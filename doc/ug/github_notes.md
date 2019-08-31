@@ -54,7 +54,6 @@ $ cd <where the repo should go>
 $ git clone https://github.com/$GITHUB_USER/opentitan.git
 $ cd opentitan
 $ git remote add upstream https://github.com/lowRISC/opentitan.git
-$ git remote set-url --push upstream disabled
 $ git remote -v
 ```
 
