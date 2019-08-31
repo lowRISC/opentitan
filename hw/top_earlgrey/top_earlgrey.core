@@ -1,0 +1,51 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_earlgrey:0.1"
+description: "Technology-independent Earl Grey toplevel"
+filesets:
+  files_rtl_generic:
+    depend:
+      - lowrisc:ip:uart:0.1
+      - lowrisc:ip:gpio
+      - lowrisc:ip:rv_core_ibex
+      - lowrisc:ip:rv_dm
+      - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:rv_timer
+      - lowrisc:ip:tlul
+      - lowrisc:ip:spi_device
+      - lowrisc:ip:hmac
+      - lowrisc:prim:ram_1p
+      - lowrisc:prim:rom
+      - lowrisc:prim:flash
+      - lowrisc:ip:flash_ctrl:0.1
+      - lowrisc:constants:top_pkg
+    files:
+      - rtl/tl_main_pkg.sv
+      - rtl/xbar_main.sv
+      - rtl/rv_plic_reg_pkg.sv
+      - rtl/rv_plic_reg_top.sv
+      - rtl/rv_plic.sv
+      - rtl/padctl.sv
+      - rtl/top_earlgrey.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+  ASIC_SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl_generic
+    toplevel: top_earlgrey
+  sim:
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+    toplevel: top_earlgrey

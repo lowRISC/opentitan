@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# to run rtl_diff (Conformal LEC) on all modules, type
+#   rtl_diff_all
+
+#-------------------------------------------------------------------------
+# list all blocks
+#-------------------------------------------------------------------------
+declare -a blocks=(
+  "gpio"
+  "rv_core_ibex"
+  "rv_dm"
+  "rv_plic"
+  "spi_device"
+  "rv_timer"
+  "uart"
+  "hmac"
+  "flash_ctrl"
+  "usbuart"
+  "usbdev"
+  "usb_fs_nb_pe"
+  "tlul_adapter_sram"
+  "tlul_socket_1n"
+  "tlul_socket_m1"
+  "sram2tlul"
+  "top_earlgrey"
+)
+
+#-------------------------------------------------------------------------
+# print header
+#-------------------------------------------------------------------------
+printf "LEC RESULTS (RTL vs. RTL) \n\n"
+format="%18s %10s \n"
+printf "${format}" "Block" "Result"
+echo "------------------------------"
+
+#-------------------------------------------------------------------------
+# run rtl_diff and summarize results
+#-------------------------------------------------------------------------
+\rm -Rf lec_*.log
+
+for block in "${blocks[@]}" ; do
+
+  # set full path to module $block
+  if [ $block == "top_earlgrey" ]; then
+    block_full="../${block}/rtl/${block}.sv"
+  elif [ $block == "usb_fs_nb_pe" ]; then
+    block_full="../ip/usbfs_nb_pe/rtl/${block}.sv"
+    # TODO: perhaps rename usb_fs_* modules to usbfs_*
+  elif [[ $block =~ "tlul" ]]; then
+    block_full="../ip/tlul/rtl/${block}.sv"
+  else
+    block_full="../ip/${block}/rtl/${block}.sv"
+  fi
+
+  # run rtl_diff for module $block_full vs. itself
+  rtl_diff $block_full $block_full > /dev/null 2>&1
+  cp rtl_diff.log lec_${block}.log
+
+  # summarize results
+  result=`grep "Compare Results" rtl_diff.log`
+  if [ $? -ne 0 ]; then
+    printf "${format}" $block "CRASH"
+  else
+    result=`echo $result | awk '{ print $4 }'`
+    printf "${format}" $block $result
+  fi
+done
+
+#-------------------------------------------------------------------------
+# print errors
+#-------------------------------------------------------------------------
+printf "\n\nLIST OF ERRORS:"
+
+for block in "${blocks[@]}" ; do
+  egrep -A 2 "(Error:|ERROR )" lec_${block}.log > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    printf "\n\n${block}\n"
+    egrep -A 2 "(Error:|ERROR )" lec_${block}.log
+  fi
+done

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# CDC stands for clock domain crossing. This script uses Meridian CDC,
+# which is a CDC linting tool.
+#
+# Usage: To run cdc_lint on module foo, type
+#   cdc_lint foo
+#
+# Here are three examples:
+#   cdc_lint gpio
+#   cdc_lint prim_fifo_async
+#   cdc_lint top_earlgrey
+
+#-------------------------------------------------------------------------
+# set LINT_TOP env variable
+#-------------------------------------------------------------------------
+export LINT_TOP=$1
+
+#-------------------------------------------------------------------------
+# use fusesoc to generate file list
+#-------------------------------------------------------------------------
+fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+
+#-------------------------------------------------------------------------
+# run meridian CDC lint
+#-------------------------------------------------------------------------
+mcdc -i cdc_lint.tcl -wait -log cdc.log

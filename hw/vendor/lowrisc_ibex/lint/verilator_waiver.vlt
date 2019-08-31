@@ -1,0 +1,57 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Lint waivers for Verilator
+// See https://www.veripool.org/projects/verilator/wiki/Manual-verilator#CONFIGURATION-FILES
+// for documentation.
+//
+// Important: This file must included *before* any other Verilog file is read.
+// Otherwise, only global waivers are applied, but not file-specific waivers.
+
+`verilator_config
+lint_off -msg PINCONNECTEMPTY
+
+// Filename 'ibex_register_file_ff' does not match MODULE name: ibex_register_file
+// ibex_register_file_ff and ibex_register_file_latch provide two
+// implementation choices for the same module.
+lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
+lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
+
+// Bits of signal are not used: boot_addr_i[7:0]
+// Boot address is 256B aligned, cleaner to pass all bits in
+lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 40
+
+// Bits of signal are not used: fetch_addr_n[0]
+// cleaner to write all bits even if not all are used
+lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 94
+
+// Bits of signal are not used: shift_right_result_ext[32]
+// cleaner to write all bits even if not all are used
+lint_off -msg UNUSED -file "*/rtl/ibex_alu.sv" -lines 122
+
+// Bits of signal are not used: alu_adder_ext_i[0]
+// Bottom bit is round, not needed
+lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 35
+
+// Bits of signal are not used: mac_res_ext[34]
+// cleaner to write all bits even if not all are used
+lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 60
+
+// Bits of signal are not used: res_adder_h[32]
+// cleaner to write all bits even if not all are used
+lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 80
+
+// Signal is not used: test_en_i
+// testability signal
+lint_off -msg UNUSED -file "*/rtl/ibex_register_file_ff.sv" -lines 38
+
+// Signal unoptimizable: Feedback to clock or circular logic:
+// ibex_core.id_stage_i.controller_i.ctrl_fsm_cs
+// Issue lowrisc/ibex#211
+lint_off -msg UNOPTFLAT -file "*/rtl/ibex_controller.sv" -lines 112
+
+// Signal unoptimizable: Feedback to clock or circular logic:
+// ibex_core.cs_registers_i.mie_q
+// Issue lowrisc/ibex#212
+lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 157

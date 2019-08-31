@@ -1,0 +1,57 @@
+{
+  name: "BADWEN",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+
+  regwidth: "32",
+  registers: [
+    {name: "RDATA", desc: "UART read data",
+      swaccess: "ro", fields: [
+      {bits: "7:0", resval: "0x0"}
+    ]},
+    {name: "WDATA", desc: "UART write data", swaccess: "wo", fields: [
+      {bits: "7:0", resval: "0x0"}
+    ]},
+    {name: "NCO", desc: "Baud clock rate control",
+      swaccess: "rw", regwen: "GOODWEN", fields: [
+      {bits: "15:0", resval: "0b0"}
+    ]},
+    {name: "NCO1", desc: "Baud clock rate control",
+      swaccess: "rw", regwen: "BADWEN1", fields: [
+      {bits: "15:0", resval: "0b0"}
+    ]},
+    {name: "NCO2", desc: "Baud clock rate control",
+      swaccess: "rw", regwen: "BADWEN2", fields: [
+      {bits: "15:0", resval: "0b0"}
+    ]},
+    {name: "NCO3", desc: "Baud clock rate control",
+      swaccess: "rw", regwen: "BADWEN3", fields: [
+      {bits: "15:0", resval: "0b0"}
+    ]},
+    {name: "NCO4", desc: "Baud clock rate control",
+      swaccess: "rw", regwen: "NONE", fields: [
+      {bits: "15:0", resval: "0b0"}
+    ]},
+    {name: "GOODWEN", desc: "Write enable control",
+      swaccess: "rw1c", fields: [
+      {name: "wen", desc: "wr enable", bits: "0", resval: "1"}
+    ]},
+    {name: "BADWEN1", desc: "Write enable control too many bits",
+      swaccess: "rw1c", fields: [
+      {name: "wen", desc: "wr enable", bits: "0", resval: "1"}
+      {name: "foo", desc: "wr enable", bits: "1", resval: "1"}
+    ]},
+    {name: "BADWEN2", desc: "Write enable control not rw1c",
+      swaccess: "rw", fields: [
+      {name: "wen", desc: "wr enable", bits: "0", resval: "1"}
+    ]},
+    {name: "BADWEN3", desc: "Write enable control not default to 1",
+      swaccess: "rw1c", fields: [
+      {name: "wen", desc: "wr enable", bits: "0", resval: "0"}
+    ]},
+    {name: "DVREG", desc: "DV-accessible test register", swaccess: "rw",
+     fields: [
+      {bits: "7:0", name: "", desc: "-" }
+    ]}
+  ]
+}

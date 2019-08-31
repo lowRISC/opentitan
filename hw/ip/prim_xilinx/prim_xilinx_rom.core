@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_xilinx:rom"
+description: "Xilinx implementation of a Read-Only Memory (ROM) primitive"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - rtl/prim_xilinx_rom.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

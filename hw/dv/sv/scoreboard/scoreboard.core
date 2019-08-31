@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:scoreboard"
+description: "DV Scoreboard"
+
+filesets:
+  files_dv:
+    files:
+      - scoreboard_pkg.sv
+      - scoreboard_queue.sv: {is_include_file: true}
+      - scoreboard.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

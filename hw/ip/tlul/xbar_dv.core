@@ -1,0 +1,39 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:xbar_dv:0.1"
+description: "xbar_dv"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul:0.1
+    files:
+      - dv/tb/xbar_main_bind.sv
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:tl_agent
+      - lowrisc:dv:scoreboard
+      - lowrisc:dv:mem_model
+    files:
+      - dv/env/xbar_env_pkg.sv
+      - dv/tests/xbar_test_pkg.sv
+      - dv/tb/xbar_tb_top.sv
+      - dv/env/xbar_params.svh: {is_include_file: true}
+      - dv/tests/xbar_seq_lib.sv: {is_include_file: true}
+      - dv/tb/xbar_tl_if_connection.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+  sim:
+    toplevel: xbar_tb_top
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs

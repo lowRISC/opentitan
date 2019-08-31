@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv_dpi:jtagdpi:0.1"
+description: "JTAG DPI for OpenOCD remote_bitbang driver (JTAG over TCP)"
+
+filesets:
+  files_rtl:
+    files:
+      - jtagdpi.sv: { file_type: systemVerilogSource }
+      - jtagdpi.c: { file_type: cSource }
+      - jtagdpi.h: { file_type: cSource, is_include_file: true }
+
+
+targets:
+  default:
+    filesets:
+      - files_rtl

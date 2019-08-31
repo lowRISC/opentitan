@@ -1,0 +1,236 @@
+// Copyright 2018 lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Multi queues scoreboard
+// - Collect items from variable number of source and destination ports and perform
+//   queue based checking.
+// - Support configure checking policy for each queue
+//   - In order checking, out of order checking, custom checking
+// - Support multi-cast
+// - Support data transform from source to destination
+
+class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
+
+  uvm_tlm_analysis_fifo #(SEQ_ITEM) item_fifos[string];
+  // Port direction
+  port_dir_e                        port_dir[string];
+  // Queues for pending items
+  scoreboard_queue#(SEQ_ITEM)       item_queues[string];
+  int unsigned                      timeout_cycle_limit = 10000;
+  bit [63:0]                        ref_timer;
+  bit [63:0]                        last_activity_cycle;
+  int unsigned                      num_of_exp_item;
+  int unsigned                      num_of_act_item;
+  int unsigned                      timeout_check_cycle_interval = 100;
+  bit                               enable_logging = 1'b1;
+  uvm_phase                         run_phase_h;
+  bit                               objection_raised;
+  semaphore                         token;
+  string                            log_filename;
+  int                               log_fd;
+  virtual clk_if                    clk_vif;
+  bit                               allow_packet_drop;
+  bit                               disable_scoreboard;
+
+  `uvm_component_param_utils(scoreboard#(SEQ_ITEM))
+
+  function new (string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction : new
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(virtual clk_if)::get(this, "", "clk_if", clk_vif)) begin
+      `uvm_fatal(get_full_name(), "Cannot get clk interface")
+    end
+    if(enable_logging) begin
+      log_filename = {get_full_name(), ".log"};
+      `uvm_info(get_full_name(), $sformatf(
+                "Trasnaction logging enabled, log will be saved to %0s", log_filename), UVM_LOW)
+      log_fd = $fopen(log_filename, "w");
+    end
+    // Add a default in order check queue
+    add_item_queue("default");
+    token = new(1);
+  endfunction
+
+  virtual function void add_item_port(string port_name, port_dir_e direction);
+    if(item_fifos.exists(port_name)) begin
+      `uvm_error(get_full_name(), $sformatf(
+                 "Port %0s already exists, cannot be added again", port_name))
+    end
+    `uvm_info(get_full_name(), $sformatf(
+              "Adding port :%0s(%0s)", port_name, direction.name()), UVM_HIGH)
+    port_dir[port_name] = direction;
+    item_fifos[port_name] = new(port_name, this);
+  endfunction
+
+  virtual function void add_item_queue(string queue_name,
+                                       checking_policy_e policy = kInOrderCheck);
+    if(item_queues.exists(queue_name)) begin
+      `uvm_fatal(get_full_name(), $sformatf(
+                 "Queue %0s already exists, cannot be added again", queue_name))
+    end
+    `uvm_info(get_full_name(), $sformatf(
+              "Adding queue :%0s(%0s)", queue_name, policy.name()), UVM_HIGH)
+    item_queues[queue_name] = scoreboard_queue#(SEQ_ITEM)::type_id::
+                              create($sformatf("%0s_%0s", get_full_name(), queue_name));
+    item_queues[queue_name].policy = policy;
+  endfunction
+
+  task run_phase(uvm_phase phase);
+    run_phase_h = phase;
+    if(disable_scoreboard) return;
+    fork
+      timeout_monitor();
+      ref_timer_thread();
+    join_none
+    foreach(item_fifos[port_name]) begin
+      fork
+        automatic string t_port_name = port_name;
+        port_monitor(t_port_name);
+      join_none
+    end
+    wait fork;
+  endtask: run_phase
+
+  // Collect items from analysis FIFO, send to corresponding queues
+  virtual task port_monitor(string port_name);
+    SEQ_ITEM tr;
+    SEQ_ITEM transformed_tr[$];
+    string queue_name;
+    while(1) begin
+      item_fifos[port_name].get(tr);
+      last_activity_cycle = ref_timer;
+      `uvm_info(get_full_name(), $sformatf("Got an item from port %0s:\n%0s",
+                port_name, tr.sprint()), UVM_HIGH)
+      if(port_dir[port_name] == kSrcPort) begin
+        process_src_packet(tr, port_name, transformed_tr);
+        foreach(transformed_tr[i]) begin
+          queue_name = get_queue_name(transformed_tr[i], port_name);
+          // destination ports
+          if(!item_queues.exists(queue_name)) begin
+             `uvm_fatal(get_full_name(), $sformatf("%0s queue doesn't exist", queue_name))
+          end
+          if(enable_logging) begin
+            $fwrite(log_fd, $sformatf("EXP @%0t [%0s][%0s] %0s\n", $realtime, port_name,
+                                     queue_name, transformed_tr[i].convert2string()));
+          end
+          token.get();
+          num_of_exp_item++;
+          handle_objection();
+          token.put();
+          item_queues[queue_name].add_expected_item(transformed_tr[i], ref_timer);
+        end
+      end else begin
+        SEQ_ITEM tr_modified;
+        queue_name = get_queue_name(tr, port_name);
+        // destination ports
+        if(!item_queues.exists(queue_name)) begin
+           `uvm_fatal(get_full_name(), $sformatf("%0s queue doesn't exist", queue_name))
+        end
+        process_dst_packet(tr, port_name, tr_modified);
+        if(enable_logging) begin
+          $fwrite(log_fd, $sformatf("ACT @%0t [%0s][%0s] %0s\n", $realtime, port_name,
+                                     queue_name, tr_modified.convert2string()));
+        end
+        token.get();
+        num_of_act_item++;
+        handle_objection();
+        token.put();
+        item_queues[queue_name].add_actual_item(tr_modified, ref_timer);
+      end
+    end
+  endtask
+
+  function void handle_objection();
+    if((num_of_act_item != num_of_exp_item) && !objection_raised) begin
+      run_phase_h.raise_objection(this);
+      objection_raised = 1'b1;
+    end
+    if((num_of_act_item == num_of_exp_item) && objection_raised) begin
+      run_phase_h.drop_objection(this);
+      objection_raised = 1'b0;
+    end
+  endfunction
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+    if((num_of_act_item != num_of_exp_item) && !allow_packet_drop) begin
+      `uvm_error(get_full_name(), $sformatf("Expected item cnt %0d != actual item cnt %0d",
+                 num_of_exp_item, num_of_act_item))
+      foreach(item_queues[queue_name]) begin
+        `uvm_info(get_full_name(), $sformatf("Queue[%0s] expected items %0d, actual items %0d",
+                  queue_name, item_queues[queue_name].expected_items.size(),
+                  item_queues[queue_name].actual_items.size()), UVM_LOW)
+      end
+    end else begin
+      `uvm_info(get_full_name(), $sformatf("Totally %0d items processed",
+                 num_of_act_item), UVM_LOW)
+    end
+  endfunction
+
+  // Transform the original item before sending to queue
+  // - Support original transaction fields modification
+  // - Support multi-cast original transaction to multiple destinations
+  // This step is optional, the default implementation is pass through the original
+  // transaction without any modification.
+  virtual function void process_src_packet(input SEQ_ITEM  tr,
+                                           input string    port_name,
+                                           output SEQ_ITEM transformed_tr[$]);
+    transformed_tr = {tr};
+  endfunction
+
+  // Process the destination packet before comparing
+  virtual function void process_dst_packet(input SEQ_ITEM  tr,
+                                           input string    port_name,
+                                           output SEQ_ITEM transformed_tr);
+    transformed_tr = tr;
+  endfunction
+
+  // Get scoreboard queue name based on the transaction and port name
+  // This function should be implemented with actual transaction to queue mapping
+  virtual function string get_queue_name(SEQ_ITEM tr, string port_name);
+    return "default";
+  endfunction
+
+  // Scoreboard timeout detection
+  virtual task timeout_monitor;
+    if(timeout_cycle_limit > 0) begin
+      while(1) begin
+        repeat(timeout_check_cycle_interval) @(posedge clk_vif.clk);
+        if((ref_timer - last_activity_cycle > timeout_cycle_limit) &&
+           (num_of_act_item != num_of_exp_item)) begin
+          if(!allow_packet_drop) begin
+            `uvm_error(get_full_name(), $sformatf("Scoreboard timeout, act/exp items = %0d/%0d",
+                                       num_of_act_item, num_of_exp_item))
+            foreach(item_queues[q]) begin
+              if(item_queues[q].expected_items.size() > 0) begin
+                `uvm_info(get_full_name(), $sformatf("Queue[%0s] pending item[0]:%0s", q,
+                          item_queues[q].expected_items[0].convert2string()), UVM_LOW)
+              end
+            end
+          end else begin
+            `uvm_info(get_full_name(), $sformatf(
+                      "Scoreboard timeout caused by packet drop, act/exp items = %0d/%0d",
+                      num_of_act_item, num_of_exp_item), UVM_LOW)
+            if(objection_raised) begin
+              run_phase_h.drop_objection(this);
+              objection_raised = 1'b0;
+            end
+          end
+        end
+      end
+    end
+  endtask
+
+  virtual task ref_timer_thread();
+    ref_timer = 0;
+    forever begin
+      @(posedge clk_vif.clk);
+      ref_timer++;
+    end
+  endtask
+
+endclass

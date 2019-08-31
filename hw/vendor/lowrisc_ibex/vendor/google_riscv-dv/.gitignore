@@ -1,0 +1,4 @@
+*.ini
+*.bin
+out_*/
+work/

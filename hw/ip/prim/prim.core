@@ -1,0 +1,38 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# XXX: Split this core into multiple smaller ones.
+name: "lowrisc:prim:all:0.1"
+description: "Primitives"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:ram_2p # for prim_ram_2p_adv
+      - lowrisc:prim:assert
+    files:
+      - rtl/prim_clock_inverter.sv
+      - rtl/prim_arbiter.sv
+      - rtl/prim_sram_arbiter.sv
+      - rtl/prim_fifo_async.sv
+      - rtl/prim_fifo_sync.sv
+      - rtl/prim_flop_2sync.sv
+      - rtl/prim_lfsr.sv
+      - rtl/prim_packer.sv
+      - rtl/prim_pulse_sync.sv
+      - rtl/prim_filter.sv
+      - rtl/prim_filter_ctr.sv
+      - rtl/prim_subreg.sv
+      - rtl/prim_subreg_ext.sv
+      - rtl/prim_intr_hw.sv
+      - rtl/prim_secded_39_32_enc.sv
+      - rtl/prim_secded_39_32_dec.sv
+      - rtl/prim_ram_2p_adv.sv
+      - rtl/prim_ram_2p_async_adv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

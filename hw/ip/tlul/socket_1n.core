@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tlul:socket_1n:0.1"
+description: "TL-UL socket 1:n"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:tlul:headers
+      - lowrisc:tlul:common
+    files:
+      - rtl/tlul_err_resp.sv
+      - rtl/tlul_socket_1n.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: tlul_socket_1n

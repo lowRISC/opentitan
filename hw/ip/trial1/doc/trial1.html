@@ -1,0 +1,562 @@
+
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<style type='text/css'>/* Stylesheet for mistletoe output in class=mdown div */
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details.*/
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.mdown {
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  color: #24292e;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 16px;
+  word-wrap: break-word;
+  width: 80%;
+  margin-left:auto; 
+  margin-right:auto;
+}
+
+.mdown code,
+.mdown pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+  display: inline;
+  max-width: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+
+.mdown table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  display: block;
+  width: 100%;
+  overflow: auto;
+}
+
+.mdown table th {
+  font-weight: 600;
+}
+
+.mdown table th,
+.mdown table td {
+  padding: 6px 13px;
+  border: 1px solid black;
+}
+
+.mdown table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+
+.mdown table tr:nth-child(even) {
+  background-color: lightgray;
+}
+
+p.titleright {
+  font-size: 1em;
+  text-align: right;
+  font-weight: 600;
+}
+
+h1 {
+    text-align: center;
+}
+p.copy {
+    font-weight: 100;
+    font-size: 1em;
+    text-align: left;
+}
+
+code.reg {
+    font-family: monospace, monospace;
+    font-size: 0.8em;
+    color: blue;
+}
+
+.highlight {
+    border-left: 2px solid;
+    font-size: 80%;
+    padding: 12px 8px;
+}
+
+table.section_heading {
+    border: 2px solid black;
+    width: 100%;
+    font-size: 140%;
+    background-color:#ffe8e8;
+    text-align:center;
+    vertical-align:middle;
+    font-family: serif;
+    display: table;
+}
+
+table.section_heading tr,
+table.section_heading td {
+    border: 1px solid black;
+    width: 100%;
+    background-color:#ffe8e8;
+    border: 0px;
+    float: center;
+}
+
+table.subsection_heading {
+    border: 2px solid black;
+    width: 100%;
+    font-size: 110%;
+    background-color:white;
+    text-align:center;
+    vertical-align:middle;
+    font-family: serif;
+    display: table;
+}
+
+table.subsection_heading tr,
+table.subsection_heading td {
+    border: 1px solid black;
+    width: 100%;
+    background-color:white;
+    border: 0px;
+    float: center;
+}
+/* Stylesheet for reggen html register output */
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details.*/
+/* SPDX-License-Identifier: Apache-2.0 */
+
+table.regpic {
+    width: 95%;
+    border-collapse: collapse;
+    margin-left:auto; 
+    margin-right:auto;
+    table-layout:fixed;
+}
+
+table.regdef {
+    border: 1px solid black;
+    width: 80%;
+    border-collapse: collapse;
+    margin-left:auto; 
+    margin-right:auto;
+    table-layout:auto;
+}
+
+table.regdef th {
+    border: 1px solid black;
+    font-family: sans-serif;
+
+}
+
+td.bitnum {
+    font-size: 60%;
+    text-align: center;
+}
+
+td.unused {
+    border: 1px solid black;
+    background-color: gray;
+}
+
+td.fname {
+    border: 1px solid black;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+
+td.regbits, td.regperm, td.regrv {
+    border: 1px solid black;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+td.regde, td.regfn {
+    border: 1px solid black;
+}
+
+table.cfgtable {
+    border: 1px solid black;
+    width: 80%;
+    border-collapse: collapse;
+    margin-left:auto;
+    margin-right:auto;
+    table-layout:auto;
+}
+
+table.cfgtable th {
+    border: 1px solid black;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+table.cfgtable td {
+    border: 1px solid black;
+    font-family: sans-serif;
+}
+</style>
+<div class="mdown">
+<p>{ name: &quot;TRIAL1&quot;,
+regwidth: 32,
+// this is a legal comment, with TODO and FIXME
+registers: [
+////////////////////////////
+//
+// read-write types no HWQE no HWEXT
+{ name: &quot;RWTYPE0&quot;,
+desc: &quot;RW type with one field&quot;,
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;12345678&quot;,
+}
+]
+},
+{ name: &quot;RWTYPE1&quot;,
+desc: '''
+RW type
+with long
+description
+and multiple fields
+'''
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{ bits: &quot;0&quot;,
+name: &quot;FIELD0&quot;,
+desc: &quot;field 0&quot;,
+resval: &quot;1&quot;,
+}
+{ bits: &quot;1&quot;,
+name: &quot;FIELD1&quot;,
+desc: &quot;field 1&quot;,
+resval: &quot;0&quot;,
+}
+{ bits: &quot;4&quot;,
+name: &quot;FIELD4&quot;,
+desc: &quot;field 4&quot;,
+resval: &quot;1&quot;,
+}
+{ bits: &quot;15:8&quot;,
+name: &quot;FIELD15_8&quot;,
+desc: &quot;field [15:8]&quot;,
+resval: &quot;100&quot;,
+}
+]
+},
+{ name: &quot;RWTYPE2&quot;,
+desc: &quot;RW type with one field and HW rw&quot;,
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;,
+resval: &quot;0x04000400&quot;,
+}
+]
+},
+{ name: &quot;RWTYPE3&quot;,
+desc: &quot;simple RW/HWR type with fields&quot;
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;15:0&quot;,
+name: &quot;field0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xcc55&quot;,
+}
+{
+bits: &quot;31:16&quot;,
+name: &quot;field1&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xee66&quot;,
+}
+]
+}
+{ skipto: &quot;0x200&quot; }
+{ name: &quot;RWTYPE4&quot;,
+desc: &quot;simple RW type with fields, plus skipto&quot;,
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{
+bits: &quot;15:0&quot;,
+name: &quot;field0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0x4000&quot;,
+}
+{
+bits: &quot;31:16&quot;,
+name: &quot;field1&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0x8000&quot;,
+}
+]
+},
+////////////////////////////
+//
+// read-only type
+{ name: &quot;ROTYPE0&quot;,
+desc: &quot;RO type&quot;,
+swaccess: &quot;ro&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;
+desc: &quot;field description&quot;
+resval: &quot;0x11111111&quot;
+}
+]
+},
+////////////////////////////
+//
+// W1C/W1S/etc types no HWQE no HWEXT
+{ name: &quot;W1CTYPE0&quot;,
+desc: &quot;W1C type with one field&quot;,
+swaccess: &quot;rw1c&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xbbccddee&quot;,
+}
+]
+},
+{ name: &quot;W1CTYPE1&quot;,
+desc: &quot;W1C type with fields&quot;,
+swaccess: &quot;rw1c&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{
+bits: &quot;15:0&quot;,
+name: &quot;field0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xeeee&quot;,
+}
+{
+bits: &quot;31:16&quot;,
+name: &quot;field1&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0x7777&quot;,
+}
+]
+},
+{ name: &quot;W1CTYPE2&quot;,
+desc: &quot;W1C type with one field, plus HRW&quot;,
+swaccess: &quot;rw1c&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xaa775566&quot;,
+}
+]
+},
+{ name: &quot;W1STYPE2&quot;,
+desc: &quot;W1S type with one field, plus HRW&quot;,
+swaccess: &quot;rw1s&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0x11224488&quot;,
+}
+]
+},
+{ name: &quot;W0CTYPE2&quot;,
+desc: &quot;W0C type with one field, plus HRW&quot;,
+swaccess: &quot;rw0c&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xfec8137f&quot;,
+}
+]
+},
+{ name: &quot;R0W1CTYPE2&quot;,
+desc: &quot;R0W1C type with one field, plus HRW&quot;,
+swaccess: &quot;r0w1c&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xaa775566&quot;,
+}
+]
+},
+////////////////////////////
+//
+// read-only-clear type
+{ name: &quot;RCTYPE0&quot;,
+desc: &quot;RC type&quot;,
+swaccess: &quot;rc&quot;,
+hwaccess: &quot;hrw&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;
+desc: &quot;field description&quot;
+resval: &quot;0x77443399&quot;
+}
+]
+},
+////////////////////////////
+//
+// write-only type
+{ name: &quot;WOTYPE0&quot;,
+desc: &quot;WO type&quot;,
+swaccess: &quot;wo&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;
+desc: &quot;field description&quot;
+resval: &quot;0x11223344&quot;
+}
+]
+},
+{ name: &quot;MIXTYPE0&quot;,
+desc: &quot;mixed type with different field access&quot;,
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hro&quot;,
+fields: [
+{
+bits: &quot;3:0&quot;,
+name: &quot;field0&quot;,
+desc: &quot;field description&quot;
+// should be default access
+resval: &quot;0x1&quot;,
+}
+{
+bits: &quot;7:4&quot;,
+name: &quot;field1&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hrw&quot;,
+resval: &quot;0x2&quot;,
+}
+{
+bits: &quot;11:8&quot;,
+name: &quot;field2&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;ro&quot;,
+hwaccess: &quot;hro&quot;,
+resval: &quot;0x3&quot;,
+}
+{
+bits: &quot;15:12&quot;,
+name: &quot;field3&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;ro&quot;,
+hwaccess: &quot;hrw&quot;,
+resval: &quot;0x4&quot;,
+}
+{
+bits: &quot;19:16&quot;,
+name: &quot;field4&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;rw1c&quot;,
+hwaccess: &quot;hrw&quot;,
+resval: &quot;0x5&quot;,
+}
+{
+bits: &quot;23:20&quot;,
+name: &quot;field5&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;rw1s&quot;,
+hwaccess: &quot;hrw&quot;,
+resval: &quot;0x6&quot;,
+}
+{
+bits: &quot;27:24&quot;,
+name: &quot;field6&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;rc&quot;,
+hwaccess: &quot;hrw&quot;,
+resval: &quot;0x7&quot;,
+}
+{
+bits: &quot;31:28&quot;,
+name: &quot;field7&quot;,
+desc: &quot;field description&quot;
+swaccess: &quot;wo&quot;,
+hwaccess: &quot;hro&quot;,
+resval: &quot;0x8&quot;,
+}
+]
+},
+////////////////////////////
+//
+// read-write type with HWQE (not external)
+{ name: &quot;RWTYPE5&quot;,
+desc: &quot;RW type with hwqe&quot;,
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hrw&quot;,  // do hrw to see the difference between written values
+hwqe: &quot;true&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xbabababa&quot;,
+}
+]
+},
+////////////////////////////
+//
+// read-write type with HWEXT
+{ name: &quot;RWTYPE6&quot;,
+desc: &quot;RW type with hwext&quot;,
+swaccess: &quot;rw&quot;,
+hwaccess: &quot;hrw&quot;,
+hwext:    &quot;true&quot;,
+hwqe:     &quot;true&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0xc8c8c8c8&quot;,
+}
+]
+},
+////////////////////////////
+//
+// read-only type with HWEXT (defaults to have hwqe too, doesn't really enforce RO)
+{ name: &quot;ROTYPE1&quot;,
+desc: &quot;RO type with hwext&quot;,
+swaccess: &quot;ro&quot;,
+hwaccess: &quot;hrw&quot;,
+hwext: &quot;true&quot;,
+fields: [
+{
+bits: &quot;31:0&quot;,
+desc: &quot;field description&quot;
+resval: &quot;0x66aa66aa&quot;,
+}
+]
+},
+]
+}</p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+</div>
+
+</body>
+</html>

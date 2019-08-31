@@ -1,0 +1,74 @@
+/* Stylesheet for reggen html register output */
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details.*/
+/* SPDX-License-Identifier: Apache-2.0 */
+
+table.regpic {
+    width: 95%;
+    border-collapse: collapse;
+    margin-left:auto; 
+    margin-right:auto;
+    table-layout:fixed;
+}
+
+table.regdef {
+    border: 1px solid black;
+    width: 80%;
+    border-collapse: collapse;
+    margin-left:auto; 
+    margin-right:auto;
+    table-layout:auto;
+}
+
+table.regdef th {
+    border: 1px solid black;
+    font-family: sans-serif;
+
+}
+
+td.bitnum {
+    font-size: 60%;
+    text-align: center;
+}
+
+td.unused {
+    border: 1px solid black;
+    background-color: gray;
+}
+
+td.fname {
+    border: 1px solid black;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+
+td.regbits, td.regperm, td.regrv {
+    border: 1px solid black;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+td.regde, td.regfn {
+    border: 1px solid black;
+}
+
+table.cfgtable {
+    border: 1px solid black;
+    width: 80%;
+    border-collapse: collapse;
+    margin-left:auto;
+    margin-right:auto;
+    table-layout:auto;
+}
+
+table.cfgtable th {
+    border: 1px solid black;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+table.cfgtable td {
+    border: 1px solid black;
+    font-family: sans-serif;
+}

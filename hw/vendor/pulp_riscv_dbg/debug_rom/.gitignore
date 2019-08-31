@@ -1,0 +1,3 @@
+*.bin
+*.elf
+debug_rom.img

@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "google_riscv-dv",
+  target_dir: "google_riscv-dv",
+
+  upstream: {
+    url: "https://github.com/google/riscv-dv",
+    rev: "master",
+  },
+
+}

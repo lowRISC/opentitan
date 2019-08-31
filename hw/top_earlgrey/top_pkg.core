@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# XXX: This name is currently required as global identifier until we have
+# support for "interfaces" or a similar concept.
+# Tracked in https://github.com/olofk/fusesoc/issues/235
+name: "lowrisc:constants:top_pkg"
+description: "Toplevel-wide constants for Earl Grey"
+filesets:
+  files_rtl:
+    files:
+      - rtl/top_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

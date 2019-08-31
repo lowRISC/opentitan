@@ -1,0 +1,6 @@
++incdir+${PRJ_DIR}/hw/dv/sv/agent/tl_agent
++incdir+${PRJ_DIR}/hw/dv/sv/mem_model
+${PRJ_DIR}/hw/ip/tlul/rtl/top_pkg.sv
+${PRJ_DIR}/hw/ip/tlul/rtl/tlul_pkg.sv
+${PRJ_DIR}/hw/dv/sv/mem_model/mem_model_pkg.sv
+${PRJ_DIR}/hw/dv/sv/agent/tl_agent/tl_agent_pkg.sv

@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:rv_dm:0.1"
+description: "RISC-V debug module"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - pulp-platform:riscv-dbg:0.1
+    files:
+      - rtl/rv_dm.sv
+      - rtl/tlul_adapter_host.sv
+    file_type: systemVerilogSource
+
+parameters:
+  NrHarts:
+    datatype: int
+    paramtype: vlogparam
+    description: Number of harts
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: rv_dm

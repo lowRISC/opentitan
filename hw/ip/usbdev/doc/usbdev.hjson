@@ -1,0 +1,388 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "usbdev",
+  clock_primary: "clk_fixed",
+  other_clock_list: [ "clk_48MHz" ]
+  bus_device: "tlul",
+  bus_host: "none",
+  available_inout_list: [
+    { name: "usb_dp", desc: "USB data D+" }
+    { name: "usb_dn", desc: "USB data D-" }
+  ],
+  available_input_list: [
+    {  name: "usb_sense", desc: "USB host VBUS sense" }
+  ],
+  available_output_list: [
+    { name: "usb_pullup", desc: "USB Full Speed pullup control" }
+  ],
+  interrupt_list: [
+    { name: "pkt_received"
+      desc: "raised if a packet was received using an OUT or SETUP transaction."}
+    { name: "pkt_sent"
+      desc: "raised if a packet was sent as part of an IN transaction."}
+    { name: "disconnected",
+      desc: "Raised if VBUS is lost thus the link is disconnected"}
+    { name: "host_lost",
+      desc: '''
+            Raised if link is active but start of frame not received from
+            host for 4.096ms. The SOF should be every 1ms.
+            '''
+    }
+    { name: "link_reset",
+      desc: '''
+            Raised if the link is at SE0 longer than 3us indicating a link
+            reset (host asserts for min 10ms, device can react after 2.5us).
+            '''
+    }
+    { name: "link_suspend",
+      desc: '''
+            Raised if the line has signalled J for longer than 3ms and is
+            therefore in suspend state.
+            '''
+    }
+    { name: "link_resume",
+      desc: '''
+            Raised when the link becomes active again after being suspended.
+            '''
+    }
+    { name: "av_empty",
+      desc: '''
+            Raised when a transaction is NACKed because the AVBuffer FIFO
+            for OUT or SETUP transactions is empty.
+            '''
+    }
+    { name: "rx_full",
+      desc: '''
+            Raised when a transaction is NACKed because the Receive FIFO
+            for OUT or SETUP transactions is full.
+            '''
+    }
+    { name: "av_overflow",
+      desc: '''
+            Raised if a write was done to the AVBuffer fifo when the
+            FIFO was full.
+            '''
+    }
+  ]
+  regwidth: "32",
+  registers: [
+    { name: "usbctrl",
+      desc: "USB Control",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "enable",
+          desc: '''
+               Set to enable the USB interface and assert the FS pullup.
+          '''
+        }
+        {
+          bits: "22:16",
+          name: "device_address",
+          hwaccess: "hrw",
+          desc: '''
+                Device address set by host (this should be copied from
+                the Set Device ID SETUP packet).
+
+                This will be zeroed by the hardware when the link resets.
+          '''
+        }
+      ]
+    }
+    { name: "usbstat",
+      desc: "USB Status",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        {
+          bits: "10:0",
+          name: "frame",
+          desc: '''
+                Frame index received from host. On an active link this
+                will increment every milisecond.
+                '''
+        }
+        {
+          bits: "11",
+          name: "host_lost",
+          desc: '''
+                Start of frame not received from host for 4.096ms
+                and the line is active.
+                '''
+        }
+        {
+          bits: "13:12",
+          name: "link_state",
+          desc: '''
+                State of USB link, decoded from line.
+                '''
+          enum: [
+            { value: "0",
+              name: "disconnect",
+              desc: "Link disconnected (no VBUS)"
+            },
+            { value: "1",
+              name: "reset",
+              desc: "Link reset (constant SE0 for > 3us)"
+            },
+            { value: "2",
+              name: "suspend",
+              desc: "Link suspended (constant idle for > 3ms)"
+            },
+            { value: "3",
+              name: "active",
+              desc: "Link active"
+            }
+	  ]
+        }
+        {
+          bits: "14",
+          name: "usb_sense",
+          desc: '''
+                Refelects the state of the usb_sense pin. 1 indicates that
+                the host is providing VBUS.
+                '''
+        }
+        {
+          bits: "18:16",
+          name: "av_depth",
+          desc: '''
+                Number of buffers in the Available-Buffer FIFO.
+
+                These buffers are available for receiving packets.
+                '''
+        }
+        {
+          bits: "23",
+          name: "av_full",
+          desc: "Available buffers FIFO is full"
+        }
+        {
+          bits: "26:24",
+          name: "rx_depth",
+          desc: '''
+                Number of buffers in the Receive FIFO.
+
+                These buffers have packets that have been received and
+                should be popped from the FIFO and processed.
+                '''
+        }
+        {
+          bits: "31",
+          name: "rx_empty",
+          desc: "Receive FIFO is empty"
+        }
+      ]
+    }
+    { name: "avbuffer",
+      desc: "Available Buffer FIFO",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "4:0",
+          name: "buffer",
+          desc: '''
+                This field contains the buffer number being passed to the
+                USB receive engine.
+
+                If the FIFO is full then the write is discarded.
+                '''
+        }
+      ]
+    }
+    { name: "rxfifo",
+      desc: "Received packet FIFO",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        {
+          bits: "4:0",
+          name: "buffer",
+          desc: '''
+                This field contains the buffer number that data was received
+                into. On read the buffer is popped from the FIFO and returned
+                to software.
+                '''
+        }
+        {
+          bits: "14:8",
+          name: "size",
+          desc: '''
+                This field contains the size in bytes of the packet written
+                to the buffer.
+                '''
+        }
+        {
+          bits: "19",
+          name: "setup",
+          desc: '''
+                This field indicates the type of transaction received. It is
+                set for a SETUP transaction and clear for an OUT transaction.
+                '''
+        }
+        {
+          bits: "23:20",
+          name: "ep",
+          desc: '''
+                This field contains the Endpoint to which the packet was
+                directed.
+                '''
+        }
+      ]
+    }
+    { multireg: {
+        name: "rxenable",
+        count: "12"
+        cname: "Endpoint"
+        desc: "Receive transaction enable",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "0",
+            name: "setup",
+            desc: '''
+                  This bit must be set to enable SETUP transactions to be
+                  received on the endpoint. If the bit is clear then a
+                  SETUP request will be responded to with a NACK.
+                  '''
+          }
+          {
+            bits: "16",
+            name: "out",
+            desc: '''
+                  This bit must be set to enable OUT transactions to be
+                  received on the endpoint. If the bit is clear then an
+                  OUT request will be responded to with a NACK.
+                  '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "in_sent",
+        count: "12"
+        cname: "Endpoint"
+        desc: "IN Transaction Sent",
+        swaccess: "rw1c",
+        hwaccess: "hwo",
+        fields: [
+          {
+            bits: "0",
+            name: "sent",
+            desc: '''
+                  This bit will be set when the ACK is received from
+                  the host to indicate successful packet delivery
+                  as part of an IN transaction.
+                  '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "stall",
+        count: "12"
+        cname: "Endpoint"
+        desc: "Endpoint STALL control",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+                bits: "0",
+                name: "stall",
+                desc: '''
+                      If this bit is set then an IN, OUT or SETUP
+                      transaction to this endpoint will be responded to
+                      with a STALL return. This is used when the endpoint
+                      is disabled.
+                      '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "configin",
+        count: "12"
+        cname: "Endpoint"
+        desc: "Configure IN Transaction",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "4:0",
+            name: "buffer",
+            desc: '''
+                  The buffer number containing the data to send when
+                  an IN transaction is received on the Endpoint.
+                  '''
+          }
+          {
+            bits: "14:8",
+            name: "size",
+            desc: '''
+                  The number of bytes to send from the buffer.
+
+                  If this is 0 then a CRC only packet is sent.
+
+                  If this is greater than 64 then 64 bytes are sent.
+                  '''
+          }
+          {
+            bits: "30",
+            name: "pend",
+            swaccess: "rw1c"
+            hwaccess: "hrw"
+            desc: '''
+                  This bit indicates a pending transaction was canceled by the hardware.
+
+                  The bit is set when the rdy bit is cleared by hardware because of a
+		  SETUP packet being received or a link reset being detected.
+
+		  The bit remains set until cleared by being written with a 1.
+                  '''
+          }
+          {
+            bits: "31",
+            name: "rdy",
+            hwaccess: "hrw"
+            desc: '''
+                  This bit should be set to indicate the buffer is ready
+                  for sending. It will be cleared when the ACK is received
+                  indicating the host has accepted the data.
+
+                  This bit will also be cleared if an enabled SETUP
+                  transaction is received on the Endpoint. This allows
+                  use of the IN channel for transfer of SETUP information.
+                  The original buffer must be resubmitted after the SETUP
+                  sequence is complete. A link reset also clears the bit.
+		  In either of the cases where the hardware cancels the
+		  transaction it will also set the pend bit.
+                  '''
+          }
+        ]
+      }
+    }
+    { window: {
+        name: "buffer",
+        items: "512",
+        validbits: "32",
+        byte-write: "false",
+        unusual: "false"
+        swaccess: "rw",
+        desc: '''
+              2kB packet buffer. Divided into 32 64-byte packets.
+
+              The packet buffer is used for sending and receiveing packets.
+              '''
+      },
+    },
+  ]
+}

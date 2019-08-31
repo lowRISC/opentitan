@@ -1,0 +1,125 @@
+/* Stylesheet for mistletoe output in class=mdown div */
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details.*/
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.mdown {
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  color: #24292e;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 16px;
+  word-wrap: break-word;
+  width: 80%;
+  margin-left:auto; 
+  margin-right:auto;
+}
+
+.mdown code,
+.mdown pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+  display: inline;
+  max-width: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+
+.mdown table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  display: block;
+  width: 100%;
+  overflow: auto;
+}
+
+.mdown table th {
+  font-weight: 600;
+}
+
+.mdown table th,
+.mdown table td {
+  padding: 6px 13px;
+  border: 1px solid black;
+}
+
+.mdown table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+
+.mdown table tr:nth-child(even) {
+  background-color: lightgray;
+}
+
+p.titleright {
+  font-size: 1em;
+  text-align: right;
+  font-weight: 600;
+}
+
+h1 {
+    text-align: center;
+}
+p.copy {
+    font-weight: 100;
+    font-size: 1em;
+    text-align: left;
+}
+
+code.reg {
+    font-family: monospace, monospace;
+    font-size: 0.8em;
+    color: blue;
+}
+
+.highlight {
+    border-left: 2px solid;
+    font-size: 80%;
+    padding: 12px 8px;
+}
+
+table.section_heading {
+    border: 2px solid black;
+    width: 100%;
+    font-size: 140%;
+    background-color:#ffe8e8;
+    text-align:center;
+    vertical-align:middle;
+    font-family: serif;
+    display: table;
+}
+
+table.section_heading tr,
+table.section_heading td {
+    border: 1px solid black;
+    width: 100%;
+    background-color:#ffe8e8;
+    border: 0px;
+    float: center;
+}
+
+table.subsection_heading {
+    border: 2px solid black;
+    width: 100%;
+    font-size: 110%;
+    background-color:white;
+    text-align:center;
+    vertical-align:middle;
+    font-family: serif;
+    display: table;
+}
+
+table.subsection_heading tr,
+table.subsection_heading td {
+    border: 1px solid black;
+    width: 100%;
+    background-color:white;
+    border: 0px;
+    float: center;
+}

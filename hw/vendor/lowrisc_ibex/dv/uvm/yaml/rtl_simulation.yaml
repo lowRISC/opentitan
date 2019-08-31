@@ -1,0 +1,46 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- tool: vcs
+  compile:
+    cmd:
+      - "vcs -f ibex_dv.f  -full64
+         -l <out>/compile.log
+         -sverilog -ntb_opts uvm-1.2
+         +define+UVM_REGEX_NO_DPI -timescale=1ns/10ps -licqueue
+         -Mdir=<out>/vcs_simv.csrc
+         -o <out>/vcs_simv
+         -debug_access+pp
+         -lca -kdb <wave_opts> <cov_opts>"
+    cov_opts: >
+      -cm line+tgl+assert+fsm+branch
+      -cm_tgl portsonly
+      -cm_tgl structarr
+      -cm_report noinitial
+      -cm_seqnoconst
+      -cm_dir <out>/test.vdb
+      -cm_hier cover.cfg
+    wave_opts: >
+      -debug_access+all -ucli -do vcs.tcl
+  sim:
+    cmd: >
+      <out>/vcs_simv +vcs+lic+wait <sim_opts> <wave_opts> <cov_opts>
+    cov_opts: >
+      -cm line+tgl+assert+fsm+branch
+      -cm_dir <out>/test.vdb
+      -cm_log /dev/null
+      -assert nopostproc
+      -cm_name test_<seed>
+    wave_opts: >
+      -ucli -do <cwd>/vcs.tcl

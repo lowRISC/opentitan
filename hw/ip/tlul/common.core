@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tlul:common:0.1"
+description: "TL-UL common building blocks"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:tlul:headers
+    files:
+      - rtl/tlul_fifo_sync.sv
+      - rtl/tlul_fifo_async.sv
+      - rtl/tlul_assert.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

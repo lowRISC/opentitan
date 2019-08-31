@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This script uses AscentLint from Real Intent.
+#
+# Usage: To run lint on module foo, type
+#   lint foo
+#
+# Here are three examples:
+#   lint gpio
+#   lint prim_fifo_async
+#   lint top_earlgrey
+
+#-------------------------------------------------------------------------
+# set LINT_TOP env variable
+#-------------------------------------------------------------------------
+export LINT_TOP=$1
+
+#-------------------------------------------------------------------------
+# use fusesoc to generate file list
+#-------------------------------------------------------------------------
+fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+
+#-------------------------------------------------------------------------
+# run meridian CDC lint
+#-------------------------------------------------------------------------
+ascentlint -i lint.tcl -wait -log lint.log

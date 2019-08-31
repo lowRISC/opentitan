@@ -1,0 +1,398 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "TRIAL1",
+  regwidth: 32,
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+  // this is a legal comment, with TODO and FIXME
+  registers: [
+     ////////////////////////////
+    //
+    // read-write types no HWQE no HWEXT
+    { name: "RWTYPE0",
+      desc: "RW type with one field",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "12345678",
+        }
+      ]
+    },
+    { name: "RWTYPE1",
+      desc: '''
+          RW type
+          with long
+          description
+          and multiple fields
+          '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "FIELD0",
+          desc: "field 0",
+          resval: "1",
+        }
+        { bits: "1",
+          name: "FIELD1",
+          desc: "field 1",
+          resval: "0",
+        }
+        { bits: "4",
+          name: "FIELD4",
+          desc: "field 4",
+          resval: "1",
+        }
+        { bits: "15:8",
+          name: "FIELD15_8",
+          desc: "field [15:8]",
+          resval: "100",
+        }
+      ]
+    },
+    { name: "RWTYPE2",
+      desc: "RW type with one field and HW rw",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        {
+        bits: "31:0",
+        desc: "field description",
+        resval: "0x04000400",
+        }
+      ]
+    },
+    { name: "RWTYPE3",
+      desc: "simple RW/HWR type with fields"
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        {
+          bits: "15:0",
+          name: "field0",
+          desc: "field description"
+          resval: "0xcc55",
+        }
+        {
+          bits: "31:16",
+          name: "field1",
+          desc: "field description"
+          resval: "0xee66",
+        }
+      ]
+    }
+    { skipto: "0x200" }
+    { name: "RWTYPE4",
+      desc: "simple RW type with fields, plus skipto",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "15:0",
+          name: "field0",
+          desc: "field description"
+          resval: "0x4000",
+        }
+        {
+          bits: "31:16",
+          name: "field1",
+          desc: "field description"
+          resval: "0x8000",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-only type
+    { name: "ROTYPE0",
+      desc: "RO type",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      fields: [
+        {
+        bits: "31:0"
+        desc: "field description"
+        resval: "0x11111111"
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // W1C/W1S/etc types no HWQE no HWEXT
+    { name: "W1CTYPE0",
+      desc: "W1C type with one field",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xbbccddee",
+        }
+      ]
+    },
+    { name: "W1CTYPE1",
+      desc: "W1C type with fields",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "15:0",
+          name: "field0",
+          desc: "field description"
+          resval: "0xeeee",
+        }
+        {
+          bits: "31:16",
+          name: "field1",
+          desc: "field description"
+          resval: "0x7777",
+        }
+      ]
+    },
+    { name: "W1CTYPE2",
+      desc: "W1C type with one field, plus HRW",
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xaa775566",
+        }
+      ]
+    },
+    { name: "W1STYPE2",
+      desc: "W1S type with one field, plus HRW",
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0x11224488",
+        }
+      ]
+    },
+    { name: "W0CTYPE2",
+      desc: "W0C type with one field, plus HRW",
+      swaccess: "rw0c",
+      hwaccess: "hrw",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xfec8137f",
+        }
+      ]
+    },
+    { name: "R0W1CTYPE2",
+      desc: "R0W1C type with one field, plus HRW",
+      swaccess: "r0w1c",
+      hwaccess: "hrw",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xaa775566",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-only-clear type
+    { name: "RCTYPE0",
+      desc: "RC type",
+      swaccess: "rc",
+      hwaccess: "hrw",
+      fields: [
+        {
+        bits: "31:0"
+        desc: "field description"
+        resval: "0x77443399"
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // write-only type
+    { name: "WOTYPE0",
+      desc: "WO type",
+      swaccess: "wo",
+      hwaccess: "hro",
+      fields: [
+        {
+        bits: "31:0"
+        desc: "field description"
+        resval: "0x11223344"
+        }
+      ]
+    },
+    { name: "MIXTYPE0",
+      desc: "mixed type with different field access",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "3:0",
+          name: "field0",
+          desc: "field description"
+          // should be default access
+          resval: "0x1",
+        }
+        {
+          bits: "7:4",
+          name: "field1",
+          desc: "field description"
+          swaccess: "rw",
+          hwaccess: "hrw",
+          resval: "0x2",
+        }
+        {
+          bits: "11:8",
+          name: "field2",
+          desc: "field description"
+          swaccess: "ro",
+          hwaccess: "hro",
+          resval: "0x3",
+        }
+        {
+          bits: "15:12",
+          name: "field3",
+          desc: "field description"
+          swaccess: "ro",
+          hwaccess: "hrw",
+          resval: "0x4",
+        }
+        {
+          bits: "19:16",
+          name: "field4",
+          desc: "field description"
+          swaccess: "rw1c",
+          hwaccess: "hrw",
+          resval: "0x5",
+        }
+        {
+          bits: "23:20",
+          name: "field5",
+          desc: "field description"
+          swaccess: "rw1s",
+          hwaccess: "hrw",
+          resval: "0x6",
+        }
+        {
+          bits: "27:24",
+          name: "field6",
+          desc: "field description"
+          swaccess: "rc",
+          hwaccess: "hrw",
+          resval: "0x7",
+        }
+        {
+          bits: "31:28",
+          name: "field7",
+          desc: "field description"
+          swaccess: "wo",
+          hwaccess: "hro",
+          resval: "0x8",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-write type with HWQE (not external)
+    { name: "RWTYPE5",
+      desc: "RW type with hwqe",
+      swaccess: "rw",
+      hwaccess: "hrw",  // do hrw to see the difference between written values
+      hwqe: "true",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xbabababa",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-write type with HWEXT
+    { name: "RWTYPE6",
+      desc: "RW type with hwext",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xc8c8c8c8",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-only type with HWEXT (defaults to have hwqe too, doesn't really enforce RO)
+    { name: "ROTYPE1",
+      desc: "RO type with hwext",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0x66aa66aa",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-only type with HWACCESS=NONE
+    { name: "ROTYPE2",
+      desc: "RO type, constant only (hw=none)",
+      swaccess: "ro",
+      hwaccess: "none",
+      fields: [
+        {
+          name: "field0",
+          bits: "7:0",
+          desc: "field 0 description"
+          resval: "0x79",
+        }
+        {
+          name: "field1",
+          bits: "15:8",
+          desc: "field 1 description"
+          resval: "0x8a",
+        }
+        {
+          name: "field2",
+          bits: "31:20",
+          desc: "field 2 description"
+          resval: "0x9b9",
+        }
+      ]
+    },
+     ////////////////////////////
+    //
+    // read-write type with HW-NONE
+    { name: "RWTYPE7",
+      desc: "RW type with hw-none",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "0xf6f6f6f6",
+        }
+      ]
+    },
+  ]
+}

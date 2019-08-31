@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:spi_device_env:0.1"
+description: "RISC-V Timer DV UVM environmnt"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:spi_agent
+    files:
+      - spi_device_env_pkg.sv
+      - spi_device_env_cfg.sv: {is_include_file: true}
+      - spi_device_env_cov.sv: {is_include_file: true}
+      - spi_device_env.sv: {is_include_file: true}
+      - spi_device_reg_block.sv: {is_include_file: true}
+      - spi_device_scoreboard.sv: {is_include_file: true}
+      - seq_lib/spi_device_vseq_list.sv: {is_include_file: true}
+      - seq_lib/spi_device_base_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_csr_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

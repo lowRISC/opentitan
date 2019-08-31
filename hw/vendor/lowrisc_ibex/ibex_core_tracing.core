@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_core_tracing:0.1"
+description: "Ibex CPU core with tracing enabled"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_core
+      - lowrisc:ibex:ibex_tracer
+    files:
+      - rtl/ibex_core_tracing.sv
+    file_type: systemVerilogSource
+
+parameters:
+  # The tracer uses the RISC-V Formal Interface (RVFI) to collect trace signals.
+  RVFI:
+    datatype: bool
+    paramtype: vlogdefine
+    default: true
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+    parameters:
+      - RVFI=true

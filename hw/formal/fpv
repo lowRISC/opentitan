@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Script to run fpv (formal property verification) using Jasper Gold
+#
+# Usage: To run fpv on module foo, type
+#   fpv foo
+#
+# Here are some examples:
+#   fpv gpio
+#   fpv uart
+#   fpv top_earlgrey
+
+#-------------------------------------------------------------------------
+# set FPV_TOP env variable
+#-------------------------------------------------------------------------
+export FPV_TOP=$1
+
+#-------------------------------------------------------------------------
+# use fusesoc to generate file list
+#-------------------------------------------------------------------------
+\rm -Rf build jgproject
+fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+
+#-------------------------------------------------------------------------
+# run Jasper Gold
+#-------------------------------------------------------------------------
+cd build/formal_0/sim-icarus
+
+jg -batch \
+  ../../../fpv.tcl \
+  -proj ../../../jgproject \
+  -allow_unsupported_OS \
+  -command exit \
+  | tee ../../../fpv.log
+
+cd -

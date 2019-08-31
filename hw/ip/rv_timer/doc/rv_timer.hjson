@@ -1,0 +1,115 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+{ name: "rv_timer",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+  bus_host: "none",
+  available_input_list: [
+  ],
+  available_output_list: [
+  ],
+  interrupt_list: [
+    { name: "timer_expired_0_0",
+      desc: "raised if the timer 0_0 expired (mtimecmp >= mtime)"
+    },
+  ],
+  no_auto_intr_regs: "true",
+  regwidth: "32",
+  registers: [
+    { multireg: {
+        name: "CTRL",
+        desc: "Control register",
+        count: 1,
+        cname: "TIMER",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0", name: "active", desc: "If 1, timer operates" }
+        ],
+      }
+    },
+    { skipto: "0x100" },
+    { name: "CFG0",
+      desc: "Configuration for Hart 0",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "11:0", name: "prescale", desc: "Prescaler to generate tick" },
+        { bits: "23:16", name: "step", resval: "0x1", desc: "Incremental value for each tick" },
+      ],
+    },
+    { name: "TIMER_V_LOWER0",
+      desc: "Timer value Lower",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:0", name: "v", desc: "Timer value [31:0]" },
+      ],
+    },
+    { name: "TIMER_V_UPPER0",
+      desc: "Timer value Upper",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:0", name: "v", desc: "Timer value [63:32]" },
+      ],
+    },
+    { name: "COMPARE_LOWER0_0",
+      desc: "Timer value Lower",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0", name: "v", resval: "0xffffffff", desc: "Timer compare value [31:0]" },
+      ],
+    },
+    { name: "COMPARE_UPPER0_0",
+      desc: "Timer value Upper",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0", name: "v", resval: "0xffffffff", desc: "Timer compare value [63:32]" },
+      ],
+    },
+    { multireg: {
+        name: "INTR_ENABLE0",
+        desc: "Interrupt Enable",
+        count: 1,
+        cname: "TIMER",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0", name: "IE", desc: "Interrupt Enable for timer" }
+        ]
+      }
+    },
+    { multireg: {
+        name: "INTR_STATE0",
+        desc: "Interrupt Status",
+        count: 1,
+        cname: "TIMER",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0", name: "IS", desc: "Interrupt status for timer" }
+        ],
+      }
+    },
+    { multireg: {
+        name: "INTR_TEST0",
+        desc: "Interrupt test register",
+        count: 1,
+        cname: "TIMER",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          { bits: "0", name: "T", desc: "Interrupt test for timer" }
+        ]
+      }
+    },
+  ],
+}
+

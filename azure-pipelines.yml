@@ -1,0 +1,129 @@
+# Azure Pipelines CI build configuration
+# Documentation at https://aka.ms/yaml
+
+variables:
+  VERILATOR_VERSION: 4.010
+  VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
+
+trigger:
+  # Combine builds on master as long as another build is running
+  batch: true
+  branches:
+    include:
+    - master
+
+stages:
+# Stage 1 are fast checks for tools which provide fast turnaround time
+# (< 5 minutes)
+- stage: quick_sanity
+  displayName: Quick sanity checks
+  jobs:
+  - job: "lint"
+    displayName: "Run code quality checks (lint)"
+    pool: "Default"
+    steps:
+    - bash: |
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
+        sudo pip3 install fusesoc hjson livereload mistletoe yapf isort mako pygments pyftdi
+      displayName: 'Install dependencies'
+
+    - bash: |
+        python3 --version
+        yapf --version
+        isort --version
+        clang-format -version
+      displayName: 'Display tool versions'
+
+#   XXX: Python lint checks are until Issue #313 is resolved
+#    - bash: find ./util -iname '*.py' -print0 | xargs -0 -n1 $PWD/util/lintpy.py -f
+#      displayName: 'Run Python lint'
+
+    - bash: |
+        make -C hw regs && git diff --exit-code
+        if [ $? != 0 ]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Register headers not up-to-date. Regenerate them with 'make -C hw regs'."
+          exit 1
+        fi
+      condition: always()
+      displayName: 'Ensure all generated files are clean and up-to-date'
+
+    - bash: |
+        # XXX: As of today, task.logissue comments with 'sourcepath' set don't
+        # get reported to GitHub Checks annotations. Upstream bug report:
+        # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
+        #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
+        git diff -U0 $(git merge-base --fork-point origin/master) | clang-format-diff -p1 | tee clang-format-output
+        if [ -s clang-format-output ]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or 'git clang-format' to format the code."
+          exit 1
+        fi
+      # This check is not idempotent, but checks changes to a base branch.
+      # Run it only on pull requests.
+      condition: eq(variables['Build.Reason'], 'PullRequest')
+      displayName: 'Use clang-format to check C/C++ coding style'
+      
+    - bash: |
+        commit_range=$(git merge-base --fork-point origin/master)..HEAD
+        ./util/lint_commits.py --error-msg-prefix='##vso[task.logissue type=error]' $commit_range
+      # Only run on pull requests to check new commits only
+      condition: eq(variables['Build.Reason'], 'PullRequest')
+      displayName: "Check commit metadata"
+
+# Stage 2 for longer builds and tests. Jobs run in parallel by default, and
+# dependencies should be used for build -> test dependencies.
+- stage: build_test
+  displayName: Build and test
+  jobs:
+  - job: "top_earlgrey_verilator"
+    displayName: "Build Verilator simulation of the Earl Grey toplevel design"
+    pool: "Default"
+    steps:
+    - bash: |
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+          && sudo pip3 install fusesoc hjson livereload mistletoe yapf isort mako pygments pyftdi \
+          && sudo apt-get install git make autoconf g++ flex bison curl
+      displayName: 'Install dependencies'
+    - bash: |
+        set -e
+        if [ ! -d $(VERILATOR_PATH) ]; then
+          echo "Building verilator (no cached build found)"
+          mkdir -p build/verilator
+          cd build/verilator
+          curl -Ls -o verilator.tgz https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz
+          tar -xf verilator.tgz
+          cd verilator-$(VERILATOR_VERSION)
+          ./configure --prefix=$(VERILATOR_PATH)
+          make -j$(nproc)
+          mkdir -p $VERILATOR_PATH
+          make install
+        else
+          echo "Re-using cached verilator build"
+        fi
+      displayName: 'Build and install Verilator'
+    - bash: |
+        export PATH=$VERILATOR_PATH/bin:$PATH
+        python3 --version
+        fusesoc --version
+        verilator --version
+      displayName: 'Display environment'
+    - bash: |
+        export PATH=$VERILATOR_PATH/bin:$PATH
+        fusesoc --cores-root=. sim --build-only lowrisc:systems:top_earlgrey_verilator
+      displayName: 'Build simulation with Verilator'
+
+  - job: "top_earlgrey_nexysvideo"
+    displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
+    pool: "Default"
+    timeoutInMinutes: 120 # 2 hours
+    steps:
+    - bash: |
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+          && sudo pip3 install fusesoc hjson livereload mistletoe yapf isort mako pygments pyftdi
+      displayName: 'Install dependencies'
+    - bash: |
+        set -e
+        source /opt/xilinx/Vivado/2018.3/settings64.sh
+        fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
+      displayName: 'Build bitstream with Vivado'

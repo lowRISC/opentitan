@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "pulp-platform:riscv-dbg:0.1"
+description: "RISC-V Debug Module"
+
+filesets:
+  files_src:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - pulp_riscv_dbg/debug_rom/debug_rom.sv
+      - pulp_riscv_dbg/src/dm_pkg.sv
+      - pulp_riscv_dbg/src/dm_sba.sv
+      - pulp_riscv_dbg/src/dm_csrs.sv
+      - pulp_riscv_dbg/src/dm_mem.sv
+      - pulp_riscv_dbg/src/dmi_cdc.sv
+      - pulp_riscv_dbg/src/dmi_jtag.sv
+      - pulp_riscv_dbg/src/dmi_jtag_tap.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_src

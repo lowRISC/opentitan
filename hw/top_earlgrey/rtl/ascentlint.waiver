@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for top_earlgrey
+
+# async reset
+waive -rules RESET_DRIVER -location {top_earlgrey.sv} -msg {'ndmreset_n' is driven here, and used as an asynchronous reset 'rst_ni'} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_MUX    -location {top_earlgrey.sv} -msg {Asynchronous reset 'ndmreset_n' is driven by a multiplexer here, used as a reset 'rst_ni'} \
+      -comment "The MUX is needed to control the reset during scanmode (scanmode_i == 1)"
+
+# dmi_jtag_tap
+waive -rules INV_CLOCK -location {dmi_jtag_tap.sv} -msg {'tck_i' is inverted, used as clock} \
+      -comment "The clock inverter is needed here to trigger flop on negative edge"
+waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -msg {Clock 'tck_n' is driven by a multiplexer here, used as a clock} \
+      -comment "The MUX is needed to use the non-inverted clock during scanmode (scanmode_i == 1)"

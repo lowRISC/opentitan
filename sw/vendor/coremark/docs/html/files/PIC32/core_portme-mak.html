@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+
+<html><head><title>core_portme.mak - CoreMark</title><link rel="stylesheet" type="text/css" href="../../styles/main.css"><script language=JavaScript src="../../javascript/main.js"></script><script language=JavaScript src="../../javascript/searchdata.js"></script></head><body class="ContentPage" onLoad="NDOnLoad()"><script language=JavaScript><!--
+if (browserType) {document.write("<div class=" + browserType + ">");if (browserVer) {document.write("<div class=" + browserVer + ">"); }}// --></script>
+
+<!--  Copyright 2009 EEMBC  -->
+<!-- saved from url=(0026)http://www.naturaldocs.org -->
+
+
+
+
+<div id=Content><div class="CFile"><div class=CTopic id=MainTopic><h1 class=CTitle><a name="core_portme.mak"></a>core_portme.mak</h1><div class=CBody><!--START_ND_SUMMARY--><div class=Summary><div class=STitle>Summary</div><div class=SBorder><table border=0 cellspacing=0 cellpadding=0 class=STable><tr class="SMain"><td class=SEntry><a href="#core_portme.mak" >core_portme.mak</a></td><td class=SDescription></td></tr><tr class="SGroup"><td class=SEntry><a href="#Variables" >Variables</a></td><td class=SDescription></td></tr><tr class="SVariable SIndent1 SMarked"><td class=SEntry><a href="#OUTFLAG" >OUTFLAG</a></td><td class=SDescription>Use this flag to define how to to get an executable (e.g -o)</td></tr><tr class="SVariable SIndent1"><td class=SEntry><a href="#CFLAGS" >CFLAGS</a></td><td class=SDescription>Use this flag to define compiler options. </td></tr><tr class="SVariable SIndent1 SMarked"><td class=SEntry><a href="#LFLAGS_END" >LFLAGS_END</a></td><td class=SDescription>Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. </td></tr><tr class="SVariable SIndent1"><td class=SEntry><a href="#SEPARATE_COMPILE" >SEPARATE_COMPILE</a></td><td class=SDescription>Define if you need to separate compilation from link stage. </td></tr><tr class="SVariable SIndent1 SMarked"><td class=SEntry><a href="#PORT_OBJS" >PORT_OBJS</a></td><td class=SDescription>Port specific object files can be added here</td></tr><tr class="SGroup"><td class=SEntry><a href="#Build_Targets" >Build Targets</a></td><td class=SDescription></td></tr><tr class="SBuildTarget SIndent1 SMarked"><td class=SEntry><a href="#port_prebuild" >port_prebuild</a></td><td class=SDescription>Generate any files that are needed before actual build starts. </td></tr><tr class="SBuildTarget SIndent1"><td class=SEntry><a href="#port_postbuild" >port_postbuild</a></td><td class=SDescription>Generate any files that are needed after actual build end. </td></tr><tr class="SBuildTarget SIndent1 SMarked"><td class=SEntry><a href="#port_postrun" >port_postrun</a></td><td class=SDescription>Do platform specific after run stuff. </td></tr><tr class="SBuildTarget SIndent1"><td class=SEntry><a href="#port_prerun" >port_prerun</a></td><td class=SDescription>Do platform specific after run stuff. </td></tr><tr class="SBuildTarget SIndent1 SMarked"><td class=SEntry><a href="#port_postload" >port_postload</a></td><td class=SDescription>Do platform specific after load stuff. </td></tr><tr class="SBuildTarget SIndent1"><td class=SEntry><a href="#port_preload" >port_preload</a></td><td class=SDescription>Do platform specific before load stuff. </td></tr><tr class="SGroup"><td class=SEntry><a href="#Variables" >Variables</a></td><td class=SDescription></td></tr><tr class="SVariable SIndent1 SMarked"><td class=SEntry><a href="#OPATH" >OPATH</a></td><td class=SDescription></td></tr><tr class="SVariable SIndent1"><td class=SEntry><a href="#PERL" >PERL</a></td><td class=SDescription>Define perl executable to calculate the geomean if running separate.</td></tr></table></div></div><!--END_ND_SUMMARY--></div></div></div>
+
+<div class="CGroup"><div class=CTopic><h3 class=CTitle><a name="Variables"></a>Variables</h3></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="OUTFLAG"></a>OUTFLAG</h3><div class=CBody><p>Use this flag to define how to to get an executable (e.g -o)</p></div></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="CFLAGS"></a>CFLAGS</h3><div class=CBody><p>Use this flag to define compiler options.&nbsp; Note, you can add compiler options from the command line using XCFLAGS=&rdquo;other flags&rdquo;</p></div></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="LFLAGS_END"></a>LFLAGS_END</h3><div class=CBody><p>Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. linker scripts).&nbsp; Note: On certain platforms, the default clock_gettime implementation is supported but requires linking of librt.</p></div></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="SEPARATE_COMPILE"></a>SEPARATE_COMPILE</h3><div class=CBody><p>Define if you need to separate compilation from link stage.&nbsp; In this case, you also need to define below how to create an object file, and how to link.</p></div></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="PORT_OBJS"></a>PORT_OBJS</h3><div class=CBody><p>Port specific object files can be added here</p></div></div></div>
+
+<div class="CGroup"><div class=CTopic><h3 class=CTitle><a name="Build_Targets"></a>Build Targets</h3></div></div>
+
+<div class="CBuildTarget"><div class=CTopic><h3 class=CTitle><a name="port_prebuild"></a>port_prebuild</h3><div class=CBody><p>Generate any files that are needed before actual build starts.&nbsp; E.g. generate profile guidance files.&nbsp; Sample PGO generation for gcc enabled with PGO=1</p><ul><li>First, check if PGO was defined on the command line, if so, need to add -fprofile-use to compile line.</li><li>Second, if PGO reference has not yet been generated, add a step to the prebuild that will build a profile-generate version and run it.</li></ul><table border=0 cellspacing=0 cellpadding=0 class=CDescriptionList><tr><td class=CDLEntry>Note</td><td class=CDLDescription>Using REBUILD=1</td></tr></table><p>Use make PGO=1 to invoke this sample processing.</p></div></div></div>
+
+<div class="CBuildTarget"><div class=CTopic><h3 class=CTitle><a name="port_postbuild"></a>port_postbuild</h3><div class=CBody><p>Generate any files that are needed after actual build end.&nbsp; E.g. change format to srec, bin, zip in order to be able to load into flash</p></div></div></div>
+
+<div class="CBuildTarget"><div class=CTopic><h3 class=CTitle><a name="port_postrun"></a>port_postrun</h3><div class=CBody><p>Do platform specific after run stuff.&nbsp; E.g. reset the board, backup the logfiles etc.</p></div></div></div>
+
+<div class="CBuildTarget"><div class=CTopic><h3 class=CTitle><a name="port_prerun"></a>port_prerun</h3><div class=CBody><p>Do platform specific after run stuff.&nbsp; E.g. reset the board, backup the logfiles etc.</p></div></div></div>
+
+<div class="CBuildTarget"><div class=CTopic><h3 class=CTitle><a name="port_postload"></a>port_postload</h3><div class=CBody><p>Do platform specific after load stuff.&nbsp; E.g. reset the reset power to the flash eraser</p></div></div></div>
+
+<div class="CBuildTarget"><div class=CTopic><h3 class=CTitle><a name="port_preload"></a>port_preload</h3><div class=CBody><p>Do platform specific before load stuff.&nbsp; E.g. reset the reset power to the flash eraser</p></div></div></div>
+
+<div class="CGroup"><div class=CTopic><h3 class=CTitle><a name="Variables"></a>Variables</h3></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="OPATH"></a>OPATH</h3><div class=CBody><table border=0 cellspacing=0 cellpadding=0 class=CDescriptionList><tr><td class=CDLEntry>Path to the output folder.&nbsp; Default</td><td class=CDLDescription>current folder.</td></tr></table></div></div></div>
+
+<div class="CVariable"><div class=CTopic><h3 class=CTitle><a name="PERL"></a>PERL</h3><div class=CBody><p>Define perl executable to calculate the geomean if running separate.</p></div></div></div>
+
+</div><!--Content-->
+
+
+<div id=Footer><a href="http://www.naturaldocs.org">Copyright 2009 EEMBC</a></div><!--Footer-->
+
+
+<div id=Menu><div class=MTitle>CoreMark<div class=MSubTitle>(c) EEMBC</div></div><div class=MEntry><div class=MFile><a href="../readme-txt.html">CoreMark</a></div></div><div class=MEntry><div class=MFile><a href="../release_notes-txt.html">Release Notes</a></div></div><div class=MEntry><div class=MGroup><a href="javascript:ToggleMenu('MGroupContent2')">Source</a><div class=MGroupContent id=MGroupContent2><div class=MEntry><div class=MFile><a href="../core_list_join-c.html">core_list_join.c</a></div></div><div class=MEntry><div class=MFile><a href="../core_main-c.html">core_main.c</a></div></div><div class=MEntry><div class=MFile><a href="../core_matrix-c.html">core_matrix.c</a></div></div><div class=MEntry><div class=MFile id=MSelected>core_portme.mak</div></div><div class=MEntry><div class=MFile><a href="../core_state-c.html">core_state.c</a></div></div><div class=MEntry><div class=MFile><a href="../core_util-c.html">core_util.c</a></div></div><div class=MEntry><div class=MFile><a href="../coremark-h.html">coremark.h</a></div></div><div class=MEntry><div class=MGroup><a href="javascript:ToggleMenu('MGroupContent1')">Porting</a><div class=MGroupContent id=MGroupContent1><div class=MEntry><div class=MFile><a href="../linux/core_portme-c.html">PORT_DIR/<span class=HB> </span>core_portme.c</a></div></div><div class=MEntry><div class=MFile><a href="../linux/core_portme-h.html">PORT_DIR/<span class=HB> </span>core_portme.h</a></div></div><div class=MEntry><div class=MFile><a href="../linux/core_portme-mak.html">PORT_DIR/<span class=HB> </span>core_portme.mak</a></div></div></div></div></div></div></div></div><div class=MEntry><div class=MGroup><a href="javascript:ToggleMenu('MGroupContent3')">Index</a><div class=MGroupContent id=MGroupContent3><div class=MEntry><div class=MIndex><a href="../../index/General.html">Everything</a></div></div><div class=MEntry><div class=MIndex><a href="../../index/Files.html">Files</a></div></div><div class=MEntry><div class=MIndex><a href="../../index/Functions.html">Functions</a></div></div><div class=MEntry><div class=MIndex><a href="../../index/Types.html">Types</a></div></div><div class=MEntry><div class=MIndex><a href="../../index/Configuration.html">Configurations</a></div></div><div class=MEntry><div class=MIndex><a href="../../index/Variables.html">Variables</a></div></div><div class=MEntry><div class=MIndex><a href="../../index/BuildTargets.html">Build Targets</a></div></div></div></div></div><script type="text/javascript"><!--
+var searchPanel = new SearchPanel("searchPanel", "HTML", "../../search");
+--></script><div id=MSearchPanel class=MSearchPanelInactive><input type=text id=MSearchField value=Search onFocus="searchPanel.OnSearchFieldFocus(true)" onBlur="searchPanel.OnSearchFieldFocus(false)" onKeyUp="searchPanel.OnSearchFieldChange()"><select id=MSearchType onFocus="searchPanel.OnSearchTypeFocus(true)" onBlur="searchPanel.OnSearchTypeFocus(false)" onChange="searchPanel.OnSearchTypeChange()"><option  id=MSearchEverything selected value="General">Everything</option><option value="BuildTargets">Build Targets</option><option value="Configuration">Configuration</option><option value="Files">Files</option><option value="Functions">Functions</option><option value="Types">Types</option><option value="Variables">Variables</option></select></div></div><!--Menu-->
+
+
+
+<!--START_ND_TOOLTIPS-->
+<!--END_ND_TOOLTIPS-->
+
+
+
+
+<div id=MSearchResultsWindow><iframe src="" frameborder=0 name=MSearchResults id=MSearchResults></iframe><a href="javascript:searchPanel.CloseResultsWindow()" id=MSearchResultsWindowClose>Close</a></div>
+
+
+<script language=JavaScript><!--
+if (browserType) {if (browserVer) {document.write("</div>"); }document.write("</div>");}// --></script></body></html>

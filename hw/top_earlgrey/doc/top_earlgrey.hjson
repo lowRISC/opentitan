@@ -1,0 +1,106 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// TOP Earlgrey configuration
+{ name: "earlgrey",
+  type: "top",
+
+  datawidth: "32",  # 32-bit datawidth
+
+  clocks: [
+    { name: "main", freq: "100000000" }
+  ]
+
+  // Number of cores: used in rv_plic and timer
+  num_cores: "1",
+
+  // `module` defines the peripherals.
+  // Details are coming from each modules' config file `ip.hjson`
+  // TODO: Define parameter here
+  module: [
+    { name: "uart",     // instance name
+      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+                        // and `hw/ip/{type}`
+      clock: "main",    // `ip.hjson` clock is internal name, here top determines
+                        // actual clock (signal matched at the top)
+      base_addr: "0x40000000",
+    },
+    { name: "gpio",
+      type: "gpio",
+      clock: "main",
+      base_addr: "0x40010000",
+    }
+
+    { name: "spi_device",
+      type: "spi_device",
+      clock: "main",
+      base_addr: "0x40020000",
+    },
+    { name: "flash_ctrl",
+      type: "flash_ctrl",
+      clock: "main",
+      base_addr: "0x40030000",
+    },
+    { name: "rv_timer",
+      type: "rv_timer",
+      clock: "main",
+      base_addr: "0x40080000",
+    },
+    { name: "hmac",
+      type: "hmac",
+      clock: "main",
+      base_addr: "0x40120000",
+    },
+    { name: "rv_plic",
+      type: "rv_plic",
+      clock: "main",
+      base_addr: "0x40090000",
+      generated: "true"         // Indicate this module is generated in the topgen
+      parameter: {
+        // FIND_MAX determines the algorithm for searching highest priority interrupt.
+        // Available: { SEQUENTIAL, MATRIX }
+        FIND_MAX: "MATRIX",     // Parameter as key
+      }
+    }
+  ]
+
+  // Memories (ROM, RAM, eFlash) are defined at the top.
+  // It utilizes the primitive cells but configurable
+  memory: [
+    { name: "rom",      type: "ram_1p", base_addr: "0x00008000", size: "0x2000" },
+    { name: "ram_main", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
+    { name: "eflash",   type: "eflash", base_addr: "0x20000000", size: "0x80000" },
+  ],
+
+  debug_mem_base_addr: "0x1A110000",
+
+  // Crossbars: having a top level crossbar
+  // This version assumes all crossbars are instantiated at the top.
+  // Assume xbar.hjson is located in the same directory of top.hjson
+  xbar: [
+    { name: "main",
+      clock: "main",    // Main clock, used in sockets
+    },
+  ],
+
+  // ===== INTERRUPT CTRL =====================================================
+  // `rv_plic`  will be instantiate (need to be defined in `module` field
+  // If interrupt is not defined, it uses the order from the module list
+  // and include every modules.
+  // first item goes to LSB of the interrupt source
+  interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "hmac" ]
+
+  // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
+  // source. "sequential" is smaller but slower, "matrix" is larger but faster.
+  // Choose depends on the criteria. Currently it is set to "matrix" to meet FPGA timing @ 50MHz
+
+  // generated:
+  interrupt: [
+  ]
+
+  // TODO: ALERT HANDLER
+
+  // TODO: PINMUX
+
+}

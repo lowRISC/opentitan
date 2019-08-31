@@ -1,0 +1,155 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// TOP Earlgrey configuration
+// Current version contains all the duplicated information in this file.
+// Later on, the topgen.py will create this configuration combining
+// necessary info from peripherals and crossbars
+{ name: "earlgrey",
+  type: "top",
+
+  // Modules define the peripherals.
+  // Details are coming from each modules' config file `ip.hjson`
+  // TODO: Define parameter here
+  module: [
+    { name: "uart0",    // instance name
+      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+                        // and `hw/ip/{type}`
+      clock: "main",    // `ip.hjson` clock is internal name, here top determines
+                        // actual clock (signal matched at the top)
+      base_addr: "0x40000000",
+
+      // Below contents come from `ip.hjson`
+      size: "0x1000", // Minimum must be 4kB
+
+      // SHALL be matched to uart clock name if the module has more than one clock
+      ip_clock: "clk_fixed", // `clock` in `ip.hjson`
+
+      // If only bus_device exists, port name will be `tl_(i|o)`.
+      // If both host and device exists in a module, port wil be `tl_d_(i|o)` for device
+      //   `tl_h_(i|o)` for host.
+      bus_device: "tlul",
+      bus_host: "none",
+      available_input_list: [
+        { name: "rx" }
+      ],
+      available_output_list: [
+        { name: "tx" }
+      ],
+      interrupt_list: [
+        { name: "tx_watermark" },
+        { name: "rx_watermark" },
+        { name: "tx_overflow" },
+        { name: "rx_overflow" },
+        { name: "rx_frame_err" },
+        { name: "rx_break_err" },
+        { name: "rx_timeout" },
+        { name: "rx_parity_err" }
+      ]
+    },
+    { name: "gpio0",
+      type: "gpio",
+      clock: "main",
+      base_addr: "0x40010000",
+
+      // Below contents from `ip.hjson`
+      size: "0x1000",
+      ip_clock: "clk",
+      bus_device: "tlul",
+      bus_host: "none", // or "" permitted
+
+      // inout list will create _i, _o, _oe pairs
+      available_inout_list: [
+        { name: "gpio", width: 32 }
+      ],
+      interrupt_list: [
+        { name: "gpio", width: 32 }
+      ],
+    },
+    { name: "spi_device",
+      type: "spi_device",
+      clock: "main",
+      base_addr: "0x40020000",
+
+      // Below comes from `ip.hjson`
+      size: "0x1000",
+      clock: "main",
+      bus_device: "tlul",
+      bus_host: "",
+
+      available_input_list: [
+        { name: "sck" },
+        { name: "ce_n" },
+        { name: "mosi" }
+      ],
+      available_output_list: [
+        { name: "miso" }
+      ],
+      interrupt_list: [
+        { name: "rxne" },
+        { name: "rxlvl"},
+        { name: "txe" },
+        { name: "txf" },
+        { name: "txlvl" },
+        { name: "rxerr" },
+      ],
+      alert_list: [
+      ],
+    
+    },
+    //{ name: "spi_host",   type: "spi_device", clock: "main", base_addr: "0x40030000" },
+    //{ name: "i2c_device", type: "spi_device", clock: "main", base_addr: "0x40040000" },
+    //{ name: "i2c_host",   type: "spi_device", clock: "main", base_addr: "0x40050000" },
+
+    // Pinmux is described in pins section
+    //{ name: "pinmux",     type: "pinmux",     clock: "main", base_addr: "0x40060000" },
+    { name: "timer",
+      type: "timer",
+      clock: "main",
+      base_addr: "0x40070000",
+
+      // from `ip.hjson`
+      size: "0x1000",
+      clock_primary: "clk_fixed",
+      bus_device: "tlul",
+      bus_host: "none",
+      available_input_list: [],
+      available_output_list: [],
+      interrupt_list: [ { name: "timer_expired_0_0" } ]
+    },
+
+    // If type is omitted, it is assumed that the `name` and `type` are same.
+    //{ name: "flash_ctrl",                     clock: "crypt", base_addr: "0x40100000" },
+    //{ name: "aes",                            clock: "crypt", base_addr: "0x40110000" },
+    { name: "hmac",       type: "hmac",       clock: "crypt", base_addr: "0x40120000" },
+    //{ name: "keymgr",                         clock: "crypt", base_addr: "0x40130000" },
+    //{ name: "trng",                           clock: "crypt", base_addr: "0x40140000" },
+
+    //{ name: "alert_handler", clock: "main", base_addr: "0x40150000" },
+  ]
+
+  // Memories (ROM, RAM, eFlash) are defined at the top.
+  // It utilizes the primitive cells but configurable
+  memory: [
+    //{ name: "rom",    type: "rom",    base_addr: "0x00000000", size: "0x2000" },
+    { name: "ram64k", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
+    //{ name: "eflash", type: "eflash", base_addr: "0x20000000", size: "0x100000" },
+    //{ name: "efuse", type: "efuse" } // Doesn't have base_addr
+  ],
+
+  // Crossbars: having a top level crossbar
+  // This version assumes all crossbars are instantiated at the top.
+  // Assume xbar.hjson is located in the same directory of top.hjson
+  xbar: [
+    { name: "main" },
+  ],
+
+  // TODO: PINMUX
+
+  // TODO: INTERRUPT CTRL
+
+  // TODO: ALERT HANDLER
+
+  // TODO: CORE(? or manually in the top.tpl.sv
+}

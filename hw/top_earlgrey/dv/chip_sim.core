@@ -1,0 +1,39 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:chip_sim:0.1"
+description: "Earlgrey chip DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:ibex:ibex_tracer:0.1
+    files:
+      - ../rtl/top_earlgrey_asic.sv
+      - ../../ip/tlul/dv/tb/xbar_main_bind.sv
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:dv:chip_test
+    files:
+      - tb/chip_hier_macros.svh: {is_include_file: true}
+      - tb/tb.sv
+    file_type: systemVerilogSource
+
+parameters:
+  RVFI:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  sim:
+    parameters:
+      # The RISC-V Formal Interface (RVFI) is needed for the tracer
+      - RVFI=true
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs

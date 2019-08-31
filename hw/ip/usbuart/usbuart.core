@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:usbuart:0.1"
+description: "usbuart"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+      - lowrisc:ip:usbfs_nb_pe
+    files:
+      - rtl/usbuart_reg_pkg.sv
+      - rtl/usbuart_reg_top.sv
+      - rtl/usbuart_core.sv
+      - rtl/usbuart_usbif.sv
+      - rtl/usb_serial_fifo_ep.sv
+      - rtl/usb_serial_ctrl_ep.sv
+      - rtl/usbuart.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: usbuart

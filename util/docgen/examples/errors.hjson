@@ -1,0 +1,205 @@
+{
+  name: "ERR",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+
+  regwidth: "32",
+  registers: [
+    { name: "OE",
+      desc: '''GPIO Output Enable
+
+            bit[i]=1'b0: Input mode for GPIO[i]
+            bit[i]=1'b1: Output mode for GPIO[i]
+            ''',
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { reserved: "4" }
+    { reserved: "4" name: "error" }
+    { name: "DATA_IN",
+      desc: "GPIO Input data read bitfield",
+      swaccess: "ro",
+      fields: [
+        { bits: "31:0",
+          resval: "x"
+        }
+      ],
+    },
+    { name: "DATA_IN",
+      desc: "Duplicate name",
+      swaccess: "ro",
+      fields: [
+        { bits: "0", name: "abit", desc: "a bit"},
+        { bits: "1", name: "abit", desc: "a bit duplicate name"},
+	{ bits: "32", name: "bbit", desc: "out of bounds bit"},
+      ],
+    },
+    { name: "DATA_BB",
+      desc: "should be ok",
+      swaccess: "ro",
+      fields: [
+        { bits: "0", name: "abit", desc: "a bit"},
+	{ bits: "1", name: "bbit", desc: "ok"},
+      ],
+    },
+    { name: "data_bb",
+      desc: "Duplicate name although the case differs",
+      swaccess: "ro",
+      fields: [
+        { bits: "0", name: "abit", desc: "a bit"},
+	{ bits: "1", name: "bbit", desc: "ok"},
+      ],
+    },
+    { name: "DATA_YY",
+      desc: "Name ok should show field errors",
+      swaccess: "ro",
+      fields: [
+        { bits: "0", name: "abit", desc: "a bit"},
+        { bits: "1", name: "abit", desc: "a bit duplicate name"},
+	{ bits: "32", name: "bbit", desc: "out of bounds bit"},
+      ],
+    },
+    { name: "DATA_ZZ",
+      desc: "More errors two swaccess",
+      swaccess: "ro",
+      swaccess: "rw",
+      fields: [
+        { bits: "0", name: "abit", desc: "a bit"},
+        { bits: 1, name: "intbit", desc: "bit is an integer"},
+	{ bits: "32:20", name: "bbit", desc: "out of bounds bit range"},
+      ],
+    },
+    { name: "DATA_QQ",
+      desc: "No fields",
+      swaccess: "rw",
+      fields: [
+      ],
+    },
+    # multireg for single bit instance?
+    { multireg: {
+        name: "DATA_OUT",
+        desc: "GPIO output data",
+        count: "32",
+        cname: "GPIO",
+        swaccess: "rw",
+        fields: [
+          { bits: "0", name: "D" desc: "Output data" }
+        ],
+      }
+    },
+    {sameaddr: [
+	{name: "IIR", desc: "Interrupt identification register",
+	 resval: "0xa0", swaccess: "ro", fields: [
+	     {bits: "0", name: "INT", resval: "1",
+	      desc: "This bit is clear if the UART is interrupting."
+	     }
+	     {bits: "3:1", name: "TYPE",
+	      desc: '''
+              If the INT bit is clear, these bits indicate the highest
+              priority pending interrupt.
+              '''
+	      enum: [
+      		 { value: "0", name: "mdm", desc: "Modem status (lowest)" },
+       		 { value: "1", name: "txe", desc: "TX holding register empty" },
+       		 { value: "2", name: "rxd", desc: "RX data available" },
+       		 { value: "3", name: "rxl", desc: "RX line status (highest)" }
+	      ]
+	     }
+	     {bits: "3", name: "TO",
+	      desc: "This bit overlaps."
+	      resval: "NaN"
+	     }
+	     {bits: "5", name: "F64", resval: "1",
+	      desc: "Will always be clear because the FIFO is not 64 bytes."
+	     }
+	     {bits: "7:6", resval: "6", name: "FEN", desc: '''
+	      These bits will both be clear if the FIFO is disabled
+	      and both be set if it is enabled.
+              '''
+	      enum: [
+      		 { value: "0", name: "mdm", desc: "Modem status (lowest)" },
+       		 { value: "1", name: "txe", desc: "TX holding register empty" },
+       		 { value: "2", name: "rxd", desc: "RX data available" },
+       		 { value: "3", name: "rxl" }
+	      ]
+	     }
+	 ]}
+	{name: "FCR", desc: "FIFO Control Register",
+	 swaccess: "ab", fields: [
+	     {bits: "0", name: "FEN",
+	      desc: "This bit must be set to enable the FIFOs."
+	     }
+	     {bits: "1", name: "CRX", desc: '''
+               Writing this bit with a 1 will reset the RX fifo. The
+               bit will clear after the FIFO is reset.
+              '''
+	     }
+	     {bits: "2", name: "CTX", desc: '''
+               Writing this bit with a 1 will reset the TX fifo. The
+               bit will clear after the FIFO is reset.
+              '''
+	     }
+	     {bits: "3", name: "DMAS",
+	      desc: "DMA Mode Select. This bit is not used."
+	     }
+	     {bits: "5", name: "E64",
+	      desc: "This bit is reserved because the FIFO is not 64 bytes."
+	     }
+	     {bits: "6:7", name: "NOTPPC",
+	      desc: '''
+                These two bits set the interrupt trigger level for the
+                receive FIFO. The received data available interrupt
+                will be set when there are at least this number of
+                bytes in the receive FIFO.
+              '''
+	      enum: [
+      		 { value: "0", name: "rxlvl1", desc: "1 Byte" },
+       		 { value: "1", name: "rxlvl4", desc: "4 Bytes" },
+       		 { value: "2", name: "rxlvl8", desc: "8 bytes" },
+       		 { value: "3", name: "rxlvl14", desc: "14 bytes" }
+	      ]
+	     }
+	 ]}
+    ]}
+    // skipto bad offset
+    { skipto: "0x41" }
+    // Backwards skip is an error
+    { skipto: "16" }
+    {window: {
+    	     name: "FCR"
+	     items: "16"
+	     validbits: "48"
+	     byte-write: "True"
+	     swaccess: "rw"
+	     desc: '''
+	     	   Duplicate name, too wide.
+		   '''
+	}
+    },
+    {window: {
+    	     name: "win1"
+	     items: "16"
+	     validbits: "48"
+	     byte-write: "True"
+	     swaccess: "rw"
+	     desc: '''
+	     	   Too wide.
+		   '''
+	}
+    },
+    {window: {
+    	     name: "win2"
+	     items: "big"
+	     validbits: "x"
+	     byte-write: "True"
+	     swaccess: "read"
+	     desc: '''
+	     	   size, width not a number, bad swaccess
+		   '''
+	}
+    },
+
+  ]
+}

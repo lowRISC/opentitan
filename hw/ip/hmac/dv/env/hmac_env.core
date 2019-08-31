@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:hmac_env:0.1"
+description: "hmac DV UVM environmnt"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:cryptoc_dpi:0.1
+      - lowrisc:dv:nist_vectors
+    files:
+      - hmac_env_pkg.sv
+      - hmac_env_cfg.sv: {is_include_file: true}
+      - hmac_env_cov.sv: {is_include_file: true}
+      - hmac_env.sv: {is_include_file: true}
+      - hmac_reg_block.sv: {is_include_file: true}
+      - hmac_scoreboard.sv: {is_include_file: true}
+      - seq_lib/hmac_vseq_list.sv: {is_include_file: true}
+      - seq_lib/hmac_base_vseq.sv: {is_include_file: true}
+      - seq_lib/hmac_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/hmac_csr_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

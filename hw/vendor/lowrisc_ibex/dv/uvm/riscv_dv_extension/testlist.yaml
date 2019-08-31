@@ -1,0 +1,154 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- test: riscv_arithmetic_basic_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1'b1
+    +no_branch_jump=1'b1
+    +boot_mode=m
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  rtl_test: core_ibex_base_test
+
+- test: riscv_machine_mode_rand_test
+  description: >
+    Machine mode random instruction test
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +boot_mode=m
+  rtl_test: core_ibex_base_test
+
+- test: riscv_rand_instr_test
+  description: >
+    Random instruction stress test
+  iterations: 20
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_hazard_instr_stream,4
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4
+    +directed_instr_4=riscv_cache_line_stress_instr_stream,4
+    +directed_instr_5=riscv_multi_page_load_store_instr_stream,4
+  rtl_test: core_ibex_base_test
+
+- test: riscv_rand_jump_test
+  description: >
+    Jump among large number of sub-programs, stress testing iTLB operations.
+  iterations: 10
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=15000
+    +num_of_sub_program=20
+    +directed_instr_0=riscv_load_store_rand_instr_stream,8
+  rtl_test: core_ibex_base_test
+
+- test: riscv_mmu_stress_test
+  description: >
+    Test with different patterns of load/store instructions, stress test MMU
+    operations.
+  iterations: 20
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+    +directed_instr_2=riscv_cache_line_stress_instr_stream,40
+    +directed_instr_3=riscv_multi_page_load_store_instr_stream,40
+  rtl_test: core_ibex_base_test
+
+- test: riscv_illegal_instr_test
+  description: >
+    Illegal instruction test, verify the processor can detect illegal
+    instruction and handle corresponding exception properly. An exception
+    handling routine is designed to resume execution after illegal
+    instruction exception.
+  iterations: 20
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_illegal_instruction=1
+  rtl_test: core_ibex_base_test
+
+- test: riscv_hint_instr_test
+  description: >
+    HINT instruction test, verify the processor can detect HINT instruction
+    treat it as NOP. No illegal instruction exception is expected
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_hint_instruction=1
+  rtl_test: core_ibex_base_test
+
+- test: riscv_ebreak_test
+  description: >
+    Random instruction test with ebreak instruction enabled. Debug mode is not
+    enabled for this test, processor should raise ebreak exception.
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +no_ebreak=0
+  rtl_test: core_ibex_base_test
+
+- test: riscv_ebreak_debug_mode_test
+  description: >
+    Ebreak instruction test with debug mode enabled.
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +no_ebreak=0
+  rtl_test: core_ibex_base_test
+  sim_opts: >
+    +enable_debug_seq=1
+  compare_opts: >
+    +compare_final_value_only=1
+
+- test: riscv_fast_interrupt_test
+  description: >
+    WFI(wait for interrupt) instruction test. If WFI is supported, processor
+    should halt execution upon decoding WFI instruction and resume execution
+    by interrupt. Otherwise WFI should be executed as NOP instruction.
+    Interrupt handling routine is skipped to allow instruction strace comparison
+    with ISS which is not interrupted during execution.
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +skip_trap_handling=1
+    +no_wfi=0
+  rtl_test: core_ibex_base_test
+  sim_opts: >
+    +enable_irq_seq=1
+
+- test: riscv_full_interrupt_test
+  description: >
+    Random instruction test with complete interrupt handling
+  iterations: 0
+  gen_test: riscv_rand_instr_test
+  rtl_test: core_ibex_base_test
+  sim_opts: >
+    +enable_irq_seq=1
+  compare_opts: >
+    +compare_final_value_only=1

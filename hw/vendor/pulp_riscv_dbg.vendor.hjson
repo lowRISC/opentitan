@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "pulp_riscv_dbg",
+  target_dir: "pulp_riscv_dbg",
+  patch_dir: "patches/pulp_riscv_dbg",
+
+  upstream: {
+    url: "https://github.com/pulp-platform/riscv-dbg",
+    rev: "master",
+  },
+
+  patch_repo: {
+    url: "git@github.com:lowRISC/riscv-dbg.git",
+    rev_base: "master",
+    rev_patched: "ot",
+  },
+
+  exclude_from_upstream: [
+    "src/dm_top.sv",
+    "src_files.yml",
+  ]
+}

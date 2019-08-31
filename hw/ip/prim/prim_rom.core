@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:rom"
+description: "prim"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_generic:rom
+      - lowrisc:prim_xilinx:rom
+    files:
+      - abstract/prim_rom.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

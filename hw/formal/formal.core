@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "formal"
+description: "Core file for formal verification. It includes top_earlgrey and all
+              other modules that are currently not instantiated in top_earlgrey"
+
+filesets:
+  files_rtl_generic:
+    depend:
+      - lowrisc:ip:rv_timer
+      - lowrisc:ip:hmac
+      - lowrisc:systems:top_earlgrey
+      - lowrisc:ip:usbuart
+      - lowrisc:ip:usbdev
+      - lowrisc:ip:usbfs_nb_pe
+      - lowrisc:tlul:adapter_sram
+      - lowrisc:tlul:socket_1n
+      - lowrisc:tlul:socket_m1
+
+targets:
+  sim:
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+    toplevel: top_earlgrey

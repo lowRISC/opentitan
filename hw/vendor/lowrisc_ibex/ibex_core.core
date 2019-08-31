@@ -1,0 +1,69 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_core:0.1"
+description: "CPU core with 2 stage pipeline implementing the RV32IMC_Zicsr ISA"
+filesets:
+  files_rtl:
+    files:
+      - rtl/ibex_pkg.sv
+      - rtl/ibex_alu.sv
+      - rtl/ibex_compressed_decoder.sv
+      - rtl/ibex_controller.sv
+      - rtl/ibex_cs_registers.sv
+      - rtl/ibex_decoder.sv
+      - rtl/ibex_ex_block.sv
+      - rtl/ibex_fetch_fifo.sv
+      - rtl/ibex_id_stage.sv
+      - rtl/ibex_if_stage.sv
+      - rtl/ibex_load_store_unit.sv
+      - rtl/ibex_multdiv_fast.sv
+      - rtl/ibex_multdiv_slow.sv
+      - rtl/ibex_prefetch_buffer.sv
+      # XXX: Figure out the best way to switch these two implementations
+      # dynamically on the target.
+#      - rtl/ibex_register_file_latch.sv # ASIC
+      - rtl/ibex_register_file_ff.sv # FPGA
+      - rtl/ibex_core.sv
+    file_type: systemVerilogSource
+
+  files_lint:
+    files:
+      - dv/uvm/tb/prim_clock_gating.sv: {file_type: systemVerilogSource}
+
+  files_lint_verilator:
+    files:
+      - lint/verilator_waiver.vlt: {file_type: vlt}
+
+parameters:
+  RVFI:
+    datatype: bool
+    paramtype: vlogdefine
+
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+
+  lint:
+    filesets:
+      # Note on Verilator waivers:
+      # You *must* include the waiver file first, otherwise only global waivers
+      # are applied, but not file-specific waivers.
+      - tool_verilator ? (files_lint_verilator)
+      - files_rtl
+      - files_lint
+    parameters:
+      - SYNTHESIS=true
+    default_tool: verilator
+    toplevel: ibex_core
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

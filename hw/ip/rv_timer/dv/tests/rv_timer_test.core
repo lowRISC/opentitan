@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rv_timer_test:0.1"
+description: "RISC-V Timer DV UVM test"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:rv_timer_env
+    files:
+      - rv_timer_test_pkg.sv
+      - rv_timer_base_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -1,0 +1,35 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_earlgrey_usb:0.1"
+description: "Technology-independent Earl Grey with USB toplevel"
+filesets:
+  files_rtl_generic:
+    depend:
+      - lowrisc:ip:uart
+      - lowrisc:ip:usbuart
+      - lowrisc:ip:usbdev
+      - lowrisc:ip:gpio
+      - lowrisc:ip:rv_core_ibex
+      - lowrisc:ip:rv_dm
+      - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:tlul
+      - lowrisc:ip:spi_device
+      - lowrisc:prim:ram_1p
+    files:
+      - rtl/tl_main_pkg.sv
+      - rtl/tlul_xbar_usb.sv
+      - rtl/padctl_usb.sv
+      - rtl/top_earlgrey_usb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl_generic
+  sim:
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+    toplevel: top_earlgrey_usb

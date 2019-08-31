@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:hmac:0.1"
+description: "HMAC-SHA256 engine"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+    files:
+      - rtl/hmac_pkg.sv
+      - rtl/sha2.sv
+      - rtl/sha2_pad.sv
+      - rtl/hmac_reg_pkg.sv
+      - rtl/hmac_reg_top.sv
+      - rtl/hmac_core.sv
+      - rtl/hmac.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: hmac

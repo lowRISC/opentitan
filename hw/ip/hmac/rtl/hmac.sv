@@ -1,0 +1,406 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// HMAC-SHA256
+
+module hmac (
+  input clk_i,
+  input rst_ni,
+
+  input  tlul_pkg::tl_h2d_t tl_i,
+  output tlul_pkg::tl_d2h_t tl_o,
+
+  output logic intr_hmac_done_o,
+  output logic intr_fifo_full_o
+);
+
+  import hmac_pkg::*;
+  import hmac_reg_pkg::*;
+
+  // Signal declarations =======================================================
+  hmac_reg2hw_t reg2hw;
+  hmac_hw2reg_t hw2reg;
+
+  tlul_pkg::tl_h2d_t  tl_win_h2d[1];
+  tlul_pkg::tl_d2h_t  tl_win_d2h[1];
+
+  logic [255:0] secret_key;
+
+  logic        wipe_secret;
+  logic [31:0] wipe_v;
+
+  logic        fifo_rvalid;
+  logic        fifo_rready;
+  sha_fifo_t   fifo_rdata;
+
+  logic        fifo_wvalid, fifo_wready;
+  sha_fifo_t   fifo_wdata;
+  logic        fifo_full;
+  logic        fifo_empty;
+  logic [4:0]  fifo_depth;
+
+  logic        msg_fifo_req;
+  logic        msg_fifo_gnt;
+  logic        msg_fifo_we;
+  logic [8:0]  msg_fifo_addr;   // NOT_READ
+  logic [31:0] msg_fifo_wdata;
+  logic [31:0] msg_fifo_wmask;
+  logic [31:0] msg_fifo_rdata;
+  logic        msg_fifo_rvalid;
+  logic [1:0]  msg_fifo_rerror;
+  logic [31:0] msg_fifo_wdata_endian;
+  logic [31:0] msg_fifo_wmask_endian;
+
+  logic        packer_ready;
+  logic        packer_flush_done;
+
+  logic        reg_fifo_wvalid;
+  sha_word_t   reg_fifo_wdata;
+  sha_word_t   reg_fifo_wmask;
+  logic        hmac_fifo_wsel;
+  logic        hmac_fifo_wvalid;
+  logic [2:0]  hmac_fifo_wdata_sel;
+
+  logic        shaf_rvalid;
+  sha_fifo_t   shaf_rdata;
+  logic        shaf_rready;
+
+  logic        sha_en;
+  logic        hmac_en;
+  logic        endian_swap;
+  logic        digest_swap;
+
+  logic        reg_hash_start;
+  logic        sha_hash_start;
+  logic        reg_hash_process;
+  logic        sha_hash_process;
+
+  logic        reg_hash_done;
+  logic        sha_hash_done;
+
+  logic [63:0] message_length;
+  logic [63:0] sha_message_length;
+
+  sha_word_t [7:0] digest;
+
+  // Connect registers ========================================================
+
+  assign hw2reg.status.fifo_full.d  = fifo_full;
+  assign hw2reg.status.fifo_empty.d = fifo_empty;
+  assign hw2reg.status.fifo_depth.d = fifo_depth;
+
+  // secret key
+  assign wipe_secret = reg2hw.wipe_secret.qe;
+  assign wipe_v      = reg2hw.wipe_secret.q;
+  assign secret_key = {reg2hw.key0.q, reg2hw.key1.q, reg2hw.key2.q, reg2hw.key3.q,
+                       reg2hw.key4.q, reg2hw.key5.q, reg2hw.key6.q, reg2hw.key7.q};
+  assign hw2reg.key0.de = wipe_secret;
+  assign hw2reg.key1.de = wipe_secret;
+  assign hw2reg.key2.de = wipe_secret;
+  assign hw2reg.key3.de = wipe_secret;
+  assign hw2reg.key4.de = wipe_secret;
+  assign hw2reg.key5.de = wipe_secret;
+  assign hw2reg.key6.de = wipe_secret;
+  assign hw2reg.key7.de = wipe_secret;
+  assign {hw2reg.key0.d, hw2reg.key1.d, hw2reg.key2.d, hw2reg.key3.d,
+          hw2reg.key4.d, hw2reg.key5.d, hw2reg.key6.d, hw2reg.key7.d } = secret_key ^ {8{wipe_v}};
+  // digest
+  assign hw2reg.digest0.d = conv_endian(digest[0], digest_swap);
+  assign hw2reg.digest1.d = conv_endian(digest[1], digest_swap);
+  assign hw2reg.digest2.d = conv_endian(digest[2], digest_swap);
+  assign hw2reg.digest3.d = conv_endian(digest[3], digest_swap);
+  assign hw2reg.digest4.d = conv_endian(digest[4], digest_swap);
+  assign hw2reg.digest5.d = conv_endian(digest[5], digest_swap);
+  assign hw2reg.digest6.d = conv_endian(digest[6], digest_swap);
+  assign hw2reg.digest7.d = conv_endian(digest[7], digest_swap);
+
+  assign sha_en = reg2hw.cfg.sha_en.q;
+  assign hmac_en = reg2hw.cfg.hmac_en.q;
+  assign endian_swap = reg2hw.cfg.endian_swap.q;
+  assign digest_swap = reg2hw.cfg.digest_swap.q;
+
+  assign reg_hash_start   = reg2hw.cmd.hash_start.qe   & reg2hw.cmd.hash_start.q;
+  assign reg_hash_process = reg2hw.cmd.hash_process.qe & reg2hw.cmd.hash_process.q;
+
+  // Interrupts ===============================================================
+  logic fifo_full_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) fifo_full_d <= 1'b0;
+    else fifo_full_d <= fifo_full;
+  end
+
+  logic fifo_full_event;
+  assign fifo_full_event = fifo_full & !fifo_full_d;
+
+  logic [1:0] event_intr;
+  assign event_intr = {fifo_full_event, reg_hash_done};
+
+  // instantiate interrupt hardware primitive
+  prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
+    .event_intr_i           (event_intr[0]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_done.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_done.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.hmac_done.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.hmac_done.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.hmac_done.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.hmac_done.d),
+    .intr_o                 (intr_hmac_done_o)
+  );
+  prim_intr_hw #(.Width(1)) intr_hw_fifo_full (
+    .event_intr_i           (event_intr[1]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_full.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_full.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fifo_full.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.fifo_full.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.fifo_full.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.fifo_full.d),
+    .intr_o                 (intr_fifo_full_o)
+  );
+  // Instances ================================================================
+
+  // TODO: Revise logic to assert rvalid only after grant asserted.
+  assign msg_fifo_rvalid = msg_fifo_req & ~msg_fifo_we;
+  assign msg_fifo_rdata  = '1;  // Return all F
+  assign msg_fifo_rerror = '1;  // Return error for read access
+  assign msg_fifo_gnt    = msg_fifo_req & fifo_wready & ~hmac_fifo_wsel & packer_ready;
+
+  // FIFO control
+  sha_fifo_t reg_fifo_wentry;
+  assign reg_fifo_wentry.data = conv_endian(reg_fifo_wdata, 1'b1); // always convert
+  assign reg_fifo_wentry.mask = {reg_fifo_wmask[0],  reg_fifo_wmask[8],
+                                 reg_fifo_wmask[16], reg_fifo_wmask[24]};
+  assign fifo_full   = ~fifo_wready;
+  assign fifo_empty  = ~fifo_rvalid;
+  assign fifo_wvalid = (hmac_fifo_wsel && fifo_wready) ? hmac_fifo_wvalid : reg_fifo_wvalid;
+  assign fifo_wdata  = (hmac_fifo_wsel) ? '{data: digest[hmac_fifo_wdata_sel], mask: '1}
+                                       : reg_fifo_wentry;
+
+  prim_fifo_sync #(
+    .Width ($bits(sha_fifo_t)),
+    .Pass  (1'b0),
+    .Depth (MsgFifoDepth)
+  ) u_msg_fifo (
+    .clk_i,
+    .rst_ni,
+
+    .wvalid (fifo_wvalid),
+    .wready (fifo_wready),
+    .wdata  (fifo_wdata),
+
+    .depth  (fifo_depth),
+
+    .rvalid (fifo_rvalid),
+    .rready (fifo_rready),
+    .rdata  (fifo_rdata)
+  );
+
+  // TL ADAPTER SRAM
+  tlul_adapter_sram #(
+    .SramAw (9),
+    .SramDw (32),
+    .Outstanding (1),
+    .ByteAccess  (1)
+  ) u_tlul_adapter (
+    .clk_i,
+    .rst_ni,
+    .tl_i   (tl_win_h2d[0]),
+    .tl_o   (tl_win_d2h[0]),
+
+    .req_o    (msg_fifo_req   ),
+    .gnt_i    (msg_fifo_gnt   ),
+    .we_o     (msg_fifo_we    ),
+    .addr_o   (msg_fifo_addr  ), // Doesn't care the address other than sub-word
+    .wdata_o  (msg_fifo_wdata ),
+    .wmask_o  (msg_fifo_wmask ),
+    .rdata_i  (msg_fifo_rdata ),
+    .rvalid_i (msg_fifo_rvalid),
+    .rerror_i (msg_fifo_rerror)
+  );
+
+  // TL-UL to MSG_FIFO byte write handling
+  logic msg_write;
+
+  assign msg_write = msg_fifo_req & msg_fifo_we & fifo_wready & ~hmac_fifo_wsel;
+
+  logic [$clog2(32+1)-1:0] wmask_ones;
+
+  always_comb begin
+    wmask_ones = '0;
+    for (int i = 0 ; i < 32 ; i++) begin
+      wmask_ones = wmask_ones + reg_fifo_wmask[i];
+    end
+  end
+
+  // Calculate written message
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      message_length <= '0;
+    end else if (reg_hash_start) begin // or reg_hash_start
+      message_length <= '0;
+    end else if (reg_fifo_wvalid && fifo_wready && !hmac_fifo_wsel) begin
+      message_length <= message_length + 64'(wmask_ones);
+    end
+  end
+
+  assign hw2reg.msg_length_upper.de = 1'b1;
+  assign hw2reg.msg_length_upper.d = message_length[63:32];
+  assign hw2reg.msg_length_lower.de = 1'b1;
+  assign hw2reg.msg_length_lower.d = message_length[31:0];
+
+
+  // Convert endian here
+  //    prim_packer always packs to the right, but SHA engine assumes incoming
+  //    to be big-endian, [31:24] comes first. So, the data is reverted after
+  //    prim_packer before the message fifo. here to reverse if not big-endian
+  //    before pushing to the packer.
+  assign msg_fifo_wdata_endian = conv_endian(msg_fifo_wdata, ~endian_swap);
+  assign msg_fifo_wmask_endian = conv_endian(msg_fifo_wmask, ~endian_swap);
+
+  prim_packer #(
+    .InW      (32),
+    .OutW     (32)
+  ) u_packer (
+    .clk_i,
+    .rst_ni,
+
+    .valid_i      (msg_write),
+    .data_i       (msg_fifo_wdata_endian),
+    .mask_i       (msg_fifo_wmask_endian),
+    .ready_o      (packer_ready),
+
+    .valid_o      (reg_fifo_wvalid),
+    .data_o       (reg_fifo_wdata),
+    .mask_o       (reg_fifo_wmask),
+    .ready_i      (fifo_wready & ~hmac_fifo_wsel),
+
+    .flush_i      (reg_hash_process),
+    .flush_done_o (packer_flush_done) // ignore at this moment
+  );
+
+
+  hmac_core u_hmac (
+    .clk_i,
+    .rst_ni,
+
+    .secret_key,
+
+    .wipe_secret,
+    .wipe_v,
+
+    .hmac_en,
+
+    .reg_hash_start,
+    .reg_hash_process (packer_flush_done), // Trigger after all msg written
+    .hash_done      (reg_hash_done),
+    .sha_hash_start,
+    .sha_hash_process,
+    .sha_hash_done,
+
+    .sha_rvalid     (shaf_rvalid),
+    .sha_rdata      (shaf_rdata),
+    .sha_rready     (shaf_rready),
+
+    .fifo_rvalid,
+    .fifo_rdata,
+    .fifo_rready,
+
+    .fifo_wsel      (hmac_fifo_wsel),
+    .fifo_wvalid    (hmac_fifo_wvalid),
+    .fifo_wdata_sel (hmac_fifo_wdata_sel),
+    .fifo_wready,
+
+    .message_length,
+    .sha_message_length
+  );
+
+  sha2 u_sha2 (
+    .clk_i,
+    .rst_ni,
+
+    .wipe_secret,
+    .wipe_v,
+
+    .fifo_rvalid      (shaf_rvalid),
+    .fifo_rdata       (shaf_rdata),
+    .fifo_rready      (shaf_rready),
+
+    .sha_en,
+    .hash_start       (sha_hash_start),
+    .hash_process     (sha_hash_process),
+    .hash_done        (sha_hash_done),
+
+    .message_length   (sha_message_length),
+
+    .digest
+  );
+
+  hmac_reg_top u_reg (
+    .clk_i,
+    .rst_ni,
+
+    .tl_i,
+    .tl_o,
+
+    .tl_win_o   (tl_win_h2d),
+    .tl_win_i   (tl_win_d2h),
+
+    .reg2hw,
+    .hw2reg
+  );
+
+  //===========================================================================
+  // Assertions, Assumptions, and Coverpoints
+  //
+  // HMAC assumes TL-UL mask is byte-aligned.
+  `ifndef VERILATOR
+  //pragma translate_off
+    property wmask_bytealign_p(wmask_byte, clk, rst_n);
+      @(posedge clk) disable iff (rst_n == 0)
+        msg_fifo_req & msg_fifo_we |-> wmask_byte inside {'0, '1};
+    endproperty
+
+    for (genvar i = 0 ; i < 4; i++) begin: gen_assert_wmask_bytealign
+      assert property (wmask_bytealign_p(msg_fifo_wmask[8*i+:8], clk_i, rst_ni));
+    end
+  //pragma translate_on
+  `endif // VERILATOR
+
+  // To pass FPV, this shouldn't add pragma translate_off even these two signals
+  // are used in Assertion only
+  logic in_process;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)               in_process <= 1'b0;
+    else if (reg_hash_process) in_process <= 1'b1;
+    else if (reg_hash_done)    in_process <= 1'b0;
+  end
+
+  logic initiated;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)               initiated <= 1'b0;
+    else if (reg_hash_start)   initiated <= 1'b1;
+    else if (reg_hash_process) initiated <= 1'b0;
+  end
+
+  // the host doesn't write data after hash_process until hash_start.
+  // Same as "message_length shouldn't be changed between hash_process and done
+  `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process, clk_i, !rst_ni)
+
+  // `hash_process` shall be toggle and paired with `hash_start`.
+  `ASSERT(ValidHashStartAssert, reg_hash_start |-> !initiated, clk_i, !rst_ni)
+  `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated, clk_i, !rst_ni)
+
+  // between `hash_done` and `hash_start`, message FIFO should be empty
+  `ASSERT(MsgFifoEmptyWhenNoOpAssert,
+          !in_process && !initiated |-> $stable(message_length),
+          clk_i, !rst_ni)
+
+  // hmac_en should be modified only when the logic is Idle
+  `ASSERT(ValidHmacEnConditionAssert,
+          hmac_en != $past(hmac_en) |-> !in_process && !initiated,
+          clk_i, !rst_ni)
+
+  //---------------------------------------------------------------------------
+
+endmodule
+

@@ -1,0 +1,6 @@
+[style]
+# lowRISC style is basically pep8
+based_on_style = pep8
+# But we don't like the split before operators
+split_before_bitwise_operator = False
+split_before_logical_operator = False

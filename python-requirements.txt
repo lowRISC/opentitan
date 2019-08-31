@@ -1,0 +1,19 @@
+livereload
+mistletoe
+hjson
+pygments
+mako
+meson
+yapf
+isort
+pyftdi
+pyyaml
+pytest
+fusesoc
+
+# Develpment version to get around YAML parser warning triggered by fusesoc
+# Upstream tracking: https://github.com/olofk/ipyxact/issues/19
+git+https://github.com/olofk/ipyxact.git@master
+
+# Development version of edalize until all our changes are upstream
+git+https://github.com/lowRISC/edalize.git@ot

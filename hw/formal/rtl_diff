@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This script runs LEC (logical equivalence checking) between 2 RTL
+# files using Cadence Conformal LEC
+#
+# Usaage: To compare e.g. ../ip/foo/rtl/module.sv with
+# ../ip/rtl/foo/module_new.sv, type:
+#   diff_rtl ../ip/foo/rtl/module.sv ../ip/foo/rtl/module_new.sv
+
+# pass golden and revised to LEC script "rtl_diff.do" via env variables
+export LEC_GOLDEN=../../../${1}
+export LEC_REVISED=../../../${2}
+
+#-------------------------------------------------------------------------
+# use fusesoc to generate file list
+#-------------------------------------------------------------------------
+\rm -Rf build rtl_diff.log
+fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+
+#-------------------------------------------------------------------------
+# run Conformal LEC
+#-------------------------------------------------------------------------
+cd build/formal_*/sim-icarus
+
+lec -xl -nogui -nobanner \
+  -dofile  ../../../rtl_diff.do \
+  -logfile ../../../rtl_diff.log \
+  <<< "exit -force"
+
+cd -

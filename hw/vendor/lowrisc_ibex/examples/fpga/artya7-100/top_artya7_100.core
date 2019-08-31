@@ -1,0 +1,47 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:top_artya7_100:0.1"
+description: "Ibex example toplevel for the Arty A7-100 board"
+filesets:
+  files_rtl_artya7:
+    depend:
+      - lowrisc:ibex:ibex_core
+    files:
+      - rtl/top_artya7_100.sv
+      - rtl/ram_1p.sv
+      - rtl/prim_clock_gating.sv
+      - rtl/clkgen_xil7series.sv
+    file_type: systemVerilogSource
+
+  files_constraints:
+    files:
+      - data/pins_artya7.xdc
+    file_type: xdc
+
+parameters:
+  # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
+  # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
+  # --SRAM_INIT_FILE=$PWD/sw/led/led.vmem
+  # XXX: The VMEM file should be added to the sources of the Vivado project to
+  # make the Vivado dependency tracking work. However this requires changes to
+  # fusesoc first.
+  SRAM_INIT_FILE:
+    datatype: str
+    description: SRAM initialization file in vmem hex format
+    default: "../../../../../examples/sw/led/led.vmem"
+    paramtype: vlogdefine
+
+targets:
+  synth:
+    default_tool: vivado
+    filesets:
+      - files_rtl_artya7
+      - files_constraints
+    toplevel: top_artya7_100
+    parameters:
+      - SRAM_INIT_FILE
+    tools:
+      vivado:
+        part: "xc7a100tcsg324-1"  # Arty A7-100

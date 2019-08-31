@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rv_dm_env:0.1"
+description: "RV_DM DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:jtag_agent
+      - lowrisc:dv:tl_agent
+    files:
+      - rv_dm_params_pkg.sv
+      - rv_dm_if.sv
+      - rv_dm_env_pkg.sv
+      - rv_dm_env_cfg.sv: {is_include_file: true}
+      - rv_dm_env_cov.sv: {is_include_file: true}
+      - rv_dm_env.sv: {is_include_file: true}
+      - rv_dm_reg_block.sv: {is_include_file: true}
+      - rv_dm_virtual_sequencer.sv: {is_include_file: true}
+      - rv_dm_scoreboard.sv: {is_include_file: true}
+      - seq_lib/rv_dm_vseq_list.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

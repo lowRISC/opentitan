@@ -1,0 +1,255 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "gpio",
+  clock_primary: "clk",
+  bus_device: "tlul",
+  bus_host: "",
+  available_inout_list: [
+    { name: "gpio",
+      width: 32,
+      desc: "GPIO inout to/from PAD"
+    }
+  ],
+  interrupt_list: [
+    { name: "gpio",
+      width: 32,
+      desc: "raised if any of GPIO pin detects configured interrupt mode"
+    }
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "DATA_IN",
+      desc: "GPIO Input data read value",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          resval: "x"
+        }
+      ],
+    },
+    { name: "DIRECT_OUT",
+      desc: "GPIO direct output data write value",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "MASKED_OUT_LOWER",
+      desc: '''GPIO write data lower with mask.
+
+            Masked write for DATA_OUT[15:0].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OUT[15:0] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OUT[15:0].
+            '''
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write data value[15:0].
+
+                Value to write into DATA_OUT[i], valid in the presence of mask[i]==1
+                '''
+        },
+        { bits: "31:16",
+          name: "mask",
+          desc: '''Write data mask[15:0].
+
+                A value of 1 in mask[i] allows the updating of DATA_OUT[i], 0 <= i <= 15
+                '''
+          swaccess: "wo"
+        },
+      ],
+    },
+    { name: "MASKED_OUT_UPPER",
+      desc: '''GPIO write data upper with mask.
+
+            Masked write for DATA_OUT[31:16].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OUT[31:16] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OUT[31:16].
+            '''
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write data value[31:16].
+
+                   Value to write into DATA_OUT[i], valid in the presence of mask[i]==1
+                '''
+        },
+        { bits: "31:16",
+          name: "mask",
+          desc: '''Write data mask[31:16].
+
+                A value of 1 in mask[i] allows the updating of DATA_OUT[i], 16 <= i <= 31
+                '''
+          swaccess: "wo"
+        },
+      ],
+    },
+    { name: "DIRECT_OE",
+      desc: '''GPIO Output Enable.
+
+            Setting direct_oe[i] to 1 enables output mode for GPIO[i]
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "MASKED_OE_LOWER",
+      desc: '''GPIO write Output Enable lower with mask.
+
+            Masked write for DATA_OE[15:0], the register that controls
+            output mode for GPIO pins [15:0].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OE[15:0] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OE[15:0].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write OE value[15:0].
+
+                Value to write into DATA_OE[i], valid in the presence of mask[i]==1
+                ''',
+        },
+        { name: "mask",
+          desc: '''Write OE mask[15:0].
+
+                A value of 1 in mask[i] allows the updating of DATA_OE[i], 0 <= i <= 15
+                ''',
+          bits: "31:16"
+        },
+      ],
+    },
+    { name: "MASKED_OE_UPPER",
+      desc: '''GPIO write Output Enable upper with mask.
+
+            Masked write for DATA_OE[31:16], the register that controls
+            output mode for GPIO pins [31:16].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OE[31:16] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OE[31:16].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write OE value[31:16].
+
+                Value to write into DATA_OE[i], valid in the presence of mask[i]==1
+                ''',
+        },
+        { name: "mask",
+          desc: '''Write OE mask[31:16].
+
+                A value of 1 in mask[i] allows the updating of DATA_OE[i], 16 <= i <= 31
+                ''',
+          bits: "31:16"
+        },
+      ],
+    },
+
+    { name: "INTR_CTRL_EN_RISING",
+      desc: '''GPIO interrupt enable for GPIO, rising edge.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_RISING[i]
+            enables rising-edge interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "INTR_CTRL_EN_FALLING",
+      desc: '''GPIO interrupt enable for GPIO, falling edge.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_FALLING[i]
+            enables falling-edge interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "INTR_CTRL_EN_LVLHIGH",
+      desc: '''GPIO interrupt enable for GPIO, level high.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_LVLHIGH[i]
+            enables level high interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "INTR_CTRL_EN_LVLLOW",
+      desc: '''GPIO interrupt enable for GPIO, level low.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_LVLLOW[i]
+            enables level low interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "CTRL_EN_INPUT_FILTER",
+      desc: '''filter enable for GPIO input bits.
+
+            If !!CTRL_EN_INPUT_FILTER[i] is true, a value of input bit [i]
+            must be stable for 16 cycles before transitioning.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+  ],
+}

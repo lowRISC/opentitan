@@ -1,0 +1,307 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "FLASH_CTRL",
+  clock_primary: "main",
+  bus_device: "tlul",
+  interrupt_list: [
+    { name: "prog_empty", desc: "Program FIFO empty" },
+    { name: "prog_lvl",   desc: "Program FIFO drained to level" },
+    { name: "rd_full",    desc: "Read FIFO full" },
+    { name: "rd_lvl",     desc: "Read FIFO filled to level" },
+    { name: "op_done",    desc: "Operation complete" },
+    { name: "op_error",   desc: "Operation failed with error" },
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "CONTROL",
+      desc: "Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          hwaccess: "hrw",
+          name: "START",
+          desc: '''
+            Start flash transaction.  This bit shall only be set after the other fields of the
+            CONTROL register and ADDR have been programmed
+            '''
+          resval: "0"
+        },
+        { bits: "5:4",
+          name: "OP",
+          desc: "Flash operation selection",
+          resval: "0"
+          enum: [
+            { value: "0",
+              name: "Read",
+              desc: '''
+                Flash Read.
+
+                Read desired number of flash words
+                '''
+            },
+            { value: "1",
+              name: "Prog",
+              desc: '''
+                Flash Program.
+
+                Program desired number of flash words
+                '''
+            },
+            { value: "2",
+              name: "Erase",
+              desc: '''
+                Flash Erase Operation.
+
+                See ERASE_SEL for details on erase operation
+                '''
+            },
+          ]
+        },
+        { bits: "6",
+          name: "ERASE_SEL",
+          desc: "Flash operation selection",
+          resval: "0"
+          enum: [
+            { value: "0",
+              name: "Page Erase",
+              desc: '''
+                Erase 1 page of flash
+                '''
+            },
+            { value: "1",
+              name: "Bank Erase",
+              desc: '''
+                Erase 1 bank of flash
+                '''
+            },
+          ]
+        },
+        { bits: "7",
+          name: "FIFO_RST",
+          desc: "RST FIFOs",
+          resval: "0"
+        },
+        { bits: "27:16",
+          name: "NUM",
+          desc: "Number of flash words the flash operation should read or program.",
+          resval: "0"
+        },
+      ]
+    },
+    { name: "ADDR",
+      desc: "Address for flash operation",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "31:0",
+          name: "START",
+          desc: '''
+            Start address of a flash transaction.  Software should supply the full byte address.
+            The flash controller will then truncate the address as needed.  For read operations,
+            the flash controller will truncate to the closest, lower word aligned address.  For
+            example, if 0x13 is supplied, the controller will perform a read at address 0x10.
+
+            Program operations behave similarly, the controller does not have read modified write
+            support.
+
+            For page erases, the controller will truncate to the closest lower page aligned
+            address.  Similarly for bank erases, the controller will truncate to the closest
+            lower bank aligned address.
+            '''
+          resval: "0"
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "MP_REGION_CFG",
+        desc: "Memory protection configuration",
+        count: 8,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                Region enabled, following fields apply
+              ''',
+              resval: "0"
+            },
+            { bits: "1",
+              name: "RD_EN",
+              desc: '''
+                Region can be read
+              ''',
+              resval: "0"
+            },
+            { bits: "2",
+              name: "PROG_EN",
+              desc: '''
+                Region can be programmed
+              ''',
+              resval: "0"
+            }
+            { bits: "3",
+              name: "ERASE_EN",
+              desc: '''
+                Region can be erased
+              ''',
+              resval: "0"
+            }
+            { bits: "12:4",
+              name: "BASE",
+              desc: '''
+                Region base page. Note the granularity is page, not byte or word
+              ''',
+              resval: "0"
+            },
+            { bits: "24:16",
+              name: "SIZE",
+              desc: '''
+                Region size in number of pages
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "DEFAULT_REGION",
+      desc: "Default region permissions",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0",
+          name: "RD_EN",
+          desc: '''
+            Region can be read
+          ''',
+          resval: "0"
+        },
+        { bits: "1",
+          name: "PROG_EN",
+          desc: '''
+            Region can be programmed
+          ''',
+          resval: "0"
+        }
+        { bits: "2",
+          name: "ERASE_EN",
+          desc: '''
+            Region can be erased
+          ''',
+          resval: "0"
+        }
+      ]
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "MP_BANK_CFG",
+        desc: "Memory protect bank configuration",
+        count: 2,
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "1",
+              name: "ERASE_EN",
+              desc: '''
+                Bank wide erase enable
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "OP_STATUS",
+      desc: "Flash Operation Status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0", name: "done",
+          desc: "Flash operation done. Set by HW, cleared by SW" },
+        { bits: "1", name: "err",
+          desc: "Flash operation error. Set by HW, cleared by SW"},
+      ]
+    },
+    { name: "STATUS",
+      desc: "Flash Controller Status",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",    name: "rd_full",    desc: "Flash read fifo full, software must consume data" },
+        { bits: "1",    name: "rd_empty",   desc: "Flash read fifo empty" },
+        { bits: "2",    name: "prog_full",  desc: "Flash program fifo full"},
+        { bits: "3",    name: "prog_empty", desc: "Flash program fifo empty, software must provide data"},
+        { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init"},
+        { bits: "16:8", name: "error_page", desc: "Flash controller error page."},
+        { bits: "17",   name: "error_bank", desc: "Flash controller error bank."},
+      ]
+    },
+    { name: "Scratch",
+      desc: "Flash Controller Scratch",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0", name: "data",  desc: "Flash ctrl scratch register" },
+      ]
+    },
+    { name: "FIFO_LVL",
+      desc: "Programmable depth where fifos should generate interrupts",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "4:0",
+          name: "PROG",
+          desc: '''
+            When the program fifo drains to this level, trigger an interrupt.
+            Default value is set such that interrupt does not trigger at reset.
+            '''
+          resval: "0xF"
+        },
+        { bits: "12:8",
+          name: "RD",
+          desc: '''
+            When the read fifo fills to this level, trigger an interrupt.
+            Default value is set such that interrupt does not trigger at reset.
+            '''
+          resval: "0xF"
+        },
+      ]
+    }
+    { window: {
+        name: "prog_fifo",
+        items: "1",
+        validbits: "32",
+        byte-write: "false",
+        unusual: "false"
+        swaccess: "wo",
+        desc: '''
+          Flash program fifo.
+
+          The fifo is 16 entries of 4B flash words
+          '''
+      },
+    },
+    { window: {
+        name: "rd_fifo",
+        items: "1",
+        validbits: "32",
+        byte-write: "false",
+        unusual: "false"
+        swaccess: "ro",
+        desc: '''
+          Flash read fifo.
+
+          The fifo is 16 entries of 4B flash words
+          '''
+      },
+    },
+  ]
+}

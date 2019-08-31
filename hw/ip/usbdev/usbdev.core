@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:usbdev:0.1"
+description: "usbuart"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+      - lowrisc:ip:usbfs_nb_pe
+    files:
+      - rtl/usbdev_reg_pkg.sv
+      - rtl/usbdev_reg_top.sv
+      - rtl/usbdev_usbif.sv
+      - rtl/usbdev_flop_2syncpulse.sv
+      - rtl/usbdev_linkstate.sv
+      - rtl/usbdev.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: usbdev

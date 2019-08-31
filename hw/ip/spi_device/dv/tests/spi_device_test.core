@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:spi_device_test:0.1"
+description: "spi_device DV UVM test"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:spi_device_env
+    files:
+      - spi_device_test_pkg.sv
+      - spi_device_base_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

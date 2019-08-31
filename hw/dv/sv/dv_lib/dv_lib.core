@@ -1,0 +1,41 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:dv_lib"
+description: "DV base class UVM library"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:csr_utils
+    files:
+      - dv_lib_pkg.sv
+
+      - dv_base_reg.sv: {is_include_file: true}
+      - dv_base_reg_field.sv: {is_include_file: true}
+      - dv_base_reg_mem.sv: {is_include_file: true}
+      - dv_base_reg_block.sv: {is_include_file: true}
+      - dv_base_reg_map.sv: {is_include_file: true}
+
+      - dv_base_agent_cfg.sv: {is_include_file: true}
+      - dv_base_agent_cov.sv: {is_include_file: true}
+      - dv_base_monitor.sv: {is_include_file: true}
+      - dv_base_sequencer.sv: {is_include_file: true}
+      - dv_base_driver.sv: {is_include_file: true}
+      - dv_base_agent.sv: {is_include_file: true}
+
+      - dv_base_env_cfg.sv: {is_include_file: true}
+      - dv_base_env_cov.sv: {is_include_file: true}
+      - dv_base_virtual_sequencer.sv: {is_include_file: true}
+      - dv_base_scoreboard.sv: {is_include_file: true}
+      - dv_base_env.sv: {is_include_file: true}
+      - dv_base_vseq.sv: {is_include_file: true}
+      - dv_base_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

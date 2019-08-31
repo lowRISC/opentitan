@@ -1,0 +1,3 @@
+^TEST FAILED UVM_CHECKS$
+^UVM_ERROR\s[^:].*$
+^\s*Offending '.*'

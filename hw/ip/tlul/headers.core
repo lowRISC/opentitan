@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tlul:headers:0.1"
+description: "TL-UL headers"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:constants:top_pkg
+    files:
+      - rtl/tlul_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

@@ -1,0 +1,168 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "hmac",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+  bus_host: "none",
+  available_input_list: [],
+  available_output_list: [],
+  interrupt_list: [
+    { name: "hmac_done",
+      desc: "HMAC-256 completes a message with key"
+    }
+    { name: "fifo_full",
+      desc: "Message FIFO full condition"
+    }
+  ],
+  alert_list: [
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "CFG",
+      desc: "HMAC Configuration register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "hmac_en",
+          desc: '''HMAC datapath enable.
+
+                If this bit is 1, HMAC operates when `hash_start` toggles.
+                ''',
+        }
+        { bits: "1",
+          name: "sha_en",
+          desc: "SHA256 enable. If 0, SHA engine won't initiate compression"
+        }
+        { bits: "2",
+          name: "endian_swap",
+          desc: "Convert TL-UL wdata[31:0] to big-endian style {w[7:0], w[15:8], .. }",
+          resval: "1",
+        }
+        { bits: "3",
+          name: "digest_swap",
+          desc: "DIGEST register byte-order. If 1, it swaps the each DIGEST registers' byte-order.",
+          resval: "0",
+        }
+      ]
+    }
+    { name: "CMD",
+      desc: "HMAC command register",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe:  "true",
+      fields: [
+        { bits: "0",
+          name: "hash_start",
+          desc: '''If writes 1 into this field, SHA256 or HMAC begins its operation.
+
+                CPU should configure relative information first, such as message_length,
+                secret_key.
+                ''',
+        }
+        { bits: "1",
+          name: "hash_process",
+          desc: '''If writes 1 into this field, SHA256 or HMAC calculates the digest or signing
+                based on currently received message.
+                '''
+        }
+      ],
+    }
+    { name: "STATUS",
+      desc: "HMAC Status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "fifo_empty",
+          desc: "FIFO empty"
+        }
+        { bits: "1",
+          name: "fifo_full",
+          desc: "FIFO full. Software shouldn't write data into FIFO. It will be discarded"
+        }
+        { bits: "8:4",
+          name: "fifo_depth",
+          desc: "FIFO entry count."
+        }
+      ]
+    }
+    { name: "WIPE_SECRET",
+      desc: '''Randomize internal secret registers.
+
+            If CPU writes value into the register, the value is used to randomize internal
+            variables such as secret key, internal state machine, or hash value.
+            ''',
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0", name:"secret", desc: "Secret value" }
+      ]
+    }
+    { multireg: {
+        name: "KEY",
+        desc: '''HMAC Secret Key
+
+              SHA256 assumes secret key is hashed 256bit key.
+              Order of the secret key is:
+              key[255:0] = {KEY0, KEY1, KEY2, ... , KEY7};
+              ''',
+        count: "8",
+        cname: "HMAC",
+        swaccess: "wo",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "31:0", name: "key", desc: "Secret Key" }
+        ],
+      }
+    }
+    { multireg: {
+        name: "DIGEST",
+        desc: "Digest output. If HMAC is disabled, the register shows result of SHA256",
+        count: "8",
+        cname: "HMAC",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "31:0", name: "digest", desc: "Digest" }
+        ]
+      }
+    }
+    { name: "MSG_LENGTH_LOWER",
+      desc: '''Received Message Length in bits [31:0].
+
+            Message is byte granularity.
+            lower 3bits [2:0] are ignored.''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0", name: "v", desc: "Message Length [31:0]" }
+      ]
+    }
+    { name: "MSG_LENGTH_UPPER",
+      desc: "Received Message Length in bits [63:32]",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0", name: "v", desc: "Message Length [63:32]" }
+      ]
+    }
+    { skipto: "0x800" }
+    { window: {
+        name: "MSG_FIFO"
+        items: "512"      // 2kB
+        swaccess: "wo"
+        desc: '''Message FIFO. Any address starts from offset 0x800 to 0xFFF
+              updates MSG FIFO entry. This version only supports word-aligned
+              write.
+              '''
+      }
+    }
+  ],
+}

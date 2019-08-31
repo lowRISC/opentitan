@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:trial1_sim:0.1"
+description: "trial1 DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:constants:top_pkg
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+    files:
+      - ../rtl/trial1_reg_pkg.sv
+      - ../rtl/trial1_reg_top.sv
+    file_type: systemVerilogSource
+
+  files_dv:
+    files:
+      - bus_pkg.sv
+      - trial1_test.sv
+      - tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs
