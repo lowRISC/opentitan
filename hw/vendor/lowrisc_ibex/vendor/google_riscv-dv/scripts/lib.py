@@ -22,6 +22,7 @@ import sys
 import subprocess
 import time
 import yaml
+import logging
 
 def read_yaml(yaml_file):
   """ Read YAML file to a dictionary
@@ -36,7 +37,7 @@ def read_yaml(yaml_file):
     try:
       yaml_data = yaml.safe_load(f)
     except yaml.YAMLError as exc:
-      print(exc)
+      logging.error(exc)
       sys.exit(1)
   return yaml_data
 
@@ -53,7 +54,7 @@ def get_env_var(var):
   try:
     val = os.environ[var]
   except KeyError:
-    print ("Please set the environment variable %0s" % var)
+    logging.warning("Please set the environment variable %0s" % var)
     sys.exit(1)
   return val
 
@@ -73,7 +74,7 @@ def get_seed(seed):
     return random.getrandbits(32)
 
 
-def run_cmd(cmd, verbose = 0, timeout_s = 999):
+def run_cmd(cmd, timeout_s = 999):
   """Run a command and return output
 
   Args:
@@ -89,20 +90,19 @@ def run_cmd(cmd, verbose = 0, timeout_s = 999):
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError as exc:
-    print(ps.communicate()[0])
+    logging.error(ps.communicate()[0])
     sys.exit(1)
   try:
     output = ps.communicate(timeout = timeout_s)[0]
   except subprocess.TimeoutExpired:
-    print("Timeout[%ds]: %s" % (timeout_s, cmd))
+    logging.error("Timeout[%ds]: %s" % (timeout_s, cmd))
     output = ""
     ps.kill()
-  if verbose:
-    print(output)
+  logging.debug(output)
   return output
 
 
-def run_parallel_cmd(cmd_list, verbose = 0, timeout_s = 999):
+def run_parallel_cmd(cmd_list, timeout_s = 999):
   """Run a list of commands in parallel
 
   Args:
@@ -120,18 +120,16 @@ def run_parallel_cmd(cmd_list, verbose = 0, timeout_s = 999):
                           stderr=subprocess.STDOUT)
     children.append(ps)
   for i in range(len(children)):
-    print("Command progress: %d/%d" % (i, len(children)))
-    if verbose:
-      print("Waiting for command: %s" % cmd_list[i])
+    logging.info("Command progress: %d/%d" % (i, len(children)))
+    logging.debug("Waiting for command: %s" % cmd_list[i])
     try:
       output = children[i].communicate(timeout = timeout_s)[0]
     except subprocess.TimeoutExpired:
-      print("Timeout[%ds]: %s" % (timeout_s, cmd))
+      logging.error("Timeout[%ds]: %s" % (timeout_s, cmd))
       children[i].kill()
     # Restore stty setting otherwise the terminal may go crazy
     os.system("stty sane")
-    if verbose:
-      print(output)
+    logging.debug(output)
 
 
 def process_regression_list(testlist, test, iterations, matched_list):
@@ -145,13 +143,13 @@ def process_regression_list(testlist, test, iterations, matched_list):
   Returns:
     matched_list : A list of matched tests
   """
-  print("Processing regression test list : %s, test: %s" % (testlist, test))
+  logging.info("Processing regression test list : %s, test: %s" % (testlist, test))
   yaml_data = read_yaml(testlist)
   for entry in yaml_data:
     if (entry['test'] == test) or (test == "all"):
-      if iterations > 0:
+      if (iterations > 0 and  entry['iterations'] > 0):
         entry['iterations'] = iterations
       if entry['iterations'] > 0:
-        print ("Found matched tests: %s, iterations:%0d" %
-               (entry['test'], entry['iterations']))
+        logging.info("Found matched tests: %s, iterations:%0d" %
+                    (entry['test'], entry['iterations']))
         matched_list.append(entry)

@@ -21,6 +21,7 @@ filesets:
       - rtl/ibex_multdiv_fast.sv
       - rtl/ibex_multdiv_slow.sv
       - rtl/ibex_prefetch_buffer.sv
+      - rtl/ibex_pmp.sv
       # XXX: Figure out the best way to switch these two implementations
       # dynamically on the target.
 #      - rtl/ibex_register_file_latch.sv # ASIC

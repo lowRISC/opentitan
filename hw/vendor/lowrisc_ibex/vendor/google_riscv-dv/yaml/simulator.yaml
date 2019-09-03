@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http:#www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,15 +36,16 @@
   compile_cmd:
     - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
     - "vlog -64
-￼     -access=rwc
-￼     -f <cwd>/files.f
-￼     -sv
-￼     -mfcu -cuname design_cuname
-￼     +define+UVM_REGEX_NO_DPI
-￼     -writetoplevels <out>/top.list
-￼     -l <out>/compile.log <cmp_opts>"
+      -access=rwc
+      -f <cwd>/files.f
+      -sv
+      -mfcu -cuname design_cuname
+      +define+UVM_REGEX_NO_DPI
+      -writetoplevels <out>/top.list
+      -l <out>/compile.log <cmp_opts>"
     - "vopt -64 -debug
-￼     +designfile -f <out>/top.list
-￼     -o design_opt"
+      +designfile -f <out>/top.list
+      -l <out>/optimize.log <cmp_opts>
+      -o design_opt"
   sim_cmd: >
-    vsim -64 -c -do <cwd>/questa_sim.tcl design_opt <sim_opts>  -svseed <seed>
+    vsim -64 -c -do <cwd>/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed>

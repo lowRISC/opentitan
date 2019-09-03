@@ -1,22 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright 2017 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Matthias Baer - baermatt@student.ethz.ch                   //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Sven Stucki - svstucki@student.ethz.ch                     //
-//                                                                            //
-//                                                                            //
-// Design Name:    RISC-V processor core                                      //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Defines for various constants used by the processor core.  //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Package with constants used by Ibex
@@ -190,6 +175,7 @@ typedef enum logic [5:0] {
   // EXC_CAUSE_IRQ_FAST_14     = {1'b1, 5'd30},
   EXC_CAUSE_IRQ_NM             = {1'b1, 5'd31}, // == EXC_CAUSE_IRQ_FAST_15
   EXC_CAUSE_INSN_ADDR_MISA     = {1'b0, 5'd00},
+  EXC_CAUSE_INSTR_ACCESS_FAULT = {1'b0, 5'd01},
   EXC_CAUSE_ILLEGAL_INSN       = {1'b0, 5'd02},
   EXC_CAUSE_BREAKPOINT         = {1'b0, 5'd03},
   EXC_CAUSE_LOAD_ACCESS_FAULT  = {1'b0, 5'd05},
@@ -205,6 +191,36 @@ typedef enum logic [2:0] {
   DBG_CAUSE_HALTREQ = 3'h3,
   DBG_CAUSE_STEP    = 3'h4
 } dbg_cause_e;
+
+// PMP constants
+parameter int unsigned PMP_MAX_REGIONS      = 16;
+parameter int unsigned PMP_CFG_W            = 8;
+
+// PMP acces type
+parameter int unsigned PMP_I = 0;
+parameter int unsigned PMP_D = 1;
+
+typedef enum logic [1:0] {
+  PMP_ACC_EXEC    = 2'b00,
+  PMP_ACC_WRITE   = 2'b01,
+  PMP_ACC_READ    = 2'b10
+} pmp_req_e;
+
+// PMP cfg structures
+typedef enum logic [1:0] {
+  PMP_MODE_OFF   = 2'b00,
+  PMP_MODE_TOR   = 2'b01,
+  PMP_MODE_NA4   = 2'b10,
+  PMP_MODE_NAPOT = 2'b11
+} pmp_cfg_mode_e;
+
+typedef struct packed {
+  logic          lock;
+  pmp_cfg_mode_e mode;
+  logic          exec;
+  logic          write;
+  logic          read;
+} pmp_cfg_t;
 
 // CSRs
 typedef enum logic[11:0] {
@@ -224,6 +240,28 @@ typedef enum logic[11:0] {
   CSR_MTVAL     = 12'h343,
   CSR_MIP       = 12'h344,
 
+  // Physical memory protection
+  CSR_PMPCFG0   = 12'h3A0,
+  CSR_PMPCFG1   = 12'h3A1,
+  CSR_PMPCFG2   = 12'h3A2,
+  CSR_PMPCFG3   = 12'h3A3,
+  CSR_PMPADDR0  = 12'h3B0,
+  CSR_PMPADDR1  = 12'h3B1,
+  CSR_PMPADDR2  = 12'h3B2,
+  CSR_PMPADDR3  = 12'h3B3,
+  CSR_PMPADDR4  = 12'h3B4,
+  CSR_PMPADDR5  = 12'h3B5,
+  CSR_PMPADDR6  = 12'h3B6,
+  CSR_PMPADDR7  = 12'h3B7,
+  CSR_PMPADDR8  = 12'h3B8,
+  CSR_PMPADDR9  = 12'h3B9,
+  CSR_PMPADDR10 = 12'h3BA,
+  CSR_PMPADDR11 = 12'h3BB,
+  CSR_PMPADDR12 = 12'h3BC,
+  CSR_PMPADDR13 = 12'h3BD,
+  CSR_PMPADDR14 = 12'h3BE,
+  CSR_PMPADDR15 = 12'h3BF,
+
   // Debug/trace
   CSR_DCSR      = 12'h7b0,
   CSR_DPC       = 12'h7b1,
@@ -239,6 +277,10 @@ typedef enum logic[11:0] {
   CSR_MINSTRET           = 12'hB02,
   CSR_MINSTRETH          = 12'hB82
 } csr_num_e;
+
+// CSR pmp-related offsets
+parameter logic [11:0] CSR_OFF_PMP_CFG  = 12'h3A0; // pmp_cfg  @ 12'h3a0 - 12'h3a3
+parameter logic [11:0] CSR_OFF_PMP_ADDR = 12'h3B0; // pmp_addr @ 12'h3b0 - 12'h3bf
 
 // CSR mhpmcounter-related offsets and mask
 parameter logic [11:0] CSR_OFF_MCOUNTER_SETUP = 12'h320; // mcounter_setup @ 12'h323 - 12'h33F

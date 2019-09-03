@@ -52,7 +52,10 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
     vif.irq_external <= trans.irq_external;
     vif.irq_fast     <= trans.irq_fast;
     vif.irq_nm       <= trans.irq_nm;
-    @(posedge vif.clock);
+    // We hold the interrupt high for two cycles as Ibex is level sensitive,
+    // so this guarantees that Ibex will respond appropriately to the
+    // interrupt
+    repeat (2) @(posedge vif.clock);
     drive_reset_value();
   endtask : drive_seq_item
 

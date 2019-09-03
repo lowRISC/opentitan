@@ -1,25 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Renzo Andri - andrire@student.ethz.ch                      //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Igor Loi - igor.loi@unibo.it                               //
-//                 Andreas Traber - atraber@student.ethz.ch                   //
-//                 Sven Stucki - svstucki@student.ethz.ch                     //
-//                 Davide Schiavone - pschiavo@iis.ee.ethz.ch                 //
-//                                                                            //
-// Design Name:    Instruction Decode Stage                                   //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Decode stage of the core. It decodes the instructions      //
-//                 and hosts the register file.                               //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 `ifdef RISCV_FORMAL
   `define RVFI
@@ -65,6 +47,7 @@ module ibex_id_stage #(
     output ibex_pkg::exc_cause_e  exc_cause_o,
 
     input  logic                  illegal_c_insn_i,
+    input  logic                  instr_fetch_err_i,
 
     input  logic [31:0]           pc_id_i,
 
@@ -99,7 +82,6 @@ module ibex_id_stage #(
     output logic                  data_we_ex_o,
     output logic [1:0]            data_type_ex_o,
     output logic                  data_sign_ext_ex_o,
-    output logic [1:0]            data_reg_offset_ex_o,
     output logic [31:0]           data_wdata_ex_o,
 
     input  logic                  lsu_addr_incr_req_i,
@@ -118,6 +100,7 @@ module ibex_id_stage #(
     input  logic                  lsu_store_err_i,
 
     // Debug Signal
+    output logic                  debug_mode_o,
     output ibex_pkg::dbg_cause_e  debug_cause_o,
     output logic                  debug_csr_save_o,
     input  logic                  debug_req_i,
@@ -214,11 +197,10 @@ module ibex_id_stage #(
   logic        data_we_id;
   logic [1:0]  data_type_id;
   logic        data_sign_ext_id;
-  logic [1:0]  data_reg_offset_id;
   logic        data_req_id, data_req_dec;
 
   // CSR control
-  logic        csr_status;
+  logic        csr_pipe_flush;
 
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
@@ -377,14 +359,13 @@ module ibex_id_stage #(
       // CSRs
       .csr_access_o                    ( csr_access_o         ),
       .csr_op_o                        ( csr_op_o             ),
-      .csr_status_o                    ( csr_status           ),
+      .csr_pipe_flush_o                ( csr_pipe_flush       ),
 
       // LSU
       .data_req_o                      ( data_req_dec         ),
       .data_we_o                       ( data_we_id           ),
       .data_type_o                     ( data_type_id         ),
       .data_sign_extension_o           ( data_sign_ext_id     ),
-      .data_reg_offset_o               ( data_reg_offset_id   ),
 
       // jump/branches
       .jump_in_dec_o                   ( jump_in_dec          ),
@@ -412,13 +393,15 @@ module ibex_id_stage #(
       .dret_insn_i                    ( dret_insn_dec          ),
       .wfi_insn_i                     ( wfi_insn_dec           ),
       .ebrk_insn_i                    ( ebrk_insn              ),
-      .csr_status_i                   ( csr_status             ),
+      .csr_pipe_flush_i               ( csr_pipe_flush         ),
 
       // from IF-ID pipeline
       .instr_valid_i                  ( instr_valid_i          ),
       .instr_i                        ( instr_rdata_i          ),
       .instr_compressed_i             ( instr_rdata_c_i        ),
       .instr_is_compressed_i          ( instr_is_compressed_i  ),
+      .instr_fetch_err_i              ( instr_fetch_err_i      ),
+      .pc_id_i                        ( pc_id_i                ),
 
       // to IF-ID pipeline
       .instr_valid_clear_o            ( instr_valid_clear_o    ),
@@ -457,6 +440,7 @@ module ibex_id_stage #(
       .csr_mtval_o                    ( csr_mtval_o            ),
 
       // Debug Signal
+      .debug_mode_o                   ( debug_mode_o           ),
       .debug_cause_o                  ( debug_cause_o          ),
       .debug_csr_save_o               ( debug_csr_save_o       ),
       .debug_req_i                    ( debug_req_i            ),
@@ -499,7 +483,6 @@ module ibex_id_stage #(
   assign data_type_ex_o              = data_type_id;
   assign data_sign_ext_ex_o          = data_sign_ext_id;
   assign data_wdata_ex_o             = regfile_rdata_b;
-  assign data_reg_offset_ex_o        = data_reg_offset_id;
 
   assign alu_operator_ex_o           = alu_operator;
   assign alu_operand_a_ex_o          = alu_operand_a;
@@ -630,7 +613,8 @@ module ibex_id_stage #(
 
   // the instruction delivered to the ID stage should always be valid
   assert property (
-    @(posedge clk_i) (instr_valid_i & (~illegal_c_insn_i)) |-> (!$isunknown(instr_rdata_i)) ) else
+    @(posedge clk_i) (instr_valid_i & ~(illegal_c_insn_i | instr_fetch_err_i)) |->
+        (!$isunknown(instr_rdata_i)) ) else
       $display("Instruction is valid, but has at least one X");
 
   // make sure multicycles enable signals are unique

@@ -18,6 +18,7 @@ Convert ovpsim sim log to standard riscv instruction trace format
 import re
 import os
 import argparse
+import logging
 
 from riscv_trace_csv import *
 
@@ -27,7 +28,7 @@ def process_ovpsim_sim_log(ovpsim_log, csv):
   Extract instruction and affected register information from ovpsim simulation
   log and save to a list.
   """
-  print("Processing ovpsim log : %s" % ovpsim_log)
+  logging.info("Processing ovpsim log : %s" % ovpsim_log)
   instr_cnt = 0
   trace_instr = ""
   trace_bin = ""
@@ -66,7 +67,7 @@ def process_ovpsim_sim_log(ovpsim_log, csv):
           rv_instr_trace.binary = trace_bin
           rv_instr_trace.addr = trace_addr
           trace_csv.write_trace_entry(rv_instr_trace)
-  print("Processed instruction count : %d" % instr_cnt)
+  logging.info("Processed instruction count : %d" % instr_cnt)
 
 
 def main():

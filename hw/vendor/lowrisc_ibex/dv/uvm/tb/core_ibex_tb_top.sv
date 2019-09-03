@@ -18,14 +18,12 @@ module core_ibex_tb_top;
   core_ibex_dut_probe_if dut_if(.clk(clk));
 
   // TODO(taliu) Resolve the tied-off ports
-  ibex_core_tracing #(.DmHaltAddr(`BOOT_ADDR + 'h50),
-                      .DmExceptionAddr(`BOOT_ADDR + 'h54)
-  ) dut (
+  ibex_core_tracing #(.DmHaltAddr(`BOOT_ADDR + 'h0),
+                      .DmExceptionAddr(`BOOT_ADDR + 'h4)) dut (
     .clk_i(clk),
     .rst_ni(rst_n),
     .test_en_i(1'b1),
-    .core_id_i('0),
-    .cluster_id_i('0),
+    .hart_id_i(32'b0),
     .boot_addr_i(`BOOT_ADDR), // align with spike boot address
     .debug_req_i(debug_req),
     .irq_software_i(irq_if.irq_software),
@@ -64,12 +62,17 @@ module core_ibex_tb_top;
     force dut.instr_rvalid_i    = instr_mem_vif.rvalid;
     force instr_mem_vif.addr    = dut.instr_addr_o;
     force dut.instr_rdata_i     = instr_mem_vif.rdata;
+    force dut.instr_err_i       = 0; // TODO(taliu) Support interface error
     // IRQ interface
     force irq_vif.clock         = clk;
     force irq_vif.reset         = ~rst_n;
   end
 
-  assign dut_if.ecall = dut.u_ibex_core.id_stage_i.ecall_insn_dec;
+  assign dut_if.ecall   = dut.u_ibex_core.id_stage_i.ecall_insn_dec;
+  assign dut_if.wfi     = dut.u_ibex_core.id_stage_i.wfi_insn_dec;
+  assign dut_if.ebreak  = dut.u_ibex_core.id_stage_i.ebrk_insn;
+  assign dut_if.dret    = dut.u_ibex_core.id_stage_i.dret_insn_dec;
+  assign dut_if.mret    = dut.u_ibex_core.id_stage_i.mret_insn_dec;
 
 
   initial begin

@@ -70,6 +70,8 @@ Ibex can trigger an exception due to the following exception causes:
 +----------------+---------------------------------------------------------------+
 | Exception Code | Description                                                   |
 +----------------+---------------------------------------------------------------+
+|              1 | Instruction access fault                                      |
++----------------+---------------------------------------------------------------+
 |              2 | Illegal instruction                                           |
 +----------------+---------------------------------------------------------------+
 |              3 | Breakpoint                                                    |
@@ -81,7 +83,7 @@ Ibex can trigger an exception due to the following exception causes:
 |             11 | Environment call from M-mode (ECALL)                          |
 +----------------+---------------------------------------------------------------+
 
-The illegal instruction exception, LSU error exceptions and ECALL instruction exceptions cannot be disabled and are always active.
+The illegal instruction exception, instruction access fault, LSU error exceptions and ECALL instruction exceptions cannot be disabled and are always active.
 
 
 Handling

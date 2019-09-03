@@ -32,6 +32,7 @@ class RiscvInstructiontTraceEntry(object):
     self.addr = ""
     self.binary = ""
     self.instr_str = ""
+    self.instr = ""
     self.privileged_mode = ""
 
   def get_trace_string(self):
@@ -47,6 +48,7 @@ class RiscvInstructiontTraceCsv(object):
 
   def __init__(self, csv_fd):
     self.csv_fd = csv_fd
+    self.gpr = {}
 
 
   def start_new_trace(self):
@@ -72,11 +74,19 @@ class RiscvInstructiontTraceCsv(object):
 
   def write_trace_entry(self, entry):
     """Write a new trace entry to CSV"""
-    self.csv_writer.writerow({'str'    : entry.instr_str,
-                              'rd'     : entry.rd,
-                              'rd_val' : entry.rd_val,
-                              'binary' : entry.binary,
-                              'addr'   : entry.addr})
+    self.gpr[entry.rd] = entry.rd_val
+    self.csv_writer.writerow({'str'     : entry.instr_str,
+                              'rd'      : entry.rd,
+                              'rd_val'  : entry.rd_val,
+                              'rs1'     : entry.rs1,
+                              'rs1_val' : entry.rs1_val,
+                              'rs2'     : entry.rs2,
+                              'rs2_val' : entry.rs2_val,
+                              'addr'    : entry.addr,
+                              'instr'   : entry.instr,
+                              'imm'     : entry.imm,
+                              'binary'  : entry.binary,
+                              'addr'    : entry.addr})
 
 
 def gpr_to_abi(gpr):

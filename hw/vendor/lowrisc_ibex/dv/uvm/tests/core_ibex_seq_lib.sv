@@ -9,7 +9,7 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
   rand int unsigned  delay;
   int unsigned       num_of_iterations; // 0: infinite until stopped
   int unsigned       iteration_cnt;
-  int unsigned       max_interval = 1000;
+  int unsigned       max_interval;
   int unsigned       max_delay = 500;
   virtual clk_if     clk_vif;
   bit                stop_seq;
@@ -98,7 +98,7 @@ class debug_seq extends core_base_seq;
   virtual task send_req();
     `uvm_info(get_full_name(), "Sending debug request", UVM_HIGH)
     dut_vif.debug_req <= 1'b1;
-    clk_vif.wait_clks($urandom_range(1, 20));
+    clk_vif.wait_clks($urandom_range(10, 30));
     dut_vif.debug_req <= 1'b0;
   endtask
 

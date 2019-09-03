@@ -30,6 +30,8 @@ The main difference is that the instruction interface does not allow for write t
 +-------------------------+-----------+-----------------------------------------------+
 | ``instr_rdata_i[31:0]`` | input     | Data read from memory                         |
 +-------------------------+-----------+-----------------------------------------------+
+| ``instr_err_i``         | input     | Memory access error                           |
++-------------------------+-----------+-----------------------------------------------+
 
 
 Misaligned Accesses

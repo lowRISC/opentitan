@@ -64,20 +64,21 @@ class riscv_instr_base_test extends uvm_test;
   endfunction
 
   function void get_directed_instr_stream_opts();
-    string instr_name;
-    int ratio;
     string cmd_opts_prefix;
+    string opts;
+    string opt[$];
     int i = 0;
     while(1) begin
       cmd_opts_prefix = $sformatf("directed_instr_%0d", i);
-      if($value$plusargs({cmd_opts_prefix, "=%0s"}, instr_name) &&
-         $value$plusargs({cmd_opts_prefix, "_ratio=%0d"}, ratio)) begin
-        asm_gen.add_directed_instr_stream(instr_name, ratio);
+      if($value$plusargs({cmd_opts_prefix, "=%0s"}, opts)) begin
+        uvm_split_string(opts, ",", opt);
+        `DV_CHECK_FATAL(opt.size() == 2)
+        asm_gen.add_directed_instr_stream(opt[0], opt[1].atoi());
       end else begin
         break;
       end
-      `uvm_info(`gfn, $sformatf("Got directed instr[%0d] %0s, ratio = %0d/1000",
-                                 i, instr_name, ratio), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("Got directed instr[%0d] %0s, ratio = %0s/1000",
+                                 i, opt[0], opt[1]), UVM_LOW)
       i++;
     end
 
@@ -98,6 +99,7 @@ class riscv_instr_base_test extends uvm_test;
       test_name = $sformatf("%0s.%0d.S", asm_file_name, i);
       apply_directed_instr();
       `uvm_info(`gfn, "All directed instruction is applied", UVM_LOW)
+      cfg.build_instruction_template();
       asm_gen.gen_program();
       asm_gen.gen_test_file(test_name);
     end

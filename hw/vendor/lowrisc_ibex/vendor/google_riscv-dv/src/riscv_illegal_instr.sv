@@ -125,14 +125,25 @@ class riscv_illegal_instr extends uvm_object;
     }
   }
 
+  // TODO: Enable atomic instruction
+  constraint no_atomic_c {
+    opcode != 7'b0101111;
+  }
+
   constraint illegal_func3_c {
     solve opcode before func3;
     if (!compressed) {
       if (exception == kIllegalFunc3) {
         (opcode == 7'b1100111) -> (func3 != 3'b000);
         (opcode == 7'b1100011) -> (func3 inside {3'b010, 3'b011});
-        (opcode == 7'b0000011) -> (func3 == 3'b111);
-        (opcode == 7'b0100011) -> (func3 >= 3'b011);
+
+        if (XLEN == 32) {
+          (opcode == 7'b0100011) -> (func3 >= 3'b011);
+          (opcode == 7'b0000011) -> (func3 inside {3'b011, 3'b111});
+        } else {
+          (opcode == 7'b0100011) -> (func3 > 3'b011);
+          (opcode == 7'b0000011) -> (func3 == 3'b111);
+        }
         (opcode == 7'b0001111) -> (!(func3 inside {3'b000, 3'b001}));
         (opcode == 7'b1110011) -> (func3 == 3'b100);
         (opcode == 7'b0011011) -> (!(func3 inside {3'b000, 3'b001, 3'b101}));
@@ -142,8 +153,13 @@ class riscv_illegal_instr extends uvm_object;
       } else {
         (opcode == 7'b1100111) -> (func3 == 3'b000);
         (opcode == 7'b1100011) -> (!(func3 inside {3'b010, 3'b011}));
-        (opcode == 7'b0000011) -> (func3 != 3'b111);
-        (opcode == 7'b0100011) -> (func3 < 3'b011);
+        if (XLEN == 32) {
+          (opcode == 7'b0100011) -> (func3 < 3'b011);
+          (opcode == 7'b0000011) -> !(func3 inside {3'b011, 3'b111});
+        } else {
+          (opcode == 7'b0100011) -> (func3 <= 3'b011);
+          (opcode == 7'b0000011) -> (func3 != 3'b111);
+        }
         (opcode == 7'b0001111) -> (func3 inside {3'b000, 3'b001});
         (opcode == 7'b1110011) -> (func3 != 3'b100);
         (opcode == 7'b0011011) -> (func3 inside {3'b000, 3'b001, 3'b101});

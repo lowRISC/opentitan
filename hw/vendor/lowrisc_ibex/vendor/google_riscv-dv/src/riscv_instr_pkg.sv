@@ -17,6 +17,7 @@
 package riscv_instr_pkg;
 
   import uvm_pkg::*;
+  import riscv_signature_pkg::*;
 
   `include "uvm_macros.svh"
   `include "dv_defines.svh"
@@ -32,6 +33,11 @@ package riscv_instr_pkg;
     SV57 = 4'b1010,
     SV64 = 4'b1011
   } satp_mode_t;
+
+  typedef enum bit [1:0] {
+    DIRECT   = 2'b00,
+    VECTORED = 2'b01
+  } mtvec_mode_t;
 
   typedef enum bit [2:0] {
     IMM,    // Signed immediate
@@ -230,6 +236,30 @@ package riscv_instr_pkg;
     C_FSD,
     C_FLDSP,
     C_FSDSP,
+    // RV32A
+    LR_W,
+    SC_W,
+    AMOSWAP_W,
+    AMOADD_W,
+    AMOAND_W,
+    AMOOR_W,
+    AMOXOR_W,
+    AMOMIN_W,
+    AMOMAX_W,
+    AMOMINU_W,
+    AMOMAXU_W,
+    // RV64A
+    LR_D,
+    SC_D,
+    AMOSWAP_D,
+    AMOADD_D,
+    AMOAND_D,
+    AMOOR_D,
+    AMOXOR_D,
+    AMOMIN_D,
+    AMOMAX_D,
+    AMOMINU_D,
+    AMOMAXU_D,
     // Supervisor instruction
     MRET,
     URET,
@@ -310,7 +340,8 @@ package riscv_instr_pkg;
     CSR,
     CHANGELEVEL,
     TRAP,
-    INTERRUPT
+    INTERRUPT,
+    AMO
   } riscv_instr_cateogry_t;
 
   typedef bit [11:0] riscv_csr_t;
@@ -729,7 +760,7 @@ package riscv_instr_pkg;
     // need to use the virtual address to access the kernel stack.
     if((status == MSTATUS) && (SATP_MODE != BARE)) begin
       // We temporarily use tp to check mstatus to avoid changing other GPR. The value of sp has
-      // been saved to xStatus and can be restored later.
+      // been saved to xScratch and can be restored later.
       if(mprv) begin
         instr.push_back($sformatf("csrr tp, 0x%0x // MSTATUS", status));
         instr.push_back("srli tp, tp, 11");  // Move MPP to bit 0
@@ -769,6 +800,7 @@ package riscv_instr_pkg;
     end
   endfunction
 
+  `include "riscv_instr_base.sv"
   `include "riscv_instr_gen_config.sv"
   `include "riscv_illegal_instr.sv"
   `include "riscv_reg.sv"
@@ -779,13 +811,13 @@ package riscv_instr_pkg;
   `include "riscv_page_table_list.sv"
   `include "riscv_privileged_common_seq.sv"
   `include "riscv_callstack_gen.sv"
-  `include "riscv_instr_base.sv"
   `include "riscv_data_page_gen.sv"
   `include "riscv_rand_instr.sv"
   `include "riscv_instr_stream.sv"
   `include "riscv_loop_instr.sv"
   `include "riscv_directed_instr_lib.sv"
   `include "riscv_load_store_instr_lib.sv"
+  `include "riscv_amo_instr_lib.sv"
   `include "riscv_instr_sequence.sv"
   `include "riscv_asm_program_gen.sv"
 
