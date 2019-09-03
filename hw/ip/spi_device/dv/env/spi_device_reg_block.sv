@@ -25,10 +25,8 @@ typedef class spi_device_reg_block;
 // Class: spi_device_reg_intr_state
 class spi_device_reg_intr_state extends dv_base_reg;
   // fields
-  rand dv_base_reg_field rxne;
+  rand dv_base_reg_field rxf;
   rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txe;
-  rand dv_base_reg_field txf;
   rand dv_base_reg_field txlvl;
   rand dv_base_reg_field rxerr;
 
@@ -42,8 +40,8 @@ class spi_device_reg_intr_state extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    rxne = dv_base_reg_field::type_id::create("rxne");
-    rxne.configure(
+    rxf = dv_base_reg_field::type_id::create("rxf");
+    rxf.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
@@ -64,33 +62,11 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    txe = dv_base_reg_field::type_id::create("txe");
-    txe.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txf = dv_base_reg_field::type_id::create("txf");
-    txf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
     txlvl = dv_base_reg_field::type_id::create("txlvl");
     txlvl.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(4),
+      .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
       .reset(0),
@@ -101,7 +77,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
     rxerr.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(5),
+      .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
       .reset(0),
@@ -115,10 +91,8 @@ endclass : spi_device_reg_intr_state
 // Class: spi_device_reg_intr_enable
 class spi_device_reg_intr_enable extends dv_base_reg;
   // fields
-  rand dv_base_reg_field rxne;
+  rand dv_base_reg_field rxf;
   rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txe;
-  rand dv_base_reg_field txf;
   rand dv_base_reg_field txlvl;
   rand dv_base_reg_field rxerr;
 
@@ -132,8 +106,8 @@ class spi_device_reg_intr_enable extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    rxne = dv_base_reg_field::type_id::create("rxne");
-    rxne.configure(
+    rxf = dv_base_reg_field::type_id::create("rxf");
+    rxf.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
@@ -154,33 +128,11 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    txe = dv_base_reg_field::type_id::create("txe");
-    txe.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txf = dv_base_reg_field::type_id::create("txf");
-    txf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
     txlvl = dv_base_reg_field::type_id::create("txlvl");
     txlvl.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(4),
+      .lsb_pos(2),
       .access("RW"),
       .volatile(0),
       .reset(0),
@@ -191,7 +143,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
     rxerr.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(5),
+      .lsb_pos(3),
       .access("RW"),
       .volatile(0),
       .reset(0),
@@ -205,10 +157,8 @@ endclass : spi_device_reg_intr_enable
 // Class: spi_device_reg_intr_test
 class spi_device_reg_intr_test extends dv_base_reg;
   // fields
-  rand dv_base_reg_field rxne;
+  rand dv_base_reg_field rxf;
   rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txe;
-  rand dv_base_reg_field txf;
   rand dv_base_reg_field txlvl;
   rand dv_base_reg_field rxerr;
 
@@ -222,8 +172,8 @@ class spi_device_reg_intr_test extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    rxne = dv_base_reg_field::type_id::create("rxne");
-    rxne.configure(
+    rxf = dv_base_reg_field::type_id::create("rxf");
+    rxf.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
@@ -244,33 +194,11 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    txe = dv_base_reg_field::type_id::create("txe");
-    txe.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txf = dv_base_reg_field::type_id::create("txf");
-    txf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
     txlvl = dv_base_reg_field::type_id::create("txlvl");
     txlvl.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(4),
+      .lsb_pos(2),
       .access("WO"),
       .volatile(0),
       .reset(0),
@@ -281,7 +209,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
     rxerr.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(5),
+      .lsb_pos(3),
       .access("WO"),
       .volatile(0),
       .reset(0),

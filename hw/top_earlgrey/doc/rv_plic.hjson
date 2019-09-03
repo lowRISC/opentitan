@@ -6,6 +6,10 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --plic-only -o hw/top_earlgrey/
 
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
 # RV_PLIC register template
 #
 # Parameter (given by python tool)
@@ -22,7 +26,7 @@
     { multireg: {
         name: "IP",
         desc: "Interrupt Pending",
-        count: 54,
+        count: 52,
         cname: "RV_PLIC",
         swaccess: "ro",
         hwaccess: "hwo",
@@ -34,7 +38,7 @@
     { multireg: {
         name: "LE",
         desc: "Interrupt Source mode. 0: Level, 1: Edge-triggered",
-        count: 54,
+        count: 52,
         cname: "RV_PLIC",
         swaccess: "rw",
         hwaccess: "hro",
@@ -459,27 +463,11 @@
         { bits: "1:0" }
       ],
     }
-    { name: "PRIO52",
-      desc: "Interrupt Source 52 Priority",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "1:0" }
-      ],
-    }
-    { name: "PRIO53",
-      desc: "Interrupt Source 53 Priority",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "1:0" }
-      ],
-    }
     { skipto: 256 }
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",
-        count: 54,
+        count: 52,
         cname: "RV_PLIC",
         swaccess: "rw",
         hwaccess: "hro",

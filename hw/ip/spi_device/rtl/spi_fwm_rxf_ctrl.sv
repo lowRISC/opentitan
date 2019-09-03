@@ -26,6 +26,8 @@ module spi_fwm_rxf_ctrl #(
   output logic [PtrW-1:0] wptr,
   output logic [PtrW-1:0] depth,
 
+  output logic            full,
+
   input               fifo_valid,
   output logic        fifo_ready,
   input  [FifoDw-1:0] fifo_rdata,
@@ -86,6 +88,7 @@ module spi_fwm_rxf_ctrl #(
   assign ptr_cmp = rptr ^ wptr;
   // TODO: Check partial SRAM width read condition
   assign sramf_full = (ptr_cmp[PtrW-1] == 1'b1) && (ptr_cmp[PtrW-2:SDW] == '0);
+  assign full = sramf_full;
 
   assign sramf_limit = limit_index_i - base_index_i;
 

@@ -25,7 +25,7 @@
 //   MAX_PRIO: Maximum value of interrupt priority
 
 module rv_plic #(
-  parameter int N_SOURCE    = 54,
+  parameter int N_SOURCE    = 52,
   parameter int N_TARGET    = 1,
   parameter     FIND_MAX    = "SEQUENTIAL", // SEQUENTIAL | MATRIX
 
@@ -152,8 +152,6 @@ module rv_plic #(
   assign prio[49] = reg2hw.prio49.q;
   assign prio[50] = reg2hw.prio50.q;
   assign prio[51] = reg2hw.prio51.q;
-  assign prio[52] = reg2hw.prio52.q;
-  assign prio[53] = reg2hw.prio53.q;
   //----------------------------------------------------------------------------
 
   //////////////////////////////////////////////////////////////////////////////
@@ -210,8 +208,6 @@ module rv_plic #(
   assign ie[0][49] = reg2hw.ie01.e49.q;
   assign ie[0][50] = reg2hw.ie01.e50.q;
   assign ie[0][51] = reg2hw.ie01.e51.q;
-  assign ie[0][52] = reg2hw.ie01.e52.q;
-  assign ie[0][53] = reg2hw.ie01.e53.q;
   //----------------------------------------------------------------------------
 
   //////////////////////////////////////////////////////////////////////////////
@@ -287,8 +283,6 @@ module rv_plic #(
   assign hw2reg.ip1.p49.de = 1'b1; // Always write
   assign hw2reg.ip1.p50.de = 1'b1; // Always write
   assign hw2reg.ip1.p51.de = 1'b1; // Always write
-  assign hw2reg.ip1.p52.de = 1'b1; // Always write
-  assign hw2reg.ip1.p53.de = 1'b1; // Always write
   assign hw2reg.ip0.p0.d  = ip[0];
   assign hw2reg.ip0.p1.d  = ip[1];
   assign hw2reg.ip0.p2.d  = ip[2];
@@ -341,8 +335,6 @@ module rv_plic #(
   assign hw2reg.ip1.p49.d  = ip[49];
   assign hw2reg.ip1.p50.d  = ip[50];
   assign hw2reg.ip1.p51.d  = ip[51];
-  assign hw2reg.ip1.p52.d  = ip[52];
-  assign hw2reg.ip1.p53.d  = ip[53];
   //----------------------------------------------------------------------------
 
   //////////////////////////////////////////////////////////////////////////////
@@ -399,8 +391,6 @@ module rv_plic #(
   assign le[49] = reg2hw.le1.le49.q;
   assign le[50] = reg2hw.le1.le50.q;
   assign le[51] = reg2hw.le1.le51.q;
-  assign le[52] = reg2hw.le1.le52.q;
-  assign le[53] = reg2hw.le1.le53.q;
   //----------------------------------------------------------------------------
 
   // Gateways

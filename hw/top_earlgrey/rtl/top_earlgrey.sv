@@ -74,7 +74,7 @@ module top_earlgrey (
   tl_d2h_t tl_ram_main_d_d2h;
   tl_h2d_t tl_eflash_d_h2d;
   tl_d2h_t tl_eflash_d_d2h;
-  logic [53:0]  intr_vector;
+  logic [51:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -85,10 +85,8 @@ module top_earlgrey (
   logic intr_uart_rx_timeout;
   logic intr_uart_rx_parity_err;
   logic [31:0] intr_gpio_gpio;
-  logic intr_spi_device_rxne;
+  logic intr_spi_device_rxf;
   logic intr_spi_device_rxlvl;
-  logic intr_spi_device_txe;
-  logic intr_spi_device_txf;
   logic intr_spi_device_txlvl;
   logic intr_spi_device_rxerr;
   logic intr_flash_ctrl_prog_empty;
@@ -360,10 +358,8 @@ module top_earlgrey (
       .cio_mosi_i (cio_spi_device_mosi_p2d_i),
       .cio_miso_o    (cio_spi_device_miso_d2p_o),
       .cio_miso_en_o (cio_spi_device_miso_en_d2p_o),
-      .intr_rxne_o (intr_spi_device_rxne),
+      .intr_rxf_o (intr_spi_device_rxf),
       .intr_rxlvl_o (intr_spi_device_rxlvl),
-      .intr_txe_o (intr_spi_device_txe),
-      .intr_txf_o (intr_spi_device_txf),
       .intr_txlvl_o (intr_spi_device_txlvl),
       .intr_rxerr_o (intr_spi_device_rxerr),
       .clk_i(clk_i),
@@ -427,10 +423,8 @@ module top_earlgrey (
       intr_flash_ctrl_prog_empty,
       intr_spi_device_rxerr,
       intr_spi_device_txlvl,
-      intr_spi_device_txf,
-      intr_spi_device_txe,
       intr_spi_device_rxlvl,
-      intr_spi_device_rxne,
+      intr_spi_device_rxf,
       intr_uart_rx_parity_err,
       intr_uart_rx_timeout,
       intr_uart_rx_break_err,

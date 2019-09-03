@@ -23,10 +23,8 @@ module tb;
   wire miso_en;
   wire mosi_i;
 
-  wire intr_rxne;
+  wire intr_rxf;
   wire intr_rxlvl;
-  wire intr_txe;
-  wire intr_txf;
   wire intr_txlvl;
   wire intr_rxerr;
 
@@ -51,10 +49,8 @@ module tb;
     .cio_miso_en_o  (miso_en   ),
     .cio_mosi_i     (mosi_i    ),
 
-    .intr_rxne_o    (intr_rxne ),
+    .intr_rxf_o     (intr_rxf  ),
     .intr_rxlvl_o   (intr_rxlvl),
-    .intr_txe_o     (intr_txe  ),
-    .intr_txf_o     (intr_txf  ),
     .intr_txlvl_o   (intr_txlvl),
     .intr_rxerr_o   (intr_rxerr)
   );
@@ -64,10 +60,8 @@ module tb;
   assign mosi_i       = spi_if.mosi;
   assign spi_if.miso  = miso_en ? miso_o : 1'bz;
 
-  assign interrupts[RxFifoNotEmpty] = intr_rxne ;
+  assign interrupts[RxFifoFull]     = intr_rxf  ;
   assign interrupts[RxFifoGtLevel]  = intr_rxlvl;
-  assign interrupts[TxFifoEmpty]    = intr_txe  ;
-  assign interrupts[TxFifoFull]     = intr_txf  ;
   assign interrupts[TxFifoLtLevel]  = intr_txlvl;
   assign interrupts[RxFwModeErr]    = intr_rxerr;
 

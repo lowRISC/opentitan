@@ -25,10 +25,8 @@ module spi_device #(
   input              cio_mosi_i,
 
   // Interrupts
-  output logic intr_rxne_o,     // RX FIFO Not Empty
+  output logic intr_rxf_o,      // RX FIFO Full
   output logic intr_rxlvl_o,    // RX FIFO above level
-  output logic intr_txe_o,      // TX FIFO Empty
-  output logic intr_txf_o,      // TX FIFO Full
   output logic intr_txlvl_o,    // TX FIFO below level
   output logic intr_rxerr_o     // RX Frame error
 );
@@ -91,7 +89,7 @@ module spi_device #(
   spi_mode_e spi_mode;
   //spi_byte_t fw_dummy_byte;
 
-  logic intr_fwm_rxne, intr_fwm_txe, intr_fwm_txf, intr_fwm_rxerr;
+  logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
 
   // RX FIFO Signals
@@ -198,33 +196,25 @@ module spi_device #(
   // Interrupt
 
   // Edge
-  logic fwm_txf_q, fwm_txe_q, fwm_rxne_q, fwm_rxerr_q;
-  logic fwm_txf  , fwm_txe  , fwm_rxne  , fwm_rxerr  ;
+  logic sram_rxf_full_q, fwm_rxerr_q;
+  logic sram_rxf_full  , fwm_rxerr  ;
 
-  assign fwm_txf = ~txf_wready;
-  assign fwm_txe = txf_empty_syncd;
-  assign fwm_rxne = rxf_rvalid;
-  assign fwm_rxerr = 1'b0; // TODO: Check if CE# deasserted in the middle of bit transfer
+  // TODO: Check if CE# deasserted in the middle of bit transfer
+  assign fwm_rxerr = 1'b0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      fwm_txf_q   <= 1'b0;
-      fwm_txe_q   <= 1'b1;
-      fwm_rxne_q  <= 1'b0;
-      fwm_rxerr_q <= 1'b0;
+      sram_rxf_full_q <= 1'b0;
+      fwm_rxerr_q     <= 1'b0;
     end else begin
-      fwm_txf_q   <= fwm_txf;
-      fwm_txe_q   <= fwm_txe;
-      fwm_rxne_q  <= fwm_rxne;
-      fwm_rxerr_q <= fwm_rxerr;
+      sram_rxf_full_q <= sram_rxf_full;
+      fwm_rxerr_q     <= fwm_rxerr;
     end
   end
 
   // Interrupt
-  assign intr_fwm_txf   = ~fwm_txf_q   & fwm_txf;
-  assign intr_fwm_txe   = ~fwm_txe_q   & fwm_txe;
-  assign intr_fwm_rxne  = ~fwm_rxne_q  & fwm_rxne;
-  assign intr_fwm_rxerr = ~fwm_rxerr_q & fwm_rxerr;
+  assign intr_sram_rxf_full = ~sram_rxf_full_q & sram_rxf_full;
+  assign intr_fwm_rxerr     = ~fwm_rxerr_q & fwm_rxerr;
 
   assign rxlvl_d = (sram_rxf_depth >= reg2hw.fifo_level.rxlvl.q[PtrW-1:0]) ;
   assign txlvl_d = (sram_txf_depth <  reg2hw.fifo_level.txlvl.q[PtrW-1:0]) ;
@@ -243,20 +233,12 @@ module spi_device #(
 
   assign intr_rxlvl_o = reg2hw.intr_enable.rxlvl.q & reg2hw.intr_state.rxlvl.q;
   assign intr_txlvl_o = reg2hw.intr_enable.txlvl.q & reg2hw.intr_state.txlvl.q;
-  assign intr_rxne_o  = reg2hw.intr_enable.rxne.q  & reg2hw.intr_state.rxne.q;
-  assign intr_txe_o   = reg2hw.intr_enable.txe.q   & reg2hw.intr_state.txe.q;
-  assign intr_txf_o   = reg2hw.intr_enable.txf.q   & reg2hw.intr_state.txf.q;
+  assign intr_rxf_o   = reg2hw.intr_enable.rxf.q   & reg2hw.intr_state.rxf.q;
   assign intr_rxerr_o = reg2hw.intr_enable.rxerr.q & reg2hw.intr_state.rxerr.q;
 
-  assign hw2reg.intr_state.rxne.d   = 1'b1;
-  assign hw2reg.intr_state.rxne.de  = intr_fwm_rxne  |
-                                      (reg2hw.intr_test.rxne.qe  & reg2hw.intr_test.rxne.q);
-  assign hw2reg.intr_state.txe.d    = 1'b1;
-  assign hw2reg.intr_state.txe.de   = intr_fwm_txe |
-                                      (reg2hw.intr_test.txe.qe   & reg2hw.intr_test.txe.q);
-  assign hw2reg.intr_state.txf.d    = 1'b1;
-  assign hw2reg.intr_state.txf.de   = intr_fwm_txf |
-                                      (reg2hw.intr_test.txf.qe   & reg2hw.intr_test.txf.q);
+  assign hw2reg.intr_state.rxf.d    = 1'b1;
+  assign hw2reg.intr_state.rxf.de   = intr_sram_rxf_full |
+                                      (reg2hw.intr_test.rxf.qe   & reg2hw.intr_test.rxf.q);
   assign hw2reg.intr_state.rxerr.d  = 1'b1;
   assign hw2reg.intr_state.rxerr.de = intr_fwm_rxerr |
                                       (reg2hw.intr_test.rxerr.qe & reg2hw.intr_test.rxerr.q);
@@ -372,6 +354,7 @@ module spi_device #(
     .rptr         (sram_rxf_rptr),  // Given by FW
     .wptr         (sram_rxf_wptr),  // to Register interface
     .depth        (sram_rxf_depth),
+    .full         (sram_rxf_full),
 
     .fifo_valid  (rxf_rvalid),
     .fifo_ready  (rxf_rready),

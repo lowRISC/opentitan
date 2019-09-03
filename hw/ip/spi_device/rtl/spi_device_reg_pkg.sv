@@ -11,61 +11,41 @@ typedef struct packed {
 
   struct packed {
     struct packed {
-      logic q; // [168]
-    } rxne;
-    struct packed {
-      logic q; // [167]
-    } rxlvl;
-    struct packed {
-      logic q; // [166]
-    } txe;
-    struct packed {
-      logic q; // [165]
-    } txf;
-    struct packed {
-      logic q; // [164]
-    } txlvl;
-    struct packed {
-      logic q; // [163]
-    } rxerr;
-  } intr_state;
-  struct packed {
-    struct packed {
-      logic q; // [162]
-    } rxne;
-    struct packed {
-      logic q; // [161]
-    } rxlvl;
-    struct packed {
       logic q; // [160]
-    } txe;
+    } rxf;
     struct packed {
       logic q; // [159]
-    } txf;
+    } rxlvl;
     struct packed {
       logic q; // [158]
     } txlvl;
     struct packed {
       logic q; // [157]
     } rxerr;
-  } intr_enable;
+  } intr_state;
   struct packed {
     struct packed {
       logic q; // [156]
-      logic qe; // [155]
-    } rxne;
+    } rxf;
+    struct packed {
+      logic q; // [155]
+    } rxlvl;
     struct packed {
       logic q; // [154]
-      logic qe; // [153]
-    } rxlvl;
+    } txlvl;
+    struct packed {
+      logic q; // [153]
+    } rxerr;
+  } intr_enable;
+  struct packed {
     struct packed {
       logic q; // [152]
       logic qe; // [151]
-    } txe;
+    } rxf;
     struct packed {
       logic q; // [150]
       logic qe; // [149]
-    } txf;
+    } rxlvl;
     struct packed {
       logic q; // [148]
       logic qe; // [147]
@@ -147,21 +127,13 @@ typedef struct packed {
 
   struct packed {
     struct packed {
-      logic d;  // [66]
-      logic de; // [65]
-    } rxne;
-    struct packed {
-      logic d;  // [64]
-      logic de; // [63]
-    } rxlvl;
-    struct packed {
       logic d;  // [62]
       logic de; // [61]
-    } txe;
+    } rxf;
     struct packed {
       logic d;  // [60]
       logic de; // [59]
-    } txf;
+    } rxlvl;
     struct packed {
       logic d;  // [58]
       logic de; // [57]

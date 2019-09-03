@@ -140,19 +140,11 @@
       interrupt_list:
       [
         {
-          name: rxne
+          name: rxf
           width: 1
         }
         {
           name: rxlvl
-          width: 1
-        }
-        {
-          name: txe
-          width: 1
-        }
-        {
-          name: txf
           width: 1
         }
         {
@@ -493,19 +485,11 @@
       width: 1
     }
     {
-      name: spi_device_rxne
+      name: spi_device_rxf
       width: 1
     }
     {
       name: spi_device_rxlvl
-      width: 1
-    }
-    {
-      name: spi_device_txe
-      width: 1
-    }
-    {
-      name: spi_device_txf
       width: 1
     }
     {

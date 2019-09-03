@@ -13,13 +13,12 @@
     { name: "miso", desc: "SPI Output" },
   ],
   interrupt_list: [
-    { name: "rxne",  desc: "RX SRAM FIFO is not empty" },
+    { name: "rxf",   desc: "RX SRAM FIFO Full" },
     { name: "rxlvl", desc: "RX SRAM FIFO is above the level" },
-    { name: "txe",   desc: "TX SRAM FIFO is empty" },
-    { name: "txf",   desc: "TX SRAM FIFO is full" },
     { name: "txlvl", desc: "TX SRAM FIFO is under the level" },
     { name: "rxerr", desc: "MOSI in FwMode has error" },
   ],
+  scan: "true", // Enable `scanmode_i` port
   regwidth: "32",
   registers: [
     { name: "CONTROL",

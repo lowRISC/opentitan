@@ -41,7 +41,8 @@ module spi_fwmode (
   localparam int unsigned BITWIDTH = $clog2(BITS);
 
   logic [BITWIDTH-1:0] rx_bitcount;
-  typedef enum {
+
+  typedef enum logic {
     TxIdle,
     TxActive
   } tx_state_e;
@@ -91,11 +92,10 @@ module spi_fwmode (
   assign first_bit = (tx_bitcount == BITWIDTH'(BITS-1)) ? 1'b1 : 1'b0;
   assign last_bit  = (tx_bitcount == '0) ? 1'b1 : 1'b0;
   // Pop the entry from the FIFO at bit 1.
-  //    This let the module pop the entry correctly when CPHA == 1
-  //    If CPHA is set, there is no clock posedge after bitcnt is 0.
-  //    So TX Async FIFO pop signal cannot be latched inside FIFO.
-  //    It is safe to pop between bitcnt 6 to 1. If pop signal is asserted
-  //    when bitcnt 7 it can pop twice if CPHA is 1.
+  //    This let the module pop the entry correctly when CPHA == 1 If CPHA is set, there is no clock
+  //    posedge after bitcnt is 0 right before CSb is de-asserted.  So TX Async FIFO pop signal
+  //    cannot be latched inside FIFO.  It is safe to pop between bitcnt 6 to 1. If pop signal is
+  //    asserted when bitcnt 7 it can pop twice if CPHA is 1.
   assign tx_rready_o = (tx_bitcount == BITWIDTH'(1)); // Pop at second bit transfer
   always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
     if (!rst_out_ni) begin

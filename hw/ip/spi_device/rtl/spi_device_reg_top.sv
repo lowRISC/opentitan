@@ -174,50 +174,34 @@ module spi_device_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_rxne_qs;
-  logic intr_state_rxne_wd;
-  logic intr_state_rxne_we;
+  logic intr_state_rxf_qs;
+  logic intr_state_rxf_wd;
+  logic intr_state_rxf_we;
   logic intr_state_rxlvl_qs;
   logic intr_state_rxlvl_wd;
   logic intr_state_rxlvl_we;
-  logic intr_state_txe_qs;
-  logic intr_state_txe_wd;
-  logic intr_state_txe_we;
-  logic intr_state_txf_qs;
-  logic intr_state_txf_wd;
-  logic intr_state_txf_we;
   logic intr_state_txlvl_qs;
   logic intr_state_txlvl_wd;
   logic intr_state_txlvl_we;
   logic intr_state_rxerr_qs;
   logic intr_state_rxerr_wd;
   logic intr_state_rxerr_we;
-  logic intr_enable_rxne_qs;
-  logic intr_enable_rxne_wd;
-  logic intr_enable_rxne_we;
+  logic intr_enable_rxf_qs;
+  logic intr_enable_rxf_wd;
+  logic intr_enable_rxf_we;
   logic intr_enable_rxlvl_qs;
   logic intr_enable_rxlvl_wd;
   logic intr_enable_rxlvl_we;
-  logic intr_enable_txe_qs;
-  logic intr_enable_txe_wd;
-  logic intr_enable_txe_we;
-  logic intr_enable_txf_qs;
-  logic intr_enable_txf_wd;
-  logic intr_enable_txf_we;
   logic intr_enable_txlvl_qs;
   logic intr_enable_txlvl_wd;
   logic intr_enable_txlvl_we;
   logic intr_enable_rxerr_qs;
   logic intr_enable_rxerr_wd;
   logic intr_enable_rxerr_we;
-  logic intr_test_rxne_wd;
-  logic intr_test_rxne_we;
+  logic intr_test_rxf_wd;
+  logic intr_test_rxf_we;
   logic intr_test_rxlvl_wd;
   logic intr_test_rxlvl_we;
-  logic intr_test_txe_wd;
-  logic intr_test_txe_we;
-  logic intr_test_txf_wd;
-  logic intr_test_txf_we;
   logic intr_test_txlvl_wd;
   logic intr_test_txlvl_we;
   logic intr_test_rxerr_wd;
@@ -293,29 +277,29 @@ module spi_device_reg_top (
   // Register instances
   // R[intr_state]: V(False)
 
-  //   F[rxne]: 0:0
+  //   F[rxf]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rxne (
+  ) u_intr_state_rxf (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rxne_we),
-    .wd     (intr_state_rxne_wd),
+    .we     (intr_state_rxf_we),
+    .wd     (intr_state_rxf_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rxne.de),
-    .d      (hw2reg.intr_state.rxne.d ),
+    .de     (hw2reg.intr_state.rxf.de),
+    .d      (hw2reg.intr_state.rxf.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rxne.q ),
+    .q      (reg2hw.intr_state.rxf.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rxne_qs)
+    .qs     (intr_state_rxf_qs)
   );
 
 
@@ -345,59 +329,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[txe]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_intr_state_txe (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_state_txe_we),
-    .wd     (intr_state_txe_wd),
-
-    // from internal hardware
-    .de     (hw2reg.intr_state.txe.de),
-    .d      (hw2reg.intr_state.txe.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.txe.q ),
-
-    // to register interface (read)
-    .qs     (intr_state_txe_qs)
-  );
-
-
-  //   F[txf]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_intr_state_txf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_state_txf_we),
-    .wd     (intr_state_txf_wd),
-
-    // from internal hardware
-    .de     (hw2reg.intr_state.txf.de),
-    .d      (hw2reg.intr_state.txf.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.txf.q ),
-
-    // to register interface (read)
-    .qs     (intr_state_txf_qs)
-  );
-
-
-  //   F[txlvl]: 4:4
+  //   F[txlvl]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
@@ -423,7 +355,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[rxerr]: 5:5
+  //   F[rxerr]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
@@ -451,18 +383,18 @@ module spi_device_reg_top (
 
   // R[intr_enable]: V(False)
 
-  //   F[rxne]: 0:0
+  //   F[rxf]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rxne (
+  ) u_intr_enable_rxf (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rxne_we),
-    .wd     (intr_enable_rxne_wd),
+    .we     (intr_enable_rxf_we),
+    .wd     (intr_enable_rxf_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -470,10 +402,10 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rxne.q ),
+    .q      (reg2hw.intr_enable.rxf.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rxne_qs)
+    .qs     (intr_enable_rxf_qs)
   );
 
 
@@ -503,59 +435,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[txe]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_intr_enable_txe (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_enable_txe_we),
-    .wd     (intr_enable_txe_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.txe.q ),
-
-    // to register interface (read)
-    .qs     (intr_enable_txe_qs)
-  );
-
-
-  //   F[txf]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_intr_enable_txf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_enable_txf_we),
-    .wd     (intr_enable_txf_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.txf.q ),
-
-    // to register interface (read)
-    .qs     (intr_enable_txf_qs)
-  );
-
-
-  //   F[txlvl]: 4:4
+  //   F[txlvl]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -581,7 +461,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[rxerr]: 5:5
+  //   F[rxerr]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -609,17 +489,17 @@ module spi_device_reg_top (
 
   // R[intr_test]: V(True)
 
-  //   F[rxne]: 0:0
+  //   F[rxf]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rxne (
+  ) u_intr_test_rxf (
     .re     (1'b0),
-    .we     (intr_test_rxne_we),
-    .wd     (intr_test_rxne_wd),
+    .we     (intr_test_rxf_we),
+    .wd     (intr_test_rxf_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rxne.qe),
-    .q      (reg2hw.intr_test.rxne.q ),
+    .qe     (reg2hw.intr_test.rxf.qe),
+    .q      (reg2hw.intr_test.rxf.q ),
     .qs     ()
   );
 
@@ -639,37 +519,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[txe]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_intr_test_txe (
-    .re     (1'b0),
-    .we     (intr_test_txe_we),
-    .wd     (intr_test_txe_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.txe.qe),
-    .q      (reg2hw.intr_test.txe.q ),
-    .qs     ()
-  );
-
-
-  //   F[txf]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_intr_test_txf (
-    .re     (1'b0),
-    .we     (intr_test_txf_we),
-    .wd     (intr_test_txf_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.txf.qe),
-    .q      (reg2hw.intr_test.txf.q ),
-    .qs     ()
-  );
-
-
-  //   F[txlvl]: 4:4
+  //   F[txlvl]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test_txlvl (
@@ -684,7 +534,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[rxerr]: 5:5
+  //   F[rxerr]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test_rxerr (
@@ -1342,59 +1192,41 @@ module spi_device_reg_top (
 
   // Write Enable signal
 
-  assign intr_state_rxne_we = addr_hit[0] && reg_we;
-  assign intr_state_rxne_wd = reg_wdata[0];
+  assign intr_state_rxf_we = addr_hit[0] && reg_we;
+  assign intr_state_rxf_wd = reg_wdata[0];
 
   assign intr_state_rxlvl_we = addr_hit[0] && reg_we;
   assign intr_state_rxlvl_wd = reg_wdata[1];
 
-  assign intr_state_txe_we = addr_hit[0] && reg_we;
-  assign intr_state_txe_wd = reg_wdata[2];
-
-  assign intr_state_txf_we = addr_hit[0] && reg_we;
-  assign intr_state_txf_wd = reg_wdata[3];
-
   assign intr_state_txlvl_we = addr_hit[0] && reg_we;
-  assign intr_state_txlvl_wd = reg_wdata[4];
+  assign intr_state_txlvl_wd = reg_wdata[2];
 
   assign intr_state_rxerr_we = addr_hit[0] && reg_we;
-  assign intr_state_rxerr_wd = reg_wdata[5];
+  assign intr_state_rxerr_wd = reg_wdata[3];
 
-  assign intr_enable_rxne_we = addr_hit[1] && reg_we;
-  assign intr_enable_rxne_wd = reg_wdata[0];
+  assign intr_enable_rxf_we = addr_hit[1] && reg_we;
+  assign intr_enable_rxf_wd = reg_wdata[0];
 
   assign intr_enable_rxlvl_we = addr_hit[1] && reg_we;
   assign intr_enable_rxlvl_wd = reg_wdata[1];
 
-  assign intr_enable_txe_we = addr_hit[1] && reg_we;
-  assign intr_enable_txe_wd = reg_wdata[2];
-
-  assign intr_enable_txf_we = addr_hit[1] && reg_we;
-  assign intr_enable_txf_wd = reg_wdata[3];
-
   assign intr_enable_txlvl_we = addr_hit[1] && reg_we;
-  assign intr_enable_txlvl_wd = reg_wdata[4];
+  assign intr_enable_txlvl_wd = reg_wdata[2];
 
   assign intr_enable_rxerr_we = addr_hit[1] && reg_we;
-  assign intr_enable_rxerr_wd = reg_wdata[5];
+  assign intr_enable_rxerr_wd = reg_wdata[3];
 
-  assign intr_test_rxne_we = addr_hit[2] && reg_we;
-  assign intr_test_rxne_wd = reg_wdata[0];
+  assign intr_test_rxf_we = addr_hit[2] && reg_we;
+  assign intr_test_rxf_wd = reg_wdata[0];
 
   assign intr_test_rxlvl_we = addr_hit[2] && reg_we;
   assign intr_test_rxlvl_wd = reg_wdata[1];
 
-  assign intr_test_txe_we = addr_hit[2] && reg_we;
-  assign intr_test_txe_wd = reg_wdata[2];
-
-  assign intr_test_txf_we = addr_hit[2] && reg_we;
-  assign intr_test_txf_wd = reg_wdata[3];
-
   assign intr_test_txlvl_we = addr_hit[2] && reg_we;
-  assign intr_test_txlvl_wd = reg_wdata[4];
+  assign intr_test_txlvl_wd = reg_wdata[2];
 
   assign intr_test_rxerr_we = addr_hit[2] && reg_we;
-  assign intr_test_rxerr_wd = reg_wdata[5];
+  assign intr_test_rxerr_wd = reg_wdata[3];
 
   assign control_abort_we = addr_hit[3] && reg_we;
   assign control_abort_wd = reg_wdata[0];
@@ -1469,21 +1301,17 @@ module spi_device_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_rxne_qs;
+        reg_rdata_next[0] = intr_state_rxf_qs;
         reg_rdata_next[1] = intr_state_rxlvl_qs;
-        reg_rdata_next[2] = intr_state_txe_qs;
-        reg_rdata_next[3] = intr_state_txf_qs;
-        reg_rdata_next[4] = intr_state_txlvl_qs;
-        reg_rdata_next[5] = intr_state_rxerr_qs;
+        reg_rdata_next[2] = intr_state_txlvl_qs;
+        reg_rdata_next[3] = intr_state_rxerr_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_rxne_qs;
+        reg_rdata_next[0] = intr_enable_rxf_qs;
         reg_rdata_next[1] = intr_enable_rxlvl_qs;
-        reg_rdata_next[2] = intr_enable_txe_qs;
-        reg_rdata_next[3] = intr_enable_txf_qs;
-        reg_rdata_next[4] = intr_enable_txlvl_qs;
-        reg_rdata_next[5] = intr_enable_rxerr_qs;
+        reg_rdata_next[2] = intr_enable_txlvl_qs;
+        reg_rdata_next[3] = intr_enable_rxerr_qs;
       end
 
       addr_hit[2]: begin
@@ -1491,8 +1319,6 @@ module spi_device_reg_top (
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
-        reg_rdata_next[4] = '0;
-        reg_rdata_next[5] = '0;
       end
 
       addr_hit[3]: begin
