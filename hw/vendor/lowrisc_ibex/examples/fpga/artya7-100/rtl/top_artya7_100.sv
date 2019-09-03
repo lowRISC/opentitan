@@ -48,8 +48,7 @@ module top_artya7_100 (
 
      .test_en_i             ('b0),
 
-     .core_id_i             (4'b0),
-     .cluster_id_i          (6'b0),
+     .hart_id_i             (32'b0),
      // First instruction executed is at 0x0 + 0x80
      .boot_addr_i           (32'h00000000),
 
@@ -58,6 +57,7 @@ module top_artya7_100 (
      .instr_rvalid_i        (instr_rvalid),
      .instr_addr_o          (instr_addr),
      .instr_rdata_i         (instr_rdata),
+     .instr_err_i           ('b0),
 
      .data_req_o            (data_req),
      .data_gnt_i            (data_gnt),

@@ -31,6 +31,8 @@ class riscv_asm_program_gen extends uvm_object;
    riscv_instr_sequence                sub_program[];
    // Program in binary format, stored in the data section, used to inject illegal/HINT instruction
    riscv_instr_sequence                bin_program;
+   riscv_instr_sequence                debug_program;
+   riscv_instr_sequence                debug_sub_program[];
    string                              instr_binary[$];
    // Kernel programs
    // These programs are called in the interrupt/exception handling routine based on the privileged
@@ -68,6 +70,7 @@ class riscv_asm_program_gen extends uvm_object;
     gen_program_header();
     // Initialize general purpose registers
     init_gpr();
+    setup_misa();
     // Create all page tables
     create_page_table();
     // Setup privileged mode registers and enter target privileged mode
@@ -78,6 +81,7 @@ class riscv_asm_program_gen extends uvm_object;
     if(cfg.enable_illegal_instruction || cfg.enable_hint_instruction) begin
       bin_program = riscv_instr_sequence::type_id::create("bin_program");
       bin_program.instr_cnt = cfg.bin_program_instr_cnt;
+      bin_program.is_debug_program = 0;
       bin_program.label_name = bin_program.get_name();
       bin_program.cfg = cfg;
       if (cfg.enable_illegal_instruction) begin
@@ -87,32 +91,18 @@ class riscv_asm_program_gen extends uvm_object;
         bin_program.hint_instr_pct = $urandom_range(5, 20);
       end
       `DV_CHECK_RANDOMIZE_FATAL(bin_program)
-      bin_program.gen_instr(.is_main_program(0), .enable_hint_instr(cfg.enable_hint_instruction));
+      bin_program.gen_instr(.is_main_program(0));
       bin_program.post_process_instr();
       bin_program.generate_binary_stream(instr_binary);
     end
     // Init section
     gen_init_section();
     // Generate sub program
-    if(cfg.num_of_sub_program > 0) begin
-      sub_program = new[cfg.num_of_sub_program];
-      foreach(sub_program[i]) begin
-        sub_program[i] = riscv_instr_sequence::type_id::create($sformatf("sub_%0d",i+1));
-        sub_program[i].instr_cnt = cfg.sub_program_instr_cnt[i];
-        generate_directed_instr_stream(.label(sub_program[i].get_name()),
-                                       .original_instr_cnt(sub_program[i].instr_cnt),
-                                       .min_insert_cnt(0),
-                                       .instr_stream(sub_program[i].directed_instr));
-        sub_program[i].label_name = sub_program[i].get_name();
-        sub_program[i].cfg = cfg;
-        `DV_CHECK_RANDOMIZE_FATAL(sub_program[i])
-        sub_program[i].gen_instr(0);
-        sub_program_name.push_back(sub_program[i].label_name);
-      end
-    end
+    gen_sub_program(sub_program, sub_program_name, cfg.num_of_sub_program);
     // Generate main program
     main_program = riscv_instr_sequence::type_id::create("main_program");
     main_program.instr_cnt = cfg.main_program_instr_cnt;
+    main_program.is_debug_program = 0;
     main_program.label_name = "_main";
     generate_directed_instr_stream(.label("main"),
                                    .original_instr_cnt(main_program.instr_cnt),
@@ -122,30 +112,7 @@ class riscv_asm_program_gen extends uvm_object;
     `DV_CHECK_RANDOMIZE_FATAL(main_program)
     main_program.gen_instr(1);
     // Setup jump instruction among main program and sub programs
-    if(cfg.num_of_sub_program != 0) begin
-      callstack_gen = riscv_callstack_gen::type_id::create("callstack_gen");
-      callstack_gen.init(cfg.num_of_sub_program+1);
-      `uvm_info(get_full_name(), "Randomizing call stack", UVM_LOW)
-      if(callstack_gen.randomize()) begin
-        program_id_t pid;
-        int idx;
-        // Insert the jump instruction based on the call stack
-        foreach(callstack_gen.program_h[i]) begin
-          foreach(callstack_gen.program_h[i].sub_program_id[j]) begin
-            idx++;
-            pid = callstack_gen.program_h[i].sub_program_id[j] - 1;
-            `uvm_info(get_full_name(), $sformatf(
-                      "Gen jump instr %0d -> sub[%0d] %0d", i, j, pid+1), UVM_HIGH)
-            if(i == 0)
-              main_program.insert_jump_instr(sub_program_name[pid], idx);
-            else
-              sub_program[i-1].insert_jump_instr(sub_program_name[pid], idx);
-          end
-        end
-      end else begin
-        `uvm_fatal(get_full_name(), "Failed to generate callstack")
-      end
-    end
+    gen_callstack(main_program, sub_program, sub_program_name, cfg.num_of_sub_program);
     if (bin_program != null) begin
       main_program.insert_jump_instr("sub_bin", 0);
     end
@@ -155,12 +122,7 @@ class riscv_asm_program_gen extends uvm_object;
     // Test done section
     gen_test_done();
     // Shuffle the sub programs and insert to the instruction stream
-    sub_program.shuffle();
-    foreach(sub_program[i]) begin
-      sub_program[i].post_process_instr();
-      sub_program[i].generate_instr_stream();
-      instr_stream = {instr_stream, sub_program[i].instr_string_list};
-    end
+    insert_sub_program(sub_program, instr_stream);
     // Reserve some space to copy instruction from data section
     if (instr_binary.size() > 0) begin
       instr_stream.push_back(".align 2");
@@ -174,8 +136,10 @@ class riscv_asm_program_gen extends uvm_object;
     gen_privileged_mode_switch_routine();
     // Program end
     gen_program_end();
-    // Generate debug mode section
-    gen_debug_mode_section();
+    // Generate debug rom section
+    gen_debug_rom();
+    // Generate debug mode exception handler
+    gen_debug_exception_handler();
     // Starting point of data section
     gen_data_page_begin();
     // Generate the sub program in binary format
@@ -199,13 +163,17 @@ class riscv_asm_program_gen extends uvm_object;
   virtual function void gen_kernel_sections();
     instr_stream.push_back("_kernel_start: .align 12");
     // Kernel programs
-    smode_accessible_umode_program = riscv_instr_sequence::type_id::
-                                     create("smode_accessible_umode_program");
+    if (cfg.init_privileged_mode != MACHINE_MODE) begin
+      smode_accessible_umode_program = riscv_instr_sequence::type_id::
+                                       create("smode_accessible_umode_program");
+      gen_kernel_program(smode_accessible_umode_program);
+    end
     smode_program = riscv_instr_sequence::type_id::create("smode_program");
-    gen_kernel_program(smode_accessible_umode_program);
     gen_kernel_program(smode_program);
-    smode_ls_umem_program = riscv_instr_sequence::type_id::create("smode_ls_umem_program");
-    gen_kernel_program(smode_ls_umem_program);
+    if (cfg.init_privileged_mode != MACHINE_MODE) begin
+      smode_ls_umem_program = riscv_instr_sequence::type_id::create("smode_ls_umem_program");
+      gen_kernel_program(smode_ls_umem_program);
+    end
     // All trap/interrupt handling is in the kernel region
     // Trap/interrupt delegation to user mode is not supported now
     // Trap handler
@@ -234,12 +202,87 @@ class riscv_asm_program_gen extends uvm_object;
                                    .instr_stream(seq.directed_instr),
                                    .access_u_mode_mem(1'b0));
     seq.label_name = seq.get_name();
+    seq.is_debug_program = 0;
     seq.cfg = cfg;
     `DV_CHECK_RANDOMIZE_FATAL(seq)
     seq.gen_instr(0);
     seq.post_process_instr();
     seq.generate_instr_stream();
     instr_stream = {instr_stream, seq.instr_string_list};
+  endfunction
+
+  //---------------------------------------------------------------------------------------
+  // Generate any subprograms and set up the callstack
+  //---------------------------------------------------------------------------------------
+
+  virtual function void gen_sub_program(ref riscv_instr_sequence sub_program[],
+                                        ref string sub_program_name[$],
+                                        input int num_sub_program,
+                                        bit is_debug = 1'b0,
+                                        string prefix = "sub");
+    if(num_sub_program > 0) begin
+      sub_program = new[num_sub_program];
+      foreach(sub_program[i]) begin
+        sub_program[i] = riscv_instr_sequence::type_id::create($sformatf("%s_%0d",prefix,i+1));
+        `uvm_info(`gfn, $sformatf("sub program name: %s", prefix), UVM_LOW)
+        sub_program[i].is_debug_program = is_debug;
+        if (is_debug) begin
+          sub_program[i].instr_cnt = cfg.debug_sub_program_instr_cnt[i];
+        end else begin
+          sub_program[i].instr_cnt = cfg.sub_program_instr_cnt[i];
+        end
+        generate_directed_instr_stream(.label(sub_program[i].get_name()),
+                                       .original_instr_cnt(sub_program[i].instr_cnt),
+                                       .min_insert_cnt(0),
+                                       .instr_stream(sub_program[i].directed_instr));
+        sub_program[i].label_name = sub_program[i].get_name();
+        sub_program[i].cfg = cfg;
+        `DV_CHECK_RANDOMIZE_FATAL(sub_program[i])
+        sub_program[i].gen_instr(0);
+        sub_program_name.push_back(sub_program[i].label_name);
+      end
+    end
+  endfunction
+
+  virtual function void gen_callstack(riscv_instr_sequence main_program,
+                                      ref riscv_instr_sequence sub_program[],
+                                      ref string sub_program_name[$],
+                                      input int num_sub_program);
+    if(num_sub_program != 0) begin
+      callstack_gen = riscv_callstack_gen::type_id::create("callstack_gen");
+      callstack_gen.init(num_sub_program+1);
+      `uvm_info(get_full_name(), "Randomizing call stack", UVM_LOW)
+      if(callstack_gen.randomize()) begin
+        program_id_t pid;
+        int idx;
+        // Insert the jump instruction based on the call stack
+        foreach(callstack_gen.program_h[i]) begin
+          foreach(callstack_gen.program_h[i].sub_program_id[j]) begin
+            idx++;
+            pid = callstack_gen.program_h[i].sub_program_id[j] - 1;
+            `uvm_info(get_full_name(), $sformatf(
+                      "Gen jump instr %0d -> sub[%0d] %0d", i, j, pid+1), UVM_HIGH)
+            if(i == 0)
+              main_program.insert_jump_instr(sub_program_name[pid], idx);
+            else
+              sub_program[i-1].insert_jump_instr(sub_program_name[pid], idx);
+          end
+        end
+      end else begin
+        `uvm_fatal(get_full_name(), "Failed to generate callstack")
+      end
+    end
+    `uvm_info(get_full_name(), "Randomizing call stack..done", UVM_LOW)
+  endfunction
+
+  virtual function void insert_sub_program(ref riscv_instr_sequence sub_program[],
+                                           ref string instr_list[$]);
+    sub_program.shuffle();
+    foreach(sub_program[i]) begin
+      sub_program[i].post_process_instr();
+      sub_program[i].generate_instr_stream();
+      instr_list = {instr_list, sub_program[i].instr_string_list};
+    end
   endfunction
 
   //---------------------------------------------------------------------------------------
@@ -314,8 +357,8 @@ class riscv_asm_program_gen extends uvm_object;
     instr_stream.push_back(str);
     // Init stack pointer to point to the end of the user stack
     str = {indent, "la sp, _user_stack_end"};
-    setup_misa();
     instr_stream.push_back(str);
+    core_is_initialized();
     // Copy the instruction from data section to instruction section
     if (instr_binary.size() > 0) begin
       instr_stream.push_back({indent, "la x31, instr_bin"});
@@ -342,6 +385,7 @@ class riscv_asm_program_gen extends uvm_object;
         RV32C, RV64C, RV128C : misa[MISA_EXT_C] = 1'b1;
         RV32I, RV64I, RV128I : misa[MISA_EXT_I] = 1'b1;
         RV32M, RV64M         : misa[MISA_EXT_M] = 1'b1;
+        RV32A, RV64A         : misa[MISA_EXT_A] = 1'b1;
         default : `uvm_fatal(`gfn, $sformatf("%0s is not yet supported", supported_isa[i].name()))
       endcase
     end
@@ -350,6 +394,19 @@ class riscv_asm_program_gen extends uvm_object;
     end
     instr_stream.push_back({indent, $sformatf("li x15, 0x%0x", misa)});
     instr_stream.push_back({indent, "csrw misa, x15"});
+  endfunction
+
+  // Write to the signature_addr with values to indicate to the core testbench
+  // that is safe to start sending interrupt and debug stimulus
+  virtual function void core_is_initialized();
+    if (cfg.require_signature_addr) begin
+      if (cfg.signature_addr != 32'hdead_beef) begin
+        string str;
+        gen_signature_handshake(instr_stream, CORE_STATUS, INITIALIZED);
+      end else begin
+        `uvm_fatal(`gfn, "The signature_addr is not properly configured!")
+      end
+    end
   endfunction
 
   // Initialize general purpose registers with random value
@@ -520,9 +577,9 @@ class riscv_asm_program_gen extends uvm_object;
         USER_MODE:       trap_vec_reg = UTVEC;
       endcase
       // Skip utvec init if trap delegation to u_mode is not supported
-      // TODO: For now the default mode is direct mode, needs to support vector mode
-      if((riscv_instr_pkg::supported_privileged_mode[i] == USER_MODE) && !riscv_instr_pkg::support_umode_trap) continue;
-      if(riscv_instr_pkg::supported_privileged_mode[i] < cfg.init_privileged_mode) continue;
+      if ((riscv_instr_pkg::supported_privileged_mode[i] == USER_MODE) &&
+          !riscv_instr_pkg::support_umode_trap) continue;
+      if (riscv_instr_pkg::supported_privileged_mode[i] < cfg.init_privileged_mode) continue;
       tvec_name = trap_vec_reg.name();
       instr = {instr, $sformatf("la a0, %0s_handler", tvec_name.tolower())};
       if(SATP_MODE != BARE && riscv_instr_pkg::supported_privileged_mode[i] != MACHINE_MODE) begin
@@ -533,6 +590,7 @@ class riscv_asm_program_gen extends uvm_object;
                  $sformatf("slli a0, a0, %0d", XLEN - 20),
                  $sformatf("srli a0, a0, %0d", XLEN - 20)};
       end
+      instr = {instr, $sformatf("ori a0, a0, %0d", cfg.mtvec_mode)};
       instr = {instr, $sformatf("csrw 0x%0x, a0 # %0s", trap_vec_reg, trap_vec_reg.name())};
     end
     gen_section("trap_vec_init", instr);
@@ -566,10 +624,11 @@ class riscv_asm_program_gen extends uvm_object;
     // Generate page table fault handling routine
     // Page table fault is always handled in machine mode, as virtual address translation may be
     // broken when page fault happens.
+    gen_signature_handshake(instr, CORE_STATUS, HANDLING_EXCEPTION);
     if(page_table_list != null) begin
       page_table_list.gen_page_fault_handling_routine(instr);
     end else begin
-      instr = {"nop"};
+      instr.push_back("nop");
     end
     gen_section("pt_fault_handler", instr);
   endfunction
@@ -584,21 +643,37 @@ class riscv_asm_program_gen extends uvm_object;
     bit is_interrupt = 'b1;
     string tvec_name;
     string instr[$];
-    // Push user mode GPR to kernel stack before executing exception handling, this is to avoid
-    // exception handling routine modify user program state unexpectedly
-    push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, instr);
-    // Checking xStatus can be optional if ISS (like spike) has different implementation of certain
-    // fields compared with the RTL processor.
-    if (cfg.check_xstatus) begin
-      instr = {instr, $sformatf("csrr x15, 0x%0x # %0s", status, status.name())};
+    if (cfg.mtvec_mode == VECTORED) begin
+      gen_interrupt_vector_table(mode, status, cause, scratch, instr);
+    end else begin
+      // Push user mode GPR to kernel stack before executing exception handling, this is to avoid
+      // exception handling routine modify user program state unexpectedly
+      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, instr);
+      // Checking xStatus can be optional if ISS (like spike) has different implementation of certain
+      // fields compared with the RTL processor.
+      if (cfg.check_xstatus) begin
+        instr = {instr, $sformatf("csrr x15, 0x%0x # %0s", status, status.name())};
+      end
+      instr = {instr,
+               // Use scratch CSR to save a GPR value
+               // Check if the exception is caused by an interrupt, if yes, jump to interrupt handler
+               // Interrupt is indicated by xCause[XLEN-1]
+               $sformatf("csrr a1, 0x%0x # %0s", cause, cause.name()),
+               $sformatf("srli a1, a1, %0d", XLEN-1),
+               $sformatf("bne a1, x0, %0smode_intr_handler", mode)};
     end
+    // The trap handler will occupy one 4KB page, it will be allocated one entry in the page table
+    // with a specific privileged mode.
+    instr_stream.push_back(".align 12");
+    tvec_name = tvec.name();
+    gen_section($sformatf("%0s_handler", tvec_name.tolower()), instr);
+    // Exception handler
+    instr = {};
+    if (cfg.mtvec_mode == VECTORED) begin
+      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, instr);
+    end
+    gen_signature_handshake(instr, CORE_STATUS, HANDLING_EXCEPTION);
     instr = {instr,
-             // Use scratch CSR to save a GPR value
-             // Check if the exception is caused by an interrupt, if yes, jump to interrupt handler
-             // Interrupt is indicated by xCause[XLEN-1]
-             $sformatf("csrr a1, 0x%0x # %0s", cause, cause.name()),
-             $sformatf("srli a1, a1, %0d", XLEN-1),
-             $sformatf("bne a1, x0, %0smode_intr_handler", mode),
              // The trap is caused by an exception, read back xCAUSE, xEPC to see if these
              // CSR values are set properly. The checking is done by comparing against the log
              // generated by ISA simulator (spike).
@@ -634,13 +709,42 @@ class riscv_asm_program_gen extends uvm_object;
              $sformatf("csrr x30, 0x%0x # %0s", tval, tval.name()),
              "1: jal x1, test_done "
            };
+    gen_section($sformatf("%0smode_exception_handler", mode), instr);
+  endfunction
 
-    // The trap handler will occupy one 4KB page, it will be allocated one entry in the page table
-    // with a specific privileged mode.
-    instr_stream.push_back(".align 12");
-    tvec_name = tvec.name();
-    gen_section($sformatf("%0s_handler", tvec_name.tolower()), instr);
+  // Generate for interrupt vector table
+  virtual function void gen_interrupt_vector_table(string           mode,
+                                                   privileged_reg_t status,
+                                                   privileged_reg_t cause,
+                                                   privileged_reg_t scratch,
+                                                   ref string       instr[$]);
 
+    // In vector mode, the BASE address is shared between interrupt 0 and exception handling.
+    // When vectored interrupts are enabled, interrupt cause 0, which corresponds to user-mode
+    // software interrupts, are vectored to the same location as synchronous exceptions. This
+    // ambiguity does not arise in practice, since user-mode software interrupts are either
+    // disabled or delegated
+    instr = {instr, ".option norvc;",
+                    $sformatf("j %0smode_exception_handler", mode)};
+    // Redirect the interrupt to the corresponding interrupt handler
+    for (int i = 1; i < 16; i++) begin
+      instr.push_back($sformatf("j %0smode_intr_vector_%0d", mode, i));
+    end
+    instr = {instr, ".option rvc;"};
+    for (int i = 1; i < 16; i++) begin
+      string intr_handler[$];
+      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, intr_handler);
+      gen_signature_handshake(intr_handler, CORE_STATUS, HANDLING_IRQ);
+      intr_handler = {intr_handler,
+               $sformatf("csrr a1, 0x%0x # %0s", cause, cause.name()),
+               // Terminate the test if xCause[31] != 0 (indicating exception)
+               $sformatf("bltz a1, 1f"),
+               // TODO(taliu) write xCause to the signature address
+               // Jump to commmon interrupt handling routine
+               $sformatf("j %0smode_intr_handler", mode),
+               "1: j test_done"};
+      gen_section($sformatf("%0smode_intr_vector_%0d", mode, i), intr_handler);
+    end
   endfunction
 
   // ECALL trap handler
@@ -665,10 +769,12 @@ class riscv_asm_program_gen extends uvm_object;
   // TODO: Support random operations in debug mode
   // TODO: Support ebreak exception delegation
   virtual function void gen_ebreak_handler();
-    string instr[$] = {
-           "csrr  x31, mepc",
-           "addi  x31, x31, 4",
-           "csrw  mepc, x31"
+    string instr[$];
+    gen_signature_handshake(instr, CORE_STATUS, HANDLING_EXCEPTION);
+    instr = {instr,
+            "csrr  x31, mepc",
+            "addi  x31, x31, 4",
+            "csrw  mepc, x31"
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
     instr.push_back("mret");
@@ -682,10 +788,12 @@ class riscv_asm_program_gen extends uvm_object;
   // 4 and resumes execution. The way that the illegal instruction is injected guarantees that
   // PC + 4 is a valid instruction boundary.
   virtual function void gen_illegal_instr_handler();
-    string instr[$] = {
-           "csrr  x31, mepc",
-           "addi  x31, x31, 4",
-           "csrw  mepc, x31"
+    string instr[$];
+    gen_signature_handshake(instr, CORE_STATUS, HANDLING_EXCEPTION);
+    instr = {instr,
+            "csrr  x31, mepc",
+            "addi  x31, x31, 4",
+            "csrw  mepc, x31"
     };
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
     instr.push_back("mret");
@@ -792,6 +900,14 @@ class riscv_asm_program_gen extends uvm_object;
   // Helper functions
   //---------------------------------------------------------------------------------------
 
+  // Format a code section, without generating it
+  virtual function void format_section(ref string instr[$]);
+    string prefix = format_string(" ", LABEL_STR_LEN);
+    foreach(instr[i]) begin
+      instr[i] = {prefix, instr[i]};
+    end
+  endfunction
+
   // Generate a code section
   virtual function void gen_section(string label, string instr[$]);
     string str;
@@ -820,6 +936,88 @@ class riscv_asm_program_gen extends uvm_object;
     $fclose(fd);
     `uvm_info(get_full_name(), $sformatf("%0s is generated", test_name), UVM_LOW)
   endfunction
+
+  // Helper function to generate the proper sequence of handshake instructions
+  // to signal the testbench (see riscv_signature_pkg.sv)
+  function void gen_signature_handshake(ref string instr[$],
+                                        input signature_type_t signature_type,
+                                        core_status_t core_status = INITIALIZED,
+                                        test_result_t test_result = TEST_FAIL,
+                                        privileged_reg_t csr = MSCRATCH);
+    if (cfg.require_signature_addr) begin
+      string str;
+      str = $sformatf("li x%0d, 0x%0h", cfg.signature_addr_reg, cfg.signature_addr);
+      instr.push_back(str);
+      case (signature_type)
+        // A single data word is written to the signature address.
+        // Bits [7:0] contain the signature_type of CORE_STATUS, and the upper
+        // XLEN-8 bits contain the core_status_t data.
+        CORE_STATUS: begin
+          str = $sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, core_status);
+          instr.push_back(str);
+          str = $sformatf("slli x%0d, x%0d, 8", cfg.signature_data_reg, cfg.signature_data_reg);
+          instr.push_back(str);
+          str = $sformatf("addi x%0d, x%0d, 0x%0h", cfg.signature_data_reg,
+                          cfg.signature_data_reg, signature_type);
+          instr.push_back(str);
+          str = $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg);
+          instr.push_back(str);
+        end
+        // A single data word is written to the signature address.
+        // Bits [7:0] contain the signature_type of TEST_RESULT, and the upper
+        // XLEN-8 bits contain the test_result_t data.
+        TEST_RESULT: begin
+          str = $sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, test_result);
+          instr.push_back(str);
+          str = $sformatf("slli x%0d, x%0d, 8", cfg.signature_data_reg, cfg.signature_data_reg);
+          instr.push_back(str);
+          str = $sformatf("addi x%0d, x%0d, 0x%0h", cfg.signature_data_reg,
+                          cfg.signature_data_reg, signature_type);
+          instr.push_back(str);
+          str = $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg);
+          instr.push_back(str);
+        end
+        // The first write to the signature address contains just the
+        // signature_type of WRITE_GPR.
+        // It is followed by 32 consecutive writes to the signature address,
+        // each writing the data contained in one GPR, starting from x0 as the
+        // first write, and ending with x31 as the 32nd write.
+        WRITE_GPR: begin
+          str = $sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, signature_type);
+          instr.push_back(str);
+          str = $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg);
+          instr.push_back(str);
+          for(int i = 0; i < 32; i++) begin
+            str = $sformatf("sw x%0x, 0(x%0d)", i, cfg.signature_addr_reg);
+            instr.push_back(str);
+          end
+        end
+        // The first write to the signature address contains the
+        // signature_type of WRITE_CSR in bits [7:0], and the CSR address in
+        // the upper XLEN-8 bits.
+        // It is followed by a second write to the signature address,
+        // containing the data stored in the specified CSR.
+        WRITE_CSR: begin
+          str = $sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, csr);
+          instr.push_back(str);
+          str = $sformatf("slli x%0d, x%0d, 8", cfg.signature_data_reg, cfg.signature_data_reg);
+          instr.push_back(str);
+          str = $sformatf("addi x%0d, x%0d, 0x%0h", cfg.signature_data_reg,
+                          cfg.signature_data_reg, signature_type);
+          instr.push_back(str);
+          str = $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg);
+          instr.push_back(str);
+          str = $sformatf("csrr x%0d, 0x%0h", cfg.signature_data_reg, csr);
+          instr.push_back(str);
+          str = $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg);
+          instr.push_back(str);
+        end
+        default: begin
+          `uvm_fatal(`gfn, "signature_type is not defined")
+        end
+      endcase
+    end
+ endfunction
 
   //---------------------------------------------------------------------------------------
   // Inject directed instruction stream
@@ -913,11 +1111,49 @@ class riscv_asm_program_gen extends uvm_object;
 
   // Generate the program in the debug ROM
   // Processor will fetch instruction from here upon receiving debug request from debug module
-  virtual function void gen_debug_mode_section();
-    string instr[];
+  virtual function void gen_debug_rom();
+    string push_gpr[$];
+    string pop_gpr[$];
+    string instr[$];
+    string dret;
+    string debug_sub_program_name[$] = {};
     if (riscv_instr_pkg::support_debug_mode) begin
-      instr = {"dret"};
+      // Signal that the core entered the debug rom regardless of whether the
+      // main debug rom program has been generated
+      gen_signature_handshake(instr, CORE_STATUS, IN_DEBUG_MODE);
+      format_section(instr);
+      // The main debug rom
+      if (cfg.gen_debug_section) begin
+        gen_sub_program(debug_sub_program, debug_sub_program_name,
+                        cfg.num_debug_sub_program, 1'b1, "debug_sub");
+        debug_program = riscv_instr_sequence::type_id::create("debug_program");
+        debug_program.instr_cnt = cfg.debug_program_instr_cnt;
+        debug_program.is_debug_program = 1;
+        debug_program.cfg = cfg;
+        `DV_CHECK_RANDOMIZE_FATAL(debug_program)
+        debug_program.gen_instr(.is_main_program(1'b1), .no_branch(1'b0));
+        gen_callstack(debug_program, debug_sub_program, debug_sub_program_name,
+                      cfg.num_debug_sub_program);
+        debug_program.post_process_instr();
+        debug_program.generate_instr_stream(.no_label(1'b1));
+        // Need to save off GPRs to avoid modifying program flow
+        push_gpr_to_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, push_gpr);
+        format_section(push_gpr);
+        pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, pop_gpr);
+        format_section(pop_gpr);
+        instr = {push_gpr, instr, debug_program.instr_string_list, pop_gpr};
+        insert_sub_program(debug_sub_program, instr_stream);
+      end
+      dret = {format_string(" ", LABEL_STR_LEN), "dret"};
+      instr = {instr, dret};
       gen_section("debug_rom", instr);
+    end
+  endfunction
+
+  // Generate exception handling routine for debug ROM
+  virtual function void gen_debug_exception_handler();
+    if (riscv_instr_pkg::support_debug_mode) begin
+      string instr[];
       instr = {"dret"};
       gen_section("debug_exception", instr);
     end

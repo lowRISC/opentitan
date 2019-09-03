@@ -244,7 +244,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   // 2. For normal test, a page table fault typically means the program is accessing a large
   //    virtual address which currently not mapped a valid physical address. Need to do a
   //    memcpy to move data from lower physical address to the place the virtual address map to.
-  virtual function void gen_page_fault_handling_routine(output string instr[$]);
+  virtual function void gen_page_fault_handling_routine(ref string instr[$]);
     int unsigned  level;
     string        load_store_unit;
     bit[XLEN-1:0] bit_mask = '1;

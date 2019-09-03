@@ -3,20 +3,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Andreas Traber - atraber@iis.ee.ethz.ch                    //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Davide Schiavone - pschiavo@iis.ee.ethz.ch                 //
-//                                                                            //
-// Design Name:    RISC-V Tracer                                              //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Traces the executed instructions                           //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
 // Source/Destination register instruction index
 `define REG_S1 19:15
 `define REG_S2 24:20
@@ -37,8 +23,7 @@ module ibex_tracer #(
     input  logic                      rst_ni,
 
     input  logic                      fetch_enable_i,
-    input  logic [3:0]                core_id_i,
-    input  logic [5:0]                cluster_id_i,
+    input  logic [31:0]               hart_id_i,
 
     input  logic                      valid_i,
     input  logic [31:0]               pc_i,
@@ -304,7 +289,7 @@ module ibex_tracer #(
   initial begin
     wait(rst_ni == 1'b1);
     wait(fetch_enable_i == 1'b1);
-    $sformat(fn, "trace_core_%h_%h.log", cluster_id_i, core_id_i);
+    $sformat(fn, "trace_core_%h.log", hart_id_i);
     $display("[TRACER] Output filename is: %s", fn);
     f = $fopen(fn, "w");
     $fwrite(f, "                Time          Cycles PC       Instr    Mnemonic\n");

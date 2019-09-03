@@ -1,25 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-////////////////////////////////////////////////////////////////////////////////
-// Engineer        Andreas Traber - atraber@iis.ee.ethz.ch                    //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Matthias Baer - baermatt@student.ethz.ch                   //
-//                 Igor Loi - igor.loi@unibo.it                               //
-//                 Sven Stucki - svstucki@student.ethz.ch                     //
-//                 Davide Schiavone - pschiavo@iis.ee.ethz.ch                 //
-//                 Markus Wegmann - markus.wegmann@technokrat.ch              //
-//                                                                            //
-// Design Name:    Decoder                                                    //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Decoder                                                    //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 // Source/Destination register instruction index
 `define REG_S1 19:15
@@ -82,7 +64,7 @@ module ibex_decoder #(
     // CSRs
     output logic                 csr_access_o,          // access to CSR
     output ibex_pkg::csr_op_e    csr_op_o,              // operation to perform on CSR
-    output logic                 csr_status_o,          // access to xstatus CSR
+    output logic                 csr_pipe_flush_o,      // CSR-related pipeline flush
 
     // LSU
     output logic                 data_req_o,            // start transaction to data memory
@@ -91,7 +73,6 @@ module ibex_decoder #(
                                                         // word or word
     output logic                 data_sign_extension_o, // sign extension for data read from
                                                         // memory
-    output logic [1:0]           data_reg_offset_o,     // register byte offset for stores
 
     // jump/branches
     output logic                 jump_in_dec_o,         // jump is being calculated in ALU
@@ -159,6 +140,32 @@ module ibex_decoder #(
     end
   end
 
+  /////////////////////////////////
+  // CSR-related pipline flushes //
+  /////////////////////////////////
+  always_comb begin : csr_pipeline_flushes
+    csr_pipe_flush_o = 1'b0;
+
+    // A pipeline flush is needed to let the controller react after modifying certain CSRs:
+    // - When enabling interrupts, pending IRQs become visible to the controller only during
+    //   the next cycle. If during that cycle the core disables interrupts again, it does not
+    //   see any pending IRQs and consequently does not start to handle interrupts.
+    // - When modifying debug CSRs - TODO: Check if this is really needed
+    if (csr_access_o == 1'b1 && (csr_op_o == CSR_OP_WRITE || csr_op_o == CSR_OP_SET)) begin
+      if (csr_num_e'(instr[31:20]) == CSR_MSTATUS   ||
+          csr_num_e'(instr[31:20]) == CSR_MIE) begin
+        csr_pipe_flush_o = 1'b1;
+      end
+    end else if (csr_access_o == 1'b1 && csr_op_o != CSR_OP_READ) begin
+      if (csr_num_e'(instr[31:20]) == CSR_DCSR      ||
+          csr_num_e'(instr[31:20]) == CSR_DPC       ||
+          csr_num_e'(instr[31:20]) == CSR_DSCRATCH0 ||
+          csr_num_e'(instr[31:20]) == CSR_DSCRATCH1) begin
+        csr_pipe_flush_o = 1'b1;
+      end
+    end
+  end
+
   /////////////
   // Decoder //
   /////////////
@@ -183,14 +190,12 @@ module ibex_decoder #(
     regfile_we                  = 1'b0;
 
     csr_access_o                = 1'b0;
-    csr_status_o                = 1'b0;
     csr_illegal                 = 1'b0;
     csr_op                      = CSR_OP_READ;
 
     data_we_o                   = 1'b0;
     data_type_o                 = 2'b00;
     data_sign_extension_o       = 1'b0;
-    data_reg_offset_o           = 2'b00;
     data_req_o                  = 1'b0;
 
     illegal_insn                = 1'b0;
@@ -554,17 +559,6 @@ module ibex_decoder #(
             2'b11:   csr_op = CSR_OP_CLEAR;
             default: csr_illegal = 1'b1;
           endcase
-
-          if (!csr_illegal) begin
-            // flush pipeline on access to mstatus or debug CSRs
-            if (csr_num_e'(instr[31:20]) == CSR_MSTATUS   ||
-                csr_num_e'(instr[31:20]) == CSR_DCSR      ||
-                csr_num_e'(instr[31:20]) == CSR_DPC       ||
-                csr_num_e'(instr[31:20]) == CSR_DSCRATCH0 ||
-                csr_num_e'(instr[31:20]) == CSR_DSCRATCH1) begin
-              csr_status_o = 1'b1;
-            end
-          end
 
           illegal_insn = csr_illegal;
         end

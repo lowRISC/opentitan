@@ -42,7 +42,7 @@ module ram_1p #(
     if (!rst_ni) begin
       rvalid_o <= '0;
     end else begin
-      rvalid_o <= req_i && ~write_i;
+      rvalid_o <= req_i;
     end
   end
 

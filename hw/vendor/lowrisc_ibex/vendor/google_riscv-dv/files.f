@@ -17,6 +17,7 @@
 +incdir+./test
 
 // SOURCES
+./src/riscv_signature_pkg.sv
 ./src/riscv_instr_pkg.sv
 ./test/riscv_instr_test_pkg.sv
 ./test/riscv_instr_gen_tb_top.sv

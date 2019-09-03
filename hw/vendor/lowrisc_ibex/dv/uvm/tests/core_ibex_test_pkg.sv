@@ -11,9 +11,12 @@ package core_ibex_test_pkg;
   import core_ibex_env_pkg::*;
   import ibex_mem_intf_agent_pkg::*;
   import irq_agent_pkg::*;
+  import riscv_signature_pkg::*;
 
+  `include "core_ibex_report_server.sv"
   `include "core_ibex_seq_lib.sv"
   `include "core_ibex_vseq.sv"
   `include "core_ibex_base_test.sv"
+  `include "core_ibex_test_lib.sv"
 
 endpackage

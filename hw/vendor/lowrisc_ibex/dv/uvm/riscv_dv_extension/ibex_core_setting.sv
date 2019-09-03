@@ -34,6 +34,9 @@ riscv_instr_name_t unsupported_instr[] = {FENCEI};
 // ISA supported by the processor
 riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C};
 
+// Interrupt mode support
+mtvec_mode_t supported_interrupt_mode[$] = {VECTORED};
+
 // Debug mode support
 bit support_debug_mode = 1;
 

@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/lowrisc/ibex/_apis/build/status/lowRISC.ibex?branchName=master)](https://dev.azure.com/lowrisc/ibex/_build/latest?definitionId=3&branchName=master)
+
 # Ibex RISC-V Core
 
 Ibex is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements
@@ -56,6 +58,11 @@ Zulip](https://lowrisc.zulipchat.com/#narrow/stream/198227-ibex)!
 
 Unless otherwise noted, everything in this repository is covered by the Apache
 License, Version 2.0 (see LICENSE for full text).
+
+## Credits
+
+Many people have contributed to Ibex through the years. Please have a look at
+the [credits file](CREDITS.md) and the commit history for more information.
 
 ## References
 1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of

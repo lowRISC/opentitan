@@ -27,6 +27,8 @@ def process_ibex_sim_log(ibex_log, csv):
         trace_csv = RiscvInstructiontTraceCsv(csv_fd)
         trace_csv.start_new_trace()
         for line in f:
+            if re.search("ecall", line):
+              break
             # Extract instruction infromation
             m = re.search(r"^\s*(?P<time>\d+)\s+(?P<cycle>\d+) " \
                           "(?P<pc>[0-9a-f]+) (?P<bin>[0-9a-f]+) (?P<instr>.*)" \
@@ -43,6 +45,49 @@ def process_ibex_sim_log(ibex_log, csv):
                 instr_cnt += 1
 
     print("Processed instruction count : %d" % instr_cnt)
+
+
+def check_ibex_uvm_log(uvm_log, core_name, test_name, report, write=True):
+  """Process Ibex UVM simulation log.
+
+  This function will be used when a test disables the normal post_compare step.
+  Process the UVM simulation log produced by the test to check for correctness
+
+  Args:
+    uvm_log: the uvm simulation log
+    core_name: the name of the core
+    test_name: name of the test being checked
+    report: the output report file
+    write: enables writing to the log file
+
+  Returns:
+    A boolean indicating whether the test passed or failed based on the signature
+  """
+  pass_cnt = 0
+  fail_cnt = 0
+  with open(uvm_log, "r") as log:
+    for line in log:
+      if 'RISC-V UVM TEST PASSED' in line:
+        pass_cnt += 1
+        break
+      elif 'RISC-V UVM TEST FAILED' in line:
+        fail_cnt += 1
+        break
+
+  if write:
+    if report:
+      fd = open(report, "a+")
+    else:
+      fd = sys.stdout
+    fd.write("%s uvm log : %s\n" % (core_name, uvm_log))
+    if pass_cnt == 1:
+      fd.write("%s : PASSED\n" % test_name)
+    elif fail_cnt == 1:
+      fd.write("%s : FAILED\n" % test_name)
+    if report:
+      fd.close()
+
+  return pass_cnt == 1
 
 
 def main():

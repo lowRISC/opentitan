@@ -23,12 +23,23 @@ class riscv_rand_instr extends riscv_instr_base;
 
   `uvm_object_utils(riscv_rand_instr)
 
+  constraint category_c {
+    soft category inside {LOAD, STORE, SHIFT, ARITHMETIC, LOGICAL,
+                          BRANCH, COMPARE, CSR, SYSTEM, SYNCH};
+  }
+
+  // Atomic extension instructions are default disabled
+  // AMO instruction generation is handled by riscv_amo_instr_lib.sv
+  constraint disable_a_extension_c {
+    group != RV32A;
+    group != RV64A;
+  }
+
   constraint instr_c {
     solve instr_name before imm;
     solve instr_name before rs1;
     solve instr_name before rs2;
     !(instr_name inside {riscv_instr_pkg::unsupported_instr});
-    category inside {LOAD, STORE, SHIFT, ARITHMETIC, LOGICAL, BRANCH, COMPARE, CSR, SYSTEM, SYNCH};
     group inside {riscv_instr_pkg::supported_isa};
     // Avoid using any special purpose register as rd, those registers are reserved for
     // special instructions
@@ -55,20 +66,6 @@ class riscv_rand_instr extends riscv_instr_base;
     }
     // TODO: Support C_ADDI4SPN
     instr_name != C_ADDI4SPN;
-  }
-
-  constraint rvc_csr_c {
-    //  Registers specified by the three-bit rs1’, rs2’, and rd’ fields of the CIW, CL, CS,
-    //  and CB formats
-    if(format inside {CIW_FORMAT, CL_FORMAT, CS_FORMAT, CB_FORMAT}) {
-      rs1 inside {[S0:A5]};
-      rs2 inside {[S0:A5]};
-      rd  inside {[S0:A5]};
-    }
-    // C_ADDI16SP is only valid when rd == SP
-    if(instr_name == C_ADDI16SP) {
-      rd == SP;
-    }
   }
 
   constraint constraint_cfg_knob_c {
@@ -109,6 +106,14 @@ class riscv_rand_instr extends riscv_instr_base;
       }
     }
   }
+
+  // No label is needed if there's no branch/jump instruction
+  function void post_randomize();
+    super.post_randomize();
+    if (cfg.no_branch_jump) begin
+      has_label = 1'b0;
+    end
+  endfunction
 
   `uvm_object_new
 

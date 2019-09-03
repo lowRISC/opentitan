@@ -64,7 +64,7 @@ used commands:
    # Verbose logging
    make ... VERBOSE=1
 
-   # Run multipe tests in parallel through LSF
+   # Run multiple tests in parallel through LSF
    make ... LSF_CMD="bsub -Is"
 
    # Get command reference of the simulation script

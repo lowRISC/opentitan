@@ -45,7 +45,7 @@ def process_cmd(keyword, cmd, opts, enable):
     Processed command
   """
   if enable == "1":
-    return re.sub(keyword, opts, cmd)
+    return re.sub(keyword, opts.rstrip(), cmd)
   else:
     return re.sub(keyword, "", cmd)
 
@@ -81,43 +81,6 @@ def get_simulator_cmd(simulator, simulator_yaml, en_cov, en_wave):
       return compile_cmd, sim_cmd
   print ("Cannot find RTL simulator %0s" % simulator)
   sys.exit(1)
-
-
-def run_cmd(cmd):
-  """Run a command and return output
-
-  Args:
-    cmd : shell command to run
-
-  Returns:
-    command output
-  """
-  try:
-    ps = subprocess.Popen(cmd,
-                          shell=True,
-                          universal_newlines=True,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT,
-                          executable='/bin/bash')
-  except subprocess.CalledProcessError as exc:
-    print(ps.communicate()[0])
-    sys.exit(1)
-  return ps.communicate()[0]
-
-
-def get_seed(seed):
-  """Get the seed to run the generator
-
-  Args:
-    seed : input seed
-
-  Returns:
-    seed to run instruction generator
-  """
-  if seed >= 0:
-    return seed
-  else:
-    return random.getrandbits(32)
 
 
 def rtl_compile(compile_cmd, test_list, output_dir, lsf_cmd, opts, verbose):
@@ -165,27 +128,24 @@ def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts, verbos
   for test in test_list:
     for i in range(test['iterations']):
       rand_seed = get_seed(seed)
+      test_sim_cmd = re.sub("<seed>", str(rand_seed), sim_cmd)
+      if "sim_opts" in test:
+        test_sim_cmd += test['sim_opts']
+      print(test_sim_cmd)
       sim_dir = output_dir + ("/%s.%d" %(test['test'], i))
       run_cmd(("mkdir -p %s" % sim_dir))
       os.chdir(sim_dir)
       if verbose:
         print("Run dir: %s" % sim_dir)
       binary = ("%s/%s.%d.bin" % (bin_dir, test['test'], i))
-      cmd = lsf_cmd + " " + sim_cmd.rstrip() + \
+      cmd = lsf_cmd + " " + test_sim_cmd.rstrip() + \
             (" +UVM_TESTNAME=%s " % test['rtl_test']) + \
             (" +bin=%s " % binary) + \
-            (" +ntb_random_seed=%d " % rand_seed) + \
             (" -l sim.log ")
       print("Running %s with %s" % (test['rtl_test'], binary))
       if verbose:
         print(cmd)
-      try:
-        output = subprocess.check_output(cmd.split(),
-                                         timeout=1000,
-                                         universal_newlines=True)
-      except subprocess.CalledProcessError as exc:
-        print(output)
-        sys.exit(1)
+      output = run_cmd(' '.join(cmd.split()))
       if verbose:
         print(output)
 
@@ -205,19 +165,39 @@ def compare(test_list, iss, output_dir, verbose):
       elf = ("%s/asm_tests/%s.%d.o" % (output_dir, test['test'], i))
       print("Comparing %s/DUT sim result : %s" % (iss, elf))
       run_cmd(("echo 'Test binary: %s' >> %s" % (elf, report)))
+      uvm_log = ("%s/rtl_sim/%s.%d/sim.log" % (output_dir, test['test'], i))
       rtl_log = ("%s/rtl_sim/%s.%d/trace_core_00_0.log" % (output_dir, test['test'], i))
       rtl_csv = ("%s/rtl_sim/%s.%d/trace_core_00_0.csv" % (output_dir, test['test'], i))
-      process_ibex_sim_log(rtl_log, rtl_csv)
-      iss_log = ("%s/instr_gen/%s_sim/%s.%d.log" % (output_dir, iss, test['test'], i))
-      iss_csv = ("%s/instr_gen/%s_sim/%s.%d.csv" % (output_dir, iss, test['test'], i))
-      if iss == "spike":
-        process_spike_sim_log(iss_log, iss_csv)
-      elif iss == "ovpsim":
-        process_ovpsim_sim_log(iss_log, iss_csv)
+      test_name = "%s.%d" % (test['test'], i)
+      if 'no_post_compare' in test and test['no_post_compare'] == 1:
+        check_ibex_uvm_log(uvm_log, "ibex", test_name, report)
       else:
-        print("Unsupported ISS" % iss)
-        sys.exit(1)
-      compare_trace_csv(rtl_csv, iss_csv, "ibex", iss, report)
+        process_ibex_sim_log(rtl_log, rtl_csv)
+        iss_log = ("%s/instr_gen/%s_sim/%s.%d.log" % (output_dir, iss, test['test'], i))
+        iss_csv = ("%s/instr_gen/%s_sim/%s.%d.csv" % (output_dir, iss, test['test'], i))
+        if iss == "spike":
+          process_spike_sim_log(iss_log, iss_csv)
+        elif iss == "ovpsim":
+          process_ovpsim_sim_log(iss_log, iss_csv)
+        else:
+          print("Unsupported ISS" % iss)
+          sys.exit(1)
+        uvm_result = check_ibex_uvm_log(uvm_log, "ibex", test_name, report, False)
+        if not uvm_result:
+          check_ibex_uvm_log(uvm_log, "ibex", test_name, report)
+        else:
+          if 'compare_opts' in test:
+            compare_opts = test.get('compare_opts')
+            in_order_mode = compare_opts.get('in_order_mode', 1)
+            coalescing_limit = compare_opts.get('coalescing_limit', 0)
+            verbose = compare_opts.get('verbose', 0)
+            mismatch = compare_opts.get('mismatch_print_limit', 5)
+            compare_final = compare_opts.get('compare_final_value_only', 0)
+            compare_trace_csv(rtl_csv, iss_csv, "ibex", iss, report,
+                              in_order_mode, coalescing_limit, verbose,
+                              mismatch, compare_final)
+          else:
+            compare_trace_csv(rtl_csv, iss_csv, "ibex", iss, report)
   passed_cnt = run_cmd("grep PASSED %s | wc -l" % report).strip()
   failed_cnt = run_cmd("grep FAILED %s | wc -l" % report).strip()
   summary = ("%s PASSED, %s FAILED" % (passed_cnt, failed_cnt))
@@ -245,7 +225,7 @@ parser.add_argument("--simulator_yaml", type=str, default="yaml/rtl_simulation.y
                     help="RTL simulator setting YAML")
 parser.add_argument("--iss", type=str, default="spike",
                     help="Instruction set simulator")
-parser.add_argument("--verbose", type=int, default=0,
+parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                     help="Verbose logging")
 parser.add_argument("--cmp_opts", type=str, default="",
                     help="Compile options for the generator")
@@ -262,6 +242,7 @@ parser.add_argument("--lsf_cmd", type=str, default="",
                           command is not specified")
 
 args = parser.parse_args()
+parser.set_defaults(verbose=False)
 cwd = os.path.dirname(os.path.realpath(__file__))
 
 # Create the output directory

@@ -31,6 +31,7 @@ ${PRJ_DIR}/ibex/rtl/ibex_core.sv
 ${PRJ_DIR}/ibex/rtl/ibex_core_tracing.sv
 
 // Core DV files
+${PRJ_DIR}/ibex/vendor/google_riscv-dv/src/riscv_signature_pkg.sv
 +incdir+${PRJ_DIR}/ibex/dv/uvm/env
 +incdir+${PRJ_DIR}/ibex/dv/uvm/tests
 +incdir+${PRJ_DIR}/ibex/dv/uvm/common/ibex_mem_intf_agent

@@ -116,8 +116,7 @@ module top_earlgrey (
     .rst_ni               (ndmreset_n),
     .test_en_i            (1'b0),
     // static pinning
-    .core_id_i            (4'b0000),
-    .cluster_id_i         (6'b000000),
+    .hart_id_i            (32'b0),
     .boot_addr_i          (ADDR_SPACE_ROM),
     // TL-UL buses
     .tl_i_o               (tl_corei_h_h2d),

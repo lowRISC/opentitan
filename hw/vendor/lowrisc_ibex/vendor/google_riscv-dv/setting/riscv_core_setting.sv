@@ -30,7 +30,10 @@ privileged_mode_t supported_privileged_mode[] = {USER_MODE, SUPERVISOR_MODE, MAC
 riscv_instr_name_t unsupported_instr[];
 
 // ISA supported by the processor
-riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV64I, RV64M, RV32C, RV64C};
+riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV64I, RV64M, RV32C, RV64C, RV32A, RV64A};
+
+// Interrupt mode support
+mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 
 // Debug mode support
 bit support_debug_mode = 0;

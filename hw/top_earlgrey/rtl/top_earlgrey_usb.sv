@@ -93,8 +93,7 @@ module top_earlgrey_usb #(
     .rst_ni               (ndmreset_n),
     .test_en_i            (1'b0),
     // static pinning
-    .core_id_i            (4'b0000),
-    .cluster_id_i         (6'b000000),
+    .hart_id_i            (32'b0),
     .boot_addr_i          (ADDR_SPACE_RAM_MAIN + 'h1000),  // no ROM for now, straight out of SRAM
     // TL-UL buses
     .tl_i_o               (tl_h_h2d[TlCorei]),

@@ -36,6 +36,7 @@
   sim:
     cmd: >
       <out>/vcs_simv +vcs+lic+wait <sim_opts> <wave_opts> <cov_opts>
+        +ntb_random_seed=<seed>
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
       -cm_dir <out>/test.vdb

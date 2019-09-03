@@ -12,6 +12,9 @@ Instantiation Template
 .. code-block:: verilog
 
   ibex_core #(
+      .PMPEnable        (0),
+      .PMPGranularity   (0),
+      .PMPNumRegions    (4),
       .MHPMCounterNum   (0),
       .MHPMCounterWidth (40),
       .RV32E            (0),
@@ -25,8 +28,7 @@ Instantiation Template
       .test_en_i      (),
 
       // Configuration
-      .core_id_i      (),
-      .cluster_id_i   (),
+      .hart_id_i      (),
       .boot_addr_i    (),
 
       // Instruction memory interface
@@ -35,6 +37,7 @@ Instantiation Template
       .instr_rvalid_i (),
       .instr_addr_o   (),
       .instr_rdata_i  (),
+      .instr_err_i    (),
 
       // Data memory interface
       .data_req_o     (),
@@ -67,6 +70,12 @@ Parameters
 +-----------------------+-------------+------------+-----------------------------------------------------------------+
 | Name                  | Type/Range  | Default    | Description                                                     |
 +=======================+=============+============+=================================================================+
+| ``PMPEnable``         | bit         | 0          | Enable PMP support                                              |
++-----------------------+-------------+------------+-----------------------------------------------------------------+
+| ``PMPGranularity``    | int (0..31) | 0          | Minimum granularity of PMP address matching                     |
++-----------------------+-------------+------------+-----------------------------------------------------------------+
+| ``PMPNumRegions``     | int (1..16) | 4          | Number implemented PMP regions (ignored if PMPEnable == 0)      |
++-----------------------+-------------+------------+-----------------------------------------------------------------+
 | ``MHPMCounterNum``    | int (0..8)  | 0          | Number of performance monitor event counters                    |
 +-----------------------+-------------+------------+-----------------------------------------------------------------+
 | ``MHPMCounterWidth``  | int (64..1) | 40         | Bit width of performance monitor event counters                 |
@@ -80,7 +89,6 @@ Parameters
 | ``DmExceptionAddr``   | int         | 0x1A110808 | Address to jump to when an exception occurs while in debug mode |
 +-----------------------+-------------+------------+-----------------------------------------------------------------+
 
-
 Interfaces
 ----------
 
@@ -93,10 +101,8 @@ Interfaces
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``test_en_i``           | 1                       | in  | Test input, enables clock              |
 +-------------------------+-------------------------+-----+----------------------------------------+
-| ``core_id_i``           | 4                       | in  | Core ID, usually static, can be read   |
+| ``hart_id_i``           | 32                      | in  | Hart ID, usually static, can be read   |
 |                         |                         |     | from :ref:`csr-mhartid` CSR            |
-+-------------------------+-------------------------+-----+                                        +
-| ``cluster_id_i``        | 6                       | in  |                                        |
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``boot_addr_i``         | 32                      | in  | First program counter after reset      |
 |                         |                         |     | = ``boot_addr_i`` + 0x80,              |

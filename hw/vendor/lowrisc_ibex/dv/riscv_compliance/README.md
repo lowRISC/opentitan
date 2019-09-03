@@ -28,14 +28,16 @@ How to run RISC-V Compliance on Ibex
    pip3 install --user -U fusesoc
    ```
 
-   We recommend installing Verilator from source as versions from Linux distributions are often outdated.
-   See https://www.veripool.org/projects/verilator/wiki/Installing for installation instructions.
+   We recommend installing Verilator from source as versions from Linux
+   distributions are often outdated. See
+   https://www.veripool.org/projects/verilator/wiki/Installing for installation
+   instructions.
 
 1. Build a simulation of Ibex
 
    ```sh
    cd $IBEX_REPO_BASE
-   fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_riscv_compliance --RV32M=0 --RV32E=0
+   fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_riscv_compliance --RV32M=1 --RV32E=0
    ```
 
    You can use the two compile-time options `--RV32M` and `--RV32E` to
@@ -45,31 +47,33 @@ How to run RISC-V Compliance on Ibex
 
 2. Get the RISC-V Compliance test suite
 
-   The compliance test suite currently needs workarounds for Ibex.
-   Get a modified version of it.
+   The upstream RISC-V compliance test suite supports Ibex out of the box.
 
    ```
-   git clone https://github.com/imphil/riscv-compliance.git
+   git clone https://github.com/riscv/riscv-compliance.git
    cd riscv-compliance
-   git checkout ibex
    ```
 
 3. Run the test suite
    ```sh
    cd $RISCV_COMPLIANCE_REPO_BASE
-   export RISCV_TARGET=ibex
-   export RISCV_ISA=rv32i
+   # adjust to match your compiler name
    export RISCV_PREFIX=riscv32-unknown-elf-
+   # give the path to the simulation binary compiled in step 1
    export TARGET_SIM=path/to/your/Vibex_riscv_compliance
-   make clean
-   make
+
+   export RISCV_DEVICE=rv32imc
+   export RISCV_TARGET=ibex
+
+   # Note: rv32imc does not include the I and M extension tests
+   make RISCV_ISA=rv32i && make RISCV_ISA=rv32im && make RISCV_ISA=rv32imc
    ```
 
 Compliance test suite system
 ----------------------------
 
-This directory contains a system designed especially to run the compliance test suite.
-The system consists of
+This directory contains a system designed especially to run the compliance test
+suite. The system consists of
 
 - an Ibex core,
 - a bus,

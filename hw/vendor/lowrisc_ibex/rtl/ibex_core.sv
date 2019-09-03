@@ -1,25 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Matthias Baer - baermatt@student.ethz.ch                   //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Igor Loi - igor.loi@unibo.it                               //
-//                 Andreas Traber - atraber@student.ethz.ch                   //
-//                 Sven Stucki - svstucki@student.ethz.ch                     //
-//                 Markus Wegmann - markus.wegmann@technokrat.ch              //
-//                 Davide Schiavone - pschiavo@iis.ee.ethz.ch                 //
-//                                                                            //
-// Design Name:    Top level module                                           //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Top level module of the RISC-V core.                       //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 `ifdef RISCV_FORMAL
   `define RVFI
@@ -29,6 +11,9 @@
  * Top level module of the ibex RISC-V core
  */
 module ibex_core #(
+    parameter bit          PMPEnable        = 0,
+    parameter int unsigned PMPGranularity   = 0,
+    parameter int unsigned PMPNumRegions    = 4,
     parameter int unsigned MHPMCounterNum   = 0,
     parameter int unsigned MHPMCounterWidth = 40,
     parameter bit RV32E                     = 0,
@@ -42,9 +27,7 @@ module ibex_core #(
 
     input  logic        test_en_i,     // enable all clock gates for testing
 
-    // Core ID, Cluster ID and boot address are considered more or less static
-    input  logic [ 3:0] core_id_i,
-    input  logic [ 5:0] cluster_id_i,
+    input  logic [31:0] hart_id_i,
     input  logic [31:0] boot_addr_i,
 
     // Instruction memory interface
@@ -53,6 +36,7 @@ module ibex_core #(
     input  logic        instr_rvalid_i,
     output logic [31:0] instr_addr_o,
     input  logic [31:0] instr_rdata_i,
+    input  logic        instr_err_i,
 
     // Data memory interface
     output logic        data_req_o,
@@ -109,12 +93,15 @@ module ibex_core #(
 
   import ibex_pkg::*;
 
+  localparam int unsigned PMP_NUM_CHAN = 2;
+
   // IF/ID signals
   logic        instr_valid_id;
   logic        instr_new_id;
   logic [31:0] instr_rdata_id;         // Instruction sampled inside IF stage
   logic [15:0] instr_rdata_c_id;       // Compressed instruction sampled inside IF stage
   logic        instr_is_compressed_id;
+  logic        instr_fetch_err;        // Bus error on instr fetch
   logic        illegal_c_insn_id;      // Illegal compressed instruction sent to ID stage
   logic [31:0] pc_if;                  // Program counter in IF stage
   logic [31:0] pc_id;                  // Program counter in ID stage
@@ -173,7 +160,6 @@ module ibex_core #(
   logic        data_we_ex;
   logic [1:0]  data_type_ex;
   logic        data_sign_ext_ex;
-  logic [1:0]  data_reg_offset_ex;
   logic        data_req_ex;
   logic [31:0] data_wdata_ex;
   logic [31:0] regfile_wdata_lsu;
@@ -196,6 +182,13 @@ module ibex_core #(
   logic        csr_mstatus_mie;
   logic [31:0] csr_mepc, csr_depc;
 
+  // PMP signals
+  logic [33:0] csr_pmp_addr [PMPNumRegions];
+  pmp_cfg_t    csr_pmp_cfg  [PMPNumRegions];
+  logic        pmp_req_err  [PMP_NUM_CHAN];
+  logic        instr_req_out;
+  logic        data_req_out;
+
   logic        csr_save_if;
   logic        csr_save_id;
   logic        csr_restore_mret_id;
@@ -203,8 +196,10 @@ module ibex_core #(
   logic        csr_mtvec_init;
   logic [31:0] csr_mtvec;
   logic [31:0] csr_mtval;
+  priv_lvl_e   priv_mode;
 
   // debug mode and dcsr configuration
+  logic        debug_mode;
   dbg_cause_e  debug_cause;
   logic        debug_csr_save;
   logic        debug_single_step;
@@ -304,11 +299,13 @@ module ibex_core #(
       .req_i                    ( instr_req_int          ), // instruction request control
 
       // instruction cache interface
-      .instr_req_o              ( instr_req_o            ),
+      .instr_req_o              ( instr_req_out          ),
       .instr_addr_o             ( instr_addr_o           ),
       .instr_gnt_i              ( instr_gnt_i            ),
       .instr_rvalid_i           ( instr_rvalid_i         ),
       .instr_rdata_i            ( instr_rdata_i          ),
+      .instr_err_i              ( instr_err_i            ),
+      .instr_pmp_err_i          ( pmp_req_err[PMP_I]     ),
 
       // outputs to ID stage
       .instr_valid_id_o         ( instr_valid_id         ),
@@ -316,6 +313,7 @@ module ibex_core #(
       .instr_rdata_id_o         ( instr_rdata_id         ),
       .instr_rdata_c_id_o       ( instr_rdata_c_id       ),
       .instr_is_compressed_id_o ( instr_is_compressed_id ),
+      .instr_fetch_err_o        ( instr_fetch_err        ),
       .illegal_c_insn_id_o      ( illegal_c_insn_id      ),
       .pc_if_o                  ( pc_if                  ),
       .pc_id_o                  ( pc_id                  ),
@@ -343,6 +341,8 @@ module ibex_core #(
       .perf_imiss_o             ( perf_imiss             )
   );
 
+  // Qualify the instruction request with PMP error
+  assign instr_req_o = instr_req_out & ~pmp_req_err[PMP_I];
 
   //////////////
   // ID stage //
@@ -382,6 +382,7 @@ module ibex_core #(
       .exc_pc_mux_o                 ( exc_pc_mux_id          ),
       .exc_cause_o                  ( exc_cause              ),
 
+      .instr_fetch_err_i            ( instr_fetch_err        ),
       .illegal_c_insn_i             ( illegal_c_insn_id      ),
 
       .pc_id_i                      ( pc_id                  ),
@@ -416,7 +417,6 @@ module ibex_core #(
       .data_we_ex_o                 ( data_we_ex             ), // to load store unit
       .data_type_ex_o               ( data_type_ex           ), // to load store unit
       .data_sign_ext_ex_o           ( data_sign_ext_ex       ), // to load store unit
-      .data_reg_offset_ex_o         ( data_reg_offset_ex     ), // to load store unit
       .data_wdata_ex_o              ( data_wdata_ex          ), // to load store unit
 
       .lsu_addr_incr_req_i          ( lsu_addr_incr_req      ),
@@ -435,6 +435,7 @@ module ibex_core #(
       .irq_nm_i                     ( irq_nm_i               ),
 
       // Debug Signal
+      .debug_mode_o                 ( debug_mode             ),
       .debug_cause_o                ( debug_cause            ),
       .debug_csr_save_o             ( debug_csr_save         ),
       .debug_req_i                  ( debug_req_i            ),
@@ -500,15 +501,18 @@ module ibex_core #(
   // Load/store unit //
   /////////////////////
 
+  assign data_req_o = data_req_out & ~pmp_req_err[PMP_D];
+
   ibex_load_store_unit  load_store_unit_i (
       .clk_i                 ( clk                 ),
       .rst_ni                ( rst_ni              ),
 
       // data interface
-      .data_req_o            ( data_req_o          ),
+      .data_req_o            ( data_req_out        ),
       .data_gnt_i            ( data_gnt_i          ),
       .data_rvalid_i         ( data_rvalid_i       ),
       .data_err_i            ( data_err_i          ),
+      .data_pmp_err_i        ( pmp_req_err[PMP_D]  ),
 
       .data_addr_o           ( data_addr_o         ),
       .data_we_o             ( data_we_o           ),
@@ -520,7 +524,6 @@ module ibex_core #(
       .data_we_ex_i          ( data_we_ex          ),
       .data_type_ex_i        ( data_type_ex        ),
       .data_wdata_ex_i       ( data_wdata_ex       ),
-      .data_reg_offset_ex_i  ( data_reg_offset_ex  ),
       .data_sign_ext_ex_i    ( data_sign_ext_ex    ),
 
       .data_rdata_ex_o       ( regfile_wdata_lsu   ),
@@ -553,15 +556,17 @@ module ibex_core #(
   ibex_cs_registers #(
       .MHPMCounterNum   ( MHPMCounterNum   ),
       .MHPMCounterWidth ( MHPMCounterWidth ),
+      .PMPGranularity   ( PMPGranularity   ),
+      .PMPNumRegions    ( PMPNumRegions    ),
       .RV32E            ( RV32E            ),
       .RV32M            ( RV32M            )
   ) cs_registers_i (
       .clk_i                   ( clk                    ),
       .rst_ni                  ( rst_ni                 ),
 
-      // Core and Cluster ID from outside
-      .core_id_i               ( core_id_i              ),
-      .cluster_id_i            ( cluster_id_i           ),
+      // Hart ID from outside
+      .hart_id_i               ( hart_id_i              ),
+      .priv_mode_o             ( priv_mode              ),
 
       // mtvec
       .csr_mtvec_o             ( csr_mtvec              ),
@@ -588,8 +593,13 @@ module ibex_core #(
       .csr_mstatus_mie_o       ( csr_mstatus_mie        ),
       .csr_mepc_o              ( csr_mepc               ),
 
+      // PMP
+      .csr_pmp_cfg_o           ( csr_pmp_cfg            ),
+      .csr_pmp_addr_o          ( csr_pmp_addr           ),
+
       // debug
       .csr_depc_o              ( csr_depc               ),
+      .debug_mode_i            ( debug_mode             ),
       .debug_cause_i           ( debug_cause            ),
       .debug_csr_save_i        ( debug_csr_save         ),
       .debug_single_step_o     ( debug_single_step      ),
@@ -620,6 +630,36 @@ module ibex_core #(
       .mem_store_i             ( perf_store             ),
       .lsu_busy_i              ( lsu_busy               )
   );
+
+  if (PMPEnable) begin : g_pmp
+    logic [33:0] pmp_req_addr [PMP_NUM_CHAN];
+    pmp_req_e    pmp_req_type [PMP_NUM_CHAN];
+
+    assign pmp_req_addr[PMP_I] = {2'b00,instr_addr_o[31:0]};
+    assign pmp_req_type[PMP_I] = PMP_ACC_EXEC;
+    assign pmp_req_addr[PMP_D] = {2'b00,data_addr_o[31:0]};
+    assign pmp_req_type[PMP_D] = data_we_o ? PMP_ACC_WRITE : PMP_ACC_READ;
+
+    ibex_pmp #(
+        .PMPGranularity        ( PMPGranularity ),
+        .PMPNumChan            ( PMP_NUM_CHAN   ),
+        .PMPNumRegions         ( PMPNumRegions  )
+    ) pmp_i (
+        .clk_i                 ( clk            ),
+        .rst_ni                ( rst_ni         ),
+        // Interface to CSRs
+        .csr_pmp_cfg_i         ( csr_pmp_cfg    ),
+        .csr_pmp_addr_i        ( csr_pmp_addr   ),
+        .priv_mode_i           ( priv_mode      ),
+        // Access checking channels
+        .pmp_req_addr_i        ( pmp_req_addr   ),
+        .pmp_req_type_i        ( pmp_req_type   ),
+        .pmp_req_err_o         ( pmp_req_err    )
+    );
+  end else begin : g_no_pmp
+    assign pmp_req_err[PMP_I] = 1'b0;
+    assign pmp_req_err[PMP_D] = 1'b0;
+  end
 
 `ifdef RVFI
   always_ff @(posedge clk or negedge rst_ni) begin

@@ -14,6 +14,7 @@ Ibex User Manual
    cs_registers
    performance_counters
    exception_interrupts
+   pmp
    debug
    tracer
    rvfi

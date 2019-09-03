@@ -3,7 +3,7 @@
 RISCV-DV is a SV/UVM based open-source instruction generator for RISC-V
 processor verification. It currently supports the following features:
 
-- Supported instruction set: RV32IMC, RV64IMC
+- Supported instruction set: RV32IMAC, RV64IMAC
 - Supported privileged mode: machine mode, supervisor mode, user mode
 - Page table randomization and exception
 - Privileged CSR setup randomization
@@ -15,6 +15,10 @@ processor verification. It currently supports the following features:
 - Supports mixing directed instructions with random instruction stream
 - Supports co-simulation with multiple ISS : spike, riscv-ovpsim
 
+A CSR test generation script written in Python is also provided, to generate a
+directed test suite that stresses all CSR instructions on all of the CSRs that
+the core implements.
+
 ## Getting Started
 
 ### Prerequisites
@@ -24,9 +28,26 @@ which supports SystemVerilog and UVM 1.2. This generator has been verified with
 Synopsys VCS, Cadence Incisive/Xcelium, and Mentor Questa simulators. Please
 make sure the EDA tool environment is properly setup before running the generator.
 
+To be able to run the CSR generation script, the open-source `bitstring`
+Python library is required ([bitstring](https://github.com/scott-griffiths/bitstring)).
+To install this library, either clone the repository and run the `setup.py`
+setup script, or run only one of the below commands:
+```
+1) sudo apt-get install python3-bitstring (or your OS-specific package manager)
+2) pip install bitstring
+```
+
 ### Running the generator
 
-A simple script "run" is provided for you to run a single test or a regression.
+
+A simple script "run.py" is provided for you to run a single test or a regression.
+
+You can use --help to get the complete command reference:
+
+```
+python3 run.py --help
+```
+
 Here is the command to run a single test:
 
 ```
@@ -35,9 +56,9 @@ python3 run.py --test=riscv_arithmetic_basic_test
 You can specify the simulator by "-simulator" option
 
 ```
-python3 run.py --test=riscv_arithmetic_basic_test --simulator=irun
-python3 run.py --test=riscv_arithmetic_basic_test --simulator=vcs
-python3 run.py --test=riscv_arithmetic_basic_test --simulator=questa
+python3 run.py --test riscv_arithmetic_basic_test --simulator ius
+python3 run.py --test riscv_arithmetic_basic_test --simulator vcs
+python3 run.py --test riscv_arithmetic_basic_test --simulator questa
 ```
 The complete test list can be found in [yaml/testlist.yaml](https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml). To run a full
 regression, simply use below command
@@ -55,18 +76,43 @@ python3 run.py --lsf_cmd="bsub -Is"
 Here's a few more examples of the run command:
 
 ```
-// Get the complete command reference info
-python3 run.py --help
-
 // Run a single test 10 times
-python3 run.py --test=riscv_page_table_exception_test --iterations=10
+python3 run.py --test riscv_page_table_exception_test --iterations 10
+
+// Run a test with verbose logging
+python3 run.py --test riscv_page_table_exception_test --verbose
 
 // Run a test with a specified seed
-python3 run.py --test=riscv_page_table_exception_test --seed=123
+python3 run.py --test riscv_page_table_exception_test --seed 123
 
 // Skip the generation, run ISS simulation with previously generated program
-python3 run.py --test=riscv_page_table_exception_test --steps=iss_sim
+python3 run.py --test riscv_page_table_exception_test --steps iss_sim
+
+// Run the generator only, do not compile and simluation with ISS
+python3 run.py --test riscv_page_table_exception_test --steps gen
+
+// Compile the generator only, do not simulate
+python3 run.py --test riscv_page_table_exception_test --co
+
 ....
+```
+
+### Privileged CSR Test Generation
+
+
+The CSR generation script is located at
+[scripts/gen_csr_test.py](https://github.com/google/riscv-dv/blob/master/scripts/gen_csr_test.py).
+The CSR test code that this script generates will execute every CSR instruction
+on every processor implemented CSR, writing values to the CSR and then using a
+prediction function to calculate a reference value that will be written into
+another GPR. The reference value will then be compared to the value actually
+stored in the CSR to determine whether to jump to the failure condition or
+continue executing, allowing it to be completely self checking. This script has
+been integrated with run.py. If you want to run it separately, you can get the
+command reference with --help:
+
+```
+python3 scripts/gen_csr_test.py --help
 ```
 
 ## Configuration
@@ -76,15 +122,17 @@ python3 run.py --test=riscv_page_table_exception_test --steps=iss_sim
 [Test list in YAML format](https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml)
 
 ```
-# test         : Assembly test name
-# description  : Description of this test
-# gen_opts     : Instruction generator options
-# iterations   : Number of iterations of this test
-# gen_test     : Test name used by the instruction generator
-# rtl_test     : RTL simulation test name
-# cmp_opts     : Compile options passed to the instruction generator
-# sim_opts     : Simulation options passed to the instruction generator
-# compare_opts : Options for the RTL & ISS trace comparison
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulation (Optional)
+# gen_test        : Test name used by the instruction generator
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable log comparison (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
 
 - test: riscv_arithmetic_basic_test
   description: >
@@ -101,6 +149,11 @@ python3 run.py --test=riscv_page_table_exception_test --steps=iss_sim
   rtl_test: core_base_test
 
 ```
+
+Note: To automatically generate CSR tests without having to explicitly run the
+script, include `riscv_csr_test` in the testlist as shown in the example YAML
+file above.
+
 
 ### Configure the generator to match your processor features
 
@@ -133,23 +186,76 @@ riscv_instr_group_t supported_isa[] = {RV32I, RV32M, RV64I, RV64M};
 
 ### Runtime options of the generator
 
-| Option   |      Description      | default |
-|----------|:-------------:|:------:|
-| num_of_tests |  Number of assembly tests to be generated | 1 |
-| num_of_sub_program |    Number of sub-program in one test    | 5 |
-| instr_cnt | Instruction count per test  | 200 | 
-| enable_page_table_exception | Enable page table exception  | 0 |
-| no_ebreak |  Disable ebreak instruction  | 1 |
-| no_wfi | Disable WFI instruction  | 1 |
-| no_branch_jump | Disable branch/jump instruction   | 0 |
-| no_load_store | Disable load/store instruction  | 0 |
-| no_csr_instr | Disable CSR instruction | 0 |
-| no_fence | Disable fence instruction  | 0 |
-| enable_illegal_instruction | Enable illegal instructions  | 0 |
-| enable_hint_instruction |  Enable HINT instruction  | 0 |
-| boot_mode | m:Machine mode, s:Supervisor mode, u:User mode  | m |
-| no_directed_instr | Disable directed instruction stream  | 0 |
-| enable_interrupt | Enable MStatus.MIE, used in interrupt test | 0 |
+| Option                      | Description                                       | Default |
+|:---------------------------:|:-------------------------------------------------:|:-------:|
+| num_of_tests                | Number of assembly tests to be generated          | 1       |
+| num_of_sub_program          | Number of sub-program in one test                 | 5       |
+| instr_cnt                   | Instruction count per test                        | 200     |
+| enable_page_table_exception | Enable page table exception                       | 0       |
+| no_ebreak                   | Disable ebreak instruction                        | 1       |
+| no_wfi                      | Disable WFI instruction                           | 1       |
+| no_branch_jump              | Disable branch/jump instruction                   | 0       |
+| no_load_store               | Disable load/store instruction                    | 0       |
+| no_csr_instr                | Disable CSR instruction                           | 0       |
+| no_fence                    | Disable fence instruction                         | 0       |
+| enable_illegal_instruction  | Enable illegal instructions                       | 0       |
+| enable_hint_instruction     | Enable HINT instruction                           | 0       |
+| boot_mode                   | m:Machine mode, s:Supervisor mode, u:User mode    | m       |
+| no_directed_instr           | Disable directed instruction stream               | 0       |
+| require_signature_addr      | Set to 1 if test needs to talk to testbench       | 0       |
+| signature_addr              | Write to this addr to send data to testbench      | 0       |
+| enable_interrupt            | Enable MStatus.MIE, used in interrupt test        | 0       |
+| gen_debug_section           | Disables randomized debug_rom section             | 0       |
+| num_debug_sub_program       | Number of debug sub-programs in test              | 0       |
+
+
+### Setup Privileged CSR description
+
+This YAML description file of all CSRs is only required for the privileged CSR
+test. All other standard tests do not use this description.
+
+[CSR descriptions in YAML
+format](https://github.com/google/riscv-dv/blob/master/yaml/csr_template.yaml)
+
+```
+- csr: CSR_NAME
+  description: >
+    BRIEF_DESCRIPTION
+  address: 0x###
+  privilege_mode: MODE (D/M/S/H/U)
+  rv32:
+    - MSB_FIELD_NAME:
+      - description: >
+          BRIEF_DESCRIPTION
+      - type: TYPE (WPRI/WLRL/WARL/R)
+      - reset_val: RESET_VAL
+      - msb: MSB_POS
+      - lsb: LSB_POS
+    - ...
+    - ...
+    - LSB_FIELD_NAME:
+      - description: ...
+      - type: ...
+      - ...
+  rv64:
+    - MSB_FIELD_NAME:
+      - description: >
+          BRIEF_DESCRIPTION
+      - type: TYPE (WPRI/WLRL/WARL/R)
+      - reset_val: RESET_VAL
+      - msb: MSB_POS
+      - lsb: LSB_POS
+    - ...
+    - ...
+    - LSB_FIELD_NAME:
+      - description: ...
+      - type: ...
+      - ...
+```
+
+To specify what ISA width should be generated in the test, simply include the
+matching rv32/rv64/rv128 entry and fill in the appropriate CSR field entries.
+
 
 ### Adding new instruction stream and test
 
@@ -163,28 +269,39 @@ it with random instructions
 +directed_instr_5=riscv_multi_page_load_store_instr_stream,4
 ```
 
-## Run ISS(Instruction Set Simulator) simulation
+## Compile generated programs with GCC
 
-The default ISS is spike. Thanks for the great support from Imperas Software Ltd.,
-we have added the support for [riscv-ovpsim](https://github.com/riscv/riscv-ovpsim).
+- Install [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain
+- Set environment variable RISCV_GCC to the directory of the RISC-V gcc
+  executable. (example: <install_dir>/bin/riscv32-unknown-elf-gcc)
 
-- spike setup
+## Run ISS (Instruction Set Simulator) simulation
+
+Currently three ISS are supported, the default ISS is spike. You can install any
+one of below to run ISS simulation.
+
+- [spike](https://github.com/riscv/riscv-isa-sim#) setup
   - Follow the [steps](https://github.com/riscv/riscv-isa-sim#build-steps) to build spike
      - Make sure RISCV_ENABLE_COMMITLOG is defined in [config.h.in](https://github.com/riscv/riscv-isa-sim/blob/master/config.h.in)
   - Set environment variable SPIKE_PATH to the directory of the spike binary
 - [riscv-ovpsim](https://github.com/riscv/riscv-ovpsim) setup
   - Download the riscv-ovpsim binary
   - Set environment variable OVPSIM_PATH to the directory of the ovpsim binary
-
+- [sail-riscv](https://github.com/rems-project/sail-riscv) setup
+  - Follow the [steps](https://github.com/rems-project/sail-riscv/blob/master/README.md) to install sail-riscv
+  - Set environment variable SAIL_RISCV to the sail-riscv binary
 
 You can use -iss to run with different ISS.
 
 ```
 // Run ISS with spike
-python3 run.py --test=riscv_page_table_exception_test --iss=spike
+python3 run.py --test riscv_page_table_exception_test --iss spike
 
 // Run ISS with riscv-ovpsim
-python3 run.py --test=riscv_rand_instr_test --iss=ovpsim
+python3 run.py --test riscv_rand_instr_test --iss ovpsim
+
+// Run ISS with sail-riscv
+python3 run.py --test riscv_rand_instr_test --iss sail
 ```
 
 To run with ISS simulation for RV32IMC, you can specify ISA and ABI from command
@@ -192,7 +309,7 @@ line like this:
 
 ```
 // Run a full regression with RV32IMC
-python3 run.py --isa=rv32imc --mabi=ilp32
+python3 run.py --isa rv32imc --mabi ilp32
 ```
 
 We have added a flow to run ISS simulation with both spike and riscv-ovpsim,
@@ -202,6 +319,7 @@ real RISC-V processor.
 
 ```
 python3 run.py --test=riscv_rand_instr_test --iss=spike,ovpsim
+python3 run.py --test=riscv_rand_instr_test --iss=spike,sail
 ```
 
 ### Integrate a new ISS
@@ -218,13 +336,13 @@ You can add a new entry in [iss.yaml](https://github.com/google/riscv-dv/blob/ma
 Simulate with the new ISS
 
 ```
-python3 run.py --test=riscv_page_table_exception_test --iss=new_iss_name
+python3 run.py --test riscv_page_table_exception_test --iss new_iss_name
 ```
 
 ## End-to-end RTL and ISS co-simulation flow
 
 We have collaborated with LowRISC to apply this flow for [IBEX RISC-V core
-verification](https://github.com/lowRISC/ibex/tree/master/dv/uvm). You can use
+verification](https://github.com/lowRISC/ibex/blob/master/doc/verification.rst). You can use
 it as a reference to setup end-to-end co-simulation flow. It's also a good
 reference for [customizing the generator](https://github.com/lowRISC/ibex/tree/master/dv/uvm/riscv_dv_extension) without getting impacted by upstream
 changes.
@@ -252,73 +370,6 @@ We have some work in progress which will be part of future releases:
 -   Coverage model.
 -   Debug mode support
 
-### DEPRECATED simulation flow
-
-Note: The flow mentioned below will soon be deprecated. Please switch to new
-flow.
-
-A simple script "run" is provided for you to run a single test or a regression.
-Here is the command to run a single test:
-
-```
-./run -test riscv_instr_base_test
-```
-You can specify the simulator by "-tool" option
-
-```
-./run -test riscv_instr_base_test -tool irun
-./run -test riscv_instr_base_test -tool vcs
-./run -test riscv_instr_base_test -tool questa
-```
-The complete test list can be found in testlist. To run a full regression, you
-can just specify the test name to "all".
-
-```
-./run -test all
-```
-The script will run each test in the test list sequentially with the iteration
-count specified in the "testlist". All the generated RISC-V assembly will be
-listed when the regression is done. If it is successful, you should see the
-following output:
-
-```
-===========================================================
-                Generated RISC-V assembly tests
- ----------------------------------------------------------
-./out_2018-11-20/asm_tests/riscv_arithmetic_basic_test.0.S
-./out_2018-11-20/asm_tests/riscv_machine_mode_rand_test.0.S
-./out_2018-11-20/asm_tests/riscv_mmu_stress_test.0.S
-./out_2018-11-20/asm_tests/riscv_mmu_stress_test.1.S
-./out_2018-11-20/asm_tests/riscv_no_fence_test.0.S
-./out_2018-11-20/asm_tests/riscv_page_table_exception_test.0.S
-./out_2018-11-20/asm_tests/riscv_page_table_exception_test.1.S
-./out_2018-11-20/asm_tests/riscv_privileged_mode_rand_test.0.S
-./out_2018-11-20/asm_tests/riscv_privileged_mode_rand_test.1.S
-./out_2018-11-20/asm_tests/riscv_rand_instr_test.0.S
-./out_2018-11-20/asm_tests/riscv_rand_instr_test.1.S
-./out_2018-11-20/asm_tests/riscv_rand_jump_test.0.S
-./out_2018-11-20/asm_tests/riscv_sfence_exception_test.0.S
-```
-
-Here's a few more examples of the run command:
-
-```
-// Run a single test 10 times
-./run -test riscv_page_table_exception_test -n 10
-
-// Run a test with a specified seed
-./run -test riscv_page_table_exception_test -seed 123
-
-// Run a test with addtional runtime options, separated with comma
-./run -test riscv_rand_instr_test -runo +instr_cnt=10000,+no_fence=1
-
-// Two steps compile and simulation (Avoid multiple compilation)
-./run -co # compile only
-# Generate multiple tests
-./run -so -test riscv_rand_instr_test -n 10
-./run -so -test riscv_mmu_stress_test -n 20
-....
-```
 ## Disclaimer
 
 This is not an officially supported Google product.

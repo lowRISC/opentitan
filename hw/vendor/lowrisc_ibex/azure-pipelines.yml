@@ -1,0 +1,135 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure Pipelines CI build configuration
+# Documentation at https://aka.ms/yaml
+
+variables:
+  VERILATOR_VERSION: 4.016
+  VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
+  RISCV_TOOLCHAIN_TAR_VERSION: 20190807-1
+
+trigger:
+  batch: true
+  branches:
+# Combine builds on master as long as another build is running
+    include:
+    - master
+
+# Note: All tests run as part of one job to avoid copying intermediate build
+# artifacts around (e.g. Verilator and toolchain builds). Once more builds/tests
+# are added, we need to re-evaluate this decision to parallelize jobs and
+# improve end-to-end CI times.
+
+jobs:
+- job: lint_dv
+  displayName: Run quality checks (Lint and DV)
+  pool:
+    vmImage: "ubuntu-16.04"
+  steps:
+  # Installing six is a workaround for pip dependency resolution: six is already
+  # installed as system package with a version below the required one.
+  # Explicitly installing six through pip gets us a supported version.
+  - bash: |
+      sudo apt-get install -y \
+          python3 \
+          python3-pip \
+          python3-setuptools \
+          srecord \
+          zlib1g-dev \
+          git \
+          make \
+          autoconf \
+          g++ \
+          flex \
+          bison \
+          curl \
+        && sudo pip3 install -U six fusesoc
+    displayName: Install dependencies
+
+  - bash: |
+      set -e
+      if [ ! -d $(VERILATOR_PATH) ]; then
+        echo "Building verilator (no cached build found)"
+        mkdir -p build/verilator
+        cd build/verilator
+        curl -Ls -o verilator.tgz https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz
+        tar -xf verilator.tgz
+        cd verilator-$(VERILATOR_VERSION)
+        ./configure --prefix=$(VERILATOR_PATH)
+        make -j$(nproc)
+        mkdir -p $VERILATOR_PATH
+        make install
+      else
+        echo "Re-using cached verilator build"
+      fi
+      echo "##vso[task.setvariable variable=PATH]$VERILATOR_PATH/bin:$PATH"
+    displayName: Build and install Verilator
+
+  - bash: |
+      export TOOLCHAIN_URL=https://github.com/lowRISC/lowrisc-toolchains/releases/download/${RISCV_TOOLCHAIN_TAR_VERSION}/lowrisc-toolchain-gcc-rv32imc-${RISCV_TOOLCHAIN_TAR_VERSION}.tar.xz
+      mkdir -p build/toolchain
+      curl -Ls -o build/toolchain/rv32-toolchain.tar.xz $TOOLCHAIN_URL
+      sudo mkdir -p /tools/riscv && sudo chmod 777 /tools/riscv
+      tar -C /tools/riscv -xf build/toolchain/rv32-toolchain.tar.xz --strip-components=1
+      echo "##vso[task.setvariable variable=PATH]/tools/riscv/bin:$PATH"
+    displayName: Get precompiled RISC-V toolchain
+
+  - bash: |
+      echo $PATH
+      python3 --version
+      echo -n "fusesoc "
+      fusesoc --version
+      verilator --version
+      riscv32-unknown-elf-gcc --version
+    displayName: Display environment
+
+  - bash: |
+      fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core
+      if [ $? != 0 ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Verilog lint failed. Run 'fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core' to check and fix all errors."
+        exit 1
+      fi
+    displayName: Lint Verilog source files with Verilator
+
+  - bash: |
+      cd build
+      git clone https://github.com/riscv/riscv-compliance.git
+    displayName: Get RISC-V Compliance test suite
+
+  - bash: |
+      # Build simulation model of Ibex
+      fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_riscv_compliance --RV32M=1 --RV32E=0
+      if [ $? != 0 ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Unable to build Verilator model of Ibex for compliance testing."
+        exit 1
+      fi
+
+      # Run compliance test suite
+      export TARGET_SIM=$PWD/build/lowrisc_ibex_ibex_riscv_compliance_0.1/sim-verilator/Vibex_riscv_compliance
+      export RISCV_PREFIX=riscv32-unknown-elf-
+      export RISCV_TARGET=ibex
+      export RISCV_DEVICE=rv32imc
+      fail=0
+      for isa in rv32i rv32im rv32imc; do
+        make -C build/riscv-compliance RISCV_ISA=$isa 2>&1 | tee run.log 
+        if [ ${PIPESTATUS[0]} != 0 ]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "The RISC-V compliance test suite failed for $isa"
+
+          # There's no easy way to get the test results in machine-readable
+          # form to properly exclude known-failing tests. Going with an
+          # approximate solution for now.
+          if [ $isa == rv32i ] && grep -q 'FAIL: 5/55' run.log; then
+            echo -n "##vso[task.logissue type=error]"
+            echo "Expected failure for rv32i, see lowrisc/ibex#100 more more information."
+          else
+            fail=1
+          fi
+        fi
+      done
+      exit $fail
+    displayName: "Run RISC-V Compliance test for Ibex RV32IMC"

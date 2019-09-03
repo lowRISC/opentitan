@@ -34,6 +34,18 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x344  | ``mip``            | R      | Machine Interrupt Pending Register            |
 +---------+--------------------+--------+-----------------------------------------------+
+|  0x3A0  | ``pmpcfg0``        | WARL   | PMP Configuration Register                    |
++---------+--------------------+--------+-----------------------------------------------+
+|     .             .               .                    .                              |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x3A3  | ``pmpcfg3``        | WARL   | PMP Configuration Register                    |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x3B0  | ``pmpaddr0``       | WARL   | PMP Address Register                          |
++---------+--------------------+--------+-----------------------------------------------+
+|     .             .               .                    .                              |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x3BF  | ``pmpaddr15``      | WARL   | PMP Address Register                          |
++---------+--------------------+--------+-----------------------------------------------+
 |  0x7B0  | ``dcsr``           | RW     | Debug Control and Status Register             |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7B1  | ``dpc``            | RW     | Debug PC                                      |
@@ -212,6 +224,57 @@ A particular bit in the register reads as one if the corresponding interrupt inp
 | 3     | **Machine Software Interrupt Pending (MSIP):** if set, ``irq_software_i`` is pending. |
 +-------+---------------------------------------------------------------------------------------+
 
+PMP Configuration Register (pmpcfgx)
+----------------------------------------
+
+CSR Address: ``0x3A0 - 0x3A3``
+
+Reset Value: ``0x0000_0000``
+
+``pmpcfgx`` are registers to configure PMP regions. Each register configures 4 PMP regions.
+
++---------------------------------------+
+|  31:24  |  23:16  |  15:8   |   7:0   |
++---------------------------------------+
+| pmp3cfg | pmp2cfg | pmp1cfg | pmp0cfg |
++---------------------------------------+
+
+The configuration fields for each region are as follows:
+
++-------+--------------------------+
+| Bit#  |  Definition              |
++-------+--------------------------+
+|    7  | Lock                     |
++-------+--------------------------+
+|  6:5  | Reserved (Read as zero)  |
++-------+--------------------------+
+|  4:3  | Mode                     |
++-------+--------------------------+
+|    2  | Execute permission       |
++-------+--------------------------+
+|    1  | Write permission         |
++-------+--------------------------+
+|    0  | Read permission          |
++-------+--------------------------+
+
+Details of these configuration bits can be found in the RISC-V Privileged Specification, version 1.11 (see Physical Memory Protection CSRs, Section 3.6.1).
+
+Note that the combination of Write permission = 1, Read permission = 0 is reserved, and will be treated by the core as Read/Write permission = 0.
+
+PMP Address Register (pmpaddrx)
+----------------------------------------
+
+CSR Address: ``0x3B0 - 0x3BF``
+
+Reset Value: ``0x0000_0000``
+
+``pmpaddrx`` are registers to set address matching for PMP regions.
+
++----------------+
+|     31:0       |
++----------------+
+| address[33:2]  |
++----------------+
 
 .. _csr-mhartid:
 

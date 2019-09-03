@@ -15,7 +15,6 @@
  */
 
 // Base class for all load/store instruction stream
-// TODO: Support load/store from instruction section.
 
 class riscv_load_store_base_instr_stream extends riscv_directed_instr_stream;
 
@@ -26,9 +25,6 @@ class riscv_load_store_base_instr_stream extends riscv_directed_instr_stream;
   rand int           addr[];
   rand int unsigned  data_page_id;
   rand riscv_reg_t   rs1_reg;
-  riscv_reg_t        reserved_rd[$];
-  // User can specify a small group of available registers to generate various hazard condition
-  rand riscv_reg_t   avail_regs[];
 
   `uvm_object_utils(riscv_load_store_base_instr_stream)
 
@@ -58,11 +54,11 @@ class riscv_load_store_base_instr_stream extends riscv_directed_instr_stream;
   endfunction
 
   function void post_randomize();
-    gen_load_store_instr();
     // rs1 cannot be modified by other instructions
     if(!(rs1_reg inside {reserved_rd})) begin
-      reserved_rd.push_back(rs1_reg);
+      reserved_rd = {reserved_rd, rs1_reg};
     end
+    gen_load_store_instr();
     add_mixed_instr();
     add_rs1_init_la_instr();
     super.post_randomize();
@@ -86,68 +82,77 @@ class riscv_load_store_base_instr_stream extends riscv_directed_instr_stream;
 
   // Generate each load/store instruction
   virtual function void gen_load_store_instr();
-    riscv_rand_instr rand_instr;
-    riscv_instr_name_t allowed_instr[];
+    bit enable_compressed_load_store;
+    riscv_instr_base instr;
     if(avail_regs.size() > 0) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(avail_regs,
                                          unique{avail_regs};
+                                         avail_regs[0] inside {[S0 : A5]};
                                          foreach(avail_regs[i]) {
-                                           !(avail_regs[i] inside {cfg.reserved_regs});
+                                           !(avail_regs[i] inside {cfg.reserved_regs, reserved_rd});
                                          },
                                          "Cannot randomize avail_regs")
     end
+    if (rs1_reg inside {[S0 : A5]}) begin
+      enable_compressed_load_store = 1;
+    end
     foreach(addr[i]) begin
-      rand_instr = riscv_rand_instr::type_id::create("rand_instr");
-      rand_instr.cfg = cfg;
-      rand_instr.reserved_rd = reserved_rd;
+      instr = riscv_instr_base::type_id::create("instr");
       // Assign the allowed load/store instructions based on address alignment
       // This is done separately rather than a constraint to improve the randomization performance
       allowed_instr = {LB, LBU, SB};
       if (addr[i][0] == 1'b0) begin
         allowed_instr = {LH, LHU, SH, allowed_instr};
       end
-      if (addr[i][1:0] == 2'b00) begin
-        allowed_instr = {LW, SW, LWU, allowed_instr};
-        if((offset[i] inside {[0:127]}) && (offset[i] % 4 == 0)) begin
+      if (!cfg.enable_unaligned_load_store) begin
+        if (addr[i][1:0] == 2'b00) begin
+          allowed_instr = {LW, SW, allowed_instr};
+          if((offset[i] inside {[0:127]}) && (offset[i] % 4 == 0) &&
+             (RV32C inside {riscv_instr_pkg::supported_isa}) &&
+             enable_compressed_load_store) begin
+            allowed_instr = {C_LW, C_SW, allowed_instr};
+          end
+        end
+        if ((XLEN >= 64) && (addr[i][2:0] == 3'b000)) begin
+          allowed_instr = {LWU, LD, SD, allowed_instr};
+          if((offset[i] inside {[0:255]}) && (offset[i] % 8 == 0) &&
+             (RV64C inside {riscv_instr_pkg::supported_isa} &&
+             enable_compressed_load_store)) begin
+            allowed_instr = {C_LD, C_SD, allowed_instr};
+          end
+        end
+      end else begin
+        allowed_instr = {LW, SW, allowed_instr};
+        if ((offset[i] inside {[0:127]}) && (offset[i] % 4 == 0) &&
+            (RV32C inside {riscv_instr_pkg::supported_isa}) &&
+            enable_compressed_load_store) begin
           allowed_instr = {C_LW, C_SW, allowed_instr};
         end
-      end
-      if(addr[i][2:0] == 3'b000) begin
-        allowed_instr = {LD, SD, allowed_instr};
-        if((offset[i] inside {[0:255]}) && (offset[i] % 8 == 0)) begin
-          allowed_instr = {C_LD, C_SD, allowed_instr};
+        if (XLEN >= 64) begin
+          allowed_instr = {LWU, LD, SD, allowed_instr};
+          if ((offset[i] inside {[0:255]}) && (offset[i] % 8 == 0) &&
+              (RV64C inside {riscv_instr_pkg::supported_isa}) &&
+              enable_compressed_load_store) begin
+              allowed_instr = {C_LD, C_SD, allowed_instr};
+           end
         end
       end
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rand_instr,
-        solve rs1 before rd;
-        rs1 == rs1_reg;
-        instr_name inside {allowed_instr};
-        if(avail_regs.size() > 0) {
-          rd inside {avail_regs};
-        }
-        rd != rs1;
-      )
-      rand_instr.process_load_store = 0;
-      rand_instr.imm_str = $sformatf("%0d", offset[i]);
-      instr_list.push_back(rand_instr);
+      randomize_instr(instr, .skip_rs1(1'b1), .skip_imm(1'b1));
+      instr.rs1 = rs1_reg;
+      instr.set_imm(offset[i]);
+      instr.process_load_store = 0;
+      instr_list.push_back(instr);
     end
   endfunction
 
   // Insert some other instructions to mix with load/store instruction
   virtual function void add_mixed_instr();
-    riscv_rand_instr rand_instr;
+    riscv_instr_base instr;
+    setup_allowed_instr(1, 1);
     for(int i = 0; i < num_mixed_instr; i ++) begin
-      rand_instr = riscv_rand_instr::type_id::create("rand_instr");
-      rand_instr.cfg = cfg;
-      rand_instr.reserved_rd = reserved_rd;
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rand_instr,
-        if(avail_regs.size() > 0) {
-          rs1 inside {avail_regs};
-          rd inside {avail_regs};
-        }
-        !(category inside {LOAD, STORE, BRANCH, JUMP});,
-        "Cannot randomize instruction")
-      insert_instr(rand_instr);
+      instr = riscv_instr_base::type_id::create("instr");
+      randomize_instr(instr);
+      insert_instr(instr);
     end
   endfunction
 
@@ -310,7 +315,8 @@ class riscv_multi_page_load_store_instr_stream extends riscv_directed_instr_stre
       // Make sure each load/store sequence doesn't override the rs1 of other sequences.
       foreach(rs1_reg[j]) begin
         if(i != j) begin
-          load_store_instr_stream[i].reserved_rd.push_back(rs1_reg[j]);
+          load_store_instr_stream[i].reserved_rd =
+            {load_store_instr_stream[i].reserved_rd, rs1_reg[j]};
         end
       end
       `DV_CHECK_RANDOMIZE_WITH_FATAL(load_store_instr_stream[i],

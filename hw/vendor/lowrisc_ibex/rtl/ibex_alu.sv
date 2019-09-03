@@ -1,22 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// Engineer:       Markus Wegmann - markus.wegmann@technokrat.ch              //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Davide Schiavone - pschiavo@iis.ee.ethz.ch                 //
-//                                                                            //
-// Design Name:    ALU                                                        //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Arithmetic logic unit of the pipelined processor.          //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Arithmetic logic unit

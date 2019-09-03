@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http:#www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,13 @@
 #- csr: CSR_NAME
 #  description: >
 #    BRIEF_DESCRIPTION
+#  address: 0x###
 #  privilege_mode: MODE (D/M/S/H/U)
 #  rv32:
 #    - MSB_FIELD_NAME:
 #      - description: >
 #          BRIEF_DESCRIPTION
-#      - type: TYPE (WPRI/WLRL/WARL)
+#      - type: TYPE (WPRI/WLRL/WARL/R)
 #      - reset_val: RESET_VAL
 #      - msb: MSB_POS
 #      - lsb: LSB_POS
@@ -36,7 +37,7 @@
 #    - MSB_FIELD_NAME:
 #      - description: >
 #          BRIEF_DESCRIPTION
-#      - type: TYPE (WPRI/WLRL/WARL)
+#      - type: TYPE (WPRI/WLRL/WARL/R)
 #      - reset_val: RESET_VAL
 #      - msb: MSB_POS
 #      - lsb: LSB_POS
@@ -53,6 +54,7 @@
 - csr: misa
   description: >
     Machine ISA Register
+  address: 0x301
   privilege_mode: M
   rv32:
     - field_name: MXL

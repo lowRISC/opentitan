@@ -1,24 +1,7 @@
 // Copyright lowRISC contributors.
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Matthias Baer - baermatt@student.ethz.ch                   //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Igor Loi - igor.loi@unibo.it                               //
-//                 Andreas Traber - atraber@student.ethz.ch                   //
-//                 Sven Stucki - svstucki@student.ethz.ch                     //
-//                 Davide Schiavone - pschiavo@iis.ee.ethz.ch                 //
-//                                                                            //
-// Design Name:    Main controller                                            //
-// Project Name:   ibex                                                       //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Main controller of the processor                           //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Main controller of the processor
@@ -38,13 +21,15 @@ module ibex_controller (
     input  logic                  dret_insn_i,           // decoder has DRET instr
     input  logic                  wfi_insn_i,            // decoder has WFI instr
     input  logic                  ebrk_insn_i,           // decoder has EBREAK instr
-    input  logic                  csr_status_i,          // decoder has CSR status instr
+    input  logic                  csr_pipe_flush_i,      // do CSR-related pipeline flush
 
     // from IF-ID pipeline stage
     input  logic                  instr_valid_i,         // instr from IF-ID reg is valid
     input  logic [31:0]           instr_i,               // instr from IF-ID reg, for mtval
     input  logic [15:0]           instr_compressed_i,    // instr from IF-ID reg, for mtval
     input  logic                  instr_is_compressed_i, // instr from IF-ID reg is compressed
+    input  logic                  instr_fetch_err_i,     // instr from IF-ID reg has error
+    input  logic [31:0]           pc_id_i,               // instr from IF-ID reg address
 
     // to IF-ID pipeline stage
     output logic                  instr_valid_clear_o,   // kill instr in IF-ID reg
@@ -80,6 +65,7 @@ module ibex_controller (
     input  logic                  debug_req_i,
     output ibex_pkg::dbg_cause_e  debug_cause_o,
     output logic                  debug_csr_save_o,
+    output logic                  debug_mode_o,
     input  logic                  debug_single_step_i,
     input  logic                  debug_ebreakm_i,
 
@@ -119,6 +105,8 @@ module ibex_controller (
   logic stall;
   logic halt_if;
   logic halt_id;
+  logic illegal_dret;
+  logic illegal_insn;
   logic exc_req;
   logic exc_req_lsu;
   logic special_req;
@@ -134,8 +122,8 @@ module ibex_controller (
   // glitches
   always_ff @(negedge clk_i) begin
     // print warning in case of decoding errors
-    if ((ctrl_fsm_cs == DECODE) && instr_valid_i && illegal_insn_i) begin
-      $display("%t: Illegal instruction (core %0d) at PC 0x%h: 0x%h", $time, ibex_core.core_id_i,
+    if ((ctrl_fsm_cs == DECODE) && instr_valid_i && illegal_insn) begin
+      $display("%t: Illegal instruction (hart %0x) at PC 0x%h: 0x%h", $time, ibex_core.hart_id_i,
                ibex_id_stage.pc_id_i, ibex_id_stage.instr_rdata_i);
     end
   end
@@ -149,14 +137,19 @@ module ibex_controller (
   assign load_err_d  = load_err_i;
   assign store_err_d = store_err_i;
 
+  // "Executing DRET outside of Debug Mode causes an illegal instruction exception."
+  // [Debug Spec v0.13.2, p.41]
+  assign illegal_dret = dret_insn_i & ~debug_mode_q;
+  assign illegal_insn = illegal_insn_i | illegal_dret;
+
   // exception requests
-  assign exc_req     = ecall_insn_i | ebrk_insn_i | illegal_insn_i;
+  assign exc_req     = ecall_insn_i | ebrk_insn_i | illegal_insn | instr_fetch_err_i;
 
   // LSU exception requests
   assign exc_req_lsu = store_err_i | load_err_i;
 
   // special requests: special instructions, pipeline flushes, exceptions...
-  assign special_req = mret_insn_i | dret_insn_i | wfi_insn_i | csr_status_i |
+  assign special_req = mret_insn_i | dret_insn_i | wfi_insn_i | csr_pipe_flush_i |
       exc_req | exc_req_lsu;
 
   ////////////////
@@ -453,7 +446,11 @@ module ibex_controller (
           csr_save_cause_o = 1'b1;
 
           // set exception registers, priorities according to Table 3.7 of Privileged Spec v1.11
-          if (illegal_insn_i) begin
+          if (instr_fetch_err_i) begin
+            exc_cause_o = EXC_CAUSE_INSTR_ACCESS_FAULT;
+            csr_mtval_o = pc_id_i;
+
+          end else if (illegal_insn) begin
             exc_cause_o = EXC_CAUSE_ILLEGAL_INSN;
             csr_mtval_o = instr_is_compressed_i ? {16'b0, instr_compressed_i} : instr_i;
 
@@ -506,7 +503,7 @@ module ibex_controller (
           end
 
         end else begin
-          // special instructions
+          // special instructions and pipeline flushes
           if (mret_insn_i) begin
             pc_mux_o              = PC_ERET;
             pc_set_o              = 1'b1;
@@ -520,6 +517,9 @@ module ibex_controller (
             debug_mode_d          = 1'b0;
           end else if (wfi_insn_i) begin
             ctrl_fsm_ns           = WAIT_SLEEP;
+          end else if (csr_pipe_flush_i && handle_irq) begin
+            // start handling IRQs when doing CSR-related pipeline flushes
+            ctrl_fsm_ns           = IRQ_TAKEN;
           end
         end // exc_req
 
@@ -537,6 +537,9 @@ module ibex_controller (
       end
     endcase
   end
+
+  // signal to CSR when in debug mode
+  assign debug_mode_o = debug_mode_q;
 
   ///////////////////
   // Stall control //
