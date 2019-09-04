@@ -9,7 +9,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   `uvm_object_utils(hmac_base_vseq)
   `uvm_object_new
 
-  bit do_hmac_init = 1'b1;
+  bit do_hmac_init     = 1'b1;
+  bit do_back_pressure = 1'b0;
   rand bit [2:0] wr_size;
   rand int       wr_addr;
   rand bit [3:0] wr_mask;
@@ -125,9 +126,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       bit [7:0] word_unpack[4];
       bit [TL_DW-1:0] word;
 
-      bit msg_fifo_full;
-      csr_rd(ral.status.fifo_full, msg_fifo_full);
-      if (msg_fifo_full) csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
+      if (!do_back_pressure) begin
+        // if not back pressure sequence, wait until fifo_full status cleared then write
+        bit msg_fifo_full;
+        csr_rd(ral.status.fifo_full, msg_fifo_full);
+        if (msg_fifo_full) csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
+      end
 
       if (msg_q.size() < 4) begin
         `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask)
@@ -144,7 +148,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       `uvm_info(`gfn, $sformatf("wr_size = %0h, wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
                                 wr_size, wr_addr, wr_mask, word), UVM_HIGH)
       tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size));
-      check_status_intr_fifo_full();
+
+      if (!do_back_pressure) check_status_intr_fifo_full();
+      else clear_intr_fifo_full();
     end
   endtask
 
@@ -162,6 +168,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     check_interrupts(.interrupts((1 << HmacMsgFifoFull)),
                      .check_set (msg_fifo_full &
                                  ral.intr_enable.fifo_full.get_mirrored_value()));
+  endtask
+
+  // when msg fifo full interrupt is set, this task clears the interrupt
+  // checking the correctness of the fifo full interrupt is done in scb
+  virtual task clear_intr_fifo_full();
+    if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
+      check_interrupts(.interrupts((1 << HmacMsgFifoFull)),
+                       .check_set (ral.intr_enable.fifo_full.get_mirrored_value()));
+    end
   endtask
 
   virtual task compare_digest(bit [31:0] exp_digest[8]);
