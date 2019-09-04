@@ -49,12 +49,12 @@ class hmac_sanity_vseq extends hmac_base_vseq;
       // msg stream in finished, start hash
       trigger_process();
 
-      // read msg fifo length
-      rd_msg_length();
-
       // wait for interrupt to assert, check status and clear it
       wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
       check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
+
+      // read msg fifo length
+      rd_msg_length();
 
       // read digest from DUT
       rd_digest();
