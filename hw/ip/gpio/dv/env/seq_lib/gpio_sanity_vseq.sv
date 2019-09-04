@@ -19,8 +19,14 @@ class gpio_sanity_vseq extends gpio_base_vseq;
 
   `uvm_object_new
 
+  virtual task dut_init(string reset_kind = "HARD");
+    // Continue using randomized value by default, unless plusarg
+    // no_pullup_pulldown is passed to have no pullup/pulldown
+    set_gpio_pulls(.pu(cfg.pullup_en), .pd(cfg.pulldown_en));
+    super.dut_init(reset_kind);
+  endtask: dut_init
+
   task body();
-    uint delay;
 
     // test gpio inputs
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
@@ -31,13 +37,12 @@ class gpio_sanity_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_i)
       `uvm_info(msg_id, $sformatf("gpio_i = %0h", gpio_i), UVM_HIGH)
       cfg.gpio_vif.drive(gpio_i);
-      // TODO-Find minimum delay required to make sure register is always updated
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[1:20]};)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       cfg.clk_rst_vif.wait_clks(delay);
+      // Reading data_in will trigger a check inside scoreboard
       csr_rd(.ptr(ral.data_in), .value(csr_rd_val));
       `uvm_info(msg_id, {$sformatf("reading data_in after %0d clock cycles ", delay),
                          $sformatf("csr_rd_val = %0h", csr_rd_val)}, UVM_HIGH)
-      `DV_CHECK_EQ(csr_rd_val, gpio_i)
     end
 
     // test gpio outputs
@@ -57,7 +62,7 @@ class gpio_sanity_vseq extends gpio_base_vseq;
       ral.direct_oe.set(gpio_oe);
       csr_update(.csr(ral.direct_out));
       csr_update(.csr(ral.direct_oe));
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[1:20]};)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       cfg.clk_rst_vif.wait_clks(delay);
       `uvm_info(msg_id, $sformatf("waiting for %0d clock cycles", delay), UVM_HIGH)
     end

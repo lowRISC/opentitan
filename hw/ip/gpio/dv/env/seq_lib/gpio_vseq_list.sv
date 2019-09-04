@@ -10,3 +10,4 @@
 `include "gpio_intr_rand_pgm_vseq.sv"
 `include "gpio_rand_intr_trigger_vseq.sv"
 `include "gpio_intr_with_filter_rand_intr_event_vseq.sv"
+`include "gpio_random_long_reg_writes_reg_reads_vseq.sv"

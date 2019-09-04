@@ -34,7 +34,7 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
   task body();
     bit [NUM_GPIOS-1:0] gpio_i;
     bit [TL_DW-1:0] gpio_filter_value;
-    bit [NUM_GPIOS-1:0] stable_value = (cfg.active_high_pullup) ? {NUM_GPIOS{1'b1}} : '0;
+    bit [NUM_GPIOS-1:0] stable_value = (cfg.pullup_en) ? {NUM_GPIOS{1'b1}} : '0;
     bit [TL_DW-1:0] crnt_intr_status;
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
     // Wait for FILTER_CYCLES to make sure that we start

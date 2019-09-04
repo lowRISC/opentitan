@@ -23,7 +23,6 @@ module tb;
   wire [NUM_GPIOS-1:0] gpio_intr;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [NUM_MAX_ALERTS-1:0] alerts;
-  bit active_high_pullup = 1'b1;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -54,8 +53,7 @@ module tb;
   assign gpio_i = gpio_pins[NUM_GPIOS-1:0];
   generate
     for (genvar i = 0; i < NUM_GPIOS; i++) begin : each_gpio
-      assign (pull0, pull1) gpio_pins[i] =
-          gpio_oe[i] ? gpio_o[i] : ((active_high_pullup == 1'b1) ? 1'b1 : 1'bz);
+      assign gpio_pins[i] = gpio_oe[i] ? gpio_o[i] : 1'bz;
     end
   endgenerate
 
@@ -67,10 +65,6 @@ module tb;
     uvm_config_db#(alerts_vif)::set(null, "*.env", "alerts_vif", alerts_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
-    if ($value$plusargs("active_high_pullup=%0b", active_high_pullup)) begin
-      `uvm_info("tb", $sformatf("active_high_pullup plusarg value = %0b", active_high_pullup),
-                UVM_HIGH)
-    end
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

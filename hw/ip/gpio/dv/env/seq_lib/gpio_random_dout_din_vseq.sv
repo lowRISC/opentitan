@@ -21,6 +21,13 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
   `uvm_object_utils(gpio_random_dout_din_vseq)
   `uvm_object_new
 
+  virtual task dut_init(string reset_kind = "HARD");
+    // Continue using randomized value by default, unless plusarg
+    // no_pullup_pulldown is passed to have no pullup/pulldown
+    set_gpio_pulls(.pu(cfg.pullup_en), .pd(cfg.pulldown_en));
+    super.dut_init(reset_kind);
+  endtask: dut_init
+
   task body();
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin

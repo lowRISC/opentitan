@@ -10,6 +10,13 @@ class gpio_common_vseq extends gpio_base_vseq;
     num_trans inside {[1:3]};
   }
 
+  virtual task dut_init(string reset_kind = "HARD");
+    // Implement gpio pulldown for csr tests for avoiding comparison
+    // mismatch for DATA_IN register checks
+    set_gpio_pulls(.pu(1'b0), .pd(1'b1));
+    super.dut_init(reset_kind);
+  endtask: dut_init
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
@@ -28,6 +35,15 @@ class gpio_common_vseq extends gpio_base_vseq;
 
       // intr_state csr is affected by writes to other csrs
       csr_excl.add_excl({scope, ".", "intr_state"}, CsrExclWriteCheck);
+
+      if (csr_test_type == "rw") begin
+        // avoid writing to masked_out* registers as they affect direct_out value
+        // avoid writing to masked_oe* registers as they affect direct_oe value
+        csr_excl.add_excl({scope, ".", "masked*"}, CsrExclWrite);
+
+        // data_in is ro register, so exclude its readback check
+        csr_excl.add_excl({scope, ".", "data_in"}, CsrExclWriteCheck);
+      end
     end
 
     // writes to specific csr can affect other csrs in aliasing tests

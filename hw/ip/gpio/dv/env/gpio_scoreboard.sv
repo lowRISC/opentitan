@@ -11,6 +11,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   bit   [NUM_GPIOS-1:0] data_oe;
   // input presented by driving gpio_i
   logic [NUM_GPIOS-1:0] gpio_i_driven;
+  // gpio input pins if previous out value
+  logic [NUM_GPIOS-1:0] prv_gpio_i_pins_o;
+  // gpio input pins if previous out enable value
+  logic [NUM_GPIOS-1:0] prv_gpio_i_pins_oe;
   // Flag to store value to be updated for INTR_STATE register
   // and to indicate whether value change is due currently
   gpio_reg_update_due_t intr_state_update_queue[$];
@@ -153,10 +157,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // Task : monitor_gpio_i
   // monitor gpio input pins interface
   virtual task monitor_gpio_i();
-    logic [NUM_GPIOS-1:0] prev_gpio_i = (cfg.active_high_pullup) ? {NUM_GPIOS{1'b1}} : '0;
+    logic [NUM_GPIOS-1:0] prev_gpio_i = cfg.gpio_vif.pins;
 
     forever begin : monitor_pins_if
       @(cfg.gpio_vif.pins or under_reset);
+      `uvm_info(`gfn, $sformatf("cfg.gpio_vif.pins = %0h, under_reset = %0b",
+                                cfg.gpio_vif.pins, under_reset), UVM_HIGH)
       if (under_reset == 1'b0) begin
         // evaluate gpio input driven to dut
         foreach (cfg.gpio_vif.pins_oe[pin_num]) begin
@@ -231,12 +237,27 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           gpio_interrupt_predict(gpio_i_transition);
           // Update value
           prev_gpio_i = cfg.gpio_vif.pins;
+          `uvm_info(`gfn, $sformatf("updated prev_gpio_i = 0x%0h [%0b]", prev_gpio_i, prev_gpio_i),
+                    UVM_HIGH)
         end
+        // Update "previous pins if out and out enable" values
+        prv_gpio_i_pins_o = cfg.gpio_vif.pins_o;
+        prv_gpio_i_pins_oe = cfg.gpio_vif.pins_oe;
+        `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_o = 0x%0h [%0b]",
+                                  prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_oe = 0x%0h [%0b]",
+                                  prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
       end
 
     end // monitor_pins_if
 
   endtask : monitor_gpio_i
+
+  // Function: actual_gpio_i_activity
+  function bit actual_gpio_i_activity();
+    return ~((prv_gpio_i_pins_o === cfg.gpio_vif.pins_o) &&
+             (prv_gpio_i_pins_oe === cfg.gpio_vif.pins_oe));
+  endfunction : actual_gpio_i_activity
 
   // Function : gpio_predict_and_compare
   function void gpio_predict_and_compare(uvm_reg csr = null);
@@ -373,6 +394,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       end
       `uvm_info(msg_id, $sformatf("data_out_effect_on_gpio_i = 0x%0h [%0b]",
                                   data_out_effect_on_gpio_i, data_out_effect_on_gpio_i), UVM_HIGH)
+      `uvm_info(msg_id, $sformatf("gpio_i_driven = 0x%0h [%0b]", gpio_i_driven, gpio_i_driven),
+                UVM_HIGH)
 
       // TODO-Should we have a logic for 'x' and 'z' values of data_oe[pin_num]?
 
@@ -392,8 +415,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         else begin
           pred_val_gpio_pins[pin_num] = 1'bx;
         end
-        if (pred_val_gpio_pins[pin_num] === 1'bz && cfg.active_high_pullup == 1'b1) begin
-          pred_val_gpio_pins[pin_num] = 1'b1;
+        if (pred_val_gpio_pins[pin_num] === 1'bz) begin
+          if (cfg.gpio_vif.pins_pu[pin_num] == 1'b1) begin
+            pred_val_gpio_pins[pin_num] = 1'b1;
+          end else if (cfg.gpio_vif.pins_pd[pin_num] == 1'b1) begin
+            pred_val_gpio_pins[pin_num] = 1'b0;
+          end
         end
       end
       `uvm_info(msg_id, $sformatf("pred_val_gpio_pins = %0h(%0b)", pred_val_gpio_pins,
@@ -417,8 +444,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       end
 
       // Checker-1: Compare predicted and actual values of gpio pins
-      // Avoid calling this checker due to weak pull-up effect
-      if ( (|gpio_i_driven === 1'b1) || (csr != null) ) begin
+      // Avoid calling this checker due to weak pull-up or pull-down effect
+      if ((csr != null) ||
+          ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
         `DV_CHECK_CASE_EQ(pred_val_gpio_pins, cfg.gpio_vif.pins)
       end
     end
