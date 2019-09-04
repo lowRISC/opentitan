@@ -24,32 +24,32 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item));
       begin : wait_response_thread
         for (int i = 0; i < req_cnt; i++) begin
           get_response(rsp);
-          `uvm_info(get_full_name(), $sformatf("Received rsp[%0d] : %0s",
+          `uvm_info(`gfn, $sformatf("Received rsp[%0d] : %0s",
                                      i, req.convert2string()), UVM_HIGH)
           process_response(pending_req.pop_front(), rsp);
         end
       end
       begin : request_thread
-        `uvm_info(get_full_name(), $sformatf("Start sending %0d host requests", req_cnt), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Start sending %0d host requests", req_cnt), UVM_HIGH)
         for (int i = 0; i < req_cnt; i++) begin
           req = tl_seq_item::type_id::create("req");
           start_item(req);
           randomize_req(req, i);
           finish_item(req);
-          `uvm_info(get_full_name(), $sformatf("Sent req[%0d] : %0s",
+          `uvm_info(`gfn, $sformatf("Sent req[%0d] : %0s",
                                      i, req.convert2string()), UVM_HIGH)
           pending_req.push_back(req);
         end
       end
     join
-    `uvm_info(get_full_name(), $sformatf("Finished sending %0d host requests", req_cnt), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Finished sending %0d host requests", req_cnt), UVM_HIGH)
   endtask
 
   // Request randomization, override this functiont to do custom request generation
   virtual function void randomize_req(tl_seq_item req, int idx);
     if (!(req.randomize() with {
         a_valid_delay inside {[min_req_delay:max_req_delay]};})) begin
-      `uvm_fatal(get_full_name(), "Cannot randomize req")
+      `uvm_fatal(`gfn, "Cannot randomize req")
     end
   endfunction
 
@@ -82,7 +82,7 @@ class tl_host_single_seq extends tl_host_seq;
         a_source      == source;
         a_mask        == mask;
         a_data        == data;})) begin
-      `uvm_fatal(get_full_name(), "Cannot randomize req")
+      `uvm_fatal(`gfn, "Cannot randomize req")
     end
   endfunction
 
@@ -109,11 +109,11 @@ class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
     forever begin
       p_sequencer.a_chan_req_fifo.get(req);
       rsp = randomize_rsp(req);
-      `uvm_info(get_full_name(), $sformatf("Sent rsp[%0d] : %0s, req: %0s",
+      `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
                                  rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
       start_item(rsp);
       finish_item(rsp);
-      `uvm_info(get_full_name(), $sformatf("Sent rsp[%0d] : %0s",
+      `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s",
                                  rsp_cnt, rsp.convert2string()), UVM_HIGH)
       rsp_cnt++;
     end
@@ -133,7 +133,7 @@ class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
             rsp.d_size == rsp.a_size;
             rsp.d_user == '0; // TODO: Not defined yet, tie it to zero
             rsp.d_source == rsp.a_source;})) begin
-      `uvm_fatal(get_full_name(), "Cannot randomize rsp")
+      `uvm_fatal(`gfn, "Cannot randomize rsp")
     end
     if (mem != null) begin
       if (req.a_opcode inside {PutFullData, PutPartialData}) begin

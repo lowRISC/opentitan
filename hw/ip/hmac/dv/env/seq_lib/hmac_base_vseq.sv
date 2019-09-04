@@ -11,9 +11,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   bit do_hmac_init     = 1'b1;
   bit do_back_pressure = 1'b0;
-  rand bit [2:0] wr_size;
-  rand int       wr_addr;
-  rand bit [3:0] wr_mask;
+  rand bit [TL_AW-1:0]  wr_addr;
+  rand bit [TL_SZW-1:0] wr_size;
+  rand bit [TL_DBW-1:0] wr_mask;
 
   constraint wr_size_c {
     wr_size inside {[0:2]}; // 0 is 2**0 byte size
@@ -21,12 +21,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
-    wr_addr % (2 ** wr_size) == 0;
+    wr_addr << (TL_AW - wr_size) == 0;
     solve wr_size before wr_addr;
   }
 
   constraint wr_mask_c {
-    $countones(wr_mask) == 2 ** wr_size;
+    $countones(wr_mask) == (1 << wr_size);
     (wr_addr & 'b01) -> wr_mask[0] == 0;
     (wr_addr & 'b10) -> wr_mask[1:0] == 0;
     (wr_addr & 'b11) -> wr_mask[2:0] == 0;
@@ -135,7 +135,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
       if (msg_q.size() < 4) begin
         `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask)
-                        with {2 ** wr_size <= msg_q.size();})
+                        with {1 << wr_size <= msg_q.size();})
       end else begin
         `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask));
       end
