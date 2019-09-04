@@ -63,10 +63,22 @@ stages:
       # Run it only on pull requests.
       condition: eq(variables['Build.Reason'], 'PullRequest')
       displayName: 'Use clang-format to check C/C++ coding style'
-      
+
     - bash: |
         commit_range=$(git merge-base --fork-point origin/master)..HEAD
-        ./util/lint_commits.py --error-msg-prefix='##vso[task.logissue type=error]' $commit_range
+        # Notes:
+        # * Merge commits are not checked. We always use rebases instead of
+        #   merges to keep a linear history, which makes merge commits disappear
+        #   ultimately, making them only a CI artifact which should not be
+        #   checked.
+        # * 'type=error' is used even for warnings. Only "errors" are shown in
+        #   the GitHub checks API. However, warnings don't return a non-zero
+        #   error code and don't fail the build step.
+        ./util/lint_commits.py \
+            --no-merges \
+            --error-msg-prefix='##vso[task.logissue type=error]' \
+            --warning-msg-prefix='##vso[task.logissue type=error]' \
+            $commit_range
       # Only run on pull requests to check new commits only
       condition: eq(variables['Build.Reason'], 'PullRequest')
       displayName: "Check commit metadata"
