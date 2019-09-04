@@ -13,7 +13,8 @@ analyze -sv09 \
   [glob ../../../../ip/*/dv/*_bind.sv] \
   [glob ../../../../ip/*/dv/tb/*_bind.sv] \
   +define+ASIC_SYNTHESIS \
-  +define+SYNTHESIS
+  +define+SYNTHESIS      \
+  +define+FPV_ON
 
 elaborate -top $env(FPV_TOP)
 
