@@ -8,10 +8,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit [7:0]  msg_q[$];
-  bit [63:0] msg_length_bits;
-  bit        hmac_start, hmac_process;
-  bit        status_msg_fifo_full;
+  bit [7:0]         msg_q[$];
+  bit [TL_DW*2-1:0] msg_length_bits;
+  bit               hmac_start, hmac_process;
+  int               hmac_wr_cnt;
+  int               hmac_rd_cnt;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -19,17 +20,13 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    hmac_process_fifo_rd();
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    uvm_mem mem;
     bit     do_read_check = 1'b1;
     bit     write         = item.is_write();
-
-    // for read: grab completed transactions from data channel; ignore packets from addr channel
-    // for write: will keep both channels
-    if (!write && channel != DataChannel) return;
 
     // if access was to a valid csr, get the csr handle
     if (item.a_addr inside {cfg.csr_addrs}) begin
@@ -55,22 +52,30 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // do endian swap in the word according to the mask, then push to the queue of msgs
           foreach (item.a_mask[i]) begin
             if (item.a_mask[i]) begin
-            // The DUT by default (endian_swap bit set to 0) operates at big endian data
+              // The DUT by default (endian_swap bit set to 0) operates at big endian data
               msg = (ral.cfg.endian_swap.get_mirrored_value()) ? {bytes[i], msg} : {msg, bytes[i]};
             end
           end
-          foreach(msg[i]) msg_q.push_back(msg[i]);
+          foreach(msg[i])  begin
+            msg_q.push_back(msg[i]);
+            if (msg_q.size() % 4 == 0) incr_wr_and_check_fifo_full();
+          end
         end
       end else begin
         // csr write: predict and update according to the csr names
         csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
         case (csr.get_name())
-          "msg_length_lower": msg_length_bits[31:0]  = item.a_data;
-          "msg_length_upper": msg_length_bits[63:32] = item.a_data;
+          "msg_length_lower": msg_length_bits[TL_DW-1:0]       = item.a_data;
+          "msg_length_upper": msg_length_bits[TL_DW*2-1:TL_DW] = item.a_data;
           "cmd":              {hmac_process, hmac_start} = item.a_data[1:0];
+          "intr_state": begin
+            if (item.a_data[HmacMsgFifoFull]) begin
+              ral.intr_state.fifo_full.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+            end
+          end
           "cfg", "wipe_secret", "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
           "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
-          "intr_enable", "intr_test", "intr_state": begin
+          "intr_enable", "intr_test": begin
             // Do nothing
           end
           default: begin
@@ -82,19 +87,34 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       if (hmac_process) begin
         predict_digest(msg_q);
         update_wr_msg_length(msg_q.size());
+        // any bytes left after hmac_process will be added to the wr_cnt
+        if (msg_q.size() % 4 != 0) incr_wr_and_check_fifo_full();
         flush();
       end
     end
 
-    // process the csr req
+    // predict status based on csr read addr channel
+    if (!write && channel != DataChannel) begin
+        if (csr.get_name() == "status") begin
+          bit [4:0]       hmac_fifo_depth = hmac_wr_cnt - hmac_rd_cnt;
+          bit             fifo_full = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH;
+          bit             fifo_empty = hmac_fifo_depth == 0;
+          bit [TL_DW-1:0] hmac_status_data = (fifo_empty << HmacStaMsgFifoEmpty) |
+                                             (fifo_full << HmacStaMsgFifoFull) |
+                                             (hmac_fifo_depth << HmacStaMsgFifoDepth);
+          ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ));
+        end
+      return;
+    end
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write) begin
-      // TODO: check intr_state
-      if (csr.get_name() inside {"intr_state"}) do_read_check = 1'b0;
-      if (csr.get_name() == "status") begin
-        do_read_check = 1'b0;
-        status_msg_fifo_full = item.d_data[HmacStaMsgFifoFull];
+      if (csr.get_name() inside {"intr_state"}) begin
+        if (item.d_data[HmacDone] == 1) begin
+          do_read_check = 1'b0;
+          hmac_wr_cnt = 0;
+          hmac_rd_cnt = 0;
+        end
       end
       if (!uvm_re_match("digest*", csr.get_name())) begin
         // HW default output Littie Endian for each digest (32 bits)
@@ -127,10 +147,44 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     msg_q.delete();
   endfunction
 
+  virtual task incr_wr_and_check_fifo_full();
+    hmac_wr_cnt ++;
+    if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
+      ral.intr_state.fifo_full.predict(1);
+    end
+  endtask
+
+  virtual task hmac_process_fifo_rd();
+    bit key_processed;
+    fork begin
+      forever begin // thread hmac_key padding
+        wait (hmac_start);
+        if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
+          // 80 cycles for hmac key padding, 1 cycle for hash_start reg to reset
+          cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
+          key_processed = 1;
+        end
+        wait (cfg.intr_vif.pins[HmacDone]) key_processed = 0;
+      end
+    end
+
+    begin
+      forever begin // thread hmac fifo read
+        wait (hmac_wr_cnt > hmac_rd_cnt);
+        if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
+          wait (key_processed);
+        end
+        cfg.clk_rst_vif.wait_clks(1);
+        @(negedge cfg.clk_rst_vif.clk);
+        hmac_rd_cnt ++;
+        if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_clks(HMAC_MSG_PROCESS_CYCLES);
+      end
+    end
+    join_none
+  endtask
+
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // check all the intr reg are set to 0
-    // temp intr checking, will implement a more comprehensive check
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacMsgFifoFull], 1'b0)
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacDone], 1'b0)
   endfunction
@@ -174,8 +228,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual function update_wr_msg_length(int size_bytes);
     uint64 size_bits = size_bytes * 8;
-    ral.msg_length_upper.predict(size_bits[63:32]);
-    ral.msg_length_lower.predict(size_bits[31:0]);
+    ral.msg_length_upper.predict(size_bits[TL_DW*2-1:TL_DW]);
+    ral.msg_length_lower.predict(size_bits[TL_DW-1:0]);
   endfunction
 
 endclass
