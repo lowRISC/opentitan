@@ -3,7 +3,6 @@ mistletoe
 hjson
 pygments
 mako
-meson
 yapf
 isort
 pyftdi
