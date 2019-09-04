@@ -17,6 +17,34 @@ class gpio_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(gpio_base_vseq)
 
   `uvm_object_new
+  virtual task dut_init(string reset_kind = "HARD");
+    // Check for weak pullup or weak pulldown requirement
+    if (cfg.pullup_en) begin
+      cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b1}});
+      `uvm_info(`gfn, "weak pullup applied to gpio's", UVM_HIGH)
+    end else if (cfg.pulldown_en) begin
+      cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
+      `uvm_info(`gfn, "weak pulldown applied to gpio's", UVM_HIGH)
+    end
+    super.dut_init(reset_kind);
+  endtask : dut_init
+
+  // Function: set_gpio_pulls
+  // This function is meant to override gpio pullup or pulldown value
+  // from extended sequence.
+  // Note: This function does not check whether only one of 'pu' and 'pd' is passed 1.
+  //       If we pass both pu and pd to be 1, gpio pullup will be used.
+  protected function set_gpio_pulls(bit pu = 1'b1, bit pd = 1'b0);
+    bit no_pullup_pulldown;
+    cfg.pullup_en   = pu;
+    cfg.pulldown_en = pd;
+    if ($value$plusargs("no_pullup_pulldown=%0b", no_pullup_pulldown)) begin
+      if (no_pullup_pulldown == 1'b1) begin
+        cfg.pullup_en   = 1'b0;
+        cfg.pulldown_en = 1'b0;
+      end
+    end
+  endfunction
 
   task pre_start();
     super.pre_start();

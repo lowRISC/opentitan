@@ -73,9 +73,9 @@ interface pins_if #(
   // make connections
   generate
     for (genvar i = 0; i < Width; i++) begin : each_pin
-      assign (pull0, pull1) pins_int[i] = pins_pd[i] ? 1'b0 :
-                                          pins_pu[i] ? 1'b1 : 1'bz;
-      assign pins[i] = pins_oe[i] ? pins_o[i] : pins_int[i];
+      assign pins_int[i] = pins_pd[i] ? 1'b0 :
+                           pins_pu[i] ? 1'b1 : 1'bz;
+      assign (pull0, pull1) pins[i] = pins_oe[i] ? pins_o[i] : pins_int[i];
     end
   endgenerate
 

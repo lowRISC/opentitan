@@ -30,9 +30,9 @@ ifeq (${TEST_NAME},gpio_sanity)
   UVM_TEST_SEQ   = gpio_sanity_vseq
 endif
 
-ifeq (${TEST_NAME},gpio_sanity_no_pullup)
+ifeq (${TEST_NAME},gpio_sanity_no_pullup_pulldown)
   UVM_TEST_SEQ   = gpio_sanity_vseq
-  RUN_OPTS      += +active_high_pullup=0
+  RUN_OPTS      += +no_pullup_pulldown=1
 endif
 
 ifeq (${TEST_NAME},gpio_intr_test)
@@ -49,6 +49,7 @@ endif
 ifeq (${TEST_NAME},gpio_csr_rw)
   UVM_TEST_SEQ   = gpio_common_vseq
   RUN_OPTS      += +csr_rw
+  RUN_OPTS      += +do_clear_all_interrupts=0
   RUN_OPTS      += +en_scb=0
 endif
 
@@ -61,6 +62,7 @@ endif
 ifeq (${TEST_NAME},gpio_csr_aliasing)
   UVM_TEST_SEQ   = gpio_common_vseq
   RUN_OPTS      += +csr_aliasing
+  RUN_OPTS      += +do_clear_all_interrupts=0
   RUN_OPTS      += +en_scb=0
 endif
 
@@ -68,9 +70,9 @@ ifeq ($(TEST_NAME),gpio_random_dout_din)
   UVM_TEST_SEQ   = gpio_random_dout_din_vseq
 endif
 
-ifeq ($(TEST_NAME),gpio_random_dout_din_no_pullup)
+ifeq ($(TEST_NAME),gpio_random_dout_din_no_pullup_pulldown)
   UVM_TEST_SEQ   = gpio_random_dout_din_vseq
-  RUN_OPTS      += +active_high_pullup=0
+  RUN_OPTS      += +no_pullup_pulldown=1
 endif
 
 ifeq ($(TEST_NAME),gpio_dout_din_regs_random_rw)
@@ -91,6 +93,11 @@ ifeq ($(TEST_NAME),gpio_intr_with_filter_rand_intr_event)
   UVM_TEST_SEQ   = gpio_intr_with_filter_rand_intr_event_vseq
   RUN_OPTS      += +en_scb=0
   RUN_OPTS      += +zero_delays=1
+  RUN_OPTS      += +do_clear_all_interrupts=0
+endif
+
+ifeq ($(TEST_NAME),gpio_random_long_reg_writes_reg_reads)
+  UVM_TEST_SEQ   = gpio_random_long_reg_writes_reg_reads_vseq
   RUN_OPTS      += +do_clear_all_interrupts=0
 endif
 
