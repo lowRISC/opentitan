@@ -24,7 +24,7 @@ stages:
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
-        sudo pip3 install fusesoc hjson livereload mistletoe yapf isort mako pygments pyftdi
+        sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
 
     - bash: |
@@ -82,7 +82,7 @@ stages:
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install fusesoc hjson livereload mistletoe yapf isort mako pygments pyftdi \
+          && sudo pip3 install -r python-requirements.txt \
           && sudo apt-get install git make autoconf g++ flex bison curl
       displayName: 'Install dependencies'
     - bash: |
@@ -120,7 +120,7 @@ stages:
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install fusesoc hjson livereload mistletoe yapf isort mako pygments pyftdi
+          && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
         set -e
