@@ -155,3 +155,39 @@
   `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst) \
   //pragma translate_on                                                          \
 `endif
+
+//------------------------------------------------------------------------------------
+// Assumption macros
+//------------------------------------------------------------------------------------
+
+// Assume a concurrent property
+`define ASSUME(__name, __prop, __clk, __rst)                                      \
+`ifndef VERILATOR                                                                 \
+  __name: assume property (@(posedge __clk) disable iff (__rst !== '0) (__prop))  \
+     else begin `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop)) end           \
+`endif
+
+//------------------------------------------------------------------------------------
+// For formal verification only
+//------------------------------------------------------------------------------------
+
+// ASSERT_FPV
+// Assert a concurrent property during formal verification only.
+`define ASSERT_FPV(__name, __prop, __clk, __rst) \
+`ifdef FPV_ON                                    \
+   `ASSERT(__name, __prop, __clk, __rst)         \
+`endif
+
+// ASSUME_FPV
+// Assume a concurrent property during formal verification only.
+`define ASSUME_FPV(__name, __prop, __clk, __rst) \
+`ifdef FPV_ON                                    \
+   `ASSUME(__name, __prop, __clk, __rst)         \
+`endif
+
+// COVER_FPV
+// Cover a concurrent property during formal verification
+`define COVER_FPV(__name, __prop, __clk, __rst)  \
+`ifdef FPV_ON                                    \
+   `COVER(__name, __prop, __clk, __rst)          \
+`endif
