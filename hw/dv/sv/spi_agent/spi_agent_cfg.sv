@@ -5,8 +5,10 @@
 class spi_agent_cfg extends uvm_object;
 
   // agent cfg knobs
-  bit             is_active = 1'b1;   // active driver or passive monitor
-  bit             en_cov    = 1'b1;   // enable coverage
+  bit             is_active  = 1'b1;   // active driver or passive monitor
+  bit             en_cov     = 1'b1;   // enable coverage
+  bit             en_monitor_collect_trans = 1'b1; // enable monitor to collect trans on-the-fly
+  bit             en_monitor_checks        = 1'b1; // enable checkers in monitor
   if_mode_e       mode;               // host or device mode
 
   // host mode cfg knobs

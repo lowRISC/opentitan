@@ -68,16 +68,16 @@ class spi_host_driver extends spi_driver;
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("spi_host_driver: rcvd item:\n%0s", req.sprint()), UVM_HIGH)
       cfg.vif.csb <= 1'b0;
-      sck_pulses = req.data.size() * 8 + (cfg.sck_phase ? 1 : 0);
+      sck_pulses = req.data.size() * 8;
 
       // for mode 1 and 3, get the leading edges out of the way
       cfg.wait_sck_edge(LeadingEdge);
 
       // drive data
       for (int i = 0; i < req.data.size(); i++) begin
-        bit [7:0] host_byte;
-        bit [7:0] device_byte;
-        int       which_bit;
+        logic [7:0] host_byte;
+        logic [7:0] device_byte;
+        int         which_bit;
         host_byte = req.data[i];
         for (int j = 0; j < 8; j++) begin
           // drive mosi early so that it is stable at the sampling edge
@@ -88,7 +88,7 @@ class spi_host_driver extends spi_driver;
           which_bit = cfg.device_bit_dir ? j : 7 - j;
           device_byte[which_bit] = cfg.vif.miso;
           // wait for driving edge to complete 1 cycle
-          cfg.wait_sck_edge(DrivingEdge);
+          if (i != req.data.size() - 1 || j != 7) cfg.wait_sck_edge(DrivingEdge);
         end
         rsp.data[i] = device_byte;
       end
