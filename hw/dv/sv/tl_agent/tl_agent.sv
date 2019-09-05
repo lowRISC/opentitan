@@ -24,7 +24,7 @@ class tl_agent extends uvm_agent;
     if (!uvm_config_db#(tl_agent_cfg)::get(this, "", "cfg", cfg)) begin
       `uvm_fatal("NO_CFG", {"cfg must be set for:", get_full_name(), ".cfg"});
     end
-    if (cfg.is_active || get_is_active() == UVM_ACTIVE) begin
+    if (cfg.is_active && get_is_active() == UVM_ACTIVE) begin
       if (cfg.is_host) begin
         host_driver = tl_host_driver::type_id::create("host_driver", this);
       end else begin
@@ -36,7 +36,7 @@ class tl_agent extends uvm_agent;
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
-    if (cfg.is_active || get_is_active() == UVM_ACTIVE) begin
+    if (cfg.is_active && get_is_active() == UVM_ACTIVE) begin
       if (cfg.is_host) begin
         host_driver.seq_item_port.connect(seqr.seq_item_export);
       end else begin

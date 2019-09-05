@@ -61,7 +61,7 @@ class chip_base_vseq extends dv_base_vseq #(
   endtask
 
   virtual task body();
-    if (cfg.stub_cpu) begin
+    if (!cfg.stub_cpu) begin
       monitor_cpu_state();
       wait_for_cpu_test_complete(.timeout_ns(cpu_test_timeout_ns));
     end
