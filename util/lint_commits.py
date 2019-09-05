@@ -126,6 +126,8 @@ def main():
         is_merge = len(commit.parents) > 1
         if is_merge and args.no_merges:
             print("Skipping merge commit.")
+            continue
+
         if not lint_commit(commit):
             lint_successful = False
 
