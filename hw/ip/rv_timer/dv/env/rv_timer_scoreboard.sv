@@ -35,12 +35,13 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
     string  csr_name;
-    bit     do_read_check = 1'b1;
-    bit     write = item.is_write();
+    bit     do_read_check   = 1'b1;
+    bit     write           = item.is_write();
+    uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
 
     // if access was to a valid csr, get the csr handle
-    if (item.a_addr inside {cfg.csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(item.a_addr);
+    if (csr_addr inside {cfg.csr_addrs}) begin
+      csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
       csr_name = csr.get_name();
     end

@@ -19,13 +19,43 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     ITEM_T reg_item;
     reg_item = ITEM_T::type_id::create("reg_item");
     `DV_CHECK_RANDOMIZE_FATAL(reg_item)
-    reg_item.a_addr   = rw.addr;
-    reg_item.a_size   = 2; // 4 bytes
     reg_item.a_opcode = (rw.kind == UVM_WRITE) ? tlul_pkg::PutFullData : tlul_pkg::Get;
-    reg_item.a_mask   = rw.byte_en;
-    reg_item.a_data   = rw.data;
-    `uvm_info(`gtn, $sformatf("tl reg req item: addr=0x%0h, op=%0s data=0x%0h",
-                              reg_item.a_addr, reg_item.a_opcode.name, reg_item.a_data), UVM_HIGH)
+
+    // tlul support partial rd but follow protocol standards
+    // TODO: this code assumes TLUL data is always 32 bits wide, can explore more generic solution
+    if (reg_item.a_opcode == tlul_pkg::Get) begin
+      case ($countones(rw.byte_en))
+        3, 4: begin // no partial rd
+          reg_item.a_mask = 'hf;
+          reg_item.a_addr = rw.addr;
+        end
+        1: begin // partial rd 1 byte
+          reg_item.a_mask = rw.byte_en;
+          reg_item.a_addr = rw.addr + $clog2(rw.byte_en);
+        end
+        2: begin
+          if (rw.byte_en == 'b0110) begin // no partial rd
+            reg_item.a_mask = 'hf;
+            reg_item.a_addr = rw.addr;
+          end else begin // partial rd 2 bytes
+            reg_item.a_mask = rw.byte_en;
+            reg_item.a_addr = (rw.byte_en == 'b0011) ? rw.addr : rw.addr + 2;
+          end
+        end
+        default: begin
+          `uvm_fatal(`gtn, $sformatf("invalid byte_en value = 0x%0h", rw.byte_en));
+        end
+      endcase
+    end
+    else begin
+      reg_item.a_mask = rw.byte_en;
+      reg_item.a_addr = rw.addr;
+    end
+    reg_item.a_size = $clog2($countones(reg_item.a_mask));
+    reg_item.a_data = rw.data;
+    `uvm_info(`gtn, $sformatf("tl reg req item: addr=0x%0h, op=%0s data=0x%0h, mask = %0h",
+                              reg_item.a_addr, reg_item.a_opcode.name, reg_item.a_data,
+                              reg_item.a_mask), UVM_HIGH)
     return reg_item;
   endfunction : reg2bus
 
