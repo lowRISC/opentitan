@@ -20,27 +20,22 @@ module rv_plic_reg_top (
   import rv_plic_reg_pkg::* ;
 
   localparam AW = 9;
-  localparam IW = $bits(tl_i.a_source);
   localparam DW = 32;
   localparam DBW = DW/8;                    // Byte Width
   localparam logic [$clog2($clog2(DBW)+1)-1:0] FSZ = $clog2(DBW); // Full Size 2^(FSZ) = DBW;
 
   // register signals
-  logic          reg_we;
-  logic          reg_re;
-  logic [AW-1:0] reg_addr;
-  logic [DW-1:0] reg_wdata;
-  logic          reg_valid;
-  logic [DW-1:0] reg_rdata;
-  logic          tl_malformed, tl_addrmiss;
+  logic           reg_we;
+  logic           reg_re;
+  logic [AW-1:0]  reg_addr;
+  logic [DW-1:0]  reg_wdata;
+  logic [DBW-1:0] reg_be;
+  logic [DW-1:0]  reg_rdata;
+  logic           reg_error;
 
-  // Bus signals
-  tlul_pkg::tl_d_op_e rsp_opcode; // AccessAck or AccessAckData
-  logic          reqready;
-  logic [IW-1:0] reqid;
-  logic [IW-1:0] rspid;
+  logic          malformed, addrmiss;
 
-  logic          outstanding;
+  logic [DW-1:0] reg_rdata_next;
 
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
@@ -48,47 +43,37 @@ module rv_plic_reg_top (
   assign tl_reg_h2d = tl_i;
   assign tl_o       = tl_reg_d2h;
 
-  // TODO(eunchan): Fix it after bus interface is finalized
-  assign reg_we = tl_reg_h2d.a_valid && tl_reg_d2h.a_ready &&
-                  ((tl_reg_h2d.a_opcode == tlul_pkg::PutFullData) ||
-                   (tl_reg_h2d.a_opcode == tlul_pkg::PutPartialData));
-  assign reg_re = tl_reg_h2d.a_valid && tl_reg_d2h.a_ready &&
-                  (tl_reg_h2d.a_opcode == tlul_pkg::Get);
-  assign reg_addr = tl_reg_h2d.a_address[AW-1:0];
-  assign reg_wdata = tl_reg_h2d.a_data;
+  tlul_adapter_reg #(
+    .RegAw(AW),
+    .RegDw(DW)
+  ) u_reg_if (
+    .clk_i,
+    .rst_ni,
 
-  assign tl_reg_d2h.d_valid  = reg_valid;
-  assign tl_reg_d2h.d_opcode = rsp_opcode;
-  assign tl_reg_d2h.d_param  = '0;
-  assign tl_reg_d2h.d_size   = FSZ;         // always Full Size
-  assign tl_reg_d2h.d_source = rspid;
-  assign tl_reg_d2h.d_sink   = '0;          // Used in TL-C
-  assign tl_reg_d2h.d_data   = reg_rdata;
-  assign tl_reg_d2h.d_user   = '0;          // Doesn't allow additional features yet
-  assign tl_reg_d2h.d_error  = tl_malformed | tl_addrmiss;
+    .tl_i (tl_reg_h2d),
+    .tl_o (tl_reg_d2h),
 
-  assign tl_reg_d2h.a_ready  = reqready;
+    .we_o    (reg_we),
+    .re_o    (reg_re),
+    .addr_o  (reg_addr),
+    .wdata_o (reg_wdata),
+    .be_o    (reg_be),
+    .rdata_i (reg_rdata),
+    .error_i (reg_error)
+  );
 
-  assign reqid     = tl_reg_h2d.a_source;
+  assign reg_rdata = reg_rdata_next ;
+  assign reg_error = malformed | addrmiss ;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      tl_malformed <= 1'b1;
-    end else if (tl_reg_h2d.a_valid && tl_reg_d2h.a_ready) begin
-      if ((tl_reg_h2d.a_opcode != tlul_pkg::Get) &&
-          (tl_reg_h2d.a_opcode != tlul_pkg::PutFullData) &&
-          (tl_reg_h2d.a_opcode != tlul_pkg::PutPartialData)) begin
-        tl_malformed <= 1'b1;
-      // Only allow Full Write with full mask
-      end else if (tl_reg_h2d.a_size != FSZ || tl_reg_h2d.a_mask != {DBW{1'b1}}) begin
-        tl_malformed <= 1'b1;
-      end else if (tl_reg_h2d.a_user.parity_en == 1'b1) begin
-        tl_malformed <= 1'b1;
-      end else begin
-        tl_malformed <= 1'b0;
-      end
+  // Malformed request check only affects to the write access
+  always_comb begin : malformed_check
+    if (reg_we && (reg_be != '1)) begin
+      malformed = 1'b1;
+    end else begin
+      malformed = 1'b0;
     end
   end
+
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
   //    1. Write: No response, so that it can guarantee a request completes a clock after we
@@ -104,26 +89,6 @@ module rv_plic_reg_top (
   // d_ready ___________________/     \______
   //
   // Above example is fine but if r.b.r doesn't assert within two cycle, then it can be wrong.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    // Not to accept new request when a request is handling
-    //   #Outstanding := 1
-    if (!rst_ni) begin
-      reqready <= 1'b0;
-    end else if (reg_we || reg_re) begin
-      reqready <= 1'b0;
-    end else if (outstanding == 1'b0) begin
-      reqready <= 1'b1;
-    end
-  end
-
-  // Request/ Response ID
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rspid <= '0;
-    end else if (reg_we || reg_re) begin
-      rspid <= reqid;
-    end
-  end
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -6219,9 +6184,9 @@ module rv_plic_reg_top (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      tl_addrmiss <= 1'b0;
+      addrmiss <= 1'b0;
     end else if (reg_re || reg_we) begin
-      tl_addrmiss <= ~|addr_hit;
+      addrmiss <= ~|addr_hit;
     end
   end
 
@@ -6758,7 +6723,6 @@ module rv_plic_reg_top (
   assign msip0_wd = reg_wdata[0];
 
   // Read data return
-  logic [DW-1:0] reg_rdata_next;
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
@@ -7162,41 +7126,11 @@ module rv_plic_reg_top (
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      reg_valid <= 1'b0;
-      reg_rdata <= '0;
-      rsp_opcode <= tlul_pkg::AccessAck;
-    end else if (reg_re || reg_we) begin
-      // Guarantee to return data in a cycle
-      reg_valid <= 1'b1;
-      if (reg_re) begin
-        reg_rdata <= reg_rdata_next;
-        rsp_opcode <= tlul_pkg::AccessAckData;
-      end else begin
-        rsp_opcode <= tlul_pkg::AccessAck;
-      end
-    end else if (tl_reg_h2d.d_ready) begin
-      reg_valid <= 1'b0;
-    end
-  end
-
-  // Outstanding: 1 outstanding at a time. Identical to `reg_valid`
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      outstanding <= 1'b0;
-    end else if (tl_reg_h2d.a_valid && tl_reg_d2h.a_ready) begin
-      outstanding <= 1'b1;
-    end else if (tl_reg_d2h.d_valid && tl_reg_h2d.d_ready) begin
-      outstanding <= 1'b0;
-    end
-  end
-
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
   `ASSERT_PULSE(rePulse, reg_re, clk_i, !rst_ni)
 
-  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> reg_valid, clk_i, !rst_ni)
+  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o.d_valid, clk_i, !rst_ni)
 
   `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), clk_i, !rst_ni)
 
