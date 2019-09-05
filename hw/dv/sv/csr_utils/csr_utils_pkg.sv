@@ -256,9 +256,10 @@ package csr_utils_pkg;
           begin
             outstanding_csr_accesses++;
             csr_or_fld = decode_csr_or_field(ptr);
-            csr_or_fld.csr.read(.status(status), .value(value), .path(path), .map(map));
             if (csr_or_fld.field != null) begin
-              value = get_field_val(csr_or_fld.field, value);
+              csr_or_fld.field.read(.status(status), .value(value), .path(path), .map(map));
+            end else begin
+              csr_or_fld.csr.read(.status(status), .value(value), .path(path), .map(map));
             end
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
