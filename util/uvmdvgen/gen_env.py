@@ -23,7 +23,7 @@ def gen_env(name, is_cip, env_agents, root_dir):
                 ('env',         name + '_', 'env',                '.core'),
                 ('env/seq_lib', name + '_', 'base_vseq',          '.sv'),
                 ('env/seq_lib', name + '_', 'sanity_vseq',        '.sv'),
-                ('env/seq_lib', name + '_', 'csr_vseq',           '.sv'),
+                ('env/seq_lib', name + '_', 'common_vseq',        '.sv'),
                 ('env/seq_lib', name + '_', 'vseq_list',          '.sv'),
                 ('tb',          '',         'tb',                 '.sv'),
                 ('tb',          name + '_', 'bind',               '.sv'),

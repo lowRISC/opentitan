@@ -44,26 +44,31 @@ ifeq (${TEST_NAME},hmac_nist_sha_vectors)
   RUN_OPTS      += +nist_vectors_dir=${DV_DIR}/../../../dv/sv/nist_vectors/
 endif
 
+ifeq (${TEST_NAME},hmac_intr_test)
+  UVM_TEST_SEQ   = hmac_common_vseq
+  RUN_OPTS      += +run_intr_test
+endif
+
 ifeq (${TEST_NAME},hmac_csr_hw_reset)
-  UVM_TEST_SEQ   = hmac_csr_vseq
+  UVM_TEST_SEQ   = hmac_common_vseq
   RUN_OPTS      += +csr_hw_reset
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},hmac_csr_rw)
-  UVM_TEST_SEQ   = hmac_csr_vseq
+  UVM_TEST_SEQ   = hmac_common_vseq
   RUN_OPTS      += +csr_rw
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},hmac_csr_bit_bash)
-  UVM_TEST_SEQ   = hmac_csr_vseq
+  UVM_TEST_SEQ   = hmac_common_vseq
   RUN_OPTS      += +csr_bit_bash
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},hmac_csr_aliasing)
-  UVM_TEST_SEQ   = hmac_csr_vseq
+  UVM_TEST_SEQ   = hmac_common_vseq
   RUN_OPTS      += +csr_aliasing
   RUN_OPTS      += +en_scb=0
 endif

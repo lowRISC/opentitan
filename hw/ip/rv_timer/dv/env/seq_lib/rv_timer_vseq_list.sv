@@ -7,4 +7,4 @@
 `include "rv_timer_random_reset_vseq.sv"
 `include "rv_timer_disabled_vseq.sv"
 `include "rv_timer_cfg_update_on_fly_vseq.sv"
-`include "rv_timer_csr_vseq.sv"
+`include "rv_timer_common_vseq.sv"

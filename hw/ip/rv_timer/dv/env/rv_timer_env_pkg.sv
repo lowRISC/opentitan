@@ -18,8 +18,8 @@ package rv_timer_env_pkg;
 
   // local parameters and types
   // TODO: these are currently hardcoded to 1 - this will need to change if design is modified
-  parameter NUM_HARTS = 1;
-  parameter NUM_TIMERS = 1;
+  parameter uint NUM_HARTS = 1;
+  parameter uint NUM_TIMERS = 1;
 
   typedef class rv_timer_env_cfg;
   typedef class rv_timer_env_cov;

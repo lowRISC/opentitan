@@ -35,10 +35,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  task body();
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
-  endtask : body
-
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
     cfg.clk_rst_vif.wait_clks(1);
