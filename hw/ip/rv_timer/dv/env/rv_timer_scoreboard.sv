@@ -129,11 +129,20 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
             if (csr_name == intr_state_str) begin
               // Intr_state reg is W1C, update expected status with RAL mirrored val
               intr_status_exp[i] = get_reg_fld_mirror_value(ral, intr_state_str);
+              break;
             end
           end
         end
         (!uvm_re_match("intr_test*", csr_name)): begin
-          // TODO check it later
+          for (int i = 0; i < NUM_HARTS; i++) begin
+            string intr_test_str = $sformatf("intr_test%0d", i);
+            if (csr_name == intr_test_str) begin
+              intr_status_exp[i] = get_reg_fld_mirror_value(ral, intr_test_str);
+              // this field is WO - always returns 0
+              csr.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+              break;
+            end
+          end
         end
         default: begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

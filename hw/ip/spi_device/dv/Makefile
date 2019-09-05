@@ -31,33 +31,38 @@ ifeq (${TEST_NAME},spi_device_sanity)
 endif
 
 ifeq (${TEST_NAME},spi_device_csr_hw_reset)
-  UVM_TEST_SEQ   = spi_device_csr_vseq
+  UVM_TEST_SEQ   = spi_device_common_vseq
   RUN_OPTS      += +csr_hw_reset
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},spi_device_csr_rw)
-  UVM_TEST_SEQ   = spi_device_csr_vseq
+  UVM_TEST_SEQ   = spi_device_common_vseq
   RUN_OPTS      += +csr_rw
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},spi_device_csr_bit_bash)
-  UVM_TEST_SEQ   = spi_device_csr_vseq
+  UVM_TEST_SEQ   = spi_device_common_vseq
   RUN_OPTS      += +csr_bit_bash
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},spi_device_csr_aliasing)
-  UVM_TEST_SEQ   = spi_device_csr_vseq
+  UVM_TEST_SEQ   = spi_device_common_vseq
   RUN_OPTS      += +csr_aliasing
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${TEST_NAME},spi_device_csr_mem_walk)
-  UVM_TEST_SEQ   = spi_device_csr_vseq
+  UVM_TEST_SEQ   = spi_device_common_vseq
   RUN_OPTS      += +csr_mem_walk
   RUN_OPTS      += +en_scb=0
+endif
+
+ifeq (${TEST_NAME},spi_device_intr_test)
+  UVM_TEST_SEQ   = spi_device_common_vseq
+  RUN_OPTS      += +run_intr_test
 endif
 
 ifeq (${TEST_NAME},spi_device_txrx)

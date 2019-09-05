@@ -69,10 +69,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // scope: for top level, specify which ip / sub module's interrupt to clear
 
   // common task
-  local function uvm_reg get_interrupt_csr(string csr_name,
-                                           string suffix = "",
-                                           int indices[$] = {},
-                                           uvm_reg_block scope = null);
+  local function dv_base_reg get_interrupt_csr(string csr_name,
+                                               string suffix = "",
+                                               int indices[$] = {},
+                                               uvm_reg_block scope = null);
+    uvm_reg csr;
     if (indices.size() != 0) begin
       foreach (indices[i]) begin
         suffix = {suffix, (i == 0) ? "" : "_", $sformatf("%0d", i)};
@@ -81,10 +82,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
     // check within scope first, if supplied
     if (scope != null)  begin
-      get_interrupt_csr = scope.get_reg_by_name(csr_name);
+      csr = scope.get_reg_by_name(csr_name);
     end else begin
-      get_interrupt_csr = ral.get_reg_by_name(csr_name);
+      csr = ral.get_reg_by_name(csr_name);
     end
+    `downcast(get_interrupt_csr, csr)
     `DV_CHECK_NE_FATAL(get_interrupt_csr, null)
   endfunction
 
@@ -139,6 +141,105 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  // TODO add test sequence for intr_test
+  // wrapper task to call common test or csr tests
+  virtual task run_common_vseq_wrapper(int num_times = 1);
+    string test_type;
+    void'($value$plusargs("run_%0s", test_type));
+    // check which test type
+    case (test_type)
+      "intr_test": run_intr_test_vseq(num_times);
+      default    : run_csr_vseq_wrapper(num_times);
+    endcase
+  endtask
+
+  // generic task to check interrupt test reg functionality
+  virtual task run_intr_test_vseq(int num_times = 1);
+    uvm_reg     all_csrs[$];
+    dv_base_reg intr_test_csrs[$];
+    dv_base_reg intr_state_csrs[$];
+    dv_base_reg intr_enable_csrs[$];
+    bit [TL_DW-1:0] exp_intr_state[$];
+    int test_index[$];
+
+    // Get all interrupt test/state/enable registers
+    ral.get_registers(all_csrs);
+    foreach (all_csrs[i]) begin
+      string csr_name = all_csrs[i].get_name();
+      if (!uvm_re_match("intr_test*", csr_name)) begin
+        test_index.push_back(intr_test_csrs.size());
+        intr_test_csrs.push_back(get_interrupt_csr(csr_name));
+      end
+      else if (!uvm_re_match("intr_enable*", csr_name)) begin
+        intr_enable_csrs.push_back(get_interrupt_csr(csr_name));
+      end
+      else if (!uvm_re_match("intr_state*", csr_name)) begin
+        intr_state_csrs.push_back(get_interrupt_csr(csr_name));
+        //Place holder for expected intr state value
+        exp_intr_state.push_back(0);
+      end
+    end
+    all_csrs.delete();
+
+    // check intr test, enable and state queue sizes are equal
+    `DV_CHECK_EQ_FATAL(intr_enable_csrs.size(), intr_test_csrs.size())
+    `DV_CHECK_EQ_FATAL(intr_state_csrs.size(), intr_test_csrs.size())
+
+    for (int trans = 1; trans <= num_times; trans++) begin
+      bit [TL_DW-1:0] num_used_bits;
+      bit [TL_DW-1:0] intr_enable_val[$];
+      `uvm_info(`gfn, $sformatf("Running intr test iteration %0d/%0d", trans, num_times), UVM_LOW)
+      // Random Write to all intr enable registers
+      test_index.shuffle();
+      foreach (test_index[i]) begin
+        bit [TL_DW-1:0] wr_data;
+        wr_data = $urandom_range(1, ((1 << intr_enable_csrs[test_index[i]].get_n_used_bits()) - 1));
+        intr_enable_val.insert(test_index[i], wr_data);
+        csr_wr(.csr(intr_enable_csrs[test_index[i]]), .value(wr_data));
+      end
+
+      // Random write to all interrupt test reg
+      test_index.shuffle();
+      foreach (test_index[i]) begin
+        bit [TL_DW-1:0] wr_data;
+        wr_data = $urandom_range(1, ((1 << intr_test_csrs[test_index[i]].get_n_used_bits()) - 1));
+        // Add wr_data to expected state queue
+        exp_intr_state[test_index[i]] |= wr_data;
+        csr_wr(.csr(intr_test_csrs[test_index[i]]), .value(wr_data));
+      end
+
+      // Read all intr state
+      test_index.shuffle();
+      foreach (test_index[i]) begin
+        bit [TL_DW-1:0] dut_intr_state;
+        `uvm_info(`gtn, $sformatf("Verifying %0s", intr_test_csrs[test_index[i]].get_full_name()),
+            UVM_LOW)
+        csr_rd(.ptr(intr_state_csrs[test_index[i]]), .value(dut_intr_state));
+        `DV_CHECK_EQ(dut_intr_state, exp_intr_state[test_index[i]])
+      end
+
+      // check interrupt pins
+      foreach (intr_test_csrs[i]) begin
+        bit [TL_DW-1:0] exp_intr_pin;
+        exp_intr_pin = exp_intr_state[i] & intr_enable_val[i];
+        for (int j = 0; j < intr_test_csrs[i].get_n_used_bits(); j++) begin
+          bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
+          `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j], $sformatf(
+              "exp_intr_state: %0h, en_intr: %0h", exp_intr_state[i], intr_enable_val[i]))
+        end
+        num_used_bits += intr_test_csrs[i].get_n_used_bits();
+      end
+
+      // clear random bits of intr state
+      test_index.shuffle();
+      foreach (test_index[i]) begin
+        if ($urandom_range(0, 1)) begin
+          bit [TL_DW-1:0] wr_data;
+          wr_data = $urandom_range((1 << intr_state_csrs[test_index[i]].get_n_used_bits()) - 1);
+          exp_intr_state[test_index[i]] &= (~wr_data);
+          csr_wr(.csr(intr_state_csrs[test_index[i]]), .value(wr_data));
+        end
+      end
+    end
+  endtask
 
 endclass

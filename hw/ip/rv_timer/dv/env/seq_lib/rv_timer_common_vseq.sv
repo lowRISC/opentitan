@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class rv_timer_csr_vseq extends rv_timer_base_vseq;
-  `uvm_object_utils(rv_timer_csr_vseq)
+class rv_timer_common_vseq extends rv_timer_base_vseq;
+  `uvm_object_utils(rv_timer_common_vseq)
   `uvm_object_new
 
   constraint num_trans_c {
@@ -11,7 +11,7 @@ class rv_timer_csr_vseq extends rv_timer_base_vseq;
   }
 
   virtual task body();
-    run_csr_vseq_wrapper(num_trans);
+    run_common_vseq_wrapper(num_trans);
   endtask : body
 
   // function to add csr exclusions of the given type using the csr_excl_item item

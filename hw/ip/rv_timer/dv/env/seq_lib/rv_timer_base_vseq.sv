@@ -38,10 +38,6 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask
 
-  task body();
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
-  endtask : body
-
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     // TODO: nothing extra to do yet

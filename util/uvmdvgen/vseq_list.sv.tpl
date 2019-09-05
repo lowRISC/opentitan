@@ -4,4 +4,4 @@
 
 `include "${name}_base_vseq.sv"
 `include "${name}_sanity_vseq.sv"
-`include "${name}_csr_vseq.sv"
+`include "${name}_common_vseq.sv"

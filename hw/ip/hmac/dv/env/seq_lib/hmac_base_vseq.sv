@@ -34,10 +34,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     solve wr_size before wr_mask;
   }
 
-  task body();
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
-  endtask : body
-
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     if (do_hmac_init) hmac_init();

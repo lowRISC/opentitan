@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class hmac_csr_vseq extends hmac_base_vseq;
-  `uvm_object_utils(hmac_csr_vseq)
+class hmac_common_vseq extends hmac_base_vseq;
+  `uvm_object_utils(hmac_common_vseq)
   `uvm_object_new
 
   constraint num_trans_c {
@@ -16,7 +16,7 @@ class hmac_csr_vseq extends hmac_base_vseq;
   endtask
 
   virtual task body();
-    run_csr_vseq_wrapper(num_trans);
+    run_common_vseq_wrapper(num_trans);
   endtask : body
 
   // function to add csr exclusions of the given type using the csr_excl_item item

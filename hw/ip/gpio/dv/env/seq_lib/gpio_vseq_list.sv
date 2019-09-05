@@ -4,7 +4,7 @@
 
 `include "gpio_base_vseq.sv"
 `include "gpio_sanity_vseq.sv"
-`include "gpio_csr_vseq.sv"
+`include "gpio_common_vseq.sv"
 `include "gpio_random_dout_din_vseq.sv"
 `include "gpio_dout_din_regs_random_rw_vseq.sv"
 `include "gpio_intr_rand_pgm_vseq.sv"

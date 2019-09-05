@@ -33,33 +33,38 @@ ifeq (${'$'}{TEST_NAME},${name}_sanity)
   UVM_TEST_SEQ   = ${name}_sanity_vseq
 endif
 
+ifeq (${'$'}{TEST_NAME},${name}_intr_test)
+  UVM_TEST_SEQ   = ${name}_common_vseq
+  RUN_OPTS      += +run_intr_test
+endif
+
 ifeq (${'$'}{TEST_NAME},${name}_csr_hw_reset)
-  UVM_TEST_SEQ   = ${name}_csr_vseq
+  UVM_TEST_SEQ   = ${name}_common_vseq
   RUN_OPTS      += +csr_hw_reset
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${'$'}{TEST_NAME},${name}_csr_rw)
-  UVM_TEST_SEQ   = ${name}_csr_vseq
+  UVM_TEST_SEQ   = ${name}_common_vseq
   RUN_OPTS      += +csr_rw
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${'$'}{TEST_NAME},${name}_csr_bit_bash)
-  UVM_TEST_SEQ   = ${name}_csr_vseq
+  UVM_TEST_SEQ   = ${name}_common_vseq
   RUN_OPTS      += +csr_bit_bash
   RUN_OPTS      += +en_scb=0
 endif
 
 ifeq (${'$'}{TEST_NAME},${name}_csr_aliasing)
-  UVM_TEST_SEQ   = ${name}_csr_vseq
+  UVM_TEST_SEQ   = ${name}_common_vseq
   RUN_OPTS      += +csr_aliasing
   RUN_OPTS      += +en_scb=0
 endif
 
 ${'# TODO: remove this test if there are no memories in the DUT'}
   ifeq (${'$'}{TEST_NAME},${name}_mem_walk)
-  UVM_TEST_SEQ   = ${name}_csr_vseq
+  UVM_TEST_SEQ   = ${name}_common_vseq
   RUN_OPTS      += +csr_mem_walk
   RUN_OPTS      += +en_scb=0
 endif
