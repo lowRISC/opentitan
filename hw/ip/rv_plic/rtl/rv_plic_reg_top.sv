@@ -22,7 +22,6 @@ module rv_plic_reg_top (
   localparam AW = 9;
   localparam DW = 32;
   localparam DBW = DW/8;                    // Byte Width
-  localparam logic [$clog2($clog2(DBW)+1)-1:0] FSZ = $clog2(DBW); // Full Size 2^(FSZ) = DBW;
 
   // register signals
   logic           reg_we;

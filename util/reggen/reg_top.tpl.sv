@@ -33,7 +33,6 @@ module ${block.name}_reg_top (
   localparam AW = ${block.addr_width};
   localparam DW = ${block.width};
   localparam DBW = DW/8;                    // Byte Width
-  localparam logic [$clog2($clog2(DBW)+1)-1:0] FSZ = $clog2(DBW); // Full Size 2^(FSZ) = DBW;
 
   // register signals
   logic           reg_we;
