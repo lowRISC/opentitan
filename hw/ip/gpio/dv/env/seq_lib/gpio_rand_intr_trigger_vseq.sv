@@ -48,7 +48,7 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
             for (uint iter = 0; iter < cnt_gpio_tgl; iter++) begin
               bit [TL_DW-1:0] gpio_i;
               bit [TL_DW-1:0] data_in;
-              `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(gpio_i)
+              `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
               cfg.gpio_vif.drive(gpio_i);
               cfg.clk_rst_vif.wait_clks(1);
               // read data_in register

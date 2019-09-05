@@ -36,7 +36,7 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
           // gpio input to drive
           bit [NUM_GPIOS-1:0] gpio_i;
           bit [NUM_GPIOS-1:0] data_in;
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(gpio_i)
+          `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           `uvm_info(msg_id, "drive random value on gpio_i", UVM_HIGH)
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);

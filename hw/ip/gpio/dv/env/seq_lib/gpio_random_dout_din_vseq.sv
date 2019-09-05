@@ -36,7 +36,7 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
           bit [NUM_GPIOS-1:0] data_in;
           `uvm_info(`gfn, $sformatf("Transaction-%0d: drive random value to gpio_i", tr_num),
                     UVM_HIGH)
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(gpio_i)
+          `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
           cfg.clk_rst_vif.wait_clks(1);
