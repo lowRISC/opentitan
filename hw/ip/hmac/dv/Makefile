@@ -43,9 +43,14 @@ ifeq (${TEST_NAME},hmac_burst_wr)
   UVM_TEST_SEQ   = hmac_burst_wr_vseq
 endif
 
-ifeq (${TEST_NAME},hmac_nist_sha_vectors)
-  UVM_TEST_SEQ   = hmac_nist_vectors_vseq
-  RUN_OPTS      += +nist_vectors_dir=${DV_DIR}/../../../dv/sv/nist_vectors/
+ifeq (${TEST_NAME},hmac_test_sha_vectors)
+  UVM_TEST_SEQ   = hmac_test_vectors_sha_vseq
+  RUN_OPTS      += +test_vectors_dir=${DV_DIR}/../../../dv/sv/test_vectors/
+endif
+
+ifeq (${TEST_NAME},hmac_test_hmac_vectors)
+  UVM_TEST_SEQ   = hmac_test_vectors_hmac_vseq
+  RUN_OPTS      += +test_vectors_dir=${DV_DIR}/../../../dv/sv/test_vectors/
 endif
 
 ifeq (${TEST_NAME},hmac_intr_test)
