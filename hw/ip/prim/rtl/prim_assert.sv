@@ -28,9 +28,9 @@
 //------------------------------------------------------------------------------------
 
 // Converts an arbitrary block of code into a Verilog string
-`define STRINGIFY(__x) `"__x`"
+`define PRIM_STRINGIFY(__x) `"__x`"
 
-// ASSERT_RPT is available to change the reporting mechanism when an assert fails
+  // ASSERT_RPT is available to change the reporting mechanism when an assert fails
 `define ASSERT_RPT(__name, __msg)                                         \
 `ifdef UVM_PKG_SV                                                         \
   assert_rpt_pkg::assert_rpt($sformatf("[%m] %s: %s (%s:%0d)",            \
@@ -46,23 +46,23 @@
 //------------------------------------------------------------------------------------
 // Immediate assertion
 // Note that immediate assertions are sensitive to simulation glitches.
-`define ASSERT_I(__name, __prop)                             \
-`ifndef VERILATOR                                            \
-  //pragma translate_off                                     \
-  __name: assert (__prop)                                    \
-    else `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop)) \
-  //pragma translate_on                                      \
+`define ASSERT_I(__name, __prop)                                       \
+`ifndef VERILATOR                                                      \
+  //pragma translate_off                                               \
+  __name: assert (__prop)                                              \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) \
+  //pragma translate_on                                                \
 `endif
 
 //------------------------------------------------------------------------------------
 // Assertion in initial block. Can be used for things like parameter checking.
-`define ASSERT_INIT(__name, __prop)                            \
-`ifndef VERILATOR                                              \
-  //pragma translate_off                                       \
-  initial                                                      \
-    __name: assert (__prop)                                    \
-      else `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop)) \
-  //pragma translate_on                                        \
+`define ASSERT_INIT(__name, __prop)                                      \
+`ifndef VERILATOR                                                        \
+  //pragma translate_off                                                 \
+  initial                                                                \
+    __name: assert (__prop)                                              \
+      else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) \
+  //pragma translate_on                                                  \
 `endif
 
 //------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@
   //pragma translate_off                                                     \
   final                                                                      \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
-      else `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop))               \
+      else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))     \
   //pragma translate_on                                                      \
 `endif
 
@@ -85,7 +85,7 @@
 `ifndef VERILATOR                                                                \
   //pragma translate_off                                                         \
   __name: assert property (@(posedge __clk) disable iff (__rst !== '0) (__prop)) \
-    else `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop))                     \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))           \
   //pragma translate_on                                                          \
 `endif
 // Note: Above we use (__rst !== '0) in the disable iff statements instead of
@@ -99,7 +99,7 @@
 `ifndef VERILATOR                                                                    \
   //pragma translate_off                                                             \
   __name: assert property (@(posedge __clk) disable iff (__rst !== '0) not (__prop)) \
-    else `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop))                         \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))               \
   //pragma translate_on                                                              \
 `endif
 
