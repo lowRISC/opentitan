@@ -57,7 +57,7 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
       update_intr_state(crnt_intr_status, stable_value, stable_value);
       // Program filter register
       if ($urandom_range(0, 1)) begin
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(gpio_filter_value)
+        `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_filter_value)
         ral.ctrl_en_input_filter.set(gpio_filter_value);
         csr_update(ral.ctrl_en_input_filter);
       end
@@ -66,7 +66,7 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
       // Predict updated interrupt status register again
       update_intr_state(crnt_intr_status, stable_value, stable_value);
       // Randomize gpio data
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(gpio_i)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(stable_cycles_per_pin)
       foreach (stable_cycles_per_pin[each_pin]) begin
         if (gpio_filter_value[each_pin] == 0) begin
