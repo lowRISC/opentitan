@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:nist_vectors"
-description: "parse nist vectors files and output an array of structures with parsed info"
+name: "lowrisc:dv:test_vectors"
+description: "parse test vectors files and output an array of structures with parsed info"
 filesets:
   files_dv:
     files:
-      - nist_vectors_pkg.sv
+      - test_vectors_pkg.sv
     file_type: systemVerilogSource
 
 targets:

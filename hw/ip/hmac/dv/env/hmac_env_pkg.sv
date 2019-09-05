@@ -12,7 +12,7 @@ package hmac_env_pkg;
   import cryptoc_dpi_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
-  import nist_vectors_pkg::*;
+  import test_vectors_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
