@@ -6,6 +6,8 @@ class spi_monitor extends uvm_monitor;
   `uvm_component_utils(spi_monitor)
 
   spi_agent_cfg cfg;
+  spi_item host_item;
+  spi_item device_item;
 
   // Analysis port for the collected transfer.
   uvm_analysis_port #(spi_item) host_analysis_port;
@@ -25,18 +27,18 @@ class spi_monitor extends uvm_monitor;
 
   // collect transactions forever
   virtual protected task collect_trans(uvm_phase phase);
+    host_item   = spi_item::type_id::create("host_item", this);
+    device_item = spi_item::type_id::create("device_item", this);
+
     forever begin
       @(negedge cfg.vif.csb);
       phase.raise_objection(this);
-      collect_curr_trans();
+      if (cfg.en_monitor_collect_trans) collect_curr_trans();
       phase.drop_objection(this);
     end
   endtask
 
   virtual protected task collect_curr_trans();
-    spi_item host_item   = spi_item::type_id::create("host_item", this);
-    spi_item device_item = spi_item::type_id::create("device_item", this);
-
     // for mode 1 and 3, get the leading edges out of the way
     cfg.wait_sck_edge(LeadingEdge);
 
@@ -53,6 +55,13 @@ class spi_monitor extends uvm_monitor;
             for (int i = 0; i < 8; i++) begin
               // wait for the sampling edge
               cfg.wait_sck_edge(SamplingEdge);
+              // check mosi/miso not x or z
+              if (cfg.en_monitor_checks) begin
+                `DV_CHECK_CASE_NE(cfg.vif.mosi, 1'bx)
+                `DV_CHECK_CASE_NE(cfg.vif.mosi, 1'bz)
+                `DV_CHECK_CASE_NE(cfg.vif.miso, 1'bx)
+                `DV_CHECK_CASE_NE(cfg.vif.miso, 1'bz)
+              end
               // sample mosi
               which_bit = cfg.host_bit_dir ? i : 7 - i;
               host_byte[which_bit] = cfg.vif.mosi;
