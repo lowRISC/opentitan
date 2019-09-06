@@ -164,7 +164,7 @@
 `define ASSUME(__name, __prop, __clk, __rst)                                      \
 `ifndef VERILATOR                                                                 \
   __name: assume property (@(posedge __clk) disable iff (__rst !== '0) (__prop))  \
-     else begin `ASSERT_RPT(`STRINGIFY(__name), `STRINGIFY(__prop)) end           \
+     else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end \
 `endif
 
 //------------------------------------------------------------------------------------
