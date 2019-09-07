@@ -96,6 +96,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         do_read_check = 1'b0;
         status_msg_fifo_full = item.d_data[HmacStaMsgFifoFull];
       end
+      if (!uvm_re_match("digest*", csr.get_name())) begin
+        // HW default output Littie Endian for each digest (32 bits)
+        // But standard DPI function expect output is in Big Endian
+        // So digest_swap = 0 will require flip the expect value
+        if (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) begin
+          bit [TL_AW-1:0] digest_data = {<<8{csr.get_mirrored_value()}};
+          `DV_CHECK_EQ(item.d_data, digest_data);
+          // do not want to update mirror value here, directly return
+          return;
+        end
+      end
       if (do_read_check) begin
         `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
                                   csr.get_name(), csr.get_mirrored_value()), UVM_HIGH);
@@ -151,12 +162,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         exp_digest = '{default:0};
       end
     endcase
-    // HW default output Littie Endian for each digest (32 bits)
-    // But standard DPI function expect output is in Big Endian
-    // So digest_swap = 0 will require flip the expect value
-    if (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) begin
-      foreach (exp_digest[i]) exp_digest[i] = {<<8{exp_digest[i]}};
-    end
     ral.digest0.predict(exp_digest[0]);
     ral.digest1.predict(exp_digest[1]);
     ral.digest2.predict(exp_digest[2]);

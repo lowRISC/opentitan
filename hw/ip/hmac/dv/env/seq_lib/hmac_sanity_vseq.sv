@@ -38,8 +38,14 @@ class hmac_sanity_vseq extends hmac_base_vseq;
       // hmac_init only sha
       hmac_init(.hmac_en(hmac_en), .endian_swap(endian_swap), .digest_swap(digest_swap));
 
+      // can randomly read previous digest
+      if (i != 1 && $urandom_range(0, 1)) rd_digest();
+
       // write key
       wr_key(key);
+
+      // can randomly read previous digest
+      if (i != 1 && $urandom_range(0, 1)) rd_digest();
 
       // start stream in msg
       trigger_hash();
