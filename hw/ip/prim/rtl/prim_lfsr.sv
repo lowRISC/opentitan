@@ -17,7 +17,7 @@ module prim_lfsr #(
   // Width of output tap (from lfsr_q[OutDw-1:0])
   parameter int unsigned       OutDw  =  8,
   // Lfsr reset state, must be nonzero!
-  parameter logic [LfsrDw-1:0] Seed   = '1,
+  parameter logic [LfsrDw-1:0] Seed   = LfsrDw'(1),
   // Custom polynomial coeffs
   parameter logic [LfsrDw-1:0] Custom = '0
 ) (
@@ -29,7 +29,11 @@ module prim_lfsr #(
 );
 
   // automatically generated with get-lfsr-coeffs.py script
-  localparam logic [63:0] coeffs [4:64]  = '{ 64'h9,
+  localparam logic [63:0] coeffs [0:64]  = '{ 64'hx,
+                                              64'hx,
+                                              64'hx,
+                                              64'hx,
+                                              64'h9,
                                               64'h12,
                                               64'h21,
                                               64'h41,
@@ -94,11 +98,11 @@ module prim_lfsr #(
   logic [LfsrDw-1:0] lfsr_d, lfsr_q;
 
   // Custom Galois polynomial
-  if (Custom) begin : g_custom
+  if (Custom) begin : gen_custom
     assign lfsr_d = (en_i) ? LfsrDw'(data_i) ^ ({LfsrDw{lfsr_q[0]}} &
                              Custom[LfsrDw-1:0]) ^ (lfsr_q >> 1)
                            : lfsr_q;
-  end else begin : g_lut
+  end else begin : gen_lut
     assign lfsr_d = (en_i) ? LfsrDw'(data_i) ^ ({LfsrDw{lfsr_q[0]}} &
                              coeffs[LfsrDw][LfsrDw-1:0]) ^ (lfsr_q >> 1)
                            : lfsr_q;
