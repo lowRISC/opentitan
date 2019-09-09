@@ -111,6 +111,12 @@ class uart_intr_vseq extends uart_base_vseq;
         int level = ral.ctrl.rxblvl.get_mirrored_value();
         int break_bytes = get_break_bytes_by_level(level);
 
+        // drive one good rx char to reset DUT break cnt (allzero_cnt)
+        drive_rx_bytes(.num_bytes(1));
+        // clear rx fifo and interrupts triggered by above driving
+        clear_fifos(.clear_tx_fifo(0), .clear_rx_fifo(1));
+        csr_wr(.csr(ral.intr_state), .value('hff));
+
         fork
           begin
              drive_rx_all_0s();
@@ -284,6 +290,8 @@ class uart_intr_vseq extends uart_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(tx_byte)
       send_tx_byte(.data(tx_byte));
     end
+    // wait for 1 cycle to allow interrupt triggered
+    cfg.clk_rst_vif.wait_clks(1);
   endtask : drive_tx_bytes
 
   task drive_rx_bytes(int num_bytes);

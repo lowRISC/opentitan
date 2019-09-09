@@ -11,9 +11,7 @@ class uart_agent_cov extends uvm_component;
     cp_data:       coverpoint item.data;
     cp_en_parity:  coverpoint cfg.en_parity;
     cp_odd_parity: coverpoint cfg.odd_parity;
-    cp_baud_rate:  coverpoint cfg.baud_rate {
-      illegal_bins illegal = {BaudRate0};
-    }
+    cp_baud_rate:  coverpoint cfg.baud_rate;
     cross cp_dir, cp_data, cp_en_parity, cp_odd_parity, cp_baud_rate;
   endgroup
 

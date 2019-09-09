@@ -18,7 +18,6 @@ package uart_agent_pkg;
   } uart_dir_e;
 
   typedef enum int {
-    BaudRate0       = 0,    // none
     BaudRate9600    = 9600,
     BaudRate115200  = 115200,
     BaudRate230400  = 230400,
@@ -37,13 +36,11 @@ package uart_agent_pkg;
   function automatic real get_baud_rate_period_ns(baud_rate_e baud_rate);
     // return 10^9 / baud_rate ns upto 3 decimal places
     case(baud_rate)
-      BaudRate0     : return 0.0;
       BaudRate9600  : return 104166.667;
       BaudRate115200: return 8680.556;
       BaudRate230400: return 4340.278;
       BaudRate1Mbps : return 953.674;
       BaudRate2Mbps : return 476.837;
-      default       : return 0.0;
     endcase
   endfunction
 
