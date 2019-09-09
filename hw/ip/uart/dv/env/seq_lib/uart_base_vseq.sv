@@ -26,7 +26,6 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   bit do_interrupt      = 1'b1;
 
   constraint baud_rate_c {
-    baud_rate != BaudRate0;
     // constrain nco not over nco.get_n_bits
     `CALC_NCO(baud_rate, p_sequencer.cfg.clk_freq_mhz) <
         2 ** p_sequencer.cfg.ral.ctrl.nco.get_n_bits();

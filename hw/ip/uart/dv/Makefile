@@ -33,7 +33,7 @@ ifeq (${TEST_NAME},uart_sanity)
   UVM_TEST_SEQ   = uart_sanity_vseq
 endif
 
-ifeq (${TEST_NAME},uart_random)
+ifeq (${TEST_NAME},uart_tx_rx)
   UVM_TEST_SEQ   = uart_tx_rx_vseq
 endif
 

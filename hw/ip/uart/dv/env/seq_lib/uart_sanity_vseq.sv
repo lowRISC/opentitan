@@ -41,6 +41,8 @@ class uart_sanity_vseq extends uart_tx_rx_vseq;
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(tx_byte)
       send_tx_byte(tx_byte);
+      // if no delay in TL-UL trans, DUT takes 1 more cycle to update status reg
+      cfg.clk_rst_vif.wait_clks(1);
       spinwait_txidle();
     end
   endtask : process_tx
