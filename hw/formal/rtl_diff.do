@@ -14,7 +14,7 @@ read design -golden -sv09 \
   ../../../../ip/prim/rtl/prim_assert.sv \
   ../../../../top_earlgrey/rtl/*_pkg.sv \
   ../../../../ip/*/rtl/*_pkg.sv \
-  ../../../../vendor/*/src/*_pkg.sv \
+  ../../../../vendor/*/*/*_pkg.sv \
   $LEC_GOLDEN
 
 // read revised design
@@ -22,7 +22,7 @@ read design -revised -sv09 \
   ../../../../ip/prim/rtl/prim_assert.sv \
   ../../../../top_earlgrey/rtl/*_pkg.sv \
   ../../../../ip/*/rtl/*_pkg.sv \
-  ../../../../vendor/*/src/*_pkg.sv \
+  ../../../../vendor/*/*/*_pkg.sv \
   $LEC_REVISED
 
 //-----------------------------------------------------------------
