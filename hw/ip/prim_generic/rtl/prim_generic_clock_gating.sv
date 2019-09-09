@@ -15,7 +15,7 @@ module prim_generic_clock_gating (
   logic en_latch;
   always_latch begin
     if (!clk_i) begin
-      en_latch <= en_i | test_en_i;
+      en_latch = en_i | test_en_i;
     end
   end
   assign clk_o = en_latch & clk_i;
