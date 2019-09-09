@@ -6,9 +6,6 @@ analyze +define+ASIC_SYNTHESIS+SYNTHESIS -F [glob build/formal_0/sim-icarus/*.sc
 
 elaborate $env(LINT_TOP)
 
-# read_sdc design.sdc
-# TODO: add SDC file above
-
 analyze_intent
 verify_cdc
 
