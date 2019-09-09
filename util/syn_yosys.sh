@@ -30,13 +30,15 @@ cp build/formal_0/src/*/*/*.sv build/formal_0/src/*/*/*/*.sv syn_out
 #-------------------------------------------------------------------------
 cd syn_out
 
-# TODO: delete below file for now because sv2v currently crashes with it
-\rm -f hmac_pkg.sv
-
 for file in *.sv; do
   module=`basename -s .sv $file`
   echo $file
-  sv2v --oneunit *_pkg.sv prim_assert.sv $file > ${module}.v
+  sv2v --define=VERILATOR --oneunit *_pkg.sv prim_assert.sv $file > ${module}.v
+
+  # TODO: eventually remove below hack. It removes "unsigned" from params
+  # because Yosys doesn't support unsigned parameters
+  sed -i 's/parameter unsigned/parameter/g' ${module}.v
+  sed -i 's/localparam unsigned/localparam/g' ${module}.v
 done
 
 # remove *pkg.v files (they are empty files and not needed)
