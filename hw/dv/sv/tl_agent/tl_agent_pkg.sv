@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-`include "tl_if.sv"
-
 package tl_agent_pkg;
   // dep packages
   import uvm_pkg::*;
