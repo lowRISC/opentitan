@@ -90,14 +90,12 @@ module tlul_adapter_sram #(
   assign addr_o   = tl_i.a_address[DataBitWidth+:SramAw];
   assign wdata_o  = tl_i.a_data;
 
-  if (top_pkg::TL_DW == SramDw) begin : gen_wmask
-    always_comb begin
-      for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-        wmask_o[8*i+:8] = {8{tl_i.a_mask[i]}};
-      end
+  `ASSERT_INIT(TlUlEqualsToSramDw, top_pkg::TL_DW == SramDw)
+
+  always_comb begin
+    for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
+      wmask_o[8*i+:8] = {8{tl_i.a_mask[i]}};
     end
-  end else begin : gen_err_wmask
-    $fatal("Current TL-UL SRAM adapter only supports the case of SramDw == TL_DW");
   end
 
   if (ByteAccess == 1) begin : gen_wrsp_byte
@@ -125,6 +123,15 @@ module tlul_adapter_sram #(
   assign rspfifo_rready = ~reqfifo_rdata.op & reqfifo_rready ;
 
   // FIFO instance: REQ, RSP
+
+  // ReqFIFO is to store the Access type to match to the Response data.
+  //    For instance, SRAM accepts the write request but doesn't return the
+  //    acknowledge. In this case, it may be hard to determine when the D
+  //    response for the write data should send out if reads/writes are
+  //    interleaved. So, to make it in-order (even TL-UL allows out-of-order
+  //    responses), storing the request is necessary. And if the read entry
+  //    is write op, it is safe to return the response right away. If it is
+  //    read reqeust, then D response is waiting until read data arrives.
   prim_fifo_sync #(
     .Width  (ReqFifoWidth),
     .Pass   (1'b0),
@@ -141,9 +148,15 @@ module tlul_adapter_sram #(
     .rdata  (reqfifo_rdata)
   );
 
+  // Rationale having #Outstanding depth in response FIFO.
+  //    In normal case, if the host or the crossbar accepts the response data,
+  //    response FIFO isn't needed. But if in any case it has a chance to be
+  //    back pressured, the response FIFO should store the returned data not to
+  //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
+  //    have back-pressure signal such as read_ready.
   prim_fifo_sync #(
     .Width (RspFifoWidth),
-    .Pass  (1'b0),
+    .Pass  (1'b1),
     .Depth (Outstanding)
   ) u_rspfifo (
     .clk_i,
