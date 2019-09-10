@@ -10,7 +10,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
     );
   `uvm_object_utils(spi_device_base_vseq)
 
-  bit do_spi_device_init = 1'b0;
+  bit do_spi_device_init    = 1'b0;
+  bit do_spi_device_mem_cfg = 1'b1;
 
   bit [1:0] spi_mode = 0; // TODO fixed value in spec now
 
@@ -19,13 +20,13 @@ class spi_device_base_vseq extends cip_base_vseq #(
   rand bit host_bit_dir;
   rand bit device_bit_dir;
 
-  rand bit [31:0] sram_host_base_addr;
-  rand bit [31:0] sram_host_limit_addr;
-  rand bit [31:0] sram_device_base_addr;
-  rand bit [31:0] sram_device_limit_addr;
+  rand uint sram_host_base_addr;
+  rand uint sram_host_limit_addr;
+  rand uint sram_device_base_addr;
+  rand uint sram_device_limit_addr;
 
-  // TODO: remove this eventually
-  constraint sanity_constraints_c {
+  // override it in random seq
+  constraint sram_constraints_c {
     // host and device addr space within sram should not overlap
     sram_host_base_addr == 32'h0;
     sram_host_limit_addr == 32'h1ff; // 512 bytes
@@ -43,10 +44,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     if (do_spi_device_init) spi_device_init();
-  endtask
-
-  virtual task dut_shutdown();
-    super.dut_shutdown();
   endtask
 
   // check if any remaining data
@@ -79,9 +76,12 @@ class spi_device_base_vseq extends cip_base_vseq #(
     ral.cfg.rx_order.set(host_bit_dir);
     //ral.cfg.timer_v.set(rx_timer); TODO do it later
     csr_update(.csr(ral.cfg));
-
-    set_sram_host_addr_range(sram_host_base_addr, sram_host_limit_addr);
-    set_sram_device_addr_range(sram_device_base_addr, sram_device_limit_addr);
+    if (do_spi_device_mem_cfg) begin
+      set_sram_host_addr_range(sram_host_base_addr, sram_host_limit_addr);
+      set_sram_device_addr_range(sram_device_base_addr, sram_device_limit_addr);
+      // only configure sram once
+      do_spi_device_mem_cfg = 0;
+    end
   endtask
 
   virtual task reset_fifo(bit txfifo, bit rxfifo);
@@ -151,8 +151,9 @@ class spi_device_base_vseq extends cip_base_vseq #(
     tx_wptr = ral.txf_ptr.wptr.get_mirrored_value();
     foreach (device_data[i]) begin
       bit [TL_DW-1:0] tx_wptr_addr;
-      tx_wptr_addr = cfg.sram_start_addr + ral.txf_addr.base.get_mirrored_value()
-                     + tx_wptr[SRAM_MSB:0];
+      bit [TL_DW-1:0] tx_base_addr = ral.txf_addr.base.get_mirrored_value();
+      tx_base_addr[1:0] = 0; // ignore lower 2 bits
+      tx_wptr_addr = cfg.sram_start_addr + tx_base_addr + tx_wptr[SRAM_MSB:0];
       `uvm_info(`gfn, $sformatf({"tx_wptr[SRAM_MSB:0] = 0x%0h, tx_wptr_phase_bit = 0x%0h, ",
                                  "tx_sram_size_bytes = 0x%0h, tx_wptr_addr = 0x%0h"},
                                  tx_wptr[SRAM_MSB:0], tx_wptr[SRAM_PTR_PHASE_BIT],
@@ -181,8 +182,9 @@ class spi_device_base_vseq extends cip_base_vseq #(
     repeat (num_words) begin
       bit   [TL_DW-1:0] rx_rptr_addr;
       logic [TL_DW-1:0] word_data;
-      rx_rptr_addr = cfg.sram_start_addr + ral.rxf_addr.base.get_mirrored_value()
-                     + rx_rptr[SRAM_MSB:0];
+      bit   [TL_DW-1:0] rx_base_addr = ral.rxf_addr.base.get_mirrored_value();
+      rx_base_addr[1:0] = 0; // ignore lower 2 bits
+      rx_rptr_addr = cfg.sram_start_addr + rx_base_addr + rx_rptr[SRAM_MSB:0];
       `uvm_info(`gfn, $sformatf({"rx_rptr[SRAM_MSB:0] = 0x%0h, rx_rptr_phase_bit = 0x%0h, ",
                                  "rx_sram_size_bytes = 0x%0h, rx_rptr_addr = 0x%0h"},
                                  rx_rptr[SRAM_MSB:0], rx_rptr[SRAM_PTR_PHASE_BIT],

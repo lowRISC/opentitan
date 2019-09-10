@@ -82,6 +82,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       uint tx_limit = ral.txf_addr.limit.get_mirrored_value();
       uint rx_limit = ral.rxf_addr.limit.get_mirrored_value();
       uint mem_addr = item.a_addr - cfg.sram_start_addr;
+      tx_base[1:0] = 0;
+      rx_base[1:0] = 0;
       if (mem_addr inside {[tx_base : tx_base + tx_limit]}) begin // TX address
         if (write && channel == AddrChannel) begin
           tx_mem.write(mem_addr - tx_base, item.a_data);
