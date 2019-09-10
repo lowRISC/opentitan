@@ -1,0 +1,163 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# AES register template
+{
+  name: "aes",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+  regwidth: "32",
+
+  registers: [
+##############################################################################
+# initial key registers
+    { multireg: {
+      name: "KEY",
+      desc: '''
+        Initial Key Register. Loaded into the internal Full Key register upon
+        starting encryption/decryption of the next block. Can only be updated
+        when the AES unit is idle.
+      '''
+      count: 8,
+      cname: "KEY",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0", name: "key", desc: "Initial Key" }
+      ],
+      }
+    },
+##############################################################################
+# input data registers
+    { multireg: {
+      name: "DATA_IN",
+      desc: '''
+        Input Data Register. Loaded into the internal State register upon
+        starting encryption/decryption of the next block. After that, the processor
+        can update the Input Data Register.
+      '''
+      count: 4,
+      cname: "DATA_IN",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0", name: "data_in", desc: "Input Data" }
+      ],
+      }
+    },
+##############################################################################
+# output data registers
+    { multireg: {
+      name: "DATA_OUT",
+      desc: '''
+        Output Data Register. Holds the output data produced by the AES unit
+        during the last encryption/decryption operation. If FORCE_DATA_OVERWRITE=0
+        (see Control Register), the AES unit is stalled when the previous output
+        data has not yet been read and is about to be overwritten.
+      '''
+      count: 4,
+      cname: "DATA_OUT",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwre:     "true",
+      fields: [
+        { bits: "31:0", name: "data_out", desc: "Output Data" }
+      ],
+      }
+    },
+##############################################################################
+# control and status registers
+  { name: "CTRL",
+    desc: "Control Register",
+    swaccess: "rw",
+    hwaccess: "hro",
+    fields: [
+      { bits: "0",
+        name: "MODE",
+        desc:  '''
+          Select encryption(0) or decryption(1) operating mode of AES unit.
+        '''
+      }
+      { bits: "3:1",
+        name: "KEY_LEN",
+        resval: "1",
+        desc:  '''
+          3-bit one-hot field to select AES key length: 128 bit (3’b001), 192 bit (3’b010)
+          or 256 bit (3’b100). Invalid input values, i.e., value with multiple bits set,
+          value 3’b000, and value 3’b010 in case 192-bit keys are not supported (because
+          disabled at compile time) are mapped to 3’b001.
+        '''
+      }
+      { bits: "4",
+        name: "MANUAL_START_TRIGGER",
+        desc:  '''
+          Controls whether the AES unit should automatically start to encrypt/decrypt
+          when it receives new input data (0) or wait for separate trigger signal
+          before starting (1) (see Trigger Register).
+        '''
+      }
+      { bits: "5",
+        name: "FORCE_DATA_OVERWRITE",
+        desc:  '''
+          Control whether the AES unit is stalled during the last
+          encryption/decryption cycle if the previous output data has not yet been
+          read (0) or finishes the operation and overwrites the previous output data (1).
+        '''
+      }
+    ]
+  },
+  { name: "TRIGGER",
+    desc: "Trigger Register",
+    swaccess: "rw",
+    hwaccess: "hrw",
+    fields: [
+      { bits: "0",
+        name: "START",
+        desc:  '''
+          Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
+        '''
+      }
+    ]
+  },
+  { name: "STATUS",
+    desc: "Status Register",
+    swaccess: "ro",
+    hwaccess: "hwo",
+    fields: [
+      { bits: "0",
+        name: "IDLE",
+        desc:  '''
+          The AES unit is idle (0) or busy (1).
+        '''
+      }
+      { bits: "1",
+        name: "STALL",
+        desc:  '''
+          The AES unit is not stalled (0) or stalled (1) because there is previous
+          output data that must be read by the processor before the AES unit can
+          overwrite this data.
+        '''
+      }
+      { bits: "2",
+        name: "OUTPUT_VALID",
+        desc:  '''
+          The AES unit has no valid output (0) or has valid output data (1).
+        '''
+      }
+      { bits: "3",
+        name: "INPUT_READY",
+        resval: "1",
+        desc:  '''
+          The AES unit is ready (1) to receive new data input via the DATA_IN registers or
+          the present values in the DATA_IN registers have not yet been loaded into the
+          module (0).
+        '''
+      }
+    ]
+  },
+  ],
+}

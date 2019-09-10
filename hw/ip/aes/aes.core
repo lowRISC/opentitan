@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:aes:0.5"
+description: "AES unit"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+    files:
+      - rtl/aes_pkg.sv
+      - rtl/aes_reg_pkg.sv
+      - rtl/aes_reg_top.sv
+      - rtl/aes_core.sv
+      - rtl/aes.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: aes
