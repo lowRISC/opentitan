@@ -6,7 +6,7 @@
 clear -all
 
 #-------------------------------------------------------------------------
-# read design, specify clock and reset
+# read design
 #-------------------------------------------------------------------------
 analyze -sv09 \
   -f formal_0.scr \
@@ -17,6 +17,10 @@ analyze -sv09 \
   +define+FPV_ON
 
 elaborate -top $env(FPV_TOP)
+
+#-------------------------------------------------------------------------
+# specify clock(s) and reset(s0
+#-------------------------------------------------------------------------
 
 # select primary clock and reset condition (use ! for active-low reset)
 if {$env(FPV_TOP) == "usb_fs_nb_pe"} {
@@ -76,13 +80,15 @@ assert -disable {spi_device*.responseMustHaveReq}
 assert -disable {spi_device*.checkResponseOpcode}
 assert -disable {spi_device.u_reg.u_socket.tlul_assert_device.responseSize*}
 assert -disable {spi_device.u_reg.u_socket.tlul_assert_device.onlyOnePendingReq*}
+assert -disable {spi_device.u_reg.u_socket.tlul_assert_host.responseSizeMustEqualReq*}
+assert -disable {spi_device.tlul_assert_host.responseSizeMustEqualReq*}
 assert -disable {hmac.u_tlul_adapter.*}
 assert -disable {hmac.tlul_assert_host.response*Must*}
 assert -disable {hmac.tlul_assert_host.checkResponseOpcode*}
 assert -disable {hmac.u_reg.u_socket.tlul_assert_*.response*Must*}
 assert -disable {hmac.u_reg.u_socket.tlul_assert_*.*ResponseOpcode}
 assert -disable {hmac.u_reg.u_socket.tlul_assert_*.onlyOnePendingReq*}
-assert -disable {flash_ctrl.tlul_assert_host.responseMustHave*}
+assert -disable {flash_ctrl.tlul_assert_host.response*Must*}
 assert -disable {flash_ctrl.u_reg.u_socket.tlul_assert_*.response*Must*}
 assert -disable {flash_ctrl.u_reg.u_socket.tlul_assert_device.onlyOnePendingReq*}
 assert -disable {xbar_main.tlul_assert_device_*}
@@ -91,6 +97,7 @@ assert -disable {xbar_main.u_s*}
 assert -disable {top_earlgrey.u_xbar_main.*}
 assert -disable {top_earlgrey.*tl_adapter_*}
 assert -disable {top_earlgrey.*tlul_assert_*}
+assert -disable {top_earlgrey.*.u_reg.reAfter*}
 assert -disable {top_earlgrey.*.u_reg.reqParity}
 assert -disable {top_earlgrey.hmac.u_tlul_adapter.*}
 assert -disable {top_earlgrey.spi_devicore.u_core.load_store_unit_i.*}
