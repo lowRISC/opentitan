@@ -8,7 +8,6 @@ class spi_device_sanity_vseq extends spi_device_base_vseq;
   `uvm_object_utils(spi_device_sanity_vseq)
   `uvm_object_new
 
-
   constraint num_trans_c {
     num_trans inside {[1:6]};
   }

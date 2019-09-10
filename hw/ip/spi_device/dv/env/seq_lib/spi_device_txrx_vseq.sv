@@ -20,6 +20,10 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   rand uint rx_delay;
   rand uint spi_delay;
 
+  // helper variables for sram randomization
+  rand uint host_sram_word_size;
+  rand uint device_sram_word_size;
+
   constraint tx_total_bytes_c {
     tx_total_bytes inside {[SRAM_SIZE : 10 * SRAM_SIZE]};
     tx_total_bytes[1:0] == 0; // word aligned
@@ -54,7 +58,38 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   }
 
   constraint num_trans_c {
-    num_trans inside {[5:8]};
+    num_trans == 5;
+  }
+
+  // lower 2 bits are ignored, use word granularity to contrain the sram setting
+  constraint sram_constraints_c {
+    // if limit is 0, it means 1 word
+    sram_host_limit_addr[31:2]   < (SRAM_SIZE/SRAM_WORD_SIZE);
+    sram_device_limit_addr[31:2] < (SRAM_SIZE/SRAM_WORD_SIZE);
+
+    sram_host_base_addr   <= sram_host_limit_addr;
+    sram_device_base_addr <= sram_device_limit_addr;
+    // host and device addr space within sram should not overlap
+    if (sram_host_limit_addr < sram_device_base_addr) {
+      sram_host_limit_addr[31:2] < sram_device_base_addr[31:2];
+      sram_device_limit_addr < SRAM_SIZE;
+    } else {
+      sram_device_limit_addr[31:2] < sram_host_base_addr[31:2];
+      sram_host_limit_addr < SRAM_SIZE;
+    }
+    host_sram_word_size   == sram_host_limit_addr[31:2] - sram_host_base_addr[31:2] + 1;
+    device_sram_word_size == sram_device_limit_addr[31:2] - sram_device_base_addr[31:2] + 1;
+  }
+
+  // size from 25 to SRAM_SIZE/SRAM_WORD_SIZE-25
+  // override it if test extreme cases
+  constraint sram_size_constraints_c {
+    host_sram_word_size   inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
+    device_sram_word_size inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
+    host_sram_word_size == device_sram_word_size dist {
+      1 :/ 2,
+      0 :/ 1
+    };
   }
 
   virtual task body();

@@ -8,3 +8,4 @@
 `include "spi_device_txrx_vseq.sv"
 `include "spi_device_fifo_full_vseq.sv"
 `include "spi_device_fifo_underflow_overflow_vseq.sv"
+`include "spi_device_extreme_fifo_size_vseq.sv"

@@ -77,6 +77,10 @@ ifeq (${TEST_NAME},spi_device_fifo_underflow_overflow)
   UVM_TEST_SEQ   = spi_device_fifo_underflow_overflow_vseq
 endif
 
+ifeq (${TEST_NAME},spi_device_extreme_fifo_size)
+  UVM_TEST_SEQ   = spi_device_extreme_fifo_size_vseq
+endif
+
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##
 ## Dont add anything else below it!                                                               ##
