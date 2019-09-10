@@ -39,6 +39,10 @@ ifeq (${TEST_NAME},hmac_back_pressure)
   RUN_OPTS      += +zero_delays=1
 endif
 
+ifeq (${TEST_NAME},hmac_burst_wr)
+  UVM_TEST_SEQ   = hmac_burst_wr_vseq
+endif
+
 ifeq (${TEST_NAME},hmac_nist_sha_vectors)
   UVM_TEST_SEQ   = hmac_nist_vectors_vseq
   RUN_OPTS      += +nist_vectors_dir=${DV_DIR}/../../../dv/sv/nist_vectors/

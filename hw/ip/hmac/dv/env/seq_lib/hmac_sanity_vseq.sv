@@ -15,6 +15,7 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   rand bit        digest_swap;
   rand bit [31:0] key[8];
   rand bit [7:0]  msg[];
+  rand int        burst_wr_length;
 
   constraint msg_c {
     msg.size() dist {
@@ -22,6 +23,10 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         [1 :60] :/ 8,
         [61:64] :/ 1
     }; // upto 64 bytes (16 words, 512 bits)
+  }
+
+  constraint burst_wr_c {
+    burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
   }
 
   virtual task pre_start();
@@ -50,7 +55,8 @@ class hmac_sanity_vseq extends hmac_base_vseq;
       // start stream in msg
       trigger_hash();
 
-      wr_msg(msg);
+      if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
+      else wr_msg(msg);
 
       // msg stream in finished, start hash
       trigger_process();

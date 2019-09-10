@@ -332,6 +332,7 @@ package csr_utils_pkg;
                               input uvm_reg_map     map = null,
                               input uint            spinwait_delay_ns = 0,
                               input uint            timeout_ns = default_spinwait_timeout_ns,
+                              input compare_op_e    compare_op = CompareOpEq,
                               input uvm_verbosity   verbosity = UVM_HIGH);
     fork
       begin : isolation_fork
@@ -347,7 +348,19 @@ package csr_utils_pkg;
                    .blocking(1), .map(map));
             `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",
                                         ptr.get_full_name(), read_data), verbosity)
-            if (read_data == exp_data) break;
+            case (compare_op)
+              CompareOpEq:     if (read_data ==  exp_data) break;
+              CompareOpCaseEq: if (read_data === exp_data) break;
+              CompareOpNe:     if (read_data !=  exp_data) break;
+              CompareOpCaseNe: if (read_data !== exp_data) break;
+              CompareOpGt:     if (read_data >   exp_data) break;
+              CompareOpGe:     if (read_data >=  exp_data) break;
+              CompareOpLt:     if (read_data <   exp_data) break;
+              CompareOpLe:     if (read_data <=  exp_data) break;
+              default: begin
+                `uvm_fatal(ptr.get_full_name(), $sformatf("invalid operator:%0s", compare_op))
+              end
+            endcase
           end
           begin
             wait_timeout(timeout_ns, msg_id, $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",

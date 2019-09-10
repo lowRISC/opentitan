@@ -7,4 +7,5 @@
 `include "hmac_long_msg_vseq.sv"
 `include "hmac_nist_vectors_vseq.sv"
 `include "hmac_back_pressure_vseq.sv"
+`include "hmac_burst_wr_vseq.sv"
 `include "hmac_common_vseq.sv"
