@@ -29,11 +29,8 @@ module prim_lfsr #(
 );
 
   // automatically generated with get-lfsr-coeffs.py script
-  localparam logic [63:0] coeffs [0:64]  = '{ 64'hx,
-                                              64'hx,
-                                              64'hx,
-                                              64'hx,
-                                              64'h9,
+  localparam int unsigned LUT_OFF = 4;
+  localparam logic [63:0] COEFFS [0:60]  = '{ 64'h9,
                                               64'h12,
                                               64'h21,
                                               64'h41,
@@ -98,14 +95,17 @@ module prim_lfsr #(
   logic [LfsrDw-1:0] lfsr_d, lfsr_q;
 
   // Custom Galois polynomial
+  // re-seed the LFSR in case it enters the all-zero state
   if (Custom) begin : gen_custom
-    assign lfsr_d = (en_i) ? LfsrDw'(data_i) ^ ({LfsrDw{lfsr_q[0]}} &
-                             Custom[LfsrDw-1:0]) ^ (lfsr_q >> 1)
-                           : lfsr_q;
+    assign lfsr_d = (en_i && !lfsr_q) ? Seed                                      :
+                    (en_i)            ? LfsrDw'(data_i) ^ ({LfsrDw{lfsr_q[0]}} &
+                                        Custom[LfsrDw-1:0]) ^ (lfsr_q >> 1)       :
+                                        lfsr_q;
   end else begin : gen_lut
-    assign lfsr_d = (en_i) ? LfsrDw'(data_i) ^ ({LfsrDw{lfsr_q[0]}} &
-                             coeffs[LfsrDw][LfsrDw-1:0]) ^ (lfsr_q >> 1)
-                           : lfsr_q;
+    assign lfsr_d = (en_i && !lfsr_q) ? Seed                                                :
+                    (en_i)            ? LfsrDw'(data_i) ^ ({LfsrDw{lfsr_q[0]}} &
+                                        COEFFS[LfsrDw-LUT_OFF][LfsrDw-1:0]) ^ (lfsr_q >> 1) :
+                                        lfsr_q;
   end
 
   assign data_o  = lfsr_q[OutDw-1:0];
@@ -121,12 +121,13 @@ module prim_lfsr #(
   // assertions
   `ASSERT_INIT(InputWidth, LfsrDw >= InDw)
   `ASSERT_INIT(OutputWidth, LfsrDw >= OutDw)
-  `ASSERT_INIT(MinLfsrWidth, LfsrDw >= $low(coeffs))
-  `ASSERT_INIT(MaxLfsrWidth, LfsrDw <= $high(coeffs))
+  `ASSERT_INIT(MinLfsrWidth, LfsrDw >= $low(COEFFS)+LUT_OFF)
+  `ASSERT_INIT(MaxLfsrWidth, LfsrDw <= $high(COEFFS)+LUT_OFF)
   // check that the most significant bit of polynomial is 1
   `ASSERT_INIT(CoeffNzCheck, (Custom && Custom[LfsrDw-1]) ||
-                             (!Custom) && coeffs[LfsrDw][LfsrDw-1])
+                             (!Custom) && COEFFS[LfsrDw-LUT_OFF][LfsrDw-1])
   `ASSERT_INIT(SeedNzCheck, Seed)
-  `ASSERT(LfsrNzCheck, lfsr_q, clk_i, !rst_ni)
+  // check that an all zero LFSR is correctly reseeded
+  `ASSERT(LfsrNzCheck, en_i && !lfsr_q |=> lfsr_q, clk_i, !rst_ni)
 
 endmodule
