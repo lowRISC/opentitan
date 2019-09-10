@@ -64,8 +64,10 @@ to (defaults to lfsr_tmp)""",
 
         # select first coefficient in each file and print to SV LUT
         with outfile:
-            decl_str = "localparam logic [%d:0] coeffs [%d:%d] = '{ " % (
-                MAX_LFSR_LEN - 1, MIN_LFSR_LEN, MAX_LFSR_LEN)
+            decl_str = "localparam int unsigned LUT_OFF = %d;\n" % MIN_LFSR_LEN
+            outfile.write(decl_str)
+            decl_str = "localparam logic [%d:0] COEFFS [0:%d] = '{ " % (
+                MAX_LFSR_LEN - 1, MAX_LFSR_LEN-MIN_LFSR_LEN)
             outfile.write(decl_str)
             comma = ',\n'
             spaces = ''
