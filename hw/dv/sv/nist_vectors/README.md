@@ -12,3 +12,7 @@ The following is a list of common properties and methods:
 * **parse_sha**: A method to parse sha vectors files. Return an array of
   nist_vectors_t.
 
+### SHA256 vectors
+The SHA256LongMsg.rsp and SHA256ShortMsg.rsp are test vector files downloaded from the NIST
+website:
+'''https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs'''
