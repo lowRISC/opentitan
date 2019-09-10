@@ -128,7 +128,6 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
 
         begin : csr_read_and_check
           uint num_cycles_elapsed;
-          uint rd_interval;
           bit [NUM_GPIOS-1:0] expected_value_data_in = predict_data_in_value(gpio_filter_value,
                                                                              stable_value,
                                                                              gpio_i);
@@ -146,6 +145,10 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
               end // count_clock
             end
             begin : csr_rd_and_check
+              // Actual rtl register update takes additional cycle
+              // So if we read DATA_IN or INTR_STATE register immediately on
+              // subsequent clock cycle of write, we may still get older value
+              cfg.clk_rst_vif.wait_clks(1);
               do begin
                 randcase
                   3: csr_rd_check(.ptr(ral.intr_state), .compare_value(crnt_intr_status));
@@ -177,7 +180,7 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
           update_intr_state(crnt_intr_status, stable_value, latest_stable_value);
           stable_value = latest_stable_value;
         end
-        // Additional cycle for rtl to latch updated data_in value
+        // Additional cycle for rtl to latch updated DATA_IN and INTR_STATE values
         cfg.clk_rst_vif.wait_clks(1);
         stable_value = cfg.gpio_vif.pins;
         // Predict updated interrupt status register again

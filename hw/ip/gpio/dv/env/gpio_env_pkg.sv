@@ -17,9 +17,9 @@ package gpio_env_pkg;
   `include "dv_macros.svh"
 
   // no. of gpio pins
-  parameter NUM_GPIOS     = 32;
+  parameter uint NUM_GPIOS     = 32;
   // no. of cycles for noise filter
-  parameter FILTER_CYCLES = 16;
+  parameter uint FILTER_CYCLES = 16;
 
   typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
   typedef class gpio_env_cfg;
@@ -27,15 +27,22 @@ package gpio_env_pkg;
   typedef cip_base_virtual_sequencer #(gpio_env_cfg, gpio_env_cov) gpio_virtual_sequencer;
 
   // structure to indicate gpio pin transition and type of transition
-  // transition: 1-yes, 0-no
-  // rose_or_fell: 1-rising edge transition, 0-falling edge transition
-  typedef struct packed { bit transition; bit rose_or_fell; } gpio_transition;
+  // transition_occurred: 1-yes, 0-no
+  // is_rising_edge: 1-rising edge transition, 0-falling edge transition
+  typedef struct packed {
+    bit transition_occurred;
+    bit is_rising_edge;
+  } gpio_transition_t;
 
   // structure to indicate whether or not register update is due for particular gpio register
-  // need_update: 1-update is due, 0-update is not due
+  // needs_update: 1-update is due, 0-update is not due
   // reg_value: value to be updated when update is due
-  typedef struct packed { bit need_update; bit [TL_DW-1:0] reg_value; } gpio_reg_update_due;
-  // functions
+  // eval_time: time stamp of event, which triggered interrupt update
+  typedef struct packed {
+    bit needs_update;
+    bit [TL_DW-1:0] reg_value;
+    time eval_time;
+  } gpio_reg_update_due_t;
 
   // package sources
   `include "gpio_reg_block.sv"

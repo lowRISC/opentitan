@@ -13,22 +13,33 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   logic [NUM_GPIOS-1:0] gpio_i_driven;
   // Flag to store value to be updated for INTR_STATE register
   // and to indicate whether value change is due currently
-  gpio_reg_update_due intr_state_update_due;
+  gpio_reg_update_due_t intr_state_update_queue[$];
+  // data_in update queue
+  gpio_reg_update_due_t data_in_update_queue[$];
+  // Latest Interrupt state update due to either of following reasons:
+  //  (i) gpio value change
+  // (ii) interrupt control register value(s) write
+  // This flag is not meant for update when intr_state register is written
+  bit [TL_DW-1:0] last_intr_update_except_clearing;
+  // Value seen in last Interrupt Test write
+  bit [TL_DW-1:0] last_intr_test_event;
 
   `uvm_component_utils(gpio_scoreboard)
 
   `uvm_component_new
 
+  // Function: build_phase
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
   endfunction
 
+  // Task: run_phase
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     monitor_gpio_i();
   endtask
 
-  // task : process_tl_access
+  // Task : process_tl_access
   // process monitored tl transaction
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
@@ -48,35 +59,93 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
     // grab completed transactions from data channel; ignore packets from address channel
     if (channel == AddrChannel) begin
-      // apply pending update for interrupt stste
-      if (intr_state_update_due.need_update == 1'b1) begin
-        ral.intr_state.predict(.value(intr_state_update_due.reg_value),
-                               .kind(UVM_PREDICT_READ));
-        `uvm_info(`gfn, $sformatf("Predicted intr_state with value %0h",
-                                  intr_state_update_due.reg_value), UVM_HIGH)
-        intr_state_update_due.need_update = 1'b0;
-        intr_state_update_due.reg_value = '0;
+      // Clock period in nano seconds (timeunit)
+      int clk_period = cfg.clk_rst_vif.clk_period_ps / 1000;
+      time crnt_time = $time;
+
+      // apply pending update for interrupt state
+      if (data_in_update_queue.size() > 0) begin
+        if (data_in_update_queue[$].needs_update == 1'b1 &&
+            ((crnt_time - data_in_update_queue[$].eval_time) / clk_period) > 1) begin
+          ral.data_in.predict(.value(data_in_update_queue[$].reg_value),
+                              .kind(UVM_PREDICT_READ));
+        end else if(data_in_update_queue[$ - 1].needs_update == 1'b1) begin
+          // Use previous updated value for "data_in" prediction
+          ral.data_in.predict(.value(data_in_update_queue[$ - 1].reg_value),
+                                 .kind(UVM_PREDICT_READ));
+        end
       end
+
+      // apply pending update for interrupt state
+      if (intr_state_update_queue.size() > 0) begin
+        // As register read takes single clock cycle to latch the updated value, immediate
+        // read on same or next clock will not give latest updated value. So, look for time stamp
+        // of latest update to decide which value to predict for "intr_state" mirrored value
+        if (intr_state_update_queue[$].needs_update == 1'b1 &&
+            ((crnt_time - intr_state_update_queue[$].eval_time) / clk_period) > 1) begin
+          ral.intr_state.predict(.value(intr_state_update_queue[$].reg_value),
+                                 .kind(UVM_PREDICT_READ));
+        end else if(intr_state_update_queue[$ - 1].needs_update == 1'b1) begin
+          // Use previous updated value for "intr_state" prediction
+          ral.intr_state.predict(.value(intr_state_update_queue[$ - 1].reg_value),
+                                 .kind(UVM_PREDICT_READ));
+        end
+      end
+
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
-        csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+        if (csr.get_name() == "intr_state") begin
+          // As per rtl definition of W1C, hardware must get a chance to make update
+          // to interrupt state first, so we need to clear interrupt only after possible
+          // interrupt update due to gpio change
+          #0;
+          `uvm_info(`gfn, $sformatf("Write on intr_state: write data = %0h", item.a_data), UVM_HIGH)
+          if (intr_state_update_queue.size() > 0) begin
+            gpio_reg_update_due_t intr_state_write_to_clear_update = intr_state_update_queue[$];
+            // Update time
+            intr_state_write_to_clear_update.eval_time = $time;
+            for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
+              if (intr_state_write_to_clear_update.needs_update == 1'b1 &&
+                  intr_state_write_to_clear_update.reg_value[each_bit] == 1'b1 &&
+                  item.a_data[each_bit] == 1'b1) begin
+                intr_state_write_to_clear_update.reg_value[each_bit] = 1'b0;
+              end
+            end
+            // If same time stamp as last entry, update entry to account for "still active" event
+            // that caused last interrupt update (As per definition of w1c in comportability
+            // specification)
+            if (intr_state_write_to_clear_update.eval_time == intr_state_update_queue[$].eval_time)
+                begin
+              // Re-apply interrupt update
+              intr_state_write_to_clear_update.reg_value |= last_intr_update_except_clearing;
+              // Delete last entry with same time stamp
+              intr_state_update_queue.delete(intr_state_update_queue.size()-1);
+            end
+            // Push new interrupt state update entry into queue
+            intr_state_update_queue.push_back(intr_state_write_to_clear_update);
+            if (intr_state_update_queue.size() > 2) begin
+              // Delete extra unenecessary entry
+              intr_state_update_queue.delete(0);
+            end
+          end
+        end else begin
+          if (csr.get_name() == "intr_test") begin
+            // Store the written value as it is WO register
+            last_intr_test_event = item.a_data;
+          end
+          csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+        end
         `uvm_info(`gfn, "Calling gpio_predict_and_compare on reg write", UVM_HIGH)
         gpio_predict_and_compare(csr);
-      end
+      end // if (write)
     end else begin // if (channel == DataChannel)
       if (write == 0) begin
         // If do_read_check, is set, then check mirrored_value against item.d_data
         if (do_read_check) begin
-          // Checker-2: Check for correctness of "data_in" register read data
-          if (csr.get_name() == "data_in") begin
-            `DV_CHECK_CASE_EQ(item.d_data, cfg.gpio_vif.pins);
-          end else if (csr.get_name() == "intr_state") begin
-            `DV_CHECK_EQ(item.d_data, csr.get_mirrored_value())
-          end
-          // Checker-3: Check if reg read data matches expected value or not
+          // Checker-2: Check if reg read data matches expected value or not
           `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
         end
-      end
+      end // if (write == 0)
     end
   endtask : process_tl_access
 
@@ -111,41 +180,42 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           // Flag to indicate:
           // (i) if there was any change in value on gpio_i pin - Bit0
           // (ii) what change occurred on gpio_i pin - Bit1
-          gpio_transition [NUM_GPIOS-1:0] gpio_i_transition;
+          gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition;
           foreach (prev_gpio_i[pin]) begin
-            gpio_i_transition[pin].transition = cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin];
-            if (gpio_i_transition[pin].transition) begin
+            gpio_i_transition[pin].transition_occurred =
+                (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
+            if (gpio_i_transition[pin].transition_occurred) begin
               case (cfg.gpio_vif.pins[pin])
                 1'b0: begin
                   // Negedge seen on pin, indicated by 0 value
-                  gpio_i_transition[pin].rose_or_fell = 1'b0;
+                  gpio_i_transition[pin].is_rising_edge = 1'b0;
                 end
                 1'b1: begin
                   // Posedge seen on pin, indicated by 1 value
-                  gpio_i_transition[pin].rose_or_fell = 1'b1;
+                  gpio_i_transition[pin].is_rising_edge = 1'b1;
                 end
                 1'bz: begin
                   if (prev_gpio_i[pin] === 1'b1) begin
                     // Negedge seen on pin, indicated by 0 value
-                    gpio_i_transition[pin].rose_or_fell = 1'b0;
+                    gpio_i_transition[pin].is_rising_edge = 1'b0;
                   end else if (prev_gpio_i[pin] === 1'b0) begin
                     // Posedge seen on pin, indicated by 1 value
-                    gpio_i_transition[pin].rose_or_fell = 1'b1;
+                    gpio_i_transition[pin].is_rising_edge = 1'b1;
                   end else begin
                     // x->z does not indicate useful transition, reset transition bit
-                    gpio_i_transition[pin].transition = 1'b0;
+                    gpio_i_transition[pin].transition_occurred = 1'b0;
                   end
                 end
                 1'bx: begin
                   if (prev_gpio_i[pin] === 1'b1) begin
                     // Negedge seen on pin, indicated by 0 value
-                    gpio_i_transition[pin].rose_or_fell = 1'b0;
+                    gpio_i_transition[pin].is_rising_edge = 1'b0;
                   end else if (prev_gpio_i[pin] === 1'b0) begin
                     // Posedge seen on pin, indicated by 1 value
-                    gpio_i_transition[pin].rose_or_fell = 1'b1;
+                    gpio_i_transition[pin].is_rising_edge = 1'b1;
                   end else begin
                     // z->x does not indicate useful transition, reset transition bit
-                    gpio_i_transition[pin].transition = 1'b0;
+                    gpio_i_transition[pin].transition_occurred = 1'b0;
                   end
                 end
               endcase
@@ -155,6 +225,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             `uvm_info(`gfn, $sformatf("gpio_i_transition[%0d] = %0p", ii, gpio_i_transition[ii]),
                       UVM_HIGH)
           end
+          `uvm_info(`gfn, "Calling gpio_interrupt_predict from monitor_pins_if", UVM_HIGH)
           // Look for interrupt event and update interrupt status
           gpio_interrupt_predict(gpio_i_transition);
           // Update value
@@ -166,7 +237,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   endtask : monitor_gpio_i
 
-  // function : gpio_predict_and_compare
+  // Function : gpio_predict_and_compare
   function void gpio_predict_and_compare(uvm_reg csr = null);
     string msg_id = {`gfn, " gpio_predict_and_compare: "};
     // Predicted value of "pins" from within gpio_vif
@@ -327,8 +398,23 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       `uvm_info(msg_id, $sformatf("pred_val_gpio_pins = %0h(%0b)", pred_val_gpio_pins,
                                   pred_val_gpio_pins), UVM_HIGH)
 
-      // Update data_in register value based on result of input and output
-      ral.data_in.data_in.predict(.value(pred_val_gpio_pins), .kind(UVM_PREDICT_DIRECT));
+      // Store latest update to be applied to data_in
+      begin
+        gpio_reg_update_due_t current_data_in_update;
+        if (data_in_update_queue.size == 2) begin
+          data_in_update_queue.delete(0);
+        end
+        current_data_in_update.needs_update = 1'b1;
+        current_data_in_update.reg_value = pred_val_gpio_pins;
+        current_data_in_update.eval_time = $time;
+        data_in_update_queue.push_back(current_data_in_update);
+      end
+      // If update was due to register write, we can call predict right away
+      if (csr != null) begin
+        // Update data_in register value based on result of input and output
+        ral.data_in.data_in.predict(.value(pred_val_gpio_pins), .kind(UVM_PREDICT_DIRECT));
+      end
+
       // Checker-1: Compare predicted and actual values of gpio pins
       // Avoid calling this checker due to weak pull-up effect
       if ( (|gpio_i_driven === 1'b1) || (csr != null) ) begin
@@ -342,7 +428,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // This function computes expected value of gpio intr_status based on
   // changes of gpio_i data or interrupt control registers
   virtual function void gpio_interrupt_predict(
-    input gpio_transition [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
+    input gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
 
     string msg_id = {`gfn, $sformatf(" gpio_interrupt_predict: ")};
     bit [NUM_GPIOS-1:0] intr_state           = ral.intr_state.get_mirrored_value();
@@ -353,35 +439,28 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     // expected(predicted) value of interrupt status
     bit [NUM_GPIOS-1:0] exp_intr_status;
 
-    `uvm_info(msg_id, $sformatf("intr_state = 0x%0h [%0b]",
-                                intr_state, intr_state), UVM_HIGH)
-    // Check if there is already INTR_STATE value update which was already due
-    // for update, but not actually updated
-    if (intr_state_update_due.need_update) begin
-      intr_state = intr_state_update_due.reg_value;
-      `uvm_info(msg_id, $sformatf("intr_state after update = 0x%0h [%0b]",
-                                  intr_state, intr_state), UVM_HIGH)
+    if (intr_state_update_queue.size() > 0) begin
+      // Check if there is already INTR_STATE value update which was already due
+      // for update, but not actually updated
+      if (intr_state_update_queue[$].needs_update) begin
+        intr_state = intr_state_update_queue[$].reg_value;
+      end
     end
 
-    // TODO-Remove displays once logic is proven
-    `uvm_info(msg_id, $sformatf("intr_ctrl_en_lvllow = 0x%0h [%0b]",
-                                intr_ctrl_en_lvllow, intr_ctrl_en_lvllow), UVM_HIGH)
-    `uvm_info(msg_id, $sformatf("intr_ctrl_en_lvlhigh = 0x%0h [%0b]",
-                                intr_ctrl_en_lvlhigh, intr_ctrl_en_lvlhigh), UVM_HIGH)
-    `uvm_info(msg_id, $sformatf("intr_ctrl_en_falling = 0x%0h [%0b]",
-                                intr_ctrl_en_falling, intr_ctrl_en_falling), UVM_HIGH)
-    `uvm_info(msg_id, $sformatf("intr_ctrl_en_rising = 0x%0h [%0b]",
-                                intr_ctrl_en_rising, intr_ctrl_en_rising), UVM_HIGH)
+    // Reset value of last_intr_update_except_clearing to 0
+    last_intr_update_except_clearing = '0;
     // 1. Look for edge triggerred interrupts
     if (gpio_i_transition != {NUM_GPIOS{2'b00}}) begin
       foreach (gpio_i_transition[each_pin]) begin
-        if (gpio_i_transition[each_pin].transition) begin
-          if ((gpio_i_transition[each_pin].rose_or_fell == 1'b0 &&
+        if (gpio_i_transition[each_pin].transition_occurred) begin
+          if ((gpio_i_transition[each_pin].is_rising_edge == 1'b0 &&
                intr_ctrl_en_falling[each_pin] == 1'b1) ||
-              (gpio_i_transition[each_pin].rose_or_fell == 1'b1 &&
+              (gpio_i_transition[each_pin].is_rising_edge == 1'b1 &&
                intr_ctrl_en_rising[each_pin] == 1'b1))
               begin
             exp_intr_status[each_pin] = 1'b1;
+            // Register the latest edge triggered gpio interrupt update, if any
+            last_intr_update_except_clearing[each_pin] = 1'b1;
           end else begin
             exp_intr_status[each_pin] = intr_state[each_pin];
           end
@@ -394,19 +473,33 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         if ((cfg.gpio_vif.pins[each_pin] == 1'b1 && intr_ctrl_en_lvlhigh[each_pin] == 1'b1) ||
             (cfg.gpio_vif.pins[each_pin] == 1'b0 && intr_ctrl_en_lvllow[each_pin] == 1'b1)) begin
           exp_intr_status[each_pin] = 1'b1;
+          // Register the latest level triggered gpio interrupt update, if any
+          last_intr_update_except_clearing[each_pin] = 1'b1;
         end else begin
           exp_intr_status[each_pin] = intr_state[each_pin];
         end
       end
-      else begin
-        `uvm_info(msg_id, $sformatf("exp_intr_status[%0d] is already asserted", each_pin), UVM_HIGH)
-      end
     end
+    // 3. Apply effect of "Interrupt Test"
+    exp_intr_status |= last_intr_test_event;
+    // Clear last_intr_test_event
+    last_intr_test_event = '0;
     `uvm_info(msg_id, $sformatf("Predicted interrupt status = 0x%0h [%0b]",
                                 exp_intr_status, exp_intr_status), UVM_HIGH)
-    // Keep update pending until register access is done
-    intr_state_update_due.need_update = 1'b1;
-    intr_state_update_due.reg_value = exp_intr_status;
+    begin
+      gpio_reg_update_due_t crnt_intr_state_update;
+      // Keep update pending until register access is done
+      crnt_intr_state_update.needs_update = 1'b1;
+      crnt_intr_state_update.reg_value = exp_intr_status;
+      crnt_intr_state_update.eval_time = $time;
+      // Push new entry into queue
+      intr_state_update_queue.push_back(crnt_intr_state_update);
+
+      // If queue already has two entries, remove 0th element
+      if (intr_state_update_queue.size() > 2) begin
+        intr_state_update_queue.delete(0);
+      end
+    end
   endfunction : gpio_interrupt_predict
 
   // Function : update_gpio_out_regs
@@ -467,10 +560,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     ral.masked_oe_upper.data.predict(.value(data), .kind(UVM_PREDICT_WRITE));
   endfunction : update_gpio_oe_regs
 
+  // Function: reset
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
   endfunction
 
+  // Function: check_phase
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
   endfunction
