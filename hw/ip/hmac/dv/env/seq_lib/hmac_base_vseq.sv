@@ -11,6 +11,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   bit do_hmac_init     = 1'b1;
   bit do_back_pressure = 1'b0;
+  bit do_burst_wr      = 1'b0;
   rand bit [TL_AW-1:0]  wr_addr;
   rand bit [TL_SZW-1:0] wr_size;
   rand bit [TL_DBW-1:0] wr_mask;
@@ -150,9 +151,36 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end
   endtask
 
+  // read fifo_depth reg and burst write a chunk of words
+  virtual task burst_wr_msg(bit [7:0] msg[], int burst_wr_length);
+    bit [7:0]       msg_q[$] = msg;
+    bit [7:0]       word_unpack[4];
+    bit [TL_DW-1:0] word;
+    while (msg_q.size() > 0) begin
+      // wait until HMAC has enough space to burst write
+      csr_spinwait(.ptr(ral.status.fifo_depth),
+                   .exp_data(HMAC_MSG_FIFO_DEPTH - burst_wr_length),
+                   .compare_op(CompareOpLe));
+      if (msg_q.size() >= burst_wr_length * 4) begin
+        repeat (burst_wr_length) begin
+          for (int i = 0; i < 4; i++) word_unpack[i] = msg_q.pop_front();
+          word = {>>byte{word_unpack}};
+          `uvm_info(`gfn, $sformatf("wr_size = %0h, wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
+                                    wr_size, wr_addr, wr_mask, word), UVM_HIGH)
+          `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask) with {wr_size == 2;})
+          tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size));
+        end
+        clear_intr_fifo_full();
+     end else begin // remaining msg is smaller than the burst_wr_length
+       wr_msg(msg_q);
+       break;
+     end
+    end
+  endtask
+
   // read the message length from the DUT reg
   virtual task rd_msg_length();
-    bit [31:0] length_upper, length_lower;
+    bit [TL_DW-1:0] length_upper, length_lower;
     csr_rd(ral.msg_length_upper, length_upper);
     csr_rd(ral.msg_length_lower, length_lower);
   endtask

@@ -42,6 +42,18 @@ package dv_utils_pkg;
     ClkFreq100Mhz = 100
   } clk_freq_mhz_e;
 
+  // compare operator types
+  typedef enum {
+    CompareOpEq,
+    CompareOpCaseEq,
+    CompareOpNe,
+    CompareOpCaseNe,
+    CompareOpGt,
+    CompareOpGe,
+    CompareOpLt,
+    CompareOpLe
+  } compare_op_e;
+
   string msg_id = "dv_utils_pkg";
 
   // Simple function to set max errors before quitting sim
