@@ -95,7 +95,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endfunction
 
   // task to enable multiple interrupts
-  // enable: if set, then selected unterrupts are enabled, else disabled
+  // enable: if set, then selected interrupts are enabled, else disabled
   // see description above for other args
   virtual task cfg_interrupts(bit [TL_DW-1:0] interrupts,
                               bit enable = 1'b1,

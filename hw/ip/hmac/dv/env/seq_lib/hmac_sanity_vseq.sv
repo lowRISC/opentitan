@@ -13,6 +13,8 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   rand bit        hmac_en;
   rand bit        endian_swap;
   rand bit        digest_swap;
+  rand bit        intr_fifo_full_en;
+  rand bit        intr_hmac_done_en;
   rand bit [31:0] key[8];
   rand bit [7:0]  msg[];
   rand int        burst_wr_length;
@@ -29,6 +31,11 @@ class hmac_sanity_vseq extends hmac_base_vseq;
     burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
   }
 
+  constraint intr_enable_c {
+    intr_fifo_full_en dist {1'b1 := 8, 1'b0 := 2};
+    intr_hmac_done_en dist {1'b1 := 8, 1'b0 := 2};
+  }
+
   virtual task pre_start();
     do_hmac_init = 1'b0;
     super.pre_start();
@@ -40,8 +47,12 @@ class hmac_sanity_vseq extends hmac_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d",
                                 i, num_trans, msg.size(), hmac_en), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("intr_fifo_full_en=%b, intr_hmac_done_en=%b, endian/digest_swap=%b",
+                                intr_fifo_full_en, intr_hmac_done_en, {endian_swap, digest_swap}),
+                                UVM_HIGH)
       // hmac_init only sha
-      hmac_init(.hmac_en(hmac_en), .endian_swap(endian_swap), .digest_swap(digest_swap));
+      hmac_init(.hmac_en(hmac_en), .endian_swap(endian_swap), .digest_swap(digest_swap),
+                .intr_fifo_full_en(intr_fifo_full_en), .intr_hmac_done_en(intr_hmac_done_en));
 
       // can randomly read previous digest
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
@@ -68,9 +79,13 @@ class hmac_sanity_vseq extends hmac_base_vseq;
       clear_intr_fifo_full();
 
       // wait for interrupt to assert, check status and clear it
-      wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-      check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
-
+      if (intr_hmac_done_en) begin
+        wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
+        check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
+      end else begin
+        csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+        csr_wr(.csr(ral.intr_state), .value(1 << HmacDone));
+     end
       // read msg fifo length
       rd_msg_length();
 

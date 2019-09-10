@@ -108,6 +108,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write) begin
       if (csr.get_name() inside {"intr_state"}) begin
+        // TODO: cycle accurate checking on hmac_done
         if (item.d_data[HmacDone] == 1) begin
           do_read_check = 1'b0;
           hmac_wr_cnt = 0;
@@ -162,7 +163,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
           key_processed = 1;
         end
-        wait (cfg.intr_vif.pins[HmacDone]) key_processed = 0;
+        while (1) begin
+          if (ral.intr_state.hmac_done.get_mirrored_value() == 1) break;
+          #1;
+        end
+        key_processed = 0;
       end
     end
 

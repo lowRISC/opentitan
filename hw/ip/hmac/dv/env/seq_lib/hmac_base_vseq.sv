@@ -48,7 +48,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task hmac_init(bit sha_en = 1'b1,
                          bit hmac_en = 1'b1,
                          bit endian_swap = 1'b1,
-                         bit digest_swap = 1'b1);
+                         bit digest_swap = 1'b1,
+                         bit intr_fifo_full_en = 1'b1,
+                         bit intr_hmac_done_en = 1'b1);
     bit [TL_DW-1:0] interrupts;
     // enable sha, hmac data paths and writing to msg_fifo
     ral.cfg.sha_en.set(sha_en);
@@ -58,7 +60,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_update(.csr(ral.cfg));
 
     // enable interrupts
-    interrupts = (1 << HmacDone) | (1 << HmacMsgFifoFull);
+    interrupts = (intr_hmac_done_en << HmacDone) | (intr_fifo_full_en << HmacMsgFifoFull);
     cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
   endtask
 
@@ -73,12 +75,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // read digest value
   virtual task rd_digest();
-    logic [31:0] digest[8];
+    logic [TL_DW-1:0] digest[8];
     csr_rd_digest(digest);
   endtask
 
     // read digest value and output read value
-  virtual task csr_rd_digest(output bit [31:0] digest[8]);
+  virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[8]);
     csr_rd(.ptr(ral.digest0), .value(digest[0]));
     csr_rd(.ptr(ral.digest1), .value(digest[1]));
     csr_rd(.ptr(ral.digest2), .value(digest[2]));
@@ -90,7 +92,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
   // write 256-bit hashed key
-  virtual task wr_key(bit [31:0] key[8]);
+  virtual task wr_key(bit [TL_DW-1:0] key[8]);
     // pity we cant loop here
     ral.key0.set(key[0]);
     ral.key1.set(key[1]);
@@ -186,25 +188,35 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
   // read status FIFO FULL and check intr FIFO FULL
+  // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
   virtual task check_status_intr_fifo_full();
     bit msg_fifo_full;
     csr_rd(ral.status.fifo_full, msg_fifo_full);
-    check_interrupts(.interrupts((1 << HmacMsgFifoFull)),
-                     .check_set (msg_fifo_full &
-                                 ral.intr_enable.fifo_full.get_mirrored_value()));
+    if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
+      check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(msg_fifo_full));
+    end else begin
+      csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
+                   .compare_mask(1 << HmacMsgFifoFull));
+      csr_wr(.csr(ral.intr_state), .value(1 << HmacDone));
+    end
   endtask
 
   // when msg fifo full interrupt is set, this task clears the interrupt
   // checking the correctness of the fifo full interrupt is done in scb
   virtual task clear_intr_fifo_full();
-    if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
-      check_interrupts(.interrupts((1 << HmacMsgFifoFull)),
-                       .check_set (ral.intr_enable.fifo_full.get_mirrored_value()));
+    if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
+      if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
+        check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(1'b1));
+      end
+    end else begin
+      bit msg_fifo_full;
+      csr_rd(ral.intr_state.fifo_full, msg_fifo_full);
+      if (msg_fifo_full) csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacDone));
     end
   endtask
 
-  virtual task compare_digest(bit [31:0] exp_digest[8]);
-    logic [31:0] act_digest[8];
+  virtual task compare_digest(bit [TL_DW-1:0] exp_digest[8]);
+    logic [TL_DW-1:0] act_digest[8];
     csr_rd_digest(act_digest);
     foreach (act_digest[i]) begin
       `DV_CHECK_EQ(act_digest[i], exp_digest[i], $sformatf("for index %0d", i))
