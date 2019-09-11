@@ -19,7 +19,7 @@ analyze -sv09 \
 elaborate -top $env(FPV_TOP)
 
 #-------------------------------------------------------------------------
-# specify clock(s) and reset(s0
+# specify clock(s) and reset(s)
 #-------------------------------------------------------------------------
 
 # select primary clock and reset condition (use ! for active-low reset)
