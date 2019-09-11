@@ -39,6 +39,8 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     super.initialize();
     // create uart agent config obj
     m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
+    m_uart_agent_cfg.en_tx_monitor = 1'b0;
+    m_uart_agent_cfg.en_rx_monitor = 1'b0;
     // create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
     // create tl agent config obj
