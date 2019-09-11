@@ -171,12 +171,8 @@
 // For formal verification only
 //------------------------------------------------------------------------------------
 
-// ASSERT_FPV
-// Assert a concurrent property during formal verification only.
-`define ASSERT_FPV(__name, __prop, __clk, __rst) \
-`ifdef FPV_ON                                    \
-   `ASSERT(__name, __prop, __clk, __rst)         \
-`endif
+// Note that the existing set of ASSERT macros specified above shall be used for FPV,
+// thereby ensuring that the assertions are evaluated during DV simulations as well.
 
 // ASSUME_FPV
 // Assume a concurrent property during formal verification only.
