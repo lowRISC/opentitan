@@ -4,13 +4,11 @@
 
 module tlul_socket_m1_bind;
 
-  // TODO(NilsGraf): because there are M of these tl_h_* interfaces, need to create
-  // a new module tlul_assert_multiple, which instantiates N tlul_assert modules
-  bind tlul_socket_m1 tlul_assert tlul_assert_host (
+  bind tlul_socket_m1 tlul_assert_multiple #(M) tlul_assert_host (
     .clk_i,
     .rst_ni,
-    .h2d    (tl_h_i[0]),
-    .d2h    (tl_h_o[0])
+    .h2d    (tl_h_i),
+    .d2h    (tl_h_o)
   );
 
   bind tlul_socket_m1 tlul_assert tlul_assert_device (
