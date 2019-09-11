@@ -75,6 +75,18 @@ module xbar_main_bind;
     .h2d    (tl_flash_ctrl_o),
     .d2h    (tl_flash_ctrl_i)
   );
+  bind xbar_main tlul_assert tlul_assert_device_rv_timer (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_rv_timer_o),
+    .d2h    (tl_rv_timer_i)
+  );
+  bind xbar_main tlul_assert tlul_assert_device_hmac (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_hmac_o),
+    .d2h    (tl_hmac_i)
+  );
   bind xbar_main tlul_assert tlul_assert_device_plic (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
