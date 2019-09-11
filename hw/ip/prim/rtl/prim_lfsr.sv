@@ -1,4 +1,3 @@
-// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -21,17 +20,19 @@
 
 module prim_lfsr #(
   // Lfsr Type, can be FIB_XNOR or GAL_XOR
-  parameter                    LfsrType = "GAL_XOR",
+  parameter                    LfsrType  = "GAL_XOR",
   // Lfsr width
-  parameter int unsigned       LfsrDw   = 32,
+  parameter int unsigned       LfsrDw    = 32,
   // Width of input to be XOR'd into state (lfsr_q[InDw-1:0])
-  parameter int unsigned       InDw     =  8,
+  parameter int unsigned       InDw      =  8,
   // Width of output tap (from lfsr_q[OutDw-1:0])
-  parameter int unsigned       OutDw    =  8,
+  parameter int unsigned       OutDw     =  8,
   // Lfsr reset state, must be nonzero!
-  parameter logic [LfsrDw-1:0] Seed     = LfsrDw'(1),
+  parameter logic [LfsrDw-1:0] Seed      = LfsrDw'(1),
   // Custom polynomial coeffs
-  parameter logic [LfsrDw-1:0] Custom   = '0
+  parameter logic [LfsrDw-1:0] Custom    = '0,
+  // Enable this for DV, disable this for long LFSRs in FPV
+  parameter bit                MaxLenSVA = 1'b1
 ) (
   input                    clk_i,
   input                    rst_ni,
@@ -105,7 +106,7 @@ module prim_lfsr #(
        64'h4000000000000001,
        64'h800000000000000D };
 
-  // automatically generated with get-lfsr-coeffs.py script
+// automatically generated with get-lfsr-coeffs.py script
 localparam int unsigned FIB_XNOR_LUT_OFF = 3;
 localparam logic [167:0] FIB_XNOR_COEFFS [0:165] =
   '{ 168'h6,
@@ -349,9 +350,42 @@ localparam logic [167:0] FIB_XNOR_COEFFS [0:165] =
     end
   end
 
+
   //////////////////////////////////////////////////////
   // shared assertions
   //////////////////////////////////////////////////////
+
+  function automatic logic[LfsrDw-1:0] compute_next_state(logic[LfsrDw-1:0] coeffs,
+                                                          logic[InDw-1:0]   data,
+                                                          logic[LfsrDw-1:0] state);
+    logic state0;
+
+    // Galois XOR
+    if (LfsrType == "GAL_XOR") begin
+      if (!state) begin
+        state = Seed;
+      end else begin
+        state0 = state[0];
+        state = state >> 1;
+        if (state0) state ^= coeffs;
+        state ^= LfsrDw'(data);
+      end
+    // Fibonacci XNOR
+    end else if (LfsrType == "FIB_XNOR") begin
+      if (&state) begin
+        state = Seed;
+      end else begin
+        state0 = ~(^(state & coeffs));
+        state = state << 1;
+        state[0] = state0;
+        state ^= LfsrDw'(data);
+      end
+    end else begin
+      $error("unknown lfsr type");
+    end
+
+    return state;
+  endfunction : compute_next_state
 
   `ASSERT_INIT(InputWidth_A, LfsrDw >= InDw)
   `ASSERT_INIT(OutputWidth_A, LfsrDw >= OutDw)
@@ -359,5 +393,52 @@ localparam logic [167:0] FIB_XNOR_COEFFS [0:165] =
   `ASSERT(LfsrLockupCheck_A, en_i && lockup |=> !lockup, clk_i, !rst_ni)
   // MSB must be one in any case
   `ASSERT(CoeffCheck_A, coeffs[LfsrDw-1], clk_i, !rst_ni)
+
+  // check whether next state is computed correctly
+  `ASSERT(NextStateCheck_A, en_i |=> lfsr_q ==
+    compute_next_state(coeffs, $past(data_i,1), $past(lfsr_q,1)),
+    clk_i, !rst_ni )
+
+  // the code below is not meant to be synthesized,
+  // but it is intended to be used in simulation and FPV
+  // the formal tool defines SYNTHESIS, hence this workaround
+`ifdef FPV_ON
+  `define MAX_LEN_SVA
+`endif
+`ifndef SYNTHESIS
+  `define MAX_LEN_SVA
+`endif
+
+  if (MaxLenSVA) begin : gen_max_len_sva
+`ifdef MAX_LEN_SVA
+    // the code below is a workaround to enable long sequences to be checked.
+    // some simulators do not support SVA sequences longer than 2**32-1.
+    logic [LfsrDw-1:0] cnt_d, cnt_q;
+    logic data_set_d, data_set_q;
+    logic [LfsrDw-1:0] cmp_val;
+
+    assign cmp_val = {{(LfsrDw-1){1'b1}}, 1'b0}; // 2**LfsrDw-2
+    assign cnt_d = (en_i && lockup)             ? '0 :
+                   (en_i && (cnt_q == cmp_val)) ? '0 :
+                   (en_i)                       ? cnt_q + 1'b1 :
+                                                  cnt_q;
+
+    assign data_set_d = data_set_q | (|data_i);
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_max_len
+      if (!rst_ni) begin
+        cnt_q      <= '0;
+        data_set_q <= 1'b0;
+      end else begin
+        cnt_q      <= cnt_d;
+        data_set_q <= data_set_d;
+      end
+    end
+
+    `ASSERT(MaximalLengthCheck0_A, cnt_q == 0 |-> lfsr_q == Seed, clk_i, !rst_ni || data_set_q)
+    `ASSERT(MaximalLengthCheck1_A, cnt_q != 0 |-> lfsr_q != Seed, clk_i, !rst_ni || data_set_q)
+`endif
+  end
+`undef MAX_LEN_SVA
 
 endmodule
