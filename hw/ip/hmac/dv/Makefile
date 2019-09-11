@@ -53,6 +53,12 @@ ifeq (${TEST_NAME},hmac_test_hmac_vectors)
   RUN_OPTS      += +test_vectors_dir=${DV_DIR}/../../../dv/sv/test_vectors/
 endif
 
+ifeq (${TEST_NAME},hmac_stress_all)
+  UVM_TEST_SEQ   = hmac_stress_all_vseq
+  RUN_OPTS      += +test_vectors_dir=${DV_DIR}/../../../dv/sv/test_vectors/
+  RUN_OPTS      += +test_timeout_ns=10_000_000_000
+endif
+
 ifeq (${TEST_NAME},hmac_intr_test)
   UVM_TEST_SEQ   = hmac_common_vseq
   RUN_OPTS      += +run_intr_test
