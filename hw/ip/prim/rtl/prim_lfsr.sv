@@ -20,8 +20,8 @@
 //       [3] https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
 
 module prim_lfsr #(
-  // Lfsr Type: 0) Galois XOR, 1) Fibonacci XNOR
-  parameter int unsigned       LfsrType = 0,
+  // Lfsr Type, can be FIB_XNOR or GAL_XOR
+  parameter                    LfsrType = "GAL_XOR",
   // Lfsr width
   parameter int unsigned       LfsrDw   = 32,
   // Width of input to be XOR'd into state (lfsr_q[InDw-1:0])
@@ -281,7 +281,7 @@ localparam logic [167:0] FIB_XNOR_COEFFS [0:165] =
 
   //////////////////////////////////////////////////////
   // Galois XOR
-  if (LfsrType == 0) begin : gen_fib_xor
+  if (LfsrType == "GAL_XOR") begin : gen_gal_xor
 
     // if custom polynomial is provided
     if (Custom) begin : gen_custom
@@ -304,7 +304,7 @@ localparam logic [167:0] FIB_XNOR_COEFFS [0:165] =
 
   //////////////////////////////////////////////////////
   // Fibonacci XNOR
-  end else if (LfsrType == 1) begin : gen_fib_xnor
+  end else if (LfsrType == "FIB_XNOR") begin : gen_fib_xnor
 
     // if custom polynomial is provided
     if (Custom) begin : gen_custom
