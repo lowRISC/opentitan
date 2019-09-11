@@ -211,7 +211,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end else begin
       bit msg_fifo_full;
       csr_rd(ral.intr_state.fifo_full, msg_fifo_full);
-      if (msg_fifo_full) csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacDone));
+      if (msg_fifo_full) csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacMsgFifoFull));
     end
   endtask
 
