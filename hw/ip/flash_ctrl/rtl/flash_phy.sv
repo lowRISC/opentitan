@@ -33,57 +33,55 @@ module flash_phy #(
   output flash_ctrl_pkg::flash_m2c_t flash_ctrl_o
 );
 
-  // the primary function of flash phy, at the moment, is to redirect transactions to the correct
-  // flash macro.  This is done at the flash_phy level and not the modeled prim_flash level to
-  // ensure each prim_flash represents one bank of flash, and that there will not be blocking
-  // behavior when the host reads from one flash bank while a write / erase is performed on another
-  // bank.  If there is further non-blocking behavior at the page level, that is expected to be
-  // modeled inside the prim_flash
+  // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
+  // in order blocking read. Since the data cannot be returned out of order, this simply
+  // does the reads in advance and store them in a FIFO
+  localparam FlashMacroOustanding = 1;
+  localparam SeqFifoDepth = FlashMacroOustanding * NumBanks;
 
-  logic                 host_rd_pending;
-  logic [BankW-1:0]     host_bank_sel, ctrl_bank_sel;
-  logic [BankW-1:0]     host_last_bank_sel;
+  // flash_phy forwards incoming host transactions to the appropriate bank but is not aware of
+  // any controller / host arbitration within the bank.  This means it is possible for
+  // flash_phy to forward one transaction to bank N and another to bank N+1 only for bank N+1
+  // to finish its transaction first (if for example a controller operation were ongoing in bank
+  // N).
+  // This implies that even though transactions are received in-order, they can complete out of
+  // order.  Thus it is the responsibility of the flash_phy to sequence the responses correctly.
+  // For banks that have finished ahead of time, it is also important to hold its output until
+  // consumed.
+
+  // host to flash_phy interface
+  logic [BankW-1:0]     host_bank_sel;
+  logic [BankW-1:0]     rsp_bank_sel;
   logic [NumBanks-1:0]  host_req_rdy;
   logic [NumBanks-1:0]  host_req_done;
-  logic [DataWidth-1:0] rd_data [NumBanks];
+  logic [NumBanks-1:0]  host_rsp_avail;
+  logic [NumBanks-1:0]  host_rsp_vld;
+  logic [NumBanks-1:0]  host_rsp_ack;
+  logic [DataWidth-1:0] host_rsp_data [NumBanks];
+  logic                 seq_fifo_rdy;
+  logic                 seq_fifo_pending;
+
+
+  // flash_ctrl to flash_phy interface
+  logic [BankW-1:0]     ctrl_bank_sel;
   logic [NumBanks-1:0]  rd_done;
   logic [NumBanks-1:0]  prog_done;
   logic [NumBanks-1:0]  erase_done;
   logic [NumBanks-1:0]  init_busy;
-  logic                 host_rd_done;
-  logic                 new_rd_rdy;
 
+  // common interface
+  logic [DataWidth-1:0] rd_data [NumBanks];
 
-  assign host_bank_sel = host_addr_i[PageW + WordW +: BankW];
+  // select which bank each is operating on
+  assign host_bank_sel = host_req_i ? host_addr_i[PageW + WordW +: BankW] : '0;
   assign ctrl_bank_sel = flash_ctrl_i.addr[PageW + WordW +: BankW];
-  assign host_rd_done = host_rd_pending && host_req_done_o;
 
-  // a new host read can be accepted if no host pending, or if current read is completing
-  assign new_rd_rdy = !host_rd_pending | host_rd_done;
+  // accept transaction if bank is ready and previous response NOT pending
+  assign host_req_rdy_o = host_req_rdy[host_bank_sel] & host_rsp_avail[host_bank_sel] &
+                          seq_fifo_rdy;
 
-  // The host / controller arbitration is handled in prim_flash. This allows flash_phy to just
-  // forward on the request such that controller activity on one bank does not block host activity
-  // on another.
-  //
-  // Logic here is mainly tracking which bank host is currently reading, as the host request signals
-  // do not hold until data return
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      host_last_bank_sel <= BankW'(0);
-      host_rd_pending <= 1'b0;
-    end else if (host_req_i && host_req_rdy_o) begin
-      host_last_bank_sel <= host_bank_sel;
-      host_rd_pending <= 1'b1;
-    end else if (host_rd_done) begin
-      //if host read finished and no other request waiting
-      host_rd_pending <= 1'b0;
-    end
-  end
-
-  // ready when prim_flash is ready and no ongoing host activity
-  assign host_req_rdy_o = host_req_rdy[host_bank_sel] & new_rd_rdy & host_req_i;
-  assign host_req_done_o = host_req_done[host_last_bank_sel];
-  assign host_rdata_o = rd_data[host_last_bank_sel];
+  assign host_req_done_o = seq_fifo_pending & host_rsp_vld[rsp_bank_sel];
+  assign host_rdata_o = host_rsp_data[rsp_bank_sel];
 
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
@@ -91,7 +89,44 @@ module flash_phy #(
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = |init_busy;
 
+  // This fifo holds the expected return order
+  prim_fifo_sync #(
+      .Width  (BankW),
+      .Pass   (0),
+      .Depth  (SeqFifoDepth)
+    ) bank_sequence_fifo (
+      .clk_i,
+      .rst_ni,
+      .wvalid (host_req_i & host_req_rdy_o),
+      .wready (seq_fifo_rdy),
+      .wdata  (host_bank_sel),
+      .depth  (),
+      .rvalid (seq_fifo_pending),
+      .rready (host_req_done_o),
+      .rdata  (rsp_bank_sel)
+    );
+
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_banks
+
+    // pop if the response came from the appropriate fifo
+    assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
+
+    prim_fifo_sync #(
+      .Width  (DataWidth),
+      .Pass   (1'b1),
+      .Depth  (FlashMacroOustanding)
+    ) host_rsp_fifo (
+      .clk_i,
+      .rst_ni,
+      .wvalid (host_req_done[bank]),
+      .wready (host_rsp_avail[bank]),
+      .wdata  (rd_data[bank]),
+      .depth  (),
+      .rvalid (host_rsp_vld[bank]),
+      .rready (host_rsp_ack[bank]),
+      .rdata  (host_rsp_data[bank])
+    );
+
     prim_flash #(
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),
@@ -100,7 +135,7 @@ module flash_phy #(
       .clk_i,
       .rst_ni,
       .req_i(flash_ctrl_i.req & (ctrl_bank_sel == bank)),
-      .host_req_i(host_req_i & (host_bank_sel == bank) & new_rd_rdy),
+      .host_req_i(host_req_i & host_req_rdy_o & (host_bank_sel == bank)),
       .host_addr_i(host_addr_i[0 +: PageW + WordW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),

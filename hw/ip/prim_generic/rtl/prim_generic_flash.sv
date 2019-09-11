@@ -129,12 +129,13 @@ module prim_generic_flash #(
     prog_done_o      = 1'h0;
     erase_done_o     = 1'h0;
     init_busy_o      = 1'h0;
-    host_req_rdy_o   = 1'h0;
+    host_req_rdy_o   = 1'h1;
     host_req_done_o  = 1'h0;
     hold_rd_cmd      = 1'h0;
 
     unique case (st)
       StReset: begin
+        host_req_rdy_o = 1'b0;
         init_busy_o = 1'h1;
         st_next = StInit;
       end
@@ -142,6 +143,7 @@ module prim_generic_flash #(
       // This implies this flash will not survive a reset
       // Might need a different RESET for FPGA purposes
       StInit: begin
+        host_req_rdy_o = 1'b0;
         init_busy_o = 1'h1;
         if (index_cnt < WordsPerBank && !SkipInit) begin
           st_next = StInit;
@@ -164,7 +166,6 @@ module prim_generic_flash #(
           mem_addr = host_addr_i;
           mem_req = 1'b1;
           time_cnt_inc = 1'b1;
-          host_req_rdy_o = 1'b1; // accept host command
           st_next = StHostRead;
         end else if (req_i && rd_i) begin
           st_next = StRead;
@@ -186,6 +187,7 @@ module prim_generic_flash #(
         if (time_cnt < ReadCycles) begin
           mem_req = 1'b1;
           time_cnt_inc = 1'b1;
+          host_req_rdy_o = 1'b0;
         end else begin
           host_req_done_o = 1'b1; //finish up transaction
 
@@ -195,7 +197,6 @@ module prim_generic_flash #(
             mem_addr = host_addr_i;
             mem_req = 1'b1;
             time_cnt_set1 = 1'b1;
-            host_req_rdy_o = 1'b1;  //accept host command
             st_next = StHostRead;
           end else begin
             time_cnt_clr = 1'b1;
@@ -204,6 +205,7 @@ module prim_generic_flash #(
         end
       end
       StRead: begin
+        host_req_rdy_o = 1'b0;
         mem_addr = addr_i;
         if (time_cnt < ReadCycles) begin
           mem_req = 1'b1;
@@ -216,6 +218,7 @@ module prim_generic_flash #(
         end
       end
       StProg: begin
+        host_req_rdy_o = 1'b0;
         mem_addr = addr_i;
 
         // if data is already 0, cannot program to 1 without erase
@@ -231,6 +234,8 @@ module prim_generic_flash #(
         end
       end
       StErase: begin
+        host_req_rdy_o = 1'b0;
+
         // Actual erasing of the page
         if (index_cnt < index_limit || time_cnt < time_limit) begin
           mem_req = 1'b1;
@@ -248,6 +253,7 @@ module prim_generic_flash #(
         end
       end
       default: begin
+        host_req_rdy_o = 1'b0;
         st_next = StIdle;
       end
     endcase // unique case (st)
