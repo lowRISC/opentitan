@@ -287,8 +287,12 @@ module top_earlgrey (
   logic [FLASH_DW-1:0] flash_host_rdata;
   logic [FLASH_AW-1:0] flash_host_addr;
 
-  tlul_adapter_flash #(
-    .Outstanding(1)
+  tlul_adapter_sram #(
+    .SramAw(FLASH_AW),
+    .SramDw(FLASH_DW),
+    .Outstanding(1),
+    .ByteAccess(0),
+    .ErrOnWrite(1)
   ) tl_adapter_eflash (
     .clk_i,
     .rst_ni     (ndmreset_n),
@@ -296,11 +300,15 @@ module top_earlgrey (
     .tl_i       (tl_eflash_d_h2d),
     .tl_o       (tl_eflash_d_d2h),
 
-    .req_o      (flash_host_req),
-    .req_rdy_i  (flash_host_req_rdy),
-    .addr_o     (flash_host_addr),
-    .req_done_i (flash_host_req_done),
-    .rdata_i    (flash_host_rdata)
+    .req_o    (flash_host_req),
+    .gnt_i    (flash_host_req_rdy),
+    .we_o     (),
+    .addr_o   (flash_host_addr),
+    .wdata_o  (),
+    .wmask_o  (),
+    .rdata_i  (flash_host_rdata),
+    .rvalid_i (flash_host_req_done),
+    .rerror_i (2'b00)
   );
 
   flash_phy #(

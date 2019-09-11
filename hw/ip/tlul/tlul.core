@@ -12,7 +12,6 @@ filesets:
       - lowrisc:tlul:socket_m1
       - lowrisc:tlul:adapter_sram
       - lowrisc:tlul:adapter_reg
-      - lowrisc:tlul:adapter_flash
       - lowrisc:tlul:sram2tlul
 
 targets:

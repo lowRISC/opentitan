@@ -81,7 +81,7 @@ module flash_phy #(
   end
 
   // ready when prim_flash is ready and no ongoing host activity
-  assign host_req_rdy_o = host_req_rdy[host_bank_sel] & new_rd_rdy;
+  assign host_req_rdy_o = host_req_rdy[host_bank_sel] & new_rd_rdy & host_req_i;
   assign host_req_done_o = host_req_done[host_last_bank_sel];
   assign host_rdata_o = rd_data[host_last_bank_sel];
 

@@ -13,7 +13,8 @@ module tlul_adapter_sram #(
   parameter int SramAw      = 12,
   parameter int SramDw      = 32, // Current version supports TL-UL width only
   parameter int Outstanding = 1,  // Only one request is accepted
-  parameter bit ByteAccess  = 1   // 1: true, 0: false
+  parameter bit ByteAccess  = 1,  // 1: true, 0: false
+  parameter bit ErrOnWrite  = 0   // 1: Writes not allowed, automatically error
 ) (
   input   clk_i,
   input   rst_ni,
@@ -67,6 +68,8 @@ module tlul_adapter_sram #(
   rsp_t rspfifo_wdata,  rspfifo_rdata;
 
   logic wrsp_error;
+  logic wr_attr_error;
+  logic wr_vld_error;
 
   assign tl_o = '{
       d_valid  : reqfifo_rdata.op ? reqfifo_rvalid : rspfifo_rvalid ,
@@ -101,14 +104,21 @@ module tlul_adapter_sram #(
   end
 
   if (ByteAccess == 1) begin : gen_wrsp_byte
-    assign wrsp_error = (tl_i.a_opcode == PutFullData &&
+    assign wr_attr_error = (tl_i.a_opcode == PutFullData &&
                         (tl_i.a_mask != '1 || tl_i.a_size != 2'h2));
   end else begin : gen_wrsp_word
-    assign wrsp_error = (tl_i.a_mask != '1 || tl_i.a_size != 2'h2);
+    assign wr_attr_error = (tl_i.a_mask != '1 || tl_i.a_size != 2'h2);
   end
 
-  // TODO: handle rvalid
-  assign reqfifo_wvalid = req_o && gnt_i ;
+  if (ErrOnWrite == 1) begin : gen_no_writes
+    assign wr_vld_error = tl_i.a_opcode != Get;
+  end else begin : gen_writes_allowed
+    assign wr_vld_error = 1'b0;
+  end
+
+  assign wrsp_error = wr_attr_error | wr_vld_error;
+
+  assign reqfifo_wvalid = req_o & gnt_i ;
   assign reqfifo_wdata  = '{
     op: we_o,
     wrsp_error: wrsp_error,
