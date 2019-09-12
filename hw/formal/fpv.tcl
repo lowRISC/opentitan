@@ -25,9 +25,31 @@ elaborate -top $env(FPV_TOP)
 # select primary clock and reset condition (use ! for active-low reset)
 # note: -both_edges is needed below because the TL-UL protocol checker
 # tlul_assert.sv operates on the negedge clock
-if {$env(FPV_TOP) == "usb_fs_nb_pe"} {
-  clock clk_48mhz_i -both_edges
+
+if {$env(FPV_TOP) == "rv_dm"} {
+  clock clk_i -both_edges
+  clock tck_i
+  reset -expr {!rst_ni !trst_ni}
+} elseif {$env(FPV_TOP) == "spi_device"} {
+  clock clk_i -both_edges
+  clock cio_sck_i
+  reset -expr {!rst_ni cio_csb_i}
+} elseif {$env(FPV_TOP) == "usb_fs_nb_pe"} {
+  clock clk_48mhz_i
   reset -expr {!rst_ni}
+} elseif {$env(FPV_TOP) == "usbuart"} {
+  clock clk_i -both_edges
+  clock clk_48mhz_i
+  reset -expr {!rst_ni}
+} elseif {$env(FPV_TOP) == "usbdev"} {
+  clock clk_i -both_edges
+  clock clk_usb_48mhz_i
+  reset -expr {!rst_ni}
+} elseif {$env(FPV_TOP) == "top_earlgrey"} {
+  clock clk_i -both_edges
+  clock jtag_tck_i
+  clock cio_spi_device_sck_p2d_i
+  reset -expr {!rst_ni !jtag_trst_ni cio_spi_device_csb_p2d_i}
 } elseif {$env(FPV_TOP) == "xbar_main"} {
   clock clk_main_i -both_edges
   reset -expr {!rst_main_ni}
@@ -35,8 +57,6 @@ if {$env(FPV_TOP) == "usb_fs_nb_pe"} {
   clock clk_i -both_edges
   reset -expr {!rst_ni}
 }
-# TODO: define additional clocks here for modules with multiple clocks
-# (such as cio_sck_i for spi_device module)
 
 #-------------------------------------------------------------------------
 # assume properties for inputs
@@ -71,12 +91,12 @@ assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_device\w*\.respo
 # module_name.submodule.tlul_assert_*
 
 # For sram2tlul, input tl_i.a_ready is constrained by below asssertion
-if {$env(FPV_TOP) == "sram2tlul"} {
-  assume -from_assert -remove_original {sram2tlul.validNotReady}
-}
+assume -from_assert -remove_original {sram2tlul.validNotReady*}
 
-# TODO: eventually remove below assert disable lines
+#-------------------------------------------------------------------------
+# TODO(cindychip): eventually remove below assert disable lines
 # To reduce prohibitive runtimes, below assertions are simply turned off for now
+#-------------------------------------------------------------------------
 
 # spi_device
 assert -disable {spi_device.u_tlul2sram.tlul_assert_host.responseSize*}
