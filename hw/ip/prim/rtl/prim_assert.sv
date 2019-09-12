@@ -6,7 +6,7 @@
 //  - Provides default clk and rst options to simplify code
 //  - Provides boiler plate template for common assertions
 
-// TODO(NilsGraf):
+// TODO:
 //  - check if ASSERT_FINAL needs an `ifndef SYNTHESIS
 //  - should we add ASSERT_INIT_DISABLE?
 //  - can we remove pragma translate_off and ifndef VERILATOR?
