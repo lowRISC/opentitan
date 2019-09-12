@@ -12,12 +12,17 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `uvm_object_new
   // knobs to disable post_start clear interrupt routine
   bit do_clear_all_interrupts = 1'b1;
+  // csr queue for intr test/enable/state
+  dv_base_reg intr_test_csrs[$];
+  dv_base_reg intr_state_csrs[$];
+  dv_base_reg intr_enable_csrs[$];
 
   // user can set the name of common seq to run directly without using $value$plusargs
   string common_seq_type;
 
   task pre_start();
     super.pre_start();
+    extract_common_csrs();
   endtask
 
   task body();
@@ -97,6 +102,30 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     `DV_CHECK_NE_FATAL(get_interrupt_csr, null)
   endfunction
 
+  // function to extract common csrs and fill the respective queue
+  // for ex. intr_test_csr, intr_enable_csr, intr_state_csr etc.
+  local function void extract_common_csrs();
+    uvm_reg all_csrs[$];
+    // Get all interrupt test/state/enable registers
+    ral.get_registers(all_csrs);
+    foreach (all_csrs[i]) begin
+      string csr_name = all_csrs[i].get_name();
+      if (!uvm_re_match("intr_test*", csr_name)) begin
+        intr_test_csrs.push_back(get_interrupt_csr(csr_name));
+      end
+      else if (!uvm_re_match("intr_enable*", csr_name)) begin
+        intr_enable_csrs.push_back(get_interrupt_csr(csr_name));
+      end
+      else if (!uvm_re_match("intr_state*", csr_name)) begin
+        intr_state_csrs.push_back(get_interrupt_csr(csr_name));
+      end
+    end
+    all_csrs.delete();
+    // check intr test, enable and state queue sizes are equal
+    `DV_CHECK_EQ_FATAL(intr_enable_csrs.size(), intr_test_csrs.size())
+    `DV_CHECK_EQ_FATAL(intr_state_csrs.size(), intr_test_csrs.size())
+  endfunction
+
   // task to enable multiple interrupts
   // enable: if set, then selected interrupts are enabled, else disabled
   // see description above for other args
@@ -160,35 +189,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
-    uvm_reg     all_csrs[$];
-    dv_base_reg intr_test_csrs[$];
-    dv_base_reg intr_state_csrs[$];
-    dv_base_reg intr_enable_csrs[$];
     bit [TL_DW-1:0] exp_intr_state[$];
     int test_index[$];
 
-    // Get all interrupt test/state/enable registers
-    ral.get_registers(all_csrs);
-    foreach (all_csrs[i]) begin
-      string csr_name = all_csrs[i].get_name();
-      if (!uvm_re_match("intr_test*", csr_name)) begin
-        test_index.push_back(intr_test_csrs.size());
-        intr_test_csrs.push_back(get_interrupt_csr(csr_name));
-      end
-      else if (!uvm_re_match("intr_enable*", csr_name)) begin
-        intr_enable_csrs.push_back(get_interrupt_csr(csr_name));
-      end
-      else if (!uvm_re_match("intr_state*", csr_name)) begin
-        intr_state_csrs.push_back(get_interrupt_csr(csr_name));
-        //Place holder for expected intr state value
-        exp_intr_state.push_back(0);
-      end
+    foreach (intr_test_csrs[i]) begin
+      test_index.push_back(i);
+      //Place holder for expected intr state value
+      exp_intr_state.push_back(0);
     end
-    all_csrs.delete();
-
-    // check intr test, enable and state queue sizes are equal
-    `DV_CHECK_EQ_FATAL(intr_enable_csrs.size(), intr_test_csrs.size())
-    `DV_CHECK_EQ_FATAL(intr_state_csrs.size(), intr_test_csrs.size())
 
     for (int trans = 1; trans <= num_times; trans++) begin
       bit [TL_DW-1:0] num_used_bits;
@@ -250,31 +258,17 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // Task to clear register intr status bits
   virtual task clear_all_interrupts();
-    uvm_reg     all_csrs[$];
-    dv_base_reg csr;
     bit [TL_DW-1:0] data;
-    bit [TL_DW-1:0] num_used_bits;
-    ral.get_registers(all_csrs);
-    foreach (all_csrs[i]) begin
-      string csr_name = all_csrs[i].get_name();
-      if (!uvm_re_match("intr_state*", csr_name)) begin
-        csr = get_interrupt_csr(csr_name);
-        csr_rd(.ptr(csr), .value(data));
-        if (data != 0) begin
-          `uvm_info(`gtn, $sformatf("Clearing %0s", csr.get_name()), UVM_HIGH)
-          csr_wr(.csr(csr), .value(data));
-          csr_rd(.ptr(csr), .value(data));
-          `DV_CHECK_EQ(data, 0)
-        end
-        // check interrupt pins
-        for (int j = 0; j < csr.get_n_used_bits(); j++) begin
-          bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
-          `DV_CHECK_CASE_EQ(act_intr_pin_val, 0)
-        end
-        num_used_bits += csr.get_n_used_bits();
+    foreach (intr_state_csrs[i]) begin
+      csr_rd(.ptr(intr_state_csrs[i]), .value(data));
+      if (data != 0) begin
+        `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
+        csr_wr(.csr(intr_state_csrs[i]), .value(data));
+        csr_rd(.ptr(intr_state_csrs[i]), .value(data));
+        `DV_CHECK_EQ(data, 0)
       end
     end
-    all_csrs.delete();
+    `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
   endtask
 
 endclass

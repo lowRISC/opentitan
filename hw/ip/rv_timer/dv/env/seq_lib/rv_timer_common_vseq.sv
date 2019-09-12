@@ -23,12 +23,9 @@ class rv_timer_common_vseq extends rv_timer_base_vseq;
       // prevent timer from being enabled
       csr_excl.add_excl({scope, ".", "ctrl.active*"}, CsrExclWrite);
 
-      // TODO: issue lowrisc/opentitan#48
+      // intr_test csr is WO which - it reads back 0s, plus it affects the intr_state csr
       csr_excl.add_excl({scope, ".", "intr_test*"}, CsrExclWrite);
     end
-
-    // TODO: issue lowrisc/opentitan#48
-    csr_excl.add_excl({scope, ".", "intr_state*"}, CsrExclCheck);
   endfunction
 
 endclass
