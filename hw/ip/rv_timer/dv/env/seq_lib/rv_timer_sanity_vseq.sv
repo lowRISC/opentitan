@@ -42,7 +42,7 @@ class rv_timer_sanity_vseq extends rv_timer_base_vseq;
   constraint prescale_c {
     solve en_harts before prescale;
     foreach (prescale[i]) {
-      if (en_harts[i])  prescale[i] inside {[1:max_prescale]};
+      if (en_harts[i])  prescale[i] inside {[0:max_prescale]};
       else              prescale[i] == 0;
     }
   }
