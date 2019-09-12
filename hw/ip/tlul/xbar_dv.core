@@ -5,15 +5,9 @@ CAPI=2:
 name: "lowrisc:ip:xbar_dv:0.1"
 description: "xbar_dv"
 filesets:
-  files_rtl:
-    depend:
-      - lowrisc:ip:tlul:0.1
-    files:
-      - dv/tb/xbar_main_bind.sv
-    file_type: systemVerilogSource
-
   files_dv:
     depend:
+      - lowrisc:ip:tlul:0.1
       - lowrisc:dv:dv_utils
       - lowrisc:dv:tl_agent
       - lowrisc:dv:scoreboard
@@ -28,12 +22,8 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
-    filesets:
-      - files_rtl
   sim:
     toplevel: xbar_tb_top
     filesets:
-      - files_rtl
       - files_dv
     default_tool: vcs

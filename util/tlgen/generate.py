@@ -18,10 +18,12 @@ def generate(xbar):  #xbar: Xbar -> str
         filename=resource_filename('tlgen', 'xbar.rtl.tpl.sv'))
     xbar_pkg_tpl = Template(
         filename=resource_filename('tlgen', 'xbar.pkg.tpl.sv'))
-    xbar_dv_tpl = Template(
-        filename=resource_filename('tlgen', 'xbar.dv.tpl.sv'))
+    #xbar_dv_tpl = Template(
+    #    filename=resource_filename('tlgen', 'xbar.dv.tpl.sv'))
+    xbar_bind_tpl = Template(
+        filename=resource_filename('tlgen', 'xbar.bind.tpl.sv'))
 
     out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)
     out_pkg = xbar_pkg_tpl.render(xbar=xbar)
-    out_dv = xbar_dv_tpl.render(xbar=xbar, ntype=NodeType)
-    return (out_rtl, out_pkg, out_dv)
+    out_bind = xbar_bind_tpl.render(xbar=xbar, ntype=NodeType)
+    return (out_rtl, out_pkg, out_bind)

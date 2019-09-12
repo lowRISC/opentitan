@@ -29,6 +29,7 @@ genhdr = '''// Copyright lowRISC contributors.
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 '''
 
+
 def generate_rtl(top, tpl_filename):
     top_rtl_tpl = Template(filename=tpl_filename)
 
@@ -45,7 +46,7 @@ def generate_xbars(top, out_path):
 
         # Add clocks to the top configuration
         obj["clocks"] = xbar.clocks
-        out_rtl, out_pkg, out_dv = tlgen.generate(xbar)
+        out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
 
         rtl_path = out_path / 'rtl'
         rtl_path.mkdir(parents=True, exist_ok=True)
@@ -62,10 +63,10 @@ def generate_xbars(top, out_path):
         with pkg_filepath.open(mode='w', encoding='UTF-8') as fout:
             fout.write(out_pkg)
 
-        dv_filename = "xbar_%s_tb.sv" % (xbar.name)
-        dv_filepath = dv_path / dv_filename
-        with dv_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_dv)
+        bind_filename = "xbar_%s_bind.sv" % (xbar.name)
+        bind_filepath = dv_path / bind_filename
+        with bind_filepath.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out_bind)
 
 
 def generate_plic(top, out_path):
@@ -103,8 +104,9 @@ def generate_plic(top, out_path):
         return
 
     hjson_gen_path = doc_path / "rv_plic.hjson"
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --plic-only "
-              "-o hw/top_earlgrey/\n\n")
+    gencmd = (
+        "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --plic-only "
+        "-o hw/top_earlgrey/\n\n")
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
@@ -166,11 +168,10 @@ def generate_top_ral(top, ip_objs, out_path):
 
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
-    parser.add_argument(
-        '--topcfg',
-        '-t',
-        required=True,
-        help="`top_{name}.hjson` file.")
+    parser.add_argument('--topcfg',
+                        '-t',
+                        required=True,
+                        help="`top_{name}.hjson` file.")
     parser.add_argument('--tpl', '-c', help="`top_{name}.tpl.sv` file.")
     parser.add_argument(
         '--outdir',
@@ -298,10 +299,9 @@ def main():
                         x.stem)
                     continue
 
-                obj = hjson.load(
-                    x.open('r'),
-                    use_decimal=True,
-                    object_pairs_hook=validate.checking_dict)
+                obj = hjson.load(x.open('r'),
+                                 use_decimal=True,
+                                 object_pairs_hook=validate.checking_dict)
                 if validate.validate(obj) != 0:
                     log.info("Parsing IP %s configuration failed. Skip" % x)
                     continue
@@ -323,8 +323,9 @@ def main():
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
         genhjson_path = hjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
-        gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --hjson-only "
-                  "-o hw/top_earlgrey/\n")
+        gencmd = (
+            "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --hjson-only "
+            "-o hw/top_earlgrey/\n")
 
         if args.top_ral:
             generate_top_ral(completecfg, ip_objs, out_path)
