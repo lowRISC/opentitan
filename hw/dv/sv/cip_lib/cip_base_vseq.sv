@@ -10,6 +10,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `uvm_object_param_utils(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
 
   `uvm_object_new
+  // knobs to disable post_start clear interrupt routine
+  bit do_clear_all_interrupts = 1'b1;
 
   task pre_start();
     super.pre_start();
@@ -21,6 +23,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   task post_start();
     super.post_start();
+    void'($value$plusargs("do_clear_all_interrupts=%0b", do_clear_all_interrupts));
+    if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
   // tl_access task: does a single TL_W-bit write or read transaction to the specified address
@@ -240,6 +244,35 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         end
       end
     end
+  endtask
+
+  // Task to clear register intr status bits
+  virtual task clear_all_interrupts();
+    uvm_reg     all_csrs[$];
+    dv_base_reg csr;
+    bit [TL_DW-1:0] data;
+    bit [TL_DW-1:0] num_used_bits;
+    ral.get_registers(all_csrs);
+    foreach (all_csrs[i]) begin
+      string csr_name = all_csrs[i].get_name();
+      if (!uvm_re_match("intr_state*", csr_name)) begin
+        csr = get_interrupt_csr(csr_name);
+        csr_rd(.ptr(csr), .value(data));
+        if (data != 0) begin
+          `uvm_info(`gtn, $sformatf("Clearing %0s", csr.get_name()), UVM_HIGH)
+          csr_wr(.csr(csr), .value(data));
+          csr_rd(.ptr(csr), .value(data));
+          `DV_CHECK_EQ(data, 0)
+        end
+        // check interrupt pins
+        for (int j = 0; j < csr.get_n_used_bits(); j++) begin
+          bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
+          `DV_CHECK_CASE_EQ(act_intr_pin_val, 0)
+        end
+        num_used_bits += csr.get_n_used_bits();
+      end
+    end
+    all_csrs.delete();
   endtask
 
 endclass
