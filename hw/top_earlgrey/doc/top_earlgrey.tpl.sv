@@ -132,7 +132,8 @@ module top_earlgrey (
     // debug interface
     .debug_req_i          (debug_req),
     // CPU control signals
-    .fetch_enable_i       (1'b1)
+    .fetch_enable_i       (1'b1),
+    .core_sleep_o         ()
   );
 
   // Debug Module (RISC-V Debug Spec 0.13)
