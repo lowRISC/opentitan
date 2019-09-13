@@ -4,8 +4,8 @@
 #
 # Generate a baremetal application for the microcontroller
 
-NAME         = sanity_hmac
-SRCS         = sanity_hmac.c
+NAME         = sha256_test
+SRCS         = sha256_test.c
 PROGRAM_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 include ${PROGRAM_DIR}/../../exts/common/options.mk
