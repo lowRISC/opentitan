@@ -82,7 +82,9 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         new_node = Node(name="sm1_" + str(len(xbar.nodes)),
                         node_type=NodeType.SOCKET_M1,
                         clock=xbar.clock)
+        new_node.hdepth = 2
         new_node.hpass = 2**len(node.us) - 1
+        new_node.ddepth = 2
         new_node.dpass = 1
         xbar.insert_node(new_node, node)
         process_node(new_node, xbar)
@@ -93,7 +95,9 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         new_node = Node(name="s1n_" + str(len(xbar.nodes)),
                         node_type=NodeType.SOCKET_1N,
                         clock=xbar.clock)
+        new_node.hdepth = 2
         new_node.hpass = 1
+        new_node.ddepth = 2
         new_node.dpass = 2**len(node.ds) - 1
         xbar.insert_node(new_node, node)
 
@@ -105,42 +109,62 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
 
 
 def process_pipeline(xbar):
-    """Check if HOST, DEVICE has pipeline key and is True, then propagate it to end
+    """Check if HOST, DEVICE has settings different from default, then propagate it to end
     """
     for host in xbar.hosts:
-        # go downstream and set the HReqPass at the first instance.
+        # go downstream and change the HReqPass/Depth at the first instance.
         # If it is async, skip.
-        # If Socket 1N, set hpass to 1 and skip
-        # If Socket M1, find position of the host and set 1 of the bit in hpass skip
+        # If Socket 1N,
+        #    if pipeline True and bypass false, set hpass to 0
+        #    if pipeline is False, set depth to 0
+        # If Socket M1, find position of the host and follow procedure above
         # If it is device, it means host and device are directly connected. Ignore now.
 
         # After process node is done, always only one downstream exists in any host node
-        if host.pipeline == False:
-            # No need to process, default is Pass the req/rsp
+        if host.pipeline == True and host.pipeline_byp == True:
+            # No need to process, same as default
             continue
 
+        no_bypass = (host.pipeline == True and host.pipeline_byp == False)
         dnode = host.ds[0].ds
         if dnode.node_type == NodeType.SOCKET_1N:
-            dnode.hpass = 0
+            dnode.hpass = 0 if no_bypass else dnode.hpass
+
         elif dnode.node_type == NodeType.SOCKET_M1:
             idx = dnode.us.index(host.ds)
-            dnode.hpass = dnode.hpass ^ (1 << idx)
+            dnode.hpass = dnode.hpass ^ (
+                1 << idx) if no_bypass else dnode.hpass
+
+        # keep variables separate in case we ever need to differentiate
+        dnode.dpass = 0 if no_bypass else dnode.dpass
+        dnode.hdepth = 0 if host.pipeline == False else dnode.hdepth
+        dnode.ddepth = dnode.hdepth
 
     for device in xbar.devices:
         # go upstream and set DReq/RspPass at the first instance.
         # If it is async, skip
-        # If Socket 1N, set dpass to the bit position and skip
-        # If Socket M1, set dpass to 1 and skip
+        # If Socket M1
+        #    If pipeline True and bypass False, set dpass to 0
+        #    If pipeline False, set depth to 0
+        # If Socket 1N, find position of the device and follow procedure above
         # If it is host, ignore
 
-        if device.pipeline == False:
+        if device.pipeline == True and device.pipeline_byp == True:
             continue
 
+        no_bypass = (device.pipeline == True and device.pipeline_byp == False)
         unode = device.us[0].us
         if unode.node_type == NodeType.SOCKET_1N:
             idx = unode.ds.index(device.us)
-            unode.dpass = unode.dpass ^ (1 << idx)
+            unode.dpass = unode.dpass ^ (
+                1 << idx) if no_bypass else unode.dpass
+
         elif unode.node_type == NodeType.SOCKET_M1:
-            unode.dpass = 0
+            unode.dpass = 0 if no_bypass else unode.dpass
+
+        # keep variables separate in case we ever need to differentiate
+        unode.hpass = 0 if no_bypass else unode.hpass
+        unode.ddepth = 0 if device.pipeline == False else unode.ddepth
+        unode.hdepth = unode.ddepth
 
     return xbar

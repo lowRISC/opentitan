@@ -78,6 +78,9 @@ def validate(obj):  # OrderedDict -> Xbar
             node.pipeline = True if nodeobj["pipeline"].lower() in [
                 "true", "1"
             ] else False
+            node.pipeline_byp = True if nodeobj["pipeline_byp"].lower() in [
+                "true", "1"
+            ] else False
         xbar.nodes.append(node)
 
     # Edge

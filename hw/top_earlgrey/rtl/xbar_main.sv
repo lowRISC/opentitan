@@ -402,9 +402,11 @@ module xbar_main (
 
   // Instantiation phase
   tlul_socket_1n #(
-    .HReqPass (1'b0),
-    .HRspPass (1'b0),
-    .N        (4)
+    .HReqDepth (4'h0),
+    .HRspDepth (4'h0),
+    .DReqDepth ({4{4'h0}}),
+    .DRspDepth ({4{4'h0}}),
+    .N         (4)
   ) u_s1n_14 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -415,7 +417,11 @@ module xbar_main (
     .dev_select   (dev_sel_s1n_14)
   );
   tlul_socket_m1 #(
-    .M            (3)
+    .HReqDepth ({3{4'h0}}),
+    .HRspDepth ({3{4'h0}}),
+    .DReqDepth (4'h0),
+    .DRspDepth (4'h0),
+    .M         (3)
   ) u_sm1_15 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -425,7 +431,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_15_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_16 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -435,7 +445,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_16_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (3)
+    .HReqDepth ({3{4'h0}}),
+    .HRspDepth ({3{4'h0}}),
+    .DReqDepth (4'h0),
+    .DRspDepth (4'h0),
+    .M         (3)
   ) u_sm1_17 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -445,7 +459,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_17_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (3)
+    .HReqDepth ({3{4'h0}}),
+    .HRspDepth ({3{4'h0}}),
+    .DReqDepth (4'h0),
+    .DRspDepth (4'h0),
+    .M         (3)
   ) u_sm1_18 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -455,9 +473,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_18_ds_d2h)
   );
   tlul_socket_1n #(
-    .HReqPass (1'b0),
-    .HRspPass (1'b0),
-    .N        (11)
+    .HReqDepth (4'h0),
+    .HRspDepth (4'h0),
+    .DReqDepth ({11{4'h0}}),
+    .DRspDepth ({11{4'h0}}),
+    .N         (11)
   ) u_s1n_19 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -468,7 +488,11 @@ module xbar_main (
     .dev_select   (dev_sel_s1n_19)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_20 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -478,7 +502,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_20_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_21 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -488,7 +516,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_21_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_22 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -498,7 +530,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_22_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_23 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -508,7 +544,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_23_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_24 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -518,7 +558,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_24_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_25 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -528,7 +572,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_25_ds_d2h)
   );
   tlul_socket_m1 #(
-    .M            (2)
+    .HReqPass  (2'h0),
+    .HRspPass  (2'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
+    .M         (2)
   ) u_sm1_26 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),
@@ -538,9 +586,11 @@ module xbar_main (
     .tl_d_i       (tl_sm1_26_ds_d2h)
   );
   tlul_socket_1n #(
-    .HReqPass (1'b0),
-    .HRspPass (1'b0),
-    .N        (10)
+    .HReqPass  (1'b0),
+    .HRspPass  (1'b0),
+    .DReqPass  (10'h0),
+    .DRspPass  (10'h0),
+    .N         (10)
   ) u_s1n_27 (
     .clk_i        (clk_main_i),
     .rst_ni       (rst_main_ni),

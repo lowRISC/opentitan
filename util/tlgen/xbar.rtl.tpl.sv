@@ -184,18 +184,22 @@ module xbar_${xbar.name} (
   % elif block.node_type.name == "SOCKET_1N":
   tlul_socket_1n #(
     % if block.hpass != 1:
-    .HReqPass (1'b${block.hpass}),
-    .HRspPass (1'b${block.hpass}),
+    .HReqPass  (1'b${block.hpass}),
+    .HRspPass  (1'b${block.hpass}),
+    % endif
+    % if block.hdepth != 2:
+    .HReqDepth (4'h${block.hdepth}),
+    .HRspDepth (4'h${block.hdepth}),
     % endif
     % if block.dpass != 2**(len(block.ds)) -1:
-    .DReqPass (${len(block.ds)}'h ${"%x" % block.dpass}),
-    .DRspPass (${len(block.ds)}'h ${"%x" % block.dpass}),
+    .DReqPass  (${len(block.ds)}'h${"%x" % block.dpass}),
+    .DRspPass  (${len(block.ds)}'h${"%x" % block.dpass}),
     % endif
-    ## //.HReqDepth(),
-    ## //.HRspDepth(),
-    ## //.DReqDepth(),
-    ## //.DRspDepth(),
-    .N        (${len(block.ds)})
+    % if block.hdepth != 2:
+    .DReqDepth ({${len(block.ds)}{4'h${block.ddepth}}}),
+    .DRspDepth ({${len(block.ds)}{4'h${block.ddepth}}}),
+    % endif
+    .N         (${len(block.ds)})
   ) u_${block.name} (
     .clk_i        (clk_${xbar.clock}_i),
     .rst_ni       (rst_${xbar.clock}_ni),
@@ -207,19 +211,23 @@ module xbar_${xbar.name} (
   );
   % elif block.node_type.name == "SOCKET_M1":
   tlul_socket_m1 #(
-    % if block.hpass != 2**(len(block.us)) -1:
-    .HReqPass     (${len(block.us)}'h ${"%x" % block.hpass}),
-    .HRspPass     (${len(block.us)}'h ${"%x" % block.hpass}),
+    % if block.hpass != 2**(len(block.us)) - 1:
+    .HReqPass  (${len(block.us)}'h${"%x" % block.hpass}),
+    .HRspPass  (${len(block.us)}'h${"%x" % block.hpass}),
     % endif
-    ## //.HReqDepth    (),
-    ## //.HRspDepth    (),
+    % if block.hdepth != 2:
+    .HReqDepth ({${len(block.us)}{4'h${block.hdepth}}}),
+    .HRspDepth ({${len(block.us)}{4'h${block.hdepth}}}),
+    % endif
+    % if block.ddepth != 2:
+    .DReqDepth (4'h${block.ddepth}),
+    .DRspDepth (4'h${block.ddepth}),
+    % endif
     % if block.dpass != 1:
-    .DReqPass     (1'b${block.dpass}),
-    .DRspPass     (1'b${block.dpass}),
+    .DReqPass  (1'b${block.dpass}),
+    .DRspPass  (1'b${block.dpass}),
     % endif
-    ## //.DReqDepth    (),
-    ## //.DRspDepth    (),
-    .M            (${len(block.us)})
+    .M         (${len(block.us)})
   ) u_${block.name} (
     .clk_i        (clk_${xbar.clock}_i),
     .rst_ni       (rst_${xbar.clock}_ni),
