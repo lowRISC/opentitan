@@ -68,14 +68,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "msg_length_lower": msg_length_bits[TL_DW-1:0]       = item.a_data;
           "msg_length_upper": msg_length_bits[TL_DW*2-1:TL_DW] = item.a_data;
           "cmd":              {hmac_process, hmac_start} = item.a_data[1:0];
-          "intr_state": begin
-            if (item.a_data[HmacMsgFifoFull]) begin
-              ral.intr_state.fifo_full.predict(.value(0), .kind(UVM_PREDICT_WRITE));
-            end
+          "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
+            ral.intr_state.predict(.value(item.a_data), .kind(UVM_PREDICT_DIRECT));
           end
           "cfg", "wipe_secret", "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
           "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
-          "intr_enable", "intr_test": begin
+          "intr_enable", "intr_state": begin
             // Do nothing
           end
           default: begin
