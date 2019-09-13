@@ -10,6 +10,7 @@ description: "Core file for formal verification. It includes top_earlgrey and al
 filesets:
   files_rtl_generic:
     depend:
+      - lowrisc:fpv:prim_lfsr_fpv
       - lowrisc:ip:rv_timer
       - lowrisc:ip:hmac
       - lowrisc:systems:top_earlgrey
