@@ -30,6 +30,8 @@ module prim_arbiter #(
 
   logic [N-1:0] mask, mask_next;
 
+  logic [N-1:0] winner;
+
   assign masked_req = mask & req;
   assign arb_req = (|masked_req) ? masked_req : req;
 
@@ -44,16 +46,21 @@ module prim_arbiter #(
   end
 
   // Grant Generation: Leading-One detector
-  assign gnt = (arb_ready) ? ppc_out ^ {ppc_out[N-2:0], 1'b0} : '0;
+  assign winner = ppc_out ^ {ppc_out[N-2:0], 1'b0};
+  assign gnt    = (arb_ready) ? winner : '0;
+
   assign arb_valid = |req;
   // Mask Generation
   assign mask_next = {ppc_out[N-2:0], 1'b0};
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       mask <= '0;
-    end else if (|req && arb_ready) begin
+    end else if (arb_valid && arb_ready) begin
       // Latch only when requests available
       mask <= mask_next;
+    end else if (arb_valid && !arb_ready) begin
+      // Downstream isn't yet ready so, keep current request alive. (First come first serve)
+      mask <= ppc_out;
     end
   end
 
@@ -61,7 +68,7 @@ module prim_arbiter #(
   always_comb begin
     arb_data = '0;
     for (int i = 0 ; i < N ; i++) begin
-      if (gnt[i]) arb_data = req_data[i];
+      if (winner[i]) arb_data = req_data[i];
     end
   end
 endmodule
