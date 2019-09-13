@@ -32,22 +32,16 @@ int main(int argc, char **argv) {
   digest_t digest;
 
   uart_init(UART_BAUD_RATE);
+  uart_send_str("Starting Sha256 512 bit hash test.\r\n");
 
   hmac_cfg_t setup = {.mode = Sha256,
                       .input_endian_swap = 1,
                       .digest_endian_swap = 1,
-                      .length_lower = 0,
-                      .length_upper = 0,
                       .keys = {0}};
 
-  // length in bits
-  setup.length_lower = strlen(test.sha_input) << 3;
-
   hmac_init(setup);
-
-  hmac_write(test.sha_input, strlen(test.sha_input));
-
-  error |= hmac_done(digest.w);
+  hmac_update(test.sha_input, strlen(test.sha_input));
+  hmac_done(digest.w);
 
   for (uint32_t i = 0; i < 8; i++) {
     if (digest.w[i] != test.digest[i]) {
@@ -58,11 +52,11 @@ int main(int argc, char **argv) {
   }
 
   if (error) {
-    uart_send_str("FAIL!\n");
+    uart_send_str("FAIL!\r\n");
     while (1) {
     }
   } else {
-    uart_send_str("PASS!\n");
+    uart_send_str("PASS!\r\n");
     __asm__ volatile("wfi;");
   }
 }
