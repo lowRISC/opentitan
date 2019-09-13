@@ -53,7 +53,8 @@ module ibex_core_tracing #(
     input  logic        debug_req_i,
 
     // CPU Control Signals
-    input  logic        fetch_enable_i
+    input  logic        fetch_enable_i,
+    output logic        core_sleep_o
 
 );
 
@@ -67,7 +68,6 @@ module ibex_core_tracing #(
   logic        rvfi_valid;
   logic [63:0] rvfi_order;
   logic [31:0] rvfi_insn;
-  logic [31:0] rvfi_insn_uncompressed;
   logic        rvfi_trap;
   logic        rvfi_halt;
   logic        rvfi_intr;
@@ -130,7 +130,6 @@ module ibex_core_tracing #(
     .rvfi_valid,
     .rvfi_order,
     .rvfi_insn,
-    .rvfi_insn_uncompressed,
     .rvfi_trap,
     .rvfi_halt,
     .rvfi_intr,
@@ -149,7 +148,8 @@ module ibex_core_tracing #(
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
 
-    .fetch_enable_i
+    .fetch_enable_i,
+    .core_sleep_o
   );
 
 
@@ -163,7 +163,7 @@ module ibex_core_tracing #(
 
       .valid_i          ( rvfi_valid             ),
       .pc_i             ( rvfi_pc_rdata          ),
-      .instr_i          ( rvfi_insn_uncompressed ),
+      .instr_i          ( rvfi_insn              ),
       .rs1_value_i      ( rvfi_rs1_rdata         ),
       .rs2_value_i      ( rvfi_rs2_rdata         ),
       .ex_reg_addr_i    ( rvfi_rd_addr           ),

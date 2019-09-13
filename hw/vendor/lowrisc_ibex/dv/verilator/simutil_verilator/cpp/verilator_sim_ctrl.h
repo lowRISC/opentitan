@@ -19,7 +19,7 @@ enum VerilatorSimCtrlFlags {
 
 class VerilatorSimCtrl {
  public:
-  VerilatorSimCtrl(VerilatedToplevel* top, CData& clk, CData& rst_n,
+  VerilatorSimCtrl(VerilatedToplevel *top, CData &clk, CData &rst_n,
                    VerilatorSimCtrlFlags flags = Defaults);
 
   /**
@@ -36,7 +36,7 @@ class VerilatorSimCtrl {
    * retcode: if this method returns true, do *not* exit; if it returns *false*,
    * do exit.
    */
-  bool ParseCommandArgs(int argc, char** argv, int& retcode);
+  bool ParseCommandArgs(int argc, char **argv, int &retcode);
 
   /**
    * Run the main loop of the simulation
@@ -120,12 +120,12 @@ class VerilatorSimCtrl {
    */
   void PrintStatistics();
 
-  const char* GetSimulationFileName() const;
+  const char *GetSimulationFileName() const;
 
  private:
-  VerilatedToplevel* top_;
-  CData& sig_clk_;
-  CData& sig_rst_;
+  VerilatedToplevel *top_;
+  CData &sig_clk_;
+  CData &sig_rst_;
   VerilatorSimCtrlFlags flags_;
   unsigned long time_;
   bool init_rom_;
@@ -150,7 +150,7 @@ class VerilatorSimCtrl {
   void SetReset();
   void UnsetReset();
   bool IsFileReadable(std::string filepath);
-  bool FileSize(std::string filepath, int& size_byte);
+  bool FileSize(std::string filepath, int &size_byte);
   void Trace();
 };
 

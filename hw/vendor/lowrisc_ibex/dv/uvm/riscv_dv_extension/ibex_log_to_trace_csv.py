@@ -81,9 +81,9 @@ def check_ibex_uvm_log(uvm_log, core_name, test_name, report, write=True):
       fd = sys.stdout
     fd.write("%s uvm log : %s\n" % (core_name, uvm_log))
     if pass_cnt == 1:
-      fd.write("%s : PASSED\n" % test_name)
+      fd.write("%s : [PASSED]\n\n" % test_name)
     elif fail_cnt == 1:
-      fd.write("%s : FAILED\n" % test_name)
+      fd.write("%s : [FAILED]\n\n" % test_name)
     if report:
       fd.close()
 

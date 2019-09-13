@@ -191,6 +191,131 @@ module ibex_tracer #(
       end
     endfunction // printCSRInstr
 
+    function void printCRInstr(input string mnemonic);
+      logic [4:0] rs1;
+      logic [4:0] rs2;
+      begin
+        rs1 = instr_i[11:7];
+        rs2 = instr_i[6:2];
+
+        if (rs2 == 5'b0) begin
+          regs_read.push_back('{rs1, rs1_value_i});
+          str = $sformatf("%-16s x%0d", mnemonic, rs1);
+        end else begin
+          regs_write.push_back('{rs1, 'x});
+          regs_read.push_back('{rs2, rs2_value_i});
+          str = $sformatf("%-16s x%0d, x%0d", mnemonic, rs1, rs2);
+        end
+      end
+    endfunction // printCRInstr
+
+    function void printCIInstr(input string mnemonic);
+      begin
+        regs_write.push_back('{rd, 'x});
+        str = $sformatf("%-16s x%0d, 0x%h", mnemonic, rd, {instr_i[12], instr_i[4:0]});
+      end
+    endfunction // printCIInstr
+
+    function void printCIWInstr(input string mnemonic);
+      logic [4:0] rd;
+      begin
+        rd = {2'b01, instr_i[4:2]};
+        regs_write.push_back('{rd, 'x});
+        str = $sformatf("%-16s x%0d, 0x%h", mnemonic, rd, {instr_i[10:7], instr_i[12:11], instr_i[5], instr_i[6]});
+      end
+    endfunction // printCIWInstr
+
+    function void printCBInstr(input string mnemonic);
+      logic [4:0] rs1;
+      logic [8:1] imm;
+      begin
+        rs1 = {2'b01, instr_i[9:7]};
+        if ((instr_i[15:13] == 3'b110) || (instr_i[15:13] == 3'b111)) begin
+          imm = {instr_i[12], instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3]};
+          regs_read.push_back('{rs1, rs1_value_i});
+        end else begin
+          imm = {instr_i[12], instr_i[6:2], 2'b00};
+          regs_write.push_back('{rs1, 'x});
+        end
+        str = $sformatf("%-16s x%0d, 0x%h", mnemonic, rs1, imm);
+      end
+    endfunction // printCBInstr
+
+    function void printCSInstr(input string mnemonic);
+      logic [4:0] rd;
+      logic [4:0] rs2;
+      begin
+        rd  = {2'b01, instr_i[9:7]};
+        rs2 = {2'b01, instr_i[4:2]};
+
+        regs_write.push_back('{rd, 'x});
+        regs_read.push_back('{rs2, rs2_value_i});
+        str = $sformatf("%-16s x%0d, x%0d", mnemonic, rd, rs2);
+      end
+    endfunction // printCSInstr
+
+    function void printCJInstr(input string mnemonic);
+      logic [11:1] imm;
+      imm = {instr_i[12], instr_i[8], instr_i[10:9], instr_i[6],
+             instr_i[7], instr[2], instr[11], instr_i[5:3]};
+      begin
+        str = $sformatf("%-16s 0x%h", mnemonic, imm);
+      end
+    endfunction // printCJInstr
+
+    function void printCompressedLoadInstr(input string mnemonic);
+      logic [4:0] rd;
+      logic [4:0] rs1;
+      logic [7:0] imm;
+      mem_acc_t   mem_acc;
+      begin
+        // Detect C.LW intruction
+        if (instr_i[1:0] == OPCODE_C0) begin
+          rd = {2'b01, instr_i[4:2]};
+          rs1 = {2'b01, instr_i[9:7]};
+          imm = {1'b0, instr[5], instr[12:10], instr[6], 2'b00};
+        end else begin
+          // LWSP instruction
+          rd = instr_i[11:7];
+          rs1 = 5'h2;
+          imm = {instr[3:2], instr[12], instr[6:4], 2'b00};
+        end
+        regs_write.push_back('{rd, 'x});
+        regs_read.push_back('{rs1, rs1_value_i});
+        str = $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, rd, rs1, imm);
+        mem_acc.addr  = ex_data_addr_i;
+        mem_acc.rdata = ex_data_rdata_i;
+        mem_access.push_back(mem_acc);
+      end
+    endfunction // printCompressedLoadInstr()
+
+    function void printCompressedStoreInstr(input string mnemonic);
+      logic [4:0] rs1;
+      logic [4:0] rs2;
+      logic [7:0] imm;
+      mem_acc_t   mem_acc;
+      begin
+        // Detect C.SW instruction
+        if (instr_i[1:0] == OPCODE_C0) begin
+          rs1 = {2'b01, instr_i[9:7]};
+          rs2 = {2'b01, instr_i[4:2]};
+          imm = {1'b0, instr[5], instr[12:10], instr[6], 2'b0};
+        end else begin
+          // SWSP instruction
+          rs1 = 5'h2;
+          rs2 = instr_i[11:7];
+          imm = {instr[8:7], instr[12:9], 2'b00};
+        end
+        str = $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, rs2, rs1, imm);
+        regs_read.push_back('{rs1, rs1_value_i});
+        regs_read.push_back('{rs2, rs2_value_i});
+        mem_acc.addr  = ex_data_addr_i;
+        mem_acc.we    = 1'b1;
+        mem_acc.wdata = ex_data_wdata_i;
+        mem_access.push_back(mem_acc);
+      end
+    endfunction // printCompressedStoreInstr
+
     function void printLoadInstr();
       string      mnemonic;
       logic [2:0] size;
@@ -317,8 +442,56 @@ module ibex_tracer #(
       trace.pc         = pc_i;
       trace.instr      = instr_i;
 
-      // separate case for 'nop' instruction to avoid overlapping with 'addi'
-      if (instr_i == 32'h00_00_00_13) begin
+      // Check for compressed instructions
+      if (instr_i[1:0] != 2'b11) begin
+        // Separate case to avoid overlapping decoding
+        if ((instr_i[15:13] == 3'b100) && (instr_i[1:0] == 2'b10)) begin
+          if (instr_i[12]) begin
+            if (instr_i[11:2] == 10'h0) begin
+              trace.printMnemonic("c.ebreak");
+            end else if (instr_i[6:2] == 5'b0) begin
+              trace.printCRInstr("c.jalr");
+            end else begin
+              trace.printCRInstr("c.add");
+            end
+          end else begin
+            if (instr_i[6:2] == 5'h0) begin
+              trace.printCRInstr("c.jr");
+            end else begin
+              trace.printCRInstr("c.mv");
+            end
+          end
+        end else begin
+          // use casex instead of case inside due to ModelSim bug
+          unique casex (instr_i)
+            // C0 Opcodes
+            INSTR_CADDI4SPN:  trace.printCIWInstr("c.addi4spn");
+            INSTR_CLW:        trace.printCompressedLoadInstr("c.lw");
+            INSTR_CSW:        trace.printCompressedStoreInstr("c.sw");
+            // C1 Opcodes
+            INSTR_CADDI:      trace.printCIInstr("c.addi");
+            INSTR_CJAL:       trace.printCJInstr("c.jal");
+            INSTR_CJ:         trace.printCJInstr("c.j");
+            INSTR_CLI:        trace.printCIInstr("c.li");
+            INSTR_CLUI:       trace.printCIInstr("c.lui");
+            INSTR_CSRLI:      trace.printCBInstr("c.srli");
+            INSTR_CSRAI:      trace.printCBInstr("c.srai");
+            INSTR_CANDI:      trace.printCBInstr("c.andi");
+            INSTR_CSUB:       trace.printCSInstr("c.sub");
+            INSTR_CXOR:       trace.printCSInstr("c.xor");
+            INSTR_COR:        trace.printCSInstr("c.or");
+            INSTR_CAND:       trace.printCSInstr("c.and");
+            INSTR_CBEQZ:      trace.printCBInstr("c.beqz");
+            INSTR_CBNEZ:      trace.printCBInstr("c.bnez");
+            // C2 Opcodes
+            INSTR_CSLLI:      trace.printCIInstr("c.slli");
+            INSTR_CLWSP:      trace.printCompressedLoadInstr("c.lwsp");
+            INSTR_SWSP:       trace.printCompressedStoreInstr("c.swsp");
+            default:          trace.printMnemonic("INVALID");
+          endcase // unique casex (instr_i)
+        end
+      end else if (instr_i == 32'h00_00_00_13) begin
+        // separate case for 'nop' instruction to avoid overlapping with 'addi'
         trace.printMnemonic("nop");
       end else begin
         // use casex instead of case inside due to ModelSim bug

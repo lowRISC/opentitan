@@ -18,11 +18,11 @@
 
 // DPI Exports
 extern "C" {
-extern void simutil_verilator_memload(const char* file);
+extern void simutil_verilator_memload(const char *file);
 }
 
-VerilatorSimCtrl::VerilatorSimCtrl(VerilatedToplevel* top, CData& sig_clk,
-                                   CData& sig_rst, VerilatorSimCtrlFlags flags)
+VerilatorSimCtrl::VerilatorSimCtrl(VerilatedToplevel *top, CData &sig_clk,
+                                   CData &sig_rst, VerilatorSimCtrlFlags flags)
     : top_(top),
       sig_clk_(sig_clk),
       sig_rst_(sig_rst),
@@ -143,15 +143,15 @@ void VerilatorSimCtrl::InitFlash(std::string flash) {
             << std::endl;
 }
 
-bool VerilatorSimCtrl::ParseCommandArgs(int argc, char** argv, int& retcode) {
+bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, int &retcode) {
   const struct option long_options[] = {
-      {"rominit",   required_argument, nullptr, 'r'},
-      {"raminit",   required_argument, nullptr, 'm'},
+      {"rominit", required_argument, nullptr, 'r'},
+      {"raminit", required_argument, nullptr, 'm'},
       {"flashinit", required_argument, nullptr, 'f'},
       {"term-after-cycles", required_argument, nullptr, 'c'},
-      {"trace",     no_argument,       nullptr, 't'},
-      {"help",      no_argument,       nullptr, 'h'},
-      {nullptr,     no_argument,       nullptr, 0}};
+      {"trace", no_argument, nullptr, 't'},
+      {"help", no_argument, nullptr, 'h'},
+      {nullptr, no_argument, nullptr, 0}};
 
   while (1) {
     int c = getopt_long(argc, argv, ":r:m:f:th", long_options, nullptr);
@@ -250,7 +250,7 @@ void VerilatorSimCtrl::Trace() {
   tracer_.dump(GetTime());
 }
 
-const char* VerilatorSimCtrl::GetSimulationFileName() const {
+const char *VerilatorSimCtrl::GetSimulationFileName() const {
 #ifdef VM_TRACE_FMT_FST
   return "sim.fst";
 #else
@@ -301,8 +301,7 @@ void VerilatorSimCtrl::Run() {
     }
     if (term_after_cycles_ && time_ > term_after_cycles_) {
       std::cout << "Simulation timeout of " << term_after_cycles_
-                << " cycles reached, shutting down simulation."
-                << std::endl;
+                << " cycles reached, shutting down simulation." << std::endl;
       break;
     }
   }
@@ -344,7 +343,7 @@ bool VerilatorSimCtrl::IsFileReadable(std::string filepath) {
   return stat(filepath.data(), &statbuf) == 0;
 }
 
-bool VerilatorSimCtrl::FileSize(std::string filepath, int& size_byte) {
+bool VerilatorSimCtrl::FileSize(std::string filepath, int &size_byte) {
   struct stat statbuf;
   if (stat(filepath.data(), &statbuf) != 0) {
     size_byte = 0;

@@ -48,6 +48,10 @@ The LSU is able to handle misaligned memory accesses, meaning accesses that are 
 However, it does so by performing two separate word-aligned accesses.
 This means that at least two cycles are needed for misaligned loads and stores.
 
+If an error response is received for the first transaction, the second transaction will still be issued.
+The second transaction will then follow the normal bus protocol, but its response/data will be ignored.
+If a new load/store request is received while waiting for an abandoned second part to complete, it will not be serviced until the state machine returns to IDLE.
+
 .. _lsu-protocol:
 
 Protocol
@@ -60,6 +64,8 @@ The protocol that is used by the LSU to communicate with a memory works as follo
 2. After receiving a grant, the address may be changed in the next cycle by the LSU. In addition, the ``data_wdata_o``, ``data_we_o`` and ``data_be_o`` signals may be changed as it is assumed that the memory has already processed and stored that information.
 
 3. The memory answers with a ``data_rvalid_i`` set high for exactly one cycle to signal the response from the bus or the memory using ``data_err_i`` and ``data_rdata_i`` (during the very same cycle). This may happen one or more cycles after the grant has been received. If ``data_err_i`` is low, the request could successfully be handled at the destination and in the case of a load, ``data_rdata_i`` contains valid data. If ``data_err_i`` is high, an error occurred in the memory system and the core will raise an exception.
+
+4. When multiple granted requests are outstanding, it is assumed that the memory requests will be kept in-order and one ``data_rvalid_i`` will be signalled for each of them, in the order they were issued.
 
 :numref:`timing1`, :numref:`timing2` and :numref:`timing3` show example-timing diagrams of the protocol.
 

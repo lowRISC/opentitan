@@ -38,11 +38,11 @@ In addition, the following instruction set extensions are available.
      - Version
      - Configurability
 
-   * - **M**: Standard Extension for Compressed Instructions
+   * - **C**: Standard Extension for Compressed Instructions
      - 2.0
      - always enabled
 
-   * - **C**: Standard Extension for Integer Multiplication and Division
+   * - **M**: Standard Extension for Integer Multiplication and Division
      - 2.0
      - optional
 

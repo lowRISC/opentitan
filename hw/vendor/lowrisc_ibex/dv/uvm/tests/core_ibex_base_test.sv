@@ -12,12 +12,12 @@ class core_ibex_base_test extends uvm_test;
   core_ibex_vseq                                  vseq;
   irq_seq                                         irq_seq_h;
   int unsigned                                    timeout_in_cycles = 3000000;
-  // If no signature_addr handshake functionality is desired between the
-  // testbench and the generated code, the test will wait for the specified
-  // number of cycles before starting stimulus sequences (irq and debug)
+  // If no signature_addr handshake functionality is desired between the testbench and the generated
+  // code, the test will wait for the specifield number of cycles before starting stimulus
+  // sequences (irq and debug)
   int unsigned                                    stimulus_delay = 800;
-  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH]        signature_data_q[$];
-  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH]        signature_data;
+  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]    signature_data_q[$];
+  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]    signature_data;
   uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) item_collected_port;
 
   `uvm_component_utils(core_ibex_base_test)
@@ -120,23 +120,20 @@ class core_ibex_base_test extends uvm_test;
                                 input signature_type_t ref_type);
     ibex_mem_intf_seq_item mem_txn;
     forever begin
-      // The first write to this address is guaranteed to contain the
-      // signature type in bits [7:0]
+      // The first write to this address is guaranteed to contain the signature type in bits [7:0]
       item_collected_port.get(mem_txn);
       if (mem_txn.addr == ref_addr && mem_txn.data[7:0] === ref_type && mem_txn.read_write == WRITE) begin
         signature_data = mem_txn.data;
         case (ref_type)
-          // The very first write to the signature address in every test is
-          // guaranteed to be a write of CORE_STATUS, indicating the
-          // INITIALIZED state
+          // The very first write to the signature address in every test is guaranteed to be a write
+          // of CORE_STATUS, indicating the INITIALIZED state
           CORE_STATUS: begin
             signature_data_q.push_back(signature_data >> 8);
           end
           TEST_RESULT: begin
             signature_data_q.push_back(signature_data >> 8);
           end
-          // The next 32 writes to the address are guaranteed to be a dump of
-          // all GPRs
+          // The next 32 writes to the address are guaranteed to be a dump of all GPRs
           WRITE_GPR: begin
             for(int i = 0; i < 32; i++) begin
               do begin
@@ -145,8 +142,7 @@ class core_ibex_base_test extends uvm_test;
               signature_data_q.push_back(mem_txn.data);
             end
           end
-          // The next write to this address is guaranteed to be the data held
-          // in the CSR
+          // The next write to this address is guaranteed to be the data held in the CSR
           WRITE_CSR: begin
             signature_data_q.push_back(signature_data >> 8);
             do begin
@@ -163,10 +159,12 @@ class core_ibex_base_test extends uvm_test;
     end
   endtask
 
-  // API of various tasks wrapping wait_for_mem_txn, for various common
-  // functionalities that might be needed for verification purposes.
+  // API of various tasks wrapping wait_for_mem_txn, for various common functionalities that
+  // might be needed for verification purposes.
   // Will be expanded as needed.
 
+  // Gets the next CORE_STATUS signature write and compares it against the provided core_status
+  // type, throws uvm_error on mismatch
   virtual task check_next_core_status(core_status_t core_status, error_msg="");
     wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
     signature_data = signature_data_q.pop_front();
@@ -175,6 +173,17 @@ class core_ibex_base_test extends uvm_test;
     end
   endtask
 
+  // Waits for a write to the address of the specified CSR and retrieves the csr data
+  virtual task wait_for_csr_write(csr_num_e csr);
+    bit [11:0] csr_addr;
+    do begin
+      wait_for_mem_txn(cfg.signature_addr, WRITE_CSR);
+      csr_addr = signature_data_q.pop_front();
+      signature_data = signature_data_q.pop_front();
+    end while (csr_addr != csr);
+  endtask
+
+  // Waits until the next time the given core_status is written to the signature address
   virtual task wait_for_core_status(core_status_t core_status);
     do begin
       wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);

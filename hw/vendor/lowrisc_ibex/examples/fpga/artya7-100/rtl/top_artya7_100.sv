@@ -78,7 +78,8 @@ module top_artya7_100 (
 
      .debug_req_i           ('b0),
 
-     .fetch_enable_i        ('b1)
+     .fetch_enable_i        ('b1),
+     .core_sleep_o          ()
   );
 
   // Connect Ibex to SRAM

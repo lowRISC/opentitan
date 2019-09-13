@@ -56,15 +56,15 @@ lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 16
 
 // Signal is not used: csr_pmp_addr
 // Signal not connected when PMP is not configured
-lint_off -msg UNUSED -file "*/rtl/ibex_core.sv" -lines 186
+lint_off -msg UNUSED -file "*/rtl/ibex_core.sv" -lines 185
 
 // Signal is not used: csr_pmp_cfg
 // Signal not connected when PMP is not configured
-lint_off -msg UNUSED -file "*/rtl/ibex_core.sv" -lines 187
+lint_off -msg UNUSED -file "*/rtl/ibex_core.sv" -lines 186
 
 // Signal is not used: priv_mode
 // Signal not connected when PMP is not configured
-lint_off -msg UNUSED -file "*/rtl/ibex_core.sv" -lines 199
+lint_off -msg UNUSED -file "*/rtl/ibex_core.sv" -lines 198
 
 // Signal unoptimizable: Feedback to clock or circular logic:
 // ibex_core.id_stage_i.controller_i.ctrl_fsm_cs
