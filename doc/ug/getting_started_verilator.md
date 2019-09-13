@@ -27,12 +27,9 @@ For that purpose compile the demo program with "simulation" settings, which adju
 
 ```console
 $ cd $REPO_TOP/sw/boot_rom
-$ make clean
-$ make
-$
+$ make clean && make SIM=1
 $ cd $REPO_TOP/sw/hello_world
-$ make clean
-$ make SIM=1
+$ make clean && make SIM=1
 ```
 
 Now the simulation can be run.
@@ -40,8 +37,9 @@ The program listed after `--rominit` and `--flashinit` are loaded into the syste
 
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --rominit=sw/boot_rom/boot_rom.vmem \
-$ --flashinit=sw/hello_world/hello_world.vmem
+$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+  --rominit=sw/boot_rom/boot_rom.vmem \
+  --flashinit=sw/tests/hello_world/hello_world.vmem
 ```
 
 To stop the simulation press CTRL-c.
