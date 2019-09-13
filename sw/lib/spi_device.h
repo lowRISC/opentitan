@@ -13,7 +13,7 @@
 
 #include "spi_device_regs.h"
 
-#define SPID_SRAM_ADDR SPI_DEVICE_BUFFER(SPI_DEVICE0_BASE_ADDR)
+#define SPID_SRAM_ADDR SPI_DEVICE_BUFFER(0)
 #define SPID_RXF_BASE 0x000
 #define SPID_RXF_SIZE 0x400
 #define SPID_TXF_BASE 0x600
