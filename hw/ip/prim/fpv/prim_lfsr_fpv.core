@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:prim_lfsr_fpv:0.1"
+description: "ALERT_HANDLER FPV target"
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - tb/prim_lfsr_tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    toplevel:
+      - tb/prim_lfsr_tb.sv
+    filesets:
+      - files_fpv
+    default_tool: jg
