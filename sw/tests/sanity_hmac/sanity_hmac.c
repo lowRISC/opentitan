@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
   digest_t digest;
 
   uart_init(UART_BAUD_RATE);
-  uart_send_str("Starting Sha256 512 bit hash test.\r\n");
+  uart_send_str("SHA256 test.\r\n");
 
-  hmac_cfg_t setup = {.mode = Sha256,
+  hmac_cfg_t setup = {.mode = HMAC_OP_SHA256,
                       .input_endian_swap = 1,
                       .digest_endian_swap = 1,
                       .keys = {0}};
