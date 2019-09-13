@@ -102,7 +102,7 @@
 #define HMAC_MSG_LENGTH_UPPER(id) (HMAC##id##_BASE_ADDR + 0x60)
 
 // Memory area: Message FIFO. Any address starts from offset 0x800 to 0xFFF
-#define HMAC_MSG_FIFO(base) ((base) + 0x800)
+#define HMAC_MSG_FIFO(id) (HMAC##id##_BASE_ADDR + 0x800)
 #define HMAC_MSG_FIFO_SIZE_WORDS 512
 #define HMAC_MSG_FIFO_SIZE_BYTES 2048
 #endif  // _HMAC_REG_DEFS_

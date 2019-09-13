@@ -179,11 +179,11 @@
 #define FLASH_CTRL_FIFO_LVL_RD_OFFSET 8
 
 // Memory area: Flash program fifo.
-#define FLASH_CTRL_PROG_FIFO(base) ((base) + 0x4c)
+#define FLASH_CTRL_PROG_FIFO(id) (FLASH_CTRL##id##_BASE_ADDR + 0x4c)
 #define FLASH_CTRL_PROG_FIFO_SIZE_WORDS 1
 #define FLASH_CTRL_PROG_FIFO_SIZE_BYTES 4
 // Memory area: Flash read fifo.
-#define FLASH_CTRL_RD_FIFO(base) ((base) + 0x50)
+#define FLASH_CTRL_RD_FIFO(id) (FLASH_CTRL##id##_BASE_ADDR + 0x50)
 #define FLASH_CTRL_RD_FIFO_SIZE_WORDS 1
 #define FLASH_CTRL_RD_FIFO_SIZE_BYTES 4
 #endif  // _FLASH_CTRL_REG_DEFS_

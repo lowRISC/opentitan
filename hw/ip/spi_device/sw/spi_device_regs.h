@@ -100,7 +100,7 @@
 #define SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET 16
 
 // Memory area: SPI internal 2kB buffer.
-#define SPI_DEVICE_BUFFER(base) ((base) + 0x800)
+#define SPI_DEVICE_BUFFER(id) (SPI_DEVICE##id##_BASE_ADDR + 0x800)
 #define SPI_DEVICE_BUFFER_SIZE_WORDS 512
 #define SPI_DEVICE_BUFFER_SIZE_BYTES 2048
 #endif  // _SPI_DEVICE_REG_DEFS_

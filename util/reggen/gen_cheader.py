@@ -54,16 +54,15 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames):
                 mask = field['bitinfo'][0] >> fieldlsb
                 genout(outstr,
                        '#define ' + dname + '_MASK ' + hex(mask) + '\n')
-                genout(
-                    outstr,
-                    '#define ' + dname + '_OFFSET ' + str(fieldlsb) + '\n')
+                genout(outstr,
+                       '#define ' + dname + '_OFFSET ' + str(fieldlsb) + '\n')
             if 'enum' in field:
                 for enum in field['enum']:
                     ename = as_define(enum['name'])
                     genout(
                         outstr,
-                        '#define ' + defname + '_' + as_define(field['name'])
-                        + '_' + ename + ' ' + enum['value'] + '\n')
+                        '#define ' + defname + '_' + as_define(field['name']) +
+                        '_' + ename + ' ' + enum['value'] + '\n')
     genout(outstr, '\n')
     return
 
@@ -75,8 +74,8 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames):
     genout(outstr, '// Memory area: ' + clean_desc(win['desc']) + '\n')
     defname = as_define(comp + '_' + wname)
     genout(
-        outstr,
-        '#define ' + defname + '(base) ((base) + ' + hex(offset) + ')\n')
+        outstr, '#define ' + defname + '(id) (' + as_define(comp) +
+        '##id##_BASE_ADDR + ' + hex(offset) + ')\n')
     items = int(win['items'])
     genout(outstr, '#define ' + defname + '_SIZE_WORDS ' + str(items) + '\n')
     items = items * (regwidth // 8)
