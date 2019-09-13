@@ -60,7 +60,7 @@ uint32_t prog_flash(uint32_t addr, uint32_t num, uint32_t *data) {
 
   // beginning filling up the fifo
   for (i = 0; i < num; i++) {
-    REG32(FLASH_CTRL_PROG_FIFO(FLASH_CTRL0_BASE_ADDR)) = *data;
+    REG32(FLASH_CTRL_PROG_FIFO(0)) = *data;
     data++;
   }
 
@@ -89,7 +89,7 @@ uint32_t read_flash(uint32_t addr, uint32_t num, uint32_t *data) {
     // if not empty, read a word
     if (((REG32(FLASH_CTRL_STATUS(0)) >> FLASH_CTRL_STATUS_RD_EMPTY) & 0x1) ==
         0) {
-      *data++ = REG32(FLASH_CTRL_RD_FIFO(FLASH_CTRL0_BASE_ADDR));
+      *data++ = REG32(FLASH_CTRL_RD_FIFO(0));
       i++;
     }
   }
