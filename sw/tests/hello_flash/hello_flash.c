@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
   for (i = 0; i < max_size; i++) {
     data_pat = (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
-    REG32(FLASH_CTRL_PROG_FIFO(FLASH_CTRL0_BASE_ADDR)) = data_pat + i;
+    REG32(FLASH_CTRL_PROG_FIFO(0)) = data_pat + i;
   }
 
   // wait for operation finish
