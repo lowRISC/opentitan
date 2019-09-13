@@ -5,18 +5,20 @@
 # Generate a baremetal application for the microcontroller
 
 DIF_SRCS     = uart.c gpio.c spi_device.c flash_ctrl.c hmac.c usbdev.c rv_timer.c
-EXT_SRCS     = usb_controlep.c usb_simpleserial.c irq.c handler.c
+EXT_SRCS     = usb_controlep.c usb_simpleserial.c irq.c handler.c hw_sha256.c
 EXT_ASMS     = irq_vectors.S
 GENHDRS     := ${DIF_SRCS:.c=_regs.h}
 GENHDR_BASE := ${DIF_SRCS:.c=}
 ARCH         = rv32imc
 # ARCH = rv32im # to disable compressed instructions
 
-RV_TOOLS    ?= /tools/riscv/bin/
+RV_TOOLS    ?= /tools/riscv/bin
 
+INCS        += -I../vendor
 CC          := ${RV_TOOLS}/riscv32-unknown-elf-gcc
 CFLAGS      ?= -Wall -g -Os -march=$(ARCH) -mabi=ilp32 -static -mcmodel=medany \
-	       -fvisibility=hidden -nostdlib -nostartfiles
+               -fvisibility=hidden -nostdlib -nostartfiles $(INCS)
+
 
 ifeq ($(SIM),1)
   CFLAGS    += -DSIMULATION
@@ -36,9 +38,6 @@ $(OUTFILES): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 all: $(OUTFILES)
-
-%.o: %.c %.S
-	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
 define header_gen
     $1.c: $1_regs.h

@@ -7,18 +7,12 @@
 
 #include "common.h"
 #include "flash_ctrl.h"
-#include "hmac.h"
-#include "hmac_regs.h"
+#include "hw_sha256.h"
 #include "uart.h"
-
-typedef union digest {
-  uint8_t b[32];
-  uint32_t w[8];
-} digest_t;
 
 typedef struct test_data {
   uint32_t digest[8];
-  char sha_input[512];
+  char data[512];
 } test_data_t;
 
 test_data_t test = {
@@ -29,23 +23,16 @@ test_data_t test = {
 
 int main(int argc, char **argv) {
   uint32_t error = 0;
-  digest_t digest;
+  uint32_t digest[8];
 
   uart_init(UART_BAUD_RATE);
-  uart_send_str("SHA256 test.\r\n");
+  uart_send_str("Running SHA256 test\r\n");
 
-  hmac_cfg_t setup = {.mode = HMAC_OP_SHA256,
-                      .input_endian_swap = 1,
-                      .digest_endian_swap = 1,
-                      .keys = {0}};
-
-  hmac_init(setup);
-  hmac_update(test.sha_input, strlen(test.sha_input));
-  hmac_done(digest.w);
+  hw_SHA256_hash(test.data, strlen(test.data), (uint8_t *)digest);
 
   for (uint32_t i = 0; i < 8; i++) {
-    if (digest.w[i] != test.digest[i]) {
-      REG32(FLASH_CTRL_SCRATCH(0)) = digest.w[i];
+    if (digest[i] != test.digest[i]) {
+      REG32(FLASH_CTRL_SCRATCH(0)) = digest[i];
       error++;
       break;
     }
