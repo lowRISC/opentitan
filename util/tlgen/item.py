@@ -54,8 +54,14 @@ class Node:
     # 1 for Host, Device, 2 for Async FIFO, N for Sockets
     ds = []  # Edges
 
-    # Req/Rsp Pass. default False
+    # Req/Rsp FIFO. default False
+    # when False, FIFO fully passthrough, no storage element
+    # when True, FIFO present with default depth, "pipeline_byp"
+    # controls passthrough option
     pipeline = False
+
+    # FIFO passtru option. default True
+    pipeline_byp = True
 
     def __init__(self, name, node_type, clock):
         self.name = name

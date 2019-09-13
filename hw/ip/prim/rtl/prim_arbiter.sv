@@ -7,6 +7,10 @@
 // verilog parameter
 //   N:  Number of request ports
 //   DW: Data width
+//
+// This arbiter implements a first come first serve scheme.
+// If the destination is not ready, the current winning request is held until transaction
+// is accepted.
 
 module prim_arbiter #(
   parameter N   = 4,
@@ -56,7 +60,7 @@ module prim_arbiter #(
     if (!rst_ni) begin
       mask <= '0;
     end else if (arb_valid && arb_ready) begin
-      // Latch only when requests available
+      // Latch only when requests accepted
       mask <= mask_next;
     end else if (arb_valid && !arb_ready) begin
       // Downstream isn't yet ready so, keep current request alive. (First come first serve)

@@ -171,8 +171,8 @@ module rv_core_ibex #(
     if (!rst_ni) begin
       {tl_i_source, tl_d_source} <= '0;
     end else begin
-      if (instr_req_o) tl_i_source <= !tl_i_source;
-      if (data_req_o)  tl_d_source <= !tl_d_source;
+      if (instr_req_o && instr_gnt_i) tl_i_source <= !tl_i_source;
+      if (data_req_o && data_gnt_i)  tl_d_source <= !tl_d_source;
     end
   end
 

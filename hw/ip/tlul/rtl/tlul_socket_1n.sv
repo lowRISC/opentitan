@@ -147,7 +147,8 @@ module tlul_socket_1n #(
   always_comb begin
     hfifo_reqready = tl_u_i[N].a_ready; // default to error
     for (int idx = 0 ; idx < N ; idx++) begin
-      if (dev_select_outstanding == NWD'(idx)) hfifo_reqready = tl_u_i[idx].a_ready;
+      //if (dev_select_outstanding == NWD'(idx)) hfifo_reqready = tl_u_i[idx].a_ready;
+      if (dev_select_t == NWD'(idx)) hfifo_reqready = tl_u_i[idx].a_ready;
     end
     if (hold_all_requests) hfifo_reqready = 1'b0;
   end

@@ -209,8 +209,8 @@ module tlul_socket_m1 #(
     drsp_fifo_o.d_source[IDW-1:STIDW]
   };
   for (genvar i = 0 ; i < M ; i++) begin : gen_idrouting
-    assign hfifo_rspvalid[i] = drsp_fifo_o.d_valid    && (drsp_fifo_o.d_source[0+:STIDW] == i);
-    assign dfifo_rspready[i] = hreq_fifo_o[i].d_ready && (drsp_fifo_o.d_source[0+:STIDW] == i);
+    assign hfifo_rspvalid[i] = drsp_fifo_o.d_valid    & (drsp_fifo_o.d_source[0+:STIDW] == i);
+    assign dfifo_rspready[i] = hreq_fifo_o[i].d_ready & (drsp_fifo_o.d_source[0+:STIDW] == i) & drsp_fifo_o.d_valid;
 
     assign hrsp_fifo_i[i] = '{
       d_valid:  hfifo_rspvalid[i],

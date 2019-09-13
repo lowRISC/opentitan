@@ -6,59 +6,72 @@
       type:  "host",
       clock: "main",
 
-      pipeline: "true",
+      pipeline: "false"
+
     },
     { name:  "cored",
       type:  "host",
       clock: "main",
 
-      pipeline: "true",
+      pipeline: "false"
+
     },
     { name:  "dm_sba", // DM
       type:  "host",
       clock: "main",
 
-      pipeline: "true",
+      pipeline_byp: "false"
+
     },
     { name:      "rom",
       type:      "device",
       clock:     "main",
+      pipeline:  "false",
     },
     { name:      "debug_mem",
       type:      "device",
       clock:     "main",
+      pipeline_byp: "false"
     },
     { name:      "ram_main",
       type:      "device",
       clock:     "main",
+      pipeline:  "false",
     },
     { name:      "eflash",
       type:      "device",
       clock:     "main",
+      pipeline:  "false",
     },
     { name:      "uart",
       type:      "device",
       clock:     "main",
+      pipeline_byp: "false"
     },
     { name:      "gpio",
       type:      "device",
       clock:     "main",
+      pipeline_byp: "false"
     },
     { name:      "spi_device",
       type:      "device",
       clock:     "main",
+      pipeline_byp: "false"
     },
     { name:      "flash_ctrl",
       type:      "device",
-      clock:     "main"
+      clock:     "main",
+      pipeline_byp: "false"
     },
     { name:      "rv_timer",
       type:      "device",
-      clock:     "main"
+      clock:     "main",
+      pipeline_byp: "false"
     },
     { name:      "hmac",
       type:      "device",
       clock:     "main"
+      pipeline_byp: "false"
     },
     { name:      "rv_plic",
       type:      "device",
@@ -66,6 +79,7 @@
       inst_type: "rv_plic",
       base_addr: "0x40090000",
       size_byte: "0x1000",
+      pipeline_byp: "false"
     },
   ],
   connections: {

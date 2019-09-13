@@ -162,7 +162,10 @@ def xbar_addhost(xbar, host):
             "clock": xbar["clock"],
             "type": "host",
             "inst_type": "",
-            "pipeline": "false"
+            # The default matches RTL default
+            # pipeline_byp is don't care if pipeline is false
+            "pipeline": "true",
+            "pipeline_byp": "true"
         }
         topxbar["nodes"].append(obj)
     else:
@@ -170,8 +173,16 @@ def xbar_addhost(xbar, host):
         obj[0]["inst_type"] = predefined_modules[
             host] if host in predefined_modules else ""
         obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
-            0] else "false"
+            0] else "true"
+        obj[0]["pipeline_byp"] = obj[0]["pipeline_byp"] if obj[0]["pipeline"] == "true" and "pipeline_byp" in obj[0] else "true"
 
+def process_pipeline_var(node):
+    """Add device nodes pipeline / pipeline_byp information
+
+    - Supply a default of true / true if not defined by xbar
+    """
+    node["pipeline"] = node["pipeline"] if "pipeline" in node else "true"
+    node["pipeline_byp"] = node["pipeline_byp"] if "pipeline_byp" in node else "true"
 
 def xbar_adddevice(top, xbar, device):
     """Add device nodes information
@@ -209,7 +220,9 @@ def xbar_adddevice(top, xbar, device):
                         "clock": "main",
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
-                        "size_byte": "0x1000"
+                        "size_byte": "0x1000",
+                        "pipeline" : "true",
+                        "pipeline_byp" : "true"
                     }) # yapf: disable
                 else:
                     # Update if exists
@@ -217,6 +230,7 @@ def xbar_adddevice(top, xbar, device):
                     node["inst_type"] = predefined_modules["debug_mem"]
                     node["base_addr"] = top["debug_mem_base_addr"]
                     node["size_byte"] = "0x1000"
+                    process_pipeline_var(node)
             else:
                 log.error("device %s shouldn't be host type" % device)
                 return
@@ -236,7 +250,9 @@ def xbar_adddevice(top, xbar, device):
             "clock" : deviceobj[0]["clock"],
             "inst_type" : deviceobj[0]["type"],
             "base_addr" : deviceobj[0]["base_addr"],
-            "size_byte": deviceobj[0]["size"]
+            "size_byte": deviceobj[0]["size"],
+            "pipeline" : "true",
+            "pipeline_byp" : "true"
         }) # yapf: disable
 
     else:
@@ -245,6 +261,7 @@ def xbar_adddevice(top, xbar, device):
         node["inst_type"] = deviceobj[0]["type"]
         node["base_addr"] = deviceobj[0]["base_addr"]
         node["size_byte"] = deviceobj[0]["size"]
+        process_pipeline_var(node)
 
 
 def amend_xbar(top, xbar):
