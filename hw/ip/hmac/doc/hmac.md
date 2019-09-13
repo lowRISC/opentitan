@@ -236,27 +236,26 @@ software needs to write 512-bit message then wait until available entry in the
 message FIFO then writes next.
 
 ```c
-void sha256_hash(uint32 *msg, unsigned int msg_len, uint32 *hash) {
-  unsigned int written;
-
+void sha256_hash(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
   // Initiate hash: hash_start
-  REG32(HMAC_CMD(0)) = (1 << HMAC_HASH_START_LSB);
+  REG32(HMAC_CMD(0)) = (1 << HMAC_CMD_HASH_START);
 
   // write the message: below example assumes word-aligned access
-  for (written = 0 ; written < (msg_len >> 3) ; written += 4) {
+  for (uint32_t written = 0 ; written < (msg_len >> 3) ; written += 4) {
     while((REG32(HMAC_STATUS(0)) >> HMAC_STATUS_FIFO_FULL) & 0x1) ;
     // Any write data from HMAC_MSG_FIFO_OFFSET to HMAC_MSG_FIFO_SIZE
     // is written to the message FIFO
-    REG32(HMAC_MSG_FIFO_OFFSET(0)) = *(msg+(written/4));
+    REG32(HMAC_MSG_FIFO(0)) = *(msg+(written/4));
   }
 
   // Completes hash: hash_process
-  REG32(HMAC_CMD(0)) = (1 << HMAC_HASH_PROCESS_LSB);
+  REG32(HMAC_CMD(0)) = (1 << HMAC_CMD_HASH_PROCESS);
 
-  while(0 == (REG32(HMAC_INTR_STATE(0)) >> HMAC_INTR_STATE_HMAC_DONE_LSB) & 0x1);
+  while(0 == (REG32(HMAC_INTR_STATE(0)) >> HMAC_INTR_STATE_HMAC_DONE) & 0x1);
 
-  REG32(HMAC_INTR_STATE(0)) = 1 << HMAC_INTR_STATE_HMAC_DONE_LSB;
+  REG32(HMAC_INTR_STATE(0)) = 1 << HMAC_INTR_STATE_HMAC_DONE;
 
+  // Read the digest
   for (int i = 0 ; i < 8 ; i++) {
     *(hash + i) = REG32(HMAC_DIGEST0(0) + (i << 2));
   }
@@ -281,4 +280,3 @@ the crossbar.
 {{% section2 Register Table }}
 
 {{% registers x }}
-
