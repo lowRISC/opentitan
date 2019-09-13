@@ -8,9 +8,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Adjust clock speed to match simulation
-//#define SIMULATION
-
 #ifdef SIMULATION
 #define CLK_FIXED_FREQ_HZ (500 * 1000)
 static const unsigned long UART_BAUD_RATE = 9600;
