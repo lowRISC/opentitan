@@ -80,7 +80,7 @@ static int flash_write_internal(uint32_t addr, const uint32_t *data,
                                   (size - 1) << FLASH_CTRL_CONTROL_NUM_OFFSET |
                                   0x1 << FLASH_CTRL_CONTROL_START);
   for (int i = 0; i < size; ++i) {
-    REG32(FLASH_CTRL_PROG_FIFO(FLASH_CTRL0_BASE_ADDR)) = data[i];
+    REG32(FLASH_CTRL_PROG_FIFO(0)) = data[i];
   }
   wait_done_and_ack();
   return 0;
