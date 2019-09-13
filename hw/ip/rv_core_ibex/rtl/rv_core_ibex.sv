@@ -44,7 +44,8 @@ module rv_core_ibex #(
   input  logic        debug_req_i,
 
   // CPU Control Signals
-  input  logic        fetch_enable_i
+  input  logic        fetch_enable_i,
+  output logic        core_sleep_o
 );
 
   import top_pkg::*;
@@ -55,6 +56,7 @@ module rv_core_ibex #(
   logic        instr_rvalid_i;
   logic [31:0] instr_addr_o;
   logic [31:0] instr_rdata_i;
+  logic        instr_err_i;
 
   logic        data_req_o;
   logic        data_gnt_i;
@@ -111,6 +113,7 @@ module rv_core_ibex #(
      .instr_rvalid_i,
      .instr_addr_o,
      .instr_rdata_i,
+     .instr_err_i,
 
      .data_req_o,
      .data_gnt_i,
@@ -154,8 +157,8 @@ module rv_core_ibex #(
      .rvfi_mem_wdata,
 `endif
 
-     .fetch_enable_i
-
+     .fetch_enable_i,
+     .core_sleep_o
   );
 
   //
@@ -193,7 +196,7 @@ module rv_core_ibex #(
   assign instr_gnt_i    = tl_i_i.a_ready & tl_i_o.a_valid;
   assign instr_rvalid_i = tl_i_i.d_valid;
   assign instr_rdata_i  = tl_i_i.d_data;
-  // TODO: add error response
+  assign instr_err_i    = tl_i_i.d_error;
 
   // For core data interface, calculate a_size from data_be_o
   logic [2:0] data_be_countones;
