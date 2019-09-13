@@ -139,7 +139,8 @@ module ibex_riscv_compliance (
 
       .debug_req_i           ('b0),
 
-      .fetch_enable_i        ('b1)
+      .fetch_enable_i        ('b1),
+      .core_sleep_o          ()
     );
 
   // SRAM block for instruction and data storage

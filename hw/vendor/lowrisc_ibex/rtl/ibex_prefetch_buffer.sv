@@ -39,27 +39,31 @@ module ibex_prefetch_buffer (
     output logic        busy_o
 );
 
-  typedef enum logic [1:0] {
-    IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED
-  } pf_fsm_e;
+  // Changes to the address flops would be required for > 2 outstanding requests
+  localparam int unsigned NUM_REQS = 2;
 
-  pf_fsm_e pf_fsm_cs, pf_fsm_ns;
+  logic                valid_req;
+  logic                valid_req_d, valid_req_q;
+  logic                hold_addr_d, hold_addr_q;
+  logic                gnt_or_pmp_err, rvalid_or_pmp_err;
+  logic [NUM_REQS-1:0] rdata_outstanding_n, rdata_outstanding_s, rdata_outstanding_q;
+  logic [NUM_REQS-1:0] branch_abort_n, branch_abort_s, branch_abort_q;
 
-  logic [31:0] instr_addr_q, fetch_addr;
-  logic [31:0] instr_addr, instr_addr_w_aligned;
-  logic        addr_valid;
-  logic        pmp_err_q;
-  logic        instr_or_pmp_err;
+  logic [31:0]         instr_addr_q, fetch_addr;
+  logic [31:0]         instr_addr, instr_addr_w_aligned;
+  logic                addr_valid;
+  logic                pmp_err_q;
+  logic                instr_or_pmp_err;
 
-  logic        fifo_valid;
-  logic        fifo_ready;
-  logic        fifo_clear;
+  logic                fifo_valid;
+  logic                fifo_ready;
+  logic                fifo_clear;
 
   ////////////////////////////
   // Prefetch buffer status //
   ////////////////////////////
 
-  assign busy_o = (pf_fsm_cs != IDLE) | instr_req_o;
+  assign busy_o = (|rdata_outstanding_q) | instr_req_o;
 
   //////////////////////////////////////////////
   // Fetch fifo - consumes addresses and data //
@@ -69,16 +73,19 @@ module ibex_prefetch_buffer (
   // PMP errors are generated in the address phase, and registered into a fake data phase
   assign instr_or_pmp_err = instr_err_i | pmp_err_q;
 
+  // A branch will invalidate any previously fetched instructions
+  assign fifo_clear = branch_i;
+
   ibex_fetch_fifo fifo_i (
       .clk_i                 ( clk_i             ),
       .rst_ni                ( rst_ni            ),
 
       .clear_i               ( fifo_clear        ),
 
+      .in_valid_i            ( fifo_valid        ),
       .in_addr_i             ( instr_addr_q      ),
       .in_rdata_i            ( instr_rdata_i     ),
       .in_err_i              ( instr_or_pmp_err  ),
-      .in_valid_i            ( fifo_valid        ),
       .in_ready_o            ( fifo_ready        ),
 
 
@@ -86,130 +93,99 @@ module ibex_prefetch_buffer (
       .out_ready_i           ( ready_i           ),
       .out_rdata_o           ( rdata_o           ),
       .out_addr_o            ( addr_o            ),
-      .out_err_o             ( err_o             ),
-
-      .out_valid_stored_o    (                   )
+      .out_err_o             ( err_o             )
   );
 
+  //////////////
+  // Requests //
+  //////////////
+
+  // Make a new request any time there is space in the FIFO, and space in the request queue
+  assign valid_req = valid_req_q | (req_i & (fifo_ready | branch_i) & (~&rdata_outstanding_q));
+
+  // If a request address triggers a PMP error, the external bus request is suppressed. We might
+  // therefore never receive a grant for such a request. The grant is faked in this case to make
+  // sure the request proceeds and the error is pushed to the FIFO.
+  // We always use the registered version of the signal since it will be held stable throughout
+  // the request, and the penalty of waiting for an extra cycle to consume the error is irrelevant.
+  // A branch could update the address (and therefore data_pmp_err_i) on the cycle a request is
+  // issued, in which case we must ignore the registered version.
+  assign gnt_or_pmp_err = instr_gnt_i | (pmp_err_q & ~branch_i);
+
+  // As with the grant, the rvalid must be faked for a PMP error, since the request was suppressed.
+  // Since the pmp_err_q flop is only updated when the address updates, it will always point to the
+  // PMP error status of the oldest outstanding request
+  assign rvalid_or_pmp_err = rdata_outstanding_q[0] & (instr_rvalid_i | pmp_err_q);
+
+  // Hold the request stable for requests that didn't get granted
+  assign valid_req_d = valid_req & ~instr_gnt_i;
+
+  // Hold the address stable for requests that couldn't be issued, or didn't get granted.
+  // This is different to valid_req_q since there are cases where we must use addr+4 for
+  // an ungranted request rather than addr_q (where addr_q has not been updated).
+  assign hold_addr_d = (branch_i | hold_addr_q) & ~(valid_req & instr_gnt_i);
 
   ////////////////
   // Fetch addr //
   ////////////////
 
+  // The address flop is used to hold the address steady for ungranted requests and also to
+  // push the address to the FIFO for completed requests. For this reason, the address is only
+  // updated once a request is the oldest outstanding to ensure that newer requests do not
+  // overwrite the addresses of older ones. Branches are an exception to this, since all older
+  // addresses will be discarded due to the branch.
+
+  // Update the addr_q flop on any branch, or
+  assign addr_valid = branch_i |
+                      // A new request which will be the oldest, or
+                      (valid_req & instr_gnt_i & ~rdata_outstanding_q[0]) |
+                      // each time a valid request becomes the oldest
+                      (rvalid_or_pmp_err & ~branch_abort_q[0] &
+                       ((valid_req & instr_gnt_i) | rdata_outstanding_q[1]));
+
+  // Fetch the next word-aligned instruction address
   assign fetch_addr = {instr_addr_q[31:2], 2'b00} + 32'd4;
-  assign fifo_clear = branch_i;
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Instruction fetch FSM -deals with instruction memory / instruction cache //
-  //////////////////////////////////////////////////////////////////////////////
+  // Address mux
+  assign instr_addr = branch_i    ? addr_i :
+                      hold_addr_q ? instr_addr_q :
+                                    fetch_addr;
 
-  always_comb begin
-    instr_req_o = 1'b0;
-    instr_addr  = fetch_addr;
-    fifo_valid  = 1'b0;
-    addr_valid  = 1'b0;
-    pf_fsm_ns   = pf_fsm_cs;
+  assign instr_addr_w_aligned = {instr_addr[31:2], 2'b00};
 
-    unique case(pf_fsm_cs)
-      // default state, not waiting for requested data
-      IDLE: begin
-        instr_addr  = fetch_addr;
-        instr_req_o = 1'b0;
+  ///////////////////////////////
+  // Request outstanding queue //
+  ///////////////////////////////
 
-        if (branch_i) begin
-          instr_addr = addr_i;
-        end
+  for (genvar i = 0; i < NUM_REQS; i++) begin : g_outstanding_reqs
+    // Request 0 (always the oldest outstanding request)
+    if (i == 0) begin : g_req0
+      // A request becomes outstanding once granted, and is cleared once the rvalid is received.
+      // Outstanding requests shift down the queue towards entry 0. Entry 0 considers the PMP
+      // error cases while newer entries do not (pmp_err_q is only valid for entry 0)
+      assign rdata_outstanding_n[i] = (valid_req & gnt_or_pmp_err) |
+                                      rdata_outstanding_q[i];
+      // If a branch is received at any point while a request is outstanding, it must be tracked
+      // to ensure we discard the data once received
+      assign branch_abort_n[i]      = (branch_i & rdata_outstanding_q[i]) | branch_abort_q[i];
 
-        if (req_i && (fifo_ready || branch_i )) begin
-          instr_req_o = 1'b1;
-          addr_valid  = 1'b1;
+    end else begin : g_reqtop
 
-
-          //~> granted request or not
-          pf_fsm_ns = instr_gnt_i ? WAIT_RVALID : WAIT_GNT;
-        end
-      end // case: IDLE
-
-      // we sent a request but did not yet get a grant
-      WAIT_GNT: begin
-        instr_addr  = instr_addr_q;
-        instr_req_o = 1'b1;
-
-        if (branch_i) begin
-          instr_addr = addr_i;
-          addr_valid = 1'b1;
-        end
-
-        //~> granted request or not
-        // If the instruction generated a PMP error, we may or may not
-        // get granted (the external valid is suppressed by the error)
-        // but we proceed to WAIT_RVALID to push the error to the fifo
-        pf_fsm_ns = (instr_gnt_i || pmp_err_q) ? WAIT_RVALID : WAIT_GNT;
-      end // case: WAIT_GNT
-
-      // we wait for rvalid, after that we are ready to serve a new request
-      WAIT_RVALID: begin
-        instr_addr = fetch_addr;
-
-        if (branch_i) begin
-          instr_addr = addr_i;
-        end
-
-        if (req_i && (fifo_ready || branch_i)) begin
-          // prepare for next request
-
-          // Fake the rvalid for PMP errors to push the error to the fifo
-          if (instr_rvalid_i || pmp_err_q) begin
-            instr_req_o = 1'b1;
-            fifo_valid  = 1'b1;
-            addr_valid  = 1'b1;
-
-            //~> granted request or not
-            pf_fsm_ns = instr_gnt_i ? WAIT_RVALID : WAIT_GNT;
-          end else begin
-            // we are requested to abort our current request
-            // we didn't get an rvalid yet, so wait for it
-            if (branch_i) begin
-              addr_valid = 1'b1;
-              pf_fsm_ns  = WAIT_ABORTED;
-            end
-          end
-        end else begin
-          // just wait for rvalid and go back to IDLE, no new request
-
-          // Fake the rvalid for PMP errors to push the error to the fifo
-          if (instr_rvalid_i || pmp_err_q) begin
-            fifo_valid = 1'b1;
-            pf_fsm_ns  = IDLE;
-          end
-        end
-      end // case: WAIT_RVALID
-
-      // our last request was aborted, but we didn't yet get a rvalid and
-      // there was no new request sent yet
-      // we assume that req_i is set to high
-      WAIT_ABORTED: begin
-        instr_addr = instr_addr_q;
-
-        if (branch_i) begin
-          instr_addr = addr_i;
-          addr_valid = 1'b1;
-        end
-
-        if (instr_rvalid_i) begin
-          instr_req_o = 1'b1;
-          // no need to send address, already done in WAIT_RVALID
-
-          //~> granted request or not
-          pf_fsm_ns = instr_gnt_i ? WAIT_RVALID : WAIT_GNT;
-        end
-      end
-
-      default: begin
-        pf_fsm_ns = pf_fsm_e'(1'bX);
-      end
-    endcase
+      assign rdata_outstanding_n[i] = (valid_req & instr_gnt_i &
+                                       (&rdata_outstanding_q[i-1:0])) |
+                                      rdata_outstanding_q[i];
+      assign branch_abort_n[i]      = (branch_i & rdata_outstanding_q[i]) | branch_abort_q[i];
+    end
   end
+
+  // Shift the entries down on each instr_rvalid_i
+  assign rdata_outstanding_s = rvalid_or_pmp_err ? {1'b0,rdata_outstanding_n[NUM_REQS-1:1]} :
+                                                   rdata_outstanding_n;
+  assign branch_abort_s      = rvalid_or_pmp_err ? {1'b0,branch_abort_n[NUM_REQS-1:1]} :
+                                                   branch_abort_n;
+
+  // Push a new entry to the FIFO once complete (and not aborted by a branch)
+  assign fifo_valid = rvalid_or_pmp_err & ~branch_abort_q[0];
 
   ///////////////
   // Registers //
@@ -217,23 +193,42 @@ module ibex_prefetch_buffer (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      pf_fsm_cs      <= IDLE;
-      instr_addr_q   <= '0;
-      pmp_err_q      <= '0;
+      valid_req_q          <= 1'b0;
+      hold_addr_q          <= 1'b0;
+      rdata_outstanding_q  <= 'b0;
+      branch_abort_q       <= 'b0;
     end else begin
-      pf_fsm_cs      <= pf_fsm_ns;
-
-      if (addr_valid) begin
-        instr_addr_q <= instr_addr;
-        pmp_err_q    <= instr_pmp_err_i;
-      end
+      valid_req_q          <= valid_req_d;
+      hold_addr_q          <= hold_addr_d;
+      rdata_outstanding_q  <= rdata_outstanding_s;
+      branch_abort_q       <= branch_abort_s;
     end
   end
 
-  /////////////////
-  // Output Addr //
-  /////////////////
-  assign instr_addr_w_aligned = {instr_addr[31:2], 2'b00};
-  assign instr_addr_o         =  instr_addr_w_aligned;
+  // CPU resets with a branch, so no need to reset these
+  always_ff @(posedge clk_i) begin
+    if (addr_valid) begin
+      instr_addr_q <= instr_addr;
+      pmp_err_q    <= instr_pmp_err_i;
+    end
+  end
+
+  /////////////
+  // Outputs //
+  /////////////
+
+  assign instr_req_o          = valid_req;
+  assign instr_addr_o         = instr_addr_w_aligned;
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+`ifndef VERILATOR
+  // Code changes required to support > 2 outstanding requests
+  assert property (
+    @(posedge clk_i) disable iff (!rst_ni)
+    (NUM_REQS <= 2) );
+`endif
 
 endmodule

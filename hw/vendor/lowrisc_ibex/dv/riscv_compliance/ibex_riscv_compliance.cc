@@ -12,8 +12,8 @@
 
 VERILATED_TOPLEVEL(ibex_riscv_compliance)
 
-ibex_riscv_compliance* top;
-VerilatorSimCtrl* simctrl;
+ibex_riscv_compliance *top;
+VerilatorSimCtrl *simctrl;
 
 static void SignalHandler(int sig) {
   if (!simctrl) {
@@ -52,7 +52,7 @@ static void SetupSignalHandler() {
  */
 double sc_time_stamp() { return simctrl->GetTime(); }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   int retcode;
   top = new ibex_riscv_compliance;
   simctrl = new VerilatorSimCtrl(top, top->IO_CLK, top->IO_RST_N,

@@ -113,7 +113,7 @@ module ibex_controller (
   logic enter_debug_mode;
   logic handle_irq;
 
-  logic [4:0] mfip_id;
+  logic [3:0] mfip_id;
   logic       unused_csr_mtip;
 
 `ifndef SYNTHESIS
@@ -164,22 +164,22 @@ module ibex_controller (
 
   // generate ID of fast interrupts, highest priority to highest ID
   always_comb begin : gen_mfip_id
-    if      (csr_mfip_i[14]) mfip_id = 5'd14;
-    else if (csr_mfip_i[13]) mfip_id = 5'd13;
-    else if (csr_mfip_i[12]) mfip_id = 5'd12;
-    else if (csr_mfip_i[11]) mfip_id = 5'd11;
-    else if (csr_mfip_i[10]) mfip_id = 5'd10;
-    else if (csr_mfip_i[ 9]) mfip_id = 5'd9;
-    else if (csr_mfip_i[ 8]) mfip_id = 5'd8;
-    else if (csr_mfip_i[ 7]) mfip_id = 5'd7;
-    else if (csr_mfip_i[ 6]) mfip_id = 5'd6;
-    else if (csr_mfip_i[ 5]) mfip_id = 5'd5;
-    else if (csr_mfip_i[ 5]) mfip_id = 5'd5;
-    else if (csr_mfip_i[ 4]) mfip_id = 5'd4;
-    else if (csr_mfip_i[ 3]) mfip_id = 5'd3;
-    else if (csr_mfip_i[ 2]) mfip_id = 5'd2;
-    else if (csr_mfip_i[ 1]) mfip_id = 5'd1;
-    else                     mfip_id = 5'd0;
+    if      (csr_mfip_i[14]) mfip_id = 4'd14;
+    else if (csr_mfip_i[13]) mfip_id = 4'd13;
+    else if (csr_mfip_i[12]) mfip_id = 4'd12;
+    else if (csr_mfip_i[11]) mfip_id = 4'd11;
+    else if (csr_mfip_i[10]) mfip_id = 4'd10;
+    else if (csr_mfip_i[ 9]) mfip_id = 4'd9;
+    else if (csr_mfip_i[ 8]) mfip_id = 4'd8;
+    else if (csr_mfip_i[ 7]) mfip_id = 4'd7;
+    else if (csr_mfip_i[ 6]) mfip_id = 4'd6;
+    else if (csr_mfip_i[ 5]) mfip_id = 4'd5;
+    else if (csr_mfip_i[ 5]) mfip_id = 4'd5;
+    else if (csr_mfip_i[ 4]) mfip_id = 4'd4;
+    else if (csr_mfip_i[ 3]) mfip_id = 4'd3;
+    else if (csr_mfip_i[ 2]) mfip_id = 4'd2;
+    else if (csr_mfip_i[ 1]) mfip_id = 4'd1;
+    else                     mfip_id = 4'd0;
   end
 
   assign unused_csr_mtip = csr_mtip_i;
@@ -215,7 +215,7 @@ module ibex_controller (
     debug_csr_save_o      = 1'b0;
     debug_cause_o         = DBG_CAUSE_EBREAK;
     debug_mode_d          = debug_mode_q;
-    nmi_mode_d            = 1'b0;
+    nmi_mode_d            = nmi_mode_q;
 
     perf_tbranch_o        = 1'b0;
     perf_jump_o           = 1'b0;
@@ -360,7 +360,11 @@ module ibex_controller (
             exc_cause_o = EXC_CAUSE_IRQ_NM;
             nmi_mode_d  = 1'b1; // enter NMI mode
           end else if (csr_mfip_i != 15'b0) begin
-            exc_cause_o = exc_cause_e'({1'b1, mfip_id});
+            // generate exception cause ID from fast interrupt ID:
+            // - first bit distinguishes interrupts from exceptions,
+            // - second bit adds 16 to fast interrupt ID
+            // for example EXC_CAUSE_IRQ_FAST_0 = {1'b1, 5'd16}
+            exc_cause_o = exc_cause_e'({2'b11, mfip_id});
           end else if (csr_meip_i) begin
             exc_cause_o = EXC_CAUSE_IRQ_EXTERNAL_M;
           end else if (csr_msip_i) begin

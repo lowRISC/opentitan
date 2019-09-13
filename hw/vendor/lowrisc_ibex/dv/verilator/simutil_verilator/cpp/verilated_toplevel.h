@@ -31,35 +31,25 @@
  */
 class VerilatedTracer {
  public:
-  VerilatedTracer() : impl_(nullptr) {
-    impl_ = new VM_TRACE_CLASS_NAME();
-  };
+  VerilatedTracer() : impl_(nullptr) { impl_ = new VM_TRACE_CLASS_NAME(); };
 
-  ~VerilatedTracer() {
-    delete impl_;
+  ~VerilatedTracer() { delete impl_; }
+
+  bool isOpen() const { return impl_->isOpen(); };
+
+  void open(const char *filename) { impl_->open(filename); };
+
+  void close() { impl_->close(); };
+
+  void dump(vluint64_t timeui) { impl_->dump(timeui); }
+
+  operator VM_TRACE_CLASS_NAME *() const {
+    assert(impl_);
+    return impl_;
   }
-
-
-  bool isOpen() const {
-    return impl_->isOpen();
-  };
-
-  void open(const char* filename) {
-    impl_->open(filename);
-  };
-
-  void close() {
-    impl_->close();
-  };
-
-  void dump(vluint64_t timeui) {
-    impl_->dump(timeui);
-  }
-
-  operator VM_TRACE_CLASS_NAME*() const { assert(impl_); return impl_; }
 
  private:
-  VM_TRACE_CLASS_NAME* impl_;
+  VM_TRACE_CLASS_NAME *impl_;
 };
 #else
 /**
@@ -67,14 +57,14 @@ class VerilatedTracer {
  */
 class VerilatedTracer {
  public:
-  VerilatedTracer() {};
+  VerilatedTracer(){};
   ~VerilatedTracer() {}
   bool isOpen() const { return false; };
-  void open(const char* filename) {};
-  void close() {};
+  void open(const char *filename){};
+  void close(){};
   void dump(vluint64_t timeui) {}
 };
-#endif // VM_TRACE == 1
+#endif  // VM_TRACE == 1
 
 /**
  * Pure abstract class (interface) for verilated toplevel modules
@@ -97,37 +87,37 @@ class VerilatedTracer {
  * of the tracer-specific class.
  */
 class VerilatedToplevel {
-public:
-  VerilatedToplevel() {};
-  virtual ~VerilatedToplevel() {};
+ public:
+  VerilatedToplevel(){};
+  virtual ~VerilatedToplevel(){};
 
   virtual void eval() = 0;
   virtual void final() = 0;
-  virtual const char* name() const = 0;
-  virtual void trace(VerilatedTracer& tfp, int levels, int options) = 0;
+  virtual const char *name() const = 0;
+  virtual void trace(VerilatedTracer &tfp, int levels, int options) = 0;
 };
 
 #define STR(s) #s
 
 #if VM_TRACE == 1
-#define VERILATED_TOPLEVEL_TRACE_CALL(topname) \
-  V##topname::trace(static_cast<VM_TRACE_CLASS_NAME*>(tfp), levels, options);
+#  define VERILATED_TOPLEVEL_TRACE_CALL(topname) \
+    V##topname::trace(static_cast<VM_TRACE_CLASS_NAME *>(tfp), levels, options);
 #else
-#define VERILATED_TOPLEVEL_TRACE_CALL(topname) \
-  assert(0 && "Tracing not enabled.");
+#  define VERILATED_TOPLEVEL_TRACE_CALL(topname) \
+    assert(0 && "Tracing not enabled.");
 #endif
 
-
-#define VERILATED_TOPLEVEL(topname)                                            \
-  class topname : public V##topname, public VerilatedToplevel {                \
-   public:                                                                     \
-    topname(const char* name="TOP") : V##topname(name), VerilatedToplevel() {} \
-    const char* name() const { return STR(topname); }                          \
-    void eval() { V##topname::eval(); }                                        \
-    void final() { V##topname::final(); }                                      \
-    void trace(VerilatedTracer& tfp, int levels, int options=0) {              \
-      VERILATED_TOPLEVEL_TRACE_CALL(topname)                                   \
-    }                                                                          \
+#define VERILATED_TOPLEVEL(topname)                                 \
+  class topname : public V##topname, public VerilatedToplevel {     \
+   public:                                                          \
+    topname(const char *name = "TOP")                               \
+        : V##topname(name), VerilatedToplevel() {}                  \
+    const char *name() const { return STR(topname); }               \
+    void eval() { V##topname::eval(); }                             \
+    void final() { V##topname::final(); }                           \
+    void trace(VerilatedTracer &tfp, int levels, int options = 0) { \
+      VERILATED_TOPLEVEL_TRACE_CALL(topname)                        \
+    }                                                               \
   };
 
-#endif // VERILATED_TOPLEVEL_H_
+#endif  // VERILATED_TOPLEVEL_H_

@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/lowRISC/ibex.git
-    rev: d14312c3cc47a7d4b34943e4febb96312353b2cc
+    rev: f025236a22e4d2290acf856de60449f24d79bc6f
   }
 }

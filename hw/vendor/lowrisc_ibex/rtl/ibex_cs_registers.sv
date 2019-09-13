@@ -596,7 +596,7 @@ module ibex_cs_registers #(
       mtval_q        <= '0;
       mtvec_q        <= 32'b01;
       dcsr_q         <= '{
-          xdebugver: XDEBUGVER_NO,   // 4'h0
+          xdebugver: XDEBUGVER_STD,
           cause:     DBG_CAUSE_NONE, // 3'h0
           prv:       PRIV_LVL_M,
           default:   '0

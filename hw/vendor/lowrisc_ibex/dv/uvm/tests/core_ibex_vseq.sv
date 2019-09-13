@@ -72,8 +72,8 @@ class core_ibex_vseq extends uvm_sequence;
     end
   endtask
 
-  // Helper tasks to allow the test fine grained control to start sequences
-  // through the vseq - necessary for testing directed stimulus scenarios
+  // Helper tasks to allow the test fine grained control to start sequences through the vseq
+  // - necessary for testing directed stimulus scenarios
   virtual task start_debug_stress_seq();
     debug_seq_stress_h.start(null);
   endtask

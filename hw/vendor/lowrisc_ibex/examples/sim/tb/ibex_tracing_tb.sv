@@ -110,7 +110,8 @@ module ibex_tracing_tb;
     .debug_req_i            (1'b0),
 
     // CPU Control Signals
-    .fetch_enable_i         (1'b1)
+    .fetch_enable_i         (1'b1),
+    .core_sleep_o           ()
   );
 
 endmodule

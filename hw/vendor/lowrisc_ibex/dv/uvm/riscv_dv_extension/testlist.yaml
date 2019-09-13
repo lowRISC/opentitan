@@ -116,7 +116,7 @@
     +no_csr_instr=1
     +no_fence=1
     +num_of_sub_program=0
-  rtl_test: core_ibex_debug_intr_test
+  rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
     +max_interval=1000
@@ -135,14 +135,13 @@
     +instr_cnt=6000
     +no_csr_instr=1
     +no_fence=1
-  rtl_test: core_ibex_debug_intr_test
+  rtl_test: core_ibex_debug_intr_basic_test
   iterations: 5
   sim_opts: >
     +max_interval=250
     +enable_debug_stress_seq=1
     +require_signature_addr=1
   compare_opts:
-    compare_final_value_only: 1
     verbose: 1
 
 - test: riscv_debug_branch_jump_test
@@ -158,11 +157,12 @@
     +instr_cnt=6000
     +no_csr_instr=1
     +no_fence=1
-    +num_of_sub_program=5
-    +num_debug_sub_program=5
-  rtl_test: core_ibex_debug_intr_test
+    +num_of_sub_program=0
+    +num_debug_sub_program=3
+  rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
+    +max_interval=2000
     +enable_debug_stress_seq=1
   compare_opts:
     compare_final_value_only: 1
@@ -189,6 +189,75 @@
     compare_final_value_only: 1
     verbose: 1
 
+- test: riscv_dret_test
+  description: >
+    Dret instructions will be inserted into M-mode code, ibex should treat these
+    like illegal instructions.
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +no_dret=0
+    +instr_cnt=6000
+  rtl_test: core_ibex_dret_test
+  sim_opts: >
+    +require_signature_addr=1
+
+- test: riscv_ebreak_test
+  description: >
+    Ebreak instructions will be inserted into the M mode code, ibex should handle them normally.
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +no_ebreak=0
+    +instr_cnt=6000
+  rtl_test: core_ibex_base_test
+
+- test: riscv_debug_ebreak_test
+  description: >
+    A directed ebreak sequence will be inserted into the debug rom, upon encountering it,
+    ibex should jump back to the beginning of debug mode. The sequence is designed to avoid an
+    infinite loop.
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +enable_ebreak_in_debug_rom=1
+    +no_csr_instr=1
+    +no_fence=1
+    +no_wfi=1
+    +no_ebreak=0
+    +instr_cnt=6000
+  rtl_test: core_ibex_debug_ebreak_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_debug_ebreakm_test
+  description: >
+    dcsr.ebreakm will be set at the beginning of the test upon the first entry into the debug rom.
+    From then on, every ebreak instruction should cause debug mode to be entered.
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +set_dcsr_ebreak=1
+    +no_ebreak=0
+    +no_csr_instr=1
+    +no_fence=1
+    +no_wfi=1
+    +instr_cnt=6000
+  rtl_test: core_ibex_debug_ebreakm_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
 - test: riscv_interrupt_test
   description: >
     Random instruction test with complete interrupt handling
@@ -196,7 +265,7 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +require_signature_addr=1
-  rtl_test: core_ibex_debug_intr_test
+  rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
     +enable_irq_stress_seq=1

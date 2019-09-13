@@ -6,6 +6,10 @@
 package ibex_tracer_pkg;
 import ibex_pkg::*;
 
+parameter logic [1:0] OPCODE_C0 = 2'b00;
+parameter logic [1:0] OPCODE_C1 = 2'b01;
+parameter logic [1:0] OPCODE_C2 = 2'b10;
+
 // instruction masks (for tracer)
 parameter logic [31:0] INSTR_LUI     = { 25'b?,                           {OPCODE_LUI  } };
 parameter logic [31:0] INSTR_AUIPC   = { 25'b?,                           {OPCODE_AUIPC} };
@@ -70,5 +74,37 @@ parameter logic [31:0] INSTR_STORE   = {25'b?,                            {OPCOD
 
 // MISC-MEM
 parameter logic [31:0] INSTR_FENCE   = { 17'b?,             3'b000, 5'b?, {OPCODE_MISC_MEM} };
+
+// Compressed Instructions
+// C0
+parameter logic [15:0] INSTR_CADDI4SPN  = { 3'b000,       11'b?,                    {OPCODE_C0} };
+parameter logic [15:0] INSTR_CLW        = { 3'b010,       11'b?,                    {OPCODE_C0} };
+parameter logic [15:0] INSTR_CSW        = { 3'b110,       11'b?,                    {OPCODE_C0} };
+
+// C1
+parameter logic [15:0] INSTR_CADDI      = { 3'b000,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CJAL       = { 3'b001,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CJ         = { 3'b101,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CLI        = { 3'b010,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CLUI       = { 3'b011,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CBEQZ      = { 3'b110,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CBNEZ      = { 3'b111,       11'b?,                    {OPCODE_C1} };
+parameter logic [15:0] INSTR_CSRLI      = { 3'b100, 1'b?, 2'b00, 8'b?,              {OPCODE_C1} };
+parameter logic [15:0] INSTR_CSRAI      = { 3'b100, 1'b?, 2'b01, 8'b?,              {OPCODE_C1} };
+parameter logic [15:0] INSTR_CANDI      = { 3'b100, 1'b?, 2'b10, 8'b?,              {OPCODE_C1} };
+parameter logic [15:0] INSTR_CSUB       = { 3'b100, 1'b0, 2'b11, 3'b?, 2'b00, 3'b?, {OPCODE_C1} };
+parameter logic [15:0] INSTR_CXOR       = { 3'b100, 1'b0, 2'b11, 3'b?, 2'b01, 3'b?, {OPCODE_C1} };
+parameter logic [15:0] INSTR_COR        = { 3'b100, 1'b0, 2'b11, 3'b?, 2'b10, 3'b?, {OPCODE_C1} };
+parameter logic [15:0] INSTR_CAND       = { 3'b100, 1'b0, 2'b11, 3'b?, 2'b11, 3'b?, {OPCODE_C1} };
+
+// C2
+parameter logic [15:0] INSTR_CSLLI      = { 3'b000,       11'b?,                    {OPCODE_C2} };
+parameter logic [15:0] INSTR_CLWSP      = { 3'b010,       11'b?,                    {OPCODE_C2} };
+parameter logic [15:0] INSTR_SWSP       = { 3'b110,       11'b?,                    {OPCODE_C2} };
+parameter logic [15:0] INSTR_CMV        = { 3'b100, 1'b0, 10'b?,                    {OPCODE_C2} };
+parameter logic [15:0] INSTR_CADD       = { 3'b100, 1'b1, 10'b?,                    {OPCODE_C2} };
+parameter logic [15:0] INSTR_CEBREAK    = { 3'b100, 1'b1,        5'b0,  5'b0,       {OPCODE_C2} };
+parameter logic [15:0] INSTR_CJR        = { 3'b100, 1'b0,        5'b?,  5'b0,       {OPCODE_C2} };
+parameter logic [15:0] INSTR_CJALR      = { 3'b100, 1'b1,        5'b?,  5'b0,       {OPCODE_C2} };
 
 endpackage

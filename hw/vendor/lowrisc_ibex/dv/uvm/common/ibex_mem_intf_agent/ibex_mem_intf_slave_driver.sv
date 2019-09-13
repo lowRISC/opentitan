@@ -10,9 +10,6 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
 
   protected virtual ibex_mem_intf vif;
 
-  int unsigned min_grant_delay = 0;
-  int unsigned max_grant_delay = 10;
-
   `uvm_component_utils(ibex_mem_intf_slave_driver)
   `uvm_component_new
 
@@ -58,20 +55,15 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
     join_none
   endtask : get_and_drive
 
+  // TODO(udinator) - this direct send_grant logic is temporary until instruction fetch protocol
+  // issue is clarified (https://github.com/lowRISC/ibex/pull/293). After resolution, will re-add
+  // random delays insertion before driving grant to the ibex core.
   virtual protected task send_grant();
     int gnt_delay;
     forever begin
       while(vif.request !== 1'b1) begin
         @(negedge vif.clock);
       end
-      std::randomize(gnt_delay) with {
-        gnt_delay dist {
-          min_grant_delay                         :/ 1,
-          [min_grant_delay+1 : max_grant_delay-1] :/ 1,
-          max_grant_delay                         :/ 1
-        };
-      };
-      repeat(gnt_delay) @(negedge vif.clock);
       if(~vif.reset) begin
         vif.grant = 1'b1;
         @(negedge vif.clock);

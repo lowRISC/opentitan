@@ -60,8 +60,9 @@ Instantiation Template
       // Debug interface
       .debug_req_i    (),
 
-      // Special control signal
-      .fetch_enable_i ()
+      // Special control signals
+      .fetch_enable_i (),
+      .core_sleep_o   ()
   );
 
 Parameters
@@ -117,4 +118,9 @@ Interfaces
 | ``debug_*``             | Debug interface, see :ref:`debug-support`                              |
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``fetch_enable_i``      | 1                       | in  | Enable the core, won't fetch when 0    |
++-------------------------+-------------------------+-----+----------------------------------------+
+| ``core_sleep_o``        | 1                       | out | Core in WFI with no outstanding data   |
+|                         |                         |     | or instruction accesses.  Deasserts    |
+|                         |                         |     | if an external event (interrupt or     |
+|                         |                         |     | debug req) wakes the core up           |
 +-------------------------+-------------------------+-----+----------------------------------------+

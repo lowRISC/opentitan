@@ -76,11 +76,13 @@ module ibex_load_store_unit (
   logic         split_misaligned_access;
   logic         handle_misaligned_q, handle_misaligned_d; // high after receiving grant for first
                                                           // part of a misaligned access
+  logic         pmp_err_d;
   logic         pmp_err_q;
   logic         data_or_pmp_err;
 
   typedef enum logic [2:0]  {
-    IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT, WAIT_RVALID
+    IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT, WAIT_RVALID,
+    WAIT_GNT_ERR, WAIT_RVALID_ERR, WAIT_RVALID_DONE
   } ls_fsm_e;
 
   ls_fsm_e ls_fsm_cs, ls_fsm_ns;
@@ -321,12 +323,14 @@ module ibex_load_store_unit (
     addr_incr_req_o     = 1'b0;
     handle_misaligned_d = handle_misaligned_q;
     data_or_pmp_err     = 1'b0;
+    pmp_err_d           = pmp_err_q;
 
     unique case (ls_fsm_cs)
 
       IDLE: begin
         if (data_req_ex_i) begin
           data_req_o = 1'b1;
+          pmp_err_d  = data_pmp_err_i;
           if (data_gnt_i) begin
             handle_misaligned_d = split_misaligned_access;
             ls_fsm_ns           = split_misaligned_access ? WAIT_RVALID_MIS : WAIT_RVALID;
@@ -338,6 +342,10 @@ module ibex_load_store_unit (
 
       WAIT_GNT_MIS: begin
         data_req_o = 1'b1;
+        // data_pmp_err_i is valid during the address phase of a request. An error will block the
+        // external request and so a data_gnt_i might never be signalled. The registered version
+        // pmp_err_q is only updated for new address phases and so can be used in WAIT_GNT* and
+        // WAIT_RVALID* states
         if (data_gnt_i || pmp_err_q) begin
           handle_misaligned_d = 1'b1;
           ls_fsm_ns           = WAIT_RVALID_MIS;
@@ -345,32 +353,34 @@ module ibex_load_store_unit (
       end
 
       WAIT_RVALID_MIS: begin
+        // push out second request
+        data_req_o = 1'b1;
         // tell ID/EX stage to update the address
         addr_incr_req_o = 1'b1;
-        // first part rvalid is received, or gets a pmp error
-        // pmp_err_i will hold stable until the address is updated, and
-        // therefore pmp_err_q is valid in both WAIT_GNT_MIS and WAIT_RVALID_MIS states
+
+        // first part rvalid is received, or gets a PMP error
         if (data_rvalid_i || pmp_err_q) begin
+          // Update the PMP error for the second part
+          pmp_err_d = data_pmp_err_i;
           if (pmp_err_q || data_err_i) begin
             // first part created an error, abort transaction
             data_valid_o        = 1'b1;
             data_or_pmp_err     = 1'b1;
             handle_misaligned_d = 1'b0;
-            ls_fsm_ns           = IDLE;
+            // If already granted, wait for second rvalid
+            ls_fsm_ns = data_gnt_i ? WAIT_RVALID_ERR : WAIT_GNT_ERR;
+
           end else begin
-            // push out second request
-            data_req_o = 1'b1;
-            if (data_gnt_i) begin
-              // second grant is received
-              ls_fsm_ns = WAIT_RVALID;
-            end else begin
-              // second grant is NOT received, but first rvalid
-              ls_fsm_ns = WAIT_GNT;
-            end
+            // No error in first part, proceed with second part
+            ls_fsm_ns = data_gnt_i ? WAIT_RVALID : WAIT_GNT;
           end
+
         end else begin
           // first part rvalid is NOT received
-          ls_fsm_ns = WAIT_RVALID_MIS;
+          if (data_gnt_i) begin
+            // second grant is received
+            ls_fsm_ns = WAIT_RVALID_DONE;
+          end
         end
       end
 
@@ -385,8 +395,6 @@ module ibex_load_store_unit (
 
       WAIT_RVALID: begin
         data_req_o = 1'b0;
-        // pmp_err_i will hold stable until the address is updated, and
-        // therefore pmp_err_q is valid in both WAIT_GNT and WAIT_RVALID states
         if (data_rvalid_i || pmp_err_q) begin
           data_valid_o        = 1'b1;
           data_or_pmp_err     = data_err_i | pmp_err_q;
@@ -394,6 +402,44 @@ module ibex_load_store_unit (
           ls_fsm_ns           = IDLE;
         end else begin
           ls_fsm_ns           = WAIT_RVALID;
+        end
+      end
+
+      WAIT_GNT_ERR: begin
+        // Wait for the grant of the abandoned second access
+        data_req_o = 1'b1;
+        // tell ID/EX stage to update the address
+        addr_incr_req_o = 1'b1;
+        if (pmp_err_q) begin
+          // The second part was suppressed by a PMP error
+          ls_fsm_ns = IDLE;
+        end else if (data_gnt_i) begin
+          ls_fsm_ns = WAIT_RVALID_ERR;
+        end
+      end
+
+      WAIT_RVALID_ERR: begin
+        // Wait for the rvalid, but do nothing with it
+        if (data_rvalid_i || pmp_err_q) begin
+          ls_fsm_ns = IDLE;
+        end
+      end
+
+      WAIT_RVALID_DONE: begin
+        // Wait for the first rvalid, second request is already granted
+        if (data_rvalid_i) begin
+          // Update the pmp error for the second part
+          pmp_err_d = data_pmp_err_i;
+          // The first part cannot see a PMP error in this state
+          if (data_err_i) begin
+            // first part created an error, abort transaction and wait for second rvalid
+            data_valid_o        = 1'b1;
+            data_or_pmp_err     = 1'b1;
+            handle_misaligned_d = 1'b0;
+            ls_fsm_ns           = WAIT_RVALID_ERR;
+          end else begin
+            ls_fsm_ns           = WAIT_RVALID;
+          end
         end
       end
 
@@ -424,7 +470,7 @@ module ibex_load_store_unit (
       ls_fsm_cs           <= ls_fsm_ns;
       addr_last_q         <= addr_last_d;
       handle_misaligned_q <= handle_misaligned_d;
-      pmp_err_q           <= data_pmp_err_i;
+      pmp_err_q           <= pmp_err_d;
     end
   end
 
@@ -451,7 +497,7 @@ module ibex_load_store_unit (
   assign load_err_o    = data_or_pmp_err & ~data_we_q;
   assign store_err_o   = data_or_pmp_err &  data_we_q;
 
-  assign busy_o = (ls_fsm_cs == WAIT_RVALID) | (data_req_o == 1'b1);
+  assign busy_o = (ls_fsm_cs != IDLE);
 
   ////////////////
   // Assertions //
