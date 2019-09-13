@@ -72,7 +72,6 @@ module rv_core_ibex #(
   logic        rvfi_valid;
   logic [63:0] rvfi_order;
   logic [31:0] rvfi_insn;
-  logic [31:0] rvfi_insn_uncompressed;
   logic        rvfi_trap;
   logic        rvfi_halt;
   logic        rvfi_intr;
@@ -137,7 +136,6 @@ module rv_core_ibex #(
      .rvfi_valid,
      .rvfi_order,
      .rvfi_insn,
-     .rvfi_insn_uncompressed,
      .rvfi_trap,
      .rvfi_halt,
      .rvfi_intr,
@@ -248,7 +246,7 @@ module rv_core_ibex #(
 
     .valid_i          ( rvfi_valid             ),
     .pc_i             ( rvfi_pc_rdata          ),
-    .instr_i          ( rvfi_insn_uncompressed ),
+    .instr_i          ( rvfi_insn              ),
     .rs1_value_i      ( rvfi_rs1_rdata         ),
     .rs2_value_i      ( rvfi_rs2_rdata         ),
     .ex_reg_addr_i    ( rvfi_rd_addr           ),
