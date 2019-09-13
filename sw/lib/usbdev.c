@@ -41,7 +41,7 @@ int usbdev_buf_free_byid(usbdev_ctx_t *ctx, usbbufid_t buf) {
 }
 
 uint32_t *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf) {
-  return (uint32_t *)(USBDEV_BUFFER(USBDEV_BASE_ADDR) + (buf * BUF_LENGTH));
+  return (uint32_t *)(USBDEV_BUFFER() + (buf * BUF_LENGTH));
 }
 
 void usbdev_buf_copyto_byid(usbdev_ctx_t *ctx, usbbufid_t buf, const void *from,
