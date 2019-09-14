@@ -11,6 +11,8 @@ filesets:
   files_rtl_generic:
     depend:
       - lowrisc:fpv:prim_lfsr_fpv
+      - lowrisc:fpv:prim_alert_rxtx_fpv
+      - lowrisc:fpv:prim_esc_rxtx_fpv
       - lowrisc:ip:rv_timer
       - lowrisc:ip:hmac
       - lowrisc:systems:top_earlgrey
