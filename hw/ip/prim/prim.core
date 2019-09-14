@@ -11,9 +11,14 @@ filesets:
     depend:
       - lowrisc:prim:ram_2p # for prim_ram_2p_adv
       - lowrisc:prim:assert
+      - lowrisc:prim:diff_decode # for prim_alert_sender/receiver
     files:
       - rtl/prim_clock_inverter.sv
+      - rtl/prim_alert_receiver.sv
+      - rtl/prim_alert_sender.sv
       - rtl/prim_arbiter.sv
+      - rtl/prim_esc_receiver.sv
+      - rtl/prim_esc_sender.sv
       - rtl/prim_sram_arbiter.sv
       - rtl/prim_fifo_async.sv
       - rtl/prim_fifo_sync.sv
