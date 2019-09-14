@@ -30,6 +30,8 @@ static const unsigned long UART_BAUD_RATE = 230400;
 #define SETBIT(val, bit) (val | 1 << bit)
 #define CLRBIT(val, bit) (val & ~(1 << bit))
 
+#define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
+
 /* Hamming weight */
 #define BITLENGTH_1(X) ((X) - (((X) >> 1) & 0x55555555))
 #define BITLENGTH_2(X) (((X)&0x33333333) + (((X) >> 2) & 0x33333333))
