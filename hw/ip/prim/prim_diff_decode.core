@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:diff_decode"
+description: "prim"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+    files:
+      - rtl/prim_diff_decode.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
