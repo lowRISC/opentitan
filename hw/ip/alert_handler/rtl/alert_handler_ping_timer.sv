@@ -98,10 +98,7 @@ module alert_handler_ping_timer (
   logic cnt_en, cnt_clr;
   logic wait_ge, timeout_ge;
 
-  assign cnt_d = (cnt_clr) ? '0           :
-                 (cnt_en)  ? cnt_q + 1'b1 :
-                             cnt_q;
-
+  assign cnt_d      = cnt_q + 1'b1;
   assign wait_ge    = (cnt_q >= wait_cyc);
   assign timeout_ge = (cnt_q >= ping_timeout_cyc_i);
 
@@ -202,7 +199,12 @@ module alert_handler_ping_timer (
       cnt_q   <= '0;
     end else begin
       state_q <= state_d;
-      cnt_q   <= cnt_d;
+
+      if (cnt_clr) begin
+        cnt_q <= '0;
+      end else if (cnt_en) begin
+        cnt_q <= cnt_d;
+      end
     end
   end
 
