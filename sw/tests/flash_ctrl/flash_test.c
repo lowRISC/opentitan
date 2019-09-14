@@ -7,8 +7,6 @@
 #include "gpio.h"
 #include "uart.h"
 
-#define DATA_MAX 32
-
 /**
  * Delay loop executing within 8 cycles on ibex
  */
@@ -38,100 +36,56 @@ static int usleep(unsigned long usec) { return usleep_ibex(usec); }
 static void break_on_error(uint32_t error) {
   if (error) {
     // inifinitely fetch instructions, will flag an assertion error
-    uart_send_str("Test Failed!\r\n");
+    uart_send_str("FAIL!\r\n");
     while (1) {
-      usleep_ibex(100);
+      usleep(100);
     }
   }
-
-  // otherwise do nothing and continue
 }
 
-#define MK_PRINT(c) (((c < 32) || (c > 126)) ? '_' : c)
-
-int main(int argc, char **argv) {
-  uart_init(UART_BAUD_RATE);
-
-  // Stupid flash testing
-  uint32_t num_words;
-  uint32_t i;
-  uint32_t prog_array[DATA_MAX];
-  uint32_t rd_array[DATA_MAX];
-  uint32_t max_size;
-  uint32_t start_addr;
-  uint32_t data_pat;
-  uint32_t flash_bank1_loc = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
-
-  // wait for flash to finish "initializing"
-  wait_flash_init();
-
-  // enable all access
-  flash_default_region(1, 1, 1);
-
-  // program flash
-  num_words = 32;
-  for (i = 0; i < num_words; i++) {
-    prog_array[i] = i;
-  }
-
-  break_on_error(prog_flash(flash_bank1_loc, num_words, prog_array));
-
-  // read flash back
-  num_words = 32;
-  break_on_error(read_flash(flash_bank1_loc, num_words, rd_array));
-
-  for (i = 0; i < num_words; i++) {
-    if (prog_array[i] != rd_array[i]) {
-      REG32(FLASH_CTRL_SCRATCH(0)) = rd_array[i];
-      break_on_error(1);
+/* Returns 1 if |a| and |b| are equal. */
+int check_arr_eq(const uint32_t *a, const uint32_t *b, uint32_t len) {
+  for (int i = 0; i < len; ++i) {
+    if (a[i] != b[i]) {
+      return 0;
     }
   }
+  return 1;
+}
 
-  // erase flash and verify
-  // The controller auto rounds down to the closest page for page erase
-  break_on_error(page_erase(flash_bank1_loc + FLASH_PAGE_SZ - 1));
+int main(int argc, char **argv) {
+  uint32_t i;
+  uint32_t prog_array[FLASH_WORDS_PER_PAGE];
+  uint32_t rd_array[FLASH_WORDS_PER_PAGE];
+  uint32_t bank1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
 
-  REG32(FLASH_CTRL_SCRATCH(0)) = 0xFACEDEAD;
+  uart_init(UART_BAUD_RATE);
+  flash_init_block();
 
+  // enable all access
+  flash_default_region_access(1, 1, 1);
+  break_on_error(flash_page_erase(bank1_addr));
+  flash_write_scratch_reg(0xFACEDEAD);
   // read flash back via host to ensure everything is cleared
-  for (i = 0; i < 256; i++) {
-    if (REG32(flash_bank1_loc + i * 4) != 0xFFFFFFFF) {
-      REG32(FLASH_CTRL_SCRATCH(0)) = 0xDEADBEEF;
+  for (i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+    if (REG32(bank1_addr + i * 4) != 0xFFFFFFFF) {
+      flash_write_scratch_reg(0xDEADBEEF);
       break_on_error(1);
     }
   }
 
   // do 4K programming
   // employ the live programming method where overall payload >> flash fifo size
-  max_size = 1024;
-  start_addr = flash_bank1_loc + 0x8c68;
-  setup_flash_prog(start_addr, max_size);
-
-  for (i = 0; i < max_size; i++) {
-    data_pat = (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
-    REG32(FLASH_CTRL_PROG_FIFO(0)) = data_pat + i;
+  for (i = 0; i < ARRAYSIZE(prog_array); i++) {
+    prog_array[i] = i + (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
   }
-
-  // wait for operation finish
-  wait_done_and_ack();
-
-  // read back 4K programming
-  for (i = 0; i < max_size; i++) {
-    data_pat = (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
-
-    if (REG32(start_addr + i * 4) != data_pat + i) {
-      REG32(FLASH_CTRL_SCRATCH(0)) = i << 16 | 0xDEAD;
-      break_on_error(1);
-    }
-  }
+  break_on_error(flash_write(bank1_addr, prog_array, ARRAYSIZE(prog_array)));
+  break_on_error(flash_read(bank1_addr, ARRAYSIZE(rd_array), rd_array));
+  break_on_error(!check_arr_eq(rd_array, prog_array, ARRAYSIZE(rd_array)));
 
   /////////////////////////////////////////////////////////////
   // Begin flash memory protection testing
   /////////////////////////////////////////////////////////////
-
-  // turn off default region all access
-  flash_default_region(0, 0, 0);
-
   uint32_t region_base_page = FLASH_PAGES_PER_BANK;
   uint32_t region_size = 1;
   uint32_t good_addr_start =
@@ -151,13 +105,20 @@ int main(int argc, char **argv) {
       1,                 // allow program
       1                  // allow erase
   };
-  flash_cfg_region(region0);
 
+  // initialize good and bad regions.
+  break_on_error(flash_page_erase(good_addr_start));
+  break_on_error(flash_page_erase(bad_addr_start));
+
+  // turn off default region all access
+  flash_default_region_access(0, 0, 0);
+  flash_cfg_region(&region0);
+
+  // expect write to fail.
   for (uint32_t i = 0; i < good_words + bad_words; i++) {
     prog_array[i] = 0xA5A5A5A5 + i;
   }
-
-  break_on_error(!prog_flash(chk_addr, good_words + bad_words, prog_array));
+  break_on_error(!flash_write(chk_addr, prog_array, good_words + bad_words));
 
   // the good words should match
   for (uint32_t i = 0; i < good_words; i++) {
@@ -174,10 +135,10 @@ int main(int argc, char **argv) {
   }
 
   // attempt to erase bad page, should error
-  break_on_error(!page_erase(bad_addr_start));
+  break_on_error(!flash_page_erase(bad_addr_start));
 
   // erase the good page
-  break_on_error(page_erase(good_addr_start));
+  break_on_error(flash_page_erase(good_addr_start));
 
   // double check erase results
   for (uint32_t i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
@@ -186,7 +147,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  // cleanly terminiate execution
-  uart_send_str("Test Passed!\r\n");
+  // cleanly terminate execution
+  uart_send_str("PASS!\r\n");
   __asm__ volatile("wfi;");
 }

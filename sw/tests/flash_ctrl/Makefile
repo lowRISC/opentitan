@@ -4,8 +4,8 @@
 #
 # Generate a baremetal application for the microcontroller
 
-NAME         = hello_flash
-SRCS         = hello_flash.c
+NAME         = flash_test
+SRCS         = flash_test.c
 PROGRAM_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 include ${PROGRAM_DIR}/../../exts/common/options.mk
