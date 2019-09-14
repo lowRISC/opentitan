@@ -7,7 +7,7 @@ _Make sure you followed the install instructions to [prepare the system](install
 ## Building software
 
 ```console
-$ cd $REPO_TOP/sw/hello_world
+$ cd $REPO_TOP/sw/examples/hello_world
 $ make CC=/tools/riscv/bin/riscv32-unknown-elf-gcc
 ```
 

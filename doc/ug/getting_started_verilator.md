@@ -28,7 +28,7 @@ For that purpose compile the demo program with "simulation" settings, which adju
 ```console
 $ cd $REPO_TOP/sw/boot_rom
 $ make clean && make SIM=1
-$ cd $REPO_TOP/sw/hello_world
+$ cd $REPO_TOP/sw/examples/hello_world
 $ make clean && make SIM=1
 ```
 
@@ -39,7 +39,7 @@ The program listed after `--rominit` and `--flashinit` are loaded into the syste
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
   --rominit=sw/boot_rom/boot_rom.vmem \
-  --flashinit=sw/tests/hello_world/hello_world.vmem
+  --flashinit=sw/examples/hello_world/hello_world.vmem
 ```
 
 To stop the simulation press CTRL-c.
@@ -182,6 +182,6 @@ Tracing slows down the simulation by roughly factor of 1000.
 
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --meminit=sw/hello_world/hello_world.vmem --trace
+$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --meminit=sw/examples/hello_world/hello_world.vmem --trace
 $ gtkwave sim.fst
 ```
