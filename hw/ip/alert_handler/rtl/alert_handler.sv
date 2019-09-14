@@ -205,4 +205,3 @@ module alert_handler (
   `ASSERT_INIT(CheckNEscSev,   alert_pkg::N_ESC_SEV <= 8)
 
 endmodule
-

@@ -49,8 +49,3 @@ module alert_handler_class (
   end
 
 endmodule : alert_handler_class
-
-
-
-
-

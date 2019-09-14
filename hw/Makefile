@@ -2,14 +2,15 @@ CUR_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PRJ_DIR := $(realpath ${CUR_DIR}/../)
 export PRJ_DIR
 
-IPS ?= uart       \
-       gpio       \
-       rv_plic    \
-       flash_ctrl \
-       spi_device \
-       rv_timer   \
-       hmac       \
-       usbuart
+IPS ?= uart          \
+       gpio          \
+       rv_plic       \
+       flash_ctrl    \
+       spi_device    \
+       rv_timer      \
+       hmac          \
+       usbuart       \
+       alert_handler
 
 TOPS ?= top_earlgrey
 

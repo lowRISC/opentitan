@@ -24,7 +24,7 @@ module alert_handler_esc_timer (
   input                                   accum_trig_i,   // this will trigger escalation
   input                                   timeout_en_i,   // enables timeout
   input        [alert_pkg::EscCntDw-1:0]  timeout_cyc_i,  // interrupt timeout. 0 = disabled
-  input        [alert_pkg::N_ESC_SEV-1:0] esc_en_i,       // escalation signal enables a
+  input        [alert_pkg::N_ESC_SEV-1:0] esc_en_i,       // escalation signal enables
   input        [alert_pkg::N_ESC_SEV-1:0]
                [alert_pkg::PHASE_DW-1:0]  esc_map_i,      // escalation signal / phase map
   input        [alert_pkg::N_PHASES-1:0]
@@ -47,27 +47,22 @@ module alert_handler_esc_timer (
   logic [alert_pkg::EscCntDw-1:0] cnt_d, cnt_q;
 
   // escalation counter, used for all phases and the timeout
-  assign cnt_d = (cnt_en && cnt_clr) ? alert_pkg::EscCntDw'(1'b1) :
-                 (cnt_clr)           ? '0                         :
-                 (cnt_en)            ? cnt_q + 1'b1               :
-                                       cnt_q;
+  assign cnt_d = cnt_q + 1'b1;
 
   // current state output
   assign esc_state_o = state_q;
   assign esc_cnt_o   = cnt_q;
 
-  // threshold test, mux the thresholds depending on the current state
+  // threshold test, the thresholds are muxed further below
+  // depending on the current state
   logic [alert_pkg::EscCntDw-1:0] thresh;
-  logic esc_is_on;
-  logic [1:0] phase_idx;
-  assign esc_is_on = state_q[2];
-  assign phase_idx = state_q[1:0];
-  assign thresh    = (esc_is_on) ? phase_cyc_i[phase_idx] : timeout_cyc_i;
   assign cnt_ge    = (cnt_q >= thresh);
 
   //////////////////////////////////////////////////////
   // Main FSM
   //////////////////////////////////////////////////////
+
+  logic [alert_pkg::N_PHASES-1:0] phase_oh;
 
   always_comb begin : p_fsm
     // default
@@ -75,6 +70,8 @@ module alert_handler_esc_timer (
     cnt_en     = 1'b0;
     cnt_clr    = 1'b0;
     esc_trig_o = 1'b0;
+    phase_oh   = '0;
+    thresh     = timeout_cyc_i;
 
     unique case (state_q)
       ////////////////////////////////////
@@ -119,6 +116,9 @@ module alert_handler_esc_timer (
       ////////////////////////////////////
       // note: autolocking the clear signal is done in the regfile
       alert_pkg::Phase0: begin
+        phase_oh[0] = 1'b1;
+        thresh      = phase_cyc_i[0];
+
         if (clr_i) begin
           state_d = alert_pkg::Idle;
           cnt_clr = 1'b1;
@@ -132,6 +132,9 @@ module alert_handler_esc_timer (
       end
       ////////////////////////////////////
       alert_pkg::Phase1: begin
+        phase_oh[1] = 1'b1;
+        thresh      = phase_cyc_i[1];
+
         if (clr_i) begin
           state_d = alert_pkg::Idle;
           cnt_clr = 1'b1;
@@ -145,6 +148,9 @@ module alert_handler_esc_timer (
       end
       ////////////////////////////////////
       alert_pkg::Phase2: begin
+        phase_oh[2] = 1'b1;
+        thresh      = phase_cyc_i[2];
+
         if (clr_i) begin
           state_d = alert_pkg::Idle;
           cnt_clr = 1'b1;
@@ -158,6 +164,9 @@ module alert_handler_esc_timer (
       end
       ////////////////////////////////////
       alert_pkg::Phase3: begin
+        phase_oh[3] = 1'b1;
+        thresh      = phase_cyc_i[3];
+
         if (clr_i) begin
           state_d = alert_pkg::Idle;
           cnt_clr = 1'b1;
@@ -182,11 +191,12 @@ module alert_handler_esc_timer (
     endcase
   end
 
-  for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_esc_en
-    // check whether we are in the corresponding phase and whether
-    // the signal is enabled
-    assign esc_sig_en_o[k] = esc_en_i[k] &
-                             (alert_pkg::cstate_e'({1'b1, esc_map_i[k]}) == state_q);
+  logic [alert_pkg::N_ESC_SEV-1:0][alert_pkg::N_PHASES-1:0] esc_map_oh;
+  for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_phase_map
+    // generate configuration mask for escalation enable signals
+    assign esc_map_oh[k] = alert_pkg::N_ESC_SEV'(esc_en_i[k]) << esc_map_i[k];
+    // mask reduce current phase state vector
+    assign esc_sig_en_o[k] = |(esc_map_oh[k] & phase_oh);
   end
 
   //////////////////////////////////////////////////////
@@ -200,7 +210,15 @@ module alert_handler_esc_timer (
       cnt_q   <= '0;
     end else begin
       state_q <= state_d;
-      cnt_q   <= cnt_d;
+
+      // escalation counter
+      if (cnt_en && cnt_clr) begin
+        cnt_q <= alert_pkg::EscCntDw'(1'b1);
+      end else if (cnt_clr) begin
+        cnt_q <= '0;
+      end else if (cnt_en) begin
+        cnt_q <= cnt_d;
+      end
     end
   end
 

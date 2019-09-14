@@ -1,0 +1,32 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:alert_handler:0.1"
+description: "Alert Handler"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+    files:
+      - rtl/alert_pkg.sv
+      - rtl/alert_handler_reg_pkg.sv
+      - rtl/alert_handler_reg_top.sv
+      - rtl/alert_handler_reg_wrap.sv
+      - rtl/alert_handler_class.sv
+      - rtl/alert_handler_ping_timer.sv
+      - rtl/alert_handler_esc_timer.sv
+      - rtl/alert_handler_accu.sv
+      - rtl/alert_handler.sv
+    file_type: systemVerilogSource
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: alert_handler
+
+
