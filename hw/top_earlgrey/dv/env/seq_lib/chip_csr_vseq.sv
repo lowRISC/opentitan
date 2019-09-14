@@ -4,9 +4,9 @@
 
 `define add_ip_csr_exclusions(ip) \
   begin \
-    ip``_csr_vseq m_``ip``_csr_vseq; \
-    m_``ip``_csr_vseq = ip``_csr_vseq::type_id::create({"m_", `"ip`", "_csr_vseq"}); \
-    m_``ip``_csr_vseq.add_csr_exclusions(csr_test_type, csr_excl, {scope, ".", `"ip`"}); \
+    ip``_common_vseq m_``ip``_common_vseq; \
+    m_``ip``_common_vseq = ip``_common_vseq::type_id::create({"m_", `"ip`", "_common_vseq"}); \
+    m_``ip``_common_vseq.add_csr_exclusions(csr_test_type, csr_excl, {scope, ".", `"ip`"}); \
   end
 
 class chip_csr_vseq extends chip_base_vseq;
