@@ -44,7 +44,7 @@ $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_v
 Build hello_world program:
 
 ```shell
-$ cd ${REPO_TOP}/sw/hello_world
+$ cd ${REPO_TOP}/sw/examples/hello_world
 $ make clean && make SIM=1
 ```
 
@@ -55,7 +55,7 @@ output in the UART console.
 ```shell
 $ cd ${REPO_TOP}/util/spiflash
 $ make clean && make
-$ ./spiflash --input=../../sw/hello_world/hello_world.bin --verilator=/dev/pts/3
+$ ./spiflash --input=../../sw/examples/hello_world/hello_world.bin --verilator=/dev/pts/3
 ```
 
 ## TODOs

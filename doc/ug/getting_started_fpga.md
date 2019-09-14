@@ -22,7 +22,7 @@ Follow the install instructions to [prepare the system](install_instructions.md#
 Synthesizing a design for a FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to run from the internal
-SRAM. This is pulled in from the `sw/hello_world directory` (see the
+SRAM. This is pulled in from the `sw/examples/hello_world directory` (see the
 `parameters:` section of the `top_earlgrey_nexysvideo.core` file). At
 the moment there is no check that the `hello_world.vmem` is up to
 date, so it is best to follow the instructions to [Build
@@ -190,7 +190,7 @@ This will update the symbols which are used to get information about the program
 It is especially useful in the context of our `boot_rom.elf`, which resides in the ROM region, which will eventually jump to a different executable as part of the flash region.
 
 ```console
-(gdb) file sw/tests/hello_world/hello_world.elf
+(gdb) file sw/examples/hello_world/hello_world.elf
 (gdb) disassemble 0x200005c0,0x200005c0+16*4
 ```
 

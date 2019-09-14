@@ -22,7 +22,7 @@ filesets:
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
-  # --SRAM_INIT_FILE=$PWD/sw/hello_world/hello_world.vmem
+  # --SRAM_INIT_FILE=$PWD/sw/examples/hello_world/hello_world.vmem
   # XXX: The VMEM file should be added to the sources of the Vivado project to
   # make the Vivado dependency tracking work. However this requires changes to
   # fusesoc first.

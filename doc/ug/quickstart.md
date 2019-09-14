@@ -12,9 +12,9 @@ Build the simulator and the software and then run the simulation
 $ cd $REPO_TOP
 $ fusesoc --cores-root . sim --build-only lowrisc:systems:top_earlgrey_verilator
 $ make SIM=1 -C sw/boot_rom clean all
-$ make SIM=1 -C sw/tests/hello_world clean all
+$ make SIM=1 -C sw/examples/hello_world clean all
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --rominit=sw/boot_rom/boot_rom.vmem \
-$ --flashinit=sw/tests/hello_world/hello_world.vmem
+$ --flashinit=sw/examples/hello_world/hello_world.vmem
 ```
 
 See the [getting started](getting_started_verilator.md) for a complete guide.
@@ -30,7 +30,7 @@ Build the software and the bitstream and then program the board
 ```console
 $ cd $REPO_TOP
 $ make -C sw/boot_rom clean all
-$ make -C sw/tests/hello_world clean all
+$ make -C sw/examples/hello_world clean all
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
 $ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
