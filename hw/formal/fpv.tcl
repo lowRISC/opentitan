@@ -93,69 +93,86 @@ assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_device\w*\.respo
 # For sram2tlul, input tl_i.a_ready is constrained by below asssertion
 assume -from_assert -remove_original {sram2tlul.validNotReady*}
 
+# Input scanmode_i should not be X
+assume -from_assert -remove_original -regexp {^\w*\.scanmodeKnown}
+
 #-------------------------------------------------------------------------
 # TODO(cindychip): eventually remove below assert disable lines
 # To reduce prohibitive runtimes, below assertions are simply turned off for now
 #-------------------------------------------------------------------------
 
 # spi_device
-assert -disable {spi_device.u_tlul2sram.tlul_assert_host.responseSize*}
-assert -disable {spi_device.u_tlul2sram.tlul_assert_host.onlyOnePendingReq*}
-assert -disable {spi_device*.responseMustHaveReq}
-assert -disable {spi_device*.checkResponseOpcode}
-assert -disable {spi_device.u_reg.u_socket.tlul_assert_device.gen_assert*.tlul_assert.responseSize*}
-assert -disable {spi_device.u_reg.u_socket.tlul_assert_device.gen_assert*.tlul_assert.onlyOnePendingReq*}
-assert -disable {spi_device.u_reg.u_socket.tlul_assert_host.responseSizeMustEqualReq*}
-assert -disable {spi_device.tlul_assert_host.responseSizeMustEqualReq*}
+assert -disable {*spi_device.u_tlul2sram.tlul_assert_host.responseSize*}
+assert -disable {*spi_device.u_tlul2sram.tlul_assert_host.onlyOnePendingReq*}
+assert -disable {*spi_device.tlul_assert_host.responseMustHaveReq*}
+assert -disable {*spi_device.tlul_assert_host.checkResponseOpcode*}
+assert -disable {*spi_device.u_reg.tlul_assert_host.responseMustHaveReq*}
+assert -disable {*spi_device.u_reg.tlul_assert_host.checkResponseOpcode*}
+assert -disable {*spi_device.u_reg.u_socket.tlul_assert_host.responseMustHaveReq*}
+assert -disable {*spi_device.u_reg.u_socket.tlul_assert_host.checkResponseOpcode*}
+assert -disable {*spi_device.u_reg.u_socket.tlul_assert_device.gen_assert*.tlul_assert.responseSize*}
+assert -disable {*spi_device.u_reg.u_socket.tlul_assert_device.gen_assert*.tlul_assert.onlyOnePendingReq*}
+assert -disable {*spi_device.u_reg.u_socket.tlul_assert_host.responseSizeMustEqualReq*}
+assert -disable {*spi_device.tlul_assert_host.responseSizeMustEqualReq*}
 
 # hmac
-assert -disable {hmac.u_tlul_adapter.tlul_assert_host.checkResponse*}
-assert -disable {hmac.u_tlul_adapter.tlul_assert_host.responseSize*}
-assert -disable {hmac.u_tlul_adapter.tlul_assert_host.onlyOnePendingReq*}
-assert -disable {hmac.tlul_assert_host.response*Must*}
-assert -disable {hmac.tlul_assert_host.checkResponseOpcode*}
-assert -disable {hmac.u_reg.u_socket.tlul_assert_*.response*Must*}
-assert -disable {hmac.u_reg.u_socket.tlul_assert_*.*ResponseOpcode}
-assert -disable {hmac.u_reg.u_socket.tlul_assert_*.onlyOnePendingReq*}
+assert -disable {*hmac.u_tlul_adapter.tlul_assert_host.onlyOnePendingReq*}
+assert -disable {*hmac.u_reg.u_socket.tlul_assert_device.gen_assert[0]*onlyOnePendingReq*}
 
 # flash_ctrl
-assert -disable {flash_ctrl.tlul_assert_host.response*Must*}
-assert -disable {flash_ctrl.u_reg.u_socket.tlul_assert_*.response*Must*}
-assert -disable {flash_ctrl.u_reg.u_socket.tlul_assert_device.gen_assert*.tlul_assert.onlyOnePendingReq*}
+assert -disable {*flash_ctrl.tlul_assert_host.response*Must*}
+assert -disable {*flash_ctrl.u_reg.u_socket.tlul_assert_*.response*Must*}
+assert -disable {*flash_ctrl.u_reg.u_socket.tlul_assert_device.gen_assert*.tlul_assert.onlyOnePendingReq*}
 
 # xbar
-assert -disable {xbar_main.tlul_assert_device_*.sizeMatches*}
-assert -disable {xbar_main.tlul_assert_device_*.legalA*}
-assert -disable {xbar_main.tlul_assert_device_*.addressAligned*}
-assert -disable {xbar_main.tlul_assert_device_*.maskMustBeCont*}
-assert -disable {xbar_main.tlul_assert_host_*.legal*}
-assert -disable {xbar_main.u_*.tlul_assert_host.legalDParam*}
-assert -disable {xbar_main.u_*.tlul_assert_device.response*}
-assert -disable {xbar_main.u_*.tlul_assert_device.legalA*}
-assert -disable {xbar_main.u_*.tlul_assert_device.addressAligned*}
-assert -disable {xbar_main.u_*.tlul_assert_device.checkResponseOp*}
-assert -disable {xbar_main.u_*.tlul_assert_device.maskMustBeCont*}
-assert -disable {xbar_main.u_*.tlul_assert_device.sizeMatches*}
-assert -disable {xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.maskMustBeCont*}
-assert -disable {xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.addressAlignedToSize*}
-assert -disable {xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.legal*}
-assert -disable {xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.sizeMatches*}
+assert -disable {*xbar_main.tlul_assert_device_*.sizeMatches*}
+assert -disable {*xbar_main.tlul_assert_device_*.legalA*}
+assert -disable {*xbar_main.tlul_assert_device_*.addressAligned*}
+assert -disable {*xbar_main.tlul_assert_device_*.maskMustBeCont*}
+assert -disable {*xbar_main.tlul_assert_host_*.legal*}
+assert -disable {*xbar_main.u_*.tlul_assert_host.legalDParam*}
+assert -disable {*xbar_main.u_*.tlul_assert_device.response*}
+assert -disable {*xbar_main.u_*.tlul_assert_device.legalA*}
+assert -disable {*xbar_main.u_*.tlul_assert_device.addressAligned*}
+assert -disable {*xbar_main.u_*.tlul_assert_device.checkResponseOp*}
+assert -disable {*xbar_main.u_*.tlul_assert_device.maskMustBeCont*}
+assert -disable {*xbar_main.u_*.tlul_assert_device.sizeMatches*}
+assert -disable {*xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.maskMustBeCont*}
+assert -disable {*xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.addressAlignedToSize*}
+assert -disable {*xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.legal*}
+assert -disable {*xbar_main.u_*.tlul_assert_*.gen_assert*.tlul_assert.sizeMatches*}
 
 # top_earlgrey
+assert -disable {top_earlgrey.*addressAligned*}
+assert -disable {top_earlgrey.*tlul_assert*Must*}
+assert -disable {top_earlgrey.*onlyOne*}
+assert -disable {top_earlgrey.*Response*}
+assert -disable {top_earlgrey.*legal*}
 assert -disable {top_earlgrey.u_xbar_main.u_sm1_*.rspIdInRange}
-assert -disable {top_earlgrey.hmac.u_reg.reAfter*}
-assert -disable {top_earlgrey.hmac.u_tlul_adapter.rvalidHighWhenRsp*}
-assert -disable {top_earlgrey.core.u_core.load_store_unit_i._assert_2*}
-assert -disable {top_earlgrey.uart.uart_core.u_uart_rxfifo.depthShall*}
+assert -disable {top_earlgrey.u_xbar_main.*depthShall*}
+assert -disable {top_earlgrey.u_xbar_main.*tlul_assert*DataKnown*}
+assert -disable {top_earlgrey.u_dm_top.*tlul_assert_*DataKnown*}
 
-# TODO: JasperGold reports combo loops inside tlul_assert, which should
-# be debugged further. Below line works around this issue
-assert -disable {top_earlgrey.*tlul_assert_*}
+# TODO: If scanmode is set to 0, then JasperGold errors out complaining
+# about combo loops, which should be debugged further. For now, below
+# lines work around this issue
+if {$env(FPV_TOP) == "top_earlgrey"} {
+  assume {scanmode_i == 1}
+}
 
 #-------------------------------------------------------------------------
-# prove all assertions & covers, report
+# configure proofgrid
 #-------------------------------------------------------------------------
-set_proofgrid_per_engine_max_local_jobs 8
+set_proofgrid_per_engine_max_local_jobs 16
+
+# Uncomment below 2 lines when using LSF:
+# set_proofgrid_mode lsf
+# set_proofgrid_per_engine_max_jobs 16
+
+#-------------------------------------------------------------------------
+# prove all assertions & report
+#-------------------------------------------------------------------------
+get_reset_info -x_value -with_reset_pin
 prove -all
 report
 

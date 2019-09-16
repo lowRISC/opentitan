@@ -435,6 +435,9 @@ module top_earlgrey (
 % endfor
   );
 
+  // make sure scanmode_i is never X (including during reset)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+
 endmodule
 <%def name="parameterize(v)">\
     ## value type
