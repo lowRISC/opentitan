@@ -64,7 +64,7 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
       end else begin
         d_valid_delay = $urandom_range(cfg.d_valid_delay_min, cfg.d_valid_delay_max);
       end
-      repeat (d_valid_delay) @(vif.host_cb);
+      repeat (d_valid_delay) @(vif.device_cb);
       vif.device_cb.d2h.d_valid  <= 1'b1;
       vif.device_cb.d2h.d_opcode <= tlul_pkg::tl_d_op_e'(rsp.d_opcode);
       vif.device_cb.d2h.d_data   <= rsp.d_data;
