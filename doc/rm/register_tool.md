@@ -307,7 +307,7 @@ Other error responses (always sent, regardless of `devmode_i`) include for the f
   * I.e. writes of size 16b to registers > 16b will cause error (explicitly: if it has field bits within `[31:16]`)
 * TL-UL writes of size smaller than 32b that are not word-aligned
   * I.e. writes of size 8b or 16b that are not to an address that is 4B aligned return in error.
-￼
+
 Reads of size smaller than full word (32b) return the full register content and do not signal error.
 Reads response data is always in its byte-channel, i.e. a one-byte read to `address 0x3` will return the full word with the correct MSB in bits `[31:24]` on the TL-UL response bus (as well as the not-asked-for bytes 2:0 in `[23:0]`).
 

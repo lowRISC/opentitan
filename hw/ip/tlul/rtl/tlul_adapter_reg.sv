@@ -35,18 +35,27 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   logic a_ack, d_ack;
 
   logic [RegDw-1:0] rdata;
-  logic             error;
+  logic             error, err_internal;
+
+  logic addr_align_err;     // Size and alignment
+  logic malformed_meta_err; // User signal format error or unsupported
+  logic opcode_err;         // opcode isn't supported
 
   logic [IW-1:0]  reqid;
   logic [SZW-1:0] reqsz;
   tl_d_op_e       rspop;
 
+  logic rd_req, wr_req;
+
   assign a_ack   = tl_i.a_valid & tl_o.a_ready;
   assign d_ack   = tl_o.d_valid & tl_i.d_ready;
   // Request signal
-  assign we_o    = a_ack & ((tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData));
-  assign re_o    = a_ack & (tl_i.a_opcode == Get);
-  assign addr_o  = tl_i.a_address[RegAw-1:0];
+  assign wr_req  = a_ack & ((tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData));
+  assign rd_req  = a_ack & (tl_i.a_opcode == Get);
+
+  assign we_o    = wr_req & ~err_internal;
+  assign re_o    = rd_req & ~err_internal;
+  assign addr_o  = {tl_i.a_address[RegAw-1:2], 2'b00}; // generate always word-align
   assign wdata_o = tl_i.a_data;
   assign be_o    = tl_i.a_mask;
 
@@ -74,8 +83,8 @@ module tlul_adapter_reg import tlul_pkg::*; #(
       rdata  <= '0;
       error <= 1'b0;
     end else if (a_ack) begin
-      rdata <= rdata_i;
-      error <= error_i | (tl_i.a_user.parity_en == 1'b1);
+      rdata <= (err_internal) ? '1 : rdata_i;
+      error <= error_i | err_internal;
     end
   end
 
@@ -91,6 +100,48 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     d_user:  '0,
     d_error: error
   };
+
+  //= Error Handling ==========================================================
+  assign err_internal = addr_align_err | malformed_meta_err | opcode_err ;
+
+  // malformed_meta_err
+  //    Raised if not supported feature is turned on or user signal has malformed
+  assign malformed_meta_err = (tl_i.a_user.parity_en == 1'b1);
+
+  // addr_align_err
+  //    Raised if addr isn't aligned with the size
+  always_comb begin
+    if (rd_req) begin
+      unique case (tl_i.a_size)
+        'h0: begin // 1 Byte
+          addr_align_err = 1'b0;
+        end
+
+        'h1: begin // 2 Byte
+          addr_align_err = tl_i.a_address[0];
+        end
+
+        'h2: begin // 4 Byte
+          addr_align_err = |tl_i.a_address[1:0];
+        end
+
+        default: begin
+          addr_align_err = 1'b1;
+        end
+      endcase
+    end else if (wr_req) begin
+      // Only word-align is accepted based on comportability spec
+      addr_align_err = |tl_i.a_address[1:0];
+    end else begin
+      // No request
+      addr_align_err = 1'b0;
+    end
+  end
+
+  // opcode_err
+  //    Register interface and TL-UL only supports PutPartialData, PutFullData, Get
+  //    Rasies an error if not.
+  assign opcode_err = a_ack & ~(wr_req | rd_req);
 
 
   `ASSERT_INIT(MatchedWidthAssert, RegDw == top_pkg::TL_DW)
