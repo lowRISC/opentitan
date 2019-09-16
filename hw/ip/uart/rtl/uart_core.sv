@@ -8,6 +8,7 @@
 module uart_core (
   input                  clk_i,
   input                  rst_ni,
+  input                  scanmode_i,
 
   input  uart_reg_pkg::uart_reg2hw_t reg2hw,
   output uart_reg_pkg::uart_hw2reg_t hw2reg,
@@ -24,10 +25,6 @@ module uart_core (
   output logic           intr_rx_timeout_o,
   output logic           intr_rx_parity_err_o
 );
-
-  // TODO: same as in spi_device.sv, add input scanmode_i to module
-  logic scanmode_i;
-  assign scanmode_i = 1'b0;
 
   import uart_reg_pkg::*;
 

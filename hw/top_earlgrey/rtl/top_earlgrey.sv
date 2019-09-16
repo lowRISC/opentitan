@@ -488,4 +488,7 @@ module top_earlgrey (
     .scanmode_i
   );
 
+  // make sure scanmode_i is never X (including during reset)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+
 endmodule
