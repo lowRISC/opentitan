@@ -7,8 +7,10 @@
 // ---------------------------------------------
 interface tl_if(input clk, input rst_n);
 
-  tlul_pkg::tl_h2d_t h2d; // req
-  tlul_pkg::tl_d2h_t d2h; // rsp
+  wire tlul_pkg::tl_h2d_t h2d; // req
+  wire tlul_pkg::tl_d2h_t d2h; // rsp
+  modport dut_host_mp(output h2d, input d2h);
+  modport dut_device_mp(input h2d, output d2h);
 
   clocking host_cb @(posedge clk);
     input  rst_n;
