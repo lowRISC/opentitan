@@ -48,16 +48,15 @@ ifneq (${CAPP_NAME},)
 	# Recursive make calls
 	make distclean -C ${SW_DIR}/boot_rom
 	make -C ${SW_DIR}/boot_rom
-	make distclean -C ${SW_DIR}/tests/${CAPP_NAME} MAKEFLAGS=$(CAPP_BUILD_OPTS)
-	make -C ${PRJ_DIR}/sw/tests/${CAPP_NAME} MAKEFLAGS=$(CAPP_BUILD_OPTS) \
+	make distclean -C ${SW_DIR}/${CAPP_DIR} MAKEFLAGS=$(CAPP_BUILD_OPTS)
+	make -C ${SW_DIR}/${CAPP_DIR} MAKEFLAGS=$(CAPP_BUILD_OPTS) \
 	PROGRAM_CFLAGS=$(PROGRAM_CFLAGS)
 
 	# Copy outputs over to run area
 	cp $(SW_DIR)/boot_rom/boot_rom.vmem ${RUN_DIR}/rom.vmem
-	cp ${SW_DIR}/tests/${CAPP_NAME}/${CAPP_NAME}.vmem ${RUN_DIR}/main.vmem
-	cp ${SW_DIR}/tests/${CAPP_NAME}/${CAPP_NAME}.dis ${RUN_DIR}/main.dis
-	cp ${SW_DIR}/tests/${CAPP_NAME}/${CAPP_NAME}.map ${RUN_DIR}/main.map
-
+	cp ${SW_DIR}/${CAPP_DIR}/${CAPP_NAME}.vmem ${RUN_DIR}/main.vmem
+	cp ${SW_DIR}/${CAPP_DIR}/${CAPP_NAME}.dis ${RUN_DIR}/main.dis
+	cp ${SW_DIR}/${CAPP_DIR}/${CAPP_NAME}.map ${RUN_DIR}/main.map
 endif
 
 simulate: capp

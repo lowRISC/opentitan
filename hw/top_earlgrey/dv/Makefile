@@ -28,25 +28,30 @@ UVM_TEST        ?= chip_base_test
 UVM_TEST_SEQ    ?= chip_base_vseq
 
 ifeq (${TEST_NAME},chip_sanity)
+  CAPP_DIR       = examples/hello_world
   CAPP_NAME      = hello_world
 endif
 
-ifeq (${TEST_NAME},chip_sanity_flash)
-  CAPP_NAME      = hello_flash
+ifeq (${TEST_NAME},chip_flash_test)
+  CAPP_DIR       = tests/flash_ctrl
+  CAPP_NAME      = flash_test
   RUN_OPTS      += +cpu_test_timeout_ns=15000000
 endif
 
-ifeq (${TEST_NAME},chip_sanity_hmac)
-  CAPP_NAME      = sanity_hmac
+ifeq (${TEST_NAME},chip_sha256_test)
+  CAPP_DIR       = tests/hmac
+  CAPP_NAME      = sha256_test
   RUN_OPTS      += +cpu_test_timeout_ns=4000000
 endif
 
-ifeq (${TEST_NAME},chip_sanity_timer)
-  CAPP_NAME      = sanity_timer
+ifeq (${TEST_NAME},chip_rv_timer_test)
+  CAPP_DIR       = tests/rv_timer
+  CAPP_NAME      = rv_timer_test
   RUN_OPTS      += +cpu_test_timeout_ns=4000000
 endif
 
 ifeq (${TEST_NAME},coremark)
+  CAPP_DIR         = coremark
   CAPP_NAME        = coremark
   RUN_OPTS        += +cpu_test_timeout_ns=20000000
   CAPP_BUILD_OPTS += ITERATIONS=1
