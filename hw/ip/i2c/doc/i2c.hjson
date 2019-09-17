@@ -1,0 +1,381 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{ name: "i2c"
+  clock_primary: "clk_fixed"
+  bus_device: "tlul"
+  bus_host: "none"
+  // INPUT pins
+  available_input_list: [
+    { name: "sda_rx", desc: "Serial input data bit" }
+    { name: "scl_rx", desc: "Serial input clock bit" }
+  ]
+  // OUTPUT pins
+  available_output_list: [
+    { name: "sda_tx", desc: "Serial output data bit" }
+    { name: "scl_tx", desc: "Serial output clock bit" }
+  ]
+  // INTERRUPT pins
+  interrupt_list: [
+    { name: "fmt_watermark"
+      desc: "raised when the FMT FIFO depth falls below the lowwater mark."
+    }
+    { name: "rx_watermark"
+      desc: "raised if the RX FIFO is past the highwater mark."
+    }
+    { name: "fmt_overflow"
+      desc: "raised if the FMT FIFO has overflowed."
+    }
+    { name: "rx_overflow"
+      desc: "raised if the RX FIFO has overflowed."
+    }
+    { name: "nak"
+      desc: "raised if there is no ACK in response to an address or data write"
+    }
+    { name: "scl_interference"
+      desc: "raised if the SCL line drops early (not supported without clock synchronization)."
+    }
+    { name: "sda_interference"
+      desc: "raised if the SDA line goes low when master is trying to assert high"
+    }
+    { name: "stretch_timeout"
+      desc: "raised if target stretches the clock beyond the allowed timeout period"
+    }
+    { name: "sda_unstable"
+      desc: "raised if the target does not assert a constant value of SDA during transmission."
+    }
+  ]
+
+  // REGISTER definition
+  regwidth: "32"
+  registers: [
+    // CTRL register
+    { name: "CTRL"
+      desc: "I2C control register (Functions TBD)"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          resval: "0"
+          name: "ENABLEHOST"
+          desc: '''
+	        Enable Host I2C functionality
+                '''
+        }
+      ]
+    }
+    { name:     "STATUS"
+      desc:     "I2C live status register"
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwext:    "true"
+      hwre:     "true"
+      fields: [
+        { bits: "0"
+          name: "FMTFULL"
+          desc: "TX buffer is full"
+        }
+        { bits: "1"
+          name: "RXFULL"
+          desc: "RX buffer is full"
+        }
+        { bits: "2"
+          name: "FMTEMPTY"
+          desc: "FMT FIFO is empty"
+          resval: "1"
+        }
+	{ bits: "5"
+          name: "RXEMPTY"
+          desc: "RX FIFO is empty"
+          resval: "1"
+        }
+        { bits: "3"
+          name: "HOSTIDLE"
+          desc: "Host functionality is idle. No Host transaction is in progress"
+          resval: "1"
+        }
+        { bits: "4"
+          name: "TARGETIDLE"
+          desc: "Target functionality is idle No Target transaction is in progress"
+          resval: "1"
+        }
+      ]
+    }
+    { name: "RDATA"
+      desc: "I2C read data"
+      swaccess: "ro"
+      hwext: "true"
+      hwre: "true"
+      fields: [
+        {bits: "7:0"}
+      ]
+    }
+    { name: "FDATA"
+      desc: "I2C Format Data"
+      swaccess: "wo"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "7:0"
+          name: "FBYTE"
+          desc: "Format Byte. Directly transmitted if no flags are set."
+        }
+        { bits: "8"
+          name: "START"
+	  desc: "Issue a START condition before transmitting BYTE."
+        }
+        { bits: "9"
+          name: "STOP"
+          desc: "Issue a STOP condition after this operation"
+	}
+        { bits: "10"
+          name: "READ"
+          desc: "Read BYTE bytes from I2C. (256 if BYTE==0)"
+        }
+        { bits: "11"
+          name: "RCONT"
+          desc: "Do not NAK the last byte read, let the read operation continue"
+        }
+        { bits: "12"
+          name: "NAKOK"
+          desc: "Do not signal an exception if the current byte is not ACK'd"
+        }
+      ]
+    }
+    { name: "FIFO_CTRL"
+      desc: "I2C FIFO control register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "0"
+          swaccess: "wo"
+          name: "RXRST"
+          desc: "RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0"
+        }
+        { bits: "1"
+          swaccess: "wo"
+          name: "FMTRST"
+          desc: "FMT fifo reset. Write 1 to the register resets FMT_FIFO. Read returns 0"
+        }
+        { bits: "4:2"
+          name: "RXILVL"
+          desc: '''Trigger level for RX interrupts. If the FIFO depth exceeds
+                this setting, it raises rx_watermark interrupt.
+                '''
+          enum: [
+            { value: "0",
+              name: "rxlvl1",
+              desc: "1 character"
+            },
+            { value: "1",
+              name: "rxlvl4",
+              desc: "4 characters"
+            },
+            { value: "2",
+              name: "rxlvl8",
+              desc: "8 characters"
+            },
+            { value: "3",
+              name: "rxlvl16",
+              desc: "16 characters"
+            },
+            { value: "4",
+              name: "rxlvl30",
+              desc: "30 characters"
+            },
+          ]
+        }
+        { bits: "6:5"
+          name: "FMTILVL"
+          desc: '''Trigger level for FMT interrupts. If the FIFO depth falls below
+                this setting, it raises fmt_watermark interrupt.
+                '''
+          enum: [
+            { value: "0",
+              name: "fmtlvl1"
+              desc: "1 character"
+            },
+            { value: "1",
+              name: "fmtlvl4",
+              desc: "4 characters"
+            },
+            { value: "2",
+              name: "fmtlvl8",
+              desc: "8 characters"
+            },
+            { value: "3",
+              name: "fmtlvl16",
+              desc: "16 characters"
+            }
+          ]
+        }
+      ]
+    }
+    { name: "FIFO_STATUS"
+      desc: "I2C FIFO status register"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "5:0"
+          name: "FMTLVL"
+          desc: "Current fill level of FMT fifo"
+        }
+        { bits: "21:16"
+          name: "RXLVL"
+          desc: "Current fill level of RX fifo"
+        }
+      ]
+    }
+    { name: "OVRD"
+      desc: "I2C override control register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0",
+          name: "TXOVRDEN",
+          desc: "Override the SDA and SCL TX signals."
+        }
+        { bits: "1",
+          name: "SCLVAL",
+          desc: "Value for SCL Override. Set to 0 to drive TX Low, and set to 1 for high-Z"
+        }
+        { bits: "2",
+          name: "SDAVAL",
+          desc: "Value for SDA Override. Set to 0 to drive TX Low, and set to 1 for high-Z"
+        }
+      ]
+    }
+    { name: "VAL"
+      desc: "Oversampled RX values"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext:    "true"
+      fields: [
+        { bits: "15:0"
+          name: "SCL_RX"
+          desc: '''
+                Last 16 oversampled values of SCL. Most recent bit is bit 0, oldest 15.
+                '''
+        }
+        { bits: "31:16"
+          name: "SDA_RX"
+          desc: '''
+                Last 16 oversampled values of SDA. Most recent bit is bit 16, oldest 31.
+                '''
+        }
+      ]
+    }
+
+    { name: "TIMING0"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "THIGH"
+          desc: "The minimum time to hold SCL high in a given pulse"
+        }
+        { bits: "31:16"
+          name: "TLOW"
+          desc: "The minimum time to hold SCL low between any two SCL pulses"
+        }
+      ]
+    }
+    { name: "TIMING1",
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "T_R"
+          desc: "The nominal rise time to anticipate for the bus (depends on capacitance)"
+        }
+        { bits: "31:16"
+          name: "T_F"
+          desc: "The nominal fall time to anticipate for the bus (influences SDA hold times)"
+        }
+      ]
+    }
+    { name: "TIMING2"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "TSU_STA"
+          desc: "Minimum setup time for repeated start signals"
+        }
+        { bits: "31:16"
+          name: "THD_ST"
+          desc: "Minimum hold time for start signals"
+        }
+      ]
+    }
+    { name: "TIMING3"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "TSU_DAT"
+          desc: "Minimum setup time for data (or ack) bits"
+        }
+        { bits: "31:16"
+          name: "THD_DAT"
+          desc: '''
+                Minimum hold time for data (or ack) bits
+                (Note, where required, the parameters TVD_DAT is taken to be THD_DAT+T_F)
+                '''
+        }
+      ]
+    }
+    { name: "TIMING4"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "TSU_STO"
+          desc: "Minimum setup time for stop signals"
+        }
+        { bits: "31:16"
+          name: "T_BUF"
+          desc: "Minimum time between each STOP signal and the following START signal"
+        }
+      ]
+    }
+    { name: "TIMEOUT_CTRL"
+      desc: "I2C clock stretching timeout control"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "30:0"
+          name: "VAL"
+          desc: "Clock stretching timeout value (in units of input clock frequency)"
+        }
+        { bits: "31"
+          name: "EN"
+          desc: "Enable timeout feature"
+        }
+      ]
+    }
+  ]
+}
