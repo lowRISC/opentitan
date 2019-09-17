@@ -5,15 +5,26 @@
 #include "spi_device.h"
 
 #include "common.h"
-#include "uart.h"
+#include "spi_device_regs.h"
+
+#define SPI_DEVICE0_BASE_ADDR 0x40020000
+#define SPID_SRAM_ADDR SPI_DEVICE_BUFFER(0)
+#define SPID_RXF_BASE 0x000
+#define SPID_RXF_SIZE 0x400
+#define SPID_TXF_BASE 0x600
+#define SPID_TXF_SIZE 0x200
+
+#define SPID_SRAM_SIZE (0x800)
+
+/* Note: these will correctly remove the phase bit */
+#define READ32_RXFPTR(P) \
+  REG32(SPID_SRAM_ADDR + SPID_RXF_BASE + ((P) & (SPID_RXF_SIZE - 1)))
+
+#define ACCESS32_TXFPTR(P) \
+  REG32(SPID_SRAM_ADDR + SPID_TXF_BASE + ((P) & ((SPID_TXF_SIZE - 1) & ~0x3)))
 
 uint32_t calc_depth(uint32_t wptr, uint32_t rptr, uint32_t size);
 
-/**
- * Init SPI Device
- *
- * Configure registers, RXF_ADDR, TXF_ADDR, CTRL.TIMER_V
- */
 void spid_init(void) {
   /* Abort 0 */
   REG32(SPI_DEVICE_CONTROL(0)) =
@@ -79,14 +90,7 @@ uint32_t ptr_inc(uint32_t ptr, uint32_t inc, uint32_t size) {
 
 static int word_aligned(void *p) { return (((int)p & 0x3) == 0); }
 
-/**
- * Send data over SPI
- *
- * @param data pointer to buffer of uint_8 to send
- * @param len_bytes number of bytes to send
- * @return number of bytes actually sent (<len if no space in the fifo)
- */
-size_t spid_send(void *data, size_t len_bytes) {
+uint32_t spid_send(void *data, uint32_t len_bytes) {
   uint32_t txf_ptr, txf_wptr, txf_rptr;
   uint32_t fifo_inuse_bytes;
   uint32_t msg_length_bytes;
@@ -145,12 +149,7 @@ size_t spid_send(void *data, size_t len_bytes) {
   return msg_length_bytes;
 }
 
-/**
- * Read the amount of the data from SRAM RX FIFO
- *
- * If remained data is smaller than length, it returns only up to data
- */
-size_t spid_read_nb(void *data, size_t len_bytes) {
+uint32_t spid_read_nb(void *data, uint32_t len_bytes) {
   uint32_t rxf_ptr, rxf_wptr, rxf_rptr;
   uint32_t msg_len_bytes;
 
@@ -164,10 +163,6 @@ size_t spid_read_nb(void *data, size_t len_bytes) {
   if (msg_len_bytes == 0) {
     return 0;
   }
-  uart_send_uint(rxf_ptr, 32);
-  uart_send_char(' ');
-  uart_send_uint(msg_len_bytes, 32);
-  uart_send_char(' ');
   /* Check there is room for the whole buffer */
   if (msg_len_bytes > len_bytes) {
     msg_len_bytes = len_bytes;
@@ -208,4 +203,14 @@ size_t spid_read_nb(void *data, size_t len_bytes) {
   REG32(SPI_DEVICE_RXF_PTR(0)) = rxf_rptr << SPI_DEVICE_RXF_PTR_RPTR_OFFSET;
 
   return msg_len_bytes;
+}
+
+uint32_t spid_bytes_available(void) {
+  uint32_t rxf_ptr = REG32(SPI_DEVICE_RXF_PTR(0));
+  uint32_t rxf_wptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_WPTR_OFFSET) &
+                      SPI_DEVICE_RXF_PTR_WPTR_MASK;
+  uint32_t rxf_rptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_RPTR_OFFSET) &
+                      SPI_DEVICE_RXF_PTR_RPTR_MASK;
+
+  return calc_depth(rxf_wptr, rxf_rptr, SPID_RXF_SIZE);
 }
