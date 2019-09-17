@@ -9,6 +9,7 @@ module tb;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
   import gpio_env_pkg::*;
+  import gpio_test_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

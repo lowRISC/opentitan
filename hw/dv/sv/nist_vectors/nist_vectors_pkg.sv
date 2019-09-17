@@ -27,7 +27,10 @@ package nist_vectors_pkg;
     int array_size = str.len() / 2;
     `uvm_info(header, $sformatf("str_to_bytes: string = %s, len = %0d", str, array_size), UVM_HIGH)
     bytes = new[array_size];
-    foreach (bytes[i]) bytes[i] = str.substr(i * 2, i * 2 + 1).atohex();
+    foreach (bytes[i]) begin
+      string tmp_str = str.substr(i * 2, i * 2 + 1);
+      bytes[i] = tmp_str.atohex();
+    end
   endfunction : str_to_bytes
 
   // this funciton gets vector path from plusargs, next function open the file with path provided

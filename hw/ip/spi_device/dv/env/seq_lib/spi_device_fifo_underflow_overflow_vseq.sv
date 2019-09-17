@@ -10,13 +10,15 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
 
   // return avail_bytes without checking the availability of sram fifo
   virtual task read_tx_filled_rx_space_bytes(ref uint avail_bytes);
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(avail_bytes,
-                                       avail_bytes[1:0] == 0;
-                                       avail_bytes dist {
+    uint data_bytes;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data_bytes,
+                                       data_bytes[1:0] == 0;
+                                       data_bytes dist {
                                            [1:SRAM_WORD_SIZE]    :/ 5,
                                            [SRAM_WORD_SIZE+1:20] :/ 20,
                                            [21:SRAM_SIZE-1]      :/ 1,
                                            SRAM_SIZE             :/ 1};)
+    avail_bytes = data_bytes;
   endtask
 
 endclass : spi_device_fifo_underflow_overflow_vseq
