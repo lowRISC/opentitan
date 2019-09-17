@@ -14,6 +14,11 @@ filesets:
       - rtl/aes_reg_pkg.sv
       - rtl/aes_reg_top.sv
       - rtl/aes_core.sv
+      - rtl/aes_sub_bytes.sv
+      - rtl/aes_shift_rows.sv
+      - rtl/aes_mix_columns.sv
+      - rtl/aes_key_expand.sv
+      - rtl/aes_control.sv
       - rtl/aes.sv
     file_type: systemVerilogSource
 
