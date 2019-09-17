@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  uart_send_str("PASS!\n");
+  uart_send_str("PASS!\r\n");
   __asm__ volatile("wfi;");
 }
 
