@@ -8,7 +8,7 @@
 {{% section2 Features }}
 
 - Single-bit wide SPI device interface implementing a raw data transfer protocol
-  termed “firmware mode”
+  termed "firmware mode"
   - No address bits, data is sent and received from peripheral pins to/from an
     internal buffer
   - Intended to be used to bulk-load data into and out of the chip
@@ -44,8 +44,8 @@ Data transfers with the SPI device module involve four peripheral SPI pins: SCK,
 CSB, MOSI, MISO. SCK is the SPI clock driven by an external SPI host. CSB (chip
 select bar) is an active low enable signal that frames a transfer, driven by the
 external host. Transfers with active SCK edges but inactive (high) CSB are
-ignored. Data is driven into the SPI device on the MOSI pin (“Master Out Slave
-In”, though we’re otherwise using host/device terminology) and driven out on
+ignored. Data is driven into the SPI device on the MOSI pin ("Master Out Slave
+In", though we're otherwise using host/device terminology) and driven out on
 MISO. Any transfer length is legal, though higher level protocols typically
 assume word width boundaries. See details on protocols and transfers that
 follow. The diagram below shows a typical transfer, here for 8 bytes (64 cycles,
@@ -70,12 +70,12 @@ edges, polarities, and bit orders are described later.
 ```
 
 
-{{% section2 Defining “Firmware Mode” }}
+{{% section2 Defining "Generic Mode" }}
 
 Firmware mode, as implemented by this SPI device, is used to bulk copy data in
 and out of the chip using the pins as shown above. In general, it is used to
 load firmware into the chip, but can be used for any data transfer into or out
-of the chip. The transfers are “generic” in the sense that there is no
+of the chip. The transfers are "generic" in the sense that there is no
 addressing involved. Data transferred into the chip goes into a SPI Device
 circular buffer implemented in an SRAM, and firmware decides what to do with the
 data. Data transferred out of the chip comes out of a circular buffer in an
@@ -85,23 +85,23 @@ SCK edge is received, a bit of RX data is latched into the peripheral, and a bit
 of TX data is sent out of the peripheral. If transfers only require
 unidirectional movement of data, the other direction can be ignored but will
 still be active. For instance, if only receive data is needed in the transfer,
-the device will still be transmitting data out on the TX (“MISO”) pin.
+the device will still be transmitting data out on the TX ("MISO") pin.
 
-### SPI Flash Mode
+### SPI Generic Mode
 
 The primary protocol considered is one used by an external SPI host to send
 chunks of firmware data into the device in the receive direction, confirming the
 contents with an echo back of a hash of the received data in the transmit
-direction. This is generally termed ‘SPI Flash’ mode, since SPI is used to
+direction. This is generally termed 'SPI Generic' mode, since SPI is used to
 send firmware into the device flash, brokered by software confirming integrity
 of the received firmware data. This special case will be described first, and
 then a generic understanding of how firmware mode operates will follow.
 
-The following diagram shows the expected data transfer in SPI Flash mode.
+The following diagram shows the expected data transfer in SPI Generic mode.
 
 ![data transfer in SPI Device](data_transfer.svg)
 
-In this diagram, bursts of data transfer are shown as “pages” of firmware
+In this diagram, bursts of data transfer are shown as "pages" of firmware
 content being driven into the device. The size of the page is not relevant,
 though it must be less than the size of the internal SPI Device SRAM. (Typically
 the SRAM is divided in half for RX and TX buffers, but the boundary is
@@ -118,7 +118,7 @@ first page is received, software will get alerted as to its completion (via an
 RX interrupt), and will execute whatever integrity check is required on that
 data. It can then prepare its response to page zero by writing into the SPI
 Device TX buffer. What it writes into the TX buffer is of the concern of the
-higher level protocol. It could be a “good” indication, a full echo of the RX
+higher level protocol. It could be a "good" indication, a full echo of the RX
 data, or a hash of the received contents. The decision is not in scope for this
 specification.
 
@@ -127,10 +127,10 @@ received before software has prepared the transmit response to page zero
 (including the time to read data out of the SRAM), but that is a condition that
 the higher level protocol must prepare for. That protocol is not in scope for
 this document, but some hints to its implementation are given in the
-programmer’s guide that follows.
+programmer's guide that follows.
 
 The transfer continues until all received data is taken in, and responded back.
-In this protocol the last “received” page of data is a “don’t care” as long
+In this protocol the last "received" page of data is a "don't care" as long
 as the response is transmitted successfully.
 
 ### Generic Firmware Mode
@@ -152,19 +152,19 @@ error conditions discussed in the Design Details section that follows.
 The block diagram above shows how the SPI Device IP converts incoming
 bit-serialized MOSI data into a valid byte, where the data bit is valid when the
 chip select signal (CSB) is 0 (active low) and SCK is at positive or negative
-edge (configurable, henceforth called the “active edge”). The bit order within
+edge (configurable, henceforth called the "active edge"). The bit order within
 the byte is determined by !!CFG.rx_order configuration register field. After a
 byte is gathered, the interface module writes the byte data into a small FIFO
-(“RXFIFO”) using SCK. It is read out of the FIFO and written into to the
-buffer SRAM (“DP_SRAM”) using the system bus clock. If RXFIFO is full, this is
+("RXFIFO") using SCK. It is read out of the FIFO and written into to the
+buffer SRAM ("DP_SRAM") using the system bus clock. If RXFIFO is full, this is
 an error condition and the interface module discards the byte.
 
 The interface module also serializes data from the small transmit FIFO
-(“TXFIFO”) and shifts it out on the MISO pin when CSB is 0 and SCK is at the
+("TXFIFO") and shifts it out on the MISO pin when CSB is 0 and SCK is at the
 active edge. The bit order within the byte can be configured with configuration
 register field !!CFG.tx_order. It is expected that software has prepared TX data
-as per the SPI Flash or general Firmware Mode described in the “Defining
-Firmware Mode” section above. But because SCK is not under the control of
+as per the SPI Flash or general Firmware Mode described in the "Defining
+Firmware Mode" section above. But because SCK is not under the control of
 software or the device (it is driven by the external SPI host), it is possible
 that there is no data ready in the TXFIFO when chip select becomes active and
 the interface needs to send data on the MISO pin. Either software has not
@@ -256,9 +256,9 @@ clock, !!CFG.CPOL and !!CFG.CPHA. CPOL controls clock polarity and CPHA controls
 phase. Please take a look at the link below from Wikipedia.
 [File:SPI_timing_diagram2.svg](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg)
 
-{{% section2 SPI Device FW Mode }}
+{{% section2 SPI Device Generic Mode }}
 
-As described in the Theory of Operations above, in firmware mode, the SPI device
+As described in the Theory of Operations above, in generic mode, the SPI device
 writes incoming data directly into the SRAM (through RXFIFO) and updates the SPI
 device SRAM write pointer (!!RXF_PTR.wptr). It does not parse a command byte nor
 address bytes, analyzing incoming data relies on firmware implementation of a
@@ -294,20 +294,20 @@ case, see !!CFG.rx_order configuration field) cannot be latched. When BitCount
 is 0h, bit 0 of FIFO data shows bit1 value for the first half clock cycle then
 shows correct value after MOSI value is changed.
 
-TXFIFO is the same. TX_REN is asserted when Tx BitCount reaches 0, and the
+TXFIFO is similar. TX_REN is asserted when Tx BitCount reaches 1, and the
 current entry of TXFIFO is popped at the negative edge of SCK. It results in a
 change of MISO value at the negative edge of SCK. MISO_OE is bounded by CSB
 signal. If CSB goes to high, MISO is returned to High-Z state.
 
 ```wavejson
 { signal: [
-  { name: 'CSB', wave: '10.||...|..1'},
-  { name: 'SCK', wave: '0...p.|.|...|l' , node:'.............a', period:0.5},
-  { name: 'MISO', wave: 'x.=..=|=|=.=.=.=|=.=.x..', data:['7','6','5','1','0','7','6','1','0'], period:0.5, },
-  { name: 'MISO_OE', wave:'0.1...................0.', period:0.5},
-  { name: 'BitCount', wave: '=....=.=|=|=.=.=.=|=.=..', data:['7','6','5','1','0','7','6','1','0','7'], period:0.5},
-  { name: 'TX_REN', wave: '0.....|....1.0.|...1.0..' , node:'............c',period:0.5},
-  { name: 'TX_DATA_i', wave: '=............=.......=..',data:['D0','Dn','Dn+1'], node:'.............b', period:0.5},
+  { name: 'CSB',      wave:'10.||...|..1'},
+  { name: 'SCK',      wave:'0...p.|.|...|l' , node:'.............a', period:0.5},
+  { name: 'MISO',     wave:'x.=..=|=|=.=.=.=|=.=.x..', data:['7','6','5','1','0','7','6','1','0'], period:0.5, },
+  { name: 'MISO_OE',  wave:'0.1...................0.', period:0.5},
+  { name: 'BitCount', wave:'=....=.=|=|=.=.=.=|=.=..', data:['7','6','5','1','0','7','6','1','0','7'], period:0.5},
+  { name: 'TX_REN',   wave:'0.....|..1.0...|.1.0....' , node:'..........c',period:0.5},
+  { name: 'TX_DATA_i',wave:'=.....|....=.......=....',data:['D0','Dn','Dn+1'], node:'...........b', period:0.5},
   ],
   edge: ['a~b', 'c~b t1'],
   head:{
@@ -317,6 +317,15 @@ signal. If CSB goes to high, MISO is returned to High-Z state.
 }
 ```
 
+Please keep in mind that in the mode 3 configuration, the logic isn't able to
+pop the entry from the TX async FIFO at the end of the bit at the last byte in a
+transaction. In the mode 3, no further SCK edge is given after sending the last
+bit before the CSB de-assertion. The design is chosen to pop the entry at the
+7th bit position.  This introduces unavoidable behavior of dropping the last
+byte if CSB is de-asserted before a byte transfer is completed. If CSB is
+de-asserted in bit 1 to 6 position, the FIFO entry isn't popped. TX logic will
+re-send the byte in next transaction. If CSB is de-asserted in 7th or 8th bit
+position, the data is dropped and begins with next byte in the next transaction.
 
 ### RXFIFO control
 
