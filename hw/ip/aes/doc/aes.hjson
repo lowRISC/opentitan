@@ -75,6 +75,7 @@
     desc: "Control Register",
     swaccess: "rw",
     hwaccess: "hro",
+    hwqe: "true",
     fields: [
       { bits: "0",
         name: "MODE",
@@ -85,6 +86,7 @@
       { bits: "3:1",
         name: "KEY_LEN",
         resval: "1",
+        hwaccess: "hrw",
         desc:  '''
           3-bit one-hot field to select AES key length: 128 bit (3’b001), 192 bit (3’b010)
           or 256 bit (3’b100). Invalid input values, i.e., value with multiple bits set,
