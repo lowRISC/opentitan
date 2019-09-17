@@ -6,6 +6,11 @@
 
 package aes_pkg;
 
+typedef enum logic {
+  AES_ENC = 1'b0,
+  AES_DEC = 1'b1
+} mode_e;
+
 typedef enum logic [2:0] {
   AES_128 = 3'b001,
   AES_192 = 3'b010,

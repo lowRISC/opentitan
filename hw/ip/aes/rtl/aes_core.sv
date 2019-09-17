@@ -34,7 +34,7 @@ module aes_core #(
   logic        force_data_overwrite;
   logic        manual_start_trigger;
   key_len_e    key_len;
-  logic        mode;
+  mode_e       mode;
   logic        start;
 
   logic [7:0]  state_init[16];
@@ -76,7 +76,7 @@ module aes_core #(
 
   assign force_data_overwrite = reg2hw.ctrl.force_data_overwrite.q;
   assign manual_start_trigger = reg2hw.ctrl.manual_start_trigger.q;
-  assign mode                 = reg2hw.ctrl.mode.q;
+  assign mode                 = mode_e'(reg2hw.ctrl.mode.q);
   assign start                = reg2hw.trigger.q;
 
   always_comb begin : get_key_len
@@ -146,7 +146,7 @@ module aes_core #(
   logic     unused_force_data_overwrite;
   logic     unused_manual_start_trigger;
   key_len_e unused_key_len;
-  logic     unused_mode;
+  mode_e    unused_mode;
   logic     unused_start;
   assign unused_force_data_overwrite = force_data_overwrite;
   assign unused_manual_start_trigger = manual_start_trigger;
