@@ -23,12 +23,12 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     if (cfg.if_mode == Host) begin
       cfg.vif.tck_en <= 1'b0;
       cfg.vif.trst_n <= 1'b1;
-      cfg.vif.tms <= 1'b0;
-      cfg.vif.tdi <= 1'b0;
+      `HOST_CB.tms <= 1'b0;
+      `HOST_CB.tdi <= 1'b0;
     end
     else begin
-      cfg.vif.tdo <= 1'b0;
-      cfg.vif.tdo_oe <= 1'b0;
+      `DEVICE_CB.tdo <= 1'b0;
+      `DEVICE_CB.tdo_oe <= 1'b0;
     end
   endtask
 

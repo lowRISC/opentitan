@@ -43,9 +43,8 @@ package hmac_pkg;
   };
 
   function automatic sha_word_t conv_endian( input sha_word_t v, input logic swap);
-
-    conv_endian = (swap) ? {<<8{v}} : v ;
-
+    sha_word_t conv_data = {<<8{v}};
+    conv_endian = (swap) ? conv_data : v ;
   endfunction : conv_endian
 
   function automatic sha_word_t rotr( input sha_word_t v , input int amt );

@@ -8,10 +8,10 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   // interface pins
   logic tck;
   logic trst_n;
-  logic tms;
-  logic tdi;
-  logic tdo;
-  logic tdo_oe;
+  wire  tms;
+  wire  tdi;
+  wire  tdo;
+  wire  tdo_oe;
 
   // generate local tck
   bit   tck_en;

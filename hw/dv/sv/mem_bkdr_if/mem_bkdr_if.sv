@@ -328,7 +328,7 @@ interface mem_bkdr_if();
   function automatic void randomize_mem();
     init();
     `uvm_info(path, "Randomizing mem contents", UVM_LOW)
-    `DV_CHECK_STD_RANDOMIZE_FATAL(`mem_array_path_slice, "randomization failed!", path)
+    foreach (`mem_array_path_slice[i]) `mem_array_path_slice[i] = {$urandom, $urandom};
   endfunction
 
 endinterface

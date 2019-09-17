@@ -126,7 +126,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     {<<8{data_bytes}} = host_data;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                   data.size() == data_bytes.size();
+                                   data.size() == SRAM_WORD_SIZE;
                                    foreach (data[i]) {data[i] == data_bytes[i];})
     `uvm_send(m_spi_host_seq)
     device_data = {<<8{m_spi_host_seq.rsp.data}};
@@ -246,26 +246,28 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   virtual task wait_for_tx_avail_bytes(uint req_bytes, sram_avail_type_e avail_type,
                                        ref uint avail_bytes);
+    uint cur_bytes;
     `DV_SPINWAIT(
       do begin
-        read_tx_avail_bytes(avail_type, avail_bytes);
-      end while (avail_bytes < req_bytes);,
+        read_tx_avail_bytes(avail_type, cur_bytes);
+      end while (cur_bytes < req_bytes);,
       {"wait_for_tx_avail_bytes::", avail_type.name}
     )
+    avail_bytes = cur_bytes;
     `uvm_info(`gfn, $sformatf("TX req_bytes = %0d, avail_type = %0s, avail_bytes = %0d",
                               req_bytes, avail_type.name, avail_bytes), UVM_MEDIUM)
   endtask
 
   virtual task wait_for_rx_avail_bytes(uint req_bytes, sram_avail_type_e avail_type,
                                        ref uint avail_bytes);
-    `uvm_info(`gfn, $sformatf("RX req_bytes = %0d, avail_type = %0s, avail_bytes = %0d",
-                              req_bytes, avail_type.name, avail_bytes), UVM_MEDIUM)
+    uint cur_bytes;
     `DV_SPINWAIT(
       do begin
-        read_rx_avail_bytes(avail_type, avail_bytes);
-      end while (avail_bytes < req_bytes);,
+        read_rx_avail_bytes(avail_type, cur_bytes);
+      end while (cur_bytes < req_bytes);,
       {"wait_for_rx_avail_bytes::", avail_type.name}
     )
+    avail_bytes = cur_bytes;
     `uvm_info(`gfn, $sformatf("RX req_bytes = %0d, avail_type = %0s, avail_bytes = %0d",
                               req_bytes, avail_type.name, avail_bytes), UVM_MEDIUM)
   endtask

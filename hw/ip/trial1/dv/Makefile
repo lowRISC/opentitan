@@ -20,6 +20,7 @@ FUSESOC_CORE    := lowrisc:ip:trial1_sim:0.1
 COMPILE_KEY     ?= default
 
 TEST_NAME       ?= trial1_sanity
+UVM_TEST        ?= ${TEST_NAME}
 
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##

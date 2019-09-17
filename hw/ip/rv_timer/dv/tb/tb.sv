@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
   import rv_timer_env_pkg::*;
+  import rv_timer_test_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
