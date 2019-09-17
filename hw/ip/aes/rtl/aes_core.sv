@@ -18,37 +18,51 @@ module aes_core #(
   import aes_reg_pkg::*;
   import aes_pkg::*;
 
-  // Types
-
   // Signals
-  logic [31:0] data_in[4];
-  logic  [3:0] data_in_new_d, data_in_new_q;
-  logic        data_in_new;
-  logic        data_in_load;
+  logic    [31:0] data_in[4];
+  logic     [3:0] data_in_qe;
+  logic    [31:0] key_init[8];
+  logic     [7:0] key_init_qe;
 
-  logic [31:0] key_init[8];
-  logic  [7:0] key_init_new_d, key_init_new_q;
-  logic        key_init_new;
-  logic        dec_key_gen;
+  mode_e          mode;
+  key_len_e       key_len;
 
-  logic        force_data_overwrite;
-  logic        manual_start_trigger;
-  key_len_e    key_len;
-  mode_e       mode;
-  logic        start;
+  logic     [7:0] state_init[16];
+  logic     [7:0] state_d[16];
+  logic     [7:0] state_q[16];
+  logic           state_we;
+  state_sel_e     state_sel;
 
-  logic [7:0]  state_init[16];
-  logic [7:0]  state_d[16];
-  logic [7:0]  state_q[16];
+  logic     [7:0] sub_bytes_out[16];
+  logic     [7:0] shift_rows_out[16];
+  logic     [7:0] mix_columns_out[16];
+  logic     [7:0] add_round_key_in[16];
+  logic     [7:0] add_round_key_out[16];
+  add_rk_sel_e    add_round_key_in_sel;
 
-  logic [31:0] data_out_d[4];
-  logic [31:0] data_out_q[4];
-  logic        data_out_we;
-  logic  [3:0] data_out_read_d, data_out_read_q;
-  logic        data_out_read;
+  logic    [31:0] key_full_d[8];
+  logic    [31:0] key_full_q[8];
+  logic           key_full_we;
+  key_full_sel_e  key_full_sel;
+  logic    [31:0] key_dec_d[8];
+  logic    [31:0] key_dec_q[8];
+  logic           key_dec_we;
+  key_dec_sel_e   key_dec_sel;
+  logic    [31:0] key_expand_out[8];
+  logic           key_expand_clear;
+  key_words_sel_e key_words_sel;
+  logic    [31:0] key_words[4];
+  logic     [7:0] key_bytes[16];
+  logic     [7:0] key_mix_columns_out[16];
+  logic     [7:0] round_key[16];
+
+  logic    [31:0] data_out_d[4];
+  logic    [31:0] data_out_q[4];
+  logic           data_out_we;
+  logic     [3:0] data_out_re;
 
   // Unused signals
-  logic [31:0] unused_data_out_q[4];
+  logic    [31:0] unused_data_out_q[4];
 
   // Inputs
   assign key_init[0] = reg2hw.key0.q;
@@ -60,10 +74,16 @@ module aes_core #(
   assign key_init[6] = reg2hw.key6.q;
   assign key_init[7] = reg2hw.key7.q;
 
+  assign key_init_qe = {reg2hw.key7.qe, reg2hw.key6.qe, reg2hw.key5.qe, reg2hw.key4.qe,
+                        reg2hw.key3.qe, reg2hw.key2.qe, reg2hw.key1.qe, reg2hw.key0.qe};
+
   assign data_in[0] = reg2hw.data_in0.q;
   assign data_in[1] = reg2hw.data_in1.q;
   assign data_in[2] = reg2hw.data_in2.q;
   assign data_in[3] = reg2hw.data_in3.q;
+
+  assign data_in_qe = {reg2hw.data_in3.qe, reg2hw.data_in2.qe,
+                       reg2hw.data_in1.qe, reg2hw.data_in0.qe};
 
   always_comb begin : conv_data_in_to_state
     for (int i=0; i<4; i++) begin
@@ -74,10 +94,7 @@ module aes_core #(
     end
   end
 
-  assign force_data_overwrite = reg2hw.ctrl.force_data_overwrite.q;
-  assign manual_start_trigger = reg2hw.ctrl.manual_start_trigger.q;
-  assign mode                 = mode_e'(reg2hw.ctrl.mode.q);
-  assign start                = reg2hw.trigger.q;
+  assign mode = mode_e'(reg2hw.ctrl.mode.q);
 
   always_comb begin : get_key_len
     unique case (key_len_e'(reg2hw.ctrl.key_len.q))
@@ -90,6 +107,9 @@ module aes_core #(
     endcase
   end
 
+  assign data_out_re = {reg2hw.data_out3.re, reg2hw.data_out2.re,
+                        reg2hw.data_out1.re, reg2hw.data_out0.re};
+
   // Unused inputs
   // data_out is actually hwo, but we need hrw for hwre
   assign unused_data_out_q[0] = reg2hw.data_out0.q;
@@ -97,77 +117,151 @@ module aes_core #(
   assign unused_data_out_q[2] = reg2hw.data_out2.q;
   assign unused_data_out_q[3] = reg2hw.data_out3.q;
 
-  // Core modules
-
   // State registers
-  assign state_d = data_in_load ? state_init : state_q;
+  always_comb begin : state_mux
+    unique case (state_sel)
+      STATE_INIT:  state_d = state_init;
+      STATE_ROUND: state_d = add_round_key_out;
+      STATE_CLEAR: state_d = '{default: '0};
+      default      state_d = '{default: 'X};
+    endcase
+  end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_state
+  always_ff @(posedge clk_i or negedge rst_ni) begin : state_reg
     if (!rst_ni) begin
       state_q <= '{default: '0};
-    end else begin
+    end else if (state_we) begin
       state_q <= state_d;
     end
   end
 
-  // Detect new key, new input, output read
-  // Edge detectors are cleared by the FSM
-  assign key_init_new_d = dec_key_gen ? '0 : key_init_new_q |
-      {reg2hw.key7.qe, reg2hw.key6.qe, reg2hw.key5.qe, reg2hw.key4.qe,
-       reg2hw.key3.qe, reg2hw.key2.qe, reg2hw.key1.qe, reg2hw.key0.qe};
-  assign key_init_new = &key_init_new_d;
+  // Cipher data path
+  aes_sub_bytes aes_sub_bytes (
+    .mode_i ( mode          ),
+    .data_i ( state_q       ),
+    .data_o ( sub_bytes_out )
+  );
 
-  assign data_in_new_d = data_in_load ? '0 : data_in_new_q |
-      {reg2hw.data_in3.qe, reg2hw.data_in2.qe, reg2hw.data_in1.qe, reg2hw.data_in0.qe};
-  assign data_in_new = &data_in_new_d;
+  aes_shift_rows aes_shift_rows (
+    .mode_i ( mode           ),
+    .data_i ( sub_bytes_out  ),
+    .data_o ( shift_rows_out )
+  );
 
-  assign data_out_read_d = data_out_we ? '0 : data_out_read_q |
-      {reg2hw.data_out3.re, reg2hw.data_out2.re, reg2hw.data_out1.re, reg2hw.data_out0.re};
-  assign data_out_read = &data_out_read_d;
+  aes_mix_columns aes_mix_columns (
+    .mode_i ( mode            ),
+    .data_i ( shift_rows_out  ),
+    .data_o ( mix_columns_out )
+  );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_edge_detection
-    if (!rst_ni) begin
-      key_init_new_q  <= '0;
-      data_in_new_q   <= '0;
-      data_out_read_q <= '0;
-    end else begin
-      key_init_new_q  <= key_init_new_d;
-      data_in_new_q   <= data_in_new_d;
-      data_out_read_q <= data_out_read_d;
+  always_comb begin : add_round_key_in_mux
+    unique case (add_round_key_in_sel)
+      ADD_RK_INIT:  add_round_key_in = state_q;
+      ADD_RK_ROUND: add_round_key_in = mix_columns_out;
+      ADD_RK_FINAL: add_round_key_in = shift_rows_out;
+      default:      add_round_key_in = '{default: 'X};
+    endcase
+  end
+
+  always_comb begin : add_round_key
+    for (int i=0; i<16; i++) begin
+      add_round_key_out[i] = add_round_key_in[i] ^ round_key[i];
     end
   end
 
-  // Control FSM
-  assign dec_key_gen  = 1'b0;
-  assign data_in_load = 1'b0;
-  assign data_out_we  = 1'b0;
+  // Full Key registers
+  always_comb begin : key_full_mux
+    unique case (key_full_sel)
+      KEY_FULL_ENC_INIT: key_full_d = key_init;
+      KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
+      KEY_FULL_ROUND:    key_full_d = key_expand_out;
+      KEY_FULL_CLEAR:    key_full_d = '{default: '0};
+      default:           key_full_d = '{default: 'X};
+    endcase
+  end
 
-  // placeholders
-  logic     unused_force_data_overwrite;
-  logic     unused_manual_start_trigger;
-  key_len_e unused_key_len;
-  mode_e    unused_mode;
-  logic     unused_start;
-  assign unused_force_data_overwrite = force_data_overwrite;
-  assign unused_manual_start_trigger = manual_start_trigger;
-  assign unused_key_len              = key_len;
-  assign unused_mode                 = mode;
-  assign unused_start                = start;
-  logic unused_data_in_new;
-  logic unused_key_init_new;
-  logic unused_data_out_read;
-  assign unused_data_in_new   = data_in_new;
-  assign unused_key_init_new  = key_init_new;
-  assign unused_data_out_read = data_out_read;
-  logic [31:0] unused_key_init[8];
-  assign unused_key_init[0] = key_init[0];
-  assign unused_key_init[1] = key_init[1];
-  assign unused_key_init[2] = key_init[2];
-  assign unused_key_init[3] = key_init[3];
-  assign unused_key_init[4] = key_init[4];
-  assign unused_key_init[5] = key_init[5];
-  assign unused_key_init[6] = key_init[6];
-  assign unused_key_init[7] = key_init[7];
+  always_ff @(posedge clk_i or negedge rst_ni) begin : key_full_reg
+    if (!rst_ni) begin
+      key_full_q <= '{default: '0};
+    end else if (key_full_we) begin
+      key_full_q <= key_full_d;
+    end
+  end
+
+  // Decryption Key registers
+  always_comb begin : key_dec_mux
+    unique case (key_dec_sel)
+      KEY_DEC_EXPAND: key_dec_d = key_expand_out;
+      KEY_DEC_CLEAR:  key_dec_d = '{default: '0};
+      default:        key_dec_d = '{default: 'X};
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : key_dec_reg
+    if (!rst_ni) begin
+      key_dec_q <= '{default: '0};
+    end else if (key_dec_we) begin
+      key_dec_q <= key_dec_d;
+    end
+  end
+
+  // Key expand data path
+  aes_key_expand #(
+  .AES192Enable (AES192Enable)
+  ) aes_key_expand (
+    .clk_i   ( clk_i            ),
+    .rst_ni  ( rst_ni           ),
+    .mode_i  ( mode             ),
+    .clear_i ( key_expand_clear ),
+    .key_i   ( key_full_q       ),
+    .key_o   ( key_expand_out   )
+  );
+
+  always_comb begin : key_words_mux
+    unique case (key_words_sel)
+      KEY_WORDS_0123: begin
+        key_words[0] = key_full_q[0];
+        key_words[1] = key_full_q[1];
+        key_words[2] = key_full_q[2];
+        key_words[3] = key_full_q[3];
+      end
+      KEY_WORDS_2345: begin
+        key_words[0] = key_full_q[2];
+        key_words[1] = key_full_q[3];
+        key_words[2] = key_full_q[4];
+        key_words[3] = key_full_q[5];
+      end
+      KEY_WORDS_4567: begin
+        key_words[0] = key_full_q[4];
+        key_words[1] = key_full_q[5];
+        key_words[2] = key_full_q[6];
+        key_words[3] = key_full_q[7];
+      end
+      KEY_WORDS_ZERO: begin
+        key_words    = '{default: '0};
+      end
+      default: begin
+        key_words    = '{default: 'X};
+      end
+    endcase
+  end
+
+  always_comb begin : conv_key_words_to_bytes
+    for (int i=0; i<4; i++) begin
+      key_bytes[4*i+0] = key_words[i][ 7: 0];
+      key_bytes[4*i+1] = key_words[i][15: 8];
+      key_bytes[4*i+2] = key_words[i][23:16];
+      key_bytes[4*i+3] = key_words[i][31:24];
+    end
+  end
+
+  aes_mix_columns aes_key_mix_columns (
+    .mode_i ( AES_DEC             ),
+    .data_i ( key_bytes           ),
+    .data_o ( key_mix_columns_out )
+  );
+
+  assign round_key = (mode == AES_DEC) ? key_mix_columns_out : key_bytes;
 
   // Output registers
   always_comb begin : conv_state_to_data_out
@@ -176,13 +270,54 @@ module aes_core #(
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_data_out
+  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
     if (!rst_ni) begin
       data_out_q <= '{default: '0};
     end else if (data_out_we) begin
       data_out_q <= data_out_d;
     end
   end
+
+  // Control
+  aes_control #(
+  .AES192Enable (AES192Enable)
+  ) aes_control (
+    .clk_i                  ( clk_i                              ),
+    .rst_ni                 ( rst_ni                             ),
+
+    .mode_i                 ( mode                               ),
+    .key_len_i              ( key_len                            ),
+    .force_data_overwrite_i ( reg2hw.ctrl.force_data_overwrite.q ),
+    .manual_start_trigger_i ( reg2hw.ctrl.manual_start_trigger.q ),
+    .start_i                ( reg2hw.trigger.q                   ),
+
+    .data_in_qe_i           ( data_in_qe                         ),
+    .key_init_qe_i          ( key_init_qe                        ),
+    .data_out_re_i          ( data_out_re                        ),
+
+    .state_sel_o            ( state_sel                          ),
+    .state_we_o             ( state_we                           ),
+    .add_rk_sel_o           ( add_round_key_in_sel               ),
+    .key_full_sel_o         ( key_full_sel                       ),
+    .key_full_we_o          ( key_full_we                        ),
+    .key_dec_sel_o          ( key_dec_sel                        ),
+    .key_dec_we_o           ( key_dec_we                         ),
+    .key_expand_clear_o     ( key_expand_clear                   ),
+    .key_words_sel_o        ( key_words_sel                      ),
+
+    .data_out_we_o          ( data_out_we                        ),
+
+    .trigger_o              ( hw2reg.trigger.d                   ),
+    .trigger_we_o           ( hw2reg.trigger.de                  ),
+    .output_valid_o         ( hw2reg.status.output_valid.d       ),
+    .output_valid_we_o      ( hw2reg.status.output_valid.de      ),
+    .input_ready_o          ( hw2reg.status.input_ready.d        ),
+    .input_ready_we_o       ( hw2reg.status.input_ready.de       ),
+    .idle_o                 ( hw2reg.status.idle.d               ),
+    .idle_we_o              ( hw2reg.status.idle.de              ),
+    .stall_o                ( hw2reg.status.stall.d              ),
+    .stall_we_o             ( hw2reg.status.stall.de             )
+  );
 
   // Outputs
   assign hw2reg.data_out0.d = data_out_q[0];
@@ -192,21 +327,5 @@ module aes_core #(
 
   assign hw2reg.ctrl.key_len.d  = {key_len};
   assign hw2reg.ctrl.key_len.de = reg2hw.ctrl.key_len.qe;
-
-  assign hw2reg.trigger.d   = 1'b0;
-  assign hw2reg.trigger.de  = 1'b1;
-
-  assign hw2reg.status.idle.d   = 1'b0;
-  assign hw2reg.status.idle.de  = 1'b1;
-  assign hw2reg.status.stall.d  = 1'b0;
-  assign hw2reg.status.stall.de = 1'b1;
-
-  // clear once all output regs have been read
-  assign hw2reg.status.output_valid.d  = data_out_we;
-  assign hw2reg.status.output_valid.de = data_out_we | data_out_read;
-
-  // clear once all input regs have been written
-  assign hw2reg.status.input_ready.d   = ~data_in_new;
-  assign hw2reg.status.input_ready.de  =  data_in_new | data_in_load;
 
 endmodule

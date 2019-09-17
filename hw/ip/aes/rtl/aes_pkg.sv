@@ -17,4 +17,35 @@ typedef enum logic [2:0] {
   AES_256 = 3'b100
 } key_len_e;
 
+typedef enum logic [1:0] {
+  STATE_INIT,
+  STATE_ROUND,
+  STATE_CLEAR
+} state_sel_e;
+
+typedef enum logic [1:0] {
+  ADD_RK_INIT,
+  ADD_RK_ROUND,
+  ADD_RK_FINAL
+} add_rk_sel_e;
+
+typedef enum logic [1:0] {
+  KEY_FULL_ENC_INIT,
+  KEY_FULL_DEC_INIT,
+  KEY_FULL_ROUND,
+  KEY_FULL_CLEAR
+} key_full_sel_e;
+
+typedef enum logic {
+  KEY_DEC_EXPAND,
+  KEY_DEC_CLEAR
+} key_dec_sel_e;
+
+typedef enum logic [1:0] {
+  KEY_WORDS_0123,
+  KEY_WORDS_2345,
+  KEY_WORDS_4567,
+  KEY_WORDS_ZERO
+} key_words_sel_e;
+
 endpackage
