@@ -4,8 +4,8 @@
 #
 # Generate a baremetal application for the microcontroller
 
-NAME         = sanity_timer
-SRCS         = sanity_timer.c
+NAME         = rv_timer_test
+SRCS         = rv_timer_test.c
 PROGRAM_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 include ${PROGRAM_DIR}/../../exts/common/options.mk
