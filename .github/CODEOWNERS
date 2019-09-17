@@ -1,0 +1,60 @@
+# This file specifies default reviewers for new pull requests. This is used as a
+# convenience - the OpenTitan project doesn't currently have a formalised notion
+# of "code owners".
+#
+# Note: The default reviewers aren't required to give a review prior to merging.
+# You are encouraged to add non-default reviewers where you know someone else
+# may have useful insight or has been recently working in the area touched by
+# your PR. Anyone is able to contribute to pull request review, and is
+# encouraged to do so
+
+# Default Reviewers
+# *     @asb @sjgitty
+
+# Order: last matching pattern takes the most precedence.
+#   Please refer the link for the detail
+#   https://help.github.com/en/articles/about-code-owners
+
+*.c                 @moidx
+*.h                 @moidx
+
+# Utils: reggen, topgen, tlgen
+util/*.py           @imphil @asb
+util/*gen/          @eunchan @msfschaffner @tjaychen
+util/uvmdvgen*      @sriyerg
+util/regtool.py     @eunchan
+util/tlgen.py       @eunchan @msfschaffner
+util/topgen.py      @eunchan @msfschaffner @tjaychen
+util/build_docs.py  @gdk
+
+
+# RTL related
+/hw/ip/*/rtl/           @eunchan
+/hw/ip/*/doc/           @eunchan
+/hw/ip/aes/             @vogelpi
+/hw/ip/flash_ctrl/      @tjaychen
+/hw/ip/prim*            @sjgitty @eunchan @tjaychen
+/hw/ip/rv_core_ibex/    @imphil @tjaychen
+/hw/ip/rv_dm/           @imphil @vogelpi
+/hw/ip/tlul/            @sjgitty @eunchan @tjaychen
+# /hw/ip/usb*           # TBD
+/hw/top_*/rtl           @eunchan
+/hw/top_*/doc/top_*     @eunchan @msfschaffner
+
+
+# DV related common files
+dv/                 @sriyerg @weicaiyang
+fpv/                @cindychip
+formal/             @cindychip
+# lint/             # TBD
+
+# SW related
+/sw/                @moidx
+
+# Common docs
+/doc/               @sjgitty @asb
+
+# License related files
+LICENSE*            @asb
+COPYING*            @asb
+
