@@ -81,12 +81,12 @@ module aes_core #(
 
   always_comb begin : get_key_len
     unique case (key_len_e'(reg2hw.ctrl.key_len.q))
-      AES_128: key_len   = AES_128;
-      AES_256: key_len   = AES_256;
+      AES_128: key_len = AES_128;
+      AES_256: key_len = AES_256;
       AES_192: begin
         key_len = AES192Enable ? AES_192 : AES_128;
       end
-      default: key_len   = AES_128; // unsupported values are mapped to AES_128
+      default: key_len = AES_128; // unsupported values are mapped to AES_128
     endcase
   end
 
@@ -189,6 +189,9 @@ module aes_core #(
   assign hw2reg.data_out1.d = data_out_q[1];
   assign hw2reg.data_out2.d = data_out_q[2];
   assign hw2reg.data_out3.d = data_out_q[3];
+
+  assign hw2reg.ctrl.key_len.d  = {key_len};
+  assign hw2reg.ctrl.key_len.de = reg2hw.ctrl.key_len.qe;
 
   assign hw2reg.trigger.d   = 1'b0;
   assign hw2reg.trigger.de  = 1'b1;

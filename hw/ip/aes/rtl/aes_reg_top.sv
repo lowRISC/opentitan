@@ -541,7 +541,7 @@ module aes_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.ctrl.mode.qe),
     .q      (reg2hw.ctrl.mode.q ),
 
     // to register interface (read)
@@ -563,11 +563,11 @@ module aes_reg_top (
     .wd     (ctrl_key_len_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.ctrl.key_len.de),
+    .d      (hw2reg.ctrl.key_len.d ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.ctrl.key_len.qe),
     .q      (reg2hw.ctrl.key_len.q ),
 
     // to register interface (read)
@@ -593,7 +593,7 @@ module aes_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.ctrl.manual_start_trigger.qe),
     .q      (reg2hw.ctrl.manual_start_trigger.q ),
 
     // to register interface (read)
@@ -619,7 +619,7 @@ module aes_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.ctrl.force_data_overwrite.qe),
     .q      (reg2hw.ctrl.force_data_overwrite.q ),
 
     // to register interface (read)

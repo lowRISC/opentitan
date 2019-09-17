@@ -10,81 +10,85 @@ package aes_reg_pkg;
 typedef struct packed {
 
   struct packed {
-    logic [31:0] q; // [534:503]
-    logic qe; // [502]
+    logic [31:0] q; // [538:507]
+    logic qe; // [506]
   } key0;
   struct packed {
-    logic [31:0] q; // [501:470]
-    logic qe; // [469]
+    logic [31:0] q; // [505:474]
+    logic qe; // [473]
   } key1;
   struct packed {
-    logic [31:0] q; // [468:437]
-    logic qe; // [436]
+    logic [31:0] q; // [472:441]
+    logic qe; // [440]
   } key2;
   struct packed {
-    logic [31:0] q; // [435:404]
-    logic qe; // [403]
+    logic [31:0] q; // [439:408]
+    logic qe; // [407]
   } key3;
   struct packed {
-    logic [31:0] q; // [402:371]
-    logic qe; // [370]
+    logic [31:0] q; // [406:375]
+    logic qe; // [374]
   } key4;
   struct packed {
-    logic [31:0] q; // [369:338]
-    logic qe; // [337]
+    logic [31:0] q; // [373:342]
+    logic qe; // [341]
   } key5;
   struct packed {
-    logic [31:0] q; // [336:305]
-    logic qe; // [304]
+    logic [31:0] q; // [340:309]
+    logic qe; // [308]
   } key6;
   struct packed {
-    logic [31:0] q; // [303:272]
-    logic qe; // [271]
+    logic [31:0] q; // [307:276]
+    logic qe; // [275]
   } key7;
   struct packed {
-    logic [31:0] q; // [270:239]
-    logic qe; // [238]
+    logic [31:0] q; // [274:243]
+    logic qe; // [242]
   } data_in0;
   struct packed {
-    logic [31:0] q; // [237:206]
-    logic qe; // [205]
+    logic [31:0] q; // [241:210]
+    logic qe; // [209]
   } data_in1;
   struct packed {
-    logic [31:0] q; // [204:173]
-    logic qe; // [172]
+    logic [31:0] q; // [208:177]
+    logic qe; // [176]
   } data_in2;
   struct packed {
-    logic [31:0] q; // [171:140]
-    logic qe; // [139]
+    logic [31:0] q; // [175:144]
+    logic qe; // [143]
   } data_in3;
   struct packed {
-    logic [31:0] q; // [138:107]
-    logic re; // [106]
+    logic [31:0] q; // [142:111]
+    logic re; // [110]
   } data_out0;
   struct packed {
-    logic [31:0] q; // [105:74]
-    logic re; // [73]
+    logic [31:0] q; // [109:78]
+    logic re; // [77]
   } data_out1;
   struct packed {
-    logic [31:0] q; // [72:41]
-    logic re; // [40]
+    logic [31:0] q; // [76:45]
+    logic re; // [44]
   } data_out2;
   struct packed {
-    logic [31:0] q; // [39:8]
-    logic re; // [7]
+    logic [31:0] q; // [43:12]
+    logic re; // [11]
   } data_out3;
   struct packed {
     struct packed {
-      logic q; // [6]
+      logic q; // [10]
+      logic qe; // [9]
     } mode;
     struct packed {
-      logic [2:0] q; // [5:3]
+      logic [2:0] q; // [8:6]
+      logic qe; // [5]
     } key_len;
     struct packed {
-      logic q; // [2]
+      logic q; // [4]
+      logic qe; // [3]
     } manual_start_trigger;
     struct packed {
-      logic q; // [1]
+      logic q; // [2]
+      logic qe; // [1]
     } force_data_overwrite;
   } ctrl;
   struct packed {
@@ -96,17 +100,23 @@ typedef struct packed {
 typedef struct packed {
 
   struct packed {
-    logic [31:0] d; // [137:106]
+    logic [31:0] d; // [141:110]
   } data_out0;
   struct packed {
-    logic [31:0] d; // [105:74]
+    logic [31:0] d; // [109:78]
   } data_out1;
   struct packed {
-    logic [31:0] d; // [73:42]
+    logic [31:0] d; // [77:46]
   } data_out2;
   struct packed {
-    logic [31:0] d; // [41:10]
+    logic [31:0] d; // [45:14]
   } data_out3;
+  struct packed {
+    struct packed {
+      logic [2:0] d; // [13:11]
+      logic de; // [10]
+    } key_len;
+  } ctrl;
   struct packed {
     logic [0:0] d; // [9:9]
     logic de; // [8]
