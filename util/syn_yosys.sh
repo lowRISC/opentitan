@@ -15,7 +15,7 @@
 #   syn_yosys.sh 2>&1 | tee syn.std
 
 #-------------------------------------------------------------------------
-# use fusesoc to generate file list
+# use fusesoc to generate files and file list
 #-------------------------------------------------------------------------
 \rm -Rf build
 fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
@@ -33,7 +33,7 @@ cd syn_out
 for file in *.sv; do
   module=`basename -s .sv $file`
   echo $file
-  sv2v --define=VERILATOR --oneunit *_pkg.sv prim_assert.sv $file > ${module}.v
+  sv2v --define=VERILATOR --define=SYNTHESIS *_pkg.sv prim_assert.sv $file > ${module}.v
 
   # TODO: eventually remove below hack. It removes "unsigned" from params
   # because Yosys doesn't support unsigned parameters
@@ -45,8 +45,29 @@ done
 \rm -Rf *_pkg.v
 
 #-------------------------------------------------------------------------
+# run LEC (generarted verilog vs. original SystemVerilog)
+#-------------------------------------------------------------------------
+printf "\n\nLEC RESULTS:\n"
+cd ../../hw/formal
+for file in ../../util/syn_out/*.v; do
+  module=`basename -s .v $file`
+  lec_sv2v ../../util/syn_out $module > /dev/null 2>&1
+
+  # summarize results
+  result=`grep "Compare Results" lec_${module}.log`
+  if [ $? -ne 0 ]; then
+    result="CRASH"
+  else
+    result=`echo $result | awk '{ print $4 }'`
+  fi
+  printf "%-25s %s\n" $module $result
+done
+cd -
+
+#-------------------------------------------------------------------------
 # run yosys
 #-------------------------------------------------------------------------
+printf "\n\nYosys:\n"
 
 # for now, read in each verilog file into Yosys and only output errors
 # and warnings
@@ -54,9 +75,6 @@ for file in *.v; do
   yosys -QTqp "read_verilog ${file}"
 done
 
-cd -
-
 # TODOs:
-#  - add LEC to check if generated Verilog is equivalent to original SV
 #  - add full yosys synthesis for all modules
 #  - add final LEC check (RTL-versus-netlist)
