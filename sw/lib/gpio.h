@@ -11,6 +11,8 @@
 
 #define GPIO0_BASE_ADDR 0x40010000
 
+#define GPIO_BOOTSTRAP_BIT_MASK 0x20000
+
 void gpio_init(uint32_t oe);
 void gpio_write_bit(unsigned int bit, unsigned int val);
 void gpio_write_all(uint32_t val);

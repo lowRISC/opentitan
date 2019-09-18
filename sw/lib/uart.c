@@ -31,6 +31,10 @@ void uart_send_char(char c) {
   REG32(UART_WDATA(0)) = c;
 }
 
+int uart_tx_empty(void) {
+  return !!(REG32(UART_STATUS(0)) & (1 << UART_STATUS_TXEMPTY));
+}
+
 /**
  * Send a NULL-terminated string over UART
  */
