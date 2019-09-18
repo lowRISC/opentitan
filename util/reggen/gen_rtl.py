@@ -55,6 +55,7 @@ class Register():
     dvrights = "RO"  # Used by UVM REG only
     regwen = ""
     fields = []
+    width = 0  # indicate register size
 
     def __init__(self):
         self.name = ""
@@ -66,6 +67,7 @@ class Register():
         self.dvrights = "RO"  # Used by UVM REG only
         self.regwen = ""
         self.fields = []
+        self.width = 0
 
 
 class Window():
@@ -77,6 +79,7 @@ class Window():
         self.base_addr = 0
         self.limit_addr = 0
         self.n_bits = 0
+
 
 class Block():
     width = 32
@@ -95,6 +98,7 @@ class Block():
         self.regs = []
         self.wins = []
         self.blocks = []
+
 
 def escape_name(name):
     return name.lower().replace(' ', '_')
@@ -156,6 +160,7 @@ def parse_reg(obj):
         field = parse_field(f, reg, len(obj["fields"]))
         if field != None:
             reg.fields.append(field)
+            reg.width = max(reg.width, field.msb + 1)
 
     # TODO(eunchan): Field bitfield overlapping check
     log.info("R[0x%04x]: %s ", reg.offset, reg.name)

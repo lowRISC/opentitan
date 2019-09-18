@@ -32,7 +32,7 @@ module rv_plic_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -62,16 +62,7 @@ module rv_plic_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -3832,16 +3823,16 @@ module rv_plic_reg_top (
   logic [37:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == RV_PLIC_IP_OFFSET);
-    addr_hit[1] = (reg_addr == RV_PLIC_LE_OFFSET);
-    addr_hit[2] = (reg_addr == RV_PLIC_PRIO0_OFFSET);
-    addr_hit[3] = (reg_addr == RV_PLIC_PRIO1_OFFSET);
-    addr_hit[4] = (reg_addr == RV_PLIC_PRIO2_OFFSET);
-    addr_hit[5] = (reg_addr == RV_PLIC_PRIO3_OFFSET);
-    addr_hit[6] = (reg_addr == RV_PLIC_PRIO4_OFFSET);
-    addr_hit[7] = (reg_addr == RV_PLIC_PRIO5_OFFSET);
-    addr_hit[8] = (reg_addr == RV_PLIC_PRIO6_OFFSET);
-    addr_hit[9] = (reg_addr == RV_PLIC_PRIO7_OFFSET);
+    addr_hit[ 0] = (reg_addr == RV_PLIC_IP_OFFSET);
+    addr_hit[ 1] = (reg_addr == RV_PLIC_LE_OFFSET);
+    addr_hit[ 2] = (reg_addr == RV_PLIC_PRIO0_OFFSET);
+    addr_hit[ 3] = (reg_addr == RV_PLIC_PRIO1_OFFSET);
+    addr_hit[ 4] = (reg_addr == RV_PLIC_PRIO2_OFFSET);
+    addr_hit[ 5] = (reg_addr == RV_PLIC_PRIO3_OFFSET);
+    addr_hit[ 6] = (reg_addr == RV_PLIC_PRIO4_OFFSET);
+    addr_hit[ 7] = (reg_addr == RV_PLIC_PRIO5_OFFSET);
+    addr_hit[ 8] = (reg_addr == RV_PLIC_PRIO6_OFFSET);
+    addr_hit[ 9] = (reg_addr == RV_PLIC_PRIO7_OFFSET);
     addr_hit[10] = (reg_addr == RV_PLIC_PRIO8_OFFSET);
     addr_hit[11] = (reg_addr == RV_PLIC_PRIO9_OFFSET);
     addr_hit[12] = (reg_addr == RV_PLIC_PRIO10_OFFSET);
@@ -3880,7 +3871,48 @@ module rv_plic_reg_top (
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    if (addr_hit[ 0] && reg_we && (RV_PLIC_PERMIT[ 0] != (RV_PLIC_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (RV_PLIC_PERMIT[ 1] != (RV_PLIC_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (RV_PLIC_PERMIT[ 2] != (RV_PLIC_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (RV_PLIC_PERMIT[ 3] != (RV_PLIC_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (RV_PLIC_PERMIT[ 4] != (RV_PLIC_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (RV_PLIC_PERMIT[ 5] != (RV_PLIC_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (RV_PLIC_PERMIT[ 6] != (RV_PLIC_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (RV_PLIC_PERMIT[ 7] != (RV_PLIC_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (RV_PLIC_PERMIT[ 8] != (RV_PLIC_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (RV_PLIC_PERMIT[ 9] != (RV_PLIC_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (RV_PLIC_PERMIT[10] != (RV_PLIC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (RV_PLIC_PERMIT[11] != (RV_PLIC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (RV_PLIC_PERMIT[12] != (RV_PLIC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (RV_PLIC_PERMIT[13] != (RV_PLIC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (RV_PLIC_PERMIT[14] != (RV_PLIC_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (RV_PLIC_PERMIT[15] != (RV_PLIC_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (RV_PLIC_PERMIT[16] != (RV_PLIC_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (RV_PLIC_PERMIT[17] != (RV_PLIC_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (RV_PLIC_PERMIT[18] != (RV_PLIC_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (RV_PLIC_PERMIT[19] != (RV_PLIC_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (RV_PLIC_PERMIT[20] != (RV_PLIC_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[21] && reg_we && (RV_PLIC_PERMIT[21] != (RV_PLIC_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (RV_PLIC_PERMIT[22] != (RV_PLIC_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[23] && reg_we && (RV_PLIC_PERMIT[23] != (RV_PLIC_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[24] && reg_we && (RV_PLIC_PERMIT[24] != (RV_PLIC_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[25] && reg_we && (RV_PLIC_PERMIT[25] != (RV_PLIC_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[26] && reg_we && (RV_PLIC_PERMIT[26] != (RV_PLIC_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[27] && reg_we && (RV_PLIC_PERMIT[27] != (RV_PLIC_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[28] && reg_we && (RV_PLIC_PERMIT[28] != (RV_PLIC_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[29] && reg_we && (RV_PLIC_PERMIT[29] != (RV_PLIC_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[30] && reg_we && (RV_PLIC_PERMIT[30] != (RV_PLIC_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[31] && reg_we && (RV_PLIC_PERMIT[31] != (RV_PLIC_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[32] && reg_we && (RV_PLIC_PERMIT[32] != (RV_PLIC_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[33] && reg_we && (RV_PLIC_PERMIT[33] != (RV_PLIC_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[34] && reg_we && (RV_PLIC_PERMIT[34] != (RV_PLIC_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[35] && reg_we && (RV_PLIC_PERMIT[35] != (RV_PLIC_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[36] && reg_we && (RV_PLIC_PERMIT[36] != (RV_PLIC_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[37] && reg_we && (RV_PLIC_PERMIT[37] != (RV_PLIC_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
+  end
 
 
 
@@ -3914,302 +3946,302 @@ module rv_plic_reg_top (
 
 
 
-  assign le_le0_we = addr_hit[1] && reg_we;
+  assign le_le0_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le0_wd = reg_wdata[0];
 
-  assign le_le1_we = addr_hit[1] && reg_we;
+  assign le_le1_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le1_wd = reg_wdata[1];
 
-  assign le_le2_we = addr_hit[1] && reg_we;
+  assign le_le2_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le2_wd = reg_wdata[2];
 
-  assign le_le3_we = addr_hit[1] && reg_we;
+  assign le_le3_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le3_wd = reg_wdata[3];
 
-  assign le_le4_we = addr_hit[1] && reg_we;
+  assign le_le4_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le4_wd = reg_wdata[4];
 
-  assign le_le5_we = addr_hit[1] && reg_we;
+  assign le_le5_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le5_wd = reg_wdata[5];
 
-  assign le_le6_we = addr_hit[1] && reg_we;
+  assign le_le6_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le6_wd = reg_wdata[6];
 
-  assign le_le7_we = addr_hit[1] && reg_we;
+  assign le_le7_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le7_wd = reg_wdata[7];
 
-  assign le_le8_we = addr_hit[1] && reg_we;
+  assign le_le8_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le8_wd = reg_wdata[8];
 
-  assign le_le9_we = addr_hit[1] && reg_we;
+  assign le_le9_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le9_wd = reg_wdata[9];
 
-  assign le_le10_we = addr_hit[1] && reg_we;
+  assign le_le10_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le10_wd = reg_wdata[10];
 
-  assign le_le11_we = addr_hit[1] && reg_we;
+  assign le_le11_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le11_wd = reg_wdata[11];
 
-  assign le_le12_we = addr_hit[1] && reg_we;
+  assign le_le12_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le12_wd = reg_wdata[12];
 
-  assign le_le13_we = addr_hit[1] && reg_we;
+  assign le_le13_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le13_wd = reg_wdata[13];
 
-  assign le_le14_we = addr_hit[1] && reg_we;
+  assign le_le14_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le14_wd = reg_wdata[14];
 
-  assign le_le15_we = addr_hit[1] && reg_we;
+  assign le_le15_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le15_wd = reg_wdata[15];
 
-  assign le_le16_we = addr_hit[1] && reg_we;
+  assign le_le16_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le16_wd = reg_wdata[16];
 
-  assign le_le17_we = addr_hit[1] && reg_we;
+  assign le_le17_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le17_wd = reg_wdata[17];
 
-  assign le_le18_we = addr_hit[1] && reg_we;
+  assign le_le18_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le18_wd = reg_wdata[18];
 
-  assign le_le19_we = addr_hit[1] && reg_we;
+  assign le_le19_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le19_wd = reg_wdata[19];
 
-  assign le_le20_we = addr_hit[1] && reg_we;
+  assign le_le20_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le20_wd = reg_wdata[20];
 
-  assign le_le21_we = addr_hit[1] && reg_we;
+  assign le_le21_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le21_wd = reg_wdata[21];
 
-  assign le_le22_we = addr_hit[1] && reg_we;
+  assign le_le22_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le22_wd = reg_wdata[22];
 
-  assign le_le23_we = addr_hit[1] && reg_we;
+  assign le_le23_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le23_wd = reg_wdata[23];
 
-  assign le_le24_we = addr_hit[1] && reg_we;
+  assign le_le24_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le24_wd = reg_wdata[24];
 
-  assign le_le25_we = addr_hit[1] && reg_we;
+  assign le_le25_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le25_wd = reg_wdata[25];
 
-  assign le_le26_we = addr_hit[1] && reg_we;
+  assign le_le26_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le26_wd = reg_wdata[26];
 
-  assign le_le27_we = addr_hit[1] && reg_we;
+  assign le_le27_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le27_wd = reg_wdata[27];
 
-  assign le_le28_we = addr_hit[1] && reg_we;
+  assign le_le28_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le28_wd = reg_wdata[28];
 
-  assign le_le29_we = addr_hit[1] && reg_we;
+  assign le_le29_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le29_wd = reg_wdata[29];
 
-  assign le_le30_we = addr_hit[1] && reg_we;
+  assign le_le30_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le30_wd = reg_wdata[30];
 
-  assign le_le31_we = addr_hit[1] && reg_we;
+  assign le_le31_we = addr_hit[1] & reg_we & ~wr_err;
   assign le_le31_wd = reg_wdata[31];
 
-  assign prio0_we = addr_hit[2] && reg_we;
+  assign prio0_we = addr_hit[2] & reg_we & ~wr_err;
   assign prio0_wd = reg_wdata[2:0];
 
-  assign prio1_we = addr_hit[3] && reg_we;
+  assign prio1_we = addr_hit[3] & reg_we & ~wr_err;
   assign prio1_wd = reg_wdata[2:0];
 
-  assign prio2_we = addr_hit[4] && reg_we;
+  assign prio2_we = addr_hit[4] & reg_we & ~wr_err;
   assign prio2_wd = reg_wdata[2:0];
 
-  assign prio3_we = addr_hit[5] && reg_we;
+  assign prio3_we = addr_hit[5] & reg_we & ~wr_err;
   assign prio3_wd = reg_wdata[2:0];
 
-  assign prio4_we = addr_hit[6] && reg_we;
+  assign prio4_we = addr_hit[6] & reg_we & ~wr_err;
   assign prio4_wd = reg_wdata[2:0];
 
-  assign prio5_we = addr_hit[7] && reg_we;
+  assign prio5_we = addr_hit[7] & reg_we & ~wr_err;
   assign prio5_wd = reg_wdata[2:0];
 
-  assign prio6_we = addr_hit[8] && reg_we;
+  assign prio6_we = addr_hit[8] & reg_we & ~wr_err;
   assign prio6_wd = reg_wdata[2:0];
 
-  assign prio7_we = addr_hit[9] && reg_we;
+  assign prio7_we = addr_hit[9] & reg_we & ~wr_err;
   assign prio7_wd = reg_wdata[2:0];
 
-  assign prio8_we = addr_hit[10] && reg_we;
+  assign prio8_we = addr_hit[10] & reg_we & ~wr_err;
   assign prio8_wd = reg_wdata[2:0];
 
-  assign prio9_we = addr_hit[11] && reg_we;
+  assign prio9_we = addr_hit[11] & reg_we & ~wr_err;
   assign prio9_wd = reg_wdata[2:0];
 
-  assign prio10_we = addr_hit[12] && reg_we;
+  assign prio10_we = addr_hit[12] & reg_we & ~wr_err;
   assign prio10_wd = reg_wdata[2:0];
 
-  assign prio11_we = addr_hit[13] && reg_we;
+  assign prio11_we = addr_hit[13] & reg_we & ~wr_err;
   assign prio11_wd = reg_wdata[2:0];
 
-  assign prio12_we = addr_hit[14] && reg_we;
+  assign prio12_we = addr_hit[14] & reg_we & ~wr_err;
   assign prio12_wd = reg_wdata[2:0];
 
-  assign prio13_we = addr_hit[15] && reg_we;
+  assign prio13_we = addr_hit[15] & reg_we & ~wr_err;
   assign prio13_wd = reg_wdata[2:0];
 
-  assign prio14_we = addr_hit[16] && reg_we;
+  assign prio14_we = addr_hit[16] & reg_we & ~wr_err;
   assign prio14_wd = reg_wdata[2:0];
 
-  assign prio15_we = addr_hit[17] && reg_we;
+  assign prio15_we = addr_hit[17] & reg_we & ~wr_err;
   assign prio15_wd = reg_wdata[2:0];
 
-  assign prio16_we = addr_hit[18] && reg_we;
+  assign prio16_we = addr_hit[18] & reg_we & ~wr_err;
   assign prio16_wd = reg_wdata[2:0];
 
-  assign prio17_we = addr_hit[19] && reg_we;
+  assign prio17_we = addr_hit[19] & reg_we & ~wr_err;
   assign prio17_wd = reg_wdata[2:0];
 
-  assign prio18_we = addr_hit[20] && reg_we;
+  assign prio18_we = addr_hit[20] & reg_we & ~wr_err;
   assign prio18_wd = reg_wdata[2:0];
 
-  assign prio19_we = addr_hit[21] && reg_we;
+  assign prio19_we = addr_hit[21] & reg_we & ~wr_err;
   assign prio19_wd = reg_wdata[2:0];
 
-  assign prio20_we = addr_hit[22] && reg_we;
+  assign prio20_we = addr_hit[22] & reg_we & ~wr_err;
   assign prio20_wd = reg_wdata[2:0];
 
-  assign prio21_we = addr_hit[23] && reg_we;
+  assign prio21_we = addr_hit[23] & reg_we & ~wr_err;
   assign prio21_wd = reg_wdata[2:0];
 
-  assign prio22_we = addr_hit[24] && reg_we;
+  assign prio22_we = addr_hit[24] & reg_we & ~wr_err;
   assign prio22_wd = reg_wdata[2:0];
 
-  assign prio23_we = addr_hit[25] && reg_we;
+  assign prio23_we = addr_hit[25] & reg_we & ~wr_err;
   assign prio23_wd = reg_wdata[2:0];
 
-  assign prio24_we = addr_hit[26] && reg_we;
+  assign prio24_we = addr_hit[26] & reg_we & ~wr_err;
   assign prio24_wd = reg_wdata[2:0];
 
-  assign prio25_we = addr_hit[27] && reg_we;
+  assign prio25_we = addr_hit[27] & reg_we & ~wr_err;
   assign prio25_wd = reg_wdata[2:0];
 
-  assign prio26_we = addr_hit[28] && reg_we;
+  assign prio26_we = addr_hit[28] & reg_we & ~wr_err;
   assign prio26_wd = reg_wdata[2:0];
 
-  assign prio27_we = addr_hit[29] && reg_we;
+  assign prio27_we = addr_hit[29] & reg_we & ~wr_err;
   assign prio27_wd = reg_wdata[2:0];
 
-  assign prio28_we = addr_hit[30] && reg_we;
+  assign prio28_we = addr_hit[30] & reg_we & ~wr_err;
   assign prio28_wd = reg_wdata[2:0];
 
-  assign prio29_we = addr_hit[31] && reg_we;
+  assign prio29_we = addr_hit[31] & reg_we & ~wr_err;
   assign prio29_wd = reg_wdata[2:0];
 
-  assign prio30_we = addr_hit[32] && reg_we;
+  assign prio30_we = addr_hit[32] & reg_we & ~wr_err;
   assign prio30_wd = reg_wdata[2:0];
 
-  assign prio31_we = addr_hit[33] && reg_we;
+  assign prio31_we = addr_hit[33] & reg_we & ~wr_err;
   assign prio31_wd = reg_wdata[2:0];
 
-  assign ie0_e0_we = addr_hit[34] && reg_we;
+  assign ie0_e0_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e0_wd = reg_wdata[0];
 
-  assign ie0_e1_we = addr_hit[34] && reg_we;
+  assign ie0_e1_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e1_wd = reg_wdata[1];
 
-  assign ie0_e2_we = addr_hit[34] && reg_we;
+  assign ie0_e2_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e2_wd = reg_wdata[2];
 
-  assign ie0_e3_we = addr_hit[34] && reg_we;
+  assign ie0_e3_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e3_wd = reg_wdata[3];
 
-  assign ie0_e4_we = addr_hit[34] && reg_we;
+  assign ie0_e4_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e4_wd = reg_wdata[4];
 
-  assign ie0_e5_we = addr_hit[34] && reg_we;
+  assign ie0_e5_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e5_wd = reg_wdata[5];
 
-  assign ie0_e6_we = addr_hit[34] && reg_we;
+  assign ie0_e6_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e6_wd = reg_wdata[6];
 
-  assign ie0_e7_we = addr_hit[34] && reg_we;
+  assign ie0_e7_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e7_wd = reg_wdata[7];
 
-  assign ie0_e8_we = addr_hit[34] && reg_we;
+  assign ie0_e8_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e8_wd = reg_wdata[8];
 
-  assign ie0_e9_we = addr_hit[34] && reg_we;
+  assign ie0_e9_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e9_wd = reg_wdata[9];
 
-  assign ie0_e10_we = addr_hit[34] && reg_we;
+  assign ie0_e10_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e10_wd = reg_wdata[10];
 
-  assign ie0_e11_we = addr_hit[34] && reg_we;
+  assign ie0_e11_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e11_wd = reg_wdata[11];
 
-  assign ie0_e12_we = addr_hit[34] && reg_we;
+  assign ie0_e12_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e12_wd = reg_wdata[12];
 
-  assign ie0_e13_we = addr_hit[34] && reg_we;
+  assign ie0_e13_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e13_wd = reg_wdata[13];
 
-  assign ie0_e14_we = addr_hit[34] && reg_we;
+  assign ie0_e14_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e14_wd = reg_wdata[14];
 
-  assign ie0_e15_we = addr_hit[34] && reg_we;
+  assign ie0_e15_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e15_wd = reg_wdata[15];
 
-  assign ie0_e16_we = addr_hit[34] && reg_we;
+  assign ie0_e16_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e16_wd = reg_wdata[16];
 
-  assign ie0_e17_we = addr_hit[34] && reg_we;
+  assign ie0_e17_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e17_wd = reg_wdata[17];
 
-  assign ie0_e18_we = addr_hit[34] && reg_we;
+  assign ie0_e18_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e18_wd = reg_wdata[18];
 
-  assign ie0_e19_we = addr_hit[34] && reg_we;
+  assign ie0_e19_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e19_wd = reg_wdata[19];
 
-  assign ie0_e20_we = addr_hit[34] && reg_we;
+  assign ie0_e20_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e20_wd = reg_wdata[20];
 
-  assign ie0_e21_we = addr_hit[34] && reg_we;
+  assign ie0_e21_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e21_wd = reg_wdata[21];
 
-  assign ie0_e22_we = addr_hit[34] && reg_we;
+  assign ie0_e22_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e22_wd = reg_wdata[22];
 
-  assign ie0_e23_we = addr_hit[34] && reg_we;
+  assign ie0_e23_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e23_wd = reg_wdata[23];
 
-  assign ie0_e24_we = addr_hit[34] && reg_we;
+  assign ie0_e24_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e24_wd = reg_wdata[24];
 
-  assign ie0_e25_we = addr_hit[34] && reg_we;
+  assign ie0_e25_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e25_wd = reg_wdata[25];
 
-  assign ie0_e26_we = addr_hit[34] && reg_we;
+  assign ie0_e26_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e26_wd = reg_wdata[26];
 
-  assign ie0_e27_we = addr_hit[34] && reg_we;
+  assign ie0_e27_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e27_wd = reg_wdata[27];
 
-  assign ie0_e28_we = addr_hit[34] && reg_we;
+  assign ie0_e28_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e28_wd = reg_wdata[28];
 
-  assign ie0_e29_we = addr_hit[34] && reg_we;
+  assign ie0_e29_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e29_wd = reg_wdata[29];
 
-  assign ie0_e30_we = addr_hit[34] && reg_we;
+  assign ie0_e30_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e30_wd = reg_wdata[30];
 
-  assign ie0_e31_we = addr_hit[34] && reg_we;
+  assign ie0_e31_we = addr_hit[34] & reg_we & ~wr_err;
   assign ie0_e31_wd = reg_wdata[31];
 
-  assign threshold0_we = addr_hit[35] && reg_we;
+  assign threshold0_we = addr_hit[35] & reg_we & ~wr_err;
   assign threshold0_wd = reg_wdata[2:0];
 
-  assign cc0_we = addr_hit[36] && reg_we;
+  assign cc0_we = addr_hit[36] & reg_we & ~wr_err;
   assign cc0_wd = reg_wdata[5:0];
   assign cc0_re = addr_hit[36] && reg_re;
 
-  assign msip0_we = addr_hit[37] && reg_we;
+  assign msip0_we = addr_hit[37] & reg_we & ~wr_err;
   assign msip0_wd = reg_wdata[0];
 
   // Read data return

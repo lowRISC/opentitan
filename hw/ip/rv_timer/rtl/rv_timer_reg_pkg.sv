@@ -73,4 +73,30 @@ typedef struct packed {
   parameter RV_TIMER_INTR_TEST0_OFFSET = 9'h 11c;
 
 
+  // Register Index
+  typedef enum int {
+    RV_TIMER_CTRL,
+    RV_TIMER_CFG0,
+    RV_TIMER_TIMER_V_LOWER0,
+    RV_TIMER_TIMER_V_UPPER0,
+    RV_TIMER_COMPARE_LOWER0_0,
+    RV_TIMER_COMPARE_UPPER0_0,
+    RV_TIMER_INTR_ENABLE0,
+    RV_TIMER_INTR_STATE0,
+    RV_TIMER_INTR_TEST0
+  } rv_timer_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] RV_TIMER_PERMIT [9] = '{
+    4'b 0001, // index[0] RV_TIMER_CTRL
+    4'b 1111, // index[1] RV_TIMER_CFG0
+    4'b 1111, // index[2] RV_TIMER_TIMER_V_LOWER0
+    4'b 1111, // index[3] RV_TIMER_TIMER_V_UPPER0
+    4'b 1111, // index[4] RV_TIMER_COMPARE_LOWER0_0
+    4'b 1111, // index[5] RV_TIMER_COMPARE_UPPER0_0
+    4'b 0001, // index[6] RV_TIMER_INTR_ENABLE0
+    4'b 0001, // index[7] RV_TIMER_INTR_STATE0
+    4'b 0001, // index[8] RV_TIMER_INTR_TEST0
+  };
 endpackage
+

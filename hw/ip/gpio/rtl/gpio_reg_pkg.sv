@@ -153,4 +153,42 @@ typedef struct packed {
   parameter GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 38;
 
 
+  // Register Index
+  typedef enum int {
+    GPIO_INTR_STATE,
+    GPIO_INTR_ENABLE,
+    GPIO_INTR_TEST,
+    GPIO_DATA_IN,
+    GPIO_DIRECT_OUT,
+    GPIO_MASKED_OUT_LOWER,
+    GPIO_MASKED_OUT_UPPER,
+    GPIO_DIRECT_OE,
+    GPIO_MASKED_OE_LOWER,
+    GPIO_MASKED_OE_UPPER,
+    GPIO_INTR_CTRL_EN_RISING,
+    GPIO_INTR_CTRL_EN_FALLING,
+    GPIO_INTR_CTRL_EN_LVLHIGH,
+    GPIO_INTR_CTRL_EN_LVLLOW,
+    GPIO_CTRL_EN_INPUT_FILTER
+  } gpio_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] GPIO_PERMIT [15] = '{
+    4'b 1111, // index[ 0] GPIO_INTR_STATE
+    4'b 1111, // index[ 1] GPIO_INTR_ENABLE
+    4'b 1111, // index[ 2] GPIO_INTR_TEST
+    4'b 1111, // index[ 3] GPIO_DATA_IN
+    4'b 1111, // index[ 4] GPIO_DIRECT_OUT
+    4'b 1111, // index[ 5] GPIO_MASKED_OUT_LOWER
+    4'b 1111, // index[ 6] GPIO_MASKED_OUT_UPPER
+    4'b 1111, // index[ 7] GPIO_DIRECT_OE
+    4'b 1111, // index[ 8] GPIO_MASKED_OE_LOWER
+    4'b 1111, // index[ 9] GPIO_MASKED_OE_UPPER
+    4'b 1111, // index[10] GPIO_INTR_CTRL_EN_RISING
+    4'b 1111, // index[11] GPIO_INTR_CTRL_EN_FALLING
+    4'b 1111, // index[12] GPIO_INTR_CTRL_EN_LVLHIGH
+    4'b 1111, // index[13] GPIO_INTR_CTRL_EN_LVLLOW
+    4'b 1111, // index[14] GPIO_CTRL_EN_INPUT_FILTER
+  };
 endpackage
+

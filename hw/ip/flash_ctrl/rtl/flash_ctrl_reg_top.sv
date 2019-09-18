@@ -37,7 +37,7 @@ module flash_ctrl_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -112,16 +112,7 @@ module flash_ctrl_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -2609,16 +2600,16 @@ module flash_ctrl_reg_top (
   logic [18:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == FLASH_CTRL_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == FLASH_CTRL_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == FLASH_CTRL_CONTROL_OFFSET);
-    addr_hit[4] = (reg_addr == FLASH_CTRL_ADDR_OFFSET);
-    addr_hit[5] = (reg_addr == FLASH_CTRL_MP_REGION_CFG0_OFFSET);
-    addr_hit[6] = (reg_addr == FLASH_CTRL_MP_REGION_CFG1_OFFSET);
-    addr_hit[7] = (reg_addr == FLASH_CTRL_MP_REGION_CFG2_OFFSET);
-    addr_hit[8] = (reg_addr == FLASH_CTRL_MP_REGION_CFG3_OFFSET);
-    addr_hit[9] = (reg_addr == FLASH_CTRL_MP_REGION_CFG4_OFFSET);
+    addr_hit[ 0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == FLASH_CTRL_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == FLASH_CTRL_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == FLASH_CTRL_CONTROL_OFFSET);
+    addr_hit[ 4] = (reg_addr == FLASH_CTRL_ADDR_OFFSET);
+    addr_hit[ 5] = (reg_addr == FLASH_CTRL_MP_REGION_CFG0_OFFSET);
+    addr_hit[ 6] = (reg_addr == FLASH_CTRL_MP_REGION_CFG1_OFFSET);
+    addr_hit[ 7] = (reg_addr == FLASH_CTRL_MP_REGION_CFG2_OFFSET);
+    addr_hit[ 8] = (reg_addr == FLASH_CTRL_MP_REGION_CFG3_OFFSET);
+    addr_hit[ 9] = (reg_addr == FLASH_CTRL_MP_REGION_CFG4_OFFSET);
     addr_hit[10] = (reg_addr == FLASH_CTRL_MP_REGION_CFG5_OFFSET);
     addr_hit[11] = (reg_addr == FLASH_CTRL_MP_REGION_CFG6_OFFSET);
     addr_hit[12] = (reg_addr == FLASH_CTRL_MP_REGION_CFG7_OFFSET);
@@ -2638,243 +2629,265 @@ module flash_ctrl_reg_top (
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    if (addr_hit[ 0] && reg_we && (FLASH_CTRL_PERMIT[ 0] != (FLASH_CTRL_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (FLASH_CTRL_PERMIT[ 1] != (FLASH_CTRL_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (FLASH_CTRL_PERMIT[ 2] != (FLASH_CTRL_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (FLASH_CTRL_PERMIT[ 3] != (FLASH_CTRL_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (FLASH_CTRL_PERMIT[ 4] != (FLASH_CTRL_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (FLASH_CTRL_PERMIT[ 5] != (FLASH_CTRL_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (FLASH_CTRL_PERMIT[ 6] != (FLASH_CTRL_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (FLASH_CTRL_PERMIT[ 7] != (FLASH_CTRL_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (FLASH_CTRL_PERMIT[ 8] != (FLASH_CTRL_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (FLASH_CTRL_PERMIT[ 9] != (FLASH_CTRL_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (FLASH_CTRL_PERMIT[10] != (FLASH_CTRL_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (FLASH_CTRL_PERMIT[11] != (FLASH_CTRL_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (FLASH_CTRL_PERMIT[12] != (FLASH_CTRL_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (FLASH_CTRL_PERMIT[13] != (FLASH_CTRL_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (FLASH_CTRL_PERMIT[14] != (FLASH_CTRL_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (FLASH_CTRL_PERMIT[15] != (FLASH_CTRL_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (FLASH_CTRL_PERMIT[16] != (FLASH_CTRL_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (FLASH_CTRL_PERMIT[17] != (FLASH_CTRL_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (FLASH_CTRL_PERMIT[18] != (FLASH_CTRL_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+  end
 
-  assign intr_state_prog_empty_we = addr_hit[0] && reg_we;
+  assign intr_state_prog_empty_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_prog_empty_wd = reg_wdata[0];
 
-  assign intr_state_prog_lvl_we = addr_hit[0] && reg_we;
+  assign intr_state_prog_lvl_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_prog_lvl_wd = reg_wdata[1];
 
-  assign intr_state_rd_full_we = addr_hit[0] && reg_we;
+  assign intr_state_rd_full_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rd_full_wd = reg_wdata[2];
 
-  assign intr_state_rd_lvl_we = addr_hit[0] && reg_we;
+  assign intr_state_rd_lvl_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rd_lvl_wd = reg_wdata[3];
 
-  assign intr_state_op_done_we = addr_hit[0] && reg_we;
+  assign intr_state_op_done_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_op_done_wd = reg_wdata[4];
 
-  assign intr_state_op_error_we = addr_hit[0] && reg_we;
+  assign intr_state_op_error_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_op_error_wd = reg_wdata[5];
 
-  assign intr_enable_prog_empty_we = addr_hit[1] && reg_we;
+  assign intr_enable_prog_empty_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_prog_empty_wd = reg_wdata[0];
 
-  assign intr_enable_prog_lvl_we = addr_hit[1] && reg_we;
+  assign intr_enable_prog_lvl_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_prog_lvl_wd = reg_wdata[1];
 
-  assign intr_enable_rd_full_we = addr_hit[1] && reg_we;
+  assign intr_enable_rd_full_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rd_full_wd = reg_wdata[2];
 
-  assign intr_enable_rd_lvl_we = addr_hit[1] && reg_we;
+  assign intr_enable_rd_lvl_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rd_lvl_wd = reg_wdata[3];
 
-  assign intr_enable_op_done_we = addr_hit[1] && reg_we;
+  assign intr_enable_op_done_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_op_done_wd = reg_wdata[4];
 
-  assign intr_enable_op_error_we = addr_hit[1] && reg_we;
+  assign intr_enable_op_error_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_op_error_wd = reg_wdata[5];
 
-  assign intr_test_prog_empty_we = addr_hit[2] && reg_we;
+  assign intr_test_prog_empty_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_prog_empty_wd = reg_wdata[0];
 
-  assign intr_test_prog_lvl_we = addr_hit[2] && reg_we;
+  assign intr_test_prog_lvl_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_prog_lvl_wd = reg_wdata[1];
 
-  assign intr_test_rd_full_we = addr_hit[2] && reg_we;
+  assign intr_test_rd_full_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rd_full_wd = reg_wdata[2];
 
-  assign intr_test_rd_lvl_we = addr_hit[2] && reg_we;
+  assign intr_test_rd_lvl_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rd_lvl_wd = reg_wdata[3];
 
-  assign intr_test_op_done_we = addr_hit[2] && reg_we;
+  assign intr_test_op_done_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_op_done_wd = reg_wdata[4];
 
-  assign intr_test_op_error_we = addr_hit[2] && reg_we;
+  assign intr_test_op_error_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_op_error_wd = reg_wdata[5];
 
-  assign control_start_we = addr_hit[3] && reg_we;
+  assign control_start_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_start_wd = reg_wdata[0];
 
-  assign control_op_we = addr_hit[3] && reg_we;
+  assign control_op_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_op_wd = reg_wdata[5:4];
 
-  assign control_erase_sel_we = addr_hit[3] && reg_we;
+  assign control_erase_sel_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_erase_sel_wd = reg_wdata[6];
 
-  assign control_fifo_rst_we = addr_hit[3] && reg_we;
+  assign control_fifo_rst_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_fifo_rst_wd = reg_wdata[7];
 
-  assign control_num_we = addr_hit[3] && reg_we;
+  assign control_num_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_num_wd = reg_wdata[27:16];
 
-  assign addr_we = addr_hit[4] && reg_we;
+  assign addr_we = addr_hit[4] & reg_we & ~wr_err;
   assign addr_wd = reg_wdata[31:0];
 
-  assign mp_region_cfg0_en0_we = addr_hit[5] && reg_we;
+  assign mp_region_cfg0_en0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mp_region_cfg0_en0_wd = reg_wdata[0];
 
-  assign mp_region_cfg0_rd_en0_we = addr_hit[5] && reg_we;
+  assign mp_region_cfg0_rd_en0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mp_region_cfg0_rd_en0_wd = reg_wdata[1];
 
-  assign mp_region_cfg0_prog_en0_we = addr_hit[5] && reg_we;
+  assign mp_region_cfg0_prog_en0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mp_region_cfg0_prog_en0_wd = reg_wdata[2];
 
-  assign mp_region_cfg0_erase_en0_we = addr_hit[5] && reg_we;
+  assign mp_region_cfg0_erase_en0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mp_region_cfg0_erase_en0_wd = reg_wdata[3];
 
-  assign mp_region_cfg0_base0_we = addr_hit[5] && reg_we;
+  assign mp_region_cfg0_base0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mp_region_cfg0_base0_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg0_size0_we = addr_hit[5] && reg_we;
+  assign mp_region_cfg0_size0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mp_region_cfg0_size0_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg1_en1_we = addr_hit[6] && reg_we;
+  assign mp_region_cfg1_en1_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg1_en1_wd = reg_wdata[0];
 
-  assign mp_region_cfg1_rd_en1_we = addr_hit[6] && reg_we;
+  assign mp_region_cfg1_rd_en1_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg1_rd_en1_wd = reg_wdata[1];
 
-  assign mp_region_cfg1_prog_en1_we = addr_hit[6] && reg_we;
+  assign mp_region_cfg1_prog_en1_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg1_prog_en1_wd = reg_wdata[2];
 
-  assign mp_region_cfg1_erase_en1_we = addr_hit[6] && reg_we;
+  assign mp_region_cfg1_erase_en1_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg1_erase_en1_wd = reg_wdata[3];
 
-  assign mp_region_cfg1_base1_we = addr_hit[6] && reg_we;
+  assign mp_region_cfg1_base1_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg1_base1_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg1_size1_we = addr_hit[6] && reg_we;
+  assign mp_region_cfg1_size1_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg1_size1_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg2_en2_we = addr_hit[7] && reg_we;
+  assign mp_region_cfg2_en2_we = addr_hit[7] & reg_we & ~wr_err;
   assign mp_region_cfg2_en2_wd = reg_wdata[0];
 
-  assign mp_region_cfg2_rd_en2_we = addr_hit[7] && reg_we;
+  assign mp_region_cfg2_rd_en2_we = addr_hit[7] & reg_we & ~wr_err;
   assign mp_region_cfg2_rd_en2_wd = reg_wdata[1];
 
-  assign mp_region_cfg2_prog_en2_we = addr_hit[7] && reg_we;
+  assign mp_region_cfg2_prog_en2_we = addr_hit[7] & reg_we & ~wr_err;
   assign mp_region_cfg2_prog_en2_wd = reg_wdata[2];
 
-  assign mp_region_cfg2_erase_en2_we = addr_hit[7] && reg_we;
+  assign mp_region_cfg2_erase_en2_we = addr_hit[7] & reg_we & ~wr_err;
   assign mp_region_cfg2_erase_en2_wd = reg_wdata[3];
 
-  assign mp_region_cfg2_base2_we = addr_hit[7] && reg_we;
+  assign mp_region_cfg2_base2_we = addr_hit[7] & reg_we & ~wr_err;
   assign mp_region_cfg2_base2_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg2_size2_we = addr_hit[7] && reg_we;
+  assign mp_region_cfg2_size2_we = addr_hit[7] & reg_we & ~wr_err;
   assign mp_region_cfg2_size2_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg3_en3_we = addr_hit[8] && reg_we;
+  assign mp_region_cfg3_en3_we = addr_hit[8] & reg_we & ~wr_err;
   assign mp_region_cfg3_en3_wd = reg_wdata[0];
 
-  assign mp_region_cfg3_rd_en3_we = addr_hit[8] && reg_we;
+  assign mp_region_cfg3_rd_en3_we = addr_hit[8] & reg_we & ~wr_err;
   assign mp_region_cfg3_rd_en3_wd = reg_wdata[1];
 
-  assign mp_region_cfg3_prog_en3_we = addr_hit[8] && reg_we;
+  assign mp_region_cfg3_prog_en3_we = addr_hit[8] & reg_we & ~wr_err;
   assign mp_region_cfg3_prog_en3_wd = reg_wdata[2];
 
-  assign mp_region_cfg3_erase_en3_we = addr_hit[8] && reg_we;
+  assign mp_region_cfg3_erase_en3_we = addr_hit[8] & reg_we & ~wr_err;
   assign mp_region_cfg3_erase_en3_wd = reg_wdata[3];
 
-  assign mp_region_cfg3_base3_we = addr_hit[8] && reg_we;
+  assign mp_region_cfg3_base3_we = addr_hit[8] & reg_we & ~wr_err;
   assign mp_region_cfg3_base3_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg3_size3_we = addr_hit[8] && reg_we;
+  assign mp_region_cfg3_size3_we = addr_hit[8] & reg_we & ~wr_err;
   assign mp_region_cfg3_size3_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg4_en4_we = addr_hit[9] && reg_we;
+  assign mp_region_cfg4_en4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mp_region_cfg4_en4_wd = reg_wdata[0];
 
-  assign mp_region_cfg4_rd_en4_we = addr_hit[9] && reg_we;
+  assign mp_region_cfg4_rd_en4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mp_region_cfg4_rd_en4_wd = reg_wdata[1];
 
-  assign mp_region_cfg4_prog_en4_we = addr_hit[9] && reg_we;
+  assign mp_region_cfg4_prog_en4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mp_region_cfg4_prog_en4_wd = reg_wdata[2];
 
-  assign mp_region_cfg4_erase_en4_we = addr_hit[9] && reg_we;
+  assign mp_region_cfg4_erase_en4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mp_region_cfg4_erase_en4_wd = reg_wdata[3];
 
-  assign mp_region_cfg4_base4_we = addr_hit[9] && reg_we;
+  assign mp_region_cfg4_base4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mp_region_cfg4_base4_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg4_size4_we = addr_hit[9] && reg_we;
+  assign mp_region_cfg4_size4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mp_region_cfg4_size4_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg5_en5_we = addr_hit[10] && reg_we;
+  assign mp_region_cfg5_en5_we = addr_hit[10] & reg_we & ~wr_err;
   assign mp_region_cfg5_en5_wd = reg_wdata[0];
 
-  assign mp_region_cfg5_rd_en5_we = addr_hit[10] && reg_we;
+  assign mp_region_cfg5_rd_en5_we = addr_hit[10] & reg_we & ~wr_err;
   assign mp_region_cfg5_rd_en5_wd = reg_wdata[1];
 
-  assign mp_region_cfg5_prog_en5_we = addr_hit[10] && reg_we;
+  assign mp_region_cfg5_prog_en5_we = addr_hit[10] & reg_we & ~wr_err;
   assign mp_region_cfg5_prog_en5_wd = reg_wdata[2];
 
-  assign mp_region_cfg5_erase_en5_we = addr_hit[10] && reg_we;
+  assign mp_region_cfg5_erase_en5_we = addr_hit[10] & reg_we & ~wr_err;
   assign mp_region_cfg5_erase_en5_wd = reg_wdata[3];
 
-  assign mp_region_cfg5_base5_we = addr_hit[10] && reg_we;
+  assign mp_region_cfg5_base5_we = addr_hit[10] & reg_we & ~wr_err;
   assign mp_region_cfg5_base5_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg5_size5_we = addr_hit[10] && reg_we;
+  assign mp_region_cfg5_size5_we = addr_hit[10] & reg_we & ~wr_err;
   assign mp_region_cfg5_size5_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg6_en6_we = addr_hit[11] && reg_we;
+  assign mp_region_cfg6_en6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mp_region_cfg6_en6_wd = reg_wdata[0];
 
-  assign mp_region_cfg6_rd_en6_we = addr_hit[11] && reg_we;
+  assign mp_region_cfg6_rd_en6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mp_region_cfg6_rd_en6_wd = reg_wdata[1];
 
-  assign mp_region_cfg6_prog_en6_we = addr_hit[11] && reg_we;
+  assign mp_region_cfg6_prog_en6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mp_region_cfg6_prog_en6_wd = reg_wdata[2];
 
-  assign mp_region_cfg6_erase_en6_we = addr_hit[11] && reg_we;
+  assign mp_region_cfg6_erase_en6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mp_region_cfg6_erase_en6_wd = reg_wdata[3];
 
-  assign mp_region_cfg6_base6_we = addr_hit[11] && reg_we;
+  assign mp_region_cfg6_base6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mp_region_cfg6_base6_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg6_size6_we = addr_hit[11] && reg_we;
+  assign mp_region_cfg6_size6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mp_region_cfg6_size6_wd = reg_wdata[24:16];
 
-  assign mp_region_cfg7_en7_we = addr_hit[12] && reg_we;
+  assign mp_region_cfg7_en7_we = addr_hit[12] & reg_we & ~wr_err;
   assign mp_region_cfg7_en7_wd = reg_wdata[0];
 
-  assign mp_region_cfg7_rd_en7_we = addr_hit[12] && reg_we;
+  assign mp_region_cfg7_rd_en7_we = addr_hit[12] & reg_we & ~wr_err;
   assign mp_region_cfg7_rd_en7_wd = reg_wdata[1];
 
-  assign mp_region_cfg7_prog_en7_we = addr_hit[12] && reg_we;
+  assign mp_region_cfg7_prog_en7_we = addr_hit[12] & reg_we & ~wr_err;
   assign mp_region_cfg7_prog_en7_wd = reg_wdata[2];
 
-  assign mp_region_cfg7_erase_en7_we = addr_hit[12] && reg_we;
+  assign mp_region_cfg7_erase_en7_we = addr_hit[12] & reg_we & ~wr_err;
   assign mp_region_cfg7_erase_en7_wd = reg_wdata[3];
 
-  assign mp_region_cfg7_base7_we = addr_hit[12] && reg_we;
+  assign mp_region_cfg7_base7_we = addr_hit[12] & reg_we & ~wr_err;
   assign mp_region_cfg7_base7_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg7_size7_we = addr_hit[12] && reg_we;
+  assign mp_region_cfg7_size7_we = addr_hit[12] & reg_we & ~wr_err;
   assign mp_region_cfg7_size7_wd = reg_wdata[24:16];
 
-  assign default_region_rd_en_we = addr_hit[13] && reg_we;
+  assign default_region_rd_en_we = addr_hit[13] & reg_we & ~wr_err;
   assign default_region_rd_en_wd = reg_wdata[0];
 
-  assign default_region_prog_en_we = addr_hit[13] && reg_we;
+  assign default_region_prog_en_we = addr_hit[13] & reg_we & ~wr_err;
   assign default_region_prog_en_wd = reg_wdata[1];
 
-  assign default_region_erase_en_we = addr_hit[13] && reg_we;
+  assign default_region_erase_en_we = addr_hit[13] & reg_we & ~wr_err;
   assign default_region_erase_en_wd = reg_wdata[2];
 
-  assign mp_bank_cfg_erase_en0_we = addr_hit[14] && reg_we;
+  assign mp_bank_cfg_erase_en0_we = addr_hit[14] & reg_we & ~wr_err;
   assign mp_bank_cfg_erase_en0_wd = reg_wdata[1];
 
-  assign mp_bank_cfg_erase_en1_we = addr_hit[14] && reg_we;
+  assign mp_bank_cfg_erase_en1_we = addr_hit[14] & reg_we & ~wr_err;
   assign mp_bank_cfg_erase_en1_wd = reg_wdata[2];
 
-  assign op_status_done_we = addr_hit[15] && reg_we;
+  assign op_status_done_we = addr_hit[15] & reg_we & ~wr_err;
   assign op_status_done_wd = reg_wdata[0];
 
-  assign op_status_err_we = addr_hit[15] && reg_we;
+  assign op_status_err_we = addr_hit[15] & reg_we & ~wr_err;
   assign op_status_err_wd = reg_wdata[1];
 
   assign status_rd_full_re = addr_hit[16] && reg_re;
@@ -2891,13 +2904,13 @@ module flash_ctrl_reg_top (
 
   assign status_error_bank_re = addr_hit[16] && reg_re;
 
-  assign scratch_we = addr_hit[17] && reg_we;
+  assign scratch_we = addr_hit[17] & reg_we & ~wr_err;
   assign scratch_wd = reg_wdata[31:0];
 
-  assign fifo_lvl_prog_we = addr_hit[18] && reg_we;
+  assign fifo_lvl_prog_we = addr_hit[18] & reg_we & ~wr_err;
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
-  assign fifo_lvl_rd_we = addr_hit[18] && reg_we;
+  assign fifo_lvl_rd_we = addr_hit[18] & reg_we & ~wr_err;
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
 
   // Read data return

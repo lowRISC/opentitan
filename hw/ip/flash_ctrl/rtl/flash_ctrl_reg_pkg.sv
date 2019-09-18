@@ -384,4 +384,50 @@ typedef struct packed {
   parameter FLASH_CTRL_RD_FIFO_OFFSET = 7'h 50;
   parameter FLASH_CTRL_RD_FIFO_SIZE   = 7'h 4;
 
+  // Register Index
+  typedef enum int {
+    FLASH_CTRL_INTR_STATE,
+    FLASH_CTRL_INTR_ENABLE,
+    FLASH_CTRL_INTR_TEST,
+    FLASH_CTRL_CONTROL,
+    FLASH_CTRL_ADDR,
+    FLASH_CTRL_MP_REGION_CFG0,
+    FLASH_CTRL_MP_REGION_CFG1,
+    FLASH_CTRL_MP_REGION_CFG2,
+    FLASH_CTRL_MP_REGION_CFG3,
+    FLASH_CTRL_MP_REGION_CFG4,
+    FLASH_CTRL_MP_REGION_CFG5,
+    FLASH_CTRL_MP_REGION_CFG6,
+    FLASH_CTRL_MP_REGION_CFG7,
+    FLASH_CTRL_DEFAULT_REGION,
+    FLASH_CTRL_MP_BANK_CFG,
+    FLASH_CTRL_OP_STATUS,
+    FLASH_CTRL_STATUS,
+    FLASH_CTRL_SCRATCH,
+    FLASH_CTRL_FIFO_LVL
+  } flash_ctrl_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] FLASH_CTRL_PERMIT [19] = '{
+    4'b 0001, // index[ 0] FLASH_CTRL_INTR_STATE
+    4'b 0001, // index[ 1] FLASH_CTRL_INTR_ENABLE
+    4'b 0001, // index[ 2] FLASH_CTRL_INTR_TEST
+    4'b 1111, // index[ 3] FLASH_CTRL_CONTROL
+    4'b 1111, // index[ 4] FLASH_CTRL_ADDR
+    4'b 1111, // index[ 5] FLASH_CTRL_MP_REGION_CFG0
+    4'b 1111, // index[ 6] FLASH_CTRL_MP_REGION_CFG1
+    4'b 1111, // index[ 7] FLASH_CTRL_MP_REGION_CFG2
+    4'b 1111, // index[ 8] FLASH_CTRL_MP_REGION_CFG3
+    4'b 1111, // index[ 9] FLASH_CTRL_MP_REGION_CFG4
+    4'b 1111, // index[10] FLASH_CTRL_MP_REGION_CFG5
+    4'b 1111, // index[11] FLASH_CTRL_MP_REGION_CFG6
+    4'b 1111, // index[12] FLASH_CTRL_MP_REGION_CFG7
+    4'b 0001, // index[13] FLASH_CTRL_DEFAULT_REGION
+    4'b 0001, // index[14] FLASH_CTRL_MP_BANK_CFG
+    4'b 0001, // index[15] FLASH_CTRL_OP_STATUS
+    4'b 1111, // index[16] FLASH_CTRL_STATUS
+    4'b 1111, // index[17] FLASH_CTRL_SCRATCH
+    4'b 0011, // index[18] FLASH_CTRL_FIFO_LVL
+  };
 endpackage
+

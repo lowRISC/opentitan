@@ -37,7 +37,7 @@ module spi_device_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -108,16 +108,7 @@ module spi_device_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -1132,16 +1123,16 @@ module spi_device_reg_top (
   logic [11:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == SPI_DEVICE_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == SPI_DEVICE_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == SPI_DEVICE_CONTROL_OFFSET);
-    addr_hit[4] = (reg_addr == SPI_DEVICE_CFG_OFFSET);
-    addr_hit[5] = (reg_addr == SPI_DEVICE_FIFO_LEVEL_OFFSET);
-    addr_hit[6] = (reg_addr == SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET);
-    addr_hit[7] = (reg_addr == SPI_DEVICE_STATUS_OFFSET);
-    addr_hit[8] = (reg_addr == SPI_DEVICE_RXF_PTR_OFFSET);
-    addr_hit[9] = (reg_addr == SPI_DEVICE_TXF_PTR_OFFSET);
+    addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == SPI_DEVICE_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == SPI_DEVICE_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == SPI_DEVICE_CONTROL_OFFSET);
+    addr_hit[ 4] = (reg_addr == SPI_DEVICE_CFG_OFFSET);
+    addr_hit[ 5] = (reg_addr == SPI_DEVICE_FIFO_LEVEL_OFFSET);
+    addr_hit[ 6] = (reg_addr == SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET);
+    addr_hit[ 7] = (reg_addr == SPI_DEVICE_STATUS_OFFSET);
+    addr_hit[ 8] = (reg_addr == SPI_DEVICE_RXF_PTR_OFFSET);
+    addr_hit[ 9] = (reg_addr == SPI_DEVICE_TXF_PTR_OFFSET);
     addr_hit[10] = (reg_addr == SPI_DEVICE_RXF_ADDR_OFFSET);
     addr_hit[11] = (reg_addr == SPI_DEVICE_TXF_ADDR_OFFSET);
   end
@@ -1154,75 +1145,90 @@ module spi_device_reg_top (
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    if (addr_hit[ 0] && reg_we && (SPI_DEVICE_PERMIT[ 0] != (SPI_DEVICE_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (SPI_DEVICE_PERMIT[ 1] != (SPI_DEVICE_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (SPI_DEVICE_PERMIT[ 2] != (SPI_DEVICE_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (SPI_DEVICE_PERMIT[ 3] != (SPI_DEVICE_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (SPI_DEVICE_PERMIT[ 4] != (SPI_DEVICE_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (SPI_DEVICE_PERMIT[ 5] != (SPI_DEVICE_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (SPI_DEVICE_PERMIT[ 6] != (SPI_DEVICE_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (SPI_DEVICE_PERMIT[ 7] != (SPI_DEVICE_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (SPI_DEVICE_PERMIT[ 8] != (SPI_DEVICE_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (SPI_DEVICE_PERMIT[ 9] != (SPI_DEVICE_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (SPI_DEVICE_PERMIT[10] != (SPI_DEVICE_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (SPI_DEVICE_PERMIT[11] != (SPI_DEVICE_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+  end
 
-  assign intr_state_rxf_we = addr_hit[0] && reg_we;
+  assign intr_state_rxf_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rxf_wd = reg_wdata[0];
 
-  assign intr_state_rxlvl_we = addr_hit[0] && reg_we;
+  assign intr_state_rxlvl_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rxlvl_wd = reg_wdata[1];
 
-  assign intr_state_txlvl_we = addr_hit[0] && reg_we;
+  assign intr_state_txlvl_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_txlvl_wd = reg_wdata[2];
 
-  assign intr_state_rxerr_we = addr_hit[0] && reg_we;
+  assign intr_state_rxerr_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rxerr_wd = reg_wdata[3];
 
-  assign intr_enable_rxf_we = addr_hit[1] && reg_we;
+  assign intr_enable_rxf_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rxf_wd = reg_wdata[0];
 
-  assign intr_enable_rxlvl_we = addr_hit[1] && reg_we;
+  assign intr_enable_rxlvl_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rxlvl_wd = reg_wdata[1];
 
-  assign intr_enable_txlvl_we = addr_hit[1] && reg_we;
+  assign intr_enable_txlvl_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_txlvl_wd = reg_wdata[2];
 
-  assign intr_enable_rxerr_we = addr_hit[1] && reg_we;
+  assign intr_enable_rxerr_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rxerr_wd = reg_wdata[3];
 
-  assign intr_test_rxf_we = addr_hit[2] && reg_we;
+  assign intr_test_rxf_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rxf_wd = reg_wdata[0];
 
-  assign intr_test_rxlvl_we = addr_hit[2] && reg_we;
+  assign intr_test_rxlvl_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rxlvl_wd = reg_wdata[1];
 
-  assign intr_test_txlvl_we = addr_hit[2] && reg_we;
+  assign intr_test_txlvl_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_txlvl_wd = reg_wdata[2];
 
-  assign intr_test_rxerr_we = addr_hit[2] && reg_we;
+  assign intr_test_rxerr_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rxerr_wd = reg_wdata[3];
 
-  assign control_abort_we = addr_hit[3] && reg_we;
+  assign control_abort_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_abort_wd = reg_wdata[0];
 
-  assign control_mode_we = addr_hit[3] && reg_we;
+  assign control_mode_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_mode_wd = reg_wdata[5:4];
 
-  assign control_rst_txfifo_we = addr_hit[3] && reg_we;
+  assign control_rst_txfifo_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_rst_txfifo_wd = reg_wdata[16];
 
-  assign control_rst_rxfifo_we = addr_hit[3] && reg_we;
+  assign control_rst_rxfifo_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_rst_rxfifo_wd = reg_wdata[17];
 
-  assign cfg_cpol_we = addr_hit[4] && reg_we;
+  assign cfg_cpol_we = addr_hit[4] & reg_we & ~wr_err;
   assign cfg_cpol_wd = reg_wdata[0];
 
-  assign cfg_cpha_we = addr_hit[4] && reg_we;
+  assign cfg_cpha_we = addr_hit[4] & reg_we & ~wr_err;
   assign cfg_cpha_wd = reg_wdata[1];
 
-  assign cfg_tx_order_we = addr_hit[4] && reg_we;
+  assign cfg_tx_order_we = addr_hit[4] & reg_we & ~wr_err;
   assign cfg_tx_order_wd = reg_wdata[2];
 
-  assign cfg_rx_order_we = addr_hit[4] && reg_we;
+  assign cfg_rx_order_we = addr_hit[4] & reg_we & ~wr_err;
   assign cfg_rx_order_wd = reg_wdata[3];
 
-  assign cfg_timer_v_we = addr_hit[4] && reg_we;
+  assign cfg_timer_v_we = addr_hit[4] & reg_we & ~wr_err;
   assign cfg_timer_v_wd = reg_wdata[15:8];
 
-  assign fifo_level_rxlvl_we = addr_hit[5] && reg_we;
+  assign fifo_level_rxlvl_we = addr_hit[5] & reg_we & ~wr_err;
   assign fifo_level_rxlvl_wd = reg_wdata[15:0];
 
-  assign fifo_level_txlvl_we = addr_hit[5] && reg_we;
+  assign fifo_level_txlvl_we = addr_hit[5] & reg_we & ~wr_err;
   assign fifo_level_txlvl_wd = reg_wdata[31:16];
 
   assign async_fifo_level_rxlvl_re = addr_hit[6] && reg_re;
@@ -1239,24 +1245,24 @@ module spi_device_reg_top (
 
   assign status_abort_done_re = addr_hit[7] && reg_re;
 
-  assign rxf_ptr_rptr_we = addr_hit[8] && reg_we;
+  assign rxf_ptr_rptr_we = addr_hit[8] & reg_we & ~wr_err;
   assign rxf_ptr_rptr_wd = reg_wdata[15:0];
 
 
 
-  assign txf_ptr_wptr_we = addr_hit[9] && reg_we;
+  assign txf_ptr_wptr_we = addr_hit[9] & reg_we & ~wr_err;
   assign txf_ptr_wptr_wd = reg_wdata[31:16];
 
-  assign rxf_addr_base_we = addr_hit[10] && reg_we;
+  assign rxf_addr_base_we = addr_hit[10] & reg_we & ~wr_err;
   assign rxf_addr_base_wd = reg_wdata[15:0];
 
-  assign rxf_addr_limit_we = addr_hit[10] && reg_we;
+  assign rxf_addr_limit_we = addr_hit[10] & reg_we & ~wr_err;
   assign rxf_addr_limit_wd = reg_wdata[31:16];
 
-  assign txf_addr_base_we = addr_hit[11] && reg_we;
+  assign txf_addr_base_we = addr_hit[11] & reg_we & ~wr_err;
   assign txf_addr_base_wd = reg_wdata[15:0];
 
-  assign txf_addr_limit_we = addr_hit[11] && reg_we;
+  assign txf_addr_limit_we = addr_hit[11] & reg_we & ~wr_err;
   assign txf_addr_limit_wd = reg_wdata[31:16];
 
   // Read data return

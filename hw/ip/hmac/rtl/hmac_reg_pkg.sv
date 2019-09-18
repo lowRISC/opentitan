@@ -210,4 +210,62 @@ typedef struct packed {
   parameter HMAC_MSG_FIFO_OFFSET = 12'h 800;
   parameter HMAC_MSG_FIFO_SIZE   = 12'h 800;
 
+  // Register Index
+  typedef enum int {
+    HMAC_INTR_STATE,
+    HMAC_INTR_ENABLE,
+    HMAC_INTR_TEST,
+    HMAC_CFG,
+    HMAC_CMD,
+    HMAC_STATUS,
+    HMAC_WIPE_SECRET,
+    HMAC_KEY0,
+    HMAC_KEY1,
+    HMAC_KEY2,
+    HMAC_KEY3,
+    HMAC_KEY4,
+    HMAC_KEY5,
+    HMAC_KEY6,
+    HMAC_KEY7,
+    HMAC_DIGEST0,
+    HMAC_DIGEST1,
+    HMAC_DIGEST2,
+    HMAC_DIGEST3,
+    HMAC_DIGEST4,
+    HMAC_DIGEST5,
+    HMAC_DIGEST6,
+    HMAC_DIGEST7,
+    HMAC_MSG_LENGTH_LOWER,
+    HMAC_MSG_LENGTH_UPPER
+  } hmac_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] HMAC_PERMIT [25] = '{
+    4'b 0001, // index[ 0] HMAC_INTR_STATE
+    4'b 0001, // index[ 1] HMAC_INTR_ENABLE
+    4'b 0001, // index[ 2] HMAC_INTR_TEST
+    4'b 0001, // index[ 3] HMAC_CFG
+    4'b 0001, // index[ 4] HMAC_CMD
+    4'b 0011, // index[ 5] HMAC_STATUS
+    4'b 1111, // index[ 6] HMAC_WIPE_SECRET
+    4'b 1111, // index[ 7] HMAC_KEY0
+    4'b 1111, // index[ 8] HMAC_KEY1
+    4'b 1111, // index[ 9] HMAC_KEY2
+    4'b 1111, // index[10] HMAC_KEY3
+    4'b 1111, // index[11] HMAC_KEY4
+    4'b 1111, // index[12] HMAC_KEY5
+    4'b 1111, // index[13] HMAC_KEY6
+    4'b 1111, // index[14] HMAC_KEY7
+    4'b 1111, // index[15] HMAC_DIGEST0
+    4'b 1111, // index[16] HMAC_DIGEST1
+    4'b 1111, // index[17] HMAC_DIGEST2
+    4'b 1111, // index[18] HMAC_DIGEST3
+    4'b 1111, // index[19] HMAC_DIGEST4
+    4'b 1111, // index[20] HMAC_DIGEST5
+    4'b 1111, // index[21] HMAC_DIGEST6
+    4'b 1111, // index[22] HMAC_DIGEST7
+    4'b 1111, // index[23] HMAC_MSG_LENGTH_LOWER
+    4'b 1111, // index[24] HMAC_MSG_LENGTH_UPPER
+  };
 endpackage
+

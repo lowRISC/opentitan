@@ -298,4 +298,40 @@ typedef struct packed {
   parameter USBUART_USBPARAM_OFFSET = 6'h 34;
 
 
+  // Register Index
+  typedef enum int {
+    USBUART_INTR_STATE,
+    USBUART_INTR_ENABLE,
+    USBUART_INTR_TEST,
+    USBUART_CTRL,
+    USBUART_STATUS,
+    USBUART_RDATA,
+    USBUART_WDATA,
+    USBUART_FIFO_CTRL,
+    USBUART_FIFO_STATUS,
+    USBUART_OVRD,
+    USBUART_VAL,
+    USBUART_TIMEOUT_CTRL,
+    USBUART_USBSTAT,
+    USBUART_USBPARAM
+  } usbuart_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] USBUART_PERMIT [14] = '{
+    4'b 0001, // index[ 0] USBUART_INTR_STATE
+    4'b 0001, // index[ 1] USBUART_INTR_ENABLE
+    4'b 0001, // index[ 2] USBUART_INTR_TEST
+    4'b 1111, // index[ 3] USBUART_CTRL
+    4'b 0001, // index[ 4] USBUART_STATUS
+    4'b 0001, // index[ 5] USBUART_RDATA
+    4'b 0001, // index[ 6] USBUART_WDATA
+    4'b 0001, // index[ 7] USBUART_FIFO_CTRL
+    4'b 1111, // index[ 8] USBUART_FIFO_STATUS
+    4'b 0001, // index[ 9] USBUART_OVRD
+    4'b 0011, // index[10] USBUART_VAL
+    4'b 1111, // index[11] USBUART_TIMEOUT_CTRL
+    4'b 1111, // index[12] USBUART_USBSTAT
+    4'b 1111, // index[13] USBUART_USBPARAM
+  };
 endpackage
+

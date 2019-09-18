@@ -200,4 +200,36 @@ typedef struct packed {
   parameter SPI_DEVICE_BUFFER_OFFSET = 12'h 800;
   parameter SPI_DEVICE_BUFFER_SIZE   = 12'h 800;
 
+  // Register Index
+  typedef enum int {
+    SPI_DEVICE_INTR_STATE,
+    SPI_DEVICE_INTR_ENABLE,
+    SPI_DEVICE_INTR_TEST,
+    SPI_DEVICE_CONTROL,
+    SPI_DEVICE_CFG,
+    SPI_DEVICE_FIFO_LEVEL,
+    SPI_DEVICE_ASYNC_FIFO_LEVEL,
+    SPI_DEVICE_STATUS,
+    SPI_DEVICE_RXF_PTR,
+    SPI_DEVICE_TXF_PTR,
+    SPI_DEVICE_RXF_ADDR,
+    SPI_DEVICE_TXF_ADDR
+  } spi_device_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] SPI_DEVICE_PERMIT [12] = '{
+    4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
+    4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
+    4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST
+    4'b 1111, // index[ 3] SPI_DEVICE_CONTROL
+    4'b 0011, // index[ 4] SPI_DEVICE_CFG
+    4'b 1111, // index[ 5] SPI_DEVICE_FIFO_LEVEL
+    4'b 1111, // index[ 6] SPI_DEVICE_ASYNC_FIFO_LEVEL
+    4'b 0001, // index[ 7] SPI_DEVICE_STATUS
+    4'b 1111, // index[ 8] SPI_DEVICE_RXF_PTR
+    4'b 1111, // index[ 9] SPI_DEVICE_TXF_PTR
+    4'b 1111, // index[10] SPI_DEVICE_RXF_ADDR
+    4'b 1111, // index[11] SPI_DEVICE_TXF_ADDR
+  };
 endpackage
+

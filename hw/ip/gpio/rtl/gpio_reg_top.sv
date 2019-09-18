@@ -32,7 +32,7 @@ module gpio_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -62,16 +62,7 @@ module gpio_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -549,16 +540,16 @@ module gpio_reg_top (
   logic [14:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == GPIO_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == GPIO_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == GPIO_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == GPIO_DATA_IN_OFFSET);
-    addr_hit[4] = (reg_addr == GPIO_DIRECT_OUT_OFFSET);
-    addr_hit[5] = (reg_addr == GPIO_MASKED_OUT_LOWER_OFFSET);
-    addr_hit[6] = (reg_addr == GPIO_MASKED_OUT_UPPER_OFFSET);
-    addr_hit[7] = (reg_addr == GPIO_DIRECT_OE_OFFSET);
-    addr_hit[8] = (reg_addr == GPIO_MASKED_OE_LOWER_OFFSET);
-    addr_hit[9] = (reg_addr == GPIO_MASKED_OE_UPPER_OFFSET);
+    addr_hit[ 0] = (reg_addr == GPIO_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == GPIO_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == GPIO_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == GPIO_DATA_IN_OFFSET);
+    addr_hit[ 4] = (reg_addr == GPIO_DIRECT_OUT_OFFSET);
+    addr_hit[ 5] = (reg_addr == GPIO_MASKED_OUT_LOWER_OFFSET);
+    addr_hit[ 6] = (reg_addr == GPIO_MASKED_OUT_UPPER_OFFSET);
+    addr_hit[ 7] = (reg_addr == GPIO_DIRECT_OE_OFFSET);
+    addr_hit[ 8] = (reg_addr == GPIO_MASKED_OE_LOWER_OFFSET);
+    addr_hit[ 9] = (reg_addr == GPIO_MASKED_OE_UPPER_OFFSET);
     addr_hit[10] = (reg_addr == GPIO_INTR_CTRL_EN_RISING_OFFSET);
     addr_hit[11] = (reg_addr == GPIO_INTR_CTRL_EN_FALLING_OFFSET);
     addr_hit[12] = (reg_addr == GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET);
@@ -574,69 +565,87 @@ module gpio_reg_top (
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    if (addr_hit[ 0] && reg_we && (GPIO_PERMIT[ 0] != (GPIO_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (GPIO_PERMIT[ 1] != (GPIO_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (GPIO_PERMIT[ 2] != (GPIO_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (GPIO_PERMIT[ 3] != (GPIO_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (GPIO_PERMIT[ 4] != (GPIO_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (GPIO_PERMIT[ 5] != (GPIO_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (GPIO_PERMIT[ 6] != (GPIO_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (GPIO_PERMIT[ 7] != (GPIO_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (GPIO_PERMIT[ 8] != (GPIO_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (GPIO_PERMIT[ 9] != (GPIO_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (GPIO_PERMIT[10] != (GPIO_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (GPIO_PERMIT[11] != (GPIO_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (GPIO_PERMIT[12] != (GPIO_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (GPIO_PERMIT[13] != (GPIO_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (GPIO_PERMIT[14] != (GPIO_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+  end
 
-  assign intr_state_we = addr_hit[0] && reg_we;
+  assign intr_state_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_wd = reg_wdata[31:0];
 
-  assign intr_enable_we = addr_hit[1] && reg_we;
+  assign intr_enable_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_wd = reg_wdata[31:0];
 
-  assign intr_test_we = addr_hit[2] && reg_we;
+  assign intr_test_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_wd = reg_wdata[31:0];
 
 
-  assign direct_out_we = addr_hit[4] && reg_we;
+  assign direct_out_we = addr_hit[4] & reg_we & ~wr_err;
   assign direct_out_wd = reg_wdata[31:0];
   assign direct_out_re = addr_hit[4] && reg_re;
 
-  assign masked_out_lower_data_we = addr_hit[5] && reg_we;
+  assign masked_out_lower_data_we = addr_hit[5] & reg_we & ~wr_err;
   assign masked_out_lower_data_wd = reg_wdata[15:0];
   assign masked_out_lower_data_re = addr_hit[5] && reg_re;
 
-  assign masked_out_lower_mask_we = addr_hit[5] && reg_we;
+  assign masked_out_lower_mask_we = addr_hit[5] & reg_we & ~wr_err;
   assign masked_out_lower_mask_wd = reg_wdata[31:16];
 
-  assign masked_out_upper_data_we = addr_hit[6] && reg_we;
+  assign masked_out_upper_data_we = addr_hit[6] & reg_we & ~wr_err;
   assign masked_out_upper_data_wd = reg_wdata[15:0];
   assign masked_out_upper_data_re = addr_hit[6] && reg_re;
 
-  assign masked_out_upper_mask_we = addr_hit[6] && reg_we;
+  assign masked_out_upper_mask_we = addr_hit[6] & reg_we & ~wr_err;
   assign masked_out_upper_mask_wd = reg_wdata[31:16];
 
-  assign direct_oe_we = addr_hit[7] && reg_we;
+  assign direct_oe_we = addr_hit[7] & reg_we & ~wr_err;
   assign direct_oe_wd = reg_wdata[31:0];
   assign direct_oe_re = addr_hit[7] && reg_re;
 
-  assign masked_oe_lower_data_we = addr_hit[8] && reg_we;
+  assign masked_oe_lower_data_we = addr_hit[8] & reg_we & ~wr_err;
   assign masked_oe_lower_data_wd = reg_wdata[15:0];
   assign masked_oe_lower_data_re = addr_hit[8] && reg_re;
 
-  assign masked_oe_lower_mask_we = addr_hit[8] && reg_we;
+  assign masked_oe_lower_mask_we = addr_hit[8] & reg_we & ~wr_err;
   assign masked_oe_lower_mask_wd = reg_wdata[31:16];
   assign masked_oe_lower_mask_re = addr_hit[8] && reg_re;
 
-  assign masked_oe_upper_data_we = addr_hit[9] && reg_we;
+  assign masked_oe_upper_data_we = addr_hit[9] & reg_we & ~wr_err;
   assign masked_oe_upper_data_wd = reg_wdata[15:0];
   assign masked_oe_upper_data_re = addr_hit[9] && reg_re;
 
-  assign masked_oe_upper_mask_we = addr_hit[9] && reg_we;
+  assign masked_oe_upper_mask_we = addr_hit[9] & reg_we & ~wr_err;
   assign masked_oe_upper_mask_wd = reg_wdata[31:16];
   assign masked_oe_upper_mask_re = addr_hit[9] && reg_re;
 
-  assign intr_ctrl_en_rising_we = addr_hit[10] && reg_we;
+  assign intr_ctrl_en_rising_we = addr_hit[10] & reg_we & ~wr_err;
   assign intr_ctrl_en_rising_wd = reg_wdata[31:0];
 
-  assign intr_ctrl_en_falling_we = addr_hit[11] && reg_we;
+  assign intr_ctrl_en_falling_we = addr_hit[11] & reg_we & ~wr_err;
   assign intr_ctrl_en_falling_wd = reg_wdata[31:0];
 
-  assign intr_ctrl_en_lvlhigh_we = addr_hit[12] && reg_we;
+  assign intr_ctrl_en_lvlhigh_we = addr_hit[12] & reg_we & ~wr_err;
   assign intr_ctrl_en_lvlhigh_wd = reg_wdata[31:0];
 
-  assign intr_ctrl_en_lvllow_we = addr_hit[13] && reg_we;
+  assign intr_ctrl_en_lvllow_we = addr_hit[13] & reg_we & ~wr_err;
   assign intr_ctrl_en_lvllow_wd = reg_wdata[31:0];
 
-  assign ctrl_en_input_filter_we = addr_hit[14] && reg_we;
+  assign ctrl_en_input_filter_we = addr_hit[14] & reg_we & ~wr_err;
   assign ctrl_en_input_filter_wd = reg_wdata[31:0];
 
   // Read data return

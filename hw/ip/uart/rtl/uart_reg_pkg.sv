@@ -292,4 +292,36 @@ typedef struct packed {
   parameter UART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
 
 
+  // Register Index
+  typedef enum int {
+    UART_INTR_STATE,
+    UART_INTR_ENABLE,
+    UART_INTR_TEST,
+    UART_CTRL,
+    UART_STATUS,
+    UART_RDATA,
+    UART_WDATA,
+    UART_FIFO_CTRL,
+    UART_FIFO_STATUS,
+    UART_OVRD,
+    UART_VAL,
+    UART_TIMEOUT_CTRL
+  } uart_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] UART_PERMIT [12] = '{
+    4'b 0001, // index[ 0] UART_INTR_STATE
+    4'b 0001, // index[ 1] UART_INTR_ENABLE
+    4'b 0001, // index[ 2] UART_INTR_TEST
+    4'b 1111, // index[ 3] UART_CTRL
+    4'b 0001, // index[ 4] UART_STATUS
+    4'b 0001, // index[ 5] UART_RDATA
+    4'b 0001, // index[ 6] UART_WDATA
+    4'b 0001, // index[ 7] UART_FIFO_CTRL
+    4'b 1111, // index[ 8] UART_FIFO_STATUS
+    4'b 0001, // index[ 9] UART_OVRD
+    4'b 0011, // index[10] UART_VAL
+    4'b 1111, // index[11] UART_TIMEOUT_CTRL
+  };
 endpackage
+

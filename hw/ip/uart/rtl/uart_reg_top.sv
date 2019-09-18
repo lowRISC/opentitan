@@ -32,7 +32,7 @@ module uart_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -62,16 +62,7 @@ module uart_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -1405,16 +1396,16 @@ module uart_reg_top (
   logic [11:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == UART_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == UART_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == UART_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == UART_CTRL_OFFSET);
-    addr_hit[4] = (reg_addr == UART_STATUS_OFFSET);
-    addr_hit[5] = (reg_addr == UART_RDATA_OFFSET);
-    addr_hit[6] = (reg_addr == UART_WDATA_OFFSET);
-    addr_hit[7] = (reg_addr == UART_FIFO_CTRL_OFFSET);
-    addr_hit[8] = (reg_addr == UART_FIFO_STATUS_OFFSET);
-    addr_hit[9] = (reg_addr == UART_OVRD_OFFSET);
+    addr_hit[ 0] = (reg_addr == UART_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == UART_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == UART_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == UART_CTRL_OFFSET);
+    addr_hit[ 4] = (reg_addr == UART_STATUS_OFFSET);
+    addr_hit[ 5] = (reg_addr == UART_RDATA_OFFSET);
+    addr_hit[ 6] = (reg_addr == UART_WDATA_OFFSET);
+    addr_hit[ 7] = (reg_addr == UART_FIFO_CTRL_OFFSET);
+    addr_hit[ 8] = (reg_addr == UART_FIFO_STATUS_OFFSET);
+    addr_hit[ 9] = (reg_addr == UART_OVRD_OFFSET);
     addr_hit[10] = (reg_addr == UART_VAL_OFFSET);
     addr_hit[11] = (reg_addr == UART_TIMEOUT_CTRL_OFFSET);
   end
@@ -1427,105 +1418,120 @@ module uart_reg_top (
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    if (addr_hit[ 0] && reg_we && (UART_PERMIT[ 0] != (UART_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (UART_PERMIT[ 1] != (UART_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (UART_PERMIT[ 2] != (UART_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (UART_PERMIT[ 3] != (UART_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (UART_PERMIT[ 4] != (UART_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (UART_PERMIT[ 5] != (UART_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (UART_PERMIT[ 6] != (UART_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (UART_PERMIT[ 7] != (UART_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (UART_PERMIT[ 8] != (UART_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (UART_PERMIT[ 9] != (UART_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (UART_PERMIT[10] != (UART_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (UART_PERMIT[11] != (UART_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+  end
 
-  assign intr_state_tx_watermark_we = addr_hit[0] && reg_we;
+  assign intr_state_tx_watermark_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_tx_watermark_wd = reg_wdata[0];
 
-  assign intr_state_rx_watermark_we = addr_hit[0] && reg_we;
+  assign intr_state_rx_watermark_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_state_tx_overflow_we = addr_hit[0] && reg_we;
+  assign intr_state_tx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_tx_overflow_wd = reg_wdata[2];
 
-  assign intr_state_rx_overflow_we = addr_hit[0] && reg_we;
+  assign intr_state_rx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_state_rx_frame_err_we = addr_hit[0] && reg_we;
+  assign intr_state_rx_frame_err_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_frame_err_wd = reg_wdata[4];
 
-  assign intr_state_rx_break_err_we = addr_hit[0] && reg_we;
+  assign intr_state_rx_break_err_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_break_err_wd = reg_wdata[5];
 
-  assign intr_state_rx_timeout_we = addr_hit[0] && reg_we;
+  assign intr_state_rx_timeout_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_timeout_wd = reg_wdata[6];
 
-  assign intr_state_rx_parity_err_we = addr_hit[0] && reg_we;
+  assign intr_state_rx_parity_err_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_parity_err_wd = reg_wdata[7];
 
-  assign intr_enable_tx_watermark_we = addr_hit[1] && reg_we;
+  assign intr_enable_tx_watermark_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_tx_watermark_wd = reg_wdata[0];
 
-  assign intr_enable_rx_watermark_we = addr_hit[1] && reg_we;
+  assign intr_enable_rx_watermark_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_enable_tx_overflow_we = addr_hit[1] && reg_we;
+  assign intr_enable_tx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_tx_overflow_wd = reg_wdata[2];
 
-  assign intr_enable_rx_overflow_we = addr_hit[1] && reg_we;
+  assign intr_enable_rx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_enable_rx_frame_err_we = addr_hit[1] && reg_we;
+  assign intr_enable_rx_frame_err_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_frame_err_wd = reg_wdata[4];
 
-  assign intr_enable_rx_break_err_we = addr_hit[1] && reg_we;
+  assign intr_enable_rx_break_err_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_break_err_wd = reg_wdata[5];
 
-  assign intr_enable_rx_timeout_we = addr_hit[1] && reg_we;
+  assign intr_enable_rx_timeout_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_timeout_wd = reg_wdata[6];
 
-  assign intr_enable_rx_parity_err_we = addr_hit[1] && reg_we;
+  assign intr_enable_rx_parity_err_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_parity_err_wd = reg_wdata[7];
 
-  assign intr_test_tx_watermark_we = addr_hit[2] && reg_we;
+  assign intr_test_tx_watermark_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_tx_watermark_wd = reg_wdata[0];
 
-  assign intr_test_rx_watermark_we = addr_hit[2] && reg_we;
+  assign intr_test_rx_watermark_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_test_tx_overflow_we = addr_hit[2] && reg_we;
+  assign intr_test_tx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_tx_overflow_wd = reg_wdata[2];
 
-  assign intr_test_rx_overflow_we = addr_hit[2] && reg_we;
+  assign intr_test_rx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_test_rx_frame_err_we = addr_hit[2] && reg_we;
+  assign intr_test_rx_frame_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_frame_err_wd = reg_wdata[4];
 
-  assign intr_test_rx_break_err_we = addr_hit[2] && reg_we;
+  assign intr_test_rx_break_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_break_err_wd = reg_wdata[5];
 
-  assign intr_test_rx_timeout_we = addr_hit[2] && reg_we;
+  assign intr_test_rx_timeout_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_timeout_wd = reg_wdata[6];
 
-  assign intr_test_rx_parity_err_we = addr_hit[2] && reg_we;
+  assign intr_test_rx_parity_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_parity_err_wd = reg_wdata[7];
 
-  assign ctrl_tx_we = addr_hit[3] && reg_we;
+  assign ctrl_tx_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_tx_wd = reg_wdata[0];
 
-  assign ctrl_rx_we = addr_hit[3] && reg_we;
+  assign ctrl_rx_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_rx_wd = reg_wdata[1];
 
-  assign ctrl_nf_we = addr_hit[3] && reg_we;
+  assign ctrl_nf_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_nf_wd = reg_wdata[2];
 
-  assign ctrl_slpbk_we = addr_hit[3] && reg_we;
+  assign ctrl_slpbk_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_slpbk_wd = reg_wdata[4];
 
-  assign ctrl_llpbk_we = addr_hit[3] && reg_we;
+  assign ctrl_llpbk_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_llpbk_wd = reg_wdata[5];
 
-  assign ctrl_parity_en_we = addr_hit[3] && reg_we;
+  assign ctrl_parity_en_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_parity_en_wd = reg_wdata[6];
 
-  assign ctrl_parity_odd_we = addr_hit[3] && reg_we;
+  assign ctrl_parity_odd_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_parity_odd_wd = reg_wdata[7];
 
-  assign ctrl_rxblvl_we = addr_hit[3] && reg_we;
+  assign ctrl_rxblvl_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_rxblvl_wd = reg_wdata[9:8];
 
-  assign ctrl_nco_we = addr_hit[3] && reg_we;
+  assign ctrl_nco_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_nco_wd = reg_wdata[31:16];
 
   assign status_txfull_re = addr_hit[4] && reg_re;
@@ -1542,37 +1548,37 @@ module uart_reg_top (
 
   assign rdata_re = addr_hit[5] && reg_re;
 
-  assign wdata_we = addr_hit[6] && reg_we;
+  assign wdata_we = addr_hit[6] & reg_we & ~wr_err;
   assign wdata_wd = reg_wdata[7:0];
 
-  assign fifo_ctrl_rxrst_we = addr_hit[7] && reg_we;
+  assign fifo_ctrl_rxrst_we = addr_hit[7] & reg_we & ~wr_err;
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
-  assign fifo_ctrl_txrst_we = addr_hit[7] && reg_we;
+  assign fifo_ctrl_txrst_we = addr_hit[7] & reg_we & ~wr_err;
   assign fifo_ctrl_txrst_wd = reg_wdata[1];
 
-  assign fifo_ctrl_rxilvl_we = addr_hit[7] && reg_we;
+  assign fifo_ctrl_rxilvl_we = addr_hit[7] & reg_we & ~wr_err;
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
-  assign fifo_ctrl_txilvl_we = addr_hit[7] && reg_we;
+  assign fifo_ctrl_txilvl_we = addr_hit[7] & reg_we & ~wr_err;
   assign fifo_ctrl_txilvl_wd = reg_wdata[6:5];
 
   assign fifo_status_txlvl_re = addr_hit[8] && reg_re;
 
   assign fifo_status_rxlvl_re = addr_hit[8] && reg_re;
 
-  assign ovrd_txen_we = addr_hit[9] && reg_we;
+  assign ovrd_txen_we = addr_hit[9] & reg_we & ~wr_err;
   assign ovrd_txen_wd = reg_wdata[0];
 
-  assign ovrd_txval_we = addr_hit[9] && reg_we;
+  assign ovrd_txval_we = addr_hit[9] & reg_we & ~wr_err;
   assign ovrd_txval_wd = reg_wdata[1];
 
   assign val_re = addr_hit[10] && reg_re;
 
-  assign timeout_ctrl_val_we = addr_hit[11] && reg_we;
+  assign timeout_ctrl_val_we = addr_hit[11] & reg_we & ~wr_err;
   assign timeout_ctrl_val_wd = reg_wdata[23:0];
 
-  assign timeout_ctrl_en_we = addr_hit[11] && reg_we;
+  assign timeout_ctrl_en_we = addr_hit[11] & reg_we & ~wr_err;
   assign timeout_ctrl_en_wd = reg_wdata[31];
 
   // Read data return

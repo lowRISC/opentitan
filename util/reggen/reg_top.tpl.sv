@@ -7,6 +7,8 @@
   num_wins = len(block.wins)
   num_wins_width = ((num_wins+1).bit_length()) - 1
   num_dsp  = num_wins + 1
+  num_regs = len(block.regs)
+  max_regs_char = len("{}".format(num_regs-1))
 %>
 
 module ${block.name}_reg_top (
@@ -43,7 +45,7 @@ module ${block.name}_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -127,16 +129,7 @@ module ${block.name}_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -236,7 +229,7 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
   always_comb begin
     addr_hit = '0;
     % for i,r in enumerate(block.regs):
-    addr_hit[${i}] = (reg_addr == ${block.name.upper()}_${r.name.upper()}_OFFSET);
+    addr_hit[${"{}".format(i).rjust(max_regs_char)}] = (reg_addr == ${block.name.upper()}_${r.name.upper()}_OFFSET);
     % endfor
   end
 
@@ -248,7 +241,14 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    % for i,r in enumerate(block.regs):
+<% index_str = "{}".format(i).rjust(max_regs_char) %>\
+    if (addr_hit[${index_str}] && reg_we && (${block.name.upper()}_PERMIT[${index_str}] != (${block.name.upper()}_PERMIT[${index_str}] & reg_be))) wr_err = 1'b1 ;
+    % endfor
+  end
   % for i, r in enumerate(block.regs):
     % if len(r.fields) == 1:
 <%
@@ -464,11 +464,11 @@ ${msb}\
 <%def name="we_gen(sig_name, msb, lsb, swrdaccess, swwraccess, hwext, idx)">\
 % if swwraccess != SwWrAccess.NONE:
   % if swrdaccess != SwRdAccess.RC:
-  assign ${sig_name}_we = addr_hit[${idx}] && reg_we;
+  assign ${sig_name}_we = addr_hit[${idx}] & reg_we & ~wr_err;
   assign ${sig_name}_wd = reg_wdata[${str_bits_sv(msb,lsb)}];
   % else:
   ## Generate WE based on read request, read should clear
-  assign ${sig_name}_we = addr_hit[${idx}] && reg_re;
+  assign ${sig_name}_we = addr_hit[${idx}] & reg_re;
   assign ${sig_name}_wd = '1;
   % endif
 % endif

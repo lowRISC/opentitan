@@ -37,7 +37,7 @@ module hmac_reg_top (
   logic [DW-1:0]  reg_rdata;
   logic           reg_error;
 
-  logic          malformed, addrmiss;
+  logic          addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -108,16 +108,7 @@ module hmac_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = malformed | addrmiss ;
-
-  // Malformed request check only affects to the write access
-  always_comb begin : malformed_check
-    if (reg_we && (reg_be != '1)) begin
-      malformed = 1'b1;
-    end else begin
-      malformed = 1'b0;
-    end
-  end
+  assign reg_error = addrmiss | wr_err;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario
@@ -947,16 +938,16 @@ module hmac_reg_top (
   logic [24:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == HMAC_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == HMAC_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == HMAC_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == HMAC_CFG_OFFSET);
-    addr_hit[4] = (reg_addr == HMAC_CMD_OFFSET);
-    addr_hit[5] = (reg_addr == HMAC_STATUS_OFFSET);
-    addr_hit[6] = (reg_addr == HMAC_WIPE_SECRET_OFFSET);
-    addr_hit[7] = (reg_addr == HMAC_KEY0_OFFSET);
-    addr_hit[8] = (reg_addr == HMAC_KEY1_OFFSET);
-    addr_hit[9] = (reg_addr == HMAC_KEY2_OFFSET);
+    addr_hit[ 0] = (reg_addr == HMAC_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == HMAC_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == HMAC_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == HMAC_CFG_OFFSET);
+    addr_hit[ 4] = (reg_addr == HMAC_CMD_OFFSET);
+    addr_hit[ 5] = (reg_addr == HMAC_STATUS_OFFSET);
+    addr_hit[ 6] = (reg_addr == HMAC_WIPE_SECRET_OFFSET);
+    addr_hit[ 7] = (reg_addr == HMAC_KEY0_OFFSET);
+    addr_hit[ 8] = (reg_addr == HMAC_KEY1_OFFSET);
+    addr_hit[ 9] = (reg_addr == HMAC_KEY2_OFFSET);
     addr_hit[10] = (reg_addr == HMAC_KEY3_OFFSET);
     addr_hit[11] = (reg_addr == HMAC_KEY4_OFFSET);
     addr_hit[12] = (reg_addr == HMAC_KEY5_OFFSET);
@@ -982,42 +973,70 @@ module hmac_reg_top (
     end
   end
 
-  // Write Enable signal
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = 1'b0;
+    if (addr_hit[ 0] && reg_we && (HMAC_PERMIT[ 0] != (HMAC_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (HMAC_PERMIT[ 1] != (HMAC_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (HMAC_PERMIT[ 2] != (HMAC_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (HMAC_PERMIT[ 3] != (HMAC_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (HMAC_PERMIT[ 4] != (HMAC_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (HMAC_PERMIT[ 5] != (HMAC_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (HMAC_PERMIT[ 6] != (HMAC_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (HMAC_PERMIT[ 7] != (HMAC_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (HMAC_PERMIT[ 8] != (HMAC_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (HMAC_PERMIT[ 9] != (HMAC_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (HMAC_PERMIT[10] != (HMAC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (HMAC_PERMIT[11] != (HMAC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (HMAC_PERMIT[12] != (HMAC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (HMAC_PERMIT[13] != (HMAC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (HMAC_PERMIT[14] != (HMAC_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (HMAC_PERMIT[15] != (HMAC_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (HMAC_PERMIT[16] != (HMAC_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (HMAC_PERMIT[17] != (HMAC_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (HMAC_PERMIT[18] != (HMAC_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (HMAC_PERMIT[19] != (HMAC_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (HMAC_PERMIT[20] != (HMAC_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[21] && reg_we && (HMAC_PERMIT[21] != (HMAC_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (HMAC_PERMIT[22] != (HMAC_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[23] && reg_we && (HMAC_PERMIT[23] != (HMAC_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[24] && reg_we && (HMAC_PERMIT[24] != (HMAC_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+  end
 
-  assign intr_state_hmac_done_we = addr_hit[0] && reg_we;
+  assign intr_state_hmac_done_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_hmac_done_wd = reg_wdata[0];
 
-  assign intr_state_fifo_full_we = addr_hit[0] && reg_we;
+  assign intr_state_fifo_full_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_fifo_full_wd = reg_wdata[1];
 
-  assign intr_enable_hmac_done_we = addr_hit[1] && reg_we;
+  assign intr_enable_hmac_done_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_hmac_done_wd = reg_wdata[0];
 
-  assign intr_enable_fifo_full_we = addr_hit[1] && reg_we;
+  assign intr_enable_fifo_full_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_fifo_full_wd = reg_wdata[1];
 
-  assign intr_test_hmac_done_we = addr_hit[2] && reg_we;
+  assign intr_test_hmac_done_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_hmac_done_wd = reg_wdata[0];
 
-  assign intr_test_fifo_full_we = addr_hit[2] && reg_we;
+  assign intr_test_fifo_full_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_fifo_full_wd = reg_wdata[1];
 
-  assign cfg_hmac_en_we = addr_hit[3] && reg_we;
+  assign cfg_hmac_en_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_hmac_en_wd = reg_wdata[0];
 
-  assign cfg_sha_en_we = addr_hit[3] && reg_we;
+  assign cfg_sha_en_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_sha_en_wd = reg_wdata[1];
 
-  assign cfg_endian_swap_we = addr_hit[3] && reg_we;
+  assign cfg_endian_swap_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_endian_swap_wd = reg_wdata[2];
 
-  assign cfg_digest_swap_we = addr_hit[3] && reg_we;
+  assign cfg_digest_swap_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_digest_swap_wd = reg_wdata[3];
 
-  assign cmd_hash_start_we = addr_hit[4] && reg_we;
+  assign cmd_hash_start_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_hash_start_wd = reg_wdata[0];
 
-  assign cmd_hash_process_we = addr_hit[4] && reg_we;
+  assign cmd_hash_process_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_hash_process_wd = reg_wdata[1];
 
   assign status_fifo_empty_re = addr_hit[5] && reg_re;
@@ -1026,31 +1045,31 @@ module hmac_reg_top (
 
   assign status_fifo_depth_re = addr_hit[5] && reg_re;
 
-  assign wipe_secret_we = addr_hit[6] && reg_we;
+  assign wipe_secret_we = addr_hit[6] & reg_we & ~wr_err;
   assign wipe_secret_wd = reg_wdata[31:0];
 
-  assign key0_we = addr_hit[7] && reg_we;
+  assign key0_we = addr_hit[7] & reg_we & ~wr_err;
   assign key0_wd = reg_wdata[31:0];
 
-  assign key1_we = addr_hit[8] && reg_we;
+  assign key1_we = addr_hit[8] & reg_we & ~wr_err;
   assign key1_wd = reg_wdata[31:0];
 
-  assign key2_we = addr_hit[9] && reg_we;
+  assign key2_we = addr_hit[9] & reg_we & ~wr_err;
   assign key2_wd = reg_wdata[31:0];
 
-  assign key3_we = addr_hit[10] && reg_we;
+  assign key3_we = addr_hit[10] & reg_we & ~wr_err;
   assign key3_wd = reg_wdata[31:0];
 
-  assign key4_we = addr_hit[11] && reg_we;
+  assign key4_we = addr_hit[11] & reg_we & ~wr_err;
   assign key4_wd = reg_wdata[31:0];
 
-  assign key5_we = addr_hit[12] && reg_we;
+  assign key5_we = addr_hit[12] & reg_we & ~wr_err;
   assign key5_wd = reg_wdata[31:0];
 
-  assign key6_we = addr_hit[13] && reg_we;
+  assign key6_we = addr_hit[13] & reg_we & ~wr_err;
   assign key6_wd = reg_wdata[31:0];
 
-  assign key7_we = addr_hit[14] && reg_we;
+  assign key7_we = addr_hit[14] & reg_we & ~wr_err;
   assign key7_wd = reg_wdata[31:0];
 
   assign digest0_re = addr_hit[15] && reg_re;

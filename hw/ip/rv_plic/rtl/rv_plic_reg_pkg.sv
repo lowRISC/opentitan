@@ -493,4 +493,88 @@ typedef struct packed {
   parameter RV_PLIC_MSIP0_OFFSET = 9'h 10c;
 
 
+  // Register Index
+  typedef enum int {
+    RV_PLIC_IP,
+    RV_PLIC_LE,
+    RV_PLIC_PRIO0,
+    RV_PLIC_PRIO1,
+    RV_PLIC_PRIO2,
+    RV_PLIC_PRIO3,
+    RV_PLIC_PRIO4,
+    RV_PLIC_PRIO5,
+    RV_PLIC_PRIO6,
+    RV_PLIC_PRIO7,
+    RV_PLIC_PRIO8,
+    RV_PLIC_PRIO9,
+    RV_PLIC_PRIO10,
+    RV_PLIC_PRIO11,
+    RV_PLIC_PRIO12,
+    RV_PLIC_PRIO13,
+    RV_PLIC_PRIO14,
+    RV_PLIC_PRIO15,
+    RV_PLIC_PRIO16,
+    RV_PLIC_PRIO17,
+    RV_PLIC_PRIO18,
+    RV_PLIC_PRIO19,
+    RV_PLIC_PRIO20,
+    RV_PLIC_PRIO21,
+    RV_PLIC_PRIO22,
+    RV_PLIC_PRIO23,
+    RV_PLIC_PRIO24,
+    RV_PLIC_PRIO25,
+    RV_PLIC_PRIO26,
+    RV_PLIC_PRIO27,
+    RV_PLIC_PRIO28,
+    RV_PLIC_PRIO29,
+    RV_PLIC_PRIO30,
+    RV_PLIC_PRIO31,
+    RV_PLIC_IE0,
+    RV_PLIC_THRESHOLD0,
+    RV_PLIC_CC0,
+    RV_PLIC_MSIP0
+  } rv_plic_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] RV_PLIC_PERMIT [38] = '{
+    4'b 1111, // index[ 0] RV_PLIC_IP
+    4'b 1111, // index[ 1] RV_PLIC_LE
+    4'b 0001, // index[ 2] RV_PLIC_PRIO0
+    4'b 0001, // index[ 3] RV_PLIC_PRIO1
+    4'b 0001, // index[ 4] RV_PLIC_PRIO2
+    4'b 0001, // index[ 5] RV_PLIC_PRIO3
+    4'b 0001, // index[ 6] RV_PLIC_PRIO4
+    4'b 0001, // index[ 7] RV_PLIC_PRIO5
+    4'b 0001, // index[ 8] RV_PLIC_PRIO6
+    4'b 0001, // index[ 9] RV_PLIC_PRIO7
+    4'b 0001, // index[10] RV_PLIC_PRIO8
+    4'b 0001, // index[11] RV_PLIC_PRIO9
+    4'b 0001, // index[12] RV_PLIC_PRIO10
+    4'b 0001, // index[13] RV_PLIC_PRIO11
+    4'b 0001, // index[14] RV_PLIC_PRIO12
+    4'b 0001, // index[15] RV_PLIC_PRIO13
+    4'b 0001, // index[16] RV_PLIC_PRIO14
+    4'b 0001, // index[17] RV_PLIC_PRIO15
+    4'b 0001, // index[18] RV_PLIC_PRIO16
+    4'b 0001, // index[19] RV_PLIC_PRIO17
+    4'b 0001, // index[20] RV_PLIC_PRIO18
+    4'b 0001, // index[21] RV_PLIC_PRIO19
+    4'b 0001, // index[22] RV_PLIC_PRIO20
+    4'b 0001, // index[23] RV_PLIC_PRIO21
+    4'b 0001, // index[24] RV_PLIC_PRIO22
+    4'b 0001, // index[25] RV_PLIC_PRIO23
+    4'b 0001, // index[26] RV_PLIC_PRIO24
+    4'b 0001, // index[27] RV_PLIC_PRIO25
+    4'b 0001, // index[28] RV_PLIC_PRIO26
+    4'b 0001, // index[29] RV_PLIC_PRIO27
+    4'b 0001, // index[30] RV_PLIC_PRIO28
+    4'b 0001, // index[31] RV_PLIC_PRIO29
+    4'b 0001, // index[32] RV_PLIC_PRIO30
+    4'b 0001, // index[33] RV_PLIC_PRIO31
+    4'b 1111, // index[34] RV_PLIC_IE0
+    4'b 0001, // index[35] RV_PLIC_THRESHOLD0
+    4'b 0001, // index[36] RV_PLIC_CC0
+    4'b 0001, // index[37] RV_PLIC_MSIP0
+  };
 endpackage
+
