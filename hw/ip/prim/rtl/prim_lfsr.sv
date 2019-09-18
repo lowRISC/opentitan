@@ -14,6 +14,8 @@
 // reseeds the state once it has accidentally fallen into the all-zero (XOR) or
 // all-one (XNOR) state.
 //
+// All polynomials up to 34 bit in length have been verified in simulation.
+//
 // Refs: [1] https://en.wikipedia.org/wiki/Linear-feedback_shift_register
 //       [2] https://users.ece.cmu.edu/~koopman/lfsr/
 //       [3] https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
