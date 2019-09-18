@@ -25,10 +25,10 @@ static int bootstrap_requested(void) {
 
 /* Erase all flash, and verify blank. */
 static int erase_flash(void) {
-  if (flash_bank_erase(FlashBank0)) {
+  if (flash_bank_erase(FLASH_BANK_0)) {
     return E_BS_ERASE;
   }
-  if (flash_bank_erase(FlashBank1)) {
+  if (flash_bank_erase(FLASH_BANK_1)) {
     return E_BS_ERASE;
   }
   if (!flash_check_empty()) {

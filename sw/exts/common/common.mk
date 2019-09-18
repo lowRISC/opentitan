@@ -11,8 +11,6 @@
 
 all: $(LIB_DIR) $(OUTFILES)
 
-#
-
 .PHONY: $(LIB_DIR)
 
 $(LIB_DIR):
@@ -44,7 +42,7 @@ $(EXE).elf: $(OBJS) $(LINKER_SCRIPT) $(LIB_DIR)
 -include $(DEPS)
 
 clean:
-	$(RM) -f *.o *.d $(GENHDRS)
+	$(RM) -f *.o *.d *.bin *.elf *.vmem *.map *.dis $(GENHDRS)
 
 distclean: clean
 	cd $(LIB_DIR) && $(MAKE) distclean

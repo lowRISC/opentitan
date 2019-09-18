@@ -9,13 +9,6 @@
 #include "spi_device.h"
 #include "uart.h"
 
-// Choose a "standard" baud rate to make it possible to use stty/screen directly
-#if defined(SIMULATION)
-const unsigned long UART_BAUD_RATE = 9600;
-#else
-const unsigned long UART_BAUD_RATE = 230400;
-#endif
-
 static inline void try_launch(void) {
   __asm__ volatile(
       "la a0, _flash_start;"
