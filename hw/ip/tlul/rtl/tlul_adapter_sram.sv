@@ -145,7 +145,12 @@ module tlul_adapter_sram #(
   prim_fifo_sync #(
     .Width  (ReqFifoWidth),
     .Pass   (1'b0),
-    .Depth  (Outstanding)
+  // The oustanding+1 allows the reqfifo to absorb back to back transactions
+  // without any wait states.  Alternatively, the depth can be kept as
+  // oustanding as long as the outgoing ready is qualified with the acceptance
+  // of the response in the same cycle.  Doing so however creates a path from
+  // ready_i to ready_o, which may not be desireable.
+    .Depth  (Outstanding+1'b1)
   ) u_reqfifo (
     .clk_i,
     .rst_ni,
