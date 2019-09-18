@@ -1,0 +1,120 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# UART library (sw_lib_uart)
+sw_lib_uart = declare_dependency(
+  include_directories: ['.'],
+  sources: [hw_ip_uart_reg_h],
+  link_with: static_library(
+    'uart_ot',
+    sources: [
+      hw_ip_uart_reg_h,
+      'uart.c',
+    ]
+  )
+)
+
+
+# Flash controller library (sw_lib_flash_ctrl)
+sw_lib_flash_ctrl = declare_dependency(
+  include_directories: ['.'],
+  sources: [hw_ip_flash_ctrl_regs_h],
+  link_with: static_library(
+    'flash_ctrl_ot',
+    sources: [
+      hw_ip_flash_ctrl_regs_h,
+      'flash_ctrl.c',
+    ]
+  )
+)
+
+# GPIO library (sw_lib_gpio)
+sw_lib_gpio = declare_dependency(
+  include_directories: ['.'],
+  sources: [hw_ip_gpio_reg_h],
+  link_with: static_library(
+    'gpio_ot',
+    sources: [
+      hw_ip_gpio_reg_h,
+      'gpio.c',
+    ]
+  )
+)
+
+# HMAC library (sw_lib_hmac)
+sw_lib_hmac = declare_dependency(
+  include_directories: [
+    '.',
+    '../vendor',
+  ],
+  sources: [hw_ip_hmac_reg_h],
+  link_with: static_library(
+    'hmac_ot',
+    include_directories: ['.', '../vendor'],
+    sources: [
+      hw_ip_hmac_reg_h,
+      'hw_sha256.c',
+      'hmac.c',
+    ]
+  )
+)
+
+# IRQ library (sw_lib_irq)
+sw_lib_irq = declare_dependency(
+  include_directories: ['.'],
+  link_with: static_library(
+    'irq_ot',
+    sources: [
+      'handler.c',
+      'irq_vectors.S',
+      'irq.c'
+    ],
+    dependencies: [
+      sw_lib_uart,
+    ]
+  )
+)
+
+# RV_TIMER library (sw_lib_rv_timer)
+sw_lib_rv_timer = declare_dependency(
+  include_directories: ['.'],
+  sources: [hw_ip_rv_timer_reg_h],
+  link_with: static_library(
+    'rv_timer_ot',
+    sources: [
+      hw_ip_rv_timer_reg_h,
+      'rv_timer.c',
+    ]
+  )
+)
+
+# SPI device library (sw_lib_spi_device)
+sw_lib_spi_device = declare_dependency(
+  include_directories: ['.'],
+  link_with: static_library(
+    'spid_ot',
+    sources: [
+      hw_ip_spi_device_reg_h,
+      'spi_device.c',
+    ]
+  )
+)
+
+# USB DEV library (sw_lib_usb)
+sw_lib_usb = declare_dependency(
+  include_directories: ['.'],
+  sources: [hw_ip_usbdev_reg_h],
+  link_with: static_library(
+    'usb_ot',
+    sources: [
+      hw_ip_usbdev_reg_h,
+      'usb_controlep.c',
+      'usb_simpleserial.c',
+      'usbdev.c',
+    ],
+    dependencies: [
+      sw_lib_uart,
+    ]
+  )
+)
