@@ -10,7 +10,34 @@
 ${xbar.repr_tree(host, 0)}
 % endfor
 
-module xbar_${xbar.name} (
+<%
+  num_blocks = len(xbar.nodes)
+%>
+module xbar_${xbar.name} #(
+  // The parameters below allow for compile time override for socket pipeline.
+  // Please note this is generally not needed as the xbar generation already
+  // creates a unique xbar based on xbar_*.hjson.
+  //
+  // The purpose of these parameters is to allow for differentiation between
+  // normal design and FPGA, and thus should not be used by anyone OTHER
+  // than FPGA
+% for i in range(num_blocks) :
+  % if xbar.nodes[i].node_type.name in ["SOCKET_1N", "SOCKET_M1"]:
+  <%
+  block = xbar.nodes[i]
+  sep = "" if(i == num_blocks-1) else ","
+  %>
+    % if block.node_type.name is "SOCKET_1N":
+  parameter ${block.sname}_pass = 1'h${block.hpass},
+  parameter ${block.sname}_depth = 4'h${block.hdepth}${sep}
+    % elif block.node_type.name is "SOCKET_M1":
+  parameter ${block.sname}_pass = 1'h${block.dpass},
+  parameter ${block.sname}_depth = 4'h${block.ddepth}${sep}
+    % endif
+  % endif
+% endfor
+) (
+
 % for clock in xbar.clocks:
   input clk_${clock}_i,
   input rst_${clock}_ni,
@@ -183,14 +210,10 @@ module xbar_${xbar.name} (
   );
   % elif block.node_type.name == "SOCKET_1N":
   tlul_socket_1n #(
-    % if block.hpass != 1:
-    .HReqPass  (1'b${block.hpass}),
-    .HRspPass  (1'b${block.hpass}),
-    % endif
-    % if block.hdepth != 2:
-    .HReqDepth (4'h${block.hdepth}),
-    .HRspDepth (4'h${block.hdepth}),
-    % endif
+    .HReqPass  (${block.sname}_pass),
+    .HRspPass  (${block.sname}_pass),
+    .HReqDepth (${block.sname}_depth),
+    .HRspDepth (${block.sname}_depth),
     % if block.dpass != 2**(len(block.ds)) -1:
     .DReqPass  (${len(block.ds)}'h${"%x" % block.dpass}),
     .DRspPass  (${len(block.ds)}'h${"%x" % block.dpass}),
@@ -219,14 +242,10 @@ module xbar_${xbar.name} (
     .HReqDepth ({${len(block.us)}{4'h${block.hdepth}}}),
     .HRspDepth ({${len(block.us)}{4'h${block.hdepth}}}),
     % endif
-    % if block.ddepth != 2:
-    .DReqDepth (4'h${block.ddepth}),
-    .DRspDepth (4'h${block.ddepth}),
-    % endif
-    % if block.dpass != 1:
-    .DReqPass  (1'b${block.dpass}),
-    .DRspPass  (1'b${block.dpass}),
-    % endif
+    .DReqDepth (${block.sname}_depth),
+    .DRspDepth (${block.sname}_depth),
+    .DReqPass  (${block.sname}_pass),
+    .DRspPass  (${block.sname}_pass),
     .M         (${len(block.us)})
   ) u_${block.name} (
     .clk_i        (clk_${xbar.clock}_i),

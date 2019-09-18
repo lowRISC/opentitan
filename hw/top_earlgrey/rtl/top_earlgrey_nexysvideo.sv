@@ -46,7 +46,10 @@ module top_earlgrey_nexysvideo (
   logic cio_jtag_trst_n_p2d, cio_jtag_srst_n_p2d;
 
   // Top-level design
-  top_earlgrey top_earlgrey (
+  top_earlgrey top_earlgrey #(
+    .COREI_PIPE(COREI_PIPE),
+    .CORED_PIPE(CORED_PIPE)
+  ) (
     .clk_i                        (clk_sys),
     .rst_ni                       (rst_sys_n),
 
@@ -68,9 +71,7 @@ module top_earlgrey_nexysvideo (
     .cio_spi_device_csb_p2d_i     (cio_spi_device_csb_p2d),
     .cio_spi_device_mosi_p2d_i    (cio_spi_device_mosi_p2d),
     .cio_spi_device_miso_d2p_o    (cio_spi_device_miso_d2p),
-    .cio_spi_device_miso_en_d2p_o (cio_spi_device_miso_en_d2p),
-
-    .scanmode_i                   (1'b0) // 1 for Scan
+    .cio_spi_device_miso_en_d2p_o (cio_spi_device_miso_en_d2p)
   );
 
   clkgen_xil7series clkgen (

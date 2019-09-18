@@ -38,8 +38,12 @@ class Node:
     """Node class is a port that communicates from/to other Node or TL-UL
     input/output.
     """
+    # For non-socket node types, the below names are the same
+    # For socket node types, name refers to the number of connections, e.g s1n_14
+    # while sname refers to the node it is most related to, e.g unode for 1n, dnode for m1
+    name = ""  # instance name of the node: str
+    sname = "" # associated string name of the node: str
 
-    name = ""  # name: str
     # node_type: NodeType
     clocks = []  # Clocks  # Clock domain of the node
     # e.g. async_fifo in : clk_core , out : clk_main
@@ -63,8 +67,9 @@ class Node:
     # FIFO passtru option. default True
     pipeline_byp = True
 
-    def __init__(self, name, node_type, clock):
+    def __init__(self, name, node_type, clock, sname=None):
         self.name = name
+        self.sname = name if sname is None else sname
         self.node_type = node_type
         self.clocks = [clock]
         self.us = []

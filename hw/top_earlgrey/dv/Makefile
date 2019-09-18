@@ -32,7 +32,7 @@ ifeq (${TEST_NAME},chip_sanity)
 endif
 
 ifeq (${TEST_NAME},chip_sanity_flash)
-  CAPP_NAME      = hello_flash
+  CAPP_NAME      = flash_test
   RUN_OPTS      += +cpu_test_timeout_ns=15000000
 endif
 

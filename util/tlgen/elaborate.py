@@ -80,6 +80,7 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
     elif node.node_type != NodeType.SOCKET_M1 and len(node.us) > 1:
         # (New node) Create SOCKET_M1 node
         new_node = Node(name="sm1_" + str(len(xbar.nodes)),
+                        sname="sm1_" + node.name,
                         node_type=NodeType.SOCKET_M1,
                         clock=xbar.clock)
         new_node.hdepth = 2
@@ -93,6 +94,7 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
     elif node.node_type != NodeType.SOCKET_1N and len(node.ds) > 1:
         # (New node) Create SOCKET_1N node
         new_node = Node(name="s1n_" + str(len(xbar.nodes)),
+                        sname="s1n_" + node.name,
                         node_type=NodeType.SOCKET_1N,
                         clock=xbar.clock)
         new_node.hdepth = 2

@@ -63,7 +63,59 @@
 //     -> sm1_26
 //       -> rv_plic
 
-module xbar_main (
+
+module xbar_main #(
+  // The parameters below allow for compile time override for socket pipeline.
+  // Please note this is generally not needed as the xbar generation already
+  // creates a unique xbar based on xbar_*.hjson.
+  //
+  // The purpose of these parameters is to allow for differentiation between
+  // normal design and FPGA, and thus should not be used by anyone OTHER
+  // than FPGA
+  
+  parameter s1n_corei_pass = 1'h1,
+  parameter s1n_corei_depth = 4'h0,
+  
+  parameter sm1_rom_pass = 1'h1,
+  parameter sm1_rom_depth = 4'h0,
+  
+  parameter sm1_debug_mem_pass = 1'h0,
+  parameter sm1_debug_mem_depth = 4'h2,
+  
+  parameter sm1_ram_main_pass = 1'h1,
+  parameter sm1_ram_main_depth = 4'h0,
+  
+  parameter sm1_eflash_pass = 1'h1,
+  parameter sm1_eflash_depth = 4'h0,
+  
+  parameter s1n_cored_pass = 1'h1,
+  parameter s1n_cored_depth = 4'h0,
+  
+  parameter sm1_uart_pass = 1'h0,
+  parameter sm1_uart_depth = 4'h2,
+  
+  parameter sm1_gpio_pass = 1'h0,
+  parameter sm1_gpio_depth = 4'h2,
+  
+  parameter sm1_spi_device_pass = 1'h0,
+  parameter sm1_spi_device_depth = 4'h2,
+  
+  parameter sm1_flash_ctrl_pass = 1'h0,
+  parameter sm1_flash_ctrl_depth = 4'h2,
+  
+  parameter sm1_rv_timer_pass = 1'h0,
+  parameter sm1_rv_timer_depth = 4'h2,
+  
+  parameter sm1_hmac_pass = 1'h0,
+  parameter sm1_hmac_depth = 4'h2,
+  
+  parameter sm1_rv_plic_pass = 1'h0,
+  parameter sm1_rv_plic_depth = 4'h2,
+  
+  parameter s1n_dm_sba_pass = 1'h0,
+  parameter s1n_dm_sba_depth = 4'h2
+) (
+
   input clk_main_i,
   input rst_main_ni,
 
@@ -402,8 +454,10 @@ module xbar_main (
 
   // Instantiation phase
   tlul_socket_1n #(
-    .HReqDepth (4'h0),
-    .HRspDepth (4'h0),
+    .HReqPass  (s1n_corei_pass),
+    .HRspPass  (s1n_corei_pass),
+    .HReqDepth (s1n_corei_depth),
+    .HRspDepth (s1n_corei_depth),
     .DReqDepth ({4{4'h0}}),
     .DRspDepth ({4{4'h0}}),
     .N         (4)
@@ -419,8 +473,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqDepth ({3{4'h0}}),
     .HRspDepth ({3{4'h0}}),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DReqDepth (sm1_rom_depth),
+    .DRspDepth (sm1_rom_depth),
+    .DReqPass  (sm1_rom_pass),
+    .DRspPass  (sm1_rom_pass),
     .M         (3)
   ) u_sm1_15 (
     .clk_i        (clk_main_i),
@@ -433,8 +489,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_debug_mem_depth),
+    .DRspDepth (sm1_debug_mem_depth),
+    .DReqPass  (sm1_debug_mem_pass),
+    .DRspPass  (sm1_debug_mem_pass),
     .M         (2)
   ) u_sm1_16 (
     .clk_i        (clk_main_i),
@@ -447,8 +505,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqDepth ({3{4'h0}}),
     .HRspDepth ({3{4'h0}}),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DReqDepth (sm1_ram_main_depth),
+    .DRspDepth (sm1_ram_main_depth),
+    .DReqPass  (sm1_ram_main_pass),
+    .DRspPass  (sm1_ram_main_pass),
     .M         (3)
   ) u_sm1_17 (
     .clk_i        (clk_main_i),
@@ -461,8 +521,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqDepth ({3{4'h0}}),
     .HRspDepth ({3{4'h0}}),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DReqDepth (sm1_eflash_depth),
+    .DRspDepth (sm1_eflash_depth),
+    .DReqPass  (sm1_eflash_pass),
+    .DRspPass  (sm1_eflash_pass),
     .M         (3)
   ) u_sm1_18 (
     .clk_i        (clk_main_i),
@@ -473,8 +535,10 @@ module xbar_main (
     .tl_d_i       (tl_sm1_18_ds_d2h)
   );
   tlul_socket_1n #(
-    .HReqDepth (4'h0),
-    .HRspDepth (4'h0),
+    .HReqPass  (s1n_cored_pass),
+    .HRspPass  (s1n_cored_pass),
+    .HReqDepth (s1n_cored_depth),
+    .HRspDepth (s1n_cored_depth),
     .DReqDepth ({11{4'h0}}),
     .DRspDepth ({11{4'h0}}),
     .N         (11)
@@ -490,8 +554,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_uart_depth),
+    .DRspDepth (sm1_uart_depth),
+    .DReqPass  (sm1_uart_pass),
+    .DRspPass  (sm1_uart_pass),
     .M         (2)
   ) u_sm1_20 (
     .clk_i        (clk_main_i),
@@ -504,8 +570,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_gpio_depth),
+    .DRspDepth (sm1_gpio_depth),
+    .DReqPass  (sm1_gpio_pass),
+    .DRspPass  (sm1_gpio_pass),
     .M         (2)
   ) u_sm1_21 (
     .clk_i        (clk_main_i),
@@ -518,8 +586,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_spi_device_depth),
+    .DRspDepth (sm1_spi_device_depth),
+    .DReqPass  (sm1_spi_device_pass),
+    .DRspPass  (sm1_spi_device_pass),
     .M         (2)
   ) u_sm1_22 (
     .clk_i        (clk_main_i),
@@ -532,8 +602,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_flash_ctrl_depth),
+    .DRspDepth (sm1_flash_ctrl_depth),
+    .DReqPass  (sm1_flash_ctrl_pass),
+    .DRspPass  (sm1_flash_ctrl_pass),
     .M         (2)
   ) u_sm1_23 (
     .clk_i        (clk_main_i),
@@ -546,8 +618,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_rv_timer_depth),
+    .DRspDepth (sm1_rv_timer_depth),
+    .DReqPass  (sm1_rv_timer_pass),
+    .DRspPass  (sm1_rv_timer_pass),
     .M         (2)
   ) u_sm1_24 (
     .clk_i        (clk_main_i),
@@ -560,8 +634,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_hmac_depth),
+    .DRspDepth (sm1_hmac_depth),
+    .DReqPass  (sm1_hmac_pass),
+    .DRspPass  (sm1_hmac_pass),
     .M         (2)
   ) u_sm1_25 (
     .clk_i        (clk_main_i),
@@ -574,8 +650,10 @@ module xbar_main (
   tlul_socket_m1 #(
     .HReqPass  (2'h0),
     .HRspPass  (2'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqDepth (sm1_rv_plic_depth),
+    .DRspDepth (sm1_rv_plic_depth),
+    .DReqPass  (sm1_rv_plic_pass),
+    .DRspPass  (sm1_rv_plic_pass),
     .M         (2)
   ) u_sm1_26 (
     .clk_i        (clk_main_i),
@@ -586,8 +664,10 @@ module xbar_main (
     .tl_d_i       (tl_sm1_26_ds_d2h)
   );
   tlul_socket_1n #(
-    .HReqPass  (1'b0),
-    .HRspPass  (1'b0),
+    .HReqPass  (s1n_dm_sba_pass),
+    .HRspPass  (s1n_dm_sba_pass),
+    .HReqDepth (s1n_dm_sba_depth),
+    .HRspDepth (s1n_dm_sba_depth),
     .DReqPass  (10'h0),
     .DRspPass  (10'h0),
     .N         (10)

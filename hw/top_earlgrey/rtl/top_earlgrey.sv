@@ -7,13 +7,6 @@ module top_earlgrey (
   input               clk_i,
   input               rst_ni,
 
-  // JTAG interface
-  input               jtag_tck_i,
-  input               jtag_tms_i,
-  input               jtag_trst_ni,
-  input               jtag_td_i,
-  output              jtag_td_o,
-
   // uart
   input  cio_uart_rx_p2d_i,
   output cio_uart_tx_d2p_o,
@@ -33,13 +26,21 @@ module top_earlgrey (
   // hmac
   // rv_plic
 
-  input               scanmode_i  // 1 for Scan
+  // JTAG interface
+  input               jtag_tck_i,
+  input               jtag_tms_i,
+  input               jtag_trst_ni,
+  input               jtag_td_i,
+  output              jtag_td_o
 );
 
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
   import flash_ctrl_pkg::*;
+
+  logic scanmode_i;
+  assign scanmode_i = 1'b0;
 
   tl_h2d_t  tl_corei_h_h2d;
   tl_d2h_t  tl_corei_h_d2h;
@@ -452,7 +453,15 @@ module top_earlgrey (
   assign clk_main = clk_i;
   assign ndmreset_sync_main_n = ndmreset_n;
 
-  xbar_main u_xbar_main (
+  xbar_main #(
+  `ifdef FPGA_CORE_PIPE
+      .s1n_corei_pass (1'h0),
+      .s1n_corei_depth(4'h2),
+      .s1n_cored_pass (1'h0),
+      .s1n_cored_depth(4'h2)
+      
+  `endif
+  ) u_xbar_main (
     .clk_main_i  (clk_main),
     .rst_main_ni (ndmreset_sync_main_n),
 

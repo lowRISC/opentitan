@@ -9,13 +9,6 @@ module top_earlgrey (
   input               clk_i,
   input               rst_ni,
 
-  // JTAG interface
-  input               jtag_tck_i,
-  input               jtag_tms_i,
-  input               jtag_trst_ni,
-  input               jtag_td_i,
-  output              jtag_td_o,
-
 % for m in top["module"]:
   // ${m["name"]}
 %     for p_in in m["available_input_list"] + m["available_inout_list"]:
@@ -38,13 +31,21 @@ module top_earlgrey (
 %     endfor
 % endfor
 
-  input               scanmode_i  // 1 for Scan
+  // JTAG interface
+  input               jtag_tck_i,
+  input               jtag_tms_i,
+  input               jtag_trst_ni,
+  input               jtag_td_i,
+  output              jtag_td_o
 );
 
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
   import flash_ctrl_pkg::*;
+
+  logic scanmode_i;
+  assign scanmode_i = 1'b0;
 
   tl_h2d_t  tl_corei_h_h2d;
   tl_d2h_t  tl_corei_h_d2h;
@@ -414,7 +415,21 @@ module top_earlgrey (
 <%
   name_len = max([len(x["name"]) for x in xbar["nodes"]]);
 %>\
-  xbar_${xbar["name"]} u_xbar_${xbar["name"]} (
+  xbar_${xbar["name"]} #(
+  `ifdef FPGA_CORE_PIPE
+  % for node in xbar["nodes"]:
+    % if node["type"] == "host" and node["name"] in ["corei", "cored"] :
+      .s1n_corei_pass (1'h0),
+      .s1n_corei_depth(4'h2),
+      .s1n_cored_pass (1'h0),
+      .s1n_cored_depth(4'h2)
+      <% break
+      %>\
+    % endif
+  %endfor
+
+  `endif
+  ) u_xbar_${xbar["name"]} (
   % for clock in xbar["clocks"]:
     ## TODO: How we can handle the reset?
     .clk_${clock}_i  (clk_${clock}),

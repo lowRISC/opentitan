@@ -40,6 +40,11 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use
+  FPGA_CORE_PIPE:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Xbar ibex port pipeline
+    default: false
 
 targets:
   synth:
@@ -54,6 +59,7 @@ targets:
       # path of a VMEM file containing the ROM code.
       #- ROM_INIT_FILE
       - PRIM_DEFAULT_IMPL=xilinx
+      - FPGA_CORE_PIPE=true
     tools:
       vivado:
         part: "xc7a200tsbg484-1" # Nexys Video
