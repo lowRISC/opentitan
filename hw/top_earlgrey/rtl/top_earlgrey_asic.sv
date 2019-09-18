@@ -54,7 +54,9 @@ module top_earlgrey_asic (
 
     .cio_gpio_gpio_p2d_i       (cio_gpio_p2d),
     .cio_gpio_gpio_d2p_o       (cio_gpio_d2p),
-    .cio_gpio_gpio_en_d2p_o    (cio_gpio_en_d2p)
+    .cio_gpio_gpio_en_d2p_o    (cio_gpio_en_d2p),
+
+    .scanmode_i           (1'b0)
   );
 
   // pad control
