@@ -1,0 +1,1 @@
+option('target', type : 'combo', choices: ['verilator', 'fpga', 'undef'], value : 'undef')
