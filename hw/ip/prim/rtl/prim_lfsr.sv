@@ -405,14 +405,16 @@ module prim_lfsr #(
   // but it is intended to be used in simulation and FPV
   // the formal tool defines SYNTHESIS, hence this workaround
 `ifdef FPV_ON
-  `define MAX_LEN_SVA
-`endif
+  localparam bit MaxLenSVALocal = MaxLenSVA;
+`else
 `ifndef SYNTHESIS
-  `define MAX_LEN_SVA
+  localparam bit MaxLenSVALocal = MaxLenSVA;
+`else
+  localparam bit MaxLenSVALocal = 1'b0;
+`endif
 `endif
 
-  if (MaxLenSVA) begin : gen_max_len_sva
-`ifdef MAX_LEN_SVA
+  if (MaxLenSVALocal) begin : gen_max_len_sva
     // the code below is a workaround to enable long sequences to be checked.
     // some simulators do not support SVA sequences longer than 2**32-1.
     logic [LfsrDw-1:0] cnt_d, cnt_q;
@@ -439,8 +441,6 @@ module prim_lfsr #(
 
     `ASSERT(MaximalLengthCheck0_A, cnt_q == 0 |-> lfsr_q == Seed, clk_i, !rst_ni || data_set_q)
     `ASSERT(MaximalLengthCheck1_A, cnt_q != 0 |-> lfsr_q != Seed, clk_i, !rst_ni || data_set_q)
-`endif
   end
-`undef MAX_LEN_SVA
 
 endmodule
