@@ -13,6 +13,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to disable post_start clear interrupt routine
   bit do_clear_all_interrupts = 1'b1;
 
+  // user can set the name of common seq to run directly without using $value$plusargs
+  string common_seq_type;
+
   task pre_start();
     super.pre_start();
   endtask
@@ -147,10 +150,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // wrapper task to call common test or csr tests
   virtual task run_common_vseq_wrapper(int num_times = 1);
-    string test_type;
-    void'($value$plusargs("run_%0s", test_type));
+    if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     // check which test type
-    case (test_type)
+    case (common_seq_type)
       "intr_test": run_intr_test_vseq(num_times);
       default    : run_csr_vseq_wrapper(num_times);
     endcase
