@@ -110,7 +110,7 @@
       count: ${n_alerts},
       cname: "ALERT",
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       fields: [
         { bits: "0", name: "A", desc: "Cause bit " }
       ]
@@ -163,7 +163,7 @@
     { name:     "LOC_ALERT_CAUSE",
       desc:     "Alert Cause Register for Local Alerts",
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       fields: [
         { bits: "0",
           name: "LA0",

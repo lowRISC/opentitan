@@ -9,27 +9,29 @@
 //
 
 module alert_handler (
-  input                      clk_i,
-  input                      rst_ni,
+  input                                    clk_i,
+  input                                    rst_ni,
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t  tl_i,
-  output tlul_pkg::tl_d2h_t  tl_o,
+  input  tlul_pkg::tl_h2d_t                tl_i,
+  output tlul_pkg::tl_d2h_t                tl_o,
   // Interrupt Requests
-  output logic [alert_pkg::N_CLASSES-1:0] irq_o,
+  output logic [alert_pkg::N_CLASSES-1:0]  irq_o,
+  // State information for HW crashdump
+  output alert_pkg::alert_crashdump_t      crashdump_o,
   // Entropy Input from TRNG
-  input                                   entropy_i,
+  input                                    entropy_i,
   // Alert Sources
-  input        [alert_pkg::NAlerts-1:0]   alert_pi,
-  input        [alert_pkg::NAlerts-1:0]   alert_ni,
-  output logic [alert_pkg::NAlerts-1:0]   ack_po,
-  output logic [alert_pkg::NAlerts-1:0]   ack_no,
-  output logic [alert_pkg::NAlerts-1:0]   ping_po,
-  output logic [alert_pkg::NAlerts-1:0]   ping_no,
+  input        [alert_pkg::NAlerts-1:0]    alert_pi,
+  input        [alert_pkg::NAlerts-1:0]    alert_ni,
+  output logic [alert_pkg::NAlerts-1:0]    ack_po,
+  output logic [alert_pkg::NAlerts-1:0]    ack_no,
+  output logic [alert_pkg::NAlerts-1:0]    ping_po,
+  output logic [alert_pkg::NAlerts-1:0]    ping_no,
   // Escalation outputs
-  output logic [alert_pkg::N_ESC_SEV-1:0] esc_po,
-  output logic [alert_pkg::N_ESC_SEV-1:0] esc_no,
-  input        [alert_pkg::N_ESC_SEV-1:0] resp_pi,
-  input        [alert_pkg::N_ESC_SEV-1:0] resp_ni
+  output logic [alert_pkg::N_ESC_SEV-1:0]  esc_po,
+  output logic [alert_pkg::N_ESC_SEV-1:0]  esc_no,
+  input        [alert_pkg::N_ESC_SEV-1:0]  resp_pi,
+  input        [alert_pkg::N_ESC_SEV-1:0]  resp_ni
 );
 
   //////////////////////////////////////////////////////
@@ -45,6 +47,7 @@ module alert_handler (
     .tl_i        ,
     .tl_o        ,
     .irq_o       ,
+    .crashdump_o ,
     .hw2reg_wrap ,
     .reg2hw_wrap
   );
