@@ -37,7 +37,7 @@ module prim_generic_flash #(
 );
 
   // Emulated flash macro values
-  localparam int ReadCycles = 2;
+  localparam int ReadCycles = 1;
   localparam int ProgCycles = 50;
   localparam int PgEraseCycles = 200;
   localparam int BkEraseCycles = 2000;
