@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module top_earlgrey (
+module top_earlgrey #(
+  parameter bit IbexPipeLine = 0
+) (
   // Clock and Reset
   input               clk_i,
   input               rst_ni,
@@ -119,7 +121,8 @@ module top_earlgrey (
     .RV32E               (0),
     .RV32M               (1),
     .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
-    .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress)
+    .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
+    .PipeLine            (IbexPipeLine)
   ) core (
     // clock and reset
     .clk_i                (clk_i),

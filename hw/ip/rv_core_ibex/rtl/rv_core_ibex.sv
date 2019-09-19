@@ -14,7 +14,8 @@ module rv_core_ibex #(
   parameter bit RV32E                     = 0,
   parameter bit RV32M                     = 1,
   parameter int unsigned DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr  = 32'h1A110808
+  parameter int unsigned DmExceptionAddr  = 32'h1A110808,
+  parameter bit PipeLine                  = 0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -49,6 +50,12 @@ module rv_core_ibex #(
 );
 
   import top_pkg::*;
+  import tlul_pkg::*;
+
+  // if pipeline=1, do not allow pass through and always break the path
+  // if pipeline is 0, passthrough the fifo completely
+  localparam int FifoPass = PipeLine ? 1'b0 : 1'b1;
+  localparam int FifoDepth = PipeLine ? 4'h2 : 4'h0;
 
   // Inst interface (internal)
   logic        instr_req_o;
@@ -67,6 +74,12 @@ module rv_core_ibex #(
   logic [31:0] data_wdata_o;
   logic [31:0] data_rdata_i;
   logic        data_err_i;
+
+  // Pipeline interfaces
+  tl_h2d_t tl_i_ibex2fifo;
+  tl_d2h_t tl_i_fifo2ibex;
+  tl_h2d_t tl_d_ibex2fifo;
+  tl_d2h_t tl_d_fifo2ibex;
 
 `ifdef RVFI
   logic        rvfi_valid;
@@ -177,7 +190,7 @@ module rv_core_ibex #(
   end
 
   // Convert core instruction interface to TL-UL
-  assign tl_i_o = '{
+  assign tl_i_ibex2fifo = '{
     a_valid:   instr_req_o,
     a_opcode:  tlul_pkg::Get,
     a_param:   3'h0,
@@ -191,10 +204,27 @@ module rv_core_ibex #(
     d_ready:   1'b1
   };
 
-  assign instr_gnt_i    = tl_i_i.a_ready & tl_i_o.a_valid;
-  assign instr_rvalid_i = tl_i_i.d_valid;
-  assign instr_rdata_i  = tl_i_i.d_data;
-  assign instr_err_i    = tl_i_i.d_error;
+  assign instr_gnt_i    = tl_i_fifo2ibex.a_ready & tl_i_ibex2fifo.a_valid;
+  assign instr_rvalid_i = tl_i_fifo2ibex.d_valid;
+  assign instr_rdata_i  = tl_i_fifo2ibex.d_data;
+  assign instr_err_i    = tl_i_fifo2ibex.d_error;
+
+  tlul_fifo_sync #(
+    .ReqPass(FifoPass),
+    .RspPass(FifoPass),
+    .ReqDepth(FifoDepth),
+    .RspDepth(FifoDepth)
+  ) fifo_i (
+    .clk_i,
+    .rst_ni,
+    .tl_h_i      (tl_i_ibex2fifo),
+    .tl_h_o      (tl_i_fifo2ibex),
+    .tl_d_o      (tl_i_o),
+    .tl_d_i      (tl_i_i),
+    .spare_req_i (1'b0),
+    .spare_req_o (),
+    .spare_rsp_i (1'b0),
+    .spare_rsp_o ());
 
   // For core data interface, calculate a_size from data_be_o
   logic [2:0] data_be_countones;
@@ -216,7 +246,7 @@ module rv_core_ibex #(
   // a_address must be aligned with a_size (TL spec 6.2)
   // if _address is not aligned to word address, it cannot handle the condition
   // when addr[1:0] == 2'b01 and data_type == 2'b01 (Half-word)
-  assign tl_d_o = '{
+  assign tl_d_ibex2fifo = '{
     a_valid:   data_req_o,
     a_opcode:  (~data_we_o)        ? tlul_pkg::Get           :
                (data_be_o == 4'hf) ? tlul_pkg::PutFullData   :
@@ -231,10 +261,28 @@ module rv_core_ibex #(
 
     d_ready:   1'b1
   };
-  assign data_gnt_i    = tl_d_i.a_ready & tl_d_o.a_valid;
-  assign data_rvalid_i = tl_d_i.d_valid;
-  assign data_rdata_i  = tl_d_i.d_data;
-  assign data_err_i    = tl_d_i.d_error;
+  assign data_gnt_i    = tl_d_fifo2ibex.a_ready & tl_d_ibex2fifo.a_valid;
+  assign data_rvalid_i = tl_d_fifo2ibex.d_valid;
+  assign data_rdata_i  = tl_d_fifo2ibex.d_data;
+  assign data_err_i    = tl_d_fifo2ibex.d_error;
+
+  tlul_fifo_sync #(
+    .ReqPass(FifoPass),
+    .RspPass(FifoPass),
+    .ReqDepth(FifoDepth),
+    .RspDepth(FifoDepth)
+  ) fifo_d (
+    .clk_i,
+    .rst_ni,
+    .tl_h_i      (tl_d_ibex2fifo),
+    .tl_h_o      (tl_d_fifo2ibex),
+    .tl_d_o      (tl_d_o),
+    .tl_d_i      (tl_d_i),
+    .spare_req_i (1'b0),
+    .spare_req_o (),
+    .spare_rsp_i (1'b0),
+    .spare_rsp_o ());
+
 
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
