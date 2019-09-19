@@ -54,10 +54,13 @@ int check_arr_eq(const uint32_t *a, const uint32_t *b, uint32_t len) {
 }
 
 int main(int argc, char **argv) {
-  uint32_t i;
+  uint32_t i, iteration;
   uint32_t prog_array[FLASH_WORDS_PER_PAGE];
   uint32_t rd_array[FLASH_WORDS_PER_PAGE];
+  uint32_t test_addr;
   uint32_t bank1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
+  uint32_t bank0_last_page =
+      FLASH_MEM_BASE_ADDR + (FLASH_PAGES_PER_BANK - 1) * FLASH_PAGE_SZ;
 
   uart_init(UART_BAUD_RATE);
   flash_init_block();
@@ -79,9 +82,13 @@ int main(int argc, char **argv) {
   for (i = 0; i < ARRAYSIZE(prog_array); i++) {
     prog_array[i] = i + (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
   }
-  break_on_error(flash_write(bank1_addr, prog_array, ARRAYSIZE(prog_array)));
-  break_on_error(flash_read(bank1_addr, ARRAYSIZE(rd_array), rd_array));
-  break_on_error(!check_arr_eq(rd_array, prog_array, ARRAYSIZE(rd_array)));
+
+  for (iteration = 0; iteration < 2; iteration++) {
+    test_addr = iteration ? bank1_addr : bank0_last_page;
+    break_on_error(flash_write(test_addr, prog_array, ARRAYSIZE(prog_array)));
+    break_on_error(flash_read(test_addr, ARRAYSIZE(rd_array), rd_array));
+    break_on_error(!check_arr_eq(rd_array, prog_array, ARRAYSIZE(rd_array)));
+  }
 
   /////////////////////////////////////////////////////////////
   // Begin flash memory protection testing
