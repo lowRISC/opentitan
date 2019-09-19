@@ -16,7 +16,7 @@ class uart_stress_all_vseq extends uart_base_vseq;
                           "uart_fifo_full_vseq",
                           "uart_fifo_overflow_vseq",
                           "uart_fifo_reset_vseq",
-                          "uart_intr_testmode_vseq",
+                          "uart_common_vseq", // for intr_test
                           "uart_intr_vseq",
                           "uart_noise_filter_vseq",
                           "uart_rx_start_bit_filter_vseq",
@@ -24,18 +24,24 @@ class uart_stress_all_vseq extends uart_base_vseq;
                           "uart_loopback_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
-      uart_base_vseq uart_seq;
+      uart_base_vseq uart_vseq;
       uint           seq_idx = $urandom_range(0, seq_names.size - 1);
 
       seq = create_seq_by_name(seq_names[seq_idx]);
-      `downcast(uart_seq, seq)
+      `downcast(uart_vseq, seq)
 
       // dut_init (reset) can be skipped after the 1st seq
-      if (i > 0) uart_seq.do_dut_init = $urandom_range(0, 1);
+      if (i > 0) uart_vseq.do_dut_init = $urandom_range(0, 1);
 
-      uart_seq.set_sequencer(p_sequencer);
-      `DV_CHECK_RANDOMIZE_FATAL(uart_seq)
-      uart_seq.start(p_sequencer);
+      uart_vseq.set_sequencer(p_sequencer);
+      `DV_CHECK_RANDOMIZE_FATAL(uart_vseq)
+      if (seq_names[seq_idx] == "uart_common_vseq") begin
+        uart_common_vseq common_vseq;
+        `downcast(common_vseq, uart_vseq);
+        common_vseq.common_seq_type = "intr_test";
+      end
+
+      uart_vseq.start(p_sequencer);
     end
   endtask : body
 

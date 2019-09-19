@@ -111,14 +111,11 @@ class uart_tx_rx_vseq extends uart_base_vseq;
     bit [TL_DW-1:0] intr_status;
     // dut_shutdown is must for each iteration, it's called in body
     do_dut_shutdown = 0;
-    super.post_start();
     // need to clear fifo when tx is disabled as data isn't sent out
     if (ral.ctrl.tx.get_mirrored_value() == 0) begin
       clear_fifos(.clear_tx_fifo(1), .clear_rx_fifo(0));
     end
-    // read & check, then clear up all interrupts
-    csr_rd(.ptr(ral.intr_state), .value(intr_status));
-    csr_wr(.csr(ral.intr_state), .value(intr_status));
+    super.post_start();
   endtask
 
   // read interrupts and randomly clear interrupts if set
