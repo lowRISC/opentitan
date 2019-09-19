@@ -32,7 +32,9 @@ RUN_DIR           := ${RUN_PATH}/${RUN_LOC}
 
 SW_DIR            := ${PRJ_DIR}/sw
 
-
+JOB_OPTS          ?=
+BUILD_JOB_OPTS    ?= $(JOB_OPTS)
+RUN_JOB_OPTS      ?= $(JOB_OPTS)
 
 # limit run directories upto a limit specified below
 RUN_DIR_LIMIT     ?= 5
