@@ -21,15 +21,14 @@ $ fusesoc --cores-root . sim --build-only lowrisc:systems:top_earlgrey_verilator
 Then we need to build software to run on the simulated system.
 There are 3 memory types: ROM, RAM and Flash.
 By default, the system will first execute out of ROM and then jump to flash.
-A program needs to be built for each until ROM functionality for code download is ready
+A program needs to be built for each until ROM functionality for code download is ready.
 
 For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
 
 ```console
-$ cd $REPO_TOP/sw/boot_rom
-$ make clean && make SIM=1
-$ cd $REPO_TOP/sw/examples/hello_world
-$ make clean && make SIM=1
+$ cd $REPO_TOP
+$ make SIM=1 -C sw/boot_rom distclean all
+$ make SIM=1 -C sw/examples/hello_world distclean all
 ```
 
 Now the simulation can be run.
