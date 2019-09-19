@@ -265,7 +265,7 @@ typedef struct packed {
     4'b 1111, // index[21] HMAC_DIGEST6
     4'b 1111, // index[22] HMAC_DIGEST7
     4'b 1111, // index[23] HMAC_MSG_LENGTH_LOWER
-    4'b 1111, // index[24] HMAC_MSG_LENGTH_UPPER
+    4'b 1111  // index[24] HMAC_MSG_LENGTH_UPPER
   };
 endpackage
 

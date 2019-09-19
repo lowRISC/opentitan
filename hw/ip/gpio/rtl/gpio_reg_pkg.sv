@@ -188,7 +188,7 @@ typedef struct packed {
     4'b 1111, // index[11] GPIO_INTR_CTRL_EN_FALLING
     4'b 1111, // index[12] GPIO_INTR_CTRL_EN_LVLHIGH
     4'b 1111, // index[13] GPIO_INTR_CTRL_EN_LVLLOW
-    4'b 1111, // index[14] GPIO_CTRL_EN_INPUT_FILTER
+    4'b 1111  // index[14] GPIO_CTRL_EN_INPUT_FILTER
   };
 endpackage
 

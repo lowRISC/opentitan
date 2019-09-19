@@ -321,7 +321,7 @@ typedef struct packed {
     4'b 1111, // index[ 8] UART_FIFO_STATUS
     4'b 0001, // index[ 9] UART_OVRD
     4'b 0011, // index[10] UART_VAL
-    4'b 1111, // index[11] UART_TIMEOUT_CTRL
+    4'b 1111  // index[11] UART_TIMEOUT_CTRL
   };
 endpackage
 

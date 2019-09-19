@@ -151,11 +151,11 @@ packbit = 0
 % for i,r in enumerate(block.regs):
 <% index_str = "{}".format(i).rjust(max_regs_char) %>\
   % if r.width > 16:
-    4'b 1111${" " if i == max_regs else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
+    4'b 1111${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
   % elif r.width > 8:
-    4'b 0011${" " if i == max_regs else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
+    4'b 0011${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
   % else:
-    4'b 0001${" " if i == max_regs else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
+    4'b 0001${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
   % endif
 % endfor
   };

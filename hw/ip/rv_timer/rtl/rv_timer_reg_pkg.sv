@@ -96,7 +96,7 @@ typedef struct packed {
     4'b 1111, // index[5] RV_TIMER_COMPARE_UPPER0_0
     4'b 0001, // index[6] RV_TIMER_INTR_ENABLE0
     4'b 0001, // index[7] RV_TIMER_INTR_STATE0
-    4'b 0001, // index[8] RV_TIMER_INTR_TEST0
+    4'b 0001  // index[8] RV_TIMER_INTR_TEST0
   };
 endpackage
 

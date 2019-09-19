@@ -427,7 +427,7 @@ typedef struct packed {
     4'b 0001, // index[15] FLASH_CTRL_OP_STATUS
     4'b 1111, // index[16] FLASH_CTRL_STATUS
     4'b 1111, // index[17] FLASH_CTRL_SCRATCH
-    4'b 0011, // index[18] FLASH_CTRL_FIFO_LVL
+    4'b 0011  // index[18] FLASH_CTRL_FIFO_LVL
   };
 endpackage
 

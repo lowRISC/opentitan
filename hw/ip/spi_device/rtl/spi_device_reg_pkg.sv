@@ -229,7 +229,7 @@ typedef struct packed {
     4'b 1111, // index[ 8] SPI_DEVICE_RXF_PTR
     4'b 1111, // index[ 9] SPI_DEVICE_TXF_PTR
     4'b 1111, // index[10] SPI_DEVICE_RXF_ADDR
-    4'b 1111, // index[11] SPI_DEVICE_TXF_ADDR
+    4'b 1111  // index[11] SPI_DEVICE_TXF_ADDR
   };
 endpackage
 

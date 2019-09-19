@@ -909,7 +909,7 @@ typedef struct packed {
     4'b 1111, // index[57] RV_PLIC_IE01
     4'b 0001, // index[58] RV_PLIC_THRESHOLD0
     4'b 0001, // index[59] RV_PLIC_CC0
-    4'b 0001, // index[60] RV_PLIC_MSIP0
+    4'b 0001  // index[60] RV_PLIC_MSIP0
   };
 endpackage
 
