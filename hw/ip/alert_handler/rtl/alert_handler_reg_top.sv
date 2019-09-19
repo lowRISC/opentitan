@@ -979,7 +979,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.alert_cause.a0.q ),
 
     // to register interface (read)
     .qs     (alert_cause_a0_qs)
@@ -1005,7 +1005,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.alert_cause.a1.q ),
 
     // to register interface (read)
     .qs     (alert_cause_a1_qs)
@@ -1031,7 +1031,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.alert_cause.a2.q ),
 
     // to register interface (read)
     .qs     (alert_cause_a2_qs)
@@ -1057,7 +1057,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.alert_cause.a3.q ),
 
     // to register interface (read)
     .qs     (alert_cause_a3_qs)
@@ -1297,7 +1297,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.loc_alert_cause.la0.q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la0_qs)
@@ -1323,7 +1323,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.loc_alert_cause.la1.q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la1_qs)
@@ -1349,7 +1349,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.loc_alert_cause.la2.q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la2_qs)
@@ -1375,7 +1375,7 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.loc_alert_cause.la3.q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la3_qs)

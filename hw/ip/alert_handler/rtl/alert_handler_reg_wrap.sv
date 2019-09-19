@@ -12,11 +12,14 @@ module alert_handler_reg_wrap (
   output tlul_pkg::tl_d2h_t               tl_o,
   // interrupt
   output logic [alert_pkg::N_CLASSES-1:0] irq_o,
+  // State information for HW crashdump
+  output alert_pkg::alert_crashdump_t     crashdump_o,
   // hw2reg
   input  alert_pkg::hw2reg_wrap_t         hw2reg_wrap,
   // reg2hw
   output alert_pkg::reg2hw_wrap_t         reg2hw_wrap
 );
+
 
   //////////////////////////////////////////////////////
   // reg instance
@@ -112,7 +115,8 @@ module alert_handler_reg_wrap (
            hw2reg.alert_cause.a1.de,
            hw2reg.alert_cause.a0.de
            } = hw2reg_wrap.alert_cause;
-  //----------------------------------------------------------------------------
+
+  //////////////////////////////////////////////////////////////////////////////
 
   // if a local alert is enabled and it fires,
   // we have to set the corresponding cause bit
@@ -126,6 +130,7 @@ module alert_handler_reg_wrap (
            hw2reg.loc_alert_cause.la1.de,
            hw2reg.loc_alert_cause.la0.de } = hw2reg_wrap.loc_alert_cause;
 
+  // ping timeout in cycles
   // autolock can clear these regs automatically upon entering escalation
   // note: the class must be activated for this to occur
   assign { hw2reg.classd_clren.d,
@@ -172,7 +177,7 @@ module alert_handler_reg_wrap (
                                   reg2hw.alert_en.en_a2.q,
                                   reg2hw.alert_en.en_a1.q,
                                   reg2hw.alert_en.en_a0.q };
-  //----------------------------------------------------------------------------
+  //////////////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////////////
   // classification mapping
@@ -181,7 +186,7 @@ module alert_handler_reg_wrap (
                                      reg2hw.alert_class.class_a2.q,
                                      reg2hw.alert_class.class_a1.q,
                                      reg2hw.alert_class.class_a0.q };
-  //----------------------------------------------------------------------------
+  //////////////////////////////////////////////////////////////////////////////
 
   // local alert enable and class assignments
   assign reg2hw_wrap.loc_alert_en = { reg2hw.loc_alert_en.en_la3.q,
@@ -193,7 +198,7 @@ module alert_handler_reg_wrap (
                                          reg2hw.loc_alert_class.class_la2.q[1:0],
                                          reg2hw.loc_alert_class.class_la1.q[1:0],
                                          reg2hw.loc_alert_class.class_la0.q[1:0]};
-  // ping timeout in cycles
+
   assign reg2hw_wrap.ping_timeout_cyc = reg2hw.ping_timeout_cyc.q;
 
   // class enable
@@ -290,6 +295,26 @@ module alert_handler_reg_wrap (
                                          reg2hw.classa_phase2_cyc.q,
                                          reg2hw.classa_phase1_cyc.q,
                                          reg2hw.classa_phase0_cyc.q};
+
+  //////////////////////////////////////////////////////
+  // crashdump output
+  //////////////////////////////////////////////////////
+
+  // alert cause output 
+  assign crashdump_o.alert_cause = { reg2hw.alert_cause.a3.q,
+                                     reg2hw.alert_cause.a2.q,
+                                     reg2hw.alert_cause.a1.q,
+                                     reg2hw.alert_cause.a0.q };
+
+  // local alert cause register output
+  assign crashdump_o.loc_alert_cause = { reg2hw.loc_alert_cause.la3.q,
+                                         reg2hw.loc_alert_cause.la2.q,
+                                         reg2hw.loc_alert_cause.la1.q,
+                                         reg2hw.loc_alert_cause.la0.q };
+
+  assign crashdump_o.class_accum_cnt = hw2reg_wrap.class_accum_cnt;
+  assign crashdump_o.class_esc_cnt   = hw2reg_wrap.class_esc_cnt;
+  assign crashdump_o.class_esc_state = hw2reg_wrap.class_esc_state;
 
 endmodule : alert_handler_reg_wrap
 

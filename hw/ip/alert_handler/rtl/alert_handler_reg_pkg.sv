@@ -11,112 +11,140 @@ typedef struct packed {
 
   struct packed {
     struct packed {
-      logic q; // [832]
+      logic q; // [840]
     } classa;
     struct packed {
-      logic q; // [831]
+      logic q; // [839]
     } classb;
     struct packed {
-      logic q; // [830]
+      logic q; // [838]
     } classc;
     struct packed {
-      logic q; // [829]
+      logic q; // [837]
     } classd;
   } intr_state;
   struct packed {
     struct packed {
-      logic q; // [828]
+      logic q; // [836]
     } classa;
     struct packed {
-      logic q; // [827]
+      logic q; // [835]
     } classb;
     struct packed {
-      logic q; // [826]
+      logic q; // [834]
     } classc;
     struct packed {
-      logic q; // [825]
+      logic q; // [833]
     } classd;
   } intr_enable;
   struct packed {
     struct packed {
-      logic q; // [824]
-      logic qe; // [823]
+      logic q; // [832]
+      logic qe; // [831]
     } classa;
     struct packed {
-      logic q; // [822]
-      logic qe; // [821]
+      logic q; // [830]
+      logic qe; // [829]
     } classb;
     struct packed {
-      logic q; // [820]
-      logic qe; // [819]
+      logic q; // [828]
+      logic qe; // [827]
     } classc;
     struct packed {
-      logic q; // [818]
-      logic qe; // [817]
+      logic q; // [826]
+      logic qe; // [825]
     } classd;
   } intr_test;
   struct packed {
-    logic [0:0] q; // [816:816]
+    logic [0:0] q; // [824:824]
   } regen;
   struct packed {
-    logic [23:0] q; // [815:792]
+    logic [23:0] q; // [823:800]
   } ping_timeout_cyc;
   struct packed {
     struct packed {
-      logic q; // [791]
+      logic q; // [799]
     } en_a0;
     struct packed {
-      logic q; // [790]
+      logic q; // [798]
     } en_a1;
     struct packed {
-      logic q; // [789]
+      logic q; // [797]
     } en_a2;
     struct packed {
-      logic q; // [788]
+      logic q; // [796]
     } en_a3;
   } alert_en;
   struct packed {
     struct packed {
-      logic [1:0] q; // [787:786]
+      logic [1:0] q; // [795:794]
     } class_a0;
     struct packed {
-      logic [1:0] q; // [785:784]
+      logic [1:0] q; // [793:792]
     } class_a1;
     struct packed {
-      logic [1:0] q; // [783:782]
+      logic [1:0] q; // [791:790]
     } class_a2;
     struct packed {
-      logic [1:0] q; // [781:780]
+      logic [1:0] q; // [789:788]
     } class_a3;
   } alert_class;
   struct packed {
     struct packed {
-      logic q; // [779]
+      logic q; // [787]
+    } a0;
+    struct packed {
+      logic q; // [786]
+    } a1;
+    struct packed {
+      logic q; // [785]
+    } a2;
+    struct packed {
+      logic q; // [784]
+    } a3;
+  } alert_cause;
+  struct packed {
+    struct packed {
+      logic q; // [783]
     } en_la0;
     struct packed {
-      logic q; // [778]
+      logic q; // [782]
     } en_la1;
     struct packed {
-      logic q; // [777]
+      logic q; // [781]
     } en_la2;
     struct packed {
-      logic q; // [776]
+      logic q; // [780]
     } en_la3;
   } loc_alert_en;
   struct packed {
     struct packed {
-      logic [1:0] q; // [775:774]
+      logic [1:0] q; // [779:778]
     } class_la0;
     struct packed {
-      logic [1:0] q; // [773:772]
+      logic [1:0] q; // [777:776]
     } class_la1;
     struct packed {
-      logic [1:0] q; // [771:770]
+      logic [1:0] q; // [775:774]
     } class_la2;
     struct packed {
-      logic [1:0] q; // [769:768]
+      logic [1:0] q; // [773:772]
     } class_la3;
   } loc_alert_class;
+  struct packed {
+    struct packed {
+      logic q; // [771]
+    } la0;
+    struct packed {
+      logic q; // [770]
+    } la1;
+    struct packed {
+      logic q; // [769]
+    } la2;
+    struct packed {
+      logic q; // [768]
+    } la3;
+  } loc_alert_cause;
   struct packed {
     struct packed {
       logic q; // [767]

@@ -27,14 +27,26 @@ package alert_pkg;
                             Phase0 = 3'b100, Phase1 = 3'b101, Phase2 = 3'b110,
                             Phase3 = 3'b111} cstate_e;
 
+  // struct containing the current alert handler state
+  // can be used to gather crashdump information in HW
+  typedef struct packed {
+    // alerts
+    logic    [NAlerts-1:0]                  alert_cause;     // alert cause bits
+    logic    [N_LOC_ALERT-1:0]              loc_alert_cause; // local alert cause bits
+    // class state
+    logic    [N_CLASSES-1:0][AccuCntDw-1:0] class_accum_cnt; // current accumulator value
+    logic    [N_CLASSES-1:0][EscCntDw-1:0]  class_esc_cnt;   // current escalation counter value
+    cstate_e [N_CLASSES-1:0]                class_esc_state; // current escalation protocol state
+  } alert_crashdump_t;
+
   // breakout wrapper structs
   typedef struct packed {
     // alerts
     logic    [NAlerts-1:0]                  alert_cause;     // alert cause bits
     logic    [N_LOC_ALERT-1:0]              loc_alert_cause; // local alert cause bits
     // class state
-    logic    [N_CLASSES-1:0]                class_trig;      // class has been triggered
-    logic    [N_CLASSES-1:0]                class_esc_trig;  // escalation has triggered
+    logic    [N_CLASSES-1:0]                class_trig;      // class trigger
+    logic    [N_CLASSES-1:0]                class_esc_trig;  // escalation trigger
     logic    [N_CLASSES-1:0][AccuCntDw-1:0] class_accum_cnt; // current accumulator value
     logic    [N_CLASSES-1:0][EscCntDw-1:0]  class_esc_cnt;   // current escalation counter value
     cstate_e [N_CLASSES-1:0]                class_esc_state; // current escalation protocol state
