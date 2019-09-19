@@ -46,7 +46,9 @@ module top_earlgrey_nexysvideo (
   logic cio_jtag_trst_n_p2d, cio_jtag_srst_n_p2d;
 
   // Top-level design
-  top_earlgrey top_earlgrey (
+  top_earlgrey #(
+    .IbexPipeLine(1)
+  ) top_earlgrey (
     .clk_i                        (clk_sys),
     .rst_ni                       (rst_sys_n),
 
