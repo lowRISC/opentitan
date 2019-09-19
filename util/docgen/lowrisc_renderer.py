@@ -341,6 +341,12 @@ class LowriscRenderer(mathjax.MathJaxRenderer):
             self.toc.append((3, token.text, id))
             return html_data.section_template.format(
                 cls="subsection_heading", id=id, inner=token.text)
+        if token.type == "section3":
+            # TODO should token.text get parsed to allow markdown in it?
+            id = self.id_from_inner(token.text)
+            self.toc.append((4, token.text, id))
+            return html_data.section_template.format(
+                cls="subsubsection_heading", id=id, inner=token.text)
         if token.type == "doctree":
             md_paths = []
             return_string = ''

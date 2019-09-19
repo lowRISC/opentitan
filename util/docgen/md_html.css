@@ -11,7 +11,7 @@
   font-size: 16px;
   word-wrap: break-word;
   width: 80%;
-  margin-left:auto; 
+  margin-left:auto;
   margin-right:auto;
 }
 
@@ -107,7 +107,7 @@ table.section_heading td {
 table.subsection_heading {
     border: 2px solid black;
     width: 100%;
-    font-size: 110%;
+    font-size: 120%;
     background-color:white;
     text-align:center;
     vertical-align:middle;
@@ -118,6 +118,30 @@ table.subsection_heading {
 table.subsection_heading tr,
 table.subsection_heading td {
     border: 1px solid black;
+    width: 100%;
+    background-color:white;
+    border: 0px;
+    float: center;
+}
+
+table.subsubsection_heading {
+    border: 1px ;
+    border-style: solid;
+    border-color: darkgray;
+    width: 100%;
+    font-size: 100%;
+    background-color:white;
+    text-align:center;
+    vertical-align:middle;
+    font-family: serif;
+    display: table;
+}
+
+table.subsubsection_heading tr,
+table.subsubsection_heading td {
+    border: 1px;
+    border-style: solid;
+    border-color: darkgray;
     width: 100%;
     background-color:white;
     border: 0px;
