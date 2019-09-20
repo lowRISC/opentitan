@@ -5,6 +5,12 @@
 # clear previous settings
 clear -all
 
+# We use parameter instead of localparam in packages to allow redefinition
+# at elaboration time.
+# Disabling the warning
+# "parameter declared inside package XXX shall be treated as localparam".
+set_message -disable VERI-2418
+
 #-------------------------------------------------------------------------
 # read design
 #-------------------------------------------------------------------------
@@ -175,5 +181,3 @@ set_proofgrid_per_engine_max_local_jobs 16
 get_reset_info -x_value -with_reset_pin
 prove -all
 report
-
-exit
