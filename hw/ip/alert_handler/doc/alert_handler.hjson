@@ -1,0 +1,1166 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# ALERT_HANDLER register template
+#
+# Parameter (given by python tool)
+#  - n_alerts:    Number of alert sources
+#  - esc_cnt_dw:  Width of escalation counter
+#  - accu_cnt_dw: Width of accumulator
+{
+  name: "ALERT_HANDLER",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+  regwidth: "32",
+
+# interrupt registers for the classes
+  interrupt_list: [
+    { name: "CLASSA",
+      desc: '''
+            Interrupt state bit of Class A. Set by HW in case an alert within this class triggered. Defaults true, write one to clear.
+            ''',
+    },
+    { name: "CLASSB",
+      desc: '''
+            Interrupt state bit of Class B. Set by HW in case an alert within this class triggered. Defaults true, write one to clear.
+            ''',
+    },
+    { name: "CLASSC",
+      desc: '''
+            Interrupt state bit of Class C. Set by HW in case an alert within this class triggered. Defaults true, write one to clear.
+            ''',
+    },
+    { name: "CLASSD",
+      desc: '''
+            Interrupt state bit of Class D. Set by HW in case an alert within this class triggered. Defaults true, write one to clear.
+            ''',
+    },
+  ],
+
+  registers: [
+# register locks for alerts and class configs
+    { name: "REGEN",
+      desc: '''
+            Register write enable for all control registers.
+            ''',
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When true, the alert enable and escalation configuration registers can be modified.
+            When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
+            cleared after initial configuration at boot in order to lock in the configuration and activate
+            the ping testing.
+            '''
+            resval: 1,
+        },
+      ]
+    },
+    { name:     "PING_TIMEOUT_CYC",
+      desc:     '''
+                Ping timeout cycle count.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "23:0",
+          resval:   32,
+          desc: '''Timeout value in cycles. If an alert receiver or an escalation sender does not
+          respond to a ping within this timeout window, a pingfail alert will be raised.
+          '''
+        }
+      ]
+    }
+# all alerts
+    { multireg: { name:     "ALERT_EN",
+                  desc:     '''Enable register for alerts.
+                  ''',
+                  count:    4,
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  regwen:   "REGEN",
+                  cname:    "alert",
+                  fields: [
+                    { bits: "0",
+                      name: "EN_A",
+                      desc: "Alert enable "
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "ALERT_CLASS",
+                  desc:     '''Class assignment of alerts.
+                  ''',
+                  count:    4,
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  regwen:   "REGEN",
+                  cname:    "alert",
+                  fields: [
+                    {
+                      bits: "1:0",
+                      name: "CLASS_A",
+                      desc: "Classification ",
+                      enum: [
+                              { value: "0", name: "ClassA", desc: "" },
+                              { value: "1", name: "ClassB", desc: "" },
+                              { value: "2", name: "ClassC", desc: "" },
+                              { value: "3", name: "ClassD", desc: "" }
+                            ]
+                    }
+                  ]
+                }
+    },
+    { multireg: {
+      name: "ALERT_CAUSE",
+      desc: "Alert Cause Register",
+      count: 4,
+      cname: "ALERT",
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0", name: "A", desc: "Cause bit " }
+      ]
+      }
+    },
+# local alerts
+    { multireg: { name:     "LOC_ALERT_EN",
+                  desc:     '''Enable register for the aggregated local alerts "alert
+                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
+                  ''',
+                  count:    4,
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  regwen:   "REGEN",
+                  cname:    "local alert",
+                  fields: [
+                    { bits: "0",
+                      name: "EN_LA",
+                      desc: "Alert enable "
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "LOC_ALERT_CLASS",
+                  desc:     '''Class assignment of local alerts. "alert
+                  pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
+                  ''',
+                  count:    4,
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  regwen:   "REGEN",
+                  cname:    "local alert",
+                  fields: [
+                    {
+                      # reduce range to 2:1 once above TODO has been fixed
+                      bits: "1:0",
+                      name: "CLASS_LA",
+                      desc: "Classification ",
+                      enum: [
+                              { value: "0", name: "ClassA", desc: "" },
+                              { value: "1", name: "ClassB", desc: "" },
+                              { value: "2", name: "ClassC", desc: "" },
+                              { value: "3", name: "ClassD", desc: "" }
+                            ]
+                    }
+                  ]
+                }
+    },
+    { name:     "LOC_ALERT_CAUSE",
+      desc:     "Alert Cause Register for Local Alerts",
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "LA0",
+          desc: "True when pingfail alert has been detected on an alert receiver. Cleared with write"
+        }
+        { bits: "1",
+          name: "LA1",
+          desc: "True when pingfail alert has been detected on an escalation sender. Cleared with write"
+        }
+        { bits: "2",
+          name: "LA2",
+          desc: "True when integfail alert has been detected on an alert receiver. Cleared with write"
+        }
+        { bits: "3",
+          name: "LA3",
+          desc: "True when integfail alert has been detected on an escalation sender. Cleared with write"
+        }
+      ]
+    },
+# classes
+    { name:     "CLASSA_CTRL",
+      desc:     "Escalation control register for alert Class A. Can not be modified if !!REGEN is false."
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+                Enable escalation mechanisms (accumulation and
+                interrupt timeout) for Class A. Note that interrupts can fire
+                regardless of whether the escalation mechanisms are enabled for
+                this class or not.
+                ''',
+        }
+        { bits: "1",
+          name: "LOCK",
+          desc: '''
+                Enable automatic locking of escalation counter for class A.
+                If true, there is no way to stop the escalation protocol for class A
+                once it has been triggered.
+                '''
+        }
+        { bits: "2",
+          name: "EN_E0",
+          resval: 1,
+          desc: "Enable escalation signal 0 for class A",
+        }
+        { bits: "3",
+          name: "EN_E1",
+          resval: 1,
+          desc: "Enable escalation signal 1 for class A",
+        }
+        { bits: "4",
+          name: "EN_E2",
+          resval: 1,
+          desc: "Enable escalation signal 2 for class A",
+        }
+        { bits: "5",
+          name: "EN_E3",
+          resval: 1,
+          desc: "Enable escalation signal 3 for class A",
+        }
+        { bits: "7:6",
+          name: "MAP_E0",
+          resval: 0,
+          desc: "Determines in which escalation phase escalation signal 0 shall be asserted.",
+        }
+        { bits: "9:8",
+          name: "MAP_E1",
+          resval: 1,
+          desc: "Determines in which escalation phase escalation signal 1 shall be asserted.",
+        }
+        { bits: "11:10",
+          name: "MAP_E2",
+          resval: 2,
+          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+        }
+        { bits: "13:12",
+          name: "MAP_E3",
+          resval: 3,
+          desc: "Determines in which escalation phase escalation signal 3 shall be asserted.",
+        }
+      ]
+    },
+    { name:     "CLASSA_CLREN",
+      desc:     '''
+                Clear enable for escalation protocol of class A alerts.
+                '''
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+      {   bits:   "0",
+          desc:   '''Register defaults to true, can only be cleared. This register is set
+          to false by the hardware if the escalation protocol has been triggered and the bit
+          !!CLASSA_CTRL.LOCK is true.
+          ''',
+          resval: 1,
+        }
+      ]
+    },
+    { name:     "CLASSA_CLR",
+      desc:     '''
+                Clear for esclation protocol of class A.
+                '''
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "true",
+      regwen:   "CLASSA_CLREN",
+      fields: [
+        { bits: "0",
+          desc: '''Writing to this register clears the accumulator and aborts escalation
+          (if it has been triggered). This clear is disabled if !!CLASSA_CLREN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSA_ACCUM_CNT",
+      desc:     '''
+                Current accumulation value for alert Class A. Software can clear this register
+                with a write to !!CLASSA_CLR register unless !!CLASSA_CLREN is false.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "15:0" }
+      ]
+    },
+    { name:     "CLASSA_ACCUM_THRESH",
+      desc:     '''
+                Accumulation threshold value for alert Class A.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          desc: '''Once the accumulation value register is equal to the threshold escalation will
+          be triggered on the next alert occurrence within this class A begins. Note that this
+          register can not be modified if !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSA_TIMEOUT_CYC",
+      desc:     '''
+                Interrupt timeout in cycles.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0",
+          desc: '''If the interrupt corresponding to this class is not
+          handled within the specified amount of cycles, escalation will be triggered.
+          Set to a positive value to enable the interrupt timeout for Class A. The timeout is set to zero
+          by default, which disables this feature. Note that this register can not be modified if
+          !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSA_PHASE0_CYC",
+      desc:     '''
+                Duration of escalation phase 0 for class A.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSA_PHASE1_CYC",
+      desc:     '''
+                Duration of escalation phase 1 for class A.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSA_PHASE2_CYC",
+      desc:     '''
+                Duration of escalation phase 2 for class A.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSA_PHASE3_CYC",
+      desc:     '''
+                Duration of escalation phase 3 for class A.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSA_ESC_CNT",
+      desc:     '''
+                Escalation counter in cycles for class A.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''Returns the current timeout or escalation count (depending on !!CLASSA_STATE).
+          This register can not be directly cleared. However, SW can indirectly clear as follows.
+
+          If the class is in the Timeout state, the timeout can be aborted by clearing the
+          corresponding interrupt bit.
+
+          If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
+          aborted by writing to !!CLASSA_CLR. Note however that has no effect if !!CLASSA_CLREN
+          is set to false (either by SW or by HW via the !!CLASSA_CTRL.LOCK feature).
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSA_STATE",
+      desc:     '''
+                Current escalation state of Class A. See also !!CLASSA_ESC_CNT.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "2:0",
+          enum: [
+                  { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
+                  { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
+                  { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
+                  { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
+                  { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },
+                  { value: "0b110", name: "Phase2",   desc: "Escalation Phase2 is active." },
+                  { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
+                ]
+        }
+      ]
+    },
+    { name:     "CLASSB_CTRL",
+      desc:     "Escalation control register for alert Class B. Can not be modified if !!REGEN is false."
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+                Enable escalation mechanisms (accumulation and
+                interrupt timeout) for Class B. Note that interrupts can fire
+                regardless of whether the escalation mechanisms are enabled for
+                this class or not.
+                ''',
+        }
+        { bits: "1",
+          name: "LOCK",
+          desc: '''
+                Enable automatic locking of escalation counter for class B.
+                If true, there is no way to stop the escalation protocol for class B
+                once it has been triggered.
+                '''
+        }
+        { bits: "2",
+          name: "EN_E0",
+          resval: 1,
+          desc: "Enable escalation signal 0 for class B",
+        }
+        { bits: "3",
+          name: "EN_E1",
+          resval: 1,
+          desc: "Enable escalation signal 1 for class B",
+        }
+        { bits: "4",
+          name: "EN_E2",
+          resval: 1,
+          desc: "Enable escalation signal 2 for class B",
+        }
+        { bits: "5",
+          name: "EN_E3",
+          resval: 1,
+          desc: "Enable escalation signal 3 for class B",
+        }
+        { bits: "7:6",
+          name: "MAP_E0",
+          resval: 0,
+          desc: "Determines in which escalation phase escalation signal 0 shall be asserted.",
+        }
+        { bits: "9:8",
+          name: "MAP_E1",
+          resval: 1,
+          desc: "Determines in which escalation phase escalation signal 1 shall be asserted.",
+        }
+        { bits: "11:10",
+          name: "MAP_E2",
+          resval: 2,
+          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+        }
+        { bits: "13:12",
+          name: "MAP_E3",
+          resval: 3,
+          desc: "Determines in which escalation phase escalation signal 3 shall be asserted.",
+        }
+      ]
+    },
+    { name:     "CLASSB_CLREN",
+      desc:     '''
+                Clear enable for escalation protocol of class B alerts.
+                '''
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+      {   bits:   "0",
+          desc:   '''Register defaults to true, can only be cleared. This register is set
+          to false by the hardware if the escalation protocol has been triggered and the bit
+          !!CLASSB_CTRL.LOCK is true.
+          ''',
+          resval: 1,
+        }
+      ]
+    },
+    { name:     "CLASSB_CLR",
+      desc:     '''
+                Clear for esclation protocol of class B.
+                '''
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "true",
+      regwen:   "CLASSB_CLREN",
+      fields: [
+        { bits: "0",
+          desc: '''Writing to this register clears the accumulator and aborts escalation
+          (if it has been triggered). This clear is disabled if !!CLASSB_CLREN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSB_ACCUM_CNT",
+      desc:     '''
+                Current accumulation value for alert Class B. Software can clear this register
+                with a write to !!CLASSB_CLR register unless !!CLASSB_CLREN is false.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "15:0" }
+      ]
+    },
+    { name:     "CLASSB_ACCUM_THRESH",
+      desc:     '''
+                Accumulation threshold value for alert Class B.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          desc: '''Once the accumulation value register is equal to the threshold escalation will
+          be triggered on the next alert occurrence within this class B begins. Note that this
+          register can not be modified if !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSB_TIMEOUT_CYC",
+      desc:     '''
+                Interrupt timeout in cycles.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0",
+          desc: '''If the interrupt corresponding to this class is not
+          handled within the specified amount of cycles, escalation will be triggered.
+          Set to a positive value to enable the interrupt timeout for Class B. The timeout is set to zero
+          by default, which disables this feature. Note that this register can not be modified if
+          !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSB_PHASE0_CYC",
+      desc:     '''
+                Duration of escalation phase 0 for class B.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSB_PHASE1_CYC",
+      desc:     '''
+                Duration of escalation phase 1 for class B.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSB_PHASE2_CYC",
+      desc:     '''
+                Duration of escalation phase 2 for class B.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSB_PHASE3_CYC",
+      desc:     '''
+                Duration of escalation phase 3 for class B.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSB_ESC_CNT",
+      desc:     '''
+                Escalation counter in cycles for class B.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''Returns the current timeout or escalation count (depending on !!CLASSB_STATE).
+          This register can not be directly cleared. However, SW can indirectly clear as follows.
+
+          If the class is in the Timeout state, the timeout can be aborted by clearing the
+          corresponding interrupt bit.
+
+          If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
+          aborted by writing to !!CLASSB_CLR. Note however that has no effect if !!CLASSB_CLREN
+          is set to false (either by SW or by HW via the !!CLASSB_CTRL.LOCK feature).
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSB_STATE",
+      desc:     '''
+                Current escalation state of Class B. See also !!CLASSB_ESC_CNT.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "2:0",
+          enum: [
+                  { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
+                  { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
+                  { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
+                  { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
+                  { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },
+                  { value: "0b110", name: "Phase2",   desc: "Escalation Phase2 is active." },
+                  { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
+                ]
+        }
+      ]
+    },
+    { name:     "CLASSC_CTRL",
+      desc:     "Escalation control register for alert Class C. Can not be modified if !!REGEN is false."
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+                Enable escalation mechanisms (accumulation and
+                interrupt timeout) for Class C. Note that interrupts can fire
+                regardless of whether the escalation mechanisms are enabled for
+                this class or not.
+                ''',
+        }
+        { bits: "1",
+          name: "LOCK",
+          desc: '''
+                Enable automatic locking of escalation counter for class C.
+                If true, there is no way to stop the escalation protocol for class C
+                once it has been triggered.
+                '''
+        }
+        { bits: "2",
+          name: "EN_E0",
+          resval: 1,
+          desc: "Enable escalation signal 0 for class C",
+        }
+        { bits: "3",
+          name: "EN_E1",
+          resval: 1,
+          desc: "Enable escalation signal 1 for class C",
+        }
+        { bits: "4",
+          name: "EN_E2",
+          resval: 1,
+          desc: "Enable escalation signal 2 for class C",
+        }
+        { bits: "5",
+          name: "EN_E3",
+          resval: 1,
+          desc: "Enable escalation signal 3 for class C",
+        }
+        { bits: "7:6",
+          name: "MAP_E0",
+          resval: 0,
+          desc: "Determines in which escalation phase escalation signal 0 shall be asserted.",
+        }
+        { bits: "9:8",
+          name: "MAP_E1",
+          resval: 1,
+          desc: "Determines in which escalation phase escalation signal 1 shall be asserted.",
+        }
+        { bits: "11:10",
+          name: "MAP_E2",
+          resval: 2,
+          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+        }
+        { bits: "13:12",
+          name: "MAP_E3",
+          resval: 3,
+          desc: "Determines in which escalation phase escalation signal 3 shall be asserted.",
+        }
+      ]
+    },
+    { name:     "CLASSC_CLREN",
+      desc:     '''
+                Clear enable for escalation protocol of class C alerts.
+                '''
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+      {   bits:   "0",
+          desc:   '''Register defaults to true, can only be cleared. This register is set
+          to false by the hardware if the escalation protocol has been triggered and the bit
+          !!CLASSC_CTRL.LOCK is true.
+          ''',
+          resval: 1,
+        }
+      ]
+    },
+    { name:     "CLASSC_CLR",
+      desc:     '''
+                Clear for esclation protocol of class C.
+                '''
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "true",
+      regwen:   "CLASSC_CLREN",
+      fields: [
+        { bits: "0",
+          desc: '''Writing to this register clears the accumulator and aborts escalation
+          (if it has been triggered). This clear is disabled if !!CLASSC_CLREN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSC_ACCUM_CNT",
+      desc:     '''
+                Current accumulation value for alert Class C. Software can clear this register
+                with a write to !!CLASSC_CLR register unless !!CLASSC_CLREN is false.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "15:0" }
+      ]
+    },
+    { name:     "CLASSC_ACCUM_THRESH",
+      desc:     '''
+                Accumulation threshold value for alert Class C.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          desc: '''Once the accumulation value register is equal to the threshold escalation will
+          be triggered on the next alert occurrence within this class C begins. Note that this
+          register can not be modified if !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSC_TIMEOUT_CYC",
+      desc:     '''
+                Interrupt timeout in cycles.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0",
+          desc: '''If the interrupt corresponding to this class is not
+          handled within the specified amount of cycles, escalation will be triggered.
+          Set to a positive value to enable the interrupt timeout for Class C. The timeout is set to zero
+          by default, which disables this feature. Note that this register can not be modified if
+          !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSC_PHASE0_CYC",
+      desc:     '''
+                Duration of escalation phase 0 for class C.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSC_PHASE1_CYC",
+      desc:     '''
+                Duration of escalation phase 1 for class C.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSC_PHASE2_CYC",
+      desc:     '''
+                Duration of escalation phase 2 for class C.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSC_PHASE3_CYC",
+      desc:     '''
+                Duration of escalation phase 3 for class C.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSC_ESC_CNT",
+      desc:     '''
+                Escalation counter in cycles for class C.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''Returns the current timeout or escalation count (depending on !!CLASSC_STATE).
+          This register can not be directly cleared. However, SW can indirectly clear as follows.
+
+          If the class is in the Timeout state, the timeout can be aborted by clearing the
+          corresponding interrupt bit.
+
+          If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
+          aborted by writing to !!CLASSC_CLR. Note however that has no effect if !!CLASSC_CLREN
+          is set to false (either by SW or by HW via the !!CLASSC_CTRL.LOCK feature).
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSC_STATE",
+      desc:     '''
+                Current escalation state of Class C. See also !!CLASSC_ESC_CNT.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "2:0",
+          enum: [
+                  { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
+                  { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
+                  { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
+                  { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
+                  { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },
+                  { value: "0b110", name: "Phase2",   desc: "Escalation Phase2 is active." },
+                  { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
+                ]
+        }
+      ]
+    },
+    { name:     "CLASSD_CTRL",
+      desc:     "Escalation control register for alert Class D. Can not be modified if !!REGEN is false."
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+                Enable escalation mechanisms (accumulation and
+                interrupt timeout) for Class D. Note that interrupts can fire
+                regardless of whether the escalation mechanisms are enabled for
+                this class or not.
+                ''',
+        }
+        { bits: "1",
+          name: "LOCK",
+          desc: '''
+                Enable automatic locking of escalation counter for class D.
+                If true, there is no way to stop the escalation protocol for class D
+                once it has been triggered.
+                '''
+        }
+        { bits: "2",
+          name: "EN_E0",
+          resval: 1,
+          desc: "Enable escalation signal 0 for class D",
+        }
+        { bits: "3",
+          name: "EN_E1",
+          resval: 1,
+          desc: "Enable escalation signal 1 for class D",
+        }
+        { bits: "4",
+          name: "EN_E2",
+          resval: 1,
+          desc: "Enable escalation signal 2 for class D",
+        }
+        { bits: "5",
+          name: "EN_E3",
+          resval: 1,
+          desc: "Enable escalation signal 3 for class D",
+        }
+        { bits: "7:6",
+          name: "MAP_E0",
+          resval: 0,
+          desc: "Determines in which escalation phase escalation signal 0 shall be asserted.",
+        }
+        { bits: "9:8",
+          name: "MAP_E1",
+          resval: 1,
+          desc: "Determines in which escalation phase escalation signal 1 shall be asserted.",
+        }
+        { bits: "11:10",
+          name: "MAP_E2",
+          resval: 2,
+          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+        }
+        { bits: "13:12",
+          name: "MAP_E3",
+          resval: 3,
+          desc: "Determines in which escalation phase escalation signal 3 shall be asserted.",
+        }
+      ]
+    },
+    { name:     "CLASSD_CLREN",
+      desc:     '''
+                Clear enable for escalation protocol of class D alerts.
+                '''
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+      {   bits:   "0",
+          desc:   '''Register defaults to true, can only be cleared. This register is set
+          to false by the hardware if the escalation protocol has been triggered and the bit
+          !!CLASSD_CTRL.LOCK is true.
+          ''',
+          resval: 1,
+        }
+      ]
+    },
+    { name:     "CLASSD_CLR",
+      desc:     '''
+                Clear for esclation protocol of class D.
+                '''
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "true",
+      regwen:   "CLASSD_CLREN",
+      fields: [
+        { bits: "0",
+          desc: '''Writing to this register clears the accumulator and aborts escalation
+          (if it has been triggered). This clear is disabled if !!CLASSD_CLREN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSD_ACCUM_CNT",
+      desc:     '''
+                Current accumulation value for alert Class D. Software can clear this register
+                with a write to !!CLASSD_CLR register unless !!CLASSD_CLREN is false.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "15:0" }
+      ]
+    },
+    { name:     "CLASSD_ACCUM_THRESH",
+      desc:     '''
+                Accumulation threshold value for alert Class D.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          desc: '''Once the accumulation value register is equal to the threshold escalation will
+          be triggered on the next alert occurrence within this class D begins. Note that this
+          register can not be modified if !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSD_TIMEOUT_CYC",
+      desc:     '''
+                Interrupt timeout in cycles.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0",
+          desc: '''If the interrupt corresponding to this class is not
+          handled within the specified amount of cycles, escalation will be triggered.
+          Set to a positive value to enable the interrupt timeout for Class D. The timeout is set to zero
+          by default, which disables this feature. Note that this register can not be modified if
+          !!REGEN is false.
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSD_PHASE0_CYC",
+      desc:     '''
+                Duration of escalation phase 0 for class D.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSD_PHASE1_CYC",
+      desc:     '''
+                Duration of escalation phase 1 for class D.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSD_PHASE2_CYC",
+      desc:     '''
+                Duration of escalation phase 2 for class D.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSD_PHASE3_CYC",
+      desc:     '''
+                Duration of escalation phase 3 for class D.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "31:0" ,
+          desc: '''Escalation phase duration in cycles. Note that this register can not be
+          modified if !!REGEN is false.'''
+        }
+      ]
+    }
+    { name:     "CLASSD_ESC_CNT",
+      desc:     '''
+                Escalation counter in cycles for class D.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''Returns the current timeout or escalation count (depending on !!CLASSD_STATE).
+          This register can not be directly cleared. However, SW can indirectly clear as follows.
+
+          If the class is in the Timeout state, the timeout can be aborted by clearing the
+          corresponding interrupt bit.
+
+          If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
+          aborted by writing to !!CLASSD_CLR. Note however that has no effect if !!CLASSD_CLREN
+          is set to false (either by SW or by HW via the !!CLASSD_CTRL.LOCK feature).
+          '''
+        }
+      ]
+    },
+    { name:     "CLASSD_STATE",
+      desc:     '''
+                Current escalation state of Class D. See also !!CLASSD_ESC_CNT.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "2:0",
+          enum: [
+                  { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
+                  { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
+                  { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
+                  { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
+                  { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },
+                  { value: "0b110", name: "Phase2",   desc: "Escalation Phase2 is active." },
+                  { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
+                ]
+        }
+      ]
+    },
+  ],
+}
+
