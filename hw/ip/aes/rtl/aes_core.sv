@@ -49,7 +49,9 @@ module aes_core #(
   logic           key_dec_we;
   key_dec_sel_e   key_dec_sel;
   logic    [31:0] key_expand_out[8];
+  logic           key_expand_step;
   logic           key_expand_clear;
+  logic     [3:0] key_expand_round;
   key_words_sel_e key_words_sel;
   logic    [31:0] key_words[4];
   logic     [7:0] key_bytes[16];
@@ -210,12 +212,15 @@ module aes_core #(
   aes_key_expand #(
   .AES192Enable (AES192Enable)
   ) aes_key_expand (
-    .clk_i   ( clk_i            ),
-    .rst_ni  ( rst_ni           ),
-    .mode_i  ( key_expand_mode  ),
-    .clear_i ( key_expand_clear ),
-    .key_i   ( key_full_q       ),
-    .key_o   ( key_expand_out   )
+    .clk_i     ( clk_i            ),
+    .rst_ni    ( rst_ni           ),
+    .mode_i    ( key_expand_mode  ),
+    .step_i    ( key_expand_step  ),
+    .clear_i   ( key_expand_clear ),
+    .round_i   ( key_expand_round ),
+    .key_len_i ( key_len          ),
+    .key_i     ( key_full_q       ),
+    .key_o     ( key_expand_out   )
   );
 
   always_comb begin : key_words_mux
@@ -321,7 +326,9 @@ module aes_core #(
     .key_full_we_o          ( key_full_we                        ),
     .key_dec_sel_o          ( key_dec_sel                        ),
     .key_dec_we_o           ( key_dec_we                         ),
+    .key_expand_step_o      ( key_expand_step                    ),
     .key_expand_clear_o     ( key_expand_clear                   ),
+    .key_expand_round_o     ( key_expand_round                   ),
     .key_words_sel_o        ( key_words_sel                      ),
     .round_key_sel_o        ( round_key_sel                      ),
 
