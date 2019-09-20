@@ -4,6 +4,9 @@
 variables:
   VERILATOR_VERSION: 4.010
   VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
+  TOOLCHAIN_PATH: /opt/buildcache/riscv
+  # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
+  TOOLCHAIN_VERSION: 20190827-2
 
 trigger:
   # Combine builds on master as long as another build is running
@@ -90,6 +93,19 @@ stages:
 - stage: build_test
   displayName: Build and test
   jobs:
+  - job: "sw_build"
+    displayName: "Build Software"
+    pool: "Default"
+    steps:
+    - bash: |
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+          && sudo pip3 install -r python-requirements.txt
+      displayName: 'Install dependencies'
+    - bash: |
+        export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
+        export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
+        REQUEST_UPDATE=true ci/run_sw_build.sh
+      displayName: 'Build embedded targets'
   - job: "top_earlgrey_verilator"
     displayName: "Build Verilator simulation of the Earl Grey toplevel design"
     pool: "Default"
