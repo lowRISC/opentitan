@@ -8,9 +8,9 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    rom (rx)   : ORIGIN = 0x00008000, LENGTH = 0x2000
-    ram (w)    : ORIGIN = 0x10000000, LENGTH = 0x10000
-    flash (rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
+    rom (rx)     : ORIGIN = 0x00008000, LENGTH = 0x2000
+    ram (w)      : ORIGIN = 0x10000000, LENGTH = 0x10000
+    flash (rx)   : ORIGIN = 0x20000000, LENGTH = 0x100000
 }
 
 /* Memory Allocation */
@@ -18,6 +18,8 @@ _heap_size = 0xe000;
 _stack_size = 0x2000;
 _stack_start = ORIGIN(ram) + _heap_size + _stack_size;
 _flash_start = ORIGIN(flash);
+_chip_info_size = 128;
+_chip_info_start = ORIGIN(rom) + LENGTH(rom) - _chip_info_size;
 
 /* We have to align each sector to word boundaries as our current s19->slm
  * conversion scripts are not able to handle non-word aligned sections. */
@@ -70,6 +72,11 @@ SECTIONS
         *(.data.*)
         edata  =  .;
         _edata  =  .;
+    } > rom
+
+    .chip_info _chip_info_start : {
+        . = ALIGN(4);
+        *(.chip_info)
     } > rom
 
     .bss :
