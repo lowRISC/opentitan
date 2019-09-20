@@ -11,7 +11,8 @@ module prim_rom #(
   input                        clk_i,
   input        [Aw-1:0]        addr_i,
   input                        cs_i,
-  output logic [Width-1:0]     dout_o
+  output logic [Width-1:0]     dout_o,
+  output logic                 dvalid_o
 );
 
   if (Impl == "generic") begin: gen_mem_generic
@@ -22,7 +23,8 @@ module prim_rom #(
       .clk_i,
       .addr_i,
       .cs_i,
-      .dout_o
+      .dout_o,
+      .dvalid_o
     );
   end else if (Impl == "xilinx") begin: gen_rom_xilinx
     prim_xilinx_rom #(
@@ -32,7 +34,8 @@ module prim_rom #(
       .clk_i,
       .addr_i,
       .cs_i,
-      .dout_o
+      .dout_o,
+      .dvalid_o
     );
   end else begin : gen_rom_unsupported_impl
     // TODO: Find code that works across tools and causes a compile failure

@@ -68,7 +68,7 @@
   // Memories (ROM, RAM, eFlash) are defined at the top.
   // It utilizes the primitive cells but configurable
   memory: [
-    { name: "rom",      type: "ram_1p", base_addr: "0x00008000", size: "0x2000" },
+    { name: "rom",      type: "rom",    base_addr: "0x00008000", size: "0x2000"  },
     { name: "ram_main", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
     { name: "eflash",   type: "eflash", base_addr: "0x20000000", size: "0x80000" },
   ],

@@ -185,19 +185,17 @@ module top_earlgrey #(
     .tdo_oe_o         (       )
   );
 
-  // sram device
+  // ROM device
   logic        rom_req;
-  logic        rom_we;
   logic [10:0] rom_addr;
-  logic [31:0] rom_wdata;
-  logic [31:0] rom_wmask;
   logic [31:0] rom_rdata;
   logic        rom_rvalid;
 
   tlul_adapter_sram #(
     .SramAw(11),
     .SramDw(32),
-    .Outstanding(1)
+    .Outstanding(1),
+    .ErrOnWrite(1)
   ) tl_adapter_rom (
     .clk_i,
     .rst_ni   (ndmreset_n),
@@ -207,31 +205,26 @@ module top_earlgrey #(
 
     .req_o    (rom_req),
     .gnt_i    (1'b1), // Always grant as only one requester exists
-    .we_o     (rom_we),
+    .we_o     (),
     .addr_o   (rom_addr),
-    .wdata_o  (rom_wdata),
-    .wmask_o  (rom_wmask),
+    .wdata_o  (),
+    .wmask_o  (),
     .rdata_i  (rom_rdata),
     .rvalid_i (rom_rvalid),
     .rerror_i (2'b00)
   );
 
-  prim_ram_1p #(
+  prim_rom #(
     .Width(32),
-    .Depth(2048),
-    .DataBitsPerMask(8)
-  ) u_ram1p_rom (
+    .Depth(2048)
+  ) u_rom_rom (
     .clk_i,
-    .rst_ni   (ndmreset_n),
-
-    .req_i    (rom_req),
-    .write_i  (rom_we),
+    .cs_i     (rom_req),
     .addr_i   (rom_addr),
-    .wdata_i  (rom_wdata),
-    .wmask_i  (rom_wmask),
-    .rvalid_o (rom_rvalid),
-    .rdata_o  (rom_rdata)
+    .dout_o   (rom_rdata),
+    .dvalid_o (rom_rvalid)
   );
+
   // sram device
   logic        ram_main_req;
   logic        ram_main_we;

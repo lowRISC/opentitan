@@ -10,7 +10,8 @@ module prim_generic_rom #(
   input                        clk_i,
   input        [Aw-1:0]        addr_i,
   input                        cs_i,
-  output logic [Width-1:0]     dout_o
+  output logic [Width-1:0]     dout_o,
+  output logic                 dvalid_o
 );
 
   logic [Width-1:0] mem [Depth];
@@ -19,6 +20,10 @@ module prim_generic_rom #(
     if (cs_i) begin
       dout_o <= mem[addr_i];
     end
+  end
+
+  always_ff @(posedge clk_i) begin
+    dvalid_o <= cs_i;
   end
 
   // ******************************************************************************
@@ -51,4 +56,3 @@ module prim_generic_rom #(
     end
   `endif
 endmodule
-

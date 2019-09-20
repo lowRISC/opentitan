@@ -265,7 +265,7 @@
   [
     {
       name: rom
-      type: ram_1p
+      type: rom
       base_addr: 0x00008000
       size: 0x2000
     }
@@ -355,7 +355,7 @@
           type: device
           clock: main
           pipeline: "false"
-          inst_type: ram_1p
+          inst_type: rom
           base_addr: 0x00008000
           size_byte: 0x2000
           pipeline_byp: "true"

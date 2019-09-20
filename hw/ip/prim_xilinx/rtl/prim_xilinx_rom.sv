@@ -21,7 +21,9 @@ module prim_xilinx_rom #(
   input                        clk_i,
   input        [Aw-1:0]        addr_i,
   input                        cs_i,
-  output logic [Width-1:0]     dout_o
+  output logic [Width-1:0]     dout_o,
+  output logic                 dvalid_o
+
 );
 
   `ifdef ROM_INIT_FILE
@@ -52,6 +54,11 @@ module prim_xilinx_rom #(
     end
   `endif
 
+  always_ff @(posedge clk_i) begin
+    dvalid_o <= cs_i;
+  end
+
+
   // ******************************************************************************
   // ASSERTIONS
   // ******************************************************************************
@@ -65,4 +72,3 @@ module prim_xilinx_rom #(
   `endif // VERILATOR
 
 endmodule
-
