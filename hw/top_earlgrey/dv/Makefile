@@ -16,7 +16,6 @@
 DV_DIR          := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export DUT_TOP  := top_earlgrey_asic
 export TB_TOP   := tb
-export RV_TOOLS := /edascratch/ms_edatools/riscv-tools/rv32ic/bin
 FUSESOC_CORE    := lowrisc:dv:chip_sim:0.1
 COMPILE_KEY     ?= default
 
@@ -28,33 +27,33 @@ UVM_TEST        ?= chip_base_test
 UVM_TEST_SEQ    ?= chip_base_vseq
 
 ifeq (${TEST_NAME},chip_sanity)
-  CAPP_DIR       = examples/hello_world
-  CAPP_NAME      = hello_world
+  SW_DIR         = examples/hello_world
+  SW_NAME        = hello_world
 endif
 
 ifeq (${TEST_NAME},chip_flash_test)
-  CAPP_DIR       = tests/flash_ctrl
-  CAPP_NAME      = flash_test
+  SW_DIR         = tests/flash_ctrl
+  SW_NAME        = flash_test
   RUN_OPTS      += +cpu_test_timeout_ns=15000000
 endif
 
 ifeq (${TEST_NAME},chip_sha256_test)
-  CAPP_DIR       = tests/hmac
-  CAPP_NAME      = sha256_test
+  SW_DIR         = tests/hmac
+  SW_NAME        = sha256_test
   RUN_OPTS      += +cpu_test_timeout_ns=4000000
 endif
 
 ifeq (${TEST_NAME},chip_rv_timer_test)
-  CAPP_DIR       = tests/rv_timer
-  CAPP_NAME      = rv_timer_test
+  SW_DIR         = tests/rv_timer
+  SW_NAME        = rv_timer_test
   RUN_OPTS      += +cpu_test_timeout_ns=4000000
 endif
 
 ifeq (${TEST_NAME},coremark)
-  CAPP_DIR         = coremark
-  CAPP_NAME        = coremark
+  SW_DIR           = benchmarks/coremark
+  SW_NAME          = coremark
   RUN_OPTS        += +cpu_test_timeout_ns=20000000
-  CAPP_BUILD_OPTS += ITERATIONS=1
+  SW_OPTS         += ITERATIONS=1
 endif
 
 ifeq (${TEST_NAME},chip_csr_hw_reset)

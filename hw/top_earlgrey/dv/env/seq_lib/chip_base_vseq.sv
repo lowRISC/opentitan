@@ -46,12 +46,12 @@ class chip_base_vseq extends dv_base_vseq #(
   // routine to backdoor load cpu test hex image and bring the cpu out of reset (if required)
   // TODO(sriyerg): for future implementation
   virtual task cpu_init();
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file("rom.vmem");
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(ROM_MEM_IMG);
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
 
     // TODO: the location of the main execution image should be randomized for either bank in future
-    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file("main.vmem");
+    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(SW_MEM_IMG);
     cpu_test_state = CpuTestRunning;
   endtask
 
