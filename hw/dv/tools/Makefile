@@ -29,8 +29,8 @@ SCRATCH_PATH      ?= ${SCRATCH_ROOT}/${SCRATCH_LOC}
 BUILD_DIR         := ${SCRATCH_PATH}/${BUILD_LOC}
 RUN_PATH          ?= ${SCRATCH_PATH}/${TEST_NAME}
 RUN_DIR           := ${RUN_PATH}/${RUN_LOC}
-
-SW_DIR            := ${PRJ_DIR}/sw
+SW_BUILD_DIR      ?= ${RUN_DIR}/sw_build
+SW_ROOT_DIR       := ${PRJ_DIR}/sw
 
 JOB_OPTS          ?=
 BUILD_JOB_OPTS    ?= $(JOB_OPTS)
@@ -44,13 +44,27 @@ SEED              ?= $(shell od -vAn -N4 -tu < /dev/random | xargs)
 BUILD_LOG         ?= ${BUILD_DIR}/build.log
 RUN_LOG           ?= ${RUN_DIR}/run.log
 UVM_VERBOSITY     ?= UVM_LOW
-BUILD_OPTS        +=
-# command line version of BUILD_OPTS - CL_BUILD_OPTS - it should be empty here
+
+####################################################################################################
+## Options for SV build / C build / simulation run                                                ##
+## CL_ prefix represents command line versions of these options - they should be empty and only   ##
+## be set on the command line                                                                     ##
+####################################################################################################
+# BUILD_OPTS are passed to the simulator during the SV testbench compile step
 CL_BUILD_OPTS     +=
-RUN_OPTS          += +UVM_NO_RELNOTES
-# command line version of RUN_OPTS - CL_RUN_OPTS - it should be empty here
+BUILD_OPTS        +=
+
+# RUN_OPTS are passed to the simulation executable that is invoked to run the simulation
 CL_RUN_OPTS       +=
-CAPP_BUILD_OPTS   ?=
+RUN_OPTS          += +UVM_NO_RELNOTES
+
+# SW_OPTS are options for SW apps that come with their own Makefile (example coremark)
+CL_SW_OPTS        +=
+SW_OPTS           += ${CL_SW_OPTS}
+
+# SW_FLAGS are compiler flags / directives that we can pass for each test using our own Makefiles
+CL_SW_FLAGS       +=
+SW_FLAGS          += ${CL_SW_FLAGS}
 
 # default project-wide bus widths
 TL_AW             ?= 32

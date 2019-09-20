@@ -42,24 +42,21 @@ pre_run:
 	/bin/bash ${MAKE_ROOT}/run_dir_limiter ${RUN_PATH} ${RUN_DIR_LIMIT}
 	env > ${RUN_DIR}/env_vars
 
-# TODO: clean this (capp tooling infrastructure)
-capp: pre_run
-ifneq (${CAPP_NAME},)
-	# Recursive make calls
-	make distclean -C ${SW_DIR}/boot_rom
-	make -C ${SW_DIR}/boot_rom
-	make distclean -C ${SW_DIR}/${CAPP_DIR} MAKEFLAGS=$(CAPP_BUILD_OPTS)
-	make -C ${SW_DIR}/${CAPP_DIR} MAKEFLAGS=$(CAPP_BUILD_OPTS) \
-	PROGRAM_CFLAGS=$(PROGRAM_CFLAGS)
-
-	# Copy outputs over to run area
-	cp $(SW_DIR)/boot_rom/boot_rom.vmem ${RUN_DIR}/rom.vmem
-	cp ${SW_DIR}/${CAPP_DIR}/${CAPP_NAME}.vmem ${RUN_DIR}/main.vmem
-	cp ${SW_DIR}/${CAPP_DIR}/${CAPP_NAME}.dis ${RUN_DIR}/main.dis
-	cp ${SW_DIR}/${CAPP_DIR}/${CAPP_NAME}.map ${RUN_DIR}/main.map
+sw_build: pre_run
+ifneq (${SW_NAME},)
+	mkdir -p ${SW_BUILD_DIR}
+	$(MAKE) -C $(SW_ROOT_DIR) \
+	  SW_DIR=boot_rom \
+	  SW_BUILD_DIR=$(SW_BUILD_DIR)/rom \
+	  MAKEFLAGS="$(SW_OPTS)"
+	$(MAKE) -C $(SW_ROOT_DIR) \
+	  SW_DIR=$(SW_DIR) \
+	  SW_NAME=$(SW_NAME) \
+	  SW_BUILD_DIR=$(SW_BUILD_DIR)/sw \
+	  MAKEFLAGS="$(SW_OPTS)"
 endif
 
-simulate: capp
+simulate: sw_build
 	$(RUN_JOB_OPTS) cd ${RUN_DIR} && ${SIMX} ${RUN_OPTS} ${CL_RUN_OPTS}
 
 post_run: simulate
@@ -77,6 +74,7 @@ clean:
 	compile \
 	post_compile \
 	compile_result \
+	sw_build \
 	pre_run \
 	simulate \
 	post_run \
