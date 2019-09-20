@@ -276,12 +276,10 @@ module top_earlgrey #(
     .clk_i,
     .cs_i     (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
-    .dout_o   (${m["name"]}_rdata)
+    .dout_o   (${m["name"]}_rdata),
+    .dvalid_o (${m["name"]}_rvalid)
   );
 
-  always_ff @(posedge clk_i) begin
-    ${m["name"]}_rvalid <= ${m["name"]}_req;
-  end
   % elif m["type"] == "eflash":
 
   // flash controller to eflash communication
