@@ -24,7 +24,7 @@ module aes_core #(
   logic    [31:0] key_init[8];
   logic     [7:0] key_init_qe;
 
-  mode_e          mode;
+  mode_e          mode, key_expand_mode;
   key_len_e       key_len;
 
   logic     [7:0] state_init[16];
@@ -211,7 +211,7 @@ module aes_core #(
   ) aes_key_expand (
     .clk_i   ( clk_i            ),
     .rst_ni  ( rst_ni           ),
-    .mode_i  ( mode             ),
+    .mode_i  ( key_expand_mode  ),
     .clear_i ( key_expand_clear ),
     .key_i   ( key_full_q       ),
     .key_o   ( key_expand_out   )
@@ -303,6 +303,7 @@ module aes_core #(
     .state_sel_o            ( state_sel                          ),
     .state_we_o             ( state_we                           ),
     .add_rk_sel_o           ( add_round_key_in_sel               ),
+    .key_expand_mode_o      ( key_expand_mode                    ),
     .key_full_sel_o         ( key_full_sel                       ),
     .key_full_we_o          ( key_full_we                        ),
     .key_dec_sel_o          ( key_dec_sel                        ),
