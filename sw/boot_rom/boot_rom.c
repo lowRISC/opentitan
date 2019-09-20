@@ -8,6 +8,7 @@
 #include "gpio.h"
 #include "spi_device.h"
 #include "uart.h"
+#include "chip_info.h"
 
 static inline void try_launch(void) {
   __asm__ volatile(
@@ -21,6 +22,7 @@ static inline void try_launch(void) {
 
 int main(int argc, char **argv) {
   uart_init(UART_BAUD_RATE);
+  uart_send_str((char *)chip_info);
 
   int rv = bootstrap();
   if (rv) {

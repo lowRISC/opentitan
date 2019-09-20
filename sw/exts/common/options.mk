@@ -23,6 +23,7 @@ EXT_DIR       := $(SW_DIR)/exts/common
 CRT_SRCS      ?= $(EXT_DIR)/_crt.c
 EXT_SRCS      ?= $(CRT_SRCS)
 EXT_ASMS      ?=
+CHIP_INFO     ?=
 VENDOR_DIR    := $(SW_DIR)/vendor
 
 RV_TOOLS      ?= /tools/riscv/bin/
@@ -34,6 +35,7 @@ ARCH           = rv32imc
 LINKER_SCRIPT ?= $(EXT_DIR)/link.ld
 
 REGTOOL        = $(ROOT_DIR)/util/regtool.py
+INFOTOOL       = $(ROOT_DIR)/util/rom_chip_info.py
 
 CC            := $(RV_TOOLS)/riscv32-unknown-elf-gcc
 CFLAGS        ?= -Wall -g -Os -march=$(ARCH) -mabi=ilp32 -static -mcmodel=medany \
@@ -46,3 +48,4 @@ LIBS           =-L$(LIB_DIR) -l$(LIB_NAME)
 INCS          +=-I$(LIB_DIR) -I$(VENDOR_DIR)
 
 OUTFILES      := $(EXE).elf $(EXE).vmem $(EXE).bin $(EXE).dis $(EXE).map
+OUTFILES      += $(CHIP_INFO)

@@ -32,12 +32,15 @@ $(EXE).elf: $(OBJS) $(LINKER_SCRIPT) $(LIB_DIR)
 %.bin: %.elf
 	$(OBJCOPY) -O binary $^ $@
 
-%.o: %.c
+%.o: %.c $(CHIP_INFO)
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
 %.o: %.S
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
+$(CHIP_INFO):
+	$(RM) chip_info.h
+	$(INFOTOOL) -o $(shell pwd)
 
 -include $(DEPS)
 

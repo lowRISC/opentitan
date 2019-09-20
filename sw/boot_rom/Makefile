@@ -6,9 +6,10 @@
 
 NAME          = boot_rom
 SRCS          = bootstrap.c boot_rom.c
-LINKER_SCRIPT = link.ld
+LINKER_SCRIPT = rom_link.ld
 CRT_SRCS      =
 EXT_ASMS      = crt0.S
+CHIP_INFO     = chip_info.h
 
 PROGRAM_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SW_DIR      := $(PROGRAM_DIR)/..
