@@ -25,6 +25,11 @@ declare -a blocks=(
   "sram2tlul"
   "xbar_main"
   "top_earlgrey"
+  # run formal on dedicated FPV testbenches
+  "prim_lfsr_tb"
+  "prim_alert_rxtx_tb"
+  "prim_alert_rxtx_async_tb"
+  "prim_esc_rxtx_tb"
 )
 
 #-------------------------------------------------------------------------
