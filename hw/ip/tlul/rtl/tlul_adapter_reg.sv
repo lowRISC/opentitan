@@ -74,7 +74,8 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     end else if (a_ack) begin
       reqid <= tl_i.a_source;
       reqsz <= tl_i.a_size;
-      rspop <= (re_o) ? AccessAckData : AccessAck ;
+      // Return AccessAckData regardless of error
+      rspop <= (rd_req) ? AccessAckData : AccessAck ;
     end
   end
 
