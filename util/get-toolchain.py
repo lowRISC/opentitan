@@ -14,6 +14,7 @@ from urllib.request import urlopen, urlretrieve
 TOOLCHAIN_VERSION = 'latest'
 RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
 ASSET_PREFIX = "lowrisc-toolchain-gcc-rv32imc-"
+ASSET_SUFFIX = ".tar.xz"
 TARGET_DIR = '/tools/riscv'
 
 
@@ -26,7 +27,8 @@ def get_download_url(toolchain_version):
         info = json.loads(f.read().decode('utf-8'))
         return [
             a["browser_download_url"] for a in info["assets"]
-            if a["name"].startswith(ASSET_PREFIX)
+            if (a["name"].startswith(ASSET_PREFIX) and
+                a["name"].endswith(ASSET_SUFFIX))
         ][0]
 
 
