@@ -6,7 +6,7 @@
 
 NAME          = boot_rom
 SRCS          = bootstrap.c boot_rom.c
-LINKER_SCRIPT = link.ld
+LINKER_SCRIPT = rom_link.ld
 CRT_SRCS      =
 EXT_ASMS      = crt0.S
 
