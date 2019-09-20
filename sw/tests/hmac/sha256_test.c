@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
   for (uint32_t i = 0; i < 8; i++) {
     if (digest[i] != test.digest[i]) {
-      REG32(FLASH_CTRL_SCRATCH(0)) = digest[i];
+      flash_write_scratch_reg(digest[i]);
       error++;
       break;
     }
