@@ -28,6 +28,7 @@ module aes_control #(
   output aes_pkg::add_rk_sel_e    add_rk_sel_o,
 
   // Control outputs key expand data path
+  output aes_pkg::mode_e          key_expand_mode_o,
   output aes_pkg::key_full_sel_e  key_full_sel_o,
   output logic                    key_full_we_o,
   output aes_pkg::key_dec_sel_e   key_dec_sel_o,
@@ -133,5 +134,7 @@ module aes_control #(
   // clear once all input regs have been written
   assign input_ready_o     = ~data_in_new;
   assign input_ready_we_o  =  data_in_new | data_in_load;
+
+  assign key_expand_mode_o = dec_key_gen_q ? AES_ENC : mode_i;
 
 endmodule
