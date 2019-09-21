@@ -8,6 +8,7 @@ module prim_generic_rom #(
   parameter  int Aw        = $clog2(Depth)
 ) (
   input                        clk_i,
+  input                        rst_ni,
   input        [Aw-1:0]        addr_i,
   input                        cs_i,
   output logic [Width-1:0]     dout_o,
@@ -22,8 +23,12 @@ module prim_generic_rom #(
     end
   end
 
-  always_ff @(posedge clk_i) begin
-    dvalid_o <= cs_i;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dvalid_o <= 1'b0;
+    end else begin
+      dvalid_o <= cs_i;
+    end
   end
 
   // ******************************************************************************

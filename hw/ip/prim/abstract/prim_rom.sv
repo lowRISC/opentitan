@@ -9,6 +9,7 @@ module prim_rom #(
   parameter  int Aw        = $clog2(Depth)
 ) (
   input                        clk_i,
+  input                        rst_ni,
   input        [Aw-1:0]        addr_i,
   input                        cs_i,
   output logic [Width-1:0]     dout_o,
@@ -21,6 +22,7 @@ module prim_rom #(
       .Depth(Depth)
     ) u_impl_generic (
       .clk_i,
+      .rst_ni,
       .addr_i,
       .cs_i,
       .dout_o,

@@ -274,6 +274,7 @@ module top_earlgrey #(
     .Depth(${rom_depth})
   ) u_rom_${m["name"]} (
     .clk_i,
+    .rst_ni   (ndmreset_n),
     .cs_i     (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
     .dout_o   (${m["name"]}_rdata),
