@@ -57,17 +57,25 @@ static int usleep_ibex(unsigned long usec) {
 
 static int usleep(unsigned long usec) { return usleep_ibex(usec); }
 
-// called from ctr0 when something bad happens
-// char I=illegal instruction, A=lsu error (address), E=ecall
-void trap_handler(uint32_t mepc, char c) {
-  uart_send_char(c);
-  uart_send_uint(mepc, 32);
+static void test_error(void) {
   while (1) {
     gpio_write_all(0xAA00);  // pattern
     usleep(200 * 1000);
     gpio_write_all(0x5500);  // pattern
     usleep(100 * 1000);
   }
+}
+
+// Override default handler routines
+void handler_instr_ill_fault(void) {
+  uart_send_str("Instruction Illegal fault");
+  test_error();
+}
+
+// Override default handler routines
+void handler_lsu_fault(void) {
+  uart_send_str("Load/Store Fault");
+  test_error();
 }
 
 #define MK_PRINT(c) \
