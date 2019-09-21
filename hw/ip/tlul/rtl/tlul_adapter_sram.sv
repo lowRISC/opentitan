@@ -125,7 +125,7 @@ module tlul_adapter_sram #(
   }; // Store the request only. Doesn't have to store data
   assign reqfifo_rready = tl_o.d_valid & tl_i.d_ready ;
 
-  assign rspfifo_wvalid = rvalid_i ;
+  assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
   assign rspfifo_wdata  = '{
     data:  rdata_i,
     error: rerror_i[1]  // Only care for Uncorrectable error

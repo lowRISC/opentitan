@@ -219,6 +219,7 @@ module top_earlgrey #(
     .Depth(2048)
   ) u_rom_rom (
     .clk_i,
+    .rst_ni   (ndmreset_n),
     .cs_i     (rom_req),
     .addr_i   (rom_addr),
     .dout_o   (rom_rdata),
