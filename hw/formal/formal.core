@@ -16,6 +16,7 @@ filesets:
       - lowrisc:ip:rv_timer
       - lowrisc:ip:hmac
       - lowrisc:systems:top_earlgrey
+      - lowrisc:fpv:rv_plic_fpv
       - lowrisc:ip:usbuart
       - lowrisc:ip:usbdev
       - lowrisc:ip:usbfs_nb_pe

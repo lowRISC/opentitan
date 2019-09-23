@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:rv_plic_fpv:0.1"
+description: "RISC-V PLIC"
+
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:ip:rv_plic_component
+    files:
+      - ../rtl/rv_plic_reg_pkg.sv
+      - ../rtl/rv_plic_reg_top.sv
+      - ../rtl/rv_plic.sv
+      - tb/rv_plic_bind.sv
+      - vip/rv_plic_assert.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    toplevel:
+      - ../rtl/rv_plic.sv
+    filesets:
+      - files_fpv
+    default_tool: jg
