@@ -157,10 +157,10 @@
     { window: {
         name: "MSG_FIFO"
         items: "512"      // 2kB
-        swaccess: "wo"
+        swaccess: "wo",
+        byte-write: "true",
         desc: '''Message FIFO. Any address starts from offset 0x800 to 0xFFF
-              updates MSG FIFO entry. This version only supports word-aligned
-              write.
+              updates MSG FIFO entry.
               '''
       }
     }
