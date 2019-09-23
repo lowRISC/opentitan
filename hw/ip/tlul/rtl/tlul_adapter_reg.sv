@@ -110,26 +110,10 @@ module tlul_adapter_reg import tlul_pkg::*; #(
 
   // addr_align_err
   //    Raised if addr isn't aligned with the size
+  //    Read size error is checked in tlul_assert.sv
+  //    Here is it added due to the limitation of register interface.
   always_comb begin
-    if (rd_req) begin
-      unique case (tl_i.a_size)
-        'h0: begin // 1 Byte
-          addr_align_err = 1'b0;
-        end
-
-        'h1: begin // 2 Byte
-          addr_align_err = tl_i.a_address[0];
-        end
-
-        'h2: begin // 4 Byte
-          addr_align_err = |tl_i.a_address[1:0];
-        end
-
-        default: begin
-          addr_align_err = 1'b1;
-        end
-      endcase
-    end else if (wr_req) begin
+    if (wr_req) begin
       // Only word-align is accepted based on comportability spec
       addr_align_err = |tl_i.a_address[1:0];
     end else begin
