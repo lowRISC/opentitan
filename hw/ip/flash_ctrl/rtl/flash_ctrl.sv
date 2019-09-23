@@ -66,7 +66,9 @@ module flash_ctrl (
     .tl_win_i (tl_fifo_d2h),
 
     .reg2hw,
-    .hw2reg
+    .hw2reg,
+
+    .devmode_i  (1'b1)
   );
 
   // FIFO Connections

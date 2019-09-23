@@ -509,7 +509,9 @@ module usbdev (
     .tl_win_i (tl_sram_d2h),
 
     .reg2hw,
-    .hw2reg
+    .hw2reg,
+
+    .devmode_i  (1'b1)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_pkt_received (

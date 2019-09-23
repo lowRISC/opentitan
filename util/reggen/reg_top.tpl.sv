@@ -11,7 +11,9 @@
   max_regs_char = len("{}".format(num_regs-1))
 %>
 
-module ${block.name}_reg_top (
+module ${block.name}_reg_top #(
+  parameter logic LifeCycle = 1'b0 // If 0b, assume devmode 1b always
+) (
   input clk_i,
   input rst_ni,
 
@@ -27,7 +29,10 @@ module ${block.name}_reg_top (
 % endif
   // To HW
   output ${block.name}_reg_pkg::${block.name}_reg2hw_t reg2hw, // Write
-  input  ${block.name}_reg_pkg::${block.name}_hw2reg_t hw2reg  // Read
+  input  ${block.name}_reg_pkg::${block.name}_hw2reg_t hw2reg, // Read
+
+  // Config
+  input devmode_i // If 1, explicit error return for unmapped register access
 );
 
   import ${block.name}_reg_pkg::* ;
@@ -129,7 +134,14 @@ module ${block.name}_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = addrmiss | wr_err;
+
+  // Ignore devmode_i if this register module isn't used in LifeCycle managed IP
+  // And mandate to return error for address miss
+
+  logic  devmode ;
+  assign devmode = LifeCycle ? devmode_i : 1'b1;
+
+  assign reg_error = (devmode & addrmiss) | wr_err ;
 
   // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
   // TODO(eunchan): Make concrete scenario

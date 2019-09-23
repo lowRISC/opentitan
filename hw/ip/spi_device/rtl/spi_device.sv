@@ -499,7 +499,9 @@ module spi_device #(
     .tl_win_i (tl_sram_d2h),
 
     .reg2hw,
-    .hw2reg
+    .hw2reg,
+
+    .devmode_i  (1'b1)
   );
 
   // make sure scanmode_i is never X (including during reset)

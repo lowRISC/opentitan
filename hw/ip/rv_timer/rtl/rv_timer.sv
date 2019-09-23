@@ -112,7 +112,9 @@ module rv_timer (
     .tl_o,
 
     .reg2hw,
-    .hw2reg
+    .hw2reg,
+
+    .devmode_i  (1'b1)
   );
 
 endmodule
