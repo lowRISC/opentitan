@@ -35,8 +35,6 @@ module tlul_assert (
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
-  bit saw_one, not_contig;
-
   // use negedge clk to avoid possible race conditions
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -57,8 +55,17 @@ module tlul_assert (
         // a_param is reserved
         `ASSERT_I(legalAParam, h2d.a_param === '0)
 
-        // a_size: 2**a_size must equal $countones(a_mask)
-        `ASSERT_I(sizeMatchesMask, (1 << h2d.a_size) === $countones(h2d.a_mask))
+        // a_size: Size shouldn't be greater than the bus width in TL-UL (not in TL-UH)
+        //         This assertion can be covered by below
+        //         (a_size must less than or equal to ones of a_mask)
+
+        // a_size: 2**a_size must less than or equal to $countones(a_mask) for PutPartial
+        `ASSERT_I(sizeLTEMask, (h2d.a_opcode === PutPartialData) ||
+                               ((1 << h2d.a_size) >= $countones(h2d.a_mask)))
+
+        // a_size: 2**a_size must equal to $countones(a_mask) for PutFull and Get
+        `ASSERT_I(sizeMatchesMask, (h2d.a_opcode !== PutPartialData) ||
+                                   ((1 << h2d.a_size) === $countones(h2d.a_mask)))
 
         // a_source: there should be no more than one pending request per each source ID
         `ASSERT_I(onlyOnePendingReqPerSourceID, pend_req[h2d.a_source].pend == 0)
@@ -71,17 +78,11 @@ module tlul_assert (
         // mask is always 1? If that's true, then below code could be much simpler.
         // However, the spec shows a timing diagram where bit 0 of mask is 0.
         if (h2d.a_opcode != PutPartialData) begin
-          // Below loop traverses mask[TL_DBW-1:0] from bit [1] to [TL_DBW-1].
-          // It sets bit "not_contig" whenever it sees pattern "10" and it has seen a
-          // "1" in the previous bits. So e.g. patterns like 10..1.. will be flagged.
-          saw_one = h2d.a_mask[0];
-          not_contig = 0; // below loop sets not_contig once it detects non-contiguous
-          for (int ii = 1; ii < TL_DBW; ii++) begin
-            if (saw_one && h2d.a_mask[ii] && (!h2d.a_mask[ii-1])) not_contig = 1;
-            if (h2d.a_mask[ii]) saw_one = 1;
-          end
-          `ASSERT_I(maskMustBeContiguous, !not_contig)
+          `ASSERT_I(maskMustBeContiguous, $countones(h2d.a_mask ^
+                                          {h2d.a_mask[$bits(h2d.a_mask)-2:0], 1'b0}) <= 2)
         end
+
+        // TODO: a_mask in innactive lanes should be LOW
 
         // a_data must be known for opcode == Put*(depending on mask bits)
         for (int ii = 0; ii < TL_DBW; ii++) begin
@@ -99,7 +100,7 @@ module tlul_assert (
           pend_req[h2d.a_source].size   = h2d.a_size;
           pend_req[h2d.a_source].mask   = h2d.a_mask;
         end
-      end
+      end // h2d.a_valid
 
       //--------------------------------------------------------------------------------
       // check responses
@@ -130,7 +131,7 @@ module tlul_assert (
         if (h2d.d_ready) begin
           pend_req[d2h.d_source].pend = 0;
         end
-      end
+      end //d2h.d_valid
     end
   end
 
@@ -144,10 +145,12 @@ module tlul_assert (
   //------------------------------------------------------------------------------------
 
   // a_* should be known when a_valid == 1 (a_opcode and a_param are already covered above)
+  // This also covers ASSERT_KNOWN of a_valid
   `ASSERT_VALID_DATA(aKnown, h2d.a_valid, {h2d.a_size, h2d.a_source, h2d.a_address,
       h2d.a_mask, h2d.a_user}, clk_i, !rst_ni)
 
   // d_* should be known when d_valid == 1 (d_opcode, d_param, d_size already covered above)
+  // This also covers ASSERT_KNOWN of d_valid
   `ASSERT_VALID_DATA(dKnown, d2h.d_valid, {d2h.d_source, d2h.d_sink, d2h.d_error, d2h.d_user},
       clk_i, !rst_ni)
 
@@ -156,3 +159,4 @@ module tlul_assert (
   `ASSERT_KNOWN(dReadyKnown, h2d.d_ready, clk_i, !rst_ni)
 
 endmodule
+
