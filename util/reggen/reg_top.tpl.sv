@@ -245,13 +245,7 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
     % endfor
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      addrmiss <= 1'b0;
-    end else if (reg_re || reg_we) begin
-      addrmiss <= ~|addr_hit;
-    end
-  end
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
 
   // Check sub-word write is permitted
   always_comb begin
