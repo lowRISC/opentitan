@@ -6,30 +6,56 @@
 import argparse
 import json
 import os
+from pathlib import Path
+import re
 import subprocess
+import shutil
 import sys
 import tempfile
 from urllib.request import urlopen, urlretrieve
 
-TOOLCHAIN_VERSION = 'latest'
-RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
 ASSET_PREFIX = "lowrisc-toolchain-gcc-rv32imc-"
 ASSET_SUFFIX = ".tar.xz"
+BUILDINFO_FILENAME = "buildinfo"
+RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
 TARGET_DIR = '/tools/riscv'
+TOOLCHAIN_VERSION = 'latest'
 
 
-def get_download_url(toolchain_version):
+def get_release_info(toolchain_version):
     if toolchain_version == 'latest':
         releases_url = '%s/%s' % (RELEASES_URL_BASE, toolchain_version)
     else:
         releases_url = '%s/tags/%s' % (RELEASES_URL_BASE, toolchain_version)
     with urlopen(releases_url) as f:
-        info = json.loads(f.read().decode('utf-8'))
-        return [
-            a["browser_download_url"] for a in info["assets"]
-            if (a["name"].startswith(ASSET_PREFIX) and
-                a["name"].endswith(ASSET_SUFFIX))
-        ][0]
+        return json.loads(f.read().decode('utf-8'))
+
+
+def get_download_url(release_info):
+    return [
+        a["browser_download_url"] for a in release_info["assets"]
+        if (a["name"].startswith(ASSET_PREFIX) and
+            a["name"].endswith(ASSET_SUFFIX))
+    ][0]
+
+
+def get_release_tag(release_info):
+    return release_info["tag_name"]
+
+
+def get_release_tag_from_file(buildinfo_file):
+    """Extracts version tag from buildinfo file.
+
+    Args:
+        buildinfo_file: Path to buildinfo_file.
+    Returns:
+        Release tag string if available, otherwise None.
+    """
+    with open(buildinfo_file, 'r') as f:
+        match = re.match(r"Version:\n(?P<version>\d+-\d+)", f.read(), re.M)
+    if not match:
+        return None
+    return match.group("version")
 
 
 def download(url):
@@ -39,7 +65,9 @@ def download(url):
     return tmpfile
 
 
-def install(archive_file, target_dir):
+def install(archive_file, target_dir, update):
+    if os.path.exists(target_dir) and update:
+        shutil.rmtree(target_dir)
     os.makedirs(target_dir)
 
     cmd = [
@@ -63,19 +91,43 @@ def main():
         required=False,
         default=TOOLCHAIN_VERSION,
         help="Toolchain version (default: %(default)s)")
+    parser.add_argument(
+        '--update',
+        '-u',
+        required=False,
+        default=False,
+        action='store_true',
+        help="Set to update to target version if needed (default: %(default)s)")
     args = parser.parse_args()
 
-    target_dir = args.target_dir
+    target_dir = Path(args.target_dir)
     toolchain_version = args.release_version
 
-    if os.path.exists(args.target_dir):
-        sys.exit('Target directory %s already exists. Delete it first it you '
-                 'want to re-download the toolchain.' % (target_dir, ))
+    if not args.update and os.path.exists(args.target_dir):
+        sys.exit('Target directory %s already exists. Delete it first '
+             'it you want to re-download the toolchain.' % (target_dir, ))
 
-    download_url = get_download_url(toolchain_version)
+    release_info = get_release_info(toolchain_version)
+
+    if args.update and os.path.exists(args.target_dir):
+        buildinfo_file = target_dir / BUILDINFO_FILENAME
+        if not os.path.exists(buildinfo_file):
+            sys.exit('Unable to find buildinfo file at %s. Delete target '
+                'directory and try again.' % buildinfo_file)
+        current_release_tag = get_release_tag_from_file(buildinfo_file)
+        if not current_release_tag:
+            sys.exit('Unable to extract current toolchain version from %s.'
+                'Delete target directory and try again.' % buildinfo_file)
+        if get_release_tag(release_info) == current_release_tag:
+            print('Toolchain version %s already installed at %s. Skipping '
+                'install.' % (current_release_tag, target_dir))
+            return
+        print('Cleaning target_dir before attempting install.')
+
+    download_url = get_download_url(release_info)
     try:
         archive_file = download(download_url)
-        install(archive_file, target_dir)
+        install(archive_file, target_dir, args.update)
     finally:
         os.remove(archive_file)
 
