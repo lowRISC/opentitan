@@ -76,7 +76,7 @@ if n_alerts > reg_dw:
 if not k:
   comma = ''
 if k < n_alerts-1:
-  prefix = space;%>${prefix}hw2reg.cause_word${w}.a${k}.d${comma}
+  prefix = space;%>${prefix}hw2reg.alert_cause${w}.a${k}.d${comma}
 %endfor
 ${space}} = '1;
 <%
@@ -94,22 +94,22 @@ if n_alerts > reg_dw:
 if not k:
   comma = ''
 if k < n_alerts-1:
-  prefix = space;%>${prefix}hw2reg.cause_word${w}.a${k}.de${comma}
+  prefix = space;%>${prefix}hw2reg.alert_cause${w}.a${k}.de${comma}
 %endfor
 ${space}} = hw2reg_wrap.alert_cause;
   //----------------------------------------------------------------------------
 
   // if a local alert is enabled and it fires,
   // we have to set the corresponding cause bit
-  assign { hw2reg.cause_local.la3.d,
-           hw2reg.cause_local.la2.d,
-           hw2reg.cause_local.la1.d,
-           hw2reg.cause_local.la0.d } = '1;
+  assign { hw2reg.loc_alert_cause.la3.d,
+           hw2reg.loc_alert_cause.la2.d,
+           hw2reg.loc_alert_cause.la1.d,
+           hw2reg.loc_alert_cause.la0.d } = '1;
 
-  assign { hw2reg.cause_local.la3.de,
-           hw2reg.cause_local.la2.de,
-           hw2reg.cause_local.la1.de,
-           hw2reg.cause_local.la0.de } = hw2reg_wrap.loc_alert_cause;
+  assign { hw2reg.loc_alert_cause.la3.de,
+           hw2reg.loc_alert_cause.la2.de,
+           hw2reg.loc_alert_cause.la1.de,
+           hw2reg.loc_alert_cause.la0.de } = hw2reg_wrap.loc_alert_cause;
 
   // autolock can clear these regs automatically upon entering escalation
   // note: the class must be activated for this to occur

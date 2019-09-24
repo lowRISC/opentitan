@@ -100,31 +100,31 @@ module alert_handler_reg_wrap (
   // if an alert is enabled and it fires,
   // we have to set the corresponding cause bit
 
-  assign { hw2reg.cause_word.a3.d,
-           hw2reg.cause_word.a2.d,
-           hw2reg.cause_word.a1.d,
-           hw2reg.cause_word.a0.d
+  assign { hw2reg.alert_cause.a3.d,
+           hw2reg.alert_cause.a2.d,
+           hw2reg.alert_cause.a1.d,
+           hw2reg.alert_cause.a0.d
            } = '1;
 
 
-  assign { hw2reg.cause_word.a3.de,
-           hw2reg.cause_word.a2.de,
-           hw2reg.cause_word.a1.de,
-           hw2reg.cause_word.a0.de
+  assign { hw2reg.alert_cause.a3.de,
+           hw2reg.alert_cause.a2.de,
+           hw2reg.alert_cause.a1.de,
+           hw2reg.alert_cause.a0.de
            } = hw2reg_wrap.alert_cause;
   //----------------------------------------------------------------------------
 
   // if a local alert is enabled and it fires,
   // we have to set the corresponding cause bit
-  assign { hw2reg.cause_local.la3.d,
-           hw2reg.cause_local.la2.d,
-           hw2reg.cause_local.la1.d,
-           hw2reg.cause_local.la0.d } = '1;
+  assign { hw2reg.loc_alert_cause.la3.d,
+           hw2reg.loc_alert_cause.la2.d,
+           hw2reg.loc_alert_cause.la1.d,
+           hw2reg.loc_alert_cause.la0.d } = '1;
 
-  assign { hw2reg.cause_local.la3.de,
-           hw2reg.cause_local.la2.de,
-           hw2reg.cause_local.la1.de,
-           hw2reg.cause_local.la0.de } = hw2reg_wrap.loc_alert_cause;
+  assign { hw2reg.loc_alert_cause.la3.de,
+           hw2reg.loc_alert_cause.la2.de,
+           hw2reg.loc_alert_cause.la1.de,
+           hw2reg.loc_alert_cause.la0.de } = hw2reg_wrap.loc_alert_cause;
 
   // autolock can clear these regs automatically upon entering escalation
   // note: the class must be activated for this to occur
