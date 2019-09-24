@@ -7,6 +7,7 @@
 #include "common.h"
 #include "flash_ctrl.h"
 #include "gpio.h"
+#include "msg.h"
 #include "spi_device.h"
 #include "uart.h"
 
@@ -26,14 +27,12 @@ int main(int argc, char **argv) {
 
   int rv = bootstrap();
   if (rv) {
-    uart_send_str("Bootstrap failed with status code: ");
-    uart_send_uint(rv, 32);
-    uart_send_str("\r\n");
+    MSG_ERROR("Bootstrap failed with status code: %0d\n", rv);
     // Currently the only way to recover is by a hard reset.
     return rv;
   }
 
-  uart_send_str("Jump!\r\n");
+  MSG_INFO("Jump!\n");
   while (!uart_tx_empty()) {
   }
   try_launch();

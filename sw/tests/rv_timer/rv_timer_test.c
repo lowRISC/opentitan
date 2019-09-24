@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "rv_timer.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "common.h"
 #include "irq.h"
-#include "rv_timer.h"
 #include "uart.h"
 
 static uint32_t intr_handling_success = 0;

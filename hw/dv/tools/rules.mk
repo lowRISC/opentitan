@@ -46,10 +46,12 @@ sw_build: pre_run
 ifneq (${SW_NAME},)
 	mkdir -p ${SW_BUILD_DIR}
 	$(MAKE) -C $(SW_ROOT_DIR) \
+	  TARGET=dv \
 	  SW_DIR=boot_rom \
 	  SW_BUILD_DIR=$(SW_BUILD_DIR)/rom \
 	  MAKEFLAGS="$(SW_OPTS)"
 	$(MAKE) -C $(SW_ROOT_DIR) \
+	  TARGET=dv \
 	  SW_DIR=$(SW_DIR) \
 	  SW_NAME=$(SW_NAME) \
 	  SW_BUILD_DIR=$(SW_BUILD_DIR)/sw \
