@@ -11,9 +11,7 @@
   max_regs_char = len("{}".format(num_regs-1))
 %>
 
-module ${block.name}_reg_top #(
-  parameter logic LifeCycle = 1'b0 // If 0b, assume devmode 1b always
-) (
+module ${block.name}_reg_top (
   input clk_i,
   input rst_ni,
 
@@ -134,30 +132,7 @@ module ${block.name}_reg_top #(
   );
 
   assign reg_rdata = reg_rdata_next ;
-
-  // Ignore devmode_i if this register module isn't used in LifeCycle managed IP
-  // And mandate to return error for address miss
-
-  logic  devmode ;
-  assign devmode = LifeCycle ? devmode_i : 1'b1;
-
-  assign reg_error = (devmode & addrmiss) | wr_err ;
-
-  // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
-  // TODO(eunchan): Make concrete scenario
-  //    1. Write: No response, so that it can guarantee a request completes a clock after we
-  //              It means, bus_reg_ready doesn't have to be lowered.
-  //    2. Read: response. So bus_reg_ready should assert after reg_bus_valid & reg_bus_ready
-  //               _____         _____
-  // a_valid _____/     \_______/     \______
-  //         ___________         _____
-  // a_ready            \_______/     \______ <- ERR though no logic malfunction
-  //                     _____________
-  // d_valid ___________/             \______
-  //                             _____
-  // d_ready ___________________/     \______
-  //
-  // Above example is fine but if r.b.r doesn't assert within two cycle, then it can be wrong.
+  assign reg_error = (devmode_i & addrmiss) | wr_err ;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
