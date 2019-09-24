@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import sys
 import tempfile
+import time
 from urllib.request import urlopen, urlretrieve
 
 ASSET_PREFIX = "lowrisc-toolchain-gcc-rv32imc-"
@@ -20,6 +21,18 @@ BUILDINFO_FILENAME = "buildinfo"
 RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
 TARGET_DIR = '/tools/riscv'
 TOOLCHAIN_VERSION = 'latest'
+
+
+def prompt_yes_no(msg):
+    while True:
+        print(msg, end=" ")
+        response = input().lower()
+        if response in ('yes', 'y'):
+            return True
+        elif response in ('no', 'n'):
+            return False
+        else:
+            print('Invalid response. Valid options are "yes" or "no"')
 
 
 def get_release_info(toolchain_version):
@@ -52,7 +65,7 @@ def get_release_tag_from_file(buildinfo_file):
         Release tag string if available, otherwise None.
     """
     with open(buildinfo_file, 'r') as f:
-        match = re.match(r"Version:\n(?P<version>\d+-\d+)", f.read(), re.M)
+        match = re.match(r"Version:\n(?P<version>\d+(-\d+)?)", f.read(), re.M)
     if not match:
         return None
     return match.group("version")
@@ -65,9 +78,7 @@ def download(url):
     return tmpfile
 
 
-def install(archive_file, target_dir, update):
-    if os.path.exists(target_dir) and update:
-        shutil.rmtree(target_dir)
+def install(archive_file, target_dir):
     os.makedirs(target_dir)
 
     cmd = [
@@ -98,6 +109,14 @@ def main():
         default=False,
         action='store_true',
         help="Set to update to target version if needed (default: %(default)s)")
+    parser.add_argument(
+        '--force',
+        '-f',
+        required=False,
+        default=False,
+        action='store_true',
+        help="Set to skip directory erase prompt when --update is set "
+            "(default: %(default)s)")
     args = parser.parse_args()
 
     target_dir = Path(args.target_dir)
@@ -116,18 +135,26 @@ def main():
                 'directory and try again.' % buildinfo_file)
         current_release_tag = get_release_tag_from_file(buildinfo_file)
         if not current_release_tag:
-            sys.exit('Unable to extract current toolchain version from %s.'
+            sys.exit('Unable to extract current toolchain version from %s. '
                 'Delete target directory and try again.' % buildinfo_file)
         if get_release_tag(release_info) == current_release_tag:
             print('Toolchain version %s already installed at %s. Skipping '
                 'install.' % (current_release_tag, target_dir))
             return
-        print('Cleaning target_dir before attempting install.')
 
     download_url = get_download_url(release_info)
     try:
         archive_file = download(download_url)
-        install(archive_file, target_dir, args.update)
+        if args.update and os.path.exists(args.target_dir):
+            # Warn the user before deleting the target directory.
+            warning_msg = 'WARNING: Removing directory: %s.' % target_dir
+            if not args.force:
+                if not prompt_yes_no(warning_msg + ' Continue [yes/no]:'):
+                    sys.exit('Aborting update.')
+            else:
+                print(warning_msg)
+            shutil.rmtree(target_dir)
+        install(archive_file, target_dir)
     finally:
         os.remove(archive_file)
 
