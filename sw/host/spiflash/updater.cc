@@ -4,6 +4,7 @@
 
 #include "updater.h"
 
+#include <algorithm>
 #include <assert.h>
 
 namespace opentitan {
@@ -29,13 +30,17 @@ uint32_t Populate(uint32_t frame_number, uint32_t code_offset,
   // Populate header number, offset and hash.
   f->hdr.frame_num = frame_number;
   f->hdr.offset = code_offset;
+  return copy_size;
+}
+
+// Calculate hash for frame |f| and store it in the frame header hash field.
+void HashFrame(Frame *f) {
   SHA256_CTX sha256;
   SHA256_Init(&sha256);
   SHA256_Update(&sha256, &f->hdr.frame_num, sizeof(f->hdr.frame_num));
   SHA256_Update(&sha256, &f->hdr.offset, sizeof(f->hdr.offset));
   SHA256_Update(&sha256, f->data, f->PayloadSize());
   SHA256_Final(f->hdr.hash, &sha256);
-  return copy_size;
 }
 
 }  // namespace
@@ -81,6 +86,10 @@ bool Updater::GenerateFrames(const std::string &code,
   // Update last frame to sentinel EOF value.
   Frame &last_frame = frames->back();
   last_frame.hdr.frame_num = 0x80000000 | last_frame.hdr.frame_num;
+
+  for (Frame& f : *frames) {
+    HashFrame(&f);
+  }
   return true;
 }
 
