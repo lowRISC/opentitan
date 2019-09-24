@@ -29,6 +29,8 @@ class spi_device_reg_intr_state extends dv_base_reg;
   rand dv_base_reg_field rxlvl;
   rand dv_base_reg_field txlvl;
   rand dv_base_reg_field rxerr;
+  rand dv_base_reg_field rxoverflow;
+  rand dv_base_reg_field txunderflow;
 
   `uvm_object_utils(spi_device_reg_intr_state)
 
@@ -84,6 +86,28 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
+    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
+    rxoverflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
+    txunderflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
   endfunction : build
 
 endclass : spi_device_reg_intr_state
@@ -95,6 +119,8 @@ class spi_device_reg_intr_enable extends dv_base_reg;
   rand dv_base_reg_field rxlvl;
   rand dv_base_reg_field txlvl;
   rand dv_base_reg_field rxerr;
+  rand dv_base_reg_field rxoverflow;
+  rand dv_base_reg_field txunderflow;
 
   `uvm_object_utils(spi_device_reg_intr_enable)
 
@@ -150,6 +176,28 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
+    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
+    rxoverflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
+    txunderflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
   endfunction : build
 
 endclass : spi_device_reg_intr_enable
@@ -161,6 +209,8 @@ class spi_device_reg_intr_test extends dv_base_reg;
   rand dv_base_reg_field rxlvl;
   rand dv_base_reg_field txlvl;
   rand dv_base_reg_field rxerr;
+  rand dv_base_reg_field rxoverflow;
+  rand dv_base_reg_field txunderflow;
 
   `uvm_object_utils(spi_device_reg_intr_test)
 
@@ -210,6 +260,28 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .parent(this),
       .size(1),
       .lsb_pos(3),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
+    rxoverflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
+    txunderflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
       .access("WO"),
       .volatile(0),
       .reset(0),
@@ -456,6 +528,7 @@ class spi_device_reg_status extends dv_base_reg;
   rand dv_base_reg_field txf_full;
   rand dv_base_reg_field txf_empty;
   rand dv_base_reg_field abort_done;
+  rand dv_base_reg_field csb;
 
   `uvm_object_utils(spi_device_reg_status)
 
@@ -516,6 +589,17 @@ class spi_device_reg_status extends dv_base_reg;
       .parent(this),
       .size(1),
       .lsb_pos(4),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    csb = dv_base_reg_field::type_id::create("csb");
+    csb.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
       .access("RO"),
       .volatile(1),
       .reset(1),

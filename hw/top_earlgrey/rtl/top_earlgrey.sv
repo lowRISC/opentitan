@@ -76,7 +76,7 @@ module top_earlgrey #(
   tl_d2h_t tl_ram_main_d_d2h;
   tl_h2d_t tl_eflash_d_h2d;
   tl_d2h_t tl_eflash_d_d2h;
-  logic [51:0]  intr_vector;
+  logic [53:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -91,6 +91,8 @@ module top_earlgrey #(
   logic intr_spi_device_rxlvl;
   logic intr_spi_device_txlvl;
   logic intr_spi_device_rxerr;
+  logic intr_spi_device_rxoverflow;
+  logic intr_spi_device_txunderflow;
   logic intr_flash_ctrl_prog_empty;
   logic intr_flash_ctrl_prog_lvl;
   logic intr_flash_ctrl_rd_full;
@@ -368,6 +370,8 @@ module top_earlgrey #(
       .intr_rxlvl_o (intr_spi_device_rxlvl),
       .intr_txlvl_o (intr_spi_device_txlvl),
       .intr_rxerr_o (intr_spi_device_rxerr),
+      .intr_rxoverflow_o (intr_spi_device_rxoverflow),
+      .intr_txunderflow_o (intr_spi_device_txunderflow),
       .clk_i(clk_i),
       .rst_ni(ndmreset_n)
   );
@@ -427,6 +431,8 @@ module top_earlgrey #(
       intr_flash_ctrl_rd_full,
       intr_flash_ctrl_prog_lvl,
       intr_flash_ctrl_prog_empty,
+      intr_spi_device_txunderflow,
+      intr_spi_device_rxoverflow,
       intr_spi_device_rxerr,
       intr_spi_device_txlvl,
       intr_spi_device_rxlvl,

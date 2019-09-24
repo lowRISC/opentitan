@@ -11,49 +11,69 @@ typedef struct packed {
 
   struct packed {
     struct packed {
-      logic q; // [160]
+      logic q; // [168]
     } rxf;
     struct packed {
-      logic q; // [159]
+      logic q; // [167]
     } rxlvl;
     struct packed {
-      logic q; // [158]
+      logic q; // [166]
     } txlvl;
     struct packed {
-      logic q; // [157]
+      logic q; // [165]
     } rxerr;
+    struct packed {
+      logic q; // [164]
+    } rxoverflow;
+    struct packed {
+      logic q; // [163]
+    } txunderflow;
   } intr_state;
   struct packed {
     struct packed {
-      logic q; // [156]
+      logic q; // [162]
     } rxf;
     struct packed {
-      logic q; // [155]
+      logic q; // [161]
     } rxlvl;
     struct packed {
-      logic q; // [154]
+      logic q; // [160]
     } txlvl;
     struct packed {
-      logic q; // [153]
+      logic q; // [159]
     } rxerr;
+    struct packed {
+      logic q; // [158]
+    } rxoverflow;
+    struct packed {
+      logic q; // [157]
+    } txunderflow;
   } intr_enable;
   struct packed {
     struct packed {
+      logic q; // [156]
+      logic qe; // [155]
+    } rxf;
+    struct packed {
+      logic q; // [154]
+      logic qe; // [153]
+    } rxlvl;
+    struct packed {
       logic q; // [152]
       logic qe; // [151]
-    } rxf;
+    } txlvl;
     struct packed {
       logic q; // [150]
       logic qe; // [149]
-    } rxlvl;
+    } rxerr;
     struct packed {
       logic q; // [148]
       logic qe; // [147]
-    } txlvl;
+    } rxoverflow;
     struct packed {
       logic q; // [146]
       logic qe; // [145]
-    } rxerr;
+    } txunderflow;
   } intr_test;
   struct packed {
     struct packed {
@@ -127,46 +147,57 @@ typedef struct packed {
 
   struct packed {
     struct packed {
-      logic d;  // [62]
-      logic de; // [61]
+      logic d;  // [67]
+      logic de; // [66]
     } rxf;
     struct packed {
-      logic d;  // [60]
-      logic de; // [59]
+      logic d;  // [65]
+      logic de; // [64]
     } rxlvl;
     struct packed {
-      logic d;  // [58]
-      logic de; // [57]
+      logic d;  // [63]
+      logic de; // [62]
     } txlvl;
     struct packed {
-      logic d;  // [56]
-      logic de; // [55]
+      logic d;  // [61]
+      logic de; // [60]
     } rxerr;
+    struct packed {
+      logic d;  // [59]
+      logic de; // [58]
+    } rxoverflow;
+    struct packed {
+      logic d;  // [57]
+      logic de; // [56]
+    } txunderflow;
   } intr_state;
   struct packed {
     struct packed {
-      logic [7:0] d; // [54:47]
+      logic [7:0] d; // [55:48]
     } rxlvl;
     struct packed {
-      logic [7:0] d; // [46:39]
+      logic [7:0] d; // [47:40]
     } txlvl;
   } async_fifo_level;
   struct packed {
     struct packed {
-      logic d;  // [38]
+      logic d;  // [39]
     } rxf_full;
     struct packed {
-      logic d;  // [37]
+      logic d;  // [38]
     } rxf_empty;
     struct packed {
-      logic d;  // [36]
+      logic d;  // [37]
     } txf_full;
     struct packed {
-      logic d;  // [35]
+      logic d;  // [36]
     } txf_empty;
     struct packed {
-      logic d;  // [34]
+      logic d;  // [35]
     } abort_done;
+    struct packed {
+      logic d;  // [34]
+    } csb;
   } status;
   struct packed {
     struct packed {

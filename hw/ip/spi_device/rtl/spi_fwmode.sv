@@ -23,10 +23,15 @@ module spi_fwmode (
 
   // RX, TX FIFO interface
   output logic                      rx_wvalid_o,
+  input                             rx_wready_i,
   output spi_device_pkg::spi_byte_t rx_data_o,
 
+  input                             tx_rvalid_i,
   output logic                      tx_rready_o,
   input  spi_device_pkg::spi_byte_t tx_data_i,
+
+  output logic                      rx_overflow_o,
+  output logic                      tx_underflow_o,
 
   // SPI Interface: clock is given (ckl_in_i, clk_out_i)
   input        csb_i,
@@ -138,5 +143,16 @@ module spi_fwmode (
       end
     end
   end
+
+  // Events: rx_overflow, tx_underflow
+  //    Reminder: Those events are not 100% accurate. If the event happens at
+  //    the end of the transaction right before CSb de-assertion, the event
+  //    cannot be propagated to the main clock domain due to the reset and lack
+  //    of SCK after CSb de-assertion.
+  //
+  //    For these events to be propagated to the main clock domain, it needds
+  //    one more clock edge to creates toggle signal in the pulse synchronizer.
+  assign rx_overflow_o  = rx_wvalid_o & ~rx_wready_i;
+  assign tx_underflow_o = tx_rready_o & ~tx_rvalid_i;
 
 endmodule

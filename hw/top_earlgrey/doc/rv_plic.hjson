@@ -26,7 +26,7 @@
     { multireg: {
         name: "IP",
         desc: "Interrupt Pending",
-        count: 52,
+        count: 54,
         cname: "RV_PLIC",
         swaccess: "ro",
         hwaccess: "hwo",
@@ -38,7 +38,7 @@
     { multireg: {
         name: "LE",
         desc: "Interrupt Source mode. 0: Level, 1: Edge-triggered",
-        count: 52,
+        count: 54,
         cname: "RV_PLIC",
         swaccess: "rw",
         hwaccess: "hro",
@@ -463,11 +463,27 @@
         { bits: "1:0" }
       ],
     }
+    { name: "PRIO52",
+      desc: "Interrupt Source 52 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO53",
+      desc: "Interrupt Source 53 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
     { skipto: 256 }
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",
-        count: 52,
+        count: 54,
         cname: "RV_PLIC",
         swaccess: "rw",
         hwaccess: "hro",

@@ -25,10 +25,12 @@ module spi_device #(
   input              cio_mosi_i,
 
   // Interrupts
-  output logic intr_rxf_o,      // RX FIFO Full
-  output logic intr_rxlvl_o,    // RX FIFO above level
-  output logic intr_txlvl_o,    // TX FIFO below level
-  output logic intr_rxerr_o     // RX Frame error
+  output logic intr_rxf_o,         // RX FIFO Full
+  output logic intr_rxlvl_o,       // RX FIFO above level
+  output logic intr_txlvl_o,       // TX FIFO below level
+  output logic intr_rxerr_o,       // RX Frame error
+  output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
+  output logic intr_txunderflow_o  // TX Async FIFO Underflow
 );
 
   // TODO: make a way to connect scanmode from the top in topgen.py
@@ -82,6 +84,8 @@ module spi_device #(
                 // Think how FW knows abort is done.
   //logic abort_done; // TODO: Not implemented yet
 
+  logic csb_syncd;
+
   logic rst_txfifo_n, rst_rxfifo_n;
   logic rst_txfifo_reg, rst_rxfifo_reg;
 
@@ -91,20 +95,23 @@ module spi_device #(
 
   logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
+  logic intr_fwm_rxoverflow, intr_fwm_txunderflow;
 
-  // RX FIFO Signals
+  // RX Async FIFO Signals
   //  Write: SCK positive edge
   logic      rxf_wvalid, rxf_wready;
   spi_byte_t rxf_wdata;
+  logic      rxf_overflow;
   //  Read: Main clock
   logic      rxf_rvalid, rxf_rready;
   spi_byte_t rxf_rdata;
   logic      rxf_full_syncd;
 
-  // TX FIFO Signals
+  // TX Async FIFO Signals
   //   Read: SCK negative edge
   logic      txf_rvalid, txf_rready;
   spi_byte_t txf_rdata;
+  logic      txf_underflow;
   //   Write: Main clock
   logic      txf_wvalid, txf_wready;
   spi_byte_t txf_wdata;
@@ -170,6 +177,15 @@ module spi_device #(
   assign hw2reg.status.rxf_full.d = rxf_full_syncd;
   assign hw2reg.status.txf_empty.d = txf_empty_syncd;
 
+  // CSb : after 2stage synchronizer
+  assign hw2reg.status.csb.d = csb_syncd;
+  prim_flop_2sync #(.Width(1)) u_sync_csb (
+    .clk_i,
+    .rst_ni,
+    .d(cio_csb_i),
+    .q(csb_syncd)
+  );
+
   logic rxf_full_q, txf_empty_q;
   always_ff @(posedge clk_spi_in)  rxf_full_q  <= ~rxf_wready;
   always_ff @(posedge clk_spi_out) txf_empty_q <= ~txf_rvalid;
@@ -231,10 +247,36 @@ module spi_device #(
   assign intr_fwm_rxlvl = ~rxlvl && rxlvl_d;
   assign intr_fwm_txlvl = ~txlvl && txlvl_d;
 
-  assign intr_rxlvl_o = reg2hw.intr_enable.rxlvl.q & reg2hw.intr_state.rxlvl.q;
-  assign intr_txlvl_o = reg2hw.intr_enable.txlvl.q & reg2hw.intr_state.txlvl.q;
-  assign intr_rxf_o   = reg2hw.intr_enable.rxf.q   & reg2hw.intr_state.rxf.q;
-  assign intr_rxerr_o = reg2hw.intr_enable.rxerr.q & reg2hw.intr_state.rxerr.q;
+  // rxf_overflow
+  //    Could trigger lint error for input clock.
+  //    It's unavoidable due to the characteristics of SPI intf
+  prim_pulse_sync u_rxf_overflow (
+    .clk_src_i   (clk_spi_in         ),
+    .rst_src_ni  (rst_ni             ),
+    .src_pulse_i (rxf_overflow       ),
+    .clk_dst_i   (clk_i              ),
+    .rst_dst_ni  (rst_ni             ),
+    .dst_pulse_o (intr_fwm_rxoverflow)
+  );
+
+  // txf_underflow
+  //    Could trigger lint error for input clock.
+  //    It's unavoidable due to the characteristics of SPI intf
+  prim_pulse_sync u_txf_underflow (
+    .clk_src_i   (clk_spi_out         ),
+    .rst_src_ni  (rst_ni              ),
+    .src_pulse_i (txf_underflow       ),
+    .clk_dst_i   (clk_i               ),
+    .rst_dst_ni  (rst_ni              ),
+    .dst_pulse_o (intr_fwm_txunderflow)
+  );
+
+  assign intr_rxlvl_o       = reg2hw.intr_enable.rxlvl.q       & reg2hw.intr_state.rxlvl.q;
+  assign intr_txlvl_o       = reg2hw.intr_enable.txlvl.q       & reg2hw.intr_state.txlvl.q;
+  assign intr_rxf_o         = reg2hw.intr_enable.rxf.q         & reg2hw.intr_state.rxf.q;
+  assign intr_rxerr_o       = reg2hw.intr_enable.rxerr.q       & reg2hw.intr_state.rxerr.q;
+  assign intr_rxoverflow_o  = reg2hw.intr_enable.rxoverflow.q  & reg2hw.intr_state.rxoverflow.q;
+  assign intr_txunderflow_o = reg2hw.intr_enable.txunderflow.q & reg2hw.intr_state.txunderflow.q;
 
   assign hw2reg.intr_state.rxf.d    = 1'b1;
   assign hw2reg.intr_state.rxf.de   = intr_sram_rxf_full |
@@ -248,6 +290,12 @@ module spi_device #(
   assign hw2reg.intr_state.txlvl.d  = 1'b1;
   assign hw2reg.intr_state.txlvl.de = intr_fwm_txlvl |
                                       (reg2hw.intr_test.txlvl.qe & reg2hw.intr_test.txlvl.q);
+  assign hw2reg.intr_state.rxoverflow.d   = 1'b1;
+  assign hw2reg.intr_state.rxoverflow.de  = intr_fwm_rxoverflow |
+      (reg2hw.intr_test.rxoverflow.qe  & reg2hw.intr_test.rxoverflow.q);
+  assign hw2reg.intr_state.txunderflow.d  = 1'b1;
+  assign hw2reg.intr_state.txunderflow.de = intr_fwm_txunderflow |
+      (reg2hw.intr_test.txunderflow.qe & reg2hw.intr_test.txunderflow.q);
   // -----------------------------------------------------------------------------
 
   // Clock & reset control
@@ -282,10 +330,15 @@ module spi_device #(
     .mode_i        (spi_mode),
 
     .rx_wvalid_o   (rxf_wvalid),
+    .rx_wready_i   (rxf_wready),
     .rx_data_o     (rxf_wdata),
 
+    .tx_rvalid_i   (txf_rvalid),
     .tx_rready_o   (txf_rready),
     .tx_data_i     (txf_rdata),
+
+    .rx_overflow_o  (rxf_overflow),
+    .tx_underflow_o (txf_underflow),
 
     // SPI signal
     .csb_i         (cio_csb_i),

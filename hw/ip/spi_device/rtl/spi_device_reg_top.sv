@@ -128,6 +128,12 @@ module spi_device_reg_top (
   logic intr_state_rxerr_qs;
   logic intr_state_rxerr_wd;
   logic intr_state_rxerr_we;
+  logic intr_state_rxoverflow_qs;
+  logic intr_state_rxoverflow_wd;
+  logic intr_state_rxoverflow_we;
+  logic intr_state_txunderflow_qs;
+  logic intr_state_txunderflow_wd;
+  logic intr_state_txunderflow_we;
   logic intr_enable_rxf_qs;
   logic intr_enable_rxf_wd;
   logic intr_enable_rxf_we;
@@ -140,6 +146,12 @@ module spi_device_reg_top (
   logic intr_enable_rxerr_qs;
   logic intr_enable_rxerr_wd;
   logic intr_enable_rxerr_we;
+  logic intr_enable_rxoverflow_qs;
+  logic intr_enable_rxoverflow_wd;
+  logic intr_enable_rxoverflow_we;
+  logic intr_enable_txunderflow_qs;
+  logic intr_enable_txunderflow_wd;
+  logic intr_enable_txunderflow_we;
   logic intr_test_rxf_wd;
   logic intr_test_rxf_we;
   logic intr_test_rxlvl_wd;
@@ -148,6 +160,10 @@ module spi_device_reg_top (
   logic intr_test_txlvl_we;
   logic intr_test_rxerr_wd;
   logic intr_test_rxerr_we;
+  logic intr_test_rxoverflow_wd;
+  logic intr_test_rxoverflow_we;
+  logic intr_test_txunderflow_wd;
+  logic intr_test_txunderflow_we;
   logic control_abort_qs;
   logic control_abort_wd;
   logic control_abort_we;
@@ -195,6 +211,8 @@ module spi_device_reg_top (
   logic status_txf_empty_re;
   logic status_abort_done_qs;
   logic status_abort_done_re;
+  logic status_csb_qs;
+  logic status_csb_re;
   logic [15:0] rxf_ptr_rptr_qs;
   logic [15:0] rxf_ptr_rptr_wd;
   logic rxf_ptr_rptr_we;
@@ -323,6 +341,58 @@ module spi_device_reg_top (
   );
 
 
+  //   F[rxoverflow]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rxoverflow (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rxoverflow_we),
+    .wd     (intr_state_rxoverflow_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rxoverflow.de),
+    .d      (hw2reg.intr_state.rxoverflow.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rxoverflow.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rxoverflow_qs)
+  );
+
+
+  //   F[txunderflow]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_txunderflow (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_txunderflow_we),
+    .wd     (intr_state_txunderflow_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.txunderflow.de),
+    .d      (hw2reg.intr_state.txunderflow.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.txunderflow.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_txunderflow_qs)
+  );
+
+
   // R[intr_enable]: V(False)
 
   //   F[rxf]: 0:0
@@ -429,6 +499,58 @@ module spi_device_reg_top (
   );
 
 
+  //   F[rxoverflow]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rxoverflow (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rxoverflow_we),
+    .wd     (intr_enable_rxoverflow_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rxoverflow.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rxoverflow_qs)
+  );
+
+
+  //   F[txunderflow]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_txunderflow (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_txunderflow_we),
+    .wd     (intr_enable_txunderflow_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.txunderflow.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_txunderflow_qs)
+  );
+
+
   // R[intr_test]: V(True)
 
   //   F[rxf]: 0:0
@@ -487,6 +609,36 @@ module spi_device_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.rxerr.qe),
     .q      (reg2hw.intr_test.rxerr.q ),
+    .qs     ()
+  );
+
+
+  //   F[rxoverflow]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rxoverflow (
+    .re     (1'b0),
+    .we     (intr_test_rxoverflow_we),
+    .wd     (intr_test_rxoverflow_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rxoverflow.qe),
+    .q      (reg2hw.intr_test.rxoverflow.q ),
+    .qs     ()
+  );
+
+
+  //   F[txunderflow]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_txunderflow (
+    .re     (1'b0),
+    .we     (intr_test_txunderflow_we),
+    .wd     (intr_test_txunderflow_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.txunderflow.qe),
+    .q      (reg2hw.intr_test.txunderflow.q ),
     .qs     ()
   );
 
@@ -892,6 +1044,21 @@ module spi_device_reg_top (
   );
 
 
+  //   F[csb]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_csb (
+    .re     (status_csb_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.csb.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_csb_qs)
+  );
+
+
   // R[rxf_ptr]: V(False)
 
   //   F[rptr]: 15:0
@@ -1155,6 +1322,12 @@ module spi_device_reg_top (
   assign intr_state_rxerr_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rxerr_wd = reg_wdata[3];
 
+  assign intr_state_rxoverflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rxoverflow_wd = reg_wdata[4];
+
+  assign intr_state_txunderflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_txunderflow_wd = reg_wdata[5];
+
   assign intr_enable_rxf_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rxf_wd = reg_wdata[0];
 
@@ -1167,6 +1340,12 @@ module spi_device_reg_top (
   assign intr_enable_rxerr_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rxerr_wd = reg_wdata[3];
 
+  assign intr_enable_rxoverflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rxoverflow_wd = reg_wdata[4];
+
+  assign intr_enable_txunderflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_txunderflow_wd = reg_wdata[5];
+
   assign intr_test_rxf_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rxf_wd = reg_wdata[0];
 
@@ -1178,6 +1357,12 @@ module spi_device_reg_top (
 
   assign intr_test_rxerr_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rxerr_wd = reg_wdata[3];
+
+  assign intr_test_rxoverflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rxoverflow_wd = reg_wdata[4];
+
+  assign intr_test_txunderflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_txunderflow_wd = reg_wdata[5];
 
   assign control_abort_we = addr_hit[3] & reg_we & ~wr_err;
   assign control_abort_wd = reg_wdata[0];
@@ -1226,6 +1411,8 @@ module spi_device_reg_top (
 
   assign status_abort_done_re = addr_hit[7] && reg_re;
 
+  assign status_csb_re = addr_hit[7] && reg_re;
+
   assign rxf_ptr_rptr_we = addr_hit[8] & reg_we & ~wr_err;
   assign rxf_ptr_rptr_wd = reg_wdata[15:0];
 
@@ -1255,6 +1442,8 @@ module spi_device_reg_top (
         reg_rdata_next[1] = intr_state_rxlvl_qs;
         reg_rdata_next[2] = intr_state_txlvl_qs;
         reg_rdata_next[3] = intr_state_rxerr_qs;
+        reg_rdata_next[4] = intr_state_rxoverflow_qs;
+        reg_rdata_next[5] = intr_state_txunderflow_qs;
       end
 
       addr_hit[1]: begin
@@ -1262,6 +1451,8 @@ module spi_device_reg_top (
         reg_rdata_next[1] = intr_enable_rxlvl_qs;
         reg_rdata_next[2] = intr_enable_txlvl_qs;
         reg_rdata_next[3] = intr_enable_rxerr_qs;
+        reg_rdata_next[4] = intr_enable_rxoverflow_qs;
+        reg_rdata_next[5] = intr_enable_txunderflow_qs;
       end
 
       addr_hit[2]: begin
@@ -1269,6 +1460,8 @@ module spi_device_reg_top (
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
+        reg_rdata_next[4] = '0;
+        reg_rdata_next[5] = '0;
       end
 
       addr_hit[3]: begin
@@ -1302,6 +1495,7 @@ module spi_device_reg_top (
         reg_rdata_next[2] = status_txf_full_qs;
         reg_rdata_next[3] = status_txf_empty_qs;
         reg_rdata_next[4] = status_abort_done_qs;
+        reg_rdata_next[5] = status_csb_qs;
       end
 
       addr_hit[8]: begin
