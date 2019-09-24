@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bootstrap.h"
+#include "chip_info.h"
 #include "common.h"
 #include "flash_ctrl.h"
 #include "gpio.h"
 #include "spi_device.h"
 #include "uart.h"
-#include "chip_info.h"
 
 static inline void try_launch(void) {
   __asm__ volatile(
