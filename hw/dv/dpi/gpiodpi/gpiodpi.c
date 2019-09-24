@@ -43,9 +43,14 @@ void *gpiodpi_create(const char *name, int n_bits) {
 
   rv = mkfifo(ctx->fifo_pathname, 0644);  // writes are not supported currently
   if (rv != 0) {
-    fprintf(stderr, "GPIO: Unable to create FIFO at %s: %s\n",
-            ctx->fifo_pathname, strerror(errno));
-    return NULL;
+    if (errno == EEXIST) {
+      fprintf(stderr, "GPIO: Reusing existing FIFO at %s\n",
+              ctx->fifo_pathname);
+    } else {
+      fprintf(stderr, "GPIO: Unable to create FIFO at %s: %s\n",
+              ctx->fifo_pathname, strerror(errno));
+      return NULL;
+    }
   }
 
   ctx->fifo_fd = open(ctx->fifo_pathname, O_RDWR);
@@ -57,7 +62,7 @@ void *gpiodpi_create(const char *name, int n_bits) {
 
   printf(
       "\n"
-      "GPIO: FIFO pipe created at %s for %d bit wide GPIO. Run\n"
+      "GPIO: FIFO pipe at %s for %d bit wide GPIO. Run\n"
       "$ cat %s\n"
       "to observe the output.\n",
       ctx->fifo_pathname, ctx->n_bits, ctx->fifo_pathname);
