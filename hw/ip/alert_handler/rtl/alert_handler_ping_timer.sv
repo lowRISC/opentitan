@@ -38,14 +38,14 @@ module alert_handler_ping_timer (
   localparam int unsigned IdDw        = $clog2(NModsToPing);
 
   // this defines a random permutation
-  localparam int unsigned perm [0:31] = '{ 4, 11, 25,  3,
-                                          15, 16,  1, 10,
-                                           2, 22,  7,  0,
-                                          23, 28, 30, 19,
-                                          27, 12, 24, 26,
-                                          14, 21, 18,  5,
-                                          13,  8, 29, 31,
-                                          20,  6,  9, 17};
+  localparam int unsigned perm [32] = '{ 4, 11, 25,  3,
+                                        15, 16,  1, 10,
+                                         2, 22,  7,  0,
+                                        23, 28, 30, 19,
+                                        27, 12, 24, 26,
+                                        14, 21, 18,  5,
+                                        13,  8, 29, 31,
+                                        20,  6,  9, 17};
 
   //////////////////////////////////////////////////////
   // PRNG
