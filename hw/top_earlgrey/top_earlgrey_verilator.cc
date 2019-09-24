@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
   // Initialize ROM
   simctrl->InitRom(
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_rom"
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom"
       ".gen_mem_generic.u_impl_generic");
 
   // Initialize Ram
