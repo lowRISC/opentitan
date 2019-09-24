@@ -70,6 +70,10 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   task pre_start();
     super.pre_start();
     num_trans.rand_mode(0);
+    // dly to send a_valid is controlled in uart vseq level. Don't add additional delay in tl
+    // driver as it may make tl happens at ignore period
+    cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
   endtask
 
   task body();
