@@ -270,7 +270,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               end
 
               // when tx_q.size = 1 and it's at last 2 cycles, can't predict if txempty is set
-              if (!(tx_enabled && tx_q_size_at_addr_phase == 1
+              if (!(tx_enabled && tx_q_size_at_addr_phase inside {0, 1}
                     && is_in_ignored_period(UartTx))) begin
                 `DV_CHECK_EQ(get_field_val(ral.status.txempty, item.d_data), tx_empty_exp,
                     $sformatf("check tx_empty fail: uart_tx_clk_pulses = %0d, tx_q.size = %0d",
