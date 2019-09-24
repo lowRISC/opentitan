@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "flash_ctrl.h"
+#include "hw_sha256.h"
 #include "gpio.h"
 #include "spi_device.h"
 #include "uart.h"  // TODO: Wrap uart in DEBUG macros.
@@ -37,6 +38,19 @@ static int erase_flash(void) {
   return 0;
 }
 
+/* Calculates SHA256 hash of received data and compares it against recieved
+ * hash. Returns 0 if both hashes are identical. */
+static int check_frame_hash(const frame_t *f) {
+  static uint32_t hash[8];
+  uint32_t result = 0;
+  hw_SHA256_hash((uint8_t *)&f->hdr.frame_num, RAW_BUFFER_SIZE - 32,
+                 (uint8_t *)hash);
+  for (int i = 0; i < 8; ++i) {
+    result |= hash[i] ^ f->hdr.hash[i];
+  }
+  return result;
+}
+
 /* Processes frames received via spid interface and writes them to flash. */
 static int bootstrap_flash(void) {
   static frame_t f;
@@ -51,13 +65,18 @@ static int bootstrap_flash(void) {
       uart_send_uint(expected_frame_no, 32);
       uart_send_str("\r\n");
 
-      // TODO: Add hash check.
+      if (check_frame_hash(&f)) {
+        uart_send_str("Error: detected hash mismatch on frame: ");
+        uart_send_uint(f.hdr.frame_num, 32);
+        uart_send_str("\r\n");
+        return E_BS_BAD_HASH_FRAME;
+      }
+
       if (FRAME_NO(f.hdr.frame_num) == expected_frame_no) {
-        // TODO: Add ack computation.
+        hw_SHA256_hash(&f, sizeof(f), ack);
         spid_send(ack, sizeof(ack));
 
         if (expected_frame_no == 0) {
-          // TODO: Add signed header checks.
           flash_default_region_access(/*rd_en=*/1, /*prog_en=*/1,
                                       /*erase_en=*/1);
           int rv = erase_flash();
@@ -92,6 +111,9 @@ int bootstrap(void) {
   flash_init_block();
 
   int rv = bootstrap_flash();
+  if (rv) {
+    rv |= erase_flash();
+  }
 
   // Always make sure to revert flash_ctrl access to default settings.
   // bootstrap_flash enables access to flash to perform update.
