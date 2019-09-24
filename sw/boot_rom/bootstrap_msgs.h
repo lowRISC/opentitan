@@ -31,8 +31,7 @@ typedef struct {
 } frame_t;
 
 /* Bootstrap error codes */
-
-/* Errors requiring reset */
+#define E_BS_BAD_HASH_FRAME 9
 #define E_BS_ERASE 10
 #define E_BS_NOTEMPTY 11
 #define E_BS_WRITE 12
