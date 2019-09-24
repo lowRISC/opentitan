@@ -6,8 +6,8 @@
 
 #include "common.h"
 #include "flash_ctrl.h"
-#include "hw_sha256.h"
 #include "gpio.h"
+#include "hw_sha256.h"
 #include "spi_device.h"
 #include "uart.h"  // TODO: Wrap uart in DEBUG macros.
 
@@ -65,14 +65,15 @@ static int bootstrap_flash(void) {
       uart_send_uint(expected_frame_no, 32);
       uart_send_str("\r\n");
 
-      if (check_frame_hash(&f)) {
-        uart_send_str("Error: detected hash mismatch on frame: ");
-        uart_send_uint(f.hdr.frame_num, 32);
-        uart_send_str("\r\n");
-        return E_BS_BAD_HASH_FRAME;
-      }
-
       if (FRAME_NO(f.hdr.frame_num) == expected_frame_no) {
+        if (check_frame_hash(&f)) {
+          uart_send_str("Error: detected hash mismatch on frame: ");
+          uart_send_uint(f.hdr.frame_num, 32);
+          uart_send_str("\r\n");
+          spid_send(ack, sizeof(ack));
+          continue;
+        }
+
         hw_SHA256_hash(&f, sizeof(f), ack);
         spid_send(ack, sizeof(ack));
 
