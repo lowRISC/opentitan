@@ -227,22 +227,23 @@ module alert_handler_esc_timer (
   //////////////////////////////////////////////////////
 
   // a clear should always bring us back to idle
-  `ASSERT(CheckClr, clr_i && state_q != Timeout |=> state_q == Idle, clk_i, !rst_ni)
+  `ASSERT(CheckClr, clr_i && state_q != alert_pkg::Timeout |=>
+      state_q == alert_pkg::Idle, clk_i, !rst_ni)
   // if currently in idle and not enabled, must remain here
   `ASSERT(CheckEn,  state_q == alert_pkg::Idle && !en_i |=>
       state_q == alert_pkg::Idle, clk_i, !rst_ni)
   // Check if accumulation trigger correctly captured
-  `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == Idle && en_i |=>
-      state_q == Phase0, clk_i, !rst_ni)
-  `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == Timeout && en_i |=>
-      state_q == Phase0, clk_i, !rst_ni)
+  `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == alert_pkg::Idle && en_i |=>
+      state_q == alert_pkg::Phase0, clk_i, !rst_ni)
+  `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == alert_pkg::Timeout && en_i |=>
+      state_q == alert_pkg::Phase0, clk_i, !rst_ni)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0, !accum_trig_i && state_q == Idle && timeout_en_i && en_i |=>
-      state_q == Timeout, clk_i, !rst_ni)
-  `ASSERT(CheckTimeout1, !accum_trig_i && state_q == Timeout && timeout_en_i |=>
-      state_q == Timeout, clk_i, !rst_ni)
-  `ASSERT(CheckTimeout2, !accum_trig_i && state_q == Timeout && !timeout_en_i |=>
-      state_q == Idle, clk_i, !rst_ni)
+  `ASSERT(CheckTimeout0, !accum_trig_i && state_q == alert_pkg::Idle && timeout_en_i && en_i |=>
+      state_q == alert_pkg::Timeout, clk_i, !rst_ni)
+  `ASSERT(CheckTimeout1, !accum_trig_i && state_q == alert_pkg::Timeout && timeout_en_i |=>
+      state_q == alert_pkg::Timeout, clk_i, !rst_ni)
+  `ASSERT(CheckTimeout2, !accum_trig_i && state_q == alert_pkg::Timeout && !timeout_en_i |=>
+      state_q == alert_pkg::Idle, clk_i, !rst_ni)
   // Check if timeout correctly triggers escalation
   `ASSERT(CheckTimeoutTrig, state_q == alert_pkg::Timeout && timeout_en_i &&
       cnt_q == timeout_cyc_i |=> state_q == alert_pkg::Phase0, clk_i, !rst_ni)
