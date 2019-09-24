@@ -32,7 +32,8 @@ module alert_handler_reg_wrap (
     .tl_i,
     .tl_o,
     .reg2hw,
-    .hw2reg
+    .hw2reg,
+    .devmode_i(1'b1)
   );
 
   //////////////////////////////////////////////////////
