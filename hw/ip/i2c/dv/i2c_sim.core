@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:i2c_sim:0.1"
+description: "I2C DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:i2c:0.1
+    files:
+      - tb/i2c_bind.sv
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:dv:i2c_test
+    files:
+      - tb/tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs
