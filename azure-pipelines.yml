@@ -53,7 +53,9 @@ stages:
         # get reported to GitHub Checks annotations. Upstream bug report:
         # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
         #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
-        git diff -U0 $(git merge-base --fork-point origin/master) ':(exclude)hw/vendor' ':(exclude)sw/vendor' | clang-format-diff -p1 | tee clang-format-output
+        fork_origin=$(git merge-base --fork-point origin/master)
+        changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/)
+        git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
         if [ -s clang-format-output ]; then
           echo -n "##vso[task.logissue type=error]"
           echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or 'git clang-format' to format the code."
