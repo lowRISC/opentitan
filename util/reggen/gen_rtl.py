@@ -11,8 +11,8 @@ import sys
 from mako.template import Template
 from pkg_resources import resource_filename
 
-from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 from .data import *
+from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
 
 def escape_name(name):
@@ -46,6 +46,7 @@ def parse_field(obj, reg, nfields):
     f.hwaccess = obj["genhwaccess"]
     f.hwqe = obj["genhwqe"]
     f.hwre = obj["genhwre"]
+    f.hwext = reg.hwext
 
     # resval handling. `genresval` has zero value if `resval` field is defined
     # as unknown 'x'
@@ -55,32 +56,48 @@ def parse_field(obj, reg, nfields):
 
 
 def parse_reg(obj):
-    """Convert OrderedDict register into Register class
+    """Convert OrderedDict register into Register or MultiRegister object.
+    Supports nested MultiRegisters.
     """
+    if 'multireg' in obj:
+        regs = []
+        for genr in obj['multireg']['genregs']:
+            regs += [parse_reg(genr)]
+        # get register properties of the first register in the multireg and
+        # copy them to the parent
+        # since all regs in a multireg have the same props
+        reg = MultiReg(regs[0].get_reg_flat(0))
+        # since this is a multireg, the list of fields can
+        # contain regs or multiregs
+        reg.fields = regs
+        # TODO: need to rework this once the underlying JSON has been changed
+        reg.name = escape_name(obj['multireg']['name'])
+        # TODO: need to reference proper param here such that it can be used
+        # in the package template for the array declaration
+        # reg.param = ...
+    else:
+        reg = Reg(escape_name(obj['name']))
+        reg.offset = obj["genoffset"]
+        reg.fields = []
 
-    reg = Reg()
-    reg.name = escape_name(obj['name'])
-    reg.offset = obj["genoffset"]
-    reg.fields = []
+        reg.hwext = (obj['hwext'] == "true")
+        reg.hwqe = (obj["hwqe"] == "true")
+        reg.hwre = (obj["hwre"] == "true")
+        reg.resval = obj["genresval"]
+        reg.dvrights = obj["gendvrights"]
+        reg.regwen = obj["regwen"].lower()
 
-    reg.hwext = (obj['hwext'] == "true")
-    reg.hwqe = (obj["hwqe"] == "true")
-    reg.hwre = (obj["hwre"] == "true")
-    reg.resval = obj["genresval"]
-    reg.dvrights = obj["gendvrights"]
-    reg.regwen = obj["regwen"].lower()
+        # Parsing Fields
+        for f in obj["fields"]:
+            field = parse_field(f, reg, len(obj["fields"]))
+            if field != None:
+                reg.fields.append(field)
+                reg.width = max(reg.width, field.msb + 1)
 
-    # Parsing Fields
-    for f in obj["fields"]:
-        field = parse_field(f, reg, len(obj["fields"]))
-        if field != None:
-            reg.fields.append(field)
-            reg.width = max(reg.width, field.msb + 1)
-
-    # TODO(eunchan): Field bitfield overlapping check
-    log.info("R[0x%04x]: %s ", reg.offset, reg.name)
-    for f in reg.fields:
-        log.info("  F[%2d:%2d]: %s", f.msb, f.lsb, f.name)
+        # TODO(eunchan): Field bitfield overlapping check
+        log.info("R[0x%04x]: %s ", reg.offset, reg.name)
+        for f in reg.fields:
+            log.info("  F[%2d:%2d]: %s", f.msb, f.lsb, f.name)
 
     return reg
 
@@ -139,16 +156,8 @@ def json_to_reg(obj):
             if win != None:
                 block.wins.append(win)
             continue
-        elif 'multireg' in r:
-            for genr in r['multireg']['genregs']:
-                reg = parse_reg(genr)
-                if reg != None:
-                    block.regs.append(reg)
-            continue
-        reg = parse_reg(r)
-        if reg != None:
-            block.regs.append(reg)
-        # mdhayter -- moved logging into parse_regs
+
+        block.regs += [parse_reg(r)]
 
     # Last offset and calculate space
     #  Later on, it could use block.regs[-1].genoffset

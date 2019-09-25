@@ -7,11 +7,10 @@
   num_wins = len(block.wins)
   num_wins_width = ((num_wins+1).bit_length()) - 1
   num_dsp  = num_wins + 1
-  num_regs = len(block.regs)
-  max_regs_char = len("{}".format(num_regs-1))
   params = [p for p in block.params if p["local"] == "false"]
+  max_regs_char = len("{}".format(block.get_n_regs_flat()-1))
+  regs_flat = block.get_regs_flat()
 %>
-
 module ${block.name}_reg_top ${print_param(params)}(
   input clk_i,
   input rst_ni,
@@ -138,7 +137,7 @@ module ${block.name}_reg_top ${print_param(params)}(
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  % for r in block.regs:
+  % for r in regs_flat:
     % if len(r.fields) == 1:
 <%
       msb = r.fields[0].msb
@@ -169,41 +168,96 @@ ${sig_gen(msb, lsb, sig_name, swwraccess, swrdaccess, hwext, regwen)}\
 
   // Register instances
   % for r in block.regs:
-  // R[${r.name}]: V(${str(r.hwext)})
-    % if len(r.fields) == 1:
+  ######################## multiregister ###########################
+    % if r.is_multi_reg():
 <%
-      f = r.fields[0]
-      finst_name = r.name
-      fsig_name = r.name
-      msb = f.msb
-      lsb = f.lsb
-      swaccess = f.swaccess
-      swrdaccess = f.swrdaccess
-      swwraccess = f.swwraccess
-      hwaccess = f.hwaccess
-      hwqe = f.hwqe
-      hwre = f.hwre
-      hwext = r.hwext
-      resval = f.resval
-      regwen = r.regwen
+      mreg_flat = r.get_regs_flat()
+      k = 0
+%>
+      % for sr in mreg_flat:
+  // Subregister ${k} of Multireg ${r.name}
+  // R[${sr.name}]: V(${str(sr.hwext)})
+        % if len(sr.fields) == 1:
+<%
+          f = sr.fields[0]
+          finst_name = sr.name
+          fsig_name = r.name + "[%d]" % k
+          msb = f.msb
+          lsb = f.lsb
+          swaccess = f.swaccess
+          swrdaccess = f.swrdaccess
+          swwraccess = f.swwraccess
+          hwaccess = f.hwaccess
+          hwqe = f.hwqe
+          hwre = f.hwre
+          hwext = sr.hwext
+          resval = f.resval
+          regwen = sr.regwen
+          k = k + 1
 %>
 ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, hwaccess, hwqe, hwre, hwext, resval, regwen)}
+        % else:
+          % for f in sr.fields:
+<%
+            finst_name = sr.name + "_" + f.name
+            fsig_name = r.name + "[%d]" % k
+            msb = f.msb
+            lsb = f.lsb
+            swaccess = f.swaccess
+            swrdaccess = f.swrdaccess
+            swwraccess = f.swwraccess
+            hwaccess = f.hwaccess
+            hwqe = f.hwqe
+            hwre = f.hwre
+            hwext = sr.hwext
+            resval = f.resval
+            regwen = sr.regwen
+            k = k + 1
+%>
+  // F[${f.name}]: ${f.msb}:${f.lsb}
+${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, hwaccess, hwqe, hwre, hwext, resval, regwen)}
+          % endfor
+        % endif
+      ## for: mreg_flat
+      % endfor
+######################## register with single field ###########################
+    % elif len(r.fields) == 1:
+  // R[${r.name}]: V(${str(r.hwext)})
+<%
+        f = r.fields[0]
+        finst_name = r.name
+        fsig_name = r.name
+        msb = f.msb
+        lsb = f.lsb
+        swaccess = f.swaccess
+        swrdaccess = f.swrdaccess
+        swwraccess = f.swwraccess
+        hwaccess = f.hwaccess
+        hwqe = f.hwqe
+        hwre = f.hwre
+        hwext = r.hwext
+        resval = f.resval
+        regwen = r.regwen
+%>
+${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, hwaccess, hwqe, hwre, hwext, resval, regwen)}
+######################## register with multiple fields ###########################
     % else:
+  // R[${r.name}]: V(${str(r.hwext)})
       % for f in r.fields:
 <%
-      finst_name = r.name + "_" + f.name
-      fsig_name = r.name + "." + f.name
-      msb = f.msb
-      lsb = f.lsb
-      swaccess = f.swaccess
-      swrdaccess = f.swrdaccess
-      swwraccess = f.swwraccess
-      hwaccess = f.hwaccess
-      hwqe = f.hwqe
-      hwre = f.hwre
-      hwext = r.hwext
-      resval = f.resval
-      regwen = r.regwen
+        finst_name = r.name + "_" + f.name
+        fsig_name = r.name + "." + f.name
+        msb = f.msb
+        lsb = f.lsb
+        swaccess = f.swaccess
+        swrdaccess = f.swrdaccess
+        swwraccess = f.swwraccess
+        hwaccess = f.hwaccess
+        hwqe = f.hwqe
+        hwre = f.hwre
+        hwext = r.hwext
+        resval = f.resval
+        regwen = r.regwen
 %>
   //   F[${f.name}]: ${f.msb}:${f.lsb}
 ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, hwaccess, hwqe, hwre, hwext, resval, regwen)}
@@ -213,10 +267,11 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
   ## for: block.regs
   % endfor
 
-  logic [${len(block.regs)-1}:0] addr_hit;
+
+  logic [${len(regs_flat)-1}:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    % for i,r in enumerate(block.regs):
+    % for i,r in enumerate(regs_flat):
     addr_hit[${"{}".format(i).rjust(max_regs_char)}] = (reg_addr == ${block.name.upper()}_${r.name.upper()}_OFFSET);
     % endfor
   end
@@ -226,12 +281,12 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    % for i,r in enumerate(block.regs):
+    % for i,r in enumerate(regs_flat):
 <% index_str = "{}".format(i).rjust(max_regs_char) %>\
     if (addr_hit[${index_str}] && reg_we && (${block.name.upper()}_PERMIT[${index_str}] != (${block.name.upper()}_PERMIT[${index_str}] & reg_be))) wr_err = 1'b1 ;
     % endfor
   end
-  % for i, r in enumerate(block.regs):
+  % for i, r in enumerate(regs_flat):
     % if len(r.fields) == 1:
 <%
       f = r.fields[0]
@@ -264,7 +319,7 @@ ${we_gen(sig_name, msb, lsb, swrdaccess, swwraccess, hwext, i)}\
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      % for i, r in enumerate(block.regs):
+      % for i, r in enumerate(regs_flat):
         % if len(r.fields) == 1:
 <%
           f = r.fields[0]
