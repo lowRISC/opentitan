@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class i2c_env extends cip_base_env #(
-    .CFG_T              (i2c_env_cfg),
-    .COV_T              (i2c_env_cov),
-    .VIRTUAL_SEQUENCER_T(i2c_virtual_sequencer),
-    .SCOREBOARD_T       (i2c_scoreboard)
-  );
+    .CFG_T                (i2c_env_cfg),
+    .COV_T                (i2c_env_cov),
+    .VIRTUAL_SEQUENCER_T  (i2c_virtual_sequencer),
+    .SCOREBOARD_T         (i2c_scoreboard));
+
   `uvm_component_utils(i2c_env)
 
-  i2c_agent m_i2c_agent;
+  i2c_agent         m_i2c_agent;
 
   `uvm_component_new
 
@@ -30,4 +30,4 @@ class i2c_env extends cip_base_env #(
     end
   endfunction
 
-endclass
+endclass : i2c_env
