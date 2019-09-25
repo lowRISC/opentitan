@@ -10,7 +10,8 @@ IPS ?= uart          \
        rv_timer      \
        hmac          \
        usbuart       \
-       alert_handler
+       alert_handler \
+       pinmux
 
 TOPS ?= top_earlgrey
 
