@@ -13,9 +13,30 @@ package alert_handler_reg_pkg;
   localparam int LOC_ALERT_EN = 4;
   localparam int LOC_ALERT_CLASS = 4;
 
-// Register to internal design logic
+/////////////////////////////////////////////////////////////////////
+// Typedefs for multiregs
+/////////////////////////////////////////////////////////////////////
 typedef struct packed {
+  logic [0:0] q;
+} alert_handler_reg2hw_alert_en_mreg_t;
+typedef struct packed {
+  logic [1:0] q;
+} alert_handler_reg2hw_alert_class_mreg_t;
+typedef struct packed {
+  logic [0:0] q;
+} alert_handler_reg2hw_alert_cause_mreg_t;
+typedef struct packed {
+  logic [0:0] q;
+} alert_handler_reg2hw_loc_alert_en_mreg_t;
+typedef struct packed {
+  logic [1:0] q;
+} alert_handler_reg2hw_loc_alert_class_mreg_t;
 
+/////////////////////////////////////////////////////////////////////
+// Register to internal design logic
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
   struct packed {
     struct packed {
       logic q; // [840]
@@ -68,76 +89,11 @@ typedef struct packed {
   struct packed {
     logic [23:0] q; // [823:800]
   } ping_timeout_cyc;
-  struct packed {
-    struct packed {
-      logic q; // [799]
-    } en_a0;
-    struct packed {
-      logic q; // [798]
-    } en_a1;
-    struct packed {
-      logic q; // [797]
-    } en_a2;
-    struct packed {
-      logic q; // [796]
-    } en_a3;
-  } alert_en;
-  struct packed {
-    struct packed {
-      logic [1:0] q; // [795:794]
-    } class_a0;
-    struct packed {
-      logic [1:0] q; // [793:792]
-    } class_a1;
-    struct packed {
-      logic [1:0] q; // [791:790]
-    } class_a2;
-    struct packed {
-      logic [1:0] q; // [789:788]
-    } class_a3;
-  } alert_class;
-  struct packed {
-    struct packed {
-      logic q; // [787]
-    } a0;
-    struct packed {
-      logic q; // [786]
-    } a1;
-    struct packed {
-      logic q; // [785]
-    } a2;
-    struct packed {
-      logic q; // [784]
-    } a3;
-  } alert_cause;
-  struct packed {
-    struct packed {
-      logic q; // [783]
-    } en_la0;
-    struct packed {
-      logic q; // [782]
-    } en_la1;
-    struct packed {
-      logic q; // [781]
-    } en_la2;
-    struct packed {
-      logic q; // [780]
-    } en_la3;
-  } loc_alert_en;
-  struct packed {
-    struct packed {
-      logic [1:0] q; // [779:778]
-    } class_la0;
-    struct packed {
-      logic [1:0] q; // [777:776]
-    } class_la1;
-    struct packed {
-      logic [1:0] q; // [775:774]
-    } class_la2;
-    struct packed {
-      logic [1:0] q; // [773:772]
-    } class_la3;
-  } loc_alert_class;
+  alert_handler_reg2hw_alert_en_mreg_t [3:0] alert_en; // [799:796]
+  alert_handler_reg2hw_alert_class_mreg_t [3:0] alert_class; // [795:788]
+  alert_handler_reg2hw_alert_cause_mreg_t [3:0] alert_cause; // [787:784]
+  alert_handler_reg2hw_loc_alert_en_mreg_t [3:0] loc_alert_en; // [783:780]
+  alert_handler_reg2hw_loc_alert_class_mreg_t [3:0] loc_alert_class; // [779:772]
   struct packed {
     struct packed {
       logic q; // [771]
@@ -370,60 +326,54 @@ typedef struct packed {
   } classd_phase3_cyc;
 } alert_handler_reg2hw_t;
 
-// Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
+// Typedefs for multiregs
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
+  logic [0:0] d;
+  logic de;
+} alert_handler_hw2reg_alert_cause_mreg_t;
+
+/////////////////////////////////////////////////////////////////////
+// Internal design logic to register
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
   struct packed {
     struct packed {
-      logic d;  // [235]
+      logic d; // [235]
       logic de; // [234]
     } classa;
     struct packed {
-      logic d;  // [233]
+      logic d; // [233]
       logic de; // [232]
     } classb;
     struct packed {
-      logic d;  // [231]
+      logic d; // [231]
       logic de; // [230]
     } classc;
     struct packed {
-      logic d;  // [229]
+      logic d; // [229]
       logic de; // [228]
     } classd;
   } intr_state;
+  alert_handler_hw2reg_alert_cause_mreg_t [3:0] alert_cause; // [227:220]
   struct packed {
     struct packed {
-      logic d;  // [227]
-      logic de; // [226]
-    } a0;
-    struct packed {
-      logic d;  // [225]
-      logic de; // [224]
-    } a1;
-    struct packed {
-      logic d;  // [223]
-      logic de; // [222]
-    } a2;
-    struct packed {
-      logic d;  // [221]
-      logic de; // [220]
-    } a3;
-  } alert_cause;
-  struct packed {
-    struct packed {
-      logic d;  // [219]
+      logic d; // [219]
       logic de; // [218]
     } la0;
     struct packed {
-      logic d;  // [217]
+      logic d; // [217]
       logic de; // [216]
     } la1;
     struct packed {
-      logic d;  // [215]
+      logic d; // [215]
       logic de; // [214]
     } la2;
     struct packed {
-      logic d;  // [213]
+      logic d; // [213]
       logic de; // [212]
     } la3;
   } loc_alert_cause;
