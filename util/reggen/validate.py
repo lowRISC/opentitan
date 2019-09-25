@@ -431,6 +431,13 @@ multireg_required = {'name':   ['s', "base name of the registers"],
                                 " base instance."]
                      }
 multireg_optional = reg_optional
+multireg_optional.update({
+    'regwen_incr': [
+        's', "If true, regwen term increments along with current multireg " +
+        "count "
+    ],
+})
+
 multireg_added = {'genregs': ['l',
                               "generated list of registers with required "\
                               "and added keys"]
@@ -891,6 +898,15 @@ def validate_multi(mreg, offset, addrsep, width, top):
         mreg, mrname)
     error += derr
 
+    # multireg specific default validation
+    regwen_incr = False
+    if 'regwen_incr' not in mreg or 'regwen' not in mreg:
+        mreg['regwen_incr'] = 'false'
+    else:
+        regwen_incr, derr = check_bool(mreg['regwen_incr'],
+                                       mrname + " multireg increment")
+        error += derr
+
     # if there was an error before this then can't trust anything!
     if error > 0:
         log.info(mrname + "@" + hex(offset) + " " + str(error) +
@@ -927,7 +943,14 @@ def validate_multi(mreg, offset, addrsep, width, top):
             genreg['hwext'] = mreg['hwext']
             genreg['hwqe'] = mreg['hwqe']
             genreg['hwre'] = mreg['hwre']
-            genreg['regwen'] = mreg['regwen']
+            genreg['swaccess'] = mreg['swaccess']
+            genreg['hwaccess'] = mreg['hwaccess']
+
+            if regwen_incr:
+                genreg['regwen'] = mreg['regwen'] + str(rnum)
+            else:
+                genreg['regwen'] = mreg['regwen']
+
             resval = 0
             resmask = 0
             bits_used = 0
@@ -969,20 +992,22 @@ def validate_multi(mreg, offset, addrsep, width, top):
             closereg = True
 
         if closereg:
-            genreg['genresval'] = resval
-            genreg['genresmask'] = resmask
-            genreg['genbitsused'] = bits_used
-            genreg['genbasebits'] = bused
-            genreg['genoffset'] = offset + (rnum * addrsep)
-            genreg['gendvrights'] = parse_dvrights(default_sw)
-            genfields.sort(key=get_bits)
             genreg['fields'] = genfields
+            genreg['genbasebits'] = bused
+            error += validate_register(genreg, offset + (rnum * addrsep),
+                                       width, top)
+            if error:
+                return (error, 0)
             rnum += 1
             bpos = 0
             rlist.append(genreg)
-            top['genrnames'].append(genreg['name'].lower())
+    # there is only one entry, so the index is unnecessary.  Pop and re-assign names
+    # associated with the index
     if len(rlist) == 1:
+        # TODO really should make the following a function that reverses the last node inserted
+        # may have more properties than just genrnames in the future
         rlist[0]['name'] = mrname
+        rlist[0]['regwen'] = mreg['regwen']
         top['genrnames'].pop()
     mreg['genregs'] = rlist
     top['genrnames'].append(mrname.lower())
@@ -1151,31 +1176,55 @@ def validate_window(win, offset, regwidth, top):
 
     return error, nextoff
 
+""" Check that terms specified for regwen exist
 
+Regwen can be individual registers or fields within a register.  The function
+below checks for both and additional regwen properties.
+"""
 def check_wen_regs(regs):
     error = 0
-    for x in regs['genwennames']:
-        if not x.lower() in regs['genrnames']:
-            error += 1
-            log.error(x + " used as regwen but is not defined")
-        else:
-            for reg in regs['registers']:
-                if ('name' in reg):
-                    if (reg['name'] == x):
-                        break
+    idx = 0
 
-            if reg['genbitsused'] != 1:
-                error += 1
-                log.error(x + " used as regwen fails requirement to only " +
-                          "define bit 0")
-            elif reg['genresval'] != 1:
-                error += 1
-                log.error(x + " used as regwen fails requirement to default " +
-                          "to 1")
-            elif reg['fields'][0]['genswaccess'] != SwAccess.W1C:
-                error += 1
-                log.error(x + " used as regwen fails requirement to be " +
-                          "rw1c")
+    # Construct Tuple
+    # 0 - name
+    # 1 - reset value
+    # 2 - sw access
+    tuple_name = 0
+    tuple_rstval = 1
+    tuple_swaccess = 2
+
+    reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'])
+                for reg in regs['registers'] if 'name' in reg]
+    mreg_list = [
+        reg['multireg'] for reg in regs['registers'] if 'multireg' in reg
+    ]
+    field_list = [((reg['name'] + "_" + field['name']).lower(),
+                   field['genresval'], field['swaccess']) for mreg in mreg_list
+                  for reg in mreg['genregs'] for field in reg['fields']]
+
+    # Need to check in register names and field list in case of multireg
+    reg_list.extend(field_list)
+
+    # check for reset value
+    # both w1c and w0c are acceptable
+    for x in regs['genwennames']:
+        target = x.lower()
+        log.info("check_wen_regs::Searching for %s" % target)
+        try:
+            idx = [r[tuple_name] for r in reg_list].index(target)
+        except ValueError:
+            log.error("Could not find register name matching %s" % target)
+
+        if not reg_list[idx][tuple_rstval]:
+            error += 1
+            log.error(x + " used as regwen fails requirement to default " +
+                      "to 1")
+
+        if not reg_list[idx][tuple_swaccess] in ["rw0c", "rw1c"]:
+            error += 1
+            log.error(x +
+                      " used as regwen fails requirement to be W1C or W0C ")
+
     return error
 
 

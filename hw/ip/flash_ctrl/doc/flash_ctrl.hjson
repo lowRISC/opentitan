@@ -115,6 +115,36 @@
         },
       ]
     },
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "REGION_CFG_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: 8,
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Region locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Region enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
 
     { multireg: {
         cname: "FLASH_CTRL",
@@ -123,6 +153,8 @@
         count: 8,
         swaccess: "rw",
         hwaccess: "hro",
+        regwen: "REGION_CFG_REGWEN_REGION",
+        regwen_incr: "true",
         fields: [
             { bits: "0",
               name: "EN",
@@ -202,11 +234,44 @@
 
     { multireg: {
         cname: "FLASH_CTRL",
+        name: "BANK_CFG_REGWEN"
+        desc: "Bank configuration registers configuration enable.",
+        count: 2,
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+            { bits: "0",
+              name: "BANK",
+              resval: "1"
+              desc: "Bank register write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Bank locked",
+                  desc: '''
+                    Bank can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Bank enabled",
+                  desc: '''
+                    Bank can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
         name: "MP_BANK_CFG",
         desc: "Memory protect bank configuration",
         count: 2,
         swaccess: "rw",
         hwaccess: "hro",
+        regwen: "BANK_CFG_REGWEN_BANK"
+        regwen_incr: "true",
         fields: [
             { bits: "1",
               name: "ERASE_EN",

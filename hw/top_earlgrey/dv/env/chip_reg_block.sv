@@ -6,6 +6,74 @@
 // Do Not Edit directly
 
 // Forward declare all register/memory/block classes
+typedef class spi_device_reg_intr_state;
+typedef class spi_device_reg_intr_enable;
+typedef class spi_device_reg_intr_test;
+typedef class spi_device_reg_control;
+typedef class spi_device_reg_cfg;
+typedef class spi_device_reg_fifo_level;
+typedef class spi_device_reg_async_fifo_level;
+typedef class spi_device_reg_status;
+typedef class spi_device_reg_rxf_ptr;
+typedef class spi_device_reg_txf_ptr;
+typedef class spi_device_reg_rxf_addr;
+typedef class spi_device_reg_txf_addr;
+typedef class spi_device_mem_buffer;
+typedef class spi_device_reg_block;
+
+typedef class flash_ctrl_reg_intr_state;
+typedef class flash_ctrl_reg_intr_enable;
+typedef class flash_ctrl_reg_intr_test;
+typedef class flash_ctrl_reg_control;
+typedef class flash_ctrl_reg_addr;
+typedef class flash_ctrl_reg_region_cfg_regwen;
+typedef class flash_ctrl_reg_mp_region_cfg0;
+typedef class flash_ctrl_reg_mp_region_cfg1;
+typedef class flash_ctrl_reg_mp_region_cfg2;
+typedef class flash_ctrl_reg_mp_region_cfg3;
+typedef class flash_ctrl_reg_mp_region_cfg4;
+typedef class flash_ctrl_reg_mp_region_cfg5;
+typedef class flash_ctrl_reg_mp_region_cfg6;
+typedef class flash_ctrl_reg_mp_region_cfg7;
+typedef class flash_ctrl_reg_default_region;
+typedef class flash_ctrl_reg_bank_cfg_regwen;
+typedef class flash_ctrl_reg_mp_bank_cfg;
+typedef class flash_ctrl_reg_op_status;
+typedef class flash_ctrl_reg_status;
+typedef class flash_ctrl_reg_scratch;
+typedef class flash_ctrl_reg_fifo_lvl;
+typedef class flash_ctrl_mem_prog_fifo;
+typedef class flash_ctrl_mem_rd_fifo;
+typedef class flash_ctrl_reg_block;
+
+typedef class rv_timer_reg_ctrl;
+typedef class rv_timer_reg_cfg0;
+typedef class rv_timer_reg_timer_v_lower0;
+typedef class rv_timer_reg_timer_v_upper0;
+typedef class rv_timer_reg_compare_lower0_0;
+typedef class rv_timer_reg_compare_upper0_0;
+typedef class rv_timer_reg_intr_enable0;
+typedef class rv_timer_reg_intr_state0;
+typedef class rv_timer_reg_intr_test0;
+typedef class rv_timer_reg_block;
+
+typedef class gpio_reg_intr_state;
+typedef class gpio_reg_intr_enable;
+typedef class gpio_reg_intr_test;
+typedef class gpio_reg_data_in;
+typedef class gpio_reg_direct_out;
+typedef class gpio_reg_masked_out_lower;
+typedef class gpio_reg_masked_out_upper;
+typedef class gpio_reg_direct_oe;
+typedef class gpio_reg_masked_oe_lower;
+typedef class gpio_reg_masked_oe_upper;
+typedef class gpio_reg_intr_ctrl_en_rising;
+typedef class gpio_reg_intr_ctrl_en_falling;
+typedef class gpio_reg_intr_ctrl_en_lvlhigh;
+typedef class gpio_reg_intr_ctrl_en_lvllow;
+typedef class gpio_reg_ctrl_en_input_filter;
+typedef class gpio_reg_block;
+
 typedef class hmac_reg_intr_state;
 typedef class hmac_reg_intr_enable;
 typedef class hmac_reg_intr_test;
@@ -34,46 +102,6 @@ typedef class hmac_reg_msg_length_upper;
 typedef class hmac_mem_msg_fifo;
 typedef class hmac_reg_block;
 
-typedef class gpio_reg_intr_state;
-typedef class gpio_reg_intr_enable;
-typedef class gpio_reg_intr_test;
-typedef class gpio_reg_data_in;
-typedef class gpio_reg_direct_out;
-typedef class gpio_reg_masked_out_lower;
-typedef class gpio_reg_masked_out_upper;
-typedef class gpio_reg_direct_oe;
-typedef class gpio_reg_masked_oe_lower;
-typedef class gpio_reg_masked_oe_upper;
-typedef class gpio_reg_intr_ctrl_en_rising;
-typedef class gpio_reg_intr_ctrl_en_falling;
-typedef class gpio_reg_intr_ctrl_en_lvlhigh;
-typedef class gpio_reg_intr_ctrl_en_lvllow;
-typedef class gpio_reg_ctrl_en_input_filter;
-typedef class gpio_reg_block;
-
-typedef class flash_ctrl_reg_intr_state;
-typedef class flash_ctrl_reg_intr_enable;
-typedef class flash_ctrl_reg_intr_test;
-typedef class flash_ctrl_reg_control;
-typedef class flash_ctrl_reg_addr;
-typedef class flash_ctrl_reg_mp_region_cfg0;
-typedef class flash_ctrl_reg_mp_region_cfg1;
-typedef class flash_ctrl_reg_mp_region_cfg2;
-typedef class flash_ctrl_reg_mp_region_cfg3;
-typedef class flash_ctrl_reg_mp_region_cfg4;
-typedef class flash_ctrl_reg_mp_region_cfg5;
-typedef class flash_ctrl_reg_mp_region_cfg6;
-typedef class flash_ctrl_reg_mp_region_cfg7;
-typedef class flash_ctrl_reg_default_region;
-typedef class flash_ctrl_reg_mp_bank_cfg;
-typedef class flash_ctrl_reg_op_status;
-typedef class flash_ctrl_reg_status;
-typedef class flash_ctrl_reg_scratch;
-typedef class flash_ctrl_reg_fifo_lvl;
-typedef class flash_ctrl_mem_prog_fifo;
-typedef class flash_ctrl_mem_rd_fifo;
-typedef class flash_ctrl_reg_block;
-
 typedef class uart_reg_intr_state;
 typedef class uart_reg_intr_enable;
 typedef class uart_reg_intr_test;
@@ -87,32 +115,6 @@ typedef class uart_reg_ovrd;
 typedef class uart_reg_val;
 typedef class uart_reg_timeout_ctrl;
 typedef class uart_reg_block;
-
-typedef class spi_device_reg_intr_state;
-typedef class spi_device_reg_intr_enable;
-typedef class spi_device_reg_intr_test;
-typedef class spi_device_reg_control;
-typedef class spi_device_reg_cfg;
-typedef class spi_device_reg_fifo_level;
-typedef class spi_device_reg_async_fifo_level;
-typedef class spi_device_reg_status;
-typedef class spi_device_reg_rxf_ptr;
-typedef class spi_device_reg_txf_ptr;
-typedef class spi_device_reg_rxf_addr;
-typedef class spi_device_reg_txf_addr;
-typedef class spi_device_mem_buffer;
-typedef class spi_device_reg_block;
-
-typedef class rv_timer_reg_ctrl;
-typedef class rv_timer_reg_cfg0;
-typedef class rv_timer_reg_timer_v_lower0;
-typedef class rv_timer_reg_timer_v_upper0;
-typedef class rv_timer_reg_compare_lower0_0;
-typedef class rv_timer_reg_compare_upper0_0;
-typedef class rv_timer_reg_intr_enable0;
-typedef class rv_timer_reg_intr_state0;
-typedef class rv_timer_reg_intr_test0;
-typedef class rv_timer_reg_block;
 
 typedef class rv_plic_reg_ip0;
 typedef class rv_plic_reg_ip1;
@@ -183,6 +185,3672 @@ typedef class chip_mem_rom;
 typedef class chip_mem_ram_main;
 typedef class chip_mem_eflash;
 typedef class chip_reg_block;
+
+// Block: spi_device
+// Class: spi_device_reg_intr_state
+class spi_device_reg_intr_state extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxf;
+  rand dv_base_reg_field rxlvl;
+  rand dv_base_reg_field txlvl;
+  rand dv_base_reg_field rxerr;
+  rand dv_base_reg_field rxoverflow;
+  rand dv_base_reg_field txunderflow;
+
+  `uvm_object_utils(spi_device_reg_intr_state)
+
+  function new(string       name = "spi_device_reg_intr_state",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxf = dv_base_reg_field::type_id::create("rxf");
+    rxf.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txlvl = dv_base_reg_field::type_id::create("txlvl");
+    txlvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxerr = dv_base_reg_field::type_id::create("rxerr");
+    rxerr.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
+    rxoverflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
+    txunderflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_intr_state
+
+// Class: spi_device_reg_intr_enable
+class spi_device_reg_intr_enable extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxf;
+  rand dv_base_reg_field rxlvl;
+  rand dv_base_reg_field txlvl;
+  rand dv_base_reg_field rxerr;
+  rand dv_base_reg_field rxoverflow;
+  rand dv_base_reg_field txunderflow;
+
+  `uvm_object_utils(spi_device_reg_intr_enable)
+
+  function new(string       name = "spi_device_reg_intr_enable",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxf = dv_base_reg_field::type_id::create("rxf");
+    rxf.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txlvl = dv_base_reg_field::type_id::create("txlvl");
+    txlvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxerr = dv_base_reg_field::type_id::create("rxerr");
+    rxerr.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
+    rxoverflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
+    txunderflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_intr_enable
+
+// Class: spi_device_reg_intr_test
+class spi_device_reg_intr_test extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxf;
+  rand dv_base_reg_field rxlvl;
+  rand dv_base_reg_field txlvl;
+  rand dv_base_reg_field rxerr;
+  rand dv_base_reg_field rxoverflow;
+  rand dv_base_reg_field txunderflow;
+
+  `uvm_object_utils(spi_device_reg_intr_test)
+
+  function new(string       name = "spi_device_reg_intr_test",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxf = dv_base_reg_field::type_id::create("rxf");
+    rxf.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txlvl = dv_base_reg_field::type_id::create("txlvl");
+    txlvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxerr = dv_base_reg_field::type_id::create("rxerr");
+    rxerr.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
+    rxoverflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
+    txunderflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_intr_test
+
+// Class: spi_device_reg_control
+class spi_device_reg_control extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field abort;
+  rand dv_base_reg_field mode;
+  rand dv_base_reg_field rst_txfifo;
+  rand dv_base_reg_field rst_rxfifo;
+
+  `uvm_object_utils(spi_device_reg_control)
+
+  function new(string       name = "spi_device_reg_control",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    abort = dv_base_reg_field::type_id::create("abort");
+    abort.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mode = dv_base_reg_field::type_id::create("mode");
+    mode.configure(
+      .parent(this),
+      .size(2),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rst_txfifo = dv_base_reg_field::type_id::create("rst_txfifo");
+    rst_txfifo.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rst_rxfifo = dv_base_reg_field::type_id::create("rst_rxfifo");
+    rst_rxfifo.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(17),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_control
+
+// Class: spi_device_reg_cfg
+class spi_device_reg_cfg extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field cpol;
+  rand dv_base_reg_field cpha;
+  rand dv_base_reg_field tx_order;
+  rand dv_base_reg_field rx_order;
+  rand dv_base_reg_field timer_v;
+
+  `uvm_object_utils(spi_device_reg_cfg)
+
+  function new(string       name = "spi_device_reg_cfg",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    cpol = dv_base_reg_field::type_id::create("cpol");
+    cpol.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    cpha = dv_base_reg_field::type_id::create("cpha");
+    cpha.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    tx_order = dv_base_reg_field::type_id::create("tx_order");
+    tx_order.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_order = dv_base_reg_field::type_id::create("rx_order");
+    rx_order.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    timer_v = dv_base_reg_field::type_id::create("timer_v");
+    timer_v.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(8),
+      .access("RW"),
+      .volatile(0),
+      .reset(127),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_cfg
+
+// Class: spi_device_reg_fifo_level
+class spi_device_reg_fifo_level extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxlvl;
+  rand dv_base_reg_field txlvl;
+
+  `uvm_object_utils(spi_device_reg_fifo_level)
+
+  function new(string       name = "spi_device_reg_fifo_level",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(128),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txlvl = dv_base_reg_field::type_id::create("txlvl");
+    txlvl.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_fifo_level
+
+// Class: spi_device_reg_async_fifo_level
+class spi_device_reg_async_fifo_level extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxlvl;
+  rand dv_base_reg_field txlvl;
+
+  `uvm_object_utils(spi_device_reg_async_fifo_level)
+
+  function new(string       name = "spi_device_reg_async_fifo_level",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txlvl = dv_base_reg_field::type_id::create("txlvl");
+    txlvl.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(16),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_async_fifo_level
+
+// Class: spi_device_reg_status
+class spi_device_reg_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxf_full;
+  rand dv_base_reg_field rxf_empty;
+  rand dv_base_reg_field txf_full;
+  rand dv_base_reg_field txf_empty;
+  rand dv_base_reg_field abort_done;
+  rand dv_base_reg_field csb;
+
+  `uvm_object_utils(spi_device_reg_status)
+
+  function new(string       name = "spi_device_reg_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxf_full = dv_base_reg_field::type_id::create("rxf_full");
+    rxf_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxf_empty = dv_base_reg_field::type_id::create("rxf_empty");
+    rxf_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txf_full = dv_base_reg_field::type_id::create("txf_full");
+    txf_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txf_empty = dv_base_reg_field::type_id::create("txf_empty");
+    txf_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    abort_done = dv_base_reg_field::type_id::create("abort_done");
+    abort_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    csb = dv_base_reg_field::type_id::create("csb");
+    csb.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_status
+
+// Class: spi_device_reg_rxf_ptr
+class spi_device_reg_rxf_ptr extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rptr;
+  rand dv_base_reg_field wptr;
+
+  `uvm_object_utils(spi_device_reg_rxf_ptr)
+
+  function new(string       name = "spi_device_reg_rxf_ptr",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rptr = dv_base_reg_field::type_id::create("rptr");
+    rptr.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    wptr = dv_base_reg_field::type_id::create("wptr");
+    wptr.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_rxf_ptr
+
+// Class: spi_device_reg_txf_ptr
+class spi_device_reg_txf_ptr extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rptr;
+  rand dv_base_reg_field wptr;
+
+  `uvm_object_utils(spi_device_reg_txf_ptr)
+
+  function new(string       name = "spi_device_reg_txf_ptr",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rptr = dv_base_reg_field::type_id::create("rptr");
+    rptr.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    wptr = dv_base_reg_field::type_id::create("wptr");
+    wptr.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_txf_ptr
+
+// Class: spi_device_reg_rxf_addr
+class spi_device_reg_rxf_addr extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field base;
+  rand dv_base_reg_field limit;
+
+  `uvm_object_utils(spi_device_reg_rxf_addr)
+
+  function new(string       name = "spi_device_reg_rxf_addr",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    base = dv_base_reg_field::type_id::create("base");
+    base.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    limit = dv_base_reg_field::type_id::create("limit");
+    limit.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(508),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_rxf_addr
+
+// Class: spi_device_reg_txf_addr
+class spi_device_reg_txf_addr extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field base;
+  rand dv_base_reg_field limit;
+
+  `uvm_object_utils(spi_device_reg_txf_addr)
+
+  function new(string       name = "spi_device_reg_txf_addr",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    base = dv_base_reg_field::type_id::create("base");
+    base.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(512),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    limit = dv_base_reg_field::type_id::create("limit");
+    limit.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(1020),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : spi_device_reg_txf_addr
+
+// Class: spi_device_mem_buffer
+class spi_device_mem_buffer extends dv_base_mem;
+
+  `uvm_object_utils(spi_device_mem_buffer)
+
+  function new(string           name = "spi_device_mem_buffer",
+               longint unsigned size = 512,
+               int unsigned     n_bits = 32,
+               string           access = "RW"/* TODO:"RW"*/,
+               int              has_coverage = UVM_NO_COVERAGE);
+    super.new(name, size, n_bits, access, has_coverage);
+  endfunction : new
+
+endclass : spi_device_mem_buffer
+
+// Class: spi_device_reg_block
+class spi_device_reg_block extends dv_base_reg_block;
+  // registers
+  rand spi_device_reg_intr_state intr_state;
+  rand spi_device_reg_intr_enable intr_enable;
+  rand spi_device_reg_intr_test intr_test;
+  rand spi_device_reg_control control;
+  rand spi_device_reg_cfg cfg;
+  rand spi_device_reg_fifo_level fifo_level;
+  rand spi_device_reg_async_fifo_level async_fifo_level;
+  rand spi_device_reg_status status;
+  rand spi_device_reg_rxf_ptr rxf_ptr;
+  rand spi_device_reg_txf_ptr txf_ptr;
+  rand spi_device_reg_rxf_addr rxf_addr;
+  rand spi_device_reg_txf_addr txf_addr;
+  // memories
+  rand spi_device_mem_buffer buffer;
+
+  `uvm_object_utils(spi_device_reg_block)
+
+  function new(string name = "spi_device_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    intr_state = spi_device_reg_intr_state::type_id::create("intr_state");
+    intr_state.configure(.blk_parent(this));
+    intr_state.build();
+    default_map.add_reg(.rg(intr_state),
+                        .offset(32'h0),
+                        .rights("RW"));
+    intr_enable = spi_device_reg_intr_enable::type_id::create("intr_enable");
+    intr_enable.configure(.blk_parent(this));
+    intr_enable.build();
+    default_map.add_reg(.rg(intr_enable),
+                        .offset(32'h4),
+                        .rights("RW"));
+    intr_test = spi_device_reg_intr_test::type_id::create("intr_test");
+    intr_test.configure(.blk_parent(this));
+    intr_test.build();
+    default_map.add_reg(.rg(intr_test),
+                        .offset(32'h8),
+                        .rights("WO"));
+    control = spi_device_reg_control::type_id::create("control");
+    control.configure(.blk_parent(this));
+    control.build();
+    default_map.add_reg(.rg(control),
+                        .offset(32'hc),
+                        .rights("RW"));
+    cfg = spi_device_reg_cfg::type_id::create("cfg");
+    cfg.configure(.blk_parent(this));
+    cfg.build();
+    default_map.add_reg(.rg(cfg),
+                        .offset(32'h10),
+                        .rights("RW"));
+    fifo_level = spi_device_reg_fifo_level::type_id::create("fifo_level");
+    fifo_level.configure(.blk_parent(this));
+    fifo_level.build();
+    default_map.add_reg(.rg(fifo_level),
+                        .offset(32'h14),
+                        .rights("RW"));
+    async_fifo_level = spi_device_reg_async_fifo_level::type_id::create("async_fifo_level");
+    async_fifo_level.configure(.blk_parent(this));
+    async_fifo_level.build();
+    default_map.add_reg(.rg(async_fifo_level),
+                        .offset(32'h18),
+                        .rights("RO"));
+    status = spi_device_reg_status::type_id::create("status");
+    status.configure(.blk_parent(this));
+    status.build();
+    default_map.add_reg(.rg(status),
+                        .offset(32'h1c),
+                        .rights("RO"));
+    rxf_ptr = spi_device_reg_rxf_ptr::type_id::create("rxf_ptr");
+    rxf_ptr.configure(.blk_parent(this));
+    rxf_ptr.build();
+    default_map.add_reg(.rg(rxf_ptr),
+                        .offset(32'h20),
+                        .rights("RW"));
+    txf_ptr = spi_device_reg_txf_ptr::type_id::create("txf_ptr");
+    txf_ptr.configure(.blk_parent(this));
+    txf_ptr.build();
+    default_map.add_reg(.rg(txf_ptr),
+                        .offset(32'h24),
+                        .rights("RW"));
+    rxf_addr = spi_device_reg_rxf_addr::type_id::create("rxf_addr");
+    rxf_addr.configure(.blk_parent(this));
+    rxf_addr.build();
+    default_map.add_reg(.rg(rxf_addr),
+                        .offset(32'h28),
+                        .rights("RW"));
+    txf_addr = spi_device_reg_txf_addr::type_id::create("txf_addr");
+    txf_addr.configure(.blk_parent(this));
+    txf_addr.build();
+    default_map.add_reg(.rg(txf_addr),
+                        .offset(32'h2c),
+                        .rights("RW"));
+
+    // create memories
+    buffer = spi_device_mem_buffer::type_id::create("buffer");
+    buffer.configure(.parent(this));
+    default_map.add_mem(.mem(buffer),
+                        .offset(32'h800),
+                        .rights("RW"));
+  endfunction : build
+
+endclass : spi_device_reg_block
+
+// Block: flash_ctrl
+// Class: flash_ctrl_reg_intr_state
+class flash_ctrl_reg_intr_state extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field prog_empty;
+  rand dv_base_reg_field prog_lvl;
+  rand dv_base_reg_field rd_full;
+  rand dv_base_reg_field rd_lvl;
+  rand dv_base_reg_field op_done;
+  rand dv_base_reg_field op_error;
+
+  `uvm_object_utils(flash_ctrl_reg_intr_state)
+
+  function new(string       name = "flash_ctrl_reg_intr_state",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
+    prog_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_lvl = dv_base_reg_field::type_id::create("prog_lvl");
+    prog_lvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_full = dv_base_reg_field::type_id::create("rd_full");
+    rd_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_lvl = dv_base_reg_field::type_id::create("rd_lvl");
+    rd_lvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op_done = dv_base_reg_field::type_id::create("op_done");
+    op_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op_error = dv_base_reg_field::type_id::create("op_error");
+    op_error.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_intr_state
+
+// Class: flash_ctrl_reg_intr_enable
+class flash_ctrl_reg_intr_enable extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field prog_empty;
+  rand dv_base_reg_field prog_lvl;
+  rand dv_base_reg_field rd_full;
+  rand dv_base_reg_field rd_lvl;
+  rand dv_base_reg_field op_done;
+  rand dv_base_reg_field op_error;
+
+  `uvm_object_utils(flash_ctrl_reg_intr_enable)
+
+  function new(string       name = "flash_ctrl_reg_intr_enable",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
+    prog_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_lvl = dv_base_reg_field::type_id::create("prog_lvl");
+    prog_lvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_full = dv_base_reg_field::type_id::create("rd_full");
+    rd_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_lvl = dv_base_reg_field::type_id::create("rd_lvl");
+    rd_lvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op_done = dv_base_reg_field::type_id::create("op_done");
+    op_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op_error = dv_base_reg_field::type_id::create("op_error");
+    op_error.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_intr_enable
+
+// Class: flash_ctrl_reg_intr_test
+class flash_ctrl_reg_intr_test extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field prog_empty;
+  rand dv_base_reg_field prog_lvl;
+  rand dv_base_reg_field rd_full;
+  rand dv_base_reg_field rd_lvl;
+  rand dv_base_reg_field op_done;
+  rand dv_base_reg_field op_error;
+
+  `uvm_object_utils(flash_ctrl_reg_intr_test)
+
+  function new(string       name = "flash_ctrl_reg_intr_test",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
+    prog_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_lvl = dv_base_reg_field::type_id::create("prog_lvl");
+    prog_lvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_full = dv_base_reg_field::type_id::create("rd_full");
+    rd_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_lvl = dv_base_reg_field::type_id::create("rd_lvl");
+    rd_lvl.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op_done = dv_base_reg_field::type_id::create("op_done");
+    op_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op_error = dv_base_reg_field::type_id::create("op_error");
+    op_error.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_intr_test
+
+// Class: flash_ctrl_reg_control
+class flash_ctrl_reg_control extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field start;
+  rand dv_base_reg_field op;
+  rand dv_base_reg_field erase_sel;
+  rand dv_base_reg_field fifo_rst;
+  rand dv_base_reg_field num;
+
+  `uvm_object_utils(flash_ctrl_reg_control)
+
+  function new(string       name = "flash_ctrl_reg_control",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    start = dv_base_reg_field::type_id::create("start");
+    start.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    op = dv_base_reg_field::type_id::create("op");
+    op.configure(
+      .parent(this),
+      .size(2),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_sel = dv_base_reg_field::type_id::create("erase_sel");
+    erase_sel.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fifo_rst = dv_base_reg_field::type_id::create("fifo_rst");
+    fifo_rst.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    num = dv_base_reg_field::type_id::create("num");
+    num.configure(
+      .parent(this),
+      .size(12),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_control
+
+// Class: flash_ctrl_reg_addr
+class flash_ctrl_reg_addr extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field start;
+
+  `uvm_object_utils(flash_ctrl_reg_addr)
+
+  function new(string       name = "flash_ctrl_reg_addr",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    start = dv_base_reg_field::type_id::create("start");
+    start.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_addr
+
+// Class: flash_ctrl_reg_region_cfg_regwen
+class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field region0;
+  rand dv_base_reg_field region1;
+  rand dv_base_reg_field region2;
+  rand dv_base_reg_field region3;
+  rand dv_base_reg_field region4;
+  rand dv_base_reg_field region5;
+  rand dv_base_reg_field region6;
+  rand dv_base_reg_field region7;
+
+  `uvm_object_utils(flash_ctrl_reg_region_cfg_regwen)
+
+  function new(string       name = "flash_ctrl_reg_region_cfg_regwen",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    region0 = dv_base_reg_field::type_id::create("region0");
+    region0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region1 = dv_base_reg_field::type_id::create("region1");
+    region1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region2 = dv_base_reg_field::type_id::create("region2");
+    region2.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region3 = dv_base_reg_field::type_id::create("region3");
+    region3.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region4 = dv_base_reg_field::type_id::create("region4");
+    region4.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region5 = dv_base_reg_field::type_id::create("region5");
+    region5.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region6 = dv_base_reg_field::type_id::create("region6");
+    region6.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region7 = dv_base_reg_field::type_id::create("region7");
+    region7.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_region_cfg_regwen
+
+// Class: flash_ctrl_reg_mp_region_cfg0
+class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en0;
+  rand dv_base_reg_field rd_en0;
+  rand dv_base_reg_field prog_en0;
+  rand dv_base_reg_field erase_en0;
+  rand dv_base_reg_field base0;
+  rand dv_base_reg_field size0;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg0)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en0 = dv_base_reg_field::type_id::create("en0");
+    en0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en0 = dv_base_reg_field::type_id::create("rd_en0");
+    rd_en0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en0 = dv_base_reg_field::type_id::create("prog_en0");
+    prog_en0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en0 = dv_base_reg_field::type_id::create("erase_en0");
+    erase_en0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base0 = dv_base_reg_field::type_id::create("base0");
+    base0.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size0 = dv_base_reg_field::type_id::create("size0");
+    size0.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg0
+
+// Class: flash_ctrl_reg_mp_region_cfg1
+class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en1;
+  rand dv_base_reg_field rd_en1;
+  rand dv_base_reg_field prog_en1;
+  rand dv_base_reg_field erase_en1;
+  rand dv_base_reg_field base1;
+  rand dv_base_reg_field size1;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg1)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg1",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en1 = dv_base_reg_field::type_id::create("en1");
+    en1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en1 = dv_base_reg_field::type_id::create("rd_en1");
+    rd_en1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en1 = dv_base_reg_field::type_id::create("prog_en1");
+    prog_en1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en1 = dv_base_reg_field::type_id::create("erase_en1");
+    erase_en1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base1 = dv_base_reg_field::type_id::create("base1");
+    base1.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size1 = dv_base_reg_field::type_id::create("size1");
+    size1.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg1
+
+// Class: flash_ctrl_reg_mp_region_cfg2
+class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en2;
+  rand dv_base_reg_field rd_en2;
+  rand dv_base_reg_field prog_en2;
+  rand dv_base_reg_field erase_en2;
+  rand dv_base_reg_field base2;
+  rand dv_base_reg_field size2;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg2)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg2",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en2 = dv_base_reg_field::type_id::create("en2");
+    en2.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en2 = dv_base_reg_field::type_id::create("rd_en2");
+    rd_en2.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en2 = dv_base_reg_field::type_id::create("prog_en2");
+    prog_en2.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en2 = dv_base_reg_field::type_id::create("erase_en2");
+    erase_en2.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base2 = dv_base_reg_field::type_id::create("base2");
+    base2.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size2 = dv_base_reg_field::type_id::create("size2");
+    size2.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg2
+
+// Class: flash_ctrl_reg_mp_region_cfg3
+class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en3;
+  rand dv_base_reg_field rd_en3;
+  rand dv_base_reg_field prog_en3;
+  rand dv_base_reg_field erase_en3;
+  rand dv_base_reg_field base3;
+  rand dv_base_reg_field size3;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg3)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg3",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en3 = dv_base_reg_field::type_id::create("en3");
+    en3.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en3 = dv_base_reg_field::type_id::create("rd_en3");
+    rd_en3.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en3 = dv_base_reg_field::type_id::create("prog_en3");
+    prog_en3.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en3 = dv_base_reg_field::type_id::create("erase_en3");
+    erase_en3.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base3 = dv_base_reg_field::type_id::create("base3");
+    base3.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size3 = dv_base_reg_field::type_id::create("size3");
+    size3.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg3
+
+// Class: flash_ctrl_reg_mp_region_cfg4
+class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en4;
+  rand dv_base_reg_field rd_en4;
+  rand dv_base_reg_field prog_en4;
+  rand dv_base_reg_field erase_en4;
+  rand dv_base_reg_field base4;
+  rand dv_base_reg_field size4;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg4)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg4",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en4 = dv_base_reg_field::type_id::create("en4");
+    en4.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en4 = dv_base_reg_field::type_id::create("rd_en4");
+    rd_en4.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en4 = dv_base_reg_field::type_id::create("prog_en4");
+    prog_en4.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en4 = dv_base_reg_field::type_id::create("erase_en4");
+    erase_en4.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base4 = dv_base_reg_field::type_id::create("base4");
+    base4.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size4 = dv_base_reg_field::type_id::create("size4");
+    size4.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg4
+
+// Class: flash_ctrl_reg_mp_region_cfg5
+class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en5;
+  rand dv_base_reg_field rd_en5;
+  rand dv_base_reg_field prog_en5;
+  rand dv_base_reg_field erase_en5;
+  rand dv_base_reg_field base5;
+  rand dv_base_reg_field size5;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg5)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg5",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en5 = dv_base_reg_field::type_id::create("en5");
+    en5.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en5 = dv_base_reg_field::type_id::create("rd_en5");
+    rd_en5.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en5 = dv_base_reg_field::type_id::create("prog_en5");
+    prog_en5.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en5 = dv_base_reg_field::type_id::create("erase_en5");
+    erase_en5.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base5 = dv_base_reg_field::type_id::create("base5");
+    base5.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size5 = dv_base_reg_field::type_id::create("size5");
+    size5.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg5
+
+// Class: flash_ctrl_reg_mp_region_cfg6
+class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en6;
+  rand dv_base_reg_field rd_en6;
+  rand dv_base_reg_field prog_en6;
+  rand dv_base_reg_field erase_en6;
+  rand dv_base_reg_field base6;
+  rand dv_base_reg_field size6;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg6)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg6",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en6 = dv_base_reg_field::type_id::create("en6");
+    en6.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en6 = dv_base_reg_field::type_id::create("rd_en6");
+    rd_en6.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en6 = dv_base_reg_field::type_id::create("prog_en6");
+    prog_en6.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en6 = dv_base_reg_field::type_id::create("erase_en6");
+    erase_en6.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base6 = dv_base_reg_field::type_id::create("base6");
+    base6.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size6 = dv_base_reg_field::type_id::create("size6");
+    size6.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg6
+
+// Class: flash_ctrl_reg_mp_region_cfg7
+class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field en7;
+  rand dv_base_reg_field rd_en7;
+  rand dv_base_reg_field prog_en7;
+  rand dv_base_reg_field erase_en7;
+  rand dv_base_reg_field base7;
+  rand dv_base_reg_field size7;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg7)
+
+  function new(string       name = "flash_ctrl_reg_mp_region_cfg7",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    en7 = dv_base_reg_field::type_id::create("en7");
+    en7.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_en7 = dv_base_reg_field::type_id::create("rd_en7");
+    rd_en7.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en7 = dv_base_reg_field::type_id::create("prog_en7");
+    prog_en7.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en7 = dv_base_reg_field::type_id::create("erase_en7");
+    erase_en7.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    base7 = dv_base_reg_field::type_id::create("base7");
+    base7.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    size7 = dv_base_reg_field::type_id::create("size7");
+    size7.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_region_cfg7
+
+// Class: flash_ctrl_reg_default_region
+class flash_ctrl_reg_default_region extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rd_en;
+  rand dv_base_reg_field prog_en;
+  rand dv_base_reg_field erase_en;
+
+  `uvm_object_utils(flash_ctrl_reg_default_region)
+
+  function new(string       name = "flash_ctrl_reg_default_region",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rd_en = dv_base_reg_field::type_id::create("rd_en");
+    rd_en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_en = dv_base_reg_field::type_id::create("prog_en");
+    prog_en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en = dv_base_reg_field::type_id::create("erase_en");
+    erase_en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_default_region
+
+// Class: flash_ctrl_reg_bank_cfg_regwen
+class flash_ctrl_reg_bank_cfg_regwen extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field bank0;
+  rand dv_base_reg_field bank1;
+
+  `uvm_object_utils(flash_ctrl_reg_bank_cfg_regwen)
+
+  function new(string       name = "flash_ctrl_reg_bank_cfg_regwen",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    bank0 = dv_base_reg_field::type_id::create("bank0");
+    bank0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    bank1 = dv_base_reg_field::type_id::create("bank1");
+    bank1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_bank_cfg_regwen
+
+// Class: flash_ctrl_reg_mp_bank_cfg
+class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field erase_en0;
+  rand dv_base_reg_field erase_en1;
+
+  `uvm_object_utils(flash_ctrl_reg_mp_bank_cfg)
+
+  function new(string       name = "flash_ctrl_reg_mp_bank_cfg",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    erase_en0 = dv_base_reg_field::type_id::create("erase_en0");
+    erase_en0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    erase_en1 = dv_base_reg_field::type_id::create("erase_en1");
+    erase_en1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_mp_bank_cfg
+
+// Class: flash_ctrl_reg_op_status
+class flash_ctrl_reg_op_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field done;
+  rand dv_base_reg_field err;
+
+  `uvm_object_utils(flash_ctrl_reg_op_status)
+
+  function new(string       name = "flash_ctrl_reg_op_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    done = dv_base_reg_field::type_id::create("done");
+    done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    err = dv_base_reg_field::type_id::create("err");
+    err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_op_status
+
+// Class: flash_ctrl_reg_status
+class flash_ctrl_reg_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rd_full;
+  rand dv_base_reg_field rd_empty;
+  rand dv_base_reg_field prog_full;
+  rand dv_base_reg_field prog_empty;
+  rand dv_base_reg_field init_wip;
+  rand dv_base_reg_field error_page;
+  rand dv_base_reg_field error_bank;
+
+  `uvm_object_utils(flash_ctrl_reg_status)
+
+  function new(string       name = "flash_ctrl_reg_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rd_full = dv_base_reg_field::type_id::create("rd_full");
+    rd_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd_empty = dv_base_reg_field::type_id::create("rd_empty");
+    rd_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_full = dv_base_reg_field::type_id::create("prog_full");
+    prog_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
+    prog_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    init_wip = dv_base_reg_field::type_id::create("init_wip");
+    init_wip.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    error_page = dv_base_reg_field::type_id::create("error_page");
+    error_page.configure(
+      .parent(this),
+      .size(9),
+      .lsb_pos(8),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    error_bank = dv_base_reg_field::type_id::create("error_bank");
+    error_bank.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(17),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_status
+
+// Class: flash_ctrl_reg_scratch
+class flash_ctrl_reg_scratch extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+
+  `uvm_object_utils(flash_ctrl_reg_scratch)
+
+  function new(string       name = "flash_ctrl_reg_scratch",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_scratch
+
+// Class: flash_ctrl_reg_fifo_lvl
+class flash_ctrl_reg_fifo_lvl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field prog;
+  rand dv_base_reg_field rd;
+
+  `uvm_object_utils(flash_ctrl_reg_fifo_lvl)
+
+  function new(string       name = "flash_ctrl_reg_fifo_lvl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    prog = dv_base_reg_field::type_id::create("prog");
+    prog.configure(
+      .parent(this),
+      .size(5),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(15),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rd = dv_base_reg_field::type_id::create("rd");
+    rd.configure(
+      .parent(this),
+      .size(5),
+      .lsb_pos(8),
+      .access("RW"),
+      .volatile(0),
+      .reset(15),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_fifo_lvl
+
+// Class: flash_ctrl_mem_prog_fifo
+class flash_ctrl_mem_prog_fifo extends dv_base_mem;
+
+  `uvm_object_utils(flash_ctrl_mem_prog_fifo)
+
+  function new(string           name = "flash_ctrl_mem_prog_fifo",
+               longint unsigned size = 1,
+               int unsigned     n_bits = 32,
+               string           access = "RW"/* TODO:"WO"*/,
+               int              has_coverage = UVM_NO_COVERAGE);
+    super.new(name, size, n_bits, access, has_coverage);
+  endfunction : new
+
+endclass : flash_ctrl_mem_prog_fifo
+
+// Class: flash_ctrl_mem_rd_fifo
+class flash_ctrl_mem_rd_fifo extends dv_base_mem;
+
+  `uvm_object_utils(flash_ctrl_mem_rd_fifo)
+
+  function new(string           name = "flash_ctrl_mem_rd_fifo",
+               longint unsigned size = 1,
+               int unsigned     n_bits = 32,
+               string           access = "RW"/* TODO:"RO"*/,
+               int              has_coverage = UVM_NO_COVERAGE);
+    super.new(name, size, n_bits, access, has_coverage);
+  endfunction : new
+
+endclass : flash_ctrl_mem_rd_fifo
+
+// Class: flash_ctrl_reg_block
+class flash_ctrl_reg_block extends dv_base_reg_block;
+  // registers
+  rand flash_ctrl_reg_intr_state intr_state;
+  rand flash_ctrl_reg_intr_enable intr_enable;
+  rand flash_ctrl_reg_intr_test intr_test;
+  rand flash_ctrl_reg_control control;
+  rand flash_ctrl_reg_addr addr;
+  rand flash_ctrl_reg_region_cfg_regwen region_cfg_regwen;
+  rand flash_ctrl_reg_mp_region_cfg0 mp_region_cfg0;
+  rand flash_ctrl_reg_mp_region_cfg1 mp_region_cfg1;
+  rand flash_ctrl_reg_mp_region_cfg2 mp_region_cfg2;
+  rand flash_ctrl_reg_mp_region_cfg3 mp_region_cfg3;
+  rand flash_ctrl_reg_mp_region_cfg4 mp_region_cfg4;
+  rand flash_ctrl_reg_mp_region_cfg5 mp_region_cfg5;
+  rand flash_ctrl_reg_mp_region_cfg6 mp_region_cfg6;
+  rand flash_ctrl_reg_mp_region_cfg7 mp_region_cfg7;
+  rand flash_ctrl_reg_default_region default_region;
+  rand flash_ctrl_reg_bank_cfg_regwen bank_cfg_regwen;
+  rand flash_ctrl_reg_mp_bank_cfg mp_bank_cfg;
+  rand flash_ctrl_reg_op_status op_status;
+  rand flash_ctrl_reg_status status;
+  rand flash_ctrl_reg_scratch scratch;
+  rand flash_ctrl_reg_fifo_lvl fifo_lvl;
+  // memories
+  rand flash_ctrl_mem_prog_fifo prog_fifo;
+  rand flash_ctrl_mem_rd_fifo rd_fifo;
+
+  `uvm_object_utils(flash_ctrl_reg_block)
+
+  function new(string name = "flash_ctrl_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    intr_state = flash_ctrl_reg_intr_state::type_id::create("intr_state");
+    intr_state.configure(.blk_parent(this));
+    intr_state.build();
+    default_map.add_reg(.rg(intr_state),
+                        .offset(32'h0),
+                        .rights("RW"));
+    intr_enable = flash_ctrl_reg_intr_enable::type_id::create("intr_enable");
+    intr_enable.configure(.blk_parent(this));
+    intr_enable.build();
+    default_map.add_reg(.rg(intr_enable),
+                        .offset(32'h4),
+                        .rights("RW"));
+    intr_test = flash_ctrl_reg_intr_test::type_id::create("intr_test");
+    intr_test.configure(.blk_parent(this));
+    intr_test.build();
+    default_map.add_reg(.rg(intr_test),
+                        .offset(32'h8),
+                        .rights("WO"));
+    control = flash_ctrl_reg_control::type_id::create("control");
+    control.configure(.blk_parent(this));
+    control.build();
+    default_map.add_reg(.rg(control),
+                        .offset(32'hc),
+                        .rights("RW"));
+    addr = flash_ctrl_reg_addr::type_id::create("addr");
+    addr.configure(.blk_parent(this));
+    addr.build();
+    default_map.add_reg(.rg(addr),
+                        .offset(32'h10),
+                        .rights("RW"));
+    region_cfg_regwen = flash_ctrl_reg_region_cfg_regwen::type_id::create("region_cfg_regwen");
+    region_cfg_regwen.configure(.blk_parent(this));
+    region_cfg_regwen.build();
+    default_map.add_reg(.rg(region_cfg_regwen),
+                        .offset(32'h14),
+                        .rights("RW"));
+    mp_region_cfg0 = flash_ctrl_reg_mp_region_cfg0::type_id::create("mp_region_cfg0");
+    mp_region_cfg0.configure(.blk_parent(this));
+    mp_region_cfg0.build();
+    default_map.add_reg(.rg(mp_region_cfg0),
+                        .offset(32'h18),
+                        .rights("RW"));
+    mp_region_cfg1 = flash_ctrl_reg_mp_region_cfg1::type_id::create("mp_region_cfg1");
+    mp_region_cfg1.configure(.blk_parent(this));
+    mp_region_cfg1.build();
+    default_map.add_reg(.rg(mp_region_cfg1),
+                        .offset(32'h1c),
+                        .rights("RW"));
+    mp_region_cfg2 = flash_ctrl_reg_mp_region_cfg2::type_id::create("mp_region_cfg2");
+    mp_region_cfg2.configure(.blk_parent(this));
+    mp_region_cfg2.build();
+    default_map.add_reg(.rg(mp_region_cfg2),
+                        .offset(32'h20),
+                        .rights("RW"));
+    mp_region_cfg3 = flash_ctrl_reg_mp_region_cfg3::type_id::create("mp_region_cfg3");
+    mp_region_cfg3.configure(.blk_parent(this));
+    mp_region_cfg3.build();
+    default_map.add_reg(.rg(mp_region_cfg3),
+                        .offset(32'h24),
+                        .rights("RW"));
+    mp_region_cfg4 = flash_ctrl_reg_mp_region_cfg4::type_id::create("mp_region_cfg4");
+    mp_region_cfg4.configure(.blk_parent(this));
+    mp_region_cfg4.build();
+    default_map.add_reg(.rg(mp_region_cfg4),
+                        .offset(32'h28),
+                        .rights("RW"));
+    mp_region_cfg5 = flash_ctrl_reg_mp_region_cfg5::type_id::create("mp_region_cfg5");
+    mp_region_cfg5.configure(.blk_parent(this));
+    mp_region_cfg5.build();
+    default_map.add_reg(.rg(mp_region_cfg5),
+                        .offset(32'h2c),
+                        .rights("RW"));
+    mp_region_cfg6 = flash_ctrl_reg_mp_region_cfg6::type_id::create("mp_region_cfg6");
+    mp_region_cfg6.configure(.blk_parent(this));
+    mp_region_cfg6.build();
+    default_map.add_reg(.rg(mp_region_cfg6),
+                        .offset(32'h30),
+                        .rights("RW"));
+    mp_region_cfg7 = flash_ctrl_reg_mp_region_cfg7::type_id::create("mp_region_cfg7");
+    mp_region_cfg7.configure(.blk_parent(this));
+    mp_region_cfg7.build();
+    default_map.add_reg(.rg(mp_region_cfg7),
+                        .offset(32'h34),
+                        .rights("RW"));
+    default_region = flash_ctrl_reg_default_region::type_id::create("default_region");
+    default_region.configure(.blk_parent(this));
+    default_region.build();
+    default_map.add_reg(.rg(default_region),
+                        .offset(32'h38),
+                        .rights("RW"));
+    bank_cfg_regwen = flash_ctrl_reg_bank_cfg_regwen::type_id::create("bank_cfg_regwen");
+    bank_cfg_regwen.configure(.blk_parent(this));
+    bank_cfg_regwen.build();
+    default_map.add_reg(.rg(bank_cfg_regwen),
+                        .offset(32'h3c),
+                        .rights("RW"));
+    mp_bank_cfg = flash_ctrl_reg_mp_bank_cfg::type_id::create("mp_bank_cfg");
+    mp_bank_cfg.configure(.blk_parent(this));
+    mp_bank_cfg.build();
+    default_map.add_reg(.rg(mp_bank_cfg),
+                        .offset(32'h40),
+                        .rights("RW"));
+    op_status = flash_ctrl_reg_op_status::type_id::create("op_status");
+    op_status.configure(.blk_parent(this));
+    op_status.build();
+    default_map.add_reg(.rg(op_status),
+                        .offset(32'h44),
+                        .rights("RW"));
+    status = flash_ctrl_reg_status::type_id::create("status");
+    status.configure(.blk_parent(this));
+    status.build();
+    default_map.add_reg(.rg(status),
+                        .offset(32'h48),
+                        .rights("RO"));
+    scratch = flash_ctrl_reg_scratch::type_id::create("scratch");
+    scratch.configure(.blk_parent(this));
+    scratch.build();
+    default_map.add_reg(.rg(scratch),
+                        .offset(32'h4c),
+                        .rights("RW"));
+    fifo_lvl = flash_ctrl_reg_fifo_lvl::type_id::create("fifo_lvl");
+    fifo_lvl.configure(.blk_parent(this));
+    fifo_lvl.build();
+    default_map.add_reg(.rg(fifo_lvl),
+                        .offset(32'h50),
+                        .rights("RW"));
+
+    // create memories
+    prog_fifo = flash_ctrl_mem_prog_fifo::type_id::create("prog_fifo");
+    prog_fifo.configure(.parent(this));
+    default_map.add_mem(.mem(prog_fifo),
+                        .offset(32'h54),
+                        .rights("WO"));
+    rd_fifo = flash_ctrl_mem_rd_fifo::type_id::create("rd_fifo");
+    rd_fifo.configure(.parent(this));
+    default_map.add_mem(.mem(rd_fifo),
+                        .offset(32'h58),
+                        .rights("RO"));
+  endfunction : build
+
+endclass : flash_ctrl_reg_block
+
+// Block: rv_timer
+// Class: rv_timer_reg_ctrl
+class rv_timer_reg_ctrl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field active0;
+
+  `uvm_object_utils(rv_timer_reg_ctrl)
+
+  function new(string       name = "rv_timer_reg_ctrl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    active0 = dv_base_reg_field::type_id::create("active0");
+    active0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_ctrl
+
+// Class: rv_timer_reg_cfg0
+class rv_timer_reg_cfg0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field prescale;
+  rand dv_base_reg_field step;
+
+  `uvm_object_utils(rv_timer_reg_cfg0)
+
+  function new(string       name = "rv_timer_reg_cfg0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    prescale = dv_base_reg_field::type_id::create("prescale");
+    prescale.configure(
+      .parent(this),
+      .size(12),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    step = dv_base_reg_field::type_id::create("step");
+    step.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_cfg0
+
+// Class: rv_timer_reg_timer_v_lower0
+class rv_timer_reg_timer_v_lower0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_timer_v_lower0)
+
+  function new(string       name = "rv_timer_reg_timer_v_lower0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_timer_v_lower0
+
+// Class: rv_timer_reg_timer_v_upper0
+class rv_timer_reg_timer_v_upper0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_timer_v_upper0)
+
+  function new(string       name = "rv_timer_reg_timer_v_upper0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_timer_v_upper0
+
+// Class: rv_timer_reg_compare_lower0_0
+class rv_timer_reg_compare_lower0_0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_compare_lower0_0)
+
+  function new(string       name = "rv_timer_reg_compare_lower0_0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(4294967295),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_compare_lower0_0
+
+// Class: rv_timer_reg_compare_upper0_0
+class rv_timer_reg_compare_upper0_0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_compare_upper0_0)
+
+  function new(string       name = "rv_timer_reg_compare_upper0_0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(4294967295),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_compare_upper0_0
+
+// Class: rv_timer_reg_intr_enable0
+class rv_timer_reg_intr_enable0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field ie0;
+
+  `uvm_object_utils(rv_timer_reg_intr_enable0)
+
+  function new(string       name = "rv_timer_reg_intr_enable0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    ie0 = dv_base_reg_field::type_id::create("ie0");
+    ie0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_intr_enable0
+
+// Class: rv_timer_reg_intr_state0
+class rv_timer_reg_intr_state0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field is0;
+
+  `uvm_object_utils(rv_timer_reg_intr_state0)
+
+  function new(string       name = "rv_timer_reg_intr_state0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    is0 = dv_base_reg_field::type_id::create("is0");
+    is0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_intr_state0
+
+// Class: rv_timer_reg_intr_test0
+class rv_timer_reg_intr_test0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field t0;
+
+  `uvm_object_utils(rv_timer_reg_intr_test0)
+
+  function new(string       name = "rv_timer_reg_intr_test0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    t0 = dv_base_reg_field::type_id::create("t0");
+    t0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_intr_test0
+
+// Class: rv_timer_reg_block
+class rv_timer_reg_block extends dv_base_reg_block;
+  // registers
+  rand rv_timer_reg_ctrl ctrl;
+  rand rv_timer_reg_cfg0 cfg0;
+  rand rv_timer_reg_timer_v_lower0 timer_v_lower0;
+  rand rv_timer_reg_timer_v_upper0 timer_v_upper0;
+  rand rv_timer_reg_compare_lower0_0 compare_lower0_0;
+  rand rv_timer_reg_compare_upper0_0 compare_upper0_0;
+  rand rv_timer_reg_intr_enable0 intr_enable0;
+  rand rv_timer_reg_intr_state0 intr_state0;
+  rand rv_timer_reg_intr_test0 intr_test0;
+
+  `uvm_object_utils(rv_timer_reg_block)
+
+  function new(string name = "rv_timer_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    ctrl = rv_timer_reg_ctrl::type_id::create("ctrl");
+    ctrl.configure(.blk_parent(this));
+    ctrl.build();
+    default_map.add_reg(.rg(ctrl),
+                        .offset(32'h0),
+                        .rights("RW"));
+    cfg0 = rv_timer_reg_cfg0::type_id::create("cfg0");
+    cfg0.configure(.blk_parent(this));
+    cfg0.build();
+    default_map.add_reg(.rg(cfg0),
+                        .offset(32'h100),
+                        .rights("RW"));
+    timer_v_lower0 = rv_timer_reg_timer_v_lower0::type_id::create("timer_v_lower0");
+    timer_v_lower0.configure(.blk_parent(this));
+    timer_v_lower0.build();
+    default_map.add_reg(.rg(timer_v_lower0),
+                        .offset(32'h104),
+                        .rights("RW"));
+    timer_v_upper0 = rv_timer_reg_timer_v_upper0::type_id::create("timer_v_upper0");
+    timer_v_upper0.configure(.blk_parent(this));
+    timer_v_upper0.build();
+    default_map.add_reg(.rg(timer_v_upper0),
+                        .offset(32'h108),
+                        .rights("RW"));
+    compare_lower0_0 = rv_timer_reg_compare_lower0_0::type_id::create("compare_lower0_0");
+    compare_lower0_0.configure(.blk_parent(this));
+    compare_lower0_0.build();
+    default_map.add_reg(.rg(compare_lower0_0),
+                        .offset(32'h10c),
+                        .rights("RW"));
+    compare_upper0_0 = rv_timer_reg_compare_upper0_0::type_id::create("compare_upper0_0");
+    compare_upper0_0.configure(.blk_parent(this));
+    compare_upper0_0.build();
+    default_map.add_reg(.rg(compare_upper0_0),
+                        .offset(32'h110),
+                        .rights("RW"));
+    intr_enable0 = rv_timer_reg_intr_enable0::type_id::create("intr_enable0");
+    intr_enable0.configure(.blk_parent(this));
+    intr_enable0.build();
+    default_map.add_reg(.rg(intr_enable0),
+                        .offset(32'h114),
+                        .rights("RW"));
+    intr_state0 = rv_timer_reg_intr_state0::type_id::create("intr_state0");
+    intr_state0.configure(.blk_parent(this));
+    intr_state0.build();
+    default_map.add_reg(.rg(intr_state0),
+                        .offset(32'h118),
+                        .rights("RW"));
+    intr_test0 = rv_timer_reg_intr_test0::type_id::create("intr_test0");
+    intr_test0.configure(.blk_parent(this));
+    intr_test0.build();
+    default_map.add_reg(.rg(intr_test0),
+                        .offset(32'h11c),
+                        .rights("WO"));
+  endfunction : build
+
+endclass : rv_timer_reg_block
+
+// Block: gpio
+// Class: gpio_reg_intr_state
+class gpio_reg_intr_state extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field gpio;
+
+  `uvm_object_utils(gpio_reg_intr_state)
+
+  function new(string       name = "gpio_reg_intr_state",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    gpio = dv_base_reg_field::type_id::create("gpio");
+    gpio.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_state
+
+// Class: gpio_reg_intr_enable
+class gpio_reg_intr_enable extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field gpio;
+
+  `uvm_object_utils(gpio_reg_intr_enable)
+
+  function new(string       name = "gpio_reg_intr_enable",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    gpio = dv_base_reg_field::type_id::create("gpio");
+    gpio.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_enable
+
+// Class: gpio_reg_intr_test
+class gpio_reg_intr_test extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field gpio;
+
+  `uvm_object_utils(gpio_reg_intr_test)
+
+  function new(string       name = "gpio_reg_intr_test",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    gpio = dv_base_reg_field::type_id::create("gpio");
+    gpio.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_test
+
+// Class: gpio_reg_data_in
+class gpio_reg_data_in extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data_in;
+
+  `uvm_object_utils(gpio_reg_data_in)
+
+  function new(string       name = "gpio_reg_data_in",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data_in = dv_base_reg_field::type_id::create("data_in");
+    data_in.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_data_in
+
+// Class: gpio_reg_direct_out
+class gpio_reg_direct_out extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field direct_out;
+
+  `uvm_object_utils(gpio_reg_direct_out)
+
+  function new(string       name = "gpio_reg_direct_out",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    direct_out = dv_base_reg_field::type_id::create("direct_out");
+    direct_out.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_direct_out
+
+// Class: gpio_reg_masked_out_lower
+class gpio_reg_masked_out_lower extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_out_lower)
+
+  function new(string       name = "gpio_reg_masked_out_lower",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_out_lower
+
+// Class: gpio_reg_masked_out_upper
+class gpio_reg_masked_out_upper extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_out_upper)
+
+  function new(string       name = "gpio_reg_masked_out_upper",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_out_upper
+
+// Class: gpio_reg_direct_oe
+class gpio_reg_direct_oe extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field direct_oe;
+
+  `uvm_object_utils(gpio_reg_direct_oe)
+
+  function new(string       name = "gpio_reg_direct_oe",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    direct_oe = dv_base_reg_field::type_id::create("direct_oe");
+    direct_oe.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_direct_oe
+
+// Class: gpio_reg_masked_oe_lower
+class gpio_reg_masked_oe_lower extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_oe_lower)
+
+  function new(string       name = "gpio_reg_masked_oe_lower",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_oe_lower
+
+// Class: gpio_reg_masked_oe_upper
+class gpio_reg_masked_oe_upper extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_oe_upper)
+
+  function new(string       name = "gpio_reg_masked_oe_upper",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_oe_upper
+
+// Class: gpio_reg_intr_ctrl_en_rising
+class gpio_reg_intr_ctrl_en_rising extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_rising;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_rising)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_rising",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_rising = dv_base_reg_field::type_id::create("intr_ctrl_en_rising");
+    intr_ctrl_en_rising.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_rising
+
+// Class: gpio_reg_intr_ctrl_en_falling
+class gpio_reg_intr_ctrl_en_falling extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_falling;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_falling)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_falling",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_falling = dv_base_reg_field::type_id::create("intr_ctrl_en_falling");
+    intr_ctrl_en_falling.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_falling
+
+// Class: gpio_reg_intr_ctrl_en_lvlhigh
+class gpio_reg_intr_ctrl_en_lvlhigh extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_lvlhigh;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvlhigh)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_lvlhigh",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_lvlhigh = dv_base_reg_field::type_id::create("intr_ctrl_en_lvlhigh");
+    intr_ctrl_en_lvlhigh.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_lvlhigh
+
+// Class: gpio_reg_intr_ctrl_en_lvllow
+class gpio_reg_intr_ctrl_en_lvllow extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_lvllow;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvllow)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_lvllow",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_lvllow = dv_base_reg_field::type_id::create("intr_ctrl_en_lvllow");
+    intr_ctrl_en_lvllow.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_lvllow
+
+// Class: gpio_reg_ctrl_en_input_filter
+class gpio_reg_ctrl_en_input_filter extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field ctrl_en_input_filter;
+
+  `uvm_object_utils(gpio_reg_ctrl_en_input_filter)
+
+  function new(string       name = "gpio_reg_ctrl_en_input_filter",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    ctrl_en_input_filter = dv_base_reg_field::type_id::create("ctrl_en_input_filter");
+    ctrl_en_input_filter.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_ctrl_en_input_filter
+
+// Class: gpio_reg_block
+class gpio_reg_block extends dv_base_reg_block;
+  // registers
+  rand gpio_reg_intr_state intr_state;
+  rand gpio_reg_intr_enable intr_enable;
+  rand gpio_reg_intr_test intr_test;
+  rand gpio_reg_data_in data_in;
+  rand gpio_reg_direct_out direct_out;
+  rand gpio_reg_masked_out_lower masked_out_lower;
+  rand gpio_reg_masked_out_upper masked_out_upper;
+  rand gpio_reg_direct_oe direct_oe;
+  rand gpio_reg_masked_oe_lower masked_oe_lower;
+  rand gpio_reg_masked_oe_upper masked_oe_upper;
+  rand gpio_reg_intr_ctrl_en_rising intr_ctrl_en_rising;
+  rand gpio_reg_intr_ctrl_en_falling intr_ctrl_en_falling;
+  rand gpio_reg_intr_ctrl_en_lvlhigh intr_ctrl_en_lvlhigh;
+  rand gpio_reg_intr_ctrl_en_lvllow intr_ctrl_en_lvllow;
+  rand gpio_reg_ctrl_en_input_filter ctrl_en_input_filter;
+
+  `uvm_object_utils(gpio_reg_block)
+
+  function new(string name = "gpio_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    intr_state = gpio_reg_intr_state::type_id::create("intr_state");
+    intr_state.configure(.blk_parent(this));
+    intr_state.build();
+    default_map.add_reg(.rg(intr_state),
+                        .offset(32'h0),
+                        .rights("RW"));
+    intr_enable = gpio_reg_intr_enable::type_id::create("intr_enable");
+    intr_enable.configure(.blk_parent(this));
+    intr_enable.build();
+    default_map.add_reg(.rg(intr_enable),
+                        .offset(32'h4),
+                        .rights("RW"));
+    intr_test = gpio_reg_intr_test::type_id::create("intr_test");
+    intr_test.configure(.blk_parent(this));
+    intr_test.build();
+    default_map.add_reg(.rg(intr_test),
+                        .offset(32'h8),
+                        .rights("WO"));
+    data_in = gpio_reg_data_in::type_id::create("data_in");
+    data_in.configure(.blk_parent(this));
+    data_in.build();
+    default_map.add_reg(.rg(data_in),
+                        .offset(32'hc),
+                        .rights("RO"));
+    direct_out = gpio_reg_direct_out::type_id::create("direct_out");
+    direct_out.configure(.blk_parent(this));
+    direct_out.build();
+    default_map.add_reg(.rg(direct_out),
+                        .offset(32'h10),
+                        .rights("RW"));
+    masked_out_lower = gpio_reg_masked_out_lower::type_id::create("masked_out_lower");
+    masked_out_lower.configure(.blk_parent(this));
+    masked_out_lower.build();
+    default_map.add_reg(.rg(masked_out_lower),
+                        .offset(32'h14),
+                        .rights("RW"));
+    masked_out_upper = gpio_reg_masked_out_upper::type_id::create("masked_out_upper");
+    masked_out_upper.configure(.blk_parent(this));
+    masked_out_upper.build();
+    default_map.add_reg(.rg(masked_out_upper),
+                        .offset(32'h18),
+                        .rights("RW"));
+    direct_oe = gpio_reg_direct_oe::type_id::create("direct_oe");
+    direct_oe.configure(.blk_parent(this));
+    direct_oe.build();
+    default_map.add_reg(.rg(direct_oe),
+                        .offset(32'h1c),
+                        .rights("RW"));
+    masked_oe_lower = gpio_reg_masked_oe_lower::type_id::create("masked_oe_lower");
+    masked_oe_lower.configure(.blk_parent(this));
+    masked_oe_lower.build();
+    default_map.add_reg(.rg(masked_oe_lower),
+                        .offset(32'h20),
+                        .rights("RW"));
+    masked_oe_upper = gpio_reg_masked_oe_upper::type_id::create("masked_oe_upper");
+    masked_oe_upper.configure(.blk_parent(this));
+    masked_oe_upper.build();
+    default_map.add_reg(.rg(masked_oe_upper),
+                        .offset(32'h24),
+                        .rights("RW"));
+    intr_ctrl_en_rising = gpio_reg_intr_ctrl_en_rising::type_id::create("intr_ctrl_en_rising");
+    intr_ctrl_en_rising.configure(.blk_parent(this));
+    intr_ctrl_en_rising.build();
+    default_map.add_reg(.rg(intr_ctrl_en_rising),
+                        .offset(32'h28),
+                        .rights("RW"));
+    intr_ctrl_en_falling = gpio_reg_intr_ctrl_en_falling::type_id::create("intr_ctrl_en_falling");
+    intr_ctrl_en_falling.configure(.blk_parent(this));
+    intr_ctrl_en_falling.build();
+    default_map.add_reg(.rg(intr_ctrl_en_falling),
+                        .offset(32'h2c),
+                        .rights("RW"));
+    intr_ctrl_en_lvlhigh = gpio_reg_intr_ctrl_en_lvlhigh::type_id::create("intr_ctrl_en_lvlhigh");
+    intr_ctrl_en_lvlhigh.configure(.blk_parent(this));
+    intr_ctrl_en_lvlhigh.build();
+    default_map.add_reg(.rg(intr_ctrl_en_lvlhigh),
+                        .offset(32'h30),
+                        .rights("RW"));
+    intr_ctrl_en_lvllow = gpio_reg_intr_ctrl_en_lvllow::type_id::create("intr_ctrl_en_lvllow");
+    intr_ctrl_en_lvllow.configure(.blk_parent(this));
+    intr_ctrl_en_lvllow.build();
+    default_map.add_reg(.rg(intr_ctrl_en_lvllow),
+                        .offset(32'h34),
+                        .rights("RW"));
+    ctrl_en_input_filter = gpio_reg_ctrl_en_input_filter::type_id::create("ctrl_en_input_filter");
+    ctrl_en_input_filter.configure(.blk_parent(this));
+    ctrl_en_input_filter.build();
+    default_map.add_reg(.rg(ctrl_en_input_filter),
+                        .offset(32'h38),
+                        .rights("RW"));
+  endfunction : build
+
+endclass : gpio_reg_block
 
 // Block: hmac
 // Class: hmac_reg_intr_state
@@ -1265,2245 +4933,6 @@ class hmac_reg_block extends dv_base_reg_block;
 
 endclass : hmac_reg_block
 
-// Block: gpio
-// Class: gpio_reg_intr_state
-class gpio_reg_intr_state extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field gpio;
-
-  `uvm_object_utils(gpio_reg_intr_state)
-
-  function new(string       name = "gpio_reg_intr_state",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    gpio = dv_base_reg_field::type_id::create("gpio");
-    gpio.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_state
-
-// Class: gpio_reg_intr_enable
-class gpio_reg_intr_enable extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field gpio;
-
-  `uvm_object_utils(gpio_reg_intr_enable)
-
-  function new(string       name = "gpio_reg_intr_enable",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    gpio = dv_base_reg_field::type_id::create("gpio");
-    gpio.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_enable
-
-// Class: gpio_reg_intr_test
-class gpio_reg_intr_test extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field gpio;
-
-  `uvm_object_utils(gpio_reg_intr_test)
-
-  function new(string       name = "gpio_reg_intr_test",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    gpio = dv_base_reg_field::type_id::create("gpio");
-    gpio.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_test
-
-// Class: gpio_reg_data_in
-class gpio_reg_data_in extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data_in;
-
-  `uvm_object_utils(gpio_reg_data_in)
-
-  function new(string       name = "gpio_reg_data_in",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data_in = dv_base_reg_field::type_id::create("data_in");
-    data_in.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_data_in
-
-// Class: gpio_reg_direct_out
-class gpio_reg_direct_out extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field direct_out;
-
-  `uvm_object_utils(gpio_reg_direct_out)
-
-  function new(string       name = "gpio_reg_direct_out",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    direct_out = dv_base_reg_field::type_id::create("direct_out");
-    direct_out.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_direct_out
-
-// Class: gpio_reg_masked_out_lower
-class gpio_reg_masked_out_lower extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_out_lower)
-
-  function new(string       name = "gpio_reg_masked_out_lower",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_out_lower
-
-// Class: gpio_reg_masked_out_upper
-class gpio_reg_masked_out_upper extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_out_upper)
-
-  function new(string       name = "gpio_reg_masked_out_upper",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_out_upper
-
-// Class: gpio_reg_direct_oe
-class gpio_reg_direct_oe extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field direct_oe;
-
-  `uvm_object_utils(gpio_reg_direct_oe)
-
-  function new(string       name = "gpio_reg_direct_oe",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    direct_oe = dv_base_reg_field::type_id::create("direct_oe");
-    direct_oe.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_direct_oe
-
-// Class: gpio_reg_masked_oe_lower
-class gpio_reg_masked_oe_lower extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_oe_lower)
-
-  function new(string       name = "gpio_reg_masked_oe_lower",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_oe_lower
-
-// Class: gpio_reg_masked_oe_upper
-class gpio_reg_masked_oe_upper extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_oe_upper)
-
-  function new(string       name = "gpio_reg_masked_oe_upper",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_oe_upper
-
-// Class: gpio_reg_intr_ctrl_en_rising
-class gpio_reg_intr_ctrl_en_rising extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_rising;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_rising)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_rising",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_rising = dv_base_reg_field::type_id::create("intr_ctrl_en_rising");
-    intr_ctrl_en_rising.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_rising
-
-// Class: gpio_reg_intr_ctrl_en_falling
-class gpio_reg_intr_ctrl_en_falling extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_falling;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_falling)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_falling",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_falling = dv_base_reg_field::type_id::create("intr_ctrl_en_falling");
-    intr_ctrl_en_falling.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_falling
-
-// Class: gpio_reg_intr_ctrl_en_lvlhigh
-class gpio_reg_intr_ctrl_en_lvlhigh extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_lvlhigh;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvlhigh)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_lvlhigh",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_lvlhigh = dv_base_reg_field::type_id::create("intr_ctrl_en_lvlhigh");
-    intr_ctrl_en_lvlhigh.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_lvlhigh
-
-// Class: gpio_reg_intr_ctrl_en_lvllow
-class gpio_reg_intr_ctrl_en_lvllow extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_lvllow;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvllow)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_lvllow",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_lvllow = dv_base_reg_field::type_id::create("intr_ctrl_en_lvllow");
-    intr_ctrl_en_lvllow.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_lvllow
-
-// Class: gpio_reg_ctrl_en_input_filter
-class gpio_reg_ctrl_en_input_filter extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field ctrl_en_input_filter;
-
-  `uvm_object_utils(gpio_reg_ctrl_en_input_filter)
-
-  function new(string       name = "gpio_reg_ctrl_en_input_filter",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    ctrl_en_input_filter = dv_base_reg_field::type_id::create("ctrl_en_input_filter");
-    ctrl_en_input_filter.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_ctrl_en_input_filter
-
-// Class: gpio_reg_block
-class gpio_reg_block extends dv_base_reg_block;
-  // registers
-  rand gpio_reg_intr_state intr_state;
-  rand gpio_reg_intr_enable intr_enable;
-  rand gpio_reg_intr_test intr_test;
-  rand gpio_reg_data_in data_in;
-  rand gpio_reg_direct_out direct_out;
-  rand gpio_reg_masked_out_lower masked_out_lower;
-  rand gpio_reg_masked_out_upper masked_out_upper;
-  rand gpio_reg_direct_oe direct_oe;
-  rand gpio_reg_masked_oe_lower masked_oe_lower;
-  rand gpio_reg_masked_oe_upper masked_oe_upper;
-  rand gpio_reg_intr_ctrl_en_rising intr_ctrl_en_rising;
-  rand gpio_reg_intr_ctrl_en_falling intr_ctrl_en_falling;
-  rand gpio_reg_intr_ctrl_en_lvlhigh intr_ctrl_en_lvlhigh;
-  rand gpio_reg_intr_ctrl_en_lvllow intr_ctrl_en_lvllow;
-  rand gpio_reg_ctrl_en_input_filter ctrl_en_input_filter;
-
-  `uvm_object_utils(gpio_reg_block)
-
-  function new(string name = "gpio_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    intr_state = gpio_reg_intr_state::type_id::create("intr_state");
-    intr_state.configure(.blk_parent(this));
-    intr_state.build();
-    default_map.add_reg(.rg(intr_state),
-                        .offset(32'h0),
-                        .rights("RW"));
-    intr_enable = gpio_reg_intr_enable::type_id::create("intr_enable");
-    intr_enable.configure(.blk_parent(this));
-    intr_enable.build();
-    default_map.add_reg(.rg(intr_enable),
-                        .offset(32'h4),
-                        .rights("RW"));
-    intr_test = gpio_reg_intr_test::type_id::create("intr_test");
-    intr_test.configure(.blk_parent(this));
-    intr_test.build();
-    default_map.add_reg(.rg(intr_test),
-                        .offset(32'h8),
-                        .rights("WO"));
-    data_in = gpio_reg_data_in::type_id::create("data_in");
-    data_in.configure(.blk_parent(this));
-    data_in.build();
-    default_map.add_reg(.rg(data_in),
-                        .offset(32'hc),
-                        .rights("RO"));
-    direct_out = gpio_reg_direct_out::type_id::create("direct_out");
-    direct_out.configure(.blk_parent(this));
-    direct_out.build();
-    default_map.add_reg(.rg(direct_out),
-                        .offset(32'h10),
-                        .rights("RW"));
-    masked_out_lower = gpio_reg_masked_out_lower::type_id::create("masked_out_lower");
-    masked_out_lower.configure(.blk_parent(this));
-    masked_out_lower.build();
-    default_map.add_reg(.rg(masked_out_lower),
-                        .offset(32'h14),
-                        .rights("RW"));
-    masked_out_upper = gpio_reg_masked_out_upper::type_id::create("masked_out_upper");
-    masked_out_upper.configure(.blk_parent(this));
-    masked_out_upper.build();
-    default_map.add_reg(.rg(masked_out_upper),
-                        .offset(32'h18),
-                        .rights("RW"));
-    direct_oe = gpio_reg_direct_oe::type_id::create("direct_oe");
-    direct_oe.configure(.blk_parent(this));
-    direct_oe.build();
-    default_map.add_reg(.rg(direct_oe),
-                        .offset(32'h1c),
-                        .rights("RW"));
-    masked_oe_lower = gpio_reg_masked_oe_lower::type_id::create("masked_oe_lower");
-    masked_oe_lower.configure(.blk_parent(this));
-    masked_oe_lower.build();
-    default_map.add_reg(.rg(masked_oe_lower),
-                        .offset(32'h20),
-                        .rights("RW"));
-    masked_oe_upper = gpio_reg_masked_oe_upper::type_id::create("masked_oe_upper");
-    masked_oe_upper.configure(.blk_parent(this));
-    masked_oe_upper.build();
-    default_map.add_reg(.rg(masked_oe_upper),
-                        .offset(32'h24),
-                        .rights("RW"));
-    intr_ctrl_en_rising = gpio_reg_intr_ctrl_en_rising::type_id::create("intr_ctrl_en_rising");
-    intr_ctrl_en_rising.configure(.blk_parent(this));
-    intr_ctrl_en_rising.build();
-    default_map.add_reg(.rg(intr_ctrl_en_rising),
-                        .offset(32'h28),
-                        .rights("RW"));
-    intr_ctrl_en_falling = gpio_reg_intr_ctrl_en_falling::type_id::create("intr_ctrl_en_falling");
-    intr_ctrl_en_falling.configure(.blk_parent(this));
-    intr_ctrl_en_falling.build();
-    default_map.add_reg(.rg(intr_ctrl_en_falling),
-                        .offset(32'h2c),
-                        .rights("RW"));
-    intr_ctrl_en_lvlhigh = gpio_reg_intr_ctrl_en_lvlhigh::type_id::create("intr_ctrl_en_lvlhigh");
-    intr_ctrl_en_lvlhigh.configure(.blk_parent(this));
-    intr_ctrl_en_lvlhigh.build();
-    default_map.add_reg(.rg(intr_ctrl_en_lvlhigh),
-                        .offset(32'h30),
-                        .rights("RW"));
-    intr_ctrl_en_lvllow = gpio_reg_intr_ctrl_en_lvllow::type_id::create("intr_ctrl_en_lvllow");
-    intr_ctrl_en_lvllow.configure(.blk_parent(this));
-    intr_ctrl_en_lvllow.build();
-    default_map.add_reg(.rg(intr_ctrl_en_lvllow),
-                        .offset(32'h34),
-                        .rights("RW"));
-    ctrl_en_input_filter = gpio_reg_ctrl_en_input_filter::type_id::create("ctrl_en_input_filter");
-    ctrl_en_input_filter.configure(.blk_parent(this));
-    ctrl_en_input_filter.build();
-    default_map.add_reg(.rg(ctrl_en_input_filter),
-                        .offset(32'h38),
-                        .rights("RW"));
-  endfunction : build
-
-endclass : gpio_reg_block
-
-// Block: flash_ctrl
-// Class: flash_ctrl_reg_intr_state
-class flash_ctrl_reg_intr_state extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field prog_empty;
-  rand dv_base_reg_field prog_lvl;
-  rand dv_base_reg_field rd_full;
-  rand dv_base_reg_field rd_lvl;
-  rand dv_base_reg_field op_done;
-  rand dv_base_reg_field op_error;
-
-  `uvm_object_utils(flash_ctrl_reg_intr_state)
-
-  function new(string       name = "flash_ctrl_reg_intr_state",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
-    prog_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_lvl = dv_base_reg_field::type_id::create("prog_lvl");
-    prog_lvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_full = dv_base_reg_field::type_id::create("rd_full");
-    rd_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_lvl = dv_base_reg_field::type_id::create("rd_lvl");
-    rd_lvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op_done = dv_base_reg_field::type_id::create("op_done");
-    op_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op_error = dv_base_reg_field::type_id::create("op_error");
-    op_error.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_intr_state
-
-// Class: flash_ctrl_reg_intr_enable
-class flash_ctrl_reg_intr_enable extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field prog_empty;
-  rand dv_base_reg_field prog_lvl;
-  rand dv_base_reg_field rd_full;
-  rand dv_base_reg_field rd_lvl;
-  rand dv_base_reg_field op_done;
-  rand dv_base_reg_field op_error;
-
-  `uvm_object_utils(flash_ctrl_reg_intr_enable)
-
-  function new(string       name = "flash_ctrl_reg_intr_enable",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
-    prog_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_lvl = dv_base_reg_field::type_id::create("prog_lvl");
-    prog_lvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_full = dv_base_reg_field::type_id::create("rd_full");
-    rd_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_lvl = dv_base_reg_field::type_id::create("rd_lvl");
-    rd_lvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op_done = dv_base_reg_field::type_id::create("op_done");
-    op_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op_error = dv_base_reg_field::type_id::create("op_error");
-    op_error.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_intr_enable
-
-// Class: flash_ctrl_reg_intr_test
-class flash_ctrl_reg_intr_test extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field prog_empty;
-  rand dv_base_reg_field prog_lvl;
-  rand dv_base_reg_field rd_full;
-  rand dv_base_reg_field rd_lvl;
-  rand dv_base_reg_field op_done;
-  rand dv_base_reg_field op_error;
-
-  `uvm_object_utils(flash_ctrl_reg_intr_test)
-
-  function new(string       name = "flash_ctrl_reg_intr_test",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
-    prog_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_lvl = dv_base_reg_field::type_id::create("prog_lvl");
-    prog_lvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_full = dv_base_reg_field::type_id::create("rd_full");
-    rd_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_lvl = dv_base_reg_field::type_id::create("rd_lvl");
-    rd_lvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op_done = dv_base_reg_field::type_id::create("op_done");
-    op_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op_error = dv_base_reg_field::type_id::create("op_error");
-    op_error.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_intr_test
-
-// Class: flash_ctrl_reg_control
-class flash_ctrl_reg_control extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field start;
-  rand dv_base_reg_field op;
-  rand dv_base_reg_field erase_sel;
-  rand dv_base_reg_field fifo_rst;
-  rand dv_base_reg_field num;
-
-  `uvm_object_utils(flash_ctrl_reg_control)
-
-  function new(string       name = "flash_ctrl_reg_control",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    start = dv_base_reg_field::type_id::create("start");
-    start.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    op = dv_base_reg_field::type_id::create("op");
-    op.configure(
-      .parent(this),
-      .size(2),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_sel = dv_base_reg_field::type_id::create("erase_sel");
-    erase_sel.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(6),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    fifo_rst = dv_base_reg_field::type_id::create("fifo_rst");
-    fifo_rst.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(7),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    num = dv_base_reg_field::type_id::create("num");
-    num.configure(
-      .parent(this),
-      .size(12),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_control
-
-// Class: flash_ctrl_reg_addr
-class flash_ctrl_reg_addr extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field start;
-
-  `uvm_object_utils(flash_ctrl_reg_addr)
-
-  function new(string       name = "flash_ctrl_reg_addr",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    start = dv_base_reg_field::type_id::create("start");
-    start.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_addr
-
-// Class: flash_ctrl_reg_mp_region_cfg0
-class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en0;
-  rand dv_base_reg_field rd_en0;
-  rand dv_base_reg_field prog_en0;
-  rand dv_base_reg_field erase_en0;
-  rand dv_base_reg_field base0;
-  rand dv_base_reg_field size0;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg0)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en0 = dv_base_reg_field::type_id::create("en0");
-    en0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en0 = dv_base_reg_field::type_id::create("rd_en0");
-    rd_en0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en0 = dv_base_reg_field::type_id::create("prog_en0");
-    prog_en0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en0 = dv_base_reg_field::type_id::create("erase_en0");
-    erase_en0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base0 = dv_base_reg_field::type_id::create("base0");
-    base0.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size0 = dv_base_reg_field::type_id::create("size0");
-    size0.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg0
-
-// Class: flash_ctrl_reg_mp_region_cfg1
-class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en1;
-  rand dv_base_reg_field rd_en1;
-  rand dv_base_reg_field prog_en1;
-  rand dv_base_reg_field erase_en1;
-  rand dv_base_reg_field base1;
-  rand dv_base_reg_field size1;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg1)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg1",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en1 = dv_base_reg_field::type_id::create("en1");
-    en1.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en1 = dv_base_reg_field::type_id::create("rd_en1");
-    rd_en1.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en1 = dv_base_reg_field::type_id::create("prog_en1");
-    prog_en1.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en1 = dv_base_reg_field::type_id::create("erase_en1");
-    erase_en1.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base1 = dv_base_reg_field::type_id::create("base1");
-    base1.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size1 = dv_base_reg_field::type_id::create("size1");
-    size1.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg1
-
-// Class: flash_ctrl_reg_mp_region_cfg2
-class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en2;
-  rand dv_base_reg_field rd_en2;
-  rand dv_base_reg_field prog_en2;
-  rand dv_base_reg_field erase_en2;
-  rand dv_base_reg_field base2;
-  rand dv_base_reg_field size2;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg2)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg2",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en2 = dv_base_reg_field::type_id::create("en2");
-    en2.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en2 = dv_base_reg_field::type_id::create("rd_en2");
-    rd_en2.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en2 = dv_base_reg_field::type_id::create("prog_en2");
-    prog_en2.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en2 = dv_base_reg_field::type_id::create("erase_en2");
-    erase_en2.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base2 = dv_base_reg_field::type_id::create("base2");
-    base2.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size2 = dv_base_reg_field::type_id::create("size2");
-    size2.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg2
-
-// Class: flash_ctrl_reg_mp_region_cfg3
-class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en3;
-  rand dv_base_reg_field rd_en3;
-  rand dv_base_reg_field prog_en3;
-  rand dv_base_reg_field erase_en3;
-  rand dv_base_reg_field base3;
-  rand dv_base_reg_field size3;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg3)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg3",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en3 = dv_base_reg_field::type_id::create("en3");
-    en3.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en3 = dv_base_reg_field::type_id::create("rd_en3");
-    rd_en3.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en3 = dv_base_reg_field::type_id::create("prog_en3");
-    prog_en3.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en3 = dv_base_reg_field::type_id::create("erase_en3");
-    erase_en3.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base3 = dv_base_reg_field::type_id::create("base3");
-    base3.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size3 = dv_base_reg_field::type_id::create("size3");
-    size3.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg3
-
-// Class: flash_ctrl_reg_mp_region_cfg4
-class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en4;
-  rand dv_base_reg_field rd_en4;
-  rand dv_base_reg_field prog_en4;
-  rand dv_base_reg_field erase_en4;
-  rand dv_base_reg_field base4;
-  rand dv_base_reg_field size4;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg4)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg4",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en4 = dv_base_reg_field::type_id::create("en4");
-    en4.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en4 = dv_base_reg_field::type_id::create("rd_en4");
-    rd_en4.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en4 = dv_base_reg_field::type_id::create("prog_en4");
-    prog_en4.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en4 = dv_base_reg_field::type_id::create("erase_en4");
-    erase_en4.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base4 = dv_base_reg_field::type_id::create("base4");
-    base4.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size4 = dv_base_reg_field::type_id::create("size4");
-    size4.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg4
-
-// Class: flash_ctrl_reg_mp_region_cfg5
-class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en5;
-  rand dv_base_reg_field rd_en5;
-  rand dv_base_reg_field prog_en5;
-  rand dv_base_reg_field erase_en5;
-  rand dv_base_reg_field base5;
-  rand dv_base_reg_field size5;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg5)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg5",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en5 = dv_base_reg_field::type_id::create("en5");
-    en5.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en5 = dv_base_reg_field::type_id::create("rd_en5");
-    rd_en5.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en5 = dv_base_reg_field::type_id::create("prog_en5");
-    prog_en5.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en5 = dv_base_reg_field::type_id::create("erase_en5");
-    erase_en5.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base5 = dv_base_reg_field::type_id::create("base5");
-    base5.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size5 = dv_base_reg_field::type_id::create("size5");
-    size5.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg5
-
-// Class: flash_ctrl_reg_mp_region_cfg6
-class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en6;
-  rand dv_base_reg_field rd_en6;
-  rand dv_base_reg_field prog_en6;
-  rand dv_base_reg_field erase_en6;
-  rand dv_base_reg_field base6;
-  rand dv_base_reg_field size6;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg6)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg6",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en6 = dv_base_reg_field::type_id::create("en6");
-    en6.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en6 = dv_base_reg_field::type_id::create("rd_en6");
-    rd_en6.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en6 = dv_base_reg_field::type_id::create("prog_en6");
-    prog_en6.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en6 = dv_base_reg_field::type_id::create("erase_en6");
-    erase_en6.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base6 = dv_base_reg_field::type_id::create("base6");
-    base6.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size6 = dv_base_reg_field::type_id::create("size6");
-    size6.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg6
-
-// Class: flash_ctrl_reg_mp_region_cfg7
-class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field en7;
-  rand dv_base_reg_field rd_en7;
-  rand dv_base_reg_field prog_en7;
-  rand dv_base_reg_field erase_en7;
-  rand dv_base_reg_field base7;
-  rand dv_base_reg_field size7;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_region_cfg7)
-
-  function new(string       name = "flash_ctrl_reg_mp_region_cfg7",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    en7 = dv_base_reg_field::type_id::create("en7");
-    en7.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_en7 = dv_base_reg_field::type_id::create("rd_en7");
-    rd_en7.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en7 = dv_base_reg_field::type_id::create("prog_en7");
-    prog_en7.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en7 = dv_base_reg_field::type_id::create("erase_en7");
-    erase_en7.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    base7 = dv_base_reg_field::type_id::create("base7");
-    base7.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    size7 = dv_base_reg_field::type_id::create("size7");
-    size7.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_region_cfg7
-
-// Class: flash_ctrl_reg_default_region
-class flash_ctrl_reg_default_region extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rd_en;
-  rand dv_base_reg_field prog_en;
-  rand dv_base_reg_field erase_en;
-
-  `uvm_object_utils(flash_ctrl_reg_default_region)
-
-  function new(string       name = "flash_ctrl_reg_default_region",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rd_en = dv_base_reg_field::type_id::create("rd_en");
-    rd_en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_en = dv_base_reg_field::type_id::create("prog_en");
-    prog_en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en = dv_base_reg_field::type_id::create("erase_en");
-    erase_en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_default_region
-
-// Class: flash_ctrl_reg_mp_bank_cfg
-class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field erase_en0;
-  rand dv_base_reg_field erase_en1;
-
-  `uvm_object_utils(flash_ctrl_reg_mp_bank_cfg)
-
-  function new(string       name = "flash_ctrl_reg_mp_bank_cfg",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    erase_en0 = dv_base_reg_field::type_id::create("erase_en0");
-    erase_en0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    erase_en1 = dv_base_reg_field::type_id::create("erase_en1");
-    erase_en1.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_mp_bank_cfg
-
-// Class: flash_ctrl_reg_op_status
-class flash_ctrl_reg_op_status extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field done;
-  rand dv_base_reg_field err;
-
-  `uvm_object_utils(flash_ctrl_reg_op_status)
-
-  function new(string       name = "flash_ctrl_reg_op_status",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    done = dv_base_reg_field::type_id::create("done");
-    done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    err = dv_base_reg_field::type_id::create("err");
-    err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_op_status
-
-// Class: flash_ctrl_reg_status
-class flash_ctrl_reg_status extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rd_full;
-  rand dv_base_reg_field rd_empty;
-  rand dv_base_reg_field prog_full;
-  rand dv_base_reg_field prog_empty;
-  rand dv_base_reg_field init_wip;
-  rand dv_base_reg_field error_page;
-  rand dv_base_reg_field error_bank;
-
-  `uvm_object_utils(flash_ctrl_reg_status)
-
-  function new(string       name = "flash_ctrl_reg_status",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rd_full = dv_base_reg_field::type_id::create("rd_full");
-    rd_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd_empty = dv_base_reg_field::type_id::create("rd_empty");
-    rd_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_full = dv_base_reg_field::type_id::create("prog_full");
-    prog_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    prog_empty = dv_base_reg_field::type_id::create("prog_empty");
-    prog_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    init_wip = dv_base_reg_field::type_id::create("init_wip");
-    init_wip.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    error_page = dv_base_reg_field::type_id::create("error_page");
-    error_page.configure(
-      .parent(this),
-      .size(9),
-      .lsb_pos(8),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    error_bank = dv_base_reg_field::type_id::create("error_bank");
-    error_bank.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(17),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_status
-
-// Class: flash_ctrl_reg_scratch
-class flash_ctrl_reg_scratch extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-
-  `uvm_object_utils(flash_ctrl_reg_scratch)
-
-  function new(string       name = "flash_ctrl_reg_scratch",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_scratch
-
-// Class: flash_ctrl_reg_fifo_lvl
-class flash_ctrl_reg_fifo_lvl extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field prog;
-  rand dv_base_reg_field rd;
-
-  `uvm_object_utils(flash_ctrl_reg_fifo_lvl)
-
-  function new(string       name = "flash_ctrl_reg_fifo_lvl",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    prog = dv_base_reg_field::type_id::create("prog");
-    prog.configure(
-      .parent(this),
-      .size(5),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(15),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rd = dv_base_reg_field::type_id::create("rd");
-    rd.configure(
-      .parent(this),
-      .size(5),
-      .lsb_pos(8),
-      .access("RW"),
-      .volatile(0),
-      .reset(15),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : flash_ctrl_reg_fifo_lvl
-
-// Class: flash_ctrl_mem_prog_fifo
-class flash_ctrl_mem_prog_fifo extends dv_base_mem;
-
-  `uvm_object_utils(flash_ctrl_mem_prog_fifo)
-
-  function new(string           name = "flash_ctrl_mem_prog_fifo",
-               longint unsigned size = 1,
-               int unsigned     n_bits = 32,
-               string           access = "RW"/* TODO:"WO"*/,
-               int              has_coverage = UVM_NO_COVERAGE);
-    super.new(name, size, n_bits, access, has_coverage);
-  endfunction : new
-
-endclass : flash_ctrl_mem_prog_fifo
-
-// Class: flash_ctrl_mem_rd_fifo
-class flash_ctrl_mem_rd_fifo extends dv_base_mem;
-
-  `uvm_object_utils(flash_ctrl_mem_rd_fifo)
-
-  function new(string           name = "flash_ctrl_mem_rd_fifo",
-               longint unsigned size = 1,
-               int unsigned     n_bits = 32,
-               string           access = "RW"/* TODO:"RO"*/,
-               int              has_coverage = UVM_NO_COVERAGE);
-    super.new(name, size, n_bits, access, has_coverage);
-  endfunction : new
-
-endclass : flash_ctrl_mem_rd_fifo
-
-// Class: flash_ctrl_reg_block
-class flash_ctrl_reg_block extends dv_base_reg_block;
-  // registers
-  rand flash_ctrl_reg_intr_state intr_state;
-  rand flash_ctrl_reg_intr_enable intr_enable;
-  rand flash_ctrl_reg_intr_test intr_test;
-  rand flash_ctrl_reg_control control;
-  rand flash_ctrl_reg_addr addr;
-  rand flash_ctrl_reg_mp_region_cfg0 mp_region_cfg0;
-  rand flash_ctrl_reg_mp_region_cfg1 mp_region_cfg1;
-  rand flash_ctrl_reg_mp_region_cfg2 mp_region_cfg2;
-  rand flash_ctrl_reg_mp_region_cfg3 mp_region_cfg3;
-  rand flash_ctrl_reg_mp_region_cfg4 mp_region_cfg4;
-  rand flash_ctrl_reg_mp_region_cfg5 mp_region_cfg5;
-  rand flash_ctrl_reg_mp_region_cfg6 mp_region_cfg6;
-  rand flash_ctrl_reg_mp_region_cfg7 mp_region_cfg7;
-  rand flash_ctrl_reg_default_region default_region;
-  rand flash_ctrl_reg_mp_bank_cfg mp_bank_cfg;
-  rand flash_ctrl_reg_op_status op_status;
-  rand flash_ctrl_reg_status status;
-  rand flash_ctrl_reg_scratch scratch;
-  rand flash_ctrl_reg_fifo_lvl fifo_lvl;
-  // memories
-  rand flash_ctrl_mem_prog_fifo prog_fifo;
-  rand flash_ctrl_mem_rd_fifo rd_fifo;
-
-  `uvm_object_utils(flash_ctrl_reg_block)
-
-  function new(string name = "flash_ctrl_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    intr_state = flash_ctrl_reg_intr_state::type_id::create("intr_state");
-    intr_state.configure(.blk_parent(this));
-    intr_state.build();
-    default_map.add_reg(.rg(intr_state),
-                        .offset(32'h0),
-                        .rights("RW"));
-    intr_enable = flash_ctrl_reg_intr_enable::type_id::create("intr_enable");
-    intr_enable.configure(.blk_parent(this));
-    intr_enable.build();
-    default_map.add_reg(.rg(intr_enable),
-                        .offset(32'h4),
-                        .rights("RW"));
-    intr_test = flash_ctrl_reg_intr_test::type_id::create("intr_test");
-    intr_test.configure(.blk_parent(this));
-    intr_test.build();
-    default_map.add_reg(.rg(intr_test),
-                        .offset(32'h8),
-                        .rights("WO"));
-    control = flash_ctrl_reg_control::type_id::create("control");
-    control.configure(.blk_parent(this));
-    control.build();
-    default_map.add_reg(.rg(control),
-                        .offset(32'hc),
-                        .rights("RW"));
-    addr = flash_ctrl_reg_addr::type_id::create("addr");
-    addr.configure(.blk_parent(this));
-    addr.build();
-    default_map.add_reg(.rg(addr),
-                        .offset(32'h10),
-                        .rights("RW"));
-    mp_region_cfg0 = flash_ctrl_reg_mp_region_cfg0::type_id::create("mp_region_cfg0");
-    mp_region_cfg0.configure(.blk_parent(this));
-    mp_region_cfg0.build();
-    default_map.add_reg(.rg(mp_region_cfg0),
-                        .offset(32'h14),
-                        .rights("RW"));
-    mp_region_cfg1 = flash_ctrl_reg_mp_region_cfg1::type_id::create("mp_region_cfg1");
-    mp_region_cfg1.configure(.blk_parent(this));
-    mp_region_cfg1.build();
-    default_map.add_reg(.rg(mp_region_cfg1),
-                        .offset(32'h18),
-                        .rights("RW"));
-    mp_region_cfg2 = flash_ctrl_reg_mp_region_cfg2::type_id::create("mp_region_cfg2");
-    mp_region_cfg2.configure(.blk_parent(this));
-    mp_region_cfg2.build();
-    default_map.add_reg(.rg(mp_region_cfg2),
-                        .offset(32'h1c),
-                        .rights("RW"));
-    mp_region_cfg3 = flash_ctrl_reg_mp_region_cfg3::type_id::create("mp_region_cfg3");
-    mp_region_cfg3.configure(.blk_parent(this));
-    mp_region_cfg3.build();
-    default_map.add_reg(.rg(mp_region_cfg3),
-                        .offset(32'h20),
-                        .rights("RW"));
-    mp_region_cfg4 = flash_ctrl_reg_mp_region_cfg4::type_id::create("mp_region_cfg4");
-    mp_region_cfg4.configure(.blk_parent(this));
-    mp_region_cfg4.build();
-    default_map.add_reg(.rg(mp_region_cfg4),
-                        .offset(32'h24),
-                        .rights("RW"));
-    mp_region_cfg5 = flash_ctrl_reg_mp_region_cfg5::type_id::create("mp_region_cfg5");
-    mp_region_cfg5.configure(.blk_parent(this));
-    mp_region_cfg5.build();
-    default_map.add_reg(.rg(mp_region_cfg5),
-                        .offset(32'h28),
-                        .rights("RW"));
-    mp_region_cfg6 = flash_ctrl_reg_mp_region_cfg6::type_id::create("mp_region_cfg6");
-    mp_region_cfg6.configure(.blk_parent(this));
-    mp_region_cfg6.build();
-    default_map.add_reg(.rg(mp_region_cfg6),
-                        .offset(32'h2c),
-                        .rights("RW"));
-    mp_region_cfg7 = flash_ctrl_reg_mp_region_cfg7::type_id::create("mp_region_cfg7");
-    mp_region_cfg7.configure(.blk_parent(this));
-    mp_region_cfg7.build();
-    default_map.add_reg(.rg(mp_region_cfg7),
-                        .offset(32'h30),
-                        .rights("RW"));
-    default_region = flash_ctrl_reg_default_region::type_id::create("default_region");
-    default_region.configure(.blk_parent(this));
-    default_region.build();
-    default_map.add_reg(.rg(default_region),
-                        .offset(32'h34),
-                        .rights("RW"));
-    mp_bank_cfg = flash_ctrl_reg_mp_bank_cfg::type_id::create("mp_bank_cfg");
-    mp_bank_cfg.configure(.blk_parent(this));
-    mp_bank_cfg.build();
-    default_map.add_reg(.rg(mp_bank_cfg),
-                        .offset(32'h38),
-                        .rights("RW"));
-    op_status = flash_ctrl_reg_op_status::type_id::create("op_status");
-    op_status.configure(.blk_parent(this));
-    op_status.build();
-    default_map.add_reg(.rg(op_status),
-                        .offset(32'h3c),
-                        .rights("RW"));
-    status = flash_ctrl_reg_status::type_id::create("status");
-    status.configure(.blk_parent(this));
-    status.build();
-    default_map.add_reg(.rg(status),
-                        .offset(32'h40),
-                        .rights("RO"));
-    scratch = flash_ctrl_reg_scratch::type_id::create("scratch");
-    scratch.configure(.blk_parent(this));
-    scratch.build();
-    default_map.add_reg(.rg(scratch),
-                        .offset(32'h44),
-                        .rights("RW"));
-    fifo_lvl = flash_ctrl_reg_fifo_lvl::type_id::create("fifo_lvl");
-    fifo_lvl.configure(.blk_parent(this));
-    fifo_lvl.build();
-    default_map.add_reg(.rg(fifo_lvl),
-                        .offset(32'h48),
-                        .rights("RW"));
-
-    // create memories
-    prog_fifo = flash_ctrl_mem_prog_fifo::type_id::create("prog_fifo");
-    prog_fifo.configure(.parent(this));
-    default_map.add_mem(.mem(prog_fifo),
-                        .offset(32'h4c),
-                        .rights("WO"));
-    rd_fifo = flash_ctrl_mem_rd_fifo::type_id::create("rd_fifo");
-    rd_fifo.configure(.parent(this));
-    default_map.add_mem(.mem(rd_fifo),
-                        .offset(32'h50),
-                        .rights("RO"));
-  endfunction : build
-
-endclass : flash_ctrl_reg_block
-
 // Block: uart
 // Class: uart_reg_intr_state
 class uart_reg_intr_state extends dv_base_reg;
@@ -4451,1263 +5880,6 @@ class uart_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : uart_reg_block
-
-// Block: spi_device
-// Class: spi_device_reg_intr_state
-class spi_device_reg_intr_state extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxf;
-  rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txlvl;
-  rand dv_base_reg_field rxerr;
-  rand dv_base_reg_field rxoverflow;
-  rand dv_base_reg_field txunderflow;
-
-  `uvm_object_utils(spi_device_reg_intr_state)
-
-  function new(string       name = "spi_device_reg_intr_state",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxf = dv_base_reg_field::type_id::create("rxf");
-    rxf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
-    rxlvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txlvl = dv_base_reg_field::type_id::create("txlvl");
-    txlvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxerr = dv_base_reg_field::type_id::create("rxerr");
-    rxerr.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
-    rxoverflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
-    txunderflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_intr_state
-
-// Class: spi_device_reg_intr_enable
-class spi_device_reg_intr_enable extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxf;
-  rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txlvl;
-  rand dv_base_reg_field rxerr;
-  rand dv_base_reg_field rxoverflow;
-  rand dv_base_reg_field txunderflow;
-
-  `uvm_object_utils(spi_device_reg_intr_enable)
-
-  function new(string       name = "spi_device_reg_intr_enable",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxf = dv_base_reg_field::type_id::create("rxf");
-    rxf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
-    rxlvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txlvl = dv_base_reg_field::type_id::create("txlvl");
-    txlvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxerr = dv_base_reg_field::type_id::create("rxerr");
-    rxerr.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
-    rxoverflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
-    txunderflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_intr_enable
-
-// Class: spi_device_reg_intr_test
-class spi_device_reg_intr_test extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxf;
-  rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txlvl;
-  rand dv_base_reg_field rxerr;
-  rand dv_base_reg_field rxoverflow;
-  rand dv_base_reg_field txunderflow;
-
-  `uvm_object_utils(spi_device_reg_intr_test)
-
-  function new(string       name = "spi_device_reg_intr_test",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxf = dv_base_reg_field::type_id::create("rxf");
-    rxf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
-    rxlvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txlvl = dv_base_reg_field::type_id::create("txlvl");
-    txlvl.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxerr = dv_base_reg_field::type_id::create("rxerr");
-    rxerr.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxoverflow = dv_base_reg_field::type_id::create("rxoverflow");
-    rxoverflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txunderflow = dv_base_reg_field::type_id::create("txunderflow");
-    txunderflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_intr_test
-
-// Class: spi_device_reg_control
-class spi_device_reg_control extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field abort;
-  rand dv_base_reg_field mode;
-  rand dv_base_reg_field rst_txfifo;
-  rand dv_base_reg_field rst_rxfifo;
-
-  `uvm_object_utils(spi_device_reg_control)
-
-  function new(string       name = "spi_device_reg_control",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    abort = dv_base_reg_field::type_id::create("abort");
-    abort.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mode = dv_base_reg_field::type_id::create("mode");
-    mode.configure(
-      .parent(this),
-      .size(2),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rst_txfifo = dv_base_reg_field::type_id::create("rst_txfifo");
-    rst_txfifo.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rst_rxfifo = dv_base_reg_field::type_id::create("rst_rxfifo");
-    rst_rxfifo.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(17),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_control
-
-// Class: spi_device_reg_cfg
-class spi_device_reg_cfg extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field cpol;
-  rand dv_base_reg_field cpha;
-  rand dv_base_reg_field tx_order;
-  rand dv_base_reg_field rx_order;
-  rand dv_base_reg_field timer_v;
-
-  `uvm_object_utils(spi_device_reg_cfg)
-
-  function new(string       name = "spi_device_reg_cfg",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    cpol = dv_base_reg_field::type_id::create("cpol");
-    cpol.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    cpha = dv_base_reg_field::type_id::create("cpha");
-    cpha.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    tx_order = dv_base_reg_field::type_id::create("tx_order");
-    tx_order.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_order = dv_base_reg_field::type_id::create("rx_order");
-    rx_order.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    timer_v = dv_base_reg_field::type_id::create("timer_v");
-    timer_v.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(8),
-      .access("RW"),
-      .volatile(0),
-      .reset(127),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_cfg
-
-// Class: spi_device_reg_fifo_level
-class spi_device_reg_fifo_level extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txlvl;
-
-  `uvm_object_utils(spi_device_reg_fifo_level)
-
-  function new(string       name = "spi_device_reg_fifo_level",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
-    rxlvl.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(128),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txlvl = dv_base_reg_field::type_id::create("txlvl");
-    txlvl.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_fifo_level
-
-// Class: spi_device_reg_async_fifo_level
-class spi_device_reg_async_fifo_level extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxlvl;
-  rand dv_base_reg_field txlvl;
-
-  `uvm_object_utils(spi_device_reg_async_fifo_level)
-
-  function new(string       name = "spi_device_reg_async_fifo_level",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
-    rxlvl.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txlvl = dv_base_reg_field::type_id::create("txlvl");
-    txlvl.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(16),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_async_fifo_level
-
-// Class: spi_device_reg_status
-class spi_device_reg_status extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxf_full;
-  rand dv_base_reg_field rxf_empty;
-  rand dv_base_reg_field txf_full;
-  rand dv_base_reg_field txf_empty;
-  rand dv_base_reg_field abort_done;
-  rand dv_base_reg_field csb;
-
-  `uvm_object_utils(spi_device_reg_status)
-
-  function new(string       name = "spi_device_reg_status",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxf_full = dv_base_reg_field::type_id::create("rxf_full");
-    rxf_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxf_empty = dv_base_reg_field::type_id::create("rxf_empty");
-    rxf_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txf_full = dv_base_reg_field::type_id::create("txf_full");
-    txf_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txf_empty = dv_base_reg_field::type_id::create("txf_empty");
-    txf_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    abort_done = dv_base_reg_field::type_id::create("abort_done");
-    abort_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    csb = dv_base_reg_field::type_id::create("csb");
-    csb.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_status
-
-// Class: spi_device_reg_rxf_ptr
-class spi_device_reg_rxf_ptr extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rptr;
-  rand dv_base_reg_field wptr;
-
-  `uvm_object_utils(spi_device_reg_rxf_ptr)
-
-  function new(string       name = "spi_device_reg_rxf_ptr",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rptr = dv_base_reg_field::type_id::create("rptr");
-    rptr.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    wptr = dv_base_reg_field::type_id::create("wptr");
-    wptr.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_rxf_ptr
-
-// Class: spi_device_reg_txf_ptr
-class spi_device_reg_txf_ptr extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rptr;
-  rand dv_base_reg_field wptr;
-
-  `uvm_object_utils(spi_device_reg_txf_ptr)
-
-  function new(string       name = "spi_device_reg_txf_ptr",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rptr = dv_base_reg_field::type_id::create("rptr");
-    rptr.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    wptr = dv_base_reg_field::type_id::create("wptr");
-    wptr.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_txf_ptr
-
-// Class: spi_device_reg_rxf_addr
-class spi_device_reg_rxf_addr extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field base;
-  rand dv_base_reg_field limit;
-
-  `uvm_object_utils(spi_device_reg_rxf_addr)
-
-  function new(string       name = "spi_device_reg_rxf_addr",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    base = dv_base_reg_field::type_id::create("base");
-    base.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    limit = dv_base_reg_field::type_id::create("limit");
-    limit.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(508),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_rxf_addr
-
-// Class: spi_device_reg_txf_addr
-class spi_device_reg_txf_addr extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field base;
-  rand dv_base_reg_field limit;
-
-  `uvm_object_utils(spi_device_reg_txf_addr)
-
-  function new(string       name = "spi_device_reg_txf_addr",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    base = dv_base_reg_field::type_id::create("base");
-    base.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(512),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    limit = dv_base_reg_field::type_id::create("limit");
-    limit.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(1020),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : spi_device_reg_txf_addr
-
-// Class: spi_device_mem_buffer
-class spi_device_mem_buffer extends dv_base_mem;
-
-  `uvm_object_utils(spi_device_mem_buffer)
-
-  function new(string           name = "spi_device_mem_buffer",
-               longint unsigned size = 512,
-               int unsigned     n_bits = 32,
-               string           access = "RW"/* TODO:"RW"*/,
-               int              has_coverage = UVM_NO_COVERAGE);
-    super.new(name, size, n_bits, access, has_coverage);
-  endfunction : new
-
-endclass : spi_device_mem_buffer
-
-// Class: spi_device_reg_block
-class spi_device_reg_block extends dv_base_reg_block;
-  // registers
-  rand spi_device_reg_intr_state intr_state;
-  rand spi_device_reg_intr_enable intr_enable;
-  rand spi_device_reg_intr_test intr_test;
-  rand spi_device_reg_control control;
-  rand spi_device_reg_cfg cfg;
-  rand spi_device_reg_fifo_level fifo_level;
-  rand spi_device_reg_async_fifo_level async_fifo_level;
-  rand spi_device_reg_status status;
-  rand spi_device_reg_rxf_ptr rxf_ptr;
-  rand spi_device_reg_txf_ptr txf_ptr;
-  rand spi_device_reg_rxf_addr rxf_addr;
-  rand spi_device_reg_txf_addr txf_addr;
-  // memories
-  rand spi_device_mem_buffer buffer;
-
-  `uvm_object_utils(spi_device_reg_block)
-
-  function new(string name = "spi_device_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    intr_state = spi_device_reg_intr_state::type_id::create("intr_state");
-    intr_state.configure(.blk_parent(this));
-    intr_state.build();
-    default_map.add_reg(.rg(intr_state),
-                        .offset(32'h0),
-                        .rights("RW"));
-    intr_enable = spi_device_reg_intr_enable::type_id::create("intr_enable");
-    intr_enable.configure(.blk_parent(this));
-    intr_enable.build();
-    default_map.add_reg(.rg(intr_enable),
-                        .offset(32'h4),
-                        .rights("RW"));
-    intr_test = spi_device_reg_intr_test::type_id::create("intr_test");
-    intr_test.configure(.blk_parent(this));
-    intr_test.build();
-    default_map.add_reg(.rg(intr_test),
-                        .offset(32'h8),
-                        .rights("WO"));
-    control = spi_device_reg_control::type_id::create("control");
-    control.configure(.blk_parent(this));
-    control.build();
-    default_map.add_reg(.rg(control),
-                        .offset(32'hc),
-                        .rights("RW"));
-    cfg = spi_device_reg_cfg::type_id::create("cfg");
-    cfg.configure(.blk_parent(this));
-    cfg.build();
-    default_map.add_reg(.rg(cfg),
-                        .offset(32'h10),
-                        .rights("RW"));
-    fifo_level = spi_device_reg_fifo_level::type_id::create("fifo_level");
-    fifo_level.configure(.blk_parent(this));
-    fifo_level.build();
-    default_map.add_reg(.rg(fifo_level),
-                        .offset(32'h14),
-                        .rights("RW"));
-    async_fifo_level = spi_device_reg_async_fifo_level::type_id::create("async_fifo_level");
-    async_fifo_level.configure(.blk_parent(this));
-    async_fifo_level.build();
-    default_map.add_reg(.rg(async_fifo_level),
-                        .offset(32'h18),
-                        .rights("RO"));
-    status = spi_device_reg_status::type_id::create("status");
-    status.configure(.blk_parent(this));
-    status.build();
-    default_map.add_reg(.rg(status),
-                        .offset(32'h1c),
-                        .rights("RO"));
-    rxf_ptr = spi_device_reg_rxf_ptr::type_id::create("rxf_ptr");
-    rxf_ptr.configure(.blk_parent(this));
-    rxf_ptr.build();
-    default_map.add_reg(.rg(rxf_ptr),
-                        .offset(32'h20),
-                        .rights("RW"));
-    txf_ptr = spi_device_reg_txf_ptr::type_id::create("txf_ptr");
-    txf_ptr.configure(.blk_parent(this));
-    txf_ptr.build();
-    default_map.add_reg(.rg(txf_ptr),
-                        .offset(32'h24),
-                        .rights("RW"));
-    rxf_addr = spi_device_reg_rxf_addr::type_id::create("rxf_addr");
-    rxf_addr.configure(.blk_parent(this));
-    rxf_addr.build();
-    default_map.add_reg(.rg(rxf_addr),
-                        .offset(32'h28),
-                        .rights("RW"));
-    txf_addr = spi_device_reg_txf_addr::type_id::create("txf_addr");
-    txf_addr.configure(.blk_parent(this));
-    txf_addr.build();
-    default_map.add_reg(.rg(txf_addr),
-                        .offset(32'h2c),
-                        .rights("RW"));
-
-    // create memories
-    buffer = spi_device_mem_buffer::type_id::create("buffer");
-    buffer.configure(.parent(this));
-    default_map.add_mem(.mem(buffer),
-                        .offset(32'h800),
-                        .rights("RW"));
-  endfunction : build
-
-endclass : spi_device_reg_block
-
-// Block: rv_timer
-// Class: rv_timer_reg_ctrl
-class rv_timer_reg_ctrl extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field active0;
-
-  `uvm_object_utils(rv_timer_reg_ctrl)
-
-  function new(string       name = "rv_timer_reg_ctrl",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    active0 = dv_base_reg_field::type_id::create("active0");
-    active0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_ctrl
-
-// Class: rv_timer_reg_cfg0
-class rv_timer_reg_cfg0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field prescale;
-  rand dv_base_reg_field step;
-
-  `uvm_object_utils(rv_timer_reg_cfg0)
-
-  function new(string       name = "rv_timer_reg_cfg0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    prescale = dv_base_reg_field::type_id::create("prescale");
-    prescale.configure(
-      .parent(this),
-      .size(12),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    step = dv_base_reg_field::type_id::create("step");
-    step.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_cfg0
-
-// Class: rv_timer_reg_timer_v_lower0
-class rv_timer_reg_timer_v_lower0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_timer_v_lower0)
-
-  function new(string       name = "rv_timer_reg_timer_v_lower0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_timer_v_lower0
-
-// Class: rv_timer_reg_timer_v_upper0
-class rv_timer_reg_timer_v_upper0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_timer_v_upper0)
-
-  function new(string       name = "rv_timer_reg_timer_v_upper0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_timer_v_upper0
-
-// Class: rv_timer_reg_compare_lower0_0
-class rv_timer_reg_compare_lower0_0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_compare_lower0_0)
-
-  function new(string       name = "rv_timer_reg_compare_lower0_0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(4294967295),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_compare_lower0_0
-
-// Class: rv_timer_reg_compare_upper0_0
-class rv_timer_reg_compare_upper0_0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_compare_upper0_0)
-
-  function new(string       name = "rv_timer_reg_compare_upper0_0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(4294967295),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_compare_upper0_0
-
-// Class: rv_timer_reg_intr_enable0
-class rv_timer_reg_intr_enable0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field ie0;
-
-  `uvm_object_utils(rv_timer_reg_intr_enable0)
-
-  function new(string       name = "rv_timer_reg_intr_enable0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    ie0 = dv_base_reg_field::type_id::create("ie0");
-    ie0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_intr_enable0
-
-// Class: rv_timer_reg_intr_state0
-class rv_timer_reg_intr_state0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field is0;
-
-  `uvm_object_utils(rv_timer_reg_intr_state0)
-
-  function new(string       name = "rv_timer_reg_intr_state0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    is0 = dv_base_reg_field::type_id::create("is0");
-    is0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_intr_state0
-
-// Class: rv_timer_reg_intr_test0
-class rv_timer_reg_intr_test0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field t0;
-
-  `uvm_object_utils(rv_timer_reg_intr_test0)
-
-  function new(string       name = "rv_timer_reg_intr_test0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    t0 = dv_base_reg_field::type_id::create("t0");
-    t0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_intr_test0
-
-// Class: rv_timer_reg_block
-class rv_timer_reg_block extends dv_base_reg_block;
-  // registers
-  rand rv_timer_reg_ctrl ctrl;
-  rand rv_timer_reg_cfg0 cfg0;
-  rand rv_timer_reg_timer_v_lower0 timer_v_lower0;
-  rand rv_timer_reg_timer_v_upper0 timer_v_upper0;
-  rand rv_timer_reg_compare_lower0_0 compare_lower0_0;
-  rand rv_timer_reg_compare_upper0_0 compare_upper0_0;
-  rand rv_timer_reg_intr_enable0 intr_enable0;
-  rand rv_timer_reg_intr_state0 intr_state0;
-  rand rv_timer_reg_intr_test0 intr_test0;
-
-  `uvm_object_utils(rv_timer_reg_block)
-
-  function new(string name = "rv_timer_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    ctrl = rv_timer_reg_ctrl::type_id::create("ctrl");
-    ctrl.configure(.blk_parent(this));
-    ctrl.build();
-    default_map.add_reg(.rg(ctrl),
-                        .offset(32'h0),
-                        .rights("RW"));
-    cfg0 = rv_timer_reg_cfg0::type_id::create("cfg0");
-    cfg0.configure(.blk_parent(this));
-    cfg0.build();
-    default_map.add_reg(.rg(cfg0),
-                        .offset(32'h100),
-                        .rights("RW"));
-    timer_v_lower0 = rv_timer_reg_timer_v_lower0::type_id::create("timer_v_lower0");
-    timer_v_lower0.configure(.blk_parent(this));
-    timer_v_lower0.build();
-    default_map.add_reg(.rg(timer_v_lower0),
-                        .offset(32'h104),
-                        .rights("RW"));
-    timer_v_upper0 = rv_timer_reg_timer_v_upper0::type_id::create("timer_v_upper0");
-    timer_v_upper0.configure(.blk_parent(this));
-    timer_v_upper0.build();
-    default_map.add_reg(.rg(timer_v_upper0),
-                        .offset(32'h108),
-                        .rights("RW"));
-    compare_lower0_0 = rv_timer_reg_compare_lower0_0::type_id::create("compare_lower0_0");
-    compare_lower0_0.configure(.blk_parent(this));
-    compare_lower0_0.build();
-    default_map.add_reg(.rg(compare_lower0_0),
-                        .offset(32'h10c),
-                        .rights("RW"));
-    compare_upper0_0 = rv_timer_reg_compare_upper0_0::type_id::create("compare_upper0_0");
-    compare_upper0_0.configure(.blk_parent(this));
-    compare_upper0_0.build();
-    default_map.add_reg(.rg(compare_upper0_0),
-                        .offset(32'h110),
-                        .rights("RW"));
-    intr_enable0 = rv_timer_reg_intr_enable0::type_id::create("intr_enable0");
-    intr_enable0.configure(.blk_parent(this));
-    intr_enable0.build();
-    default_map.add_reg(.rg(intr_enable0),
-                        .offset(32'h114),
-                        .rights("RW"));
-    intr_state0 = rv_timer_reg_intr_state0::type_id::create("intr_state0");
-    intr_state0.configure(.blk_parent(this));
-    intr_state0.build();
-    default_map.add_reg(.rg(intr_state0),
-                        .offset(32'h118),
-                        .rights("RW"));
-    intr_test0 = rv_timer_reg_intr_test0::type_id::create("intr_test0");
-    intr_test0.configure(.blk_parent(this));
-    intr_test0.build();
-    default_map.add_reg(.rg(intr_test0),
-                        .offset(32'h11c),
-                        .rights("WO"));
-  endfunction : build
-
-endclass : rv_timer_reg_block
 
 // Block: rv_plic
 // Class: rv_plic_reg_ip0
@@ -9985,12 +10157,12 @@ endclass : chip_mem_eflash
 // Class: chip_reg_block
 class chip_reg_block extends dv_base_reg_block;
   // sub blocks
-  rand hmac_reg_block hmac;
-  rand gpio_reg_block gpio;
-  rand flash_ctrl_reg_block flash_ctrl;
-  rand uart_reg_block uart;
   rand spi_device_reg_block spi_device;
+  rand flash_ctrl_reg_block flash_ctrl;
   rand rv_timer_reg_block rv_timer;
+  rand gpio_reg_block gpio;
+  rand hmac_reg_block hmac;
+  rand uart_reg_block uart;
   rand rv_plic_reg_block rv_plic;
   // memories
   rand chip_mem_rom rom;
@@ -10012,36 +10184,36 @@ class chip_reg_block extends dv_base_reg_block;
                                   .endian(UVM_LITTLE_ENDIAN));
 
     // create sub blocks and add their maps
-    hmac = hmac_reg_block::type_id::create("hmac");
-    hmac.configure(.parent(this));
-    hmac.build(.base_addr(base_addr + 32'h40120000));
-    default_map.add_submap(.child_map(hmac.default_map),
-                           .offset(base_addr + 32'h40120000));
-    gpio = gpio_reg_block::type_id::create("gpio");
-    gpio.configure(.parent(this));
-    gpio.build(.base_addr(base_addr + 32'h40010000));
-    default_map.add_submap(.child_map(gpio.default_map),
-                           .offset(base_addr + 32'h40010000));
-    flash_ctrl = flash_ctrl_reg_block::type_id::create("flash_ctrl");
-    flash_ctrl.configure(.parent(this));
-    flash_ctrl.build(.base_addr(base_addr + 32'h40030000));
-    default_map.add_submap(.child_map(flash_ctrl.default_map),
-                           .offset(base_addr + 32'h40030000));
-    uart = uart_reg_block::type_id::create("uart");
-    uart.configure(.parent(this));
-    uart.build(.base_addr(base_addr + 32'h40000000));
-    default_map.add_submap(.child_map(uart.default_map),
-                           .offset(base_addr + 32'h40000000));
     spi_device = spi_device_reg_block::type_id::create("spi_device");
     spi_device.configure(.parent(this));
     spi_device.build(.base_addr(base_addr + 32'h40020000));
     default_map.add_submap(.child_map(spi_device.default_map),
                            .offset(base_addr + 32'h40020000));
+    flash_ctrl = flash_ctrl_reg_block::type_id::create("flash_ctrl");
+    flash_ctrl.configure(.parent(this));
+    flash_ctrl.build(.base_addr(base_addr + 32'h40030000));
+    default_map.add_submap(.child_map(flash_ctrl.default_map),
+                           .offset(base_addr + 32'h40030000));
     rv_timer = rv_timer_reg_block::type_id::create("rv_timer");
     rv_timer.configure(.parent(this));
     rv_timer.build(.base_addr(base_addr + 32'h40080000));
     default_map.add_submap(.child_map(rv_timer.default_map),
                            .offset(base_addr + 32'h40080000));
+    gpio = gpio_reg_block::type_id::create("gpio");
+    gpio.configure(.parent(this));
+    gpio.build(.base_addr(base_addr + 32'h40010000));
+    default_map.add_submap(.child_map(gpio.default_map),
+                           .offset(base_addr + 32'h40010000));
+    hmac = hmac_reg_block::type_id::create("hmac");
+    hmac.configure(.parent(this));
+    hmac.build(.base_addr(base_addr + 32'h40120000));
+    default_map.add_submap(.child_map(hmac.default_map),
+                           .offset(base_addr + 32'h40120000));
+    uart = uart_reg_block::type_id::create("uart");
+    uart.configure(.parent(this));
+    uart.build(.base_addr(base_addr + 32'h40000000));
+    default_map.add_submap(.child_map(uart.default_map),
+                           .offset(base_addr + 32'h40000000));
     rv_plic = rv_plic_reg_block::type_id::create("rv_plic");
     rv_plic.configure(.parent(this));
     rv_plic.build(.base_addr(base_addr + 32'h40090000));
