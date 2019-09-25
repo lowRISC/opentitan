@@ -14,7 +14,7 @@
 
 # sources and targets
 SW_NAME       ?= $(notdir $(SW_DIR))
-SW_SRCS       := $(CRT_SRCS) $(SW_SRCS)
+SW_SRCS       += $(CRT_SRCS)
 SW_OBJS       += $(addprefix $(SW_BUILD_DIR)/, $(addsuffix .o, $(basename $(notdir $(SW_SRCS)))))
 SW_PPOS       += $(SW_OBJS:.o=.ppo)
 SW_DEPS       ?= lib
