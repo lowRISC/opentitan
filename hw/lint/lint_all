@@ -7,6 +7,7 @@
 # list all blocks
 #-------------------------------------------------------------------------
 declare -a blocks=(
+  "alert_handler"
   "gpio"
   "rv_core_ibex"
   "rv_dm"
