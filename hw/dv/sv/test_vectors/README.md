@@ -1,4 +1,4 @@
-### nist_vectors_pkg.sv
+### test_vectors_pkg.sv
 This class read a list of vector files and parse the useful information to
 uvm_sequences.
 The following is a list of common properties and methods:
@@ -13,10 +13,8 @@ The following is a list of common properties and methods:
   test_vectors_t.
 
 ### SHA256 vectors
-The SHA256LongMsg.rsp and SHA256ShortMsg.rsp are test vector files downloaded from the NIST
-website:
-'''https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs'''
+The SHA256LongMsg.rsp and SHA256ShortMsg.rsp are test vector files downloaded from the
+[NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
 
 ### HMAC_RFC4868.rsp
-The HMAC_RFC4868.rsp contains test vectors extracted from IETF RFC 4868:
-'''https://tools.ietf.org/html/rfc4868'''
+The HMAC_RFC4868.rsp contains test vectors extracted from [IETF RFC 4868](https://tools.ietf.org/html/rfc4868)
