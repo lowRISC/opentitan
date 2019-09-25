@@ -24,11 +24,13 @@ By default, the system will first execute out of ROM and then jump to flash.
 A program needs to be built for each until ROM functionality for code download is ready.
 
 For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
+In the instrcutions below, `SW_DIR` is a requirement argument, while `SW_BUILD_DIR` is not a required argument.
+If `SW_BUILD_DIR` argument is not supplied, the default location of the of output files are in `SW_DIR`
 
 ```console
 $ cd $REPO_TOP
-$ make SIM=1 -C sw/boot_rom distclean all
-$ make SIM=1 -C sw/examples/hello_world distclean all
+$ make -C sw SIM=1 SW_DIR=sw/boot_rom SW_BUILD_DIR=${ROM_BUILD_DIR} clean all
+$ make -C sw SIM=1 SW_DIR=sw/examples/hello_world SW_BUILD_DIR=${SW_BUILD_DIR} clean all
 ```
 
 Now the simulation can be run.
@@ -37,8 +39,8 @@ The program listed after `--rominit` and `--flashinit` are loaded into the syste
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=sw/boot_rom/boot_rom.vmem \
-  --flashinit=sw/examples/hello_world/hello_world.vmem
+  --rominit=${ROM_BUILD_DIR}/rom.vmem \
+  --flashinit=${SW_BUILD_DIR}/sw.vmem
 ```
 
 To stop the simulation press CTRL-c.
