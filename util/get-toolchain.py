@@ -119,7 +119,7 @@ def main():
             "(default: %(default)s)")
     args = parser.parse_args()
 
-    target_dir = Path(args.target_dir)
+    target_dir = args.target_dir
     toolchain_version = args.release_version
 
     if not args.update and os.path.exists(args.target_dir):
@@ -129,7 +129,7 @@ def main():
     release_info = get_release_info(toolchain_version)
 
     if args.update and os.path.exists(args.target_dir):
-        buildinfo_file = target_dir / BUILDINFO_FILENAME
+        buildinfo_file = str(Path(target_dir) / BUILDINFO_FILENAME)
         if not os.path.exists(buildinfo_file):
             sys.exit('Unable to find buildinfo file at %s. Delete target '
                 'directory and try again.' % buildinfo_file)
