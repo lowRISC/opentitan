@@ -425,6 +425,28 @@ module flash_ctrl (
   assign init_busy = flash_i.init_busy;
 
   // Interrupts
+  // Generate edge triggered signals for sources that are level
+  logic [3:0] intr_src;
+  logic [3:0] intr_src_q;
+  logic [3:0] intr_assert;
+
+  assign intr_src = { ~prog_fifo_rvalid,
+                      reg2hw.fifo_lvl.prog.q == prog_fifo_depth,
+                      ~rd_fifo_wready,
+                      reg2hw.fifo_lvl.rd.q == rd_fifo_depth
+                    };
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intr_src_q <= 'h0;
+    end else begin
+      intr_src_q <= intr_src;
+    end
+  end
+
+  assign intr_assert = ~intr_src_q & intr_src;
+
+
   assign intr_prog_empty_o = reg2hw.intr_enable.prog_empty.q & reg2hw.intr_state.prog_empty.q;
   assign intr_prog_lvl_o = reg2hw.intr_enable.prog_lvl.q & reg2hw.intr_state.prog_lvl.q;
   assign intr_rd_full_o = reg2hw.intr_enable.rd_full.q & reg2hw.intr_state.rd_full.q;
@@ -433,22 +455,22 @@ module flash_ctrl (
   assign intr_op_error_o = reg2hw.intr_enable.op_error.q & reg2hw.intr_state.op_error.q;
 
   assign hw2reg.intr_state.prog_empty.d  = 1'b1;
-  assign hw2reg.intr_state.prog_empty.de = ~prog_fifo_rvalid  |
+  assign hw2reg.intr_state.prog_empty.de = intr_assert[3]  |
                                            (reg2hw.intr_test.prog_empty.qe  &
                                            reg2hw.intr_test.prog_empty.q);
 
   assign hw2reg.intr_state.prog_lvl.d  = 1'b1;
-  assign hw2reg.intr_state.prog_lvl.de = (reg2hw.fifo_lvl.prog.q == prog_fifo_depth)  |
+  assign hw2reg.intr_state.prog_lvl.de = intr_assert[2]  |
                                          (reg2hw.intr_test.prog_lvl.qe  &
                                          reg2hw.intr_test.prog_lvl.q);
 
   assign hw2reg.intr_state.rd_full.d  = 1'b1;
-  assign hw2reg.intr_state.rd_full.de = ~rd_fifo_wready |
+  assign hw2reg.intr_state.rd_full.de = intr_assert[1] |
                                         (reg2hw.intr_test.rd_full.qe  &
                                         reg2hw.intr_test.rd_full.q);
 
   assign hw2reg.intr_state.rd_lvl.d  = 1'b1;
-  assign hw2reg.intr_state.rd_lvl.de = (reg2hw.fifo_lvl.rd.q == rd_fifo_depth)  |
+  assign hw2reg.intr_state.rd_lvl.de =  intr_assert[0] |
                                        (reg2hw.intr_test.rd_lvl.qe  &
                                        reg2hw.intr_test.rd_lvl.q);
 

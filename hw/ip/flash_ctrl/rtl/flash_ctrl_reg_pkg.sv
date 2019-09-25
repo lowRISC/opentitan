@@ -7,7 +7,9 @@
 package flash_ctrl_reg_pkg;
 
   // Param list
+  localparam int REGION_CFG_REGWEN = 8;
   localparam int MP_REGION_CFG = 8;
+  localparam int BANK_CFG_REGWEN = 2;
   localparam int MP_BANK_CFG = 2;
 
 // Register to internal design logic
@@ -367,25 +369,27 @@ typedef struct packed {
   parameter FLASH_CTRL_INTR_TEST_OFFSET = 7'h 8;
   parameter FLASH_CTRL_CONTROL_OFFSET = 7'h c;
   parameter FLASH_CTRL_ADDR_OFFSET = 7'h 10;
-  parameter FLASH_CTRL_MP_REGION_CFG0_OFFSET = 7'h 14;
-  parameter FLASH_CTRL_MP_REGION_CFG1_OFFSET = 7'h 18;
-  parameter FLASH_CTRL_MP_REGION_CFG2_OFFSET = 7'h 1c;
-  parameter FLASH_CTRL_MP_REGION_CFG3_OFFSET = 7'h 20;
-  parameter FLASH_CTRL_MP_REGION_CFG4_OFFSET = 7'h 24;
-  parameter FLASH_CTRL_MP_REGION_CFG5_OFFSET = 7'h 28;
-  parameter FLASH_CTRL_MP_REGION_CFG6_OFFSET = 7'h 2c;
-  parameter FLASH_CTRL_MP_REGION_CFG7_OFFSET = 7'h 30;
-  parameter FLASH_CTRL_DEFAULT_REGION_OFFSET = 7'h 34;
-  parameter FLASH_CTRL_MP_BANK_CFG_OFFSET = 7'h 38;
-  parameter FLASH_CTRL_OP_STATUS_OFFSET = 7'h 3c;
-  parameter FLASH_CTRL_STATUS_OFFSET = 7'h 40;
-  parameter FLASH_CTRL_SCRATCH_OFFSET = 7'h 44;
-  parameter FLASH_CTRL_FIFO_LVL_OFFSET = 7'h 48;
+  parameter FLASH_CTRL_REGION_CFG_REGWEN_OFFSET = 7'h 14;
+  parameter FLASH_CTRL_MP_REGION_CFG0_OFFSET = 7'h 18;
+  parameter FLASH_CTRL_MP_REGION_CFG1_OFFSET = 7'h 1c;
+  parameter FLASH_CTRL_MP_REGION_CFG2_OFFSET = 7'h 20;
+  parameter FLASH_CTRL_MP_REGION_CFG3_OFFSET = 7'h 24;
+  parameter FLASH_CTRL_MP_REGION_CFG4_OFFSET = 7'h 28;
+  parameter FLASH_CTRL_MP_REGION_CFG5_OFFSET = 7'h 2c;
+  parameter FLASH_CTRL_MP_REGION_CFG6_OFFSET = 7'h 30;
+  parameter FLASH_CTRL_MP_REGION_CFG7_OFFSET = 7'h 34;
+  parameter FLASH_CTRL_DEFAULT_REGION_OFFSET = 7'h 38;
+  parameter FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 7'h 3c;
+  parameter FLASH_CTRL_MP_BANK_CFG_OFFSET = 7'h 40;
+  parameter FLASH_CTRL_OP_STATUS_OFFSET = 7'h 44;
+  parameter FLASH_CTRL_STATUS_OFFSET = 7'h 48;
+  parameter FLASH_CTRL_SCRATCH_OFFSET = 7'h 4c;
+  parameter FLASH_CTRL_FIFO_LVL_OFFSET = 7'h 50;
 
   // Window parameter
-  parameter FLASH_CTRL_PROG_FIFO_OFFSET = 7'h 4c;
+  parameter FLASH_CTRL_PROG_FIFO_OFFSET = 7'h 54;
   parameter FLASH_CTRL_PROG_FIFO_SIZE   = 7'h 4;
-  parameter FLASH_CTRL_RD_FIFO_OFFSET = 7'h 50;
+  parameter FLASH_CTRL_RD_FIFO_OFFSET = 7'h 58;
   parameter FLASH_CTRL_RD_FIFO_SIZE   = 7'h 4;
 
   // Register Index
@@ -395,6 +399,7 @@ typedef struct packed {
     FLASH_CTRL_INTR_TEST,
     FLASH_CTRL_CONTROL,
     FLASH_CTRL_ADDR,
+    FLASH_CTRL_REGION_CFG_REGWEN,
     FLASH_CTRL_MP_REGION_CFG0,
     FLASH_CTRL_MP_REGION_CFG1,
     FLASH_CTRL_MP_REGION_CFG2,
@@ -404,6 +409,7 @@ typedef struct packed {
     FLASH_CTRL_MP_REGION_CFG6,
     FLASH_CTRL_MP_REGION_CFG7,
     FLASH_CTRL_DEFAULT_REGION,
+    FLASH_CTRL_BANK_CFG_REGWEN,
     FLASH_CTRL_MP_BANK_CFG,
     FLASH_CTRL_OP_STATUS,
     FLASH_CTRL_STATUS,
@@ -412,26 +418,28 @@ typedef struct packed {
   } flash_ctrl_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] FLASH_CTRL_PERMIT [19] = '{
+  localparam logic [3:0] FLASH_CTRL_PERMIT [21] = '{
     4'b 0001, // index[ 0] FLASH_CTRL_INTR_STATE
     4'b 0001, // index[ 1] FLASH_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] FLASH_CTRL_INTR_TEST
     4'b 1111, // index[ 3] FLASH_CTRL_CONTROL
     4'b 1111, // index[ 4] FLASH_CTRL_ADDR
-    4'b 1111, // index[ 5] FLASH_CTRL_MP_REGION_CFG0
-    4'b 1111, // index[ 6] FLASH_CTRL_MP_REGION_CFG1
-    4'b 1111, // index[ 7] FLASH_CTRL_MP_REGION_CFG2
-    4'b 1111, // index[ 8] FLASH_CTRL_MP_REGION_CFG3
-    4'b 1111, // index[ 9] FLASH_CTRL_MP_REGION_CFG4
-    4'b 1111, // index[10] FLASH_CTRL_MP_REGION_CFG5
-    4'b 1111, // index[11] FLASH_CTRL_MP_REGION_CFG6
-    4'b 1111, // index[12] FLASH_CTRL_MP_REGION_CFG7
-    4'b 0001, // index[13] FLASH_CTRL_DEFAULT_REGION
-    4'b 0001, // index[14] FLASH_CTRL_MP_BANK_CFG
-    4'b 0001, // index[15] FLASH_CTRL_OP_STATUS
-    4'b 1111, // index[16] FLASH_CTRL_STATUS
-    4'b 1111, // index[17] FLASH_CTRL_SCRATCH
-    4'b 0011  // index[18] FLASH_CTRL_FIFO_LVL
+    4'b 0001, // index[ 5] FLASH_CTRL_REGION_CFG_REGWEN
+    4'b 1111, // index[ 6] FLASH_CTRL_MP_REGION_CFG0
+    4'b 1111, // index[ 7] FLASH_CTRL_MP_REGION_CFG1
+    4'b 1111, // index[ 8] FLASH_CTRL_MP_REGION_CFG2
+    4'b 1111, // index[ 9] FLASH_CTRL_MP_REGION_CFG3
+    4'b 1111, // index[10] FLASH_CTRL_MP_REGION_CFG4
+    4'b 1111, // index[11] FLASH_CTRL_MP_REGION_CFG5
+    4'b 1111, // index[12] FLASH_CTRL_MP_REGION_CFG6
+    4'b 1111, // index[13] FLASH_CTRL_MP_REGION_CFG7
+    4'b 0001, // index[14] FLASH_CTRL_DEFAULT_REGION
+    4'b 0001, // index[15] FLASH_CTRL_BANK_CFG_REGWEN
+    4'b 0001, // index[16] FLASH_CTRL_MP_BANK_CFG
+    4'b 0001, // index[17] FLASH_CTRL_OP_STATUS
+    4'b 1111, // index[18] FLASH_CTRL_STATUS
+    4'b 1111, // index[19] FLASH_CTRL_SCRATCH
+    4'b 0011  // index[20] FLASH_CTRL_FIFO_LVL
   };
 endpackage
 

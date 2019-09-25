@@ -11,6 +11,7 @@ typedef class flash_ctrl_reg_intr_enable;
 typedef class flash_ctrl_reg_intr_test;
 typedef class flash_ctrl_reg_control;
 typedef class flash_ctrl_reg_addr;
+typedef class flash_ctrl_reg_region_cfg_regwen;
 typedef class flash_ctrl_reg_mp_region_cfg0;
 typedef class flash_ctrl_reg_mp_region_cfg1;
 typedef class flash_ctrl_reg_mp_region_cfg2;
@@ -20,6 +21,7 @@ typedef class flash_ctrl_reg_mp_region_cfg5;
 typedef class flash_ctrl_reg_mp_region_cfg6;
 typedef class flash_ctrl_reg_mp_region_cfg7;
 typedef class flash_ctrl_reg_default_region;
+typedef class flash_ctrl_reg_bank_cfg_regwen;
 typedef class flash_ctrl_reg_mp_bank_cfg;
 typedef class flash_ctrl_reg_op_status;
 typedef class flash_ctrl_reg_status;
@@ -407,6 +409,120 @@ class flash_ctrl_reg_addr extends dv_base_reg;
   endfunction : build
 
 endclass : flash_ctrl_reg_addr
+
+// Class: flash_ctrl_reg_region_cfg_regwen
+class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field region0;
+  rand dv_base_reg_field region1;
+  rand dv_base_reg_field region2;
+  rand dv_base_reg_field region3;
+  rand dv_base_reg_field region4;
+  rand dv_base_reg_field region5;
+  rand dv_base_reg_field region6;
+  rand dv_base_reg_field region7;
+
+  `uvm_object_utils(flash_ctrl_reg_region_cfg_regwen)
+
+  function new(string       name = "flash_ctrl_reg_region_cfg_regwen",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    region0 = dv_base_reg_field::type_id::create("region0");
+    region0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region1 = dv_base_reg_field::type_id::create("region1");
+    region1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region2 = dv_base_reg_field::type_id::create("region2");
+    region2.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region3 = dv_base_reg_field::type_id::create("region3");
+    region3.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region4 = dv_base_reg_field::type_id::create("region4");
+    region4.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region5 = dv_base_reg_field::type_id::create("region5");
+    region5.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region6 = dv_base_reg_field::type_id::create("region6");
+    region6.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    region7 = dv_base_reg_field::type_id::create("region7");
+    region7.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_region_cfg_regwen
 
 // Class: flash_ctrl_reg_mp_region_cfg0
 class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
@@ -1182,6 +1298,48 @@ class flash_ctrl_reg_default_region extends dv_base_reg;
 
 endclass : flash_ctrl_reg_default_region
 
+// Class: flash_ctrl_reg_bank_cfg_regwen
+class flash_ctrl_reg_bank_cfg_regwen extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field bank0;
+  rand dv_base_reg_field bank1;
+
+  `uvm_object_utils(flash_ctrl_reg_bank_cfg_regwen)
+
+  function new(string       name = "flash_ctrl_reg_bank_cfg_regwen",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    bank0 = dv_base_reg_field::type_id::create("bank0");
+    bank0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    bank1 = dv_base_reg_field::type_id::create("bank1");
+    bank1.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W0C"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : flash_ctrl_reg_bank_cfg_regwen
+
 // Class: flash_ctrl_reg_mp_bank_cfg
 class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
   // fields
@@ -1478,6 +1636,7 @@ class flash_ctrl_reg_block extends dv_base_reg_block;
   rand flash_ctrl_reg_intr_test intr_test;
   rand flash_ctrl_reg_control control;
   rand flash_ctrl_reg_addr addr;
+  rand flash_ctrl_reg_region_cfg_regwen region_cfg_regwen;
   rand flash_ctrl_reg_mp_region_cfg0 mp_region_cfg0;
   rand flash_ctrl_reg_mp_region_cfg1 mp_region_cfg1;
   rand flash_ctrl_reg_mp_region_cfg2 mp_region_cfg2;
@@ -1487,6 +1646,7 @@ class flash_ctrl_reg_block extends dv_base_reg_block;
   rand flash_ctrl_reg_mp_region_cfg6 mp_region_cfg6;
   rand flash_ctrl_reg_mp_region_cfg7 mp_region_cfg7;
   rand flash_ctrl_reg_default_region default_region;
+  rand flash_ctrl_reg_bank_cfg_regwen bank_cfg_regwen;
   rand flash_ctrl_reg_mp_bank_cfg mp_bank_cfg;
   rand flash_ctrl_reg_op_status op_status;
   rand flash_ctrl_reg_status status;
@@ -1541,101 +1701,113 @@ class flash_ctrl_reg_block extends dv_base_reg_block;
     default_map.add_reg(.rg(addr),
                         .offset(32'h10),
                         .rights("RW"));
+    region_cfg_regwen = flash_ctrl_reg_region_cfg_regwen::type_id::create("region_cfg_regwen");
+    region_cfg_regwen.configure(.blk_parent(this));
+    region_cfg_regwen.build();
+    default_map.add_reg(.rg(region_cfg_regwen),
+                        .offset(32'h14),
+                        .rights("RW"));
     mp_region_cfg0 = flash_ctrl_reg_mp_region_cfg0::type_id::create("mp_region_cfg0");
     mp_region_cfg0.configure(.blk_parent(this));
     mp_region_cfg0.build();
     default_map.add_reg(.rg(mp_region_cfg0),
-                        .offset(32'h14),
+                        .offset(32'h18),
                         .rights("RW"));
     mp_region_cfg1 = flash_ctrl_reg_mp_region_cfg1::type_id::create("mp_region_cfg1");
     mp_region_cfg1.configure(.blk_parent(this));
     mp_region_cfg1.build();
     default_map.add_reg(.rg(mp_region_cfg1),
-                        .offset(32'h18),
+                        .offset(32'h1c),
                         .rights("RW"));
     mp_region_cfg2 = flash_ctrl_reg_mp_region_cfg2::type_id::create("mp_region_cfg2");
     mp_region_cfg2.configure(.blk_parent(this));
     mp_region_cfg2.build();
     default_map.add_reg(.rg(mp_region_cfg2),
-                        .offset(32'h1c),
+                        .offset(32'h20),
                         .rights("RW"));
     mp_region_cfg3 = flash_ctrl_reg_mp_region_cfg3::type_id::create("mp_region_cfg3");
     mp_region_cfg3.configure(.blk_parent(this));
     mp_region_cfg3.build();
     default_map.add_reg(.rg(mp_region_cfg3),
-                        .offset(32'h20),
+                        .offset(32'h24),
                         .rights("RW"));
     mp_region_cfg4 = flash_ctrl_reg_mp_region_cfg4::type_id::create("mp_region_cfg4");
     mp_region_cfg4.configure(.blk_parent(this));
     mp_region_cfg4.build();
     default_map.add_reg(.rg(mp_region_cfg4),
-                        .offset(32'h24),
+                        .offset(32'h28),
                         .rights("RW"));
     mp_region_cfg5 = flash_ctrl_reg_mp_region_cfg5::type_id::create("mp_region_cfg5");
     mp_region_cfg5.configure(.blk_parent(this));
     mp_region_cfg5.build();
     default_map.add_reg(.rg(mp_region_cfg5),
-                        .offset(32'h28),
+                        .offset(32'h2c),
                         .rights("RW"));
     mp_region_cfg6 = flash_ctrl_reg_mp_region_cfg6::type_id::create("mp_region_cfg6");
     mp_region_cfg6.configure(.blk_parent(this));
     mp_region_cfg6.build();
     default_map.add_reg(.rg(mp_region_cfg6),
-                        .offset(32'h2c),
+                        .offset(32'h30),
                         .rights("RW"));
     mp_region_cfg7 = flash_ctrl_reg_mp_region_cfg7::type_id::create("mp_region_cfg7");
     mp_region_cfg7.configure(.blk_parent(this));
     mp_region_cfg7.build();
     default_map.add_reg(.rg(mp_region_cfg7),
-                        .offset(32'h30),
+                        .offset(32'h34),
                         .rights("RW"));
     default_region = flash_ctrl_reg_default_region::type_id::create("default_region");
     default_region.configure(.blk_parent(this));
     default_region.build();
     default_map.add_reg(.rg(default_region),
-                        .offset(32'h34),
+                        .offset(32'h38),
+                        .rights("RW"));
+    bank_cfg_regwen = flash_ctrl_reg_bank_cfg_regwen::type_id::create("bank_cfg_regwen");
+    bank_cfg_regwen.configure(.blk_parent(this));
+    bank_cfg_regwen.build();
+    default_map.add_reg(.rg(bank_cfg_regwen),
+                        .offset(32'h3c),
                         .rights("RW"));
     mp_bank_cfg = flash_ctrl_reg_mp_bank_cfg::type_id::create("mp_bank_cfg");
     mp_bank_cfg.configure(.blk_parent(this));
     mp_bank_cfg.build();
     default_map.add_reg(.rg(mp_bank_cfg),
-                        .offset(32'h38),
+                        .offset(32'h40),
                         .rights("RW"));
     op_status = flash_ctrl_reg_op_status::type_id::create("op_status");
     op_status.configure(.blk_parent(this));
     op_status.build();
     default_map.add_reg(.rg(op_status),
-                        .offset(32'h3c),
+                        .offset(32'h44),
                         .rights("RW"));
     status = flash_ctrl_reg_status::type_id::create("status");
     status.configure(.blk_parent(this));
     status.build();
     default_map.add_reg(.rg(status),
-                        .offset(32'h40),
+                        .offset(32'h48),
                         .rights("RO"));
     scratch = flash_ctrl_reg_scratch::type_id::create("scratch");
     scratch.configure(.blk_parent(this));
     scratch.build();
     default_map.add_reg(.rg(scratch),
-                        .offset(32'h44),
+                        .offset(32'h4c),
                         .rights("RW"));
     fifo_lvl = flash_ctrl_reg_fifo_lvl::type_id::create("fifo_lvl");
     fifo_lvl.configure(.blk_parent(this));
     fifo_lvl.build();
     default_map.add_reg(.rg(fifo_lvl),
-                        .offset(32'h48),
+                        .offset(32'h50),
                         .rights("RW"));
 
     // create memories
     prog_fifo = flash_ctrl_mem_prog_fifo::type_id::create("prog_fifo");
     prog_fifo.configure(.parent(this));
     default_map.add_mem(.mem(prog_fifo),
-                        .offset(32'h4c),
+                        .offset(32'h54),
                         .rights("WO"));
     rd_fifo = flash_ctrl_mem_rd_fifo::type_id::create("rd_fifo");
     rd_fifo.configure(.parent(this));
     default_map.add_mem(.mem(rd_fifo),
-                        .offset(32'h50),
+                        .offset(32'h58),
                         .rights("RO"));
   endfunction : build
 
