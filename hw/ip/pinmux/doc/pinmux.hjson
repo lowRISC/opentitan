@@ -1,0 +1,90 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+{
+  name: "PINMUX",
+  clock_primary: "clk_fixed",
+  bus_device: "tlul",
+  regwidth: "32",
+  param_list: [
+    { name: "NPeriphIn",
+      desc: "Number of peripheral inputs",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NPeriphOut",
+      desc: "Number of peripheral outputs",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NMioPads",
+      desc: "Number of muxed IO pads",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+  ],
+  registers: [
+    { name: "REGEN",
+      desc: '''
+            Register write enable for all control registers.
+            ''',
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When true, all configuration registers can be modified.
+            When false, they become read-only. Defaults true, write one to clear.
+            '''
+            resval: 1,
+        },
+      ]
+    },
+# inputs
+    { multireg: { name:     "PERIPH_INSEL",
+                  desc:     "Mux select for peripheral inputs.",
+                  count:    "NPeriphOut",
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  regwen:   "REGEN",
+                  cname:    "IN",
+                  fields: [
+                    { bits: "2:0",
+                      name: "IN",
+                      desc: '''
+                      0: tie constantly to zero, 1: tie constantly to 1.
+                      >=2: MIO pads (i.e., add 2 to the native MIO pad index).
+                      '''
+                      default: 0
+                    }
+                  ]
+                }
+    },
+# outputs
+    { multireg: { name:     "MIO_OUTSEL",
+                  desc:     "Mux select for MIO outputs.",
+                  count:    "NMioPads",
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  regwen:   "REGEN",
+                  cname:    "OUT",
+                  fields: [
+                    { bits: "3:0",
+                      name: "OUT",
+                      desc: '''
+                      0: tie constantly to zero, 1: tie constantly to 1. 2: high-Z
+                      >=3: peripheral outputs (i.e., add 3 to the native peripheral pad index).
+                      '''
+                      default: 2
+                    }
+                  ]
+                }
+    },
+  ],
+}
+
+
