@@ -22,6 +22,9 @@ COMPILE_KEY     ?= default
 UVM_TEST        ?= i2c_base_test
 UVM_TEST_SEQ    ?= i2c_base_vseq
 
+# enable waveform-gen
+export WAVES    := 1
+
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
