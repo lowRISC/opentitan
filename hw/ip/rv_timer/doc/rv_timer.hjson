@@ -15,13 +15,25 @@
       desc: "raised if the timer 0_0 expired (mtimecmp >= mtime)"
     },
   ],
+  param_list: [
+    { name: "N_HARTS",
+      desc: "Number of harts",
+      type: "int",
+      default: "1"
+    },
+    { name: "N_TIMERS",
+      desc: "Number of timers per Hart",
+      type: "int",
+      default: "1"
+    }
+  ],
   no_auto_intr_regs: "true",
   regwidth: "32",
   registers: [
     { multireg: {
         name: "CTRL",
         desc: "Control register",
-        count: 1,
+        count: "N_HARTS",
         cname: "TIMER",
         swaccess: "rw",
         hwaccess: "hro",
@@ -75,7 +87,7 @@
     { multireg: {
         name: "INTR_ENABLE0",
         desc: "Interrupt Enable",
-        count: 1,
+        count: "N_TIMERS",
         cname: "TIMER",
         swaccess: "rw",
         hwaccess: "hro",
@@ -87,7 +99,7 @@
     { multireg: {
         name: "INTR_STATE0",
         desc: "Interrupt Status",
-        count: 1,
+        count: "N_TIMERS",
         cname: "TIMER",
         swaccess: "rw1c",
         hwaccess: "hrw",
@@ -99,7 +111,7 @@
     { multireg: {
         name: "INTR_TEST0",
         desc: "Interrupt test register",
-        count: 1,
+        count: "N_TIMERS",
         cname: "TIMER",
         swaccess: "wo",
         hwaccess: "hro",

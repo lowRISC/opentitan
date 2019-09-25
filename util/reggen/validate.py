@@ -27,6 +27,18 @@ def checking_dict(pairs):
     return d
 
 
+def check_count(params, x, err_prefix):
+    '''Checking mreg count if it is in param list
+    '''
+    name_list = [z["name"] for z in params]
+    try:
+        index = name_list.index(x)
+        return check_int(params[index]["default"], err_prefix + " default")
+    except ValueError:
+        # cannot find entry in the param list
+        return check_int(x, err_prefix)
+
+
 # validating version of int(x, 0)
 # returns int value, error flag
 # if error flag is True value will be zero
@@ -92,6 +104,31 @@ def check_ln(obj, x, withwidth, err_prefix):
     return error
 
 
+def check_lp(obj, x, err_prefix):
+    error = 0
+    if not isinstance(obj[x], list):
+        log.error(err_prefix + ' element ' + x + ' not a list')
+        return 1
+
+    for y in obj[x]:
+        error += check_keys(y, lp_required, lp_optional, {},
+                            err_prefix + ' element ' + x)
+        # TODO: Check if PascalCase or ALL_CAPS
+        if not "type" in y:
+            y["type"] = "int"
+        if not "default" in y:
+            if y["type"][:3] == "int":
+                y["default"] = "1"
+            elif y["type"] == "string":
+                y["default"] = ""
+            else:
+                log.err(err_prefix + ' element ' + x + '["' + y["name"] +
+                        '"]' + ' type is not supported')
+                return error + 1
+
+    return error
+
+
 def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
     error = 0
     for x in required_keys:
@@ -108,6 +145,9 @@ def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
             log.warning(err_prefix + " contains extra key " + x)
         if type[:2] == 'ln':
             error += check_ln(obj, x, type == 'lnw', err_prefix)
+        if type == 'lp':
+            error += check_lp(obj, x, err_prefix)
+
     return error
 
 
@@ -179,6 +219,7 @@ val_types = {
            'one or more groups that have just name and dscr keys.'\
            ' e.g. `{ name: "name", desc: "description"}`'],
     'lnw': ["name list+", 'name list that optionally contains a width'],
+    'lp': ["parameter list", 'parameter list having default value optionally'],
     'g': ["group", "comma separated group of key:value enclosed in `{}`"],
     's': ["string", "string, typically short"],
     't': ["text", "string, may be multi-line enclosed in `'''` "\
@@ -212,6 +253,7 @@ top_optional = {
                           "Defaults to false if not present."],
     'alert_list': ['ln', "list of peripheral alerts"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
+    'param_list': ['lp', "list of parameters of the IP"],
     'SPDX-License-Identifier': ['s', "License ientifier (if using pure json) "\
                                 "Only use this if unable to put this "\
                                 "information in a comment at the top of the "\
@@ -233,6 +275,16 @@ ln_required = {
 }
 ln_optional = {
     'width': ['d', "bit width of the item (if not 1)"],
+}
+
+# lp type
+lp_required = {
+    'name': ['s', "name of the item"],
+}
+lp_optional = {
+    'desc': ['s', "description of the item"],
+    'type': ['s', "item type. int by default"],
+    'default': ['s', "item default value"],
 }
 
 # Registers list may have embedded keys
@@ -329,7 +381,9 @@ window_added = {'genbyte-write': ['pb', "generated boolean for byte-write "],
 # Multireg keys
 multireg_required = {'name':   ['s', "base name of the registers"],
                      'desc':   ['t', "description of the registers"],
-                     'count':  ['d', "number of instances to generate"],
+                     'count':  ['s', "number of instances to generate."\
+                                " This field can be integer or string matching"\
+                                " from param_list"],
                      'cname':  ['s', "base name for each instance, mostly "\
                                 "useful for refering to instance in messages"],
                      'fields': ['l', "list of register field description"\
@@ -773,8 +827,7 @@ def validate_register(reg, offset, width, top):
     reg['genoffset'] = offset
     reg['gendvrights'] = parse_dvrights(default_sw)
 
-    if ((reg['regwen'] != '') and
-        (not reg['regwen'] in top['genwennames'])):
+    if ((reg['regwen'] != '') and (not reg['regwen'] in top['genwennames'])):
         top['genwennames'].append(reg['regwen'])
 
     log.info(rname + "@" + hex(offset) + " " + str(error) + " errors. Mask " +
@@ -809,7 +862,10 @@ def validate_multi(mreg, offset, addrsep, width, top):
 
     error += gen[0]
 
-    mcount, ierr = check_int(mreg['count'], mrname + " multireg count")
+    # Check `count` field if it is in paramter list
+    mcount, ierr = check_count(
+        top['param_list'] if "param_list" in top else [], mreg['count'],
+        mrname + " multireg count")
     if ierr:
         error += 1
 
@@ -1119,8 +1175,8 @@ def validate(regs):
     # auto header generation would go here and update autoregs
 
     if 'no_auto_intr_regs' in regs:
-        no_autoi, err = check_bool(
-            regs['no_auto_intr_regs'], 'no_auto_intr_regs')
+        no_autoi, err = check_bool(regs['no_auto_intr_regs'],
+                                   'no_auto_intr_regs')
         if err:
             error += 1
     else:

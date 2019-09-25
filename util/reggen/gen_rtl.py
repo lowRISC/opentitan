@@ -89,6 +89,7 @@ class Block():
     regs = []
     wins = []
     blocks = []
+    params = []
 
     def __init__(self):
         self.width = 32
@@ -98,6 +99,7 @@ class Block():
         self.regs = []
         self.wins = []
         self.blocks = []
+        self.params = []
 
 
 def escape_name(name):
@@ -207,6 +209,8 @@ def json_to_reg(obj):
         )
 
     log.info("Data Width is set to %d bits", block.width)
+
+    block.params = obj["param_list"] if "param_list" in obj else []
 
     for r in obj["registers"]:
         # Check if any exception condition hit

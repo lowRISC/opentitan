@@ -6,6 +6,10 @@
 
 package rv_timer_reg_pkg;
 
+  // Param list
+  localparam int N_HARTS = 1;
+  localparam int N_TIMERS = 1;
+
 // Register to internal design logic
 typedef struct packed {
 

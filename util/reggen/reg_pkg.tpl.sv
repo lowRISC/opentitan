@@ -9,6 +9,13 @@
   max_regs_char = len("{}".format(num_regs-1))
 %>\
 package ${block.name}_reg_pkg;
+% if len(block.params) != 0:
+
+  // Param list
+% endif
+% for param in block.params:
+  localparam ${param["type"]} ${param["name"]} = ${param["default"]};
+% endfor
 
 // Register to internal design logic
 typedef struct packed {
