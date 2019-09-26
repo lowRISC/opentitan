@@ -6,6 +6,13 @@
 
 package alert_handler_reg_pkg;
 
+  // Param list
+  localparam int ALERT_EN = 4;
+  localparam int ALERT_CLASS = 4;
+  localparam int ALERT_CAUSE = 4;
+  localparam int LOC_ALERT_EN = 4;
+  localparam int LOC_ALERT_CLASS = 4;
+
 // Register to internal design logic
 typedef struct packed {
 

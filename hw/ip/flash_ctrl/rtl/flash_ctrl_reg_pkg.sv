@@ -6,6 +6,10 @@
 
 package flash_ctrl_reg_pkg;
 
+  // Param list
+  localparam int MP_REGION_CFG = 8;
+  localparam int MP_BANK_CFG = 2;
+
 // Register to internal design logic
 typedef struct packed {
 

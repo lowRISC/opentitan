@@ -27,16 +27,38 @@ def checking_dict(pairs):
     return d
 
 
-def check_count(params, x, err_prefix):
+def check_count(top, mreg, err_prefix):
     '''Checking mreg count if it is in param list
     '''
-    name_list = [z["name"] for z in params]
+    if not "param_list" in top:
+        top["param_list"] = []
+        name_list = []
+    else:
+        name_list = [z["name"] for z in top["param_list"]]
+
     try:
-        index = name_list.index(x)
-        return check_int(params[index]["default"], err_prefix + " default")
+        index = name_list.index(mreg["count"])
+        return check_int(top["param_list"][index]["default"],
+                         err_prefix + " default")
     except ValueError:
         # cannot find entry in the param list
-        return check_int(x, err_prefix)
+        log.warning(err_prefix + " is integer. " +
+                    "It is recommended to use Parameter.")
+        mcount, ierr = check_int(mreg["count"], err_prefix)
+        if ierr != 0:
+            return mcount, ierr
+
+        top["param_list"].append({
+            "name": mreg["name"],
+            "type": "int",
+            "default": mcount,
+            "desc": "auto added parameter"
+        })
+        log.info("Parameter {} is added".format(mreg["name"]))
+        # Replace count integer to parameter
+        mreg["count"] = mreg["name"]
+
+        return mcount, ierr
 
 
 # validating version of int(x, 0)
@@ -842,6 +864,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
 
     if not 'name' in mreg:
         mrname = "MultiRegister at +" + hex(offset)
+        mreg["name"] = "MREG_" + hex(offset)
     else:
         mrname = mreg['name']
     error = check_keys(mreg, multireg_required, multireg_optional,
@@ -863,9 +886,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
     error += gen[0]
 
     # Check `count` field if it is in paramter list
-    mcount, ierr = check_count(
-        top['param_list'] if "param_list" in top else [], mreg['count'],
-        mrname + " multireg count")
+    # If count is integer, add the value to param with name as REGISTER
+    mcount, ierr = check_count(top, mreg, mrname + " multireg count")
     if ierr:
         error += 1
 

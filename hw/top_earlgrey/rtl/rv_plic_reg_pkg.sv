@@ -6,6 +6,11 @@
 
 package rv_plic_reg_pkg;
 
+  // Param list
+  localparam int IP = 54;
+  localparam int LE = 54;
+  localparam int IE0 = 54;
+
 // Register to internal design logic
 typedef struct packed {
 
