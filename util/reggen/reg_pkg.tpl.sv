@@ -13,7 +13,7 @@ package ${block.name}_reg_pkg;
 
   // Param list
 % endif
-% for param in block.params:
+% for param in [p for p in block.params if p["local"] == "true"]:
   localparam ${param["type"]} ${param["name"]} = ${param["default"]};
 % endfor
 

@@ -12,7 +12,8 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
-from .gen_rtl import Block, Field, Register, Window, json_to_reg
+from .gen_rtl import json_to_reg
+from .data import *
 
 
 # function get block class name
@@ -57,8 +58,7 @@ def gen_ral(block, outdir):
     # Generate pkg.sv with block name
     with open(outdir + "/" + block.name + "_reg_block.sv", 'w') as fout:
         fout.write(
-            uvm_reg_tpl.render(
-                block=block,
-                HwAccess=HwAccess,
-                SwRdAccess=SwRdAccess,
-                SwWrAccess=SwWrAccess))
+            uvm_reg_tpl.render(block=block,
+                               HwAccess=HwAccess,
+                               SwRdAccess=SwRdAccess,
+                               SwWrAccess=SwWrAccess))

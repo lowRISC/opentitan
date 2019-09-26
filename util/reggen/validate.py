@@ -52,7 +52,8 @@ def check_count(top, mreg, err_prefix):
             "name": mreg["name"],
             "type": "int",
             "default": mcount,
-            "desc": "auto added parameter"
+            "desc": "auto added parameter",
+            "local": "true"
         })
         log.info("Parameter {} is added".format(mreg["name"]))
         # Replace count integer to parameter
@@ -138,7 +139,23 @@ def check_lp(obj, x, err_prefix):
         # TODO: Check if PascalCase or ALL_CAPS
         if not "type" in y:
             y["type"] = "int"
-        if not "default" in y:
+
+        if "local" in y:
+            local, ierr = check_bool(y["local"], err_prefix + " local")
+            if ierr:
+                error += 1
+                y["local"] = "true"
+        else:
+            y["local"] = "true"
+
+        if "default" in y:
+            if y["type"][:3] == "int":
+                default, ierr = check_int(y["default"],
+                                          err_prefix + " default")
+                if ierr:
+                    error += 1
+                    y["default"] = "1"
+        else:
             if y["type"][:3] == "int":
                 y["default"] = "1"
             elif y["type"] == "string":
@@ -307,6 +324,7 @@ lp_optional = {
     'desc': ['s', "description of the item"],
     'type': ['s', "item type. int by default"],
     'default': ['s', "item default value"],
+    'local': ['pb', "to be localparam"],
 }
 
 # Registers list may have embedded keys

@@ -9,9 +9,10 @@
   num_dsp  = num_wins + 1
   num_regs = len(block.regs)
   max_regs_char = len("{}".format(num_regs-1))
+  params = [p for p in block.params if p["local"] == "false"]
 %>
 
-module ${block.name}_reg_top (
+module ${block.name}_reg_top ${print_param(params)}(
   input clk_i,
   input rst_ni,
 
@@ -462,5 +463,15 @@ ${msb}\
         reg_rdata_next[${str_bits_sv(msb,lsb)}] = ${sig_name}_qs;
 % else:
         reg_rdata_next[${str_bits_sv(msb,lsb)}] = '0;
+% endif
+</%def>\
+<%def name="print_param(params)">\
+<% num_params = len(params) %>\
+% if num_params != 0:
+#(
+% for i,p in enumerate(params):
+  parameter ${p["type"]} ${p["name"]} = ${p["default"]}${"," if i != num_params-1 else ""}
+% endfor
+) \
 % endif
 </%def>\

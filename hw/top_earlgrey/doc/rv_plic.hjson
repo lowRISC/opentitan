@@ -21,12 +21,26 @@
   clock_primary: "clk_fixed",
   bus_device: "tlul",
 
+  param_list: [
+    { name: "NumSrc",
+      desc: "Number of interrupt sources",
+      type: "int",
+      default: "54",
+      local: "true"
+    },
+    { name: "NumTarget",
+      desc: "Number of Targets (Harts)",
+      type: "int",
+      default: "1",
+      local: "true",
+    },
+  ],
   regwidth: "32",
   registers: [
     { multireg: {
         name: "IP",
         desc: "Interrupt Pending",
-        count: 54,
+        count: "NumSrc",
         cname: "RV_PLIC",
         swaccess: "ro",
         hwaccess: "hwo",
@@ -38,7 +52,7 @@
     { multireg: {
         name: "LE",
         desc: "Interrupt Source mode. 0: Level, 1: Edge-triggered",
-        count: 54,
+        count: "NumSrc",
         cname: "RV_PLIC",
         swaccess: "rw",
         hwaccess: "hro",
@@ -483,7 +497,7 @@
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",
-        count: 54,
+        count: "NumSrc",
         cname: "RV_PLIC",
         swaccess: "rw",
         hwaccess: "hro",

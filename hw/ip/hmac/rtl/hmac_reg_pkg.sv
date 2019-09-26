@@ -7,8 +7,7 @@
 package hmac_reg_pkg;
 
   // Param list
-  localparam int KEY = 8;
-  localparam int DIGEST = 8;
+  localparam int NumWords = 8;
 
 // Register to internal design logic
 typedef struct packed {

@@ -17,6 +17,14 @@
   ],
   alert_list: [
   ],
+  param_list: [
+    { name:    "NumWords",
+      type:    "int",
+      default: "8",
+      desc:    "Number of words for digest/ key",
+      local:   "true"
+    }
+  ],
   regwidth: "32",
   registers: [
     { name: "CFG",
@@ -112,7 +120,7 @@
               Order of the secret key is:
               key[255:0] = {KEY0, KEY1, KEY2, ... , KEY7};
               ''',
-        count: "8",
+        count: "NumWords",
         cname: "HMAC",
         swaccess: "wo",
         hwaccess: "hrw",
@@ -124,7 +132,7 @@
     { multireg: {
         name: "DIGEST",
         desc: "Digest output. If HMAC is disabled, the register shows result of SHA256",
-        count: "8",
+        count: "NumWords",
         cname: "HMAC",
         swaccess: "ro",
         hwaccess: "hwo",
