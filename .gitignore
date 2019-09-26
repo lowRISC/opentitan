@@ -3,14 +3,20 @@
 __pycache__
 opentitan-docs
 
-#fusesoc result
+# fusesoc result
 build/
+
+# build directories with special suffixes
+build*/
 
 # Sphinx result
 _build/
 
 # JasperGold FPV Result
 jgproject/
+
+# FPGA splice intermediate files
+*.jou
 
 # Simulation Results
 *.log
