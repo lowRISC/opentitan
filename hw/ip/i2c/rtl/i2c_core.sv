@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: UART core module
+// Description: I2C core module
 
 module  i2c_core (
   input                            clk_i,
   input                            rst_ni,
+  input                            scanmode_i,
 
   input i2c_reg_pkg::i2c_reg2hw_t  reg2hw,
   output i2c_reg_pkg::i2c_hw2reg_t hw2reg,
@@ -31,12 +32,14 @@ module  i2c_core (
   logic [15:0] tlow;
   logic [15:0] t_r;
   logic [15:0] t_f;
+  logic [15:0] thd_sta;
   logic [15:0] tsu_sta;
   logic [15:0] tsu_sto;
-  logic [15:0] thd_st;
   logic [15:0] tsu_dat;
   logic [15:0] thd_dat;
   logic [15:0] t_buf;
+  logic [30:0] stretch_timeout;
+  logic        timeout_enable;
 
   logic scl_out_fsm;
   logic sda_out_fsm;
@@ -56,22 +59,52 @@ module  i2c_core (
 
   logic override;
 
+  logic        fmt_fifo_rst_n;
+  logic        fmt_fifo_wvalid;
+  logic        fmt_fifo_wready;
+  logic [12:0] fmt_fifo_wdata;
+  logic [5:0]  fmt_fifo_depth;
+  logic        fmt_fifo_rvalid;
+  logic        fmt_fifo_rready;
+  logic [12:0] fmt_fifo_rdata;
+  logic [7:0]  fmt_byte;
+  logic        fmt_flag_start_before;
+  logic        fmt_flag_stop_after;
+  logic        fmt_flag_read_bytes;
+  logic        fmt_flag_read_continue;
+  logic        fmt_flag_nak_ok;
+
+  logic [1:0]  i2c_fifo_fmtilvl;
+  logic [2:0]  i2c_fifo_rxilvl;
+
+  logic        rx_fifo_rst_n;
+  logic        rx_fifo_wvalid;
+  logic        rx_fifo_wready;
+  logic [7:0]  rx_fifo_wdata;
+  logic [5:0]  rx_fifo_depth;
+  logic        rx_fifo_rvalid;
+  logic        rx_fifo_rready;
+  logic [7:0]  rx_fifo_rdata;
+
+  logic        host_idle;
+  logic        target_idle;
+
+   // placeholder: no target functionality yet;
+  assign target_idle = 1'b1;
+
+  assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
+  assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
+  assign hw2reg.status.fmtempty.d = ~fmt_fifo_rvalid;
+  assign hw2reg.status.hostidle.d = host_idle;
+  assign hw2reg.status.targetidle.d = target_idle;
+  assign hw2reg.status.rxempty.d = ~rx_fifo_rvalid;
+  assign hw2reg.rdata.d = rx_fifo_rdata;
+  assign hw2reg.fifo_status.fmtlvl.d = fmt_fifo_depth;
+  assign hw2reg.fifo_status.rxlvl.d = rx_fifo_depth;
+  assign hw2reg.val.scl_rx.d = scl_rx_val;
+  assign hw2reg.val.sda_rx.d = sda_rx_val;
+
   assign override = reg2hw.ovrd.txovrden;
-
-  // placeholder until FSM in place
-  assign sclout_fsm = 1'b0;
-  assign sdaout_fsm = 1'b0;
-
-  // placeholders for unused output registers
-  assign hw2reg.status.fmtfull.d = 1'b0;
-  assign hw2reg.status.rxfull.d = 1'b0;
-  assign hw2reg.status.fmtempty.d = 1'b0;
-  assign hw2reg.status.hostidle.d = 1'b1;
-  assign hw2reg.status.targetidle.d = 1'b1;
-  assign hw2reg.status.rxempty.d = 1'b0;
-  assign hw2reg.fifo_status.fmtlvl.d = 5'b0;
-  assign hw2reg.fifo_status.rxlvl.d = 5'b0;
-
 
   assign scl_o = override ? reg2hw.ovrd.sclval : scl_out_fsm;
   assign sda_o = override ? reg2hw.ovrd.sdaval : sda_out_fsm;
@@ -87,29 +120,146 @@ module  i2c_core (
     end
   end
 
-  assign hw2reg.val.scl_rx.d = scl_rx_val;
-  assign hw2reg.val.sda_rx.d = sda_rx_val;
+  assign thigh           = reg2hw.timing0.thigh.q;
+  assign tlow            = reg2hw.timing0.tlow.q;
+  assign t_r             = reg2hw.timing1.t_r.q;
+  assign t_f             = reg2hw.timing1.t_f.q;
+  assign tsu_sta         = reg2hw.timing2.tsu_sta.q;
+  assign thd_sta         = reg2hw.timing2.thd_sta.q;
+  assign tsu_dat         = reg2hw.timing3.tsu_dat.q;
+  assign thd_dat         = reg2hw.timing3.thd_dat.q;
+  assign tsu_sto         = reg2hw.timing4.tsu_sto.q;
+  assign t_buf           = reg2hw.timing4.t_buf.q;
+  assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
+  assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
 
-  assign thigh = reg2hw.timing0.thigh.q;
-  assign tlow = reg2hw.timing0.tlow.q;
-  assign t_r = reg2hw.timing1.t_r.q;
-  assign t_f = reg2hw.timing1.t_f.q;
-  assign tsu_sta = reg2hw.timing2.tsu_sta.q;
-  assign thd_st = reg2hw.timing2.thd_st.q;
-  assign tsu_dat = reg2hw.timing3.tsu_dat.q;
-  assign thd_dat = reg2hw.timing3.thd_dat.q;
-  assign tsu_sto = reg2hw.timing4.tsu_sto.q;
-  assign t_buf = reg2hw.timing4.t_buf.q;
+  assign i2c_fifo_fmtilvl = reg2hw.fifo_ctrl.fmtilvl.q;
+  assign i2c_fifo_rxilvl  = reg2hw.fifo_ctrl.rxilvl.q;
 
-  assign event_fmt_watermark = 1'b0;
-  assign event_rx_watermark = 1'b0;
-  assign event_fmt_overflow = 1'b0;
-  assign event_rx_overflow = 1'b0;
-  assign event_nak = 1'b0;
-  assign event_scl_interference = 1'b0;
-  assign event_sda_interference = 1'b0;
-  assign event_stretch_timeout = 1'b0;
-  assign event_sda_unstable = 1'b0;
+  always_comb begin
+    unique case(i2c_fifo_fmtilvl)
+      2'h0:    event_fmt_watermark = (fmt_fifo_depth <= 6'd1);
+      2'h1:    event_fmt_watermark = (fmt_fifo_depth <= 6'd4);
+      2'h2:    event_fmt_watermark = (fmt_fifo_depth <= 6'd8);
+      default: event_fmt_watermark = (fmt_fifo_depth <= 6'd16);
+    endcase
+  end
+
+  always_comb begin
+    unique case(i2c_fifo_rxilvl)
+      3'h0:    event_rx_watermark = (rx_fifo_depth >= 6'd1);
+      3'h1:    event_rx_watermark = (rx_fifo_depth >= 6'd4);
+      3'h2:    event_rx_watermark = (rx_fifo_depth >= 6'd8);
+      3'h3:    event_rx_watermark = (rx_fifo_depth >= 6'd16);
+      3'h4:    event_rx_watermark = (rx_fifo_depth >= 6'd30);
+      default: event_rx_watermark = 1'b0;
+    endcase
+  end
+
+  assign event_fmt_overflow = fmt_fifo_wvalid & ~fmt_fifo_wready;
+  assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
+
+
+
+  // The fifo write enable is controlled entirely
+  // by the fbyte field qe bit.
+  // When all fbyte.qe is asserted the fbyte, and all forma flags
+  // are injected into the fifo. (i.e. the qe bits for the flags have no effect).
+  assign fmt_fifo_wvalid     = reg2hw.fdata.fbyte.qe;
+  assign fmt_fifo_wdata[7:0] = reg2hw.fdata.fbyte.q;
+  assign fmt_fifo_wdata[8]   = reg2hw.fdata.start.q;
+  assign fmt_fifo_wdata[9]   = reg2hw.fdata.stop.q;
+  assign fmt_fifo_wdata[10]  = reg2hw.fdata.read.q;
+  assign fmt_fifo_wdata[11]  = reg2hw.fdata.rcont.q;
+  assign fmt_fifo_wdata[12]  = reg2hw.fdata.nakok.q;
+
+  assign fmt_byte               = fmt_fifo_rdata[7:0];
+  assign fmt_flag_start_before  = fmt_fifo_rdata[8];
+  assign fmt_flag_stop_after    = fmt_fifo_rdata[9];
+  assign fmt_flag_read_continue = fmt_fifo_rdata[10];
+  assign fmt_flag_read_bytes    = fmt_fifo_rdata[11];
+  assign fmt_flag_nak_ok        = fmt_fifo_rdata[12];
+
+  assign fmt_fifo_rst_n         = scanmode_i ? rst_ni : (rst_ni & ~reg2hw.fifo_ctrl.fmtrst.q);
+
+  prim_fifo_sync #(
+    .Width(13),
+    .Pass(1'b1),
+    .Depth(32)
+  ) u_i2c_fmtfifo (
+    .clk_i,
+    .rst_ni(fmt_fifo_rst_n),
+    .wvalid(fmt_fifo_wen),
+    .wready(fmt_fifo_wready),
+    .wdata(fmt_fifo_wdata),
+    .depth(fmt_fifo_depth),
+    .rvalid(fmt_fifo_rvalid),
+    .rready(fmt_fifo_rready),
+    .rdata(fmt_fifo_rdata)
+  );
+
+  assign rx_fifo_rready = reg2hw.rdata.re;
+  assign rx_fifo_rst_n  = scanmode_i ? rst_ni : (rst_ni & ~reg2hw.fifo_ctrl.rxrst.q);
+
+  prim_fifo_sync #(
+    .Width(8),
+    .Pass(1'b0),
+    .Depth(32)
+  ) u_i2c_rxfifo (
+    .clk_i,
+    .rst_ni(rx_fifo_rst_n),
+    .wvalid(rx_fifo_wvalid),
+    .wready(rx_fifo_wready),
+    .wdata(rx_fifo_wdata),
+    .depth(rx_fifo_depth),
+    .rvalid(rx_fifo_rvalid),
+    .rready(rx_fifo_rready),
+    .rdata(rx_fifo_rdata)
+  );
+
+  i2c_fsm u_i2c_fsm (
+    .clk_i,
+    .rst_ni,
+
+    .scl_i,
+    .scl_o(scl_out_fsm),
+    .sda_i,
+    .sda_o(sda_out_fsm),
+
+    .fmt_fifo_rvalid,
+    .fmt_fifo_rready,
+
+    .fmt_byte,
+    .fmt_flag_start_before,
+    .fmt_flag_stop_after,
+    .fmt_flag_read_bytes,
+    .fmt_flag_read_continue,
+    .fmt_flag_nak_ok,
+
+    .rx_fifo_wvalid,
+    .rx_fifo_wdata,
+
+    .host_idle,
+
+    .thigh,
+    .tlow,
+    .t_r,
+    .t_f,
+    .thd_sta,
+    .tsu_sta,
+    .tsu_sto,
+    .tsu_dat,
+    .thd_dat,
+    .t_buf,
+    .stretch_timeout,
+    .timeout_enable,
+
+    .event_nak,
+    .event_scl_interference,
+    .event_sda_interference,
+    .event_stretch_timeout,
+    .event_sda_unstable
+  );
 
   prim_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
     .event_intr_i           (event_fmt_watermark),

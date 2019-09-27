@@ -105,6 +105,7 @@
     { name: "RDATA"
       desc: "I2C read data"
       swaccess: "ro"
+      hwaccess: "hrw"
       hwext: "true"
       hwre: "true"
       fields: [
@@ -279,11 +280,11 @@
       fields: [
         { bits: "15:0"
           name: "THIGH"
-          desc: "The minimum time to hold SCL high in a given pulse"
+          desc: "The actual time to hold SCL high in a given pulse"
         }
         { bits: "31:16"
           name: "TLOW"
-          desc: "The minimum time to hold SCL low between any two SCL pulses"
+          desc: "The actual time to hold SCL low between any two SCL pulses"
         }
       ]
     }
@@ -315,11 +316,11 @@
       fields: [
         { bits: "15:0"
           name: "TSU_STA"
-          desc: "Minimum setup time for repeated start signals"
+          desc: "Actual setup time for repeated start signals"
         }
         { bits: "31:16"
-          name: "THD_ST"
-          desc: "Minimum hold time for start signals"
+          name: "THD_STA"
+          desc: "Actual hold time for start signals"
         }
       ]
     }
@@ -333,12 +334,12 @@
       fields: [
         { bits: "15:0"
           name: "TSU_DAT"
-          desc: "Minimum setup time for data (or ack) bits"
+          desc: "Actual setup time for data (or ack) bits"
         }
         { bits: "31:16"
           name: "THD_DAT"
           desc: '''
-                Minimum hold time for data (or ack) bits
+                Actual hold time for data (or ack) bits
                 (Note, where required, the parameters TVD_DAT is taken to be THD_DAT+T_F)
                 '''
         }
@@ -354,11 +355,11 @@
       fields: [
         { bits: "15:0"
           name: "TSU_STO"
-          desc: "Minimum setup time for stop signals"
+          desc: "Actual setup time for stop signals"
         }
         { bits: "31:16"
           name: "T_BUF"
-          desc: "Minimum time between each STOP signal and the following START signal"
+          desc: "Actual time between each STOP signal and the following START signal"
         }
       ]
     }
