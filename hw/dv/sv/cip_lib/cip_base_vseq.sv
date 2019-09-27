@@ -106,6 +106,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // for ex. intr_test_csr, intr_enable_csr, intr_state_csr etc.
   local function void extract_common_csrs();
     uvm_reg all_csrs[$];
+    intr_test_csrs.delete();
+    intr_state_csrs.delete();
+    intr_enable_csrs.delete();
     // Get all interrupt test/state/enable registers
     ral.get_registers(all_csrs);
     foreach (all_csrs[i]) begin
