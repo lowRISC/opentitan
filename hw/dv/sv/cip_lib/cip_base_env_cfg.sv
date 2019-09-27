@@ -3,13 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg #(RAL_T);
-
   // ext component cfgs
   rand tl_agent_cfg     m_tl_agent_cfg;
 
   // common interfaces - intrrupts and alerts
   intr_vif              intr_vif;
   alerts_vif            alerts_vif;
+  devmode_vif           devmode_vif;
+  tlul_assert_vif       tlul_assert_vif;
+
+  // only security IP can support devmode. If supported, override it to 1 in initialize()
+  bit                   en_devmode = 0;
 
   uint                  num_interrupts;
   uint                  num_alerts;

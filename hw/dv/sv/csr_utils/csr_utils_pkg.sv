@@ -46,6 +46,20 @@ package csr_utils_pkg;
     end
   endfunction
 
+  // Get all valid mem addr ranges - useful to check if incoming addr falls in the mem range.
+  function automatic void get_mem_addrs(input uvm_reg_block ral, ref mem_addr_s mem_addrs[$]);
+    uvm_mem mems[$];
+    ral.get_memories(mems);
+    mems.delete();
+    foreach (mems[i]) begin
+      mem_addr_s mem_addr;
+      mem_addr.start_addr = mems[i].get_address();
+      mem_addr.end_addr   = mem_addr.start_addr +
+                            mems[i].get_size() * mems[i].get_n_bytes() - 1;
+      mem_addrs.push_back(mem_addr);
+    end
+  endfunction
+
   // This fucntion return mirrored value of reg/field of given RAL
   function automatic uvm_reg_data_t get_reg_fld_mirror_value(uvm_reg_block ral,
                                                              string        reg_name,

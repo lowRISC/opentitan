@@ -45,21 +45,48 @@ class tl_seq_item extends uvm_sequence_item;
     soft d_valid_delay inside {[0:50]};
   }
 
-  // For PutFullData message, mask needs to continuous
-  constraint mask_c {
+  // mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
+  constraint mask_contiguous_c {
+    $countones(a_mask ^ {a_mask[MaskWidth-2:0], 1'b0}) <= 2;
+  }
+
+  // For PutFullData message, mask needs to match with size
+  constraint mask_w_PutFullData_c {
     if (a_opcode == PutFullData) {
-      foreach(a_mask[i]) {
-        if ((i > 0) && (i < MaskWidth - 1)) {
-          !a_mask[i] -> !(a_mask[i-1] && a_mask[i+1]);
-        }
-      }
+      $countones(a_mask) == 1 << a_size;
     }
   }
 
-  // Address alignment constraint
+  // mask bits can't be more than size
+  constraint mask_w_size_c {
+    $countones(a_mask) <= 1 << a_size;
+  }
+
+  // mask must align with addr
+  constraint mask_w_addr_c {
+    if (a_addr[1:0] == 1) {
+      a_mask[0] == 0;
+    } else if (a_addr[1:0] == 2) {
+      a_mask[1:0] == 0;
+    } else if (a_addr[1:0] == 3) {
+      a_mask[2:0] == 0;
+    }
+  }
+
+  // mask must be within enabled lanes
+  // prevent cases: addr: 0h, size: 1, mask: 'b1100; addr: 0h, size: 0, mask: 'b1000
+  constraint mask_in_enabled_lanes_c {
+    ((a_mask >> a_addr[1:0]) >> (1 << a_size)) == 0;
+  }
+
   // Address must be aligned to the a_size (2 ** a_size bytes)
-  constraint addr_c {
+  constraint addr_size_align_c {
     a_addr << (AddrWidth - a_size) == 0;
+  }
+
+  // size can't be more than 2
+  constraint max_size_c {
+    a_size <= 2;
   }
 
   `uvm_object_utils_begin(tl_seq_item)
@@ -112,6 +139,16 @@ class tl_seq_item extends uvm_sequence_item;
     a_param.rand_mode(0);
     a_source.rand_mode(0);
     a_opcode.rand_mode(0);
+  endfunction
+
+  function void disable_a_chan_protocol_constraint();
+    mask_contiguous_c.constraint_mode(0);
+    mask_w_PutFullData_c.constraint_mode(0);
+    mask_w_size_c.constraint_mode(0);
+    mask_w_addr_c.constraint_mode(0);
+    mask_in_enabled_lanes_c.constraint_mode(0);
+    addr_size_align_c.constraint_mode(0);
+    max_size_c.constraint_mode(0);
   endfunction
 
   // Find whether this seq item is a read or a write.

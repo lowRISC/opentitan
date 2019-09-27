@@ -18,4 +18,14 @@ class dv_base_reg extends uvm_reg;
     get_fields(fields);
     foreach (fields[i]) get_n_used_bits += fields[i].get_n_bits();
   endfunction
+
+  // loop all the fields to find the msb position of this reg
+  function uint get_msb_pos();
+    uvm_reg_field fields[$];
+    get_fields(fields);
+    foreach (fields[i]) begin
+      uint field_msb_pos = fields[i].get_lsb_pos() + fields[i].get_n_bits() - 1;
+      if (field_msb_pos > get_msb_pos) get_msb_pos = field_msb_pos;
+    end
+  endfunction
 endclass

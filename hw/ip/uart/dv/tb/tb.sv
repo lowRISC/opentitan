@@ -30,6 +30,7 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(NUM_MAX_ALERTS) alerts_if(alerts);
+  pins_if #(1) devmode_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   uart_if uart_if();
 
@@ -70,6 +71,9 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(alerts_vif)::set(null, "*.env", "alerts_vif", alerts_if);
+    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
+    uvm_config_db#(tlul_assert_vif)::set(null, "*.env", "tlul_assert_vif",
+                                         tb.dut.tlul_assert_host);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual uart_if)::set(null, "*.env.m_uart_agent*", "vif", uart_if);
     $timeformat(-12, 0, " ps", 12);

@@ -15,9 +15,10 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // reg model & q of valid csr addresses
   RAL_T                 ral;
   bit [TL_AW-1:0]       csr_addrs[$];
+  mem_addr_s            mem_addrs[$];
 
   // ral base address and size
-  rand bit [TL_AW-1:0]  csr_base_addr;              // base address where csr map begins
+  bit [TL_AW-1:0]       csr_base_addr;              // base address where csr map begins
   bit [TL_AW-1:0]       csr_addr_map_size = 2048;   // csr addr region allocated to the ip
 
   // clk_rst_if & freq
@@ -27,11 +28,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // set zero_delays 40% of the time
   constraint zero_delays_c {
     zero_delays dist {1'b0 := 6, 1'b1 := 4};
-  }
-
-  // base address needs to be aligned to csr_addr_map_size
-  constraint csr_base_addr_c {
-    csr_base_addr << csr_addr_map_size == {TL_AW{1'b0}};
   }
 
   `uvm_object_param_utils_begin(dv_base_env_cfg #(RAL_T))
@@ -52,11 +48,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     // use locally randomized csr base address, unless provided as arg to this function
     if (csr_base_addr != '1) begin
       this.csr_base_addr = csr_base_addr;
-      this.csr_addr_map_size = csr_addr_map_size;
+    end else begin
+      // base address needs to be aligned to csr_addr_map_size
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(csr_base_addr,
+                                         csr_base_addr << csr_addr_map_size == {TL_AW{1'b0}};)
     end
+    this.csr_addr_map_size = csr_addr_map_size;
     // check alignment
-    // TODO(sriyerg) remove this
-    this.csr_base_addr = 0;
     is_aligned = ~|(this.csr_base_addr & (this.csr_addr_map_size - 1));
     `DV_CHECK_EQ_FATAL(is_aligned, 1'b1)
     // build the ral model

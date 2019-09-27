@@ -76,6 +76,9 @@ TL_DBW            ?= 4
 # set simulator to vcs by default
 SIMULATOR ?= vcs
 
+# common tests/seqs
+include ${MAKE_ROOT}/common_tests.mk
+
 # tool to generate ral
 include ${MAKE_ROOT}/ral_gen.mk
 
