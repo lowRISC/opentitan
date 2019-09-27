@@ -40,9 +40,15 @@ module tlul_adapter_sram #(
   localparam int SramByte = SramDw/8; // TODO: Fatal if SramDw isn't multiple of 8
   localparam int DataBitWidth = $clog2(SramByte);
 
+  typedef enum logic [1:0] {
+    OpWrite,
+    OpRead,
+    OpUnknown
+  } req_op_e ;
+
   typedef struct packed {
-    logic                       op ;
-    logic                       wrsp_error ;
+    req_op_e                    op ;
+    logic                       error ;
     logic [top_pkg::TL_SZW-1:0] size ;
     logic [top_pkg::TL_AIW-1:0] source ;
   } req_t ;
@@ -67,46 +73,94 @@ module tlul_adapter_sram #(
   logic rspfifo_rvalid, rspfifo_rready;
   rsp_t rspfifo_wdata,  rspfifo_rdata;
 
-  logic wrsp_error;
+  logic error_internal; // Internal protocol error checker
   logic wr_attr_error;
   logic wr_vld_error;
+  logic tlul_error;     // Error from `tlul_err` module
+
+  logic a_ack, d_ack, unused_sram_ack;
+  assign a_ack    = tl_i.a_valid & tl_o.a_ready ;
+  assign d_ack    = tl_o.d_valid & tl_i.d_ready ;
+  assign unused_sram_ack = req_o        & gnt_i ;
+
+  // Valid handling
+  logic d_valid, d_error;
+  always_comb begin
+    d_valid = 1'b0;
+
+    if (reqfifo_rvalid) begin
+      if (reqfifo_rdata.error) begin
+        // Return error response. Assume no request went out to SRAM
+        d_valid = 1'b1;
+      end else if (reqfifo_rdata.op == OpRead) begin
+        d_valid = rspfifo_rvalid;
+      end else begin
+        // Write without error
+        d_valid = 1'b1;
+      end
+    end else begin
+      d_valid = 1'b0;
+    end
+  end
+
+  always_comb begin
+    d_error = 1'b0;
+
+    if (reqfifo_rvalid) begin
+      if (reqfifo_rdata.op == OpRead) begin
+        d_error = rspfifo_rdata.error | reqfifo_rdata.error;
+      end else begin
+        d_error = reqfifo_rdata.error;
+      end
+    end else begin
+      d_error = 1'b0;
+    end
+  end
 
   assign tl_o = '{
-      d_valid  : reqfifo_rdata.op ? reqfifo_rvalid : rspfifo_rvalid ,
-      d_opcode : reqfifo_rdata.op ? AccessAck : AccessAckData ,
+      d_valid  : d_valid ,
+      d_opcode : (reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData ,
       d_param  : '0,
       d_size   : reqfifo_rdata.size,
       d_source : reqfifo_rdata.source,
       d_sink   : 1'b0,
       d_data   : rspfifo_rdata.data,
       d_user   : '0,
-      d_error  : reqfifo_rdata.op ? reqfifo_rdata.wrsp_error : rspfifo_rdata.error,
+      d_error  : d_error,
 
-      a_ready  : gnt_i & reqfifo_wready
+      a_ready  : (gnt_i | error_internal) & reqfifo_wready
   };
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
   // assemble response, including read response, write response, and error for unsupported stuff
 
-  assign req_o    = reqfifo_wready & tl_i.a_valid;
+  // Output to SRAM:
+  //    Generate request only when no internal error occurs. If error occurs, the request should be
+  //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
+  //    In this case, it is assumed the request is granted (may cause ordering issue later?)
+  assign req_o    = reqfifo_wready & tl_i.a_valid & ~error_internal;
   assign we_o     = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData) ? 1'b1 : 1'b0;
   assign addr_o   = tl_i.a_address[DataBitWidth+:SramAw];
   assign wdata_o  = tl_i.a_data;
 
   `ASSERT_INIT(TlUlEqualsToSramDw, top_pkg::TL_DW == SramDw)
 
+  // Convert byte mask to SRAM bit mask.
   always_comb begin
     for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
       wmask_o[8*i+:8] = {8{tl_i.a_mask[i]}};
     end
   end
 
-  if (ByteAccess == 1) begin : gen_wrsp_byte
-    assign wr_attr_error = (tl_i.a_opcode == PutFullData &&
-                        (tl_i.a_mask != '1 || tl_i.a_size != 2'h2));
-  end else begin : gen_wrsp_word
-    assign wr_attr_error = (tl_i.a_mask != '1 || tl_i.a_size != 2'h2);
-  end
+
+  //== Begin: Request Error Detection =========================================
+
+  // wr_attr_error: Check if the request size,mask are permitted.
+  //    Basic check of size, mask, addr align is done in tlul_err module.
+  //    Here it checks any partial write if ByteAccess isn't allowed.
+  assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData) ?
+                         (ByteAccess == 0) ? (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0 :
+                         1'b0;
 
   if (ErrOnWrite == 1) begin : gen_no_writes
     assign wr_vld_error = tl_i.a_opcode != Get;
@@ -114,23 +168,32 @@ module tlul_adapter_sram #(
     assign wr_vld_error = 1'b0;
   end
 
-  assign wrsp_error = wr_attr_error | wr_vld_error;
+  tlul_err u_err (
+    .clk_i,
+    .rst_ni,
+    .tl_i,
+    .err_o (tlul_error)
+  );
 
-  assign reqfifo_wvalid = req_o & gnt_i ;
+  assign error_internal = wr_attr_error | wr_vld_error | tlul_error;
+  //-- End: Request Error Detection -------------------------------------------
+
+  assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{
-    op: we_o,
-    wrsp_error: wrsp_error,
-    size: tl_i.a_size,
+    op:     (tl_i.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
+    error:  error_internal,
+    size:   tl_i.a_size,
     source: tl_i.a_source
   }; // Store the request only. Doesn't have to store data
-  assign reqfifo_rready = tl_o.d_valid & tl_i.d_ready ;
+  assign reqfifo_rready = d_ack ;
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
   assign rspfifo_wdata  = '{
     data:  rdata_i,
     error: rerror_i[1]  // Only care for Uncorrectable error
   };
-  assign rspfifo_rready = ~reqfifo_rdata.op & reqfifo_rready ;
+  assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
+                        ? reqfifo_rready : 1'b0 ;
 
   // FIFO instance: REQ, RSP
 
