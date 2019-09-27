@@ -49,7 +49,8 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i_oen)
           `uvm_info(msg_id, $sformatf("drive random value 0x%0h on gpio_i", gpio_i), UVM_HIGH)
-          `uvm_info(msg_id, $sformatf("drive random value 0x%0h on gpio_i_oen", gpio_i_oen), UVM_HIGH)
+          `uvm_info(msg_id, $sformatf("drive random value 0x%0h on gpio_i_oen", gpio_i_oen),
+                    UVM_HIGH)
 
           // drive gpio_vif after setting all output enables to 0's
           cfg.gpio_vif.pins_oe = gpio_i_oen;

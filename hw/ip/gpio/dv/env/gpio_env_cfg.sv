@@ -10,10 +10,10 @@ class gpio_env_cfg extends cip_base_env_cfg #(.RAL_T(gpio_reg_block));
   // flag to indicate if weak pulldown has been introduced on gpio
   rand bit pulldown_en;
   // gpio virtual interface
-  gpio_vif      gpio_vif;
+  gpio_vif gpio_vif;
 
   constraint pullup_pulldown_en_c {
-    (pullup_en ^ pulldown_en) == 1'b1;
+    pullup_en ^ pulldown_en;
   }
 
   `uvm_object_utils(gpio_env_cfg)
