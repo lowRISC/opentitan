@@ -12,6 +12,22 @@
     { name: "op_done",    desc: "Operation complete" },
     { name: "op_error",   desc: "Operation failed with error" },
   ],
+
+  param_list: [
+    { name: "NumBanks",
+      desc: "Number of flash banks",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name: "NumRegions",
+      desc: "Number of configurable flash regions",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+  ],
+
   regwidth: "32",
   registers: [
     { name: "CONTROL",
@@ -119,7 +135,7 @@
         cname: "FLASH_CTRL",
         name: "REGION_CFG_REGWEN"
         desc: "Memory region registers configuration enable.",
-        count: 8,
+        count: "NumRegions",
         swaccess: "rw0c",
         hwaccess: "none",
         fields: [
@@ -150,7 +166,7 @@
         cname: "FLASH_CTRL",
         name: "MP_REGION_CFG",
         desc: "Memory protection configuration",
-        count: 8,
+        count: "NumRegions",
         swaccess: "rw",
         hwaccess: "hro",
         regwen: "REGION_CFG_REGWEN_REGION",
@@ -236,7 +252,7 @@
         cname: "FLASH_CTRL",
         name: "BANK_CFG_REGWEN"
         desc: "Bank configuration registers configuration enable.",
-        count: 2,
+        count: "NumBanks",
         swaccess: "rw0c",
         hwaccess: "none",
         fields: [
@@ -267,7 +283,7 @@
         cname: "FLASH_CTRL",
         name: "MP_BANK_CFG",
         desc: "Memory protect bank configuration",
-        count: 2,
+        count: "NumBanks",
         swaccess: "rw",
         hwaccess: "hro",
         regwen: "BANK_CFG_REGWEN_BANK"

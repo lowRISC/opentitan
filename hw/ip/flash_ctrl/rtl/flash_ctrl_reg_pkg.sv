@@ -7,10 +7,8 @@
 package flash_ctrl_reg_pkg;
 
   // Param list
-  localparam int REGION_CFG_REGWEN = 8;
-  localparam int MP_REGION_CFG = 8;
-  localparam int BANK_CFG_REGWEN = 2;
-  localparam int MP_BANK_CFG = 2;
+  localparam int NumBanks = 2;
+  localparam int NumRegions = 8;
 
 // Register to internal design logic
 typedef struct packed {
