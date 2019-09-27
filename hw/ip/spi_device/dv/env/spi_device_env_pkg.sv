@@ -31,6 +31,7 @@ package spi_device_env_pkg;
     SramSpaceAvail
   } sram_avail_type_e;
 
+  parameter uint ADDR_MAP_SIZE      = 4096;
   // SPI SRAM is 2kB
   parameter uint SRAM_OFFSET        = 'h800;
   parameter uint SRAM_SIZE          = 2048;

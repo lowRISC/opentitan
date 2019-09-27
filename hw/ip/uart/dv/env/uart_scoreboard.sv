@@ -132,15 +132,12 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
 
+    super.process_tl_access(item, channel);
+    if (is_tl_err_exp || is_tl_unmapped_addr) return;
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    if (csr == null) begin
-      // we hit an oob addr - expect error response and return
-      `DV_CHECK_EQ(item.d_error, 1'b1)
-      return;
     end
 
     if (channel == AddrChannel) begin

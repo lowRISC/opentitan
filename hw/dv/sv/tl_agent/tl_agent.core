@@ -11,7 +11,7 @@ filesets:
       - lowrisc:tlul:headers:0.1
       - lowrisc:dv:mem_model
     files:
-      - tl_if.sv    
+      - tl_if.sv
       - tl_agent_pkg.sv
       - tl_if_connect_macros.svh: {is_include_file: true}
       - tl_agent_cfg.sv: {is_include_file: true}

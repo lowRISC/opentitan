@@ -29,6 +29,9 @@ TEST_NAME       ?= uart_sanity
 UVM_TEST        ?= uart_base_test
 UVM_TEST_SEQ    ?= uart_base_vseq
 
+# common tests/seqs
+include ${DV_DIR}/../../../dv/tools/common_tests.mk
+
 ifeq (${TEST_NAME},uart_sanity)
   UVM_TEST_SEQ   = uart_sanity_vseq
 endif
@@ -47,11 +50,6 @@ endif
 
 ifeq (${TEST_NAME},uart_fifo_reset)
   UVM_TEST_SEQ   = uart_fifo_reset_vseq
-endif
-
-ifeq (${TEST_NAME},uart_intr_test)
-  UVM_TEST_SEQ   = uart_common_vseq
-  RUN_OPTS      += +run_intr_test
 endif
 
 ifeq (${TEST_NAME},uart_rx_oversample)
@@ -92,30 +90,6 @@ endif
 ifeq (${TEST_NAME},uart_stress_all)
   RUN_OPTS      += +test_timeout_ns=10_000_000_000
   UVM_TEST_SEQ   = uart_stress_all_vseq
-endif
-
-ifeq (${TEST_NAME},uart_csr_hw_reset)
-  UVM_TEST_SEQ   = uart_common_vseq
-  RUN_OPTS      += +csr_hw_reset
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},uart_csr_rw)
-  UVM_TEST_SEQ   = uart_common_vseq
-  RUN_OPTS      += +csr_rw
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},uart_csr_bit_bash)
-  UVM_TEST_SEQ   = uart_common_vseq
-  RUN_OPTS      += +csr_bit_bash
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},uart_csr_aliasing)
-  UVM_TEST_SEQ   = uart_common_vseq
-  RUN_OPTS      += +csr_aliasing
-  RUN_OPTS      += +en_scb=0
 endif
 
 ####################################################################################################

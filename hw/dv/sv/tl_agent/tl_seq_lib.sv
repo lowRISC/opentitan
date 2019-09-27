@@ -88,6 +88,19 @@ class tl_host_single_seq extends tl_host_seq;
 
 endclass
 
+// disable all the TL protocol related constraint for testing error cases
+class tl_host_single_err_seq extends tl_host_single_seq;
+
+  `uvm_object_utils(tl_host_single_err_seq)
+  `uvm_object_new
+
+  virtual function void randomize_req(REQ req, int idx);
+    req.disable_a_chan_protocol_constraint();
+    super.randomize_req(req, idx);
+  endfunction
+
+endclass
+
 // Device sequence, currently support in-order response
 class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
 

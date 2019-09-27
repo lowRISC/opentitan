@@ -22,6 +22,8 @@ package ${name}_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
+  // TODO update below, or compile error occurs
+  parameter uint ADDR_MAP_SIZE   = ;
 
   // types
 % if env_agents == []:

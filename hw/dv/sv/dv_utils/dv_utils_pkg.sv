@@ -26,6 +26,7 @@ package dv_utils_pkg;
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
   typedef virtual pins_if #(NUM_MAX_ALERTS)     alerts_vif;
   typedef virtual pins_if #(1)                  devmode_vif;
+  typedef virtual tlul_assert                   tlul_assert_vif;
 
   // interface direction / mode - Host or Device
   typedef enum bit {
@@ -53,6 +54,12 @@ package dv_utils_pkg;
     CompareOpLt,
     CompareOpLe
   } compare_op_e;
+
+  // mem address struct
+  typedef struct {
+    uvm_reg_addr_t start_addr;
+    uvm_reg_addr_t end_addr;
+  } mem_addr_s;
 
   string msg_id = "dv_utils_pkg";
 

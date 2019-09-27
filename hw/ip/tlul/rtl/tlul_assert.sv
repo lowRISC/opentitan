@@ -4,7 +4,7 @@
 
 // Protocol checker for TL-UL ports using assertions
 
-module tlul_assert (
+interface tlul_assert (
   input clk_i,
   input rst_ni,
 
@@ -158,5 +158,25 @@ module tlul_assert (
   `ASSERT_KNOWN(aReadyKnown, d2h.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(dReadyKnown, h2d.d_ready, clk_i, !rst_ni)
 
-endmodule
+  // create functions to enable or disable assertions
+  `define create_sva_ctrl_function(sva_name_) \
+    function void enable_``sva_name_``(); \
+      `ifndef VERILATOR \
+        $asserton(1, sva_name_); \
+       `endif \
+    endfunction \
+    \
+    function void disable_``sva_name_``(); \
+      `ifndef VERILATOR \
+        $assertoff(1, sva_name_); \
+      `endif \
+    endfunction
+
+  `create_sva_ctrl_function(sizeMatchesMask)
+  `create_sva_ctrl_function(addressAlignedToSize)
+  `create_sva_ctrl_function(maskMustBeContiguous)
+  `create_sva_ctrl_function(sizeGTEMask)
+
+  `undef create_sva_ctrl_function
+endinterface
 
