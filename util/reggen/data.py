@@ -135,17 +135,25 @@ class Reg():
 
     def get_nested_dims(self):
         """Recursively get dimensions of nested registers (outputs a list)"""
-        dims = []
-        if self.is_multi_reg():
-            dims = self.fields[0].get_nested_dims()
-        return [len(self.fields)] + dims
+        # return length of flattened field array if this is a regular register,
+        # or if this is the last multiregister level in a nested multiregister
+        if not isinstance(self, MultiReg) or \
+            isinstance(self, MultiReg) and   \
+            not isinstance(self.fields[0], MultiReg):
+            dims = [len(self.get_fields_flat())]
+        else:
+        # nested multiregister case
+            dims = [len(self.fields)] + self.fields[0].get_nested_dims()
+        return dims
 
     def get_nested_params(self):
         """Recursively get parameters of nested registers (outputs a list)"""
         params = []
-        if self.is_multi_reg():
-            params = self.fields[0].get_nested_params()
-        return [self.param] + params
+        if isinstance(self, MultiReg):
+            params += [self.param]
+        if isinstance(self.fields[0], MultiReg):
+            params += self.fields[0].get_nested_params()
+        return params
 
 
 class MultiReg(Reg):

@@ -46,9 +46,8 @@ typedef struct packed {
   ######################## multiregister ###########################
   % if r.is_multi_reg() and r.get_n_bits(["q"]):
   <%
-  dims = r.get_nested_dims()
   array_dims = ""
-  for d in dims[1:]:
+  for d in r.get_nested_dims():
     array_dims += "[%d:0]" % (d-1)
   %>${block.name + "_reg2hw_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]) - 1)}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>
   ######################## register with single field ###########################
@@ -116,9 +115,8 @@ typedef struct packed {
   ######################## multiregister ###########################
   % if r.is_multi_reg() and r.get_n_bits(["d"]):
   <%
-  dims = r.get_nested_dims()
   array_dims = ""
-  for d in dims[1:]:
+  for d in r.get_nested_dims():
     array_dims += "[%d:0]" % (d-1)
   %>${block.name + "_hw2reg_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit}:${nbits - (packbit + r.get_n_bits(["d", "de"]) - 1)}]<% packbit += r.get_n_bits(["d", "de"]) %>
   ######################## register with single field ###########################
