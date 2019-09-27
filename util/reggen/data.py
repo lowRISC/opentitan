@@ -4,6 +4,14 @@
 
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
+# helper funtion that strips trailing number from name
+# TODO: this is a workaround, should solve this in validate.py
+def _get_basename(name):
+    outname = ""
+    for (k, c) in enumerate(name[::-1]):
+        if not str.isdigit(c):
+            return name[0:len(name)-k]
+    return ""
 
 class Field():
     """Field in a register.
@@ -54,6 +62,8 @@ class Field():
     def get_fields_flat(self):
         return [self]
 
+    def get_basename(self):
+        return _get_basename(self.name)
 
 class Reg():
     name = ""
@@ -66,6 +76,7 @@ class Reg():
     regwen = ""
     fields = []
     width = 0  # indicate register size
+    ishomog = 0
 
     def __init__(self, name=""):
         self.name = name
@@ -78,6 +89,7 @@ class Reg():
         self.regwen = ""
         self.fields = []
         self.width = 0
+        self.ishomog = 0
 
     def is_multi_reg(self):
         """Returns true if this is a multireg"""
@@ -137,10 +149,14 @@ class Reg():
         """Recursively get dimensions of nested registers (outputs a list)"""
         # return length of flattened field array if this is a regular register,
         # or if this is the last multiregister level in a nested multiregister
-        if not isinstance(self, MultiReg) or \
-            isinstance(self, MultiReg) and   \
-            not isinstance(self.fields[0], MultiReg):
+        if not isinstance(self, MultiReg):
             dims = [len(self.get_fields_flat())]
+        if  isinstance(self, MultiReg) and   \
+            not isinstance(self.fields[0], MultiReg):
+            if self.ishomog:
+                dims = [len(self.get_fields_flat())]
+            else:
+                dims = [len(self.fields)]
         else:
         # nested multiregister case
             dims = [len(self.fields)] + self.fields[0].get_nested_dims()
@@ -154,6 +170,9 @@ class Reg():
         if isinstance(self.fields[0], MultiReg):
             params += self.fields[0].get_nested_params()
         return params
+
+    def get_basename(self):
+        return _get_basename(self.name)
 
 
 class MultiReg(Reg):
@@ -220,3 +239,11 @@ class Block():
 
     def get_n_regs_flat(self):
         return len(self.get_regs_flat())
+
+    def contains_multiregs(self):
+        """Returns true if there are multiregs in this block
+        """
+        for r in self.regs:
+            if isinstance(r, MultiReg):
+                return True
+        return False

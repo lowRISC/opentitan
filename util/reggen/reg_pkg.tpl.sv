@@ -17,11 +17,14 @@ package ${block.name}_reg_pkg;
   localparam ${param["type"]} ${param["name"]} = ${param["default"]};
 % endfor
 
+% if block.contains_multiregs():
 /////////////////////////////////////////////////////////////////////
 // Typedefs for multiregs
 /////////////////////////////////////////////////////////////////////
+
 % for r in block.regs:
-% if r.is_multi_reg() and r.get_n_bits(["q"]):
+  ## in this case we have a homogeneous multireg, with only one replicated field
+  % if r.is_multi_reg() and r.get_n_bits(["q"]) and r.ishomog:
 typedef struct packed {
   logic [${r.get_field_flat(0).get_n_bits()-1}:0] q;
   % if r.get_field_flat(0).hwqe:
@@ -31,9 +34,49 @@ typedef struct packed {
   logic re;
   % endif
 } ${block.name + "_reg2hw_" + r.name + "_mreg_t"};
-% endif
+  ## in this case we have an inhomogeneous multireg, with several different fields per register
+  % elif r.is_multi_reg() and r.get_n_bits(["q"]) and not r.ishomog:
+typedef struct packed {
+    % for f in r.get_reg_flat(0).fields:
+  struct packed {
+    logic [${f.get_n_bits()-1}:0] q;
+      % if f.hwqe:
+    logic qe;
+      % endif
+      % if f.hwre:
+    logic re;
+      % endif
+  } ${f.get_basename()};
+    %endfor
+} ${block.name + "_reg2hw_" + r.name + "_mreg_t"};
+  %endif
 % endfor
 
+% for r in block.regs:
+ ## in this case we have a homogeneous multireg, with only one replicated field
+  % if r.is_multi_reg() and r.get_n_bits(["d"]) and r.ishomog:
+typedef struct packed {
+  logic [${r.get_field_flat(0).get_n_bits(["d"])-1}:0] d;
+    % if not r.get_reg_flat(0).hwext:
+  logic de;
+    % endif
+} ${block.name + "_hw2reg_" + r.name + "_mreg_t"};
+  ## in this case we have an inhomogeneous multireg, with several different fields per register
+  % elif r.is_multi_reg() and r.get_n_bits(["d"]) and not r.ishomog:
+typedef struct packed {
+    % for f in r.get_reg_flat(0).fields:
+  struct packed {
+    logic [${f.get_n_bits(["d"])-1}:0] d;
+      % if not r.hwext:
+    logic de;
+      % endif
+  } ${f.get_basename()};
+    %endfor
+} ${block.name + "_hw2reg_" + r.name + "_mreg_t"};
+  % endif
+% endfor
+
+% endif
 /////////////////////////////////////////////////////////////////////
 // Register to internal design logic
 /////////////////////////////////////////////////////////////////////
@@ -87,21 +130,6 @@ typedef struct packed {
   % endif
 % endfor
 } ${block.name}_reg2hw_t;
-
-/////////////////////////////////////////////////////////////////////
-// Typedefs for multiregs
-/////////////////////////////////////////////////////////////////////
-
-% for r in block.regs:
-% if r.is_multi_reg() and r.get_n_bits(["d"]):
-typedef struct packed {
-  logic [${r.get_field_flat(0).get_n_bits()-1}:0] d;
-  % if not r.get_reg_flat(0).hwext:
-  logic de;
-  % endif
-} ${block.name + "_hw2reg_" + r.name + "_mreg_t"};
-% endif
-% endfor
 
 /////////////////////////////////////////////////////////////////////
 // Internal design logic to register

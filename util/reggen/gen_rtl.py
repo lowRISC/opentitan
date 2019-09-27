@@ -70,6 +70,8 @@ def parse_reg(obj):
         # since this is a multireg, the list of fields can
         # contain regs or multiregs
         reg.fields = regs
+        # a homogenous multireg contains only one single field that is replicated
+        reg.ishomog = len(obj['multireg']['fields']) == 1
         # TODO: need to rework this once the underlying JSON has been changed
         reg.name = escape_name(obj['multireg']['name'])
         # TODO: need to reference proper param here such that it can be used
