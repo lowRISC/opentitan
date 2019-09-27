@@ -15,10 +15,11 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
   local uint64 timer_val[NUM_HARTS];
   local uint64 compare_val[NUM_HARTS][NUM_TIMERS];
   local uint   num_clks[NUM_HARTS][NUM_TIMERS];
-  local bit [NUM_TIMERS-1:0] en_timers[NUM_HARTS];
-  local bit [NUM_TIMERS-1:0] en_timers_prev[NUM_HARTS];
-  local bit [NUM_TIMERS-1:0] en_interrupt[NUM_HARTS];
-  local bit [NUM_TIMERS-1:0] ignore_period[NUM_HARTS];
+  local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] en_timers;
+  local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] en_timers_prev;
+  local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] en_interrupt;
+  local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] ignore_period;
+  local bit [NUM_HARTS-1:0] num_clk_update_due;
 
   // expected values
   local uint intr_status_exp[NUM_HARTS];
@@ -165,8 +166,14 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
               end
               else begin
-                if (!uvm_re_match("timer_v_lower*", csr_name)) timer_val[i][31:0] = item.d_data;
-                else timer_val[i][63:32] = item.d_data;
+                if (!uvm_re_match("timer_v_lower*", csr_name)) begin
+                  timer_val[i][31:0] = item.d_data;
+                  // on timer_val read update num_clks
+                  num_clk_update_due[i] = 1'b1;
+                end
+                else begin
+                  timer_val[i][63:32] = item.d_data;
+                end
               end
               break;
             end
@@ -188,18 +195,24 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
   // Task : compute_and_check_interrupt
   // wait for expected # of clocks and check for interrupt state reg and pin
   virtual task compute_and_check_interrupt();
+    bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] reset_count;
 
     fork
       begin
         forever begin : compute_num_clks
           // calculate number of clocks required to have interrupt
-          @(en_timers or step or prescale or timer_val or compare_val);
+          @(en_timers or num_clk_update_due);
           wait(under_reset == 0);
           foreach (en_timers[i, j]) begin
             uint64 mtime_diff = compare_val[i][j] - timer_val[i];
             num_clks[i][j] = ((mtime_diff / step[i]) +
                               ((mtime_diff % step[i]) != 0)) * (prescale[i] + 1) + 1;
           end
+          // reset count if timer is enabled and num_clks got updated
+          for (int i = 0; i < NUM_HARTS; i++) begin
+            if (num_clk_update_due[i]) reset_count[i] = en_timers[i];
+          end
+          num_clk_update_due = '0;
         end // compute_num_clks
       end
     join_none
@@ -216,17 +229,15 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
             fork
               begin
                 uint64 count = 0;
-                uint64 num_clks_latest = num_clks[a_i][a_j];
-                uint   num_clks_prev   = num_clks[a_i][a_j];
                 en_timers_prev[a_i][a_j] = 1'b1;
                 forever begin
                   @cfg.clk_rst_vif.cb;
                   count = count + 1;
-                  if (num_clks_prev != num_clks[a_i][a_j]) begin
-                    num_clks_latest = count + num_clks[a_i][a_j];
-                    num_clks_prev = num_clks[a_i][a_j];
+                  if (reset_count[a_i][a_j] == 1'b1) begin
+                    count = 0;
+                    reset_count[a_i][a_j] = 1'b0;
                   end
-                  if (count >= num_clks_latest) break;
+                  if (count >= num_clks[a_i][a_j]) break;
                 end
                 // enabling one clock cycle of ignore period
                 ignore_period[a_i][a_j] = 1'b1;
