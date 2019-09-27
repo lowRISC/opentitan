@@ -200,7 +200,11 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
           % for f in sr.fields:
 <%
             finst_name = sr.name + "_" + f.name
-            fsig_name = r.name + "[%d]" % k
+            if r.ishomog:
+              fsig_name = r.name + "[%d]" % k
+              k = k + 1
+            else:
+              fsig_name = r.name + "[%d]" % k + "." + f.get_basename()
             msb = f.msb
             lsb = f.lsb
             swaccess = f.swaccess
@@ -212,11 +216,14 @@ ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, h
             hwext = sr.hwext
             resval = f.resval
             regwen = sr.regwen
-            k = k + 1
 %>
   // F[${f.name}]: ${f.msb}:${f.lsb}
 ${finst_gen(finst_name, fsig_name, msb, lsb, swaccess, swrdaccess, swwraccess, hwaccess, hwqe, hwre, hwext, resval, regwen)}
           % endfor
+<%
+          if not r.ishomog:
+            k += 1
+%>
         % endif
       ## for: mreg_flat
       % endfor
