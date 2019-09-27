@@ -114,6 +114,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                   intr_state_write_to_clear_update.reg_value[each_bit] == 1'b1 &&
                   item.a_data[each_bit] == 1'b1) begin
                 intr_state_write_to_clear_update.reg_value[each_bit] = 1'b0;
+                if (cfg.en_cov) begin
+                  cov.intr_state_cg[each_bit].sample(1'b0);
+                end
               end
             end
             // If same time stamp as last entry, update entry to account for "still active" event
@@ -149,6 +152,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         if (do_read_check) begin
           // Checker-2: Check if reg read data matches expected value or not
           `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
+          // Checker-3: Check value of interrupt pins against predicted value
+          if (csr.get_name() == "intr_state") begin
+            bit [TL_DW-1:0] pred_val_intr_pins = csr.get_mirrored_value() &
+                                                 ral.intr_enable.get_mirrored_value();
+            `DV_CHECK_EQ(cfg.intr_vif.pins, pred_val_intr_pins)
+          end
         end
       end // if (write == 0)
     end
@@ -164,6 +173,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       `uvm_info(`gfn, $sformatf("cfg.gpio_vif.pins = %0h, under_reset = %0b",
                                 cfg.gpio_vif.pins, under_reset), UVM_HIGH)
       if (under_reset == 1'b0) begin
+        // Coverage Sampling-1: gpio pin values' coverage
+        if (cfg.en_cov) begin
+          foreach (cov.gpio_pin_values_cg[each_pin]) begin
+            cov.gpio_pin_values_cg[each_pin].sample(cfg.gpio_vif.pins[each_pin]);
+          end
+        end
         // evaluate gpio input driven to dut
         foreach (cfg.gpio_vif.pins_oe[pin_num]) begin
           if (cfg.gpio_vif.pins_oe[pin_num] == 1'b1) begin
@@ -460,57 +475,113 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     input gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
 
     string msg_id = {`gfn, $sformatf(" gpio_interrupt_predict: ")};
-    bit [NUM_GPIOS-1:0] intr_state           = ral.intr_state.get_mirrored_value();
-    bit [NUM_GPIOS-1:0] intr_ctrl_en_rising  = ral.intr_ctrl_en_rising.get_mirrored_value();
-    bit [NUM_GPIOS-1:0] intr_ctrl_en_falling = ral.intr_ctrl_en_falling.get_mirrored_value();
-    bit [NUM_GPIOS-1:0] intr_ctrl_en_lvlhigh = ral.intr_ctrl_en_lvlhigh.get_mirrored_value();
-    bit [NUM_GPIOS-1:0] intr_ctrl_en_lvllow  = ral.intr_ctrl_en_lvllow.get_mirrored_value();
+    bit [TL_DW-1:0] intr_enable          = ral.intr_enable.get_mirrored_value();
+    bit [TL_DW-1:0] intr_state           = ral.intr_state.get_mirrored_value();
+    bit [TL_DW-1:0] intr_ctrl_en_rising  = ral.intr_ctrl_en_rising.get_mirrored_value();
+    bit [TL_DW-1:0] intr_ctrl_en_falling = ral.intr_ctrl_en_falling.get_mirrored_value();
+    bit [TL_DW-1:0] intr_ctrl_en_lvlhigh = ral.intr_ctrl_en_lvlhigh.get_mirrored_value();
+    bit [TL_DW-1:0] intr_ctrl_en_lvllow  = ral.intr_ctrl_en_lvllow.get_mirrored_value();
     // expected(predicted) value of interrupt status
-    bit [NUM_GPIOS-1:0] exp_intr_status;
+    bit [TL_DW-1:0] exp_intr_status;
 
+    // Reset value of last_intr_update_except_clearing to 0
+    last_intr_update_except_clearing = '0;
+    // Check if there is already INTR_STATE value update which was already due
+    // for update, but not actually updated
     if (intr_state_update_queue.size() > 0) begin
-      // Check if there is already INTR_STATE value update which was already due
-      // for update, but not actually updated
       if (intr_state_update_queue[$].needs_update) begin
         intr_state = intr_state_update_queue[$].reg_value;
       end
     end
 
-    // Reset value of last_intr_update_except_clearing to 0
-    last_intr_update_except_clearing = '0;
+    // Coverage Sampling-2: gpio interrupt types
+    if (cfg.en_cov) begin
+      foreach (intr_ctrl_en_rising[each_bit]) begin
+        cov.intr_ctrl_en_rising_cg [each_bit].sample(intr_ctrl_en_rising[each_bit]);
+        cov.intr_ctrl_en_falling_cg[each_bit].sample(intr_ctrl_en_falling[each_bit]);
+        cov.intr_ctrl_en_lvlhigh_cg[each_bit].sample(intr_ctrl_en_lvlhigh[each_bit]);
+        cov.intr_ctrl_en_lvllow_cg [each_bit].sample(intr_ctrl_en_lvllow[each_bit]);
+        // Interrupt Test coverage
+        cov.intr_test_cg.sample(each_bit,
+                                last_intr_test_event[each_bit],
+                                intr_enable[each_bit],
+                                last_intr_test_event[each_bit]);
+      end
+    end
     // 1. Look for edge triggerred interrupts
-    if (gpio_i_transition != {NUM_GPIOS{2'b00}}) begin
-      foreach (gpio_i_transition[each_pin]) begin
-        if (gpio_i_transition[each_pin].transition_occurred) begin
-          if ((gpio_i_transition[each_pin].is_rising_edge == 1'b0 &&
-               intr_ctrl_en_falling[each_pin] == 1'b1) ||
-              (gpio_i_transition[each_pin].is_rising_edge == 1'b1 &&
-               intr_ctrl_en_rising[each_pin] == 1'b1))
-              begin
-            exp_intr_status[each_pin] = 1'b1;
-            // Register the latest edge triggered gpio interrupt update, if any
-            last_intr_update_except_clearing[each_pin] = 1'b1;
-          end else begin
-            exp_intr_status[each_pin] = intr_state[each_pin];
+    begin
+      bit [TL_DW-1:0] rising_edge_intr_events, falling_edge_intr_events;
+      if (gpio_i_transition != {NUM_GPIOS{2'b00}}) begin
+        foreach (rising_edge_intr_events[each_bit]) begin
+          if (gpio_i_transition[each_bit].transition_occurred) begin
+            rising_edge_intr_events[each_bit]  = gpio_i_transition[each_bit].is_rising_edge &
+                                                 intr_ctrl_en_rising[each_bit];
+            falling_edge_intr_events[each_bit] = !gpio_i_transition[each_bit].is_rising_edge &
+                                                 intr_ctrl_en_falling[each_bit];
           end
+        end
+        foreach (gpio_i_transition[each_bit]) begin
+          if (gpio_i_transition[each_bit].transition_occurred) begin
+            if (rising_edge_intr_events[each_bit] || falling_edge_intr_events[each_bit]) begin
+              exp_intr_status[each_bit] = 1'b1;
+              // Register the latest edge triggered gpio interrupt update, if any
+              last_intr_update_except_clearing[each_bit] = 1'b1;
+            end else begin
+              exp_intr_status[each_bit] = intr_state[each_bit];
+            end
+          end
+        end
+      end
+      // Cross coverage of (edge tiggered intr type)x(enable)x(state) when type is enabled
+      if (cfg.en_cov) begin
+        foreach (rising_edge_intr_events[each_bit]) begin
+          cov.rising_edge_intr_event_cg[each_bit].sample(intr_ctrl_en_rising[each_bit],
+                                                         intr_enable[each_bit],
+                                                         rising_edge_intr_events[each_bit]);
+          cov.falling_edge_intr_event_cg[each_bit].sample(intr_ctrl_en_falling[each_bit],
+                                                          intr_enable[each_bit],
+                                                          falling_edge_intr_events[each_bit]);
         end
       end
     end
     // 2. Look for level triggerred interrupts
-    for (uint each_pin = 0; each_pin < TL_DW; each_pin++) begin
-      if (exp_intr_status[each_pin] == 1'b0) begin
-        if ((cfg.gpio_vif.pins[each_pin] == 1'b1 && intr_ctrl_en_lvlhigh[each_pin] == 1'b1) ||
-            (cfg.gpio_vif.pins[each_pin] == 1'b0 && intr_ctrl_en_lvllow[each_pin] == 1'b1)) begin
-          exp_intr_status[each_pin] = 1'b1;
-          // Register the latest level triggered gpio interrupt update, if any
-          last_intr_update_except_clearing[each_pin] = 1'b1;
-        end else begin
-          exp_intr_status[each_pin] = intr_state[each_pin];
+    begin
+      bit [TL_DW-1:0] lvlhigh_intr_events, lvllow_intr_events;
+      for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
+        lvlhigh_intr_events[each_bit] = (cfg.gpio_vif.pins[each_bit] == 1'b1) &&
+                                        (intr_ctrl_en_lvlhigh[each_bit] == 1'b1);
+        lvllow_intr_events[each_bit]  = (cfg.gpio_vif.pins[each_bit] == 1'b0) &&
+                                        (intr_ctrl_en_lvllow[each_bit] == 1'b1);
+        if (exp_intr_status[each_bit] == 1'b0) begin
+          if (lvlhigh_intr_events[each_bit] || lvllow_intr_events[each_bit]) begin
+            exp_intr_status[each_bit] = 1'b1;
+            // Register the latest level triggered gpio interrupt update, if any
+            last_intr_update_except_clearing[each_bit] = 1'b1;
+          end else begin
+            exp_intr_status[each_bit] = intr_state[each_bit];
+          end
+        end
+      end
+      // Cross coverage of (edge tiggered intr type)x(enable)x(state) when type is enabled
+      if (cfg.en_cov) begin
+        foreach (lvlhigh_intr_events[each_bit]) begin
+          cov.lvlhigh_intr_event_cg[each_bit].sample(intr_ctrl_en_lvlhigh[each_bit],
+                                                     intr_enable[each_bit],
+                                                     lvlhigh_intr_events[each_bit]);
+          cov.lvllow_intr_event_cg[each_bit].sample(intr_ctrl_en_lvllow[each_bit],
+                                                    intr_enable[each_bit],
+                                                    lvllow_intr_events[each_bit]);
         end
       end
     end
     // 3. Apply effect of "Interrupt Test"
     exp_intr_status |= last_intr_test_event;
+    if (cfg.en_cov) begin
+      foreach (exp_intr_status[each_bit]) begin
+        cov.intr_cg.sample(each_bit, intr_enable[each_bit], exp_intr_status[each_bit]);
+        cov.intr_state_cg[each_bit].sample(last_intr_update_except_clearing[each_bit]);
+      end
+    end
     // Clear last_intr_test_event
     last_intr_test_event = '0;
     `uvm_info(msg_id, $sformatf("Predicted interrupt status = 0x%0h [%0b]",

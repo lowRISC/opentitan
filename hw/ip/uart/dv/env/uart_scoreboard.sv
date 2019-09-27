@@ -324,7 +324,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           do_read_check = 1'b0;
           foreach (intr_exp[i]) begin
             intr = i; // cast to enum to get interrupt name
-            if (cfg.en_cov) cov.intr_cg.sample(intr, intr_en[intr]);
+            if (cfg.en_cov) cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
             // don't check it when it's in ignored period
             if (intr inside {TxWatermark, TxOverflow}) begin // TX interrupts
               if (is_in_ignored_period(UartTx)) continue;
