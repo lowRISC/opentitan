@@ -215,7 +215,7 @@ typedef struct packed {
     } tsu_sta;
     struct packed {
       logic [15:0] q; // [111:96]
-    } thd_st;
+    } thd_sta;
   } timing2;
   struct packed {
     struct packed {
@@ -248,62 +248,65 @@ typedef struct packed {
 
   struct packed {
     struct packed {
+      logic d;  // [75]
+      logic de; // [74]
+    } fmt_watermark;
+    struct packed {
+      logic d;  // [73]
+      logic de; // [72]
+    } rx_watermark;
+    struct packed {
+      logic d;  // [71]
+      logic de; // [70]
+    } fmt_overflow;
+    struct packed {
+      logic d;  // [69]
+      logic de; // [68]
+    } rx_overflow;
+    struct packed {
       logic d;  // [67]
       logic de; // [66]
-    } fmt_watermark;
+    } nak;
     struct packed {
       logic d;  // [65]
       logic de; // [64]
-    } rx_watermark;
+    } scl_interference;
     struct packed {
       logic d;  // [63]
       logic de; // [62]
-    } fmt_overflow;
+    } sda_interference;
     struct packed {
       logic d;  // [61]
       logic de; // [60]
-    } rx_overflow;
+    } stretch_timeout;
     struct packed {
       logic d;  // [59]
       logic de; // [58]
-    } nak;
-    struct packed {
-      logic d;  // [57]
-      logic de; // [56]
-    } scl_interference;
-    struct packed {
-      logic d;  // [55]
-      logic de; // [54]
-    } sda_interference;
-    struct packed {
-      logic d;  // [53]
-      logic de; // [52]
-    } stretch_timeout;
-    struct packed {
-      logic d;  // [51]
-      logic de; // [50]
     } sda_unstable;
   } intr_state;
   struct packed {
     struct packed {
-      logic d;  // [49]
+      logic d;  // [57]
     } fmtfull;
     struct packed {
-      logic d;  // [48]
+      logic d;  // [56]
     } rxfull;
     struct packed {
-      logic d;  // [47]
+      logic d;  // [55]
     } fmtempty;
     struct packed {
-      logic d;  // [46]
+      logic d;  // [54]
     } hostidle;
     struct packed {
-      logic d;  // [45]
+      logic d;  // [53]
     } targetidle;
     struct packed {
-      logic d;  // [44]
+      logic d;  // [52]
     } rxempty;
   } status;
+  struct packed {
+    logic [7:0] d; // [51:44]
+  } rdata;
   struct packed {
     struct packed {
       logic [5:0] d; // [43:38]

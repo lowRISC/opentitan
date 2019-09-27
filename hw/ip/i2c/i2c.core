@@ -14,6 +14,7 @@ filesets:
       - rtl/i2c_reg_pkg.sv
       - rtl/i2c_reg_top.sv
       - rtl/i2c_core.sv
+      - rtl/i2c_fsm.sv
       - rtl/i2c.sv
     file_type: systemVerilogSource
 

@@ -38,6 +38,9 @@ module i2c (
   i2c_hw2reg_t hw2reg;
 
   logic devmode;
+  logic scanmode_i;
+
+  assign scanmode_i = 1'b0;
 
   i2c_reg_top u_reg (
     .clk_i,
@@ -55,6 +58,7 @@ module i2c (
   i2c_core i2c_core (
     .clk_i,
     .rst_ni,
+    .scanmode_i,
     .reg2hw,
     .hw2reg,
 
@@ -83,5 +87,7 @@ module i2c (
 
   assign cio_scl_en_o = ~scl_int;
   assign cio_sda_en_o = ~sda_int;
+
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
 
 endmodule
