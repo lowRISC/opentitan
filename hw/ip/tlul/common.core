@@ -14,6 +14,7 @@ filesets:
       - rtl/tlul_fifo_sync.sv
       - rtl/tlul_fifo_async.sv
       - rtl/tlul_assert.sv
+      - rtl/tlul_err.sv
       - rtl/tlul_assert_multiple.sv
     file_type: systemVerilogSource
 

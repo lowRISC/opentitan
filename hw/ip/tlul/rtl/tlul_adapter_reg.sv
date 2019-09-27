@@ -39,6 +39,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
 
   logic addr_align_err;     // Size and alignment
   logic malformed_meta_err; // User signal format error or unsupported
+  logic tl_err;             // Common TL-UL error checker
 
   logic [IW-1:0]  reqid;
   logic [SZW-1:0] reqsz;
@@ -57,7 +58,6 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   assign addr_o  = {tl_i.a_address[RegAw-1:2], 2'b00}; // generate always word-align
   assign wdata_o = tl_i.a_data;
   assign be_o    = tl_i.a_mask;
-
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)    outstanding <= 1'b0;
@@ -102,7 +102,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   };
 
   //= Error Handling ==========================================================
-  assign err_internal = addr_align_err | malformed_meta_err ;
+  assign err_internal = addr_align_err | malformed_meta_err | tl_err ;
 
   // malformed_meta_err
   //    Raised if not supported feature is turned on or user signal has malformed
@@ -121,6 +121,14 @@ module tlul_adapter_reg import tlul_pkg::*; #(
       addr_align_err = 1'b0;
     end
   end
+
+  // tl_err : separate checker
+  tlul_err u_err (
+    .clk_i,
+    .rst_ni,
+    .tl_i,
+    .err_o (tl_err)
+  );
 
   `ASSERT_INIT(MatchedWidthAssert, RegDw == top_pkg::TL_DW)
 
