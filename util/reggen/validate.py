@@ -1004,6 +1004,9 @@ def validate_multi(mreg, offset, addrsep, width, top):
     # there is only one entry, so the index is unnecessary.  Pop and re-assign names
     # associated with the index
     if len(rlist) == 1:
+        if regwen_incr:
+            error +=1
+            log.error("%s multireg has only 1 register entry with regwen_incr set to true" % mrname)
         # TODO really should make the following a function that reverses the last node inserted
         # may have more properties than just genrnames in the future
         rlist[0]['name'] = mrname
