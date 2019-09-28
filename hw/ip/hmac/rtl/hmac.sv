@@ -93,27 +93,16 @@ module hmac (
   // secret key
   assign wipe_secret = reg2hw.wipe_secret.qe;
   assign wipe_v      = reg2hw.wipe_secret.q;
-  assign secret_key = {reg2hw.key0.q, reg2hw.key1.q, reg2hw.key2.q, reg2hw.key3.q,
-                       reg2hw.key4.q, reg2hw.key5.q, reg2hw.key6.q, reg2hw.key7.q};
-  assign hw2reg.key0.de = wipe_secret;
-  assign hw2reg.key1.de = wipe_secret;
-  assign hw2reg.key2.de = wipe_secret;
-  assign hw2reg.key3.de = wipe_secret;
-  assign hw2reg.key4.de = wipe_secret;
-  assign hw2reg.key5.de = wipe_secret;
-  assign hw2reg.key6.de = wipe_secret;
-  assign hw2reg.key7.de = wipe_secret;
-  assign {hw2reg.key0.d, hw2reg.key1.d, hw2reg.key2.d, hw2reg.key3.d,
-          hw2reg.key4.d, hw2reg.key5.d, hw2reg.key6.d, hw2reg.key7.d } = secret_key ^ {8{wipe_v}};
-  // digest
-  assign hw2reg.digest0.d = conv_endian(digest[0], digest_swap);
-  assign hw2reg.digest1.d = conv_endian(digest[1], digest_swap);
-  assign hw2reg.digest2.d = conv_endian(digest[2], digest_swap);
-  assign hw2reg.digest3.d = conv_endian(digest[3], digest_swap);
-  assign hw2reg.digest4.d = conv_endian(digest[4], digest_swap);
-  assign hw2reg.digest5.d = conv_endian(digest[5], digest_swap);
-  assign hw2reg.digest6.d = conv_endian(digest[6], digest_swap);
-  assign hw2reg.digest7.d = conv_endian(digest[7], digest_swap);
+
+  for (genvar i = 0; i < 8; i++) begin : gen_key_digest
+    // secret key
+    assign secret_key[32*i +: 32] = reg2hw.key[7-i].q;
+    assign hw2reg.key[i].de       = wipe_secret;
+    assign hw2reg.key[7-i].d      = secret_key[32*i +: 32] ^ wipe_v;
+    // digest
+    assign hw2reg.digest[i].d = conv_endian(digest[i], digest_swap);
+  end
+
 
   assign sha_en = reg2hw.cfg.sha_en.q;
   assign hmac_en = reg2hw.cfg.hmac_en.q;

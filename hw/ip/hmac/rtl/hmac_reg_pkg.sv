@@ -9,9 +9,27 @@ package hmac_reg_pkg;
   // Param list
   localparam int NumWords = 8;
 
-// Register to internal design logic
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
+// Typedefs for multiregs
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
+  logic [31:0] q;
+} hmac_reg2hw_key_mreg_t;
+
+typedef struct packed {
+  logic [31:0] d;
+  logic de;
+} hmac_hw2reg_key_mreg_t;
+typedef struct packed {
+  logic [31:0] d;
+} hmac_hw2reg_digest_mreg_t;
+
+/////////////////////////////////////////////////////////////////////
+// Register to internal design logic
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
   struct packed {
     struct packed {
       logic q; // [304]
@@ -66,112 +84,37 @@ typedef struct packed {
     logic [31:0] q; // [288:257]
     logic qe; // [256]
   } wipe_secret;
-  struct packed {
-    logic [31:0] q; // [255:224]
-  } key0;
-  struct packed {
-    logic [31:0] q; // [223:192]
-  } key1;
-  struct packed {
-    logic [31:0] q; // [191:160]
-  } key2;
-  struct packed {
-    logic [31:0] q; // [159:128]
-  } key3;
-  struct packed {
-    logic [31:0] q; // [127:96]
-  } key4;
-  struct packed {
-    logic [31:0] q; // [95:64]
-  } key5;
-  struct packed {
-    logic [31:0] q; // [63:32]
-  } key6;
-  struct packed {
-    logic [31:0] q; // [31:0]
-  } key7;
+  hmac_reg2hw_key_mreg_t [7:0] key; // [255:0]
 } hmac_reg2hw_t;
 
+/////////////////////////////////////////////////////////////////////
 // Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
   struct packed {
     struct packed {
-      logic d;  // [596]
+      logic d; // [596]
       logic de; // [595]
     } hmac_done;
     struct packed {
-      logic d;  // [594]
+      logic d; // [594]
       logic de; // [593]
     } fifo_full;
   } intr_state;
   struct packed {
     struct packed {
-      logic d;  // [592]
+      logic d; // [592]
     } fifo_empty;
     struct packed {
-      logic d;  // [591]
+      logic d; // [591]
     } fifo_full;
     struct packed {
       logic [4:0] d; // [590:586]
     } fifo_depth;
   } status;
-  struct packed {
-    logic [31:0] d; // [585:554]
-    logic de; // [553]
-  } key0;
-  struct packed {
-    logic [31:0] d; // [552:521]
-    logic de; // [520]
-  } key1;
-  struct packed {
-    logic [31:0] d; // [519:488]
-    logic de; // [487]
-  } key2;
-  struct packed {
-    logic [31:0] d; // [486:455]
-    logic de; // [454]
-  } key3;
-  struct packed {
-    logic [31:0] d; // [453:422]
-    logic de; // [421]
-  } key4;
-  struct packed {
-    logic [31:0] d; // [420:389]
-    logic de; // [388]
-  } key5;
-  struct packed {
-    logic [31:0] d; // [387:356]
-    logic de; // [355]
-  } key6;
-  struct packed {
-    logic [31:0] d; // [354:323]
-    logic de; // [322]
-  } key7;
-  struct packed {
-    logic [31:0] d; // [321:290]
-  } digest0;
-  struct packed {
-    logic [31:0] d; // [289:258]
-  } digest1;
-  struct packed {
-    logic [31:0] d; // [257:226]
-  } digest2;
-  struct packed {
-    logic [31:0] d; // [225:194]
-  } digest3;
-  struct packed {
-    logic [31:0] d; // [193:162]
-  } digest4;
-  struct packed {
-    logic [31:0] d; // [161:130]
-  } digest5;
-  struct packed {
-    logic [31:0] d; // [129:98]
-  } digest6;
-  struct packed {
-    logic [31:0] d; // [97:66]
-  } digest7;
+  hmac_hw2reg_key_mreg_t [7:0] key; // [585:322]
+  hmac_hw2reg_digest_mreg_t [7:0] digest; // [321:66]
   struct packed {
     logic [31:0] d; // [65:34]
     logic de; // [33]
