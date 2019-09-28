@@ -318,72 +318,28 @@ module flash_ctrl (
   flash_mp_region_t region_cfgs[MpRegions+1];
   logic [NumBanks-1:0] bank_cfgs;
 
-  // TODO: Templatize the assigments below
-  assign bank_cfgs[0] = reg2hw.mp_bank_cfg.erase_en0.q;
-  assign bank_cfgs[1] = reg2hw.mp_bank_cfg.erase_en1.q;
+  // TODO: reuse generated type from reg_pkg?
+  for (genvar k = 0; k < NumBanks; k++) begin : gen_mp_bank_cfgs
+    assign bank_cfgs[k] = reg2hw.mp_bank_cfg[k].q;
+  end
 
-  assign region_cfgs[0].base_page = reg2hw.mp_region_cfg0.base0.q;
-  assign region_cfgs[0].size      = reg2hw.mp_region_cfg0.size0.q;
-  assign region_cfgs[0].en        = reg2hw.mp_region_cfg0.en0.q;
-  assign region_cfgs[0].rd_en     = reg2hw.mp_region_cfg0.rd_en0.q;
-  assign region_cfgs[0].prog_en   = reg2hw.mp_region_cfg0.prog_en0.q;
-  assign region_cfgs[0].erase_en  = reg2hw.mp_region_cfg0.erase_en0.q;
-
-  assign region_cfgs[1].base_page = reg2hw.mp_region_cfg1.base1.q;
-  assign region_cfgs[1].size      = reg2hw.mp_region_cfg1.size1.q;
-  assign region_cfgs[1].en        = reg2hw.mp_region_cfg1.en1.q;
-  assign region_cfgs[1].rd_en     = reg2hw.mp_region_cfg1.rd_en1.q;
-  assign region_cfgs[1].prog_en   = reg2hw.mp_region_cfg1.prog_en1.q;
-  assign region_cfgs[1].erase_en  = reg2hw.mp_region_cfg1.erase_en1.q;
-
-  assign region_cfgs[2].base_page = reg2hw.mp_region_cfg2.base2.q;
-  assign region_cfgs[2].size      = reg2hw.mp_region_cfg2.size2.q;
-  assign region_cfgs[2].en        = reg2hw.mp_region_cfg2.en2.q;
-  assign region_cfgs[2].rd_en     = reg2hw.mp_region_cfg2.rd_en2.q;
-  assign region_cfgs[2].prog_en   = reg2hw.mp_region_cfg2.prog_en2.q;
-  assign region_cfgs[2].erase_en  = reg2hw.mp_region_cfg2.erase_en2.q;
-
-  assign region_cfgs[3].base_page = reg2hw.mp_region_cfg3.base3.q;
-  assign region_cfgs[3].size      = reg2hw.mp_region_cfg3.size3.q;
-  assign region_cfgs[3].en        = reg2hw.mp_region_cfg3.en3.q;
-  assign region_cfgs[3].rd_en     = reg2hw.mp_region_cfg3.rd_en3.q;
-  assign region_cfgs[3].prog_en   = reg2hw.mp_region_cfg3.prog_en3.q;
-  assign region_cfgs[3].erase_en  = reg2hw.mp_region_cfg3.erase_en3.q;
-
-  assign region_cfgs[4].base_page = reg2hw.mp_region_cfg4.base4.q;
-  assign region_cfgs[4].size      = reg2hw.mp_region_cfg4.size4.q;
-  assign region_cfgs[4].en        = reg2hw.mp_region_cfg4.en4.q;
-  assign region_cfgs[4].rd_en     = reg2hw.mp_region_cfg4.rd_en4.q;
-  assign region_cfgs[4].prog_en   = reg2hw.mp_region_cfg4.prog_en4.q;
-  assign region_cfgs[4].erase_en  = reg2hw.mp_region_cfg4.erase_en4.q;
-
-  assign region_cfgs[5].base_page = reg2hw.mp_region_cfg5.base5.q;
-  assign region_cfgs[5].size      = reg2hw.mp_region_cfg5.size5.q;
-  assign region_cfgs[5].en        = reg2hw.mp_region_cfg5.en5.q;
-  assign region_cfgs[5].rd_en     = reg2hw.mp_region_cfg5.rd_en5.q;
-  assign region_cfgs[5].prog_en   = reg2hw.mp_region_cfg5.prog_en5.q;
-  assign region_cfgs[5].erase_en  = reg2hw.mp_region_cfg5.erase_en5.q;
-
-  assign region_cfgs[6].base_page = reg2hw.mp_region_cfg6.base6.q;
-  assign region_cfgs[6].size      = reg2hw.mp_region_cfg6.size6.q;
-  assign region_cfgs[6].en        = reg2hw.mp_region_cfg6.en6.q;
-  assign region_cfgs[6].rd_en     = reg2hw.mp_region_cfg6.rd_en6.q;
-  assign region_cfgs[6].prog_en   = reg2hw.mp_region_cfg6.prog_en6.q;
-  assign region_cfgs[6].erase_en  = reg2hw.mp_region_cfg6.erase_en6.q;
-
-  assign region_cfgs[7].base_page = reg2hw.mp_region_cfg7.base7.q;
-  assign region_cfgs[7].size      = reg2hw.mp_region_cfg7.size7.q;
-  assign region_cfgs[7].en        = reg2hw.mp_region_cfg7.en7.q;
-  assign region_cfgs[7].rd_en     = reg2hw.mp_region_cfg7.rd_en7.q;
-  assign region_cfgs[7].prog_en   = reg2hw.mp_region_cfg7.prog_en7.q;
-  assign region_cfgs[7].erase_en  = reg2hw.mp_region_cfg7.erase_en7.q;
-
-  assign region_cfgs[8].base_page = '0;
-  assign region_cfgs[8].size      = {AllPagesW{1'b1}};
-  assign region_cfgs[8].en        = 1'b1;
-  assign region_cfgs[8].rd_en     = reg2hw.default_region.rd_en.q;
-  assign region_cfgs[8].prog_en   = reg2hw.default_region.prog_en.q;
-  assign region_cfgs[8].erase_en  = reg2hw.default_region.erase_en.q;
+  for (genvar k = 0; k <= MpRegions; k++) begin : gen_mp_region_cfg
+    if (k == MpRegions) begin : gen_last_region
+      assign region_cfgs[k].base_page = '0;
+      assign region_cfgs[k].size      = {AllPagesW{1'b1}};
+      assign region_cfgs[k].en        = 1'b1;
+      assign region_cfgs[k].rd_en     = reg2hw.default_region.rd_en.q;
+      assign region_cfgs[k].prog_en   = reg2hw.default_region.prog_en.q;
+      assign region_cfgs[k].erase_en  = reg2hw.default_region.erase_en.q;
+    end else begin : gen_region
+      assign region_cfgs[k].base_page = reg2hw.mp_region_cfg[k].base.q;
+      assign region_cfgs[k].size      = reg2hw.mp_region_cfg[k].size.q;
+      assign region_cfgs[k].en        = reg2hw.mp_region_cfg[k].en.q;
+      assign region_cfgs[k].rd_en     = reg2hw.mp_region_cfg[k].rd_en.q;
+      assign region_cfgs[k].prog_en   = reg2hw.mp_region_cfg[k].prog_en.q;
+      assign region_cfgs[k].erase_en  = reg2hw.mp_region_cfg[k].erase_en.q;
+    end
+  end
 
   // Flash memory protection
   flash_mp #(
