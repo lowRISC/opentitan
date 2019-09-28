@@ -10,9 +10,40 @@ package flash_ctrl_reg_pkg;
   localparam int NumBanks = 2;
   localparam int NumRegions = 8;
 
-// Register to internal design logic
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
+// Typedefs for multiregs
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
+  struct packed {
+    logic [0:0] q;
+  } en;
+  struct packed {
+    logic [0:0] q;
+  } rd_en;
+  struct packed {
+    logic [0:0] q;
+  } prog_en;
+  struct packed {
+    logic [0:0] q;
+  } erase_en;
+  struct packed {
+    logic [8:0] q;
+  } base;
+  struct packed {
+    logic [8:0] q;
+  } size;
+} flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
+typedef struct packed {
+  logic [0:0] q;
+} flash_ctrl_reg2hw_mp_bank_cfg_mreg_t;
+
+
+/////////////////////////////////////////////////////////////////////
+// Register to internal design logic
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
   struct packed {
     struct packed {
       logic q; // [295]
@@ -99,166 +130,7 @@ typedef struct packed {
   struct packed {
     logic [31:0] q; // [254:223]
   } addr;
-  struct packed {
-    struct packed {
-      logic q; // [222]
-    } en0;
-    struct packed {
-      logic q; // [221]
-    } rd_en0;
-    struct packed {
-      logic q; // [220]
-    } prog_en0;
-    struct packed {
-      logic q; // [219]
-    } erase_en0;
-    struct packed {
-      logic [8:0] q; // [218:210]
-    } base0;
-    struct packed {
-      logic [8:0] q; // [209:201]
-    } size0;
-  } mp_region_cfg0;
-  struct packed {
-    struct packed {
-      logic q; // [200]
-    } en1;
-    struct packed {
-      logic q; // [199]
-    } rd_en1;
-    struct packed {
-      logic q; // [198]
-    } prog_en1;
-    struct packed {
-      logic q; // [197]
-    } erase_en1;
-    struct packed {
-      logic [8:0] q; // [196:188]
-    } base1;
-    struct packed {
-      logic [8:0] q; // [187:179]
-    } size1;
-  } mp_region_cfg1;
-  struct packed {
-    struct packed {
-      logic q; // [178]
-    } en2;
-    struct packed {
-      logic q; // [177]
-    } rd_en2;
-    struct packed {
-      logic q; // [176]
-    } prog_en2;
-    struct packed {
-      logic q; // [175]
-    } erase_en2;
-    struct packed {
-      logic [8:0] q; // [174:166]
-    } base2;
-    struct packed {
-      logic [8:0] q; // [165:157]
-    } size2;
-  } mp_region_cfg2;
-  struct packed {
-    struct packed {
-      logic q; // [156]
-    } en3;
-    struct packed {
-      logic q; // [155]
-    } rd_en3;
-    struct packed {
-      logic q; // [154]
-    } prog_en3;
-    struct packed {
-      logic q; // [153]
-    } erase_en3;
-    struct packed {
-      logic [8:0] q; // [152:144]
-    } base3;
-    struct packed {
-      logic [8:0] q; // [143:135]
-    } size3;
-  } mp_region_cfg3;
-  struct packed {
-    struct packed {
-      logic q; // [134]
-    } en4;
-    struct packed {
-      logic q; // [133]
-    } rd_en4;
-    struct packed {
-      logic q; // [132]
-    } prog_en4;
-    struct packed {
-      logic q; // [131]
-    } erase_en4;
-    struct packed {
-      logic [8:0] q; // [130:122]
-    } base4;
-    struct packed {
-      logic [8:0] q; // [121:113]
-    } size4;
-  } mp_region_cfg4;
-  struct packed {
-    struct packed {
-      logic q; // [112]
-    } en5;
-    struct packed {
-      logic q; // [111]
-    } rd_en5;
-    struct packed {
-      logic q; // [110]
-    } prog_en5;
-    struct packed {
-      logic q; // [109]
-    } erase_en5;
-    struct packed {
-      logic [8:0] q; // [108:100]
-    } base5;
-    struct packed {
-      logic [8:0] q; // [99:91]
-    } size5;
-  } mp_region_cfg5;
-  struct packed {
-    struct packed {
-      logic q; // [90]
-    } en6;
-    struct packed {
-      logic q; // [89]
-    } rd_en6;
-    struct packed {
-      logic q; // [88]
-    } prog_en6;
-    struct packed {
-      logic q; // [87]
-    } erase_en6;
-    struct packed {
-      logic [8:0] q; // [86:78]
-    } base6;
-    struct packed {
-      logic [8:0] q; // [77:69]
-    } size6;
-  } mp_region_cfg6;
-  struct packed {
-    struct packed {
-      logic q; // [68]
-    } en7;
-    struct packed {
-      logic q; // [67]
-    } rd_en7;
-    struct packed {
-      logic q; // [66]
-    } prog_en7;
-    struct packed {
-      logic q; // [65]
-    } erase_en7;
-    struct packed {
-      logic [8:0] q; // [64:56]
-    } base7;
-    struct packed {
-      logic [8:0] q; // [55:47]
-    } size7;
-  } mp_region_cfg7;
+  flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [222:47]
   struct packed {
     struct packed {
       logic q; // [46]
@@ -270,14 +142,7 @@ typedef struct packed {
       logic q; // [44]
     } erase_en;
   } default_region;
-  struct packed {
-    struct packed {
-      logic q; // [43]
-    } erase_en0;
-    struct packed {
-      logic q; // [42]
-    } erase_en1;
-  } mp_bank_cfg;
+  flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [1:0] mp_bank_cfg; // [43:42]
   struct packed {
     logic [31:0] q; // [41:10]
   } scratch;
@@ -291,72 +156,74 @@ typedef struct packed {
   } fifo_lvl;
 } flash_ctrl_reg2hw_t;
 
+/////////////////////////////////////////////////////////////////////
 // Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
   struct packed {
     struct packed {
-      logic d;  // [32]
+      logic d; // [32]
       logic de; // [31]
     } prog_empty;
     struct packed {
-      logic d;  // [30]
+      logic d; // [30]
       logic de; // [29]
     } prog_lvl;
     struct packed {
-      logic d;  // [28]
+      logic d; // [28]
       logic de; // [27]
     } rd_full;
     struct packed {
-      logic d;  // [26]
+      logic d; // [26]
       logic de; // [25]
     } rd_lvl;
     struct packed {
-      logic d;  // [24]
+      logic d; // [24]
       logic de; // [23]
     } op_done;
     struct packed {
-      logic d;  // [22]
+      logic d; // [22]
       logic de; // [21]
     } op_error;
   } intr_state;
   struct packed {
     struct packed {
-      logic d;  // [20]
+      logic d; // [20]
       logic de; // [19]
     } start;
   } control;
   struct packed {
     struct packed {
-      logic d;  // [18]
+      logic d; // [18]
       logic de; // [17]
     } done;
     struct packed {
-      logic d;  // [16]
+      logic d; // [16]
       logic de; // [15]
     } err;
   } op_status;
   struct packed {
     struct packed {
-      logic d;  // [14]
+      logic d; // [14]
     } rd_full;
     struct packed {
-      logic d;  // [13]
+      logic d; // [13]
     } rd_empty;
     struct packed {
-      logic d;  // [12]
+      logic d; // [12]
     } prog_full;
     struct packed {
-      logic d;  // [11]
+      logic d; // [11]
     } prog_empty;
     struct packed {
-      logic d;  // [10]
+      logic d; // [10]
     } init_wip;
     struct packed {
       logic [8:0] d; // [9:1]
     } error_page;
     struct packed {
-      logic d;  // [0]
+      logic d; // [0]
     } error_bank;
   } status;
 } flash_ctrl_hw2reg_t;
