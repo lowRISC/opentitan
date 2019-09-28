@@ -854,6 +854,7 @@ module alert_handler_reg_top (
 
 
 
+
   // Subregister 0 of Multireg alert_class
   // R[alert_class]: V(False)
 
@@ -959,6 +960,7 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (alert_class_class_a3_qs)
   );
+
 
 
 
@@ -1070,6 +1072,7 @@ module alert_handler_reg_top (
 
 
 
+
   // Subregister 0 of Multireg loc_alert_en
   // R[loc_alert_en]: V(False)
 
@@ -1178,6 +1181,7 @@ module alert_handler_reg_top (
 
 
 
+
   // Subregister 0 of Multireg loc_alert_class
   // R[loc_alert_class]: V(False)
 
@@ -1283,6 +1287,7 @@ module alert_handler_reg_top (
     // to register interface (read)
     .qs     (loc_alert_class_class_la3_qs)
   );
+
 
 
   // R[loc_alert_cause]: V(False)
