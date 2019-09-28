@@ -46,7 +46,7 @@ module rv_timer (
   ///////////////////////////////////////////////////////////////////
   // Connecting register interface to the signal: need to connect manually
   //
-  assign active[0]  = reg2hw.ctrl.q[0];
+  assign active[0]  = reg2hw.ctrl[0].q;
   assign prescaler = '{reg2hw.cfg0.prescale.q};
   assign step      = '{reg2hw.cfg0.step.q};
 
@@ -58,12 +58,12 @@ module rv_timer (
   assign mtimecmp = '{'{{reg2hw.compare_upper0_0,reg2hw.compare_lower0_0}}};
 
   assign intr_timer_expired_0_0_o = intr_out[0];
-  assign intr_timer_en            = reg2hw.intr_enable0.q;
-  assign intr_timer_state_q       = reg2hw.intr_state0.q;
-  assign intr_timer_test_q        = reg2hw.intr_test0.q;
-  assign intr_timer_test_qe       = reg2hw.intr_test0.qe;
-  assign hw2reg.intr_state0.de    = intr_timer_state_de;
-  assign hw2reg.intr_state0.d     = intr_timer_state_d;
+  assign intr_timer_en            = reg2hw.intr_enable0[0].q;
+  assign intr_timer_state_q       = reg2hw.intr_state0[0].q;
+  assign intr_timer_test_q        = reg2hw.intr_test0[0].q;
+  assign intr_timer_test_qe       = reg2hw.intr_test0[0].qe;
+  assign hw2reg.intr_state0[0].de = intr_timer_state_de;
+  assign hw2reg.intr_state0[0].d  = intr_timer_state_d;
   //
   //-----------------------------------------------------------------
 
