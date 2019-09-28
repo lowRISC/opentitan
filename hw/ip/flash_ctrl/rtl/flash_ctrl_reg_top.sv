@@ -363,12 +363,9 @@ module flash_ctrl_reg_top (
   logic default_region_erase_en_qs;
   logic default_region_erase_en_wd;
   logic default_region_erase_en_we;
-  logic bank_cfg_regwen_bank0_qs;
-  logic bank_cfg_regwen_bank0_wd;
-  logic bank_cfg_regwen_bank0_we;
-  logic bank_cfg_regwen_bank1_qs;
-  logic bank_cfg_regwen_bank1_wd;
-  logic bank_cfg_regwen_bank1_we;
+  logic bank_cfg_regwen_qs;
+  logic bank_cfg_regwen_wd;
+  logic bank_cfg_regwen_we;
   logic mp_bank_cfg_erase_en0_qs;
   logic mp_bank_cfg_erase_en0_wd;
   logic mp_bank_cfg_erase_en0_we;
@@ -2529,18 +2526,17 @@ module flash_ctrl_reg_top (
 
   // R[bank_cfg_regwen]: V(False)
 
-  //   F[bank0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_bank_cfg_regwen_bank0 (
+  ) u_bank_cfg_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (bank_cfg_regwen_bank0_we),
-    .wd     (bank_cfg_regwen_bank0_wd),
+    .we     (bank_cfg_regwen_we),
+    .wd     (bank_cfg_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2551,33 +2547,7 @@ module flash_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (bank_cfg_regwen_bank0_qs)
-  );
-
-
-  //   F[bank1]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_bank_cfg_regwen_bank1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (bank_cfg_regwen_bank1_we),
-    .wd     (bank_cfg_regwen_bank1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (bank_cfg_regwen_bank1_qs)
+    .qs     (bank_cfg_regwen_qs)
   );
 
 
@@ -2593,7 +2563,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_bank_cfg_erase_en0_we & bank_cfg_regwen_bank_qs),
+    .we     (mp_bank_cfg_erase_en0_we & bank_cfg_regwen_qs),
     .wd     (mp_bank_cfg_erase_en0_wd),
 
     // from internal hardware
@@ -2619,7 +2589,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_bank_cfg_erase_en1_we & bank_cfg_regwen_bank_qs),
+    .we     (mp_bank_cfg_erase_en1_we & bank_cfg_regwen_qs),
     .wd     (mp_bank_cfg_erase_en1_wd),
 
     // from internal hardware
@@ -3181,11 +3151,8 @@ module flash_ctrl_reg_top (
   assign default_region_erase_en_we = addr_hit[14] & reg_we & ~wr_err;
   assign default_region_erase_en_wd = reg_wdata[2];
 
-  assign bank_cfg_regwen_bank0_we = addr_hit[15] & reg_we & ~wr_err;
-  assign bank_cfg_regwen_bank0_wd = reg_wdata[0];
-
-  assign bank_cfg_regwen_bank1_we = addr_hit[15] & reg_we & ~wr_err;
-  assign bank_cfg_regwen_bank1_wd = reg_wdata[1];
+  assign bank_cfg_regwen_we = addr_hit[15] & reg_we & ~wr_err;
+  assign bank_cfg_regwen_wd = reg_wdata[0];
 
   assign mp_bank_cfg_erase_en0_we = addr_hit[16] & reg_we & ~wr_err;
   assign mp_bank_cfg_erase_en0_wd = reg_wdata[1];
@@ -3355,8 +3322,7 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[0] = bank_cfg_regwen_bank0_qs;
-        reg_rdata_next[1] = bank_cfg_regwen_bank1_qs;
+        reg_rdata_next[0] = bank_cfg_regwen_qs;
       end
 
       addr_hit[16]: begin
