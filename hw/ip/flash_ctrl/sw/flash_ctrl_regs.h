@@ -160,8 +160,7 @@
 
 // Bank configuration registers configuration enable.
 #define FLASH_CTRL_BANK_CFG_REGWEN(id) (FLASH_CTRL##id##_BASE_ADDR + 0x3c)
-#define FLASH_CTRL_BANK_CFG_REGWEN_BANK0 0
-#define FLASH_CTRL_BANK_CFG_REGWEN_BANK1 1
+#define FLASH_CTRL_BANK_CFG_REGWEN_BANK 0
 
 // Memory protect bank configuration
 #define FLASH_CTRL_MP_BANK_CFG(id) (FLASH_CTRL##id##_BASE_ADDR + 0x40)
