@@ -6,9 +6,11 @@
 
 package uart_reg_pkg;
 
+/////////////////////////////////////////////////////////////////////
 // Register to internal design logic
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
   struct packed {
     struct packed {
       logic q; // [124]
@@ -194,61 +196,63 @@ typedef struct packed {
   } timeout_ctrl;
 } uart_reg2hw_t;
 
+/////////////////////////////////////////////////////////////////////
 // Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
   struct packed {
     struct packed {
-      logic d;  // [64]
+      logic d; // [64]
       logic de; // [63]
     } tx_watermark;
     struct packed {
-      logic d;  // [62]
+      logic d; // [62]
       logic de; // [61]
     } rx_watermark;
     struct packed {
-      logic d;  // [60]
+      logic d; // [60]
       logic de; // [59]
     } tx_overflow;
     struct packed {
-      logic d;  // [58]
+      logic d; // [58]
       logic de; // [57]
     } rx_overflow;
     struct packed {
-      logic d;  // [56]
+      logic d; // [56]
       logic de; // [55]
     } rx_frame_err;
     struct packed {
-      logic d;  // [54]
+      logic d; // [54]
       logic de; // [53]
     } rx_break_err;
     struct packed {
-      logic d;  // [52]
+      logic d; // [52]
       logic de; // [51]
     } rx_timeout;
     struct packed {
-      logic d;  // [50]
+      logic d; // [50]
       logic de; // [49]
     } rx_parity_err;
   } intr_state;
   struct packed {
     struct packed {
-      logic d;  // [48]
+      logic d; // [48]
     } txfull;
     struct packed {
-      logic d;  // [47]
+      logic d; // [47]
     } rxfull;
     struct packed {
-      logic d;  // [46]
+      logic d; // [46]
     } txempty;
     struct packed {
-      logic d;  // [45]
+      logic d; // [45]
     } txidle;
     struct packed {
-      logic d;  // [44]
+      logic d; // [44]
     } rxidle;
     struct packed {
-      logic d;  // [43]
+      logic d; // [43]
     } rxempty;
   } status;
   struct packed {

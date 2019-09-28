@@ -16,6 +16,7 @@ package alert_handler_reg_pkg;
 /////////////////////////////////////////////////////////////////////
 // Typedefs for multiregs
 /////////////////////////////////////////////////////////////////////
+
 typedef struct packed {
   logic [0:0] q;
 } alert_handler_reg2hw_alert_en_mreg_t;
@@ -31,6 +32,11 @@ typedef struct packed {
 typedef struct packed {
   logic [1:0] q;
 } alert_handler_reg2hw_loc_alert_class_mreg_t;
+
+typedef struct packed {
+  logic [0:0] d;
+  logic de;
+} alert_handler_hw2reg_alert_cause_mreg_t;
 
 /////////////////////////////////////////////////////////////////////
 // Register to internal design logic
@@ -325,15 +331,6 @@ typedef struct packed {
     logic [31:0] q; // [31:0]
   } classd_phase3_cyc;
 } alert_handler_reg2hw_t;
-
-/////////////////////////////////////////////////////////////////////
-// Typedefs for multiregs
-/////////////////////////////////////////////////////////////////////
-
-typedef struct packed {
-  logic [0:0] d;
-  logic de;
-} alert_handler_hw2reg_alert_cause_mreg_t;
 
 /////////////////////////////////////////////////////////////////////
 // Internal design logic to register

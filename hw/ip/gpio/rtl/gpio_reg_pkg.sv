@@ -6,9 +6,11 @@
 
 package gpio_reg_pkg;
 
+/////////////////////////////////////////////////////////////////////
 // Register to internal design logic
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
   struct packed {
     logic [31:0] q; // [458:427]
   } intr_state;
@@ -84,9 +86,11 @@ typedef struct packed {
   } ctrl_en_input_filter;
 } gpio_reg2hw_t;
 
+/////////////////////////////////////////////////////////////////////
 // Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
+typedef struct packed {
   struct packed {
     logic [31:0] d; // [257:226]
     logic de; // [225]
