@@ -27,11 +27,10 @@ package chip_env_pkg;
 
   // local parameters and types
   parameter         NUM_GPIOS   = 16;
-  parameter string  ROM_MEM_IMG = "sw_build/rom/rom.vmem";
-  parameter string  SW_MEM_IMG  = "sw_build/sw/sw.vmem";
 
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual mem_bkdr_if           mem_bkdr_vif;
+  typedef virtual sw_msg_monitor_if     sw_msg_monitor_vif;
 
   // enum to indicate cpu test pass / fail status
   typedef enum bit [15:0] {

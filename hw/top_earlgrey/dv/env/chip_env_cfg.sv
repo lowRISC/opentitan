@@ -8,7 +8,16 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
 
   // chip top interfaces
   gpio_vif            gpio_vif;
-  virtual mem_bkdr_if mem_bkdr_vifs[chip_mem_e];
+  mem_bkdr_vif        mem_bkdr_vifs[chip_mem_e];
+
+  // sw msg monitor related
+  sw_msg_monitor_vif  sw_msg_monitor_vif;
+  // below values are constants, but made variables in case some test has different requirements
+  string              rom_image         = "sw_build/rom/rom.vmem";
+  string              rom_msg_data_file = "sw_build/rom/msg_data.txt";
+  string              sw_image          = "sw_build/sw/sw.vmem";
+  string              sw_msg_data_file  = "sw_build/sw/msg_data.txt";
+  bit [TL_AW-1:0]     sw_msg_addr       = 32'h1000fff4;
 
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;

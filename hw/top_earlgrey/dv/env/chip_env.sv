@@ -43,6 +43,11 @@ class chip_env extends dv_base_env #(
       end
     end
 
+    if (!uvm_config_db#(sw_msg_monitor_vif)::get(this, "", "sw_msg_monitor_vif",
+                                                 cfg.sw_msg_monitor_vif)) begin
+      `uvm_fatal(`gfn, "failed to get sw_msg_monitor_vif from uvm_config_db")
+    end
+
     // create components
     m_uart_agent = uart_agent::type_id::create("m_uart_agent", this);
     uvm_config_db#(uart_agent_cfg)::set(this, "m_uart_agent*", "cfg", cfg.m_uart_agent_cfg);
