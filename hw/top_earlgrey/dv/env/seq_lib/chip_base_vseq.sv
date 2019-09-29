@@ -46,13 +46,19 @@ class chip_base_vseq extends dv_base_vseq #(
   // routine to backdoor load cpu test hex image and bring the cpu out of reset (if required)
   // TODO(sriyerg): for future implementation
   virtual task cpu_init();
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(ROM_MEM_IMG);
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.rom_image);
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
 
     // TODO: the location of the main execution image should be randomized for either bank in future
-    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(SW_MEM_IMG);
+    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_image);
     cpu_test_state = CpuTestRunning;
+
+    // initialize the sw msg monitor
+    cfg.sw_msg_monitor_vif.sw_msg_addr = cfg.sw_msg_addr;
+    cfg.sw_msg_monitor_vif.add_sw_msg_data_files("rom", cfg.rom_msg_data_file);
+    cfg.sw_msg_monitor_vif.add_sw_msg_data_files("sw", cfg.sw_msg_data_file);
+    cfg.sw_msg_monitor_vif.ready();
   endtask
 
   virtual task dut_shutdown();
@@ -76,7 +82,7 @@ class chip_base_vseq extends dv_base_vseq #(
         `uvm_info(`gfn, $sformatf("cpu_test_state = %0s", cpu_test_state), UVM_LOW)
         case (cpu_test_state)
           CpuUnderReset: begin
-            wait (cpu_test_state == CpuTestRunning);
+            wait(cpu_test_state == CpuTestRunning);
           end
 
           CpuTestRunning: begin
@@ -92,8 +98,8 @@ class chip_base_vseq extends dv_base_vseq #(
             end
           end
 
-          {CpuTestPass, CpuTestFail}: begin
-            wait (cpu_test_state == CpuUnderReset);
+          CpuTestPass, CpuTestFail: begin
+            wait(cpu_test_state == CpuUnderReset);
           end
         endcase
       end

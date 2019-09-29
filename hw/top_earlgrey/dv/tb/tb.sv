@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
   import chip_env_pkg::*;
+  import top_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -68,6 +69,20 @@ module tb;
     .IO_GP15    (gpio_pins[15])
   );
 
+  // connect sw_msg_monitor
+  bit                 sw_msg_monitor_valid;
+  bit [TL_AW-1:0]     sw_msg_monitor_sw_msg_addr;
+
+  sw_msg_monitor_if sw_msg_monitor_if (
+    .clk              (`RAM_MAIN_HIER.clk_i),
+    .rst_n            (`RAM_MAIN_HIER.rst_ni),
+    .valid            (sw_msg_monitor_valid),
+    .addr_data        (`RAM_MAIN_HIER.wdata_i),
+    .sw_msg_addr      (sw_msg_monitor_sw_msg_addr)
+  );
+  assign sw_msg_monitor_valid = `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+                                (`RAM_MAIN_HIER.addr_i == sw_msg_monitor_sw_msg_addr);
+
   // connect signals
   assign jtag_tck         = jtag_if.tck;
   assign jtag_tms         = jtag_if.tms;
@@ -90,6 +105,8 @@ module tb;
         `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(null, "*.env", "mem_bkdr_vifs[FlashBank1]",
         `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+    uvm_config_db#(virtual sw_msg_monitor_if)::set(null, "*.env", "sw_msg_monitor_vif",
+        sw_msg_monitor_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
