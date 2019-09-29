@@ -10,8 +10,13 @@ typedef class i2c_reg_intr_state;
 typedef class i2c_reg_intr_enable;
 typedef class i2c_reg_intr_test;
 typedef class i2c_reg_ctrl;
+typedef class i2c_reg_status;
 typedef class i2c_reg_rdata;
 typedef class i2c_reg_fdata;
+typedef class i2c_reg_fifo_ctrl;
+typedef class i2c_reg_fifo_status;
+typedef class i2c_reg_ovrd;
+typedef class i2c_reg_val;
 typedef class i2c_reg_timing0;
 typedef class i2c_reg_timing1;
 typedef class i2c_reg_timing2;
@@ -24,15 +29,15 @@ typedef class i2c_reg_block;
 // Class: i2c_reg_intr_state
 class i2c_reg_intr_state extends dv_base_reg;
   // fields
-  rand dv_base_reg_field intr_fmt_watermark_o;
-  rand dv_base_reg_field intr_rx_watermark_o;
-  rand dv_base_reg_field intr_fmt_overflow_o;
-  rand dv_base_reg_field intr_rx_overflow_o;
-  rand dv_base_reg_field intr_nak_o;
-  rand dv_base_reg_field intr_scl_interference_o;
-  rand dv_base_reg_field intr_sda_interference_o;
-  rand dv_base_reg_field intr_stretch_timeout_o;
-  rand dv_base_reg_field intr_sda_unstable_o;
+  rand dv_base_reg_field fmt_watermark;
+  rand dv_base_reg_field rx_watermark;
+  rand dv_base_reg_field fmt_overflow;
+  rand dv_base_reg_field rx_overflow;
+  rand dv_base_reg_field nak;
+  rand dv_base_reg_field scl_interference;
+  rand dv_base_reg_field sda_interference;
+  rand dv_base_reg_field stretch_timeout;
+  rand dv_base_reg_field sda_unstable;
 
   `uvm_object_utils(i2c_reg_intr_state)
 
@@ -44,8 +49,8 @@ class i2c_reg_intr_state extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    intr_fmt_watermark_o = dv_base_reg_field::type_id::create("intr_fmt_watermark_o");
-    intr_fmt_watermark_o.configure(
+    fmt_watermark = dv_base_reg_field::type_id::create("fmt_watermark");
+    fmt_watermark.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
@@ -55,8 +60,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_rx_watermark_o = dv_base_reg_field::type_id::create("intr_rx_watermark_o");
-    intr_rx_watermark_o.configure(
+    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
+    rx_watermark.configure(
       .parent(this),
       .size(1),
       .lsb_pos(1),
@@ -66,8 +71,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_fmt_overflow_o = dv_base_reg_field::type_id::create("intr_fmt_overflow_o");
-    intr_fmt_overflow_o.configure(
+    fmt_overflow = dv_base_reg_field::type_id::create("fmt_overflow");
+    fmt_overflow.configure(
       .parent(this),
       .size(1),
       .lsb_pos(2),
@@ -77,8 +82,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_rx_overflow_o = dv_base_reg_field::type_id::create("intr_rx_overflow_o");
-    intr_rx_overflow_o.configure(
+    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
+    rx_overflow.configure(
       .parent(this),
       .size(1),
       .lsb_pos(3),
@@ -88,8 +93,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_nak_o = dv_base_reg_field::type_id::create("intr_nak_o");
-    intr_nak_o.configure(
+    nak = dv_base_reg_field::type_id::create("nak");
+    nak.configure(
       .parent(this),
       .size(1),
       .lsb_pos(4),
@@ -99,8 +104,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_scl_interference_o = dv_base_reg_field::type_id::create("intr_scl_interference_o");
-    intr_scl_interference_o.configure(
+    scl_interference = dv_base_reg_field::type_id::create("scl_interference");
+    scl_interference.configure(
       .parent(this),
       .size(1),
       .lsb_pos(5),
@@ -110,8 +115,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_sda_interference_o = dv_base_reg_field::type_id::create("intr_sda_interference_o");
-    intr_sda_interference_o.configure(
+    sda_interference = dv_base_reg_field::type_id::create("sda_interference");
+    sda_interference.configure(
       .parent(this),
       .size(1),
       .lsb_pos(6),
@@ -121,8 +126,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_stretch_timeout_o = dv_base_reg_field::type_id::create("intr_stretch_timeout_o");
-    intr_stretch_timeout_o.configure(
+    stretch_timeout = dv_base_reg_field::type_id::create("stretch_timeout");
+    stretch_timeout.configure(
       .parent(this),
       .size(1),
       .lsb_pos(7),
@@ -132,8 +137,8 @@ class i2c_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_sda_unstable_o = dv_base_reg_field::type_id::create("intr_sda_unstable_o");
-    intr_sda_unstable_o.configure(
+    sda_unstable = dv_base_reg_field::type_id::create("sda_unstable");
+    sda_unstable.configure(
       .parent(this),
       .size(1),
       .lsb_pos(8),
@@ -150,15 +155,15 @@ endclass : i2c_reg_intr_state
 // Class: i2c_reg_intr_enable
 class i2c_reg_intr_enable extends dv_base_reg;
   // fields
-  rand dv_base_reg_field intr_fmt_watermark_o;
-  rand dv_base_reg_field intr_rx_watermark_o;
-  rand dv_base_reg_field intr_fmt_overflow_o;
-  rand dv_base_reg_field intr_rx_overflow_o;
-  rand dv_base_reg_field intr_nak_o;
-  rand dv_base_reg_field intr_scl_interference_o;
-  rand dv_base_reg_field intr_sda_interference_o;
-  rand dv_base_reg_field intr_stretch_timeout_o;
-  rand dv_base_reg_field intr_sda_unstable_o;
+  rand dv_base_reg_field fmt_watermark;
+  rand dv_base_reg_field rx_watermark;
+  rand dv_base_reg_field fmt_overflow;
+  rand dv_base_reg_field rx_overflow;
+  rand dv_base_reg_field nak;
+  rand dv_base_reg_field scl_interference;
+  rand dv_base_reg_field sda_interference;
+  rand dv_base_reg_field stretch_timeout;
+  rand dv_base_reg_field sda_unstable;
 
   `uvm_object_utils(i2c_reg_intr_enable)
 
@@ -170,8 +175,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    intr_fmt_watermark_o = dv_base_reg_field::type_id::create("intr_fmt_watermark_o");
-    intr_fmt_watermark_o.configure(
+    fmt_watermark = dv_base_reg_field::type_id::create("fmt_watermark");
+    fmt_watermark.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
@@ -181,8 +186,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_rx_watermark_o = dv_base_reg_field::type_id::create("intr_rx_watermark_o");
-    intr_rx_watermark_o.configure(
+    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
+    rx_watermark.configure(
       .parent(this),
       .size(1),
       .lsb_pos(1),
@@ -192,8 +197,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_fmt_overflow_o = dv_base_reg_field::type_id::create("intr_fmt_overflow_o");
-    intr_fmt_overflow_o.configure(
+    fmt_overflow = dv_base_reg_field::type_id::create("fmt_overflow");
+    fmt_overflow.configure(
       .parent(this),
       .size(1),
       .lsb_pos(2),
@@ -203,8 +208,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_rx_overflow_o = dv_base_reg_field::type_id::create("intr_rx_overflow_o");
-    intr_rx_overflow_o.configure(
+    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
+    rx_overflow.configure(
       .parent(this),
       .size(1),
       .lsb_pos(3),
@@ -214,8 +219,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_nak_o = dv_base_reg_field::type_id::create("intr_nak_o");
-    intr_nak_o.configure(
+    nak = dv_base_reg_field::type_id::create("nak");
+    nak.configure(
       .parent(this),
       .size(1),
       .lsb_pos(4),
@@ -225,8 +230,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_scl_interference_o = dv_base_reg_field::type_id::create("intr_scl_interference_o");
-    intr_scl_interference_o.configure(
+    scl_interference = dv_base_reg_field::type_id::create("scl_interference");
+    scl_interference.configure(
       .parent(this),
       .size(1),
       .lsb_pos(5),
@@ -236,8 +241,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_sda_interference_o = dv_base_reg_field::type_id::create("intr_sda_interference_o");
-    intr_sda_interference_o.configure(
+    sda_interference = dv_base_reg_field::type_id::create("sda_interference");
+    sda_interference.configure(
       .parent(this),
       .size(1),
       .lsb_pos(6),
@@ -247,8 +252,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_stretch_timeout_o = dv_base_reg_field::type_id::create("intr_stretch_timeout_o");
-    intr_stretch_timeout_o.configure(
+    stretch_timeout = dv_base_reg_field::type_id::create("stretch_timeout");
+    stretch_timeout.configure(
       .parent(this),
       .size(1),
       .lsb_pos(7),
@@ -258,8 +263,8 @@ class i2c_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_sda_unstable_o = dv_base_reg_field::type_id::create("intr_sda_unstable_o");
-    intr_sda_unstable_o.configure(
+    sda_unstable = dv_base_reg_field::type_id::create("sda_unstable");
+    sda_unstable.configure(
       .parent(this),
       .size(1),
       .lsb_pos(8),
@@ -276,15 +281,15 @@ endclass : i2c_reg_intr_enable
 // Class: i2c_reg_intr_test
 class i2c_reg_intr_test extends dv_base_reg;
   // fields
-  rand dv_base_reg_field intr_fmt_watermark_o;
-  rand dv_base_reg_field intr_rx_watermark_o;
-  rand dv_base_reg_field intr_fmt_overflow_o;
-  rand dv_base_reg_field intr_rx_overflow_o;
-  rand dv_base_reg_field intr_nak_o;
-  rand dv_base_reg_field intr_scl_interference_o;
-  rand dv_base_reg_field intr_sda_interference_o;
-  rand dv_base_reg_field intr_stretch_timeout_o;
-  rand dv_base_reg_field intr_sda_unstable_o;
+  rand dv_base_reg_field fmt_watermark;
+  rand dv_base_reg_field rx_watermark;
+  rand dv_base_reg_field fmt_overflow;
+  rand dv_base_reg_field rx_overflow;
+  rand dv_base_reg_field nak;
+  rand dv_base_reg_field scl_interference;
+  rand dv_base_reg_field sda_interference;
+  rand dv_base_reg_field stretch_timeout;
+  rand dv_base_reg_field sda_unstable;
 
   `uvm_object_utils(i2c_reg_intr_test)
 
@@ -296,8 +301,8 @@ class i2c_reg_intr_test extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    intr_fmt_watermark_o = dv_base_reg_field::type_id::create("intr_fmt_watermark_o");
-    intr_fmt_watermark_o.configure(
+    fmt_watermark = dv_base_reg_field::type_id::create("fmt_watermark");
+    fmt_watermark.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
@@ -307,8 +312,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_rx_watermark_o = dv_base_reg_field::type_id::create("intr_rx_watermark_o");
-    intr_rx_watermark_o.configure(
+    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
+    rx_watermark.configure(
       .parent(this),
       .size(1),
       .lsb_pos(1),
@@ -318,8 +323,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_fmt_overflow_o = dv_base_reg_field::type_id::create("intr_fmt_overflow_o");
-    intr_fmt_overflow_o.configure(
+    fmt_overflow = dv_base_reg_field::type_id::create("fmt_overflow");
+    fmt_overflow.configure(
       .parent(this),
       .size(1),
       .lsb_pos(2),
@@ -329,8 +334,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_rx_overflow_o = dv_base_reg_field::type_id::create("intr_rx_overflow_o");
-    intr_rx_overflow_o.configure(
+    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
+    rx_overflow.configure(
       .parent(this),
       .size(1),
       .lsb_pos(3),
@@ -340,8 +345,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_nak_o = dv_base_reg_field::type_id::create("intr_nak_o");
-    intr_nak_o.configure(
+    nak = dv_base_reg_field::type_id::create("nak");
+    nak.configure(
       .parent(this),
       .size(1),
       .lsb_pos(4),
@@ -351,8 +356,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_scl_interference_o = dv_base_reg_field::type_id::create("intr_scl_interference_o");
-    intr_scl_interference_o.configure(
+    scl_interference = dv_base_reg_field::type_id::create("scl_interference");
+    scl_interference.configure(
       .parent(this),
       .size(1),
       .lsb_pos(5),
@@ -362,8 +367,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_sda_interference_o = dv_base_reg_field::type_id::create("intr_sda_interference_o");
-    intr_sda_interference_o.configure(
+    sda_interference = dv_base_reg_field::type_id::create("sda_interference");
+    sda_interference.configure(
       .parent(this),
       .size(1),
       .lsb_pos(6),
@@ -373,8 +378,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_stretch_timeout_o = dv_base_reg_field::type_id::create("intr_stretch_timeout_o");
-    intr_stretch_timeout_o.configure(
+    stretch_timeout = dv_base_reg_field::type_id::create("stretch_timeout");
+    stretch_timeout.configure(
       .parent(this),
       .size(1),
       .lsb_pos(7),
@@ -384,8 +389,8 @@ class i2c_reg_intr_test extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    intr_sda_unstable_o = dv_base_reg_field::type_id::create("intr_sda_unstable_o");
-    intr_sda_unstable_o.configure(
+    sda_unstable = dv_base_reg_field::type_id::create("sda_unstable");
+    sda_unstable.configure(
       .parent(this),
       .size(1),
       .lsb_pos(8),
@@ -402,11 +407,7 @@ endclass : i2c_reg_intr_test
 // Class: i2c_reg_ctrl
 class i2c_reg_ctrl extends dv_base_reg;
   // fields
-  rand dv_base_reg_field override;
-  rand dv_base_reg_field scl_o;
-  rand dv_base_reg_field sda_o;
-  rand dv_base_reg_field scl_i;
-  rand dv_base_reg_field sda_i;
+  rand dv_base_reg_field enablehost;
 
   `uvm_object_utils(i2c_reg_ctrl)
 
@@ -418,57 +419,13 @@ class i2c_reg_ctrl extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    override = dv_base_reg_field::type_id::create("override");
-    override.configure(
+    enablehost = dv_base_reg_field::type_id::create("enablehost");
+    enablehost.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
-      .access("WO"),
+      .access("RW"),
       .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    scl_o = dv_base_reg_field::type_id::create("scl_o");
-    scl_o.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    sda_o = dv_base_reg_field::type_id::create("sda_o");
-    sda_o.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    scl_i = dv_base_reg_field::type_id::create("scl_i");
-    scl_i.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    sda_i = dv_base_reg_field::type_id::create("sda_i");
-    sda_i.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RO"),
-      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -477,10 +434,100 @@ class i2c_reg_ctrl extends dv_base_reg;
 
 endclass : i2c_reg_ctrl
 
+// Class: i2c_reg_status
+class i2c_reg_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field fmtfull;
+  rand dv_base_reg_field rxfull;
+  rand dv_base_reg_field fmtempty;
+  rand dv_base_reg_field hostidle;
+  rand dv_base_reg_field targetidle;
+  rand dv_base_reg_field rxempty;
+
+  `uvm_object_utils(i2c_reg_status)
+
+  function new(string       name = "i2c_reg_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    fmtfull = dv_base_reg_field::type_id::create("fmtfull");
+    fmtfull.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxfull = dv_base_reg_field::type_id::create("rxfull");
+    rxfull.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fmtempty = dv_base_reg_field::type_id::create("fmtempty");
+    fmtempty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    hostidle = dv_base_reg_field::type_id::create("hostidle");
+    hostidle.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    targetidle = dv_base_reg_field::type_id::create("targetidle");
+    targetidle.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxempty = dv_base_reg_field::type_id::create("rxempty");
+    rxempty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : i2c_reg_status
+
 // Class: i2c_reg_rdata
 class i2c_reg_rdata extends dv_base_reg;
   // fields
-  rand dv_base_reg_field data;
+  rand dv_base_reg_field rdata;
 
   `uvm_object_utils(i2c_reg_rdata)
 
@@ -492,8 +539,8 @@ class i2c_reg_rdata extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
+    rdata = dv_base_reg_field::type_id::create("rdata");
+    rdata.configure(
       .parent(this),
       .size(8),
       .lsb_pos(0),
@@ -510,7 +557,7 @@ endclass : i2c_reg_rdata
 // Class: i2c_reg_fdata
 class i2c_reg_fdata extends dv_base_reg;
   // fields
-  rand dv_base_reg_field byte_fmt;
+  rand dv_base_reg_field fbyte;
   rand dv_base_reg_field start;
   rand dv_base_reg_field stop;
   rand dv_base_reg_field read;
@@ -527,8 +574,8 @@ class i2c_reg_fdata extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    byte_fmt = dv_base_reg_field::type_id::create("byte_fmt");
-    byte_fmt.configure(
+    fbyte = dv_base_reg_field::type_id::create("fbyte");
+    fbyte.configure(
       .parent(this),
       .size(8),
       .lsb_pos(0),
@@ -597,6 +644,210 @@ class i2c_reg_fdata extends dv_base_reg;
 
 endclass : i2c_reg_fdata
 
+// Class: i2c_reg_fifo_ctrl
+class i2c_reg_fifo_ctrl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxrst;
+  rand dv_base_reg_field fmtrst;
+  rand dv_base_reg_field rxilvl;
+  rand dv_base_reg_field fmtilvl;
+
+  `uvm_object_utils(i2c_reg_fifo_ctrl)
+
+  function new(string       name = "i2c_reg_fifo_ctrl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxrst = dv_base_reg_field::type_id::create("rxrst");
+    rxrst.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fmtrst = dv_base_reg_field::type_id::create("fmtrst");
+    fmtrst.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxilvl = dv_base_reg_field::type_id::create("rxilvl");
+    rxilvl.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fmtilvl = dv_base_reg_field::type_id::create("fmtilvl");
+    fmtilvl.configure(
+      .parent(this),
+      .size(2),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : i2c_reg_fifo_ctrl
+
+// Class: i2c_reg_fifo_status
+class i2c_reg_fifo_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field fmtlvl;
+  rand dv_base_reg_field rxlvl;
+
+  `uvm_object_utils(i2c_reg_fifo_status)
+
+  function new(string       name = "i2c_reg_fifo_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    fmtlvl = dv_base_reg_field::type_id::create("fmtlvl");
+    fmtlvl.configure(
+      .parent(this),
+      .size(6),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(6),
+      .lsb_pos(16),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : i2c_reg_fifo_status
+
+// Class: i2c_reg_ovrd
+class i2c_reg_ovrd extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field txovrden;
+  rand dv_base_reg_field sclval;
+  rand dv_base_reg_field sdaval;
+
+  `uvm_object_utils(i2c_reg_ovrd)
+
+  function new(string       name = "i2c_reg_ovrd",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    txovrden = dv_base_reg_field::type_id::create("txovrden");
+    txovrden.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    sclval = dv_base_reg_field::type_id::create("sclval");
+    sclval.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    sdaval = dv_base_reg_field::type_id::create("sdaval");
+    sdaval.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : i2c_reg_ovrd
+
+// Class: i2c_reg_val
+class i2c_reg_val extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field scl_rx;
+  rand dv_base_reg_field sda_rx;
+
+  `uvm_object_utils(i2c_reg_val)
+
+  function new(string       name = "i2c_reg_val",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    scl_rx = dv_base_reg_field::type_id::create("scl_rx");
+    scl_rx.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    sda_rx = dv_base_reg_field::type_id::create("sda_rx");
+    sda_rx.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : i2c_reg_val
+
 // Class: i2c_reg_timing0
 class i2c_reg_timing0 extends dv_base_reg;
   // fields
@@ -619,7 +870,7 @@ class i2c_reg_timing0 extends dv_base_reg;
       .size(16),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -630,7 +881,7 @@ class i2c_reg_timing0 extends dv_base_reg;
       .size(16),
       .lsb_pos(16),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -661,7 +912,7 @@ class i2c_reg_timing1 extends dv_base_reg;
       .size(16),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -672,7 +923,7 @@ class i2c_reg_timing1 extends dv_base_reg;
       .size(16),
       .lsb_pos(16),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -685,7 +936,7 @@ endclass : i2c_reg_timing1
 class i2c_reg_timing2 extends dv_base_reg;
   // fields
   rand dv_base_reg_field tsu_sta;
-  rand dv_base_reg_field thd_st;
+  rand dv_base_reg_field thd_sta;
 
   `uvm_object_utils(i2c_reg_timing2)
 
@@ -703,18 +954,18 @@ class i2c_reg_timing2 extends dv_base_reg;
       .size(16),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
-    thd_st = dv_base_reg_field::type_id::create("thd_st");
-    thd_st.configure(
+    thd_sta = dv_base_reg_field::type_id::create("thd_sta");
+    thd_sta.configure(
       .parent(this),
       .size(16),
       .lsb_pos(16),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -745,7 +996,7 @@ class i2c_reg_timing3 extends dv_base_reg;
       .size(16),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -756,7 +1007,7 @@ class i2c_reg_timing3 extends dv_base_reg;
       .size(16),
       .lsb_pos(16),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -787,7 +1038,7 @@ class i2c_reg_timing4 extends dv_base_reg;
       .size(16),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -798,7 +1049,7 @@ class i2c_reg_timing4 extends dv_base_reg;
       .size(16),
       .lsb_pos(16),
       .access("RW"),
-      .volatile(1),
+      .volatile(0),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -856,8 +1107,13 @@ class i2c_reg_block extends dv_base_reg_block;
   rand i2c_reg_intr_enable intr_enable;
   rand i2c_reg_intr_test intr_test;
   rand i2c_reg_ctrl ctrl;
+  rand i2c_reg_status status;
   rand i2c_reg_rdata rdata;
   rand i2c_reg_fdata fdata;
+  rand i2c_reg_fifo_ctrl fifo_ctrl;
+  rand i2c_reg_fifo_status fifo_status;
+  rand i2c_reg_ovrd ovrd;
+  rand i2c_reg_val val;
   rand i2c_reg_timing0 timing0;
   rand i2c_reg_timing1 timing1;
   rand i2c_reg_timing2 timing2;
@@ -903,54 +1159,84 @@ class i2c_reg_block extends dv_base_reg_block;
     ctrl.build();
     default_map.add_reg(.rg(ctrl),
                         .offset(32'hc),
-                        .rights("WO"));
+                        .rights("RW"));
+    status = i2c_reg_status::type_id::create("status");
+    status.configure(.blk_parent(this));
+    status.build();
+    default_map.add_reg(.rg(status),
+                        .offset(32'h10),
+                        .rights("RO"));
     rdata = i2c_reg_rdata::type_id::create("rdata");
     rdata.configure(.blk_parent(this));
     rdata.build();
     default_map.add_reg(.rg(rdata),
-                        .offset(32'h10),
+                        .offset(32'h14),
                         .rights("RO"));
     fdata = i2c_reg_fdata::type_id::create("fdata");
     fdata.configure(.blk_parent(this));
     fdata.build();
     default_map.add_reg(.rg(fdata),
-                        .offset(32'h14),
+                        .offset(32'h18),
                         .rights("WO"));
+    fifo_ctrl = i2c_reg_fifo_ctrl::type_id::create("fifo_ctrl");
+    fifo_ctrl.configure(.blk_parent(this));
+    fifo_ctrl.build();
+    default_map.add_reg(.rg(fifo_ctrl),
+                        .offset(32'h1c),
+                        .rights("RW"));
+    fifo_status = i2c_reg_fifo_status::type_id::create("fifo_status");
+    fifo_status.configure(.blk_parent(this));
+    fifo_status.build();
+    default_map.add_reg(.rg(fifo_status),
+                        .offset(32'h20),
+                        .rights("RO"));
+    ovrd = i2c_reg_ovrd::type_id::create("ovrd");
+    ovrd.configure(.blk_parent(this));
+    ovrd.build();
+    default_map.add_reg(.rg(ovrd),
+                        .offset(32'h24),
+                        .rights("RW"));
+    val = i2c_reg_val::type_id::create("val");
+    val.configure(.blk_parent(this));
+    val.build();
+    default_map.add_reg(.rg(val),
+                        .offset(32'h28),
+                        .rights("RO"));
     timing0 = i2c_reg_timing0::type_id::create("timing0");
     timing0.configure(.blk_parent(this));
     timing0.build();
     default_map.add_reg(.rg(timing0),
-                        .offset(32'h18),
+                        .offset(32'h2c),
                         .rights("RW"));
     timing1 = i2c_reg_timing1::type_id::create("timing1");
     timing1.configure(.blk_parent(this));
     timing1.build();
     default_map.add_reg(.rg(timing1),
-                        .offset(32'h1c),
+                        .offset(32'h30),
                         .rights("RW"));
     timing2 = i2c_reg_timing2::type_id::create("timing2");
     timing2.configure(.blk_parent(this));
     timing2.build();
     default_map.add_reg(.rg(timing2),
-                        .offset(32'h20),
+                        .offset(32'h34),
                         .rights("RW"));
     timing3 = i2c_reg_timing3::type_id::create("timing3");
     timing3.configure(.blk_parent(this));
     timing3.build();
     default_map.add_reg(.rg(timing3),
-                        .offset(32'h24),
+                        .offset(32'h38),
                         .rights("RW"));
     timing4 = i2c_reg_timing4::type_id::create("timing4");
     timing4.configure(.blk_parent(this));
     timing4.build();
     default_map.add_reg(.rg(timing4),
-                        .offset(32'h28),
+                        .offset(32'h3c),
                         .rights("RW"));
     timeout_ctrl = i2c_reg_timeout_ctrl::type_id::create("timeout_ctrl");
     timeout_ctrl.configure(.blk_parent(this));
     timeout_ctrl.build();
     default_map.add_reg(.rg(timeout_ctrl),
-                        .offset(32'h2c),
+                        .offset(32'h40),
                         .rights("RW"));
   endfunction : build
 

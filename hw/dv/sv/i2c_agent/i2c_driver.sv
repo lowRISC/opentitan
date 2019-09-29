@@ -6,18 +6,22 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   `uvm_component_utils(i2c_driver)
 
   // the base class provides the following handles for use:
-  // i2c_agent_cfg: cfg
+  i2c_agent_cfg cfg;
 
   `uvm_component_new
 
   virtual task run_phase(uvm_phase phase);
     // base class forks off reset_signals() and get_and_drive() tasks
     super.run_phase(phase);
+    reset_signals();
+    get_and_drive();
   endtask
 
   // reset signals
   virtual task reset_signals();
-  endtask
+    cfg.vif.scl_i <= 1'b1;
+    cfg.vif.sda_i <= 1'b1;
+  endtask : reset_signals
 
   // drive trans received from sequencer
   virtual task get_and_drive();
@@ -34,4 +38,4 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
   endtask
 
-endclass
+endclass : i2c_driver

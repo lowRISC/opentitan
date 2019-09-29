@@ -67,14 +67,14 @@ package i2c_env_pkg;
 
   // get timing values from speed mode
   function automatic int get_timing_values_by_speed_mode(int speed_mode);
-    // TBD
+    // TODO
   endfunction : get_timing_values_by_speed_mode
 
   // get speed mode from timing values
   function automatic int get_speed_mode_by_timing_values(int timing0, int timing1,
                                                          int timing2, int timing3,
                                                          int timing4, int timing5);
-    // TBD
+    // TODO
   endfunction : get_speed_mode_by_timing_values
 
   // package sources

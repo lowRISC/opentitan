@@ -17,8 +17,9 @@ class i2c_agent extends dv_base_agent #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     // get i2c_if handle
-    if (!uvm_config_db#(virtual i2c_if)::get(this, "", "vif", cfg.vif))
+    if (!uvm_config_db#(virtual i2c_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get i2c_if handle from uvm_config_db")
+    end
   endfunction
 
 endclass
