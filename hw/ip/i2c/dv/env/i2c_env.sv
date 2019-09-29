@@ -10,7 +10,7 @@ class i2c_env extends cip_base_env #(
 
   `uvm_component_utils(i2c_env)
 
-  i2c_agent         m_i2c_agent;
+  i2c_agent m_i2c_agent;
 
   `uvm_component_new
 

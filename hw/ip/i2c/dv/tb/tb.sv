@@ -59,7 +59,7 @@ module tb;
     .intr_sda_unstable_o     (intr_sda_unstable     )
   );
 
-  /*
+
   assign interrupts[FmtWatermark]   = intr_fmt_watermark;
   assign interrupts[RxWatermark]    = intr_rx_watermark;
   assign interrupts[FmtOverflow]    = intr_fmt_overflow;
@@ -69,7 +69,6 @@ module tb;
   assign interrupts[SdaInference]   = intr_sda_interference;
   assign interrupts[StretchTimeout] = intr_stretch_timeout;
   assign interrupts[SdaUnstable]    = intr_sda_unstable;
-  */
 
   initial begin
     // drive clk and rst_n from clk_if

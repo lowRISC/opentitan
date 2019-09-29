@@ -10,19 +10,32 @@ class i2c_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(i2c_base_vseq)
 
+  // enable interrupts
+  rand bit [NumI2cIntr-1:0] en_intr;
+
+  // random delays to access fifo/intr, may be controlled in extended seq
+  rand uint dly_to_access_fifo;
+
   // various knobs to enable certain routines
-  bit do_i2c_init = 1'b1;
+  bit do_interrupt      = 1'b1;
+
+  constraint dly_to_access_fifo_c {
+    dly_to_access_fifo inside {[1:100]};
+  }
 
   `uvm_object_new
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
-    if (do_i2c_init) i2c_init();
-  endtask
+  virtual task body();
+    // override cip_base_vseq.body()
+  endtask : body
 
   virtual task dut_shutdown();
     // check for pending i2c operations and wait for them to complete
-    // TODO
+    super.dut_shutdown();
+    // wait for tx and rx operations to complete
+    `uvm_info(`gfn, "waiting for idle", UVM_HIGH)
+    cfg.m_i2c_agent_cfg.vif.wait_for_idle();
+    `uvm_info(`gfn, "done waiting for idle", UVM_HIGH)
   endtask
 
   // setup basic i2c features

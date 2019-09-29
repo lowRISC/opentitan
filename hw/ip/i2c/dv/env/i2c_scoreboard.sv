@@ -45,8 +45,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check = 1'b1;
-    bit     write         = item.is_write();
+    bit do_read_check = 1'b0;
+    bit write = item.is_write();
 
     // if access was to a valid csr, get the csr handle
     if (item.a_addr inside {cfg.csr_addrs}) begin
