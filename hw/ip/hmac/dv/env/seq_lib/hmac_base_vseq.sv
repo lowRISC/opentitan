@@ -16,6 +16,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   rand bit [TL_SZW-1:0] wr_size;
   rand bit [TL_DBW-1:0] wr_mask;
 
+  //TODO: temp constraints here, eventually should move to TL_ACCESS
   constraint wr_size_c {
     wr_size inside {[0:2]}; // 0 is 2**0 byte size
   }
@@ -23,16 +24,30 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
     wr_addr << (TL_AW - wr_size) == 0;
-    solve wr_size before wr_addr;
   }
 
-  constraint wr_mask_c {
-    $countones(wr_mask) == (1 << wr_size);
-    (wr_addr & 'b01) -> wr_mask[0] == 0;
-    (wr_addr & 'b10) -> wr_mask[1:0] == 0;
-    (wr_addr & 'b11) -> wr_mask[2:0] == 0;
-    !(wr_mask inside {'h5, 'h9, 'ha, 'hb, 'hd}); // mask must have continues ones
-    solve wr_size before wr_mask;
+  constraint wr_mask_align_with_addr_c {
+    if (wr_addr[1:0] == 1) {
+      wr_mask[0] == 0;
+    } else if (wr_addr[1:0] == 2) {
+      wr_mask[1:0] == 0;
+    } else if (wr_addr[1:0] == 3) {
+      wr_mask[2:0] == 0;
+    }
+  }
+
+  constraint wr_mask_size_c {
+    $countones(wr_mask) <= ('b1 << wr_size);
+  }
+
+  constraint wr_mask_conintuous_c {
+    $countones(wr_mask ^ {wr_mask[TL_DBW-2:0], 1'b0}) <= 2; // mask must have continues ones
+  }
+
+  // mask must be within enabled lanes
+  // prevent cases: addr: 0h, size: 1, mask: 'b1100; addr: 0h, size: 0, mask: 'b1000
+  constraint mask_in_enabled_lanes_c {
+    ((wr_mask >> wr_addr[1:0]) >> (1 << wr_size)) == 0;
   }
 
   virtual task dut_init(string reset_kind = "HARD");

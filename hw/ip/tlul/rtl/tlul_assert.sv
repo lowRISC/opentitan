@@ -59,12 +59,12 @@ module tlul_assert (
         //         This assertion can be covered by below
         //         (a_size must less than or equal to ones of a_mask)
 
-        // a_size: 2**a_size must less than or equal to $countones(a_mask) for PutPartial
-        `ASSERT_I(sizeLTEMask, (h2d.a_opcode === PutPartialData) ||
+        // a_size: 2**a_size must greater than or equal to $countones(a_mask) for PutPartial and Get
+        `ASSERT_I(sizeGTEMask, (h2d.a_opcode == PutFullData) ||
                                ((1 << h2d.a_size) >= $countones(h2d.a_mask)))
 
-        // a_size: 2**a_size must equal to $countones(a_mask) for PutFull and Get
-        `ASSERT_I(sizeMatchesMask, (h2d.a_opcode !== PutPartialData) ||
+        // a_size: 2**a_size must equal to $countones(a_mask) for PutFull
+        `ASSERT_I(sizeMatchesMask, (h2d.a_opcode inside {PutPartialData, Get}) ||
                                    ((1 << h2d.a_size) === $countones(h2d.a_mask)))
 
         // a_source: there should be no more than one pending request per each source ID

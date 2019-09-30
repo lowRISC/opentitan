@@ -38,6 +38,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // tl_access task: does a single TL_W-bit write or read transaction to the specified address
   // note that this task does not update ral model; optionally also checks for error response
   // TODO: add additional args? non-blocking? respose data check? timeout? spinwait?
+  // TODO: randomize size, addr here based on given addr range, data, and mask, eventually can be
+  // reused for mem_read, partial read, and hmac msg fifo write
   virtual task tl_access(input bit [TL_AW-1:0]  addr,
                          input bit              write,
                          inout bit [TL_DW-1:0]  data,
@@ -56,7 +58,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         size      == local::size;
         mask      == local::mask;
         if (write) {
-          opcode  == ((size == 2) ? tlul_pkg::PutFullData : tlul_pkg::PutPartialData);
+          if ($countones(mask) < (1 << size)) opcode == tlul_pkg::PutPartialData;
+          else opcode inside {tlul_pkg::PutPartialData, tlul_pkg::PutFullData};
           data    == local::data;
         } else {
           opcode  == tlul_pkg::Get;
