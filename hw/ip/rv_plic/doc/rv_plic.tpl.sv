@@ -100,15 +100,9 @@ module rv_plic #(
   //////////////////////////////////////////////////////////////////////////////
   // Interrupt Enable
 % for t in range(target):
-  % for s in range(src):
-    % if src > 32:
-      ## TODO: make regwidth configurable
-  assign ie[${t}][${s}] = reg2hw.ie${t}${s//32}.e${s}.q;
-    % else:
-      ## no multireg expands to multiple registers
-  assign ie[${t}][${s}] = reg2hw.ie${t}.e${s}.q;
-    % endif
-  % endfor
+  for (genvar s = 0; s < ${src}; s++) begin : gen_ie${t}
+    assign ie[${t}][s] = reg2hw.ie${t}[s].q;
+  end
 % endfor
   //----------------------------------------------------------------------------
 
@@ -139,37 +133,17 @@ module rv_plic #(
 
   //////////////////////////////////////////////////////////////////////////////
   // IP
-% for s in range(src):
-  % if src > 32:
-    ## TODO: make regwidth configurable
-  assign hw2reg.ip${s//32}.p${s}.de = 1'b1; // Always write
-  % else:
-    ## no multireg expands to multiple registers
-  assign hw2reg.ip.p${s}.de = 1'b1; // Always write
-  % endif
-% endfor
-% for s in range(src):
-  % if src > 32:
-    ## TODO: make regwidth configurable
-  assign hw2reg.ip${s//32}.p${s}.d  = ip[${s}];
-  % else:
-    ## no multireg expands to multiple registers
-  assign hw2reg.ip.p${s}.d  = ip[${s}];
-  % endif
-% endfor
+  for (genvar s = 0; s < ${src}; s++) begin : gen_ip
+    assign hw2reg.ip[s].de = 1'b1; // Always write
+    assign hw2reg.ip[s].d  = ip[s];
+  end
   //----------------------------------------------------------------------------
 
   //////////////////////////////////////////////////////////////////////////////
   // Detection:: 0: Level, 1: Edge
-% for s in range(src):
-  % if src > 32:
-    ## TODO: make regwidth configurable
-  assign le[${s}] = reg2hw.le${s//32}.le${s}.q;
-  % else:
-    ## no multireg expands to multiple registers
-  assign le[${s}] = reg2hw.le.le${s}.q;
-  % endif
-% endfor
+  for (genvar s = 0; s < ${src}; s++) begin : gen_le
+    assign le[s] = reg2hw.le[s].q;
+  end
   //----------------------------------------------------------------------------
 
   // Gateways
