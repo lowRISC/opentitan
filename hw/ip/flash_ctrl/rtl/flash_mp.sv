@@ -88,15 +88,15 @@ module flash_mp #(
     end
   end
 
-  assign final_rd_en = |rd_en;
-  assign final_prog_en = |prog_en;
-  assign final_pg_erase_en = |pg_erase_en;
-  assign final_bk_erase_en = |bk_erase_en;
+  assign final_rd_en = rd_i & |rd_en;
+  assign final_prog_en = prog_i & |prog_en;
+  assign final_pg_erase_en = pg_erase_i & |pg_erase_en;
+  assign final_bk_erase_en = bk_erase_i & |bk_erase_en;
 
-  assign rd_o = req_i & rd_i & final_rd_en;
-  assign prog_o = req_i & prog_i & final_prog_en;
-  assign pg_erase_o = req_i & pg_erase_i & final_pg_erase_en;
-  assign bk_erase_o = req_i & bk_erase_i & final_bk_erase_en;
+  assign rd_o = req_i & final_rd_en;
+  assign prog_o = req_i & final_prog_en;
+  assign pg_erase_o = req_i & final_pg_erase_en;
+  assign bk_erase_o = req_i & final_bk_erase_en;
   assign req_o = rd_o | prog_o | pg_erase_o | bk_erase_o;
 
   logic txn_err;
