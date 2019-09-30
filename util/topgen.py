@@ -19,7 +19,7 @@ from reggen import gen_rtl, gen_dv, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
 
 # Filter from IP list but adding generated hjson
-filter_list = ['rv_plic', 'alert_h']
+filter_list = ['rv_plic', 'alert_h', 'pinmux']
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -195,7 +195,11 @@ def main():
                         '-t',
                         required=True,
                         help="`top_{name}.hjson` file.")
-    parser.add_argument('--tpl', '-c', help="`top_{name}.tpl.sv` file.")
+    parser.add_argument(
+        '--tpl',
+        '-c',
+        help=
+        "The directory having top_{name}_core.tpl.sv and top_{name}.tpl.sv.")
     parser.add_argument(
         '--outdir',
         '-o',
@@ -312,6 +316,8 @@ def main():
         rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/doc/autogen/rv_plic.hjson'
         ips.append(rv_plic_hjson)
 
+        # TODO: Add generated pinmux hjson to ips here
+
         # load hjson and pass validate from reggen
         try:
             ip_objs = []
@@ -341,7 +347,9 @@ def main():
                  (", ".join([x["name"] for x in xbar_objs])))
 
         # TODO: Add validate
-        topcfg = validate_top(topcfg)
+        topcfg, error = validate_top(topcfg)
+        if error != 0:
+            raise SystemExit("Error occured while validating top.hjson")
 
         # TODO: Add conversion logic from top to top.complete.hjson
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
@@ -381,13 +389,16 @@ def main():
     top_name = completecfg["name"]
 
     if not args.no_top or args.top_only:
+        tpl_path = Path(args.tpl)
+        top_tplpath = tpl_path / ("top_%s.tpl.sv" % (top_name))
+        out_top = generate_rtl(completecfg, str(top_tplpath))
+
         rtl_path = out_path / 'rtl'
         rtl_path.mkdir(parents=True, exist_ok=True)
-        rtl_filepath = rtl_path / ("top_%s.sv" % (top_name))
-        out_rtl = generate_rtl(completecfg, args.tpl)
+        top_path = rtl_path / ("top_%s.sv" % top_name)
 
-        with rtl_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_rtl)
+        with top_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out_top)
 
 
 if __name__ == "__main__":

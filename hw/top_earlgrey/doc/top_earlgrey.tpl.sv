@@ -4,7 +4,7 @@
 
 <% import re
 %>\
-module top_earlgrey #(
+module top_${top["name"]} #(
   parameter bit IbexPipeLine = 0
 ) (
   // Clock and Reset

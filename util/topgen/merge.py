@@ -4,57 +4,9 @@
 
 import logging as log
 from copy import deepcopy
-from pathlib import Path, PosixPath
+from functools import partial
 
-import hjson
-
-
-def is_ipcfg(ip: Path) -> bool:  # return bool
-    log.info("IP Path: %s" % repr(ip))
-    ip_name = ip.parents[1].name
-    hjson_name = ip.name
-
-    log.info("IP Name(%s) and HJSON name (%s)" % (ip_name, hjson_name))
-
-    if ip_name + ".hjson" == hjson_name or ip_name + "_reg.hjson" == hjson_name:
-        return True
-    return False
-
-
-def search_ips(ip_path):  # return list of config files
-    # list the every hjson file
-    p = ip_path.glob('*/doc/*.hjson')
-
-    # filter only ip_name/doc/ip_name{_reg|''}.hjson
-    ips = [x for x in p if is_ipcfg(x)]
-
-    log.info("Filtered-in IP files: %s" % repr(ips))
-    return ips
-
-
-def is_xbarcfg(xbar_obj):
-    if "type" in xbar_obj and xbar_obj["type"] == "xbar":
-        return True
-
-    return False
-
-
-def get_hjsonobj_xbars(xbar_path):
-    """ Search crossbars hjson files from given path.
-
-    Search every hjson in the directory and check hjson type.
-    It could be type: "top" or type: "xbar"
-    returns [(name, obj), ... ]
-    """
-    p = xbar_path.glob('*.hjson')
-    try:
-        xbar_objs = [hjson.load(x.open('r'), use_decimal=True) for x in p]
-    except ValueError:
-        raise Systemexit(sys.exc_info()[1])
-
-    xbar_objs = [x for x in xbar_objs if is_xbarcfg(x)]
-
-    return xbar_objs
+from .lib import *
 
 
 def amend_ip(top, ip):
@@ -110,6 +62,7 @@ def amend_ip(top, ip):
         ip_module["available_input_list"] = ip["available_input_list"]
         for i in ip_module["available_input_list"]:
             i.pop('desc', None)
+            i["type"] = "input"
             i["width"] = int(i["width"])
     else:
         ip_module["available_input_list"] = []
@@ -117,6 +70,7 @@ def amend_ip(top, ip):
         ip_module["available_output_list"] = ip["available_output_list"]
         for i in ip_module["available_output_list"]:
             i.pop('desc', None)
+            i["type"] = "output"
             i["width"] = int(i["width"])
     else:
         ip_module["available_output_list"] = []
@@ -124,6 +78,7 @@ def amend_ip(top, ip):
         ip_module["available_inout_list"] = ip["available_inout_list"]
         for i in ip_module["available_inout_list"]:
             i.pop('desc', None)
+            i["type"] = "inout"
             i["width"] = int(i["width"])
     else:
         ip_module["available_inout_list"] = []
@@ -133,6 +88,7 @@ def amend_ip(top, ip):
         ip_module["interrupt_list"] = ip["interrupt_list"]
         for i in ip_module["interrupt_list"]:
             i.pop('desc', None)
+            i["type"] = "interrupt"
             i["width"] = int(i["width"])
     else:
         ip_module["interrupt_list"] = []
@@ -314,17 +270,6 @@ def amend_xbar(top, xbar):
         xbar_adddevice(top, topxbar, device)
 
 
-def prefix_module(module, interrupt_list):
-    result = []
-    for i in interrupt_list:
-        result.append({
-            "name": module.lower() + "_" + i["name"],
-            "width": i["width"]
-        })
-
-    return result
-
-
 def amend_interrupt(top):
     """Check interrupt_module if exists, or just use all modules
     """
@@ -342,7 +287,128 @@ def amend_interrupt(top):
             continue
 
         log.info("Adding interrupts from module %s" % ip[0]["name"])
-        top["interrupt"] += prefix_module(m, ip[0]["interrupt_list"])
+        top["interrupt"] += list(
+            map(partial(add_prefix_to_signal, prefix=m.lower()),
+                ip[0]["interrupt_list"]))
+
+
+def amend_pinmux_io(top):
+    """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
+    """
+    pinmux = top["pinmux"]
+
+    if not "dio_modules" in pinmux:
+        pinmux['dio_modules'] = []
+
+    # list out dedicated IO
+    pinmux['dio'] = []
+    for e in pinmux["dio_modules"]:
+        # Check name if it is module or signal
+        mname, sname = get_ms_name(e["name"])
+
+        # Parse how many signals
+        m = get_module_by_name(top, mname)
+
+        if sname != None:
+            signals = deepcopy([get_signal_by_name(m, sname)])
+        else:
+            # Get all module signals
+            signals = deepcopy(m["available_input_list"] +
+                               m["available_output_list"] +
+                               m["available_inout_list"])
+
+        sig_width = sum([s["width"] for s in signals])
+
+        # convert signal with module name
+        signals = list(
+            map(partial(add_prefix_to_signal, prefix=mname), signals))
+        # Parse how many pads are assigned
+        if not "pad" in e:
+            raise SystemExit("Should catch pad field in validate.py!")
+
+        total_width = 0
+
+        # pads are the list of individual pin, each entry is 1 bit width
+        pads = []
+        for p in e["pad"]:
+            pads += get_pad_list(p)
+
+        # check if #sig and #pads are matched
+        if len(pads) != sig_width:
+            raise SystemExit("# Pads and # Sig (%s) aren't same: %d" %
+                             (mname, sig_width))
+
+        # add info to pads["dio"]
+        for s in signals:
+            p = pads[:s["width"]]
+            pads = pads[s["width"]:]
+            s["pad"] = p
+            pinmux["dio"].append(s)
+
+    dio_names = [p["name"] for p in pinmux["dio"]]
+
+    ## Multiplexer IO
+    if not "mio_modules" in pinmux:
+        # Add all modules having available io to Multiplexer IO
+        pinmux["mio_modules"] = []
+
+        for m in top["module"]:
+            num_io = len(m["available_input_list"] +
+                         m["available_output_list"] +
+                         m["available_inout_list"])
+            if num_io != 0:
+                # Add if not in dio_modules
+                pinmux["mio_modules"].append(m["name"])
+
+    # List up the dedicated IO to exclude from inputs/outputs
+
+    # Add port list to `inputs` and `outputs` fields
+    if not "inputs" in pinmux:
+        pinmux["inputs"] = []
+    if not "outputs" in pinmux:
+        pinmux["outputs"] = []
+    if not "inouts" in pinmux:
+        pinmux["inouts"] = []
+
+    for e in pinmux["mio_modules"]:
+        tokens = e.split('.')
+        if len(tokens) not in [1, 2]:
+            raise SystemExit(
+                "Cannot parse signal/module in mio_modules {}".format(e))
+        # Add all ports from the module to input/outputs
+        m = get_module_by_name(top, tokens[0])
+        if m == None:
+            raise SystemExit("Module {} doesn't exist".format(tokens[0]))
+
+        if len(tokens) == 1:
+            pinmux["inputs"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(add_prefix_to_signal,
+                                prefix=m["name"].lower()),
+                        m["available_input_list"])))
+            pinmux["outputs"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(add_prefix_to_signal,
+                                prefix=m["name"].lower()),
+                        m["available_output_list"])))
+            pinmux["inouts"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(add_prefix_to_signal,
+                                prefix=m["name"].lower()),
+                        m["available_inout_list"])))
+
+        elif len(tokens) == 2:
+            # Current version doesn't consider signal in mio_modules
+            # only in dio_modules
+            raise SystemExit(
+                "Curren version doesn't support signal in mio_modules {}".
+                format(e))
 
 
 def merge_top(topcfg, ipobjs, xbarobjs):
@@ -354,6 +420,10 @@ def merge_top(topcfg, ipobjs, xbarobjs):
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)
+
+    # Creates input/output list in the pinmux
+    log.info("Processing PINMUX")
+    amend_pinmux_io(gencfg)
 
     # Combine xbar into topcfg
     for xbar in xbarobjs:

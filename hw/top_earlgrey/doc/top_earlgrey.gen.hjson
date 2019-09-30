@@ -33,6 +33,7 @@
         {
           name: rx
           width: 1
+          type: input
         }
       ]
       available_output_list:
@@ -40,6 +41,7 @@
         {
           name: tx
           width: 1
+          type: output
         }
       ]
       available_inout_list: []
@@ -48,34 +50,42 @@
         {
           name: tx_watermark
           width: 1
+          type: interrupt
         }
         {
           name: rx_watermark
           width: 1
+          type: interrupt
         }
         {
           name: tx_overflow
           width: 1
+          type: interrupt
         }
         {
           name: rx_overflow
           width: 1
+          type: interrupt
         }
         {
           name: rx_frame_err
           width: 1
+          type: interrupt
         }
         {
           name: rx_break_err
           width: 1
+          type: interrupt
         }
         {
           name: rx_timeout
           width: 1
+          type: interrupt
         }
         {
           name: rx_parity_err
           width: 1
+          type: interrupt
         }
       ]
       scan: "false"
@@ -96,6 +106,7 @@
         {
           name: gpio
           width: 32
+          type: inout
         }
       ]
       interrupt_list:
@@ -103,6 +114,7 @@
         {
           name: gpio
           width: 32
+          type: interrupt
         }
       ]
       scan: "false"
@@ -121,14 +133,17 @@
         {
           name: sck
           width: 1
+          type: input
         }
         {
           name: csb
           width: 1
+          type: input
         }
         {
           name: mosi
           width: 1
+          type: input
         }
       ]
       available_output_list:
@@ -136,6 +151,7 @@
         {
           name: miso
           width: 1
+          type: output
         }
       ]
       available_inout_list: []
@@ -144,26 +160,32 @@
         {
           name: rxf
           width: 1
+          type: interrupt
         }
         {
           name: rxlvl
           width: 1
+          type: interrupt
         }
         {
           name: txlvl
           width: 1
+          type: interrupt
         }
         {
           name: rxerr
           width: 1
+          type: interrupt
         }
         {
           name: rxoverflow
           width: 1
+          type: interrupt
         }
         {
           name: txunderflow
           width: 1
+          type: interrupt
         }
       ]
       scan: "true"
@@ -185,26 +207,32 @@
         {
           name: prog_empty
           width: 1
+          type: interrupt
         }
         {
           name: prog_lvl
           width: 1
+          type: interrupt
         }
         {
           name: rd_full
           width: 1
+          type: interrupt
         }
         {
           name: rd_lvl
           width: 1
+          type: interrupt
         }
         {
           name: op_done
           width: 1
+          type: interrupt
         }
         {
           name: op_error
           width: 1
+          type: interrupt
         }
       ]
       scan: "false"
@@ -226,6 +254,7 @@
         {
           name: timer_expired_0_0
           width: 1
+          type: interrupt
         }
       ]
       scan: "false"
@@ -247,10 +276,12 @@
         {
           name: hmac_done
           width: 1
+          type: interrupt
         }
         {
           name: fifo_full
           width: 1
+          type: interrupt
         }
       ]
       scan: "false"
@@ -491,94 +522,252 @@
     {
       name: gpio_gpio
       width: 32
+      type: interrupt
     }
     {
       name: uart_tx_watermark
       width: 1
+      type: interrupt
     }
     {
       name: uart_rx_watermark
       width: 1
+      type: interrupt
     }
     {
       name: uart_tx_overflow
       width: 1
+      type: interrupt
     }
     {
       name: uart_rx_overflow
       width: 1
+      type: interrupt
     }
     {
       name: uart_rx_frame_err
       width: 1
+      type: interrupt
     }
     {
       name: uart_rx_break_err
       width: 1
+      type: interrupt
     }
     {
       name: uart_rx_timeout
       width: 1
+      type: interrupt
     }
     {
       name: uart_rx_parity_err
       width: 1
+      type: interrupt
     }
     {
       name: spi_device_rxf
       width: 1
+      type: interrupt
     }
     {
       name: spi_device_rxlvl
       width: 1
+      type: interrupt
     }
     {
       name: spi_device_txlvl
       width: 1
+      type: interrupt
     }
     {
       name: spi_device_rxerr
       width: 1
+      type: interrupt
     }
     {
       name: spi_device_rxoverflow
       width: 1
+      type: interrupt
     }
     {
       name: spi_device_txunderflow
       width: 1
+      type: interrupt
     }
     {
       name: flash_ctrl_prog_empty
       width: 1
+      type: interrupt
     }
     {
       name: flash_ctrl_prog_lvl
       width: 1
+      type: interrupt
     }
     {
       name: flash_ctrl_rd_full
       width: 1
+      type: interrupt
     }
     {
       name: flash_ctrl_rd_lvl
       width: 1
+      type: interrupt
     }
     {
       name: flash_ctrl_op_done
       width: 1
+      type: interrupt
     }
     {
       name: flash_ctrl_op_error
       width: 1
+      type: interrupt
     }
     {
       name: hmac_hmac_done
       width: 1
+      type: interrupt
     }
     {
       name: hmac_fifo_full
       width: 1
+      type: interrupt
     }
   ]
+  pinmux:
+  {
+    dio_modules:
+    [
+      {
+        name: spi_device
+        pad:
+        [
+          ChB[0..3]
+        ]
+      }
+      {
+        name: uart.tx
+        pad:
+        [
+          ChA[0]
+        ]
+      }
+    ]
+    mio_modules:
+    [
+      uart
+      gpio
+    ]
+    nc_modules:
+    [
+      rv_timer
+      hmac
+    ]
+    dio:
+    [
+      {
+        name: spi_device_sck
+        width: 1
+        type: input
+        pad:
+        [
+          {
+            name: ChB
+            index: 0
+          }
+        ]
+      }
+      {
+        name: spi_device_csb
+        width: 1
+        type: input
+        pad:
+        [
+          {
+            name: ChB
+            index: 1
+          }
+        ]
+      }
+      {
+        name: spi_device_mosi
+        width: 1
+        type: input
+        pad:
+        [
+          {
+            name: ChB
+            index: 2
+          }
+        ]
+      }
+      {
+        name: spi_device_miso
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChB
+            index: 3
+          }
+        ]
+      }
+      {
+        name: uart_tx
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChA
+            index: 0
+          }
+        ]
+      }
+    ]
+    inputs:
+    [
+      {
+        name: uart_rx
+        width: 1
+        type: input
+      }
+    ]
+    outputs: []
+    inouts:
+    [
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+      }
+    ]
+  }
+  padctrl:
+  {
+    attr_default:
+    [
+      STRONG
+    ]
+    pads:
+    [
+      {
+        name: ChA
+        type: IO_33V
+        count: 32
+      }
+      {
+        name: ChB
+        type: IO_33V
+        count: 4
+        attr:
+        [
+          KEEP
+          WEAK
+        ]
+      }
+    ]
+  }
 }

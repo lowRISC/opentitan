@@ -102,5 +102,50 @@
   // TODO: ALERT HANDLER
 
   // TODO: PINMUX
+  pinmux: {
+
+    // Dedicated IO modules. The in/out ports of the modules below are connected
+    //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers
+    dio_modules: [
+      { name: "spi_device", pad: ["ChB[0..3]"] },
+      { name: "uart.tx", pad: ["ChA[0]"]},
+      // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
+    ],
+
+    // Multiplexing IO modules. The in/out ports of the modules below are
+    //  connected through PINMUX, which gives controllability of the connection
+    //  between the modules and the IO PADS.
+    //  If `mio_modules` aren't defined, it uses all remaining modules from
+    //  module list except defined in `dio_modules`.
+    mio_modules: ["uart", "gpio"]
+
+    // If any module isn't defined in above two lists, its inputs will be tied
+    //  to 0, and the output/OE signals will be floating (or connected to
+    //  unused signal). `rv_plic` is special module, shouldn't be defined here.
+    nc_modules: ["rv_timer", "hmac"]
+
+    // Below fields are generated.
+    // inputs: [
+    //  { name: "xxx", width: xx },
+    //  ]
+    // outputs: [
+    //  { name: "xxx", width: xx },
+    //  ]
+    // inouts: [
+    //  { name: "xxx", width: xx },
+    //  ]
+  }
+
+  // PADS instantiation
+  //  Number of in/outs and the numer of PAD instances doesn't have to be
+  //  same. The number given below excludes clock/reset and other necessary
+  //  PADS but only defines GPIO pads.
+  padctrl: {
+    attr_default: ["STRONG"],
+    pads: [
+      { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
+      { name: "ChB" type: "IO_33V", count: 4, attr: ["KEEP", "WEAK"]},
+    ]
+  }
 
 }
