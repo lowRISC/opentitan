@@ -128,38 +128,9 @@ module rv_plic #(
 
   //////////////////////////////////////////////////////////////////////////////
   // Interrupt Enable
-  assign ie[0][0] = reg2hw.ie0.e0.q;
-  assign ie[0][1] = reg2hw.ie0.e1.q;
-  assign ie[0][2] = reg2hw.ie0.e2.q;
-  assign ie[0][3] = reg2hw.ie0.e3.q;
-  assign ie[0][4] = reg2hw.ie0.e4.q;
-  assign ie[0][5] = reg2hw.ie0.e5.q;
-  assign ie[0][6] = reg2hw.ie0.e6.q;
-  assign ie[0][7] = reg2hw.ie0.e7.q;
-  assign ie[0][8] = reg2hw.ie0.e8.q;
-  assign ie[0][9] = reg2hw.ie0.e9.q;
-  assign ie[0][10] = reg2hw.ie0.e10.q;
-  assign ie[0][11] = reg2hw.ie0.e11.q;
-  assign ie[0][12] = reg2hw.ie0.e12.q;
-  assign ie[0][13] = reg2hw.ie0.e13.q;
-  assign ie[0][14] = reg2hw.ie0.e14.q;
-  assign ie[0][15] = reg2hw.ie0.e15.q;
-  assign ie[0][16] = reg2hw.ie0.e16.q;
-  assign ie[0][17] = reg2hw.ie0.e17.q;
-  assign ie[0][18] = reg2hw.ie0.e18.q;
-  assign ie[0][19] = reg2hw.ie0.e19.q;
-  assign ie[0][20] = reg2hw.ie0.e20.q;
-  assign ie[0][21] = reg2hw.ie0.e21.q;
-  assign ie[0][22] = reg2hw.ie0.e22.q;
-  assign ie[0][23] = reg2hw.ie0.e23.q;
-  assign ie[0][24] = reg2hw.ie0.e24.q;
-  assign ie[0][25] = reg2hw.ie0.e25.q;
-  assign ie[0][26] = reg2hw.ie0.e26.q;
-  assign ie[0][27] = reg2hw.ie0.e27.q;
-  assign ie[0][28] = reg2hw.ie0.e28.q;
-  assign ie[0][29] = reg2hw.ie0.e29.q;
-  assign ie[0][30] = reg2hw.ie0.e30.q;
-  assign ie[0][31] = reg2hw.ie0.e31.q;
+  for (genvar s = 0; s < 32; s++) begin : gen_ie0
+    assign ie[0][s] = reg2hw.ie0[s].q;
+  end
   //----------------------------------------------------------------------------
 
   //////////////////////////////////////////////////////////////////////////////
@@ -183,106 +154,17 @@ module rv_plic #(
 
   //////////////////////////////////////////////////////////////////////////////
   // IP
-  assign hw2reg.ip.p0.de = 1'b1; // Always write
-  assign hw2reg.ip.p1.de = 1'b1; // Always write
-  assign hw2reg.ip.p2.de = 1'b1; // Always write
-  assign hw2reg.ip.p3.de = 1'b1; // Always write
-  assign hw2reg.ip.p4.de = 1'b1; // Always write
-  assign hw2reg.ip.p5.de = 1'b1; // Always write
-  assign hw2reg.ip.p6.de = 1'b1; // Always write
-  assign hw2reg.ip.p7.de = 1'b1; // Always write
-  assign hw2reg.ip.p8.de = 1'b1; // Always write
-  assign hw2reg.ip.p9.de = 1'b1; // Always write
-  assign hw2reg.ip.p10.de = 1'b1; // Always write
-  assign hw2reg.ip.p11.de = 1'b1; // Always write
-  assign hw2reg.ip.p12.de = 1'b1; // Always write
-  assign hw2reg.ip.p13.de = 1'b1; // Always write
-  assign hw2reg.ip.p14.de = 1'b1; // Always write
-  assign hw2reg.ip.p15.de = 1'b1; // Always write
-  assign hw2reg.ip.p16.de = 1'b1; // Always write
-  assign hw2reg.ip.p17.de = 1'b1; // Always write
-  assign hw2reg.ip.p18.de = 1'b1; // Always write
-  assign hw2reg.ip.p19.de = 1'b1; // Always write
-  assign hw2reg.ip.p20.de = 1'b1; // Always write
-  assign hw2reg.ip.p21.de = 1'b1; // Always write
-  assign hw2reg.ip.p22.de = 1'b1; // Always write
-  assign hw2reg.ip.p23.de = 1'b1; // Always write
-  assign hw2reg.ip.p24.de = 1'b1; // Always write
-  assign hw2reg.ip.p25.de = 1'b1; // Always write
-  assign hw2reg.ip.p26.de = 1'b1; // Always write
-  assign hw2reg.ip.p27.de = 1'b1; // Always write
-  assign hw2reg.ip.p28.de = 1'b1; // Always write
-  assign hw2reg.ip.p29.de = 1'b1; // Always write
-  assign hw2reg.ip.p30.de = 1'b1; // Always write
-  assign hw2reg.ip.p31.de = 1'b1; // Always write
-  assign hw2reg.ip.p0.d  = ip[0];
-  assign hw2reg.ip.p1.d  = ip[1];
-  assign hw2reg.ip.p2.d  = ip[2];
-  assign hw2reg.ip.p3.d  = ip[3];
-  assign hw2reg.ip.p4.d  = ip[4];
-  assign hw2reg.ip.p5.d  = ip[5];
-  assign hw2reg.ip.p6.d  = ip[6];
-  assign hw2reg.ip.p7.d  = ip[7];
-  assign hw2reg.ip.p8.d  = ip[8];
-  assign hw2reg.ip.p9.d  = ip[9];
-  assign hw2reg.ip.p10.d  = ip[10];
-  assign hw2reg.ip.p11.d  = ip[11];
-  assign hw2reg.ip.p12.d  = ip[12];
-  assign hw2reg.ip.p13.d  = ip[13];
-  assign hw2reg.ip.p14.d  = ip[14];
-  assign hw2reg.ip.p15.d  = ip[15];
-  assign hw2reg.ip.p16.d  = ip[16];
-  assign hw2reg.ip.p17.d  = ip[17];
-  assign hw2reg.ip.p18.d  = ip[18];
-  assign hw2reg.ip.p19.d  = ip[19];
-  assign hw2reg.ip.p20.d  = ip[20];
-  assign hw2reg.ip.p21.d  = ip[21];
-  assign hw2reg.ip.p22.d  = ip[22];
-  assign hw2reg.ip.p23.d  = ip[23];
-  assign hw2reg.ip.p24.d  = ip[24];
-  assign hw2reg.ip.p25.d  = ip[25];
-  assign hw2reg.ip.p26.d  = ip[26];
-  assign hw2reg.ip.p27.d  = ip[27];
-  assign hw2reg.ip.p28.d  = ip[28];
-  assign hw2reg.ip.p29.d  = ip[29];
-  assign hw2reg.ip.p30.d  = ip[30];
-  assign hw2reg.ip.p31.d  = ip[31];
+  for (genvar s = 0; s < 32; s++) begin : gen_ip
+    assign hw2reg.ip[s].de = 1'b1; // Always write
+    assign hw2reg.ip[s].d  = ip[s];
+  end
   //----------------------------------------------------------------------------
 
   //////////////////////////////////////////////////////////////////////////////
   // Detection:: 0: Level, 1: Edge
-  assign le[0] = reg2hw.le.le0.q;
-  assign le[1] = reg2hw.le.le1.q;
-  assign le[2] = reg2hw.le.le2.q;
-  assign le[3] = reg2hw.le.le3.q;
-  assign le[4] = reg2hw.le.le4.q;
-  assign le[5] = reg2hw.le.le5.q;
-  assign le[6] = reg2hw.le.le6.q;
-  assign le[7] = reg2hw.le.le7.q;
-  assign le[8] = reg2hw.le.le8.q;
-  assign le[9] = reg2hw.le.le9.q;
-  assign le[10] = reg2hw.le.le10.q;
-  assign le[11] = reg2hw.le.le11.q;
-  assign le[12] = reg2hw.le.le12.q;
-  assign le[13] = reg2hw.le.le13.q;
-  assign le[14] = reg2hw.le.le14.q;
-  assign le[15] = reg2hw.le.le15.q;
-  assign le[16] = reg2hw.le.le16.q;
-  assign le[17] = reg2hw.le.le17.q;
-  assign le[18] = reg2hw.le.le18.q;
-  assign le[19] = reg2hw.le.le19.q;
-  assign le[20] = reg2hw.le.le20.q;
-  assign le[21] = reg2hw.le.le21.q;
-  assign le[22] = reg2hw.le.le22.q;
-  assign le[23] = reg2hw.le.le23.q;
-  assign le[24] = reg2hw.le.le24.q;
-  assign le[25] = reg2hw.le.le25.q;
-  assign le[26] = reg2hw.le.le26.q;
-  assign le[27] = reg2hw.le.le27.q;
-  assign le[28] = reg2hw.le.le28.q;
-  assign le[29] = reg2hw.le.le29.q;
-  assign le[30] = reg2hw.le.le30.q;
-  assign le[31] = reg2hw.le.le31.q;
+  for (genvar s = 0; s < 32; s++) begin : gen_le
+    assign le[s] = reg2hw.le[s].q;
+  end
   //----------------------------------------------------------------------------
 
   // Gateways

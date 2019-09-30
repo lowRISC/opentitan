@@ -10,107 +10,28 @@ package rv_plic_reg_pkg;
   localparam int NumSrc = 32;
   localparam int NumTarget = 1;
 
-// Register to internal design logic
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
+// Typedefs for multiregs
+/////////////////////////////////////////////////////////////////////
 
-  struct packed {
-    struct packed {
-      logic q; // [171]
-    } le0;
-    struct packed {
-      logic q; // [170]
-    } le1;
-    struct packed {
-      logic q; // [169]
-    } le2;
-    struct packed {
-      logic q; // [168]
-    } le3;
-    struct packed {
-      logic q; // [167]
-    } le4;
-    struct packed {
-      logic q; // [166]
-    } le5;
-    struct packed {
-      logic q; // [165]
-    } le6;
-    struct packed {
-      logic q; // [164]
-    } le7;
-    struct packed {
-      logic q; // [163]
-    } le8;
-    struct packed {
-      logic q; // [162]
-    } le9;
-    struct packed {
-      logic q; // [161]
-    } le10;
-    struct packed {
-      logic q; // [160]
-    } le11;
-    struct packed {
-      logic q; // [159]
-    } le12;
-    struct packed {
-      logic q; // [158]
-    } le13;
-    struct packed {
-      logic q; // [157]
-    } le14;
-    struct packed {
-      logic q; // [156]
-    } le15;
-    struct packed {
-      logic q; // [155]
-    } le16;
-    struct packed {
-      logic q; // [154]
-    } le17;
-    struct packed {
-      logic q; // [153]
-    } le18;
-    struct packed {
-      logic q; // [152]
-    } le19;
-    struct packed {
-      logic q; // [151]
-    } le20;
-    struct packed {
-      logic q; // [150]
-    } le21;
-    struct packed {
-      logic q; // [149]
-    } le22;
-    struct packed {
-      logic q; // [148]
-    } le23;
-    struct packed {
-      logic q; // [147]
-    } le24;
-    struct packed {
-      logic q; // [146]
-    } le25;
-    struct packed {
-      logic q; // [145]
-    } le26;
-    struct packed {
-      logic q; // [144]
-    } le27;
-    struct packed {
-      logic q; // [143]
-    } le28;
-    struct packed {
-      logic q; // [142]
-    } le29;
-    struct packed {
-      logic q; // [141]
-    } le30;
-    struct packed {
-      logic q; // [140]
-    } le31;
-  } le;
+typedef struct packed {
+  logic [0:0] q;
+} rv_plic_reg2hw_le_mreg_t;
+typedef struct packed {
+  logic [0:0] q;
+} rv_plic_reg2hw_ie0_mreg_t;
+
+typedef struct packed {
+  logic [0:0] d;
+  logic de;
+} rv_plic_hw2reg_ip_mreg_t;
+
+/////////////////////////////////////////////////////////////////////
+// Register to internal design logic
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
+  rv_plic_reg2hw_le_mreg_t [31:0] le; // [171:140]
   struct packed {
     logic [2:0] q; // [139:137]
   } prio0;
@@ -207,104 +128,7 @@ typedef struct packed {
   struct packed {
     logic [2:0] q; // [46:44]
   } prio31;
-  struct packed {
-    struct packed {
-      logic q; // [43]
-    } e0;
-    struct packed {
-      logic q; // [42]
-    } e1;
-    struct packed {
-      logic q; // [41]
-    } e2;
-    struct packed {
-      logic q; // [40]
-    } e3;
-    struct packed {
-      logic q; // [39]
-    } e4;
-    struct packed {
-      logic q; // [38]
-    } e5;
-    struct packed {
-      logic q; // [37]
-    } e6;
-    struct packed {
-      logic q; // [36]
-    } e7;
-    struct packed {
-      logic q; // [35]
-    } e8;
-    struct packed {
-      logic q; // [34]
-    } e9;
-    struct packed {
-      logic q; // [33]
-    } e10;
-    struct packed {
-      logic q; // [32]
-    } e11;
-    struct packed {
-      logic q; // [31]
-    } e12;
-    struct packed {
-      logic q; // [30]
-    } e13;
-    struct packed {
-      logic q; // [29]
-    } e14;
-    struct packed {
-      logic q; // [28]
-    } e15;
-    struct packed {
-      logic q; // [27]
-    } e16;
-    struct packed {
-      logic q; // [26]
-    } e17;
-    struct packed {
-      logic q; // [25]
-    } e18;
-    struct packed {
-      logic q; // [24]
-    } e19;
-    struct packed {
-      logic q; // [23]
-    } e20;
-    struct packed {
-      logic q; // [22]
-    } e21;
-    struct packed {
-      logic q; // [21]
-    } e22;
-    struct packed {
-      logic q; // [20]
-    } e23;
-    struct packed {
-      logic q; // [19]
-    } e24;
-    struct packed {
-      logic q; // [18]
-    } e25;
-    struct packed {
-      logic q; // [17]
-    } e26;
-    struct packed {
-      logic q; // [16]
-    } e27;
-    struct packed {
-      logic q; // [15]
-    } e28;
-    struct packed {
-      logic q; // [14]
-    } e29;
-    struct packed {
-      logic q; // [13]
-    } e30;
-    struct packed {
-      logic q; // [12]
-    } e31;
-  } ie0;
+  rv_plic_reg2hw_ie0_mreg_t [31:0] ie0; // [43:12]
   struct packed {
     logic [2:0] q; // [11:9]
   } threshold0;
@@ -318,139 +142,12 @@ typedef struct packed {
   } msip0;
 } rv_plic_reg2hw_t;
 
+/////////////////////////////////////////////////////////////////////
 // Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
-  struct packed {
-    struct packed {
-      logic d;  // [69]
-      logic de; // [68]
-    } p0;
-    struct packed {
-      logic d;  // [67]
-      logic de; // [66]
-    } p1;
-    struct packed {
-      logic d;  // [65]
-      logic de; // [64]
-    } p2;
-    struct packed {
-      logic d;  // [63]
-      logic de; // [62]
-    } p3;
-    struct packed {
-      logic d;  // [61]
-      logic de; // [60]
-    } p4;
-    struct packed {
-      logic d;  // [59]
-      logic de; // [58]
-    } p5;
-    struct packed {
-      logic d;  // [57]
-      logic de; // [56]
-    } p6;
-    struct packed {
-      logic d;  // [55]
-      logic de; // [54]
-    } p7;
-    struct packed {
-      logic d;  // [53]
-      logic de; // [52]
-    } p8;
-    struct packed {
-      logic d;  // [51]
-      logic de; // [50]
-    } p9;
-    struct packed {
-      logic d;  // [49]
-      logic de; // [48]
-    } p10;
-    struct packed {
-      logic d;  // [47]
-      logic de; // [46]
-    } p11;
-    struct packed {
-      logic d;  // [45]
-      logic de; // [44]
-    } p12;
-    struct packed {
-      logic d;  // [43]
-      logic de; // [42]
-    } p13;
-    struct packed {
-      logic d;  // [41]
-      logic de; // [40]
-    } p14;
-    struct packed {
-      logic d;  // [39]
-      logic de; // [38]
-    } p15;
-    struct packed {
-      logic d;  // [37]
-      logic de; // [36]
-    } p16;
-    struct packed {
-      logic d;  // [35]
-      logic de; // [34]
-    } p17;
-    struct packed {
-      logic d;  // [33]
-      logic de; // [32]
-    } p18;
-    struct packed {
-      logic d;  // [31]
-      logic de; // [30]
-    } p19;
-    struct packed {
-      logic d;  // [29]
-      logic de; // [28]
-    } p20;
-    struct packed {
-      logic d;  // [27]
-      logic de; // [26]
-    } p21;
-    struct packed {
-      logic d;  // [25]
-      logic de; // [24]
-    } p22;
-    struct packed {
-      logic d;  // [23]
-      logic de; // [22]
-    } p23;
-    struct packed {
-      logic d;  // [21]
-      logic de; // [20]
-    } p24;
-    struct packed {
-      logic d;  // [19]
-      logic de; // [18]
-    } p25;
-    struct packed {
-      logic d;  // [17]
-      logic de; // [16]
-    } p26;
-    struct packed {
-      logic d;  // [15]
-      logic de; // [14]
-    } p27;
-    struct packed {
-      logic d;  // [13]
-      logic de; // [12]
-    } p28;
-    struct packed {
-      logic d;  // [11]
-      logic de; // [10]
-    } p29;
-    struct packed {
-      logic d;  // [9]
-      logic de; // [8]
-    } p30;
-    struct packed {
-      logic d;  // [7]
-      logic de; // [6]
-    } p31;
-  } ip;
+typedef struct packed {
+  rv_plic_hw2reg_ip_mreg_t [31:0] ip; // [69:6]
   struct packed {
     logic [5:0] d; // [5:0]
   } cc0;
