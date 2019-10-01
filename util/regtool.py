@@ -37,56 +37,64 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         usage=USAGE,
         description=DESC)
-    parser.add_argument(
-        'input',
-        nargs='?',
-        metavar='file',
-        type=argparse.FileType('r'),
-        default=sys.stdin,
-        help='input file in hjson type')
-    parser.add_argument(
-        '-d', action='store_true', help='Output register documentation (html)')
-    parser.add_argument(
-        '--cdefines',
-        '-D',
-        action='store_true',
-        help='Output C defines header')
-    parser.add_argument(
-        '--ctdefines',
-        '-T',
-        action='store_true',
-        help='Output C defines header (Titan style)')
-    parser.add_argument(
-        '--doc',
-        action='store_true',
-        help='Output source file documentation (gfm)')
-    parser.add_argument(
-        '-j', action='store_true', help='Output as formatted JSON')
+    parser.add_argument('input',
+                        nargs='?',
+                        metavar='file',
+                        type=argparse.FileType('r'),
+                        default=sys.stdin,
+                        help='input file in hjson type')
+    parser.add_argument('-d',
+                        action='store_true',
+                        help='Output register documentation (html)')
+    parser.add_argument('--cdefines',
+                        '-D',
+                        action='store_true',
+                        help='Output C defines header')
+    parser.add_argument('--ctdefines',
+                        '-T',
+                        action='store_true',
+                        help='Output C defines header (Titan style)')
+    parser.add_argument('--doc',
+                        action='store_true',
+                        help='Output source file documentation (gfm)')
+    parser.add_argument('-j',
+                        action='store_true',
+                        help='Output as formatted JSON')
     parser.add_argument('-c', action='store_true', help='Output as JSON')
-    parser.add_argument(
-        '-r', action='store_true', help='Output as SystemVerilog RTL')
-    parser.add_argument(
-        '-s', action='store_true', help='Output as UVM Register class')
+    parser.add_argument('-r',
+                        action='store_true',
+                        help='Output as SystemVerilog RTL')
+    parser.add_argument('-s',
+                        action='store_true',
+                        help='Output as UVM Register class')
     parser.add_argument('--outdir', '-t',
                         help='Target directory for generated RTL, '\
                              'tool uses ../rtl if blank.')
-    parser.add_argument(
-        '--outfile',
-        '-o',
-        type=argparse.FileType('w'),
-        default=sys.stdout,
-        help='Target filename for json, html, gfm.')
-    parser.add_argument(
-        '--verbose',
-        '-v',
-        action='store_true',
-        help='Verbose and run validate twice')
-    parser.add_argument(
-        '--version', '-V', action='store_true', help='Show version')
-    parser.add_argument(
-        '--novalidate',
-        action='store_true',
-        help='Skip validate, just output json')
+    parser.add_argument('--outfile',
+                        '-o',
+                        type=argparse.FileType('w'),
+                        default=sys.stdout,
+                        help='Target filename for json, html, gfm.')
+    parser.add_argument('--verbose',
+                        '-v',
+                        action='store_true',
+                        help='Verbose and run validate twice')
+    parser.add_argument('--param',
+                        '-p',
+                        type=str,
+                        help='''Change the Parameter values.
+                                Only integer value is supported.
+                                You can add multiple param arguments.
+
+                                  Format: ParamA=ValA;ParamB=ValB
+                                  ''')
+    parser.add_argument('--version',
+                        '-V',
+                        action='store_true',
+                        help='Show version')
+    parser.add_argument('--novalidate',
+                        action='store_true',
+                        help='Skip validate, just output json')
 
     args = parser.parse_args()
 
@@ -112,6 +120,8 @@ def main():
     outfile = args.outfile
 
     infile = args.input
+
+    params = args.param.split(';')
 
     if format == 'rtl':
         if args.outdir:
@@ -141,10 +151,9 @@ def main():
     with infile:
         try:
             srcfull = infile.read()
-            obj = hjson.loads(
-                srcfull,
-                use_decimal=True,
-                object_pairs_hook=validate.checking_dict)
+            obj = hjson.loads(srcfull,
+                              use_decimal=True,
+                              object_pairs_hook=validate.checking_dict)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 
@@ -152,10 +161,10 @@ def main():
         with outfile:
             gen_json.gen_json(obj, outfile, format)
             outfile.write('\n')
-    elif (validate.validate(obj) == 0):
+    elif (validate.validate(obj, params=params) == 0):
         if (verbose):
             log.info("Second validate pass (should show added optional keys)")
-            validate.validate(obj)
+            validate.validate(obj, params=params)
 
         if format == 'rtl':
             gen_rtl.gen_rtl(obj, outdir)

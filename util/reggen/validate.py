@@ -168,6 +168,17 @@ def check_lp(obj, x, err_prefix):
     return error
 
 
+def search_param(obj, key):
+    """return the param object if found, else return non zero error
+    """
+    for p in obj:
+        if p["name"] == key:
+            return p, 0
+
+    log.error("Param {} cannot be found".format(key))
+    return None, 1
+
+
 def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
     error = 0
     for x in required_keys:
@@ -293,6 +304,7 @@ top_optional = {
     'alert_list': ['ln', "list of peripheral alerts"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'param_list': ['lp', "list of parameters of the IP"],
+    'scan': ['pb', 'Indicates the module have `scanmode_i`'],
     'SPDX-License-Identifier': ['s', "License ientifier (if using pure json) "\
                                 "Only use this if unable to put this "\
                                 "information in a comment at the top of the "\
@@ -1005,8 +1017,10 @@ def validate_multi(mreg, offset, addrsep, width, top):
     # associated with the index
     if len(rlist) == 1:
         if regwen_incr:
-            error +=1
-            log.error("%s multireg has only 1 register entry with regwen_incr set to true" % mrname)
+            error += 1
+            log.error(
+                "%s multireg has only 1 register entry with regwen_incr set to true"
+                % mrname)
         # TODO really should make the following a function that reverses the last node inserted
         # may have more properties than just genrnames in the future
         rlist[0]['name'] = mrname
@@ -1179,11 +1193,14 @@ def validate_window(win, offset, regwidth, top):
 
     return error, nextoff
 
+
 """ Check that terms specified for regwen exist
 
 Regwen can be individual registers or fields within a register.  The function
 below checks for both and additional regwen properties.
 """
+
+
 def check_wen_regs(regs):
     error = 0
     idx = 0
@@ -1231,7 +1248,12 @@ def check_wen_regs(regs):
     return error
 
 
-def validate(regs):
+def validate(regs, **kwargs):
+    if "params" in kwargs:
+        params = kwargs["params"]
+    else:
+        params = []
+
     if not 'name' in regs:
         log.error("Component has no name. Aborting.")
         return 1
@@ -1278,6 +1300,33 @@ def validate(regs):
         error += err
         autoregs.extend(iregs)
         offset += addrsep * len(iregs)
+
+    # Change default param value if exists.
+    #   Assumed param list is already validated in above `check_keys` function
+    if "param_list" in regs and len(regs["param_list"]) != 0:
+        for p in params:
+            tokens = p.split('=')
+            if len(tokens) != 2:
+                error += 1
+                log.error("Parameter format isn't correct. {}".format(p))
+            key, value = tokens[0], tokens[1]
+            param, err = search_param(regs["param_list"], key)
+            if err != 0:
+                error += err
+                continue
+
+            value, err = check_int(
+                value, component + " param[{}]".format(param["name"]))
+            if err != 0:
+                error += err
+                continue
+
+            param["default"] = value
+
+    if "scan" in regs:
+        scan, err = check_bool(regs["scan"], component + " scan")
+    else:
+        regs["scan"] = "false"
 
     for x in regs['registers']:
         ck_err = check_zero_one_key(x, list_optone, "At " + hex(offset))
