@@ -14,7 +14,8 @@ module tlul_adapter_sram #(
   parameter int SramDw      = 32, // Current version supports TL-UL width only
   parameter int Outstanding = 1,  // Only one request is accepted
   parameter bit ByteAccess  = 1,  // 1: true, 0: false
-  parameter bit ErrOnWrite  = 0   // 1: Writes not allowed, automatically error
+  parameter bit ErrOnWrite  = 0,  // 1: Writes not allowed, automatically error
+  parameter bit ErrOnRead   = 0   // 1: Reads not allowed, automatically error
 ) (
   input   clk_i,
   input   rst_ni,
@@ -76,6 +77,7 @@ module tlul_adapter_sram #(
   logic error_internal; // Internal protocol error checker
   logic wr_attr_error;
   logic wr_vld_error;
+  logic rd_vld_error;
   logic tlul_error;     // Error from `tlul_err` module
 
   logic a_ack, d_ack, unused_sram_ack;
@@ -168,6 +170,12 @@ module tlul_adapter_sram #(
     assign wr_vld_error = 1'b0;
   end
 
+  if (ErrOnRead == 1) begin: gen_no_reads
+    assign rd_vld_error = tl_i.a_opcode == Get;
+  end else begin : gen_reads_allowed
+    assign rd_vld_error = 1'b0;
+  end
+
   tlul_err u_err (
     .clk_i,
     .rst_ni,
@@ -175,7 +183,7 @@ module tlul_adapter_sram #(
     .err_o (tlul_error)
   );
 
-  assign error_internal = wr_attr_error | wr_vld_error | tlul_error;
+  assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | tlul_error;
   //-- End: Request Error Detection -------------------------------------------
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
@@ -254,5 +262,8 @@ module tlul_adapter_sram #(
   // below assertion fails when outstanding value is too small (SRAM rvalid is asserted
   // even though the RspFifo is full)
   `ASSERT(rvalidHighWhenRspFifoFull, rvalid_i |-> rspfifo_wready, clk_i, !rst_ni)
+
+  // If both ErrOnWrite and ErrOnRead are set, this block is useless
+  `ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
 
 endmodule

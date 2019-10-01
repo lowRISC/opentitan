@@ -74,7 +74,8 @@ module flash_ctrl (
   // FIFO Connections
   logic                 prog_fifo_wready;
   logic                 prog_fifo_rvalid;
-  logic                 prog_fifo_wvalid;
+  logic                 prog_fifo_req;
+  logic                 prog_fifo_wen;
   logic                 prog_fifo_ren;
   logic [DataWidth-1:0] prog_fifo_wdata;
   logic [DataWidth-1:0] prog_fifo_rdata;
@@ -127,20 +128,25 @@ module flash_ctrl (
   // Since the program and read FIFOs are never used at the same time, it should really be one
   // FIFO with muxed inputs and outputs.  This should be addressed once the flash integration
   // strategy has been identified
-  flash_tlul_to_fifo #(
-    .Size(DataWidth),
-    .Dir(0)
+  tlul_adapter_sram #(
+    .SramAw(1),         //address unused
+    .SramDw(DataWidth),
+    .ByteAccess(0),     //flash may not support byte access
+    .ErrOnRead(1)       //reads not supported
   ) u_to_prog_fifo (
     .clk_i,
     .rst_ni,
-    .tl_i         (tl_fifo_h2d[0]),
-    .tl_o         (tl_fifo_d2h[0]),
-    .fifo_wen_o   (prog_fifo_wvalid),
-    .fifo_wdata_o (prog_fifo_wdata),
-    .fifo_full_i  (~prog_fifo_wready),
-    .fifo_ren_o   (),
-    .fifo_empty_i (1'b1),
-    .fifo_rdata_i ('0)
+    .tl_i       (tl_fifo_h2d[0]),
+    .tl_o       (tl_fifo_d2h[0]),
+    .req_o      (prog_fifo_req),
+    .gnt_i      (prog_fifo_wready),
+    .we_o       (prog_fifo_wen),
+    .addr_o     (),
+    .wmask_o    (),
+    .wdata_o    (prog_fifo_wdata),
+    .rdata_i    (DataWidth'(0)),
+    .rvalid_i   (1'b0),
+    .rerror_i   (2'b0)
   );
 
   prim_fifo_sync #(
@@ -149,7 +155,7 @@ module flash_ctrl (
   ) u_prog_fifo (
     .clk_i,
     .rst_ni (rst_ni & ~reg2hw.control.fifo_rst.q),
-    .wvalid (prog_fifo_wvalid),
+    .wvalid (prog_fifo_req & prog_fifo_wen),
     .wready (prog_fifo_wready),
     .wdata  (prog_fifo_wdata),
     .depth  (prog_fifo_depth),
@@ -188,21 +194,35 @@ module flash_ctrl (
   );
 
   // Read FIFO
-  flash_tlul_to_fifo #(
-    .Size(DataWidth),
-    .Dir(1)      //change this to something in package file later
+  logic adapter_rvalid;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      adapter_rvalid <= 1'b0;
+    end else begin
+      adapter_rvalid <= rd_fifo_ren && rd_fifo_rvalid;
+    end
+  end
+
+  tlul_adapter_sram #(
+    .SramAw(1),         //address unused
+    .SramDw(DataWidth),
+    .ByteAccess(0),     //flash may not support byte access
+    .ErrOnWrite(1)      //writes not supported
   ) u_to_rd_fifo (
     .clk_i,
     .rst_ni,
-    .tl_i         (tl_fifo_h2d[1]),
-    .tl_o         (tl_fifo_d2h[1]),
-    .fifo_wen_o   (),
-    .fifo_wdata_o (),
-    .fifo_full_i  (1'b1),
-    .fifo_ren_o   (rd_fifo_ren),
-    .fifo_empty_i (~rd_fifo_rvalid),
-    .fifo_rdata_i (rd_fifo_rdata)
-    );
+    .tl_i       (tl_fifo_h2d[1]),
+    .tl_o       (tl_fifo_d2h[1]),
+    .req_o      (rd_fifo_ren),
+    .gnt_i      (rd_fifo_rvalid),
+    .we_o       (),
+    .addr_o     (),
+    .wmask_o    (),
+    .wdata_o    (),
+    .rdata_i    (rd_fifo_rdata),
+    .rvalid_i   (adapter_rvalid),
+    .rerror_i   (2'b0)
+  );
 
   prim_fifo_sync #(
     .Width(DataWidth),
@@ -215,7 +235,9 @@ module flash_ctrl (
     .wdata  (rd_fifo_wdata),
     .depth  (rd_fifo_depth),
     .rvalid (rd_fifo_rvalid),
-    .rready (rd_fifo_ren),
+    //adapter_rvalid is used here because adapter_sram does not accept data the same cycle.
+    //It expects an sram like interface where data arrives during the next cycle
+    .rready (adapter_rvalid),
     .rdata  (rd_fifo_rdata)
   );
 
