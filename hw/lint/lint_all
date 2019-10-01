@@ -8,6 +8,7 @@
 #-------------------------------------------------------------------------
 declare -a blocks=(
   "alert_handler"
+  "pinmux"  
   "gpio"
   "rv_core_ibex"
   "rv_dm"
