@@ -275,7 +275,6 @@
       ],
     },
 
-
     { multireg: {
         cname: "FLASH_CTRL",
         name: "MP_BANK_CFG",
@@ -285,7 +284,7 @@
         hwaccess: "hro",
         regwen: "BANK_CFG_REGWEN"
         fields: [
-            { bits: "1",
+            { bits: "0",
               name: "ERASE_EN",
               desc: '''
                 Bank wide erase enable

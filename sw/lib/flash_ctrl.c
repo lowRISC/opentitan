@@ -63,9 +63,7 @@ int flash_check_empty(void) {
 }
 
 int flash_bank_erase(bank_index_t idx) {
-  REG32(FLASH_CTRL_MP_BANK_CFG(0)) =
-      0x1 << ((idx == FLASH_BANK_0) ? FLASH_CTRL_MP_BANK_CFG_ERASE_EN0
-                                    : FLASH_CTRL_MP_BANK_CFG_ERASE_EN1);
+  flash_cfg_bank_erase(idx, /*erase_en=*/true);
 
   // TODO: Add timeout conditions and add error codes.
   REG32(FLASH_CTRL_ADDR(0)) = (idx == FLASH_BANK_0)
@@ -77,9 +75,8 @@ int flash_bank_erase(bank_index_t idx) {
        0x1 << FLASH_CTRL_CONTROL_START);
   wait_done_and_ack();
 
-  REG32(FLASH_CTRL_MP_BANK_CFG(0)) =
-      0x0 << ((idx == FLASH_BANK_0) ? FLASH_CTRL_MP_BANK_CFG_ERASE_EN0
-                                    : FLASH_CTRL_MP_BANK_CFG_ERASE_EN1);
+  flash_cfg_bank_erase(idx, /*erase_en=*/false);
+
   return get_clr_err();
 }
 
@@ -127,6 +124,12 @@ int flash_read(uint32_t addr, uint32_t size, uint32_t *data) {
   }
   wait_done_and_ack();
   return get_clr_err();
+}
+
+void flash_cfg_bank_erase(bank_index_t bank, bool erase_en) {
+  REG32(FLASH_CTRL_MP_BANK_CFG(0)) =
+      (erase_en) ? SETBIT(REG32(FLASH_CTRL_MP_BANK_CFG(0)), bank)
+                 : CLRBIT(REG32(FLASH_CTRL_MP_BANK_CFG(0)), bank);
 }
 
 void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en) {

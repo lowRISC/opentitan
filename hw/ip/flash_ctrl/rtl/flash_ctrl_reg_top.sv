@@ -2567,7 +2567,7 @@ module flash_ctrl_reg_top (
   // Subregister 0 of Multireg mp_bank_cfg
   // R[mp_bank_cfg]: V(False)
 
-  // F[erase_en0]: 1:1
+  // F[erase_en0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -2593,7 +2593,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[erase_en1]: 2:2
+  // F[erase_en1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -3171,10 +3171,10 @@ module flash_ctrl_reg_top (
   assign bank_cfg_regwen_wd = reg_wdata[0];
 
   assign mp_bank_cfg_erase_en0_we = addr_hit[16] & reg_we & ~wr_err;
-  assign mp_bank_cfg_erase_en0_wd = reg_wdata[1];
+  assign mp_bank_cfg_erase_en0_wd = reg_wdata[0];
 
   assign mp_bank_cfg_erase_en1_we = addr_hit[16] & reg_we & ~wr_err;
-  assign mp_bank_cfg_erase_en1_wd = reg_wdata[2];
+  assign mp_bank_cfg_erase_en1_wd = reg_wdata[1];
 
   assign op_status_done_we = addr_hit[17] & reg_we & ~wr_err;
   assign op_status_done_wd = reg_wdata[0];
@@ -3342,8 +3342,8 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[1] = mp_bank_cfg_erase_en0_qs;
-        reg_rdata_next[2] = mp_bank_cfg_erase_en1_qs;
+        reg_rdata_next[0] = mp_bank_cfg_erase_en0_qs;
+        reg_rdata_next[1] = mp_bank_cfg_erase_en1_qs;
       end
 
       addr_hit[17]: begin

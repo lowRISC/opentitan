@@ -164,8 +164,8 @@
 
 // Memory protect bank configuration
 #define FLASH_CTRL_MP_BANK_CFG(id) (FLASH_CTRL##id##_BASE_ADDR + 0x40)
-#define FLASH_CTRL_MP_BANK_CFG_ERASE_EN0 1
-#define FLASH_CTRL_MP_BANK_CFG_ERASE_EN1 2
+#define FLASH_CTRL_MP_BANK_CFG_ERASE_EN0 0
+#define FLASH_CTRL_MP_BANK_CFG_ERASE_EN1 1
 
 // Flash Operation Status
 #define FLASH_CTRL_OP_STATUS(id) (FLASH_CTRL##id##_BASE_ADDR + 0x44)

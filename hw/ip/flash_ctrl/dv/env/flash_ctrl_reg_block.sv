@@ -1348,7 +1348,7 @@ class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
     erase_en0.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(1),
+      .lsb_pos(0),
       .access("RW"),
       .volatile(0),
       .reset(0),
@@ -1359,7 +1359,7 @@ class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
     erase_en1.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(2),
+      .lsb_pos(1),
       .access("RW"),
       .volatile(0),
       .reset(0),

@@ -71,6 +71,11 @@ int flash_write(uint32_t addr, const uint32_t *data, uint32_t size);
 int flash_read(uint32_t addr, uint32_t size, uint32_t *data);
 
 /**
+ * Configure bank erase enable
+ */
+void flash_cfg_bank_erase(bank_index_t bank, bool erase_en);
+
+/**
  * Set flash controller default permissions.
  *
  * @param rd_end Read enable.
