@@ -82,6 +82,7 @@ def main():
     parser.add_argument('--param',
                         '-p',
                         type=str,
+                        default='',
                         help='''Change the Parameter values.
                                 Only integer value is supported.
                                 You can add multiple param arguments.
@@ -121,7 +122,7 @@ def main():
 
     infile = args.input
 
-    params = args.param.split(';')
+    params = args.param.split(';') if args.param else []
 
     if format == 'rtl':
         if args.outdir:

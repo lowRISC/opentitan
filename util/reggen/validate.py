@@ -1249,10 +1249,7 @@ def check_wen_regs(regs):
 
 
 def validate(regs, **kwargs):
-    if "params" in kwargs:
-        params = kwargs["params"]
-    else:
-        params = []
+    params = kwargs["params"]
 
     if not 'name' in regs:
         log.error("Component has no name. Aborting.")
