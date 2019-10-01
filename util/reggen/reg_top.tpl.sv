@@ -26,8 +26,12 @@ module ${block.name}_reg_top ${print_param(params)}(
 
 % endif
   // To HW
+% if block.get_n_bits(["q","qe","re"]):
   output ${block.name}_reg_pkg::${block.name}_reg2hw_t reg2hw, // Write
+% endif
+% if block.get_n_bits(["d","de"]):
   input  ${block.name}_reg_pkg::${block.name}_hw2reg_t hw2reg, // Read
+% endif
 
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access

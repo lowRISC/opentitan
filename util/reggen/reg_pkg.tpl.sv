@@ -84,6 +84,7 @@ typedef struct packed {
 nbits = block.get_n_bits(["q","qe","re"]) - 1
 packbit = 0
 %>
+% if nbits > 0:
 typedef struct packed {
 % for r in block.regs:
   ######################## multiregister ###########################
@@ -130,6 +131,7 @@ typedef struct packed {
   % endif
 % endfor
 } ${block.name}_reg2hw_t;
+% endif
 
 /////////////////////////////////////////////////////////////////////
 // Internal design logic to register
@@ -138,6 +140,7 @@ typedef struct packed {
 nbits = block.get_n_bits(["d","de"]) - 1
 packbit = 0
 %>
+% if nbits > 0:
 typedef struct packed {
 % for r in block.regs:
   ######################## multiregister ###########################
@@ -178,6 +181,7 @@ typedef struct packed {
   % endif
 % endfor
 } ${block.name}_hw2reg_t;
+% endif
 
   // Register Address
 % for r in block.get_regs_flat():
