@@ -186,7 +186,6 @@ typedef class chip_mem_ram_main;
 typedef class chip_mem_eflash;
 typedef class chip_reg_block;
 
-
 // Block: spi_device
 // Class: spi_device_reg_intr_state
 class spi_device_reg_intr_state extends dv_base_reg;
@@ -1074,7 +1073,6 @@ class spi_device_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : spi_device_reg_block
-
 // Block: flash_ctrl
 // Class: flash_ctrl_reg_intr_state
 class flash_ctrl_reg_intr_state extends dv_base_reg;
@@ -2392,7 +2390,7 @@ class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
     erase_en0.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(1),
+      .lsb_pos(0),
       .access("RW"),
       .volatile(0),
       .reset(0),
@@ -2403,7 +2401,7 @@ class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
     erase_en1.configure(
       .parent(this),
       .size(1),
-      .lsb_pos(2),
+      .lsb_pos(1),
       .access("RW"),
       .volatile(0),
       .reset(0),
@@ -2844,7 +2842,6 @@ class flash_ctrl_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : flash_ctrl_reg_block
-
 // Block: rv_timer
 // Class: rv_timer_reg_ctrl
 class rv_timer_reg_ctrl extends dv_base_reg;
@@ -3213,7 +3210,6 @@ class rv_timer_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : rv_timer_reg_block
-
 // Block: gpio
 // Class: gpio_reg_intr_state
 class gpio_reg_intr_state extends dv_base_reg;
@@ -3840,7 +3836,6 @@ class gpio_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : gpio_reg_block
-
 // Block: hmac
 // Class: hmac_reg_intr_state
 class hmac_reg_intr_state extends dv_base_reg;
@@ -4921,7 +4916,6 @@ class hmac_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : hmac_reg_block
-
 // Block: uart
 // Class: uart_reg_intr_state
 class uart_reg_intr_state extends dv_base_reg;
@@ -5869,7 +5863,6 @@ class uart_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : uart_reg_block
-
 // Block: rv_plic
 // Class: rv_plic_reg_ip0
 class rv_plic_reg_ip0 extends dv_base_reg;
@@ -10096,7 +10089,6 @@ class rv_plic_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : rv_plic_reg_block
-
 // Block: chip
 // Class: chip_mem_rom
 class chip_mem_rom extends dv_base_mem;

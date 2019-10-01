@@ -66,6 +66,8 @@ int main(int argc, char **argv) {
   flash_init_block();
 
   // enable all access
+  flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/true);
+  flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/true);
   flash_default_region_access(1, 1, 1);
   break_on_error(flash_page_erase(bank1_addr));
   flash_write_scratch_reg(0xFACEDEAD);
@@ -80,7 +82,7 @@ int main(int argc, char **argv) {
   // do 4K programming
   // employ the live programming method where overall payload >> flash fifo size
   for (i = 0; i < ARRAYSIZE(prog_array); i++) {
-    prog_array[i] = i + (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
+    prog_array[i] = (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
   }
 
   for (iteration = 0; iteration < 2; iteration++) {
@@ -153,6 +155,9 @@ int main(int argc, char **argv) {
       break_on_error(1);
     }
   }
+
+  flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/false);
+  flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/false);
 
   // cleanly terminate execution
   uart_send_str("PASS!\r\n");
