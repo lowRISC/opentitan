@@ -33,7 +33,7 @@
             Register write enable for all control registers.
             ''',
       swaccess: "rw1c",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         {
             bits:   "0",
