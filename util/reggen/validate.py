@@ -955,8 +955,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
             genreg['hwext'] = mreg['hwext']
             genreg['hwqe'] = mreg['hwqe']
             genreg['hwre'] = mreg['hwre']
-            genreg['swaccess'] = mreg['swaccess']
-            genreg['hwaccess'] = mreg['hwaccess']
+            genreg['swaccess'] = default_sw
+            genreg['hwaccess'] = default_hw
 
             if regwen_incr:
                 genreg['regwen'] = mreg['regwen'] + str(rnum)
@@ -1214,7 +1214,7 @@ def check_wen_regs(regs):
     tuple_swaccess = 2
 
     reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'])
-                for reg in regs['registers'] if 'name' in reg]
+                for reg in regs['registers'] if 'name' in reg and 'genresval' in reg]
     mreg_list = [
         reg['multireg'] for reg in regs['registers'] if 'multireg' in reg
     ]
