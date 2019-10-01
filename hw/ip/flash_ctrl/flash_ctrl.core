@@ -18,7 +18,6 @@ filesets:
       - rtl/flash_erase_ctrl.sv
       - rtl/flash_prog_ctrl.sv
       - rtl/flash_rd_ctrl.sv
-      - rtl/flash_tlul_to_fifo.sv
       - rtl/flash_mp.sv
       - rtl/flash_phy.sv
     file_type: systemVerilogSource
