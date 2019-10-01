@@ -4,9 +4,6 @@
 //
 // Pinmux toplevel.
 //
-// Note that the regfile hjson needs to be generated using the pinmux.py
-// script before generating the register file.
-//
 
 module pinmux (
   input                                         clk_i,
