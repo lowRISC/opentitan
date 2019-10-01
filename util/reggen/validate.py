@@ -1305,23 +1305,24 @@ def validate(regs, **kwargs):
     #   Assumed param list is already validated in above `check_keys` function
     if "param_list" in regs and len(regs["param_list"]) != 0:
         for p in params:
-            tokens = p.split('=')
-            if len(tokens) != 2:
-                error += 1
-                log.error("Parameter format isn't correct. {}".format(p))
-            key, value = tokens[0], tokens[1]
-            param, err = search_param(regs["param_list"], key)
-            if err != 0:
-                error += err
-                continue
+            if p:
+                tokens = p.split('=')
+                if len(tokens) != 2:
+                    error += 1
+                    log.error("Parameter format isn't correct. {}".format(p))
+                key, value = tokens[0], tokens[1]
+                param, err = search_param(regs["param_list"], key)
+                if err != 0:
+                    error += err
+                    continue
 
-            value, err = check_int(
-                value, component + " param[{}]".format(param["name"]))
-            if err != 0:
-                error += err
-                continue
+                value, err = check_int(
+                    value, component + " param[{}]".format(param["name"]))
+                if err != 0:
+                    error += err
+                    continue
 
-            param["default"] = value
+                param["default"] = value
 
     if "scan" in regs:
         scan, err = check_bool(regs["scan"], component + " scan")
