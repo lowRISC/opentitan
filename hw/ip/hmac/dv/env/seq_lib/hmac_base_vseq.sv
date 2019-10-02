@@ -238,4 +238,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end
   endtask
 
+  // task to read all csrs and check against ral expected value
+  // used after reset
+  virtual task read_and_check_all_csrs();
+    uvm_reg       csrs[$];
+    ral.get_registers(csrs);
+    csrs.shuffle();
+
+    foreach (csrs[i]) begin
+      csr_rd_check(.ptr(csrs[i]), .compare_vs_ral(1));
+    end
+  endtask
 endclass : hmac_base_vseq

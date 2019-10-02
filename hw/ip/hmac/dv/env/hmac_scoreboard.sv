@@ -136,6 +136,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+    flush();
+    hmac_wr_cnt = 0;
+    hmac_rd_cnt = 0;
   endfunction
 
   // clear variables after expected digest is calculated
@@ -154,34 +157,53 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual task hmac_process_fifo_rd();
     bit key_processed;
-    fork begin
-      forever begin // thread hmac_key padding
-        wait (hmac_start);
-        if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
-          // 80 cycles for hmac key padding, 1 cycle for hash_start reg to reset
-          cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
-          key_processed = 1;
-        end
-        while (1) begin
-          if (ral.intr_state.hmac_done.get_mirrored_value() == 1) break;
-          #1;
-        end
-        key_processed = 0;
+    fork
+      begin : process_hmac_key_pad
+        forever begin
+          wait(cfg.clk_rst_vif.rst_n === 1);
+          fork
+            begin : key_padding
+              wait(hmac_start);
+              if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
+                // 80 cycles for hmac key padding, 1 cycle for hash_start reg to reset
+                cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
+                key_processed = 1;
+              end
+              while (1) begin
+                if (ral.intr_state.hmac_done.get_mirrored_value() == 1) break;
+                cfg.clk_rst_vif.wait_clks(1);
+              end
+            end
+            begin : reset_key_padding
+              wait(!cfg.clk_rst_vif.rst_n);
+            end
+          join_any
+          disable fork;
+          key_processed = 0;
+        end // end forever
       end
-    end
 
-    begin
-      forever begin // thread hmac fifo read
-        wait (hmac_wr_cnt > hmac_rd_cnt);
-        if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
-          wait (key_processed);
-        end
-        cfg.clk_rst_vif.wait_clks(1);
-        @(negedge cfg.clk_rst_vif.clk);
-        hmac_rd_cnt ++;
-        if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_clks(HMAC_MSG_PROCESS_CYCLES);
+      begin : process_internal_fifo_rd
+        forever begin
+          wait(cfg.clk_rst_vif.rst_n === 1);
+          fork
+            begin : hmac_fifo_rd
+              wait(hmac_wr_cnt > hmac_rd_cnt);
+              if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
+                wait(key_processed);
+              end
+              cfg.clk_rst_vif.wait_clks(1);
+              @(negedge cfg.clk_rst_vif.clk);
+              hmac_rd_cnt ++;
+              if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_clks(HMAC_MSG_PROCESS_CYCLES);
+            end
+            begin : reset_hmac_fifo_rd
+              wait(!cfg.clk_rst_vif.rst_n);
+            end
+          join_any
+          disable fork;
+        end // end forever
       end
-    end
     join_none
   endtask
 
