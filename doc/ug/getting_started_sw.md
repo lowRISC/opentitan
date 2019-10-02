@@ -7,8 +7,8 @@ _Make sure you followed the install instructions to [prepare the system](install
 ## Building software
 
 ```console
-$ cd $REPO_TOP/sw/examples/hello_world
-$ make CC=/tools/riscv/bin/riscv32-unknown-elf-gcc
+$ cd $REPO_TOP/sw
+$ make SW_DIR=examples/hello_world CC=/tools/riscv/bin/riscv32-unknown-elf-gcc
 ```
 
 The build process produces a variety of output files.
@@ -17,3 +17,5 @@ The build process produces a variety of output files.
 * `.bin`: the linked program as plain binary
 * `.dis`: the disassembled program
 * `.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code
+
+Please see [SW build flow](../../sw/doc/sw_build_flow.md) for more details.
