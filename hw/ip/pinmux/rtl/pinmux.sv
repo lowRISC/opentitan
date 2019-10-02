@@ -48,7 +48,7 @@ module pinmux (
     // index using configured insel
     assign mio_to_periph_o[k] = data_mux[reg2hw.periph_insel[k].q];
     // disallow undefined entries
-    `ASSUME(InSelRange_A, reg2hw.periph_insel[k].q < pinmux_reg_pkg::NMioPads + 2, clk_i, rst_ni)
+    `ASSUME(InSelRange_A, reg2hw.periph_insel[k].q < pinmux_reg_pkg::NMioPads + 2, clk_i, !rst_ni)
   end
 
   //////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ module pinmux (
     assign mio_out_o[k] = data_mux[reg2hw.mio_outsel[k].q];
     assign mio_oe_o[k]  = oe_mux[reg2hw.mio_outsel[k].q];
     // disallow undefined entries
-    `ASSUME(OutSelRange_A, reg2hw.mio_outsel[k].q < pinmux_reg_pkg::NPeriphOut + 3, clk_i, rst_ni)
+    `ASSUME(OutSelRange_A, reg2hw.mio_outsel[k].q < pinmux_reg_pkg::NPeriphOut + 3, clk_i, !rst_ni)
   end
 
 endmodule : pinmux

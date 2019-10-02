@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:pinmux_fpv:0.1"
+description: "PIINMUX FPV target"
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:ip:pinmux
+    files:
+      - tb/pinmux_tb.sv
+      - tb/pinmux_bind.sv
+      - vip/pinmux_assert.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    toplevel:
+      - tb/pinmux_tb.sv
+    filesets:
+      - files_fpv
+    default_tool: jg
