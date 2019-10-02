@@ -6,7 +6,7 @@
 
 
 module prim_generic_pad_wrapper #(
-  parameter int unsigned AttrDw = 7
+  parameter int unsigned AttrDw = 6
 ) (
   inout wire         inout_io, // bidirectional pad
   output logic       in_o,     // input data
@@ -18,9 +18,9 @@ module prim_generic_pad_wrapper #(
 
   // get pad attributes
   logic kp, pu, pd, od, inv;
-  typedef enum logic {STRONG = 1'b0, WEAK = 1'b1} drv_e;
+  typedef enum logic {STRONG_DRIVE = 1'b0, WEAK_DRIVE = 1'b1} drv_e;
   drv_e drv;
-  assign {drv, kp, pu, pd, od, inv} = attr_i[6:0];
+  assign {drv, kp, pu, pd, od, inv} = attr_i[5:0];
 
   // input inversion
   assign in_o     = inv ^ inout_io;
@@ -35,8 +35,8 @@ module prim_generic_pad_wrapper #(
   assign inout_io = (oe) ? out : 1'bz;
 `else
   // different driver types
-  assign (strong0, strong1) inout_io = (oe && drv == STRONG) ? out : 1'bz;
-  assign (pull0, pull1)     inout_io = (oe && drv == WEAK)   ? out : 1'bz;
+  assign (strong0, strong1) inout_io = (oe && drv == STRONG_DRIVE) ? out : 1'bz;
+  assign (pull0, pull1)     inout_io = (oe && drv == WEAK_DRIVE)   ? out : 1'bz;
   // pullup / pulldown termination
   assign (highz0, weak1)    inout_io = pu;
   assign (weak0, highz1)    inout_io = ~pd;
