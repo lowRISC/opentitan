@@ -76,6 +76,20 @@ module top_earlgrey #(
   tl_d2h_t tl_ram_main_d_d2h;
   tl_h2d_t tl_eflash_d_h2d;
   tl_d2h_t tl_eflash_d_d2h;
+
+  //reset wires declaration
+  logic uart_rst_n;
+  logic gpio_rst_n;
+  logic spi_device_rst_n;
+  logic flash_ctrl_rst_n;
+  logic rv_timer_rst_n;
+  logic hmac_rst_n;
+  logic rv_plic_rst_n;
+  logic rom_rst_n;
+  logic ram_main_rst_n;
+  logic eflash_rst_n;
+  logic xbar_main_rst_n;
+
   logic [53:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
@@ -113,6 +127,19 @@ module top_earlgrey #(
   logic ndmreset_n;
   logic ndmreset_from_dm;
   assign ndmreset_n = (scanmode_i) ? rst_ni : ~ndmreset_from_dm & rst_ni;
+
+  //temp reset assignments
+  assign uart_rst_n = ndmreset_n;
+  assign gpio_rst_n = ndmreset_n;
+  assign spi_device_rst_n = ndmreset_n;
+  assign flash_ctrl_rst_n = ndmreset_n;
+  assign rv_timer_rst_n = ndmreset_n;
+  assign hmac_rst_n = ndmreset_n;
+  assign rv_plic_rst_n = ndmreset_n;
+  assign rom_rst_n = ndmreset_n;
+  assign ram_main_rst_n = ndmreset_n;
+  assign eflash_rst_n = ndmreset_n;
+  assign xbar_main_rst_n = ndmreset_n;
 
   logic debug_req;
 
@@ -200,7 +227,7 @@ module top_earlgrey #(
     .ErrOnWrite(1)
   ) tl_adapter_rom (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (rom_rst_n),
 
     .tl_i     (tl_rom_d_h2d),
     .tl_o     (tl_rom_d_d2h),
@@ -221,7 +248,7 @@ module top_earlgrey #(
     .Depth(2048)
   ) u_rom_rom (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (rom_rst_n),
     .cs_i     (rom_req),
     .addr_i   (rom_addr),
     .dout_o   (rom_rdata),
@@ -243,7 +270,7 @@ module top_earlgrey #(
     .Outstanding(1)
   ) tl_adapter_ram_main (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (ram_main_rst_n),
 
     .tl_i     (tl_ram_main_d_h2d),
     .tl_o     (tl_ram_main_d_d2h),
@@ -265,7 +292,7 @@ module top_earlgrey #(
     .DataBitsPerMask(8)
   ) u_ram1p_ram_main (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (ram_main_rst_n),
 
     .req_i    (ram_main_req),
     .write_i  (ram_main_we),
@@ -295,7 +322,7 @@ module top_earlgrey #(
     .ErrOnWrite(1)
   ) tl_adapter_eflash (
     .clk_i,
-    .rst_ni     (ndmreset_n),
+    .rst_ni     (eflash_rst_n),
 
     .tl_i       (tl_eflash_d_h2d),
     .tl_o       (tl_eflash_d_d2h),
@@ -344,7 +371,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(uart_rst_n)
   );
 
   gpio gpio (
@@ -355,7 +382,7 @@ module top_earlgrey #(
       .cio_gpio_en_o (cio_gpio_gpio_en_d2p_o),
       .intr_gpio_o (intr_gpio_gpio),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(gpio_rst_n)
   );
 
   spi_device spi_device (
@@ -373,7 +400,7 @@ module top_earlgrey #(
       .intr_rxoverflow_o (intr_spi_device_rxoverflow),
       .intr_txunderflow_o (intr_spi_device_txunderflow),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(spi_device_rst_n)
   );
 
   flash_ctrl flash_ctrl (
@@ -388,7 +415,7 @@ module top_earlgrey #(
       .flash_o(flash_c2m),
       .flash_i(flash_m2c),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(flash_ctrl_rst_n)
   );
 
   rv_timer rv_timer (
@@ -396,7 +423,7 @@ module top_earlgrey #(
       .tl_o (tl_rv_timer_d_d2h),
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(rv_timer_rst_n)
   );
 
   hmac hmac (
@@ -405,7 +432,7 @@ module top_earlgrey #(
       .intr_hmac_done_o (intr_hmac_hmac_done),
       .intr_fifo_full_o (intr_hmac_fifo_full),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(hmac_rst_n)
   );
 
   rv_plic #(
@@ -418,7 +445,7 @@ module top_earlgrey #(
       .irq_id_o   (irq_id),
       .msip_o     (msip),
       .clk_i(clk_i),
-      .rst_ni(ndmreset_n)
+      .rst_ni(rv_plic_rst_n)
   );
 
   // interrupt assignments
@@ -450,14 +477,12 @@ module top_earlgrey #(
 
   // TL-UL Crossbar
   logic clk_main;
-  logic ndmreset_sync_main_n;   // ndmreset synchronized to clk_main
-
   assign clk_main = clk_i;
-  assign ndmreset_sync_main_n = ndmreset_n;
+
 
   xbar_main u_xbar_main (
     .clk_main_i  (clk_main),
-    .rst_main_ni (ndmreset_sync_main_n),
+    .rst_main_ni (xbar_main_rst_n),
 
     .tl_corei_i      (tl_corei_h_h2d),
     .tl_corei_o      (tl_corei_h_d2h),

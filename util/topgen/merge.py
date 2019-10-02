@@ -57,12 +57,33 @@ def get_hjsonobj_xbars(xbar_path):
     return xbar_objs
 
 
+def amend_mem(top, mem):
+    """ Amend additional memory information into top module
+
+    Amended fields:
+        - clock: assign primary clock is not created
+        - reset: assign reset if one is not created
+    """
+
+    mem_list = [x["name"].lower() for x in top["memory"]]
+    name = mem["name"].lower()
+    idx = mem_list.index(name)
+    mem_module = top["memory"][idx]
+
+    # clock
+    mem_module['clock'] = 'main' if 'clock' not in mem_module else mem_module['clock']
+
+    # reset
+    mem_module['reset'] = name if 'reset' not in mem_module else mem_module['reset']
+
+
 def amend_ip(top, ip):
     """ Amend additional information into top module
 
     Amended fields:
         - size: register space
         - clock: converted into ip_clock
+        - reset: assign reset if one is not created
         - bus_device
         - bus_host: none if doesn't exist
         - available_input_list: empty list if doesn't exist
@@ -95,6 +116,10 @@ def amend_ip(top, ip):
         ip_module["ip_clock"] = ip["clock"]
     else:
         ip_module["ip_clock"] = "main"
+
+    # ip_reset
+    if "reset" not in ip:
+        ip_module["reset"] = ip_module["name"]
 
     # bus_device
     ip_module["bus_device"] = ip["bus_device"]
@@ -160,6 +185,7 @@ def xbar_addhost(xbar, host):
         obj = {
             "name": host,
             "clock": xbar["clock"],
+            "reset": xbar["reset"],
             "type": "host",
             "inst_type": "",
             # The default matches RTL default
@@ -170,6 +196,7 @@ def xbar_addhost(xbar, host):
         topxbar["nodes"].append(obj)
     else:
         obj[0]["clock"] = xbar["clock"]
+        obj[0]["reset"] = xbar["reset"]
         obj[0]["inst_type"] = predefined_modules[
             host] if host in predefined_modules else ""
         obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
@@ -188,6 +215,7 @@ def xbar_adddevice(top, xbar, device):
     """Add device nodes information
 
     - clock: comes from module if exist. use main top clock for memory as of now
+    - reset: if defined, reuse existing definiton, otherwise use xbar reset
     - inst_type: comes from module or memory if exist.
     - base_addr: comes from module or memory, or assume rv_plic?
     - size_byte: comes from module or memory
@@ -218,6 +246,7 @@ def xbar_adddevice(top, xbar, device):
                         "name": "debug_mem",
                         "type": "device",
                         "clock": "main",
+                        "reset": xbar['reset'],
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
                         "size_byte": "0x1000",
@@ -227,6 +256,7 @@ def xbar_adddevice(top, xbar, device):
                 else:
                     # Update if exists
                     node = nodeobj[0]
+                    node["reset"] = xbar['reset'] if 'reset' not in node else node['reset']
                     node["inst_type"] = predefined_modules["debug_mem"]
                     node["base_addr"] = top["debug_mem_base_addr"]
                     node["size_byte"] = "0x1000"
@@ -248,6 +278,7 @@ def xbar_adddevice(top, xbar, device):
             "name" : device,
             "type" : "device",
             "clock" : deviceobj[0]["clock"],
+            "reset" : xbar['reset'],
             "inst_type" : deviceobj[0]["type"],
             "base_addr" : deviceobj[0]["base_addr"],
             "size_byte": deviceobj[0]["size"],
@@ -258,6 +289,7 @@ def xbar_adddevice(top, xbar, device):
     else:
         # found and exist in the nodes too
         node = nodeobj[0]
+        node["reset"] = xbar['reset'] if 'reset' not in node else node['reset']
         node["inst_type"] = deviceobj[0]["type"]
         node["base_addr"] = deviceobj[0]["base_addr"]
         node["size_byte"] = deviceobj[0]["size"]
@@ -269,6 +301,7 @@ def amend_xbar(top, xbar):
 
     Amended fields
     - clock: Adopt from module clock if exists
+    - reset: If not defined, create a default one
     - inst_type: Module instance some module will be hard-coded
                  the tool searches module list and memory list then put here
     - base_addr: from top["module"]
@@ -289,6 +322,10 @@ def amend_xbar(top, xbar):
         topxbar["nodes"] = deepcopy(xbar["nodes"])
     else:
         topxbar["nodes"] = []
+
+    # default xbar reset
+    if 'reset' not in topxbar:
+        topxbar['reset'] = xbar['name']
 
     # Build nodes from 'connections'
     device_nodes = set()
@@ -337,6 +374,11 @@ def amend_interrupt(top):
 
 def merge_top(topcfg, ipobjs, xbarobjs):
     gencfg = deepcopy(topcfg)
+
+    # Primarily create clocks/resets if not present
+    mem_objs = gencfg['memory'] if 'memory' in gencfg.keys() else []
+    for mem in mem_objs:
+        amend_mem(gencfg, mem)
 
     # Combine ip cfg into topcfg
     for ip in ipobjs:

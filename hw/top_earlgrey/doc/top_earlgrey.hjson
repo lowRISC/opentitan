@@ -12,6 +12,16 @@
     { name: "main", freq: "100000000" }
   ]
 
+  resets: [
+    { name: "uart_rstn", root: "sys" }
+    { name: "spi_device_rstn", root: "sys"}
+    { name: "rv_timer_rstn", root: "sys"}
+    { name: "hmac_rstn", root: "sys"}
+    { name: "rv_plic_rstn", root: "sys"}
+    { name: "flash_ctrl_rstn", root: "lc"}
+    { name: "xbar_main_rstn", root: "sys"}
+  ]
+
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
@@ -40,21 +50,25 @@
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock: "main",
+      rstn: "lc",
       base_addr: "0x40030000",
     },
     { name: "rv_timer",
       type: "rv_timer",
       clock: "main",
+      rstn: "sys",
       base_addr: "0x40080000",
     },
     { name: "hmac",
       type: "hmac",
       clock: "main",
+      rstn: "sys",
       base_addr: "0x40120000",
     },
     { name: "rv_plic",
       type: "rv_plic",
       clock: "main",
+      rstn: "sys",
       base_addr: "0x40090000",
       generated: "true"         // Indicate this module is generated in the topgen
       parameter: {

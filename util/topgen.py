@@ -44,8 +44,9 @@ def generate_xbars(top, out_path):
         if not tlgen.elaborate(xbar):
             log.error("Elaboration failed." + repr(xbar))
 
-        # Add clocks to the top configuration
+        # Add clocks/resets to the top configuration
         obj["clocks"] = xbar.clocks
+        obj["resets"] = xbar.clocks
         out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
 
         rtl_path = out_path / 'rtl'

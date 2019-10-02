@@ -16,6 +16,37 @@
       freq: "100000000"
     }
   ]
+  resets:
+  [
+    {
+      name: uart_rstn
+      root: sys
+    }
+    {
+      name: spi_device_rstn
+      root: sys
+    }
+    {
+      name: rv_timer_rstn
+      root: sys
+    }
+    {
+      name: hmac_rstn
+      root: sys
+    }
+    {
+      name: rv_plic_rstn
+      root: sys
+    }
+    {
+      name: flash_ctrl_rstn
+      root: lc
+    }
+    {
+      name: xbar_main_rstn
+      root: sys
+    }
+  ]
   num_cores: "1"
   module:
   [
@@ -26,6 +57,7 @@
       base_addr: 0x40000000
       size: 0x1000
       ip_clock: main
+      reset: uart
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -86,6 +118,7 @@
       base_addr: 0x40010000
       size: 0x1000
       ip_clock: main
+      reset: gpio
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -112,6 +145,7 @@
       base_addr: 0x40020000
       size: 0x1000
       ip_clock: main
+      reset: spi_device
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -169,9 +203,11 @@
       name: flash_ctrl
       type: flash_ctrl
       clock: main
+      rstn: lc
       base_addr: 0x40030000
       size: 0x1000
       ip_clock: main
+      reset: flash_ctrl
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -209,9 +245,11 @@
       name: rv_timer
       type: rv_timer
       clock: main
+      rstn: sys
       base_addr: 0x40080000
       size: 0x1000
       ip_clock: main
+      reset: rv_timer
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -229,9 +267,11 @@
       name: hmac
       type: hmac
       clock: main
+      rstn: sys
       base_addr: 0x40120000
       size: 0x1000
       ip_clock: main
+      reset: hmac
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -253,6 +293,7 @@
       name: rv_plic
       type: rv_plic
       clock: main
+      rstn: sys
       base_addr: 0x40090000
       generated: "true"
       parameter:
@@ -261,6 +302,7 @@
       }
       size: 0x1000
       ip_clock: main
+      reset: rv_plic
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -276,18 +318,24 @@
       type: rom
       base_addr: 0x00008000
       size: 0x2000
+      clock: main
+      reset: rom
     }
     {
       name: ram_main
       type: ram_1p
       base_addr: 0x10000000
       size: 0x10000
+      clock: main
+      reset: ram_main
     }
     {
       name: eflash
       type: eflash
       base_addr: 0x20000000
       size: 0x80000
+      clock: main
+      reset: eflash
     }
   ]
   xbar:
@@ -339,6 +387,7 @@
           type: host
           clock: main
           pipeline: "false"
+          reset: main
           inst_type: rv_core_ibex
           pipeline_byp: "true"
         }
@@ -347,6 +396,7 @@
           type: host
           clock: main
           pipeline: "false"
+          reset: main
           inst_type: rv_core_ibex
           pipeline_byp: "true"
         }
@@ -355,6 +405,7 @@
           type: host
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: rv_dm
           pipeline: "true"
         }
@@ -363,6 +414,7 @@
           type: device
           clock: main
           pipeline: "false"
+          reset: main
           inst_type: rom
           base_addr: 0x00008000
           size_byte: 0x2000
@@ -373,6 +425,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: rv_dm
           base_addr: 0x1A110000
           size_byte: 0x1000
@@ -383,6 +436,7 @@
           type: device
           clock: main
           pipeline: "false"
+          reset: main
           inst_type: ram_1p
           base_addr: 0x10000000
           size_byte: 0x10000
@@ -393,6 +447,7 @@
           type: device
           clock: main
           pipeline: "false"
+          reset: main
           inst_type: eflash
           base_addr: 0x20000000
           size_byte: 0x80000
@@ -403,6 +458,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: uart
           base_addr: 0x40000000
           size_byte: 0x1000
@@ -413,6 +469,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: gpio
           base_addr: 0x40010000
           size_byte: 0x1000
@@ -423,6 +480,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: spi_device
           base_addr: 0x40020000
           size_byte: 0x1000
@@ -433,6 +491,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: flash_ctrl
           base_addr: 0x40030000
           size_byte: 0x1000
@@ -443,6 +502,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: rv_timer
           base_addr: 0x40080000
           size_byte: 0x1000
@@ -453,6 +513,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: main
           inst_type: hmac
           base_addr: 0x40120000
           size_byte: 0x1000
@@ -466,9 +527,11 @@
           base_addr: 0x40090000
           size_byte: 0x1000
           pipeline_byp: "false"
+          reset: main
           pipeline: "true"
         }
       ]
+      reset: main
     }
   ]
   interrupt_module:

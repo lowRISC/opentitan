@@ -41,6 +41,7 @@ def validate(obj):  # OrderedDict -> Xbar
     xbar = Xbar()
     xbar.name = obj["name"].lower()
     xbar.clock = obj["clock"].lower()
+    xbar.reset = obj["reset"].lower()
 
     addr_ranges = []
 
@@ -49,13 +50,17 @@ def validate(obj):  # OrderedDict -> Xbar
         clock = nodeobj["clock"].lower() if "clock" in nodeobj.keys(
         ) else xbar.clock
 
+        reset = nodeobj["reset"].lower() if "reset" in nodeobj.keys(
+        ) else xbar.reset
+
         if checkNameExist(nodeobj["name"], xbar):
             log.error("Duplicated name: %s" % (nodeobj["name"]))
             raise SystemExit("Duplicated name in the configuration")
 
+        log.error("Creating node %s, with clock=%s, reset=%s" % (nodeobj["name"].lower(), clock, reset))
         node = Node(name=nodeobj["name"].lower(),
                     node_type=get_nodetype(nodeobj["type"].lower()),
-                    clock=clock)
+                    clock=clock, reset=reset)
 
         if node.node_type == NodeType.DEVICE:
             # Add address obj["base_addr"], obj["size"])

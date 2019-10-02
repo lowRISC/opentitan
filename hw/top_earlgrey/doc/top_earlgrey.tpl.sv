@@ -76,6 +76,17 @@ module top_earlgrey #(
   tl_h2d_t tl_${m["name"]}_d_h2d;
   tl_d2h_t tl_${m["name"]}_d_d2h;
 % endfor
+
+<%
+  all_resets = [m['reset'] + "_rst_n" for m in top['module']]
+  all_resets.extend([m['reset'] + "_rst_n" for m in top['memory']])
+  all_resets.extend(["xbar_" + r + "_rst_n" for xbar in top['xbar'] for r in xbar['resets']])
+%>\
+  //reset wires declaration
+% for reset in all_resets:
+  logic ${reset};
+% endfor
+
 <%
   interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]])
 %>\
@@ -101,6 +112,11 @@ module top_earlgrey #(
   logic ndmreset_n;
   logic ndmreset_from_dm;
   assign ndmreset_n = (scanmode_i) ? rst_ni : ~ndmreset_from_dm & rst_ni;
+
+  //temp reset assignments
+% for reset in all_resets:
+  assign ${reset} = ndmreset_n;
+% endfor
 
   logic debug_req;
 
@@ -199,7 +215,7 @@ module top_earlgrey #(
     .Outstanding(1)
   ) tl_adapter_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (${m["name"]}_rst_n),
 
     .tl_i     (tl_${m["name"]}_d_h2d),
     .tl_o     (tl_${m["name"]}_d_d2h),
@@ -222,7 +238,7 @@ module top_earlgrey #(
     .DataBitsPerMask(${int(data_width/4)})
   ) u_ram1p_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (${m["name"]}_rst_n),
 
     .req_i    (${m["name"]}_req),
     .write_i  (${m["name"]}_we),
@@ -252,7 +268,7 @@ module top_earlgrey #(
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (${m["name"]}_rst_n),
 
     .tl_i     (tl_${m["name"]}_d_h2d),
     .tl_o     (tl_${m["name"]}_d_d2h),
@@ -274,7 +290,7 @@ module top_earlgrey #(
     .Depth(${rom_depth})
   ) u_rom_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    .rst_ni   (${m["name"]}_rst_n),
     .cs_i     (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
     .dout_o   (${m["name"]}_rdata),
@@ -302,7 +318,7 @@ module top_earlgrey #(
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
     .clk_i,
-    .rst_ni     (ndmreset_n),
+    .rst_ni     (${m["name"]}_rst_n),
 
     .tl_i       (tl_${m["name"]}_d_h2d),
     .tl_o       (tl_${m["name"]}_d_d2h),
@@ -339,8 +355,8 @@ module top_earlgrey #(
     // flash memory is embedded within controller
   % endif
 % endfor
-
 ## Peripheral Instantiation
+
 % for m in top["module"]:
   % if "parameter" in m:
   ${m["type"]} #(
@@ -390,7 +406,7 @@ module top_earlgrey #(
       .msip_o     (msip),
     % endif
       .clk_i(${"clk_i" if m["clock"] == "main" else "clk_"+ m["clock"] + "_i"}),
-      .rst_ni(${"ndmreset_n" if m["clock"] == "main" else "rst_" + m["clock"] + "_ni"})
+      .rst_ni(${m["reset"]}_rst_n)
   );
 
 % endfor
@@ -407,10 +423,8 @@ module top_earlgrey #(
 
   // TL-UL Crossbar
   logic clk_main;
-  logic ndmreset_sync_main_n;   // ndmreset synchronized to clk_main
-
   assign clk_main = clk_i;
-  assign ndmreset_sync_main_n = ndmreset_n;
+
 
 % for xbar in top["xbar"]:
 <%
@@ -418,9 +432,10 @@ module top_earlgrey #(
 %>\
   xbar_${xbar["name"]} u_xbar_${xbar["name"]} (
   % for clock in xbar["clocks"]:
-    ## TODO: How we can handle the reset?
     .clk_${clock}_i  (clk_${clock}),
-    .rst_${clock}_ni (ndmreset_sync_${clock}_n),
+  % endfor
+  % for reset in xbar["resets"]:
+    .rst_${reset}_ni (xbar_${reset}_rst_n),
   % endfor
 
   % for node in xbar["nodes"]:
