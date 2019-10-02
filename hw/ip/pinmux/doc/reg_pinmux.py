@@ -29,7 +29,7 @@ def main():
                         default = 16)
     parser.add_argument('--n_mio_pads',
                         type=int,
-                        help='Number of muxed OP pads',
+                        help='Number of muxed IO pads',
                         default = 8)
 
     args = parser.parse_args()
