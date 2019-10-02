@@ -45,6 +45,7 @@ BUILD_LOG         ?= ${BUILD_DIR}/build.log
 RUN_LOG           ?= ${RUN_DIR}/run.log
 UVM_VERBOSITY     ?= UVM_LOW
 
+TOPS              ?= tb ${DUT_TOP}_bind
 ####################################################################################################
 ## Options for SV build / C build / simulation run                                                ##
 ## CL_ prefix represents command line versions of these options - they should be empty and only   ##
@@ -52,7 +53,7 @@ UVM_VERBOSITY     ?= UVM_LOW
 ####################################################################################################
 # BUILD_OPTS are passed to the simulator during the SV testbench compile step
 CL_BUILD_OPTS     +=
-BUILD_OPTS        +=
+BUILD_OPTS        += $(addprefix -top , $(TOPS))
 
 # RUN_OPTS are passed to the simulation executable that is invoked to run the simulation
 CL_RUN_OPTS       +=
