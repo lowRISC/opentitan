@@ -76,6 +76,12 @@ module top_earlgrey #(
   tl_h2d_t tl_${m["name"]}_d_h2d;
   tl_d2h_t tl_${m["name"]}_d_d2h;
 % endfor
+
+  //reset wires declaration
+% for reset in top['resets']:
+  logic ${reset['name']}_rst_n;
+% endfor
+
 <%
   interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]])
 %>\
@@ -96,12 +102,24 @@ module top_earlgrey #(
   logic [${(interrupt_num).bit_length()-1}:0] irq_id[1];
   logic [0:0]   msip;
 
-  // Non-debug module reset == reset for everything except for the debug module
-  // and the logic required to access it.
-  logic ndmreset_n;
-  logic ndmreset_from_dm;
-  assign ndmreset_n = (scanmode_i) ? rst_ni : ~ndmreset_from_dm & rst_ni;
 
+  // Non-debug module reset == reset for everything except for the debug module
+  logic ndmreset_req;
+
+  // root resets
+  // TODO: lc_rst_n is not the true root reset.  It will be differentiated once the
+  //       the reset controller logic is present
+  assign lc_rst_n = rst_ni;
+  assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
+
+  //non-root reset assignments
+% for reset in top['resets']:
+  % if reset['type'] in ['leaf']:
+  assign ${reset['name']}_rst_n = ${reset['root']}_rst_n;
+  % endif
+% endfor
+
+  // debug request from rv_dm to core
   logic debug_req;
 
   // processor core
@@ -116,7 +134,7 @@ module top_earlgrey #(
   ) core (
     // clock and reset
     .clk_i                (clk_i),
-    .rst_ni               (ndmreset_n),
+    .rst_ni               (sys_rst_n),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -151,9 +169,9 @@ module top_earlgrey #(
                                 // 1                required by standard
   ) u_dm_top (
     .clk_i         (clk_i),
-    .rst_ni        (rst_ni),
+    .rst_ni        (lc_rst_n),
     .testmode_i    (1'b0),
-    .ndmreset_o    (ndmreset_from_dm),
+    .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
     .debug_req_o   (debug_req),
     .unavailable_i (1'b0),
@@ -177,12 +195,16 @@ module top_earlgrey #(
 
 ## Memory Instantiation
 % for m in top["memory"]:
+<%
+  resets = m['reset_connectivity']
+%>\
   % if m["type"] == "ram_1p":
 <%
      data_width = int(top["datawidth"])
      dw_byte = data_width // 8
      addr_width = ((int(m["size"], 0) // dw_byte) -1).bit_length()
      sram_depth = (int(m["size"], 0) // dw_byte)
+
 %>\
   // sram device
   logic        ${m["name"]}_req;
@@ -199,8 +221,9 @@ module top_earlgrey #(
     .Outstanding(1)
   ) tl_adapter_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
-
+    % for key in resets:
+    .${key}   (${resets[key]}_rst_n),
+    % endfor
     .tl_i     (tl_${m["name"]}_d_h2d),
     .tl_o     (tl_${m["name"]}_d_d2h),
 
@@ -222,7 +245,9 @@ module top_earlgrey #(
     .DataBitsPerMask(${int(data_width/4)})
   ) u_ram1p_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    % for key in resets:
+    .${key}   (${resets[key]}_rst_n),
+    % endfor
 
     .req_i    (${m["name"]}_req),
     .write_i  (${m["name"]}_we),
@@ -252,7 +277,9 @@ module top_earlgrey #(
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    % for key in resets:
+    .${key}   (${resets[key]}_rst_n),
+    % endfor
 
     .tl_i     (tl_${m["name"]}_d_h2d),
     .tl_o     (tl_${m["name"]}_d_d2h),
@@ -274,7 +301,9 @@ module top_earlgrey #(
     .Depth(${rom_depth})
   ) u_rom_${m["name"]} (
     .clk_i,
-    .rst_ni   (ndmreset_n),
+    % for key in resets:
+    .${key}   (${resets[key]}_rst_n),
+    % endfor
     .cs_i     (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
     .dout_o   (${m["name"]}_rdata),
@@ -302,7 +331,9 @@ module top_earlgrey #(
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
     .clk_i,
-    .rst_ni     (ndmreset_n),
+    % for key in resets:
+    .${key}   (${resets[key]}_rst_n),
+    % endfor
 
     .tl_i       (tl_${m["name"]}_d_h2d),
     .tl_o       (tl_${m["name"]}_d_d2h),
@@ -325,7 +356,9 @@ module top_earlgrey #(
     .DataWidth(${data_width})
   ) u_flash_${m["name"]} (
     .clk_i,
-    .rst_ni,
+    % for key in resets:
+    .${key}   (${resets[key]}_rst_n),
+    % endfor
     .host_req_i      (flash_host_req),
     .host_addr_i     (flash_host_addr),
     .host_req_rdy_o  (flash_host_req_rdy),
@@ -339,9 +372,12 @@ module top_earlgrey #(
     // flash memory is embedded within controller
   % endif
 % endfor
-
 ## Peripheral Instantiation
+
 % for m in top["module"]:
+<%
+
+%>\
   % if "parameter" in m:
   ${m["type"]} #(
     % for k, v in m["parameter"].items():
@@ -389,11 +425,18 @@ module top_earlgrey #(
       .irq_id_o   (irq_id),
       .msip_o     (msip),
     % endif
+
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
     % endif
-      .clk_i(${"clk_i" if m["clock"] == "main" else "clk_"+ m["clock"] + "_i"}),
-      .rst_ni(${"ndmreset_n" if m["clock"] == "main" else "rst_" + m["clock"] + "_ni"})
+      .clk_i (${"clk_i" if m["clock"] == "main" else "clk_"+ m["clock"] + "_i"}),
+    % for k, v in m["reset_connectivity"].items():
+        % if loop.last:
+      .${k} (${v}_rst_n)
+        % else:
+      .${k} (${v}_rst_n),
+        % endif
+    % endfor
   );
 
 % endfor
@@ -410,10 +453,8 @@ module top_earlgrey #(
 
   // TL-UL Crossbar
   logic clk_main;
-  logic ndmreset_sync_main_n;   // ndmreset synchronized to clk_main
-
   assign clk_main = clk_i;
-  assign ndmreset_sync_main_n = ndmreset_n;
+
 
 % for xbar in top["xbar"]:
 <%
@@ -421,11 +462,11 @@ module top_earlgrey #(
 %>\
   xbar_${xbar["name"]} u_xbar_${xbar["name"]} (
   % for clock in xbar["clocks"]:
-    ## TODO: How we can handle the reset?
     .clk_${clock}_i  (clk_${clock}),
-    .rst_${clock}_ni (ndmreset_sync_${clock}_n),
   % endfor
-
+  % for k, v in xbar["reset_connectivity"].items():
+    .${k} (${v}_rst_n),
+  % endfor
   % for node in xbar["nodes"]:
     % if node["type"] == "device":
     .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_d_h2d),

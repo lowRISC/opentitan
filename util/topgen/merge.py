@@ -9,6 +9,41 @@ from pathlib import Path, PosixPath
 import hjson
 
 
+def create_reset_map(top, inst):
+
+    reset_connectivity = {}
+    error = 0
+
+    if 'reset' not in top:
+        top['reset'] = [top['name']]
+    elif isinstance(top['reset'] , str):
+        top['reset'] = [top['reset']]
+
+    if not isinstance(top['reset'] , list):
+        log.error("Reset nets must be defined as a list")
+        error += 1
+
+    # gather IP reset ports
+    # if ports defined already, use them
+    # if not, declare a default rst_ni port
+    inst_resets = []
+    if "reset" in inst:
+        if isinstance(inst['reset'] , str):
+            inst_resets.extend([inst['reset']])
+        else:
+            inst_resets.extend(inst['reset'])
+    else:
+        inst_resets.extend(["rst_ni"])
+
+    if len(inst_resets) != len(top["reset"]):
+        log.error("The number of reset ports / reset nets for module %s do not match" % top['name'])
+        error += 1
+
+    for i in range(len(inst_resets)):
+        reset_connectivity[inst_resets[i]] = top['reset'][i]
+
+    return error, reset_connectivity
+
 def is_ipcfg(ip: Path) -> bool:  # return bool
     log.info("IP Path: %s" % repr(ip))
     ip_name = ip.parents[1].name
@@ -57,12 +92,25 @@ def get_hjsonobj_xbars(xbar_path):
     return xbar_objs
 
 
+def amend_mem(top, mem):
+    """ Amend additional memory information into top module
+
+    Amended fields:
+        - reset: assign reset if one is not created
+    """
+
+    error, mem['reset_connectivity'] = create_reset_map(mem, [])
+
+
 def amend_ip(top, ip):
     """ Amend additional information into top module
 
     Amended fields:
         - size: register space
         - clock: converted into ip_clock
+        - reset: set of {reset_port : top_level_reset_net} mappings
+                 reset_port is obtained from ip.hjson, default is rst_ni
+                 reset net attributes is defined in top_*.hjson
         - bus_device
         - bus_host: none if doesn't exist
         - available_input_list: empty list if doesn't exist
@@ -95,6 +143,11 @@ def amend_ip(top, ip):
         ip_module["ip_clock"] = ip["clock"]
     else:
         ip_module["ip_clock"] = "main"
+
+    # create list of reset port to reset net mapping
+    error, ip_module['reset_connectivity'] = create_reset_map(ip_module, ip)
+    if error:
+        return
 
     # bus_device
     ip_module["bus_device"] = ip["bus_device"]
@@ -166,6 +219,7 @@ def xbar_addhost(xbar, host):
         obj = {
             "name": host,
             "clock": xbar["clock"],
+            "reset": xbar["reset"][0],
             "type": "host",
             "inst_type": "",
             # The default matches RTL default
@@ -176,6 +230,7 @@ def xbar_addhost(xbar, host):
         topxbar["nodes"].append(obj)
     else:
         obj[0]["clock"] = xbar["clock"]
+        obj[0]["reset"] = xbar["reset"][0]
         obj[0]["inst_type"] = predefined_modules[
             host] if host in predefined_modules else ""
         obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
@@ -198,6 +253,7 @@ def xbar_adddevice(top, xbar, device):
     """Add device nodes information
 
     - clock: comes from module if exist. use main top clock for memory as of now
+    - reset: if defined, reuse existing definiton, otherwise use xbar reset
     - inst_type: comes from module or memory if exist.
     - base_addr: comes from module or memory, or assume rv_plic?
     - size_byte: comes from module or memory
@@ -228,6 +284,7 @@ def xbar_adddevice(top, xbar, device):
                         "name": "debug_mem",
                         "type": "device",
                         "clock": "main",
+                        "reset": xbar['reset'][0],
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
                         "size_byte": "0x1000",
@@ -237,6 +294,7 @@ def xbar_adddevice(top, xbar, device):
                 else:
                     # Update if exists
                     node = nodeobj[0]
+                    node["reset"] = xbar['reset'][0] if 'reset' not in node else node['reset']
                     node["inst_type"] = predefined_modules["debug_mem"]
                     node["base_addr"] = top["debug_mem_base_addr"]
                     node["size_byte"] = "0x1000"
@@ -258,6 +316,7 @@ def xbar_adddevice(top, xbar, device):
             "name" : device,
             "type" : "device",
             "clock" : deviceobj[0]["clock"],
+            "reset" : xbar['reset'][0],
             "inst_type" : deviceobj[0]["type"],
             "base_addr" : deviceobj[0]["base_addr"],
             "size_byte": deviceobj[0]["size"],
@@ -268,6 +327,7 @@ def xbar_adddevice(top, xbar, device):
     else:
         # found and exist in the nodes too
         node = nodeobj[0]
+        node["reset"] = xbar['reset'][0] if 'reset' not in node else node['reset']
         node["inst_type"] = deviceobj[0]["type"]
         node["base_addr"] = deviceobj[0]["base_addr"]
         node["size_byte"] = deviceobj[0]["size"]
@@ -279,6 +339,7 @@ def amend_xbar(top, xbar):
 
     Amended fields
     - clock: Adopt from module clock if exists
+    - reset: If not defined, create a default one
     - inst_type: Module instance some module will be hard-coded
                  the tool searches module list and memory list then put here
     - base_addr: from top["module"]
@@ -299,6 +360,11 @@ def amend_xbar(top, xbar):
         topxbar["nodes"] = deepcopy(xbar["nodes"])
     else:
         topxbar["nodes"] = []
+
+    # create list of reset port to reset net mapping
+    error, topxbar['reset_connectivity'] = create_reset_map(topxbar, xbar)
+    if error:
+        return
 
     # Build nodes from 'connections'
     device_nodes = set()
@@ -348,6 +414,11 @@ def amend_interrupt(top):
 def merge_top(topcfg, ipobjs, xbarobjs):
     gencfg = deepcopy(topcfg)
 
+    # Primarily create clocks/resets if not present
+    mem_objs = gencfg['memory'] if 'memory' in gencfg.keys() else []
+    for mem in mem_objs:
+        amend_mem(gencfg, mem)
+
     # Combine ip cfg into topcfg
     for ip in ipobjs:
         amend_ip(gencfg, ip)
@@ -361,5 +432,7 @@ def merge_top(topcfg, ipobjs, xbarobjs):
 
     # remove unwanted fields 'debug_mem_base_addr'
     gencfg.pop('debug_mem_base_addr', None)
+
+    # validate resets
 
     return gencfg

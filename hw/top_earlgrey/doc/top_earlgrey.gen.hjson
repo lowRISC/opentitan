@@ -16,6 +16,25 @@
       freq: "100000000"
     }
   ]
+  resets:
+  [
+    {
+      name: lc
+      type: root
+      clk: main
+    }
+    {
+      name: sys
+      type: root
+      clk: main
+    }
+    {
+      name: spi_device
+      type: leaf
+      root: sys
+      clk: main
+    }
+  ]
   num_cores: "1"
   module:
   [
@@ -23,9 +42,17 @@
       name: uart
       type: uart
       clock: main
+      reset:
+      [
+        sys
+      ]
       base_addr: 0x40000000
       size: 0x1000
       ip_clock: main
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -84,9 +111,17 @@
       name: gpio
       type: gpio
       clock: main
+      reset:
+      [
+        sys
+      ]
       base_addr: 0x40010000
       size: 0x1000
       ip_clock: main
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -114,6 +149,14 @@
       base_addr: 0x40020000
       size: 0x1000
       ip_clock: main
+      reset:
+      [
+        spi_device
+      ]
+      reset_connectivity:
+      {
+        rst_ni: spi_device
+      }
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -172,9 +215,17 @@
       name: flash_ctrl
       type: flash_ctrl
       clock: main
+      reset:
+      [
+        lc
+      ]
       base_addr: 0x40030000
       size: 0x1000
       ip_clock: main
+      reset_connectivity:
+      {
+        rst_ni: lc
+      }
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -213,9 +264,17 @@
       name: rv_timer
       type: rv_timer
       clock: main
+      reset:
+      [
+        sys
+      ]
       base_addr: 0x40080000
       size: 0x1000
       ip_clock: main
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -234,9 +293,17 @@
       name: hmac
       type: hmac
       clock: main
+      reset:
+      [
+        sys
+      ]
       base_addr: 0x40120000
       size: 0x1000
       ip_clock: main
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -259,6 +326,10 @@
       name: rv_plic
       type: rv_plic
       clock: main
+      reset:
+      [
+        sys
+      ]
       base_addr: 0x40090000
       generated: "true"
       parameter:
@@ -267,6 +338,10 @@
       }
       size: 0x1000
       ip_clock: main
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -280,21 +355,45 @@
   [
     {
       name: rom
+      reset:
+      [
+        sys
+      ]
       type: rom
       base_addr: 0x00008000
       size: 0x2000
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
     }
     {
       name: ram_main
+      reset:
+      [
+        sys
+      ]
       type: ram_1p
       base_addr: 0x10000000
       size: 0x10000
+      reset_connectivity:
+      {
+        rst_ni: sys
+      }
     }
     {
       name: eflash
+      reset:
+      [
+        lc
+      ]
       type: eflash
       base_addr: 0x20000000
       size: 0x80000
+      reset_connectivity:
+      {
+        rst_ni: lc
+      }
     }
   ]
   xbar:
@@ -302,6 +401,10 @@
     {
       name: main
       clock: main
+      reset:
+      [
+        sys
+      ]
       connections:
       {
         corei:
@@ -346,6 +449,7 @@
           type: host
           clock: main
           pipeline: "false"
+          reset: sys
           inst_type: rv_core_ibex
           pipeline_byp: "true"
         }
@@ -354,6 +458,7 @@
           type: host
           clock: main
           pipeline: "false"
+          reset: sys
           inst_type: rv_core_ibex
           pipeline_byp: "true"
         }
@@ -362,6 +467,7 @@
           type: host
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: rv_dm
           pipeline: "true"
         }
@@ -370,6 +476,7 @@
           type: device
           clock: main
           pipeline: "false"
+          reset: sys
           inst_type: rom
           base_addr: 0x00008000
           size_byte: 0x2000
@@ -380,6 +487,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: rv_dm
           base_addr: 0x1A110000
           size_byte: 0x1000
@@ -390,6 +498,7 @@
           type: device
           clock: main
           pipeline: "false"
+          reset: sys
           inst_type: ram_1p
           base_addr: 0x10000000
           size_byte: 0x10000
@@ -400,6 +509,7 @@
           type: device
           clock: main
           pipeline: "false"
+          reset: sys
           inst_type: eflash
           base_addr: 0x20000000
           size_byte: 0x80000
@@ -410,6 +520,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: uart
           base_addr: 0x40000000
           size_byte: 0x1000
@@ -420,6 +531,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: gpio
           base_addr: 0x40010000
           size_byte: 0x1000
@@ -430,6 +542,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: spi_device
           base_addr: 0x40020000
           size_byte: 0x1000
@@ -440,6 +553,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: flash_ctrl
           base_addr: 0x40030000
           size_byte: 0x1000
@@ -450,6 +564,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: rv_timer
           base_addr: 0x40080000
           size_byte: 0x1000
@@ -460,6 +575,7 @@
           type: device
           clock: main
           pipeline_byp: "false"
+          reset: sys
           inst_type: hmac
           base_addr: 0x40120000
           size_byte: 0x1000
@@ -473,9 +589,14 @@
           base_addr: 0x40090000
           size_byte: 0x1000
           pipeline_byp: "false"
+          reset: sys
           pipeline: "true"
         }
       ]
+      reset_connectivity:
+      {
+        rst_main_ni: sys
+      }
     }
   ]
   interrupt_module:

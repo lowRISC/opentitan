@@ -12,6 +12,17 @@
     { name: "main", freq: "100000000" }
   ]
 
+  // Reset attributes
+  // name: name of reset. Real name is `name`_rst_n
+  // type: reset type, either root or leaf
+  // root: if reset type not root, the root reset it is related to
+  // clk:  related clock domain for synchronous release
+  resets: [
+    { name: "lc", type: "root", clk: "main"}
+    { name: "sys", type: "root", clk: "main"}
+    { name: "spi_device", type: "leaf", root: "sys", clk: "main"}
+  ]
+
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
@@ -22,13 +33,19 @@
     { name: "uart",     // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
+
       clock: "main",    // `ip.hjson` clock is internal name, here top determines
                         // actual clock (signal matched at the top)
+
+      reset: "sys",     // reset is the top level net that connects to the IP
+                        // the ip.hjson will declare the reset port names, these will then
+                        // be hooked up at the top level
       base_addr: "0x40000000",
     },
     { name: "gpio",
       type: "gpio",
       clock: "main",
+      reset: "sys",
       base_addr: "0x40010000",
     }
 
@@ -40,21 +57,25 @@
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock: "main",
+      reset: "lc",
       base_addr: "0x40030000",
     },
     { name: "rv_timer",
       type: "rv_timer",
       clock: "main",
+      reset: "sys",
       base_addr: "0x40080000",
     },
     { name: "hmac",
       type: "hmac",
       clock: "main",
+      reset: "sys",
       base_addr: "0x40120000",
     },
     { name: "rv_plic",
       type: "rv_plic",
       clock: "main",
+      reset: "sys",
       base_addr: "0x40090000",
       generated: "true"         // Indicate this module is generated in the topgen
       parameter: {
@@ -68,9 +89,9 @@
   // Memories (ROM, RAM, eFlash) are defined at the top.
   // It utilizes the primitive cells but configurable
   memory: [
-    { name: "rom",      type: "rom",    base_addr: "0x00008000", size: "0x2000"  },
-    { name: "ram_main", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
-    { name: "eflash",   type: "eflash", base_addr: "0x20000000", size: "0x80000" },
+    { name: "rom",      reset: "sys", type: "rom",    base_addr: "0x00008000", size: "0x2000"  },
+    { name: "ram_main", reset: "sys", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
+    { name: "eflash",   reset: "lc",  type: "eflash", base_addr: "0x20000000", size: "0x80000" },
   ],
 
   debug_mem_base_addr: "0x1A110000",
@@ -81,6 +102,7 @@
   xbar: [
     { name: "main",
       clock: "main",    // Main clock, used in sockets
+      reset: "sys",
     },
   ],
 

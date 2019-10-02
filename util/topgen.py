@@ -15,7 +15,7 @@ from mako.template import Template
 
 import tlgen
 from reggen import gen_rtl, gen_dv, validate
-from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
+from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top, validate_reset
 
 # Filter from IP list but adding generated hjson
 filter_list = ['rv_plic', 'alert_h']
@@ -44,7 +44,7 @@ def generate_xbars(top, out_path):
         if not tlgen.elaborate(xbar):
             log.error("Elaboration failed." + repr(xbar))
 
-        # Add clocks to the top configuration
+        # Add clocks/resets to the top configuration
         obj["clocks"] = xbar.clocks
         out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
 
@@ -321,6 +321,9 @@ def main():
 
         # TODO: Add conversion logic from top to top.complete.hjson
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+
+        # validate resets
+        validate_reset(completecfg)
 
         genhjson_path = hjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
         gencmd = (
