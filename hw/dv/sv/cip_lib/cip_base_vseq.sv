@@ -63,6 +63,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit              exp_err_rsp = 1'b0);
     tl_host_single_seq  tl_seq;
     `uvm_create_on(tl_seq, p_sequencer.tl_sequencer_h)
+    outstanding_csr_accesses++;
     if (cfg.zero_delays) begin
       tl_seq.min_req_delay = 0;
       tl_seq.max_req_delay = 0;
@@ -83,6 +84,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (check_rsp) begin
       `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
     end
+    outstanding_csr_accesses--;
   endtask
 
   virtual task tl_access_unmapped_addr();
