@@ -32,7 +32,7 @@ class pinmux_reg_regen extends dv_base_reg;
       .parent(this),
       .size(1),
       .lsb_pos(0),
-      .access("W1C"),
+      .access("W0C"),
       .volatile(1),
       .reset(1),
       .has_reset(1),
