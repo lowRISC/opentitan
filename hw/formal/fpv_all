@@ -30,6 +30,7 @@ declare -a blocks=(
   "prim_alert_rxtx_tb"
   "prim_alert_rxtx_async_tb"
   "prim_esc_rxtx_tb"
+  "pinmux_tb"
 )
 
 #-------------------------------------------------------------------------

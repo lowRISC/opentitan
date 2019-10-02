@@ -22,6 +22,7 @@ filesets:
       - lowrisc:tlul:adapter_sram
       - lowrisc:tlul:socket_1n
       - lowrisc:tlul:socket_m1
+      - lowrisc:fpv:pinmux_fpv
 
 targets:
   sim:
