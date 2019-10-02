@@ -17,3 +17,8 @@ git+https://github.com/olofk/ipyxact.git@master
 
 # Development version of edalize until all our changes are upstream
 git+https://github.com/lowRISC/edalize.git@ot
+
+# Pin attrs version to workaround
+# https://github.com/enthought/sat-solver/issues/270
+# Tracked in https://github.com/lowRISC/opentitan/issues/305
+attrs==19.1.0
