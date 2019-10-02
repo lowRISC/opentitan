@@ -113,7 +113,7 @@ module pinmux_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_regen (
     .clk_i   (clk_i    ),
