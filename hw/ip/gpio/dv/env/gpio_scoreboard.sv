@@ -154,7 +154,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
           // Checker-3: Check value of interrupt pins against predicted value
           if (csr.get_name() == "intr_state") begin
-            bit [TL_DW-1:0] pred_val_intr_pins = csr.get_mirrored_value() &
+            bit [TL_DW-1:0] intr_state = (intr_state_update_queue.size() > 0) ?
+                                         intr_state_update_queue[$].reg_value :
+                                         csr.get_mirrored_value();
+            bit [TL_DW-1:0] pred_val_intr_pins = intr_state &
                                                  ral.intr_enable.get_mirrored_value();
             `DV_CHECK_EQ(cfg.intr_vif.pins, pred_val_intr_pins)
           end
