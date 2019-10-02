@@ -6,7 +6,7 @@
 
 This document specifies the functionality of the alert handler mechanism. The
 alert handler is a module that is a peripheral on the chip interconnect bus,
-and thus follows the [Comportability Specification](https://github.com/lowRISC/stwg-base/blob/master/doc/rm/ComportabilitySpecification.md).
+and thus follows the [Comportability Specification](../../../../doc/rm/comportability_specification.md).
 It gathers alerts - defined as interrupt-type signals from other peripherals
 that are designated as a potential security threat - from throughout the design,
 and converts them to interrupts that the processor can handle. If the processor
@@ -19,8 +19,8 @@ responses to handle the threat.
 
 {{% section2 Features }}
 
-- Differentially-signaled, asynchronous alert inputs from NumAlerts peripheral
-sources, where NumAlerts is a function of the requirements of the peripherals
+- Differentially-signaled, asynchronous alert inputs from NAlerts peripheral
+sources, where NAlerts is a function of the requirements of the peripherals
 
 - Ping testing of alert sources: responder module requests periodic alert
 response from each source to ensure proper wiring
@@ -107,10 +107,10 @@ architectural description.
 
 Localparam     | Default (Max)         | Description
 ---------------|-----------------------|---------------
-`NumAlerts`    | 8 (248)               | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
+`NAlerts`      | 8 (248)               | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
 `EscCntWidth`  | 32 (32)               | Width of the escalation counters in bit.
 `AccuCntWidth` | 16 (32)               | Width of the alert accumulation counters in bit.
-`AsyncOn`      | '0 (2^`NumAlerts`-1)  | This is a bit array specifying whether a certain alert sender / receiver pair goes across an asynchronous boundary or not.
+`AsyncOn`      | '0 (2^`NAlerts`-1)    | This is a bit array specifying whether a certain alert sender / receiver pair goes across an asynchronous boundary or not.
 `LfsrSeed`     | '1 (2^31-1)           | Seed for the LFSR timer, must be nonzero.
 
 The next table lists free parameters in the `prim_alert_sender` and
@@ -156,9 +156,9 @@ Signal                  | Direction        | Type           | Description
 `tl_i`                  | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
 `tl_o`                  | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
 `entropy_i`             | `input`          | `logic`        | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
-`alert_pi/ni[<number>]` | `input`          | packed `logic` | Incoming alert or ping response(s), differentially encoded. Index range: `[NumAlerts-1:0]`
-`ack_po/no[<number>]`   | `output`         | packed `logic` | Outgoing alert acknowledgment, differentially encoded. Index range: `[NumAlerts-1:0]`
-`ping_po/no[<number>]`  | `output`         | packed `logic` | Ping request to alert sender, differentially encoded. Index range: `[NumAlerts-1:0]`
+`alert_pi/ni[<number>]` | `input`          | packed `logic` | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
+`ack_po/no[<number>]`   | `output`         | packed `logic` | Outgoing alert acknowledgment, differentially encoded. Index range: `[NAlerts-1:0]`
+`ping_po/no[<number>]`  | `output`         | packed `logic` | Ping request to alert sender, differentially encoded. Index range: `[NAlerts-1:0]`
 `irq_o[<class>]`        | `output`         | packed `logic` | Interrupt outputs, level sensitive, active high. Indices 0-3 correspond to classes A-D.
 `esc_po/no[<sev>]`      | `output`         | packed `logic` | Escalation or ping request, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
 `resp_pi/ni[<sev>]`     | `input`          | packed `logic` | Escalation ping response, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
