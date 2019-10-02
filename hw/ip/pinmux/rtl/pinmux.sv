@@ -12,9 +12,9 @@ module pinmux (
   input  tlul_pkg::tl_h2d_t                     tl_i,
   output tlul_pkg::tl_d2h_t                     tl_o,
   // Peripheral side
-  input        [pinmux_reg_pkg::NPeriphOut-1:0] periph_out_i,
-  input        [pinmux_reg_pkg::NPeriphOut-1:0] periph_oe_i,
-  output logic [pinmux_reg_pkg::NPeriphIn-1:0]  periph_in_o,
+  input        [pinmux_reg_pkg::NPeriphOut-1:0] periph_to_mio_i,
+  input        [pinmux_reg_pkg::NPeriphOut-1:0] periph_to_mio_oe_i,
+  output logic [pinmux_reg_pkg::NPeriphIn-1:0]  mio_to_periph_o,
   // Pad side
   output logic [pinmux_reg_pkg::NMioPads-1:0]   mio_out_o,
   output logic [pinmux_reg_pkg::NMioPads-1:0]   mio_oe_o,
@@ -46,7 +46,7 @@ module pinmux (
     // possible defaults: constant 0 or 1
     assign data_mux = $size(data_mux)'({mio_in_i, 1'b1, 1'b0});
     // index using configured insel
-    assign periph_in_o[k] = data_mux[reg2hw.periph_insel[k].q];
+    assign mio_to_periph_o[k] = data_mux[reg2hw.periph_insel[k].q];
     // disallow undefined entries
     `ASSUME(InSelRange_A, reg2hw.periph_insel[k].q < pinmux_reg_pkg::NMioPads + 2, clk_i, rst_ni)
   end
@@ -59,8 +59,8 @@ module pinmux (
     logic [pinmux_reg_pkg::NPeriphOut+3-1:0] data_mux, oe_mux;
     // stack output data/enable and default signals for convenient indexing below
     // possible defaults: 0, 1 or 2 (high-Z)
-    assign data_mux = $size(data_mux)'({periph_out_i, 1'b0, 1'b1, 1'b0});
-    assign oe_mux   = $size(oe_mux)'({periph_oe_i,  1'b0, 1'b1, 1'b1});
+    assign data_mux = $size(data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
+    assign oe_mux   = $size(oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
     // index using configured outsel
     assign mio_out_o[k] = data_mux[reg2hw.mio_outsel[k].q];
     assign mio_oe_o[k]  = oe_mux[reg2hw.mio_outsel[k].q];
