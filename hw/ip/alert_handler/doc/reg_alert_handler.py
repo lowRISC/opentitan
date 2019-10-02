@@ -21,6 +21,7 @@ def main():
                         help='input template file')
     parser.add_argument('--n_alerts',
                         type=int,
+                        default=4,
                         help='Number of Alert Sources')
     parser.add_argument('--esc_cnt_dw',
                         type=int,
@@ -33,7 +34,12 @@ def main():
     parser.add_argument('--lfsr_seed',
                         type=int,
                         default=2**31-1,
-                        help='Width of accumulator')
+                        help='Seed for LFSR timer')
+    parser.add_argument('--async_on',
+                        type=str,
+                        default="'0",
+                        help="""Enables asynchronous sygnalling between specific
+                        alert RX/TX pairs""")
 
     args = parser.parse_args()
 
@@ -46,11 +52,11 @@ def main():
     reg_tpl = Template(args.input.read())
     out.write(
         reg_tpl.render(n_alerts=args.n_alerts,
-                       n_classes=4, # not fully parameterized yet
                        esc_cnt_dw=args.esc_cnt_dw,
                        accu_cnt_dw=args.accu_cnt_dw,
                        lfsr_seed=args.lfsr_seed,
-                       reg_dw=32))  # 32bit regfile
+                       async_on=args.async_on,
+                       n_classes=4)) # leave this constant for now
 
     print(out.getvalue())
 

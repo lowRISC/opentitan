@@ -11,9 +11,9 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
     files:
-      - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_pkg.sv
       - rtl/alert_handler_reg_top.sv
+      - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_wrap.sv
       - rtl/alert_handler_class.sv
       - rtl/alert_handler_ping_timer.sv

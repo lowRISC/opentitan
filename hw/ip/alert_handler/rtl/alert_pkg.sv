@@ -6,21 +6,23 @@
 package alert_pkg;
 
   // these localparams are generated based on the system top-level configuration
-  localparam int unsigned NAlerts      = 4; // maximum 252
-  localparam int unsigned EscCntDw     = 32; // maximum 32
-  localparam int unsigned AccuCntDw    = 16; // maximum 32
-  localparam logic [31:0] LfsrSeed     = 2147483647; // seed for the ping timer (must be nonzero!)
-  localparam bit [NAlerts-1:0] AsyncOn = '0; // TODO: make parametric via generator
+  localparam int unsigned      NAlerts   = alert_handler_reg_pkg::NAlerts;   // maximum 252
+  localparam int unsigned      EscCntDw  = alert_handler_reg_pkg::EscCntDw;  // maximum 32
+  localparam int unsigned      AccuCntDw = alert_handler_reg_pkg::AccuCntDw; // maximum 32
+  // seed for the ping timer (must be nonzero!)
+  localparam logic [31:0]      LfsrSeed  = alert_handler_reg_pkg::LfsrSeed;
+  // enable async transitions for specific RX/TX pairs
+  localparam bit [NAlerts-1:0] AsyncOn   = alert_handler_reg_pkg::AsyncOn;
 
   // common constants, do not change
-  localparam int unsigned N_CLASSES   = 4;
-  localparam int unsigned N_ESC_SEV   = 4;
-  localparam int unsigned N_PHASES    = 4;
-  localparam int unsigned N_LOC_ALERT = 4;
+  localparam int unsigned N_CLASSES   = alert_handler_reg_pkg::N_CLASSES;
+  localparam int unsigned N_ESC_SEV   = alert_handler_reg_pkg::N_ESC_SEV;
+  localparam int unsigned N_PHASES    = alert_handler_reg_pkg::N_PHASES;
+  localparam int unsigned N_LOC_ALERT = alert_handler_reg_pkg::N_LOC_ALERT;
 
-  localparam int unsigned PING_CNT_DW = 24;
-  localparam int unsigned PHASE_DW    = $clog2(N_PHASES);
-  localparam int unsigned CLASS_DW    = $clog2(N_CLASSES);
+  localparam int unsigned PING_CNT_DW = alert_handler_reg_pkg::PING_CNT_DW;
+  localparam int unsigned PHASE_DW    = alert_handler_reg_pkg::PHASE_DW;
+  localparam int unsigned CLASS_DW    = alert_handler_reg_pkg::CLASS_DW;
 
   // do not change the phase encoding
   typedef enum logic [2:0] {Idle = 3'b000, Timeout = 3'b001, Terminal = 3'b011,
