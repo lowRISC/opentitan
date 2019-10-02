@@ -86,16 +86,16 @@ NMioPads       | 1 (-)                 | Number of muxed outputs.
 {{% section2 Signals }}
 The table below lists the `pinmux` signals. The number of IOs is parametric, and hence the signals are stacked in packed arrays.
 
-Signal                         | Direction        | Type           | Description
--------------------------------|------------------|----------------|---------------
-`tl_i`                         | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
-`tl_o`                         | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
-`periph_out_i[NPeriphOut-1:0]` | `input`          | packed `logic` | Signals from `NPeriphOut` peripheral outputs coming into the pinmux.
-`periph_oe_i[NPeriphOut-1:0]`  | `input`          | packed `logic` | Signals from `NPeriphOut` peripheral output enables coming into the pinmux.
-`periph_in_i[NPeriphIn-1:0]`   | `output`         | packed `logic` | Signals to `NPeriphIn` peripherals coming from the pinmux.
-`mio_out_o[NMioPads-1:0]`      | `output`         | packed `logic` | Signals to `NMioPads` bidirectional pads as output data.
-`mio_oe_o[NMioPads-1:0]`       | `output`         | packed `logic` | Signals to `NMioPads` bidirectional pads as output enables.
-`mio_in_i[NMioPads-1:0]`       | `input`          | packed `logic` | Signals from `NMioPads` bidirectional pads as input data.
+Signal                               | Direction        | Type           | Description
+-------------------------------------|------------------|----------------|---------------
+`tl_i`                               | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
+`tl_o`                               | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
+`periph_to_mio_i[NPeriphOut-1:0]`    | `input`          | packed `logic` | Signals from `NPeriphOut` peripheral outputs coming into the pinmux.
+`periph_to_mio_oe_i[NPeriphOut-1:0]` | `input`          | packed `logic` | Signals from `NPeriphOut` peripheral output enables coming into the pinmux.
+`mio_to_periph_o[NPeriphIn-1:0]`     | `output`         | packed `logic` | Signals to `NPeriphIn` peripherals coming from the pinmux.
+`mio_out_o[NMioPads-1:0]`            | `output`         | packed `logic` | Signals to `NMioPads` bidirectional pads as output data.
+`mio_oe_o[NMioPads-1:0]`             | `output`         | packed `logic` | Signals to `NMioPads` bidirectional pads as output enables.
+`mio_in_i[NMioPads-1:0]`             | `input`          | packed `logic` | Signals from `NMioPads` bidirectional pads as input data.
 
 {{% section2 Programmers Guide }}
 
