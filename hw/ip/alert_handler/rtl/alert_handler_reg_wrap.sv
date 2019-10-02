@@ -108,15 +108,10 @@ module alert_handler_reg_wrap (
 
   // if a local alert is enabled and it fires,
   // we have to set the corresponding cause bit
-  assign { hw2reg.loc_alert_cause.la3.d,
-           hw2reg.loc_alert_cause.la2.d,
-           hw2reg.loc_alert_cause.la1.d,
-           hw2reg.loc_alert_cause.la0.d } = '1;
-
-  assign { hw2reg.loc_alert_cause.la3.de,
-           hw2reg.loc_alert_cause.la2.de,
-           hw2reg.loc_alert_cause.la1.de,
-           hw2reg.loc_alert_cause.la0.de } = hw2reg_wrap.loc_alert_cause;
+  for (genvar k = 0; k < alert_pkg::N_LOC_ALERT; k++) begin : gen_loc_alert_cause
+    assign hw2reg.loc_alert_cause[k].d  = 1'b1;
+    assign hw2reg.loc_alert_cause[k].de = hw2reg_wrap.loc_alert_cause[k];
+  end
 
   // ping timeout in cycles
   // autolock can clear these regs automatically upon entering escalation
@@ -277,10 +272,9 @@ module alert_handler_reg_wrap (
   end
 
   // local alert cause register output
-  assign crashdump_o.loc_alert_cause = { reg2hw.loc_alert_cause.la3.q,
-                                         reg2hw.loc_alert_cause.la2.q,
-                                         reg2hw.loc_alert_cause.la1.q,
-                                         reg2hw.loc_alert_cause.la0.q };
+  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_loc_alert_cause_dump
+    assign crashdump_o.loc_alert_cause[k]  = reg2hw.loc_alert_cause[k].q;
+  end
 
   assign crashdump_o.class_accum_cnt = hw2reg_wrap.class_accum_cnt;
   assign crashdump_o.class_esc_cnt   = hw2reg_wrap.class_esc_cnt;

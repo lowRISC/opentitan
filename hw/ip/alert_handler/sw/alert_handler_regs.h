@@ -91,7 +91,7 @@
 #define ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA3_MASK 0x3
 #define ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA3_OFFSET 6
 
-// Alert Cause Register for Local Alerts
+// Alert Cause Register for Local Alerts. "alert
 #define ALERT_HANDLER_LOC_ALERT_CAUSE(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x28)
 #define ALERT_HANDLER_LOC_ALERT_CAUSE_LA0 0
 #define ALERT_HANDLER_LOC_ALERT_CAUSE_LA1 1
@@ -115,11 +115,11 @@
 #define ALERT_HANDLER_CLASSA_CTRL_MAP_E3_MASK 0x3
 #define ALERT_HANDLER_CLASSA_CTRL_MAP_E3_OFFSET 12
 
-// Clear enable for escalation protocol of class A alerts.
+// Clear enable for escalation protocol of Class A alerts.
 #define ALERT_HANDLER_CLASSA_CLREN(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x30)
 #define ALERT_HANDLER_CLASSA_CLREN 0
 
-// Clear for esclation protocol of class A.
+// Clear for esclation protocol of Class A.
 #define ALERT_HANDLER_CLASSA_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x34)
 #define ALERT_HANDLER_CLASSA_CLR 0
 
@@ -136,19 +136,19 @@
 // Interrupt timeout in cycles.
 #define ALERT_HANDLER_CLASSA_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x40)
 
-// Duration of escalation phase 0 for class A.
+// Duration of escalation phase 0 for Class A.
 #define ALERT_HANDLER_CLASSA_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x44)
 
-// Duration of escalation phase 1 for class A.
+// Duration of escalation phase 1 for Class A.
 #define ALERT_HANDLER_CLASSA_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x48)
 
-// Duration of escalation phase 2 for class A.
+// Duration of escalation phase 2 for Class A.
 #define ALERT_HANDLER_CLASSA_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x4c)
 
-// Duration of escalation phase 3 for class A.
+// Duration of escalation phase 3 for Class A.
 #define ALERT_HANDLER_CLASSA_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x50)
 
-// Escalation counter in cycles for class A.
+// Escalation counter in cycles for Class A.
 #define ALERT_HANDLER_CLASSA_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x54)
 
 // Current escalation state of Class A. See also !!CLASSA_ESC_CNT.
@@ -180,11 +180,11 @@
 #define ALERT_HANDLER_CLASSB_CTRL_MAP_E3_MASK 0x3
 #define ALERT_HANDLER_CLASSB_CTRL_MAP_E3_OFFSET 12
 
-// Clear enable for escalation protocol of class B alerts.
+// Clear enable for escalation protocol of Class B alerts.
 #define ALERT_HANDLER_CLASSB_CLREN(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x60)
 #define ALERT_HANDLER_CLASSB_CLREN 0
 
-// Clear for esclation protocol of class B.
+// Clear for esclation protocol of Class B.
 #define ALERT_HANDLER_CLASSB_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x64)
 #define ALERT_HANDLER_CLASSB_CLR 0
 
@@ -201,19 +201,19 @@
 // Interrupt timeout in cycles.
 #define ALERT_HANDLER_CLASSB_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x70)
 
-// Duration of escalation phase 0 for class B.
+// Duration of escalation phase 0 for Class B.
 #define ALERT_HANDLER_CLASSB_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x74)
 
-// Duration of escalation phase 1 for class B.
+// Duration of escalation phase 1 for Class B.
 #define ALERT_HANDLER_CLASSB_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x78)
 
-// Duration of escalation phase 2 for class B.
+// Duration of escalation phase 2 for Class B.
 #define ALERT_HANDLER_CLASSB_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x7c)
 
-// Duration of escalation phase 3 for class B.
+// Duration of escalation phase 3 for Class B.
 #define ALERT_HANDLER_CLASSB_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x80)
 
-// Escalation counter in cycles for class B.
+// Escalation counter in cycles for Class B.
 #define ALERT_HANDLER_CLASSB_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x84)
 
 // Current escalation state of Class B. See also !!CLASSB_ESC_CNT.
@@ -245,11 +245,11 @@
 #define ALERT_HANDLER_CLASSC_CTRL_MAP_E3_MASK 0x3
 #define ALERT_HANDLER_CLASSC_CTRL_MAP_E3_OFFSET 12
 
-// Clear enable for escalation protocol of class C alerts.
+// Clear enable for escalation protocol of Class C alerts.
 #define ALERT_HANDLER_CLASSC_CLREN(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x90)
 #define ALERT_HANDLER_CLASSC_CLREN 0
 
-// Clear for esclation protocol of class C.
+// Clear for esclation protocol of Class C.
 #define ALERT_HANDLER_CLASSC_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x94)
 #define ALERT_HANDLER_CLASSC_CLR 0
 
@@ -266,19 +266,19 @@
 // Interrupt timeout in cycles.
 #define ALERT_HANDLER_CLASSC_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xa0)
 
-// Duration of escalation phase 0 for class C.
+// Duration of escalation phase 0 for Class C.
 #define ALERT_HANDLER_CLASSC_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xa4)
 
-// Duration of escalation phase 1 for class C.
+// Duration of escalation phase 1 for Class C.
 #define ALERT_HANDLER_CLASSC_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xa8)
 
-// Duration of escalation phase 2 for class C.
+// Duration of escalation phase 2 for Class C.
 #define ALERT_HANDLER_CLASSC_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xac)
 
-// Duration of escalation phase 3 for class C.
+// Duration of escalation phase 3 for Class C.
 #define ALERT_HANDLER_CLASSC_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xb0)
 
-// Escalation counter in cycles for class C.
+// Escalation counter in cycles for Class C.
 #define ALERT_HANDLER_CLASSC_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xb4)
 
 // Current escalation state of Class C. See also !!CLASSC_ESC_CNT.
@@ -310,11 +310,11 @@
 #define ALERT_HANDLER_CLASSD_CTRL_MAP_E3_MASK 0x3
 #define ALERT_HANDLER_CLASSD_CTRL_MAP_E3_OFFSET 12
 
-// Clear enable for escalation protocol of class D alerts.
+// Clear enable for escalation protocol of Class D alerts.
 #define ALERT_HANDLER_CLASSD_CLREN(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xc0)
 #define ALERT_HANDLER_CLASSD_CLREN 0
 
-// Clear for esclation protocol of class D.
+// Clear for esclation protocol of Class D.
 #define ALERT_HANDLER_CLASSD_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xc4)
 #define ALERT_HANDLER_CLASSD_CLR 0
 
@@ -331,19 +331,19 @@
 // Interrupt timeout in cycles.
 #define ALERT_HANDLER_CLASSD_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xd0)
 
-// Duration of escalation phase 0 for class D.
+// Duration of escalation phase 0 for Class D.
 #define ALERT_HANDLER_CLASSD_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xd4)
 
-// Duration of escalation phase 1 for class D.
+// Duration of escalation phase 1 for Class D.
 #define ALERT_HANDLER_CLASSD_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xd8)
 
-// Duration of escalation phase 2 for class D.
+// Duration of escalation phase 2 for Class D.
 #define ALERT_HANDLER_CLASSD_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xdc)
 
-// Duration of escalation phase 3 for class D.
+// Duration of escalation phase 3 for Class D.
 #define ALERT_HANDLER_CLASSD_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xe0)
 
-// Escalation counter in cycles for class D.
+// Escalation counter in cycles for Class D.
 #define ALERT_HANDLER_CLASSD_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xe4)
 
 // Current escalation state of Class D. See also !!CLASSD_ESC_CNT.

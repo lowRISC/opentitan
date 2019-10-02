@@ -1290,9 +1290,11 @@ module alert_handler_reg_top (
 
 
 
+
+  // Subregister 0 of Multireg loc_alert_cause
   // R[loc_alert_cause]: V(False)
 
-  //   F[la0]: 0:0
+  // F[la0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
@@ -1306,19 +1308,19 @@ module alert_handler_reg_top (
     .wd     (loc_alert_cause_la0_wd),
 
     // from internal hardware
-    .de     (hw2reg.loc_alert_cause.la0.de),
-    .d      (hw2reg.loc_alert_cause.la0.d ),
+    .de     (hw2reg.loc_alert_cause[0].de),
+    .d      (hw2reg.loc_alert_cause[0].d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause.la0.q ),
+    .q      (reg2hw.loc_alert_cause[0].q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la0_qs)
   );
 
 
-  //   F[la1]: 1:1
+  // F[la1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
@@ -1332,19 +1334,19 @@ module alert_handler_reg_top (
     .wd     (loc_alert_cause_la1_wd),
 
     // from internal hardware
-    .de     (hw2reg.loc_alert_cause.la1.de),
-    .d      (hw2reg.loc_alert_cause.la1.d ),
+    .de     (hw2reg.loc_alert_cause[1].de),
+    .d      (hw2reg.loc_alert_cause[1].d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause.la1.q ),
+    .q      (reg2hw.loc_alert_cause[1].q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la1_qs)
   );
 
 
-  //   F[la2]: 2:2
+  // F[la2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
@@ -1358,19 +1360,19 @@ module alert_handler_reg_top (
     .wd     (loc_alert_cause_la2_wd),
 
     // from internal hardware
-    .de     (hw2reg.loc_alert_cause.la2.de),
-    .d      (hw2reg.loc_alert_cause.la2.d ),
+    .de     (hw2reg.loc_alert_cause[2].de),
+    .d      (hw2reg.loc_alert_cause[2].d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause.la2.q ),
+    .q      (reg2hw.loc_alert_cause[2].q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la2_qs)
   );
 
 
-  //   F[la3]: 3:3
+  // F[la3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
@@ -1384,16 +1386,17 @@ module alert_handler_reg_top (
     .wd     (loc_alert_cause_la3_wd),
 
     // from internal hardware
-    .de     (hw2reg.loc_alert_cause.la3.de),
-    .d      (hw2reg.loc_alert_cause.la3.d ),
+    .de     (hw2reg.loc_alert_cause[3].de),
+    .d      (hw2reg.loc_alert_cause[3].d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause.la3.q ),
+    .q      (reg2hw.loc_alert_cause[3].q ),
 
     // to register interface (read)
     .qs     (loc_alert_cause_la3_qs)
   );
+
 
 
   // R[classa_ctrl]: V(False)

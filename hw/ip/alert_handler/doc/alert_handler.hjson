@@ -8,12 +8,89 @@
 #  - n_alerts:    Number of alert sources
 #  - esc_cnt_dw:  Width of escalation counter
 #  - accu_cnt_dw: Width of accumulator
+#  - lfsr_seed:   Seed for LFSR timer
+#  - async_on:    Enables asynchronous sygnalling between specific alert RX/TX pairs
+#  - n_classes:   Number of supported classes (leave this at 4 at the moment)
+
 {
   name: "ALERT_HANDLER",
   clock_primary: "clk_fixed",
   bus_device: "tlul",
   regwidth: "32",
-
+  param_list: [
+    { name: "NAlerts",
+      desc: "Number of peripheral inputs",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "EscCntDw",
+      desc: "Number of peripheral outputs",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
+    { name: "AccuCntDw",
+      desc: "Number of peripheral outputs",
+      type: "int",
+      default: "16",
+      local: "true"
+    },
+    { name: "LfsrSeed",
+      desc: "Number of peripheral outputs",
+      type: "int",
+      default: "2147483647",
+      local: "true"
+    },
+    { name: "AsyncOn",
+      desc: "Number of peripheral outputs",
+      type: "logic [NAlerts-1:0]",
+      default: "'0",
+      local: "true"
+    },
+    { name: "N_CLASSES",
+      desc: "Number of classes",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "N_ESC_SEV",
+      desc: "Number of escalation severities",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "N_PHASES",
+      desc: "Number of escalation phases",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "N_LOC_ALERT",
+      desc: "Number of local alerts phases",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "PING_CNT_DW",
+      desc: "Width of ping counter",
+      type: "int",
+      default: "24",
+      local: "true"
+    },
+    { name: "PHASE_DW",
+      desc: "Width of phase ID",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name: "CLASS_DW",
+      desc: "Width of class ID",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+  ],
 # interrupt registers for the classes
   interrupt_list: [
     { name: "CLASSA",
@@ -66,7 +143,9 @@
       hwaccess: "hro",
       regwen:   "REGEN",
       fields: [
-        { bits: "23:0",
+        {
+          # TODO: add PING_CNT_DW parameter here
+          bits: "23:0",
           resval:   32,
           desc: '''Timeout value in cycles. If an alert receiver or an escalation sender does not
           respond to a ping within this timeout window, a pingfail alert will be raised.
@@ -78,7 +157,7 @@
     { multireg: { name:     "ALERT_EN",
                   desc:     '''Enable register for alerts.
                   ''',
-                  count:    4,
+                  count:    "NAlerts",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGEN",
@@ -94,13 +173,14 @@
     { multireg: { name:     "ALERT_CLASS",
                   desc:     '''Class assignment of alerts.
                   ''',
-                  count:    4,
+                  count:    "NAlerts",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGEN",
                   cname:    "alert",
                   fields: [
                     {
+                      # TODO: bitwidth should be parameterized with CLASS_DW
                       bits: "1:0",
                       name: "CLASS_A",
                       desc: "Classification ",
@@ -108,7 +188,7 @@
                               { value: "0", name: "ClassA", desc: "" },
                               { value: "1", name: "ClassB", desc: "" },
                               { value: "2", name: "ClassC", desc: "" },
-                              { value: "3", name: "ClassD", desc: "" }
+                              { value: "3", name: "ClassD", desc: "" },
                             ]
                     }
                   ]
@@ -117,7 +197,7 @@
     { multireg: {
       name: "ALERT_CAUSE",
       desc: "Alert Cause Register",
-      count: 4,
+      count: "NAlerts",
       cname: "ALERT",
       swaccess: "rw1c",
       hwaccess: "hrw",
@@ -131,7 +211,7 @@
                   desc:     '''Enable register for the aggregated local alerts "alert
                   pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
                   ''',
-                  count:    4,
+                  count:    "N_LOC_ALERT",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGEN",
@@ -148,14 +228,14 @@
                   desc:     '''Class assignment of local alerts. "alert
                   pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
                   ''',
-                  count:    4,
+                  count:    "N_LOC_ALERT",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGEN",
                   cname:    "local alert",
                   fields: [
                     {
-                      # reduce range to 2:1 once above TODO has been fixed
+                      # TODO: bitwidth should be parameterized with CLASS_DW
                       bits: "1:0",
                       name: "CLASS_LA",
                       desc: "Classification ",
@@ -163,36 +243,28 @@
                               { value: "0", name: "ClassA", desc: "" },
                               { value: "1", name: "ClassB", desc: "" },
                               { value: "2", name: "ClassC", desc: "" },
-                              { value: "3", name: "ClassD", desc: "" }
+                              { value: "3", name: "ClassD", desc: "" },
                             ]
                     }
                   ]
                 }
     },
-    { name:     "LOC_ALERT_CAUSE",
-      desc:     "Alert Cause Register for Local Alerts",
+    { multireg: {
+      name: "LOC_ALERT_CAUSE",
+      desc: '''Alert Cause Register for Local Alerts. "alert
+      pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
+      ''',
+      count: "N_LOC_ALERT",
+      cname: "LOC_ALERT",
       swaccess: "rw1c",
       hwaccess: "hrw",
       fields: [
-        { bits: "0",
-          name: "LA0",
-          desc: "True when pingfail alert has been detected on an alert receiver. Cleared with write"
-        }
-        { bits: "1",
-          name: "LA1",
-          desc: "True when pingfail alert has been detected on an escalation sender. Cleared with write"
-        }
-        { bits: "2",
-          name: "LA2",
-          desc: "True when integfail alert has been detected on an alert receiver. Cleared with write"
-        }
-        { bits: "3",
-          name: "LA3",
-          desc: "True when integfail alert has been detected on an escalation sender. Cleared with write"
-        }
+        { bits: "0", name: "LA", desc: "Cause bit " }
       ]
+      }
     },
 # classes
+
     { name:     "CLASSA_CTRL",
       desc:     "Escalation control register for alert Class A. Can not be modified if !!REGEN is false."
       swaccess: "rw",
@@ -219,23 +291,24 @@
         { bits: "2",
           name: "EN_E0",
           resval: 1,
-          desc: "Enable escalation signal 0 for class A",
+          desc: "Enable escalation signal 0 for Class A",
         }
         { bits: "3",
           name: "EN_E1",
           resval: 1,
-          desc: "Enable escalation signal 1 for class A",
+          desc: "Enable escalation signal 1 for Class A",
         }
         { bits: "4",
           name: "EN_E2",
           resval: 1,
-          desc: "Enable escalation signal 2 for class A",
+          desc: "Enable escalation signal 2 for Class A",
         }
         { bits: "5",
           name: "EN_E3",
           resval: 1,
-          desc: "Enable escalation signal 3 for class A",
+          desc: "Enable escalation signal 3 for Class A",
         }
+        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -260,7 +333,7 @@
     },
     { name:     "CLASSA_CLREN",
       desc:     '''
-                Clear enable for escalation protocol of class A alerts.
+                Clear enable for escalation protocol of Class A alerts.
                 '''
       swaccess: "rw1c",
       hwaccess: "hwo",
@@ -276,7 +349,7 @@
     },
     { name:     "CLASSA_CLR",
       desc:     '''
-                Clear for esclation protocol of class A.
+                Clear for esclation protocol of Class A.
                 '''
       swaccess: "wo",
       hwaccess: "hro",
@@ -338,7 +411,7 @@
     },
     { name:     "CLASSA_PHASE0_CYC",
       desc:     '''
-                Duration of escalation phase 0 for class A.
+                Duration of escalation phase 0 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -352,7 +425,7 @@
     }
     { name:     "CLASSA_PHASE1_CYC",
       desc:     '''
-                Duration of escalation phase 1 for class A.
+                Duration of escalation phase 1 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -366,7 +439,7 @@
     }
     { name:     "CLASSA_PHASE2_CYC",
       desc:     '''
-                Duration of escalation phase 2 for class A.
+                Duration of escalation phase 2 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -380,7 +453,7 @@
     }
     { name:     "CLASSA_PHASE3_CYC",
       desc:     '''
-                Duration of escalation phase 3 for class A.
+                Duration of escalation phase 3 for Class A.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -394,7 +467,7 @@
     }
     { name:     "CLASSA_ESC_CNT",
       desc:     '''
-                Escalation counter in cycles for class A.
+                Escalation counter in cycles for Class A.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -435,6 +508,7 @@
         }
       ]
     },
+
     { name:     "CLASSB_CTRL",
       desc:     "Escalation control register for alert Class B. Can not be modified if !!REGEN is false."
       swaccess: "rw",
@@ -461,23 +535,24 @@
         { bits: "2",
           name: "EN_E0",
           resval: 1,
-          desc: "Enable escalation signal 0 for class B",
+          desc: "Enable escalation signal 0 for Class B",
         }
         { bits: "3",
           name: "EN_E1",
           resval: 1,
-          desc: "Enable escalation signal 1 for class B",
+          desc: "Enable escalation signal 1 for Class B",
         }
         { bits: "4",
           name: "EN_E2",
           resval: 1,
-          desc: "Enable escalation signal 2 for class B",
+          desc: "Enable escalation signal 2 for Class B",
         }
         { bits: "5",
           name: "EN_E3",
           resval: 1,
-          desc: "Enable escalation signal 3 for class B",
+          desc: "Enable escalation signal 3 for Class B",
         }
+        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -502,7 +577,7 @@
     },
     { name:     "CLASSB_CLREN",
       desc:     '''
-                Clear enable for escalation protocol of class B alerts.
+                Clear enable for escalation protocol of Class B alerts.
                 '''
       swaccess: "rw1c",
       hwaccess: "hwo",
@@ -518,7 +593,7 @@
     },
     { name:     "CLASSB_CLR",
       desc:     '''
-                Clear for esclation protocol of class B.
+                Clear for esclation protocol of Class B.
                 '''
       swaccess: "wo",
       hwaccess: "hro",
@@ -580,7 +655,7 @@
     },
     { name:     "CLASSB_PHASE0_CYC",
       desc:     '''
-                Duration of escalation phase 0 for class B.
+                Duration of escalation phase 0 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -594,7 +669,7 @@
     }
     { name:     "CLASSB_PHASE1_CYC",
       desc:     '''
-                Duration of escalation phase 1 for class B.
+                Duration of escalation phase 1 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -608,7 +683,7 @@
     }
     { name:     "CLASSB_PHASE2_CYC",
       desc:     '''
-                Duration of escalation phase 2 for class B.
+                Duration of escalation phase 2 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -622,7 +697,7 @@
     }
     { name:     "CLASSB_PHASE3_CYC",
       desc:     '''
-                Duration of escalation phase 3 for class B.
+                Duration of escalation phase 3 for Class B.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -636,7 +711,7 @@
     }
     { name:     "CLASSB_ESC_CNT",
       desc:     '''
-                Escalation counter in cycles for class B.
+                Escalation counter in cycles for Class B.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -677,6 +752,7 @@
         }
       ]
     },
+
     { name:     "CLASSC_CTRL",
       desc:     "Escalation control register for alert Class C. Can not be modified if !!REGEN is false."
       swaccess: "rw",
@@ -703,23 +779,24 @@
         { bits: "2",
           name: "EN_E0",
           resval: 1,
-          desc: "Enable escalation signal 0 for class C",
+          desc: "Enable escalation signal 0 for Class C",
         }
         { bits: "3",
           name: "EN_E1",
           resval: 1,
-          desc: "Enable escalation signal 1 for class C",
+          desc: "Enable escalation signal 1 for Class C",
         }
         { bits: "4",
           name: "EN_E2",
           resval: 1,
-          desc: "Enable escalation signal 2 for class C",
+          desc: "Enable escalation signal 2 for Class C",
         }
         { bits: "5",
           name: "EN_E3",
           resval: 1,
-          desc: "Enable escalation signal 3 for class C",
+          desc: "Enable escalation signal 3 for Class C",
         }
+        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -744,7 +821,7 @@
     },
     { name:     "CLASSC_CLREN",
       desc:     '''
-                Clear enable for escalation protocol of class C alerts.
+                Clear enable for escalation protocol of Class C alerts.
                 '''
       swaccess: "rw1c",
       hwaccess: "hwo",
@@ -760,7 +837,7 @@
     },
     { name:     "CLASSC_CLR",
       desc:     '''
-                Clear for esclation protocol of class C.
+                Clear for esclation protocol of Class C.
                 '''
       swaccess: "wo",
       hwaccess: "hro",
@@ -822,7 +899,7 @@
     },
     { name:     "CLASSC_PHASE0_CYC",
       desc:     '''
-                Duration of escalation phase 0 for class C.
+                Duration of escalation phase 0 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -836,7 +913,7 @@
     }
     { name:     "CLASSC_PHASE1_CYC",
       desc:     '''
-                Duration of escalation phase 1 for class C.
+                Duration of escalation phase 1 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -850,7 +927,7 @@
     }
     { name:     "CLASSC_PHASE2_CYC",
       desc:     '''
-                Duration of escalation phase 2 for class C.
+                Duration of escalation phase 2 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -864,7 +941,7 @@
     }
     { name:     "CLASSC_PHASE3_CYC",
       desc:     '''
-                Duration of escalation phase 3 for class C.
+                Duration of escalation phase 3 for Class C.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -878,7 +955,7 @@
     }
     { name:     "CLASSC_ESC_CNT",
       desc:     '''
-                Escalation counter in cycles for class C.
+                Escalation counter in cycles for Class C.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -919,6 +996,7 @@
         }
       ]
     },
+
     { name:     "CLASSD_CTRL",
       desc:     "Escalation control register for alert Class D. Can not be modified if !!REGEN is false."
       swaccess: "rw",
@@ -945,23 +1023,24 @@
         { bits: "2",
           name: "EN_E0",
           resval: 1,
-          desc: "Enable escalation signal 0 for class D",
+          desc: "Enable escalation signal 0 for Class D",
         }
         { bits: "3",
           name: "EN_E1",
           resval: 1,
-          desc: "Enable escalation signal 1 for class D",
+          desc: "Enable escalation signal 1 for Class D",
         }
         { bits: "4",
           name: "EN_E2",
           resval: 1,
-          desc: "Enable escalation signal 2 for class D",
+          desc: "Enable escalation signal 2 for Class D",
         }
         { bits: "5",
           name: "EN_E3",
           resval: 1,
-          desc: "Enable escalation signal 3 for class D",
+          desc: "Enable escalation signal 3 for Class D",
         }
+        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -986,7 +1065,7 @@
     },
     { name:     "CLASSD_CLREN",
       desc:     '''
-                Clear enable for escalation protocol of class D alerts.
+                Clear enable for escalation protocol of Class D alerts.
                 '''
       swaccess: "rw1c",
       hwaccess: "hwo",
@@ -1002,7 +1081,7 @@
     },
     { name:     "CLASSD_CLR",
       desc:     '''
-                Clear for esclation protocol of class D.
+                Clear for esclation protocol of Class D.
                 '''
       swaccess: "wo",
       hwaccess: "hro",
@@ -1064,7 +1143,7 @@
     },
     { name:     "CLASSD_PHASE0_CYC",
       desc:     '''
-                Duration of escalation phase 0 for class D.
+                Duration of escalation phase 0 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -1078,7 +1157,7 @@
     }
     { name:     "CLASSD_PHASE1_CYC",
       desc:     '''
-                Duration of escalation phase 1 for class D.
+                Duration of escalation phase 1 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -1092,7 +1171,7 @@
     }
     { name:     "CLASSD_PHASE2_CYC",
       desc:     '''
-                Duration of escalation phase 2 for class D.
+                Duration of escalation phase 2 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -1106,7 +1185,7 @@
     }
     { name:     "CLASSD_PHASE3_CYC",
       desc:     '''
-                Duration of escalation phase 3 for class D.
+                Duration of escalation phase 3 for Class D.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
@@ -1120,7 +1199,7 @@
     }
     { name:     "CLASSD_ESC_CNT",
       desc:     '''
-                Escalation counter in cycles for class D.
+                Escalation counter in cycles for Class D.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
