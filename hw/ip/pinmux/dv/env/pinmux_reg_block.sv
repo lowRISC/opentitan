@@ -7,7 +7,8 @@
 
 // Forward declare all register/memory/block classes
 typedef class pinmux_reg_regen;
-typedef class pinmux_reg_periph_insel;
+typedef class pinmux_reg_periph_insel0;
+typedef class pinmux_reg_periph_insel1;
 typedef class pinmux_reg_mio_outsel;
 typedef class pinmux_reg_block;
 
@@ -42,8 +43,8 @@ class pinmux_reg_regen extends dv_base_reg;
 
 endclass : pinmux_reg_regen
 
-// Class: pinmux_reg_periph_insel
-class pinmux_reg_periph_insel extends dv_base_reg;
+// Class: pinmux_reg_periph_insel0
+class pinmux_reg_periph_insel0 extends dv_base_reg;
   // fields
   rand dv_base_reg_field in0;
   rand dv_base_reg_field in1;
@@ -53,10 +54,12 @@ class pinmux_reg_periph_insel extends dv_base_reg;
   rand dv_base_reg_field in5;
   rand dv_base_reg_field in6;
   rand dv_base_reg_field in7;
+  rand dv_base_reg_field in8;
+  rand dv_base_reg_field in9;
 
-  `uvm_object_utils(pinmux_reg_periph_insel)
+  `uvm_object_utils(pinmux_reg_periph_insel0)
 
-  function new(string       name = "pinmux_reg_periph_insel",
+  function new(string       name = "pinmux_reg_periph_insel0",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -152,9 +155,121 @@ class pinmux_reg_periph_insel extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
+    in8 = dv_base_reg_field::type_id::create("in8");
+    in8.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(24),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    in9 = dv_base_reg_field::type_id::create("in9");
+    in9.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(27),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
   endfunction : build
 
-endclass : pinmux_reg_periph_insel
+endclass : pinmux_reg_periph_insel0
+
+// Class: pinmux_reg_periph_insel1
+class pinmux_reg_periph_insel1 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field in10;
+  rand dv_base_reg_field in11;
+  rand dv_base_reg_field in12;
+  rand dv_base_reg_field in13;
+  rand dv_base_reg_field in14;
+  rand dv_base_reg_field in15;
+
+  `uvm_object_utils(pinmux_reg_periph_insel1)
+
+  function new(string       name = "pinmux_reg_periph_insel1",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    in10 = dv_base_reg_field::type_id::create("in10");
+    in10.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    in11 = dv_base_reg_field::type_id::create("in11");
+    in11.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    in12 = dv_base_reg_field::type_id::create("in12");
+    in12.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(6),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    in13 = dv_base_reg_field::type_id::create("in13");
+    in13.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(9),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    in14 = dv_base_reg_field::type_id::create("in14");
+    in14.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(12),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    in15 = dv_base_reg_field::type_id::create("in15");
+    in15.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(15),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : pinmux_reg_periph_insel1
 
 // Class: pinmux_reg_mio_outsel
 class pinmux_reg_mio_outsel extends dv_base_reg;
@@ -163,6 +278,10 @@ class pinmux_reg_mio_outsel extends dv_base_reg;
   rand dv_base_reg_field out1;
   rand dv_base_reg_field out2;
   rand dv_base_reg_field out3;
+  rand dv_base_reg_field out4;
+  rand dv_base_reg_field out5;
+  rand dv_base_reg_field out6;
+  rand dv_base_reg_field out7;
 
   `uvm_object_utils(pinmux_reg_mio_outsel)
 
@@ -181,7 +300,7 @@ class pinmux_reg_mio_outsel extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -192,7 +311,7 @@ class pinmux_reg_mio_outsel extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -203,7 +322,7 @@ class pinmux_reg_mio_outsel extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -214,7 +333,51 @@ class pinmux_reg_mio_outsel extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(2),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    out4 = dv_base_reg_field::type_id::create("out4");
+    out4.configure(
+      .parent(this),
+      .size(4),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(2),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    out5 = dv_base_reg_field::type_id::create("out5");
+    out5.configure(
+      .parent(this),
+      .size(4),
+      .lsb_pos(20),
+      .access("RW"),
+      .volatile(0),
+      .reset(2),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    out6 = dv_base_reg_field::type_id::create("out6");
+    out6.configure(
+      .parent(this),
+      .size(4),
+      .lsb_pos(24),
+      .access("RW"),
+      .volatile(0),
+      .reset(2),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    out7 = dv_base_reg_field::type_id::create("out7");
+    out7.configure(
+      .parent(this),
+      .size(4),
+      .lsb_pos(28),
+      .access("RW"),
+      .volatile(0),
+      .reset(2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -226,7 +389,8 @@ endclass : pinmux_reg_mio_outsel
 class pinmux_reg_block extends dv_base_reg_block;
   // registers
   rand pinmux_reg_regen regen;
-  rand pinmux_reg_periph_insel periph_insel;
+  rand pinmux_reg_periph_insel0 periph_insel0;
+  rand pinmux_reg_periph_insel1 periph_insel1;
   rand pinmux_reg_mio_outsel mio_outsel;
 
   `uvm_object_utils(pinmux_reg_block)
@@ -250,17 +414,23 @@ class pinmux_reg_block extends dv_base_reg_block;
     default_map.add_reg(.rg(regen),
                         .offset(32'h0),
                         .rights("RW"));
-    periph_insel = pinmux_reg_periph_insel::type_id::create("periph_insel");
-    periph_insel.configure(.blk_parent(this));
-    periph_insel.build();
-    default_map.add_reg(.rg(periph_insel),
+    periph_insel0 = pinmux_reg_periph_insel0::type_id::create("periph_insel0");
+    periph_insel0.configure(.blk_parent(this));
+    periph_insel0.build();
+    default_map.add_reg(.rg(periph_insel0),
                         .offset(32'h4),
+                        .rights("RW"));
+    periph_insel1 = pinmux_reg_periph_insel1::type_id::create("periph_insel1");
+    periph_insel1.configure(.blk_parent(this));
+    periph_insel1.build();
+    default_map.add_reg(.rg(periph_insel1),
+                        .offset(32'h8),
                         .rights("RW"));
     mio_outsel = pinmux_reg_mio_outsel::type_id::create("mio_outsel");
     mio_outsel.configure(.blk_parent(this));
     mio_outsel.build();
     default_map.add_reg(.rg(mio_outsel),
-                        .offset(32'h8),
+                        .offset(32'hc),
                         .rights("RW"));
   endfunction : build
 
