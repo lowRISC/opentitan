@@ -11,7 +11,8 @@ IPS ?= uart          \
        hmac          \
        usbuart       \
        alert_handler \
-       pinmux
+       pinmux        \
+       padctrl
 
 TOPS ?= top_earlgrey
 

@@ -8,7 +8,7 @@
 // prim_pad_wrapper using the generic implementation
 module prim_pad_wrapper #(
   parameter              Impl   = "generic",
-  parameter int unsigned AttrDw = 7
+  parameter int unsigned AttrDw = 6
 ) (
   inout  wire        inout_io, // bidirectional pad
   output logic       in_o,     // input data
