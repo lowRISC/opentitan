@@ -4,6 +4,9 @@
 
 ##############################################################
 ## Generic rules set for compiling SW for different targets ##
+##                                                          ##
+## Documentation: doc/sw_build_flow.md                      ##
+##                                                          ##
 ##############################################################
 
 # rules

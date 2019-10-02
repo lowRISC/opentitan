@@ -4,6 +4,9 @@
 
 ####################################################################################################
 ## Generate a baremetal application for the microcontroller                                       ##
+##                                                                                                ##
+## Documentation: doc/sw_build_flow.md                                                            ##
+##                                                                                                ##
 ## Mandatory variables that need to be set over the command line:                                 ##
 ## SW_DIR:       this is the partial directory path to the SW test being built starting from sw/  ##
 ##               ex: if running hello_world.c, then SW_DIR=examples/hello_world                   ##
