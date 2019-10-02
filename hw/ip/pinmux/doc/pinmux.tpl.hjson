@@ -8,7 +8,7 @@
 #  - n_periph_in:     Number of peripheral inputs
 #  - n_periph_out:    Number of peripheral outputs
 #  - n_mio_pads:      Number of muxed OP pads
-#
+# <% import math %>
 {
   name: "PINMUX",
   clock_primary: "clk_fixed",
@@ -18,19 +18,19 @@
     { name: "NPeriphIn",
       desc: "Number of peripheral inputs",
       type: "int",
-      default: "16",
+      default: "${n_periph_in}",
       local: "true"
     },
     { name: "NPeriphOut",
       desc: "Number of peripheral outputs",
       type: "int",
-      default: "16",
+      default: "${n_periph_out}",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "8",
+      default: "${n_mio_pads}",
       local: "true"
     },
   ],
@@ -60,7 +60,7 @@
                   regwen:   "REGEN",
                   cname:    "IN",
                   fields: [
-                    { bits: "2:0",
+                    { bits: "${int(math.ceil(math.log2(n_mio_pads))-1)}:0",
                       name: "IN",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1.
@@ -80,7 +80,7 @@
                   regwen:   "REGEN",
                   cname:    "OUT",
                   fields: [
-                    { bits: "3:0",
+                    { bits: "${int(math.ceil(math.log2(n_periph_out))-1)}:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1. 2: high-Z
@@ -93,6 +93,5 @@
     },
   ],
 }
-
 
 
