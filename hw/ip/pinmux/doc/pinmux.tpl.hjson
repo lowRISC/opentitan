@@ -7,7 +7,7 @@
 # Parameter (given by python tool)
 #  - n_periph_in:     Number of peripheral inputs
 #  - n_periph_out:    Number of peripheral outputs
-#  - n_mio_pads:      Number of muxed OP pads
+#  - n_mio_pads:      Number of muxed IO pads
 # <% import math %>
 {
   name: "PINMUX",
@@ -39,7 +39,7 @@
       desc: '''
             Register write enable for all control registers.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         {
