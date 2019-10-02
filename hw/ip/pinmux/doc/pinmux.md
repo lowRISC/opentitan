@@ -124,5 +124,7 @@ The pinmux configuration can be locked down by writing a 1 to register !!REGEN.
 The configuration can then not be altered anymore unless the system is reset.
 
 
+{{% section1 Register Table }}
+
 {{% registers x }}
 
