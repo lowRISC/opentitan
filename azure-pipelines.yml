@@ -99,7 +99,7 @@ stages:
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install -r python-requirements.txt && sudo pip3 uninstall attrs -y && sudo pip3 install attrs==19.1.0
+          && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
         export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
@@ -113,7 +113,6 @@ stages:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
           && sudo pip3 install -r python-requirements.txt \
-          && sudo pip3 uninstall attrs -y && sudo pip3 install attrs==19.1.0 \
           && sudo apt-get install git make autoconf g++ flex bison curl
       displayName: 'Install dependencies'
     - bash: |
@@ -151,8 +150,7 @@ stages:
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install -r python-requirements.txt \
-          && sudo pip3 uninstall attrs -y && sudo pip3 install attrs==19.1.0
+          && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
         set -e
