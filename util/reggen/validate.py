@@ -1305,6 +1305,9 @@ def validate(regs, **kwargs):
     #   Assumed param list is already validated in above `check_keys` function
     if "param_list" in regs and len(regs["param_list"]) != 0:
         for p in params:
+            if p == '':
+                continue
+
             tokens = p.split('=')
             if len(tokens) != 2:
                 error += 1

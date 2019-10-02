@@ -82,6 +82,7 @@ def main():
     parser.add_argument('--param',
                         '-p',
                         type=str,
+                        default="",
                         help='''Change the Parameter values.
                                 Only integer value is supported.
                                 You can add multiple param arguments.
