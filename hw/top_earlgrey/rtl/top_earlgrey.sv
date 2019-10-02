@@ -372,6 +372,7 @@ module top_earlgrey #(
       .intr_rxerr_o (intr_spi_device_rxerr),
       .intr_rxoverflow_o (intr_spi_device_rxoverflow),
       .intr_txunderflow_o (intr_spi_device_txunderflow),
+      .scanmode_i   (scanmode_i),
       .clk_i(clk_i),
       .rst_ni(ndmreset_n)
   );

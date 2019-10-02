@@ -53,7 +53,8 @@ module tb;
     .intr_rxf_o     (intr_rxf  ),
     .intr_rxlvl_o   (intr_rxlvl),
     .intr_txlvl_o   (intr_txlvl),
-    .intr_rxerr_o   (intr_rxerr)
+    .intr_rxerr_o   (intr_rxerr),
+    .scanmode_i     (1'b0      )
   );
 
   assign sck          = spi_if.sck;

@@ -139,6 +139,12 @@ def amend_ip(top, ip):
 
     # (TBD) alert_list
 
+    # scan
+    if "scan" in ip:
+        ip_module["scan"] = ip["scan"]
+    else:
+        ip_module["scan"] = "false"
+
 
 # TODO: Replace this part to be configurable from hjson or template
 predefined_modules = {
@@ -174,7 +180,9 @@ def xbar_addhost(xbar, host):
             host] if host in predefined_modules else ""
         obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
             0] else "true"
-        obj[0]["pipeline_byp"] = obj[0]["pipeline_byp"] if obj[0]["pipeline"] == "true" and "pipeline_byp" in obj[0] else "true"
+        obj[0]["pipeline_byp"] = obj[0]["pipeline_byp"] if obj[0][
+            "pipeline"] == "true" and "pipeline_byp" in obj[0] else "true"
+
 
 def process_pipeline_var(node):
     """Add device nodes pipeline / pipeline_byp information
@@ -182,7 +190,9 @@ def process_pipeline_var(node):
     - Supply a default of true / true if not defined by xbar
     """
     node["pipeline"] = node["pipeline"] if "pipeline" in node else "true"
-    node["pipeline_byp"] = node["pipeline_byp"] if "pipeline_byp" in node else "true"
+    node["pipeline_byp"] = node[
+        "pipeline_byp"] if "pipeline_byp" in node else "true"
+
 
 def xbar_adddevice(top, xbar, device):
     """Add device nodes information

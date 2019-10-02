@@ -389,6 +389,9 @@ module top_earlgrey #(
       .irq_id_o   (irq_id),
       .msip_o     (msip),
     % endif
+    % if m["scan"] == "true":
+      .scanmode_i   (scanmode_i),
+    % endif
       .clk_i(${"clk_i" if m["clock"] == "main" else "clk_"+ m["clock"] + "_i"}),
       .rst_ni(${"ndmreset_n" if m["clock"] == "main" else "rst_" + m["clock"] + "_ni"})
   );

@@ -30,12 +30,10 @@ module spi_device #(
   output logic intr_txlvl_o,       // TX FIFO below level
   output logic intr_rxerr_o,       // RX Frame error
   output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
-  output logic intr_txunderflow_o  // TX Async FIFO Underflow
-);
+  output logic intr_txunderflow_o, // TX Async FIFO Underflow
 
-  // TODO: make a way to connect scanmode from the top in topgen.py
-  logic scanmode_i;
-  assign scanmode_i = 1'b0;
+  input scanmode_i
+);
 
   import spi_device_pkg::*;
   import spi_device_reg_pkg::*;
