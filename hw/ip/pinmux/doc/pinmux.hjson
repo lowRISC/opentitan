@@ -32,7 +32,7 @@
       desc: '''
             Register write enable for all control registers.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         {
