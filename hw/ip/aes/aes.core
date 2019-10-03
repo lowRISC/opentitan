@@ -15,6 +15,7 @@ filesets:
       - rtl/aes_reg_top.sv
       - rtl/aes_core.sv
       - rtl/aes_sub_bytes.sv
+      - rtl/aes_sbox_lut.sv
       - rtl/aes_shift_rows.sv
       - rtl/aes_mix_columns.sv
       - rtl/aes_key_expand.sv
