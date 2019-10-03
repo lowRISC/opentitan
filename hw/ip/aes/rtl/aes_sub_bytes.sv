@@ -10,11 +10,13 @@ module aes_sub_bytes (
   output logic [7:0]     data_o [16]
 );
 
-import aes_pkg::*;
-
-// dummy only
-mode_e unused_mode;
-assign unused_mode = mode_i;
-assign data_o      = data_i;
+  // Individually substitute bytes
+  for (genvar i = 0; i < 16; i++) begin : gen_sbox
+    aes_sbox_lut aes_sbox_i (
+      .mode_i ( mode_i    ),
+      .data_i ( data_i[i] ),
+      .data_o ( data_o[i] )
+    );
+  end
 
 endmodule
