@@ -172,7 +172,11 @@ def main():
                         '-t',
                         required=True,
                         help="`top_{name}.hjson` file.")
-    parser.add_argument('--tpl', '-c', help="`top_{name}.tpl.sv` file.")
+    parser.add_argument(
+        '--tpl',
+        '-c',
+        help=
+        "The directory having top_{name}_core.tpl.sv and top_{name}.tpl.sv.")
     parser.add_argument(
         '--outdir',
         '-o',
@@ -288,6 +292,8 @@ def main():
         hjson_dir = Path(args.topcfg).parent
         ips.append(hjson_dir / 'rv_plic.hjson')
 
+        # TODO: Add generated pinmux hjson to ips here
+
         # load hjson and pass validate from reggen
         try:
             ip_objs = []
@@ -357,13 +363,21 @@ def main():
     top_name = completecfg["name"]
 
     if not args.no_top or args.top_only:
+        tpl_path = Path(args.tpl)
+        core_tplpath = tpl_path / ("top_%s_core.tpl.sv" % (top_name))
+        top_tplpath = tpl_path / ("top_%s.tpl.sv" % (top_name))
+        out_core = generate_rtl(completecfg, str(core_tplpath))
+        out_top = generate_rtl(completecfg, str(top_tplpath))
+
         rtl_path = out_path / 'rtl'
         rtl_path.mkdir(parents=True, exist_ok=True)
-        rtl_filepath = rtl_path / ("top_%s.sv" % (top_name))
-        out_rtl = generate_rtl(completecfg, args.tpl)
+        core_path = rtl_path / ("top_%s_core.sv" % top_name)
+        top_path = rtl_path / ("top_%s.sv" % top_name)
 
-        with rtl_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_rtl)
+        with core_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out_core)
+        with top_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out_top)
 
 
 if __name__ == "__main__":

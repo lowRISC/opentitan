@@ -43,7 +43,7 @@ $(ips_reg):
 $(tops_gen):
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
-		--tpl ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).tpl.sv \
+		--tpl ${PRJ_DIR}/hw/$($@_TOP)/doc/ \
 		-o ${PRJ_DIR}/hw/$($@_TOP)/
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
 		-r -o ${PRJ_DIR}/hw/$($@_TOP)/dv/env/

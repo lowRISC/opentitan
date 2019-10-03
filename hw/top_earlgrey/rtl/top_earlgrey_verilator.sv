@@ -21,7 +21,7 @@ module top_earlgrey_verilator (
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
   // Top-level design
-  top_earlgrey top_earlgrey (
+  top_earlgrey_core top_earlgrey (
     .clk_i                        (clk_i),
     .rst_ni                       (rst_ni),
 

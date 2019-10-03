@@ -28,7 +28,7 @@ filesets:
       - rtl/rv_plic_reg_top.sv
       - rtl/rv_plic.sv
       - rtl/padctl.sv
-      - rtl/top_earlgrey.sv
+      - rtl/top_earlgrey_core.sv
     file_type: systemVerilogSource
 
 parameters:
@@ -43,9 +43,9 @@ targets:
   default: &default_target
     filesets:
       - files_rtl_generic
-    toplevel: top_earlgrey
+    toplevel: top_earlgrey_core
   sim:
     default_tool: icarus
     filesets:
       - files_rtl_generic
-    toplevel: top_earlgrey
+    toplevel: top_earlgrey_core

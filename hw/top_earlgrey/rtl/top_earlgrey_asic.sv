@@ -38,7 +38,7 @@ module top_earlgrey_asic (
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
   // Top-level design
-  top_earlgrey top_earlgrey (
+  top_earlgrey_core top_earlgrey (
     .clk_i                (IO_CLK),
     .rst_ni               (IO_RST_N),
 
