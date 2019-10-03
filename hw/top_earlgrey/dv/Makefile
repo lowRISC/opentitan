@@ -18,7 +18,7 @@ export DUT_TOP  := top_earlgrey_asic
 export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:dv:chip_sim:0.1
 COMPILE_KEY     ?= default
-
+TOPS            := ${TB_TOP}
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################

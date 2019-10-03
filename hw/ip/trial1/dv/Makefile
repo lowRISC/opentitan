@@ -18,7 +18,7 @@ export DUT_TOP  := trial1_reg_top
 export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:ip:trial1_sim:0.1
 COMPILE_KEY     ?= default
-
+TOPS            ?= ${TB_TOP}
 TEST_NAME       ?= trial1_sanity
 UVM_TEST        ?= ${TEST_NAME}
 
