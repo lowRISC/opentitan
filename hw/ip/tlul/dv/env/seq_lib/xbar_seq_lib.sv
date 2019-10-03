@@ -29,8 +29,7 @@ class xbar_tl_host_seq extends tl_host_seq;
     end
     if (!(req.randomize() with {a_valid_delay inside {[min_req_delay:max_req_delay]};
                                 // Keep msb to zero as it's reserved to add host ID
-                                a_source[(Source_width - 1)-:Valid_host_id_lsb] == 0;
-                                a_source inside {[0:xbar_hosts.size()-1]};
+                                a_source[(SourceWidth - 1):VALID_HOST_ID_WIDTH] == 0;
                                 if (!access_unclaimed_addr) {
                                   a_addr inside {[xbar_devices[device_id].start_address :
                                                   xbar_devices[device_id].end_address]};

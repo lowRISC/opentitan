@@ -53,13 +53,12 @@ class xbar_env extends uvm_env;
     foreach (xbar_devices[i]) begin
       scb.add_item_port({"a_chan_", xbar_devices[i].device_name}, scoreboard_pkg::kDstPort);
       scb.add_item_port({"d_chan_", xbar_devices[i].device_name}, scoreboard_pkg::kSrcPort);
+
+      scb.add_item_queue({"a_chan_", xbar_devices[i].device_name},
+                         scoreboard_pkg::kOutOfOrderCheck);
     end
-    foreach (xbar_hosts[i]) begin
-      foreach (xbar_devices[j]) begin
-        scb.add_item_queue({"a_chan_", xbar_hosts[i].host_name, "_", xbar_devices[j].device_name});
-        scb.add_item_queue({"d_chan_", xbar_devices[j].device_name, "_", xbar_hosts[i].host_name});
-      end
-    end
+    // all the d_channals share one queue as we can't know which host to return from device side
+    scb.add_item_queue(D_CHAN_QUEUE_NAME, scoreboard_pkg::kOutOfOrderCheck);
   endfunction : create_scoreboard
 
   function void connect_phase(uvm_phase phase);

@@ -9,7 +9,7 @@ class xbar_base_test extends uvm_test;
   xbar_env_cfg    cfg;
   virtual clk_if  clk_vif;
   xbar_vseq       vseq;
-  int unsigned    max_quit_count = 1;
+  int unsigned    max_quit_count = 10;
   int unsigned    test_timeout_ns = 200_000_000; // 200ms
   int unsigned    drain_time_ns = 2_000;  // 2us
 

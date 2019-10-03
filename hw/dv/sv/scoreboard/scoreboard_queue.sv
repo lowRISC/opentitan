@@ -31,34 +31,34 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
 
   task add_expected_item(SEQ_ITEM tr, bit [63:0] current_cycle_cnt);
     token.get(1);
-    if(max_pending_items > 0) begin
-      if(expected_items.size() > max_pending_items) begin
+    if (max_pending_items > 0) begin
+      if (expected_items.size() > max_pending_items) begin
         `uvm_error(get_full_name(), $sformatf("Number of expected items %0d exceeds limit %0d",
                          expected_items.size(), max_pending_items))
       end
     end
     expected_items.push_back(tr);
     expected_items_timestamp.push_back(current_cycle_cnt);
-    if(actual_items.size() != 0) check_item();
+    if (actual_items.size() != 0) check_item();
     token.put(1);
   endtask
 
   task add_actual_item(SEQ_ITEM tr, bit [63:0] current_cycle_cnt);
     token.get(1);
-    if(max_pending_items > 0) begin
-      if(actual_items.size() > max_pending_items) begin
+    if (max_pending_items > 0) begin
+      if (actual_items.size() > max_pending_items) begin
         `uvm_error(get_full_name(), $sformatf("Number of actected items %0d exceeds limit %0d",
                          actual_items.size(), max_pending_items))
       end
     end
     actual_items.push_back(tr);
     actual_items_timestamp.push_back(current_cycle_cnt);
-    if(expected_items.size() != 0) check_item();
+    if (expected_items.size() != 0) check_item();
     token.put(1);
   endtask
 
   virtual function bit check_item();
-    if(expected_items.size() == 0 || actual_items.size() == 0) begin
+    if (expected_items.size() == 0 || actual_items.size() == 0) begin
       `uvm_error(get_full_name(), $sformatf(
         "Cannot check with empty queue, expected items: %0d, actual items: %0d",
         expected_items.size(),  actual_items.size()))
@@ -68,7 +68,7 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
       // In order check : compare the first item in the expected and actual item queue
       kInOrderCheck: begin
         bit check_pass;
-        if(actual_items[0].compare(expected_items[0])) begin
+        if (actual_items[0].compare(expected_items[0])) begin
           `uvm_info(get_full_name(), $sformatf(
                     "IN ORDER CHECK PASS:\n Expected item:\n%0s Actual item:\n%0s",
                     expected_items[0].sprint(), actual_items[0].sprint()), UVM_HIGH)
@@ -91,7 +91,7 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
       // the first actual item
       kOutOfOrderCheck: begin
         foreach(expected_items[i]) begin
-          if(actual_items[0].compare(expected_items[i], out_of_order_comparator)) begin
+          if (actual_items[0].compare(expected_items[i], out_of_order_comparator)) begin
             `uvm_info(get_full_name(),
                 $sformatf("OUT OF ORDER CHECK PASS:\n Expected item[%0d]:\n%0s Actual item:\n%0s",
                 i, expected_items[i].sprint(), actual_items[0].sprint()), UVM_HIGH)

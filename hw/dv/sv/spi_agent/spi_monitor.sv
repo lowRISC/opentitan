@@ -79,8 +79,10 @@ class spi_monitor extends uvm_monitor;
             // sending transactions when collect a word data
             if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
                 device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
-              `uvm_info(`gfn, $sformatf("spi_monitor: host packet:\n%0s", host_item.sprint()), UVM_HIGH)
-              `uvm_info(`gfn, $sformatf("spi_monitor: device packet:\n%0s", device_item.sprint()), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("spi_monitor: host packet:\n%0s", host_item.sprint()),
+                        UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("spi_monitor: device packet:\n%0s", device_item.sprint()),
+                        UVM_HIGH)
               host_analysis_port.write(host_item);
               device_analysis_port.write(device_item);
               host_item   = spi_item::type_id::create("host_item", this);

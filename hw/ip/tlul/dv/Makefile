@@ -14,7 +14,7 @@
 ## TEST_NAME    - name of the test to run - this is supplied on the command line                  ##
 ####################################################################################################
 DV_DIR          := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-export DUT_TOP  := tlul_xbar
+export DUT_TOP  := xbar_main
 export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:ip:xbar_dv:0.1
 COMPILE_KEY     ?= default
