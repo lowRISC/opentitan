@@ -32,7 +32,7 @@ up to date before starting an FPGA build.
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
 
 ```console
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
+$ . /tools/xilinx/Vivado/2019.1/settings64.sh
 $ cd $REPO_TOP
 $ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
 ```
@@ -66,7 +66,7 @@ To flash the bitstream onto the FPGA you need to use either the Vivado GUI or th
 Use the following command to program the FPGA with fusesoc.
 
 ```console
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
+$ . /tools/xilinx/Vivado/2019.1/settings64.sh
 $ cd $REPO_TOP
 $ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
 ```
@@ -77,7 +77,7 @@ You can check the version you're using with `pip3 show edalize`.
 ### Using the Vivado GUI
 
 ```console
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
+$ . /tools/xilinx/Vivado/2019.1/settings64.sh
 $ cd $REPO_TOP
 $ make -C build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado build-gui
 ```

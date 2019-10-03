@@ -163,15 +163,10 @@ Most lowRISC designs support at least one FPGA board which works with a free Web
 ### Install Xilinx Vivado
 
 Vivado can be installed in two ways: either through an "All OS installer Single-File Download", or via the "Linux Self Extracting Web Installer".
-Neither option is great:
-the "All OS installer" is a huge download of around 20 GB (and the Xilinx download servers seem to be overloaded regularly), but it supports an unattended installation.
-The web installer downloads only necessary subsets of the software, which significantly reduces the download size.
-But unfortunately it doesn't support the batch mode for unattended installations, requiring users to click through the GUI and select the right options.
-
-To get started faster we use the web installer in the following.
+In the following, we use the web installer to significantly reduce the download size.
 
 1. Go to the [Xilinx download page](https://www.xilinx.com/support/download.html) and download two files for the current version of Vivado.
-   (We used Vivado 2018.3 to prepare this guide.)
+   (We used Vivado 2019.1 to prepare this guide.)
    1. The file "Vivado HLx <VERSION>: WebPACK and Editions - Linux Self Extracting Web Installer".
    2. The "Digests" file below the download.
 
@@ -183,60 +178,97 @@ To get started faster we use the web installer in the following.
 2. Before you proceed ensure that the download didn't get corrupted by verifying the checksum.
 
     ```console
-    $ sha512sum --check Xilinx_Vivado_SDK_Web_2018.3_1207_2324_Lin64.bin.digests
-    Xilinx_Vivado_SDK_Web_2018.3_1207_2324_Lin64.bin: OK
+    $ sha512sum --check Xilinx_Vivado_SDK_Web_2019.1_0524_1430_Lin64.bin.digests
+    Xilinx_Vivado_SDK_Web_2019.1_0524_1430_Lin64.bin: OK
     sha512sum: WARNING: 22 lines are improperly formatted
     ```
 
     If you see an "OK" after the downloaded file proceed to the next step. Otherwise delete the download and start over. (You can ignore the warning produced by `sha512sum`.)
-3. Run the graphical installer.
+
+3. Now run the installer
 
     ```console
-    $ sh Xilinx_Vivado_SDK_Web_2018.3_1207_2324_Lin64.bin
+    $ sh Xilinx_Vivado_SDK_Web_2019.1_0524_1430_Lin64.bin --keep --noexec --target vivado-installer
+    $ cd vivado-installer/
+    $ ./xsetup -b AuthTokenGen
+    Running in batch mode...
+    Copyright (c) 1986-2019 Xilinx, Inc.  All rights reserved.
+
+    INFO : Log file location - /home/user/.Xilinx/xinstall/xinstall_1570100376363.log
+    INFO : Internet connection validated, can connect to internet.
+    INFO : In order to generate the authentication token please provide your Xilinx account User ID and password.
+    User ID:youremailaddress@example.com
+    Password:
+
+    INFO : Generating authentication token...
+    INFO : Saved authentication token file successfully, valid until 10/10/2019 11:59 am.
+
+    $ ./xsetup --agree 3rdPartyEULA,WebTalkTerms,XilinxEULA --batch Install --edition "Vivado HL WebPACK" --location "/tools/xilinx"
+    Running in batch mode...
+    Copyright (c) 1986-2019 Xilinx, Inc.  All rights reserved.
+
+    INFO : Log file location - /home/user/.Xilinx/xinstall/xinstall_1570100957466.log
+    INFO : Internet connection validated, can connect to internet.
+    INFO : Authenticated user youremailaddress@example.com successfully.
+    INFO : Installing Edition: Vivado HL WebPACK
+    INFO : Installation directory is /tools/xilinx
+    .
+    INFO : Downloading.....
+    INFO : Downloaded successfully 295 archives representing 10,5 GiB in 47 min, 11 sec
+    INFO : Installing......
+    INFO : Log file is copied to : /tools/xilinx/.xinstall/Vivado_2019.1/xinstall.log
+    INFO : Installation completed successfully.
+
     ```
 
-4. Now you need to click through the installer.
-   Click "Next" on the first screen.
+    Now Vivado will download and install multiple gigabytes of data, which typically takes multiple hours to complete.
+    After the installer completes, Vivado is installed to `/tools/xilinx/Vivado/2019.1`.
+    Before you use Vivado, we recommend installing any updates as described next.
 
-   ![Vivado installation step 1](img/install_vivado/step1.png)
+### Update Xilinx Vivado to a Point Release (e.g. 2019.1.x)
 
-5. Type in your Xilinx User ID (your email address) and the associated password.
-   Choose the "Download and Install Now" option.
-   Click "Next" to continue.
+The installer installs the initially released version of a given Vivado quarterly release (e.g. 2019.1).
+To get all point releases after that, e.g. 2019.1.1 you need to run the updater available from the Xilinx Information Center.
 
-   ![Vivado installation step 2](img/install_vivado/step2.png)
+1. Start the Xilinx Information Center (XIC).
 
-6. Click all "I Agree" checkboxes, and click on "Next" to continue.
+   From the command line:
 
-   ![Vivado installation step 3](img/install_vivado/step3.png)
+   ```console
+   $ /tools/xilinx/xic/xic
+   ```
 
-7. Choose "Vivado HL WebPACK" if you do not have a commercial Vivado license, or "Vivado HL Design Edition" if you have a valid license.
-   In this walk through we'll install the WebPACK edition.
+   or select Xilinx Design Tools > Xilinx Information Center from the application menu of your desktop environment.
 
-   ![Vivado installation step 4](img/install_vivado/step4.png)
+2. Choose the applicable update, and click on "Update".
 
-8. Choose the features to install.
-    You can restrict the features to the ones shown in the screenshot below.
-    Click "Next" to continue.
+   ![Xilinx Information Center](img/install_vivado/update_xic.png)
 
-   ![Vivado installation step 5](img/install_vivado/step5.png)
+3. The update installer will launch and first ask you for your Xilinx registration information: your email address and your password.
+   Enter this information.
 
-9. Choose an installation location.
-    Any location which doesn't have a whitespace in its path and enough free space is fine.
-    We use `/tools` in our example, but a path in `/opt` or within the home directory works equally well.
-    Click "Next" to continue.
+4. In the installer window, continue to press "Next" without making other changes.
+   Then click "Install" to start the download and installation of the update.
+   This process typically takes 15-30 minutes, depending on your internet connection.
 
-   ![Vivado installation step 6](img/install_vivado/step6.png)
+5. After the installation completes close the Xilinx Information Center.
 
-10. Double-check the installation summary and click on "Next" to start the installation process.
+6. As final step, confirm the installed version.
+   Run Vivado (see the section below for instructions on how to do so) and click on Help > About Vivado.
+   The version number is displayed at the bottom of the dialog and should equal the version you just installed.
 
-   ![Vivado installation step 7](img/install_vivado/step7.png)
+   ![Xilinx Information Center](img/install_vivado/help_check_version.png)
 
-11. Now Vivado is downloaded and installed, a process which can easily take multiple hours.
+### Run Xilinx Vivado
 
-   ![Vivado installation step 8](img/install_vivado/step8.png)
+Vivado can be started through the desktop's application menu by clicking on Xilinx Design Tools > Vivado.
 
-12. As soon as the installation has completed close the installer and you're now ready to use Vivado!
+Alternatively, Vivado can be started from the command line:
+
+```console
+$ source /tools/xilinx/Vivado/2019.1/settings64.sh
+$ vivado
+```
 
 ### Device permissions: udev rules
 
