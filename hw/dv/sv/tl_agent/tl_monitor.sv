@@ -31,7 +31,7 @@ class tl_monitor extends uvm_monitor;
     super.build_phase(phase);
     d_chan_port = new("d_chan_port", this);
     a_chan_port = new("a_chan_port", this);
-    if(!uvm_config_db#(virtual tl_if)::get(this,"","vif",vif)) begin
+    if (!uvm_config_db#(virtual tl_if)::get(this,"","vif",vif)) begin
       `uvm_fatal("NO_VIF", {"virtual interface must be set for:",
                  get_full_name(),".vif"});
     end

@@ -44,7 +44,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
     if (!uvm_config_db#(virtual clk_if)::get(this, "", "clk_if", clk_vif)) begin
       `uvm_fatal(get_full_name(), "Cannot get clk interface")
     end
-    if(enable_logging) begin
+    if (enable_logging) begin
       log_filename = {get_full_name(), ".log"};
       `uvm_info(get_full_name(), $sformatf(
                 "Trasnaction logging enabled, log will be saved to %0s", log_filename), UVM_LOW)
@@ -56,7 +56,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
   endfunction
 
   virtual function void add_item_port(string port_name, port_dir_e direction);
-    if(item_fifos.exists(port_name)) begin
+    if (item_fifos.exists(port_name)) begin
       `uvm_error(get_full_name(), $sformatf(
                  "Port %0s already exists, cannot be added again", port_name))
     end
@@ -68,7 +68,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   virtual function void add_item_queue(string queue_name,
                                        checking_policy_e policy = kInOrderCheck);
-    if(item_queues.exists(queue_name)) begin
+    if (item_queues.exists(queue_name)) begin
       `uvm_fatal(get_full_name(), $sformatf(
                  "Queue %0s already exists, cannot be added again", queue_name))
     end
@@ -81,7 +81,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   task run_phase(uvm_phase phase);
     run_phase_h = phase;
-    if(disable_scoreboard) return;
+    if (disable_scoreboard) return;
     fork
       timeout_monitor();
       ref_timer_thread();
@@ -105,15 +105,15 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
       last_activity_cycle = ref_timer;
       `uvm_info(get_full_name(), $sformatf("Got an item from port %0s:\n%0s",
                 port_name, tr.sprint()), UVM_HIGH)
-      if(port_dir[port_name] == kSrcPort) begin
+      if (port_dir[port_name] == kSrcPort) begin
         process_src_packet(tr, port_name, transformed_tr);
         foreach(transformed_tr[i]) begin
           queue_name = get_queue_name(transformed_tr[i], port_name);
           // destination ports
-          if(!item_queues.exists(queue_name)) begin
+          if (!item_queues.exists(queue_name)) begin
              `uvm_fatal(get_full_name(), $sformatf("%0s queue doesn't exist", queue_name))
           end
-          if(enable_logging) begin
+          if (enable_logging) begin
             $fwrite(log_fd, $sformatf("EXP @%0t [%0s][%0s] %0s\n", $realtime, port_name,
                                      queue_name, transformed_tr[i].convert2string()));
           end
@@ -127,11 +127,12 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
         SEQ_ITEM tr_modified;
         queue_name = get_queue_name(tr, port_name);
         // destination ports
-        if(!item_queues.exists(queue_name)) begin
+        if (!item_queues.exists(queue_name)) begin
            `uvm_fatal(get_full_name(), $sformatf("%0s queue doesn't exist", queue_name))
         end
         process_dst_packet(tr, port_name, tr_modified);
-        if(enable_logging) begin
+        #0; // avoid race condition when item is received in both queue in same cycle
+        if (enable_logging) begin
           $fwrite(log_fd, $sformatf("ACT @%0t [%0s][%0s] %0s\n", $realtime, port_name,
                                      queue_name, tr_modified.convert2string()));
         end
@@ -145,11 +146,11 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
   endtask
 
   function void handle_objection();
-    if((num_of_act_item != num_of_exp_item) && !objection_raised) begin
+    if ((num_of_act_item != num_of_exp_item) && !objection_raised) begin
       run_phase_h.raise_objection(this);
       objection_raised = 1'b1;
     end
-    if((num_of_act_item == num_of_exp_item) && objection_raised) begin
+    if ((num_of_act_item == num_of_exp_item) && objection_raised) begin
       run_phase_h.drop_objection(this);
       objection_raised = 1'b0;
     end
@@ -157,7 +158,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   function void report_phase(uvm_phase phase);
     super.report_phase(phase);
-    if((num_of_act_item != num_of_exp_item) && !allow_packet_drop) begin
+    if ((num_of_act_item != num_of_exp_item) && !allow_packet_drop) begin
       `uvm_error(get_full_name(), $sformatf("Expected item cnt %0d != actual item cnt %0d",
                  num_of_exp_item, num_of_act_item))
       foreach(item_queues[queue_name]) begin
@@ -197,16 +198,16 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   // Scoreboard timeout detection
   virtual task timeout_monitor;
-    if(timeout_cycle_limit > 0) begin
+    if (timeout_cycle_limit > 0) begin
       while(1) begin
         repeat(timeout_check_cycle_interval) @(posedge clk_vif.clk);
-        if((ref_timer - last_activity_cycle > timeout_cycle_limit) &&
+        if ((ref_timer - last_activity_cycle > timeout_cycle_limit) &&
            (num_of_act_item != num_of_exp_item)) begin
-          if(!allow_packet_drop) begin
+          if (!allow_packet_drop) begin
             `uvm_error(get_full_name(), $sformatf("Scoreboard timeout, act/exp items = %0d/%0d",
                                        num_of_act_item, num_of_exp_item))
             foreach(item_queues[q]) begin
-              if(item_queues[q].expected_items.size() > 0) begin
+              if (item_queues[q].expected_items.size() > 0) begin
                 `uvm_info(get_full_name(), $sformatf("Queue[%0s] pending item[0]:%0s", q,
                           item_queues[q].expected_items[0].convert2string()), UVM_LOW)
               end
@@ -215,7 +216,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
             `uvm_info(get_full_name(), $sformatf(
                       "Scoreboard timeout caused by packet drop, act/exp items = %0d/%0d",
                       num_of_act_item, num_of_exp_item), UVM_LOW)
-            if(objection_raised) begin
+            if (objection_raised) begin
               run_phase_h.drop_objection(this);
               objection_raised = 1'b0;
             end

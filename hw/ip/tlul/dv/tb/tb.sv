@@ -5,13 +5,15 @@
 module tb;
 
   import uvm_pkg::*;
+  import xbar_test_pkg::*;
+
 
   logic clk;
   logic rst_n;
 
-  tlul_xbar dut(
-    .clk_i(clk),
-    .rst_ni(rst_n)
+  xbar_main dut(
+    .clk_main_i(clk),
+    .rst_main_ni(rst_n)
   );
 
   `include "tl_if_connect_macros.svh"

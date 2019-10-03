@@ -49,7 +49,7 @@ class tl_seq_item extends uvm_sequence_item;
   constraint mask_c {
     if (a_opcode == PutFullData) {
       foreach(a_mask[i]) {
-        if((i > 0) && (i < MaskWidth - 1)) {
+        if ((i > 0) && (i < MaskWidth - 1)) {
           !a_mask[i] -> !(a_mask[i-1] && a_mask[i+1]);
         }
       }

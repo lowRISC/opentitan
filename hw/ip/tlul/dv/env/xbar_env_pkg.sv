@@ -9,6 +9,7 @@ package xbar_env_pkg;
 
   import uvm_pkg::*;
   import tl_agent_pkg::*;
+  import tl_main_pkg::*;
 
   typedef struct {
     string                      device_name;
@@ -23,6 +24,8 @@ package xbar_env_pkg;
   } tl_host_t;
 
   `include "xbar_params.svh"
+
+  parameter string D_CHAN_QUEUE_NAME   = "D_CHAN_COMMON_QUEUE";
 
   function automatic int get_host_id(string name);
     foreach (xbar_hosts[i]) begin
