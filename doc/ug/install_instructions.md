@@ -2,11 +2,30 @@
 
 {{% toc 3 }}
 
-## System preparation
+## System requirements
 
 _**Note for all Windows users:** many tools we're using can in theory work on Windows.
 However, we didn't test on Windows and things will be broken there.
 Unless you are experienced in debugging various tool problems on Windows using Linux will improve your developer experience significantly._
+
+This guide makes assumes the following system setup.
+
+* A reasonably powerful PC running Linux.
+  Using a virtual machine can work, but will slow down builds considerably.
+  8 GB of RAM or more are highly recommended.
+* Physical access to that machine, root permissions and a graphical environment.
+* Python 3.5 or newer. Python 3.6+ is recommended.
+* 60 GB or more of disk space.
+  EDA tools like Xilinx Vivado can easily take up 40 GB each.
+* We develop and test on the following Linux distributions:
+  * Ubuntu 16.04 LTS
+  * Debian testing
+  * openSUSE Tumbleweed
+  * TODO: Check RHEL/CentOS and SLES (used in many commercial environments)
+
+TODO: Be more specific about the system requirements, especially the Linux distribution.
+
+## System preparation
 
 By convention tools which are not provided through a package manager will be installed into `/tools`.
 This directory can be replaced by any sufficiently large directory without spaces in the directory name.
@@ -131,25 +150,6 @@ $ make install
 After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
 
 ## Xilinx Vivado
-
-### System requirements
-
-This guide makes assumes the following system setup.
-
-* A reasonably powerful PC running Linux.
-  Using a virtual machine can work, but will slow down builds considerably.
-  8 GB of RAM or more are highly recommended.
-* Physical access to that machine, root permissions and a graphical environment.
-* Python 3.5 or newer. Python 3.6+ is recommended.
-* 60 GB or more of disk space.
-  EDA tools like Xilinx Vivado can easily take up 40 GB each.
-* We develop and test on the following Linux distributions:
-  * Ubuntu 16.04 LTS
-  * Debian testing
-  * openSUSE Tumbleweed
-  * TODO: Check RHEL/CentOS and SLES (used in many commercial environments)
-
-TODO: Be more specific about the system requirements, especially the Linux distribution.
 
 ### About Xilinx Vivado
 
