@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:padctrl_fpv:0.1"
+description: "PADCTRL FPV target"
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:ip:padctrl
+    files:
+      - tb/padctrl_tb.sv
+      - tb/padctrl_bind.sv
+      - vip/padring_assert.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    toplevel:
+      - tb/padctrl_tb.sv
+    filesets:
+      - files_fpv
+    default_tool: jg
