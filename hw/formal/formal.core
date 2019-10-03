@@ -23,6 +23,7 @@ filesets:
       - lowrisc:tlul:socket_1n
       - lowrisc:tlul:socket_m1
       - lowrisc:fpv:pinmux_fpv
+      - lowrisc:fpv:padctrl_fpv
 
 targets:
   sim:

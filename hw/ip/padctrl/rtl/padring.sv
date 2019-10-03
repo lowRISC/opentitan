@@ -10,8 +10,8 @@ module padring #(
   parameter Impl = "generic" // this determines the pad implementation
 ) (
   // pad input
-  inout wire                                   clk_i,
-  inout wire                                   rst_ni,
+  input wire                                   clk_i,
+  input wire                                   rst_ni,
   // to clocking/reset infrastructure
   output logic                                 clk_o,
   output logic                                 rst_no,
