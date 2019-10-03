@@ -45,7 +45,7 @@ BUILD_LOG         ?= ${BUILD_DIR}/build.log
 RUN_LOG           ?= ${RUN_DIR}/run.log
 UVM_VERBOSITY     ?= UVM_LOW
 
-TOPS              ?= tb ${DUT_TOP}_bind
+TOPS              ?= ${TB_TOP} ${DUT_TOP}_bind
 ####################################################################################################
 ## Options for SV build / C build / simulation run                                                ##
 ## CL_ prefix represents command line versions of these options - they should be empty and only   ##
