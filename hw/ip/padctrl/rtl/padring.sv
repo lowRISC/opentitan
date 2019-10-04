@@ -37,11 +37,20 @@ module padring #(
   // Infrastructure
   //////////////////////////////////////////////////////
 
+  // use this intermediate assignment to make both lint and fpv happy.
+  // the clock/reset wires should be input-only, otherwise fpv
+  // has trouble defining/tracing the clock signal. on the other hand, a direct
+  // connection of input wire to an inout pad causes lint problems
+  // (even though oe is hardwired to 0).
+  wire clk, rst_n;
+  assign clk   = clk_i;
+  assign rst_n = rst_ni;
+
   prim_pad_wrapper #(
     .Impl(Impl),
     .AttrDw(padctrl_reg_pkg::AttrDw)
   ) i_clk_pad (
-    .inout_io ( clk_i ),
+    .inout_io ( clk   ),
     .in_o     ( clk_o ),
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
@@ -52,7 +61,7 @@ module padring #(
     .Impl(Impl),
     .AttrDw(padctrl_reg_pkg::AttrDw)
   ) i_rst_pad (
-    .inout_io ( rst_ni ),
+    .inout_io ( rst_n  ),
     .in_o     ( rst_no ),
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
