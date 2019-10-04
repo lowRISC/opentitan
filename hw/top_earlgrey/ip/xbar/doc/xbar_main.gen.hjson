@@ -9,6 +9,11 @@
 {
   name: main
   clock: main
+  reset: sys
+  reset_connections:
+  {
+    rst_main_ni: sys
+  }
   connections:
   {
     corei:

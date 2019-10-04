@@ -1,6 +1,7 @@
 { name: "main",
   type: "xbar",
   clock: "main", // Main clock, used in sockets
+  reset_primary: "rst_main_ni", // Main reset, used in sockets
   nodes: [
     { name:  "corei",
       type:  "host",

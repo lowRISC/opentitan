@@ -16,6 +16,25 @@
       freq: "100000000"
     }
   ]
+  resets:
+  [
+    {
+      name: lc
+      type: root
+      clk: main
+    }
+    {
+      name: sys
+      type: root
+      clk: main
+    }
+    {
+      name: spi_device
+      type: leaf
+      root: sys
+      clk: main
+    }
+  ]
   num_cores: "1"
   module:
   [
@@ -23,6 +42,10 @@
       name: uart
       type: uart
       clock: main
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       base_addr: 0x40000000
       size: 0x1000
       ip_clock: main
@@ -94,6 +117,10 @@
       name: gpio
       type: gpio
       clock: main
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       base_addr: 0x40010000
       size: 0x1000
       ip_clock: main
@@ -123,6 +150,10 @@
       name: spi_device
       type: spi_device
       clock: main
+      reset_connections:
+      {
+        rst_ni: spi_device
+      }
       base_addr: 0x40020000
       size: 0x1000
       ip_clock: main
@@ -194,6 +225,10 @@
       name: flash_ctrl
       type: flash_ctrl
       clock: main
+      reset_connections:
+      {
+        rst_ni: lc
+      }
       base_addr: 0x40030000
       size: 0x1000
       ip_clock: main
@@ -241,6 +276,10 @@
       name: rv_timer
       type: rv_timer
       clock: main
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       base_addr: 0x40080000
       size: 0x1000
       ip_clock: main
@@ -263,6 +302,10 @@
       name: hmac
       type: hmac
       clock: main
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       base_addr: 0x40120000
       size: 0x1000
       ip_clock: main
@@ -290,6 +333,10 @@
       name: rv_plic
       type: rv_plic
       clock: main
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       base_addr: 0x40090000
       generated: "true"
       parameter:
@@ -311,18 +358,30 @@
   [
     {
       name: rom
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       type: rom
       base_addr: 0x00008000
       size: 0x2000
     }
     {
       name: ram_main
+      reset_connections:
+      {
+        rst_ni: sys
+      }
       type: ram_1p
       base_addr: 0x10000000
       size: 0x10000
     }
     {
       name: eflash
+      reset_connections:
+      {
+        rst_ni: lc
+      }
       type: eflash
       base_addr: 0x20000000
       size: 0x80000
@@ -333,6 +392,11 @@
     {
       name: main
       clock: main
+      reset: sys
+      reset_connections:
+      {
+        rst_main_ni: sys
+      }
       connections:
       {
         corei:

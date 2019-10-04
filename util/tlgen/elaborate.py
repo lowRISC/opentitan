@@ -29,7 +29,7 @@ def elaborate(xbar):  # xbar: Xbar -> bool
     ## Build address map
     ## Each socket_1n should have address map
 
-    ## Gather clocks
+    ## Gather clocks and resets
     xbar.clocks = {xbar.clock
                    } | {clk
                         for node in xbar.nodes for clk in node.clocks}

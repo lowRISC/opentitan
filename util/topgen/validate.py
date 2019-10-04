@@ -1,7 +1,6 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 import logging as log
 
 from reggen.validate import val_types, check_keys
@@ -84,8 +83,101 @@ def check_padctrl(top, prefix):
 def check_pinmux(top, prefix):
     return 0
 
+def check_resets(top, ipobjs, xbarobjs):
+    # all defined reset nets
+    reset_nets = [reset['name'] for reset in top['resets']]
+    error = 0
 
-def validate_top(top):
+    # Check reset port connection for all IPs
+    for ipcfg in top['module']:
+        log.info("Checking resets for %s" % ipcfg['name'].lower())
+        ipdef = [ip for ip in ipobjs if ipcfg['type'] == ip['name'].lower()]
+        error += check_rst_def(ipdef, ipcfg['type'])
+        error += validate_reset(ipcfg, ipdef[0], reset_nets)
+
+        if error:
+            log.error("module reset checking failed")
+            break
+
+    # Check reset port connection for all xbars
+    for xbarcfg in top['xbar']:
+        log.info("Checking resets for %s" % xbarcfg['name'].lower())
+        xbardef = [
+            xbar for xbar in xbarobjs
+            if xbarcfg['name'] == xbar['name'].lower()
+        ]
+        error += check_rst_def(xbardef, xbarcfg['name'])
+        error += validate_reset(xbarcfg, xbardef[0], reset_nets, "xbar")
+
+        if error:
+            log.error("xbar reset checking failed")
+            break
+
+    return error
+
+def check_rst_def(inst_def, name):
+    error = 0
+    if not inst_def:
+        log.error("Could not find %s.hjson for" % name)
+        error += 1
+
+    if len(inst_def) > 1:
+        log.error("Duplicate %s.hjson" % name)
+        error += 1
+
+    return error
+
+# Checks the following
+# For each defined reset connection in top*.hjson, there exists a defined port at the destination
+# and defined reset net
+# There are the same number of defined connections as there are ports
+def validate_reset(top, inst, reset_nets, prefix=""):
+    # Gather inst port list
+    error = 0
+    inst_port_list = []
+    if 'reset_primary' not in inst.keys():
+        log.info("%s %s does not have a reset_primary defined, default used" %
+                 (prefix, inst['name']))
+        inst_port_list.append("rst_ni")
+    else:
+        inst_port_list.append(inst['reset_primary'])
+
+    if 'other_reset_list' in inst.keys():
+        inst_port_list.extend(inst['other_reset_list'])
+    log.info("%s %s resets are %s" %
+             (prefix, inst['name'].lower(), inst_port_list))
+
+    if len(top['reset_connections'].keys()) != len(inst_port_list):
+        error += 1
+        log.error("%s %s mismatched number of ports and nets" %
+                  (prefix, inst['name']))
+
+    missing_port = [
+        port for port in top['reset_connections'].keys()
+        if port not in inst_port_list
+    ]
+
+    if missing_port:
+        error += 1
+        log.error("%s %s Following reset ports do not exist:" %
+                  (prefix, inst['name']))
+        [log.error("%s" % port) for port in missing_port]
+
+    missing_net = [
+        net for port, net in top['reset_connections'].items()
+        if net not in reset_nets
+    ]
+
+    if missing_net:
+        error += 1
+        log.error("%s %s Following reset nets do not exist:" %
+                  (prefix, inst['name']))
+        [log.error("%s" % net) for net in missing_net]
+
+    return error
+
+
+def validate_top(top, ipobjs, xbarobjs):
     # return as it is for now
     error = check_keys(top, top_required, top_optional, top_added, "top")
 
@@ -94,6 +186,9 @@ def validate_top(top):
         return top, error
 
     component = top['name']
+
+    ## Reset check
+    error += check_resets(top, ipobjs, xbarobjs)
 
     ## MODULE check
 
