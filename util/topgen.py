@@ -42,7 +42,7 @@ def generate_rtl(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    xbar_path = out_path / 'doc'
+    xbar_path = out_path / 'ip/xbar/doc'
     xbar_path.mkdir(parents=True, exist_ok=True)
     gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
               "-o hw/top_earlgrey/\n\n")
@@ -65,9 +65,9 @@ def generate_xbars(top, out_path):
         except:
             log.error(exceptions.text_error_template().render())
 
-        rtl_path = out_path / 'rtl'
+        rtl_path = out_path / 'ip/xbar/rtl/autogen'
         rtl_path.mkdir(parents=True, exist_ok=True)
-        dv_path = out_path / 'dv'
+        dv_path = out_path / 'ip/xbar/dv/autogen'
         dv_path.mkdir(parents=True, exist_ok=True)
 
         rtl_filename = "xbar_%s.sv" % (xbar.name)
@@ -97,9 +97,9 @@ def generate_plic(top, out_path):
     # Define target path
     #   rtl: rv_plic.sv & rv_plic_reg_pkg.sv & rv_plic_reg_top.sv
     #   doc: rv_plic.hjson
-    rtl_path = out_path / 'rtl'
+    rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
     rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'doc'
+    doc_path = out_path / 'ip/rv_plic/doc/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
 
     # Generating IP top module script is not generalized yet.
@@ -309,7 +309,8 @@ def main():
         # It needs to run up to amend_interrupt in merge_top function
         # then creates rv_plic.hjson then run xbar generation.
         hjson_dir = Path(args.topcfg).parent
-        ips.append(hjson_dir / 'rv_plic.hjson')
+        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/doc/autogen/rv_plic.hjson'
+        ips.append(rv_plic_hjson)
 
         # load hjson and pass validate from reggen
         try:

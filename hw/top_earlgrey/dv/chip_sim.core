@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ibex:ibex_tracer:0.1
     files:
       - ../rtl/top_earlgrey_asic.sv
-      - xbar_main_bind.sv
+      - ../ip/xbar/dv/autogen/xbar_main_bind.sv
     file_type: systemVerilogSource
 
   files_dv:
