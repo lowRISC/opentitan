@@ -41,14 +41,16 @@
     {
       name: uart
       type: uart
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
       }
       base_addr: 0x40000000
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -116,14 +118,16 @@
     {
       name: gpio
       type: gpio
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
       }
       base_addr: 0x40010000
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -149,14 +153,16 @@
     {
       name: spi_device
       type: spi_device
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: spi_device
       }
       base_addr: 0x40020000
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -224,14 +230,16 @@
     {
       name: flash_ctrl
       type: flash_ctrl
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: lc
       }
       base_addr: 0x40030000
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -275,14 +283,16 @@
     {
       name: rv_timer
       type: rv_timer
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
       }
       base_addr: 0x40080000
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -301,14 +311,16 @@
     {
       name: hmac
       type: hmac
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
       }
       base_addr: 0x40120000
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -332,7 +344,10 @@
     {
       name: rv_plic
       type: rv_plic
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
@@ -344,7 +359,6 @@
         FIND_MAX: MATRIX
       }
       size: 0x1000
-      ip_clock: main
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -358,6 +372,10 @@
   [
     {
       name: rom
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
@@ -368,6 +386,10 @@
     }
     {
       name: ram_main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: sys
@@ -378,6 +400,10 @@
     }
     {
       name: eflash
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connections:
       {
         rst_ni: lc
@@ -391,7 +417,10 @@
   [
     {
       name: main
-      clock: main
+      clock_connections:
+      {
+        clk_main_i: main
+      }
       reset: sys
       reset_connections:
       {
@@ -571,6 +600,7 @@
           pipeline: "true"
         }
       ]
+      clock: main
     }
   ]
   interrupt_module:

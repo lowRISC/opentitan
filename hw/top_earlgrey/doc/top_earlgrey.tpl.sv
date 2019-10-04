@@ -82,6 +82,11 @@ module top_${top["name"]} #(
   logic ${reset['name']}_rst_n;
 % endfor
 
+  //clock wires declaration
+% for clock in top['clocks']:
+  logic ${clock['name']}_clk;
+% endfor
+
 <%
   interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]])
 %>\
@@ -102,6 +107,11 @@ module top_${top["name"]} #(
   logic [${(interrupt_num).bit_length()-1}:0] irq_id[1];
   logic [0:0]   msip;
 
+
+  // clock assignments
+% for clock in top['clocks']:
+  assign ${clock['name']}_clk = clk_i;
+% endfor
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -133,7 +143,7 @@ module top_${top["name"]} #(
     .PipeLine            (IbexPipeLine)
   ) core (
     // clock and reset
-    .clk_i                (clk_i),
+    .clk_i                (main_clk),
     .rst_ni               (sys_rst_n),
     .test_en_i            (1'b0),
     // static pinning
@@ -168,7 +178,7 @@ module top_${top["name"]} #(
                                 // xxxxxxxxxxx      manufacturer id
                                 // 1                required by standard
   ) u_dm_top (
-    .clk_i         (clk_i),
+    .clk_i         (main_clk),
     .rst_ni        (lc_rst_n),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
@@ -197,6 +207,7 @@ module top_${top["name"]} #(
 % for m in top["memory"]:
 <%
   resets = m['reset_connections']
+  clocks = m['clock_connections']
 %>\
   % if m["type"] == "ram_1p":
 <%
@@ -220,7 +231,9 @@ module top_${top["name"]} #(
     .SramDw(${data_width}),
     .Outstanding(1)
   ) tl_adapter_${m["name"]} (
-    .clk_i,
+    % for key in clocks:
+    .${key}   (${clocks[key]}_clk),
+    % endfor
     % for key in resets:
     .${key}   (${resets[key]}_rst_n),
     % endfor
@@ -244,7 +257,9 @@ module top_${top["name"]} #(
     .Depth(${sram_depth}),
     .DataBitsPerMask(${int(data_width/4)})
   ) u_ram1p_${m["name"]} (
-    .clk_i,
+    % for key in clocks:
+    .${key}   (${clocks[key]}_clk),
+    % endfor
     % for key in resets:
     .${key}   (${resets[key]}_rst_n),
     % endfor
@@ -276,7 +291,9 @@ module top_${top["name"]} #(
     .Outstanding(1),
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
-    .clk_i,
+    % for key in clocks:
+    .${key}   (${clocks[key]}_clk),
+    % endfor
     % for key in resets:
     .${key}   (${resets[key]}_rst_n),
     % endfor
@@ -300,7 +317,9 @@ module top_${top["name"]} #(
     .Width(${data_width}),
     .Depth(${rom_depth})
   ) u_rom_${m["name"]} (
-    .clk_i,
+    % for key in clocks:
+    .${key}   (${clocks[key]}_clk),
+    % endfor
     % for key in resets:
     .${key}   (${resets[key]}_rst_n),
     % endfor
@@ -330,7 +349,9 @@ module top_${top["name"]} #(
     .ByteAccess(0),
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
-    .clk_i,
+    % for key in clocks:
+    .${key}   (${clocks[key]}_clk),
+    % endfor
     % for key in resets:
     .${key}   (${resets[key]}_rst_n),
     % endfor
@@ -355,7 +376,9 @@ module top_${top["name"]} #(
     .WordsPerPage(FLASH_WORDS_PER_PAGE),
     .DataWidth(${data_width})
   ) u_flash_${m["name"]} (
-    .clk_i,
+    % for key in clocks:
+    .${key}   (${clocks[key]}_clk),
+    % endfor
     % for key in resets:
     .${key}   (${resets[key]}_rst_n),
     % endfor
@@ -429,7 +452,9 @@ module top_${top["name"]} #(
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
     % endif
-      .clk_i (${"clk_i" if m["clock"] == "main" else "clk_"+ m["clock"] + "_i"}),
+    % for k, v in m["clock_connections"].items():
+      .${k} (${v}_clk),
+    % endfor
     % for k, v in m["reset_connections"].items():
         % if loop.last:
       .${k} (${v}_rst_n)
@@ -452,17 +477,13 @@ module top_${top["name"]} #(
   };
 
   // TL-UL Crossbar
-  logic clk_main;
-  assign clk_main = clk_i;
-
-
 % for xbar in top["xbar"]:
 <%
   name_len = max([len(x["name"]) for x in xbar["nodes"]]);
 %>\
   xbar_${xbar["name"]} u_xbar_${xbar["name"]} (
-  % for clock in xbar["clocks"]:
-    .clk_${clock}_i  (clk_${clock}),
+  % for k, v in xbar["clock_connections"].items():
+    .${k} (${v}_clk),
   % endfor
   % for k, v in xbar["reset_connections"].items():
     .${k} (${v}_rst_n),

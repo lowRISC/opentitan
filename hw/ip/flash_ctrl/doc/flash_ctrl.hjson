@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "FLASH_CTRL",
-  clock_primary: "main",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   interrupt_list: [
     { name: "prog_empty", desc: "Program FIFO empty" },
