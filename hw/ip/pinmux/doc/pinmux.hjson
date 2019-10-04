@@ -60,7 +60,7 @@
                   regwen:   "REGEN",
                   cname:    "IN",
                   fields: [
-                    { bits: "2:0",
+                    { bits: "3:0",
                       name: "IN",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1.
@@ -80,7 +80,7 @@
                   regwen:   "REGEN",
                   cname:    "OUT",
                   fields: [
-                    { bits: "3:0",
+                    { bits: "4:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1. 2: high-Z
