@@ -34,7 +34,7 @@ class gpio_base_vseq extends cip_base_vseq #(
   // from extended sequence.
   // Note: This function does not check whether only one of 'pu' and 'pd' is passed 1.
   //       If we pass both pu and pd to be 1, gpio pullup will be used.
-  protected function set_gpio_pulls(bit pu = 1'b1, bit pd = 1'b0);
+  protected function void set_gpio_pulls(bit pu = 1'b1, bit pd = 1'b0);
     bit no_pullup_pulldown;
     cfg.pullup_en   = pu;
     cfg.pulldown_en = pd;
