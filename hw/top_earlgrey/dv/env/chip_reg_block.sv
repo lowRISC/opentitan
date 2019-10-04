@@ -186,6 +186,7 @@ typedef class chip_mem_ram_main;
 typedef class chip_mem_eflash;
 typedef class chip_reg_block;
 
+
 // Block: spi_device
 // Class: spi_device_reg_intr_state
 class spi_device_reg_intr_state extends dv_base_reg;
@@ -2344,8 +2345,7 @@ endclass : flash_ctrl_reg_default_region
 // Class: flash_ctrl_reg_bank_cfg_regwen
 class flash_ctrl_reg_bank_cfg_regwen extends dv_base_reg;
   // fields
-  rand dv_base_reg_field bank0;
-  rand dv_base_reg_field bank1;
+  rand dv_base_reg_field bank;
 
   `uvm_object_utils(flash_ctrl_reg_bank_cfg_regwen)
 
@@ -2357,22 +2357,11 @@ class flash_ctrl_reg_bank_cfg_regwen extends dv_base_reg;
 
   virtual function void build();
     // create fields
-    bank0 = dv_base_reg_field::type_id::create("bank0");
-    bank0.configure(
+    bank = dv_base_reg_field::type_id::create("bank");
+    bank.configure(
       .parent(this),
       .size(1),
       .lsb_pos(0),
-      .access("W0C"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    bank1 = dv_base_reg_field::type_id::create("bank1");
-    bank1.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
       .access("W0C"),
       .volatile(1),
       .reset(1),
