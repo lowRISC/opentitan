@@ -16,10 +16,10 @@ package pinmux_reg_pkg;
 /////////////////////////////////////////////////////////////////////
 
 typedef struct packed {
-  logic [2:0] q;
+  logic [3:0] q;
 } pinmux_reg2hw_periph_insel_mreg_t;
 typedef struct packed {
-  logic [3:0] q;
+  logic [4:0] q;
 } pinmux_reg2hw_mio_outsel_mreg_t;
 
 
@@ -28,8 +28,8 @@ typedef struct packed {
 /////////////////////////////////////////////////////////////////////
 
 typedef struct packed {
-  pinmux_reg2hw_periph_insel_mreg_t [15:0] periph_insel; // [79:32]
-  pinmux_reg2hw_mio_outsel_mreg_t [7:0] mio_outsel; // [31:0]
+  pinmux_reg2hw_periph_insel_mreg_t [15:0] periph_insel; // [103:40]
+  pinmux_reg2hw_mio_outsel_mreg_t [7:0] mio_outsel; // [39:0]
 } pinmux_reg2hw_t;
 
 /////////////////////////////////////////////////////////////////////
@@ -38,10 +38,11 @@ typedef struct packed {
 
 
   // Register Address
-  parameter PINMUX_REGEN_OFFSET = 4'h 0;
-  parameter PINMUX_PERIPH_INSEL0_OFFSET = 4'h 4;
-  parameter PINMUX_PERIPH_INSEL1_OFFSET = 4'h 8;
-  parameter PINMUX_MIO_OUTSEL_OFFSET = 4'h c;
+  parameter PINMUX_REGEN_OFFSET = 5'h 0;
+  parameter PINMUX_PERIPH_INSEL0_OFFSET = 5'h 4;
+  parameter PINMUX_PERIPH_INSEL1_OFFSET = 5'h 8;
+  parameter PINMUX_MIO_OUTSEL0_OFFSET = 5'h c;
+  parameter PINMUX_MIO_OUTSEL1_OFFSET = 5'h 10;
 
 
   // Register Index
@@ -49,15 +50,17 @@ typedef struct packed {
     PINMUX_REGEN,
     PINMUX_PERIPH_INSEL0,
     PINMUX_PERIPH_INSEL1,
-    PINMUX_MIO_OUTSEL
+    PINMUX_MIO_OUTSEL0,
+    PINMUX_MIO_OUTSEL1
   } pinmux_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] PINMUX_PERMIT [4] = '{
+  localparam logic [3:0] PINMUX_PERMIT [5] = '{
     4'b 0001, // index[0] PINMUX_REGEN
     4'b 1111, // index[1] PINMUX_PERIPH_INSEL0
     4'b 1111, // index[2] PINMUX_PERIPH_INSEL1
-    4'b 1111  // index[3] PINMUX_MIO_OUTSEL
+    4'b 1111, // index[3] PINMUX_MIO_OUTSEL0
+    4'b 0011  // index[4] PINMUX_MIO_OUTSEL1
   };
 endpackage
 

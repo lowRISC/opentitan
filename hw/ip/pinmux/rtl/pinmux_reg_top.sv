@@ -20,7 +20,7 @@ module pinmux_reg_top (
 
   import pinmux_reg_pkg::* ;
 
-  localparam AW = 4;
+  localparam AW = 5;
   localparam DW = 32;
   localparam DBW = DW/8;                    // Byte Width
 
@@ -71,78 +71,78 @@ module pinmux_reg_top (
   logic regen_qs;
   logic regen_wd;
   logic regen_we;
-  logic [2:0] periph_insel0_in0_qs;
-  logic [2:0] periph_insel0_in0_wd;
+  logic [3:0] periph_insel0_in0_qs;
+  logic [3:0] periph_insel0_in0_wd;
   logic periph_insel0_in0_we;
-  logic [2:0] periph_insel0_in1_qs;
-  logic [2:0] periph_insel0_in1_wd;
+  logic [3:0] periph_insel0_in1_qs;
+  logic [3:0] periph_insel0_in1_wd;
   logic periph_insel0_in1_we;
-  logic [2:0] periph_insel0_in2_qs;
-  logic [2:0] periph_insel0_in2_wd;
+  logic [3:0] periph_insel0_in2_qs;
+  logic [3:0] periph_insel0_in2_wd;
   logic periph_insel0_in2_we;
-  logic [2:0] periph_insel0_in3_qs;
-  logic [2:0] periph_insel0_in3_wd;
+  logic [3:0] periph_insel0_in3_qs;
+  logic [3:0] periph_insel0_in3_wd;
   logic periph_insel0_in3_we;
-  logic [2:0] periph_insel0_in4_qs;
-  logic [2:0] periph_insel0_in4_wd;
+  logic [3:0] periph_insel0_in4_qs;
+  logic [3:0] periph_insel0_in4_wd;
   logic periph_insel0_in4_we;
-  logic [2:0] periph_insel0_in5_qs;
-  logic [2:0] periph_insel0_in5_wd;
+  logic [3:0] periph_insel0_in5_qs;
+  logic [3:0] periph_insel0_in5_wd;
   logic periph_insel0_in5_we;
-  logic [2:0] periph_insel0_in6_qs;
-  logic [2:0] periph_insel0_in6_wd;
+  logic [3:0] periph_insel0_in6_qs;
+  logic [3:0] periph_insel0_in6_wd;
   logic periph_insel0_in6_we;
-  logic [2:0] periph_insel0_in7_qs;
-  logic [2:0] periph_insel0_in7_wd;
+  logic [3:0] periph_insel0_in7_qs;
+  logic [3:0] periph_insel0_in7_wd;
   logic periph_insel0_in7_we;
-  logic [2:0] periph_insel0_in8_qs;
-  logic [2:0] periph_insel0_in8_wd;
-  logic periph_insel0_in8_we;
-  logic [2:0] periph_insel0_in9_qs;
-  logic [2:0] periph_insel0_in9_wd;
-  logic periph_insel0_in9_we;
-  logic [2:0] periph_insel1_in10_qs;
-  logic [2:0] periph_insel1_in10_wd;
+  logic [3:0] periph_insel1_in8_qs;
+  logic [3:0] periph_insel1_in8_wd;
+  logic periph_insel1_in8_we;
+  logic [3:0] periph_insel1_in9_qs;
+  logic [3:0] periph_insel1_in9_wd;
+  logic periph_insel1_in9_we;
+  logic [3:0] periph_insel1_in10_qs;
+  logic [3:0] periph_insel1_in10_wd;
   logic periph_insel1_in10_we;
-  logic [2:0] periph_insel1_in11_qs;
-  logic [2:0] periph_insel1_in11_wd;
+  logic [3:0] periph_insel1_in11_qs;
+  logic [3:0] periph_insel1_in11_wd;
   logic periph_insel1_in11_we;
-  logic [2:0] periph_insel1_in12_qs;
-  logic [2:0] periph_insel1_in12_wd;
+  logic [3:0] periph_insel1_in12_qs;
+  logic [3:0] periph_insel1_in12_wd;
   logic periph_insel1_in12_we;
-  logic [2:0] periph_insel1_in13_qs;
-  logic [2:0] periph_insel1_in13_wd;
+  logic [3:0] periph_insel1_in13_qs;
+  logic [3:0] periph_insel1_in13_wd;
   logic periph_insel1_in13_we;
-  logic [2:0] periph_insel1_in14_qs;
-  logic [2:0] periph_insel1_in14_wd;
+  logic [3:0] periph_insel1_in14_qs;
+  logic [3:0] periph_insel1_in14_wd;
   logic periph_insel1_in14_we;
-  logic [2:0] periph_insel1_in15_qs;
-  logic [2:0] periph_insel1_in15_wd;
+  logic [3:0] periph_insel1_in15_qs;
+  logic [3:0] periph_insel1_in15_wd;
   logic periph_insel1_in15_we;
-  logic [3:0] mio_outsel_out0_qs;
-  logic [3:0] mio_outsel_out0_wd;
-  logic mio_outsel_out0_we;
-  logic [3:0] mio_outsel_out1_qs;
-  logic [3:0] mio_outsel_out1_wd;
-  logic mio_outsel_out1_we;
-  logic [3:0] mio_outsel_out2_qs;
-  logic [3:0] mio_outsel_out2_wd;
-  logic mio_outsel_out2_we;
-  logic [3:0] mio_outsel_out3_qs;
-  logic [3:0] mio_outsel_out3_wd;
-  logic mio_outsel_out3_we;
-  logic [3:0] mio_outsel_out4_qs;
-  logic [3:0] mio_outsel_out4_wd;
-  logic mio_outsel_out4_we;
-  logic [3:0] mio_outsel_out5_qs;
-  logic [3:0] mio_outsel_out5_wd;
-  logic mio_outsel_out5_we;
-  logic [3:0] mio_outsel_out6_qs;
-  logic [3:0] mio_outsel_out6_wd;
-  logic mio_outsel_out6_we;
-  logic [3:0] mio_outsel_out7_qs;
-  logic [3:0] mio_outsel_out7_wd;
-  logic mio_outsel_out7_we;
+  logic [4:0] mio_outsel0_out0_qs;
+  logic [4:0] mio_outsel0_out0_wd;
+  logic mio_outsel0_out0_we;
+  logic [4:0] mio_outsel0_out1_qs;
+  logic [4:0] mio_outsel0_out1_wd;
+  logic mio_outsel0_out1_we;
+  logic [4:0] mio_outsel0_out2_qs;
+  logic [4:0] mio_outsel0_out2_wd;
+  logic mio_outsel0_out2_we;
+  logic [4:0] mio_outsel0_out3_qs;
+  logic [4:0] mio_outsel0_out3_wd;
+  logic mio_outsel0_out3_we;
+  logic [4:0] mio_outsel0_out4_qs;
+  logic [4:0] mio_outsel0_out4_wd;
+  logic mio_outsel0_out4_we;
+  logic [4:0] mio_outsel0_out5_qs;
+  logic [4:0] mio_outsel0_out5_wd;
+  logic mio_outsel0_out5_we;
+  logic [4:0] mio_outsel1_out6_qs;
+  logic [4:0] mio_outsel1_out6_wd;
+  logic mio_outsel1_out6_we;
+  logic [4:0] mio_outsel1_out7_qs;
+  logic [4:0] mio_outsel1_out7_wd;
+  logic mio_outsel1_out7_we;
 
   // Register instances
   // R[regen]: V(False)
@@ -176,11 +176,11 @@ module pinmux_reg_top (
   // Subregister 0 of Multireg periph_insel
   // R[periph_insel0]: V(False)
 
-  // F[in0]: 2:0
+  // F[in0]: 3:0
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -202,11 +202,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in1]: 5:3
+  // F[in1]: 7:4
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -228,11 +228,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in2]: 8:6
+  // F[in2]: 11:8
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -254,11 +254,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in3]: 11:9
+  // F[in3]: 15:12
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -280,11 +280,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in4]: 14:12
+  // F[in4]: 19:16
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -306,11 +306,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in5]: 17:15
+  // F[in5]: 23:20
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -332,11 +332,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in6]: 20:18
+  // F[in6]: 27:24
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -358,11 +358,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in7]: 23:21
+  // F[in7]: 31:28
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel0_in7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -384,18 +384,21 @@ module pinmux_reg_top (
   );
 
 
-  // F[in8]: 26:24
+  // Subregister 8 of Multireg periph_insel
+  // R[periph_insel1]: V(False)
+
+  // F[in8]: 3:0
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
-  ) u_periph_insel0_in8 (
+    .RESVAL  (4'h0)
+  ) u_periph_insel1_in8 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel0_in8_we & regen_qs),
-    .wd     (periph_insel0_in8_wd),
+    .we     (periph_insel1_in8_we & regen_qs),
+    .wd     (periph_insel1_in8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -406,22 +409,22 @@ module pinmux_reg_top (
     .q      (reg2hw.periph_insel[8].q ),
 
     // to register interface (read)
-    .qs     (periph_insel0_in8_qs)
+    .qs     (periph_insel1_in8_qs)
   );
 
 
-  // F[in9]: 29:27
+  // F[in9]: 7:4
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
-  ) u_periph_insel0_in9 (
+    .RESVAL  (4'h0)
+  ) u_periph_insel1_in9 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel0_in9_we & regen_qs),
-    .wd     (periph_insel0_in9_wd),
+    .we     (periph_insel1_in9_we & regen_qs),
+    .wd     (periph_insel1_in9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -432,18 +435,15 @@ module pinmux_reg_top (
     .q      (reg2hw.periph_insel[9].q ),
 
     // to register interface (read)
-    .qs     (periph_insel0_in9_qs)
+    .qs     (periph_insel1_in9_qs)
   );
 
 
-  // Subregister 10 of Multireg periph_insel
-  // R[periph_insel1]: V(False)
-
-  // F[in10]: 2:0
+  // F[in10]: 11:8
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel1_in10 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -465,11 +465,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in11]: 5:3
+  // F[in11]: 15:12
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel1_in11 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -491,11 +491,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in12]: 8:6
+  // F[in12]: 19:16
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel1_in12 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -517,11 +517,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in13]: 11:9
+  // F[in13]: 23:20
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel1_in13 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -543,11 +543,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in14]: 14:12
+  // F[in14]: 27:24
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel1_in14 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -569,11 +569,11 @@ module pinmux_reg_top (
   );
 
 
-  // F[in15]: 17:15
+  // F[in15]: 31:28
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h0)
   ) u_periph_insel1_in15 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -598,20 +598,20 @@ module pinmux_reg_top (
 
 
   // Subregister 0 of Multireg mio_outsel
-  // R[mio_outsel]: V(False)
+  // R[mio_outsel0]: V(False)
 
-  // F[out0]: 3:0
+  // F[out0]: 4:0
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out0 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel0_out0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out0_we & regen_qs),
-    .wd     (mio_outsel_out0_wd),
+    .we     (mio_outsel0_out0_we & regen_qs),
+    .wd     (mio_outsel0_out0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -622,22 +622,22 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[0].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out0_qs)
+    .qs     (mio_outsel0_out0_qs)
   );
 
 
-  // F[out1]: 7:4
+  // F[out1]: 9:5
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out1 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel0_out1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out1_we & regen_qs),
-    .wd     (mio_outsel_out1_wd),
+    .we     (mio_outsel0_out1_we & regen_qs),
+    .wd     (mio_outsel0_out1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -648,22 +648,22 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[1].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out1_qs)
+    .qs     (mio_outsel0_out1_qs)
   );
 
 
-  // F[out2]: 11:8
+  // F[out2]: 14:10
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out2 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel0_out2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out2_we & regen_qs),
-    .wd     (mio_outsel_out2_wd),
+    .we     (mio_outsel0_out2_we & regen_qs),
+    .wd     (mio_outsel0_out2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -674,22 +674,22 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[2].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out2_qs)
+    .qs     (mio_outsel0_out2_qs)
   );
 
 
-  // F[out3]: 15:12
+  // F[out3]: 19:15
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out3 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel0_out3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out3_we & regen_qs),
-    .wd     (mio_outsel_out3_wd),
+    .we     (mio_outsel0_out3_we & regen_qs),
+    .wd     (mio_outsel0_out3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -700,22 +700,22 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[3].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out3_qs)
+    .qs     (mio_outsel0_out3_qs)
   );
 
 
-  // F[out4]: 19:16
+  // F[out4]: 24:20
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out4 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel0_out4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out4_we & regen_qs),
-    .wd     (mio_outsel_out4_wd),
+    .we     (mio_outsel0_out4_we & regen_qs),
+    .wd     (mio_outsel0_out4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -726,22 +726,22 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[4].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out4_qs)
+    .qs     (mio_outsel0_out4_qs)
   );
 
 
-  // F[out5]: 23:20
+  // F[out5]: 29:25
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out5 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel0_out5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out5_we & regen_qs),
-    .wd     (mio_outsel_out5_wd),
+    .we     (mio_outsel0_out5_we & regen_qs),
+    .wd     (mio_outsel0_out5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -752,22 +752,25 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[5].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out5_qs)
+    .qs     (mio_outsel0_out5_qs)
   );
 
 
-  // F[out6]: 27:24
+  // Subregister 6 of Multireg mio_outsel
+  // R[mio_outsel1]: V(False)
+
+  // F[out6]: 4:0
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out6 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel1_out6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out6_we & regen_qs),
-    .wd     (mio_outsel_out6_wd),
+    .we     (mio_outsel1_out6_we & regen_qs),
+    .wd     (mio_outsel1_out6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -778,22 +781,22 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[6].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out6_qs)
+    .qs     (mio_outsel1_out6_qs)
   );
 
 
-  // F[out7]: 31:28
+  // F[out7]: 9:5
   prim_subreg #(
-    .DW      (4),
+    .DW      (5),
     .SWACCESS("RW"),
-    .RESVAL  (4'h2)
-  ) u_mio_outsel_out7 (
+    .RESVAL  (5'h2)
+  ) u_mio_outsel1_out7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_out7_we & regen_qs),
-    .wd     (mio_outsel_out7_wd),
+    .we     (mio_outsel1_out7_we & regen_qs),
+    .wd     (mio_outsel1_out7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -804,20 +807,21 @@ module pinmux_reg_top (
     .q      (reg2hw.mio_outsel[7].q ),
 
     // to register interface (read)
-    .qs     (mio_outsel_out7_qs)
+    .qs     (mio_outsel1_out7_qs)
   );
 
 
 
 
 
-  logic [3:0] addr_hit;
+  logic [4:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == PINMUX_REGEN_OFFSET);
     addr_hit[1] = (reg_addr == PINMUX_PERIPH_INSEL0_OFFSET);
     addr_hit[2] = (reg_addr == PINMUX_PERIPH_INSEL1_OFFSET);
-    addr_hit[3] = (reg_addr == PINMUX_MIO_OUTSEL_OFFSET);
+    addr_hit[3] = (reg_addr == PINMUX_MIO_OUTSEL0_OFFSET);
+    addr_hit[4] = (reg_addr == PINMUX_MIO_OUTSEL1_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -829,82 +833,83 @@ module pinmux_reg_top (
     if (addr_hit[1] && reg_we && (PINMUX_PERMIT[1] != (PINMUX_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[2] && reg_we && (PINMUX_PERMIT[2] != (PINMUX_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[3] && reg_we && (PINMUX_PERMIT[3] != (PINMUX_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[4] && reg_we && (PINMUX_PERMIT[4] != (PINMUX_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign regen_we = addr_hit[0] & reg_we & ~wr_err;
   assign regen_wd = reg_wdata[0];
 
   assign periph_insel0_in0_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in0_wd = reg_wdata[2:0];
+  assign periph_insel0_in0_wd = reg_wdata[3:0];
 
   assign periph_insel0_in1_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in1_wd = reg_wdata[5:3];
+  assign periph_insel0_in1_wd = reg_wdata[7:4];
 
   assign periph_insel0_in2_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in2_wd = reg_wdata[8:6];
+  assign periph_insel0_in2_wd = reg_wdata[11:8];
 
   assign periph_insel0_in3_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in3_wd = reg_wdata[11:9];
+  assign periph_insel0_in3_wd = reg_wdata[15:12];
 
   assign periph_insel0_in4_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in4_wd = reg_wdata[14:12];
+  assign periph_insel0_in4_wd = reg_wdata[19:16];
 
   assign periph_insel0_in5_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in5_wd = reg_wdata[17:15];
+  assign periph_insel0_in5_wd = reg_wdata[23:20];
 
   assign periph_insel0_in6_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in6_wd = reg_wdata[20:18];
+  assign periph_insel0_in6_wd = reg_wdata[27:24];
 
   assign periph_insel0_in7_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in7_wd = reg_wdata[23:21];
+  assign periph_insel0_in7_wd = reg_wdata[31:28];
 
-  assign periph_insel0_in8_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in8_wd = reg_wdata[26:24];
+  assign periph_insel1_in8_we = addr_hit[2] & reg_we & ~wr_err;
+  assign periph_insel1_in8_wd = reg_wdata[3:0];
 
-  assign periph_insel0_in9_we = addr_hit[1] & reg_we & ~wr_err;
-  assign periph_insel0_in9_wd = reg_wdata[29:27];
+  assign periph_insel1_in9_we = addr_hit[2] & reg_we & ~wr_err;
+  assign periph_insel1_in9_wd = reg_wdata[7:4];
 
   assign periph_insel1_in10_we = addr_hit[2] & reg_we & ~wr_err;
-  assign periph_insel1_in10_wd = reg_wdata[2:0];
+  assign periph_insel1_in10_wd = reg_wdata[11:8];
 
   assign periph_insel1_in11_we = addr_hit[2] & reg_we & ~wr_err;
-  assign periph_insel1_in11_wd = reg_wdata[5:3];
+  assign periph_insel1_in11_wd = reg_wdata[15:12];
 
   assign periph_insel1_in12_we = addr_hit[2] & reg_we & ~wr_err;
-  assign periph_insel1_in12_wd = reg_wdata[8:6];
+  assign periph_insel1_in12_wd = reg_wdata[19:16];
 
   assign periph_insel1_in13_we = addr_hit[2] & reg_we & ~wr_err;
-  assign periph_insel1_in13_wd = reg_wdata[11:9];
+  assign periph_insel1_in13_wd = reg_wdata[23:20];
 
   assign periph_insel1_in14_we = addr_hit[2] & reg_we & ~wr_err;
-  assign periph_insel1_in14_wd = reg_wdata[14:12];
+  assign periph_insel1_in14_wd = reg_wdata[27:24];
 
   assign periph_insel1_in15_we = addr_hit[2] & reg_we & ~wr_err;
-  assign periph_insel1_in15_wd = reg_wdata[17:15];
+  assign periph_insel1_in15_wd = reg_wdata[31:28];
 
-  assign mio_outsel_out0_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out0_wd = reg_wdata[3:0];
+  assign mio_outsel0_out0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_outsel0_out0_wd = reg_wdata[4:0];
 
-  assign mio_outsel_out1_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out1_wd = reg_wdata[7:4];
+  assign mio_outsel0_out1_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_outsel0_out1_wd = reg_wdata[9:5];
 
-  assign mio_outsel_out2_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out2_wd = reg_wdata[11:8];
+  assign mio_outsel0_out2_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_outsel0_out2_wd = reg_wdata[14:10];
 
-  assign mio_outsel_out3_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out3_wd = reg_wdata[15:12];
+  assign mio_outsel0_out3_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_outsel0_out3_wd = reg_wdata[19:15];
 
-  assign mio_outsel_out4_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out4_wd = reg_wdata[19:16];
+  assign mio_outsel0_out4_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_outsel0_out4_wd = reg_wdata[24:20];
 
-  assign mio_outsel_out5_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out5_wd = reg_wdata[23:20];
+  assign mio_outsel0_out5_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_outsel0_out5_wd = reg_wdata[29:25];
 
-  assign mio_outsel_out6_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out6_wd = reg_wdata[27:24];
+  assign mio_outsel1_out6_we = addr_hit[4] & reg_we & ~wr_err;
+  assign mio_outsel1_out6_wd = reg_wdata[4:0];
 
-  assign mio_outsel_out7_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_outsel_out7_wd = reg_wdata[31:28];
+  assign mio_outsel1_out7_we = addr_hit[4] & reg_we & ~wr_err;
+  assign mio_outsel1_out7_wd = reg_wdata[9:5];
 
   // Read data return
   always_comb begin
@@ -915,36 +920,39 @@ module pinmux_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[2:0] = periph_insel0_in0_qs;
-        reg_rdata_next[5:3] = periph_insel0_in1_qs;
-        reg_rdata_next[8:6] = periph_insel0_in2_qs;
-        reg_rdata_next[11:9] = periph_insel0_in3_qs;
-        reg_rdata_next[14:12] = periph_insel0_in4_qs;
-        reg_rdata_next[17:15] = periph_insel0_in5_qs;
-        reg_rdata_next[20:18] = periph_insel0_in6_qs;
-        reg_rdata_next[23:21] = periph_insel0_in7_qs;
-        reg_rdata_next[26:24] = periph_insel0_in8_qs;
-        reg_rdata_next[29:27] = periph_insel0_in9_qs;
+        reg_rdata_next[3:0] = periph_insel0_in0_qs;
+        reg_rdata_next[7:4] = periph_insel0_in1_qs;
+        reg_rdata_next[11:8] = periph_insel0_in2_qs;
+        reg_rdata_next[15:12] = periph_insel0_in3_qs;
+        reg_rdata_next[19:16] = periph_insel0_in4_qs;
+        reg_rdata_next[23:20] = periph_insel0_in5_qs;
+        reg_rdata_next[27:24] = periph_insel0_in6_qs;
+        reg_rdata_next[31:28] = periph_insel0_in7_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[2:0] = periph_insel1_in10_qs;
-        reg_rdata_next[5:3] = periph_insel1_in11_qs;
-        reg_rdata_next[8:6] = periph_insel1_in12_qs;
-        reg_rdata_next[11:9] = periph_insel1_in13_qs;
-        reg_rdata_next[14:12] = periph_insel1_in14_qs;
-        reg_rdata_next[17:15] = periph_insel1_in15_qs;
+        reg_rdata_next[3:0] = periph_insel1_in8_qs;
+        reg_rdata_next[7:4] = periph_insel1_in9_qs;
+        reg_rdata_next[11:8] = periph_insel1_in10_qs;
+        reg_rdata_next[15:12] = periph_insel1_in11_qs;
+        reg_rdata_next[19:16] = periph_insel1_in12_qs;
+        reg_rdata_next[23:20] = periph_insel1_in13_qs;
+        reg_rdata_next[27:24] = periph_insel1_in14_qs;
+        reg_rdata_next[31:28] = periph_insel1_in15_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[3:0] = mio_outsel_out0_qs;
-        reg_rdata_next[7:4] = mio_outsel_out1_qs;
-        reg_rdata_next[11:8] = mio_outsel_out2_qs;
-        reg_rdata_next[15:12] = mio_outsel_out3_qs;
-        reg_rdata_next[19:16] = mio_outsel_out4_qs;
-        reg_rdata_next[23:20] = mio_outsel_out5_qs;
-        reg_rdata_next[27:24] = mio_outsel_out6_qs;
-        reg_rdata_next[31:28] = mio_outsel_out7_qs;
+        reg_rdata_next[4:0] = mio_outsel0_out0_qs;
+        reg_rdata_next[9:5] = mio_outsel0_out1_qs;
+        reg_rdata_next[14:10] = mio_outsel0_out2_qs;
+        reg_rdata_next[19:15] = mio_outsel0_out3_qs;
+        reg_rdata_next[24:20] = mio_outsel0_out4_qs;
+        reg_rdata_next[29:25] = mio_outsel0_out5_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[4:0] = mio_outsel1_out6_qs;
+        reg_rdata_next[9:5] = mio_outsel1_out7_qs;
       end
 
       default: begin
