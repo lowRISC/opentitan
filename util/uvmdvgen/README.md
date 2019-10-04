@@ -1,21 +1,22 @@
 # uvmdvgen: UVM agent & complete testbench boilerplate code auto-generation tool
 
-uvmdvgen is a python3 based tool to generate the boilerplate code for a UVM agent
-as well as the complete UVM testbench for a given DUT. The tool generates all
-the relevant UVM-based classes including the package and the fusesoc core file
-to make it quickly plug-and-playable. The packages import the standard
+uvmdvgen is a python3 based tool to generate the boilerplate code for a UVM
+agent as well as the complete UVM testbench for a given DUT. The tool generates
+all the relevant UVM-based classes including the package and the fusesoc core
+file to make it quickly plug-and-playable. The packages import the standard
 utility and library packages wherever applicable, to conform to our existing
 methodology and style.
 
-When starting with a new DV effort, user goes through a copy-paste exercise to
-replicate an existing UVM testbench code to the current one and has to go though
-several debug cycles to get it working. This tool aims to eliminate that. Also,
-as a part of OpenTitan DV methodology, we have several utilities and base class
-structures (such as DV lib and CIP lib) that share all of the common code. By
-extending a new DV enviroment from the common code, the effort is drastically
-reducecd.
+When starting with a new DV effort, the user typically goes through a copy-paste
+exercise to replicate an existing UVM testbench code to the current one and has
+to go through several debug cycles to get it working. This tool aims to
+eliminate that. Also, as a part of the OpenTitan DV methodology, we have
+several utilities and base class structures (such as DV lib and CIP lib) that
+share all of the common code. By extending a new DV environment from the common
+code, the effort is drastically reduced.
 
 ### Setup
+
 The tool uses the mako based templates, so the following tool is required as
 dependency:
 ```
@@ -23,6 +24,7 @@ $ pip3 install --user mako
 ```
 
 ### Help switch (-h)
+
 Running the tool with `-h` switch provides a brief description of all available
 switches.
 ```
@@ -63,14 +65,15 @@ optional arguments:
 ```
 
 ### Generating UVM agent
+
 The boilerplate code for a UVM agent for an interface can be generated using the
 `-a` switch. This results in the generation of complete agent with classes that
-extend from the [dv library](../../hw/dv/sv/dv_lib/README.md). Please see
+extend from the [DV library](../../hw/dv/sv/dv_lib/README.md). Please see
 description for more details.
 
 The tool generates an interface, item, cfg, cov, monitor, driver and sequence
-library classes. Let's take `jtag` as the argument passed for the name of the IP.
-The following describes their contents in each source generated:
+library classes. Let's take `jtag` as the argument passed for the name of the
+IP. The following describes their contents in each source generated:
 
 * **jtag_if**
 
@@ -127,29 +130,30 @@ The following describes their contents in each source generated:
 
 * **jtag_agent_pkg**
 
-  This is the package file that includes all of the above sources and the imports
-  the dependent packages.
+  This is the package file that includes all of the above sources and the
+  imports the dependent packages.
 
 * **jtag_agent.core**
 
   This is the fusesoc core file that is used to generate the filelist for
   the build.
 
-The tool does not create `jtag_sequencer` or `jtag_agent` classes separetely.
+The tool does not create `jtag_sequencer` or `jtag_agent` classes separately.
 Instead, it typedef's the `dv_base_sequencer` and `dv_base_agent` respectively
 with the right type-parameters in the pkg. The reason for this is having a
 dedicated sequencer and agent is not required since the `dv_base_agent` already
-has all the sub-component instantiations and connections; and `dv_base_sequencer`
-already has a handle to the agent cfg object and nothing more is typically needed.
+has all the sub-component instantiations and connections; and
+`dv_base_sequencer` already has a handle to the agent cfg object and nothing
+more is typically needed.
 
 ### Generating UVM environment & testbench
+
 The boilerplate code for a UVM environment and the testbench for a DUT can be
-generated using the `-e` switch. This results in the generation of classes
-that extend from [dv library](../../hw/dv/sv/dv_lib/README.md). If the `-c`
-switch is passed, it extends from [cip library](../../hw/dv/sv/cip_lib/README.md).
-With `-ea` switch, user can provide a list of downstream agents to create within
-the environment.
-Please see description for more details.
+generated using the `-e` switch. This results in the generation of classes that
+extend from [DV library](../../hw/dv/sv/dv_lib/README.md). If the `-c` switch is
+passed, it extends from [cip library](../../hw/dv/sv/cip_lib/README.md). With
+`-ea` switch, user can provide a list of downstream agents to create within the
+environment. Please see description for more details.
 
 The tool generates not only the UVM environment, but also the base test,
 testbench, top level fusesoc core file with sim target, Makefile that already
@@ -161,7 +165,7 @@ files generated with a brief description of their contents:
 * **env/i2c_host_env_cfg**
 
   This is the env cfg object. It creates the downstream agent cfg objects that
-  were passed using the `-ea` switch in the ``initialize()` function which is
+  were passed using the `-ea` switch in the `initialize()` function which is
   called in the `dv_base_test::build_phase()`. Since the cfg handle is passed to
   all env components, those downstream agent cfg objects can be hierarchically
   referenced.
@@ -252,8 +256,8 @@ files generated with a brief description of their contents:
 * **tb/i2c_host_bind**
 
   This is the assertion bind file that is compiled along with the testbench in a
-  multi-top architecture. If the `-c` switch is passed, it adds the `tlul_assert`
-  module bind to the `i2c_host` DUT.
+  multi-top architecture. If the `-c` switch is passed, it adds the
+  `tlul_assert` module bind to the `i2c_host` DUT.
 
 * **tb/tb**
 
@@ -265,8 +269,8 @@ files generated with a brief description of their contents:
 
 * **i2c_host_sim.core**
 
-  This is the top level fusesoc core file with the sim target. It adds the rtl
-  and dv dependencies to construct the complete filelist to pass to simulator's
+  This is the top level fusesoc core file with the sim target. It adds the RTL
+  and DV dependencies to construct the complete filelist to pass to simulator's
   build step.
 
 * **Makefile**
@@ -282,6 +286,7 @@ files generated with a brief description of their contents:
   template for this is available [here](../../hw/dv/doc/plan.tpl.md).
 
 #### Examples
+
 ```
 util/uvmdvgen.py i2c -a
 ```
@@ -301,17 +306,17 @@ This will create the I2C agent with separate 'host' mode and 'device' mode drive
 ```
 util/uvmdvgen.py i2c_host -e -c -ea i2c -eo hw/ip/i2c_host/dv
 ```
-This will create the complete i2c_host dv testbench extended from CIP lib and will
+This will create the complete i2c_host DV testbench extended from CIP lib and will
 instantiate `i2c_agent`.
 
 ```
 util/uvmdvgen.py dma -e -eo hw/ip/dma/dv
 ```
-This will create the complete dma dv testbench extended from DV lib. It does not
+This will create the complete dma DV testbench extended from DV lib. It does not
 instantiate any downstream agents due to absence of `-ea` switch.
 
 ```
 util/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_earlgrey/dv
 ```
-This will create the complete chip testbench DV lib and will instantiate `uart_agent`,
-`i2c_agent` and `jtag_agent` in the env.
+This will create the complete chip testbench DV lib and will instantiate
+`uart_agent`, `i2c_agent` and `jtag_agent` in the env.
