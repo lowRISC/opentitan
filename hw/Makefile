@@ -16,6 +16,14 @@ IPS ?= uart          \
 
 TOPS ?= top_earlgrey
 
+# conditional flags
+VERBOSE ?= 0
+toolflags ?=
+ifeq ($(VERBOSE),1)
+  toolflags      += -v
+endif
+
+
 ips_reg = $(addsuffix _reg, $(IPS))
 
 tops_gen = $(addsuffix _gen,$(TOPS))
@@ -44,8 +52,8 @@ $(tops_gen):
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
 		--tpl ${PRJ_DIR}/hw/$($@_TOP)/doc/ \
-		-o ${PRJ_DIR}/hw/$($@_TOP)/
+		-o ${PRJ_DIR}/hw/$($@_TOP)/ ${toolflags}
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
-		-r -o ${PRJ_DIR}/hw/$($@_TOP)/dv/env/
+		-r -o ${PRJ_DIR}/hw/$($@_TOP)/dv/env/ ${toolflags}
 
 .PHONY: all $(ips_reg) $(tops_gen)

@@ -20,6 +20,7 @@ class Xbar:
     clock = ""  # str  # Main clock remove 'clk_' prefix
     name = ""  # str  # e.g. "main" --> main_xbar
     clocks = []  # Clocks
+
     # prefix is useful if SoC has more than one Xbar
 
     # variables after elaboration. Shouldn't be touched by outside

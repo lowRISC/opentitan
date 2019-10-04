@@ -58,7 +58,7 @@ def generate_xbars(top, out_path):
         if not tlgen.elaborate(xbar):
             log.error("Elaboration failed." + repr(xbar))
 
-        # Add clocks to the top configuration
+        # Add clocks/resets to the top configuration
         obj["clocks"] = xbar.clocks
         try:
             out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
@@ -347,7 +347,7 @@ def main():
                  (", ".join([x["name"] for x in xbar_objs])))
 
         # TODO: Add validate
-        topcfg, error = validate_top(topcfg)
+        topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
         if error != 0:
             raise SystemExit("Error occured while validating top.hjson")
 

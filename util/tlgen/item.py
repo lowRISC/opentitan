@@ -44,6 +44,7 @@ class Node:
     clocks = []  # Clocks  # Clock domain of the node
     # e.g. async_fifo in : clk_core , out : clk_main
 
+
     # If NodeType is Socket out from 1:N then address steering is used
     # But this value is also propagated up to a Host from multiple Devices
     # Device Node should have address_from, address_to
