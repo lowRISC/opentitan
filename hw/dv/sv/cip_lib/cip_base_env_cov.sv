@@ -29,7 +29,20 @@ covergroup intr_test_covergroup (uint num_interrupts) with function sample(uint 
   cross cp_intr, cp_intr_test, cp_intr_en, cp_intr_state {
     illegal_bins test_0_state_1 = binsof(cp_intr_test) intersect {0} &&
                                   binsof(cp_intr_state) intersect {1};
+    illegal_bins test_1_state_0 = binsof(cp_intr_test) intersect {1} &&
+                                  binsof(cp_intr_state) intersect {0};
   }
+endgroup
+
+covergroup intr_pins_covergroup (uint num_interrupts) with function sample(uint intr_pin, bit intr_pin_value);
+  cp_intr_pin: coverpoint intr_pin {
+    bins all_pins[] = {[0:num_interrupts-1]};
+  }
+  cp_intr_pin_value: coverpoint intr_pin_value {
+    bins values[] = {0, 1};
+    bins transitions[] = (0 => 1), (1 => 0);
+  }
+  cp_intr_pins_all_values: cross cp_intr_pin, cp_intr_pin_value;
 endgroup
 
 covergroup alert_covergroup (uint num_alerts) with function sample(uint alert);
@@ -43,6 +56,7 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
 
   intr_covergroup      intr_cg;
   intr_test_covergroup intr_test_cg;
+  intr_pins_covergroup intr_pins_cg;
   alert_covergroup     alert_cg;
 
   `uvm_component_new
@@ -50,8 +64,9 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (cfg.num_interrupts != 0) begin
-      intr_cg       = new(cfg.num_interrupts);
-      intr_test_cg  = new(cfg.num_interrupts);
+      intr_cg      = new(cfg.num_interrupts);
+      intr_test_cg = new(cfg.num_interrupts);
+      intr_pins_cg = new(cfg.num_interrupts);
     end
     if (cfg.num_alerts != 0) alert_cg = new(cfg.num_alerts);
   endfunction
