@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "SPI_DEVICE",
-  clock_primary: "main",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   available_input_list: [
     { name: "sck", desc: "SPI Clock" },

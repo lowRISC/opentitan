@@ -82,6 +82,9 @@ module top_earlgrey #(
   logic sys_rst_n;
   logic spi_device_rst_n;
 
+  //clock wires declaration
+  logic main_clk;
+
   logic [53:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
@@ -115,6 +118,9 @@ module top_earlgrey #(
   logic [0:0]   msip;
 
 
+  // clock assignments
+  assign main_clk = clk_i;
+
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
 
@@ -141,7 +147,7 @@ module top_earlgrey #(
     .PipeLine            (IbexPipeLine)
   ) core (
     // clock and reset
-    .clk_i                (clk_i),
+    .clk_i                (main_clk),
     .rst_ni               (sys_rst_n),
     .test_en_i            (1'b0),
     // static pinning
@@ -176,7 +182,7 @@ module top_earlgrey #(
                                 // xxxxxxxxxxx      manufacturer id
                                 // 1                required by standard
   ) u_dm_top (
-    .clk_i         (clk_i),
+    .clk_i         (main_clk),
     .rst_ni        (lc_rst_n),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
@@ -213,7 +219,7 @@ module top_earlgrey #(
     .Outstanding(1),
     .ErrOnWrite(1)
   ) tl_adapter_rom (
-    .clk_i,
+    .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
 
     .tl_i     (tl_rom_d_h2d),
@@ -234,7 +240,7 @@ module top_earlgrey #(
     .Width(32),
     .Depth(2048)
   ) u_rom_rom (
-    .clk_i,
+    .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
     .cs_i     (rom_req),
     .addr_i   (rom_addr),
@@ -256,7 +262,7 @@ module top_earlgrey #(
     .SramDw(32),
     .Outstanding(1)
   ) tl_adapter_ram_main (
-    .clk_i,
+    .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
     .tl_i     (tl_ram_main_d_h2d),
     .tl_o     (tl_ram_main_d_d2h),
@@ -277,7 +283,7 @@ module top_earlgrey #(
     .Depth(16384),
     .DataBitsPerMask(8)
   ) u_ram1p_ram_main (
-    .clk_i,
+    .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
 
     .req_i    (ram_main_req),
@@ -307,7 +313,7 @@ module top_earlgrey #(
     .ByteAccess(0),
     .ErrOnWrite(1)
   ) tl_adapter_eflash (
-    .clk_i,
+    .clk_i   (main_clk),
     .rst_ni   (lc_rst_n),
 
     .tl_i       (tl_eflash_d_h2d),
@@ -330,7 +336,7 @@ module top_earlgrey #(
     .WordsPerPage(FLASH_WORDS_PER_PAGE),
     .DataWidth(32)
   ) u_flash_eflash (
-    .clk_i,
+    .clk_i   (main_clk),
     .rst_ni   (lc_rst_n),
     .host_req_i      (flash_host_req),
     .host_addr_i     (flash_host_addr),
@@ -357,7 +363,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
 
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
 
@@ -369,7 +375,7 @@ module top_earlgrey #(
       .cio_gpio_en_o (cio_gpio_gpio_en_d2p_o),
       .intr_gpio_o (intr_gpio_gpio),
 
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
 
@@ -389,7 +395,7 @@ module top_earlgrey #(
       .intr_txunderflow_o (intr_spi_device_txunderflow),
 
       .scanmode_i   (scanmode_i),
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (spi_device_rst_n)
   );
 
@@ -405,7 +411,7 @@ module top_earlgrey #(
       .flash_o(flash_c2m),
       .flash_i(flash_m2c),
 
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (lc_rst_n)
   );
 
@@ -414,7 +420,7 @@ module top_earlgrey #(
       .tl_o (tl_rv_timer_d_d2h),
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
 
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
 
@@ -424,7 +430,7 @@ module top_earlgrey #(
       .intr_hmac_done_o (intr_hmac_hmac_done),
       .intr_fifo_full_o (intr_hmac_fifo_full),
 
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
 
@@ -438,7 +444,7 @@ module top_earlgrey #(
       .irq_id_o   (irq_id),
       .msip_o     (msip),
 
-      .clk_i (clk_i),
+      .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
 
@@ -470,12 +476,8 @@ module top_earlgrey #(
   };
 
   // TL-UL Crossbar
-  logic clk_main;
-  assign clk_main = clk_i;
-
-
   xbar_main u_xbar_main (
-    .clk_main_i  (clk_main),
+    .clk_main_i (main_clk),
     .rst_main_ni (sys_rst_n),
     .tl_corei_i      (tl_corei_h_h2d),
     .tl_corei_o      (tl_corei_h_d2h),

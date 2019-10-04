@@ -8,6 +8,46 @@ from pathlib import Path, PosixPath
 
 import hjson
 
+def get_n_format_value (key, default, inst):
+    inst_list = []
+    error = 0
+    if key not in inst.keys():
+        inst_list.append(default)
+    elif isinstance(inst[key], str):
+        inst_list.append(inst[key])
+    elif isinstance(inst[key], list):
+        inst_list.extend(inst[key])
+    else:
+        log.error("definition in %s hjson is incorrect" % inst['name'])
+        error += 1
+
+    return error, inst_list
+
+def create_clk_map(top, inst):
+    # create list of clock port to clock net mapping
+    clock_connections = {}
+    error = 0
+
+    # Gather clock port names from IP
+    derr, inst_clocks = get_n_format_value('clock_primary', 'clk_i', inst)
+    error += derr
+
+    if 'other_clock_list' in inst.keys():
+        inst_clocks.extend(inst['other_clock_list'])
+
+    # Match with top level clocks
+    derr, clock_nets = get_n_format_value('clock', top['name'], top)
+
+    if len(inst_clocks) != len(clock_nets):
+        log.error("The number of clock ports / clock nets for module %s do not match" % top['name'])
+        error += 1
+        return error
+
+    for i in range(len(inst_clocks)):
+        port_name = "clk_i" if inst_clocks[i] == 'main' else inst_clocks[i]
+        clock_connections[port_name] = clock_nets[i]
+
+    return error, clock_connections
 
 def create_reset_map(top, inst):
 
@@ -92,7 +132,7 @@ def get_hjsonobj_xbars(xbar_path):
     return xbar_objs
 
 
-def amend_mem(top, mem):
+def amend_mem(mem):
     """ Amend additional memory information into top module
 
     Amended fields:
@@ -100,6 +140,7 @@ def amend_mem(top, mem):
     """
 
     error, mem['reset_connectivity'] = create_reset_map(mem, [])
+    error, mem['clock_connections'] = create_clk_map(mem, {})
 
 
 def amend_ip(top, ip):
@@ -138,14 +179,14 @@ def amend_ip(top, ip):
             "given 'size' field in IP %s is smaller than the required space" %
             ip_module["name"])
 
-    # ip_clock
-    if "clock" in ip:
-        ip_module["ip_clock"] = ip["clock"]
-    else:
-        ip_module["ip_clock"] = "main"
+    error = 0
+    err, ip_module['clock_connections'] = create_clk_map(ip_module, ip)
+    error += err
 
     # create list of reset port to reset net mapping
-    error, ip_module['reset_connectivity'] = create_reset_map(ip_module, ip)
+    err, ip_module['reset_connectivity'] = create_reset_map(ip_module, ip)
+    error += err
+
     if error:
         return
 
@@ -362,7 +403,13 @@ def amend_xbar(top, xbar):
         topxbar["nodes"] = []
 
     # create list of reset port to reset net mapping
-    error, topxbar['reset_connectivity'] = create_reset_map(topxbar, xbar)
+    error = 0
+    err, topxbar['clock_connections'] = create_clk_map(topxbar, xbar)
+    error += err
+
+    err, topxbar['reset_connectivity'] = create_reset_map(topxbar, xbar)
+    error += err
+
     if error:
         return
 
@@ -417,7 +464,7 @@ def merge_top(topcfg, ipobjs, xbarobjs):
     # Primarily create clocks/resets if not present
     mem_objs = gencfg['memory'] if 'memory' in gencfg.keys() else []
     for mem in mem_objs:
-        amend_mem(gencfg, mem)
+        amend_mem(mem)
 
     # Combine ip cfg into topcfg
     for ip in ipobjs:

@@ -48,7 +48,10 @@
       ]
       base_addr: 0x40000000
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -117,7 +120,10 @@
       ]
       base_addr: 0x40010000
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -148,7 +154,10 @@
       clock: main
       base_addr: 0x40020000
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         spi_device
@@ -221,7 +230,10 @@
       ]
       base_addr: 0x40030000
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connectivity:
       {
         rst_ni: lc
@@ -270,7 +282,10 @@
       ]
       base_addr: 0x40080000
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -299,7 +314,10 @@
       ]
       base_addr: 0x40120000
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -337,7 +355,10 @@
         FIND_MAX: MATRIX
       }
       size: 0x1000
-      ip_clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -355,6 +376,7 @@
   [
     {
       name: rom
+      clock: main
       reset:
       [
         sys
@@ -366,9 +388,14 @@
       {
         rst_ni: sys
       }
+      clock_connections:
+      {
+        clk_i: main
+      }
     }
     {
       name: ram_main
+      clock: main
       reset:
       [
         sys
@@ -380,9 +407,14 @@
       {
         rst_ni: sys
       }
+      clock_connections:
+      {
+        clk_i: main
+      }
     }
     {
       name: eflash
+      clock: main
       reset:
       [
         lc
@@ -393,6 +425,10 @@
       reset_connectivity:
       {
         rst_ni: lc
+      }
+      clock_connections:
+      {
+        clk_i: main
       }
     }
   ]
@@ -593,6 +629,10 @@
           pipeline: "true"
         }
       ]
+      clock_connections:
+      {
+        clk_main_i: main
+      }
       reset_connectivity:
       {
         rst_main_ni: sys

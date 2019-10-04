@@ -34,12 +34,20 @@
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
-      clock: "main",    // `ip.hjson` clock is internal name, here top determines
-                        // actual clock (signal matched at the top)
+      clock: "main",    // clock is the top level net that connects to the IP
+                        // The ip.hjson will declare the clock port names, these will then
+                        // be hooked up at the top level.
+                        // The ip clocks are declared using two variables
+                        // clock_primary - which indicates the primary clock port
+                        // other_clock_list - which indicates secondary clock ports
+                        // The primary clock port is important as it indicates which domain
+                        // drives the ip TLUL interface
 
       reset: "sys",     // reset is the top level net that connects to the IP
-                        // the ip.hjson will declare the reset port names, these will then
-                        // be hooked up at the top level
+                        // The ip.hjson will declare the reset port names, these will then
+                        // be hooked up at the top level.
+                        // If nothing is declared at the ip.hjson level, a default name of
+                        // `rst_ni` is assumed
       base_addr: "0x40000000",
     },
     { name: "gpio",
@@ -89,9 +97,9 @@
   // Memories (ROM, RAM, eFlash) are defined at the top.
   // It utilizes the primitive cells but configurable
   memory: [
-    { name: "rom",      reset: "sys", type: "rom",    base_addr: "0x00008000", size: "0x2000"  },
-    { name: "ram_main", reset: "sys", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
-    { name: "eflash",   reset: "lc",  type: "eflash", base_addr: "0x20000000", size: "0x80000" },
+    { name: "rom",      clock: "main", reset: "sys", type: "rom",    base_addr: "0x00008000", size: "0x2000"  },
+    { name: "ram_main", clock: "main", reset: "sys", type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
+    { name: "eflash",   clock: "main", reset: "lc",  type: "eflash", base_addr: "0x20000000", size: "0x80000" },
   ],
 
   debug_mem_base_addr: "0x1A110000",
