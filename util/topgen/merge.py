@@ -7,6 +7,9 @@ from copy import deepcopy
 from functools import partial
 
 from .lib import *
+import hjson
+
+
 
 
 def amend_ip(top, ip):
@@ -41,12 +44,6 @@ def amend_ip(top, ip):
         log.error(
             "given 'size' field in IP %s is smaller than the required space" %
             ip_module["name"])
-
-    # ip_clock
-    if "clock" in ip:
-        ip_module["ip_clock"] = ip["clock"]
-    else:
-        ip_module["ip_clock"] = "main"
 
     # bus_device
     ip_module["bus_device"] = ip["bus_device"]
@@ -121,7 +118,7 @@ def xbar_addhost(xbar, host):
             host)
         obj = {
             "name": host,
-            "clock": xbar["clock"],
+            "clock": xbar['clock'],
             "type": "host",
             "inst_type": "",
             # The default matches RTL default
@@ -131,7 +128,7 @@ def xbar_addhost(xbar, host):
         }
         topxbar["nodes"].append(obj)
     else:
-        obj[0]["clock"] = xbar["clock"]
+        obj[0]["clock"] = xbar['clock']
         obj[0]["inst_type"] = predefined_modules[
             host] if host in predefined_modules else ""
         obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
@@ -183,7 +180,7 @@ def xbar_adddevice(top, xbar, device):
                     xbar["nodes"].append({
                         "name": "debug_mem",
                         "type": "device",
-                        "clock": "main",
+                        "clock": xbar['clock'],
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
                         "size_byte": "0x1000",
@@ -255,6 +252,9 @@ def amend_xbar(top, xbar):
         topxbar["nodes"] = deepcopy(xbar["nodes"])
     else:
         topxbar["nodes"] = []
+
+
+    topxbar["clock"] = xbar["clock"]
 
     # Build nodes from 'connections'
     device_nodes = set()
@@ -413,6 +413,7 @@ def amend_pinmux_io(top):
 
 def merge_top(topcfg, ipobjs, xbarobjs):
     gencfg = deepcopy(topcfg)
+
 
     # Combine ip cfg into topcfg
     for ip in ipobjs:

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "gpio",
-  clock_primary: "clk",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   bus_host: "",
   available_inout_list: [

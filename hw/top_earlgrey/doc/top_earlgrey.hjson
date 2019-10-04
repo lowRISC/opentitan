@@ -34,48 +34,52 @@
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
-      clock: "main",    // `ip.hjson` clock is internal name, here top determines
-                        // actual clock (signal matched at the top)
+      // clock connections defines the port to top level clock connection
+      // the ip.hjson will declare the clock port names
+      // If none are defined at ip.hjson, clk_i is used by default
+      clock_connections: {clk_i: "main"},
 
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
+      // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "sys"},
+
       base_addr: "0x40000000",
     },
     { name: "gpio",
       type: "gpio",
-      clock: "main",
+      clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40010000",
     }
 
     { name: "spi_device",
       type: "spi_device",
-      clock: "main",
+      clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40020000",
     },
     { name: "flash_ctrl",
       type: "flash_ctrl",
-      clock: "main",
+      clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "lc"},
       base_addr: "0x40030000",
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock: "main",
+      clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40080000",
     },
     { name: "hmac",
       type: "hmac",
-      clock: "main",
+      clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40120000",
     },
     { name: "rv_plic",
       type: "rv_plic",
-      clock: "main",
+      clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40090000",
       generated: "true"         // Indicate this module is generated in the topgen
@@ -90,9 +94,25 @@
   // Memories (ROM, RAM, eFlash) are defined at the top.
   // It utilizes the primitive cells but configurable
   memory: [
-    { name: "rom",      reset_connections: {rst_ni: "sys"}, type: "rom",    base_addr: "0x00008000", size: "0x2000"  },
-    { name: "ram_main", reset_connections: {rst_ni: "sys"}, type: "ram_1p", base_addr: "0x10000000", size: "0x10000" },
-    { name: "eflash",   reset_connections: {rst_ni: "lc"},  type: "eflash", base_addr: "0x20000000", size: "0x80000" },
+    { name: "rom",
+      clock_connections: {clk_i: "main"},
+      reset_connections: {rst_ni: "sys"},
+      type: "rom",
+      base_addr: "0x00008000",
+      size: "0x2000"
+    },
+    { name: "ram_main",
+      clock_connections: {clk_i: "main"},
+      reset_connections: {rst_ni: "sys"},
+      type: "ram_1p",
+      base_addr: "0x10000000",
+      size: "0x10000" },
+    { name: "eflash",
+      clock_connections: {clk_i: "main"},
+      reset_connections: {rst_ni: "lc"},
+      type: "eflash",
+      base_addr: "0x20000000",
+      size: "0x80000" },
   ],
 
   debug_mem_base_addr: "0x1A110000",
@@ -102,7 +122,7 @@
   // Assume xbar.hjson is located in the same directory of top.hjson
   xbar: [
     { name: "main",
-      clock: "main",    // Main clock, used in sockets
+      clock_connections: {clk_main_i: "main"},
       reset: "sys",
       reset_connections: {rst_main_ni: "sys"}
     },

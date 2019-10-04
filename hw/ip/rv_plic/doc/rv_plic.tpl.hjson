@@ -10,7 +10,7 @@
 #  - prio:   Max value of interrupt priorities
 {
   name: "RV_PLIC",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
 
   param_list: [
