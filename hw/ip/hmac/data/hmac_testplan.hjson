@@ -1,0 +1,75 @@
+{
+  name: "hmac"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''Basic sanity test performs a few round of HMAC or SHA256-ONLY transactions with the
+      prodecures below:
+            - Set configuration register to randomly enable SHA256, hmac, endian_swap, and digest_swap
+            - Set interrupt enable register to randomly enable fifo_full, hmac_done, and err_code
+              interupts
+            - Randomly read previous digest result
+            - Write key
+            - Trigger HMAC hash_start
+            - Write HMAC message fifo with message length between 0 and 64 bytes
+            - check status and interrupt
+            - Trigger HMAC hash_process
+            - After hmac_done interrupt, read and check digest data'''
+      milestone: V1
+      tests: ["hmac_sanity"]
+    }
+    {
+      name: long_msg
+      desc: '''Long_msg test is based on the sanity test. The message length is between 0 and
+            10,000 bytes.'''
+      milestone: V2
+      tests: ["hmac_long_msg"]
+    }
+    {
+      name: back_pressure
+      desc: '''Back_pressure test is based on the long_msg test. The test disabled all the protocol
+            delays to make sure to have high chance of hitting the FIFO_FULL status.'''
+      milestone: V2
+      tests: ["hmac_back_pressure"]
+    }
+    {
+      name: test_vectors
+      desc: '''From [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
+            and [IETF](https://tools.ietf.org/html/rfc4868) websites, this test intends to use HMAC
+            and SHA test vectors to check if the reference model predicts correct data, and check if
+            DUT returns correct data.'''
+      milestone: V2
+      tests: ["hmac_test_sha_vectors", "hmac_test_hmac_vectors"]
+    }
+    {
+      name: burst_wr
+      desc: '''Burst_wr test is based on the long_msg test. The test intends to test burst write a
+            pre-defined size of message without any status or interrupt checking.'''
+      milestone: V2
+      tests: ["hmac_burst_wr"]
+    }
+    {
+      name: datapath_stress
+      desc: '''Datapath_stress test is based on the long_msg test. It enabled HMAC and message length
+            is set to N*64+1 in order to stress the datapath.'''
+      milestone: V2
+      tests: ["hmac_datapath_stress"]
+    }
+    {
+      name: stress_all
+      desc: "Stress_all test is a random mix of all the test above except csr tests."
+      milestone: V2
+      tests: ["hmac_stress_all"]
+    }
+    {
+      name: reset
+      desc: '''Reset test insert random reset during the stress_all test. After reset is asserted,
+            the test will read and check all valid CSR registers.'''
+      milestone: V2
+      tests: ["hmac_reset"]
+    }
+  ]
+}
