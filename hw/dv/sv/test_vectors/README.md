@@ -9,12 +9,12 @@ The following is a list of common properties and methods:
   and concatenate with input file name. Return the full file path.
 * **open_file**: A method to open a file with specific path, and return a open
   file handle.
-* **parse_sha**: A method to parse sha vectors files. Return an array of
+* **parse_sha**: A method to parse SHA vectors files. Return an array of
   test_vectors_t.
 
 ### SHA256 vectors
-The SHA256LongMsg.rsp and SHA256ShortMsg.rsp are test vector files downloaded from the
-[NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
+The `SHA256LongMsg.rsp` and `SHA256ShortMsg.rsp` are test vector files downloaded from the
+[NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs).
 
-### HMAC_RFC4868.rsp
-The HMAC_RFC4868.rsp contains test vectors extracted from [IETF RFC 4868](https://tools.ietf.org/html/rfc4868)
+### HMAC vectors
+The `HMAC_RFC4868.rsp` contains test vectors extracted from [IETF RFC 4868](https://tools.ietf.org/html/rfc4868).
