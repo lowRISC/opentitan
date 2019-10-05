@@ -36,6 +36,7 @@ custom_target(
       sw_lib_hmac,
       sw_lib_spi_device,
       sw_lib_uart,
+      sw_lib_log,
     ],
   ),
   command: embedded_target_args,

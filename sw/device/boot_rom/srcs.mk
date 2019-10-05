@@ -2,9 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-SW_NAME       ?= boot_rom
-SW_SRCS       += $(SW_DIR)/bootstrap.c $(SW_DIR)/boot_rom.c $(LIB_DIR)/hw_sha256.c
-INCS          += -I$(SW_ROOT_DIR)/vendor
+SW_NAME             ?= boot_rom
+SW_SRCS             += $(SW_DIR)/bootstrap.c $(SW_DIR)/boot_rom.c $(LIB_DIR)/hw_sha256.c
+INCS                += -I$(SW_ROOT_DIR)/vendor
+
+GEN_HEADER_OUTPUTS  += ${SW_BUILD_DIR}/sw/device/boot_rom/chip_info.h
 
 # overrides
 CRT_SRCS      := $(SW_DIR)/crt0.S
