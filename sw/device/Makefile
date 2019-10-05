@@ -16,6 +16,8 @@
 ##               SW_SRCS to be built for that SW test.                                            ##
 ## SW_NAME:      This is the name of the SW test begin run. Optional if SW_DIR name (last dir) is ##
 ##               the same as the SW test name.                                                    ##
+## TARGET:       Target for which the sw is cross-compiled - dv|fpga|verilator|silicon, etc       ##
+##               By default, no TARGET is selected.
 ##                                                                                                ##
 ## Optional variables:                                                                            ##
 ## SW_BUILD_DIR: This is the output location for generating all sources                           ##
@@ -26,7 +28,11 @@
 
 # Generate a baremetal application for the microcontroller
 SW_ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/..
+REPO_TOP      ?= $(realpath $(SW_ROOT_DIR)/..)
 SW_DIR        ?= examples/hello_world
+
+# SW build targets
+TARGET        ?=
 
 # sources
 STANDALONE_SW ?= 0

@@ -19,22 +19,17 @@
 SW_NAME       ?= $(notdir $(SW_DIR))
 SW_SRCS       += $(CRT_SRCS)
 SW_OBJS       += $(addprefix $(SW_BUILD_DIR)/, $(addsuffix .o, $(basename $(notdir $(SW_SRCS)))))
-SW_PPOS       += $(SW_OBJS:.o=.ppo)
 SW_DEPS       ?= lib
-SW_BUILD_DIR  ?= $(SW_ROOT_DIR)/device/$(SW_DIR)
+SW_BUILD_DIR  ?= $(REPO_TOP)/build/sw/device/$(SW_DIR)
 
 LIB_NAME      ?= ot
-LIB_DIR       ?= $(SW_ROOT_DIR)/device/lib
 LIB_TARGET    ?= $(LIB_BUILD_DIR)/lib${LIB_NAME}.a
 LIB_SRCS      +=
 LIB_OBJS      += $(addprefix $(LIB_BUILD_DIR)/, $(addsuffix .o, $(basename $(notdir $(LIB_SRCS)))))
-LIB_PPOS      += $(LIB_OBJS:.o=.ppo)
 LIB_BUILD_DIR ?= $(SW_BUILD_DIR)/lib
 
-GEN_HDRS_DIR  ?= $(SW_ROOT_DIR)/device/generated
-
 DEPS          += $(SW_OBJS:%.o=%.d) $(LIB_OBJS:%.o=%.d)
-INCS          += -I../.. -I$(LIB_BUILD_DIR)
+INCS          += -I$(REPO_TOP) -I$(SW_BUILD_DIR) -I$(LIB_BUILD_DIR)
 
 LINK_OPTS     += -T $(LINKER_SCRIPT)
 LINK_OPTS     += $(SW_OBJS) -L$(LIB_BUILD_DIR) -l$(LIB_NAME)
@@ -47,12 +42,12 @@ else
   IMG_NAME    ?= sw
 endif
 
-IMG_OUTPUTS       += $(SW_BUILD_DIR)/$(IMG_NAME).elf \
-                     $(SW_BUILD_DIR)/$(IMG_NAME).map \
-                     $(SW_BUILD_DIR)/$(IMG_NAME).dis \
-                     $(SW_BUILD_DIR)/$(IMG_NAME).bin \
-                     $(SW_BUILD_DIR)/$(IMG_NAME).vmem
-GEN_HEADER_OUTPUTS = $(addprefix $(LIB_BUILD_DIR)/, $(GEN_HEADERS))
+IMG_OUTPUTS   += $(SW_BUILD_DIR)/$(IMG_NAME).elf \
+                 $(SW_BUILD_DIR)/$(IMG_NAME).map \
+                 $(SW_BUILD_DIR)/$(IMG_NAME).dis \
+                 $(SW_BUILD_DIR)/$(IMG_NAME).bin \
+                 $(SW_BUILD_DIR)/$(IMG_NAME).vmem
+GEN_HEADER_OUTPUTS += $(addprefix $(LIB_BUILD_DIR)/, $(GEN_HEADERS))
 
 # defaults
 CRT_SRCS      ?= $(EXT_COMMON_DIR)/_crt.c
@@ -66,6 +61,7 @@ RV_TOOLS      ?= /tools/riscv/bin
 # ARCH = rv32im # to disable compressed instructions
 ARCH           = rv32imc
 CC             = ${RV_TOOLS}/riscv32-unknown-elf-gcc
+CPP            = $(subst gcc,cpp,$(wordlist 1,1,$(CC)))
 AR             = $(subst gcc,ar,$(wordlist 1,1,$(CC)))
 AS             = $(subst gcc,as,$(wordlist 1,1,$(CC)))
 LD             = $(subst gcc,ld,$(wordlist 1,1,$(CC)))
@@ -75,9 +71,18 @@ OBJDUMP        = $(subst gcc,objdump,$(wordlist 1,1,$(CC)))
 CFLAGS        += -march=$(ARCH) -mabi=ilp32 -static -mcmodel=medany -Wall -g -Os \
                  -fvisibility=hidden -nostdlib -nostartfiles $(SW_FLAGS)
 ARFLAGS        = rc
+OBJCOPY_FLAGS +=
 
 # conditional flags
 SIM ?= 0
-ifeq ($(SIM),1)
+ifeq ($(SIM), 1)
   CFLAGS      += -DSIMULATION
+endif
+
+ifeq ($(TARGET), dv)
+  CFLAGS      += -DDV_SIM
+endif
+
+ifeq ($(TARGET), fpga)
+  CFLAGS      += -DFPGA_SIM
 endif

@@ -118,3 +118,16 @@ sw_lib_usb = declare_dependency(
     ]
   )
 )
+
+# Logging library that prints to UART directly (sw_lib_log)
+sw_lib_log = declare_dependency(
+  link_with: static_library(
+    'log_ot',
+    sources: [
+      'print_log.c',
+    ],
+    dependencies: [
+      sw_lib_uart,
+    ]
+  )
+)
