@@ -22,7 +22,7 @@ gen_dir:
 standalone: $(SW_DEPS)
 	$(STANDALONE_CMD)
 
-$(LIB_TARGET): $(GEN_HEADER_OUTPUTS) $(LIB_PPOS) $(LIB_OBJS)
+$(LIB_TARGET): $(GEN_HEADER_OUTPUTS) $(LIB_OBJS)
 	$(AR) $(ARFLAGS) $@ $(LIB_OBJS)
 
 lib: $(LIB_TARGET)
@@ -37,17 +37,17 @@ lib: $(LIB_TARGET)
 	srec_cat $^ -binary -offset 0x0 -byte-swap 4 -o $@ -vmem
 
 %.bin: %.elf
-	$(OBJCOPY) -O binary $^ $@
+	$(OBJCOPY) -O binary $(OBJCOPY_FLAGS) $^ $@
 
 %.dis: %.elf
-	$(OBJDUMP) -SD $^ > $@
+	$(OBJDUMP) -SDhl $^ > $@
 
 # link & generate elf
-%.elf %.map: $(SW_DEPS) $(SW_PPOS) $(SW_OBJS) $(LINKER_SCRIPT)
+%.elf %.map: $(SW_DEPS) $(SW_OBJS) $(LINKER_SCRIPT)
 	$(CC) $(CFLAGS) $(LINK_OPTS) -o $@
 
 # compile sw sources
-# TOOD: figure out a way to 'templatise' .o/.ppo ruleset for each dir containing srcs
+# TOOD: figure out a way to 'templatise' .o/.c ruleset for each dir containing srcs
 
 $(SW_BUILD_DIR)/%.o: $(SW_DIR)/$$*.c
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
@@ -55,35 +55,17 @@ $(SW_BUILD_DIR)/%.o: $(SW_DIR)/$$*.c
 $(SW_BUILD_DIR)/%.o: $(SW_DIR)/$$*.S
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
-$(SW_BUILD_DIR)/%.ppo: $(SW_DIR)/$$*.c
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
-$(SW_BUILD_DIR)/%.ppo: $(SW_DIR)/$$*.S
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
 $(SW_BUILD_DIR)/%.o: $(LIB_DIR)/$$*.c
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
 $(SW_BUILD_DIR)/%.o: $(LIB_DIR)/$$*.S
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
-$(SW_BUILD_DIR)/%.ppo: $(LIB_DIR)/$$*.c
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
-$(SW_BUILD_DIR)/%.ppo: $(LIB_DIR)/$$*.S
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
 $(SW_BUILD_DIR)/%.o: $(EXT_COMMON_DIR)/$$*.c
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
 $(SW_BUILD_DIR)/%.o: $(EXT_COMMON_DIR)/$$*.S
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
-
-$(SW_BUILD_DIR)/%.ppo: $(EXT_COMMON_DIR)/$$*.c
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
-$(SW_BUILD_DIR)/%.ppo: $(EXT_COMMON_DIR)/$$*.S
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
 
 # compile lib sources
 $(LIB_BUILD_DIR)/%.o: $(LIB_DIR)/$$*.c
@@ -92,23 +74,17 @@ $(LIB_BUILD_DIR)/%.o: $(LIB_DIR)/$$*.c
 $(LIB_BUILD_DIR)/%.o: $(LIB_DIR)/$$*.S
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
-$(LIB_BUILD_DIR)/%.ppo: $(LIB_DIR)/$$*.c
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
-$(LIB_BUILD_DIR)/%.ppo: $(LIB_DIR)/$$*.S
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
-
 $(LIB_BUILD_DIR)/%.o: $(EXT_COMMON_DIR)/$$*.c
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
 $(LIB_BUILD_DIR)/%.o: $(EXT_COMMON_DIR)/$$*.S
 	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
-$(LIB_BUILD_DIR)/%.ppo: $(EXT_COMMON_DIR)/$$*.c
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
+$(LIB_BUILD_DIR)/%.o: $(UTIL_DIR)/$$*.c
+	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
-$(LIB_BUILD_DIR)/%.ppo: $(EXT_COMMON_DIR)/$$*.S
-	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
+$(LIB_BUILD_DIR)/%.o: $(UTIL_DIR)/$$*.S
+	$(CC) $(CFLAGS) -MMD -c $(INCS) -o $@ $<
 
 # regtool
 $(LIB_BUILD_DIR)/%_regs.h: $(SW_ROOT_DIR)/../hw/ip/$$*/doc/$$*.hjson
@@ -125,8 +101,8 @@ $(LIB_BUILD_DIR)/chip_info.h: $(INFOTOOL)
 
 # clean sources
 clean:
-	-$(RM) -r $(LIB_OBJS) $(LIB_PPOS) $(SW_OBJS) $(SW_PPOS) $(DEPS) \
-	          $(GEN_HEADER_OUTPUTS) $(IMG_OUTPUTS) $(LIB_TARGET) ${SW_BUILD_DIR}/env_vars
+	-$(RM) -r $(GEN_HEADER_OUTPUTS) $(LIB_OBJS) $(SW_OBJS) $(DEPS) \
+	          $(IMG_OUTPUTS) $(LIB_TARGET) ${SW_BUILD_DIR}/env_vars
 
 distclean: clean
 
