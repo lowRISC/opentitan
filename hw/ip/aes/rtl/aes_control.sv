@@ -16,6 +16,8 @@ module aes_control #(
   input  logic                    force_data_overwrite_i,
   input  logic                    manual_start_trigger_i,
   input  logic                    start_i,
+  input  logic                    key_clear_i,
+  input  logic                    data_out_clear_i,
 
   // I/O register read/write enables
   input  logic [3:0]              data_in_qe_i,
@@ -43,8 +45,12 @@ module aes_control #(
   output logic                    data_out_we_o,
 
   // To I/O registers
-  output logic                    trigger_o,
-  output logic                    trigger_we_o,
+  output logic                    start_o,
+  output logic                    start_we_o,
+  output logic                    key_clear_o,
+  output logic                    key_clear_we_o,
+  output logic                    data_out_clear_o,
+  output logic                    data_out_clear_we_o,
   output logic                    output_valid_o,
   output logic                    output_valid_we_o,
   output logic                    input_ready_o,
@@ -81,9 +87,7 @@ module aes_control #(
   logic [3:0] num_rounds_d, num_rounds_q;
   logic       dec_key_gen_d, dec_key_gen_q;
 
-  logic       start, clear_key, finish;
-
-  assign clear_key   = 1'b0;
+  logic       start, finish;
 
   // If not set to manually start, we start once we have valid data available.
   assign start = manual_start_trigger_i ? start_i : data_in_new;
@@ -110,8 +114,9 @@ module aes_control #(
     round_key_sel_o    = ROUND_KEY_DIRECT;
 
     // Trigger register control
-    trigger_o           = 1'b0;
-    trigger_we_o        = 1'b0;
+    start_we_o          = 1'b0;
+    key_clear_we_o      = 1'b0;
+    data_out_clear_we_o = 1'b0;
 
     // Status register
     idle_o     = 1'b0;
@@ -164,17 +169,23 @@ module aes_control #(
                          (key_len_i == AES_192) ? 12 :
                                                   14;
 
-          idle_o       = 1'b0;
-          idle_we_o    = 1'b1;
-          trigger_we_o = 1'b1;
+          idle_o      = 1'b0;
+          idle_we_o   = 1'b1;
+          start_we_o  = 1'b1;
 
-          aes_ctrl_ns  = INIT;
+          aes_ctrl_ns = INIT;
         end else begin
-          if (clear_key) begin
+          if (key_clear_i) begin
             key_full_sel_o = KEY_FULL_CLEAR;
             key_full_we_o  = 1'b1;
             key_dec_sel_o  = KEY_DEC_CLEAR;
             key_dec_we_o   = 1'b1;
+            key_clear_we_o = 1'b0;
+          end
+          if (data_out_clear_i) begin
+            state_sel_o         = STATE_CLEAR;
+            data_out_we_o       = 1'b1;
+            data_out_clear_we_o = 1'b1;
           end
         end
       end
@@ -396,5 +407,10 @@ module aes_control #(
 
   assign key_expand_mode_o  = (dec_key_gen_d || dec_key_gen_q) ? AES_ENC : mode_i;
   assign key_expand_round_o = round_d;
+
+  // Trigger register, the control only ever clears these
+  assign start_o             = 1'b0;
+  assign key_clear_o         = 1'b0;
+  assign data_out_clear_o    = 1'b0;
 
 endmodule
