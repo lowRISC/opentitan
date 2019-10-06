@@ -226,10 +226,14 @@ module aes_core #(
         key_words[3] = key_full_q[3];
       end
       KEY_WORDS_2345: begin
-        key_words[0] = key_full_q[2];
-        key_words[1] = key_full_q[3];
-        key_words[2] = key_full_q[4];
-        key_words[3] = key_full_q[5];
+        if (AES192Enable) begin
+          key_words[0] = key_full_q[2];
+          key_words[1] = key_full_q[3];
+          key_words[2] = key_full_q[4];
+          key_words[3] = key_full_q[5];
+        end else begin
+          key_words    = '{default: 'X};
+        end
       end
       KEY_WORDS_4567: begin
         key_words[0] = key_full_q[4];
