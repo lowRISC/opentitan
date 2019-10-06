@@ -6,73 +6,40 @@
 
 package aes_reg_pkg;
 
-// Register to internal design logic
-typedef struct packed {
+  // Param list
+  localparam int KEY = 8;
+  localparam int DATA_IN = 4;
+  localparam int DATA_OUT = 4;
 
-  struct packed {
-    logic [31:0] q; // [538:507]
-    logic qe; // [506]
-  } key0;
-  struct packed {
-    logic [31:0] q; // [505:474]
-    logic qe; // [473]
-  } key1;
-  struct packed {
-    logic [31:0] q; // [472:441]
-    logic qe; // [440]
-  } key2;
-  struct packed {
-    logic [31:0] q; // [439:408]
-    logic qe; // [407]
-  } key3;
-  struct packed {
-    logic [31:0] q; // [406:375]
-    logic qe; // [374]
-  } key4;
-  struct packed {
-    logic [31:0] q; // [373:342]
-    logic qe; // [341]
-  } key5;
-  struct packed {
-    logic [31:0] q; // [340:309]
-    logic qe; // [308]
-  } key6;
-  struct packed {
-    logic [31:0] q; // [307:276]
-    logic qe; // [275]
-  } key7;
-  struct packed {
-    logic [31:0] q; // [274:243]
-    logic qe; // [242]
-  } data_in0;
-  struct packed {
-    logic [31:0] q; // [241:210]
-    logic qe; // [209]
-  } data_in1;
-  struct packed {
-    logic [31:0] q; // [208:177]
-    logic qe; // [176]
-  } data_in2;
-  struct packed {
-    logic [31:0] q; // [175:144]
-    logic qe; // [143]
-  } data_in3;
-  struct packed {
-    logic [31:0] q; // [142:111]
-    logic re; // [110]
-  } data_out0;
-  struct packed {
-    logic [31:0] q; // [109:78]
-    logic re; // [77]
-  } data_out1;
-  struct packed {
-    logic [31:0] q; // [76:45]
-    logic re; // [44]
-  } data_out2;
-  struct packed {
-    logic [31:0] q; // [43:12]
-    logic re; // [11]
-  } data_out3;
+/////////////////////////////////////////////////////////////////////
+// Typedefs for multiregs
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
+  logic [31:0] q;
+  logic qe;
+} aes_reg2hw_key_mreg_t;
+typedef struct packed {
+  logic [31:0] q;
+  logic qe;
+} aes_reg2hw_data_in_mreg_t;
+typedef struct packed {
+  logic [31:0] q;
+  logic re;
+} aes_reg2hw_data_out_mreg_t;
+
+typedef struct packed {
+  logic [31:0] d;
+} aes_hw2reg_data_out_mreg_t;
+
+/////////////////////////////////////////////////////////////////////
+// Register to internal design logic
+/////////////////////////////////////////////////////////////////////
+
+typedef struct packed {
+  aes_reg2hw_key_mreg_t [7:0] key; // [538:275]
+  aes_reg2hw_data_in_mreg_t [3:0] data_in; // [274:143]
+  aes_reg2hw_data_out_mreg_t [3:0] data_out; // [142:11]
   struct packed {
     struct packed {
       logic q; // [10]
@@ -96,21 +63,12 @@ typedef struct packed {
   } trigger;
 } aes_reg2hw_t;
 
+/////////////////////////////////////////////////////////////////////
 // Internal design logic to register
-typedef struct packed {
+/////////////////////////////////////////////////////////////////////
 
-  struct packed {
-    logic [31:0] d; // [141:110]
-  } data_out0;
-  struct packed {
-    logic [31:0] d; // [109:78]
-  } data_out1;
-  struct packed {
-    logic [31:0] d; // [77:46]
-  } data_out2;
-  struct packed {
-    logic [31:0] d; // [45:14]
-  } data_out3;
+typedef struct packed {
+  aes_hw2reg_data_out_mreg_t [3:0] data_out; // [141:14]
   struct packed {
     struct packed {
       logic [2:0] d; // [13:11]
@@ -123,19 +81,19 @@ typedef struct packed {
   } trigger;
   struct packed {
     struct packed {
-      logic d;  // [7]
+      logic d; // [7]
       logic de; // [6]
     } idle;
     struct packed {
-      logic d;  // [5]
+      logic d; // [5]
       logic de; // [4]
     } stall;
     struct packed {
-      logic d;  // [3]
+      logic d; // [3]
       logic de; // [2]
     } output_valid;
     struct packed {
-      logic d;  // [1]
+      logic d; // [1]
       logic de; // [0]
     } input_ready;
   } status;
@@ -163,4 +121,50 @@ typedef struct packed {
   parameter AES_STATUS_OFFSET = 7'h 48;
 
 
+  // Register Index
+  typedef enum int {
+    AES_KEY0,
+    AES_KEY1,
+    AES_KEY2,
+    AES_KEY3,
+    AES_KEY4,
+    AES_KEY5,
+    AES_KEY6,
+    AES_KEY7,
+    AES_DATA_IN0,
+    AES_DATA_IN1,
+    AES_DATA_IN2,
+    AES_DATA_IN3,
+    AES_DATA_OUT0,
+    AES_DATA_OUT1,
+    AES_DATA_OUT2,
+    AES_DATA_OUT3,
+    AES_CTRL,
+    AES_TRIGGER,
+    AES_STATUS
+  } aes_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] AES_PERMIT [19] = '{
+    4'b 1111, // index[ 0] AES_KEY0
+    4'b 1111, // index[ 1] AES_KEY1
+    4'b 1111, // index[ 2] AES_KEY2
+    4'b 1111, // index[ 3] AES_KEY3
+    4'b 1111, // index[ 4] AES_KEY4
+    4'b 1111, // index[ 5] AES_KEY5
+    4'b 1111, // index[ 6] AES_KEY6
+    4'b 1111, // index[ 7] AES_KEY7
+    4'b 1111, // index[ 8] AES_DATA_IN0
+    4'b 1111, // index[ 9] AES_DATA_IN1
+    4'b 1111, // index[10] AES_DATA_IN2
+    4'b 1111, // index[11] AES_DATA_IN3
+    4'b 1111, // index[12] AES_DATA_OUT0
+    4'b 1111, // index[13] AES_DATA_OUT1
+    4'b 1111, // index[14] AES_DATA_OUT2
+    4'b 1111, // index[15] AES_DATA_OUT3
+    4'b 0001, // index[16] AES_CTRL
+    4'b 0001, // index[17] AES_TRIGGER
+    4'b 0001  // index[18] AES_STATUS
+  };
 endpackage
+
