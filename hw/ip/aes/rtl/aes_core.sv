@@ -312,7 +312,9 @@ module aes_core #(
     .key_len_i              ( key_len                            ),
     .force_data_overwrite_i ( reg2hw.ctrl.force_data_overwrite.q ),
     .manual_start_trigger_i ( reg2hw.ctrl.manual_start_trigger.q ),
-    .start_i                ( reg2hw.trigger.q                   ),
+    .start_i                ( reg2hw.trigger.start.q             ),
+    .key_clear_i            ( reg2hw.trigger.key_clear.q         ),
+    .data_out_clear_i       ( reg2hw.trigger.data_out_clear.q    ),
 
     .data_in_qe_i           ( data_in_qe                         ),
     .key_init_qe_i          ( key_init_qe                        ),
@@ -334,8 +336,12 @@ module aes_core #(
 
     .data_out_we_o          ( data_out_we                        ),
 
-    .trigger_o              ( hw2reg.trigger.d                   ),
-    .trigger_we_o           ( hw2reg.trigger.de                  ),
+    .start_o                ( hw2reg.trigger.start.d             ),
+    .start_we_o             ( hw2reg.trigger.start.de            ),
+    .key_clear_o            ( hw2reg.trigger.key_clear.d         ),
+    .key_clear_we_o         ( hw2reg.trigger.key_clear.de        ),
+    .data_out_clear_o       ( hw2reg.trigger.data_out_clear.d    ),
+    .data_out_clear_we_o    ( hw2reg.trigger.data_out_clear.de   ),
     .output_valid_o         ( hw2reg.status.output_valid.d       ),
     .output_valid_we_o      ( hw2reg.status.output_valid.de      ),
     .input_ready_o          ( hw2reg.status.input_ready.d        ),

@@ -37,29 +37,37 @@ typedef struct packed {
 /////////////////////////////////////////////////////////////////////
 
 typedef struct packed {
-  aes_reg2hw_key_mreg_t [7:0] key; // [538:275]
-  aes_reg2hw_data_in_mreg_t [3:0] data_in; // [274:143]
-  aes_reg2hw_data_out_mreg_t [3:0] data_out; // [142:11]
+  aes_reg2hw_key_mreg_t [7:0] key; // [540:277]
+  aes_reg2hw_data_in_mreg_t [3:0] data_in; // [276:145]
+  aes_reg2hw_data_out_mreg_t [3:0] data_out; // [144:13]
   struct packed {
     struct packed {
-      logic q; // [10]
-      logic qe; // [9]
+      logic q; // [12]
+      logic qe; // [11]
     } mode;
     struct packed {
-      logic [2:0] q; // [8:6]
-      logic qe; // [5]
+      logic [2:0] q; // [10:8]
+      logic qe; // [7]
     } key_len;
+    struct packed {
+      logic q; // [6]
+      logic qe; // [5]
+    } manual_start_trigger;
     struct packed {
       logic q; // [4]
       logic qe; // [3]
-    } manual_start_trigger;
-    struct packed {
-      logic q; // [2]
-      logic qe; // [1]
     } force_data_overwrite;
   } ctrl;
   struct packed {
-    logic [0:0] q; // [0:0]
+    struct packed {
+      logic q; // [2]
+    } start;
+    struct packed {
+      logic q; // [1]
+    } key_clear;
+    struct packed {
+      logic q; // [0]
+    } data_out_clear;
   } trigger;
 } aes_reg2hw_t;
 
@@ -68,16 +76,26 @@ typedef struct packed {
 /////////////////////////////////////////////////////////////////////
 
 typedef struct packed {
-  aes_hw2reg_data_out_mreg_t [3:0] data_out; // [141:14]
+  aes_hw2reg_data_out_mreg_t [3:0] data_out; // [145:18]
   struct packed {
     struct packed {
-      logic [2:0] d; // [13:11]
-      logic de; // [10]
+      logic [2:0] d; // [17:15]
+      logic de; // [14]
     } key_len;
   } ctrl;
   struct packed {
-    logic [0:0] d; // [9:9]
-    logic de; // [8]
+    struct packed {
+      logic d; // [13]
+      logic de; // [12]
+    } start;
+    struct packed {
+      logic d; // [11]
+      logic de; // [10]
+    } key_clear;
+    struct packed {
+      logic d; // [9]
+      logic de; // [8]
+    } data_out_clear;
   } trigger;
   struct packed {
     struct packed {

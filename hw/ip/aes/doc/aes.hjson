@@ -123,6 +123,19 @@
           Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
         '''
       }
+      { bits: "1",
+        name: "KEY_CLEAR",
+        desc:  '''
+          Keep current values in internal Full Key and Decryption Key registers (0) or clear
+          those registers (1).
+        '''
+      }
+      { bits: "2",
+        name: "DATA_OUT_CLEAR",
+        desc:  '''
+          Keep current values in output registers (0) or clear those registers (1).
+        '''
+      }
     ]
   },
   { name: "STATUS",
