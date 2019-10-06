@@ -35,6 +35,7 @@ module aes_control #(
   output logic                    key_dec_we_o,
   output logic                    key_expand_clear_o,
   output aes_pkg::key_words_sel_e key_words_sel_o,
+  output aes_pkg::round_key_sel_e round_key_sel_o,
 
   // Output registers control
   output logic                    data_out_we_o,
@@ -85,6 +86,7 @@ module aes_control #(
   assign state_sel_o        = STATE_ROUND;
   assign state_we_o         = 1'b0;
   assign add_rk_sel_o       = ADD_RK_ROUND;
+  assign round_key_sel_o    = ROUND_KEY_DIRECT;
 
   assign key_full_sel_o     = KEY_FULL_ROUND;
   assign key_full_we_o      = 1'b0;
