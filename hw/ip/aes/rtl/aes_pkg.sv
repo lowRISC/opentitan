@@ -48,4 +48,9 @@ typedef enum logic [1:0] {
   KEY_WORDS_ZERO
 } key_words_sel_e;
 
+typedef enum logic {
+  ROUND_KEY_DIRECT,
+  ROUND_KEY_MIXED
+} round_key_sel_e;
+
 endpackage

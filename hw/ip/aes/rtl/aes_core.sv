@@ -55,6 +55,7 @@ module aes_core #(
   logic     [7:0] key_bytes[16];
   logic     [7:0] key_mix_columns_out[16];
   logic     [7:0] round_key[16];
+  round_key_sel_e round_key_sel;
 
   logic    [31:0] data_out_d[4];
   logic    [31:0] data_out_q[4];
@@ -265,7 +266,19 @@ module aes_core #(
     .data_o ( key_mix_columns_out )
   );
 
-  assign round_key = (mode == AES_DEC) ? key_mix_columns_out : key_bytes;
+  always_comb begin : round_key_mux
+    unique case (round_key_sel)
+      ROUND_KEY_DIRECT: begin
+        round_key = key_bytes;
+      end
+      ROUND_KEY_MIXED: begin
+        round_key = key_mix_columns_out;
+      end
+      default: begin
+        round_key = '{default: 'X};
+      end
+    endcase
+  end
 
   // Output registers
   always_comb begin : conv_add_rk_out_to_data_out
@@ -310,6 +323,7 @@ module aes_core #(
     .key_dec_we_o           ( key_dec_we                         ),
     .key_expand_clear_o     ( key_expand_clear                   ),
     .key_words_sel_o        ( key_words_sel                      ),
+    .round_key_sel_o        ( round_key_sel                      ),
 
     .data_out_we_o          ( data_out_we                        ),
 
