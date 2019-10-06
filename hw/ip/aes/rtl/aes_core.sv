@@ -268,9 +268,10 @@ module aes_core #(
   assign round_key = (mode == AES_DEC) ? key_mix_columns_out : key_bytes;
 
   // Output registers
-  always_comb begin : conv_state_to_data_out
+  always_comb begin : conv_add_rk_out_to_data_out
     for (int i=0; i<4; i++) begin
-      data_out_d[i] = {state_q[4*i+3], state_q[4*i+2], state_q[4*i+1], state_q[4*i+0]};
+      data_out_d[i] = {add_round_key_out[4*i+3], add_round_key_out[4*i+2],
+                       add_round_key_out[4*i+1], add_round_key_out[4*i+0]};
     end
   end
 
