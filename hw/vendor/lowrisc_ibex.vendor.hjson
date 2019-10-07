@@ -9,4 +9,8 @@
     url: "https://github.com/lowRISC/ibex.git",
     rev: "master",
   },
+
+  exclude_from_upstream: [
+    "dv/verilator/simutil_verilator",
+  ]
 }
