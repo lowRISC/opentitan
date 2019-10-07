@@ -19,7 +19,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   // ral base address and size
   bit [TL_AW-1:0]       csr_base_addr;              // base address where csr map begins
-  bit [TL_AW-1:0]       csr_addr_map_size = 2048;   // csr addr region allocated to the ip
+  bit [TL_AW-1:0]       csr_addr_map_size;          // csr addr region allocated to the ip
 
   // clk_rst_if & freq
   virtual clk_rst_if    clk_rst_vif;
@@ -43,20 +43,21 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
-    bit is_aligned;
+                                   bit [TL_AW-1:0] csr_addr_map_size);
+    `DV_CHECK_NE_FATAL(csr_addr_map_size, 0, "csr_addr_map_size can't be 0")
+    this.csr_addr_map_size = csr_addr_map_size;
     // use locally randomized csr base address, unless provided as arg to this function
     if (csr_base_addr != '1) begin
+      bit is_aligned;
       this.csr_base_addr = csr_base_addr;
+      // check alignment
+      is_aligned = ~|(this.csr_base_addr & (this.csr_addr_map_size - 1));
+      `DV_CHECK_EQ_FATAL(is_aligned, 1'b1)
     end else begin
       // base address needs to be aligned to csr_addr_map_size
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(csr_base_addr,
-                                         csr_base_addr << csr_addr_map_size == {TL_AW{1'b0}};)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(this.csr_base_addr,
+                                         ~|(this.csr_base_addr & (this.csr_addr_map_size - 1));)
     end
-    this.csr_addr_map_size = csr_addr_map_size;
-    // check alignment
-    is_aligned = ~|(this.csr_base_addr & (this.csr_addr_map_size - 1));
-    `DV_CHECK_EQ_FATAL(is_aligned, 1'b1)
     // build the ral model
     if (has_ral) begin
       ral = RAL_T::type_id::create("ral");

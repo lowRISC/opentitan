@@ -67,7 +67,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
           $countones(a_mask) > (msb / 8);)
     end
     `uvm_info(`gtn, $sformatf("tl reg req item: addr=0x%0h, op=%0s data=0x%0h, mask = %0h",
-                              reg_item.a_addr, reg_item.a_opcode.name, reg_item.a_data,
+                              reg_item.a_addr, rw.kind.name, reg_item.a_data,
                               reg_item.a_mask), UVM_HIGH)
     return reg_item;
   endfunction : reg2bus

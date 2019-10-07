@@ -59,7 +59,7 @@ class tl_monitor extends uvm_monitor;
       if (vif.mon_cb.h2d.a_valid && vif.mon_cb.d2h.a_ready) begin
         req = tl_seq_item::type_id::create("req");
         req.a_addr   = vif.mon_cb.h2d.a_address;
-        req.a_opcode = tl_a_op_e'(vif.mon_cb.h2d.a_opcode);
+        req.a_opcode = vif.mon_cb.h2d.a_opcode;
         req.a_size   = vif.mon_cb.h2d.a_size;
         req.a_param  = vif.mon_cb.h2d.a_param;
         req.a_data   = vif.mon_cb.h2d.a_data;
@@ -94,7 +94,7 @@ class tl_monitor extends uvm_monitor;
         foreach (pending_a_req[i]) begin
           if (pending_a_req[i].a_source == vif.mon_cb.d2h.d_source) begin
             rsp = pending_a_req[i];
-            rsp.d_opcode = tl_d_op_e'(vif.mon_cb.d2h.d_opcode);
+            rsp.d_opcode = vif.mon_cb.d2h.d_opcode;
             rsp.d_data   = vif.mon_cb.d2h.d_data;
             rsp.d_source = vif.mon_cb.d2h.d_source;
             rsp.d_param  = vif.mon_cb.d2h.d_param;

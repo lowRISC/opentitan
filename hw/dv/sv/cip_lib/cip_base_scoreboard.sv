@@ -60,54 +60,88 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endtask
 
-  // check if there is any error cases and set is_tl_err_exp and is_tl_unmapped_addr
-  // case1: memory/register write isn't word-aligned
-  // case2: memory write isn't full word
-  // case3: access unmapped address
-  // case4: register write size is less than actual register width
-  virtual function void predict_tl_err(tl_seq_item item);
-    bit            is_mem_addr;
-    dv_base_reg    csr;
-    uvm_reg_addr_t addr = item.a_addr % cfg.csr_addr_map_size;
+  // only lsb addr is used, the other can be ignored, use this function to normalize the addr to
+  // the format that RAL uses
+  virtual function uvm_reg_addr_t get_normalized_addr(uvm_reg_addr_t addr);
+    return {addr[TL_AW-1:2], 2'b00} & (cfg.csr_addr_map_size - 1) + cfg.csr_base_addr;
+  endfunction
 
-    is_tl_err_exp       = 0;
-    is_tl_unmapped_addr = 0;
-    // case1: register write isn't word-aligned
-    if (item.is_write() && addr[1:0] != 0) begin
-      is_tl_err_exp = 1;
-      return;
-    end
-
-    // check if it's reg or mem
+  // check if it's mem addr
+  virtual function bit is_mem_addr(tl_seq_item item);
+    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
     foreach (cfg.mem_addrs[i]) begin
       if (addr inside {[cfg.mem_addrs[i].start_addr : cfg.mem_addrs[i].end_addr]}) begin
-        is_mem_addr = 1;
-        break;
+        return 1;
+      end
+    end
+  endfunction
+
+  // check if there is any error cases and set is_tl_err_exp and is_tl_unmapped_addr
+  //  - access unmapped address
+  //  - memory/register write addr isn't word-aligned
+  //  - memory write isn't full word
+  //  - register write size is less than actual register width
+  //  - TL protocol violation
+  virtual function void predict_tl_err(tl_seq_item item);
+    is_tl_err_exp       = 0;
+    is_tl_unmapped_addr = 0;
+
+    if (!is_tl_access_mapped_addr(item)) begin
+      is_tl_unmapped_addr = 1;
+      if (cfg.en_devmode == 0 || cfg.devmode_vif.sample()) begin
+        is_tl_err_exp = 1;
+        return;
       end
     end
 
-    if (is_mem_addr) begin // memory
-      // case2: memory write isn't full word
-      if (item.a_size != 2 || item.a_mask != '1) is_tl_err_exp = 1;
-    end else begin // register
-      // case3: access unmapped address
-      if (!({addr[TL_AW-1:2], 2'b00} inside {cfg.csr_addrs})) begin
-        is_tl_unmapped_addr = 1;
-        if (cfg.en_devmode == 0 || cfg.devmode_vif.sample()) is_tl_err_exp = 1;
-        return;
-      end
+    if (!is_tl_mem_write_full_word(item)      ||
+        !is_tl_write_addr_word_align(item)    ||
+        !is_tl_write_size_gte_csr_width(item) ||
+        item.get_exp_d_error())begin
+      is_tl_err_exp = 1;
+    end
+  endfunction
 
-      // case4: register write size is less than actual register width
-      `DV_CHECK_FATAL($cast(csr, ral.default_map.get_reg_by_offset({addr[TL_AW-1:2], 2'b00})))
-      if (item.is_write()) begin
-        if (csr.get_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||
-            csr.get_msb_pos >= 16 && item.a_mask[2:0] != 'b111  ||
-            csr.get_msb_pos >= 8  && item.a_mask[1:0] != 'b11   ||
-            item.a_mask[0] != 'b1) begin
-          is_tl_err_exp = 1;
-        end
-      end // item.is_write
-    end // register
+  // check if address is mapped
+  virtual function bit is_tl_access_mapped_addr(tl_seq_item item);
+    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    // check if it's mem addr or reg addr
+    if (is_mem_addr(item) || addr inside {cfg.csr_addrs}) return 1;
+    else                                                  return 0;
+  endfunction
+
+  // check if tl mem access full word
+  virtual function bit is_tl_mem_write_full_word(tl_seq_item item);
+    // check if it's mem addr
+    if (is_mem_addr(item)) begin
+      // check if write isn't full word
+      if (item.a_size != 2 || item.a_mask != '1) return 0;
+    end
+    return 1;
+  endfunction
+
+  // check if memory/register write word-aligned
+  virtual function bit is_tl_write_addr_word_align(tl_seq_item item);
+    if (item.is_write() && item.a_addr[1:0] != 0) return 0;
+    else                                          return 1;
+  endfunction
+
+  // check if write size greater or equal to csr width
+  virtual function bit is_tl_write_size_gte_csr_width(tl_seq_item item);
+    if (is_tl_unmapped_addr || is_mem_addr(item)) return 1;
+    if (item.is_write()) begin
+      dv_base_reg    csr;
+      uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+      `DV_CHECK_FATAL($cast(csr,
+                            ral.default_map.get_reg_by_offset(addr)))
+      if (csr.get_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||
+          csr.get_msb_pos >= 16 && item.a_mask[2:0] != 'b111  ||
+          csr.get_msb_pos >= 8  && item.a_mask[1:0] != 'b11   ||
+          item.a_mask[0] != 'b1) begin
+        return 0;
+      end
+    end
+    return 1;
   endfunction
 
   virtual function void reset(string kind = "HARD");

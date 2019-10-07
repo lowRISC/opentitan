@@ -120,19 +120,20 @@ interface tlul_assert (
         // d_source: each response should have a pending request using same source ID
         `ASSERT_I(responseMustHaveReq, pend_req[d2h.d_source].pend)
 
-        // d_data must be known for AccessAckData (depending on mask bits)
-        for (int ii = 0; ii < TL_DBW; ii++) begin
-          if (pend_req[d2h.d_source].mask[ii] && (d2h.d_opcode == AccessAckData)) begin
-            `ASSERT_I(dDataKnown, !$isunknown(d2h.d_data[8*ii +: 8]))
-          end
-        end
-
         // update pend_req array
         if (h2d.d_ready) begin
           pend_req[d2h.d_source].pend = 0;
         end
       end //d2h.d_valid
     end
+  end
+
+  // d_data must be known for AccessAckData (depending on mask bits)
+  for (genvar ii = 0; ii < TL_DBW; ii++) begin : gen_assert_d_data_known
+    `ASSERT(dDataKnown,
+            d2h.d_valid && pend_req[d2h.d_source].mask[ii] && (d2h.d_opcode == AccessAckData) |->
+                !$isunknown(d2h.d_data[8*ii +: 8]),
+            clk_i, !rst_ni)
   end
 
   // make sure all "pending" bits are 0 at the end of the sim
@@ -158,25 +159,40 @@ interface tlul_assert (
   `ASSERT_KNOWN(aReadyKnown, d2h.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(dReadyKnown, h2d.d_ready, clk_i, !rst_ni)
 
+`ifndef VERILATOR
   // create functions to enable or disable assertions
   `define create_sva_ctrl_function(sva_name_) \
-    function void enable_``sva_name_``(); \
-      `ifndef VERILATOR \
-        $asserton(1, sva_name_); \
-       `endif \
+    function void enable_sva_``sva_name_``(); \
+      $asserton(1, sva_name_); \
     endfunction \
     \
-    function void disable_``sva_name_``(); \
-      `ifndef VERILATOR \
-        $assertoff(1, sva_name_); \
-      `endif \
+    function void disable_sva_``sva_name_``(); \
+      $assertoff(1, sva_name_); \
     endfunction
 
+  `create_sva_ctrl_function(legalAOpcode)
   `create_sva_ctrl_function(sizeMatchesMask)
   `create_sva_ctrl_function(addressAlignedToSize)
   `create_sva_ctrl_function(maskMustBeContiguous)
   `create_sva_ctrl_function(sizeGTEMask)
+  `create_sva_ctrl_function(dKnownKnownData)
 
   `undef create_sva_ctrl_function
+
+    function void enable_sva_d_data_known();
+      // TODO, for loop, generate block isn't allowed
+      $asserton(1, gen_assert_d_data_known[0].dDataKnown);
+      $asserton(1, gen_assert_d_data_known[1].dDataKnown);
+      $asserton(1, gen_assert_d_data_known[2].dDataKnown);
+      $asserton(1, gen_assert_d_data_known[3].dDataKnown);
+    endfunction
+
+    function void disable_sva_d_data_known();
+      $assertoff(1, gen_assert_d_data_known[0].dDataKnown);
+      $assertoff(1, gen_assert_d_data_known[1].dDataKnown);
+      $assertoff(1, gen_assert_d_data_known[2].dDataKnown);
+      $assertoff(1, gen_assert_d_data_known[3].dDataKnown);
+    endfunction
+`endif
 endinterface
 
