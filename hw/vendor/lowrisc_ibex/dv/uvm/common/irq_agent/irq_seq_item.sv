@@ -12,7 +12,7 @@ class irq_seq_item extends uvm_sequence_item;
   rand int          num_of_interrupt;
 
   constraint num_of_interrupt_c {
-    num_of_interrupt inside {[1:19]};
+    num_of_interrupt inside {[0:DATA_WIDTH-1]};
     $countones({irq_software, irq_timer, irq_external, irq_fast, irq_nm}) == num_of_interrupt;
   }
 

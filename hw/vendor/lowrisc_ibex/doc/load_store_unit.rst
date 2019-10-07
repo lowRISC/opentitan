@@ -2,9 +2,15 @@
 
 Load-Store Unit
 ===============
+:file:`rtl/ibex_load_store_unit.sv`
 
 The Load-Store Unit (LSU) of the core takes care of accessing the data memory.
 Loads and stores of words (32 bit), half words (16 bit) and bytes (8 bit) are supported.
+
+Any load or store will stall the ID/EX stage for at least a cycle to await the response (whether that is awaiting load data or a response indicating whether an error has been seen for a store).
+
+Data-Side Memory Interface
+--------------------------
 
 Signals that are used by the LSU:
 
@@ -81,7 +87,7 @@ The protocol that is used by the LSU to communicate with a memory works as follo
        {"name": "data_we_o", "wave": "x=.xxxx", "data": ["WE"]},
        {"name": "data_be_o", "wave": "x=.xxxx", "data": ["BE"]},
        {"name": "data_wdata_o", "wave": "x=.xxxx", "data": ["WData"]},
-       {"name": "data_gnt_i", "wave": "0.10..."}, 
+       {"name": "data_gnt_i", "wave": "0.10..."},
        {"name": "data_rvalid_i", "wave": "0..10.."},
        {"name": "data_err_i", "wave": "xxx=xxx", "data": ["Err"]},
        {"name": "data_rdata_i", "wave": "xxx=xxx", "data": ["RData"]}
@@ -109,7 +115,7 @@ The protocol that is used by the LSU to communicate with a memory works as follo
      ],
      "config": { "hscale": 2 }
    }
-   
+
 .. wavedrom::
    :name: timing3
    :caption: Slow Response Memory Transaction
@@ -122,7 +128,7 @@ The protocol that is used by the LSU to communicate with a memory works as follo
        {"name": "data_we_o", "wave": "x=..xxx", "data": ["WE"]},
        {"name": "data_be_o", "wave": "x=..xxx", "data": ["BE"]},
        {"name": "data_wdata_o", "wave": "x=..xxx", "data": ["WData"]},
-       {"name": "data_gnt_i", "wave": "0..10.."}, 
+       {"name": "data_gnt_i", "wave": "0..10.."},
        {"name": "data_rvalid_i", "wave": "0....10"},
        {"name": "data_err_i", "wave": "xxxxx=x", "data": ["Err"]},
        {"name": "data_rdata_i", "wave": "xxxxx=x", "data": ["RData"]}

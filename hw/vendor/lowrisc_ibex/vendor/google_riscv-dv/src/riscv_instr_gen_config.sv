@@ -39,9 +39,6 @@ class riscv_instr_gen_config extends uvm_object;
   // Pattern of data section: RAND_DATA, ALL_ZERO, INCR_VAL
   rand data_pattern_t    data_page_pattern;
 
-  // Max depth for the nested loops
-  rand bit [1:0]         max_nested_loop;
-
   // Associate array for delegation configuration for each exception and interrupt
   // When the bit is 1, the corresponding delegation is enabled.
   rand bit               m_mode_exception_delegation[exception_cause_t];
@@ -51,6 +48,10 @@ class riscv_instr_gen_config extends uvm_object;
 
   // Priviledged mode after boot
   rand privileged_mode_t init_privileged_mode;
+
+  rand bit[XLEN-1:0]     mstatus, mie,
+                         sstatus, sie,
+                         ustatus, uie;
 
   // Key fields in xSTATUS
   // Memory protection bits
@@ -69,12 +70,44 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    check_misa_init_val = 1'b0;
   bit                    check_xstatus = 1'b1;
 
+  // Virtual address translation is on for this test
+  rand bit               virtual_addr_translation_on;
+
+  //-----------------------------------------------------------------------------
+  //  User space memory region and stack setting
+  //-----------------------------------------------------------------------------
+
+  mem_region_t mem_region[$] = '{
+    '{name:"region_0", size_in_bytes: 4096,      xwr: 3'b111},
+    '{name:"region_1", size_in_bytes: 4096 * 4,  xwr: 3'b111},
+    '{name:"region_2", size_in_bytes: 4096 * 2,  xwr: 3'b111},
+    '{name:"region_3", size_in_bytes: 512,       xwr: 3'b111},
+    '{name:"region_4", size_in_bytes: 4096,      xwr: 3'b111}
+  };
+
+  // Stack section word length
+  int stack_len = 5000;
+
+  //-----------------------------------------------------------------------------
+  // Kernel section setting, used by supervisor mode programs
+  //-----------------------------------------------------------------------------
+
+  mem_region_t s_mem_region[$] = '{
+    '{name:"s_region_0", size_in_bytes: 4096, xwr: 3'b111},
+    '{name:"s_region_1", size_in_bytes: 4096, xwr: 3'b111}};
+
+  // Kernel Stack section word length
+  int kernel_stack_len = 4000;
+
+  // Number of instructions for each kernel program
+  int kernel_program_instr_cnt = 400;
+
   //-----------------------------------------------------------------------------
   // Instruction list based on the config, generate by build_instruction_template
   //-----------------------------------------------------------------------------
   riscv_instr_base       instr_template[riscv_instr_name_t];
   riscv_instr_name_t     basic_instr[$];
-  riscv_instr_name_t     instr_group[riscv_instr_cateogry_t][$];
+  riscv_instr_name_t     instr_group[riscv_instr_group_t][$];
   riscv_instr_name_t     instr_category[riscv_instr_cateogry_t][$];
 
   //-----------------------------------------------------------------------------
@@ -88,16 +121,16 @@ class riscv_instr_gen_config extends uvm_object;
   // For tests doesn't involve load/store, the data section generation could be skipped
   bit                    no_data_page;
   // Options to turn off some specific types of instructions
-  bit                    no_branch_jump;   // No branch/jump instruction
-  bit                    no_load_store;    // No load/store instruction
-  bit                    no_csr_instr;     // No csr instruction
-  bit                    no_ebreak = 1;    // No ebreak instruction
-  bit                    no_fence;         // No fence instruction
-  bit                    no_wfi = 1;       // No WFI instruction
+  bit                    no_branch_jump;     // No branch/jump instruction
+  bit                    no_load_store;      // No load/store instruction
+  bit                    no_csr_instr;       // No csr instruction
+  bit                    no_ebreak = 1;      // No ebreak instruction
+  bit                    no_dret = 1;        // No dret instruction
+  bit                    no_fence;           // No fence instruction
+  bit                    no_wfi = 1;         // No WFI instruction
   bit                    enable_unaligned_load_store;
-  bit                    enable_illegal_instruction;
-  bit                    enable_hint_instruction;
-  int                    bin_program_instr_cnt = 200;
+  int                    illegal_instr_ratio;
+  int                    hint_instr_ratio;
   // Directed boot privileged mode, u, m, s
   string                 boot_mode_opts;
   int                    enable_page_table_exception;
@@ -106,10 +139,15 @@ class riscv_instr_gen_config extends uvm_object;
   string                 asm_test_suffix;
   // Enable interrupt bit in MSTATUS (MIE, SIE, UIE)
   int                    enable_interrupt;
+  // Generate a bare program without any init/exit/error handling/page table routines
+  // The generated program can be integrated with a larger program.
+  // Note that the bare mode program is not expected to run in standalone mode
+  bit                    bare_program_mode;
   // Enable accessing illegal CSR instruction
   // - Accessing non-existence CSR
   // - Accessing CSR with wrong privileged mode
   bit                    enable_illegal_csr_instruction;
+  bit                    randomize_csr = 0;
   // sfence support
   bit                    allow_sfence_exception = 0;
   // Interrupt/Exception Delegation
@@ -123,16 +161,24 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    require_signature_addr = 1'b0;
   rand riscv_reg_t       signature_addr_reg;
   rand riscv_reg_t       signature_data_reg;
-  bit                    gen_debug_section = 1'b0;
+  // Register that will be used to handle any DCSR operations inside of the
+  // debug rom
+  rand riscv_reg_t       scratch_reg;
   // Enable a full or empty debug_rom section.
   // Full debug_rom will contain random instruction streams.
   // Empty debug_rom will contain just dret instruction and will return immediately.
   // Will be empty by default.
-  bit                    empty_debug_section = 1'b0;
+  bit                    gen_debug_section = 1'b0;
+  // Enable generation of a directed sequence of instructions containing
+  // ebreak inside the debug_rom.
+  // Disabled by default.
+  bit                    enable_ebreak_in_debug_rom = 1'b0;
+  // Enable setting dcsr.ebreak(m/s/u)
+  bit                    set_dcsr_ebreak = 1'b0;
   // Number of sub programs in the debug rom
   int                    num_debug_sub_program = 0;
   // Stack space allocated to each program, need to be enough to store necessary context
-  // Example: RA, SP, T0, loop registers
+  // Example: RA, SP, T0
   int                    min_stack_len_per_program = 10 * (XLEN/8);
   int                    max_stack_len_per_program = 16 * (XLEN/8);
   // Maximum branch distance, avoid skipping large portion of the code
@@ -142,9 +188,6 @@ class riscv_instr_gen_config extends uvm_object;
   // Reserved registers
   // Default reserved registers, only used by special instructions
   riscv_reg_t            default_reserved_regs[];
-  // Reserve some registers for loop counter, make sure the loop can execute
-  // in a determinstic way and not affected by other random instructions
-  rand riscv_reg_t       loop_regs[];
   // All reserved regs
   riscv_reg_t            reserved_regs[];
 
@@ -153,17 +196,6 @@ class riscv_instr_gen_config extends uvm_object;
   constraint default_c {
     sub_program_instr_cnt.size() == num_of_sub_program;
     debug_sub_program_instr_cnt.size() == num_debug_sub_program;
-    if (riscv_instr_pkg::support_debug_mode) {
-      main_program_instr_cnt + sub_program_instr_cnt.sum()
-                             + debug_program_instr_cnt
-                             + debug_sub_program_instr_cnt.sum() == instr_cnt;
-      debug_program_instr_cnt inside {[100 : 300]};
-      foreach(debug_sub_program_instr_cnt[i]) {
-        debug_sub_program_instr_cnt[i] inside {[100 : 300]};
-      }
-    } else {
-      main_program_instr_cnt + sub_program_instr_cnt.sum() == instr_cnt;
-    }
     main_program_instr_cnt inside {[10 : instr_cnt]};
     foreach(sub_program_instr_cnt[i]) {
       sub_program_instr_cnt[i] inside {[10 : instr_cnt]};
@@ -178,6 +210,29 @@ class riscv_instr_gen_config extends uvm_object;
       (init_privileged_mode != SUPERVISOR_MODE || !riscv_instr_pkg::support_sfence || mstatus_tvm || no_fence)
                                                      -> (enable_sfence == 1'b0);
     }
+  }
+
+  constraint debug_mode_c {
+      if (riscv_instr_pkg::support_debug_mode) {
+        debug_program_instr_cnt inside {[100 : 300]};
+        foreach(debug_sub_program_instr_cnt[i]) {
+          debug_sub_program_instr_cnt[i] inside {[100 : 300]};
+        }
+      }
+    `ifndef DSIM
+       main_program_instr_cnt + sub_program_instr_cnt.sum() == instr_cnt;
+    `else
+       // dsim has some issue supporting sum(), use some approximate constraint to generate
+       // instruction cnt
+       if (num_of_sub_program > 0) {
+         main_program_instr_cnt inside {[10:instr_cnt/2]};
+         foreach (sub_program_instr_cnt[i]) {
+           sub_program_instr_cnt[i] inside {[10:instr_cnt/num_of_sub_program]};
+         }
+       } else {
+         main_program_instr_cnt == instr_cnt;
+       }
+    `endif
   }
 
   // Boot privileged mode distribution
@@ -232,7 +287,7 @@ class riscv_instr_gen_config extends uvm_object;
   // You can modify this constraint if your ISS support different set of delegations
   constraint delegation_c {
     foreach(m_mode_exception_delegation[i]) {
-      if(!support_supervisor_mode) {
+      if(!support_supervisor_mode || no_delegation) {
         m_mode_exception_delegation[i] == 0;
       }
       if(!(i inside {INSTRUCTION_ADDRESS_MISALIGNED, BREAKPOINT, ECALL_UMODE,
@@ -241,7 +296,7 @@ class riscv_instr_gen_config extends uvm_object;
       }
     }
     foreach(m_mode_interrupt_delegation[i]) {
-      if(!support_supervisor_mode) {
+      if(!support_supervisor_mode || no_delegation) {
         m_mode_interrupt_delegation[i] == 0;
       }
       if(!(i inside {S_SOFTWARE_INTR, S_TIMER_INTR, S_EXTERNAL_INTR})) {
@@ -250,23 +305,33 @@ class riscv_instr_gen_config extends uvm_object;
     }
   }
 
-  constraint reserved_reg_c {
-    unique {loop_regs};
-    foreach(loop_regs[i]) {
-      !(loop_regs[i] inside {default_reserved_regs});
+  constraint reserve_scratch_reg_c {
+    scratch_reg != ZERO;
+    foreach (default_reserved_regs[i]) {
+      signature_data_reg != default_reserved_regs[i];
+      signature_addr_reg != default_reserved_regs[i];
     }
-    !(signature_addr_reg inside {ZERO, default_reserved_regs, loop_regs});
-    !(signature_data_reg inside {ZERO, default_reserved_regs, loop_regs});
-    signature_addr_reg != signature_data_reg;
   }
 
-  constraint legal_loop_regs_c {
-    soft max_nested_loop != 0;
-    // One register for loop counter, one for loop limit
-    loop_regs.size() == max_nested_loop*2;
-    unique {loop_regs};
-    foreach(loop_regs[i]) {
-      loop_regs[i] != ZERO;
+  constraint signature_addr_c {
+    if (require_signature_addr) {
+      foreach (default_reserved_regs[i]) {
+        signature_addr_reg != default_reserved_regs[i];
+        signature_data_reg != default_reserved_regs[i];
+      }
+      signature_data_reg != scratch_reg;
+      signature_addr_reg != scratch_reg;
+      signature_data_reg != ZERO;
+      signature_addr_reg != ZERO;
+    }
+  }
+
+  constraint addr_translaction_c {
+    solve init_privileged_mode before virtual_addr_translation_on;
+    if ((init_privileged_mode != MACHINE_MODE) && (SATP_MODE != BARE)) {
+      virtual_addr_translation_on == 1'b1;
+    } else {
+      virtual_addr_translation_on == 1'b0;
     }
   }
 
@@ -287,6 +352,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_int_arg_value("+num_of_sub_program=", num_of_sub_program);
     get_int_arg_value("+instr_cnt=", instr_cnt);
     get_bool_arg_value("+no_ebreak=", no_ebreak);
+    get_bool_arg_value("+no_dret=", no_dret);
     get_bool_arg_value("+no_wfi=", no_wfi);
     get_bool_arg_value("+no_branch_jump=", no_branch_jump);
     get_bool_arg_value("+no_load_store=", no_load_store);
@@ -297,17 +363,21 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+no_directed_instr=", no_directed_instr);
     get_bool_arg_value("+no_fence=", no_fence);
     get_bool_arg_value("+no_delegation=", no_delegation);
+    get_int_arg_value("+illegal_instr_ratio=", illegal_instr_ratio);
+    get_int_arg_value("+hint_instr_ratio=", hint_instr_ratio);
     get_bool_arg_value("+enable_unaligned_load_store=", enable_unaligned_load_store);
-    get_bool_arg_value("+enable_illegal_instruction=", enable_illegal_instruction);
-    get_bool_arg_value("+enable_hint_instruction=", enable_hint_instruction);
     get_bool_arg_value("+force_m_delegation=", force_m_delegation);
     get_bool_arg_value("+force_s_delegation=", force_s_delegation);
     get_bool_arg_value("+require_signature_addr=", require_signature_addr);
+    get_bool_arg_value("+randomize_csr=", randomize_csr);
     if (this.require_signature_addr) begin
       get_hex_arg_value("+signature_addr=", signature_addr);
     end
     get_bool_arg_value("+gen_debug_section=", gen_debug_section);
+    get_bool_arg_value("+bare_program_mode=", bare_program_mode);
     get_int_arg_value("+num_debug_sub_program=", num_debug_sub_program);
+    get_bool_arg_value("+enable_ebreak_in_debug_rom=", enable_ebreak_in_debug_rom);
+    get_bool_arg_value("+set_dcsr_ebreak=", set_dcsr_ebreak);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
       `uvm_info(get_full_name(), $sformatf(
                 "Got boot mode option - %0s", boot_mode_opts), UVM_LOW)
@@ -367,10 +437,8 @@ class riscv_instr_gen_config extends uvm_object;
   // Reserve below registers for special purpose instruction
   // The other normal instruction cannot use them as destination register
   virtual function void setup_default_reserved_regs();
-    default_reserved_regs = {RA, // x1, return address
-                             SP, // x2, stack pointer (user stack)
-                             TP, // x4, thread pointer, used as kernel stack pointer
-                             T0  // x5, alternative link pointer
+    default_reserved_regs = {SP, // x2, stack pointer (user stack)
+                             TP  // x4, thread pointer, used as kernel stack pointer
                              };
   endfunction
 
@@ -383,9 +451,9 @@ class riscv_instr_gen_config extends uvm_object;
 
   function void post_randomize();
     // Setup the list all reserved registers
-    reserved_regs = {default_reserved_regs, loop_regs};
+    reserved_regs = {default_reserved_regs, scratch_reg};
     // Need to save all loop registers, and RA/T0
-    min_stack_len_per_program = (max_nested_loop * 2 + 2) * (XLEN/8);
+    min_stack_len_per_program = 2 * (XLEN/8);
     // Check if the setting is legal
     check_setting();
   endfunction
@@ -439,10 +507,13 @@ class riscv_instr_gen_config extends uvm_object;
   endfunction
 
   // Build instruction template
-  virtual function void build_instruction_template();
+  virtual function void build_instruction_template(bit skip_instr_exclusion = 0);
     riscv_instr_name_t instr_name;
     riscv_instr_name_t excluded_instr[$];
-    get_excluded_instr(excluded_instr);
+    excluded_instr = {INVALID_INSTR};
+    if (!skip_instr_exclusion) begin
+      get_excluded_instr(excluded_instr);
+    end
     instr_name = instr_name.first;
     do begin
       riscv_instr_base instr;
@@ -452,9 +523,6 @@ class riscv_instr_gen_config extends uvm_object;
         if (instr.group inside {supported_isa}) begin
           `uvm_info(`gfn, $sformatf("Adding [%s] %s to the list",
                           instr.group.name(), instr.instr_name.name()), UVM_HIGH)
-          if (instr.category inside {SHIFT, ARITHMETIC, LOGICAL, COMPARE}) begin
-            basic_instr.push_back(instr_name);
-          end
           instr_group[instr.group].push_back(instr_name);
           instr_category[instr.category].push_back(instr_name);
           instr_template[instr_name] = instr;
@@ -463,14 +531,29 @@ class riscv_instr_gen_config extends uvm_object;
       instr_name = instr_name.next;
     end
     while (instr_name != instr_name.first);
+  endfunction
+
+  virtual function void build_instruction_list();
+    basic_instr = {instr_category[SHIFT], instr_category[ARITHMETIC],
+                   instr_category[LOGICAL], instr_category[COMPARE]};
     if (no_ebreak == 0) begin
       basic_instr = {basic_instr, EBREAK};
+      foreach(riscv_instr_pkg::supported_isa[i]) begin
+        if (riscv_instr_pkg::supported_isa[i] inside {RV32C, RV64C, RV128C, RV32DC, RV32FC}) begin
+          basic_instr = {basic_instr, C_EBREAK};
+          break;
+        end
+      end
+    end
+    if (no_dret == 0) begin
+      basic_instr = {basic_instr, DRET};
     end
     if (no_fence == 0) begin
       basic_instr = {basic_instr, instr_category[SYNCH]};
     end
     // TODO: Support CSR instruction in other mode
     if ((no_csr_instr == 0) && (init_privileged_mode == MACHINE_MODE)) begin
+      `uvm_info(`gfn, $sformatf("Adding CSR instr, mode: %0s", init_privileged_mode.name()), UVM_LOW)
       basic_instr = {basic_instr, instr_category[CSR]};
     end
     if (no_wfi == 0) begin
@@ -479,7 +562,6 @@ class riscv_instr_gen_config extends uvm_object;
   endfunction
 
   virtual function void get_excluded_instr(ref riscv_instr_name_t excluded[$]);
-    excluded = {excluded, INVALID_INSTR};
     // Below instrutions will modify stack pointer, not allowed in normal instruction stream.
     // It can be used in stack operation instruction stream.
     excluded = {excluded, C_SWSP, C_SDSP, C_ADDI16SP};
@@ -487,7 +569,7 @@ class riscv_instr_gen_config extends uvm_object;
       excluded = {excluded, SFENCE_VMA};
     end
     if (no_fence) begin
-      excluded = {excluded, FENCE, FENCEI, SFENCE_VMA};
+      excluded = {excluded, FENCE, FENCE_I, SFENCE_VMA};
     end
     // TODO: Support C_ADDI4SPN
     excluded = {excluded, C_ADDI4SPN};

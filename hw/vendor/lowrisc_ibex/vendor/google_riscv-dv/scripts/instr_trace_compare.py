@@ -201,6 +201,8 @@ def parse_gpr_update_from_trace(trace_csv, gpr_trace):
 
 def check_update_gpr(rd, rd_val, gpr):
   gpr_state_change = 0
+  if rd == '':
+    return gpr_state_change
   if rd in gpr:
     if rd_val != gpr[rd]:
       gpr_state_change = 1

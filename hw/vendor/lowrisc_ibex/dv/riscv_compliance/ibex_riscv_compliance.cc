@@ -6,11 +6,8 @@
 
 #include <iostream>
 
-#include "Vibex_riscv_compliance.h"
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
-
-VERILATED_TOPLEVEL(ibex_riscv_compliance)
 
 ibex_riscv_compliance *top;
 VerilatorSimCtrl *simctrl;

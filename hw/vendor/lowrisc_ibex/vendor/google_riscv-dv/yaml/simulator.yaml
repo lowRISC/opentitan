@@ -13,39 +13,74 @@
 # limitations under the License.
 
 - tool: vcs
-  compile_cmd:
-    - "vcs -file <cwd>/vcs.compile.option.f
-           -f <cwd>/files.f -full64
-           -l <out>/compile.log
-           -Mdir=<out>/vcs_simv.csrc
-           -o <out>/vcs_simv <cmp_opts>"
-  sim_cmd: >
-    <out>/vcs_simv +vcs+lic+wait <sim_opts> +ntb_random_seed=<seed>
+  compile:
+    cmd:
+      - "vcs -file <cwd>/vcs.compile.option.f
+              +incdir+<setting>
+              +incdir+<user_extension>
+             -f <cwd>/files.f -full64
+             -l <out>/compile.log
+             -Mdir=<out>/vcs_simv.csrc
+             -o <out>/vcs_simv <cmp_opts> <cov_opts> "
+    cov_opts: >
+      -cm_dir <out>/test.vdb
+  sim:
+    cmd: >
+      <out>/vcs_simv +vcs+lic+wait <sim_opts> +ntb_random_seed=<seed> <cov_opts>
+    cov_opts: >
+      -cm_dir <out>/test.vdb -cm_log /dev/null -cm_name test_<seed>
 
 - tool: ius
-  compile_cmd:
-    - "irun -64bit -access +rwc -f <cwd>/files.f
-            -q -sv -uvm -vlog_ext +.vh -I.
-            -uvmhome CDNS-1.2
-            -elaborate
-            -l <out>/compile.log <cmp_opts>"
-  sim_cmd: >
-    irun -R <sim_opts> -svseed <seed>
+  compile:
+    cmd:
+      - "irun -64bit -access +rwc -f <cwd>/files.f
+              +incdir+<setting>
+              +incdir+<user_extension>
+              -q -sv -uvm -vlog_ext +.vh -I.
+              -uvmhome CDNS-1.2
+              -elaborate
+              -l <out>/compile.log <cmp_opts>"
+  sim:
+    cmd: >
+      irun -R <sim_opts> -svseed <seed>
 
 - tool: questa
-  compile_cmd:
-    - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
-    - "vlog -64
-      -access=rwc
-      -f <cwd>/files.f
-      -sv
-      -mfcu -cuname design_cuname
-      +define+UVM_REGEX_NO_DPI
-      -writetoplevels <out>/top.list
-      -l <out>/compile.log <cmp_opts>"
-    - "vopt -64 -debug
-      +designfile -f <out>/top.list
-      -l <out>/optimize.log <cmp_opts>
-      -o design_opt"
-  sim_cmd: >
-    vsim -64 -c -do <cwd>/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed>
+  compile:
+    cmd:
+      - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
+      - "vlog -64
+        +incdir+<setting>
+        +incdir+<user_extension>
+        -access=rwc
+        -f <cwd>/files.f
+        -sv
+        -mfcu -cuname design_cuname
+        +define+UVM_REGEX_NO_DPI
+        -writetoplevels <out>/top.list
+        -l <out>/compile.log <cmp_opts>"
+      - "vopt -64 -debug
+        +designfile -f <out>/top.list
+        -l <out>/optimize.log <cmp_opts>
+        -o design_opt"
+  sim:
+    cmd: >
+      vsim -64 -c -do <cwd>/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed>
+
+- tool: dsim
+  env_var: DSIM,DSIM_LIB_PATH
+  compile:
+    cmd:
+      - "mkdir -p <out>/dsim"
+      - "<DSIM> -sv -work <out>/dsim
+                -genimage image
+                +incdir+$UVM_HOME/src
+                $UVM_HOME/src/uvm_pkg.sv
+                +define+DSIM
+                +incdir+<setting>
+                +incdir+<user_extension>
+                -f <cwd>/files.f
+                -l <out>/dsim/compile.log <cmp_opts>"
+  sim:
+    cmd: >
+      <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim
+

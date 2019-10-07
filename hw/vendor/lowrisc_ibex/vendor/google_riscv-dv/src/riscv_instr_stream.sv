@@ -20,11 +20,14 @@
 // instruction, mix two instruction streams etc.
 class riscv_instr_stream extends uvm_object;
 
-  rand riscv_instr_base instr_list[$];
+  riscv_instr_base      instr_list[$];
   int unsigned          instr_cnt;
   string                label = "";
   // User can specify a small group of available registers to generate various hazard condition
   rand riscv_reg_t      avail_regs[];
+  // Some additional reserved registers that should not be used as rd register
+  // by this instruction stream
+  riscv_reg_t           reserved_rd[];
 
   `uvm_object_utils(riscv_instr_stream)
   `uvm_object_new
@@ -95,9 +98,17 @@ class riscv_instr_stream extends uvm_object;
     if(replace) begin
       new_instr[0].label = instr_list[idx].label;
       new_instr[0].has_label = instr_list[idx].has_label;
-      instr_list = {instr_list[0:idx-1], new_instr, instr_list[idx+1:current_instr_cnt-1]};
+      if (idx == 0) begin
+        instr_list = {new_instr, instr_list[idx+1:current_instr_cnt-1]};
+      end else begin
+        instr_list = {instr_list[0:idx-1], new_instr, instr_list[idx+1:current_instr_cnt-1]};
+      end
     end else begin
-      instr_list = {instr_list[0:idx-1], new_instr, instr_list[idx:current_instr_cnt-1]};
+      if (idx == 0) begin
+        instr_list = {new_instr, instr_list[idx:current_instr_cnt-1]};
+      end else begin
+        instr_list = {instr_list[0:idx-1], new_instr, instr_list[idx:current_instr_cnt-1]};
+      end
     end
   endfunction
 
@@ -112,10 +123,10 @@ class riscv_instr_stream extends uvm_object;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(insert_instr_position,
       foreach(insert_instr_position[i]) {
         insert_instr_position[i] inside {[0:current_instr_cnt-1]};
-        if(i > 0) {
-          insert_instr_position[i] >= insert_instr_position[i-1];
-        }
       })
+    if (insert_instr_position.size() > 0) begin
+      insert_instr_position.sort();
+    end
     if(contained) begin
       insert_instr_position[0] = 0;
       if(new_instr_cnt > 1)
@@ -144,22 +155,8 @@ endclass
 class riscv_rand_instr_stream extends riscv_instr_stream;
 
   riscv_instr_gen_config  cfg;
-  bit                     access_u_mode_mem = 1'b1;
-  int                     max_load_store_offset;
-  int                     max_data_page_id;
+  bit                     kernel_mode;
   riscv_instr_name_t      allowed_instr[$];
-
-  // Some additional reserved registers that should not be used as rd register
-  // by this instruction stream
-  riscv_reg_t             reserved_rd[];
-
-  constraint avoid_reserved_rd_c {
-    if(reserved_rd.size() > 0) {
-      foreach(instr_list[i]) {
-        !(instr_list[i].rd inside {reserved_rd});
-      }
-    }
-  }
 
   `uvm_object_utils(riscv_rand_instr_stream)
   `uvm_object_new
@@ -172,17 +169,7 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     end
   endfunction
 
-  function void pre_randomize();
-    if(access_u_mode_mem) begin
-      max_load_store_offset = riscv_instr_pkg::data_page_size;
-      max_data_page_id = riscv_instr_pkg::num_of_data_pages;
-    end else begin
-      max_load_store_offset = riscv_instr_pkg::kernel_data_page_size;
-      max_data_page_id = riscv_instr_pkg::num_of_kernel_data_pages;
-    end
-  endfunction
-
-  virtual function setup_allowed_instr(bit no_branch = 1'b0, bit no_load_store = 1'b1);
+  virtual function void setup_allowed_instr(bit no_branch = 1'b0, bit no_load_store = 1'b1);
     allowed_instr = cfg.basic_instr;
     if (no_branch == 0) begin
       allowed_instr = {allowed_instr, cfg.instr_category[BRANCH]};
@@ -192,10 +179,11 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     end
   endfunction
 
-  virtual function void gen_instr(bit no_branch = 1'b0, bit no_load_store = 1'b1);
+  virtual function void gen_instr(bit no_branch = 1'b0, bit no_load_store = 1'b1,
+                                  bit is_debug_program = 1'b0);
     setup_allowed_instr(no_branch, no_load_store);
     foreach(instr_list[i]) begin
-      randomize_instr(instr_list[i]);
+      randomize_instr(instr_list[i], is_debug_program);
     end
     // Do not allow branch instruction as the last instruction because there's no
     // forward branch target
@@ -206,21 +194,30 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
   endfunction
 
   function void randomize_instr(riscv_instr_base instr,
+                                bit is_in_debug = 1'b0,
                                 bit skip_rs1 = 1'b0,
                                 bit skip_rs2 = 1'b0,
                                 bit skip_rd  = 1'b0,
                                 bit skip_imm = 1'b0,
                                 bit skip_csr = 1'b0);
     riscv_instr_name_t instr_name;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_name,
+    // if set_dcsr_ebreak is set, we do not want to generate any ebreak
+    // instructions inside the debug_rom
+    if (!cfg.enable_ebreak_in_debug_rom && is_in_debug) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_name,
+                                        instr_name inside {allowed_instr};
+                                        !(instr_name inside {EBREAK, C_EBREAK});)
+    end else begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_name,
                                        instr_name inside {allowed_instr};)
+    end
     instr.copy_base_instr(cfg.instr_template[instr_name]);
     `uvm_info(`gfn, $sformatf("%s: rs1:%0d, rs2:%0d, rd:%0d, imm:%0d",
                               instr.instr_name.name(),
                               instr.has_rs1,
                               instr.has_rs2,
                               instr.has_rd,
-                              instr.has_imm), UVM_HIGH)
+                              instr.has_imm), UVM_FULL)
     if (instr.has_imm && !skip_imm) begin
       instr.gen_rand_imm();
     end

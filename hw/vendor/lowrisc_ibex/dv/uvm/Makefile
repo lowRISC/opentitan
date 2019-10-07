@@ -73,11 +73,11 @@ CSR_OPTS=--csr_yaml=${CSR_FILE} \
      --steps=gen \
      --gen_timeout=${TIMEOUT} \
      --lsf_cmd="${LSF_CMD}" \
+     --core_setting_dir=${DV_DIR}/riscv_dv_extension \
+     --user_extension_dir=${DV_DIR}/riscv_dv_extension \
+     --simulator=${SIMULATOR} \
      ${COMMON_OPTS} \
      ${CSR_OPTS} \
-     --cmp_opts="+define+RISCV_CORE_SETTING=${DV_DIR}/riscv_dv_extension/ibex_core_setting.sv \
-       +define+RISCV_DV_EXT_FILE_LIST=${DV_DIR}/riscv_dv_extension/flist \
-       +incdir+${DV_DIR}/riscv_dv_extension/ " \
      --sim_opts="+uvm_set_type_override=riscv_asm_program_gen,ibex_asm_program_gen \
                  +signature_addr=${SIGNATURE_ADDR}";
 
@@ -123,6 +123,7 @@ rtl_sim:
      --simulator=${SIMULATOR} \
      --en_cov ${COV} \
      --en_wave ${WAVES} \
+     --lsf_cmd="${LSF_CMD}" \
      --sim_opts="+signature_addr=0x${SIGNATURE_ADDR}" \
      ${SIM_OPTS}
 
@@ -135,6 +136,12 @@ post_compare:
      ${COMMON_OPTS} \
      --simulator=${SIMULATOR} \
      --iss=${ISS}
+
+
+# Generate functional coverage
+fcov:
+	cd ${GEN_DIR}; \
+	python3 ./cov.py --dir ${OUT}/instr_gen/spike_sim -o ${OUT}/fcov
 
 # Load verdi to review coverage
 cov:

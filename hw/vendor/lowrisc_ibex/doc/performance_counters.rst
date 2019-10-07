@@ -71,7 +71,7 @@ Setting ``NumMHPMCounters`` to values larger than 8 does not result in any more 
 
 Unavailable counters always read 0.
 
-The association of events with the ``mphmcounter``s is hardwired as listed in the following table.
+The association of events with the ``mphmcounter`` registers is hardwired as listed in the following table.
 
 +----------------------+----------------+--------------+------------------+
 | Event Counter        | CSR Address    | Event ID/Bit | Event Name       |

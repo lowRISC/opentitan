@@ -21,9 +21,7 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
     // with ibex.
     cfg.check_misa_init_val = 1'b0;
     cfg.check_xstatus = 1'b0;
-    instr_stream.push_back(".macro init");
-    instr_stream.push_back(".endm");
-    instr_stream.push_back(".section .text.init");
+    instr_stream.push_back(".section .text");
     instr_stream.push_back(".globl _start");
     instr_stream.push_back(".option norvc");
     // 0x0 debug mode entry

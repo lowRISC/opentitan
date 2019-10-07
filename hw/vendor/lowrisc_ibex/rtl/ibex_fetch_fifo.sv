@@ -9,7 +9,9 @@
  * input port: send address and data to the FIFO
  * clear_i clears the FIFO for the following cycle, including any new request
  */
-module ibex_fetch_fifo (
+module ibex_fetch_fifo #(
+  parameter int unsigned NUM_REQS = 2
+) (
     input  logic        clk_i,
     input  logic        rst_ni,
 
@@ -31,10 +33,9 @@ module ibex_fetch_fifo (
     output logic        out_err_o
 );
 
-  localparam int unsigned DEPTH = 3; // must be 3 or greater
+  localparam int unsigned DEPTH = NUM_REQS+1;
 
   // index 0 is used for output
-  logic [DEPTH-1:0] [31:2]  addr_d,    addr_q;
   logic [DEPTH-1:0] [31:0]  rdata_d,   rdata_q;
   logic [DEPTH-1:0]         err_d,     err_q;
   logic [DEPTH-1:0]         valid_d,   valid_q;
@@ -47,9 +48,11 @@ module ibex_fetch_fifo (
   logic                     err,   err_unaligned;
   logic                     valid, valid_unaligned;
 
-  logic                     entry0_unaligned_d, entry0_unaligned_q;
   logic                     aligned_is_compressed, unaligned_is_compressed;
-  
+
+  logic                     addr_incr_two;
+  logic [31:1]              instr_addr_d, instr_addr_q;
+  logic                     instr_addr_en;
   logic                     unused_addr_in;
 
   /////////////////
@@ -70,21 +73,6 @@ module ibex_fetch_fifo (
   // The FIFO also has a direct bypass path, so a complete instruction might be made up of data
   // from the FIFO and new incoming data.
   //
-  // Additionally, branches can cause a fetch from an unaligned address. The full data word will be
-  // fetched, but the FIFO must output the unaligned instruction as the first valid data.
-
-  // Alignment is tracked with a flag, this records whether entry[0] of the FIFO has become unaligned.
-  // The flag is set once any compressed instruction enters the FIFO and is only cleared once a
-  // a compressed instruction realigns the FIFO, or the FIFO is cleared.
-
-                              // New incoming unaligned request (must be a branch) or already unaligned
-  assign entry0_unaligned_d = ((((in_valid_i & in_addr_i[1]) | entry0_unaligned_q) &
-                                // cleared by a compressed unaligned instruction
-                                ~(out_ready_i & unaligned_is_compressed)) |
-                               // Also set when a new aligned compressed instruction is driven
-                               (valid & out_ready_i & ~out_addr_o[1] & aligned_is_compressed)) &
-                              // reset by a FIFO clear
-                              ~clear_i;
 
   // Construct the output data for an unaligned instruction
   assign rdata_unaligned = valid_q[1] ? {rdata_q[1][15:0], rdata[31:16]} :
@@ -129,8 +117,29 @@ module ibex_fetch_fifo (
     end
   end
 
-  assign out_addr_o[31:2] = valid_q[0] ? addr_q[0]          : in_addr_i[31:2];
-  assign out_addr_o[1]    = valid_q[0] ? entry0_unaligned_q : in_addr_i[1];
+  /////////////////////////
+  // Instruction address //
+  /////////////////////////
+
+  // Update the address on branches and every time an instruction is driven
+  assign instr_addr_en = clear_i | (out_ready_i & out_valid_o);
+
+  // Increment the address by two every time a compressed instruction is popped
+  assign addr_incr_two = instr_addr_q[1] ? unaligned_is_compressed :
+                                           aligned_is_compressed;
+
+  assign instr_addr_d = clear_i ? in_addr_i[31:1] :
+                                  (instr_addr_q[31:1] +
+                                   // Increment address by 4 or 2
+                                   {29'd0,~addr_incr_two,addr_incr_two});
+
+  always_ff @(posedge clk_i) begin
+    if (instr_addr_en) begin
+      instr_addr_q <= instr_addr_d;
+    end
+  end
+
+  assign out_addr_o[31:1] = instr_addr_q[31:1];
   assign out_addr_o[0]    = 1'b0;
 
   // The LSB of the address is unused, since all addresses are halfword aligned
@@ -140,10 +149,10 @@ module ibex_fetch_fifo (
   // input port //
   ////////////////
 
-  // we accept data as long as our FIFO is not full
-  // we don't care about clear here as the data will be received one cycle
-  // later anyway
-  assign in_ready_o = ~valid_q[DEPTH-2];
+  // Accept data as long as our FIFO has space to accept the maximum number of outstanding
+  // requests. Note that the prefetch buffer does not count how many requests are actually
+  // outstanding, so space must be reserved for the maximum number.
+  assign in_ready_o = ~valid_q[DEPTH-NUM_REQS];
 
   /////////////////////
   // FIFO management //
@@ -157,7 +166,7 @@ module ibex_fetch_fifo (
     if (i == 0) begin : g_ent0
       assign lowest_free_entry[i] = ~valid_q[i];
     end else begin : g_ent_others
-      assign lowest_free_entry[i] = ~valid_q[i] & (&valid_q[i-1:0]);
+      assign lowest_free_entry[i] = ~valid_q[i] & valid_q[i-1];
     end
 
     // An entry is set when an incoming request chooses the lowest available entry
@@ -174,17 +183,15 @@ module ibex_fetch_fifo (
                          (in_valid_i & lowest_free_entry[i] & ~pop_fifo);
 
     // take the next entry or the incoming data
-    assign addr_d [i]  = valid_q[i+1] ? addr_q [i+1] : in_addr_i[31:2];
     assign rdata_d[i]  = valid_q[i+1] ? rdata_q[i+1] : in_rdata_i;
     assign err_d  [i]  = valid_q[i+1] ? err_q  [i+1] : in_err_i;
   end
   // The top entry is similar but with simpler muxing
-  assign lowest_free_entry[DEPTH-1] = ~valid_q[DEPTH-1] & (&valid_q[DEPTH-2:0]);
+  assign lowest_free_entry[DEPTH-1] = ~valid_q[DEPTH-1] & valid_q[DEPTH-2];
   assign valid_pushed     [DEPTH-1] = valid_q[DEPTH-1] | (in_valid_i & lowest_free_entry[DEPTH-1]);
   assign valid_popped     [DEPTH-1] = pop_fifo ? 1'b0 : valid_pushed[DEPTH-1];
   assign valid_d [DEPTH-1]          = valid_popped[DEPTH-1] & ~clear_i;
   assign entry_en[DEPTH-1]          = in_valid_i & lowest_free_entry[DEPTH-1];
-  assign addr_d  [DEPTH-1]          = in_addr_i[31:2];
   assign rdata_d [DEPTH-1]          = in_rdata_i;
   assign err_d   [DEPTH-1]          = in_err_i;
 
@@ -194,18 +201,15 @@ module ibex_fetch_fifo (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      valid_q            <= '0;
-      entry0_unaligned_q <= '0;
+      valid_q <= '0;
     end else begin
-      valid_q            <= valid_d;
-      entry0_unaligned_q <= entry0_unaligned_d;
+      valid_q <= valid_d;
     end
   end
 
   for (genvar i = 0; i < DEPTH; i++) begin : g_fifo_regs
     always_ff @(posedge clk_i) begin
       if (entry_en[i]) begin
-        addr_q[i]    <= addr_d[i];
         rdata_q[i]   <= rdata_d[i];
         err_q[i]     <= err_d[i];
       end

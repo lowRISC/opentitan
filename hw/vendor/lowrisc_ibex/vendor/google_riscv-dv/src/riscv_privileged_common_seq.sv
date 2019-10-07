@@ -55,7 +55,15 @@ class riscv_privileged_common_seq extends uvm_sequence;
   virtual function void setup_mmode_reg(privileged_mode_t mode, ref riscv_privil_reg regs[$]);
     mstatus = riscv_privil_reg::type_id::create("mstatus");
     mstatus.init_reg(MSTATUS);
-    `DV_CHECK_RANDOMIZE_FATAL(mstatus, "cannot randomize mstatus");
+    if (cfg.randomize_csr) begin
+      mstatus.set_val({cfg.mstatus[XLEN-1:XLEN-21], cfg.mstatus_tvm, cfg.mstatus_mxr,
+                     cfg.mstatus_sum, cfg.mstatus_mprv, cfg.mstatus[16:0]});
+    end else begin
+      mstatus.set_field("MPRV", cfg.mstatus_mprv);
+      mstatus.set_field("MXR", cfg.mstatus_mxr);
+      mstatus.set_field("SUM", cfg.mstatus_sum);
+      mstatus.set_field("TVM", cfg.mstatus_tvm);
+    end
     if(XLEN==64) begin
       mstatus.set_field("UXL", 2'b10);
       mstatus.set_field("SXL", 2'b10);
@@ -64,16 +72,9 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("FS", 0);
     mstatus.set_field("SD", 0);
     mstatus.set_field("UIE", 0);
-    mstatus.set_field("MPRV", cfg.mstatus_mprv);
-    mstatus.set_field("MXR", cfg.mstatus_mxr);
-    mstatus.set_field("SUM", cfg.mstatus_sum);
-    mstatus.set_field("TVM", cfg.mstatus_tvm);
     // Set the previous privileged mode as the target mode
     mstatus.set_field("MPP", mode);
-    if(mode == USER_MODE)
-      mstatus.set_field("SPP", 0);
-    else
-      mstatus.set_field("SPP", 1);
+    mstatus.set_field("SPP", 0);
     // Enable interrupt
     mstatus.set_field("MPIE", cfg.enable_interrupt);
     mstatus.set_field("MIE", cfg.enable_interrupt);
@@ -81,17 +82,27 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("SIE",  cfg.enable_interrupt);
     mstatus.set_field("UPIE", cfg.enable_interrupt);
     mstatus.set_field("UIE", riscv_instr_pkg::support_umode_trap);
+    `uvm_info(`gfn, $sformatf("mstatus_val: 0x%0x", mstatus.get_val()), UVM_LOW)
     regs.push_back(mstatus);
     // Enable external and timer interrupt
     if (MIE inside {implemented_csr}) begin
       mie = riscv_privil_reg::type_id::create("mie");
       mie.init_reg(MIE);
+      if (cfg.randomize_csr) begin
+        mie.set_val(cfg.mie);
+      end
       mie.set_field("UEIE", cfg.enable_interrupt);
       mie.set_field("SEIE", cfg.enable_interrupt);
       mie.set_field("MEIE", cfg.enable_interrupt);
       mie.set_field("USIE", cfg.enable_interrupt);
       mie.set_field("SSIE", cfg.enable_interrupt);
       mie.set_field("MSIE", cfg.enable_interrupt);
+      // TODO(udinator) - since full CSRs are being randomized, it's necessary to hardwire the xTIE
+      // fields to 1'b0, as it causes some timer interrupts to be triggered in Spike after a certain
+      // amount of simulation time.
+      mie.set_field("MTIE", 1'b0);
+      mie.set_field("STIE", 1'b0);
+      mie.set_field("UTIE", 1'b0);
       regs.push_back(mie);
     end
   endfunction
@@ -100,6 +111,9 @@ class riscv_privileged_common_seq extends uvm_sequence;
     sstatus = riscv_privil_reg::type_id::create("sstatus");
     sstatus.init_reg(SSTATUS);
     `DV_CHECK_RANDOMIZE_FATAL(sstatus, "cannot randomize sstatus")
+    if (cfg.randomize_csr) begin
+      sstatus.set_val(cfg.sstatus);
+    end
     sstatus.set_field("SPIE", cfg.enable_interrupt);
     sstatus.set_field("SIE",  cfg.enable_interrupt);
     sstatus.set_field("UPIE", cfg.enable_interrupt);
@@ -111,19 +125,21 @@ class riscv_privileged_common_seq extends uvm_sequence;
     sstatus.set_field("FS", 0);
     sstatus.set_field("SD", 0);
     sstatus.set_field("UIE", 0);
-    if(mode == USER_MODE)
-      sstatus.set_field("SPP", 0);
-    else
-      sstatus.set_field("SPP", 1);
+    sstatus.set_field("SPP", 0);
     regs.push_back(sstatus);
     // Enable external and timer interrupt
     if (SIE inside {implemented_csr}) begin
       sie = riscv_privil_reg::type_id::create("sie");
       sie.init_reg(SIE);
+      if (cfg.randomize_csr) begin
+        sie.set_val(cfg.sie);
+      end
       sie.set_field("UEIE", cfg.enable_interrupt);
       sie.set_field("SEIE", cfg.enable_interrupt);
       sie.set_field("USIE", cfg.enable_interrupt);
       sie.set_field("SSIE", cfg.enable_interrupt);
+      sie.set_field("STIE", 1'b0);
+      sie.set_field("UTIE", 1'b0);
       regs.push_back(sie);
     end
   endfunction
@@ -132,14 +148,21 @@ class riscv_privileged_common_seq extends uvm_sequence;
     ustatus = riscv_privil_reg::type_id::create("ustatus");
     ustatus.init_reg(USTATUS);
     `DV_CHECK_RANDOMIZE_FATAL(ustatus, "cannot randomize ustatus")
+    if (cfg.randomize_csr) begin
+      ustatus.set_val(cfg.ustatus);
+    end
     ustatus.set_field("UIE", cfg.enable_interrupt);
     ustatus.set_field("UPIE", cfg.enable_interrupt);
     regs.push_back(ustatus);
     if (UIE inside {implemented_csr}) begin
       uie = riscv_privil_reg::type_id::create("uie");
       uie.init_reg(UIE);
+      if (cfg.randomize_csr) begin
+        uie.set_val(cfg.uie);
+      end
       uie.set_field("UEIE", cfg.enable_interrupt);
       uie.set_field("USIE", cfg.enable_interrupt);
+      uie.set_field("UTIE", 1'b0);
       regs.push_back(uie);
     end
   endfunction

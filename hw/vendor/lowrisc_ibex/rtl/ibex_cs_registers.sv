@@ -24,7 +24,12 @@ module ibex_cs_registers #(
 
     // Hart ID
     input  logic [31:0]          hart_id_i,
-    output ibex_pkg::priv_lvl_e  priv_mode_o,
+
+    // Privilege mode
+    output ibex_pkg::priv_lvl_e  priv_mode_id_o,
+    output ibex_pkg::priv_lvl_e  priv_mode_if_o,
+    output ibex_pkg::priv_lvl_e  priv_mode_lsu_o,
+    output logic                 csr_mstatus_tw_o,
 
     // mtvec
     output logic [31:0]          csr_mtvec_o,
@@ -112,7 +117,14 @@ module ibex_cs_registers #(
     logic      mie;
     logic      mpie;
     priv_lvl_e mpp;
+    logic      mprv;
+    logic      tw;
   } Status_t;
+
+  typedef struct packed {
+    logic      mpie;
+    priv_lvl_e mpp;
+  } StatusStk_t;
 
   // struct for mip/mie CSRs
   typedef struct packed {
@@ -145,6 +157,7 @@ module ibex_cs_registers #(
   logic [31:0] exception_pc;
 
   // CSRs
+  priv_lvl_e   priv_lvl_q, priv_lvl_d;
   Status_t     mstatus_q, mstatus_d;
   Interrupts_t mie_q, mie_d;
   logic [31:0] mscratch_q, mscratch_d;
@@ -160,7 +173,7 @@ module ibex_cs_registers #(
 
   // CSRs for recoverable NMIs
   // NOTE: these CSRS are nonstandard, see https://github.com/riscv/riscv-isa-manual/issues/261
-  Status_t     mstack_q, mstack_d;
+  StatusStk_t  mstack_q, mstack_d;
   logic [31:0] mstack_epc_q, mstack_epc_d;
   logic  [5:0] mstack_cause_q, mstack_cause_d;
 
@@ -204,11 +217,12 @@ module ibex_cs_registers #(
   assign csr_addr           = {csr_addr_i};
   assign mhpmcounter_idx    = csr_addr[4:0];
 
-  assign illegal_csr_priv   = 1'b0; // we only support M-mode
+  // See RISC-V Privileged Specification, version 1.11, Section 2.1
+  assign illegal_csr_priv   = (csr_addr[9:8] > {priv_lvl_q});
   assign illegal_csr_write  = (csr_addr[11:10] == 2'b11) && csr_wreq;
-  assign illegal_csr_insn_o = illegal_csr | illegal_csr_write | illegal_csr_priv;
+  assign illegal_csr_insn_o = csr_access_i & (illegal_csr | illegal_csr_write | illegal_csr_priv);
 
-  // mip CSR is purely combintational - must be able to re-enable the clock upon WFI
+  // mip CSR is purely combinational - must be able to re-enable the clock upon WFI
   assign mip.irq_software = irq_software_i & mie_q.irq_software;
   assign mip.irq_timer    = irq_timer_i    & mie_q.irq_timer;
   assign mip.irq_external = irq_external_i & mie_q.irq_external;
@@ -229,6 +243,7 @@ module ibex_cs_registers #(
         csr_rdata_int[CSR_MSTATUS_MIE_BIT]                              = mstatus_q.mie;
         csr_rdata_int[CSR_MSTATUS_MPIE_BIT]                             = mstatus_q.mpie;
         csr_rdata_int[CSR_MSTATUS_MPP_BIT_HIGH:CSR_MSTATUS_MPP_BIT_LOW] = mstatus_q.mpp;
+        csr_rdata_int[CSR_MSTATUS_MPRV_BIT]                             = mstatus_q.mprv;
       end
 
       // misa
@@ -323,7 +338,7 @@ module ibex_cs_registers #(
           if ((csr_addr[4:0] == 5'b00000) ||     // CSR_MCOUNTINHIBIT
               (csr_addr[4:0] == 5'b00001) ||
               (csr_addr[4:0] == 5'b00010)) begin
-            illegal_csr = csr_access_i;
+            illegal_csr = 1'b1;
           end
 
         end else if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTER) begin
@@ -332,7 +347,7 @@ module ibex_cs_registers #(
           if ((csr_addr[4:0] == 5'b00000) ||     // CSR_MCYCLE
               (csr_addr[4:0] == 5'b00001) ||
               (csr_addr[4:0] == 5'b00010)) begin // CSR_MINSTRET
-            illegal_csr = csr_access_i;
+            illegal_csr = 1'b1;
           end
 
         end else if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTERH) begin
@@ -341,10 +356,10 @@ module ibex_cs_registers #(
           if ((csr_addr[4:0] == 5'b00000) ||     // CSR_MCYCLEH
               (csr_addr[4:0] == 5'b00001) ||
               (csr_addr[4:0] == 5'b00010)) begin // CSR_MINSTRETH
-            illegal_csr = csr_access_i;
+            illegal_csr = 1'b1;
           end
         end else begin
-          illegal_csr = csr_access_i;
+          illegal_csr = 1'b1;
         end
       end
     endcase
@@ -354,6 +369,7 @@ module ibex_cs_registers #(
   always_comb begin
     exception_pc = pc_id_i;
 
+    priv_lvl_d   = priv_lvl_q;
     mstatus_d    = mstatus_q;
     mie_d        = mie_q;
     mscratch_d   = mscratch_q;
@@ -374,49 +390,54 @@ module ibex_cs_registers #(
     mhpmcounter_we   = '0;
     mhpmcounterh_we  = '0;
 
-    unique case (csr_addr_i)
-      // mstatus: IE bit
-      CSR_MSTATUS: begin
-        if (csr_we_int) begin
+    if (csr_we_int) begin
+      unique case (csr_addr_i)
+        // mstatus: IE bit
+        CSR_MSTATUS: begin
           mstatus_d = '{
               mie:  csr_wdata_int[CSR_MSTATUS_MIE_BIT],
               mpie: csr_wdata_int[CSR_MSTATUS_MPIE_BIT],
-              mpp:  PRIV_LVL_M
+              mpp:  priv_lvl_e'(csr_wdata_int[CSR_MSTATUS_MPP_BIT_HIGH:CSR_MSTATUS_MPP_BIT_LOW]),
+              mprv: csr_wdata_int[CSR_MSTATUS_MPRV_BIT],
+              tw:   csr_wdata_int[CSR_MSTATUS_TW_BIT]
           };
+          // Convert illegal values to M-mode
+          if ((mstatus_d.mpp != PRIV_LVL_M) && (mstatus_d.mpp != PRIV_LVL_U)) begin
+            mstatus_d.mpp = PRIV_LVL_M;
+          end
         end
-      end
 
-      // interrupt enable
-      CSR_MIE: begin
-        if (csr_we_int) begin
+        // interrupt enable
+        CSR_MIE: begin
           mie_d.irq_software = csr_wdata_int[CSR_MSIX_BIT];
           mie_d.irq_timer    = csr_wdata_int[CSR_MTIX_BIT];
           mie_d.irq_external = csr_wdata_int[CSR_MEIX_BIT];
           mie_d.irq_fast     = csr_wdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW];
         end
-      end
 
-      CSR_MSCRATCH: if (csr_we_int) mscratch_d = csr_wdata_int;
+        CSR_MSCRATCH: mscratch_d = csr_wdata_int;
 
-      // mepc: exception program counter
-      CSR_MEPC: if (csr_we_int) mepc_d = {csr_wdata_int[31:1], 1'b0};
+        // mepc: exception program counter
+        CSR_MEPC: mepc_d = {csr_wdata_int[31:1], 1'b0};
 
-      // mcause
-      CSR_MCAUSE: if (csr_we_int) mcause_d = {csr_wdata_int[31], csr_wdata_int[4:0]};
+        // mcause
+        CSR_MCAUSE: mcause_d = {csr_wdata_int[31], csr_wdata_int[4:0]};
 
-      // mtval: trap value
-      CSR_MTVAL: if (csr_we_int) mtval_d = csr_wdata_int;
+        // mtval: trap value
+        CSR_MTVAL: mtval_d = csr_wdata_int;
 
-      // mtvec
-      // mtvec.MODE set to vectored
-      // mtvec.BASE must be 256-byte aligned
-      CSR_MTVEC: if (csr_we_int) mtvec_d = {csr_wdata_int[31:8], 6'b0, 2'b01};
+        // mtvec
+        // mtvec.MODE set to vectored
+        // mtvec.BASE must be 256-byte aligned
+        CSR_MTVEC: mtvec_d = {csr_wdata_int[31:8], 6'b0, 2'b01};
 
-      CSR_DCSR: begin
-        if (csr_we_int) begin
+        CSR_DCSR: begin
           dcsr_d = csr_wdata_int;
           dcsr_d.xdebugver = XDEBUGVER_STD;
-          dcsr_d.prv = PRIV_LVL_M; // only M-mode is supported
+          // Change to PRIV_LVL_M if sofware writes an unsupported value
+          if ((dcsr_d.prv != PRIV_LVL_M) && (dcsr_d.prv != PRIV_LVL_U)) begin
+            dcsr_d.prv = PRIV_LVL_M;
+          end
 
           // currently not supported:
           dcsr_d.nmip = 1'b0;
@@ -429,59 +450,24 @@ module ibex_cs_registers #(
           dcsr_d.zero1 = 1'b0;
           dcsr_d.zero2 = 12'h0;
         end
-      end
 
-      CSR_DPC: begin
-        // Only valid PC addresses are allowed (half-word aligned with C ext.)
-        if (csr_we_int && csr_wdata_int[0] == 1'b0) begin
-          depc_d = csr_wdata_int;
+        CSR_DPC: begin
+          // Only valid PC addresses are allowed (half-word aligned with C ext.)
+          if (csr_wdata_int[0] == 1'b0) begin
+            depc_d = csr_wdata_int;
+          end
         end
-      end
 
-      CSR_DSCRATCH0: begin
-        if (csr_we_int) begin
-          dscratch0_d = csr_wdata_int;
-        end
-      end
+        CSR_DSCRATCH0: dscratch0_d = csr_wdata_int;
+        CSR_DSCRATCH1: dscratch1_d = csr_wdata_int;
 
-      CSR_DSCRATCH1: begin
-        if (csr_we_int) begin
-          dscratch1_d = csr_wdata_int;
-        end
-      end
+        CSR_MCOUNTINHIBIT: mcountinhibit_we   = 1'b1;
+        CSR_MCYCLE:        mhpmcounter_we[0]  = 1'b1;
+        CSR_MCYCLEH:       mhpmcounterh_we[0] = 1'b1;
+        CSR_MINSTRET:      mhpmcounter_we[2]  = 1'b1;
+        CSR_MINSTRETH:     mhpmcounterh_we[2] = 1'b1;
 
-      CSR_MCOUNTINHIBIT: begin
-        if (csr_we_int) begin
-          mcountinhibit_we = 1'b1;
-        end
-      end
-
-      CSR_MCYCLE: begin
-        if (csr_we_int) begin
-          mhpmcounter_we[0] = 1'b1;
-        end
-      end
-
-      CSR_MCYCLEH: begin
-        if (csr_we_int) begin
-          mhpmcounterh_we[0] = 1'b1;
-        end
-      end
-
-      CSR_MINSTRET: begin
-        if (csr_we_int) begin
-          mhpmcounter_we[2] = 1'b1;
-        end
-      end
-
-      CSR_MINSTRETH: begin
-        if (csr_we_int) begin
-          mhpmcounterh_we[2] = 1'b1;
-        end
-      end
-
-      default: begin
-        if (csr_we_int == 1'b1) begin
+        default: begin
           // performance counters and event selector
           if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTER) begin
             mhpmcounter_we[mhpmcounter_idx] = 1'b1;
@@ -489,8 +475,8 @@ module ibex_cs_registers #(
             mhpmcounterh_we[mhpmcounter_idx] = 1'b1;
           end
         end
-      end
-    endcase
+      endcase
+    end
 
     // exception controller gets priority over other writes
     unique case (1'b1)
@@ -509,15 +495,16 @@ module ibex_cs_registers #(
         if (debug_csr_save_i) begin
           // all interrupts are masked
           // do not update cause, epc, tval, epc and status
-          dcsr_d.prv   = PRIV_LVL_M;
+          dcsr_d.prv   = priv_lvl_q;
           dcsr_d.cause = debug_cause_i;
           depc_d       = exception_pc;
         end else begin
+          priv_lvl_d     = PRIV_LVL_M;
           mtval_d        = csr_mtval_i;
           mstatus_d.mie  = 1'b0; // disable interrupts
           // save current status
           mstatus_d.mpie = mstatus_q.mie;
-          mstatus_d.mpp  = PRIV_LVL_M;
+          mstatus_d.mpp  = priv_lvl_q;
           mepc_d         = exception_pc;
           mcause_d       = {csr_mcause_i};
           // save previous status for recoverable NMI
@@ -529,12 +516,15 @@ module ibex_cs_registers #(
       end // csr_save_cause_i
 
       csr_restore_mret_i: begin // MRET
+        priv_lvl_d     = mstatus_q.mpp;
         mstatus_d.mie  = mstatus_q.mpie; // re-enable interrupts
         // restore previous status for recoverable NMI
         mstatus_d.mpie = mstack_q.mpie;
         mstatus_d.mpp  = mstack_q.mpp;
         mepc_d         = mstack_epc_q;
         mcause_d       = mstack_cause_q;
+        mstack_d.mpie  = 1'b1;
+        mstack_d.mpp   = PRIV_LVL_U;
       end // csr_restore_mret_i
 
       default:;
@@ -576,6 +566,7 @@ module ibex_cs_registers #(
   assign csr_mtvec_o = mtvec_q;
 
   assign csr_mstatus_mie_o   = mstatus_q.mie;
+  assign csr_mstatus_tw_o    = mstatus_q.tw;
   assign debug_single_step_o = dcsr_q.step;
   assign debug_ebreakm_o     = dcsr_q.ebreakm;
 
@@ -584,10 +575,13 @@ module ibex_cs_registers #(
   // actual registers
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      priv_lvl_q     <= PRIV_LVL_M;
       mstatus_q      <= '{
           mie:  1'b0,
-          mpie: 1'b0,
-          mpp:  PRIV_LVL_M
+          mpie: 1'b1,
+          mpp:  PRIV_LVL_U,
+          mprv: 1'b0,
+          tw:   1'b0
       };
       mie_q          <= '0;
       mscratch_q     <= '0;
@@ -606,15 +600,15 @@ module ibex_cs_registers #(
       dscratch1_q    <= '0;
 
       mstack_q       <= '{
-          mie:  1'b0,
-          mpie: 1'b0,
-          mpp:  PRIV_LVL_M
+          mpie: 1'b1,
+          mpp:  PRIV_LVL_U
       };
       mstack_epc_q   <= '0;
       mstack_cause_q <= '0;
 
     end else begin
       // update CSRs
+      priv_lvl_q     <= priv_lvl_d;
       mstatus_q      <= mstatus_d;
       mie_q          <= mie_d;
       mscratch_q     <= mscratch_d;
@@ -634,7 +628,12 @@ module ibex_cs_registers #(
     end
   end
 
-  assign priv_mode_o = mstatus_q.mpp;
+  // Send current priv level to the decoder
+  assign priv_mode_id_o = priv_lvl_q;
+  // New instruction fetches need to account for updates to priv_lvl_q this cycle
+  assign priv_mode_if_o = priv_lvl_d;
+  // Load/store instructions must factor in MPRV for PMP checking
+  assign priv_mode_lsu_o = mstatus_q.mprv ? mstatus_q.mpp : priv_lvl_q;
 
   // -----------------
   // PMP registers

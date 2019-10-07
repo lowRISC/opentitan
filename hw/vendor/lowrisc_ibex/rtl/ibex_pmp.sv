@@ -19,8 +19,7 @@ module ibex_pmp #(
     input  ibex_pkg::pmp_cfg_t      csr_pmp_cfg_i  [PMPNumRegions],
     input  logic [33:0]             csr_pmp_addr_i [PMPNumRegions],
 
-    input  ibex_pkg::priv_lvl_e     priv_mode_i,    // Current priv mode, assumed to
-                                                    // be the same for all channels
+    input  ibex_pkg::priv_lvl_e     priv_mode_i    [PMPNumChan],
     // Access checking channels
     input  logic [33:0]             pmp_req_addr_i [PMPNumChan],
     input  ibex_pkg::pmp_req_e      pmp_req_type_i [PMPNumChan],
@@ -28,7 +27,7 @@ module ibex_pmp #(
 
 );
 
-  import ibex_pkg::*; 
+  import ibex_pkg::*;
 
   // Access Checking Signals
   logic [33:0]                                region_start_addr [PMPNumRegions];
@@ -36,7 +35,6 @@ module ibex_pmp #(
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_match_high;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_match_low;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_match_both;
-  logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_match_partial;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_perm_check;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   machine_access_fault;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   user_access_allowed;
@@ -81,11 +79,8 @@ module ibex_pmp #(
                                            (region_start_addr[r][33:PMPGranularity+2] &
                                             region_addr_mask[r]));
       assign region_match_high[c][r]    = (pmp_req_addr_i[c][33:PMPGranularity+2] <=
-                                           (csr_pmp_addr_i[r][33:PMPGranularity+2] &
-                                            region_addr_mask[r]));
+                                           csr_pmp_addr_i[r][33:PMPGranularity+2]);
       assign region_match_both[c][r]    = region_match_low[c][r] & region_match_high[c][r] &
-                                          (csr_pmp_cfg_i[r].mode != PMP_MODE_OFF);
-      assign region_match_partial[c][r] = (region_match_low[c][r] ^ region_match_high[c][r]) &
                                           (csr_pmp_cfg_i[r].mode != PMP_MODE_OFF);
       // Check specific required permissions
       assign region_perm_check[c][r] =
@@ -95,17 +90,11 @@ module ibex_pmp #(
       // In machine mode, any match to a locked region without sufficient permissions is a fault
       assign machine_access_fault[c][r] = region_match_both[c][r] & csr_pmp_cfg_i[r].lock &
                                           ~region_perm_check[c][r];
-      if (r == 0) begin : g_region0
-        // In any other mode, any access should fault unless is matches a region
-        assign user_access_allowed[c][r]  = region_match_both[c][r] & region_perm_check[c][r];
-      end else begin : g_oth_regions
-        assign user_access_allowed[c][r]  = region_match_both[c][r] & region_perm_check[c][r] &
-        // any higher priority (lower region number) partial match should also cause a fault
-                                            ~|region_match_partial[c][r-1:0];
-      end
+      // In any other mode, any access should fault unless is matches a region
+      assign user_access_allowed[c][r]  = region_match_both[c][r] & region_perm_check[c][r];
     end
-    assign access_fault[c] = (priv_mode_i == PRIV_LVL_M) ? |machine_access_fault[c] :
-                                                           ~|user_access_allowed[c];
+    assign access_fault[c] = (priv_mode_i[c] == PRIV_LVL_M) ? |machine_access_fault[c] :
+                                                              ~|user_access_allowed[c];
 
     assign pmp_req_err_o[c] = access_fault[c];
   end

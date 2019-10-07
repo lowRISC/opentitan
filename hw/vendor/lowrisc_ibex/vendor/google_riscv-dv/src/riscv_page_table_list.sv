@@ -353,7 +353,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     // Fix kernel leaf PTE
     instr.push_back("fix_kernel_leaf_pte:");
     // - Load the starting virtual address of the kernel space
-    instr.push_back($sformatf("la x%0d, _kernel_start", tmp_reg));
+    instr.push_back($sformatf("la x%0d, _kernel_instr_start", tmp_reg));
+    // TODO: Fix kernel instruction/data pages separatedly
     instr.push_back($sformatf("slli x%0d, x%0d, %0d", tmp_reg, tmp_reg,
                     XLEN - MAX_USED_VADDR_BITS));
     instr.push_back($sformatf("srli x%0d, x%0d, %0d", tmp_reg, tmp_reg,
@@ -460,14 +461,14 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
         end
       end
     end
-    // ---------------------------------------
-    // Set the kernel page u bit to 0
-    // ---------------------------------------
-    // Load the start and end address of the kernel space
+    // ---------------------------------------------------------------------------
+    // Set the kernel page u bit to 0 for supervisor mode instruction/data pages
+    // ---------------------------------------------------------------------------
     if (cfg.support_supervisor_mode) begin
       instr = {instr,
-               "la x20, _kernel_start",
-               "la x21, _kernel_end",
+               // Process kernel instruction pages
+               "la x20, _kernel_instr_start",
+               "la x21, _kernel_instr_end",
                // Get the VPN of the physical address
                $sformatf("slli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS),
                $sformatf("srli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS + 12),
@@ -480,7 +481,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                "add x20, x22, x20",
                "add x21, x22, x21",
                $sformatf("li x22, 0x%0x", ubit_mask),
-               "process_kernel_pte:",
+               "1:",
                // Load the PTE from the memory
                $sformatf("l%0s x23, 0(x20)", load_store_unit),
                // Unset U bit
@@ -490,7 +491,30 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                // Move to the next PTE
                $sformatf("addi x20, x20, %0d", XLEN/8),
                // If not the end of the kernel space, process the next PTE
-               "ble x20, x21, process_kernel_pte"};
+               "ble x20, x21, 1b",
+               // Process kernel data pages
+               "la x20, _kernel_data_start",
+               // Get the VPN of the physical address
+               $sformatf("slli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS),
+               $sformatf("srli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS + 12),
+               $sformatf("slli x20, x20, %0d", $clog2(XLEN)),
+               // Starting from the first 4KB leaf page table
+               $sformatf("la x22, page_table_%0d", get_1st_4k_table_id()),
+               "add x20, x22, x20",
+               $sformatf("li x22, 0x%0x", ubit_mask),
+               // Assume 20 PTEs for kernel data pages
+               $sformatf("addi x20, x20, %0d", 20 * XLEN/8),
+               "2:",
+               // Load the PTE from the memory
+               $sformatf("l%0s x23, 0(x20)", load_store_unit),
+               // Unset U bit
+               "and x23, x23, x22",
+               // Save PTE back to memory
+               $sformatf("l%0s x23, 0(x20)", load_store_unit),
+               // Move to the next PTE
+               $sformatf("addi x20, x20, %0d", XLEN/8),
+               // If not the end of the kernel space, process the next PTE
+               "ble x20, x21, 2b"};
     end
   endfunction
 

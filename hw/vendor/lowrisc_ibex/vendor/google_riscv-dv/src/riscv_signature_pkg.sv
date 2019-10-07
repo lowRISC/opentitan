@@ -42,13 +42,18 @@ package riscv_signature_pkg;
     IN_SUPERVISOR_MODE,
     IN_USER_MODE,
     HANDLING_IRQ,
-    HANDLING_EXCEPTION
+    FINISHED_IRQ,
+    HANDLING_EXCEPTION,
+    INSTR_FAULT_EXCEPTION,
+    ILLEGAL_INSTR_EXCEPTION,
+    LOAD_FAULT_EXCEPTION,
+    STORE_FAULT_EXCEPTION,
+    EBREAK_EXCEPTION
   } core_status_t;
 
   typedef enum bit {
     TEST_PASS,
     TEST_FAIL
   } test_result_t;
-
 
 endpackage

@@ -7,6 +7,7 @@
 // ---------------------------------------------
 
 `include "core_ibex_dut_probe_if.sv"
+`include "core_ibex_rvfi_if.sv"
 
 package core_ibex_env_pkg;
 

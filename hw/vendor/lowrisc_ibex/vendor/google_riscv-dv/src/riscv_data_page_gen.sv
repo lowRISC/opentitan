@@ -23,6 +23,7 @@ class riscv_data_page_gen extends uvm_object;
 
   riscv_instr_gen_config  cfg;
   string                  data_page_str[$];
+  mem_region_t          mem_region_setting[$];
 
   `uvm_object_utils(riscv_data_page_gen)
 
@@ -48,29 +49,48 @@ class riscv_data_page_gen extends uvm_object;
     end
   endfunction
 
-  // Generate the assembly code for the data section
+  // Generate data pages for all memory regions
   function void gen_data_page(data_pattern_t pattern, bit is_kernel = 1'b0);
     string tmp_str;
     bit [7:0] tmp_data[];
     int page_cnt;
     int page_size;
     data_page_str = {};
-    page_cnt = is_kernel ? riscv_instr_pkg::num_of_kernel_data_pages :
-                           riscv_instr_pkg::num_of_data_pages;
-    page_size = is_kernel ? riscv_instr_pkg::kernel_data_page_size :
-                            riscv_instr_pkg::data_page_size;
-    for(int section_idx = 0; section_idx < page_cnt; section_idx++) begin
-      if(is_kernel) begin
-        data_page_str.push_back($sformatf("kernel_data_page_%0d:", section_idx));
-      end else begin
-        data_page_str.push_back($sformatf("data_page_%0d:", section_idx));
+    if (is_kernel) begin
+      mem_region_setting = cfg.s_mem_region;
+    end else begin
+      mem_region_setting = cfg.mem_region;
+    end
+    if (is_kernel) begin
+      // All kernel data pages in the same section
+      data_page_str.push_back(".pushsection .kernel_data,\"aw\",@progbits;");
+    end
+    foreach (mem_region_setting[i]) begin
+      `uvm_info(`gfn, $sformatf("Generate data section: %0s size:0x%0x  xwr:0x%0x]",
+                                mem_region_setting[i].name,
+                                mem_region_setting[i].size_in_bytes,
+                                mem_region_setting[i].xwr), UVM_LOW)
+      if (!is_kernel) begin
+        data_page_str.push_back($sformatf(".pushsection .%0s,\"aw\",@progbits;",
+                                          mem_region_setting[i].name));
       end
-      data_page_str.push_back($sformatf(".align %0d", riscv_instr_pkg::data_page_alignment));
+      data_page_str.push_back($sformatf("%0s:", mem_region_setting[i].name));
+      page_size = mem_region_setting[i].size_in_bytes;
       for(int i = 0; i < page_size; i+= 32) begin
-        gen_data(.idx(i), .pattern(pattern), .num_of_bytes(32), .data(tmp_data));
+        if (page_size-i >= 32) begin
+          gen_data(.idx(i), .pattern(pattern), .num_of_bytes(32), .data(tmp_data));
+        end else begin
+          gen_data(.idx(i), .pattern(pattern), .num_of_bytes(page_size-i), .data(tmp_data));
+        end
         tmp_str = format_string($sformatf(".word %0s", format_data(tmp_data)), LABEL_STR_LEN);
         data_page_str.push_back(tmp_str);
       end
+      if (!is_kernel) begin
+        data_page_str.push_back(".popsection;");
+      end
+    end
+    if (is_kernel) begin
+      data_page_str.push_back(".popsection;");
     end
   endfunction
 

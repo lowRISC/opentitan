@@ -11,13 +11,13 @@
  * Top level module of the ibex RISC-V core
  */
 module ibex_core #(
-    parameter bit          PMPEnable        = 0,
+    parameter bit          PMPEnable        = 1'b0,
     parameter int unsigned PMPGranularity   = 0,
     parameter int unsigned PMPNumRegions    = 4,
     parameter int unsigned MHPMCounterNum   = 0,
     parameter int unsigned MHPMCounterWidth = 40,
-    parameter bit RV32E                     = 0,
-    parameter bit RV32M                     = 1,
+    parameter bit          RV32E            = 1'b0,
+    parameter bit          RV32M            = 1'b1,
     parameter int unsigned DmHaltAddr       = 32'h1A110800,
     parameter int unsigned DmExceptionAddr  = 32'h1A110808
 ) (
@@ -147,6 +147,7 @@ module ibex_core #(
 
   // CSR control
   logic        csr_access;
+  logic        valid_csr_id;
   csr_op_e     csr_op;
   csr_num_e    csr_addr;
   logic [31:0] csr_rdata;
@@ -195,7 +196,10 @@ module ibex_core #(
   logic        csr_mtvec_init;
   logic [31:0] csr_mtvec;
   logic [31:0] csr_mtval;
-  priv_lvl_e   priv_mode;
+  logic        csr_mstatus_tw;
+  priv_lvl_e   priv_mode_id;
+  priv_lvl_e   priv_mode_if;
+  priv_lvl_e   priv_mode_lsu;
 
   // debug mode and dcsr configuration
   logic        debug_mode;
@@ -411,6 +415,8 @@ module ibex_core #(
       .csr_restore_mret_id_o        ( csr_restore_mret_id    ), // restore mstatus upon MRET
       .csr_save_cause_o             ( csr_save_cause         ),
       .csr_mtval_o                  ( csr_mtval              ),
+      .priv_mode_i                  ( priv_mode_id           ),
+      .csr_mstatus_tw_i             ( csr_mstatus_tw         ),
       .illegal_csr_insn_i           ( illegal_csr_insn_id    ),
 
       // LSU
@@ -554,9 +560,13 @@ module ibex_core #(
   assign perf_load  = data_req_o & data_gnt_i & (~data_we_o);
   assign perf_store = data_req_o & data_gnt_i & data_we_o;
 
+  // CSR access is qualified by instruction fetch error
+  assign valid_csr_id = instr_new_id & ~instr_fetch_err;
+
   ibex_cs_registers #(
       .MHPMCounterNum   ( MHPMCounterNum   ),
       .MHPMCounterWidth ( MHPMCounterWidth ),
+      .PMPEnable        ( PMPEnable        ),
       .PMPGranularity   ( PMPGranularity   ),
       .PMPNumRegions    ( PMPNumRegions    ),
       .RV32E            ( RV32E            ),
@@ -567,7 +577,9 @@ module ibex_core #(
 
       // Hart ID from outside
       .hart_id_i               ( hart_id_i              ),
-      .priv_mode_o             ( priv_mode              ),
+      .priv_mode_id_o          ( priv_mode_id           ),
+      .priv_mode_if_o          ( priv_mode_if           ),
+      .priv_mode_lsu_o         ( priv_mode_lsu          ),
 
       // mtvec
       .csr_mtvec_o             ( csr_mtvec              ),
@@ -592,6 +604,7 @@ module ibex_core #(
       .csr_meip_o              ( csr_meip               ),
       .csr_mfip_o              ( csr_mfip               ),
       .csr_mstatus_mie_o       ( csr_mstatus_mie        ),
+      .csr_mstatus_tw_o        ( csr_mstatus_tw         ),
       .csr_mepc_o              ( csr_mepc               ),
 
       // PMP
@@ -617,7 +630,7 @@ module ibex_core #(
       .csr_mtval_i             ( csr_mtval              ),
       .illegal_csr_insn_o      ( illegal_csr_insn_id    ),
 
-      .instr_new_id_i          ( instr_new_id           ),
+      .instr_new_id_i          ( valid_csr_id           ),
 
       // performance counter related signals
       .instr_ret_i             ( instr_ret              ),
@@ -635,11 +648,14 @@ module ibex_core #(
   if (PMPEnable) begin : g_pmp
     logic [33:0] pmp_req_addr [PMP_NUM_CHAN];
     pmp_req_e    pmp_req_type [PMP_NUM_CHAN];
+    priv_lvl_e   pmp_priv_lvl [PMP_NUM_CHAN];
 
     assign pmp_req_addr[PMP_I] = {2'b00,instr_addr_o[31:0]};
     assign pmp_req_type[PMP_I] = PMP_ACC_EXEC;
+    assign pmp_priv_lvl[PMP_I] = priv_mode_if;
     assign pmp_req_addr[PMP_D] = {2'b00,data_addr_o[31:0]};
     assign pmp_req_type[PMP_D] = data_we_o ? PMP_ACC_WRITE : PMP_ACC_READ;
+    assign pmp_priv_lvl[PMP_D] = priv_mode_lsu;
 
     ibex_pmp #(
         .PMPGranularity        ( PMPGranularity ),
@@ -651,13 +667,18 @@ module ibex_core #(
         // Interface to CSRs
         .csr_pmp_cfg_i         ( csr_pmp_cfg    ),
         .csr_pmp_addr_i        ( csr_pmp_addr   ),
-        .priv_mode_i           ( priv_mode      ),
+        .priv_mode_i           ( pmp_priv_lvl   ),
         // Access checking channels
         .pmp_req_addr_i        ( pmp_req_addr   ),
         .pmp_req_type_i        ( pmp_req_type   ),
         .pmp_req_err_o         ( pmp_req_err    )
     );
   end else begin : g_no_pmp
+    // Unused signal tieoff
+    priv_lvl_e unused_priv_lvl_if, unused_priv_lvl_ls;
+    assign unused_priv_lvl_if = priv_mode_if;
+    assign unused_priv_lvl_ls = priv_mode_lsu;
+    // Output tieoff
     assign pmp_req_err[PMP_I] = 1'b0;
     assign pmp_req_err[PMP_D] = 1'b0;
   end
@@ -670,7 +691,7 @@ module ibex_core #(
       rvfi_intr              <= '0;
       rvfi_order             <= '0;
       rvfi_insn              <= '0;
-      rvfi_mode              <= '0;
+      rvfi_mode              <= {PRIV_LVL_M};
       rvfi_rs1_addr          <= '0;
       rvfi_rs2_addr          <= '0;
       rvfi_pc_rdata          <= '0;
@@ -689,9 +710,9 @@ module ibex_core #(
       rvfi_halt              <= '0;
       rvfi_trap              <= illegal_insn_id;
       rvfi_intr              <= rvfi_intr_d;
-      rvfi_order             <= rvfi_order + rvfi_valid;
+      rvfi_order             <= rvfi_order + 64'(rvfi_valid);
       rvfi_insn              <= rvfi_insn_id;
-      rvfi_mode              <= PRIV_LVL_M; // TODO: Update for user mode support
+      rvfi_mode              <= {priv_mode_id};
       rvfi_rs1_addr          <= rvfi_rs1_addr_id;
       rvfi_rs2_addr          <= rvfi_rs2_addr_id;
       rvfi_pc_rdata          <= pc_id;
@@ -779,7 +800,7 @@ module ibex_core #(
         rvfi_rd_wdata_d   = '0;
       end else begin
         rvfi_rd_addr_d = rvfi_rd_addr_id;
-        if (!rvfi_rd_addr_id) begin
+        if (rvfi_rd_addr_id == 5'h0) begin
           rvfi_rd_wdata_d = '0;
         end else begin
           rvfi_rd_wdata_d = rvfi_rd_wdata_id;

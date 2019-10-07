@@ -47,7 +47,7 @@ End-to-end RTL/ISS co-simulation flow
 The flow is controlled by a `Makefile <https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile>`_, here’s the list of frequently
 used commands:
 
-.. codeblock:: bash
+.. code-block:: bash
 
    # Run a full regression
    make
@@ -90,7 +90,7 @@ Run with a different RTL simulator
 
 You can add the compile/simulation options in `simulator.yaml <https://github.com/lowRISC/ibex/blob/master/dv/uvm/yaml/rtl_simulation.yaml>`_.
 
-.. codeblock:: bash
+.. code-block:: bash
 
    # Use the new RTL simulator to run
    make ... SIMULATOR=xxx

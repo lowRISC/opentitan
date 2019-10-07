@@ -23,10 +23,11 @@ module ibex_riscv_compliance (
   assign clk_sys = IO_CLK;
   assign rst_sys_n = IO_RST_N;
 
+  // Bus hosts, ordered in decreasing priority
   typedef enum {
     TestUtilHost,
-    CoreI,
-    CoreD
+    CoreD,
+    CoreI
   } bus_host_e;
 
   typedef enum {
@@ -99,7 +100,7 @@ module ibex_riscv_compliance (
     .cfg_device_addr_mask
   );
 
-  ibex_core #(
+  ibex_core_tracing #(
       .DmHaltAddr(32'h00000000),
       .DmExceptionAddr(32'h00000000),
       .RV32E(RV32E),

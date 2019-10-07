@@ -104,12 +104,13 @@ module bus #(
 
   always_comb begin
     for (integer host = 0; host < NrHosts; host = host + 1) begin
+      host_gnt_o[host] = 1'b0;
+
       if ($clog2(NrHosts)'(host) == host_sel_resp) begin
         host_rvalid_o[host] = device_rvalid_i[device_sel_resp];
         host_err_o[host]    = device_err_i[device_sel_resp];
         host_rdata_o[host]  = device_rdata_i[device_sel_resp];
       end else begin
-        host_gnt_o[host]    = 1'b0;
         host_rvalid_o[host] = 1'b0;
         host_err_o[host]    = 1'b0;
         host_rdata_o[host]  = 'b0;

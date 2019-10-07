@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
+
 package riscv_instr_pkg;
+
+  `include "dv_defines.svh"
+  `include "riscv_defines.svh"
+  `include "uvm_macros.svh"
 
   import uvm_pkg::*;
   import riscv_signature_pkg::*;
 
-  `include "uvm_macros.svh"
-  `include "dv_defines.svh"
-  `include "riscv_defines.svh"
-
   `define include_file(f) `include `"f`"
+
+  // Data section setting
+  typedef struct {
+    string         name;
+    int unsigned   size_in_bytes;
+    bit [2:0]      xwr; // Excutable,Writable,Readale
+  } mem_region_t;
 
   typedef enum bit [3:0] {
     BARE = 4'b0000,
@@ -114,7 +122,7 @@ package riscv_instr_pkg;
     AND,
     NOP,
     FENCE,
-    FENCEI,
+    FENCE_I,
     ECALL,
     EBREAK,
     CSRRW,
@@ -261,6 +269,7 @@ package riscv_instr_pkg;
     AMOMINU_D,
     AMOMAXU_D,
     // Supervisor instruction
+    DRET,
     MRET,
     URET,
     SRET,
@@ -437,7 +446,7 @@ package riscv_instr_pkg;
     SIP             = 'h144,  // Supervisor interrupt pending
     SATP            = 'h180,  // Supervisor address translation and protection
     // Machine mode register
-    MVENDORID      = 'hF11,  // Vendor ID
+    MVENDORID       = 'hF11,  // Vendor ID
     MARCHID         = 'hF12,  // Architecture ID
     MIMPID          = 'hF13,  // Implementation ID
     MHARTID         = 'hF14,  // Hardware thread ID
@@ -535,6 +544,7 @@ package riscv_instr_pkg;
     MHPMCOUNTER29H  = 'hB9D,  // Upper 32 bits of HPMCOUNTER29, RV32I only
     MHPMCOUNTER30H  = 'hB9E,  // Upper 32 bits of HPMCOUNTER30, RV32I only
     MHPMCOUNTER31H  = 'hB9F,  // Upper 32 bits of HPMCOUNTER31, RV32I only
+    MCOUNTINHIBIT   = 'h320,  // Machine counter-inhibit register
     MHPMEVENT3      = 'h323,  // Machine performance-monitoring event selector
     MHPMEVENT4      = 'h324,  // Machine performance-monitoring event selector
     MHPMEVENT5      = 'h325,  // Machine performance-monitoring event selector
@@ -570,7 +580,8 @@ package riscv_instr_pkg;
     TDATA3          = 'h7A3,  // Third Debug/Trace trigger data register
     DCSR            = 'h7B0,  // Debug control and status register
     DPC             = 'h7B1,  // Debug PC
-    DSCRATCH        = 'h7B2   // Debug scratch register
+    DSCRATCH0       = 'h7B2,  // Debug scratch register
+    DSCRATCH1       = 'h7B3   // Debug scratch register
   } privileged_reg_t;
 
   typedef enum bit [5:0] {
@@ -589,7 +600,6 @@ package riscv_instr_pkg;
   } privileged_level_t;
 
   typedef enum bit [1:0] {
-    WIRI, // Reserved Writes Ignored, Reads Ignore Value
     WPRI, // Reserved Writes Preserve Values, Reads Ignore Value
     WLRL, // Write/Read Only Legal Values
     WARL  // Write Any Values, Reads Legal Values
@@ -675,11 +685,14 @@ package riscv_instr_pkg;
     MISA_EXT_Z
   } misa_ext_t;
 
-  `ifndef RISCV_CORE_SETTING
-    `define RISCV_CORE_SETTING ../setting/riscv_core_setting.sv
-  `endif
+  typedef enum bit [1:0] {
+    NO_HAZARD,
+    RAW_HAZARD,
+    WAR_HAZARD,
+    WAW_HAZARD
+  } hazard_e;
 
-  `include_file(`RISCV_CORE_SETTING)
+  `include "riscv_core_setting.sv"
 
   typedef bit [15:0] program_id_t;
 
@@ -688,10 +701,10 @@ package riscv_instr_pkg;
   parameter bit [XLEN - 1 : 0] SUM_BIT_MASK  = 'h1 << 18;
   parameter bit [XLEN - 1 : 0] MPP_BIT_MASK  = 'h3 << 11;
 
-  parameter IMM25_WIDTH       = 25;
-  parameter IMM12_WIDTH       = 12;
-  parameter INSTR_WIDTH       = 32;
-  parameter DATA_WIDTH        = 32;
+  parameter IMM25_WIDTH = 25;
+  parameter IMM12_WIDTH = 12;
+  parameter INSTR_WIDTH = 32;
+  parameter DATA_WIDTH  = 32;
 
   // Parameters for output assembly program formatting
   parameter MAX_INSTR_STR_LEN = 11;
@@ -772,10 +785,10 @@ package riscv_instr_pkg;
         instr.push_back($sformatf("srli sp, sp, %0d", XLEN - MAX_USED_VADDR_BITS));
       end
     end
-    // Reserve space from kernel stack to save all 32 GPR
-    instr.push_back($sformatf("1: addi sp, sp, -%0d", 32 * (XLEN/8)));
+    // Reserve space from kernel stack to save all 32 GPR except for x0
+    instr.push_back($sformatf("1: addi sp, sp, -%0d", 31 * (XLEN/8)));
     // Push all GPRs to kernel stack
-    for(int i = 0; i < 32; i++) begin
+    for(int i = 1; i < 32; i++) begin
       instr.push_back($sformatf("%0s  x%0d, %0d(sp)", store_instr, i, i * (XLEN/8)));
     end
   endfunction
@@ -787,11 +800,11 @@ package riscv_instr_pkg;
                                                     ref string instr[$]);
     string load_instr = (XLEN == 32) ? "lw" : "ld";
     // Pop user mode GPRs from kernel stack
-    for(int i = 0; i < 32; i++) begin
+    for(int i = 1; i < 32; i++) begin
       instr.push_back($sformatf("%0s  x%0d, %0d(sp)", load_instr, i, i * (XLEN/8)));
     end
     // Restore kernel stack pointer
-    instr.push_back($sformatf("addi sp, sp, %0d", 32 * (XLEN/8)));
+    instr.push_back($sformatf("addi sp, sp, %0d", 31 * (XLEN/8)));
     if (scratch inside {implemented_csr}) begin
       // Move SP to TP
       instr.push_back("add tp, sp, zero");
@@ -799,6 +812,12 @@ package riscv_instr_pkg;
       instr.push_back($sformatf("csrrw sp, 0x%0x, sp", scratch));
     end
   endfunction
+
+  riscv_reg_t all_gpr[] = {ZERO, RA, SP, GP, TP, T0, T1, T2, S0, S1, A0,
+                           A1, A2, A3, A4, A5, A6, A7, S2, S3, S4, S5, S6,
+                           S7, S8, S9, S10, S11, T3, T4, T5, T6};
+
+  riscv_reg_t compressed_gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5};
 
   `include "riscv_instr_base.sv"
   `include "riscv_instr_gen_config.sv"
@@ -820,9 +839,8 @@ package riscv_instr_pkg;
   `include "riscv_amo_instr_lib.sv"
   `include "riscv_instr_sequence.sv"
   `include "riscv_asm_program_gen.sv"
-
-  `ifdef RISCV_DV_EXT_FILE_LIST
-    `include_file(`RISCV_DV_EXT_FILE_LIST)
-  `endif
+  `include "riscv_instr_cov_item.sv"
+  `include "riscv_instr_cover_group.sv"
+  `include "user_extension.svh"
 
 endpackage

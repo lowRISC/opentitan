@@ -14,5 +14,6 @@ interface ibex_mem_intf#(ADDR_WIDTH = 32, DATA_WIDTH = 32);
   logic                    rvalid;
   logic [DATA_WIDTH-1:0]   wdata;
   logic [DATA_WIDTH-1:0]   rdata;
+  logic                    error;
 
 endinterface : ibex_mem_intf

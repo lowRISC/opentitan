@@ -25,7 +25,7 @@
     --override riscvOVPsim/cpu/PMP_registers=0
     --override riscvOVPsim/cpu/simulateexceptions=T
     --trace --tracechange --traceshowicount --program <elf>
-    --finishafter 500000
+    --finishafter 1000000
 
 - iss: sail
   path_var: SAIL_RISCV

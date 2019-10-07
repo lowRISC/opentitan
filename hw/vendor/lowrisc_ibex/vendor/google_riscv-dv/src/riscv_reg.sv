@@ -153,7 +153,4 @@ class riscv_reg#(type REG_T = privileged_reg_t) extends uvm_object;
     end
   endfunction
 
-  virtual function void set_wiri_wpri_fields();
-  endfunction
-
 endclass

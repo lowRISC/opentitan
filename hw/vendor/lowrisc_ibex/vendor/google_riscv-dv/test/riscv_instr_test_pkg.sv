@@ -19,8 +19,9 @@ package riscv_instr_test_pkg;
   import uvm_pkg::*;
   import riscv_instr_pkg::*;
 
-  `include "uvm_macros.svh"
   `include "riscv_instr_base_test.sv"
   `include "riscv_instr_test_lib.sv"
+  `include "riscv_instr_cov_debug_test.sv"
+  `include "riscv_instr_cov_test.sv"
 
 endpackage

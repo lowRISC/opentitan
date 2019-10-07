@@ -11,5 +11,6 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic dret;
   logic mret;
   logic fetch_enable;
+  logic core_sleep;
   logic debug_req;
 endinterface

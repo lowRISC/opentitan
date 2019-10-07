@@ -23,7 +23,7 @@ class mem_model#(Addr_width = 32, Data_width = 32) extends uvm_object;
                 $sformatf("Read Mem  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     end
     else begin
-      std::randomize(data);
+      void'(std::randomize(data));
       `uvm_error(get_full_name(), $sformatf("read to uninitialzed addr 0x%0h", addr))
     end
     return data;
