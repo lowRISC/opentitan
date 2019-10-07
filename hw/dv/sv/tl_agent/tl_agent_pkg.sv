@@ -21,6 +21,7 @@ package tl_agent_pkg;
   parameter int MaskWidth   = top_pkg::TL_DBW;
   parameter int SourceWidth = top_pkg::TL_AIW;
   parameter int DUserWidth  = top_pkg::TL_DUW;
+  parameter int OpcodeWidth = 3;
 
   // TileLink conformance level
   typedef enum bit [1:0] {

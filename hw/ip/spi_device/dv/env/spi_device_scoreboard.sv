@@ -69,7 +69,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     uvm_reg csr;
     bit     do_read_check   = 1'b0; // TODO: fixme
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
+    uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
 
     super.process_tl_access(item, channel);
     if (is_tl_err_exp || is_tl_unmapped_addr) return;

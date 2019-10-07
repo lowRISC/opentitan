@@ -66,7 +66,7 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
       end
       repeat (d_valid_delay) @(vif.device_cb);
       vif.device_cb.d2h.d_valid  <= 1'b1;
-      vif.device_cb.d2h.d_opcode <= tlul_pkg::tl_d_op_e'(rsp.d_opcode);
+      vif.device_cb.d2h.d_opcode <= rsp.d_opcode;
       vif.device_cb.d2h.d_data   <= rsp.d_data;
       vif.device_cb.d2h.d_source <= rsp.d_source;
       vif.device_cb.d2h.d_param  <= rsp.d_param;

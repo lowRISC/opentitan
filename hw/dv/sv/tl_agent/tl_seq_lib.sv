@@ -62,7 +62,7 @@ endclass : tl_host_seq
 // extend host seq to send single specific item constructed by the caller
 class tl_host_single_seq extends tl_host_seq;
     rand bit [top_pkg::TL_AW-1:0]  addr;
-    rand tlul_pkg::tl_a_op_e       opcode;
+    rand bit [OpcodeWidth-1:0]     opcode;
     rand bit [top_pkg::TL_SZW-1:0] size;
     rand bit [top_pkg::TL_AIW-1:0] source;
     rand bit [top_pkg::TL_DBW-1:0] mask;
@@ -88,15 +88,28 @@ class tl_host_single_seq extends tl_host_seq;
 
 endclass
 
-// disable all the TL protocol related constraint for testing error cases
-class tl_host_single_err_seq extends tl_host_single_seq;
+// disable TL protocol related constraint on a_chan for error cases
+class tl_host_custom_seq extends tl_host_single_seq;
 
-  `uvm_object_utils(tl_host_single_err_seq)
+  `uvm_object_utils(tl_host_custom_seq)
   `uvm_object_new
 
   virtual function void randomize_req(REQ req, int idx);
     req.disable_a_chan_protocol_constraint();
     super.randomize_req(req, idx);
+  endfunction
+
+endclass
+
+// this seq will send an item that triggers d_error due to protocol violation
+class tl_host_protocol_err_seq extends tl_host_single_seq;
+
+  `uvm_object_utils(tl_host_protocol_err_seq)
+  `uvm_object_new
+
+  // forever randomize the item until we find one that violates the TL protocol
+  virtual function void randomize_req(REQ req, int idx);
+    req.randomize_a_chan_with_protocol_error();
   endfunction
 
 endclass

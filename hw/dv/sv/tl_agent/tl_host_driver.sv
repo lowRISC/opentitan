@@ -66,7 +66,7 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     // wait until no outstanding transaction with same source id
     while (is_source_in_pending_req(req.a_source)) @(vif.host_cb);
     vif.host_cb.h2d.a_address <= req.a_addr;
-    vif.host_cb.h2d.a_opcode  <= tl_a_op_e'(req.a_opcode);
+    vif.host_cb.h2d.a_opcode  <= req.a_opcode;
     vif.host_cb.h2d.a_size    <= req.a_size;
     vif.host_cb.h2d.a_param   <= req.a_param;
     vif.host_cb.h2d.a_data    <= req.a_data;
@@ -101,7 +101,7 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
         foreach (pending_a_req[i]) begin
           if (pending_a_req[i].a_source == vif.host_cb.d2h.d_source) begin
             rsp = pending_a_req[i];
-            rsp.d_opcode = tl_d_op_e'(vif.host_cb.d2h.d_opcode);
+            rsp.d_opcode = vif.host_cb.d2h.d_opcode;
             rsp.d_data   = vif.host_cb.d2h.d_data;
             rsp.d_source = vif.host_cb.d2h.d_source;
             rsp.d_param  = vif.host_cb.d2h.d_param;
