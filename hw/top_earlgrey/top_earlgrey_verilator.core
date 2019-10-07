@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv_dpi:jtagdpi
       - lowrisc:dv_dpi:spidpi
       - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:ibex:ibex_tracer
 
     files:
       - rtl/top_earlgrey_verilator.sv: { file_type: systemVerilogSource }
@@ -23,11 +24,16 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use
+  RVFI:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Enable the RISC-V Verification Interface and instruction tracing
 
 targets:
   sim:
     parameters:
       - PRIM_DEFAULT_IMPL=generic
+      - RVFI=true
     default_tool: verilator
     filesets:
       - files_sim_verilator
