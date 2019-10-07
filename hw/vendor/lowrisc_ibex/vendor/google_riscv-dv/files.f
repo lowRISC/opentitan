@@ -13,11 +13,11 @@
 // limitations under the License.
 
 // HEADERS
-+incdir+./src
-+incdir+./test
++incdir+${RISCV_DV_ROOT}/src
++incdir+${RISCV_DV_ROOT}/test
 
 // SOURCES
-./src/riscv_signature_pkg.sv
-./src/riscv_instr_pkg.sv
-./test/riscv_instr_test_pkg.sv
-./test/riscv_instr_gen_tb_top.sv
+${RISCV_DV_ROOT}/src/riscv_signature_pkg.sv
+${RISCV_DV_ROOT}/src/riscv_instr_pkg.sv
+${RISCV_DV_ROOT}/test/riscv_instr_test_pkg.sv
+${RISCV_DV_ROOT}/test/riscv_instr_gen_tb_top.sv

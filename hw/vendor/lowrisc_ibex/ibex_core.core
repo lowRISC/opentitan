@@ -46,6 +46,14 @@ parameters:
     datatype: bool
     paramtype: vlogdefine
 
+  RV32E:
+    datatype: bool
+    paramtype: vlogparam
+
+  RV32M:
+    datatype: bool
+    paramtype: vlogparam
+
 targets:
   default:
     filesets:
@@ -61,6 +69,7 @@ targets:
       - files_lint
     parameters:
       - SYNTHESIS=true
+      - RVFI=true
     default_tool: verilator
     toplevel: ibex_core
     tools:

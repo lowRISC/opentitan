@@ -12,6 +12,10 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
   int                     min_rvalid_delay = 0;
   ibex_mem_intf_seq_item  item;
   mem_model               m_mem;
+  bit                     enable_error = 1'b0;
+  // Used to ensure that whenever inject_error() is called, the very next transaction will inject an
+  // error, and that enable_error will not be flipped back to 0 immediately
+  bit                     error_synch = 1'b1;
 
   `uvm_object_utils(ibex_mem_intf_slave_seq)
   `uvm_declare_p_sequencer(ibex_mem_intf_slave_sequencer)
@@ -23,9 +27,11 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
     forever
     begin
       bit [ADDR_WIDTH-1:0] aligned_addr;
+      bit [DATA_WIDTH-1:0] rand_data;
       p_sequencer.addr_ph_port.get(item);
       req = ibex_mem_intf_seq_item::type_id::create("req");
-      req.randomize() with {
+      error_synch = 1'b0;
+      if (!req.randomize() with {
         addr       == item.addr;
         read_write == item.read_write;
         data       == item.data;
@@ -36,10 +42,20 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
           [max_rvalid_delay/2 : max_rvalid_delay-1]   :/ 1,
           max_rvalid_delay                            :/ 1
         };
-      };
+        error == enable_error;
+      }) begin
+        `uvm_fatal(`gfn, "Cannot randomize slave request")
+      end
+      enable_error = 1'b0;
+      error_synch = 1'b1;
       aligned_addr = {req.addr[DATA_WIDTH-1:2], 2'b0};
-      if(req.read_write == READ) begin : READ_block
-        req.data = m_mem.read(aligned_addr);
+      if (req.error) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(rand_data)
+        req.data = rand_data;
+      end else begin
+        if(req.read_write == READ) begin : READ_block
+          req.data = m_mem.read(aligned_addr);
+        end
       end
       `uvm_info(get_full_name(), $sformatf("Response transfer:\n%0s", req.sprint()), UVM_HIGH)
       start_item(req);
@@ -55,5 +71,13 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       end
     end
   endtask : body
+
+  virtual function inject_error();
+    this.enable_error = 1'b1;
+  endfunction
+
+  virtual function bit get_error_synch();
+    return this.error_synch;
+  endfunction
 
 endclass : ibex_mem_intf_slave_seq

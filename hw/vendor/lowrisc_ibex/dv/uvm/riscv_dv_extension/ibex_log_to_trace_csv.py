@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, "../../vendor/google_riscv-dv/scripts")
 
 from riscv_trace_csv import *
+from lib import *
 
 
 def process_ibex_sim_log(ibex_log, csv):
@@ -19,7 +20,7 @@ def process_ibex_sim_log(ibex_log, csv):
     Extract instruction and affected register information from ibex simulation
     log and save to a standard CSV format.
     """
-    print("Processing ibex log : %s" % ibex_log)
+    logging.info("Processing ibex log : %s" % ibex_log)
     instr_cnt = 0
     ibex_instr = ""
 
@@ -29,10 +30,10 @@ def process_ibex_sim_log(ibex_log, csv):
         for line in f:
             if re.search("ecall", line):
               break
-            # Extract instruction infromation
-            m = re.search(r"^\s*(?P<time>\d+)\s+(?P<cycle>\d+) " \
-                          "(?P<pc>[0-9a-f]+) (?P<bin>[0-9a-f]+) (?P<instr>.*)" \
-                          "x(?P<rd>\d+)=0x(?P<val>[0-9a-f]+)", line)
+            # Extract instruction information
+            m = re.search(r"^\s*(?P<time>\d+)\s+(?P<cycle>\d+)\s+" \
+                          "(?P<pc>[0-9a-f]+)\s+(?P<bin>[0-9a-f]+)\s+(?P<instr>.*)" \
+                          ".*x(?P<rd>[1-9]\d*)=0x(?P<val>[0-9a-f]+)", line)
             if m:
                 # Write the extracted instruction to a csvcol buffer file
                 rv_instr_trace = RiscvInstructiontTraceEntry()
@@ -44,7 +45,7 @@ def process_ibex_sim_log(ibex_log, csv):
                 trace_csv.write_trace_entry(rv_instr_trace)
                 instr_cnt += 1
 
-    print("Processed instruction count : %d" % instr_cnt)
+    logging.info("Processed instruction count : %d" % instr_cnt)
 
 
 def check_ibex_uvm_log(uvm_log, core_name, test_name, report, write=True):

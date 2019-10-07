@@ -75,6 +75,8 @@ module ibex_id_stage #(
     output logic                  csr_restore_mret_id_o,
     output logic                  csr_save_cause_o,
     output logic [31:0]           csr_mtval_o,
+    input  ibex_pkg::priv_lvl_e   priv_mode_i,
+    input  logic                  csr_mstatus_tw_i,
     input  logic                  illegal_csr_insn_i,
 
     // Interface to load store unit
@@ -376,7 +378,7 @@ module ibex_id_stage #(
   // Controller //
   ////////////////
 
-  assign illegal_insn_o = illegal_insn_dec | illegal_csr_insn_i;
+  assign illegal_insn_o = instr_valid_i & (illegal_insn_dec | illegal_csr_insn_i);
 
   ibex_controller controller_i (
       .clk_i                          ( clk_i                  ),
@@ -438,6 +440,8 @@ module ibex_id_stage #(
       .csr_restore_mret_id_o          ( csr_restore_mret_id_o  ),
       .csr_save_cause_o               ( csr_save_cause_o       ),
       .csr_mtval_o                    ( csr_mtval_o            ),
+      .priv_mode_i                    ( priv_mode_i            ),
+      .csr_mstatus_tw_i               ( csr_mstatus_tw_i       ),
 
       // Debug Signal
       .debug_mode_o                   ( debug_mode_o           ),
@@ -469,7 +473,9 @@ module ibex_id_stage #(
   // being executed. This is the case if the current instr is either:
   // - a new instr (not yet done)
   // - a multicycle instr that is not yet done
-  assign instr_executing = instr_new_i | (instr_multicycle & ~instr_multicycle_done_q);
+  // An instruction error will suppress any requests or register writes
+  assign instr_executing = (instr_new_i | (instr_multicycle & ~instr_multicycle_done_q)) &
+                           ~instr_fetch_err_i;
   assign data_req_id     = instr_executing ? data_req_dec  : 1'b0;
   assign mult_en_id      = instr_executing ? mult_en_dec   : 1'b0;
   assign div_en_id       = instr_executing ? div_en_dec    : 1'b0;
@@ -536,7 +542,7 @@ module ibex_id_stage #(
       IDLE: begin
         // only detect multicycle when instruction is new, do not re-detect after
         // execution (when waiting for next instruction from IF stage)
-        if (instr_new_i) begin
+        if (instr_new_i & ~instr_fetch_err_i) begin
           unique case (1'b1)
             data_req_dec: begin
               // LSU operation

@@ -45,3 +45,22 @@
       -cm_name test_<seed>
     wave_opts: >
       -ucli -do <cwd>/vcs.tcl
+
+- tool: dsim
+  env_var: DSIM,DSIM_LIB_PATH
+  compile:
+    cmd:
+      - "mkdir -p <out>/dsim"
+      - "<DSIM> -sv -work <out>/dsim
+                -genimage image
+                +incdir+$UVM_HOME/src
+                $UVM_HOME/src/uvm_pkg.sv
+                +define+DSIM
+                +acc+rwb
+                -f ibex_dv.f
+                -l <out>/dsim/compile.log"
+  sim:
+    cmd: >
+      <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim <wave_opts>
+    wave_opts: >
+      -waves waves.vcd

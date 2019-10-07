@@ -16,8 +16,6 @@
 
 module riscv_instr_gen_tb_top;
 
-  `include "uvm_macros.svh"
-
   import uvm_pkg::*;
   import riscv_instr_test_pkg::*;
 

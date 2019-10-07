@@ -32,6 +32,7 @@ from spike_log_to_trace_csv import *
 from ovpsim_log_to_trace_csv import *
 from instr_trace_compare import *
 
+
 def process_cmd(keyword, cmd, opts, enable):
   """ Process the compile and simulation command
 
@@ -63,27 +64,36 @@ def get_simulator_cmd(simulator, simulator_yaml, en_cov, en_wave):
     compile_cmd    : RTL simulator command to compile the instruction generator
     sim_cmd        : RTL simulator command to run the instruction generator
   """
-  print("Processing simulator setup file : %s" % simulator_yaml)
+  logging.info("Processing simulator setup file : %s" % simulator_yaml)
   yaml_data = read_yaml(simulator_yaml)
   # Search for matched simulator
   for entry in yaml_data:
     if entry['tool'] == simulator:
-      print("Found matching simulator: %s" % entry['tool'])
+      logging.info("Found matching simulator: %s" % entry['tool'])
       compile_cmd = entry['compile']['cmd']
       for i in range(len(compile_cmd)):
-        compile_cmd[i] = process_cmd("<cov_opts>", compile_cmd[i],
-                                     entry['compile']['cov_opts'], en_cov)
-        compile_cmd[i] = process_cmd("<wave_opts>", compile_cmd[i],
-                                     entry['compile']['wave_opts'], en_wave)
+        if 'cov_opts' in entry['compile']:
+          compile_cmd[i] = process_cmd("<cov_opts>", compile_cmd[i],
+                                       entry['compile']['cov_opts'], en_cov)
+        if 'wave_opts' in entry['compile']:
+          compile_cmd[i] = process_cmd("<wave_opts>", compile_cmd[i],
+                                       entry['compile']['wave_opts'], en_wave)
       sim_cmd = entry['sim']['cmd']
-      sim_cmd = process_cmd("<cov_opts>", sim_cmd, entry['sim']['cov_opts'], en_cov)
-      sim_cmd = process_cmd("<wave_opts>", sim_cmd, entry['sim']['wave_opts'], en_wave)
+      if 'cov_opts' in entry['sim']:
+        sim_cmd = process_cmd("<cov_opts>", sim_cmd, entry['sim']['cov_opts'], en_cov)
+      if 'wave_opts' in entry['sim']:
+        sim_cmd = process_cmd("<wave_opts>", sim_cmd, entry['sim']['wave_opts'], en_wave)
+      if 'env_var' in entry:
+        for env_var in entry['env_var'].split(','):
+          for i in range(len(compile_cmd)):
+            compile_cmd[i] = re.sub("<"+env_var+">", get_env_var(env_var), compile_cmd[i])
+          sim_cmd = re.sub("<"+env_var+">", get_env_var(env_var), sim_cmd)
       return compile_cmd, sim_cmd
-  print ("Cannot find RTL simulator %0s" % simulator)
+  logging.info("Cannot find RTL simulator %0s" % simulator)
   sys.exit(1)
 
 
-def rtl_compile(compile_cmd, test_list, output_dir, lsf_cmd, opts, verbose):
+def rtl_compile(compile_cmd, test_list, output_dir, lsf_cmd, opts):
   """Run the instruction generator
 
   Args:
@@ -92,21 +102,17 @@ def rtl_compile(compile_cmd, test_list, output_dir, lsf_cmd, opts, verbose):
     output_dir  : Output directory of the ELF files
     lsf_cmd     : LSF command to run compilation
     opts        : Compile options for the generator
-    verbose     : Verbose logging
   """
   # Compile the TB
-  print ("Compiling TB")
+  logging.info("Compiling TB")
   for cmd in compile_cmd:
     cmd = re.sub("<out>", output_dir, cmd)
     cmd = re.sub("<cmp_opts>", opts, cmd)
-    if verbose:
-      print("Compile command: %s" % cmd)
-    output = run_cmd(cmd)
-    if verbose:
-      print(output)
+    logging.debug("Compile command: %s" % cmd)
+    run_cmd(cmd)
 
 
-def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts, verbose):
+def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts):
   """Run the instruction generator
 
   Args:
@@ -117,37 +123,37 @@ def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts, verbos
     lsf_cmd    : LSF command to run simulation
     seed       : Seed of RTL simulation
     opts       : Simulation options
-    verbose    : Verbose logging
   """
   # Run the RTL simulation
   sim_cmd = re.sub("<out>", output_dir, sim_cmd)
   sim_cmd = re.sub("<sim_opts>", opts, sim_cmd)
   sim_cmd = re.sub("<cwd>", cwd, sim_cmd)
-  print ("Running RTL simulation...")
+  logging.info("Running RTL simulation...")
   cmd_list = []
   for test in test_list:
     for i in range(test['iterations']):
       rand_seed = get_seed(seed)
       test_sim_cmd = re.sub("<seed>", str(rand_seed), sim_cmd)
       if "sim_opts" in test:
+        test_sim_cmd += ' '
         test_sim_cmd += test['sim_opts']
-      print(test_sim_cmd)
       sim_dir = output_dir + ("/%s.%d" %(test['test'], i))
       run_cmd(("mkdir -p %s" % sim_dir))
       os.chdir(sim_dir)
-      if verbose:
-        print("Run dir: %s" % sim_dir)
-      binary = ("%s/%s.%d.bin" % (bin_dir, test['test'], i))
-      cmd = lsf_cmd + " " + test_sim_cmd.rstrip() + \
+      binary = ("%s/%s_%d.bin" % (bin_dir, test['test'], i))
+      cmd = lsf_cmd + " " + test_sim_cmd + \
             (" +UVM_TESTNAME=%s " % test['rtl_test']) + \
             (" +bin=%s " % binary) + \
             (" -l sim.log ")
-      print("Running %s with %s" % (test['rtl_test'], binary))
-      if verbose:
-        print(cmd)
-      output = run_cmd(' '.join(cmd.split()))
-      if verbose:
-        print(output)
+      cmd = re.sub('\n', '', cmd)
+      if lsf_cmd == "":
+        logging.info("Running %s with %s" % (test['rtl_test'], binary))
+        run_cmd(cmd, 300)
+      else:
+        cmd_list.append(cmd)
+  if lsf_cmd != "":
+    logging.info("Running %0d simulation jobs." % len(cmd_list))
+    run_parallel_cmd(cmd_list, 600)
 
 
 def compare(test_list, iss, output_dir, verbose):
@@ -161,9 +167,15 @@ def compare(test_list, iss, output_dir, verbose):
   """
   report = ("%s/regr.log" % output_dir).rstrip()
   for test in test_list:
+    compare_opts = test.get('compare_opts', {})
+    in_order_mode = compare_opts.get('in_order_mode', 1)
+    coalescing_limit = compare_opts.get('coalescing_limit', 0)
+    verbose = compare_opts.get('verbose', 0)
+    mismatch = compare_opts.get('mismatch_print_limit', 5)
+    compare_final = compare_opts.get('compare_final_value_only', 0)
     for i in range(0, test['iterations']):
       elf = ("%s/asm_tests/%s.%d.o" % (output_dir, test['test'], i))
-      print("Comparing %s/DUT sim result : %s" % (iss, elf))
+      logging.info("Comparing %s/DUT sim result : %s" % (iss, elf))
       run_cmd(("echo 'Test binary: %s' >> %s" % (elf, report)))
       uvm_log = ("%s/rtl_sim/%s.%d/sim.log" % (output_dir, test['test'], i))
       rtl_log = ("%s/rtl_sim/%s.%d/trace_core_00000000.log" % (output_dir, test['test'], i))
@@ -180,19 +192,13 @@ def compare(test_list, iss, output_dir, verbose):
         elif iss == "ovpsim":
           process_ovpsim_sim_log(iss_log, iss_csv)
         else:
-          print("Unsupported ISS" % iss)
+          logging.info("Unsupported ISS" % iss)
           sys.exit(1)
         uvm_result = check_ibex_uvm_log(uvm_log, "ibex", test_name, report, False)
         if not uvm_result:
           check_ibex_uvm_log(uvm_log, "ibex", test_name, report)
         else:
           if 'compare_opts' in test:
-            compare_opts = test.get('compare_opts')
-            in_order_mode = compare_opts.get('in_order_mode', 1)
-            coalescing_limit = compare_opts.get('coalescing_limit', 0)
-            verbose = compare_opts.get('verbose', 0)
-            mismatch = compare_opts.get('mismatch_print_limit', 5)
-            compare_final = compare_opts.get('compare_final_value_only', 0)
             compare_trace_csv(rtl_csv, iss_csv, "ibex", iss, report,
                               in_order_mode, coalescing_limit, verbose,
                               mismatch, compare_final)
@@ -201,9 +207,9 @@ def compare(test_list, iss, output_dir, verbose):
   passed_cnt = run_cmd("grep PASSED %s | wc -l" % report).strip()
   failed_cnt = run_cmd("grep FAILED %s | wc -l" % report).strip()
   summary = ("%s PASSED, %s FAILED" % (passed_cnt, failed_cnt))
-  print(summary)
+  logging.info(summary)
   run_cmd(("echo %s >> %s" % (summary, report)))
-  print("RTL & ISS regression report is saved to %s" % report)
+  logging.info("RTL & ISS regression report is saved to %s" % report)
 
 
 # Parse input arguments
@@ -242,6 +248,7 @@ parser.add_argument("--lsf_cmd", type=str, default="",
                           command is not specified")
 
 args = parser.parse_args()
+setup_logging(args.verbose)
 parser.set_defaults(verbose=False)
 cwd = os.path.dirname(os.path.realpath(__file__))
 
@@ -263,13 +270,12 @@ compile_cmd, sim_cmd = get_simulator_cmd(args.simulator, args.simulator_yaml,
                                          args.en_cov, args.en_wave)
 # Compile TB
 if args.steps == "all" or re.match("compile", args.steps):
-  rtl_compile(compile_cmd, matched_list, output_dir,
-              args.lsf_cmd, args.cmp_opts, args.verbose)
+  rtl_compile(compile_cmd, matched_list, output_dir, args.lsf_cmd, args.cmp_opts)
 
 # Run RTL simulation
 if args.steps == "all" or re.match("sim", args.steps):
   rtl_sim(sim_cmd, matched_list, output_dir, bin_dir, args.lsf_cmd,
-          args.seed, args.sim_opts, args.verbose)
+          args.seed, args.sim_opts)
 
 # Compare RTL & ISS simulation result.;
 if args.steps == "all" or re.match("compare", args.steps):

@@ -61,17 +61,38 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
 
 endclass
 
-// Interrupt sequence
-class irq_seq extends core_base_seq#(irq_seq_item);
+// Interrupt sequences
+class irq_raise_single_seq extends core_base_seq#(irq_seq_item);
 
-  `uvm_object_utils(irq_seq)
+  `uvm_object_utils(irq_raise_single_seq)
   `uvm_object_new
 
   virtual task send_req();
     irq_seq_item irq;
-    irq = irq_seq_item::type_id::create($sformatf("irq[%0d]", iteration_cnt));
+    irq = irq_seq_item::type_id::create($sformatf("irq_raise_single[%0d]", iteration_cnt));
     start_item(irq);
-    `DV_CHECK_RANDOMIZE_FATAL(irq)
+    // TODO(udinator) -  constrain irq_timer to 0 for now due to timer interrupt causing spike
+    // simulator to trap to irq handler
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, irq_timer==0;)
+    finish_item(irq);
+    get_response(irq);
+  endtask
+
+endclass
+
+// Irq sequence to deassert all interrupt lines, since Ibex interrupts are level sensitive
+class irq_drop_seq extends core_base_seq#(irq_seq_item);
+
+  `uvm_object_utils(irq_drop_seq)
+  `uvm_object_new
+
+  // TODO(udinator) - for nested interrupt tests, test scenarios where a random number of interrupts
+  // are dropped
+  virtual task send_req();
+    irq_seq_item irq;
+    irq = irq_seq_item::type_id::create($sformatf("irq_drop[%0d]", iteration_cnt));
+    start_item(irq);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, num_of_interrupt == 0;)
     finish_item(irq);
     get_response(irq);
   endtask
@@ -98,7 +119,7 @@ class debug_seq extends core_base_seq;
   virtual task send_req();
     `uvm_info(get_full_name(), "Sending debug request", UVM_HIGH)
     dut_vif.debug_req <= 1'b1;
-    clk_vif.wait_clks($urandom_range(10, 30));
+    clk_vif.wait_clks(50);
     dut_vif.debug_req <= 1'b0;
   endtask
 

@@ -13,6 +13,14 @@ filesets:
       - rtl/ibex_core_tracing.sv
     file_type: systemVerilogSource
 
+  files_lint:
+    files:
+      - dv/uvm/tb/prim_clock_gating.sv: {file_type: systemVerilogSource}
+
+  files_lint_verilator:
+    files:
+      - lint/verilator_waiver.vlt: {file_type: vlt}
+
 parameters:
   # The tracer uses the RISC-V Formal Interface (RVFI) to collect trace signals.
   RVFI:
@@ -20,9 +28,42 @@ parameters:
     paramtype: vlogdefine
     default: true
 
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+  RV32E:
+    datatype: bool
+    paramtype: vlogparam
+
+  RV32M:
+    datatype: bool
+    paramtype: vlogparam
+
+
+
 targets:
   default:
     filesets:
       - files_rtl
     parameters:
       - RVFI=true
+
+  lint:
+    filesets:
+      # Note on Verilator waivers:
+      # You *must* include the waiver file first, otherwise only global waivers
+      # are applied, but not file-specific waivers.
+      - tool_verilator ? (files_lint_verilator)
+      - files_rtl
+      - files_lint
+    parameters:
+      - RVFI=true
+      - SYNTHESIS=true
+    default_tool: verilator
+    toplevel: ibex_core_tracing
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

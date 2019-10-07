@@ -25,8 +25,8 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
   rand int                 loop_step_val[];
   rand int                 loop_limit_val[];
   rand bit [2:0]           num_of_nested_loop;
-  rand riscv_instr_name_t  branch_type[];
   rand int                 num_of_instr_in_loop;
+  rand riscv_instr_name_t  branch_type[];
   riscv_instr_base         loop_init_instr[];
   riscv_instr_base         loop_update_instr[];
   riscv_instr_base         loop_branch_instr[];
@@ -34,23 +34,37 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
   // Aggregated loop instruction stream
   riscv_instr_base         loop_instr[];
 
-  constraint loop_c {
+  constraint legal_loop_regs_c {
     solve num_of_nested_loop before loop_cnt_reg;
     solve num_of_nested_loop before loop_limit_reg;
+    foreach (loop_cnt_reg[i]) {
+      loop_cnt_reg[i] != ZERO;
+      foreach (cfg.default_reserved_regs[j]) {
+        loop_cnt_reg[i] != cfg.default_reserved_regs[j];
+      }
+    }
+    foreach (loop_limit_reg[i]) {
+      loop_limit_reg[i] != ZERO;
+      foreach (cfg.default_reserved_regs[j]) {
+        loop_limit_reg[i] != cfg.default_reserved_regs[j];
+      }
+    }
+    unique {loop_cnt_reg, loop_limit_reg};
+    loop_cnt_reg.size() == num_of_nested_loop;
+    loop_limit_reg.size() == num_of_nested_loop;
+  }
+
+  constraint loop_c {
     solve num_of_nested_loop before loop_init_val;
     solve num_of_nested_loop before loop_step_val;
     solve num_of_nested_loop before loop_limit_val;
     num_of_instr_in_loop inside {[1:200]};
-    num_of_nested_loop inside {[1:cfg.max_nested_loop]};
-    loop_cnt_reg.size() == num_of_nested_loop;
-    loop_limit_reg.size() == num_of_nested_loop;
+    num_of_nested_loop inside {[1:2]};
     loop_init_val.size() == num_of_nested_loop;
     loop_step_val.size() == num_of_nested_loop;
     loop_limit_val.size() == num_of_nested_loop;
     branch_type.size() == num_of_nested_loop;
     foreach(loop_init_val[i]) {
-      loop_cnt_reg[i]   inside {cfg.loop_regs};
-      loop_limit_reg[i] inside {cfg.loop_regs};
       loop_init_val[i]  inside {[-10:10]};
       loop_limit_val[i] inside {[-20:20]};
       loop_step_val[i]  inside {[-10:10]};
@@ -74,13 +88,13 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
         branch_type[i] inside {BGEU, BNE, BGE, BEQ};
       }
     }
-    unique {loop_cnt_reg, loop_limit_reg};
   }
 
   `uvm_object_utils(riscv_loop_instr)
   `uvm_object_new
 
   function void post_randomize();
+    reserved_rd = {loop_cnt_reg, loop_limit_reg};
     // Generate instructions that mixed with the loop instructions
     initialize_instr_list(num_of_instr_in_loop);
     gen_instr(1'b1);
@@ -113,6 +127,7 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
       // Branch target instruction, can be anything
       loop_branch_target_instr[i] = riscv_rand_instr::type_id::create("loop_branch_target_instr");
       loop_branch_target_instr[i].cfg = cfg;
+      loop_branch_target_instr[i].reserved_rd = reserved_rd;
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_branch_target_instr[i],
                                      !(category inside {LOAD, STORE, BRANCH, JUMP});,
                                      "Cannot randomize branch target instruction")

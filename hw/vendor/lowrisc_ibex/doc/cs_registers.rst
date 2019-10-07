@@ -90,18 +90,24 @@ Reset Value: ``0x0000_1800``
 +-------+-----+---------------------------------------------------------------------------------+
 | Bit#  | R/W | Description                                                                     |
 +-------+-----+---------------------------------------------------------------------------------+
-| 12:11 | R   | **MPP:** Statically 2'b11 and cannot be altered (read-only).                    |
+| 21    | RW  | **TW:** Timeout Wait (WFI executed in User Mode will trap to Machine Mode).     |
++-------+-----+---------------------------------------------------------------------------------+
+| 17    | RW  | **MPRV:** Modify Privilege (Loads and stores use MPP for privilege checking).   |
++-------+-----+---------------------------------------------------------------------------------+
+| 12:11 | RW  | **MPP:** Machine Previous Privilege mode.                                       |
 +-------+-----+---------------------------------------------------------------------------------+
 | 7     | RW  | **Previous Interrupt Enable (MPIE)**, i.e., before entering exception handling. |
 +-------+-----+---------------------------------------------------------------------------------+
 | 3     | RW  | **Interrupt Enable (MIE):** If set to 1'b1, interrupts are globally enabled.    |
 +-------+-----+---------------------------------------------------------------------------------+
 
-When an exception is encountered, ``mstatus``.MPIE will be set to ``mstatus``.MIE.
-When the MRET instruction is executed, the value of MPIE will be stored back to ``mstatus``.MIE.
+When an exception is encountered, ``mstatus``.MPIE will be set to ``mstatus``.MIE, and ``mstatus``.MPP will be set to the current privilege mode.
+When the MRET instruction is executed, the value of MPIE will be stored back to ``mstatus``.MIE, and the privilege mode will be restored from ``mstatus``.MPP.
 
 If you want to enable interrupt handling in your exception handler, set ``mstatus``.MIE to 1'b1 inside your handler code.
 
+Only Machine Mode and User Mode are supported.
+Any write to ``mstatus``.MPP of an unsupported value will be interpreted as Machine Mode.
 
 Machine ISA Register (misa)
 ---------------------------
@@ -225,7 +231,7 @@ A particular bit in the register reads as one if the corresponding interrupt inp
 +-------+---------------------------------------------------------------------------------------+
 
 PMP Configuration Register (pmpcfgx)
-----------------------------------------
+------------------------------------
 
 CSR Address: ``0x3A0 - 0x3A3``
 
@@ -233,11 +239,11 @@ Reset Value: ``0x0000_0000``
 
 ``pmpcfgx`` are registers to configure PMP regions. Each register configures 4 PMP regions.
 
-+---------------------------------------+
++---------+---------+---------+---------+
 |  31:24  |  23:16  |  15:8   |   7:0   |
-+---------------------------------------+
++---------+---------+---------+---------+
 | pmp3cfg | pmp2cfg | pmp1cfg | pmp0cfg |
-+---------------------------------------+
++---------+---------+---------+---------+
 
 The configuration fields for each region are as follows:
 
@@ -262,7 +268,7 @@ Details of these configuration bits can be found in the RISC-V Privileged Specif
 Note that the combination of Write permission = 1, Read permission = 0 is reserved, and will be treated by the core as Read/Write permission = 0.
 
 PMP Address Register (pmpaddrx)
-----------------------------------------
+-------------------------------
 
 CSR Address: ``0x3B0 - 0x3BF``
 
@@ -275,6 +281,15 @@ Reset Value: ``0x0000_0000``
 +----------------+
 | address[33:2]  |
 +----------------+
+
+Time Registers (time(h))
+------------------------
+
+CSR Address: ``0xC01 / 0xC81``
+
+The User Mode ``time(h)`` registers are not implemented in Ibex.
+Any access to these registers will trap.
+It is recommended that trap handler software provides a means of accessing platform-defined ``mtime(h)`` timers where available.
 
 .. _csr-mhartid:
 

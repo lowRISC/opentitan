@@ -31,29 +31,29 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       MISA: begin
         privil_level = M_LEVEL;
         add_field("WARL0", 26, WARL);
-        add_field("WIRI", XLEN-28, WIRI);
+        add_field("WLRL", XLEN-28, WLRL);
         add_field("MXL", 2, WARL);
       end
       // Machine Vendor ID Register
       MVENDORID: begin
         privil_level = M_LEVEL;
-        add_field("OFFSET", 7, WIRI);
-        add_field("BANK", XLEN-7, WIRI);
+        add_field("OFFSET", 7, WPRI);
+        add_field("BANK", XLEN-7, WPRI);
       end
       // Machine Architecture ID Register
       MARCHID: begin
         privil_level = M_LEVEL;
-        add_field("ARCHITECTURE_ID", XLEN, WIRI);
+        add_field("ARCHITECTURE_ID", XLEN, WPRI);
       end
       // Machine Implementation ID Register
       MIMPID: begin
         privil_level = M_LEVEL;
-        add_field("IMPLEMENTATION", XLEN, WIRI);
+        add_field("IMPLEMENTATION", XLEN, WPRI);
       end
       // Hart ID Register
       MHARTID: begin
         privil_level = M_LEVEL;
-        add_field("HART_ID", XLEN, WIRI);
+        add_field("HART_ID", XLEN, WPRI);
       end
       // Machine Status Register
       MSTATUS: begin
@@ -136,7 +136,7 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         privil_level = M_LEVEL;
         add_field("USIP",   1,  WARL);
         add_field("SSIP",   1,  WARL);
-        add_field("WIRI0",  1,  WIRI);
+        add_field("WPRI0",  1,  WPRI);
         add_field("MSIP",   1,  WARL);
         add_field("UTIP",   1,  WARL);
         add_field("STIP",   1,  WARL);
@@ -144,9 +144,9 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         add_field("MTIP",   1,  WARL);
         add_field("UEIP",   1,  WARL);
         add_field("SEIP",   1,  WARL);
-        add_field("WIRI2",  1,  WIRI);
+        add_field("WPRI2",  1,  WPRI);
         add_field("MEIP",   1,  WARL);
-        add_field("WIRI3",  XLEN - 12,  WIRI);
+        add_field("WPRI3",  XLEN - 12,  WPRI);
       end
       // Machine interrupt-enable register
       MIE: begin
@@ -168,27 +168,27 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       // Cycle Count Register
       MCYCLE: begin
         privil_level = M_LEVEL;
-        add_field("MCYCLE", 64, WIRI);
+        add_field("MCYCLE", 64, WPRI);
       end
       // Instruction Count Register
       MINSTRET: begin
         privil_level = M_LEVEL;
-        add_field("MINSTRET", 64, WIRI);
+        add_field("MINSTRET", 64, WPRI);
       end
       // Cycle Count Register - RV32I only
       MCYCLEH: begin
         privil_level = M_LEVEL;
-        add_field("MCYCLEH", 32, WIRI);
+        add_field("MCYCLEH", 32, WPRI);
       end
       // Instruction Count Register - RV32I only
       MINSTRETH: begin
         privil_level = M_LEVEL;
-        add_field("MINSTRETH", 32, WIRI);
+        add_field("MINSTRETH", 32, WPRI);
       end
       // Hardware Performance Monitor Counters
       [MHPMCOUNTER3:MHPMCOUNTER31]: begin
         privil_level = M_LEVEL;
-        add_field($sformatf("%s", reg_name.name()), XLEN, WIRI);
+        add_field($sformatf("%s", reg_name.name()), XLEN, WARL);
       end
       // Hardware Performance Monitor Events
       [MHPMEVENT3:MHPMEVENT31]: begin
@@ -201,7 +201,7 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
           `uvm_fatal(get_full_name(), $sformatf("Register %s is only in RV32I", reg_name.name()))
         end
         privil_level = M_LEVEL;
-        add_field($sformatf("%s", reg_name.name()), 32, WIRI);
+        add_field($sformatf("%s", reg_name.name()), 32, WARL);
       end
       // Machine Counter Enable Register
       MCOUNTEREN: begin
@@ -324,7 +324,7 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         privil_level = M_LEVEL;
         if(XLEN==64) begin
           add_field("ADDRESS", 54, WARL);
-          add_field("WIRI", 10, WIRI);
+          add_field("WARL", 10, WARL);
         end else begin
           add_field("ADDRESS", 32, WARL);
         end
@@ -560,16 +560,6 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
       default:
         `uvm_fatal(get_full_name(), $sformatf("reg %0s is not supported yet", reg_name.name()))
     endcase
-    set_wiri_wpri_fields();
-  endfunction
-
-  // Hardwire all WIRI and WPRI fields to '0
-  virtual function void set_wiri_wpri_fields();
-    foreach(fld[i]) begin
-      if(fld[i].access_type inside {WIRI, WPRI}) begin
-        set_field(fld[i].get_name(), '0, 1'b1);
-      end
-    end
   endfunction
 
 endclass

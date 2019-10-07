@@ -9,8 +9,8 @@
     +instr_cnt=10000
     +num_of_sub_program=0
     +no_fence=1
-    +no_data_page=1'b1
-    +no_branch_jump=1'b1
+    +no_data_page=1
+    +no_branch_jump=1
     +boot_mode=m
   iterations: 10
   gen_test: riscv_instr_base_test
@@ -35,12 +35,6 @@
   gen_opts: >
     +instr_cnt=10000
     +num_of_sub_program=5
-    +directed_instr_0=riscv_load_store_rand_instr_stream,4
-    +directed_instr_1=riscv_loop_instr,4
-    +directed_instr_2=riscv_hazard_instr_stream,4
-    +directed_instr_3=riscv_load_store_hazard_instr_stream,4
-    +directed_instr_4=riscv_cache_line_stress_instr_stream,4
-    +directed_instr_5=riscv_multi_page_load_store_instr_stream,4
   rtl_test: core_ibex_base_test
 
 - test: riscv_rand_jump_test
@@ -65,8 +59,7 @@
     +num_of_sub_program=5
     +directed_instr_0=riscv_load_store_rand_instr_stream,40
     +directed_instr_1=riscv_load_store_hazard_instr_stream,40
-    +directed_instr_2=riscv_cache_line_stress_instr_stream,40
-    +directed_instr_3=riscv_multi_page_load_store_instr_stream,40
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,40
   rtl_test: core_ibex_base_test
 
 - test: riscv_illegal_instr_test
@@ -78,7 +71,7 @@
   iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
-    +enable_illegal_instruction=1
+    +illegal_instr_ratio=5
   rtl_test: core_ibex_base_test
 
 - test: riscv_hint_instr_test
@@ -88,7 +81,7 @@
   iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
-    +enable_hint_instruction=1
+    +hint_instr_ratio=5
   rtl_test: core_ibex_base_test
 
 - test: riscv_ebreak_test
@@ -116,6 +109,7 @@
     +no_csr_instr=1
     +no_fence=1
     +num_of_sub_program=0
+    +randomize_csr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
@@ -158,11 +152,12 @@
     +no_csr_instr=1
     +no_fence=1
     +num_of_sub_program=0
-    +num_debug_sub_program=3
+    +num_debug_sub_program=2
+    +randomize_csr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
-    +max_interval=2000
+    +max_interval=3000
     +enable_debug_stress_seq=1
   compare_opts:
     compare_final_value_only: 1
@@ -177,10 +172,12 @@
     +require_signature_addr=1
     +gen_debug_section=1
     +no_ebreak=1
-    +instr_cnt=3000
+    +instr_cnt=6000
     +no_csr_instr=1
     +no_fence=1
     +no_wfi=0
+    +randomize_csr=1
+    +num_of_sub_program=0
   rtl_test: core_ibex_debug_wfi_test
   sim_opts: >
     +require_signature_addr=1
@@ -203,16 +200,6 @@
   sim_opts: >
     +require_signature_addr=1
 
-- test: riscv_ebreak_test
-  description: >
-    Ebreak instructions will be inserted into the M mode code, ibex should handle them normally.
-  iterations: 5
-  gen_test: riscv_rand_instr_test
-  gen_opts: >
-    +no_ebreak=0
-    +instr_cnt=6000
-  rtl_test: core_ibex_base_test
-
 - test: riscv_debug_ebreak_test
   description: >
     A directed ebreak sequence will be inserted into the debug rom, upon encountering it,
@@ -229,6 +216,7 @@
     +no_wfi=1
     +no_ebreak=0
     +instr_cnt=6000
+    +randomize_csr=1
   rtl_test: core_ibex_debug_ebreak_test
   sim_opts: >
     +require_signature_addr=1
@@ -251,6 +239,8 @@
     +no_fence=1
     +no_wfi=1
     +instr_cnt=6000
+    +randomize_csr=1
+    +num_of_sub_program=0
   rtl_test: core_ibex_debug_ebreakm_test
   sim_opts: >
     +require_signature_addr=1
@@ -261,14 +251,17 @@
 - test: riscv_interrupt_test
   description: >
     Random instruction test with complete interrupt handling
-  iterations: 0
+  iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
+    +instr_cnt=6000
     +require_signature_addr=1
+    +enable_interrupt=1
+    +randomize_csr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_irq_stress_seq=1
+    +enable_irq_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -290,7 +283,59 @@
     +num_of_sub_program=5
     +directed_instr_0=riscv_load_store_rand_instr_stream,20
     +directed_instr_1=riscv_load_store_hazard_instr_stream,20
-    +directed_instr_2=riscv_cache_line_stress_instr_stream,20
-    +directed_instr_3=riscv_multi_page_load_store_instr_stream,20
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,20
     +enable_unaligned_load_store=1
   rtl_test: core_ibex_base_test
+
+- test: riscv_mem_error_test
+  description: >
+    Normal random instruction test, but randomly insert instruction fetch or memory load/store errors
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=10000
+    +randomize_csr=1
+  rtl_test: core_ibex_mem_error_test
+  sim_opts: >
+    +require_signature_addr=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_perf_counter_test
+  description: >
+    Dump performance counters at EOT for any analysis
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=10000
+    +num_of_sub_program=5
+  rtl_test: core_ibex_perf_test
+  sim_opts: >
+    +require_signature_addr=1
+
+- test: riscv_debug_single_step_test
+  description: >
+    Randomly assert debug_req_i, and set dcsr.step to make ibex execute one isntruction and then re-enter debug mode
+  iterations: 5
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +no_branch_jump=1
+    +instr_cnt=6000
+    +no_csr_instr=1
+    +no_fence=1
+    +num_of_sub_program=0
+    +randomize_csr=1
+    +enable_debug_single_step=1
+  rtl_test: core_ibex_debug_single_step_test
+  sim_opts: >
+    +require_signature_addr=1
+    +max_interval=1500
+    +enable_debug_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1

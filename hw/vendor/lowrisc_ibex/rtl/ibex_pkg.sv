@@ -180,6 +180,7 @@ typedef enum logic [5:0] {
   EXC_CAUSE_BREAKPOINT         = {1'b0, 5'd03},
   EXC_CAUSE_LOAD_ACCESS_FAULT  = {1'b0, 5'd05},
   EXC_CAUSE_STORE_ACCESS_FAULT = {1'b0, 5'd07},
+  EXC_CAUSE_ECALL_UMODE        = {1'b0, 5'd08},
   EXC_CAUSE_ECALL_MMODE        = {1'b0, 5'd11}
 } exc_cause_e;
 
@@ -293,6 +294,8 @@ parameter int unsigned CSR_MSTATUS_MIE_BIT      = 3;
 parameter int unsigned CSR_MSTATUS_MPIE_BIT     = 7;
 parameter int unsigned CSR_MSTATUS_MPP_BIT_LOW  = 11;
 parameter int unsigned CSR_MSTATUS_MPP_BIT_HIGH = 12;
+parameter int unsigned CSR_MSTATUS_MPRV_BIT     = 17;
+parameter int unsigned CSR_MSTATUS_TW_BIT       = 21;
 
 // CSR interrupt pending/enable bits
 parameter int unsigned CSR_MSIX_BIT      = 3;

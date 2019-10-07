@@ -40,6 +40,51 @@ class riscv_directed_instr_stream extends riscv_rand_instr_stream;
 
 endclass
 
+// Base class for memory access stream
+class riscv_mem_access_stream extends riscv_directed_instr_stream;
+
+  int             max_data_page_id;
+  mem_region_t    data_page[$];
+
+  `uvm_object_utils(riscv_mem_access_stream)
+  `uvm_object_new
+
+  function void pre_randomize();
+    if(kernel_mode) begin
+      data_page = cfg.s_mem_region;
+    end else begin
+      data_page = cfg.mem_region;
+    end
+    max_data_page_id = data_page.size();
+  endfunction
+
+  // Use "la" instruction to initialize the base regiseter
+  virtual function void add_rs1_init_la_instr(riscv_reg_t gpr, int id, int base = 0);
+    riscv_pseudo_instr la_instr;
+    la_instr = riscv_pseudo_instr::type_id::create("la_instr");
+    la_instr.pseudo_instr_name = LA;
+    la_instr.rd = gpr;
+    if(kernel_mode) begin
+      la_instr.imm_str = $sformatf("%s+%0d", cfg.s_mem_region[id].name, base);
+    end else begin
+      la_instr.imm_str = $sformatf("%s+%0d", cfg.mem_region[id].name, base);
+    end
+    instr_list.push_front(la_instr);
+  endfunction
+
+  // Insert some other instructions to mix with mem_access instruction
+  virtual function void add_mixed_instr(int instr_cnt);
+    riscv_instr_base instr;
+    setup_allowed_instr(1, 1);
+    for(int i = 0; i < instr_cnt; i ++) begin
+      instr = riscv_instr_base::type_id::create("instr");
+      randomize_instr(instr);
+      insert_instr(instr);
+    end
+  endfunction
+
+endclass
+
 // Create a infinte zero instruction loop, test if we can interrupt or
 // enter debug mode while core is executing this loop
 class riscv_infinte_loop_instr extends riscv_directed_instr_stream;
@@ -90,34 +135,23 @@ endclass
 // For JAL, restore the stack before doing the jump
 class riscv_jump_instr extends riscv_rand_instr_stream;
 
-  rand riscv_instr_base    jump;
-  rand riscv_instr_base    addi;
-  rand riscv_pseudo_instr  la;
-  rand riscv_rand_instr    branch;
-  rand int                 imm;
-  rand bit                 enable_branch;
-  rand int                 mixed_instr_cnt;
-  riscv_instr_base         stack_exit_instr[];
-  string                   target_program_label;
-  int                      idx;
+  riscv_instr_base     jump;
+  riscv_instr_base     addi;
+  riscv_pseudo_instr   la;
+  riscv_instr_base     branch;
+  rand riscv_reg_t     gpr;
+  rand int             imm;
+  rand bit             enable_branch;
+  rand int             mixed_instr_cnt;
+  riscv_instr_base     stack_exit_instr[];
+  string               target_program_label;
+  int                  idx;
+  bit                  use_jalr;
 
   constraint instr_c {
-    solve jump.instr_name before addi.imm;
-    solve jump.instr_name before addi.rs1;
-    jump.instr_name dist {JAL := 1, JALR := 1};
-    jump.rd == RA;
-    !(addi.rs1 inside {cfg.reserved_regs, ZERO});
-    addi.rs1 == la.rd;
-    addi.rd  == la.rd;
-    // Avoid using negative offset -1024
-    addi.imm != 'hFFFF_FC00;
-    addi.imm != 1024;
-    jump.imm == ~addi.imm + 1;
-    jump.rs1 == addi.rd;
-    addi.instr_name == ADDI;
-    branch.category == BRANCH;
-    la.pseudo_instr_name == LA;
-    soft mixed_instr_cnt inside {[5:10]};
+    !(gpr inside {cfg.reserved_regs, ZERO});
+    imm inside {[-1023:1023]};
+    mixed_instr_cnt inside {[5:10]};
   }
 
   `uvm_object_utils(riscv_jump_instr)
@@ -127,21 +161,33 @@ class riscv_jump_instr extends riscv_rand_instr_stream;
     jump = riscv_instr_base::type_id::create("jump");
     la = riscv_pseudo_instr::type_id::create("la");
     addi = riscv_instr_base::type_id::create("addi");
-    branch = riscv_rand_instr::type_id::create("branch");
-    instr_list.rand_mode(0);
-  endfunction
-
-  function void pre_randomize();
-    branch.cfg = cfg;
+    branch = riscv_instr_base::type_id::create("branch");
   endfunction
 
   function void post_randomize();
     riscv_instr_base instr[];
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(jump,
+      (use_jalr) -> (instr_name == JALR);
+      instr_name dist {JAL := 1, JALR := 9};
+      rd == RA;
+      rs1 == gpr;
+    )
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(addi,
+      rs1 == gpr;
+      instr_name == ADDI;
+      rd  == gpr;
+    )
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(branch,
+      instr_name inside {BEQ, BNE, BLT, BGE, BLTU, BGEU};)
+    la.pseudo_instr_name = LA;
+    la.imm_str = target_program_label;
+    la.rd = gpr;
     // Generate some random instructions to mix with jump instructions
-    reserved_rd = {addi.rs1};
+    reserved_rd = {gpr};
     initialize_instr_list(mixed_instr_cnt);
     gen_instr(1'b1);
-    la.imm_str = target_program_label;
+    addi.imm_str = $sformatf("%0d", imm);
+    jump.imm_str = $sformatf("%0d", -imm);
     // The branch instruction is always inserted right before the jump instruction to avoid
     // skipping other required instructions like restore stack, load jump base etc.
     // The purse of adding the branch instruction here is to cover branch -> jump scenario.
@@ -188,8 +234,9 @@ class riscv_push_stack_instr extends riscv_rand_instr_stream;
   endfunction
 
   function void init();
-    // Save RA, T0 and all reserved loop regs
-    saved_regs = {RA, T0, cfg.loop_regs};
+    // Save RA, T0
+    reserved_rd = {RA, T0};
+    saved_regs = {RA, T0};
     num_of_reg_to_save = saved_regs.size();
     if(num_of_reg_to_save * (XLEN/8) > stack_len) begin
       `uvm_fatal(get_full_name(), $sformatf("stack len [%0d] is not enough to store %d regs",
@@ -232,8 +279,12 @@ class riscv_push_stack_instr extends riscv_rand_instr_stream;
       // Cover jal -> branch scenario, the branch is added before push stack operation
       branch_instr = riscv_rand_instr::type_id::create("branch_instr");
       branch_instr.cfg = cfg;
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(branch_instr,
-                                     category == BRANCH;)
+      `ifdef DSIM
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(branch_instr,
+                                       instr_name inside {[BEQ:BGEU], C_BEQZ, C_BNEZ};)
+      `else
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(branch_instr, category == BRANCH;)
+      `endif
       branch_instr.imm_str = push_start_label;
       branch_instr.branch_assigned = 1'b1;
       push_stack_instr[0].label = push_start_label;
@@ -266,6 +317,7 @@ class riscv_pop_stack_instr extends riscv_rand_instr_stream;
   endfunction
 
   function void init();
+    reserved_rd = {RA, T0};
     num_of_reg_to_save = saved_regs.size();
     if(num_of_reg_to_save * 4 > stack_len) begin
       `uvm_fatal(get_full_name(), $sformatf("stack len [%0d] is not enough to store %d regs",
@@ -337,7 +389,8 @@ class riscv_long_branch_instr extends riscv_rand_instr_stream;
     backward_branch_instr_stream.initialize_instr_list(branch_instr_stream_len);
   endfunction
 
-  virtual function void gen_instr(bit no_branch = 1'b0, bit no_load_store = 1'b1);
+  virtual function void gen_instr(bit no_branch = 1'b0, bit no_load_store = 1'b1,
+                                  bit is_debug_program = 1'b0);
     int branch_offset;
     super.gen_instr(1'b1);
     forward_branch_instr_stream.gen_instr();
@@ -414,7 +467,6 @@ class riscv_sw_interrupt_instr extends riscv_directed_instr_stream;
 
   function new(string name = "");
     super.new(name);
-    instr_list.rand_mode(0);
     li_instr = riscv_pseudo_instr::type_id::create("li_instr");
     csr_instr = riscv_instr_base::type_id::create("csr_instr");
     ip = riscv_privil_reg::type_id::create("ip");

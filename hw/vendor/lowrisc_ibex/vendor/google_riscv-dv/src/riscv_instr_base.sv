@@ -92,6 +92,7 @@ class riscv_instr_base extends uvm_object;
         imm_len == 8;
       }
     }
+    imm_len <= 20;
   }
 
   constraint imm_val_c {
@@ -113,7 +114,7 @@ class riscv_instr_base extends uvm_object;
     if (instr_name == C_JR) {
       rs1 != ZERO;
     }
-    if (instr_name == C_MV) {
+    if (instr_name inside {C_ADD, C_MV}) {
       rs2 != ZERO;
     }
   }
@@ -128,21 +129,9 @@ class riscv_instr_base extends uvm_object;
     }
   }
 
-  constraint fence_c {
-    if (instr_name == FENCE) {
-      rs1 == ZERO;
-      rd  == ZERO;
-      imm == 0;
-    }
-    if (instr_name == FENCEI) {
-      rs1 == ZERO;
-      rd  == ZERO;
-      imm == 0;
-    }
-  }
-
   // Cannot shift more than the width of the bus
   constraint shift_imm_val_c {
+    solve category before imm;
     if(category == SHIFT) {
       if(group == RV64I) {
         // The new instruction in RV64I only handles 32 bits value
@@ -237,13 +226,14 @@ class riscv_instr_base extends uvm_object;
   `add_instr(JALR,   I_FORMAT, JUMP, RV32I)
   // SYNCH instructions
   `add_instr(FENCE,   I_FORMAT, SYNCH, RV32I)
-  `add_instr(FENCEI,  I_FORMAT, SYNCH, RV32I)
+  `add_instr(FENCE_I,  I_FORMAT, SYNCH, RV32I)
   // SYSTEM instructions
   `add_instr(ECALL,   I_FORMAT, SYSTEM, RV32I)
   `add_instr(EBREAK,  I_FORMAT, SYSTEM, RV32I)
   `add_instr(URET,    I_FORMAT, SYSTEM, RV32I)
   `add_instr(SRET,    I_FORMAT, SYSTEM, RV32I)
   `add_instr(MRET,    I_FORMAT, SYSTEM, RV32I)
+  `add_instr(DRET,    I_FORMAT, SYSTEM, RV32I)
   `add_instr(WFI,     I_FORMAT, INTERRUPT, RV32I)
   // CSR instructions
   `add_instr(CSRRW,  R_FORMAT, CSR, RV32I, UIMM)
@@ -330,7 +320,7 @@ class riscv_instr_base extends uvm_object;
   `add_instr(C_LI,       CI_FORMAT, ARITHMETIC, RV32C)
   `add_instr(C_LUI,      CI_FORMAT, ARITHMETIC, RV32C, NZUIMM)
   `add_instr(C_SUB,      CS_FORMAT, ARITHMETIC, RV32C)
-  `add_instr(C_ADD,      CS_FORMAT, ARITHMETIC, RV32C)
+  `add_instr(C_ADD,      CR_FORMAT, ARITHMETIC, RV32C)
   `add_instr(C_NOP,      CI_FORMAT, ARITHMETIC, RV32C)
   `add_instr(C_MV,       CR_FORMAT, ARITHMETIC, RV32C)
   `add_instr(C_ANDI,     CB_FORMAT, LOGICAL, RV32C)
@@ -392,17 +382,17 @@ class riscv_instr_base extends uvm_object;
   `add_instr(AMOMAXU_W, R_FORMAT, AMO, RV32A)
 
   // RV64A
-  `add_instr(LR_D,      R_FORMAT, LOAD, RV32A)
-  `add_instr(SC_D,      R_FORMAT, STORE, RV32A)
-  `add_instr(AMOSWAP_D, R_FORMAT, AMO, RV32A)
-  `add_instr(AMOADD_D,  R_FORMAT, AMO, RV32A)
-  `add_instr(AMOAND_D,  R_FORMAT, AMO, RV32A)
-  `add_instr(AMOOR_D,   R_FORMAT, AMO, RV32A)
-  `add_instr(AMOXOR_D,  R_FORMAT, AMO, RV32A)
-  `add_instr(AMOMIN_D,  R_FORMAT, AMO, RV32A)
-  `add_instr(AMOMAX_D,  R_FORMAT, AMO, RV32A)
-  `add_instr(AMOMINU_D, R_FORMAT, AMO, RV32A)
-  `add_instr(AMOMAXU_D, R_FORMAT, AMO, RV32A)
+  `add_instr(LR_D,      R_FORMAT, LOAD, RV64A)
+  `add_instr(SC_D,      R_FORMAT, STORE, RV64A)
+  `add_instr(AMOSWAP_D, R_FORMAT, AMO, RV64A)
+  `add_instr(AMOADD_D,  R_FORMAT, AMO, RV64A)
+  `add_instr(AMOAND_D,  R_FORMAT, AMO, RV64A)
+  `add_instr(AMOOR_D,   R_FORMAT, AMO, RV64A)
+  `add_instr(AMOXOR_D,  R_FORMAT, AMO, RV64A)
+  `add_instr(AMOMIN_D,  R_FORMAT, AMO, RV64A)
+  `add_instr(AMOMAX_D,  R_FORMAT, AMO, RV64A)
+  `add_instr(AMOMINU_D, R_FORMAT, AMO, RV64A)
+  `add_instr(AMOMAXU_D, R_FORMAT, AMO, RV64A)
 
   // Supervisor Instructions
   `add_instr(SFENCE_VMA, R_FORMAT,SYNCH,RV32I)
@@ -420,14 +410,20 @@ class riscv_instr_base extends uvm_object;
         update_imm_str();
       end
     end
-    if (format inside {R_FORMAT, S_FORMAT, B_FORMAT, CSS_FORMAT, CS_FORMAT}) begin
+    if (format inside {R_FORMAT, S_FORMAT, B_FORMAT, CSS_FORMAT, CS_FORMAT, CR_FORMAT}) begin
       has_rs2 = 1'b1;
     end
-    if (!(format inside {J_FORMAT, U_FORMAT, CJ_FORMAT, CSS_FORMAT})) begin
+    if (!(format inside {J_FORMAT, U_FORMAT, CJ_FORMAT, CSS_FORMAT, CR_FORMAT, CI_FORMAT})) begin
       has_rs1 = 1'b1;
     end
     if (!(format inside {CJ_FORMAT, CB_FORMAT, CS_FORMAT, CSS_FORMAT, B_FORMAT, S_FORMAT})) begin
       has_rd = 1'b1;
+    end
+    if (category == CSR) begin
+      has_rs2 = 1'b0;
+      if (instr_name inside {CSRRWI, CSRRSI, CSRRCI}) begin
+        has_rs1 = 1'b0;
+      end
     end
   endfunction
 
@@ -469,16 +465,35 @@ class riscv_instr_base extends uvm_object;
   function riscv_reg_t gen_rand_gpr(riscv_reg_t included_reg[] = {},
                                     riscv_reg_t excluded_reg[] = {});
     riscv_reg_t gpr;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(gpr,
-                                       if (is_compressed) {
-                                         gpr inside {[S0:A5]};
-                                       }
-                                       if (excluded_reg.size() != 0) {
-                                         !(gpr inside {excluded_reg});
-                                       }
-                                       if (included_reg.size() != 0) {
-                                         gpr inside {included_reg};
-                                       })
+    int unsigned i;
+    riscv_reg_t legal_gpr[$];
+    if (included_reg.size() > 0) begin
+      legal_gpr = included_reg;
+      while (is_compressed && (i < legal_gpr.size())) begin
+        if (legal_gpr[i] < S0 || legal_gpr[i] > A5) begin
+          legal_gpr.delete(i);
+        end else begin
+          i++;
+        end
+      end
+    end else if (is_compressed) begin
+      legal_gpr = riscv_instr_pkg::compressed_gpr;
+    end else begin
+      legal_gpr = riscv_instr_pkg::all_gpr;
+    end
+    if (excluded_reg.size() > 0) begin
+      i = 0;
+      while (i < legal_gpr.size()) begin
+        if (legal_gpr[i] inside {excluded_reg}) begin
+          legal_gpr.delete(i);
+        end else begin
+          i++;
+        end
+      end
+    end
+    `DV_CHECK_FATAL(legal_gpr.size() > 0)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(i, i < legal_gpr.size();)
+    gpr = legal_gpr[i];
     return gpr;
   endfunction
 
@@ -521,9 +536,13 @@ class riscv_instr_base extends uvm_object;
         I_FORMAT: // instr rd,rs1,imm
           if(instr_name == NOP)
             asm_str = "nop";
+          else if(instr_name == C_NOP)
+            asm_str = "c.nop";
+          else if(instr_name == WFI)
+            asm_str = "wfi";
           else if(instr_name == FENCE)
             asm_str = $sformatf("fence"); // TODO: Support all fence combinations
-          else if(instr_name == FENCEI)
+          else if(instr_name == FENCE_I)
             asm_str = "fence.i";
           else if(category == LOAD) // Use psuedo instruction format
             asm_str = $sformatf("%0s%0s, %0s(%0s)", asm_str, rd.name(), get_imm(), rs1.name());
@@ -599,10 +618,10 @@ class riscv_instr_base extends uvm_object;
       MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU                    : get_opcode = 7'b0110011;
       ADDIW, SLLIW, SRLIW, SRAIW                                   : get_opcode = 7'b0011011;
       MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU                    : get_opcode = 7'b0110011;
-      FENCE, FENCEI                                                : get_opcode = 7'b0001111;
+      FENCE, FENCE_I                                               : get_opcode = 7'b0001111;
       ECALL, EBREAK, CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI   : get_opcode = 7'b1110011;
       ADDW, SUBW, SLLW, SRLW, SRAW, MULW, DIVW, DIVUW, REMW, REMUW : get_opcode = 7'b0111011;
-      ECALL, EBREAK, URET, SRET, MRET, WFI, SFENCE_VMA             : get_opcode = 7'b1110011;
+      ECALL, EBREAK, URET, SRET, MRET, DRET, WFI, SFENCE_VMA       : get_opcode = 7'b1110011;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
     endcase
   endfunction
@@ -661,7 +680,7 @@ class riscv_instr_base extends uvm_object;
       OR         : get_func3 = 3'b110;
       AND        : get_func3 = 3'b111;
       FENCE      : get_func3 = 3'b000;
-      FENCEI     : get_func3 = 3'b001;
+      FENCE_I    : get_func3 = 3'b001;
       ECALL      : get_func3 = 3'b000;
       EBREAK     : get_func3 = 3'b000;
       CSRRW      : get_func3 = 3'b001;
@@ -744,7 +763,7 @@ class riscv_instr_base extends uvm_object;
       C_SWSP     : get_func3 = 3'b110;
       C_FSWSP    : get_func3 = 3'b111;
       C_SDSP     : get_func3 = 3'b111;
-      ECALL, EBREAK, URET, SRET, MRET, WFI, SFENCE_VMA : get_func3 = 3'b000;
+      ECALL, EBREAK, URET, SRET, MRET, DRET, WFI, SFENCE_VMA : get_func3 = 3'b000;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
     endcase
   endfunction
@@ -765,7 +784,7 @@ class riscv_instr_base extends uvm_object;
       OR     : get_func7 = 7'b0000000;
       AND    : get_func7 = 7'b0000000;
       FENCE  : get_func7 = 7'b0000000;
-      FENCEI : get_func7 = 7'b0000000;
+      FENCE_I : get_func7 = 7'b0000000;
       ECALL  : get_func7 = 7'b0000000;
       EBREAK : get_func7 = 7'b0000000;
       SLLIW  : get_func7 = 7'b0000000;
@@ -794,6 +813,7 @@ class riscv_instr_base extends uvm_object;
       URET   : get_func7 = 7'b0000000;
       SRET   : get_func7 = 7'b0001000;
       MRET   : get_func7 = 7'b0011000;
+      DRET   : get_func7 = 7'b0111101;
       WFI    : get_func7 = 7'b0001000;
       SFENCE_VMA: get_func7 = 7'b0001001;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
@@ -812,7 +832,7 @@ class riscv_instr_base extends uvm_object;
             binary = $sformatf("%8h", {imm[31:12], rd,  get_opcode()});
         end
         I_FORMAT: begin
-          if(instr_name inside {FENCE, FENCEI})
+          if(instr_name inside {FENCE, FENCE_I})
             binary = $sformatf("%8h", {17'b0, get_func3(), 5'b0, get_opcode()});
           else if(category == CSR)
             binary = $sformatf("%8h", {csr[10:0], imm[4:0], get_func3(), rd, get_opcode()});
@@ -820,6 +840,8 @@ class riscv_instr_base extends uvm_object;
             binary = $sformatf("%8h", {get_func7(), 18'b0, get_opcode()});
           else if(instr_name inside {URET, SRET, MRET})
             binary = $sformatf("%8h", {get_func7(), 5'b10, 13'b0, get_opcode()});
+          else if(instr_name inside {DRET})
+            binary = $sformatf("%8h", {get_func7(), 5'b10010, 13'b0, get_opcode()});
           else if(instr_name == EBREAK)
             binary = $sformatf("%8h", {get_func7(), 5'b01, 13'b0, get_opcode()});
           else if(instr_name == WFI)

@@ -15,14 +15,14 @@
  */
 
 // Base class for AMO instruction stream
-class riscv_amo_base_instr_stream extends riscv_directed_instr_stream;
+class riscv_amo_base_instr_stream extends riscv_mem_access_stream;
 
   rand int unsigned  num_amo;
   rand int unsigned  num_mixed_instr;
   rand int           base;
   rand riscv_reg_t   rs1_reg;
-  riscv_reg_t        reserved_rd[$];
   rand int unsigned  data_page_id;
+  rand int           max_load_store_offset;
 
   // User can specify a small group of available registers to generate various hazard condition
   rand riscv_reg_t   avail_regs[];
@@ -48,56 +48,21 @@ class riscv_amo_base_instr_stream extends riscv_directed_instr_stream;
 
   function new(string name = "");
     super.new(name);
-    instr_list.rand_mode(0);
   endfunction
 
   function void post_randomize();
     gen_amo_instr();
     // rs1 cannot be modified by other instructions
     if(!(rs1_reg inside {reserved_rd})) begin
-      reserved_rd.push_back(rs1_reg);
+      reserved_rd = {reserved_rd, rs1_reg};
     end
-    add_mixed_instr();
-    add_rs1_init_la_instr();
+    add_mixed_instr(num_mixed_instr);
+    add_rs1_init_la_instr(rs1_reg, data_page_id);
     super.post_randomize();
-  endfunction
-
-  // Use "la" instruction to initialize the base regiseter
-  virtual function void add_rs1_init_la_instr();
-    riscv_pseudo_instr la_instr;
-    la_instr = riscv_pseudo_instr::type_id::create("la_instr");
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(la_instr,
-                                   pseudo_instr_name == LA;
-                                   rd == rs1_reg;,
-                                   "Cannot randomize la_instr")
-    if(access_u_mode_mem) begin
-      la_instr.imm_str = $sformatf("data_page_%0d+%0d", data_page_id, base);
-    end else begin
-      la_instr.imm_str = $sformatf("kernel_data_page_%0d+%0d", data_page_id, base);
-    end
-    instr_list.push_front(la_instr);
   endfunction
 
   // AMO instruction generation
   virtual function void gen_amo_instr();
-  endfunction
-
-  // Insert some other instructions to mix with load/store instruction
-  virtual function void add_mixed_instr();
-    riscv_rand_instr rand_instr;
-    for(int i = 0; i < num_mixed_instr; i ++) begin
-      rand_instr = riscv_rand_instr::type_id::create("rand_instr");
-      rand_instr.cfg = cfg;
-      rand_instr.reserved_rd = reserved_rd;
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rand_instr,
-        if(avail_regs.size() > 0) {
-          rs1 inside {avail_regs};
-          rd inside {avail_regs};
-        }
-        !(category inside {LOAD, STORE, BRANCH, JUMP});,
-        "Cannot randomize instruction")
-      insert_instr(rand_instr);
-    end
   endfunction
 
 endclass
@@ -159,10 +124,17 @@ class riscv_amo_instr_stream extends riscv_amo_base_instr_stream;
       amo_instr[i] = riscv_rand_instr::type_id::create($sformatf("amo_instr_%0d", i));
       amo_instr[i].cfg = cfg;
       amo_instr[i].disable_a_extension_c.constraint_mode(0);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(amo_instr[i],
-                                     rs1 == rs1_reg;
-                                     rd != rs1_reg;
-                                     category == AMO;)
+      `ifdef DSIM
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(amo_instr[i],
+                                       rs1 == rs1_reg;
+                                       rd != rs1_reg;
+                                       instr_name inside {[AMOSWAP_W:AMOMAXU_D]};)
+      `else
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(amo_instr[i],
+                                       rs1 == rs1_reg;
+                                       rd != rs1_reg;
+                                       category == AMO;)
+      `endif
       instr_list.push_front(amo_instr[i]);
     end
   endfunction

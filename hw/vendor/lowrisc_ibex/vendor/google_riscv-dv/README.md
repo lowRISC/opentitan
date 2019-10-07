@@ -7,12 +7,16 @@ processor verification. It currently supports the following features:
 - Supported privileged mode: machine mode, supervisor mode, user mode
 - Page table randomization and exception
 - Privileged CSR setup randomization
+- Privileged CSR test suite
 - Trap/interrupt handling
 - Test suite to stress test MMU
 - Support sub-programs and random program calls
 - Support illegal instruction and HINT instruction
 - Random forward/backward branch instructions
 - Supports mixing directed instructions with random instruction stream
+- Debug mode support, with fully randomized debug ROM
+- Instruction generation coverage model
+- Communication of information to any integrated SV testbench
 - Supports co-simulation with multiple ISS : spike, riscv-ovpsim
 
 A CSR test generation script written in Python is also provided, to generate a
@@ -59,6 +63,7 @@ You can specify the simulator by "-simulator" option
 python3 run.py --test riscv_arithmetic_basic_test --simulator ius
 python3 run.py --test riscv_arithmetic_basic_test --simulator vcs
 python3 run.py --test riscv_arithmetic_basic_test --simulator questa
+python3 run.py --test riscv_arithmetic_basic_test --simulator dsim
 ```
 The complete test list can be found in [yaml/testlist.yaml](https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml). To run a full
 regression, simply use below command
@@ -77,22 +82,22 @@ Here's a few more examples of the run command:
 
 ```
 // Run a single test 10 times
-python3 run.py --test riscv_page_table_exception_test --iterations 10
+python3 run.py --test riscv_arithmetic_basic_test --iterations 10
 
 // Run a test with verbose logging
-python3 run.py --test riscv_page_table_exception_test --verbose
+python3 run.py --test riscv_arithmetic_basic_test --verbose
 
 // Run a test with a specified seed
-python3 run.py --test riscv_page_table_exception_test --seed 123
+python3 run.py --test riscv_arithmetic_basic_test --seed 123
 
 // Skip the generation, run ISS simulation with previously generated program
-python3 run.py --test riscv_page_table_exception_test --steps iss_sim
+python3 run.py --test riscv_arithmetic_basic_test --steps iss_sim
 
 // Run the generator only, do not compile and simluation with ISS
-python3 run.py --test riscv_page_table_exception_test --steps gen
+python3 run.py --test riscv_arithmetic_basic_test --steps gen
 
 // Compile the generator only, do not simulate
-python3 run.py --test riscv_page_table_exception_test --co
+python3 run.py --test riscv_arithmetic_basic_test --co
 
 ....
 ```
@@ -184,6 +189,37 @@ riscv_instr_group_t supported_isa[] = {RV32I, RV32M, RV64I, RV64M};
 ...
 ```
 
+### Setup the memory map
+
+Here's a few cases that you might want to allocate the instruction and data
+sections to match the actual memory map
+- The processor has internal memories, and you want to test load/store from
+  various internal/externel memory regions
+- The processor implments the PMP feature, and you want to configure the memory
+  map to match PMP setting.
+- Virtual address translation is implmented and you want to test load/store from
+  sparse memory locations to verify data TLB replacement logic.
+
+You can configure the memory map in [riscv_instr_gen_config.sv](https://github.com/google/riscv-dv/blob/master/src/riscv_instr_gen_config.sv)
+
+```
+  mem_region_t mem_region[$] = '{
+    '{name:"region_0", size_in_bytes: 4096,      xwr: 3'b111},
+    '{name:"region_1", size_in_bytes: 4096 * 4,  xwr: 3'b111},
+    '{name:"region_2", size_in_bytes: 4096 * 2,  xwr: 3'b111},
+    '{name:"region_3", size_in_bytes: 512,       xwr: 3'b111},
+    '{name:"region_4", size_in_bytes: 4096,      xwr: 3'b111}
+  };
+```
+
+Each memory region belongs to a separate section in the generated assembly
+program. You can modify the link script to link each section to the target
+memory location. Please avoid setting a large memory range as it could takes a
+long time to randomly initializing the memory. You can break down a large memory
+region to a few representative small regions which covers all the boundary
+conditions for the load/store testing.
+
+
 ### Runtime options of the generator
 
 | Option                      | Description                                       | Default |
@@ -192,14 +228,16 @@ riscv_instr_group_t supported_isa[] = {RV32I, RV32M, RV64I, RV64M};
 | num_of_sub_program          | Number of sub-program in one test                 | 5       |
 | instr_cnt                   | Instruction count per test                        | 200     |
 | enable_page_table_exception | Enable page table exception                       | 0       |
+| enable_unaligned_load_store | Enable unaligned memory operations                | 0       |
 | no_ebreak                   | Disable ebreak instruction                        | 1       |
 | no_wfi                      | Disable WFI instruction                           | 1       |
+| no_dret                     | Disable dret instruction                          | 1       |
 | no_branch_jump              | Disable branch/jump instruction                   | 0       |
 | no_load_store               | Disable load/store instruction                    | 0       |
 | no_csr_instr                | Disable CSR instruction                           | 0       |
 | no_fence                    | Disable fence instruction                         | 0       |
-| enable_illegal_instruction  | Enable illegal instructions                       | 0       |
-| enable_hint_instruction     | Enable HINT instruction                           | 0       |
+| illegal_instr_ratio         | Number of illegal instructions every 1000 instr   | 0       |
+| hint_instr_ratio            | Number of HINT instructions every 1000 instr      | 0       |
 | boot_mode                   | m:Machine mode, s:Supervisor mode, u:User mode    | m       |
 | no_directed_instr           | Disable directed instruction stream               | 0       |
 | require_signature_addr      | Set to 1 if test needs to talk to testbench       | 0       |
@@ -207,6 +245,9 @@ riscv_instr_group_t supported_isa[] = {RV32I, RV32M, RV64I, RV64M};
 | enable_interrupt            | Enable MStatus.MIE, used in interrupt test        | 0       |
 | gen_debug_section           | Disables randomized debug_rom section             | 0       |
 | num_debug_sub_program       | Number of debug sub-programs in test              | 0       |
+| enable_ebreak_in_debug_rom  | Generate ebreak instructions inside debug ROM     | 0       |
+| set_dcsr_ebreak             | Randomly enable dcsr.ebreak(m/s/u)                | 0       |
+| randomize_csr               | Fully randomize main CSRs (xSTATUS, xIE)          | 0       |
 
 
 ### Setup Privileged CSR description
@@ -295,7 +336,7 @@ You can use -iss to run with different ISS.
 
 ```
 // Run ISS with spike
-python3 run.py --test riscv_page_table_exception_test --iss spike
+python3 run.py --test riscv_arithmetic_basic_test --iss spike
 
 // Run ISS with riscv-ovpsim
 python3 run.py --test riscv_rand_instr_test --iss ovpsim
@@ -336,16 +377,31 @@ You can add a new entry in [iss.yaml](https://github.com/google/riscv-dv/blob/ma
 Simulate with the new ISS
 
 ```
-python3 run.py --test riscv_page_table_exception_test --iss new_iss_name
+python3 run.py --test riscv_arithmetic_basic_test --iss new_iss_name
 ```
 
 ## End-to-end RTL and ISS co-simulation flow
 
 We have collaborated with LowRISC to apply this flow for [IBEX RISC-V core
 verification](https://github.com/lowRISC/ibex/blob/master/doc/verification.rst). You can use
-it as a reference to setup end-to-end co-simulation flow. It's also a good
-reference for [customizing the generator](https://github.com/lowRISC/ibex/tree/master/dv/uvm/riscv_dv_extension) without getting impacted by upstream
-changes.
+it as a reference to setup end-to-end co-simulation flow.
+This repo is still under active development, here's recommended approach to
+customize the instruction generator while keeping the minimum effort of merging
+upstream changes.
+- Do not modify the upstream classes directly. When possible, extending from
+  the upstream classses and implment your own functionalities.
+- Add your extensions under user_extension directory, and add the files to
+  user_extension/user_extension.svh. If you prefer to put your extensions in a
+  different directory, you can use "-ext <user_extension_path>" to override the
+  user extension path.
+- Create a new file for riscv_core_setting.sv, add the path with below option:
+  "-cs <new_core_setting_path>"
+- Use command line type override to use your extended classes.
+  --sim_opts="+uvm_set_type_override=<upstream_class>,<extended_class>"
+
+You can refer to [riscv-dv extension for ibex](https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile#L68) for a working example.
+
+
 We have plan to open-source the end-to-end environment of other advanced RISC-V
 processors. Stay tuned!
 
@@ -361,14 +417,6 @@ We definitely welcome external contributions. We hope it could be a
 collaborative effort to build a strong open source RISC-V processor
 verification platform. Free feel to submit your pull request for review.
 Please refer to CONTRIBUTING.md for license related questions.
-
-## Future release plan
-
-We have some work in progress which will be part of future releases:
-
--   Privileged CSR test suite.
--   Coverage model.
--   Debug mode support
 
 ## Disclaimer
 

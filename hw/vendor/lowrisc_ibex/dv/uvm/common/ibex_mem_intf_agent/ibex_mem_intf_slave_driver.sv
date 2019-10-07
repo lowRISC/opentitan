@@ -10,15 +10,16 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
 
   protected virtual ibex_mem_intf vif;
 
+  int unsigned min_grant_delay = 0;
+  int unsigned max_grant_delay = 10;
+
   `uvm_component_utils(ibex_mem_intf_slave_driver)
   `uvm_component_new
 
-  mailbox #(ibex_mem_intf_seq_item) grant_queue;
   mailbox #(ibex_mem_intf_seq_item) rdata_queue;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    grant_queue = new();
     rdata_queue = new();
     if(!uvm_config_db#(virtual ibex_mem_intf)::get(this, "", "vif", vif))
       `uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
@@ -36,6 +37,7 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
     vif.rvalid  <= 1'b0;
     vif.grant   <= 1'b0;
     vif.rdata   <= 'b0;
+    vif.error   <= 1'b0;
   endtask : reset_signals
 
   virtual protected task get_and_drive();
@@ -55,15 +57,22 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
     join_none
   endtask : get_and_drive
 
-  // TODO(udinator) - this direct send_grant logic is temporary until instruction fetch protocol
-  // issue is clarified (https://github.com/lowRISC/ibex/pull/293). After resolution, will re-add
-  // random delays insertion before driving grant to the ibex core.
   virtual protected task send_grant();
     int gnt_delay;
     forever begin
       while(vif.request !== 1'b1) begin
         @(negedge vif.clock);
       end
+      if (!std::randomize(gnt_delay) with {
+        gnt_delay dist {
+          min_grant_delay                         :/ 1,
+          [min_grant_delay+1 : max_grant_delay-1] :/ 1,
+          max_grant_delay                         :/ 1
+        };
+      }) begin
+        `uvm_fatal(`gfn, $sformatf("Cannot randomize grant"))
+      end
+      repeat(gnt_delay) @(negedge vif.clock);
       if(~vif.reset) begin
         vif.grant = 1'b1;
         @(negedge vif.clock);
@@ -78,11 +87,13 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
       @(posedge vif.clock);
       vif.rvalid <=  1'b0;
       vif.rdata  <= 'x;
+      vif.error  <= 1'b0;
       rdata_queue.get(tr);
       if(vif.reset) continue;
       repeat(tr.rvalid_delay) @(posedge vif.clock);
       if(~vif.reset) begin
         vif.rvalid <=  1'b1;
+        vif.error  <=  tr.error;
         vif.rdata  <=  tr.data;
       end
     end

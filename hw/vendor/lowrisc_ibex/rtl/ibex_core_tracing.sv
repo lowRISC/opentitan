@@ -7,10 +7,13 @@
  * Top level module of the ibex RISC-V core with tracing enabled
  */
 module ibex_core_tracing #(
+    parameter bit          PMPEnable        = 1'b0,
+    parameter int unsigned PMPGranularity   = 0,
+    parameter int unsigned PMPNumRegions    = 4,
     parameter int unsigned MHPMCounterNum   = 8,
     parameter int unsigned MHPMCounterWidth = 40,
-    parameter bit RV32E                     = 0,
-    parameter bit RV32M                     = 1,
+    parameter bit          RV32E            = 1'b0,
+    parameter bit          RV32M            = 1'b1,
     parameter int unsigned DmHaltAddr       = 32'h1A110800,
     parameter int unsigned DmExceptionAddr  = 32'h1A110808
 ) (
@@ -62,7 +65,7 @@ module ibex_core_tracing #(
 
   // ibex_tracer relies on the signals from the RISC-V Formal Interface
   `ifndef RVFI
-    Fatal error: RVFI needs to be defined globally.
+    $fatal("Fatal error: RVFI needs to be defined globally.");
   `endif
 
   logic        rvfi_valid;
@@ -87,6 +90,9 @@ module ibex_core_tracing #(
   logic [31:0] rvfi_mem_wdata;
 
   ibex_core #(
+    .PMPEnable(PMPEnable),
+    .PMPGranularity(PMPGranularity),
+    .PMPNumRegions(PMPNumRegions),
     .MHPMCounterNum(MHPMCounterNum),
     .MHPMCounterWidth(MHPMCounterWidth),
     .RV32E(RV32E),
@@ -152,28 +158,33 @@ module ibex_core_tracing #(
     .core_sleep_o
   );
 
+  ibex_tracer
+  u_ibex_tracer (
+    .clk_i,
+    .rst_ni,
 
-`ifndef VERILATOR
-  ibex_tracer u_ibex_tracer (
-      .clk_i            ( clk_i                  ),
-      .rst_ni           ( rst_ni                 ),
+    .hart_id_i,
 
-      .fetch_enable_i   ( fetch_enable_i         ),
-      .hart_id_i        ( hart_id_i              ),
-
-      .valid_i          ( rvfi_valid             ),
-      .pc_i             ( rvfi_pc_rdata          ),
-      .instr_i          ( rvfi_insn              ),
-      .rs1_value_i      ( rvfi_rs1_rdata         ),
-      .rs2_value_i      ( rvfi_rs2_rdata         ),
-      .ex_reg_addr_i    ( rvfi_rd_addr           ),
-      .ex_reg_wdata_i   ( rvfi_rd_wdata          ),
-      .ex_data_addr_i   ( rvfi_mem_addr          ),
-      .ex_data_wdata_i  ( rvfi_mem_wdata         ),
-      .ex_data_rdata_i  ( rvfi_mem_rdata         )
+    .rvfi_valid,
+    .rvfi_order,
+    .rvfi_insn,
+    .rvfi_trap,
+    .rvfi_halt,
+    .rvfi_intr,
+    .rvfi_mode,
+    .rvfi_rs1_addr,
+    .rvfi_rs2_addr,
+    .rvfi_rs1_rdata,
+    .rvfi_rs2_rdata,
+    .rvfi_rd_addr,
+    .rvfi_rd_wdata,
+    .rvfi_pc_rdata,
+    .rvfi_pc_wdata,
+    .rvfi_mem_addr,
+    .rvfi_mem_rmask,
+    .rvfi_mem_wmask,
+    .rvfi_mem_rdata,
+    .rvfi_mem_wdata
   );
-`else
-    // ibex_tracer uses language constructs which Verilator doesn't understand.
-`endif
 
 endmodule

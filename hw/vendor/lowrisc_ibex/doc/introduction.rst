@@ -53,7 +53,7 @@ In addition, the following instruction set extensions are available.
 Most content of the RISC-V privileged specification is optional.
 Ibex currently supports the following features according to the RISC-V Privileged Specification, version 1.11.
 
-* M mode
+* M-Mode and U-Mode
 * All CSRs listed in :ref:`cs-registers`
 * Performance counters as described in :ref:`performance-counters`
 * Vectorized trap handling as described at :ref:`exceptions-interrupts`
@@ -75,18 +75,20 @@ Since latches are not well supported on FPGAs, it is crucial to select the flip-
 Contents
 --------
 
-:ref:`getting-started` discusses the requirements and initial steps to start using Ibex.
-:ref:`core-integration` provides the instantiation template and gives descriptions of the design parameters as well as the input and output ports.
-The instruction and data interfaces of Ibex are explained in :ref:`instruction-fetch` and :ref:`load-store-unit`, respectively.
-The two register-file flavors are described in :ref:`register-file`.
-The control and status registers are explained in :ref:`cs-registers`.
-:ref:`performance-counters` gives an overview of the performance monitors and event counters available in Ibex.
-:ref:`exceptions-interrupts` deals with the infrastructure for handling exceptions and interrupts,
-:ref:`pmp` gives a brief overview of PMP support.
-:ref:`debug-support` gives a brief overview on the debug infrastructure.
-:ref:`tracer` gives a brief overview of the tracer module.
-For information regarding formal verification support, check out :ref:`rvfi`.
-:ref:`examples` gives an overview of how Ibex can be used.
+ * :ref:`getting-started` discusses the requirements and initial steps to start using Ibex.
+ * :ref:`core-integration` provides the instantiation template and gives descriptions of the design parameters as well as the input and output ports.
+ * :ref:`pipeline-details` described the overal pipeline structure.
+ * :ref:`instruction-decode-execute` describes how the Instruction Decode and Execute stage works.
+ * The instruction and data interfaces of Ibex are explained in :ref:`instruction-fetch` and :ref:`load-store-unit`, respectively.
+ * The two register-file flavors are described in :ref:`register-file`.
+ * The control and status registers are explained in :ref:`cs-registers`.
+ * :ref:`performance-counters` gives an overview of the performance monitors and event counters available in Ibex.
+ * :ref:`exceptions-interrupts` deals with the infrastructure for handling exceptions and interrupts,
+ * :ref:`pmp` gives a brief overview of PMP support.
+ * :ref:`debug-support` gives a brief overview on the debug infrastructure.
+ * :ref:`tracer` gives a brief overview of the tracer module.
+ * For information regarding formal verification support, check out :ref:`rvfi`.
+ * :ref:`examples` gives an overview of how Ibex can be used.
 
 
 History

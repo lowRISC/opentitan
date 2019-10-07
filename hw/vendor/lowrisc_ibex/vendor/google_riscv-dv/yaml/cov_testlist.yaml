@@ -1,0 +1,18 @@
+- test: riscv_instr_cov_debug_test
+  description: >
+    Functional coverage debug test, this is not a functional test to the core.
+  iterations: 1
+  gen_test: riscv_instr_cov_debug_test
+  no_iss: 1
+  no_gcc: 1
+  no_post_compare: 1
+
+- test: riscv_instr_cov_test
+  description: >
+    Parse the instruction information from the CSV trace log, sample functional
+    coverage from the instruction trace.
+  iterations: 1
+  gen_test: riscv_instr_cov_test
+  no_iss: 1
+  no_gcc: 1
+  no_post_compare: 1

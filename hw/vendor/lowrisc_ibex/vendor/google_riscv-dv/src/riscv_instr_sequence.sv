@@ -78,7 +78,8 @@ class riscv_instr_sequence extends uvm_sequence;
                                instr_stream.instr_list.size()), UVM_LOW)
     // Do not generate load/store instruction here
     // The load/store instruction will be inserted as directed instruction stream
-    instr_stream.gen_instr(.no_branch(no_branch), .no_load_store(1'b1));
+    instr_stream.gen_instr(.no_branch(no_branch), .no_load_store(1'b1),
+                           .is_debug_program(is_debug_program));
     if(!is_main_program) begin
       gen_stack_enter_instr();
       gen_stack_exit_instr();
@@ -132,7 +133,9 @@ class riscv_instr_sequence extends uvm_sequence;
   virtual function void post_process_instr();
     int i;
     int label_idx;
-    int branch_target[string] = '{default: 0};
+    int branch_cnt;
+    int unsigned branch_idx[];
+    int branch_target[int] = '{default: 0};
     // Insert directed instructions, it's randomly mixed with the random instruction stream.
     foreach (directed_instr[i]) begin
       instr_stream.insert_instr_stream(directed_instr[i].instr_list);
@@ -169,6 +172,11 @@ class riscv_instr_sequence extends uvm_sequence;
       end
     end
     // Generate branch target
+    branch_idx = new[30];
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(branch_idx,
+                                       foreach(branch_idx[i]) {
+                                         branch_idx[i] inside {[1:cfg.max_branch_step]};
+                                       })
     while(i < instr_stream.instr_list.size()) begin
       if((instr_stream.instr_list[i].category == BRANCH) &&
         (!instr_stream.instr_list[i].branch_assigned) &&
@@ -179,11 +187,15 @@ class riscv_instr_sequence extends uvm_sequence;
         // reserved loop registers
         int branch_target_label;
         int branch_byte_offset;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(branch_target_label,
-          branch_target_label >= instr_stream.instr_list[i].idx+1;
-          branch_target_label <= label_idx-1;
-          branch_target_label <= instr_stream.instr_list[i].idx+cfg.max_branch_step;,
-          "Cannot randomize branch_target_label")
+        branch_target_label = instr_stream.instr_list[i].idx + branch_idx[branch_cnt];
+        if (branch_target_label >= label_idx) begin
+          branch_target_label = label_idx-1;
+        end
+        branch_cnt++;
+        if (branch_cnt == branch_idx.size()) begin
+          branch_cnt = 0;
+          branch_idx.shuffle();
+        end
         `uvm_info(get_full_name(),
                   $sformatf("Processing branch instruction[%0d]:%0s # %0d -> %0d",
                   i, instr_stream.instr_list[i].convert2asm(),
@@ -230,14 +242,11 @@ class riscv_instr_sequence extends uvm_sequence;
     jump_instr.cfg = cfg;
     jump_instr.label = label_name;
     jump_instr.idx = idx;
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(jump_instr,
-      if(is_main_program) {
-        jump_instr.jump.rd == RA;
-      },
-      "Cannot randomize jump_instr")
+    jump_instr.use_jalr = is_main_program;
+    `DV_CHECK_RANDOMIZE_FATAL(jump_instr)
     instr_stream.insert_instr_stream(jump_instr.instr_list);
     `uvm_info(get_full_name(), $sformatf("%0s -> %0s...done",
-              jump_instr.jump.instr_name.name(), label_name), UVM_LOW)
+              jump_instr.jump.instr_name.name(), target_label), UVM_LOW)
   endfunction
 
   // Convert the instruction stream to the string format.
@@ -266,6 +275,7 @@ class riscv_instr_sequence extends uvm_sequence;
       str = {prefix, instr_stream.instr_list[i].convert2asm()};
       instr_string_list.push_back(str);
     end
+    insert_illegal_hint_instr();
     prefix = format_string($sformatf("%0d:", i), LABEL_STR_LEN);
     if(!is_main_program) begin
       str = {prefix, "ret"};
@@ -273,53 +283,36 @@ class riscv_instr_sequence extends uvm_sequence;
     end
   endfunction
 
-  // Convert the instruction stream to binary format
-  function void generate_binary_stream(ref string binary[$]);
-    string instr_bin;
-    string remaining_bin;
+  function void insert_illegal_hint_instr();
+    int bin_instr_cnt;
+    int idx;
     string str;
-    illegal_instr.cfg = cfg;
-    foreach (instr_stream.instr_list[i]) begin
-      if (instr_stream.instr_list[i].is_illegal_instr) begin
-        // Replace the original instruction with illegal instruction binary
+    illegal_instr.init(cfg);
+    bin_instr_cnt = instr_cnt * cfg.illegal_instr_ratio / 1000;
+    if (bin_instr_cnt >= 0) begin
+      `uvm_info(`gfn, $sformatf("Injecting %0d illegal instructions, ratio %0d/100",
+                      bin_instr_cnt, cfg.illegal_instr_ratio), UVM_LOW)
+      repeat (bin_instr_cnt) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_instr,
-                                       exception != kHintInstr;
-                                       compressed == instr_stream.instr_list[i].is_compressed;)
-        str = illegal_instr.get_bin_str();
-        `uvm_info(`gfn, $sformatf("Inject %0s [%0d] %0s replaced with %0s",
-                                  illegal_instr.exception.name(), i,
-                                  instr_stream.instr_list[i].convert2bin() ,str), UVM_HIGH)
-      end else if (instr_stream.instr_list[i].is_hint_instr) begin
-        // Replace the original instruction with HINT instruction binary
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_instr,
-                                       exception == kHintInstr;
-                                       compressed == instr_stream.instr_list[i].is_compressed;)
-        str = illegal_instr.get_bin_str();
-        `uvm_info(`gfn, $sformatf("Inject %0s [%0d] %0s replaced with %0s",
-                                  illegal_instr.exception.name(), i,
-                                  instr_stream.instr_list[i].convert2bin() ,str), UVM_HIGH)
-      end else begin
-        str = instr_stream.instr_list[i].convert2bin();
+                                       exception != kHintInstr;)
+        str = {indent, $sformatf(".4byte 0x%s # %0s",
+                       illegal_instr.get_bin_str(), illegal_instr.exception.name())};
+        idx = $urandom_range(0, instr_string_list.size());
+        instr_string_list.insert(idx, str);
       end
-      instr_bin = {str, remaining_bin};
-      // Handle various instruction alignment
-      if (instr_bin.len() == 8) begin
-        binary.push_back({"0x", instr_bin});
-        remaining_bin = "";
-      end else if (instr_bin.len() == 12) begin
-        binary.push_back({"0x", instr_bin.substr(4, 11)});
-        remaining_bin = instr_bin.substr(0, 3);
-      end else if (instr_bin.len() == 4) begin
-        remaining_bin = instr_bin;
-      end else begin
-        `uvm_fatal(`gfn, $sformatf("Unexpected binary length :%0d", instr_bin.len()))
-      end
-      `uvm_info("BIN", $sformatf("%0s : %0s", instr_stream.instr_list[i].convert2bin(),
-                                 instr_stream.instr_list[i].convert2asm()), UVM_HIGH)
     end
-    // Attach a C_NOP(0x0001) to make the last entry 32b
-    if (remaining_bin != "") begin
-      binary.push_back({"0x0001", remaining_bin});
+    bin_instr_cnt = instr_cnt * cfg.hint_instr_ratio / 1000;
+    if (bin_instr_cnt >= 0) begin
+      `uvm_info(`gfn, $sformatf("Injecting %0d HINT instructions, ratio %0d/100",
+                      bin_instr_cnt, cfg.illegal_instr_ratio), UVM_LOW)
+      repeat (bin_instr_cnt) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_instr,
+                                       exception == kHintInstr;)
+        str = {indent, $sformatf(".2byte 0x%s # %0s",
+                       illegal_instr.get_bin_str(), illegal_instr.exception.name())};
+        idx = $urandom_range(0, instr_string_list.size());
+        instr_string_list.insert(idx, str);
+      end
     end
   endfunction
 

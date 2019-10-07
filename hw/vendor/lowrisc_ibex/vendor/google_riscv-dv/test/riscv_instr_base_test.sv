@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 // Base test
 class riscv_instr_base_test extends uvm_test;
 
@@ -22,17 +23,21 @@ class riscv_instr_base_test extends uvm_test;
   string                  asm_file_name = "riscv_asm_test";
   riscv_asm_program_gen   asm_gen;
   string                  instr_seq;
+  int                     start_idx;
 
   `uvm_component_utils(riscv_instr_base_test)
 
   function new(string name="", uvm_component parent=null);
     super.new(name, parent);
     void'($value$plusargs("asm_file_name=%0s", asm_file_name));
+    void'($value$plusargs("start_idx=%0d", start_idx));
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    `uvm_info(`gfn, "Create configuration instance", UVM_LOW)
     cfg = riscv_instr_gen_config::type_id::create("cfg");
+    `uvm_info(`gfn, "Create configuration instance...done", UVM_LOW)
     uvm_config_db#(riscv_instr_gen_config)::set(null, "*", "instr_cfg", cfg);
     if(cfg.asm_test_suffix != "")
       asm_file_name = {asm_file_name, ".", cfg.asm_test_suffix};
@@ -63,43 +68,22 @@ class riscv_instr_base_test extends uvm_test;
     super.report_phase(phase);
   endfunction
 
-  function void get_directed_instr_stream_opts();
-    string cmd_opts_prefix;
-    string opts;
-    string opt[$];
-    int i = 0;
-    while(1) begin
-      cmd_opts_prefix = $sformatf("directed_instr_%0d", i);
-      if($value$plusargs({cmd_opts_prefix, "=%0s"}, opts)) begin
-        uvm_split_string(opts, ",", opt);
-        `DV_CHECK_FATAL(opt.size() == 2)
-        asm_gen.add_directed_instr_stream(opt[0], opt[1].atoi());
-      end else begin
-        break;
-      end
-      `uvm_info(`gfn, $sformatf("Got directed instr[%0d] %0s, ratio = %0s/1000",
-                                 i, opt[0], opt[1]), UVM_LOW)
-      i++;
-    end
-
-  endfunction
-
   virtual function void apply_directed_instr();
   endfunction
 
   task run_phase(uvm_phase phase);
     int fd;
+    cfg.build_instruction_template();
     for(int i = 0; i < cfg.num_of_tests; i++) begin
       string test_name;
-      cfg = riscv_instr_gen_config::type_id::create("cfg");
       randomize_cfg();
+      cfg.build_instruction_list();
       asm_gen = riscv_asm_program_gen::type_id::create("asm_gen");
-      get_directed_instr_stream_opts();
       asm_gen.cfg = cfg;
-      test_name = $sformatf("%0s.%0d.S", asm_file_name, i);
+      asm_gen.get_directed_instr_stream();
+      test_name = $sformatf("%0s_%0d.S", asm_file_name, i+start_idx);
       apply_directed_instr();
       `uvm_info(`gfn, "All directed instruction is applied", UVM_LOW)
-      cfg.build_instruction_template();
       asm_gen.gen_program();
       asm_gen.gen_test_file(test_name);
     end

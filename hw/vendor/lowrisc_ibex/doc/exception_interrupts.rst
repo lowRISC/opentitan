@@ -15,6 +15,12 @@ For more information, see the :ref:`cs-registers` documentation.
 The core starts fetching at the address made by concatenating the most significant 3 bytes of the boot address and the reset value (0x80) as the least significant byte.
 It is assumed that the boot address is supplied via a register to avoid long paths to the instruction fetch unit.
 
+Privilege Modes
+---------------
+
+Ibex supports operation in Machine Mode (M-Mode) and User Mode (U-Mode).
+The core resets into M-Mode and will jump to M-Mode on any interrupt or exception.
+On execution of an MRET instruction, the core will return to the Privilege Mode stored in ``mstatus``.MPP.
 
 Interrupts
 ----------
@@ -80,7 +86,9 @@ Ibex can trigger an exception due to the following exception causes:
 +----------------+---------------------------------------------------------------+
 |              7 | Store access fault                                            |
 +----------------+---------------------------------------------------------------+
-|             11 | Environment call from M-mode (ECALL)                          |
+|              8 | Environment call from U-Mode (ECALL)                          |
++----------------+---------------------------------------------------------------+
+|             11 | Environment call from M-Mode (ECALL)                          |
 +----------------+---------------------------------------------------------------+
 
 The illegal instruction exception, instruction access fault, LSU error exceptions and ECALL instruction exceptions cannot be disabled and are always active.

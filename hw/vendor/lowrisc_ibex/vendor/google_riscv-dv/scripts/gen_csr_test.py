@@ -279,7 +279,7 @@ def gen_csr_instr(original_csr_map, csr_instructions, xlen,
     csr_map = copy.deepcopy(original_csr_map)
     source_reg, dest_reg = [f"x{i}" for i in random.sample(range(1, 16), 2)]
     csr_list = list(csr_map.keys())
-    with open(f"{out}/riscv_csr_test.{i}.S", "w") as csr_test_file:
+    with open(f"{out}/riscv_csr_test_{i}.S", "w") as csr_test_file:
       gen_setup(csr_test_file)
       for csr in csr_list:
         csr_address, csr_val, csr_write_mask, csr_read_mask = csr_map.get(csr)

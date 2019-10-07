@@ -15,6 +15,7 @@ class ibex_mem_intf_seq_item extends uvm_sequence_item;
   rand bit [3:0]                gnt_delay;
   rand bit [3:0]                req_delay;
   rand bit [5:0]                rvalid_delay;
+  rand bit                      error;
 
   `uvm_object_utils_begin(ibex_mem_intf_seq_item)
     `uvm_field_int      (addr,             UVM_DEFAULT)
@@ -23,6 +24,7 @@ class ibex_mem_intf_seq_item extends uvm_sequence_item;
     `uvm_field_int      (data,             UVM_DEFAULT)
     `uvm_field_int      (gnt_delay,        UVM_DEFAULT)
     `uvm_field_int      (rvalid_delay,     UVM_DEFAULT)
+    `uvm_field_int      (error,            UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

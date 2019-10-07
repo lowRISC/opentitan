@@ -40,10 +40,8 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
   endtask : get_and_drive
 
   virtual protected task reset_signals();
-    forever begin
-      @(posedge vif.reset);
-      drive_reset_value();
-    end
+    @(negedge vif.reset);
+    drive_reset_value();
   endtask : reset_signals
 
   virtual protected task drive_seq_item (irq_seq_item trans);
@@ -52,11 +50,6 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
     vif.irq_external <= trans.irq_external;
     vif.irq_fast     <= trans.irq_fast;
     vif.irq_nm       <= trans.irq_nm;
-    // We hold the interrupt high for two cycles as Ibex is level sensitive,
-    // so this guarantees that Ibex will respond appropriately to the
-    // interrupt
-    repeat (2) @(posedge vif.clock);
-    drive_reset_value();
   endtask : drive_seq_item
 
   task drive_reset_value();

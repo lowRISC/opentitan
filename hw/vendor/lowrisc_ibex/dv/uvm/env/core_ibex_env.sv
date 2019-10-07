@@ -25,9 +25,7 @@ class core_ibex_env extends uvm_env;
                           create("data_if_slave_agent", this);
     instr_if_slave_agent = ibex_mem_intf_slave_agent::type_id::
                            create("instr_if_slave_agent", this);
-    if (cfg.enable_irq_stress_seq || cfg.enable_irq_single_seq) begin
-      irq_agent = irq_master_agent::type_id::create("irq_agent", this);
-    end
+    irq_agent = irq_master_agent::type_id::create("irq_agent", this);
     // Create virtual sequencer
     vseqr = core_ibex_vseqr::type_id::create("vseqr", this);
   endfunction : build_phase
@@ -36,9 +34,7 @@ class core_ibex_env extends uvm_env;
     super.connect_phase(phase);
     vseqr.data_if_seqr = data_if_slave_agent.sequencer;
     vseqr.instr_if_seqr = instr_if_slave_agent.sequencer;
-    if (cfg.enable_irq_stress_seq || cfg.enable_irq_single_seq) begin
-      vseqr.irq_seqr = irq_agent.sequencer;
-    end
+    vseqr.irq_seqr = irq_agent.sequencer;
   endfunction : connect_phase
 
 endclass

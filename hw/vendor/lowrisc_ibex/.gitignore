@@ -1,3 +1,10 @@
-*.swp
-include/riscv_config.sv.bak
+# Build output
 build
+
+# Common editor/IDE config and temporary files
+.project
+.vscode/
+.sw[a-p]
+
+# ibex_tracer log file
+trace_core_*.log

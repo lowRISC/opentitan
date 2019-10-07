@@ -34,6 +34,7 @@ class RiscvInstructiontTraceEntry(object):
     self.instr_str = ""
     self.instr = ""
     self.privileged_mode = ""
+    self.csr = ""
 
   def get_trace_string(self):
     """Return a short string of the trace entry"""
@@ -54,7 +55,7 @@ class RiscvInstructiontTraceCsv(object):
   def start_new_trace(self):
     """Create a CSV file handle for a new trace"""
     fields = ["instr", "rd", "rd_val", "rs1", "rs1_val", "rs2", "rs2_val",
-              "imm", "str", "addr", "binary", "mode"]
+              "imm", "str", "addr", "binary", "csr", "mode"]
     self.csv_writer = csv.DictWriter(self.csv_fd, fieldnames=fields)
     self.csv_writer.writeheader()
 
@@ -85,8 +86,8 @@ class RiscvInstructiontTraceCsv(object):
                               'addr'    : entry.addr,
                               'instr'   : entry.instr,
                               'imm'     : entry.imm,
-                              'binary'  : entry.binary,
-                              'addr'    : entry.addr})
+                              'csr'     : entry.csr,
+                              'binary'  : entry.binary})
 
 
 def gpr_to_abi(gpr):
