@@ -13,8 +13,8 @@ module rv_plic_target #(
   parameter     ALGORITHM = "SEQUENTIAL", // SEQUENTIAL | MATRIX
 
   // Local param (Do not change this through parameter
-  parameter int unsigned SRCW  = $clog2(N_SOURCE+1),  // derived parameter
-  parameter int unsigned PRIOW = $clog2(MAX_PRIO+1)   // derived parameter
+  localparam int unsigned SRCW  = $clog2(N_SOURCE+1),  // derived parameter
+  localparam int unsigned PRIOW = $clog2(MAX_PRIO+1)   // derived parameter
 ) (
   input clk_i,
   input rst_ni,
@@ -32,16 +32,8 @@ module rv_plic_target #(
   `ASSERT_INIT(paramCheckSRCW,  SRCW  == $clog2(N_SOURCE+1))
   `ASSERT_INIT(paramCheckPRIOW, PRIOW == $clog2(MAX_PRIO+1))
 
-  //always_ff @(posedge clk_i or negedge rst_ni) begin
-  //  if (!rst_ni) begin
-  //    gt_th <= '0;
-  //  end else begin
-  //    for (int i = 0 ; i < N_SOURCE ; i++) begin
-  //      gt_th[i] = (prio[i] > threshold) ? 1'b1 : 1'b0 ;
-  //    end
-  //  end
-  //end
-
+  // To occupy threshold + 1 value
+  localparam int unsigned MAX_PRIOW = $clog2(MAX_PRIO+2);
 
   if (ALGORITHM == "SEQUENTIAL") begin : gen_sequential
     // Let first implementation be brute-force
@@ -56,7 +48,7 @@ module rv_plic_target #(
       irq_next = 1'b0;
       for (int i = N_SOURCE-1 ; i >= 0 ; i--) begin
         if ((ip[i] & ie[i]) == 1'b1 && prio[i] >= max_prio) begin
-          max_prio = prio[i];
+          max_prio = MAX_PRIOW'(prio[i]);
           irq_id_next = SRCW'(i+1);
           irq_next = 1'b1;
         end
