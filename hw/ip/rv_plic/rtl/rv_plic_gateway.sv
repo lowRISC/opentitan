@@ -43,17 +43,19 @@ module rv_plic_gateway #(
     if (!rst_ni) begin
       ip <= '0;
     end else begin
-      ip <= (ip | (set & ~ia & ~ip)) & (~claim);
+      ip <= (ip | (set & ~ia & ~ip)) & (~(ip & claim));
     end
   end
 
   // Interrupt active is to control ip. If ip is set then until completed
   // by target, ip shouldn't be set by source even claim can clear ip.
+  // ia can be cleared only when ia was set. If `set` and `complete` happen
+  // at the same time, always `set` wins.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ia <= '0;
     end else begin
-      ia <= (ia | (set & ~ia)) & (~complete);
+      ia <= (ia | (set & ~ia)) & (~(ia & complete & ~ip));
     end
   end
 
