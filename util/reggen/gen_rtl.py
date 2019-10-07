@@ -97,7 +97,7 @@ def parse_reg(obj):
                 reg.fields.append(field)
                 reg.width = max(reg.width, field.msb + 1)
 
-        # TODO(eunchan): Field bitfield overlapping check
+        # TODO: Field bitfield overlapping check
         log.info("R[0x%04x]: %s ", reg.offset, reg.name)
         for f in reg.fields:
             log.info("  F[%2d:%2d]: %s", f.msb, f.lsb, f.name)

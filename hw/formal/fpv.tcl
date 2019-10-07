@@ -105,7 +105,7 @@ assume -from_assert -remove_original {sram2tlul.validNotReady*}
 assume -from_assert -remove_original -regexp {^\w*\.scanmodeKnown}
 
 #-------------------------------------------------------------------------
-# TODO(cindychip): eventually remove below assert disable lines
+# TODO: eventually remove below assert disable lines
 # To reduce prohibitive runtimes, below assertions are simply turned off for now
 #-------------------------------------------------------------------------
 

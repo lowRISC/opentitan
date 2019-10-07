@@ -142,7 +142,7 @@ interface clk_rst_if #(
   endfunction
 
   // apply reset with specified scheme
-  // TODO(sriyerg) make this enum?
+  // TODO make this enum?
   // rst_n_scheme
   // 0 - fullly synchronous reset - it is asserted and deasserted on clock edges
   // 1 - async assert, sync dessert (default)

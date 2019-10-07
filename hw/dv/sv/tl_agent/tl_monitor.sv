@@ -6,7 +6,7 @@
 // ---------------------------------------------
 // TileLink interface monitor
 // ---------------------------------------------
-// TODO(taliu): Implement protocl check in the monitor
+// TODO: Implement protocl check in the monitor
 
 class tl_monitor extends uvm_monitor;
 

@@ -74,7 +74,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
     int   chunk_size;
 
     // extract all csrs from the model
-    // TODO(sriyerg): add and use function here instead that allows pre filtering csrs
+    // TODO: add and use function here instead that allows pre filtering csrs
     all_csrs.delete();
     foreach (models[i]) begin
       models[i].get_registers(all_csrs);
