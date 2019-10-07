@@ -15,7 +15,7 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
   // Create new cipher context
   ctx = EVP_CIPHER_CTX_new();
   if (!ctx) {
-    printf("ERROR: Creation of cipher context failed");
+    printf("ERROR: Creation of cipher context failed\n");
     return -1;
   }
 
@@ -28,21 +28,21 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
     ret = EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, key, iv);
   }
   if (ret != 1) {
-    printf("ERROR: Initialization of encryption context failed");
+    printf("ERROR: Initialization of encryption context failed\n");
     return -1;
   }
 
   // Provide encryption input, get first output bytes
   ret = EVP_EncryptUpdate(ctx, output, &output_len, input, input_len);
   if (ret != 1) {
-    printf("ERROR: Encryption operation failed");
+    printf("ERROR: Encryption operation failed\n");
     return -1;
   }
 
   // Finalize encryption, further bytes might be written
   ret = EVP_EncryptFinal_ex(ctx, output + output_len, &len);
   if (ret != 1) {
-    printf("ERROR: Encryption finalizing failed");
+    printf("ERROR: Encryption finalizing failed\n");
     return -1;
   }
   output_len += len;
@@ -63,7 +63,7 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
   // Create new cipher context
   ctx = EVP_CIPHER_CTX_new();
   if (!ctx) {
-    printf("ERROR: Creation of cipher context failed");
+    printf("ERROR: Creation of cipher context failed\n");
     return -1;
   }
 
@@ -76,21 +76,21 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
     ret = EVP_DecryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, key, iv);
   }
   if (ret != 1) {
-    printf("ERROR: Initialization of decryption context failed");
+    printf("ERROR: Initialization of decryption context failed\n");
     return -1;
   }
 
   // Provide decryption input, get first output bytes
   ret = EVP_DecryptUpdate(ctx, output, &output_len, input, input_len);
   if (ret != 1) {
-    printf("ERROR: Decryption operation failed");
+    printf("ERROR: Decryption operation failed\n");
     return -1;
   }
 
   // Finalize decryption, further bytes might be written
   ret = EVP_DecryptFinal_ex(ctx, output + output_len, &len);
   if (ret != 1) {
-    printf("ERROR: Decryption finalizing failed");
+    printf("ERROR: Decryption finalizing failed\n");
     return -1;
   }
   output_len += len;
