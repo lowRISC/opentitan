@@ -66,7 +66,7 @@ uint32_t *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf);
  * Copy from memory into a buffer, referencing by buffer ID
  *
  * Implementation restriction: from must be 4-byte aligned
- * TODO(mdhayer) remove restriction
+ * TODO remove restriction
  *
  * @param ctx usbdev context pointer
  * @param buf buffer ID to copy to

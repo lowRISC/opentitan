@@ -44,7 +44,7 @@ class csr_excl_item extends uvm_object;
       blk = csr.get_parent();
       if (has_excl(blk.`gfn, csr_excl_type)) return 1'b1;
     end
-    // TODO(sriyerg): check if any parent in the hierarchy above is excluded
+    // TODO: check if any parent in the hierarchy above is excluded
     // check if obj is excluded
     return (has_excl(obj.`gfn, csr_excl_type));
   endfunction

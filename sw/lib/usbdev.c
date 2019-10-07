@@ -146,7 +146,7 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
         istate & ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
                    (1 << USBDEV_INTR_STATE_PKT_SENT));
   }
-  // TODO(mdhayter) - clean this up
+  // TODO - clean this up
   // Frame ticks every 1ms, use to flush data every 16ms
   // (faster in DPI but this seems to work ok)
   // At reset frame count is 0, compare to 1 so no calls before SOF received
@@ -163,7 +163,7 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
   } else {
     ctx->flushed = 0;
   }
-  // TODO(mdhater) Errors? What Errors?
+  // TODO Errors? What Errors?
 }
 
 void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid) {

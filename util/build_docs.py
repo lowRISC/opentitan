@@ -38,7 +38,7 @@ STATIC_ASSET_EXTENSIONS = [
 HJSON_EXTENSIONS = ['.hjson']
 
 # Configurations
-# TODO(eunchan): Move to config.yaml
+# TODO: Move to config.yaml
 SRCTREE_TOP = Path(__file__).parent.joinpath('..').resolve()
 config = {
     # Toplevel source directory

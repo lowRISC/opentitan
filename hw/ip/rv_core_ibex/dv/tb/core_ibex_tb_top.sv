@@ -14,7 +14,7 @@ module core_ibex_tb_top;
 
   clk_if ibex_clk_if(.clk(clk));
 
-  // TODO(taliu) Resolve the tied-off ports
+  // TODO Resolve the tied-off ports
   // The interrupt and debug interface ports might be changed to RISC-V compliant interface, these
   // interfaces will be connected after design is ready.
   rv_core_ibex dut(

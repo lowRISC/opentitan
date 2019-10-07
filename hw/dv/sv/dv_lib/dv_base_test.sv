@@ -51,7 +51,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     if (run_test_seq) begin
       run_seq(test_seq_s, phase);
     end
-    // TODO(sriyerg): add hook for end of test checking
+    // TODO: add hook for end of test checking
   endtask : run_phase
 
   virtual task run_seq(string test_seq_s, uvm_phase phase);
@@ -69,7 +69,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     `uvm_info(`gfn, {"finished vseq ", test_seq_s}, UVM_MEDIUM)
   endtask
 
-  // TODO(sriyerg): add default report_phase implementation
+  // TODO: add default report_phase implementation
 
 endclass : dv_base_test
 

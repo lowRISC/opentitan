@@ -44,7 +44,7 @@ class chip_base_vseq extends dv_base_vseq #(
   endtask
 
   // routine to backdoor load cpu test hex image and bring the cpu out of reset (if required)
-  // TODO(sriyerg): for future implementation
+  // TODO: for future implementation
   virtual task cpu_init();
     cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.rom_image);
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
@@ -74,7 +74,7 @@ class chip_base_vseq extends dv_base_vseq #(
   endtask : body
 
   // maintain a specific memory location for cpu test status
-  // TODO(sriyerg): using gpio for now - need to use mem loc instead
+  // TODO: using gpio for now - need to use mem loc instead
   // TODO: need to more cpu monitoring logic to separate uvm component
   virtual task monitor_cpu_state();
     fork
@@ -113,7 +113,7 @@ class chip_base_vseq extends dv_base_vseq #(
         fork
           begin: timeout_thread
             #(timeout_ns * 1ns);
-            // TODO(sriyerg): uncomment after c framework is in place
+            // TODO: uncomment after c framework is in place
             // `uvm_fatal(`gfn, $sformatf("timeout occurred - in cpu test state %0s",
             //                             cpu_test_state.name()))
           end: timeout_thread

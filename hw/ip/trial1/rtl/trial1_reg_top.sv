@@ -48,7 +48,7 @@ module trial1_reg_top (
   assign tl_reg_h2d = tl_i;
   assign tl_o       = tl_reg_d2h;
 
-  // TODO(eunchan): Fix it after bus interface is finalized
+  // TODO: Fix it after bus interface is finalized
   assign reg_we = tl_reg_h2d.a_valid && tl_reg_d2h.a_ready &&
                   ((tl_reg_h2d.a_opcode == tlul_pkg::PutFullData) ||
                    (tl_reg_h2d.a_opcode == tlul_pkg::PutPartialData));
@@ -89,8 +89,8 @@ module trial1_reg_top (
       end
     end
   end
-  // TODO(eunchan): Revise Register Interface logic after REG INTF finalized
-  // TODO(eunchan): Make concrete scenario
+  // TODO: Revise Register Interface logic after REG INTF finalized
+  // TODO: Make concrete scenario
   //    1. Write: No response, so that it can guarantee a request completes a clock after we
   //              It means, bus_reg_ready doesn't have to be lowered.
   //    2. Read: response. So bus_reg_ready should assert after reg_bus_valid & reg_bus_ready
