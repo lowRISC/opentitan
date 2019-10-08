@@ -20,16 +20,15 @@ module padctrl_tb #(
   output logic [padctrl_reg_pkg::NMioPads-1:0]  mio_in_o,
   input        [padctrl_reg_pkg::NDioPads-1:0]  dio_out_i,
   input        [padctrl_reg_pkg::NDioPads-1:0]  dio_oe_i,
-  output logic [padctrl_reg_pkg::NDioPads-1:0]  dio_in_o,
-  // symbolic inputs for FPV
-  input [$clog2(padctrl_reg_pkg::NMioPads)-1:0] mio_sel_i,
-  input [$clog2(padctrl_reg_pkg::NDioPads)-1:0] dio_sel_i
+  output logic [padctrl_reg_pkg::NDioPads-1:0]  dio_in_o
 );
 
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
 
-  padctrl i_padctrl (
+  padctrl #(
+    .Impl(Impl)
+  ) i_padctrl (
     .clk_i     ,
     .rst_ni    ,
     .tl_i      ,

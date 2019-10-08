@@ -11,6 +11,7 @@ filesets:
     files:
       - tb/padctrl_tb.sv
       - tb/padctrl_bind.sv
+      - vip/padctrl_assert.sv
       - vip/padring_assert.sv
     file_type: systemVerilogSource
 
