@@ -41,17 +41,16 @@
     {
       name: uart
       type: uart
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         sys
       ]
       base_addr: 0x40000000
       size: 0x1000
-      clock_connections:
-      {
-        clk_i: main
-      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -113,17 +112,16 @@
     {
       name: gpio
       type: gpio
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         sys
       ]
       base_addr: 0x40010000
       size: 0x1000
-      clock_connections:
-      {
-        clk_i: main
-      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -151,13 +149,12 @@
     {
       name: spi_device
       type: spi_device
-      clock: main
-      base_addr: 0x40020000
-      size: 0x1000
       clock_connections:
       {
         clk_i: main
       }
+      base_addr: 0x40020000
+      size: 0x1000
       reset:
       [
         spi_device
@@ -223,17 +220,16 @@
     {
       name: flash_ctrl
       type: flash_ctrl
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         lc
       ]
       base_addr: 0x40030000
       size: 0x1000
-      clock_connections:
-      {
-        clk_i: main
-      }
       reset_connectivity:
       {
         rst_ni: lc
@@ -275,17 +271,16 @@
     {
       name: rv_timer
       type: rv_timer
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         sys
       ]
       base_addr: 0x40080000
       size: 0x1000
-      clock_connections:
-      {
-        clk_i: main
-      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -307,17 +302,16 @@
     {
       name: hmac
       type: hmac
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         sys
       ]
       base_addr: 0x40120000
       size: 0x1000
-      clock_connections:
-      {
-        clk_i: main
-      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -343,7 +337,10 @@
     {
       name: rv_plic
       type: rv_plic
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         sys
@@ -355,10 +352,6 @@
         FIND_MAX: MATRIX
       }
       size: 0x1000
-      clock_connections:
-      {
-        clk_i: main
-      }
       reset_connectivity:
       {
         rst_ni: sys
@@ -376,7 +369,10 @@
   [
     {
       name: rom
-      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
       reset:
       [
         sys
@@ -388,14 +384,13 @@
       {
         rst_ni: sys
       }
+    }
+    {
+      name: ram_main
       clock_connections:
       {
         clk_i: main
       }
-    }
-    {
-      name: ram_main
-      clock: main
       reset:
       [
         sys
@@ -407,14 +402,13 @@
       {
         rst_ni: sys
       }
+    }
+    {
+      name: eflash
       clock_connections:
       {
         clk_i: main
       }
-    }
-    {
-      name: eflash
-      clock: main
       reset:
       [
         lc
@@ -426,17 +420,16 @@
       {
         rst_ni: lc
       }
-      clock_connections:
-      {
-        clk_i: main
-      }
     }
   ]
   xbar:
   [
     {
       name: main
-      clock: main
+      clock_connections:
+      {
+        clk_main_i: main
+      }
       reset:
       [
         sys
@@ -629,10 +622,7 @@
           pipeline: "true"
         }
       ]
-      clock_connections:
-      {
-        clk_main_i: main
-      }
+      clock: main
       reset_connectivity:
       {
         rst_main_ni: sys

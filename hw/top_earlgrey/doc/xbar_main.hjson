@@ -1,5 +1,6 @@
 { name: "main",
   type: "xbar",
+  clock: "main",
   clock_primary: "clk_main_i", // Main clock, used in sockets
   reset: "rst_main_ni", // Main reset, used in sockets
   nodes: [

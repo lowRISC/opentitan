@@ -8,46 +8,26 @@ from pathlib import Path, PosixPath
 
 import hjson
 
-def get_n_format_value (key, default, inst):
-    inst_list = []
+def check_clks (top, inst, prefix=""):
+    # Gather inst port list
     error = 0
-    if key not in inst.keys():
-        inst_list.append(default)
-    elif isinstance(inst[key], str):
-        inst_list.append(inst[key])
-    elif isinstance(inst[key], list):
-        inst_list.extend(inst[key])
-    else:
-        log.error("definition in %s hjson is incorrect" % inst['name'])
+    inst_port_list = []
+    if 'clock_primary' not in inst.keys():
+        log.error("%s %s does not have a clock_primary defined" % (prefix, inst['name']))
         error += 1
-
-    return error, inst_list
-
-def create_clk_map(top, inst):
-    # create list of clock port to clock net mapping
-    clock_connections = {}
-    error = 0
-
-    # Gather clock port names from IP
-    derr, inst_clocks = get_n_format_value('clock_primary', 'clk_i', inst)
-    error += derr
+    else:
+        inst_port_list.append(inst['clock_primary'])
 
     if 'other_clock_list' in inst.keys():
-        inst_clocks.extend(inst['other_clock_list'])
+        [inst_port_list.append(clock) for clock in inst['other_clock_list']]
+    log.info("%s %s clocks are %s" % (prefix, inst['name'].lower(), inst_port_list))
 
-    # Match with top level clocks
-    derr, clock_nets = get_n_format_value('clock', top['name'], top)
-
-    if len(inst_clocks) != len(clock_nets):
-        log.error("The number of clock ports / clock nets for module %s do not match" % top['name'])
+    if len(top['clock_connections'].keys()) != len(inst_port_list):
         error += 1
-        return error
+        log.error("%s %s top level definition did not connect following clock ports" % (prefix, inst['name']))
+        [log.error("%s" % clock) for clock in inst_port_list if clock not in top['clock_connections'].keys()]
 
-    for i in range(len(inst_clocks)):
-        port_name = "clk_i" if inst_clocks[i] == 'main' else inst_clocks[i]
-        clock_connections[port_name] = clock_nets[i]
-
-    return error, clock_connections
+    return error
 
 def create_reset_map(top, inst):
 
@@ -140,7 +120,7 @@ def amend_mem(mem):
     """
 
     error, mem['reset_connectivity'] = create_reset_map(mem, [])
-    error, mem['clock_connections'] = create_clk_map(mem, {})
+    return
 
 
 def amend_ip(top, ip):
@@ -179,9 +159,13 @@ def amend_ip(top, ip):
             "given 'size' field in IP %s is smaller than the required space" %
             ip_module["name"])
 
+    # Clocks
+    # Validate port name exists in ip
+    # Also validate all ip clock ports are connected
     error = 0
-    err, ip_module['clock_connections'] = create_clk_map(ip_module, ip)
-    error += err
+
+    # check top level clock connections
+    error += check_clks(ip_module, ip)
 
     # create list of reset port to reset net mapping
     err, ip_module['reset_connectivity'] = create_reset_map(ip_module, ip)
@@ -259,7 +243,7 @@ def xbar_addhost(xbar, host):
             host)
         obj = {
             "name": host,
-            "clock": xbar["clock"],
+            "clock": xbar['clock'],
             "reset": xbar["reset"][0],
             "type": "host",
             "inst_type": "",
@@ -270,7 +254,7 @@ def xbar_addhost(xbar, host):
         }
         topxbar["nodes"].append(obj)
     else:
-        obj[0]["clock"] = xbar["clock"]
+        obj[0]["clock"] = xbar['clock']
         obj[0]["reset"] = xbar["reset"][0]
         obj[0]["inst_type"] = predefined_modules[
             host] if host in predefined_modules else ""
@@ -324,7 +308,7 @@ def xbar_adddevice(top, xbar, device):
                     xbar["nodes"].append({
                         "name": "debug_mem",
                         "type": "device",
-                        "clock": "main",
+                        "clock": xbar['clock'],
                         "reset": xbar['reset'][0],
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
@@ -404,8 +388,8 @@ def amend_xbar(top, xbar):
 
     # create list of reset port to reset net mapping
     error = 0
-    err, topxbar['clock_connections'] = create_clk_map(topxbar, xbar)
-    error += err
+    error += check_clks(topxbar,xbar)
+    topxbar['clock'] = xbar["clock"]
 
     err, topxbar['reset_connectivity'] = create_reset_map(topxbar, xbar)
     error += err
@@ -461,10 +445,6 @@ def amend_interrupt(top):
 def merge_top(topcfg, ipobjs, xbarobjs):
     gencfg = deepcopy(topcfg)
 
-    # Primarily create clocks/resets if not present
-    mem_objs = gencfg['memory'] if 'memory' in gencfg.keys() else []
-    for mem in mem_objs:
-        amend_mem(mem)
 
     # Combine ip cfg into topcfg
     for ip in ipobjs:
@@ -476,6 +456,11 @@ def merge_top(topcfg, ipobjs, xbarobjs):
     # Combine xbar into topcfg
     for xbar in xbarobjs:
         amend_xbar(gencfg, xbar)
+
+    # Primarily create clocks/resets if not present
+    mem_objs = gencfg['memory'] if 'memory' in gencfg.keys() else []
+    for mem in mem_objs:
+        amend_mem(mem)
 
     # remove unwanted fields 'debug_mem_base_addr'
     gencfg.pop('debug_mem_base_addr', None)
