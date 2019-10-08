@@ -18,16 +18,16 @@ OutW | int  | Output data width
 
 Name         | In/Out | Description
 -------------|--------|-------------
-valid_i      | input  |
-data_i[InW]  | input  |
-mask_i[InW]  | input  | input bit mask. ones in the mask_i shall be contiguous.
-ready_o      | output | Indicates if prim_packer is able to accept the data or not.
-valid_o      | output |
-data_o[OutW] | output |
-mask_o[OutW] | output |
-ready_i      | input  |
-flush_i      | input  | If 1, send out remnant and clear state
-flush_done_o | output | Indicates flush operation is completed
+valid_i      | input  | Input data available.
+data_i[InW]  | input  | Input data.
+mask_i[InW]  | input  | Input bit mask. Ones in the mask must be contiguous.
+ready_o      | output | Indicates if prim_packer is able to accept data.
+valid_o      | output | Indicates if output data is available.
+data_o[OutW] | output | Output data.
+mask_o[OutW] | output | Output bit mask.
+ready_i      | input  | Output data can be drained.
+flush_i      | input  | Send out stored data and clear state.
+flush_done_o | output | Indicates flush operation is completed.
 
 {{% section1 Theory of Opeations }}
 
@@ -46,28 +46,29 @@ ready_o    |----------|      ready_i
            \----------/
 ```
 
-`prim_packer` accepts `InW` bits of data and bitmask signals. If `valid_i` is
-asserted, `prim_packer` stores it to internal register if the size isn't big
-enough to `OutW` data width and repeats it until it exceeds `OutW`. In most
-case, `mask_o` is full bits write, `{OutW{1'b1}}`. But when `flush_i` is
-asserted, `prim_packer` tries to sends out any remaining data in the internal
-storage. In this case, `mask_o` may become partial 1.
+`prim_packer` accepts `InW` bits of data and bitmask signals. On a `valid_i`/
+`ready_o` handshake, `data_i` is stored to internal registers and accumulated
+until `OutW` data has been gathered. In the normal case, `mask_o` will be a
+full width write (`{OutW{1'b1}}`). However, when `flush_i` is asserted,
+`prim_packer` attempts to drain out all remaining data in the internal
+storage. In this case, `mask_o` might be partial.
 
 The internal register size is `InW + OutW` bits to safely store the incoming
-data and sends out the data to `data_o` port.
+data and send outgoing data to the `data_o` port.
 
 
 ```wavejson
 { signal: [
-  { name: 'valid_i',     wave: '01.01.....0.'},
-  { name: 'data_i[3:0]', wave: 'x==x===.==x.', data:'0 1 2 3 4 5 6'},
-  { name: 'mask_i[3:0]', wave: 'x==x===.==x.', data:'F F F F F F F'},
-  { name: 'ready_o',     wave: '1.....01....'},
-  { name: 'valid_o',     wave: '0.10101.1010'},
-  { name: 'data_o[5:0]', wave: 'x.=x=x=.=x=x', data:'10h 08h 03h 15h 06h'},
-  { name: 'mask_o[5:0]', wave: 'x.=x=x=.=x=x', data:'3Fh 3Fh 3Fh 3Fh Fh '},
-  { name: 'ready_i',     wave: '1.....01....'},
-  { name: 'flush_i',     wave: '0.........10'},
+  { name: 'valid_i',      wave: '01.01.....0.'},
+  { name: 'data_i[3:0]',  wave: 'x==x===.==x.', data:'0 1 2 3 4 5 6'},
+  { name: 'mask_i[3:0]',  wave: 'x==x===.==x.', data:'F F F F F F F'},
+  { name: 'ready_o',      wave: '1.....01....'},
+  { name: 'valid_o',      wave: '0.10101..010'},
+  { name: 'data_o[5:0]',  wave: 'x.=x=x=.=x=x', data:'10h 08h 03h 15h 06h'},
+  { name: 'mask_o[5:0]',  wave: 'x.=x=x=.=x=x', data:'3Fh 3Fh 3Fh 3Fh Fh '},
+  { name: 'ready_i',      wave: '1.....01....'},
+  { name: 'flush_i',      wave: '0.........10'},
+  { name: 'flush_done_o', wave: '0.........10'},
   ],
 
   head:{
@@ -77,22 +78,23 @@ data and sends out the data to `data_o` port.
 }
 ```
 
-Above waveform shows the case of InW := 4 and OutW := 6. After the first
-transaction, `prim_packer` has `0h` in the storage. So when second `valid_i` is
-asserted, it combines `0h` and incoming data `1h` and creates output `10h`,
-`6'b01_0000`. And store `2'b00` into the internal storage from `data_i[3:2]`.
-Next transaction combines this and input data `2h` then creates `6'b00_1000`.
+The above waveform shows the case of InW := 4 and OutW := 6. After the first
+transaction, `prim_packer` has `0h` in the storage. When the second `valid_i`
+is asserted, it combines `0h` and incoming data `1h` and creates output `10h`
+(`6'b01_0000`). The remaining `2'b00` is put into the internal storage from
+`data_i[3:2]`. The next transaction combines this and input data `2h` to create
+`6'b00_1000`.
 
-If `read_i` is dropped as seen at pos 6, `prim_packer` drops the `ready_o` as it
-cannot store the incoming data. To reduce the internal logic complexity, it
-drops the ready even above case can store the incoming data as 4bit is
-available.
+`prim_packer` deasserts `ready_o` to indicate it cannot accept further data.
+`ready_o` is deasserted when `ready_i` is deasserted and there is insufficient
+internal storage available to store incoming data, as shown in cycle 6 above.
 
-At the end of the transaction, if `flush_i` is asserted, it sends out the
-remaining data.  In this case, `mask_o` isn't full ones but representing only
-available bits `6'b00_1111`.
+At the end of the sequence, `flush_i` is asserted, and the remaining data is
+drained. In this case, `mask_o` isn't full to indicate only partial data is
+available (`6'b00_1111`). `flush_done_o` is asserted as soon as the remaining
+data is drained.
 
-`prim_packer` only supports pack to right. If any design to support pack to left
-(filling MSB first), the design needs to reverse the bit order (in some case,
-reversing the byte-order is necessary like HMAC) before pushing to the packer
-and reverse back after the data output.
+`prim_packer` only supports packing to the right. To use `prim_packer` in a
+design requiring packing to the left (filling MSB first), the design needs to
+reverse the bit order (and in some cases, the byte order) before pushing to the
+packer, then reverse the data output.
