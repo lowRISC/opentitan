@@ -355,9 +355,9 @@ typedef struct packed {
   // Register width information to check illegal writes
   localparam logic [3:0] RV_PLIC_PERMIT [63] = '{
     4'b 1111, // index[ 0] RV_PLIC_IP0
-    4'b 1111, // index[ 1] RV_PLIC_IP1
+    4'b 0111, // index[ 1] RV_PLIC_IP1
     4'b 1111, // index[ 2] RV_PLIC_LE0
-    4'b 1111, // index[ 3] RV_PLIC_LE1
+    4'b 0111, // index[ 3] RV_PLIC_LE1
     4'b 0001, // index[ 4] RV_PLIC_PRIO0
     4'b 0001, // index[ 5] RV_PLIC_PRIO1
     4'b 0001, // index[ 6] RV_PLIC_PRIO2
@@ -413,7 +413,7 @@ typedef struct packed {
     4'b 0001, // index[56] RV_PLIC_PRIO52
     4'b 0001, // index[57] RV_PLIC_PRIO53
     4'b 1111, // index[58] RV_PLIC_IE00
-    4'b 1111, // index[59] RV_PLIC_IE01
+    4'b 0111, // index[59] RV_PLIC_IE01
     4'b 0001, // index[60] RV_PLIC_THRESHOLD0
     4'b 0001, // index[61] RV_PLIC_CC0
     4'b 0001  // index[62] RV_PLIC_MSIP0

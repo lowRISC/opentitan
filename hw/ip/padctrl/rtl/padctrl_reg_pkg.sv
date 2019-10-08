@@ -59,11 +59,11 @@ typedef struct packed {
   // Register width information to check illegal writes
   localparam logic [3:0] PADCTRL_PERMIT [6] = '{
     4'b 0001, // index[0] PADCTRL_REGEN
-    4'b 1111, // index[1] PADCTRL_DIO_PADS
+    4'b 0111, // index[1] PADCTRL_DIO_PADS
     4'b 1111, // index[2] PADCTRL_MIO_PADS0
     4'b 1111, // index[3] PADCTRL_MIO_PADS1
     4'b 1111, // index[4] PADCTRL_MIO_PADS2
-    4'b 1111  // index[5] PADCTRL_MIO_PADS3
+    4'b 0111  // index[5] PADCTRL_MIO_PADS3
   };
 endpackage
 

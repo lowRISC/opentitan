@@ -302,7 +302,7 @@ typedef struct packed {
     4'b 0001, // index[15] FLASH_CTRL_BANK_CFG_REGWEN
     4'b 0001, // index[16] FLASH_CTRL_MP_BANK_CFG
     4'b 0001, // index[17] FLASH_CTRL_OP_STATUS
-    4'b 1111, // index[18] FLASH_CTRL_STATUS
+    4'b 0111, // index[18] FLASH_CTRL_STATUS
     4'b 1111, // index[19] FLASH_CTRL_SCRATCH
     4'b 0011  // index[20] FLASH_CTRL_FIFO_LVL
   };

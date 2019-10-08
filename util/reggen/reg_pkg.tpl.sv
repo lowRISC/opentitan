@@ -207,8 +207,10 @@ typedef struct packed {
   localparam logic [3:0] ${block.name.upper()}_PERMIT [${block.get_n_regs_flat()}] = '{
 % for i,r in enumerate(block.get_regs_flat()):
 <% index_str = "{}".format(i).rjust(max_regs_char) %>\
-  % if r.width > 16:
+  % if r.width > 24:
     4'b 1111${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
+  % elif r.width > 16:
+    4'b 0111${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
   % elif r.width > 8:
     4'b 0011${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
   % else:

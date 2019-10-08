@@ -108,7 +108,7 @@ typedef struct packed {
   // Register width information to check illegal writes
   localparam logic [3:0] RV_TIMER_PERMIT [9] = '{
     4'b 0001, // index[0] RV_TIMER_CTRL
-    4'b 1111, // index[1] RV_TIMER_CFG0
+    4'b 0111, // index[1] RV_TIMER_CFG0
     4'b 1111, // index[2] RV_TIMER_TIMER_V_LOWER0
     4'b 1111, // index[3] RV_TIMER_TIMER_V_UPPER0
     4'b 1111, // index[4] RV_TIMER_COMPARE_LOWER0_0

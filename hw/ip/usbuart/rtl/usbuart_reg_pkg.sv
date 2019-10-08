@@ -330,12 +330,12 @@ typedef struct packed {
     4'b 0001, // index[ 5] USBUART_RDATA
     4'b 0001, // index[ 6] USBUART_WDATA
     4'b 0001, // index[ 7] USBUART_FIFO_CTRL
-    4'b 1111, // index[ 8] USBUART_FIFO_STATUS
+    4'b 0111, // index[ 8] USBUART_FIFO_STATUS
     4'b 0001, // index[ 9] USBUART_OVRD
     4'b 0011, // index[10] USBUART_VAL
     4'b 1111, // index[11] USBUART_TIMEOUT_CTRL
-    4'b 1111, // index[12] USBUART_USBSTAT
-    4'b 1111  // index[13] USBUART_USBPARAM
+    4'b 0111, // index[12] USBUART_USBSTAT
+    4'b 0111  // index[13] USBUART_USBPARAM
   };
 endpackage
 

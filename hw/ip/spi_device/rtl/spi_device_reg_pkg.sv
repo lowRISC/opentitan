@@ -256,10 +256,10 @@ typedef struct packed {
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
     4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST
-    4'b 1111, // index[ 3] SPI_DEVICE_CONTROL
+    4'b 0111, // index[ 3] SPI_DEVICE_CONTROL
     4'b 0011, // index[ 4] SPI_DEVICE_CFG
     4'b 1111, // index[ 5] SPI_DEVICE_FIFO_LEVEL
-    4'b 1111, // index[ 6] SPI_DEVICE_ASYNC_FIFO_LEVEL
+    4'b 0111, // index[ 6] SPI_DEVICE_ASYNC_FIFO_LEVEL
     4'b 0001, // index[ 7] SPI_DEVICE_STATUS
     4'b 1111, // index[ 8] SPI_DEVICE_RXF_PTR
     4'b 1111, // index[ 9] SPI_DEVICE_TXF_PTR

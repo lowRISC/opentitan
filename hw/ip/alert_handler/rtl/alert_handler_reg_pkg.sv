@@ -543,7 +543,7 @@ typedef struct packed {
     4'b 0001, // index[ 1] ALERT_HANDLER_INTR_ENABLE
     4'b 0001, // index[ 2] ALERT_HANDLER_INTR_TEST
     4'b 0001, // index[ 3] ALERT_HANDLER_REGEN
-    4'b 1111, // index[ 4] ALERT_HANDLER_PING_TIMEOUT_CYC
+    4'b 0111, // index[ 4] ALERT_HANDLER_PING_TIMEOUT_CYC
     4'b 0001, // index[ 5] ALERT_HANDLER_ALERT_EN
     4'b 0001, // index[ 6] ALERT_HANDLER_ALERT_CLASS
     4'b 0001, // index[ 7] ALERT_HANDLER_ALERT_CAUSE
