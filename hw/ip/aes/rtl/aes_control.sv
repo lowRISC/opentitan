@@ -185,12 +185,35 @@ module aes_control #(
         add_rk_sel_o = ADD_RK_INIT;
 
         // Select key words for initial add_round_key
-        key_words_sel_o = dec_key_gen_q                 ? KEY_WORDS_ZERO :
-                                 (key_len_i == AES_128) ? KEY_WORDS_0123 :
-            (mode_i == AES_ENC && key_len_i == AES_192) ? KEY_WORDS_0123 :
-            (mode_i == AES_DEC && key_len_i == AES_192) ? KEY_WORDS_2345 :
-            (mode_i == AES_ENC && key_len_i == AES_256) ? KEY_WORDS_0123 :
-            (mode_i == AES_DEC && key_len_i == AES_256) ? KEY_WORDS_4567 : key_words_sel_e'(1'bX);
+        if (dec_key_gen_q) begin
+          key_words_sel_o = KEY_WORDS_ZERO;
+        end else begin
+          unique case (key_len_i)
+            AES_128:       key_words_sel_o = KEY_WORDS_0123;
+
+            AES_192: begin
+              if (AES192Enable) begin
+                unique case (mode_i)
+                  AES_ENC: key_words_sel_o = KEY_WORDS_0123;
+                  AES_DEC: key_words_sel_o = KEY_WORDS_2345;
+                  default: key_words_sel_o = key_words_sel_e'(1'bX);
+                endcase
+              end else begin
+                key_words_sel_o = key_words_sel_e'(1'bX);
+              end
+            end
+
+            AES_256: begin
+              unique case (mode_i)
+                AES_ENC:   key_words_sel_o = KEY_WORDS_0123;
+                AES_DEC:   key_words_sel_o = KEY_WORDS_4567;
+                default:   key_words_sel_o = key_words_sel_e'(1'bX);
+              endcase
+            end
+
+            default: key_words_sel_o = key_words_sel_e'(1'bX);
+          endcase
+        end
 
         // Make key expand advance - AES-256 has two round keys available right from beginning
         if (key_len_i != AES_256 ) begin
@@ -210,12 +233,35 @@ module aes_control #(
         state_we_o = ~dec_key_gen_q;
 
         // Select key words for add_round_key
-        key_words_sel_o = dec_key_gen_q                 ? KEY_WORDS_ZERO :
-                                 (key_len_i == AES_128) ? KEY_WORDS_0123 :
-            (mode_i == AES_ENC && key_len_i == AES_192) ? KEY_WORDS_2345 :
-            (mode_i == AES_DEC && key_len_i == AES_192) ? KEY_WORDS_0123 :
-            (mode_i == AES_ENC && key_len_i == AES_256) ? KEY_WORDS_4567 :
-            (mode_i == AES_DEC && key_len_i == AES_256) ? KEY_WORDS_0123 : key_words_sel_e'(1'bX);
+        if (dec_key_gen_q) begin
+          key_words_sel_o = KEY_WORDS_ZERO;
+        end else begin
+          unique case (key_len_i)
+            AES_128:       key_words_sel_o = KEY_WORDS_0123;
+
+            AES_192: begin
+              if (AES192Enable) begin
+                unique case (mode_i)
+                  AES_ENC: key_words_sel_o = KEY_WORDS_2345;
+                  AES_DEC: key_words_sel_o = KEY_WORDS_0123;
+                  default: key_words_sel_o = key_words_sel_e'(1'bX);
+                endcase
+              end else begin
+                key_words_sel_o = key_words_sel_e'(1'bX);
+              end
+            end
+
+            AES_256: begin
+              unique case (mode_i)
+                AES_ENC:   key_words_sel_o = KEY_WORDS_4567;
+                AES_DEC:   key_words_sel_o = KEY_WORDS_0123;
+                default:   key_words_sel_o = key_words_sel_e'(1'bX);
+              endcase
+            end
+
+            default: key_words_sel_o = key_words_sel_e'(1'bX);
+          endcase
+        end
 
         // Make key expand advance
         key_expand_step_o = 1'b1;
@@ -244,11 +290,35 @@ module aes_control #(
         // Final round: do not update state anymore
 
         // Select key words for add_round_key
-        key_words_sel_o =        (key_len_i == AES_128) ? KEY_WORDS_0123 :
-            (mode_i == AES_ENC && key_len_i == AES_192) ? KEY_WORDS_2345 :
-            (mode_i == AES_DEC && key_len_i == AES_192) ? KEY_WORDS_0123 :
-            (mode_i == AES_ENC && key_len_i == AES_256) ? KEY_WORDS_4567 :
-            (mode_i == AES_DEC && key_len_i == AES_256) ? KEY_WORDS_0123 : key_words_sel_e'(1'bX);
+        if (dec_key_gen_q) begin
+          key_words_sel_o = KEY_WORDS_ZERO;
+        end else begin
+          unique case (key_len_i)
+            AES_128:       key_words_sel_o = KEY_WORDS_0123;
+
+            AES_192: begin
+              if (AES192Enable) begin
+                unique case (mode_i)
+                  AES_ENC: key_words_sel_o = KEY_WORDS_2345;
+                  AES_DEC: key_words_sel_o = KEY_WORDS_0123;
+                  default: key_words_sel_o = key_words_sel_e'(1'bX);
+                endcase
+              end else begin
+                key_words_sel_o = key_words_sel_e'(1'bX);
+              end
+            end
+
+            AES_256: begin
+              unique case (mode_i)
+                AES_ENC:   key_words_sel_o = KEY_WORDS_4567;
+                AES_DEC:   key_words_sel_o = KEY_WORDS_0123;
+                default:   key_words_sel_o = key_words_sel_e'(1'bX);
+              endcase
+            end
+
+            default: key_words_sel_o = key_words_sel_e'(1'bX);
+          endcase
+        end
 
         // Skip mix_columns
         add_rk_sel_o = ADD_RK_FINAL;
