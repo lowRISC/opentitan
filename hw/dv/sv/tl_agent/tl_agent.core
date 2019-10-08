@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers:0.1
       - lowrisc:dv:mem_model
+      - lowrisc:dv:dv_lib
     files:
       - tl_if.sv
       - tl_agent_pkg.sv

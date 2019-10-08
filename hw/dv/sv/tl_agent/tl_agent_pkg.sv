@@ -9,6 +9,7 @@ package tl_agent_pkg;
   import top_pkg::*;
   import tlul_pkg::*;
   import mem_model_pkg::*;
+  import dv_lib_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

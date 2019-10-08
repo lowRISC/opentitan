@@ -16,14 +16,14 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   endfunction : new
 
   function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);
-    ITEM_T reg_item;
+    ITEM_T  reg_item;
     reg_item = ITEM_T::type_id::create("reg_item");
-    `DV_CHECK_RANDOMIZE_FATAL(reg_item)
-    reg_item.a_opcode = (rw.kind == UVM_WRITE) ? tlul_pkg::PutFullData : tlul_pkg::Get;
 
     // tlul support partial rd but follow protocol standards
     // TODO: this code assumes TLUL data is always 32 bits wide, can explore more generic solution
-    if (reg_item.a_opcode == tlul_pkg::Get) begin
+    // TODO: seq_item level implemented constraints, so the constraints below could be optimized
+    if (rw.kind == UVM_READ) begin
+      reg_item.a_opcode = tlul_pkg::Get;
       case ($countones(rw.byte_en))
         3, 4: begin // no partial rd
           reg_item.a_mask = 'hf;
@@ -46,13 +46,26 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
           `uvm_fatal(`gtn, $sformatf("invalid byte_en value = 0x%0h", rw.byte_en));
         end
       endcase
+      reg_item.a_size = $clog2($countones(reg_item.a_mask));
     end
-    else begin
-      reg_item.a_mask = rw.byte_en;
-      reg_item.a_addr = rw.addr;
+    else begin // randomize CSR partial or full write
+      // Actual width of the CSR may be < TL_DW bits depending on fields and their widths
+      // In that case, the transaction size in bytes and partial write mask need to be at least as
+      // wide as the CSR to be a valid transaction. Otherwise, the DUT can return an error response
+      int          msb;
+      dv_base_reg  csr;
+      uvm_reg_item item    = get_item();
+      uvm_reg_map  loc_map = item.local_map;
+      uvm_reg      rg      = loc_map.get_reg_by_offset(rw.addr);
+      `DV_CHECK_FATAL($cast(csr, rg))
+      msb = csr.get_msb_pos();
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(reg_item,
+          a_opcode inside {PutFullData, PutPartialData};
+          a_addr    == rw.addr;
+          a_data    == rw.data;
+          a_mask[0] == 1;
+          $countones(a_mask) > (msb / 8);)
     end
-    reg_item.a_size = $clog2($countones(reg_item.a_mask));
-    reg_item.a_data = rw.data;
     `uvm_info(`gtn, $sformatf("tl reg req item: addr=0x%0h, op=%0s data=0x%0h, mask = %0h",
                               reg_item.a_addr, reg_item.a_opcode.name, reg_item.a_data,
                               reg_item.a_mask), UVM_HIGH)
