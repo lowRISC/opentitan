@@ -162,6 +162,9 @@ Most lowRISC designs support at least one FPGA board which works with a free Web
 
 ### Install Xilinx Vivado
 
+_**Vivado Version:** Vivado 2019.1 and all its updates are not compatible with this project.
+A discussion on this problem can be found in the [Github issue](https://github.com/lowRISC/opentitan/issues/89)._
+
 Vivado can be installed in two ways: either through an "All OS installer Single-File Download", or via the "Linux Self Extracting Web Installer".
 Neither option is great:
 the "All OS installer" is a huge download of around 20 GB (and the Xilinx download servers seem to be overloaded regularly), but it supports an unattended installation.
@@ -170,9 +173,9 @@ But unfortunately it doesn't support the batch mode for unattended installations
 
 To get started faster we use the web installer in the following.
 
-1. Go to the [Xilinx download page](https://www.xilinx.com/support/download.html) and download two files for the current version of Vivado.
-   (We used Vivado 2018.3 to prepare this guide.)
-   1. The file "Vivado HLx <VERSION>: WebPACK and Editions - Linux Self Extracting Web Installer".
+1. Go to the [Xilinx download page](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/2018-3.html) and download two files for Vivado 2018.3.
+   (The version can be chosen on the left side if version 2018.3 is not already selected.)
+   1. The file "Vivado HLx 2018.3: WebPACK and Editions - Linux Self Extracting Web Installer".
    2. The "Digests" file below the download.
 
    ![Vivado download site](img/install_vivado/vivado_download.png)
