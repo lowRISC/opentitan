@@ -56,6 +56,7 @@ module rv_core_ibex #(
   // if pipeline is 0, passthrough the fifo completely
   localparam int FifoPass = PipeLine ? 1'b0 : 1'b1;
   localparam int FifoDepth = PipeLine ? 4'h2 : 4'h0;
+  localparam int WordSize = $clog2(TL_DW / 8);
 
   // Inst interface (internal)
   logic        instr_req_o;
@@ -176,8 +177,6 @@ module rv_core_ibex #(
   // Convert ibex data/instruction bus to TL-UL
   //
 
-  localparam int TlWordBit = $clog2(32/8); // Assume 32bit TL-UL data width
-
   // Generate a_source fields by toggling between 0 and 1
   logic tl_i_source, tl_d_source;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -190,14 +189,15 @@ module rv_core_ibex #(
   end
 
   // Convert core instruction interface to TL-UL
+  // The outgoing address is always word aligned
   assign tl_i_ibex2fifo = '{
     a_valid:   instr_req_o,
     a_opcode:  tlul_pkg::Get,
     a_param:   3'h0,
-    a_size:    2'h2,
+    a_size:    2'(WordSize),
     a_mask:    {TL_DBW{1'b1}},
     a_source:  TL_AIW'(tl_i_source),
-    a_address: {instr_addr_o[31:TlWordBit], {TlWordBit{1'b0}}},
+    a_address: {instr_addr_o[31:WordSize], {WordSize{1'b0}}},
     a_data:    {TL_DW{1'b0}},
     a_user:    {TL_AUW{1'b0}},
 
@@ -226,36 +226,21 @@ module rv_core_ibex #(
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
 
-  // For core data interface, calculate a_size from data_be_o
-  logic [2:0] data_be_countones;
-  logic [1:0] data_size;
-  always_comb begin
-    // count ones of data_be
-    data_be_countones = '0;
-    for (int i = 0; i < 4; i++) begin
-      data_be_countones += data_be_o[i];
-    end
-    // data_size = log2(data_be_countones)
-    data_size = '0;
-    for (int i = 0; i < 3; i++) begin
-      if (data_be_countones[i]) data_size = 2'(i);
-    end
-  end
-
   // Convert core data interface to TL-UL
-  // a_address must be aligned with a_size (TL spec 6.2)
-  // if _address is not aligned to word address, it cannot handle the condition
-  // when addr[1:0] == 2'b01 and data_type == 2'b01 (Half-word)
+  // The outgoing address is always word aligned.  If it's a write access that occupies
+  // all lanes, then the operation is always PutFullData; otherwise it is always PutPartialData
+  // When in partial opertaion, tlul allows writes smaller than the operation size, thus
+  // size / mask information can be directly passed through
   assign tl_d_ibex2fifo = '{
     a_valid:   data_req_o,
     a_opcode:  (~data_we_o)        ? tlul_pkg::Get           :
                (data_be_o == 4'hf) ? tlul_pkg::PutFullData   :
                                      tlul_pkg::PutPartialData,
     a_param:   3'h0,
-    a_size:    data_size,
+    a_size:    2'(WordSize),
     a_mask:    data_be_o,
     a_source:  TL_AIW'(tl_d_source),
-    a_address: {data_addr_o[31:TlWordBit], {TlWordBit{1'b0}}},
+    a_address: {data_addr_o[31:WordSize], {WordSize{1'b0}}},
     a_data:    data_wdata_o,
     a_user:    {TL_AUW{1'b0}},
 
