@@ -6,10 +6,12 @@
 module padctrl_bind;
 
   bind padring padring_assert padring_assert (
-    // symbolic inputs for FPV
-    .mio_sel_i(padctrl_tb.mio_sel_i),
-    .dio_sel_i(padctrl_tb.dio_sel_i),
-    // normal connections to padring
+    .*
+  );
+
+  bind padctrl padctrl_assert #(
+    .Impl(Impl)
+  ) padctrl_assert (
     .*
   );
 
