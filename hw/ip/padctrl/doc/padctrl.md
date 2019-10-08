@@ -98,6 +98,7 @@ A specific implementation of a pad wrapper may choose to instantiate a technolog
 It is permissible to omit the implementation of all IO attributes except input/output inversion.
 
 The generic pad wrapper must expose the following IOs and parameters, even if they are not connected internally.
+In particular, the pad attribute vector `attr_i` must contain at least `AttrDw=6` bits, even if not all attributes are supported (it is permissible to just leave them unconnected in the pad wrapper implementation).
 
 Parameter      | Default (Max)         | Description
 ---------------|-----------------------|---------------
