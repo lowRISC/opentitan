@@ -57,7 +57,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
           foreach(msg[i])  begin
             msg_q.push_back(msg[i]);
-            if (msg_q.size() % 4 == 0) incr_wr_and_check_fifo_full();
+            if (msg_q.size() % 4 == 0) begin
+              wait(cfg.tlul_assert_vif.d2h.a_ready == 1); // wait for outstanding transaction
+              incr_wr_and_check_fifo_full();
+            end
           end
         end
       end else begin
@@ -149,12 +152,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   endfunction
 
   virtual task incr_wr_and_check_fifo_full();
+    @(negedge cfg.clk_rst_vif.clk);
     hmac_wr_cnt ++;
     if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
       ral.intr_state.fifo_full.predict(1);
     end
   endtask
 
+  // internal msg_fifo model to check fifo status and interrupt.
+  // monitor rd_cnt and wr_cnt on the negedge of the clk
+  // rd_cnt followed by wr_cnt with a clk cycle delay, except:
+  // 1). hmac process key: DUT will process the key first
+  // 2). read cnt reaches FIFO_MAX: DUT will process msg in the FIFO
   virtual task hmac_process_fifo_rd();
     bit key_processed;
     fork
@@ -167,6 +176,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
                 // 80 cycles for hmac key padding, 1 cycle for hash_start reg to reset
                 cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
+                @(negedge cfg.clk_rst_vif.clk);
                 key_processed = 1;
               end
               while (1) begin
@@ -192,10 +202,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
                 wait(key_processed);
               end
-              cfg.clk_rst_vif.wait_clks(1);
-              @(negedge cfg.clk_rst_vif.clk);
+              #1; // delay 1 ns to make sure did not sample right at negedge clk
+              cfg.clk_rst_vif.wait_n_clks(1);
               hmac_rd_cnt ++;
-              if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_clks(HMAC_MSG_PROCESS_CYCLES);
+              if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_n_clks(HMAC_MSG_PROCESS_CYCLES);
             end
             begin : reset_hmac_fifo_rd
               wait(!cfg.clk_rst_vif.rst_n);

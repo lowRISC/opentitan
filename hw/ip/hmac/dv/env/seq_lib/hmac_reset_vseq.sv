@@ -40,7 +40,7 @@ class hmac_reset_vseq extends hmac_base_vseq;
         begin : reset
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
           cfg.clk_rst_vif.wait_clks(delay);
-          wait(outstanding_csr_accesses == 0); // TODO : temp wait, need support
+          csr_utils_pkg::wait_no_outstanding_access(); // TODO : temp wait, need support
           reset_flag = 1'b1;
         end
       join_any

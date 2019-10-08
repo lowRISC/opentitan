@@ -161,11 +161,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       word = {>>byte{word_unpack}};
       `uvm_info(`gfn, $sformatf("wr_size = %0h, wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
                                 wr_size, wr_addr, wr_mask, word), UVM_HIGH)
-      tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size));
+      tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size),
+                .blocking($urandom_range(0, 1)));
 
       if (!do_back_pressure) check_status_intr_fifo_full();
       else clear_intr_fifo_full();
     end
+    // ensure all msg fifo are written before trigger hmac_process
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
   // read fifo_depth reg and burst write a chunk of words
@@ -185,13 +188,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
           `uvm_info(`gfn, $sformatf("wr_size = %0h, wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
                                     wr_size, wr_addr, wr_mask, word), UVM_HIGH)
           `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask) with {wr_size == 2;})
-          tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size));
+          tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size),
+                    .blocking($urandom_range(0, 1)));
         end
         clear_intr_fifo_full();
-     end else begin // remaining msg is smaller than the burst_wr_length
-       wr_msg(msg_q);
-       break;
-     end
+      end else begin // remaining msg is smaller than the burst_wr_length
+        wr_msg(msg_q);
+        break;
+      end
+    csr_utils_pkg::wait_no_outstanding_access();
     end
   endtask
 

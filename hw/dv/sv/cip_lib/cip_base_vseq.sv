@@ -25,7 +25,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   `uvm_object_new
   // knobs to disable post_start clear interrupt routine
-  bit do_clear_all_interrupts = 1'b1;
+  bit  do_clear_all_interrupts = 1'b1;
   // csr queue for intr test/enable/state
   dv_base_reg intr_test_csrs[$];
   dv_base_reg intr_state_csrs[$];
@@ -51,7 +51,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // tl_access task: does a single TL_W-bit write or read transaction to the specified address
   // note that this task does not update ral model; optionally also checks for error response
-  // TODO: add additional args? non-blocking? respose data check? timeout? spinwait?
+  // TODO: add additional args? respose data check? spinwait?
   // TODO: randomize size, addr here based on given addr range, data, and mask, eventually can be
   // reused for mem_read, partial read, and hmac msg fifo write
   virtual task tl_access(input bit [TL_AW-1:0]  addr,
@@ -60,31 +60,54 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [TL_DBW-1:0] mask = '1,
                          input bit [TL_SZW-1:0] size = 2,
                          input bit              check_rsp = 1'b1,
-                         input bit              exp_err_rsp = 1'b0);
-    tl_host_single_seq  tl_seq;
-    `uvm_create_on(tl_seq, p_sequencer.tl_sequencer_h)
-    outstanding_csr_accesses++;
-    if (cfg.zero_delays) begin
-      tl_seq.min_req_delay = 0;
-      tl_seq.max_req_delay = 0;
+                         input bit              exp_err_rsp = 1'b0,
+                         input bit              blocking = csr_utils_pkg::default_csr_blocking);
+    if (blocking) begin
+      tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp);
+    end else begin
+      fork
+        tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp);
+      join_none
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
     end
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
-        addr      == local::addr;
-        size      == local::size;
-        mask      == local::mask;
-        if (write) {
-          if ($countones(mask) < (1 << size)) opcode == tlul_pkg::PutPartialData;
-          else opcode inside {tlul_pkg::PutPartialData, tlul_pkg::PutFullData};
-          data    == local::data;
-        } else {
-          opcode  == tlul_pkg::Get;
-        })
-    `uvm_send(tl_seq)
-    if (!write) data = tl_seq.rsp.d_data;
-    if (check_rsp) begin
-      `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
-    end
-    outstanding_csr_accesses--;
+  endtask
+
+  virtual task tl_access_sub(input bit [TL_AW-1:0]  addr,
+                             input bit              write,
+                             inout bit [TL_DW-1:0]  data,
+                             input bit [TL_DBW-1:0] mask = '1,
+                             input bit [TL_SZW-1:0] size = 2,
+                             input bit              check_rsp = 1'b1,
+                             input bit              exp_err_rsp = 1'b0);
+    `DV_SPINWAIT(
+        // thread to read/write tlul
+        tl_host_single_seq  tl_seq;
+        `uvm_create_on(tl_seq, p_sequencer.tl_sequencer_h)
+        if (cfg.zero_delays) begin
+        tl_seq.min_req_delay = 0;
+        tl_seq.max_req_delay = 0;
+        end
+        csr_utils_pkg::increment_outstanding_access();
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
+            addr      == local::addr;
+            size      == local::size;
+            mask      == local::mask;
+              if (write) {
+                if ($countones(mask) < (1 << size)) opcode == tlul_pkg::PutPartialData;
+                else opcode inside {tlul_pkg::PutPartialData, tlul_pkg::PutFullData};
+                data    == local::data;
+                } else {
+                  opcode  == tlul_pkg::Get;
+                })
+        `uvm_send(tl_seq)
+        if (!write) data = tl_seq.rsp.d_data;
+        if (check_rsp) begin
+          `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
+        end
+        csr_utils_pkg::decrement_outstanding_access();,
+        // thread to check timeout
+        $sformatf("Timeout waiting tl_access : addr=0x%0h", addr))
   endtask
 
   virtual task tl_access_unmapped_addr();

@@ -12,7 +12,7 @@ package csr_utils_pkg;
   `include "dv_macros.svh"
 
   // local types and variables
-  uint       outstanding_csr_accesses    = 0;
+  uint       outstanding_accesses        = 0;
   uint       default_timeout_ns          = 1_000_000; // 1ms
   uint       default_spinwait_timeout_ns = 10_000_000; // 10ms
   string     msg_id                      = "csr_utils";
@@ -35,6 +35,18 @@ package csr_utils_pkg;
     CsrExclWrite      = 3'b100, // exclude csr from write
     CsrExclAll        = 3'b111  // exclude csr from init or write or writ-read check
   } csr_excl_type_e;
+
+  function automatic void increment_outstanding_access();
+    outstanding_accesses++;
+  endfunction
+
+  function automatic void decrement_outstanding_access();
+    outstanding_accesses--;
+  endfunction
+
+  task automatic wait_no_outstanding_access();
+    wait(outstanding_accesses == 0);
+  endtask
 
   // Get all valid csr addrs - useful to check if incoming addr falls in the csr range.
   function automatic void get_csr_addrs(input uvm_reg_block ral, ref uvm_reg_addr_t csr_addrs[$]);
@@ -167,12 +179,12 @@ package csr_utils_pkg;
 
         fork
           begin
-            outstanding_csr_accesses++;
+            increment_outstanding_access();
             csr.update(.status(status), .path(path), .map(map));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
-            outstanding_csr_accesses--;
+            decrement_outstanding_access();
           end
           begin
             wait_timeout(timeout_ns, msg_id,
@@ -217,12 +229,12 @@ package csr_utils_pkg;
 
         fork
           begin
-            outstanding_csr_accesses++;
+            increment_outstanding_access();
             csr.write(.status(status), .value(value), .path(path), .map(map));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
-            outstanding_csr_accesses--;
+            decrement_outstanding_access();
           end
           begin
             wait_timeout(timeout_ns, msg_id,
@@ -268,7 +280,7 @@ package csr_utils_pkg;
 
         fork
           begin
-            outstanding_csr_accesses++;
+            increment_outstanding_access();
             csr_or_fld = decode_csr_or_field(ptr);
             if (csr_or_fld.field != null) begin
               csr_or_fld.field.read(.status(status), .value(value), .path(path), .map(map));
@@ -278,7 +290,7 @@ package csr_utils_pkg;
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
-            outstanding_csr_accesses--;
+            decrement_outstanding_access();
           end
           begin
             wait_timeout(timeout_ns, msg_id,
@@ -312,7 +324,7 @@ package csr_utils_pkg;
             uvm_reg_data_t  exp;
             string          msg_id = {csr_utils_pkg::msg_id, "::csr_rd_check"};
 
-            outstanding_csr_accesses++;
+            increment_outstanding_access();
             csr_or_fld = decode_csr_or_field(ptr);
             // get mirrored value before the read
             if (csr_or_fld.field != null) begin
@@ -327,7 +339,7 @@ package csr_utils_pkg;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;
               `DV_CHECK_EQ(obs, exp, err_msg, error, msg_id)
             end
-            outstanding_csr_accesses--;
+            decrement_outstanding_access();
           end
         join_none
         if (blocking) wait fork;
@@ -418,12 +430,12 @@ package csr_utils_pkg;
 
         fork
           begin
-            outstanding_csr_accesses++;
+            increment_outstanding_access();
             ptr.read(.status(status), .offset(offset), .value(data), .map(map));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
-            outstanding_csr_accesses--;
+            decrement_outstanding_access();
           end
           begin : mem_rd_timeout
             wait_timeout(timeout_ns, msg_id,
@@ -467,12 +479,12 @@ package csr_utils_pkg;
 
         fork
           begin
-            outstanding_csr_accesses++;
+            increment_outstanding_access();
             ptr.write(.status(status), .offset(offset), .value(data), .map(map));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
-            outstanding_csr_accesses--;
+            decrement_outstanding_access();
           end
           begin
             wait_timeout(timeout_ns, msg_id,
