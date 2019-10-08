@@ -51,5 +51,9 @@ def gen_env(name, is_cip, env_agents, root_dir):
 
         if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
         with open(path_dir + "/" + fname, 'w') as fout:
-            fout.write(
-                tpl.render(name=name, is_cip=is_cip, env_agents=env_agents))
+            try:
+                fout.write(
+                    tpl.render(name=name, is_cip=is_cip,
+                               env_agents=env_agents))
+            except:
+                log.error(exceptions.text_error_template().render())

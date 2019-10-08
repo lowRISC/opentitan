@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
@@ -23,7 +24,11 @@ def generate(xbar):  #xbar: Xbar -> str
     xbar_bind_tpl = Template(
         filename=resource_filename('tlgen', 'xbar.bind.tpl.sv'))
 
-    out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)
-    out_pkg = xbar_pkg_tpl.render(xbar=xbar)
-    out_bind = xbar_bind_tpl.render(xbar=xbar, ntype=NodeType)
+    try:
+        out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)
+        out_pkg = xbar_pkg_tpl.render(xbar=xbar)
+        out_bind = xbar_bind_tpl.render(xbar=xbar, ntype=NodeType)
+    except:
+        log.error(exceptions.text_error_template().render())
+
     return (out_rtl, out_pkg, out_bind)

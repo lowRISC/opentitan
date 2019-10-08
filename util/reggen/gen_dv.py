@@ -8,6 +8,7 @@ import logging as log
 import operator
 import sys
 
+from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
@@ -57,8 +58,11 @@ def gen_ral(block, outdir):
 
     # Generate pkg.sv with block name
     with open(outdir + "/" + block.name + "_reg_block.sv", 'w') as fout:
-        fout.write(
-            uvm_reg_tpl.render(block=block,
-                               HwAccess=HwAccess,
-                               SwRdAccess=SwRdAccess,
-                               SwWrAccess=SwWrAccess))
+        try:
+            fout.write(
+                uvm_reg_tpl.render(block=block,
+                                   HwAccess=HwAccess,
+                                   SwRdAccess=SwRdAccess,
+                                   SwWrAccess=SwWrAccess))
+        except:
+            log.error(exceptions.text_error_template().render())

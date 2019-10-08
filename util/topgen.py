@@ -12,6 +12,7 @@ from pathlib import Path
 
 import hjson
 from mako.template import Template
+from mako import exceptions
 
 import tlgen
 from reggen import gen_rtl, gen_dv, validate
@@ -33,7 +34,10 @@ genhdr = '''// Copyright lowRISC contributors.
 def generate_rtl(top, tpl_filename):
     top_rtl_tpl = Template(filename=tpl_filename)
 
-    out_rtl = top_rtl_tpl.render(top=top)
+    try:
+        out_rtl = top_rtl_tpl.render(top=top)
+    except:
+        log.error(exceptions.text_error_template().render())
     return out_rtl
 
 
@@ -46,7 +50,10 @@ def generate_xbars(top, out_path):
 
         # Add clocks to the top configuration
         obj["clocks"] = xbar.clocks
-        out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
+        try:
+            out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
+        except:
+            log.error(exceptions.text_error_template().render())
 
         rtl_path = out_path / 'rtl'
         rtl_path.mkdir(parents=True, exist_ok=True)
@@ -96,7 +103,10 @@ def generate_plic(top, out_path):
     out = StringIO()
     with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
-        out = hjson_tpl.render(src=src, target=target, prio=prio)
+        try:
+            out = hjson_tpl.render(src=src, target=target, prio=prio)
+        except:
+            log.error(exceptions.text_error_template().render())
         log.info("RV_PLIC hjson: %s" % out)
 
     if out == "":
@@ -121,7 +131,10 @@ def generate_plic(top, out_path):
     # Generate RV_PLIC Top Module
     with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
         rtl_tpl = Template(fin.read())
-        out = rtl_tpl.render(src=src, target=target, prio=prio)
+        try:
+            out = rtl_tpl.render(src=src, target=target, prio=prio)
+        except:
+            log.error(exceptions.text_error_template().render())
         log.info("RV_PLIC RTL: %s" % out)
 
     if out == "":

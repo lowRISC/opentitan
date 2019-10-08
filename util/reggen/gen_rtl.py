@@ -9,6 +9,7 @@ import operator
 import sys
 
 from mako.template import Template
+from mako import exceptions
 from pkg_resources import resource_filename
 
 from .data import *
@@ -185,17 +186,23 @@ def gen_rtl(obj, outdir):
     # Generate pkg.sv with block name
     with open(outdir + "/" + block.name + "_reg_pkg.sv", 'w',
               encoding='UTF-8') as fout:
-        fout.write(
-            reg_pkg_tpl.render(block=block,
-                               HwAccess=HwAccess,
-                               SwRdAccess=SwRdAccess,
-                               SwWrAccess=SwWrAccess))
+        try:
+            fout.write(
+                reg_pkg_tpl.render(block=block,
+                                   HwAccess=HwAccess,
+                                   SwRdAccess=SwRdAccess,
+                                   SwWrAccess=SwWrAccess))
+        except:
+            log.error(exceptions.text_error_template().render())
 
     # Generate top.sv
     with open(outdir + "/" + block.name + "_reg_top.sv", 'w',
               encoding='UTF-8') as fout:
-        fout.write(
-            reg_top_tpl.render(block=block,
-                               HwAccess=HwAccess,
-                               SwRdAccess=SwRdAccess,
-                               SwWrAccess=SwWrAccess))
+        try:
+            fout.write(
+                reg_top_tpl.render(block=block,
+                                   HwAccess=HwAccess,
+                                   SwRdAccess=SwRdAccess,
+                                   SwWrAccess=SwWrAccess))
+        except:
+            log.error(exceptions.text_error_template().render())

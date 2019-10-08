@@ -6,6 +6,7 @@
 
 import os
 
+from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
@@ -52,8 +53,10 @@ def gen_agent(name, has_separate_host_device_driver, root_dir):
 
         if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
         with open(path_dir + "/" + fname, 'w') as fout:
-            fout.write(
-                tpl.render(
-                    name=name,
-                    has_separate_host_device_driver=
-                    has_separate_host_device_driver))
+            try:
+                fout.write(
+                    tpl.render(name=name,
+                               has_separate_host_device_driver=
+                               has_separate_host_device_driver))
+            except:
+                log.error(exceptions.text_error_template().render())
