@@ -59,7 +59,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   // post_start
   virtual task post_start();
     super.post_start();
-    wait(outstanding_csr_accesses == 0);
+    wait_no_outstanding_access();
     test_csrs.delete();
   endtask
 
@@ -451,7 +451,7 @@ class csr_aliasing_seq extends csr_base_seq;
                      .compare_vs_ral(1'b1),
                      .compare_mask  (compare_mask));
       end
-      wait(outstanding_csr_accesses == 0);
+      wait_no_outstanding_access();
     end
   endtask
 

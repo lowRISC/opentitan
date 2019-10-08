@@ -72,7 +72,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // dut shutdown - this is called in post_start if do_dut_shutdown bit is set
   virtual task dut_shutdown();
-    // TODO(sriyerg): wait for pending items in tl agent to clear up
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
   // function to add csr exclusions of the given type using the csr_excl_item item
