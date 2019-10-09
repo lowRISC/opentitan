@@ -8,6 +8,7 @@ title: "User Guides"
   * [Getting started]({{< relref "getting_started.md" >}})
   * [Quickstart]({{< relref "quickstart.md" >}})
   * [Notes on using GitHub and local git]({{< relref "github_notes.md" >}})
+  * [Directory Structure]({{< relref "directory_structure.md" >}})
   * [Build software]({{< relref "getting_started_sw.md" >}})
   * [Getting started with Verilator]({{< relref "getting_started_verilator.md" >}})
   * [Getting started on FPGAs]({{< relref "getting_started_fpga.md" >}})
