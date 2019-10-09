@@ -42,8 +42,18 @@ def generate_rtl(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
+    xbar_path = out_path / 'doc'
+    xbar_path.mkdir(parents=True, exist_ok=True)
+    gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
+              "-o hw/top_earlgrey/\n\n")
+
     for obj in top["xbar"]:
         xbar = tlgen.validate(obj)
+
+        # Generate output of crossbar with complete fields
+        xbar_hjson_path = xbar_path / "xbar_{}.gen.hjson".format(xbar.name)
+        xbar_hjson_path.write_text(genhdr + gencmd +
+                                   hjson.dumps(top["xbar"], for_json=True))
 
         if not tlgen.elaborate(xbar):
             log.error("Elaboration failed." + repr(xbar))
