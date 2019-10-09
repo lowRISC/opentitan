@@ -244,6 +244,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   // 2. For normal test, a page table fault typically means the program is accessing a large
   //    virtual address which currently not mapped a valid physical address. Need to do a
   //    memcpy to move data from lower physical address to the place the virtual address map to.
+  // TODO: Refactor this part with new reserved GPR
   virtual function void gen_page_fault_handling_routine(ref string instr[$]);
     int unsigned  level;
     string        load_store_unit;
@@ -394,7 +395,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     instr.push_back("j_smode: jal ra, smode_program");
     instr.push_back("fix_pte_ret:");
     // Recover the user mode GPR from kernal stack
-    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
 
     foreach(instr[i]) begin
@@ -437,7 +438,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     // Assign the PPN of link PTE to link the page tables together
     foreach(page_table[i]) begin
       if (page_table[i].level == 0) break;
-      instr = {instr, $sformatf("la x21, page_table_%0d+2048 # Process PT_%0d", i, i)};
+      instr = {instr, $sformatf("la x%0d, page_table_%0d+2048 # Process PT_%0d",
+                                cfg.gpr[1], i, i)};
       foreach(page_table[i].pte[j]) begin
         if(j >= SUPER_LEAF_PTE_PER_TABLE) continue;
         pte_addr_offset = (j * PTE_SIZE) - 2048;
@@ -445,19 +447,21 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                         i, j, page_table[i].pte[j].v, page_table[i].level), UVM_LOW)
         if(page_table[i].pte[j].xwr == NEXT_LEVEL_PAGE) begin
           // Use the target table address as PPN of this PTE
-          // x20 holds the target table physical address
+          // x%0d holds the target table physical address
           instr = {instr,
                    // Load the current PTE value
-                   $sformatf("l%0s x22, %0d(x21)", load_store_unit, pte_addr_offset),
+                   $sformatf("l%0s x%0d, %0d(x%0d)",
+                             load_store_unit, cfg.gpr[2], pte_addr_offset, cfg.gpr[1]),
                    // Load the target page table physical address, PPN should be 0
-                   $sformatf("la x20, page_table_%0d # Link PT_%0d_PTE_%0d -> PT_%0d",
+                   $sformatf("la x%0d, page_table_%0d # Link PT_%0d_PTE_%0d -> PT_%0d", cfg.gpr[0],
                              get_child_table_id(i, j), i, j, get_child_table_id(i, j)),
                    // Right shift the address for 2 bits to the correct PPN position in PTE
-                   $sformatf("srli x20, x20, 2"),
+                   $sformatf("srli x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
                    // Assign PPN
-                   "or x22, x20, x22",
+                   $sformatf("or x%0d, x%0d, x%0d", cfg.gpr[2], cfg.gpr[0], cfg.gpr[2]),
                    // Store the new PTE value
-                   $sformatf("s%0s x22, %0d(x21)", load_store_unit, pte_addr_offset)};
+                   $sformatf("s%0s x%0d, %0d(x%0d)",
+                   load_store_unit, cfg.gpr[2], pte_addr_offset, cfg.gpr[1])};
         end
       end
     end
@@ -467,54 +471,60 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     if (cfg.support_supervisor_mode) begin
       instr = {instr,
                // Process kernel instruction pages
-               "la x20, _kernel_instr_start",
-               "la x21, _kernel_instr_end",
+               $sformatf("la x%0d, _kernel_instr_start", cfg.gpr[0]),
+               $sformatf("la x%0d, _kernel_instr_end", cfg.gpr[1]),
                // Get the VPN of the physical address
-               $sformatf("slli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS),
-               $sformatf("srli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS + 12),
-               $sformatf("slli x20, x20, %0d", $clog2(XLEN)),
-               $sformatf("slli x21, x21, %0d", XLEN - MAX_USED_VADDR_BITS),
-               $sformatf("srli x21, x21, %0d", XLEN - MAX_USED_VADDR_BITS + 12),
-               $sformatf("slli x21, x21, %0d", $clog2(XLEN)),
+               $sformatf("slli x%0d, x%0d, %0d",
+                         cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS),
+               $sformatf("srli x%0d, x%0d, %0d",
+                         cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS + 12),
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], $clog2(XLEN)),
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1],
+                         XLEN - MAX_USED_VADDR_BITS),
+               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1],
+                         XLEN - MAX_USED_VADDR_BITS + 12),
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], $clog2(XLEN)),
                // Starting from the first 4KB leaf page table
-               $sformatf("la x22, page_table_%0d", get_1st_4k_table_id()),
-               "add x20, x22, x20",
-               "add x21, x22, x21",
-               $sformatf("li x22, 0x%0x", ubit_mask),
+               $sformatf("la x%0d, page_table_%0d", cfg.gpr[2], get_1st_4k_table_id()),
+               $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
+               $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[1], cfg.gpr[2], cfg.gpr[1]),
+               $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
                "1:",
                // Load the PTE from the memory
-               $sformatf("l%0s x23, 0(x20)", load_store_unit),
+               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Unset U bit
-               "and x23, x23, x22",
+               $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
                // Save PTE back to memory
-               $sformatf("l%0s x23, 0(x20)", load_store_unit),
+               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Move to the next PTE
-               $sformatf("addi x20, x20, %0d", XLEN/8),
+               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN/8),
                // If not the end of the kernel space, process the next PTE
-               "ble x20, x21, 1b",
+               $sformatf("ble x%0d, x%0d, 1b", cfg.gpr[0], cfg.gpr[1]),
                // Process kernel data pages
-               "la x20, _kernel_data_start",
+               $sformatf("la x%0d, _kernel_data_start", cfg.gpr[0]),
                // Get the VPN of the physical address
-               $sformatf("slli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS),
-               $sformatf("srli x20, x20, %0d", XLEN - MAX_USED_VADDR_BITS + 12),
-               $sformatf("slli x20, x20, %0d", $clog2(XLEN)),
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0],
+                         XLEN - MAX_USED_VADDR_BITS),
+               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0],
+                         XLEN - MAX_USED_VADDR_BITS + 12),
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], $clog2(XLEN)),
                // Starting from the first 4KB leaf page table
-               $sformatf("la x22, page_table_%0d", get_1st_4k_table_id()),
-               "add x20, x22, x20",
-               $sformatf("li x22, 0x%0x", ubit_mask),
+               $sformatf("la x%0d, page_table_%0d", cfg.gpr[2], get_1st_4k_table_id()),
+               $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
+               $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
                // Assume 20 PTEs for kernel data pages
-               $sformatf("addi x20, x20, %0d", 20 * XLEN/8),
+               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], 20 * XLEN/8),
                "2:",
                // Load the PTE from the memory
-               $sformatf("l%0s x23, 0(x20)", load_store_unit),
+               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Unset U bit
-               "and x23, x23, x22",
+               $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
                // Save PTE back to memory
-               $sformatf("l%0s x23, 0(x20)", load_store_unit),
+               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Move to the next PTE
-               $sformatf("addi x20, x20, %0d", XLEN/8),
+               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN/8),
                // If not the end of the kernel space, process the next PTE
-               "ble x20, x21, 2b"};
+               $sformatf("ble x%0d, x%0d, 2b", cfg.gpr[0], cfg.gpr[1])};
     end
   endfunction
 

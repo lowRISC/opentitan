@@ -5,11 +5,6 @@ Examples
 
 To make use of Ibex it has to be integrated as described in :ref:`core-integration`.
 
-Tracer Simulation
------------------
-
-How to run a simple testbench to test the tracer is described in ``examples/sim/README.md``.
-
 FPGA
 ----
 

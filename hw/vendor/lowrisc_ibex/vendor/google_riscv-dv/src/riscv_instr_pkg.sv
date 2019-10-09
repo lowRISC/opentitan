@@ -759,14 +759,16 @@ package riscv_instr_pkg;
   function automatic void push_gpr_to_kernel_stack(privileged_reg_t status,
                                                    privileged_reg_t scratch,
                                                    bit mprv,
+                                                   riscv_reg_t sp,
+                                                   riscv_reg_t tp,
                                                    ref string instr[$]);
     string store_instr = (XLEN == 32) ? "sw" : "sd";
     if (scratch inside {implemented_csr}) begin
       // Use kernal stack for handling exceptions
       // Save the user mode stack pointer to the scratch register
-      instr.push_back($sformatf("csrrw sp, 0x%0x, sp", scratch));
+      instr.push_back($sformatf("csrrw x%0d, 0x%0x, x%0d", sp, scratch, sp));
       // Move TP to SP
-      instr.push_back("add sp, tp, zero");
+      instr.push_back($sformatf("add x%0d, x%0d, zero", sp, tp));
     end
     // If MPRV is set and MPP is S/U mode, it means the address translation and memory protection
     // for load/store instruction is the same as the mode indicated by MPP. In this case, we
@@ -775,21 +777,21 @@ package riscv_instr_pkg;
       // We temporarily use tp to check mstatus to avoid changing other GPR. The value of sp has
       // been saved to xScratch and can be restored later.
       if(mprv) begin
-        instr.push_back($sformatf("csrr tp, 0x%0x // MSTATUS", status));
-        instr.push_back("srli tp, tp, 11");  // Move MPP to bit 0
-        instr.push_back("andi tp, tp, 0x3"); // keep the MPP bits
-        instr.push_back("xori tp, tp, 0x3"); // Check if MPP equals to M-mode('b11)
-        instr.push_back("bnez tp, 1f");      // Use physical address for kernel SP
+        instr.push_back($sformatf("csrr x%0d, 0x%0x // MSTATUS", tp, status));
+        instr.push_back($sformatf("srli x%0d, x%0d, 11", tp, tp));  // Move MPP to bit 0
+        instr.push_back($sformatf("andi x%0d, x%0d, 0x3", tp, tp)); // keep the MPP bits
+        instr.push_back($sformatf("xori x%0d, x%0d, 0x3", tp, tp)); // Check if MPP equals to M-mode('b11)
+        instr.push_back($sformatf("bnez x%0d, 1f", tp));      // Use physical address for kernel SP
         // Use virtual address for stack pointer
-        instr.push_back($sformatf("slli sp, sp, %0d", XLEN - MAX_USED_VADDR_BITS));
-        instr.push_back($sformatf("srli sp, sp, %0d", XLEN - MAX_USED_VADDR_BITS));
+        instr.push_back($sformatf("slli x%0d, x%0d, %0d", sp, sp, XLEN - MAX_USED_VADDR_BITS));
+        instr.push_back($sformatf("srli x%0d, x%0d, %0d", sp, sp, XLEN - MAX_USED_VADDR_BITS));
       end
     end
     // Reserve space from kernel stack to save all 32 GPR except for x0
-    instr.push_back($sformatf("1: addi sp, sp, -%0d", 31 * (XLEN/8)));
+    instr.push_back($sformatf("1: addi x%0d, x%0d, -%0d", sp, sp, 31 * (XLEN/8)));
     // Push all GPRs to kernel stack
     for(int i = 1; i < 32; i++) begin
-      instr.push_back($sformatf("%0s  x%0d, %0d(sp)", store_instr, i, i * (XLEN/8)));
+      instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, i, i * (XLEN/8), sp));
     end
   endfunction
 
@@ -797,19 +799,21 @@ package riscv_instr_pkg;
   function automatic void pop_gpr_from_kernel_stack(privileged_reg_t status,
                                                     privileged_reg_t scratch,
                                                     bit mprv,
+                                                    riscv_reg_t sp,
+                                                    riscv_reg_t tp,
                                                     ref string instr[$]);
     string load_instr = (XLEN == 32) ? "lw" : "ld";
     // Pop user mode GPRs from kernel stack
     for(int i = 1; i < 32; i++) begin
-      instr.push_back($sformatf("%0s  x%0d, %0d(sp)", load_instr, i, i * (XLEN/8)));
+      instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, i, i * (XLEN/8), sp));
     end
     // Restore kernel stack pointer
-    instr.push_back($sformatf("addi sp, sp, %0d", 31 * (XLEN/8)));
+    instr.push_back($sformatf("addi x%0d, x%0d, %0d", sp, sp, 31 * (XLEN/8)));
     if (scratch inside {implemented_csr}) begin
       // Move SP to TP
-      instr.push_back("add tp, sp, zero");
+      instr.push_back($sformatf("add x%0d, x%0d, zero", tp, sp));
       // Restore user mode stack pointer
-      instr.push_back($sformatf("csrrw sp, 0x%0x, sp", scratch));
+      instr.push_back($sformatf("csrrw x%0d, 0x%0x, x%0d", sp, scratch, sp));
     end
   endfunction
 

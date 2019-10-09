@@ -257,16 +257,16 @@ class riscv_push_stack_instr extends riscv_rand_instr_stream;
     end
     // addi sp,sp,-imm
     `DV_CHECK_RANDOMIZE_WITH_FATAL(push_stack_instr[0],
-                                   instr_name == ADDI; rd == SP; rs1 == SP;
+                                   instr_name == ADDI; rd == cfg.sp; rs1 == cfg.sp;
                                    imm == (~stack_len + 1);)
     push_stack_instr[0].imm_str = $sformatf("-%0d", stack_len);
     foreach(saved_regs[i]) begin
       if(XLEN == 32) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(push_stack_instr[i+1],
-          instr_name == SW; rs2 == saved_regs[i]; rs1 == SP; imm == 4 * (i+1);)
+          instr_name == SW; rs2 == saved_regs[i]; rs1 == cfg.sp; imm == 4 * (i+1);)
       end else begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(push_stack_instr[i+1],
-          instr_name == SD; rs2 == saved_regs[i]; rs1 == SP; imm == 8 * (i+1);)
+          instr_name == SD; rs2 == saved_regs[i]; rs1 == cfg.sp; imm == 8 * (i+1);)
       end
       push_stack_instr[i+1].process_load_store = 0;
     end
@@ -340,16 +340,16 @@ class riscv_pop_stack_instr extends riscv_rand_instr_stream;
     foreach(saved_regs[i]) begin
       if(XLEN == 32) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(pop_stack_instr[i],
-          instr_name == LW; rd == saved_regs[i]; rs1 == SP; imm == 4 * (i+1);)
+          instr_name == LW; rd == saved_regs[i]; rs1 == cfg.sp; imm == 4 * (i+1);)
       end else begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(pop_stack_instr[i],
-          instr_name == LD; rd == saved_regs[i]; rs1 == SP; imm == 8 * (i+1);)
+          instr_name == LD; rd == saved_regs[i]; rs1 == cfg.sp; imm == 8 * (i+1);)
       end
       pop_stack_instr[i].process_load_store = 0;
     end
     // addi sp,sp,imm
     `DV_CHECK_RANDOMIZE_WITH_FATAL(pop_stack_instr[num_of_reg_to_save],
-                                   instr_name == ADDI; rd == SP; rs1 == SP; imm == stack_len;)
+      instr_name == ADDI; rd == cfg.sp; rs1 == cfg.sp; imm == stack_len;)
     pop_stack_instr[num_of_reg_to_save].imm_str = $sformatf("%0d", stack_len);
     mix_instr_stream(pop_stack_instr);
     foreach(instr_list[i]) begin

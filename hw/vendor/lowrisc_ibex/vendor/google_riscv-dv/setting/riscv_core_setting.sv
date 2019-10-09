@@ -53,7 +53,11 @@ bit support_sfence = 1;
 // ----------------------------------------------------------------------------
 
 // Implemented previlieged CSR list
+`ifdef DSIM
+privileged_reg_t implemented_csr[] = {
+`else
 parameter privileged_reg_t implemented_csr[] = {
+`endif
     // User mode CSR
     USTATUS,    // User status
     UIE,        // User interrupt-enable register
@@ -93,4 +97,45 @@ parameter privileged_reg_t implemented_csr[] = {
     MCAUSE,     // Machine trap cause
     MTVAL,      // Machine bad address or instruction
     MIP         // Machine interrupt pending
+};
+
+// ----------------------------------------------------------------------------
+// Supported interrupt/exception setting, used for functional coverage
+// ----------------------------------------------------------------------------
+
+`ifdef DSIM
+interrupt_cause_t implemented_interrupt[] = {
+`else
+parameter interrupt_cause_t implemented_interrupt[] = {
+`endif
+    U_SOFTWARE_INTR,
+    S_SOFTWARE_INTR,
+    M_SOFTWARE_INTR,
+    U_TIMER_INTR,
+    S_TIMER_INTR,
+    M_TIMER_INTR,
+    U_EXTERNAL_INTR,
+    S_EXTERNAL_INTR,
+    M_EXTERNAL_INTR
+};
+
+`ifdef DSIM
+exception_cause_t implemented_exception[] = {
+`else
+parameter exception_cause_t implemented_exception[] = {
+`endif
+    INSTRUCTION_ADDRESS_MISALIGNED,
+    INSTRUCTION_ACCESS_FAULT,
+    ILLEGAL_INSTRUCTION,
+    BREAKPOINT,
+    LOAD_ADDRESS_MISALIGNED,
+    LOAD_ACCESS_FAULT,
+    STORE_AMO_ADDRESS_MISALIGNED,
+    STORE_AMO_ACCESS_FAULT,
+    ECALL_UMODE,
+    ECALL_SMODE,
+    ECALL_MMODE,
+    INSTRUCTION_PAGE_FAULT,
+    LOAD_PAGE_FAULT,
+    STORE_AMO_PAGE_FAULT
 };

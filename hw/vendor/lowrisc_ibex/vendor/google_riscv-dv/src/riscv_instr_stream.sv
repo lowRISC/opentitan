@@ -209,7 +209,7 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
                                         !(instr_name inside {EBREAK, C_EBREAK});)
     end else begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_name,
-                                       instr_name inside {allowed_instr};)
+                                         instr_name inside {allowed_instr};)
     end
     instr.copy_base_instr(cfg.instr_template[instr_name]);
     `uvm_info(`gfn, $sformatf("%s: rs1:%0d, rs2:%0d, rd:%0d, imm:%0d",
@@ -235,9 +235,15 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
       instr.rs2 = instr.gen_rand_gpr(.included_reg(avail_regs));
     end
     if (instr.has_rd && !skip_rd) begin
-      instr.rd = instr.gen_rand_gpr(
-                      .included_reg(avail_regs),
-                      .excluded_reg({reserved_rd, cfg.reserved_regs}));
+      if (instr_name == C_LUI) begin
+        instr.rd = instr.gen_rand_gpr(
+                        .included_reg(avail_regs),
+                        .excluded_reg({reserved_rd, cfg.reserved_regs, SP}));
+      end else begin
+        instr.rd = instr.gen_rand_gpr(
+                        .included_reg(avail_regs),
+                        .excluded_reg({reserved_rd, cfg.reserved_regs}));
+      end
     end
     if ((instr.category == CSR) && !skip_csr) begin
       instr.gen_rand_csr(.privileged_mode(cfg.init_privileged_mode),

@@ -36,8 +36,8 @@
     +instr_cnt=10000
     +num_of_sub_program=0
     +no_fence=1
-    +no_data_page=1'b1
-    +no_branch_jump=1'b1
+    +no_data_page=1
+    +no_branch_jump=1
     +boot_mode=m
   iterations: 2
   gen_test: riscv_instr_base_test
@@ -91,14 +91,13 @@
     +directed_instr_1=riscv_loop_instr,20
   rtl_test: core_base_test
 
-# TODO: Temporarily disable this as compiler seems to generate compressed instruction with rv64im
 - test: riscv_non_compressed_instr_test
   description: >
     Random instruction test without compressed instructions
-  iterations: 0
+  iterations: 1
   gen_test: riscv_rand_instr_test
   gen_opts: >
-    +march=RV32I,RV32M,RV64I,RV64M
+    +disable_compressed_instr=1
   gcc_opts: >
     -march=rv64im
   rtl_test: core_base_test

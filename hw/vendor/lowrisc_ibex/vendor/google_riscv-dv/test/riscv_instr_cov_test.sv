@@ -113,6 +113,11 @@ class riscv_instr_cov_test extends uvm_test;
         instr_cg.sample(instr);
         return 1'b1;
       end
+    end else if (trace["instr"] == "") begin
+      bit [XLEN-1:0] val;
+      get_val(trace["binary"], val);
+      instr_cg.illegal_cg.sample(val);
+      return 1'b1;
     end
     illegal_instr_cnt++;
     return 1'b0;

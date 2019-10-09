@@ -95,6 +95,10 @@ class riscv_instr_base extends uvm_object;
     imm_len <= 20;
   }
 
+  constraint legal_operand_c {
+    (instr_name == C_LUI) -> (rd != SP);
+  }
+
   constraint imm_val_c {
     if(imm_type inside {NZIMM, NZUIMM}) {
       imm != 0;

@@ -5,6 +5,10 @@ class riscv_instr_cov_item extends riscv_instr_base;
   } operand_sign_e;
 
   typedef enum bit[1:0] {
+    DIV_NORMAL, DIV_BY_ZERO, DIV_OVERFLOW
+  } div_result_e;
+
+  typedef enum bit[1:0] {
     EQUAL, LARGER, SMALLER
   } compare_result_e;
 
@@ -27,6 +31,7 @@ class riscv_instr_cov_item extends riscv_instr_base;
   bit                   unaligned_mem_access;
   bit                   compressed;
   bit                   branch_hit;
+  div_result_e          div_result;
   operand_sign_e        rs1_sign;
   operand_sign_e        rs2_sign;
   operand_sign_e        imm_sign;
@@ -71,6 +76,9 @@ class riscv_instr_cov_item extends riscv_instr_base;
     if (category == BRANCH) begin
       branch_hit = is_branch_hit();
     end
+    if (instr_name inside {DIV, DIVU, REM, REMU, DIVW, DIVUW, REMW, REMUW}) begin
+      div_result = get_div_result();
+    end
   endfunction
 
   function operand_sign_e get_operand_sign(bit [XLEN-1:0] value);
@@ -101,6 +109,15 @@ class riscv_instr_cov_item extends riscv_instr_base;
     end
   endfunction
 
+  function div_result_e get_div_result();
+    if (rs2_value == 0) begin
+      return DIV_BY_ZERO;
+    end else if ((rs2_value == '1) && (rs1_value == (1'b1 << (XLEN-1))))
+      return DIV_OVERFLOW;
+    else
+      return DIV_NORMAL;
+  endfunction
+
   function special_val_e get_operand_special_val(bit [XLEN-1:0] value);
     if (value == 0) begin
       return ZERO_VAL;
@@ -114,7 +131,6 @@ class riscv_instr_cov_item extends riscv_instr_base;
   endfunction
 
   function special_val_e get_imm_special_val(bit [31:0] value);
-    void'(randomize(imm_len));
     if (value == 0) begin
       return ZERO_VAL;
     end else if (format == U_FORMAT) begin

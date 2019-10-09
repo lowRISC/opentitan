@@ -108,7 +108,7 @@ class riscv_load_store_base_instr_stream extends riscv_mem_access_stream;
                                          },
                                          "Cannot randomize avail_regs")
     end
-    if (rs1_reg inside {[S0 : A5]}) begin
+    if ((rs1_reg inside {[S0 : A5]}) && !cfg.disable_compressed_instr) begin
       enable_compressed_load_store = 1;
     end
     foreach(addr[i]) begin

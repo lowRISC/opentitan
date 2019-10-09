@@ -39,14 +39,14 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
     solve num_of_nested_loop before loop_limit_reg;
     foreach (loop_cnt_reg[i]) {
       loop_cnt_reg[i] != ZERO;
-      foreach (cfg.default_reserved_regs[j]) {
-        loop_cnt_reg[i] != cfg.default_reserved_regs[j];
+      foreach (cfg.reserved_regs[j]) {
+        loop_cnt_reg[i] != cfg.reserved_regs[j];
       }
     }
     foreach (loop_limit_reg[i]) {
       loop_limit_reg[i] != ZERO;
-      foreach (cfg.default_reserved_regs[j]) {
-        loop_limit_reg[i] != cfg.default_reserved_regs[j];
+      foreach (cfg.reserved_regs[j]) {
+        loop_limit_reg[i] != cfg.reserved_regs[j];
       }
     }
     unique {loop_cnt_reg, loop_limit_reg};
