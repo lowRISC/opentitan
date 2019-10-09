@@ -2,29 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class gpio_generic_cov_obj extends uvm_object;
-  `uvm_object_utils(gpio_generic_cov_obj)
-
-  // Covergroup: generic_cg
-  // Generic covergroup definition
-  covergroup generic_cg(string name) with function sample(bit value);
-    option.per_instance = 1;
-    option.name = name;
-    cp_value: coverpoint value;
-    cp_transitions: coverpoint value {
-      bins rising  = (0 => 1);
-      bins falling = (1 => 0);
-    }
-  endgroup : generic_cg
-
-  // Function: new
-  function new(string name="gpio_generic_cov");
-    super.new(name);
-    generic_cg = new(name);
-  endfunction : new
-
-endclass : gpio_generic_cov_obj
-
+// TODO - We are enclosing generic covergroups inside class so that we can
+// take avoid tool limitation of not allowing arrays of covergroup
+// Refer to Issue#375 for more details
 class gpio_intr_type_cov_obj extends uvm_object;
   `uvm_object_utils(gpio_intr_type_cov_obj)
 
@@ -74,22 +54,22 @@ class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
   `uvm_component_utils(gpio_env_cov)
 
   // Array of coverage objects for per pin coverage for gpio pin values
-  gpio_generic_cov_obj gpio_pin_values_cov_obj[NUM_GPIOS];
+  dv_base_generic_cov_obj gpio_pin_values_cov_obj[NUM_GPIOS];
   // Interrupt State (Interrupt bit getting set and cleared)
-  gpio_generic_cov_obj intr_state_cov_obj[NUM_GPIOS];
+  dv_base_generic_cov_obj intr_state_cov_obj[NUM_GPIOS];
   // Interrupt Control Enable registers' values
-  gpio_generic_cov_obj intr_ctrl_en_cov_objs[NUM_GPIOS][string];
+  dv_base_generic_cov_obj intr_ctrl_en_cov_objs[NUM_GPIOS][string];
   // Different gpio interrupt types' occurrences
   gpio_intr_type_cov_obj intr_event_type_cov_objs[NUM_GPIOS][string];
   // Per bit coverage on *out* and *oe* registers
-  gpio_generic_cov_obj out_oe_cov_objs[NUM_GPIOS][string];
+  dv_base_generic_cov_obj out_oe_cov_objs[NUM_GPIOS][string];
 
   // Coverage on data and mask fields of masked* registers
   gpio_two_vars_generic_cov_obj out_oe_mask_data_cov_objs[NUM_GPIOS/2][string];
   // Coverage on effective values of DATA_OUT and DATA_OE
   gpio_two_vars_generic_cov_obj data_out_data_oe_cov_obj[NUM_GPIOS];
   // data_in register per bit value coverage
-  gpio_generic_cov_obj data_in_cov_obj[NUM_GPIOS];
+  dv_base_generic_cov_obj data_in_cov_obj[NUM_GPIOS];
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
