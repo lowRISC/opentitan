@@ -6,183 +6,181 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson -o hw/top_earlgrey/
 
-[
+{
+  name: main
+  clock: main
+  connections:
   {
-    name: main
-    clock: main
-    connections:
-    {
-      corei:
-      [
-        rom
-        debug_mem
-        ram_main
-        eflash
-      ]
-      cored:
-      [
-        rom
-        debug_mem
-        ram_main
-        eflash
-        uart
-        gpio
-        spi_device
-        flash_ctrl
-        rv_timer
-        hmac
-        rv_plic
-      ]
-      dm_sba:
-      [
-        rom
-        ram_main
-        eflash
-        uart
-        gpio
-        spi_device
-        flash_ctrl
-        rv_timer
-        hmac
-        rv_plic
-      ]
-    }
-    nodes:
+    corei:
     [
-      {
-        name: corei
-        type: host
-        clock: main
-        pipeline: "false"
-        inst_type: rv_core_ibex
-        pipeline_byp: "true"
-      }
-      {
-        name: cored
-        type: host
-        clock: main
-        pipeline: "false"
-        inst_type: rv_core_ibex
-        pipeline_byp: "true"
-      }
-      {
-        name: dm_sba
-        type: host
-        clock: main
-        pipeline_byp: "false"
-        inst_type: rv_dm
-        pipeline: "true"
-      }
-      {
-        name: rom
-        type: device
-        clock: main
-        pipeline: "false"
-        inst_type: rom
-        base_addr: 0x00008000
-        size_byte: 0x2000
-        pipeline_byp: "true"
-      }
-      {
-        name: debug_mem
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: rv_dm
-        base_addr: 0x1A110000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: ram_main
-        type: device
-        clock: main
-        pipeline: "false"
-        inst_type: ram_1p
-        base_addr: 0x10000000
-        size_byte: 0x10000
-        pipeline_byp: "true"
-      }
-      {
-        name: eflash
-        type: device
-        clock: main
-        pipeline: "false"
-        inst_type: eflash
-        base_addr: 0x20000000
-        size_byte: 0x80000
-        pipeline_byp: "true"
-      }
-      {
-        name: uart
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: uart
-        base_addr: 0x40000000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: gpio
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: gpio
-        base_addr: 0x40010000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: spi_device
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: spi_device
-        base_addr: 0x40020000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: flash_ctrl
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: flash_ctrl
-        base_addr: 0x40030000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: rv_timer
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: rv_timer
-        base_addr: 0x40080000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: hmac
-        type: device
-        clock: main
-        pipeline_byp: "false"
-        inst_type: hmac
-        base_addr: 0x40120000
-        size_byte: 0x1000
-        pipeline: "true"
-      }
-      {
-        name: rv_plic
-        type: device
-        clock: main
-        inst_type: rv_plic
-        base_addr: 0x40090000
-        size_byte: 0x1000
-        pipeline_byp: "false"
-        pipeline: "true"
-      }
+      rom
+      debug_mem
+      ram_main
+      eflash
+    ]
+    cored:
+    [
+      rom
+      debug_mem
+      ram_main
+      eflash
+      uart
+      gpio
+      spi_device
+      flash_ctrl
+      rv_timer
+      hmac
+      rv_plic
+    ]
+    dm_sba:
+    [
+      rom
+      ram_main
+      eflash
+      uart
+      gpio
+      spi_device
+      flash_ctrl
+      rv_timer
+      hmac
+      rv_plic
     ]
   }
-]
+  nodes:
+  [
+    {
+      name: corei
+      type: host
+      clock: main
+      pipeline: "false"
+      inst_type: rv_core_ibex
+      pipeline_byp: "true"
+    }
+    {
+      name: cored
+      type: host
+      clock: main
+      pipeline: "false"
+      inst_type: rv_core_ibex
+      pipeline_byp: "true"
+    }
+    {
+      name: dm_sba
+      type: host
+      clock: main
+      pipeline_byp: "false"
+      inst_type: rv_dm
+      pipeline: "true"
+    }
+    {
+      name: rom
+      type: device
+      clock: main
+      pipeline: "false"
+      inst_type: rom
+      base_addr: 0x00008000
+      size_byte: 0x2000
+      pipeline_byp: "true"
+    }
+    {
+      name: debug_mem
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: rv_dm
+      base_addr: 0x1A110000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: ram_main
+      type: device
+      clock: main
+      pipeline: "false"
+      inst_type: ram_1p
+      base_addr: 0x10000000
+      size_byte: 0x10000
+      pipeline_byp: "true"
+    }
+    {
+      name: eflash
+      type: device
+      clock: main
+      pipeline: "false"
+      inst_type: eflash
+      base_addr: 0x20000000
+      size_byte: 0x80000
+      pipeline_byp: "true"
+    }
+    {
+      name: uart
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: uart
+      base_addr: 0x40000000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: gpio
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: gpio
+      base_addr: 0x40010000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: spi_device
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: spi_device
+      base_addr: 0x40020000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: flash_ctrl
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: flash_ctrl
+      base_addr: 0x40030000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: rv_timer
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: rv_timer
+      base_addr: 0x40080000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: hmac
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: hmac
+      base_addr: 0x40120000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: rv_plic
+      type: device
+      clock: main
+      inst_type: rv_plic
+      base_addr: 0x40090000
+      size_byte: 0x1000
+      pipeline_byp: "false"
+      pipeline: "true"
+    }
+  ]
+}
