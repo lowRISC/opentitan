@@ -271,6 +271,8 @@ val_types = {
     'lnw': ["name list+", 'name list that optionally contains a width'],
     'lp': ["parameter list", 'parameter list having default value optionally'],
     'g': ["group", "comma separated group of key:value enclosed in `{}`"],
+    'lg': ["list of group", "comma separated group of key:value enclosed in `{}`"\
+           " the second entry of the list is the sub group format"],
     's': ["string", "string, typically short"],
     't': ["text", "string, may be multi-line enclosed in `'''` "\
           "may use `**bold**`, `*italic*` or `!!Reg` markup"],

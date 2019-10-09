@@ -2,8 +2,9 @@
 
 * [Comportability Definition and Specification](comportability_specification.md)
 * Tool Guides
-   * [Register Tool](register_tool.md): Describes `regtool.py` and its HJSON format source. Used to generate documentation, rtl, header files and validation files for IP Registers and toplevel.
-   * [Vendor-In Tool](vendor_hw_tool.md): Describes `vendor_hw.py` and its HJSON control file. Used to pull a local copy of code maintained in other upstream repositories and apply local patch sets.
+   * [Register Tool](register_tool.md): Describes `regtool.py` and its Hjson format source. Used to generate documentation, rtl, header files and validation files for IP Registers and toplevel.
+   * [Vendor-In Tool](vendor_hw_tool.md): Describes `vendor_hw.py` and its Hjson control file. Used to pull a local copy of code maintained in other upstream repositories and apply local patch sets.
+   * [Crossbar Tool](crossbar_tool.md): Describes `tlgen.py` and its Hjson format source. Used to generate RTL and validation files for the crossbar.
 * Coding Style Guides
   * [Verilog Coding Style](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
   * [Python Coding Style](python_coding_style.md)

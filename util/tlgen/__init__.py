@@ -7,3 +7,4 @@ from .generate import generate
 from .item import Edge, Node, NodeType
 from .validate import validate
 from .xbar import Xbar
+from .doc import selfdoc

@@ -7,14 +7,20 @@
     { name:  "ibexif",
       type:  "host",
       clock: "main",
+
+      pipeline: "false"
     },
     { name:  "ibexlsu",
       type:  "host",
       clock: "periph",
+
+      pipeline: "false"
     },
     { name:  "dm_sba", // DM
       type:  "host",
       clock: "jtag",
+
+      pipeline_byp: "false"
     },
     { name:      "rom",
       type:      "device",
@@ -22,7 +28,12 @@
       base_addr: "0x00000000",
       size_byte: "0x10000",   // 64kB
     },
-    { name: "debug_rom", type: "device", clock: "jtag", base_addr: "0x10040000", size_byte: "0x1000" },
+    { name:      "debug_rom",
+      type:      "device",
+      clock:     "jtag",
+      base_addr: "0x10040000",
+      size_byte: "0x1000"
+    },
     { name:      "sram",
       type:      "device",
       clock:     "main",

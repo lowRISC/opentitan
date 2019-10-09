@@ -22,13 +22,15 @@ def main():
     parser.add_argument('--topcfg',
                         '-t',
                         metavar='file',
-                        required=True,
                         type=argparse.FileType('r'),
                         help="`top_cfg.hjson` file.")
+    parser.add_argument('--doc',
+                        '-d',
+                        action='store_true',
+                        help='Generate self html document in stdout')
     parser.add_argument(
         '--outdir',
         '-o',
-        required=True,
         help=
         "Target directory. tlgen needs 'rtl/' and 'dv/' directory under the target dir"
     )
@@ -40,6 +42,15 @@ def main():
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
+
+    if args.doc:
+        # Generate Doc and return
+        sys.stdout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
+        return
+
+    # Check if topcfg defined
+    if not args.topcfg or not args.outdir:
+        log.error("--topcfg option is mandatory to generate codes.")
 
     # Check if outdir exists. If not, show error and exit
     if not Path(args.outdir).is_dir():
