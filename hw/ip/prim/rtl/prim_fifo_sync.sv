@@ -29,9 +29,15 @@ module prim_fifo_sync #(
   if (Depth == 0) begin : gen_passthru_fifo
     `ASSERT_INIT(paramCheckPass, Pass == 1)
 
-    assign depth = 1'b0; //output is meaningless
+    // In passthrough mode, the FIFO is combinatorial. Avoid lint errors for
+    // unused signals.
+    logic unused_clk_i, unused_rst_ni;
+    assign unused_clk_i = clk_i;
+    assign unused_rst_ni = rst_ni;
 
-    // devie facing
+    assign depth = 1'b0; // output is meaningless
+
+    // device facing
     assign rvalid = wvalid;
     assign rdata = wdata;
 
