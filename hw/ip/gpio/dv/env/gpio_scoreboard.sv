@@ -119,7 +119,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                 intr_state_write_to_clear_update.reg_value[each_bit] = 1'b0;
                 // Coverage Sampling: gpio interrupt cleared
                 if (cfg.en_cov) begin
-                  cov.intr_state_cov_obj[each_bit].generic_cg.sample(1'b0);
+                  cov.intr_state_cov_obj[each_bit].sample(1'b0);
                 end
               end
             end
@@ -149,9 +149,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             if (cfg.en_cov && (!uvm_re_match("*out*", csr.get_name()) ||
                                !uvm_re_match("*oe*", csr.get_name()))) begin
               for (uint each_pin = 0; each_pin < NUM_GPIOS; each_pin++) begin
-
-                cov.out_oe_cov_objs[each_pin][csr.get_name()].generic_cg.sample(
-                    item.a_data[each_pin]);
+                cov.out_oe_cov_objs[each_pin][csr.get_name()].sample(item.a_data[each_pin]);
               end
               // Coverage Sampling: Cross coverage on mask and data within masked_* registers
               if (!uvm_re_match("masked*", csr.get_name())) begin
@@ -202,7 +200,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         // Coverage Sampling: gpio pin values' coverage
         if (cfg.en_cov) begin
           foreach (cov.gpio_pin_values_cov_obj[each_pin]) begin
-            cov.gpio_pin_values_cov_obj[each_pin].generic_cg.sample(cfg.gpio_vif.pins[each_pin]);
+            cov.gpio_pin_values_cov_obj[each_pin].sample(cfg.gpio_vif.pins[each_pin]);
           end
         end
         // evaluate gpio input driven to dut
@@ -496,7 +494,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         // Coverage Sampling: data_in register coverage
         if (cfg.en_cov) begin
           for (uint each_bit = 0; each_bit < NUM_GPIOS; each_bit++) begin
-            cov.data_in_cov_obj[each_bit].generic_cg.sample(pred_val_gpio_pins[each_bit]);
+            cov.data_in_cov_obj[each_bit].sample(pred_val_gpio_pins[each_bit]);
           end
         end
       end
@@ -545,13 +543,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     // Coverage Sampling: gpio interrupt types
     if (cfg.en_cov) begin
       foreach (intr_ctrl_en_rising[each_bit]) begin
-        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_rising"].generic_cg.sample(
+        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_rising"].sample(
             intr_ctrl_en_rising[each_bit]);
-        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_falling"].generic_cg.sample(
+        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_falling"].sample(
             intr_ctrl_en_falling[each_bit]);
-        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvlhigh"].generic_cg.sample(
+        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvlhigh"].sample(
             intr_ctrl_en_lvlhigh[each_bit]);
-        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvllow"].generic_cg.sample(
+        cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvllow"].sample(
             intr_ctrl_en_lvllow[each_bit]);
         // Interrupt Test coverage
         cov.intr_test_cg.sample(each_bit,
@@ -639,8 +637,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     if (cfg.en_cov) begin
       foreach (exp_intr_status[each_bit]) begin
         cov.intr_cg.sample(each_bit, intr_enable[each_bit], exp_intr_status[each_bit]);
-        cov.intr_state_cov_obj[each_bit].generic_cg.sample(
-            last_intr_update_except_clearing[each_bit]);
+        cov.intr_state_cov_obj[each_bit].sample(last_intr_update_except_clearing[each_bit]);
       end
     end
     // Clear last_intr_test_event
