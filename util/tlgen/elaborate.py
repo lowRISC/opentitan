@@ -67,6 +67,7 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         new_node = Node(name="asf_" + str(len(xbar.nodes)),
                         node_type=NodeType.ASYNC_FIFO,
                         clock=xbar.clock)
+
         if node.node_type == NodeType.HOST:
             new_node.clocks.insert(0, node.clocks[0])
         else:
@@ -127,6 +128,10 @@ def process_pipeline(xbar):
 
         no_bypass = (host.pipeline == True and host.pipeline_byp == False)
         dnode = host.ds[0].ds
+
+        if dnode.node_type == NodeType.ASYNC_FIFO:
+            continue
+
         if dnode.node_type == NodeType.SOCKET_1N:
             dnode.hpass = 0 if no_bypass else dnode.hpass
 
@@ -154,6 +159,10 @@ def process_pipeline(xbar):
 
         no_bypass = (device.pipeline == True and device.pipeline_byp == False)
         unode = device.us[0].us
+
+        if unode.node_type == NodeType.ASYNC_FIFO:
+            continue
+
         if unode.node_type == NodeType.SOCKET_1N:
             idx = unode.ds.index(device.us)
             unode.dpass = unode.dpass ^ (
