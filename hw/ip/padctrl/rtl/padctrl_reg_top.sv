@@ -13,6 +13,7 @@ module padctrl_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
   output padctrl_reg_pkg::padctrl_reg2hw_t reg2hw, // Write
+  input  padctrl_reg_pkg::padctrl_hw2reg_t hw2reg, // Read
 
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
@@ -71,72 +72,86 @@ module padctrl_reg_top (
   logic regen_qs;
   logic regen_wd;
   logic regen_we;
-  logic [5:0] dio_pads_attr0_qs;
-  logic [5:0] dio_pads_attr0_wd;
+  logic [7:0] dio_pads_attr0_qs;
+  logic [7:0] dio_pads_attr0_wd;
   logic dio_pads_attr0_we;
-  logic [5:0] dio_pads_attr1_qs;
-  logic [5:0] dio_pads_attr1_wd;
+  logic dio_pads_attr0_re;
+  logic [7:0] dio_pads_attr1_qs;
+  logic [7:0] dio_pads_attr1_wd;
   logic dio_pads_attr1_we;
-  logic [5:0] dio_pads_attr2_qs;
-  logic [5:0] dio_pads_attr2_wd;
+  logic dio_pads_attr1_re;
+  logic [7:0] dio_pads_attr2_qs;
+  logic [7:0] dio_pads_attr2_wd;
   logic dio_pads_attr2_we;
-  logic [5:0] dio_pads_attr3_qs;
-  logic [5:0] dio_pads_attr3_wd;
+  logic dio_pads_attr2_re;
+  logic [7:0] dio_pads_attr3_qs;
+  logic [7:0] dio_pads_attr3_wd;
   logic dio_pads_attr3_we;
-  logic [5:0] mio_pads0_attr0_qs;
-  logic [5:0] mio_pads0_attr0_wd;
+  logic dio_pads_attr3_re;
+  logic [7:0] mio_pads0_attr0_qs;
+  logic [7:0] mio_pads0_attr0_wd;
   logic mio_pads0_attr0_we;
-  logic [5:0] mio_pads0_attr1_qs;
-  logic [5:0] mio_pads0_attr1_wd;
+  logic mio_pads0_attr0_re;
+  logic [7:0] mio_pads0_attr1_qs;
+  logic [7:0] mio_pads0_attr1_wd;
   logic mio_pads0_attr1_we;
-  logic [5:0] mio_pads0_attr2_qs;
-  logic [5:0] mio_pads0_attr2_wd;
+  logic mio_pads0_attr1_re;
+  logic [7:0] mio_pads0_attr2_qs;
+  logic [7:0] mio_pads0_attr2_wd;
   logic mio_pads0_attr2_we;
-  logic [5:0] mio_pads0_attr3_qs;
-  logic [5:0] mio_pads0_attr3_wd;
+  logic mio_pads0_attr2_re;
+  logic [7:0] mio_pads0_attr3_qs;
+  logic [7:0] mio_pads0_attr3_wd;
   logic mio_pads0_attr3_we;
-  logic [5:0] mio_pads0_attr4_qs;
-  logic [5:0] mio_pads0_attr4_wd;
-  logic mio_pads0_attr4_we;
-  logic [5:0] mio_pads1_attr5_qs;
-  logic [5:0] mio_pads1_attr5_wd;
+  logic mio_pads0_attr3_re;
+  logic [7:0] mio_pads1_attr4_qs;
+  logic [7:0] mio_pads1_attr4_wd;
+  logic mio_pads1_attr4_we;
+  logic mio_pads1_attr4_re;
+  logic [7:0] mio_pads1_attr5_qs;
+  logic [7:0] mio_pads1_attr5_wd;
   logic mio_pads1_attr5_we;
-  logic [5:0] mio_pads1_attr6_qs;
-  logic [5:0] mio_pads1_attr6_wd;
+  logic mio_pads1_attr5_re;
+  logic [7:0] mio_pads1_attr6_qs;
+  logic [7:0] mio_pads1_attr6_wd;
   logic mio_pads1_attr6_we;
-  logic [5:0] mio_pads1_attr7_qs;
-  logic [5:0] mio_pads1_attr7_wd;
+  logic mio_pads1_attr6_re;
+  logic [7:0] mio_pads1_attr7_qs;
+  logic [7:0] mio_pads1_attr7_wd;
   logic mio_pads1_attr7_we;
-  logic [5:0] mio_pads1_attr8_qs;
-  logic [5:0] mio_pads1_attr8_wd;
-  logic mio_pads1_attr8_we;
-  logic [5:0] mio_pads1_attr9_qs;
-  logic [5:0] mio_pads1_attr9_wd;
-  logic mio_pads1_attr9_we;
-  logic [5:0] mio_pads2_attr10_qs;
-  logic [5:0] mio_pads2_attr10_wd;
+  logic mio_pads1_attr7_re;
+  logic [7:0] mio_pads2_attr8_qs;
+  logic [7:0] mio_pads2_attr8_wd;
+  logic mio_pads2_attr8_we;
+  logic mio_pads2_attr8_re;
+  logic [7:0] mio_pads2_attr9_qs;
+  logic [7:0] mio_pads2_attr9_wd;
+  logic mio_pads2_attr9_we;
+  logic mio_pads2_attr9_re;
+  logic [7:0] mio_pads2_attr10_qs;
+  logic [7:0] mio_pads2_attr10_wd;
   logic mio_pads2_attr10_we;
-  logic [5:0] mio_pads2_attr11_qs;
-  logic [5:0] mio_pads2_attr11_wd;
+  logic mio_pads2_attr10_re;
+  logic [7:0] mio_pads2_attr11_qs;
+  logic [7:0] mio_pads2_attr11_wd;
   logic mio_pads2_attr11_we;
-  logic [5:0] mio_pads2_attr12_qs;
-  logic [5:0] mio_pads2_attr12_wd;
-  logic mio_pads2_attr12_we;
-  logic [5:0] mio_pads2_attr13_qs;
-  logic [5:0] mio_pads2_attr13_wd;
-  logic mio_pads2_attr13_we;
-  logic [5:0] mio_pads2_attr14_qs;
-  logic [5:0] mio_pads2_attr14_wd;
-  logic mio_pads2_attr14_we;
-  logic [5:0] mio_pads3_attr15_qs;
-  logic [5:0] mio_pads3_attr15_wd;
+  logic mio_pads2_attr11_re;
+  logic [7:0] mio_pads3_attr12_qs;
+  logic [7:0] mio_pads3_attr12_wd;
+  logic mio_pads3_attr12_we;
+  logic mio_pads3_attr12_re;
+  logic [7:0] mio_pads3_attr13_qs;
+  logic [7:0] mio_pads3_attr13_wd;
+  logic mio_pads3_attr13_we;
+  logic mio_pads3_attr13_re;
+  logic [7:0] mio_pads3_attr14_qs;
+  logic [7:0] mio_pads3_attr14_wd;
+  logic mio_pads3_attr14_we;
+  logic mio_pads3_attr14_re;
+  logic [7:0] mio_pads3_attr15_qs;
+  logic [7:0] mio_pads3_attr15_wd;
   logic mio_pads3_attr15_we;
-  logic [5:0] mio_pads3_attr16_qs;
-  logic [5:0] mio_pads3_attr16_wd;
-  logic mio_pads3_attr16_we;
-  logic [5:0] mio_pads3_attr17_qs;
-  logic [5:0] mio_pads3_attr17_wd;
-  logic mio_pads3_attr17_we;
+  logic mio_pads3_attr15_re;
 
   // Register instances
   // R[regen]: V(False)
@@ -168,108 +183,68 @@ module padctrl_reg_top (
 
 
   // Subregister 0 of Multireg dio_pads
-  // R[dio_pads]: V(False)
+  // R[dio_pads]: V(True)
 
-  // F[attr0]: 5:0
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr0]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_dio_pads_attr0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (dio_pads_attr0_re),
+    // qualified with register enable
     .we     (dio_pads_attr0_we & regen_qs),
     .wd     (dio_pads_attr0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.dio_pads[0].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[0].qe),
     .q      (reg2hw.dio_pads[0].q ),
-
-    // to register interface (read)
     .qs     (dio_pads_attr0_qs)
   );
 
 
-  // F[attr1]: 11:6
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr1]: 15:8
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_dio_pads_attr1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (dio_pads_attr1_re),
+    // qualified with register enable
     .we     (dio_pads_attr1_we & regen_qs),
     .wd     (dio_pads_attr1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.dio_pads[1].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[1].qe),
     .q      (reg2hw.dio_pads[1].q ),
-
-    // to register interface (read)
     .qs     (dio_pads_attr1_qs)
   );
 
 
-  // F[attr2]: 17:12
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr2]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_dio_pads_attr2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (dio_pads_attr2_re),
+    // qualified with register enable
     .we     (dio_pads_attr2_we & regen_qs),
     .wd     (dio_pads_attr2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.dio_pads[2].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[2].qe),
     .q      (reg2hw.dio_pads[2].q ),
-
-    // to register interface (read)
     .qs     (dio_pads_attr2_qs)
   );
 
 
-  // F[attr3]: 23:18
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr3]: 31:24
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_dio_pads_attr3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (dio_pads_attr3_re),
+    // qualified with register enable
     .we     (dio_pads_attr3_we & regen_qs),
     .wd     (dio_pads_attr3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.dio_pads[3].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[3].qe),
     .q      (reg2hw.dio_pads[3].q ),
-
-    // to register interface (read)
     .qs     (dio_pads_attr3_qs)
   );
 
@@ -277,482 +252,270 @@ module padctrl_reg_top (
 
 
   // Subregister 0 of Multireg mio_pads
-  // R[mio_pads0]: V(False)
+  // R[mio_pads0]: V(True)
 
-  // F[attr0]: 5:0
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr0]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads0_attr0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads0_attr0_re),
+    // qualified with register enable
     .we     (mio_pads0_attr0_we & regen_qs),
     .wd     (mio_pads0_attr0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[0].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[0].qe),
     .q      (reg2hw.mio_pads[0].q ),
-
-    // to register interface (read)
     .qs     (mio_pads0_attr0_qs)
   );
 
 
-  // F[attr1]: 11:6
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr1]: 15:8
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads0_attr1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads0_attr1_re),
+    // qualified with register enable
     .we     (mio_pads0_attr1_we & regen_qs),
     .wd     (mio_pads0_attr1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[1].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[1].qe),
     .q      (reg2hw.mio_pads[1].q ),
-
-    // to register interface (read)
     .qs     (mio_pads0_attr1_qs)
   );
 
 
-  // F[attr2]: 17:12
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr2]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads0_attr2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads0_attr2_re),
+    // qualified with register enable
     .we     (mio_pads0_attr2_we & regen_qs),
     .wd     (mio_pads0_attr2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[2].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[2].qe),
     .q      (reg2hw.mio_pads[2].q ),
-
-    // to register interface (read)
     .qs     (mio_pads0_attr2_qs)
   );
 
 
-  // F[attr3]: 23:18
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr3]: 31:24
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads0_attr3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads0_attr3_re),
+    // qualified with register enable
     .we     (mio_pads0_attr3_we & regen_qs),
     .wd     (mio_pads0_attr3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[3].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[3].qe),
     .q      (reg2hw.mio_pads[3].q ),
-
-    // to register interface (read)
     .qs     (mio_pads0_attr3_qs)
   );
 
 
-  // F[attr4]: 29:24
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads0_attr4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+  // Subregister 4 of Multireg mio_pads
+  // R[mio_pads1]: V(True)
 
-    // from register interface (qualified with register enable)
-    .we     (mio_pads0_attr4_we & regen_qs),
-    .wd     (mio_pads0_attr4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+  // F[attr4]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_mio_pads1_attr4 (
+    .re     (mio_pads1_attr4_re),
+    // qualified with register enable
+    .we     (mio_pads1_attr4_we & regen_qs),
+    .wd     (mio_pads1_attr4_wd),
+    .d      (hw2reg.mio_pads[4].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[4].qe),
     .q      (reg2hw.mio_pads[4].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads0_attr4_qs)
+    .qs     (mio_pads1_attr4_qs)
   );
 
 
-  // Subregister 5 of Multireg mio_pads
-  // R[mio_pads1]: V(False)
-
-  // F[attr5]: 5:0
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr5]: 15:8
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads1_attr5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads1_attr5_re),
+    // qualified with register enable
     .we     (mio_pads1_attr5_we & regen_qs),
     .wd     (mio_pads1_attr5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[5].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[5].qe),
     .q      (reg2hw.mio_pads[5].q ),
-
-    // to register interface (read)
     .qs     (mio_pads1_attr5_qs)
   );
 
 
-  // F[attr6]: 11:6
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr6]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads1_attr6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads1_attr6_re),
+    // qualified with register enable
     .we     (mio_pads1_attr6_we & regen_qs),
     .wd     (mio_pads1_attr6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[6].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[6].qe),
     .q      (reg2hw.mio_pads[6].q ),
-
-    // to register interface (read)
     .qs     (mio_pads1_attr6_qs)
   );
 
 
-  // F[attr7]: 17:12
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr7]: 31:24
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads1_attr7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads1_attr7_re),
+    // qualified with register enable
     .we     (mio_pads1_attr7_we & regen_qs),
     .wd     (mio_pads1_attr7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[7].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[7].qe),
     .q      (reg2hw.mio_pads[7].q ),
-
-    // to register interface (read)
     .qs     (mio_pads1_attr7_qs)
   );
 
 
-  // F[attr8]: 23:18
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads1_attr8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+  // Subregister 8 of Multireg mio_pads
+  // R[mio_pads2]: V(True)
 
-    // from register interface (qualified with register enable)
-    .we     (mio_pads1_attr8_we & regen_qs),
-    .wd     (mio_pads1_attr8_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+  // F[attr8]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_mio_pads2_attr8 (
+    .re     (mio_pads2_attr8_re),
+    // qualified with register enable
+    .we     (mio_pads2_attr8_we & regen_qs),
+    .wd     (mio_pads2_attr8_wd),
+    .d      (hw2reg.mio_pads[8].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[8].qe),
     .q      (reg2hw.mio_pads[8].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads1_attr8_qs)
+    .qs     (mio_pads2_attr8_qs)
   );
 
 
-  // F[attr9]: 29:24
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads1_attr9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mio_pads1_attr9_we & regen_qs),
-    .wd     (mio_pads1_attr9_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+  // F[attr9]: 15:8
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_mio_pads2_attr9 (
+    .re     (mio_pads2_attr9_re),
+    // qualified with register enable
+    .we     (mio_pads2_attr9_we & regen_qs),
+    .wd     (mio_pads2_attr9_wd),
+    .d      (hw2reg.mio_pads[9].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[9].qe),
     .q      (reg2hw.mio_pads[9].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads1_attr9_qs)
+    .qs     (mio_pads2_attr9_qs)
   );
 
 
-  // Subregister 10 of Multireg mio_pads
-  // R[mio_pads2]: V(False)
-
-  // F[attr10]: 5:0
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr10]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads2_attr10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads2_attr10_re),
+    // qualified with register enable
     .we     (mio_pads2_attr10_we & regen_qs),
     .wd     (mio_pads2_attr10_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[10].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[10].qe),
     .q      (reg2hw.mio_pads[10].q ),
-
-    // to register interface (read)
     .qs     (mio_pads2_attr10_qs)
   );
 
 
-  // F[attr11]: 11:6
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr11]: 31:24
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads2_attr11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads2_attr11_re),
+    // qualified with register enable
     .we     (mio_pads2_attr11_we & regen_qs),
     .wd     (mio_pads2_attr11_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[11].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[11].qe),
     .q      (reg2hw.mio_pads[11].q ),
-
-    // to register interface (read)
     .qs     (mio_pads2_attr11_qs)
   );
 
 
-  // F[attr12]: 17:12
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads2_attr12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+  // Subregister 12 of Multireg mio_pads
+  // R[mio_pads3]: V(True)
 
-    // from register interface (qualified with register enable)
-    .we     (mio_pads2_attr12_we & regen_qs),
-    .wd     (mio_pads2_attr12_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+  // F[attr12]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_mio_pads3_attr12 (
+    .re     (mio_pads3_attr12_re),
+    // qualified with register enable
+    .we     (mio_pads3_attr12_we & regen_qs),
+    .wd     (mio_pads3_attr12_wd),
+    .d      (hw2reg.mio_pads[12].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[12].qe),
     .q      (reg2hw.mio_pads[12].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads2_attr12_qs)
+    .qs     (mio_pads3_attr12_qs)
   );
 
 
-  // F[attr13]: 23:18
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads2_attr13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mio_pads2_attr13_we & regen_qs),
-    .wd     (mio_pads2_attr13_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+  // F[attr13]: 15:8
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_mio_pads3_attr13 (
+    .re     (mio_pads3_attr13_re),
+    // qualified with register enable
+    .we     (mio_pads3_attr13_we & regen_qs),
+    .wd     (mio_pads3_attr13_wd),
+    .d      (hw2reg.mio_pads[13].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[13].qe),
     .q      (reg2hw.mio_pads[13].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads2_attr13_qs)
+    .qs     (mio_pads3_attr13_qs)
   );
 
 
-  // F[attr14]: 29:24
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads2_attr14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mio_pads2_attr14_we & regen_qs),
-    .wd     (mio_pads2_attr14_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+  // F[attr14]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_mio_pads3_attr14 (
+    .re     (mio_pads3_attr14_re),
+    // qualified with register enable
+    .we     (mio_pads3_attr14_we & regen_qs),
+    .wd     (mio_pads3_attr14_wd),
+    .d      (hw2reg.mio_pads[14].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[14].qe),
     .q      (reg2hw.mio_pads[14].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads2_attr14_qs)
+    .qs     (mio_pads3_attr14_qs)
   );
 
 
-  // Subregister 15 of Multireg mio_pads
-  // R[mio_pads3]: V(False)
-
-  // F[attr15]: 5:0
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
+  // F[attr15]: 31:24
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_mio_pads3_attr15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (mio_pads3_attr15_re),
+    // qualified with register enable
     .we     (mio_pads3_attr15_we & regen_qs),
     .wd     (mio_pads3_attr15_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.mio_pads[15].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[15].qe),
     .q      (reg2hw.mio_pads[15].q ),
-
-    // to register interface (read)
     .qs     (mio_pads3_attr15_qs)
-  );
-
-
-  // F[attr16]: 11:6
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads3_attr16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mio_pads3_attr16_we & regen_qs),
-    .wd     (mio_pads3_attr16_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mio_pads[16].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads3_attr16_qs)
-  );
-
-
-  // F[attr17]: 17:12
-  prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h0)
-  ) u_mio_pads3_attr17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mio_pads3_attr17_we & regen_qs),
-    .wd     (mio_pads3_attr17_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mio_pads[17].q ),
-
-    // to register interface (read)
-    .qs     (mio_pads3_attr17_qs)
   );
 
 
@@ -787,70 +550,84 @@ module padctrl_reg_top (
   assign regen_wd = reg_wdata[0];
 
   assign dio_pads_attr0_we = addr_hit[1] & reg_we & ~wr_err;
-  assign dio_pads_attr0_wd = reg_wdata[5:0];
+  assign dio_pads_attr0_wd = reg_wdata[7:0];
+  assign dio_pads_attr0_re = addr_hit[1] && reg_re;
 
   assign dio_pads_attr1_we = addr_hit[1] & reg_we & ~wr_err;
-  assign dio_pads_attr1_wd = reg_wdata[11:6];
+  assign dio_pads_attr1_wd = reg_wdata[15:8];
+  assign dio_pads_attr1_re = addr_hit[1] && reg_re;
 
   assign dio_pads_attr2_we = addr_hit[1] & reg_we & ~wr_err;
-  assign dio_pads_attr2_wd = reg_wdata[17:12];
+  assign dio_pads_attr2_wd = reg_wdata[23:16];
+  assign dio_pads_attr2_re = addr_hit[1] && reg_re;
 
   assign dio_pads_attr3_we = addr_hit[1] & reg_we & ~wr_err;
-  assign dio_pads_attr3_wd = reg_wdata[23:18];
+  assign dio_pads_attr3_wd = reg_wdata[31:24];
+  assign dio_pads_attr3_re = addr_hit[1] && reg_re;
 
   assign mio_pads0_attr0_we = addr_hit[2] & reg_we & ~wr_err;
-  assign mio_pads0_attr0_wd = reg_wdata[5:0];
+  assign mio_pads0_attr0_wd = reg_wdata[7:0];
+  assign mio_pads0_attr0_re = addr_hit[2] && reg_re;
 
   assign mio_pads0_attr1_we = addr_hit[2] & reg_we & ~wr_err;
-  assign mio_pads0_attr1_wd = reg_wdata[11:6];
+  assign mio_pads0_attr1_wd = reg_wdata[15:8];
+  assign mio_pads0_attr1_re = addr_hit[2] && reg_re;
 
   assign mio_pads0_attr2_we = addr_hit[2] & reg_we & ~wr_err;
-  assign mio_pads0_attr2_wd = reg_wdata[17:12];
+  assign mio_pads0_attr2_wd = reg_wdata[23:16];
+  assign mio_pads0_attr2_re = addr_hit[2] && reg_re;
 
   assign mio_pads0_attr3_we = addr_hit[2] & reg_we & ~wr_err;
-  assign mio_pads0_attr3_wd = reg_wdata[23:18];
+  assign mio_pads0_attr3_wd = reg_wdata[31:24];
+  assign mio_pads0_attr3_re = addr_hit[2] && reg_re;
 
-  assign mio_pads0_attr4_we = addr_hit[2] & reg_we & ~wr_err;
-  assign mio_pads0_attr4_wd = reg_wdata[29:24];
+  assign mio_pads1_attr4_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_pads1_attr4_wd = reg_wdata[7:0];
+  assign mio_pads1_attr4_re = addr_hit[3] && reg_re;
 
   assign mio_pads1_attr5_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_pads1_attr5_wd = reg_wdata[5:0];
+  assign mio_pads1_attr5_wd = reg_wdata[15:8];
+  assign mio_pads1_attr5_re = addr_hit[3] && reg_re;
 
   assign mio_pads1_attr6_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_pads1_attr6_wd = reg_wdata[11:6];
+  assign mio_pads1_attr6_wd = reg_wdata[23:16];
+  assign mio_pads1_attr6_re = addr_hit[3] && reg_re;
 
   assign mio_pads1_attr7_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_pads1_attr7_wd = reg_wdata[17:12];
+  assign mio_pads1_attr7_wd = reg_wdata[31:24];
+  assign mio_pads1_attr7_re = addr_hit[3] && reg_re;
 
-  assign mio_pads1_attr8_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_pads1_attr8_wd = reg_wdata[23:18];
+  assign mio_pads2_attr8_we = addr_hit[4] & reg_we & ~wr_err;
+  assign mio_pads2_attr8_wd = reg_wdata[7:0];
+  assign mio_pads2_attr8_re = addr_hit[4] && reg_re;
 
-  assign mio_pads1_attr9_we = addr_hit[3] & reg_we & ~wr_err;
-  assign mio_pads1_attr9_wd = reg_wdata[29:24];
+  assign mio_pads2_attr9_we = addr_hit[4] & reg_we & ~wr_err;
+  assign mio_pads2_attr9_wd = reg_wdata[15:8];
+  assign mio_pads2_attr9_re = addr_hit[4] && reg_re;
 
   assign mio_pads2_attr10_we = addr_hit[4] & reg_we & ~wr_err;
-  assign mio_pads2_attr10_wd = reg_wdata[5:0];
+  assign mio_pads2_attr10_wd = reg_wdata[23:16];
+  assign mio_pads2_attr10_re = addr_hit[4] && reg_re;
 
   assign mio_pads2_attr11_we = addr_hit[4] & reg_we & ~wr_err;
-  assign mio_pads2_attr11_wd = reg_wdata[11:6];
+  assign mio_pads2_attr11_wd = reg_wdata[31:24];
+  assign mio_pads2_attr11_re = addr_hit[4] && reg_re;
 
-  assign mio_pads2_attr12_we = addr_hit[4] & reg_we & ~wr_err;
-  assign mio_pads2_attr12_wd = reg_wdata[17:12];
+  assign mio_pads3_attr12_we = addr_hit[5] & reg_we & ~wr_err;
+  assign mio_pads3_attr12_wd = reg_wdata[7:0];
+  assign mio_pads3_attr12_re = addr_hit[5] && reg_re;
 
-  assign mio_pads2_attr13_we = addr_hit[4] & reg_we & ~wr_err;
-  assign mio_pads2_attr13_wd = reg_wdata[23:18];
+  assign mio_pads3_attr13_we = addr_hit[5] & reg_we & ~wr_err;
+  assign mio_pads3_attr13_wd = reg_wdata[15:8];
+  assign mio_pads3_attr13_re = addr_hit[5] && reg_re;
 
-  assign mio_pads2_attr14_we = addr_hit[4] & reg_we & ~wr_err;
-  assign mio_pads2_attr14_wd = reg_wdata[29:24];
+  assign mio_pads3_attr14_we = addr_hit[5] & reg_we & ~wr_err;
+  assign mio_pads3_attr14_wd = reg_wdata[23:16];
+  assign mio_pads3_attr14_re = addr_hit[5] && reg_re;
 
   assign mio_pads3_attr15_we = addr_hit[5] & reg_we & ~wr_err;
-  assign mio_pads3_attr15_wd = reg_wdata[5:0];
-
-  assign mio_pads3_attr16_we = addr_hit[5] & reg_we & ~wr_err;
-  assign mio_pads3_attr16_wd = reg_wdata[11:6];
-
-  assign mio_pads3_attr17_we = addr_hit[5] & reg_we & ~wr_err;
-  assign mio_pads3_attr17_wd = reg_wdata[17:12];
+  assign mio_pads3_attr15_wd = reg_wdata[31:24];
+  assign mio_pads3_attr15_re = addr_hit[5] && reg_re;
 
   // Read data return
   always_comb begin
@@ -861,40 +638,38 @@ module padctrl_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[5:0] = dio_pads_attr0_qs;
-        reg_rdata_next[11:6] = dio_pads_attr1_qs;
-        reg_rdata_next[17:12] = dio_pads_attr2_qs;
-        reg_rdata_next[23:18] = dio_pads_attr3_qs;
+        reg_rdata_next[7:0] = dio_pads_attr0_qs;
+        reg_rdata_next[15:8] = dio_pads_attr1_qs;
+        reg_rdata_next[23:16] = dio_pads_attr2_qs;
+        reg_rdata_next[31:24] = dio_pads_attr3_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[5:0] = mio_pads0_attr0_qs;
-        reg_rdata_next[11:6] = mio_pads0_attr1_qs;
-        reg_rdata_next[17:12] = mio_pads0_attr2_qs;
-        reg_rdata_next[23:18] = mio_pads0_attr3_qs;
-        reg_rdata_next[29:24] = mio_pads0_attr4_qs;
+        reg_rdata_next[7:0] = mio_pads0_attr0_qs;
+        reg_rdata_next[15:8] = mio_pads0_attr1_qs;
+        reg_rdata_next[23:16] = mio_pads0_attr2_qs;
+        reg_rdata_next[31:24] = mio_pads0_attr3_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[5:0] = mio_pads1_attr5_qs;
-        reg_rdata_next[11:6] = mio_pads1_attr6_qs;
-        reg_rdata_next[17:12] = mio_pads1_attr7_qs;
-        reg_rdata_next[23:18] = mio_pads1_attr8_qs;
-        reg_rdata_next[29:24] = mio_pads1_attr9_qs;
+        reg_rdata_next[7:0] = mio_pads1_attr4_qs;
+        reg_rdata_next[15:8] = mio_pads1_attr5_qs;
+        reg_rdata_next[23:16] = mio_pads1_attr6_qs;
+        reg_rdata_next[31:24] = mio_pads1_attr7_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[5:0] = mio_pads2_attr10_qs;
-        reg_rdata_next[11:6] = mio_pads2_attr11_qs;
-        reg_rdata_next[17:12] = mio_pads2_attr12_qs;
-        reg_rdata_next[23:18] = mio_pads2_attr13_qs;
-        reg_rdata_next[29:24] = mio_pads2_attr14_qs;
+        reg_rdata_next[7:0] = mio_pads2_attr8_qs;
+        reg_rdata_next[15:8] = mio_pads2_attr9_qs;
+        reg_rdata_next[23:16] = mio_pads2_attr10_qs;
+        reg_rdata_next[31:24] = mio_pads2_attr11_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[5:0] = mio_pads3_attr15_qs;
-        reg_rdata_next[11:6] = mio_pads3_attr16_qs;
-        reg_rdata_next[17:12] = mio_pads3_attr17_qs;
+        reg_rdata_next[7:0] = mio_pads3_attr12_qs;
+        reg_rdata_next[15:8] = mio_pads3_attr13_qs;
+        reg_rdata_next[23:16] = mio_pads3_attr14_qs;
+        reg_rdata_next[31:24] = mio_pads3_attr15_qs;
       end
 
       default: begin
