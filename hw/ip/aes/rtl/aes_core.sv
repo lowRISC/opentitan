@@ -273,15 +273,9 @@ module aes_core #(
 
   always_comb begin : round_key_mux
     unique case (round_key_sel)
-      ROUND_KEY_DIRECT: begin
-        round_key = key_bytes;
-      end
-      ROUND_KEY_MIXED: begin
-        round_key = key_mix_columns_out;
-      end
-      default: begin
-        round_key = '{default: 'X};
-      end
+      ROUND_KEY_DIRECT: round_key = key_bytes;
+      ROUND_KEY_MIXED:  round_key = key_mix_columns_out;
+      default:          round_key = '{default: 'X};
     endcase
   end
 
