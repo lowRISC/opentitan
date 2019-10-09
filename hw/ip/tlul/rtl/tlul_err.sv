@@ -83,7 +83,7 @@ module tlul_err import tlul_pkg::*; (
   end
 
   assign a_config_allowed = addr_sz_chk
-                          & (op_get | mask_chk)
+                          & mask_chk
                           & (op_get | op_partial | fulldata_chk) ;
 
   // Only 32 bit data width for current tlul_err
