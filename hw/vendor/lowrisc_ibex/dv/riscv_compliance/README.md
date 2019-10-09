@@ -59,8 +59,8 @@ How to run RISC-V Compliance on Ibex
    cd $RISCV_COMPLIANCE_REPO_BASE
    # adjust to match your compiler name
    export RISCV_PREFIX=riscv32-unknown-elf-
-   # give the path to the simulation binary compiled in step 1
-   export TARGET_SIM=path/to/your/Vibex_riscv_compliance
+   # give the absolute path to the simulation binary compiled in step 1
+   export TARGET_SIM=/path/to/your/Vibex_riscv_compliance
 
    export RISCV_DEVICE=rv32imc
    export RISCV_TARGET=ibex

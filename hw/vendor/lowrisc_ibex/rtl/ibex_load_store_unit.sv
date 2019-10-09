@@ -42,7 +42,7 @@ module ibex_load_store_unit (
     output logic [31:0]  addr_last_o,          // address of last transaction      -> to controller
                                                // -> mtval
                                                // -> AGU for misaligned accesses
-    output logic         data_valid_o,         // LSU has completed transaction    -> to
+    output logic         data_valid_o,         // LSU has completed transaction    -> to ID/EX
 
     // exception signals
     output logic         load_err_o,
@@ -53,14 +53,16 @@ module ibex_load_store_unit (
 
   logic [31:0]  data_addr;
   logic [31:0]  data_addr_w_aligned;
-  logic [31:0]  addr_last_q, addr_last_d;
+  logic [31:0]  addr_last_q;
 
-  logic         data_update;
-  logic [31:0]  rdata_q, rdata_d;
-  logic [1:0]   rdata_offset_q, rdata_offset_d;
-  logic [1:0]   data_type_q, data_type_d;
-  logic         data_sign_ext_q, data_sign_ext_d;
-  logic         data_we_q, data_we_d;
+  logic         addr_update;
+  logic         ctrl_update;
+  logic         rdata_update;
+  logic [31:8]  rdata_q;
+  logic [1:0]   rdata_offset_q;
+  logic [1:0]   data_type_q;
+  logic         data_sign_ext_q;
+  logic         data_we_q;
 
   logic [1:0]   wdata_offset;   // mux control for data to be written to memory
 
@@ -76,13 +78,13 @@ module ibex_load_store_unit (
   logic         split_misaligned_access;
   logic         handle_misaligned_q, handle_misaligned_d; // high after receiving grant for first
                                                           // part of a misaligned access
-  logic         pmp_err_d;
-  logic         pmp_err_q;
+  logic         pmp_err_q, pmp_err_d;
+  logic         lsu_err_q, lsu_err_d;
   logic         data_or_pmp_err;
 
   typedef enum logic [2:0]  {
     IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT, WAIT_RVALID,
-    WAIT_GNT_ERR, WAIT_RVALID_ERR, WAIT_RVALID_DONE
+    WAIT_RVALID_DONE
   } ls_fsm_e;
 
   ls_fsm_e ls_fsm_cs, ls_fsm_ns;
@@ -165,40 +167,37 @@ module ibex_load_store_unit (
   // RData alignment //
   /////////////////////
 
-  // rdata_q holds data returned from memory for first part of misaligned loads
-  always_comb begin
-    rdata_d = rdata_q;
-    if (data_rvalid_i & ~data_we_q & handle_misaligned_q) begin
-      rdata_d = data_rdata_i;
+  // register for unaligned rdata
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rdata_q <= '0;
+    end else if (rdata_update) begin
+      rdata_q <= data_rdata_i[31:8];
     end
   end
 
-  // update control signals for next read data upon receiving grant
-  // This must also be set for a pmp error (which might not actually be granted) to force
-  // data_we_q to update in order to signal the correct exception type (load or store)
-  // Note that we can use the registered pmp_err_q here since we will always take an
-  // extra cycle to progress to the RVALID state
-  assign data_update = data_gnt_i | pmp_err_q;
-
-  assign rdata_offset_d  = data_update ? data_addr[1:0]     : rdata_offset_q;
-  assign data_type_d     = data_update ? data_type_ex_i     : data_type_q;
-  assign data_sign_ext_d = data_update ? data_sign_ext_ex_i : data_sign_ext_q;
-  assign data_we_d       = data_update ? data_we_ex_i       : data_we_q;
-
-  // registers for rdata alignment and sign-extension
+  // registers for transaction control
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rdata_q         <=   '0;
       rdata_offset_q  <= 2'h0;
       data_type_q     <= 2'h0;
       data_sign_ext_q <= 1'b0;
       data_we_q       <= 1'b0;
-    end else begin
-      rdata_q         <= rdata_d;
-      rdata_offset_q  <= rdata_offset_d;
-      data_type_q     <= data_type_d;
-      data_sign_ext_q <= data_sign_ext_d;
-      data_we_q       <= data_we_d;
+    end else if (ctrl_update) begin
+      rdata_offset_q  <= data_addr[1:0];
+      data_type_q     <= data_type_ex_i;
+      data_sign_ext_q <= data_sign_ext_ex_i;
+      data_we_q       <= data_we_ex_i;
+    end
+  end
+
+  // Store last address for mtval + AGU for misaligned transactions.
+  // Do not update in case of errors, mtval needs the (first) failing address
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      addr_last_q <= '0;
+    end else if (addr_update) begin
+      addr_last_q <= data_addr;
     end
   end
 
@@ -324,6 +323,11 @@ module ibex_load_store_unit (
     handle_misaligned_d = handle_misaligned_q;
     data_or_pmp_err     = 1'b0;
     pmp_err_d           = pmp_err_q;
+    lsu_err_d           = lsu_err_q;
+
+    addr_update         = 1'b0;
+    ctrl_update         = 1'b0;
+    rdata_update        = 1'b0;
 
     unique case (ls_fsm_cs)
 
@@ -331,7 +335,10 @@ module ibex_load_store_unit (
         if (data_req_ex_i) begin
           data_req_o = 1'b1;
           pmp_err_d  = data_pmp_err_i;
+          lsu_err_d  = 1'b0;
           if (data_gnt_i) begin
+            ctrl_update         = 1'b1;
+            addr_update         = 1'b1;
             handle_misaligned_d = split_misaligned_access;
             ls_fsm_ns           = split_misaligned_access ? WAIT_RVALID_MIS : WAIT_RVALID;
           end else begin
@@ -347,6 +354,8 @@ module ibex_load_store_unit (
         // pmp_err_q is only updated for new address phases and so can be used in WAIT_GNT* and
         // WAIT_RVALID* states
         if (data_gnt_i || pmp_err_q) begin
+          addr_update         = 1'b1;
+          ctrl_update         = 1'b1;
           handle_misaligned_d = 1'b1;
           ls_fsm_ns           = WAIT_RVALID_MIS;
         end
@@ -362,18 +371,14 @@ module ibex_load_store_unit (
         if (data_rvalid_i || pmp_err_q) begin
           // Update the PMP error for the second part
           pmp_err_d = data_pmp_err_i;
-          if (pmp_err_q || data_err_i) begin
-            // first part created an error, abort transaction
-            data_valid_o        = 1'b1;
-            data_or_pmp_err     = 1'b1;
-            handle_misaligned_d = 1'b0;
-            // If already granted, wait for second rvalid
-            ls_fsm_ns = data_gnt_i ? WAIT_RVALID_ERR : WAIT_GNT_ERR;
-
-          end else begin
-            // No error in first part, proceed with second part
-            ls_fsm_ns = data_gnt_i ? WAIT_RVALID : WAIT_GNT;
-          end
+          // Record the error status of the first part
+          lsu_err_d = data_err_i | pmp_err_q;
+          // Capture the first rdata for loads
+          rdata_update = ~data_we_q;
+          // If already granted, wait for second rvalid
+          ls_fsm_ns = data_gnt_i ? WAIT_RVALID : WAIT_GNT;
+          // Update the address for the second part, if no error
+          addr_update = data_gnt_i & ~(data_err_i | pmp_err_q);
 
         end else begin
           // first part rvalid is NOT received
@@ -389,15 +394,18 @@ module ibex_load_store_unit (
         addr_incr_req_o = handle_misaligned_q;
         data_req_o      = 1'b1;
         if (data_gnt_i || pmp_err_q) begin
-          ls_fsm_ns = WAIT_RVALID;
+          ctrl_update = 1'b1;
+          // Update the address, unless there was an error
+          addr_update = ~lsu_err_q;
+          ls_fsm_ns   = WAIT_RVALID;
         end
       end
 
       WAIT_RVALID: begin
-        data_req_o = 1'b0;
         if (data_rvalid_i || pmp_err_q) begin
           data_valid_o        = 1'b1;
-          data_or_pmp_err     = data_err_i | pmp_err_q;
+          // Data error from either part
+          data_or_pmp_err     = lsu_err_q | data_err_i | pmp_err_q;
           handle_misaligned_d = 1'b0;
           ls_fsm_ns           = IDLE;
         end else begin
@@ -405,41 +413,22 @@ module ibex_load_store_unit (
         end
       end
 
-      WAIT_GNT_ERR: begin
-        // Wait for the grant of the abandoned second access
-        data_req_o = 1'b1;
-        // tell ID/EX stage to update the address
-        addr_incr_req_o = 1'b1;
-        if (pmp_err_q) begin
-          // The second part was suppressed by a PMP error
-          ls_fsm_ns = IDLE;
-        end else if (data_gnt_i) begin
-          ls_fsm_ns = WAIT_RVALID_ERR;
-        end
-      end
-
-      WAIT_RVALID_ERR: begin
-        // Wait for the rvalid, but do nothing with it
-        if (data_rvalid_i || pmp_err_q) begin
-          ls_fsm_ns = IDLE;
-        end
-      end
-
       WAIT_RVALID_DONE: begin
+        // tell ID/EX stage to update the address (to make sure the
+        // second address can be captured correctly for mtval and PMP checking)
+        addr_incr_req_o = 1'b1;
         // Wait for the first rvalid, second request is already granted
         if (data_rvalid_i) begin
           // Update the pmp error for the second part
           pmp_err_d = data_pmp_err_i;
           // The first part cannot see a PMP error in this state
-          if (data_err_i) begin
-            // first part created an error, abort transaction and wait for second rvalid
-            data_valid_o        = 1'b1;
-            data_or_pmp_err     = 1'b1;
-            handle_misaligned_d = 1'b0;
-            ls_fsm_ns           = WAIT_RVALID_ERR;
-          end else begin
-            ls_fsm_ns           = WAIT_RVALID;
-          end
+          lsu_err_d = data_err_i;
+          // Now we can update the address for the second part if no error
+          addr_update = ~data_err_i;
+          // Capture the first rdata for loads
+          rdata_update = ~data_we_q;
+          // Wait for second rvalid
+          ls_fsm_ns = WAIT_RVALID;
         end
       end
 
@@ -449,28 +438,18 @@ module ibex_load_store_unit (
     endcase
   end
 
-  // store last address for mtval + AGU for misaligned transactions:
-  // - misaligned address needed for correct generation of data_be and data_rdata_ext
-  // - do not update in case of errors, mtval needs the failing address
-  always_comb begin
-    addr_last_d = addr_last_q;
-    if (data_req_o & data_gnt_i & ~(load_err_o | store_err_o)) begin
-      addr_last_d = data_addr;
-    end
-  end
-
   // registers for FSM
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ls_fsm_cs           <= IDLE;
-      addr_last_q         <= '0;
       handle_misaligned_q <= '0;
       pmp_err_q           <= '0;
+      lsu_err_q           <= '0;
     end else begin
       ls_fsm_cs           <= ls_fsm_ns;
-      addr_last_q         <= addr_last_d;
       handle_misaligned_q <= handle_misaligned_d;
       pmp_err_q           <= pmp_err_d;
+      lsu_err_q           <= lsu_err_d;
     end
   end
 

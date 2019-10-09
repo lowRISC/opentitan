@@ -676,8 +676,13 @@ module ibex_core #(
   end else begin : g_no_pmp
     // Unused signal tieoff
     priv_lvl_e unused_priv_lvl_if, unused_priv_lvl_ls;
+    logic [33:0] unused_csr_pmp_addr [PMPNumRegions];
+    pmp_cfg_t    unused_csr_pmp_cfg  [PMPNumRegions];
     assign unused_priv_lvl_if = priv_mode_if;
     assign unused_priv_lvl_ls = priv_mode_lsu;
+    assign unused_csr_pmp_addr = csr_pmp_addr;
+    assign unused_csr_pmp_cfg = csr_pmp_cfg;
+
     // Output tieoff
     assign pmp_req_err[PMP_I] = 1'b0;
     assign pmp_req_err[PMP_D] = 1'b0;

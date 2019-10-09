@@ -169,9 +169,9 @@ class riscv_privileged_common_seq extends uvm_sequence;
 
   virtual function void gen_csr_instr(riscv_privil_reg regs[$], ref string instrs[$]);
     foreach(regs[i]) begin
-      instrs.push_back($sformatf("li a0, 0x%0x", regs[i].get_val()));
-      instrs.push_back($sformatf("csrw 0x%0x, a0 # %0s",
-                       regs[i].reg_name, regs[i].reg_name.name()));
+      instrs.push_back($sformatf("li x%0d, 0x%0x", cfg.gpr[0], regs[i].get_val()));
+      instrs.push_back($sformatf("csrw 0x%0x, x%0d # %0s",
+                       regs[i].reg_name, cfg.gpr[0], regs[i].reg_name.name()));
     end
   endfunction
 
@@ -182,17 +182,17 @@ class riscv_privileged_common_seq extends uvm_sequence;
     satp = riscv_privil_reg::type_id::create("satp");
     satp.init_reg(SATP);
     satp.set_field("MODE", SATP_MODE);
-    instrs.push_back($sformatf("li a0, 0x%0x", satp.get_val()));
-    instrs.push_back($sformatf("csrw 0x%0x, a0 // satp", SATP));
+    instrs.push_back($sformatf("li x%0d, 0x%0x", cfg.gpr[0], satp.get_val()));
+    instrs.push_back($sformatf("csrw 0x%0x, x%0d // satp", SATP, cfg.gpr[0]));
     satp_ppn_mask = '1 >> (XLEN - satp.get_field_by_name("PPN").bit_width);
     // Load the root page table physical address
-    instrs.push_back("la a0, page_table_0");
+    instrs.push_back($sformatf("la x%0d, page_table_0", cfg.gpr[0]));
     // Right shift to get PPN at 4k granularity
-    instrs.push_back("srli a0, a0, 12");
-    instrs.push_back($sformatf("li   a1, 0x%0x", satp_ppn_mask));
-    instrs.push_back("and a0, a0, a1");
+    instrs.push_back($sformatf("srli x%0d, x%0d, 12", cfg.gpr[0], cfg.gpr[0]));
+    instrs.push_back($sformatf("li   x%0d, 0x%0x", cfg.gpr[1], satp_ppn_mask));
+    instrs.push_back($sformatf("and x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[0], cfg.gpr[1]));
     // Set the PPN field for SATP
-    instrs.push_back($sformatf("csrs 0x%0x, a0 // satp", SATP));
+    instrs.push_back($sformatf("csrs 0x%0x, x%0d // satp", SATP, cfg.gpr[0]));
   endfunction
 
 endclass

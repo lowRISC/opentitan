@@ -668,7 +668,7 @@ module ibex_cs_registers #(
             end
           end
 
-        end else begin
+        end else begin : g_pmp_g2
           // For G >= 2, bits are masked to one or zero depending on the mode
           always_comb begin
             pmp_addr_rdata[i] = pmp_addr[i];
@@ -753,7 +753,7 @@ module ibex_cs_registers #(
       assign pmp_cfg_rdata[i]  = '0;
     end
     for (genvar i = 0; i < PMPNumRegions; i++) begin : g_outputs
-      assign csr_pmp_cfg_o[i]  = pmp_cfg_t'('0);
+      assign csr_pmp_cfg_o[i]  = pmp_cfg_t'(1'b0);
       assign csr_pmp_addr_o[i] = '0;
     end
   end

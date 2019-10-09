@@ -31,7 +31,6 @@ class riscv_asm_program_gen extends uvm_object;
    riscv_instr_sequence                sub_program[];
    riscv_instr_sequence                debug_program;
    riscv_instr_sequence                debug_sub_program[];
-   string                              instr_binary[$];
    // Kernel programs
    // These programs are called in the interrupt/exception handling routine based on the privileged
    // mode settings. For example, when the interrupt/exception is delegated to S-mode, if both SUM
@@ -90,7 +89,7 @@ class riscv_asm_program_gen extends uvm_object;
                                    .instr_stream(main_program.directed_instr));
     main_program.cfg = cfg;
     `DV_CHECK_RANDOMIZE_FATAL(main_program)
-    main_program.gen_instr(1);
+    main_program.gen_instr(.is_main_program(1), .no_branch(cfg.no_branch_jump));
     // Setup jump instruction among main program and sub programs
     gen_callstack(main_program, sub_program, sub_program_name, cfg.num_of_sub_program);
     `uvm_info(`gfn, "Generating callstack...done", UVM_LOW)
@@ -104,15 +103,6 @@ class riscv_asm_program_gen extends uvm_object;
     // Shuffle the sub programs and insert to the instruction stream
     insert_sub_program(sub_program, instr_stream);
     `uvm_info(`gfn, "Inserting sub-programs...done", UVM_LOW)
-    // Reserve some space to copy instruction from data section
-    if (instr_binary.size() > 0) begin
-      instr_stream.push_back(".align 2");
-      instr_stream.push_back("sub_bin:");
-      instr_stream.push_back({indent, $sformatf(".rept %0d", 2 * instr_binary.size())});
-      instr_stream.push_back({indent, "nop"});
-      instr_stream.push_back({indent, ".endr"});
-      instr_stream.push_back({indent, "ret"});
-    end
     `uvm_info(`gfn, "Main/sub program generation...done", UVM_LOW)
     // Program end
     gen_program_end();
@@ -194,7 +184,7 @@ class riscv_asm_program_gen extends uvm_object;
     seq.is_debug_program = 0;
     seq.cfg = cfg;
     `DV_CHECK_RANDOMIZE_FATAL(seq)
-    seq.gen_instr(0);
+    seq.gen_instr(.is_main_program(0), .no_branch(cfg.no_branch_jump));
     seq.post_process_instr();
     seq.generate_instr_stream();
     instr_stream = {instr_stream, seq.instr_string_list};
@@ -227,7 +217,7 @@ class riscv_asm_program_gen extends uvm_object;
         sub_program[i].label_name = sub_program[i].get_name();
         sub_program[i].cfg = cfg;
         `DV_CHECK_RANDOMIZE_FATAL(sub_program[i])
-        sub_program[i].gen_instr(0);
+        sub_program[i].gen_instr(.is_main_program(0), .no_branch(cfg.no_branch_jump));
         sub_program_name.push_back(sub_program[i].label_name);
       end
     end
@@ -282,6 +272,9 @@ class riscv_asm_program_gen extends uvm_object;
     instr_stream.push_back(".include \"user_define.h\"");
     instr_stream.push_back(".globl _start");
     instr_stream.push_back(".section .text");
+    if (cfg.disable_compressed_instr) begin
+      instr_stream.push_back(".option norvc;");
+    end
     instr_stream.push_back("_start:");
   endfunction
 
@@ -342,20 +335,9 @@ class riscv_asm_program_gen extends uvm_object;
     str = format_string("_init:", LABEL_STR_LEN);
     instr_stream.push_back(str);
     // Init stack pointer to point to the end of the user stack
-    str = {indent, "la sp, _user_stack_end"};
+    str = {indent, $sformatf("la x%0d, _user_stack_end", cfg.sp)};
     instr_stream.push_back(str);
     core_is_initialized();
-    // Copy the instruction from data section to instruction section
-    if (instr_binary.size() > 0) begin
-      instr_stream.push_back({indent, "la x31, instr_bin"});
-      instr_stream.push_back({indent, "la x30, sub_bin"});
-      instr_stream.push_back({indent, $sformatf(".rept %0d", instr_binary.size())});
-      instr_stream.push_back({indent, "lw x29, 0(x31)"});
-      instr_stream.push_back({indent, "sw x29, 0(x30)"});
-      instr_stream.push_back({indent, "addi x31, x31, 4"});
-      instr_stream.push_back({indent, "addi x30, x30, 4"});
-      instr_stream.push_back({indent, ".endr"});
-    end
   endfunction
 
   // Setup MISA based on supported extensions
@@ -378,8 +360,8 @@ class riscv_asm_program_gen extends uvm_object;
     if (SUPERVISOR_MODE inside {supported_privileged_mode}) begin
       misa[MISA_EXT_S] = 1'b1;
     end
-    instr_stream.push_back({indent, $sformatf("li x15, 0x%0x", misa)});
-    instr_stream.push_back({indent, "csrw misa, x15"});
+    instr_stream.push_back({indent, $sformatf("li x%0d, 0x%0x",cfg.gpr[0], misa)});
+    instr_stream.push_back({indent, $sformatf("csrw misa, x%0d",cfg.gpr[0])});
   endfunction
 
   // Write to the signature_addr with values to indicate to the core testbench
@@ -435,17 +417,15 @@ class riscv_asm_program_gen extends uvm_object;
   // possible to compare the GPR value after each instruction execution.
   virtual function void gen_register_dump();
     string str;
-    riscv_reg_t base_address_reg;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base_address_reg, base_address_reg != ZERO;)
     // Load base address
-    str = {indent, $sformatf("la x%0d, _start", base_address_reg)};
+    str = {indent, $sformatf("la x%0d, _start", cfg.gpr[0])};
     instr_stream.push_back(str);
     // Generate sw/sd instructions
     for(int i = 0; i < 32; i++) begin
       if(XLEN == 64) begin
-        str = {indent, $sformatf("sd x%0d, %0d(x%0d)", i, i*(XLEN/8), base_address_reg)};
+        str = {indent, $sformatf("sd x%0d, %0d(x%0d)", i, i*(XLEN/8), cfg.gpr[0])};
       end else begin
-        str = {indent, $sformatf("sw x%0d, %0d(x%0d)", i, i*(XLEN/8), base_address_reg)};
+        str = {indent, $sformatf("sw x%0d, %0d(x%0d)", i, i*(XLEN/8), cfg.gpr[0])};
       end
       instr_stream.push_back(str);
     end
@@ -458,7 +438,7 @@ class riscv_asm_program_gen extends uvm_object;
   virtual function void pre_enter_privileged_mode();
     string instr[];
     // Setup kerenal stack pointer
-    gen_section("kernel_sp", {"la tp, _kernel_stack_end"});
+    gen_section("kernel_sp", {$sformatf("la x%0d, _kernel_stack_end", cfg.tp)});
     // Setup interrupt and exception delegation
     if(!cfg.no_delegation && (cfg.init_privileged_mode != MACHINE_MODE)) begin
       gen_delegation();
@@ -516,18 +496,18 @@ class riscv_asm_program_gen extends uvm_object;
   virtual function void setup_epc();
     string instr[];
     string mode_name;
-    instr = {"la x10, _init"};
+    instr = {$sformatf("la x%0d, _init", cfg.gpr[0])};
     if(cfg.virtual_addr_translation_on) begin
       // For supervisor and user mode, use virtual address instead of physical address.
       // Virtual address starts from address 0x0, here only the lower 12 bits are kept
       // as virtual address offset.
       instr = {instr,
-               $sformatf("slli x10, x10, %0d", XLEN - 12),
-               $sformatf("srli x10, x10, %0d", XLEN - 12)};
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12),
+               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12)};
     end
     mode_name = cfg.init_privileged_mode.name();
     instr = {instr,
-             "csrw mepc, x10",
+             $sformatf("csrw mepc, x%0d", cfg.gpr[0]),
              $sformatf("j init_%0s", mode_name.tolower())
             };
     gen_section("mepc_setup", instr);
@@ -563,8 +543,8 @@ class riscv_asm_program_gen extends uvm_object;
         deleg_val = deleg_val | (1 << int'(cause));
       end
     end
-    instr = {$sformatf("li a0, 0x%0x", deleg_val),
-             $sformatf("csrw 0x%0x, a0 # %0s", edeleg, edeleg.name())};
+    instr = {$sformatf("li x%0d, 0x%0x", cfg.gpr[0], deleg_val),
+             $sformatf("csrw 0x%0x, x%0d # %0s", edeleg, cfg.gpr[0], edeleg.name())};
     // Interrupt delegation setup
     deleg_val = '0;
     foreach(ideleg_enable[cause]) begin
@@ -573,8 +553,8 @@ class riscv_asm_program_gen extends uvm_object;
       end
     end
     instr = {instr,
-             $sformatf("li a0, 0x%0x", deleg_val),
-             $sformatf("csrw 0x%0x, a0 # %0s", ideleg, ideleg.name())};
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[0], deleg_val),
+             $sformatf("csrw 0x%0x, x%0d # %0s", ideleg, cfg.gpr[0], ideleg.name())};
     section_name = edeleg.name();
     section_name = section_name.tolower();
     gen_section($sformatf("%0s_setup", section_name), instr);
@@ -596,17 +576,18 @@ class riscv_asm_program_gen extends uvm_object;
           !riscv_instr_pkg::support_umode_trap) continue;
       if (riscv_instr_pkg::supported_privileged_mode[i] < cfg.init_privileged_mode) continue;
       tvec_name = trap_vec_reg.name();
-      instr = {instr, $sformatf("la a0, %0s_handler", tvec_name.tolower())};
+      instr = {instr, $sformatf("la x%0d, %0s_handler", cfg.gpr[0], tvec_name.tolower())};
       if (SATP_MODE != BARE && riscv_instr_pkg::supported_privileged_mode[i] != MACHINE_MODE) begin
         // For supervisor and user mode, use virtual address instead of physical address.
         // Virtual address starts from address 0x0, here only the lower 20 bits are kept
         // as virtual address offset.
         instr = {instr,
-                 $sformatf("slli a0, a0, %0d", XLEN - 20),
-                 $sformatf("srli a0, a0, %0d", XLEN - 20)};
+                 $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 20),
+                 $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 20)};
       end
-      instr = {instr, $sformatf("ori a0, a0, %0d", cfg.mtvec_mode)};
-      instr = {instr, $sformatf("csrw 0x%0x, a0 # %0s", trap_vec_reg, trap_vec_reg.name())};
+      instr = {instr, $sformatf("ori x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], cfg.mtvec_mode)};
+      instr = {instr, $sformatf("csrw 0x%0x, x%0d # %0s",
+                                 trap_vec_reg, cfg.gpr[0], trap_vec_reg.name())};
     end
     gen_section("trap_vec_init", instr);
   endfunction
@@ -670,19 +651,19 @@ class riscv_asm_program_gen extends uvm_object;
     end else begin
       // Push user mode GPR to kernel stack before executing exception handling, this is to avoid
       // exception handling routine modify user program state unexpectedly
-      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, instr);
+      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
       // Checking xStatus can be optional if ISS (like spike) has different implementation of certain
       // fields compared with the RTL processor.
       if (cfg.check_xstatus) begin
-        instr = {instr, $sformatf("csrr x15, 0x%0x # %0s", status, status.name())};
+        instr = {instr, $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], status, status.name())};
       end
       instr = {instr,
                // Use scratch CSR to save a GPR value
                // Check if the exception is caused by an interrupt, if yes, jump to interrupt handler
                // Interrupt is indicated by xCause[XLEN-1]
-               $sformatf("csrr a1, 0x%0x # %0s", cause, cause.name()),
-               $sformatf("srli a1, a1, %0d", XLEN-1),
-               $sformatf("bne a1, x0, %0smode_intr_handler", mode)};
+               $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], cause, cause.name()),
+               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN-1),
+               $sformatf("bne x%0d, x0, %0smode_intr_handler", cfg.gpr[0], mode)};
     end
     // The trap handler will occupy one 4KB page, it will be allocated one entry in the page table
     // with a specific privileged mode.
@@ -692,43 +673,43 @@ class riscv_asm_program_gen extends uvm_object;
     // Exception handler
     instr = {};
     if (cfg.mtvec_mode == VECTORED) begin
-      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, instr);
+      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     end
     gen_signature_handshake(instr, CORE_STATUS, HANDLING_EXCEPTION);
     instr = {instr,
              // The trap is caused by an exception, read back xCAUSE, xEPC to see if these
              // CSR values are set properly. The checking is done by comparing against the log
              // generated by ISA simulator (spike).
-             $sformatf("csrr a1, 0x%0x # %0s", cause, cause.name()),
-             $sformatf("csrr x31, 0x%0x # %0s", epc, epc.name()),
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], epc, epc.name()),
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], cause, cause.name()),
              // Breakpoint
-             $sformatf("li a2, 0x%0x # BREAKPOINT", BREAKPOINT),
-             "beq a1, a2, ebreak_handler",
+             $sformatf("li x%0d, 0x%0x # BREAKPOINT", cfg.gpr[1], BREAKPOINT),
+             $sformatf("beq x%0d, x%0d, ebreak_handler", cfg.gpr[0], cfg.gpr[1]),
              // Check if it's an ECALL exception. Jump to ECALL exception handler
-             $sformatf("li a2, 0x%0x # ECALL_UMODE", ECALL_UMODE),
-             "beq a1, a2, ecall_handler",
-             $sformatf("li a2, 0x%0x # ECALL_SMODE", ECALL_SMODE),
-             "beq a1, a2, ecall_handler",
-             $sformatf("li a2, 0x%0x # ECALL_MMODE", ECALL_MMODE),
-             "beq a1, a2, ecall_handler",
+             $sformatf("li x%0d, 0x%0x # ECALL_UMODE", cfg.gpr[1], ECALL_UMODE),
+             $sformatf("beq x%0d, x%0d, ecall_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x # ECALL_SMODE", cfg.gpr[1], ECALL_SMODE),
+             $sformatf("beq x%0d, x%0d, ecall_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x # ECALL_MMODE", cfg.gpr[1], ECALL_MMODE),
+             $sformatf("beq x%0d, x%0d, ecall_handler", cfg.gpr[0], cfg.gpr[1]),
              // Page table fault or access fault conditions
-             $sformatf("li a2, 0x%0x", INSTRUCTION_ACCESS_FAULT),
-             "beq a1, a2, instr_fault_handler",
-             $sformatf("li a2, 0x%0x", LOAD_ACCESS_FAULT),
-             "beq a1, a2, load_fault_handler",
-             $sformatf("li a2, 0x%0x", STORE_AMO_ACCESS_FAULT),
-             "beq a1, a2, store_fault_handler",
-             $sformatf("li a2, 0x%0x", INSTRUCTION_PAGE_FAULT),
-             "beq a1, a2, pt_fault_handler",
-             $sformatf("li a2, 0x%0x", LOAD_PAGE_FAULT),
-             "beq a1, a2, pt_fault_handler",
-             $sformatf("li a2, 0x%0x", STORE_AMO_PAGE_FAULT),
-             "beq a1, a2, pt_fault_handler",
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[1], INSTRUCTION_ACCESS_FAULT),
+             $sformatf("beq x%0d, x%0d, instr_fault_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[1], LOAD_ACCESS_FAULT),
+             $sformatf("beq x%0d, x%0d, load_fault_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[1], STORE_AMO_ACCESS_FAULT),
+             $sformatf("beq x%0d, x%0d, store_fault_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[1], INSTRUCTION_PAGE_FAULT),
+             $sformatf("beq x%0d, x%0d, pt_fault_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[1], LOAD_PAGE_FAULT),
+             $sformatf("beq x%0d, x%0d, pt_fault_handler", cfg.gpr[0], cfg.gpr[1]),
+             $sformatf("li x%0d, 0x%0x", cfg.gpr[1], STORE_AMO_PAGE_FAULT),
+             $sformatf("beq x%0d, x%0d, pt_fault_handler", cfg.gpr[0], cfg.gpr[1]),
              // Illegal instruction exception
-             $sformatf("li a2, 0x%0x # ILLEGAL_INSTRUCTION", ILLEGAL_INSTRUCTION),
-             "beq a1, a2, illegal_instr_handler",
+             $sformatf("li x%0d, 0x%0x # ILLEGAL_INSTRUCTION", cfg.gpr[1], ILLEGAL_INSTRUCTION),
+             $sformatf("beq x%0d, x%0d, illegal_instr_handler", cfg.gpr[0], cfg.gpr[1]),
              // Skip checking tval for illegal instruction as it's implementation specific
-             $sformatf("csrr x30, 0x%0x # %0s", tval, tval.name()),
+             $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[1], tval, tval.name()),
              "1: jal x1, test_done "
            };
     gen_section($sformatf("%0smode_exception_handler", mode), instr);
@@ -754,16 +735,18 @@ class riscv_asm_program_gen extends uvm_object;
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
       instr.push_back($sformatf("j %0smode_intr_vector_%0d", mode, i));
     end
-    instr = {instr, ".option rvc;"};
+    if (!cfg.disable_compressed_instr) begin
+      instr = {instr, ".option rvc;"};
+    end
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
       string intr_handler[$];
-      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, intr_handler);
+      push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, cfg.sp, cfg.tp, intr_handler);
       gen_signature_handshake(.instr(intr_handler), .signature_type(CORE_STATUS), .core_status(HANDLING_IRQ));
       intr_handler = {intr_handler,
-                      $sformatf("csrr a1, 0x%0x # %0s", cause, cause.name()),
+                      $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], cause, cause.name()),
                       // Terminate the test if xCause[31] != 0 (indicating exception)
-                      $sformatf("srli a1, a1, 0x%0x", XLEN-1),
-                      $sformatf("beqz a1, 1f")};
+                      $sformatf("srli x%0d, x%0d, 0x%0x", cfg.gpr[0], cfg.gpr[0], XLEN-1),
+                      $sformatf("beqz x%0d, 1f", cfg.gpr[0])};
       gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(status));
       gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(cause));
       gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(ie));
@@ -803,11 +786,11 @@ class riscv_asm_program_gen extends uvm_object;
     gen_signature_handshake(instr, CORE_STATUS, EBREAK_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
-            "csrr  x31, mepc",
-            "addi  x31, x31, 4",
-            "csrw  mepc, x31"
+            $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
+            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
-    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
     gen_section("ebreak_handler", instr);
   endfunction
@@ -824,11 +807,11 @@ class riscv_asm_program_gen extends uvm_object;
     gen_signature_handshake(instr, CORE_STATUS, ILLEGAL_INSTR_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     instr = {instr,
-            "csrr  x31, mepc",
-            "addi  x31, x31, 4",
-            "csrw  mepc, x31"
+            $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
+            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
     };
-    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
     gen_section("illegal_instr_handler", instr);
   endfunction
@@ -838,7 +821,7 @@ class riscv_asm_program_gen extends uvm_object;
     string instr[$];
     gen_signature_handshake(instr, CORE_STATUS, INSTR_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
-    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
     gen_section("instr_fault_handler", instr);
   endfunction
@@ -848,7 +831,7 @@ class riscv_asm_program_gen extends uvm_object;
     string instr[$];
     gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
-    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
     gen_section("load_fault_handler", instr);
   endfunction
@@ -858,7 +841,7 @@ class riscv_asm_program_gen extends uvm_object;
     string instr[$];
     gen_signature_handshake(instr, CORE_STATUS, STORE_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
-    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
     gen_section("store_fault_handler", instr);
   endfunction
@@ -948,15 +931,17 @@ class riscv_asm_program_gen extends uvm_object;
     // The value of these CSR are checked by comparing with spike simulation result.
     interrupt_handler_instr = {
            interrupt_handler_instr,
-           $sformatf("csrr  a1, 0x%0x # %0s;", status, status.name()),
-           $sformatf("csrr  a1, 0x%0x # %0s;", ie, ie.name()),
-           $sformatf("csrr  a1, 0x%0x # %0s;", ip, ip.name()),
+           $sformatf("csrr  x%0d, 0x%0x # %0s;", cfg.gpr[0], status, status.name()),
+           $sformatf("csrr  x%0d, 0x%0x # %0s;", cfg.gpr[0], ie, ie.name()),
+           $sformatf("csrr  x%0d, 0x%0x # %0s;", cfg.gpr[0], ip, ip.name()),
            // Clean all the pending interrupt
-           $sformatf("csrrc a1, 0x%0x, a1 # %0s;", ip, ip.name())
+           $sformatf("csrrc x%0d, 0x%0x, x%0d # %0s;",
+                     cfg.gpr[0], ip, cfg.gpr[0], ip.name())
     };
     gen_plic_section(interrupt_handler_instr);
     // Restore user mode GPR value from kernel stack before return
-    pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv, interrupt_handler_instr);
+    pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv,
+                              cfg.sp, cfg.tp, interrupt_handler_instr);
     interrupt_handler_instr = {interrupt_handler_instr,
                                $sformatf("%0sret;", mode_prefix)
     };
@@ -1021,29 +1006,29 @@ class riscv_asm_program_gen extends uvm_object;
                                         string addr_label = "");
     if (cfg.require_signature_addr) begin
       string str[$];
-      str = {$sformatf("li x%0d, 0x%0h", cfg.signature_addr_reg, cfg.signature_addr)};
+      str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[1], cfg.signature_addr)};
       instr = {instr, str};
       case (signature_type)
         // A single data word is written to the signature address.
         // Bits [7:0] contain the signature_type of CORE_STATUS, and the upper
         // XLEN-8 bits contain the core_status_t data.
         CORE_STATUS: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, core_status),
-                 $sformatf("slli x%0d, x%0d, 8", cfg.signature_data_reg, cfg.signature_data_reg),
-                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.signature_data_reg,
-                           cfg.signature_data_reg, signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg)};
+          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], core_status),
+                 $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
+                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],
+                           cfg.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
           instr = {instr, str};
         end
         // A single data word is written to the signature address.
         // Bits [7:0] contain the signature_type of TEST_RESULT, and the upper
         // XLEN-8 bits contain the test_result_t data.
         TEST_RESULT: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, test_result),
-                 $sformatf("slli x%0d, x%0d, 8", cfg.signature_data_reg, cfg.signature_data_reg),
-                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.signature_data_reg,
-                           cfg.signature_data_reg, signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg)};
+          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], test_result),
+                 $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
+                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],
+                           cfg.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
           instr = {instr, str};
         end
         // The first write to the signature address contains just the
@@ -1052,11 +1037,11 @@ class riscv_asm_program_gen extends uvm_object;
         // each writing the data contained in one GPR, starting from x0 as the
         // first write, and ending with x31 as the 32nd write.
         WRITE_GPR: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg)};
+          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
           instr = {instr, str};
           for(int i = 0; i < 32; i++) begin
-            str = {$sformatf("sw x%0x, 0(x%0d)", i, cfg.signature_addr_reg)};
+            str = {$sformatf("sw x%0x, 0(x%0d)", i, cfg.gpr[1])};
             instr = {instr, str};
           end
         end
@@ -1066,13 +1051,13 @@ class riscv_asm_program_gen extends uvm_object;
         // It is followed by a second write to the signature address,
         // containing the data stored in the specified CSR.
         WRITE_CSR: begin
-          str = {$sformatf("li x%0d, 0x%0h", cfg.signature_data_reg, csr),
-                 $sformatf("slli x%0d, x%0d, 8", cfg.signature_data_reg, cfg.signature_data_reg),
-                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.signature_data_reg,
-                           cfg.signature_data_reg, signature_type),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg),
-                 $sformatf("csrr x%0d, 0x%0h", cfg.signature_data_reg, csr),
-                 $sformatf("sw x%0d, 0(x%0d)", cfg.signature_data_reg, cfg.signature_addr_reg)};
+          str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], csr),
+                 $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
+                 $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],
+                           cfg.gpr[0], signature_type),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1]),
+                 $sformatf("csrr x%0d, 0x%0h", cfg.gpr[0], csr),
+                 $sformatf("sw x%0d, 0(x%0d)", cfg.gpr[0], cfg.gpr[1])};
           instr = {instr, str};
         end
         default: begin
@@ -1159,6 +1144,7 @@ class riscv_asm_program_gen extends uvm_object;
 
   //---------------------------------------------------------------------------------------
   // Generate the debug rom, and any related programs
+  // TODO - refactor such that debug_rom is generated by a separate class
   //---------------------------------------------------------------------------------------
 
   // Generate the program in the debug ROM
@@ -1200,7 +1186,7 @@ class riscv_asm_program_gen extends uvm_object;
           instr = {instr, str};
         end
         // Need to save off GPRs to avoid modifying program flow
-        push_gpr_to_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, instr);
+        push_gpr_to_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
         // Signal that the core entered debug rom only if the rom is actually
         // being filled with random instructions to prevent stress tests from
         // having to execute unnecessary push/pop of GPRs on the stack ever
@@ -1212,17 +1198,56 @@ class riscv_asm_program_gen extends uvm_object;
           // TODO(udinator) - randomize the dcsr.ebreak setup
           gen_dcsr_ebreak(instr);
         end
+        if (cfg.enable_debug_single_step) begin
+          // To enable debug single stepping, we must set dcsr.step to 1.
+          // We will repeat the debug single stepping process a random number
+          // of times, using a dscratch CSR as the counter, and decrement
+          // this counter by 1 every time we enter debug mode, until this
+          // counter reaches 0, at which point we set dcsr.step to 0 until
+          // the next debug stimulus is asserted.
+
+          // Store our designated scratch_reg to dscratch1
+          str = {$sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
+                 // Only un-set dcsr.step if it is 1 and the iterations counter
+                 // is at 0 (has finished iterating)
+                 $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DCSR),
+                 $sformatf("andi x%0d, x%0d, 4", cfg.scratch_reg, cfg.scratch_reg),
+                 // If dcsr.step is 0, set to 1 and set the counter
+                 $sformatf("beqz x%0d, 1f", cfg.scratch_reg),
+                 $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
+                 // if the counter is greater than 0, decrement and continue single stepping
+                 $sformatf("bgtz x%0d, 2f", cfg.scratch_reg),
+                 $sformatf("csrc 0x%0x, 0x4", DCSR),
+                 $sformatf("beqz x0, 3f"),
+                 // Set dcsr.step and the num_iterations counter
+                 $sformatf("1: csrs 0x%0x, 0x4", DCSR),
+                 $sformatf("li x%0d, %0d", cfg.scratch_reg, cfg.single_step_iterations),
+                 $sformatf("csrw 0x%0x, x%0d", DSCRATCH0, cfg.scratch_reg),
+                 $sformatf("beqz x0, 3f"),
+                 // Decrement dscratch counter
+                 $sformatf("2: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
+                 $sformatf("addi x%0d, x%0d, -1", cfg.scratch_reg, cfg.scratch_reg),
+                 $sformatf("csrw 0x%0x, x%0d", DSCRATCH0, cfg.scratch_reg),
+                 // Restore scratch_reg value from dscratch1
+                 $sformatf("3: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)
+                 };
+          instr = {instr, str};
+          // write dpc to testbench
+          gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DPC));
+          // write out the counter to the testbench
+          gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DSCRATCH0));
+        end
         // Check dcsr.cause, and update dpc by 0x4 if the cause is ebreak, as
         // ebreak will set set dpc to its own address, which will cause an
         // infinite loop.
         str = {$sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DCSR),
                $sformatf("slli x%0d, x%0d, 0x17", cfg.scratch_reg, cfg.scratch_reg),
                $sformatf("srli x%0d, x%0d, 0x1d", cfg.scratch_reg, cfg.scratch_reg),
-               $sformatf("li x%0d, 0x1", cfg.signature_data_reg),
-               $sformatf("bne x%0d, x%0d, 2f", cfg.scratch_reg, cfg.signature_data_reg)};
+               $sformatf("li x%0d, 0x1", cfg.gpr[0]),
+               $sformatf("bne x%0d, x%0d, 4f", cfg.scratch_reg, cfg.gpr[0])};
         instr = {instr, str};
         increment_csr(DPC, 4, instr);
-        str = {"2: nop"};
+        str = {"4: nop"};
         instr = {instr, str};
         // write DCSR to the testbench for any analysis
         gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DCSR));
@@ -1242,7 +1267,7 @@ class riscv_asm_program_gen extends uvm_object;
         debug_program.is_debug_program = 1;
         debug_program.cfg = cfg;
         `DV_CHECK_RANDOMIZE_FATAL(debug_program)
-        debug_program.gen_instr(.is_main_program(1'b1), .no_branch(1'b0));
+        debug_program.gen_instr(.is_main_program(1'b1), .no_branch(cfg.no_branch_jump));
         gen_callstack(debug_program, debug_sub_program, debug_sub_program_name,
                       cfg.num_debug_sub_program);
         debug_program.post_process_instr();
@@ -1257,7 +1282,8 @@ class riscv_asm_program_gen extends uvm_object;
           str = {$sformatf("csrwi 0x%0x, 0x0", DSCRATCH0)};
           debug_end = {debug_end, str};
         end
-        pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, debug_end);
+        pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv,
+                                  cfg.sp, cfg.tp, debug_end);
         // We have been using dscratch1 to store the
         // value of our given scratch register for use in ebreak loop, so we
         // need to restore its value before returning from D mode

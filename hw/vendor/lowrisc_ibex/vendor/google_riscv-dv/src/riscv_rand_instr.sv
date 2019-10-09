@@ -88,6 +88,9 @@ class riscv_rand_instr extends riscv_instr_base;
     if(cfg.no_branch_jump) {
       category != BRANCH;
     }
+    if (cfg.disable_compressed_instr) {
+      !(group inside {RV32C, RV64C, RV128C, RV32FC, RV32DC});
+    }
   }
 
   constraint csr_instr_c {

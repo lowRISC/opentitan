@@ -120,11 +120,11 @@ def compare_trace_csv(csv1, csv2, name1, name2, log,
       gpr_trace_2 = {}
       parse_gpr_update_from_trace(instr_trace_1, gpr_trace_1)
       parse_gpr_update_from_trace(instr_trace_2, gpr_trace_2)
-      if len(gpr_trace_1) != len(gpr_trace_2):
-        fd.write("Mismatch: affected GPR count mismtach %s:%d VS %s:%d\n" %
-                 (name1, len(gpr_trace_1), name2, len(gpr_trace_2)))
-        mismatch_cnt += 1
       if not compare_final_value_only:
+        if len(gpr_trace_1) != len(gpr_trace_2):
+          fd.write("Mismatch: affected GPR count mismtach %s:%d VS %s:%d\n" %
+                   (name1, len(gpr_trace_1), name2, len(gpr_trace_2)))
+          mismatch_cnt += 1
         for gpr in gpr_trace_1:
           coalesced_updates = 0
           if (len(gpr_trace_1[gpr]) != len(gpr_trace_2[gpr]) and
@@ -166,12 +166,22 @@ def compare_trace_csv(csv1, csv2, name1, name2, log,
               trace_2_index += 1
       # Check the final value match between the two traces
       for gpr in gpr_trace_1:
-        if (len(gpr_trace_1[gpr]) == 0 or len(gpr_trace_2[gpr]) == 0):
-          mismatch_cnt += 1
-          fd.write("Zero GPR[%s] updates observed: %s:%d, %s:%d\n" % (gpr,
-                   name1, len(gpr_trace_1[gpr]), name2, len(gpr_trace_2[gpr])))
-        elif int(gpr_trace_1[gpr][-1].rd_val, 16) != \
-             int(gpr_trace_2[gpr][-1].rd_val, 16):
+        if not compare_final_value_only:
+          if (len(gpr_trace_1[gpr]) == 0 or len(gpr_trace_2[gpr]) == 0):
+            mismatch_cnt += 1
+            fd.write("Zero GPR[%s] updates observed: %s:%d, %s:%d\n" % (gpr,
+                     name1, len(gpr_trace_1[gpr]), name2, len(gpr_trace_2[gpr])))
+        else:
+          if not gpr_trace_2.get(gpr):
+            trace = RiscvInstructiontTraceEntry()
+            trace.rd_val = "0"
+            trace.rd = gpr
+            trace.instr_str = ""
+            trace.binary = ""
+            trace.addr = ""
+            gpr_trace_2[gpr] = [trace]
+        if int(gpr_trace_1[gpr][-1].rd_val, 16) != \
+           int(gpr_trace_2[gpr][-1].rd_val, 16):
           mismatch_cnt += 1
           if mismatch_cnt <= mismatch_print_limit:
             fd.write("Mismatch final value:\n")

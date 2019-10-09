@@ -78,6 +78,8 @@ def process_spike_sim_log(spike_log, csv, full_trace = 0):
         nextline = f.readline()
         if nextline != "":
           if ILLE_RE.search(nextline):
+            if full_trace:
+              trace_csv.write_trace_entry(rv_instr_trace)
             continue
           m = RD_RE.search(nextline)
           if m:

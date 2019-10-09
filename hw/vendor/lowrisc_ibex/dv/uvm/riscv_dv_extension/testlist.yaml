@@ -130,7 +130,7 @@
     +no_csr_instr=1
     +no_fence=1
   rtl_test: core_ibex_debug_intr_basic_test
-  iterations: 5
+  iterations: 10
   sim_opts: >
     +max_interval=250
     +enable_debug_stress_seq=1
@@ -166,7 +166,7 @@
 - test: riscv_debug_wfi_test
   description: >
     Assert debug_req while core is in WFI sleep state, should jump to debug mode
-  iterations: 5
+  iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +require_signature_addr=1
@@ -205,7 +205,7 @@
     A directed ebreak sequence will be inserted into the debug rom, upon encountering it,
     ibex should jump back to the beginning of debug mode. The sequence is designed to avoid an
     infinite loop.
-  iterations: 5
+  iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +require_signature_addr=1
@@ -228,7 +228,7 @@
   description: >
     dcsr.ebreakm will be set at the beginning of the test upon the first entry into the debug rom.
     From then on, every ebreak instruction should cause debug mode to be entered.
-  iterations: 5
+  iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +require_signature_addr=1
@@ -290,12 +290,13 @@
 - test: riscv_mem_error_test
   description: >
     Normal random instruction test, but randomly insert instruction fetch or memory load/store errors
-  iterations: 5
+  iterations: 10
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +require_signature_addr=1
     +instr_cnt=10000
     +randomize_csr=1
+    +enable_unaligned_load_store=1
   rtl_test: core_ibex_mem_error_test
   sim_opts: >
     +require_signature_addr=1
@@ -318,7 +319,7 @@
 - test: riscv_debug_single_step_test
   description: >
     Randomly assert debug_req_i, and set dcsr.step to make ibex execute one isntruction and then re-enter debug mode
-  iterations: 5
+  iterations: 10
   gen_test: riscv_instr_base_test
   gen_opts: >
     +require_signature_addr=1
