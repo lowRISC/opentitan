@@ -180,10 +180,12 @@ module aes_control #(
             key_full_we_o  = 1'b1;
             key_dec_sel_o  = KEY_DEC_CLEAR;
             key_dec_we_o   = 1'b1;
-            key_clear_we_o = 1'b0;
+            key_clear_we_o = 1'b1;
           end
           if (data_out_clear_i) begin
-            state_sel_o         = STATE_CLEAR;
+            add_rk_sel_o        = ADD_RK_INIT;
+            key_words_sel_o     = KEY_WORDS_ZERO;
+            round_key_sel_o     = ROUND_KEY_DIRECT;
             data_out_we_o       = 1'b1;
             data_out_clear_we_o = 1'b1;
           end
@@ -298,7 +300,7 @@ module aes_control #(
       end
 
       FINISH: begin
-        // Final round: do not update state anymore
+        // Final round
 
         // Select key words for add_round_key
         if (dec_key_gen_q) begin
@@ -389,9 +391,9 @@ module aes_control #(
     end
   end
 
-  // Clear once all output regs have been read
-  assign output_valid_o    = data_out_we_o;
-  assign output_valid_we_o = data_out_we_o | data_out_read;
+  // Clear once all output regs have been read, or when output is cleared
+  assign output_valid_o    = data_out_we_o & ~data_out_clear_we_o;
+  assign output_valid_we_o = data_out_we_o | data_out_read | data_out_clear_we_o;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_output_valid
     if (!rst_ni) begin
