@@ -57,12 +57,15 @@ Note that the chip-level `padctrl` module also contains the pads for clock and r
 The following table lists the main parameters used throughout the `padctrl` design.
 Note that the `padctrl` modules are generated based on the system configuration, and hence these parameters are placed into a package as “localparams”.
 
-Localparam     | Default (Max)         | Description
+Localparam     | Default (Min, Max)    | Description
 ---------------|-----------------------|---------------
-NMioPads       | 4 (-)                 | Number of muxed output pads.
-NDioPads       | 16 (-)                | Number of dedicated output pads.
-AttrDw         | 6 (-)                 | Width of the pad attribute vector.
+NMioPads       | 4 (1, -)              | Number of muxed output pads.
+NDioPads       | 16 (1, -)             | Number of dedicated output pads.
+AttrDw         | 8 (6, -)              | Width of the pad attribute vector.
 
+In addition to these localparams, both the `padctrl` and `padring` modules expose an "Impl" string parameter that is used to pass the implementation target down the hierarchy.
+The `padring` module uses this parameter to instantiate the correct pad implementation, and the `padctrl` module uses this parameter to determine which attribute bits are programmable (see programming guide below).
+The parameter values can be "generic" or "xilinx" as defined in the pad wrapper primitive.
 
 {{% section2 Signals }}
 
@@ -71,18 +74,32 @@ The number of IOs is parametric, and hence the signals are stacked in packed arr
 
 Signal                                 | Direction        | Type                | Description
 ---------------------------------------|------------------|---------------------|---------------
+`clk_i`                                | `input`          | `logic`             | Clock input.
+`rst_ni`                               | `input`          | `logic`             | Reset input.
 `tl_i`                                 | `input`          | `tl_h2d_t`          | TileLink-UL input for control register access.
 `tl_o`                                 | `output`         | `tl_d2h_t`          | TileLink-UL output for control register access.
-`mio_io[NMioPads-1:0]`                 | `inout`          | packed `wire logic` | Nidirectional IOs of the muxed IO pads.
-`mio_out_i[NMioPads-1:0]`              | `input`          | packed `logic`      | Output data signal of muxed IOs.
-`mio_oe_i[NMioPads-1:0]`               | `input`          | packed `logic`      | Output data enable of muxed IOs.
-`mio_in_o[NMioPads-1:0]`               | `output`         | packed `logic`      | Input data signals of muxed IOs.
+`mio_attr_o[NMioPads-1:0][AttrDw-1:0]` | `output`         | packed `logic`      | Packed array containing the pad attributes of all muxed IOs.
+`dio_attr_o[NDioPads-1:0][AttrDw-1:0]` | `output`         | packed `logic`      | Packed array containing the pad attributes of all dedicated IOs.
+
+The table below lists the `padring` signals.
+The number of IOs is parametric, and hence the signals are stacked in packed arrays.
+
+Signal                                 | Direction        | Type                | Description
+---------------------------------------|------------------|---------------------|---------------
+`clk_i`                                | `input`          | `wire`              | Clock pad input.
+`rst_ni`                               | `input`          | `wire`              | Reset pad input.
+`mio_io[NMioPads-1:0]`                 | `inout`          | packed `wire`       | Bidirectional IOs of the muxed IO pads.
+`dio_io[NDioPads-1:0]`                 | `inout`          | packed `wire`       | Bidirectional IOs of the dedicated IO pads.
+`clk_o`                                | `output`         | `logic`             | Clock output (to clocking infrastructure).
+`rst_no`                               | `output`         | `logic`             | Reset output (to reset infrastructure).
 `mio_attr_i[NMioPads-1:0][AttrDw-1:0]` | `input`          | packed `logic`      | Packed array containing the pad attributes of all muxed IOs.
-`dio_io[NDioPads-1:0]`                 | `inout`          | packed `wire logic` | Nidirectional IOs of the dedicated IO pads.
-`dio_out_i[NDioPads-1:0]`              | `input`          | packed `logic`      | Output data signal of dedicated IOs.
-`dio_oe_i[NDioPads-1:0]`               | `input`          | packed `logic`      | Output data enable of dedicated IOs.
-`dio_in_o[NDioPads-1:0]`               | `output`         | packed `logic`      | Input data signals of dedicated IOs.
 `dio_attr_i[NDioPads-1:0][AttrDw-1:0]` | `input`          | packed `logic`      | Packed array containing the pad attributes of all dedicated IOs.
+`mio_in_o[NMioPads-1:0]`               | `output`         | packed `logic`      | Input data signals of muxed IOs.
+`dio_in_o[NDioPads-1:0]`               | `output`         | packed `logic`      | Input data signals of dedicated IOs.
+`mio_out_i[NMioPads-1:0]`              | `input`          | packed `logic`      | Output data signal of muxed IOs.
+`dio_out_i[NDioPads-1:0]`              | `input`          | packed `logic`      | Output data signal of dedicated IOs.
+`mio_oe_i[NMioPads-1:0]`               | `input`          | packed `logic`      | Output data enable of muxed IOs.
+`dio_oe_i[NDioPads-1:0]`               | `input`          | packed `logic`      | Output data enable of dedicated IOs.
 
 
 {{% section2 Generic Pad Wrapper }}
@@ -98,26 +115,28 @@ A specific implementation of a pad wrapper may choose to instantiate a technolog
 It is permissible to omit the implementation of all IO attributes except input/output inversion.
 
 The generic pad wrapper must expose the following IOs and parameters, even if they are not connected internally.
+In particular, the pad attribute vector `attr_i` must contain at least `AttrDw=6` bits, even if not all attributes are supported (it is permissible to just leave them unconnected in the pad wrapper implementation).
 
-Parameter      | Default (Max)         | Description
----------------|-----------------------|---------------
-AttrDw         | 6 (-)                 | Width of the pad attribute vector.
+Parameter      | Default (Min, Max)    | Description
+---------------|-----------------------|-----------------------------------------------------
+Impl           | "generic"             | Implementation target (e.g., "generic", "xilinx").
+AttrDw         | 8 (6, -)              | Width of the pad attribute vector.
 
 Note that the pad wrapper may implement a “virtual” open drain termination, where standard bidirectional pads are employed, but instead of driving the output high for a logic 1 the pad is put into tristate mode.
 
 Signal             | Direction  | Type  | Description                         | Mandatory
--------------------|------------|-------|-------------------------------------|--------------------
+-------------------|------------|-------|-------------------------------------|------------
 inout_io           | `inout`    | wire  | Bidirectional inout of the pad      | yes
 in_o               | `output`   | logic | Input data signal                   | yes
 out_i              | `input`    | logic | Output data signal                  | yes
 oe_i               | `input`    | logic | Output data enable                  | yes
 attr_i[0]          | `input`    | logic | Input/output inversion              | yes
-attr_i[1]          | `input`    | logic | Open drain enable.                  | yes
-attr_i[2]          | `input`    | logic | Pull-down enable.                   | no
-attr_i[3]          | `input`    | logic | Pull-up enable.                     | no
-attr_i[4]          | `input`    | logic | Keeper enable.                      | no
-attr_i[5]          | `input`    | logic | Drive strengh (0: strong, 1: weak). | no
-attr_i[AttrDw-1:6] | `input`    | logic | Additional (optional) attributes.   | no
+attr_i[1]          | `input`    | logic | Open drain enable                   | yes
+attr_i[2]          | `input`    | logic | Pull-down enable                    | no
+attr_i[3]          | `input`    | logic | Pull-up enable                      | no
+attr_i[4]          | `input`    | logic | Keeper enable                       | no
+attr_i[5]          | `input`    | logic | Drive strengh (0: strong, 1: weak)  | no
+attr_i[AttrDw-1:6] | `input`    | logic | Additional (optional) attributes    | no
 
 
 {{% section2 Programmers Guide }}
@@ -127,8 +146,24 @@ Software should determine and program the `padctrl` pin attributes at startup, o
 This can be achieved by writing to the !!MIO_PADS and !!DIO_PADS registers.
 Note that the IO attributes should be configured before enabling any driving modules such as the `pinmux` in order to avoid undesired electrical behavior and/or contention at the pads.
 
-The padctrl configuration can be locked down by writing a 1 to register !!REGEN.
+The padctrl configuration can be locked down by writing a 0 to register !!REGEN.
 The configuration can then not be altered anymore unless the system is reset.
+
+Note that the register description given in the next section is an example that has been generated with the default parameterization, and the layout may change once reparameterized.
+The following pad attributes are supported by this register layout by default:
+
+ATTR Bits | Description                          | Access
+----------|--------------------------------------|---------
+0         | Input/output inversion               | RW
+1         | Open drain enable                    | RW
+2         | Pull-down enable                     | WARL
+3         | Pull-up enable                       | WARL
+4         | Keeper enable                        | WARL
+5         | Drive strength (0: strong, 1: weak)  | WARL
+7:6       | Reserved                             | WARL
+
+Since some of the pad attributes may not be implemented, software can probe this capability by writing the CSRs and read them back to determine whether the value was legal.
+This behavior is also referred to as "writes-any-reads-legal" or "WARL" in the RISC-V world.
 
 
 {{% section1 Register Table }}
