@@ -44,7 +44,7 @@
         {
             bits:   "0",
             desc: ''' When true, all configuration registers can be modified.
-            When false, they become read-only. Defaults true, write one to clear.
+            When false, they become read-only. Defaults true, write zero to clear.
             '''
             resval: 1,
         },
@@ -52,16 +52,24 @@
     },
 # dedicated pads
     { multireg: { name:     "DIO_PADS",
-                  desc:     "Dedicated pad attributes.",
+                  desc:     '''Dedicated pad attributes.
+                  This register has WARL behavior as some attributes may not be implemented.
+                  ''',
                   count:    "NDioPads",
                   swaccess: "rw",
-                  hwaccess: "hro",
+                  hwaccess: "hrw",
+                  hwext:    "true",
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
                     { bits: "${attr_dw-1}:0",
                       name: "ATTR",
-                      desc: '''Bit 0: input/output inversion, Bit 1: Virtual open drain enable.
+                      desc: '''Bit 0: input/output inversion,
+                               Bit 1: Virtual open drain enable.
+                               Bit 2: Pull-down enable.
+                               Bit 3: Pull-up enable.
+                               Bit 4: Keeper enable.
+                               Bit 5: Drive strength (0: strong, 1: weak).
                       '''
                       resval: 0
                     }
@@ -70,16 +78,24 @@
     },
 # muxed pads
     { multireg: { name:     "MIO_PADS",
-                  desc:     "Muxed pad attributes.",
+                  desc:     '''Muxed pad attributes.
+                  This register has WARL behavior as some attributes may not be implemented.
+                  ''',
                   count:    "NMioPads",
                   swaccess: "rw",
-                  hwaccess: "hro",
+                  hwaccess: "hrw",
+                  hwext:    "true",
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
                     { bits: "${attr_dw-1}:0",
                       name: "ATTR",
-                      desc: '''Bit 0: input/output inversion, Bit 1: Virtual open drain enable.
+                      desc: '''Bit 0: input/output inversion,
+                               Bit 1: Virtual open drain enable.
+                               Bit 2: Pull-down enable.
+                               Bit 3: Pull-up enable.
+                               Bit 4: Keeper enable.
+                               Bit 5: Drive strength (0: strong, 1: weak).
                       '''
                       resval: 0
                     }

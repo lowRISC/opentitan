@@ -66,10 +66,10 @@ class padctrl_reg_dio_pads extends dv_base_reg;
     attr0 = dv_base_reg_field::type_id::create("attr0");
     attr0.configure(
       .parent(this),
-      .size(6),
+      .size(8),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -77,10 +77,10 @@ class padctrl_reg_dio_pads extends dv_base_reg;
     attr1 = dv_base_reg_field::type_id::create("attr1");
     attr1.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(6),
+      .size(8),
+      .lsb_pos(8),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -88,10 +88,10 @@ class padctrl_reg_dio_pads extends dv_base_reg;
     attr2 = dv_base_reg_field::type_id::create("attr2");
     attr2.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(12),
+      .size(8),
+      .lsb_pos(16),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -99,10 +99,10 @@ class padctrl_reg_dio_pads extends dv_base_reg;
     attr3 = dv_base_reg_field::type_id::create("attr3");
     attr3.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(18),
+      .size(8),
+      .lsb_pos(24),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -118,7 +118,6 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
   rand dv_base_reg_field attr1;
   rand dv_base_reg_field attr2;
   rand dv_base_reg_field attr3;
-  rand dv_base_reg_field attr4;
 
   `uvm_object_utils(padctrl_reg_mio_pads0)
 
@@ -133,10 +132,10 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
     attr0 = dv_base_reg_field::type_id::create("attr0");
     attr0.configure(
       .parent(this),
-      .size(6),
+      .size(8),
       .lsb_pos(0),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -144,10 +143,10 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
     attr1 = dv_base_reg_field::type_id::create("attr1");
     attr1.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(6),
+      .size(8),
+      .lsb_pos(8),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -155,10 +154,10 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
     attr2 = dv_base_reg_field::type_id::create("attr2");
     attr2.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(12),
+      .size(8),
+      .lsb_pos(16),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -166,21 +165,10 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
     attr3 = dv_base_reg_field::type_id::create("attr3");
     attr3.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(18),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr4 = dv_base_reg_field::type_id::create("attr4");
-    attr4.configure(
-      .parent(this),
-      .size(6),
+      .size(8),
       .lsb_pos(24),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -192,11 +180,10 @@ endclass : padctrl_reg_mio_pads0
 // Class: padctrl_reg_mio_pads1
 class padctrl_reg_mio_pads1 extends dv_base_reg;
   // fields
+  rand dv_base_reg_field attr4;
   rand dv_base_reg_field attr5;
   rand dv_base_reg_field attr6;
   rand dv_base_reg_field attr7;
-  rand dv_base_reg_field attr8;
-  rand dv_base_reg_field attr9;
 
   `uvm_object_utils(padctrl_reg_mio_pads1)
 
@@ -208,13 +195,24 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
 
   virtual function void build();
     // create fields
+    attr4 = dv_base_reg_field::type_id::create("attr4");
+    attr4.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
     attr5 = dv_base_reg_field::type_id::create("attr5");
     attr5.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(0),
+      .size(8),
+      .lsb_pos(8),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -222,10 +220,10 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
     attr6 = dv_base_reg_field::type_id::create("attr6");
     attr6.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(6),
+      .size(8),
+      .lsb_pos(16),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -233,32 +231,10 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
     attr7 = dv_base_reg_field::type_id::create("attr7");
     attr7.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(12),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr8 = dv_base_reg_field::type_id::create("attr8");
-    attr8.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(18),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr9 = dv_base_reg_field::type_id::create("attr9");
-    attr9.configure(
-      .parent(this),
-      .size(6),
+      .size(8),
       .lsb_pos(24),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -270,11 +246,10 @@ endclass : padctrl_reg_mio_pads1
 // Class: padctrl_reg_mio_pads2
 class padctrl_reg_mio_pads2 extends dv_base_reg;
   // fields
+  rand dv_base_reg_field attr8;
+  rand dv_base_reg_field attr9;
   rand dv_base_reg_field attr10;
   rand dv_base_reg_field attr11;
-  rand dv_base_reg_field attr12;
-  rand dv_base_reg_field attr13;
-  rand dv_base_reg_field attr14;
 
   `uvm_object_utils(padctrl_reg_mio_pads2)
 
@@ -286,13 +261,35 @@ class padctrl_reg_mio_pads2 extends dv_base_reg;
 
   virtual function void build();
     // create fields
+    attr8 = dv_base_reg_field::type_id::create("attr8");
+    attr8.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    attr9 = dv_base_reg_field::type_id::create("attr9");
+    attr9.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(8),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
     attr10 = dv_base_reg_field::type_id::create("attr10");
     attr10.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(0),
+      .size(8),
+      .lsb_pos(16),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -300,43 +297,10 @@ class padctrl_reg_mio_pads2 extends dv_base_reg;
     attr11 = dv_base_reg_field::type_id::create("attr11");
     attr11.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(6),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr12 = dv_base_reg_field::type_id::create("attr12");
-    attr12.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(12),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr13 = dv_base_reg_field::type_id::create("attr13");
-    attr13.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(18),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr14 = dv_base_reg_field::type_id::create("attr14");
-    attr14.configure(
-      .parent(this),
-      .size(6),
+      .size(8),
       .lsb_pos(24),
       .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
@@ -348,9 +312,10 @@ endclass : padctrl_reg_mio_pads2
 // Class: padctrl_reg_mio_pads3
 class padctrl_reg_mio_pads3 extends dv_base_reg;
   // fields
+  rand dv_base_reg_field attr12;
+  rand dv_base_reg_field attr13;
+  rand dv_base_reg_field attr14;
   rand dv_base_reg_field attr15;
-  rand dv_base_reg_field attr16;
-  rand dv_base_reg_field attr17;
 
   `uvm_object_utils(padctrl_reg_mio_pads3)
 
@@ -362,35 +327,46 @@ class padctrl_reg_mio_pads3 extends dv_base_reg;
 
   virtual function void build();
     // create fields
+    attr12 = dv_base_reg_field::type_id::create("attr12");
+    attr12.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    attr13 = dv_base_reg_field::type_id::create("attr13");
+    attr13.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(8),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    attr14 = dv_base_reg_field::type_id::create("attr14");
+    attr14.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
     attr15 = dv_base_reg_field::type_id::create("attr15");
     attr15.configure(
       .parent(this),
-      .size(6),
-      .lsb_pos(0),
+      .size(8),
+      .lsb_pos(24),
       .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr16 = dv_base_reg_field::type_id::create("attr16");
-    attr16.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(6),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    attr17 = dv_base_reg_field::type_id::create("attr17");
-    attr17.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(12),
-      .access("RW"),
-      .volatile(0),
+      .volatile(1),
       .reset(0),
       .has_reset(1),
       .is_rand(1),
