@@ -74,4 +74,18 @@ module uart (
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
 
+  // Assert Known for outputs
+  `ASSERT_KNOWN(txenKnown, cio_tx_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(txKnown, cio_tx_o, clk_i, !rst_ni || !cio_tx_en_o)
+
+  // Assert Known for interrupts
+  `ASSERT_KNOWN(txWatermarkKnown, intr_tx_watermark_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(rxWatermarkKnown, intr_rx_watermark_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(txOverflowKnown, intr_tx_overflow_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(rxOverflowKnown, intr_rx_overflow_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(rxFrameErrKnown, intr_rx_frame_err_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(rxBreakErrKnown, intr_rx_break_err_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(rxTimeoutKnown, intr_rx_timeout_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(rxParityErrKnown, intr_rx_parity_err_o, clk_i, !rst_ni)
+
 endmodule
