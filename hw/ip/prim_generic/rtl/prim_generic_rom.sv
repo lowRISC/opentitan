@@ -5,7 +5,8 @@
 module prim_generic_rom #(
   parameter  int Width     = 32,
   parameter  int Depth     = 2048, // 8kB default
-  parameter  int Aw        = $clog2(Depth)
+  parameter  int Aw        = $clog2(Depth),
+  parameter  bit Init      = 0
 ) (
   input                        clk_i,
   input                        rst_ni,
@@ -15,7 +16,7 @@ module prim_generic_rom #(
   output logic                 dvalid_o
 );
 
-  logic [Width-1:0] mem [Depth];
+ logic [Width-1:0] mem [Depth];
 
   always_ff @(posedge clk_i) begin
     if (cs_i) begin
@@ -52,6 +53,7 @@ module prim_generic_rom #(
     endtask
   `endif
 
+  if (Init) begin : gen_init_memory
   `ifdef ROM_INIT_FILEE
 
     localparam MEM_FILE = `"`ROM_INIT_FILE`";
@@ -60,4 +62,5 @@ module prim_generic_rom #(
       $readmemh(MEM_FILE, mem);
     end
   `endif
+  end
 endmodule

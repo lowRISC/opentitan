@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module top_earlgrey #(
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter     Impl = "generic"
 ) (
   // Clock and Reset
   input               clk_i,
@@ -232,7 +233,8 @@ module top_earlgrey #(
 
   prim_rom #(
     .Width(32),
-    .Depth(2048)
+    .Depth(2048),
+    .Impl(Impl)
   ) u_rom_rom (
     .clk_i,
     .rst_ni   (sys_rst_n),

@@ -8,6 +8,7 @@ module prim_generic_ram_1p #(
   parameter int Width           = 32, // bit
   parameter int Depth           = 128,
   parameter int DataBitsPerMask = 1, // Number of data bits per bit of write mask
+  parameter bit Init            = 0, // Initialize memory contents
   localparam int Aw             = $clog2(Depth)  // derived parameter
 ) (
   input clk_i,
@@ -72,6 +73,7 @@ module prim_generic_ram_1p #(
     endtask
   `endif
 
+  if (Init) begin : gen_init_memory
   `ifdef SRAM_INIT_FILE
       localparam MEM_FILE = `"`SRAM_INIT_FILE`";
     initial
@@ -80,4 +82,5 @@ module prim_generic_ram_1p #(
       $readmemh(MEM_FILE, mem);
     end
   `endif
+  end
 endmodule

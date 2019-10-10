@@ -5,7 +5,9 @@
 <% import re
 %>\
 module top_${top["name"]} #(
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter     Impl = "generic"
+
 ) (
   // Clock and Reset
   input               clk_i,
@@ -298,7 +300,8 @@ module top_${top["name"]} #(
   ## TODO: Replace emulated ROM to real ROM in ASIC SoC
   prim_rom #(
     .Width(${data_width}),
-    .Depth(${rom_depth})
+    .Depth(${rom_depth}),
+    .Impl(Impl)
   ) u_rom_${m["name"]} (
     .clk_i,
     % for key in resets:
