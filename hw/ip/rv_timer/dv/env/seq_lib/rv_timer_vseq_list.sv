@@ -8,3 +8,4 @@
 `include "rv_timer_disabled_vseq.sv"
 `include "rv_timer_cfg_update_on_fly_vseq.sv"
 `include "rv_timer_common_vseq.sv"
+`include "rv_timer_stress_all_vseq.sv"
