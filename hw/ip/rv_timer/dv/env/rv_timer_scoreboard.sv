@@ -81,6 +81,8 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
             for (int j = 0; j < NUM_TIMERS; j++) begin
               en_timers[i][j] = get_reg_fld_mirror_value(ral, "ctrl", $sformatf("active%0d", j));
             end
+            //Sample all timers active coverage for each hart
+            if (cfg.en_cov) cov.ctrl_reg_cov_obj[i].timer_active_cg.sample(en_timers[i]);
           end
         end
         (!uvm_re_match("cfg*", csr_name)): begin
@@ -139,9 +141,16 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
           for (int i = 0; i < NUM_HARTS; i++) begin
             string intr_test_str = $sformatf("intr_test%0d", i);
             if (csr_name == intr_test_str) begin
-              intr_status_exp[i] = get_reg_fld_mirror_value(ral, intr_test_str);
+              uint intr_test_val = get_reg_fld_mirror_value(ral, intr_test_str);
               // this field is WO - always returns 0
               csr.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+              foreach (intr_test_val[j]) begin
+                int intr_pin_idx = i * NUM_TIMERS + j;
+                if (intr_test_val[j]) intr_status_exp[i][j] = intr_test_val[j];
+                //Sample intr_test coverage for each bit of test reg
+                if (cfg.en_cov) cov.intr_test_cg.sample(intr_pin_idx, intr_test_val[j],
+                                                        en_interrupt[i][j], intr_status_exp[i][j]);
+              end
               break;
             end
           end
@@ -245,6 +254,16 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 // Update exp val and predict it in read address_channel
                 intr_status_exp[a_i][a_j] = 1'b1;
                 check_interrupt_pin();
+                if (cfg.en_cov) begin
+                  int timer_idx = a_i * NUM_TIMERS + a_j;
+                  //Sample cfg coverage for each timer
+                  cov.cfg_values_cov_obj[timer_idx].cfg_cg.sample(step[a_i],
+                      prescale[a_i], timer_val[a_i], compare_val[a_i][a_j]);
+                  //Sample toggle coverage for each prescale bit
+                  for (int i = 0; i < 12; i++) begin
+                    cov.rv_timer_prescale_values_cov_obj[a_i][i].sample(prescale[a_i][i]);
+                  end
+                end
                 @cfg.clk_rst_vif.cb;
                 ignore_period[a_i][a_j] = 1'b0;
               end
@@ -266,9 +285,14 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
   function void check_interrupt_pin();
     for (int i = 0; i < NUM_HARTS; i++) begin
       for (int j = 0; j < NUM_TIMERS; j++) begin
-        int intr_pin_idx = i * NUM_HARTS + j;
+        int intr_pin_idx = i * NUM_TIMERS + j;
         `DV_CHECK_CASE_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)),
                           (intr_status_exp[i][j] & en_interrupt[i][j]))
+        //Sample interrupt and interrupt pin coverage for each timer
+        if (cfg.en_cov) begin
+          cov.intr_cg.sample(intr_pin_idx, en_interrupt[i][j], intr_status_exp[i][j]);
+          cov.intr_pins_cg.sample(intr_pin_idx, cfg.intr_vif.sample_pin(.idx(intr_pin_idx)));
+        end
       end
     end
   endfunction

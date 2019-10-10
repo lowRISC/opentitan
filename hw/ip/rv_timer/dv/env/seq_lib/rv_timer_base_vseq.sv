@@ -110,7 +110,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
   virtual task cfg_interrupt(int hart = 0, int timer = 0, bit enable = 1'b1);
     uvm_reg       intr_en_rg;
     uvm_reg_field timer_intr_en_fld;
-    int           intr_pin_idx = hart * NUM_HARTS + timer;
+    int           intr_pin_idx = hart * NUM_TIMERS + timer;
     `DV_CHECK_LT_FATAL(hart, NUM_HARTS)
     `DV_CHECK_LT_FATAL(timer, NUM_TIMERS)
     intr_en_rg = ral.get_reg_by_name($sformatf("intr_enable%0d", hart));
@@ -129,7 +129,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
   virtual task check_interrupt(int hart = 0, int timer = 0, bit exp_intr_state, bit exp_intr_pin);
     uvm_reg       intr_state_rg;
     uvm_reg_field timer_intr_state_fld;
-    int           intr_pin_idx = hart * NUM_HARTS + timer;
+    int           intr_pin_idx = hart * NUM_TIMERS + timer;
     `DV_CHECK_LT_FATAL(hart, NUM_HARTS)
     `DV_CHECK_LT_FATAL(timer, NUM_TIMERS)
     intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));

@@ -31,7 +31,7 @@ class rv_timer_disabled_vseq extends rv_timer_sanity_vseq;
               fork
                 begin
                   // wait for num clks required to expect interrupt
-                  int    intr_pin_idx = a_i * NUM_HARTS + a_j;
+                  int    intr_pin_idx = a_i * NUM_TIMERS + a_j;
                   uint64 mtime_diff   = compare_val[a_i][a_j] - timer_val[a_i];
                   int    num_clks     = ((mtime_diff / step[a_i]) + 1) * (prescale[a_i] +1) + 1;
                   cfg.clk_rst_vif.wait_clks(num_clks);
