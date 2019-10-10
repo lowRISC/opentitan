@@ -319,7 +319,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       test_index.shuffle();
       foreach (test_index[i]) begin
         bit [TL_DW-1:0] wr_data;
-        wr_data = $urandom_range(1, ((1 << intr_enable_csrs[test_index[i]].get_n_used_bits()) - 1));
+        wr_data = $urandom_range(0, ((1 << intr_enable_csrs[test_index[i]].get_n_used_bits()) - 1));
         intr_enable_val.insert(test_index[i], wr_data);
         csr_wr(.csr(intr_enable_csrs[test_index[i]]), .value(wr_data));
       end
