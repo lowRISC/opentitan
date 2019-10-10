@@ -112,14 +112,14 @@ Putting these together an unaligned 60 byte window (15 32-bit words) could follo
 
 
 ```hjson
-	{skipto: "0x200"}
-	{name: "aligned_reg" ... }
-	{window: {
+    {skipto: "0x200"}
+    {name: "aligned_reg" ... }
+    {window: {
          name: "unaligned_win"
          items: "15"
-		 noalign: "True"
-		 unusual: "True"
-		 byte-write: "True"
+         noalign: "True"
+         unusual: "True"
+         byte-write: "True"
          swaccess: "rw"
          desc: '''
                A 60 byte window that slots in after the register.
@@ -321,7 +321,7 @@ For example, if the termination of the TL-UL bus is a memory that handles byte a
 
 The definition of what exactly is in each register type is described in this section.
 As shown above, the maximally featured register has inputs and outputs to/from both the bus interface side of the design as well as the hardware interface side.
-Some register types don’t require all of these inputs and outputs.
+Some register types don't require all of these inputs and outputs.
 For instance, a read-only register does not require write data from the bus interface (this is configured by the `SWACCESS` parameter to the `prim_subreg` module).
 The maximally defined inputs to this register block (termed the `subreg` from here forward) are given in the table below.
 Note that these are instantiated per field, not per register, so the width is the width of the field.
@@ -417,7 +417,7 @@ The connectivity to the hardware struct bundles are a function of the `hwaccess`
 In this diagram, the maximum connection for subreg_rw is shown.
 Coming in from the left (bus) are the software write enable and write data, which has the highest priority in modifying the register contents.
 These are present for all RW types.
-The “final answer” for the register content is stored in the subreg module, and presented to the peripheral hardware as the output `q` and to bus reads as the output `qs`.
+The "final answer" for the register content is stored in the subreg module, and presented to the peripheral hardware as the output `q` and to bus reads as the output `qs`.
 Optionally, if the `hwaccess` attribute allows writes from the hardware, the hardware can present updated values in the form of data enable (`de`) and update data (`d`).
 If the data enable is true, the register content is updated with the update data.
 If both software and hardware request an update in the same clock cycle (i.e. both `de` and `we` are true), the software updated value is used, as shown in the diagram.
@@ -425,9 +425,9 @@ If both software and hardware request an update in the same clock cycle (i.e. bo
 The `hwaccess` attribute value does not change the contents of the subreg, but the connections are potentially modified.
 The attribute `hwaccess` has four potential values, as shown earlier in the document: `hrw, hro, hwo, none`.
 A `hwaccess` value of `hrw` means that the hardware wants the ability to update the register content (i.e. needs connection to `d` and `de`), as well as see the updated output (`q`).
-`hwo` doesn’t care about the output `q`, but wants to update the register value.
+`hwo` doesn't care about the output `q`, but wants to update the register value.
 This is the default for registers marked for software read-only access.
-`hro` conversely indicates the hardware doesn’t need to update the content, but just wants to see the value written by software.
+`hro` conversely indicates the hardware doesn't need to update the content, but just wants to see the value written by software.
 This is the default for fields where the software access is read-write or write-only.
 Finally an attribute value of `none` asks for no interface to the hardware, and might be used for things like scratch registers or DV test registers where only software can modify the value, or informational registers like version numbers that are read-only by the software.
 
@@ -503,13 +503,13 @@ q <= (de ? d : q) & (we ? ~wd : '1)
 ```
 
 In this description if the hardware is writing, its value is sent to the logic that potentially clears that value or the stored value.
-So if the hardware accidentally clears fields that the software hasn’t cleared yet, there is a risk that events will not be seen by software.
+So if the hardware accidentally clears fields that the software hasn't cleared yet, there is a risk that events will not be seen by software.
 The recommendation is that the hardware feed the `q` value back into `d`, only setting bits with new events.
-Then there will be no “collision” between hardware setting events and software clearing events.
-The HW could have chosen to simply treat `d` and `de` as set-only, but the preference is to leave the `subreg` simple and allow the hardware to do either “the right thing” or whatever it feels is appropriate for its needs.
+Then there will be no "collision" between hardware setting events and software clearing events.
+The HW could have chosen to simply treat `d` and `de` as set-only, but the preference is to leave the `subreg` simple and allow the hardware to do either "the right thing" or whatever it feels is appropriate for its needs.
 (Perhaps it is a feature to clear all events in the hardware.)
 
-The one “conflict” that is common and worth mentioning is `RW1C` on an interrupt vector.
+The one "conflict" that is common and worth mentioning is `RW1C` on an interrupt vector.
 This is the typical scenario where hardware sets bits (representing an interrupt event), and software clears bits (indicating the event has been handled).
 The assumption is that between the hardware setting and software clearing, **software has cleaned up whatever caused the event in the first place**.
 But if the event is still true (the HW `d` input is still `1`) then the clear should still have effect for one cycle in order to create a new interrupt edge.

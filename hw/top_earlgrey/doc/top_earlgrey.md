@@ -85,7 +85,7 @@ It also feeds into the document generation to ensure that the chosen address loc
 | `IO_SHCS`   | output | SPI host chip select |
 | `IO_SHDI`   | output | SPI host input data |
 | `IO_SHDO`   | input  | SPI host output data |
-| `MIO_00` .. `MIO_23` | inout  | Multiplexible pins available for input or output connections with peripheral units’ (UART, GPIO, etc.) IO |
+| `MIO_00` .. `MIO_23` | inout  | Multiplexible pins available for input or output connections with peripheral units' (UART, GPIO, etc.) IO |
 
 {{% section2 Design Details }}
 
@@ -159,14 +159,14 @@ This is part of the *Secure Boot Process* that will be detailed in a security se
 
 Earl Grey contains 512kB of emulated embedded-flash (e-flash) memory for code storage.
 This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
-For the 0.5 version the expectation is that the operating system will be very lightweight, and the “application” will be simple proof of concept code to show that the chip can do.
+For the 0.5 version the expectation is that the operating system will be very lightweight, and the "application" will be simple proof of concept code to show that the chip can do.
 One example will be validation code that tests the validity and stability of the full chip environment itself.
 
 Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
 It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
 Earl Grey, as an FPGA-only proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
 This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
-Since by definition these details can’t be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
+Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
 We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
 
 Details on how e-flash memory is used by software will be detailed in the Secure Boot Process and Software sections that follow.
@@ -185,7 +185,7 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 
 ### Peripherals
 
-Earl Grey contains a suite of “peripherals”, or subservient execution units connected to the Ibex processor by means of a bus interconnect.
+Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
 Each of these peripherals follows an interface scheme dictated in the
 [Comportability Specification.](../../../doc/rm/comportability_specification.md)
 This specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
@@ -250,7 +250,7 @@ For SPI passthrough timing reasons, the SPI device pins will be hardwired to Ear
 ##### SPI host
 
 In addition to the SPI passthrough functionality (see below), the SPI host is able to originate SPI transactions as directed by software.
-This functionality will require addressing modes, as well as “generic transfer” where the data is simply sent as contained packets by the host hardware state machine.
+This functionality will require addressing modes, as well as "generic transfer" where the data is simply sent as contained packets by the host hardware state machine.
 The specification for SPI host is not defined at this time, and will depend upon conversations with the software team which are still in development.
 Only single-mode functionality is expected at this time.
 
@@ -261,7 +261,7 @@ For SPI passthrough timing reasons, the SPI host pins will be hardwired to Earl 
 One primary feature of the 0.5 release is to develop at least rudimentary SPI Passthrough functionality.
 This feature allows Earl Grey to interpose on SPI, watching transactions coming in to the SPI device port, and passing them on to the SPI host port.
 The involvement of the SPI device and host components (working together) requires logic to inspect the activities of the SPI transfer, and potentially modify them on the way out, with minimal latency impact.
-This is implemented with a simple MUX between the device and host pins to select either the inbound device traffic, or pre-created “safe” content.
+This is implemented with a simple MUX between the device and host pins to select either the inbound device traffic, or pre-created "safe" content.
 The MUX is simple, but the selection of it requires inspection logic and a lookup table to determine safe and unsafe behavior, as well as the replacement safe transaction.
 The specification for this functionality will be created in conjunction with systems designers who are using similar behavior in products today.
 The goal is for this subset of functionality provide enough proving ground to a) show the direction of the concept; b) test out software interfaces with the system to be developed around it.
@@ -293,12 +293,12 @@ is the primary
 and decryption mechanism used in OpenTitan protocols.
 AES runs with key sizes of 128b, 192b, or 256b.
 The module can select encryption or decryption of data that arrives in 16 byte quantities to be encrypted or decrypted independently of other data
-(“[ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB)").
+("[ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB)").
 Other modes (say
 [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR),
 [CBC mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC),
 etc) can be implemented in software on top of the results of ECB, though future versions of this AES IP will likely add such overlayed modes in hardware to improve performance and increase security (risk of secret exposure).
-For this version, all data transfer is “front door” in the sense that key and data material is passed into the module via register writes.
+For this version, all data transfer is "front door" in the sense that key and data material is passed into the module via register writes.
 Future versions will have provisions for private transfer of key and data material to reduce exposure from potentially untrusted local firmware.
 This version does not attempt to add any side-channel or fault-injection resistance into the design.
 Future versions will begin to add in such countermeasures.
@@ -318,7 +318,7 @@ family of hashing algorithms, where the digest (or hash output) is of 256b lengt
 The data is sent into the SHA peripheral after declaring the beginning of a hash request (effectively zeroing out the internal state to initial conditions), 32b at a time.
 Once all data has been sent, the user can indicate the completion of the hash request (with optional partial-word final write).
 The peripheral will produce the hash result available for register read by the user.
-All data transfer is “front door” in the sense that it is passed into the module via register writes.
+All data transfer is "front door" in the sense that it is passed into the module via register writes.
 Future versions will have provisions for private transfer of data to reduce exposure from potentially untrusted local firmware.
 This version does not attempt to add any side-channel or fault-injection resistance into the design.
 Future versions will begin to add in such countermeasures.
@@ -401,7 +401,7 @@ If the time is beyond a configurable duration, then the manager raises the respo
 These responses are not described in further detail at this time, but the basics of the configuration methods will be designed in this version of the alert manager.
 
 In addition, signaling exists between the alert manager and each peripheral to ensure that all monitors are active.
-This “heartbeat check” requests a response from the alert senders over the same wires to ensure that their reporting mechanism has not itself been compromised.
+This "heartbeat check" requests a response from the alert senders over the same wires to ensure that their reporting mechanism has not itself been compromised.
 More details about the alert manager will come in an independent alert manager specification.
 
 ##### TRNG (aspirational)

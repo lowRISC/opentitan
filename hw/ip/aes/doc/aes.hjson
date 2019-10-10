@@ -88,10 +88,10 @@
         resval: "1",
         hwaccess: "hrw",
         desc:  '''
-          3-bit one-hot field to select AES key length: 128 bit (3’b001), 192 bit (3’b010)
-          or 256 bit (3’b100). Invalid input values, i.e., value with multiple bits set,
-          value 3’b000, and value 3’b010 in case 192-bit keys are not supported (because
-          disabled at compile time) are mapped to 3’b001.
+          3-bit one-hot field to select AES key length: 128 bit (3'b001), 192 bit (3'b010)
+          or 256 bit (3'b100). Invalid input values, i.e., value with multiple bits set,
+          value 3'b000, and value 3'b010 in case 192-bit keys are not supported (because
+          disabled at compile time) are mapped to 3'b001.
         '''
       }
       { bits: "4",

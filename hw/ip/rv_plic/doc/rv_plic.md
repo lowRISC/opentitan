@@ -40,7 +40,7 @@ The RV_PLIC is compatible with any RISC-V core implementing the RISC-V privilege
 Each interrupt source has a unique ID assigned based upon its bit position
 within the input `intr_src_i`. ID counting ranges from 1 to N, the number of
 interrupt sources. `intr_src_i[i]` bit has an ID of `i+1`. This ID is used when
-targets “claim” the interrupt and to “complete” the interrupt event.
+targets "claim" the interrupt and to "complete" the interrupt event.
 
 ### Priority and Threshold
 
@@ -90,7 +90,7 @@ lowest ID.
 
 After an interrupt is claimed, the interrupt pending (`IP`) bit of the interrupt
 source is cleared, regardless of the status of the `intr_src_i` input value.
-Until a target “completes” the interrupt, it won't be re-set if a new event
+Until a target "completes" the interrupt, it won't be re-set if a new event
 for the interrupt occurs. A target completes the interrupt by writing the ID of
 the interrupt to the !!CC register. The write event is forwarded to the Gateway
 logic, which resets the interrupt status to accept new interrupt event. The
