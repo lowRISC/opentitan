@@ -39,7 +39,7 @@ module rv_plic_target #(
     // Let first implementation be brute-force
     // As N_SOURCE increasing logic depth increases O(logN)
     // This approach slows down the simulation.
-    logic [PRIOW-1:0] max_prio;
+    logic [MAX_PRIOW-1:0] max_prio;
     logic irq_next;
     logic [SRCW-1:0] irq_id_next;
     always_comb begin
