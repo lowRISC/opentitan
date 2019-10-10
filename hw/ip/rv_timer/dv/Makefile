@@ -49,6 +49,11 @@ ifeq (${TEST_NAME},rv_timer_intr_test)
   RUN_OPTS      += +run_intr_test
 endif
 
+ifeq (${TEST_NAME},rv_timer_stress_all)
+  UVM_TEST_SEQ   = rv_timer_stress_all_vseq
+  RUN_OPTS      += +test_timeout_ns=10_000_000_000
+endif
+
 ifeq (${TEST_NAME},rv_timer_csr_hw_reset)
   UVM_TEST_SEQ   = rv_timer_common_vseq
   RUN_OPTS      += +csr_hw_reset
