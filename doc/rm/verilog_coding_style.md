@@ -2149,7 +2149,7 @@ Refer to the main text body for explanations examples, and exceptions.
 *   Sequential logic must use **non-blocking** assignments
 *   Combinational blocks must use **blocking** assignments
 *   Use of latches is discouraged, use flip-flops when possible
-*   Explicitly specify don’t cares (`X`) when safe to do so.
+*   Explicitly specify don't cares (`X`) when safe to do so.
 *   Prefer `assign` statements wherever practical.
 *   Use `unique case` and always define a `default` case
 *   Use available signed arithmetic constructs wherever signed arithmetic is used

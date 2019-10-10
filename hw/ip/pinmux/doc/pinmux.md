@@ -75,7 +75,7 @@ Additional details about the signal names and parameters is given in the tables 
 {{% section2 Parameters }}
 
 The following table lists the main parameters used throughout the `pinmux` design.
-Note that the pinmux is generated based on the system configuration, and hence these parameters are placed into a package as “localparams”.
+Note that the pinmux is generated based on the system configuration, and hence these parameters are placed into a package as "localparams".
 
 Localparam     | Default (Max)         | Description
 ---------------|-----------------------|---------------

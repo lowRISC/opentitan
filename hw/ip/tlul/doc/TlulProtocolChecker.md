@@ -65,7 +65,7 @@ spec section 6.2.
 as follows: 2<sup>a_size</sup> must equal $countones(a_mask). See spec section
 4.6.
 <p>
-<strong>aKnown</strong>: Make sure it’s not X when a_valid is high.
+<strong>aKnown</strong>: Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
@@ -74,7 +74,7 @@ as follows: 2<sup>a_size</sup> must equal $countones(a_mask). See spec section
    <td><strong>onlyOnePendingReqPerSourceID</strong>: There should be no more
 than one pending request per each source ID. See spec section 5.4.
 <p>
-<strong>aKnown</strong>: Make sure it’s not X when a_valid is high.
+<strong>aKnown</strong>: Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
@@ -83,7 +83,7 @@ than one pending request per each source ID. See spec section 5.4.
    <td><strong>addressAlignedToSize</strong>: a_address must be aligned to
 a_size: a_address & ((1 << a_size) - 1) == 0. See spec section 4.6.
 <p>
-<strong>aKnown: </strong>Make sure it’s not X when a_valid is high.
+<strong>aKnown: </strong>Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
@@ -94,7 +94,7 @@ and PutFullData (but not for PutPartialData). See spec sections 4.6 and 6.2.
 <p>
 <strong>sizeMatchesMask</strong>: See a_size above.
 <p>
-<strong>aKnown: </strong>Make sure it’s not X when a_valid is high.
+<strong>aKnown: </strong>Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
@@ -108,19 +108,19 @@ corresponding a_mask bits are 0, can be X. See spec section 4.6.
   <tr>
    <td>a_user
    </td>
-   <td><strong>aKnown: </strong>Make sure it’s not X when a_valid is high.
+   <td><strong>aKnown: </strong>Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
    <td>a_valid
    </td>
-   <td><strong>aKnown</strong>: Make sure it’s not X (except during reset).
+   <td><strong>aKnown</strong>: Make sure it's not X (except during reset).
    </td>
   </tr>
   <tr>
    <td>a_ready
    </td>
-   <td><strong>aReadyKnown</strong>: Make sure it’s not X (except during
+   <td><strong>aReadyKnown</strong>: Make sure it's not X (except during
 reset).
    </td>
   </tr>
@@ -169,13 +169,13 @@ been a corresponding request with the same source ID value. See spec section
 <strong>noOutstandingReqsAtEndOfSim</strong>: Make sure that there are no
 outstanding requests at the end of the simulation.
 <p>
-<strong>dKnown</strong>: Make sure it’s not X when d_valid is high.
+<strong>dKnown</strong>: Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_sink
    </td>
-   <td><strong>dKnown</strong>: Make sure it’s not X when d_valid is high.
+   <td><strong>dKnown</strong>: Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
@@ -189,25 +189,25 @@ can be X. See spec section 4.6.
   <tr>
    <td>d_error
    </td>
-   <td><strong>dKnown: </strong>Make sure it’s not X when d_valid is high.
+   <td><strong>dKnown: </strong>Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_user
    </td>
-   <td><strong>dKnown: </strong>Make sure it’s not X when d_valid is high.
+   <td><strong>dKnown: </strong>Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_valid
    </td>
-   <td><strong>dKnown</strong>: Make sure it’s not X (except during reset).
+   <td><strong>dKnown</strong>: Make sure it's not X (except during reset).
    </td>
   </tr>
   <tr>
    <td>d_ready
    </td>
-   <td><strong>dReadyKnown: </strong>Make sure it’s not X (except during
+   <td><strong>dReadyKnown: </strong>Make sure it's not X (except during
 reset).
    </td>
   </tr>

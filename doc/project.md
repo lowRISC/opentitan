@@ -6,9 +6,9 @@ Open source strategy; History; Who are we?; Etc (more deep from the intro paragr
 ## OpenTitan project governance
 
 &lt;Governance.
-Keep the “garden” healthy;
+Keep the "garden" healthy;
 Corp partners;
-Technical ‘code owners’ etc;
+Technical 'code owners' etc;
 How to get commit permission / acceptance;
 How are PRs accepted; what is the process by which things are allowed / rejected;
 partner criteria;
@@ -21,7 +21,7 @@ License policy / CLA&gt;
 ## How to get involved
 
 &lt;Just brief points as to how to start out;
-“My company just signed up, how do I figure out what to work on and who to talk to?”;
+"My company just signed up, how do I figure out what to work on and who to talk to?";
 link to getting started user guides;
 Team drive (for internal/confidential docs) vs github, mailing list vs chat, etc.&gt;
 
@@ -29,7 +29,7 @@ Team drive (for internal/confidential docs) vs github, mailing list vs chat, etc
 
 &lt;Maturity standards - what they are;
 Articulate maturity/quality level per IP (could vary across different IPs);
-Different “support” expectation;
+Different "support" expectation;
 How we maintain quality;
 possible reference to certification;
 Process to ensure logical security of included IP;

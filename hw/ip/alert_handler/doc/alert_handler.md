@@ -26,31 +26,31 @@ sources, where NAlerts is a function of the requirements of the peripherals
 response from each source to ensure proper wiring
 
 - Register locking on all configuration registers
-	- Once locked, can not be modified by software
+    - Once locked, can not be modified by software
 
 - Register-based assignment of alert to alert-class
-	- Four classes, can be individually disabled.
-	- Each class generates one interrupt.
-	- Disambiguation history for software to determine which alert caused the
-	class interrupt.
-	- Each class has configurable response time for escalation.
-	- Disable allows for ignoring alerts, should only be used in cases when
-	alerts are faulty. Undesirable access is enforced by locking the register
-	state after initial configuration.
+    - Four classes, can be individually disabled.
+    - Each class generates one interrupt.
+    - Disambiguation history for software to determine which alert caused the
+    class interrupt.
+    - Each class has configurable response time for escalation.
+    - Disable allows for ignoring alerts, should only be used in cases when
+    alerts are faulty. Undesirable access is enforced by locking the register
+    state after initial configuration.
 
 - Register-based escalation controls
-	- Number of alerts in class before escalation
-	- Timeout for unhandled alert IRQs can also trigger escalation
-	- Configurable escalation enables for 4 escalation signals
-		- Could map to NMI, wipe secrets signal, lower permission, chip reset,
-		 etc.
-		- Escalation signals differentially-signaled with heartbeat, should
-		 trigger response if differential or heartbeat failure at destination
-	* Configurable time in cycles between each escalation level
+    - Number of alerts in class before escalation
+    - Timeout for unhandled alert IRQs can also trigger escalation
+    - Configurable escalation enables for 4 escalation signals
+        - Could map to NMI, wipe secrets signal, lower permission, chip reset,
+         etc.
+        - Escalation signals differentially-signaled with heartbeat, should
+         trigger response if differential or heartbeat failure at destination
+    * Configurable time in cycles between each escalation level
 
 - Two locally sourced hardware alerts
-	- Differential signaling from a source has failed
-	- Ping response from a source has failed
+    - Differential signaling from a source has failed
+    - Ping response from a source has failed
 
 
 {{% section2 Description }}
@@ -544,7 +544,7 @@ predetermined definition of an escalation signal, that is left to the
 top-level integration. Examples could be processor Non Maskable Interrupt (NMI),
 permission lowering, secret wiping, chip reset, etc. Typically the assumption
 is that escalation level 0 is the first to trigger, followed by 1, 2, and then
-3, emulating a "fuse" that is lit that can’t be stopped once the first triggers
+3, emulating a "fuse" that is lit that can't be stopped once the first triggers
 (this is however not a requirement). See register section for discussion of
 counter clearing and register locking to determine the finality of accumulation
 triggers.
@@ -802,7 +802,7 @@ will just be acknowledged with `ping_ok_o` in case `esc_en_i` is already
 asserted. An ongoing ping sequence will be aborted immediately.
 
 
-{{% section1 Programmer’s Guide }}
+{{% section1 Programmer's Guide }}
 
 
 {{% section2 Power-up and Reset Considerations }}
@@ -810,7 +810,7 @@ asserted. An ongoing ping sequence will be aborted immediately.
 False alerts during power-up and reset are not possible since the alerts are
 disabled by default, and need to be configured and locked in by the firmware.
 
-The ping timer won’t start until initial configuration is over and the registers
+The ping timer won't start until initial configuration is over and the registers
 are locked in.
 
 
@@ -887,7 +887,7 @@ the following steps:
    the system. Each cause register contains a sticky bit that is set by the
    incoming alert, and is clearable with a write by software. This should only
    be cleared after software has cleared the event trigger, if applicable. It is
-   possible that the event requires no clearing (e.g. a parity error), or can’t
+   possible that the event requires no clearing (e.g. a parity error), or can't
    be cleared (a breach in the metal mesh protecting the chip).
 
    Note that in the rare case when multiple events are triggered at or about the

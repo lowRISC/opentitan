@@ -55,7 +55,7 @@ descriptive, which will help during debug.
 *   The second argument is the assertion property.
 *   The last two arguments specify the clock and reset signals (active-high
 reset).
-*   Note that this macro doesn’t support a custom error message (such as the
+*   Note that this macro doesn't support a custom error message (such as the
 $error message in the previous section). However, the macro will print out the
 property name and the entire property code such as `req |-> ack`.
 
@@ -82,7 +82,7 @@ that a FIFO is empty at the end of each sim.
 Assert that a concurrent property never happens.
 
 ### `ASSERT_KNOWN(name, signal, clk, rst)
-Assert that `signal` has a known value after reset, where “known” refers to
+Assert that `signal` has a known value after reset, where "known" refers to
 a value that is not X.
 
 ### More Macros and Examples
@@ -119,7 +119,7 @@ used for assertion properties.
   <tr>
    <td>$stable()
    </td>
-   <td>True if the value of expression didn’t change
+   <td>True if the value of expression didn't change
    </td>
   </tr>
   <tr>
@@ -155,7 +155,7 @@ used for assertion properties.
   <tr>
    <td>$isunknown()
    </td>
-   <td>True if any bit in the expression is ‘X’ or ‘Z'
+   <td>True if any bit in the expression is 'X' or 'Z'
    </td>
   </tr>
 </table>
@@ -185,13 +185,13 @@ Below table lists useful operators that can be used for assertion properties.
   <tr>
    <td>|->
    </td>
-   <td>“Overlapping” implication (same cycle)
+   <td>"Overlapping" implication (same cycle)
    </td>
   </tr>
   <tr>
    <td>|=>
    </td>
-   <td>“Non-overlapping” implication (next cycle)
+   <td>"Non-overlapping" implication (next cycle)
      <br /> <code>a |=> b</code> is equivalent to <code>a |-> ##1 b</code>
    </td>
   </tr>
@@ -271,6 +271,6 @@ influence for "u_sha2.u_pad.shaf_ren".
 ## References
 *   [SVA Basics](https://www.systemverilog.io/sva-basics)
 *   [SVA Tutorial](https://www.doulos.com/knowhow/sysverilog/tutorial/assertions/)
-*   “SystemVerilog Assertions Design Tricks and SVA Bind Files,” SNUG 2009,
+*   "SystemVerilog Assertions Design Tricks and SVA Bind Files", SNUG 2009,
 Clifford E. Cummings,
 [paper](http://www.sunburst-design.com/papers/CummingsSNUG2009SJ_SVA_Bind.pdf)

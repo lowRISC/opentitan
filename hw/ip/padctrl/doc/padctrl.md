@@ -55,7 +55,7 @@ Note that the chip-level `padctrl` module also contains the pads for clock and r
 {{% section2 Parameters }}
 
 The following table lists the main parameters used throughout the `padctrl` design.
-Note that the `padctrl` modules are generated based on the system configuration, and hence these parameters are placed into a package as “localparams”.
+Note that the `padctrl` modules are generated based on the system configuration, and hence these parameters are placed into a package as "localparams".
 
 Localparam     | Default (Max)         | Description
 ---------------|-----------------------|---------------
@@ -103,7 +103,7 @@ Parameter      | Default (Max)         | Description
 ---------------|-----------------------|---------------
 AttrDw         | 6 (-)                 | Width of the pad attribute vector.
 
-Note that the pad wrapper may implement a “virtual” open drain termination, where standard bidirectional pads are employed, but instead of driving the output high for a logic 1 the pad is put into tristate mode.
+Note that the pad wrapper may implement a "virtual" open drain termination, where standard bidirectional pads are employed, but instead of driving the output high for a logic 1 the pad is put into tristate mode.
 
 Signal             | Direction  | Type  | Description                         | Mandatory
 -------------------|------------|-------|-------------------------------------|--------------------
