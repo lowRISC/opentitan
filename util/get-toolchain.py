@@ -21,6 +21,7 @@ BUILDINFO_FILENAME = "buildinfo"
 RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
 TARGET_DIR = '/tools/riscv'
 TOOLCHAIN_VERSION = 'latest'
+VERSION_RE=r"(lowRISC toolchain version|Version):\s*\n(?P<version>\d+(-\d+)?)"
 
 
 def prompt_yes_no(msg):
@@ -65,7 +66,7 @@ def get_release_tag_from_file(buildinfo_file):
         Release tag string if available, otherwise None.
     """
     with open(buildinfo_file, 'r') as f:
-        match = re.match(r"Version:\n(?P<version>\d+(-\d+)?)", f.read(), re.M)
+        match = re.match(VERSION_RE, f.read(), re.M)
     if not match:
         return None
     return match.group("version")
@@ -134,7 +135,10 @@ def main():
             sys.exit('Unable to find buildinfo file at %s. Delete target '
                 'directory and try again.' % buildinfo_file)
         current_release_tag = get_release_tag_from_file(buildinfo_file)
-        if not current_release_tag:
+        if not current_release_tag and not args.force:
+            # If args.force is set then we can skip this error condition. The
+            # version check test condition will also fail, and the install
+            # will continue.
             sys.exit('Unable to extract current toolchain version from %s. '
                 'Delete target directory and try again.' % buildinfo_file)
         if get_release_tag(release_info) == current_release_tag:
