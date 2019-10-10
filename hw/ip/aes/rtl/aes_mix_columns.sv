@@ -10,11 +10,13 @@ module aes_mix_columns (
   output logic [7:0]     data_o [16]
 );
 
-import aes_pkg::*;
-
-// dummy only
-mode_e unused_mode;
-assign unused_mode = mode_i;
-assign data_o      = data_i;
+  // Individually mix columns
+  for (genvar i = 0; i < 4; i++) begin : gen_mix_column
+    aes_mix_single_column aes_mix_column_i (
+      .mode_i ( mode_i            ),
+      .data_i ( data_i[4*i:4*i+3] ),
+      .data_o ( data_o[4*i:4*i+3] )
+    );
+  end
 
 endmodule

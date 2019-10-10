@@ -1,0 +1,77 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// AES MixColumns for one single column of the state matrix
+//
+// For details, see Equations 4-7 of:
+// Satoh et al., "A Compact Rijndael Hardware Architecture with S-Box Optimization"
+
+module aes_mix_single_column (
+  input  aes_pkg::mode_e mode_i,
+  input  logic [7:0]     data_i [4],
+  output logic [7:0]     data_o [4]
+);
+
+  import aes_pkg::*;
+
+  logic [7:0] x[4];
+  logic [7:0] y[2];
+  logic [7:0] z[2];
+
+  logic [7:0] x_mul2[4];
+  logic [7:0] y_pre_mul4[2];
+  logic [7:0] y2, y2_pre_mul2;
+
+  logic [7:0] z_muxed[2];
+
+  // Drive x
+  assign x[0] = data_i[0] ^ data_i[3];
+  assign x[1] = data_i[3] ^ data_i[2];
+  assign x[2] = data_i[2] ^ data_i[1];
+  assign x[3] = data_i[1] ^ data_i[0];
+
+  // Mul2 blocks for x
+  for (genvar i = 0; i < 4; i++) begin : gen_x_mul2
+    aes_mul2 x_mul2_i (
+      .data_i ( x[i]      ),
+      .data_o ( x_mul2[i] )
+    );
+  end
+
+  // Drive y_pre_mul4
+  assign y_pre_mul4[0] = data_i[3] ^ data_i[1];
+  assign y_pre_mul4[1] = data_i[2] ^ data_i[0];
+
+  // Mul4 blocks for y
+  for (genvar i = 0; i < 2; i++) begin : gen_mul4
+    aes_mul4 y_mul4_i (
+      .data_i ( y_pre_mul4[i] ),
+      .data_o ( y[i]          )
+    );
+  end
+
+  // Drive y2_pre_mul2
+  assign y2_pre_mul2 = y[0] ^ y[1];
+
+  // Mul2 block for y
+  aes_mul2 y_mul2 (
+    .data_i ( y2_pre_mul2 ),
+    .data_o ( y2          )
+  );
+
+  // Drive z
+  assign z[0] = y2 ^ y[0];
+  assign z[1] = y2 ^ y[1];
+
+  // Mux z
+  assign z_muxed[0] = (mode_i == AES_ENC) ? 8'b0 : z[0];
+  assign z_muxed[1] = (mode_i == AES_ENC) ? 8'b0 : z[1];
+
+  // Drive outputs
+  assign data_o[0] = data_i[1] ^ x_mul2[3] ^ x[1] ^ z_muxed[1];
+  assign data_o[1] = data_i[0] ^ x_mul2[2] ^ x[1] ^ z_muxed[0];
+  assign data_o[2] = data_i[3] ^ x_mul2[1] ^ x[3] ^ z_muxed[1];
+  assign data_o[3] = data_i[2] ^ x_mul2[0] ^ x[3] ^ z_muxed[0];
+
+endmodule
