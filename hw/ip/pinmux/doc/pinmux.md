@@ -43,7 +43,7 @@ Similarly the assignment of which peripheral input is driven by which chip input
 By default, all peripheral inputs are tied to zero or one (this default is design-time programmable via the `InputDefault` parameter).
 Further, all output enables are set to zero, which essentially causes all pads to be in high-Z state after reset.
 
-In addition to wiring programmability, each peripheral input and chip output can be set constantly to 0 or 1.
+In addition to wiring programmability, each peripheral input can be set constantly to 0 or 1, and each chip output can be set constantly to 0, 1 or high-Z.
 Additional features such as output keeper or inversion are not provided by the pinmux since they are implemented in the `padctrl` IP which operates at the chip-level.
 This separation of physical pad attributes and logical wiring makes it possible to place the pads into an always-on domain without restricting possible power-down modes of the pinmux.
 One could imagine this to be a useful feature if a deep sleep mode were implemented in future; chip outputs could hold their output values and not be affected by internal power loss.
@@ -79,11 +79,12 @@ Note that the pinmux is generated based on the system configuration, and hence t
 
 Localparam     | Default (Max)         | Description
 ---------------|-----------------------|---------------
-NPeriphOut     | 1 (-)                 | Number of peripheral outputs.
-NPeriphIn      | 1 (-)                 | Number of peripheral input.
-NMioPads       | 1 (-)                 | Number of muxed outputs.
+NPeriphOut     | 16 (-)                | Number of peripheral outputs.
+NPeriphIn      | 16 (-)                | Number of peripheral input.
+NMioPads       | 8 (-)                 | Number of muxed bidirectional pads (depending on padctrl setup).
 
 {{% section2 Signals }}
+
 The table below lists the `pinmux` signals. The number of IOs is parametric, and hence the signals are stacked in packed arrays.
 
 Signal                               | Direction        | Type           | Description
@@ -120,11 +121,14 @@ The global default at reset is `0`, but the default of individual signals can be
 
 The global default at reset is `2`, but the default of individual signals can be overridden at design time, if needed.
 
-The pinmux configuration can be locked down by writing a 1 to register !!REGEN.
+The pinmux configuration can be locked down by writing 0 to register !!REGEN.
 The configuration can then not be altered anymore unless the system is reset.
 
 
 {{% section1 Register Table }}
+
+The layout of the register table can change, based on the parameterization.
+The register table below is an example and has been generated using the default parameters.
 
 {{% registers x }}
 

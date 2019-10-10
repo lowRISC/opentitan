@@ -45,7 +45,7 @@
         {
             bits:   "0",
             desc: ''' When true, all configuration registers can be modified.
-            When false, they become read-only. Defaults true, write one to clear.
+            When false, they become read-only. Defaults true, write zero to clear.
             '''
             resval: 1,
         },
