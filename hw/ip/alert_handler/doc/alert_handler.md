@@ -155,11 +155,12 @@ Signal                  | Direction        | Type           | Description
 ------------------------|------------------|----------------|---------------
 `tl_i`                  | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
 `tl_o`                  | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
+`irq_o[<class>]`        | `output`         | packed `logic` | Interrupt outputs, level sensitive, active high. Indices 0-3 correspond to classes A-D.
+`crashdump_o`           | `output`         | packed `struct`| This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
 `entropy_i`             | `input`          | `logic`        | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
 `alert_pi/ni[<number>]` | `input`          | packed `logic` | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
 `ack_po/no[<number>]`   | `output`         | packed `logic` | Outgoing alert acknowledgment, differentially encoded. Index range: `[NAlerts-1:0]`
 `ping_po/no[<number>]`  | `output`         | packed `logic` | Ping request to alert sender, differentially encoded. Index range: `[NAlerts-1:0]`
-`irq_o[<class>]`        | `output`         | packed `logic` | Interrupt outputs, level sensitive, active high. Indices 0-3 correspond to classes A-D.
 `esc_po/no[<sev>]`      | `output`         | packed `logic` | Escalation or ping request, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
 `resp_pi/ni[<sev>]`     | `input`          | packed `logic` | Escalation ping response, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
 
@@ -174,6 +175,12 @@ that all alert senders are always active and have not been the target of an
 attack. Note that low power states are not considered at this time, but could
 affect the signaling and testing of alerts.
 
+The `crashdump_o` struct outputs a collection of CSRs and alert handler state
+bits that can be latched by hardware debugging circuitry. This can be useful for
+extracting more information about possible failures or bugs without having to
+use the tile-link bus interface (which may become unresponsive under certain
+circumstances). It is recommended for the top level to store this information in
+an always-on location.
 
 {{% section2 Design Details }}
 
@@ -585,7 +592,7 @@ shown.
     { name: 'CLASSA_PHASE3_CYC',    wave: '2...................', data: ['1e6 cycles'] },
     { name: 'alert_triggered[0]',   wave: '010|.10.............' },
     { name: 'alert_triggered[1]',   wave: '0..|10..............' },
-    { name: 'CLASSA_ACCUM_CNT',     wave: '33.|33..............', data: ['0', '14','15','16'] },
+    { name: 'CLASSA_ACCUM_CNT',     wave: '33.|33..............', data: ['0', '1','15','16'] },
     { name: 'irq_o[0]',             wave: '01.|................' },
     { name: 'CLASSA_STATE',         wave: '3..|.3|3.|3..|3..|3.', data: ['Idle', '   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',       wave: '3..|.3|33|333|333|3.', data: ['0','1','1','2','1','2','3','1','2','3','0'] },
@@ -689,10 +696,10 @@ will trigger a `integ_fail_o` alert, as illustrated below:
     { name: 'clk_i',        wave: 'p..................' },
     { name: 'ping_en_i',    wave: '0........|.........' },
     { name: 'ping_ok_o',    wave: '0........|.........' },
-    { name: 'ping_fail_o',  wave: '0........|..1......' , node: '............b..' },
-    { name: 'integ_fail_o', wave: '0........|.........' },
+    { name: 'integ_fail_o', wave: '0........|..1010...' , node: '............b.d' },
+    { name: 'ping_fail_o',  wave: '0........|.........' },
     { name: 'esc_en_i',     wave: '01....0..|.1....0..' },
-    { name: 'resp_p',       wave: '0.101010.|.........',  node: '............a..' },
+    { name: 'resp_p',       wave: '0.101010.|.........',  node: '............a.c' },
     { name: 'resp_n',       wave: '1.010101.|.........' },
     { name: 'esc_p',        wave: '01.....0.|.1.....0.' },
     { name: 'esc_n',        wave: '10.....1.|.0.....1.' },
@@ -700,12 +707,13 @@ will trigger a `integ_fail_o` alert, as illustrated below:
   ],
   edge: [
    'a~>b missing response'
+   'c~>d'
   ],
   head: {
     text: 'Escalation signaling and response',
   },
   foot: {
-    text: 'escalation enable pulse shown at input sender at time 1 and 11; missing response and ping fail at time 12',
+    text: 'escalation enable pulse shown at input sender at time 1 and 11; missing response and repeated integfail at time 12 and 14',
     tick: 0,
   }
 }
@@ -936,8 +944,8 @@ clock periods involved. Assuming both clocks have the same frequency alert
 propagation takes at least 6-8 clock alert handler clock cycles.
 
 For alerts that mandate an asynchronous response (i.e. without requiring a
-clock to be active), it is highly recommended to build a separate network on
-the top-level. That network shall OR' the super-critical sources together and
+clock to be active), it is highly recommended to build a separate network at
+the top-level. That network should OR' the critical sources together and
 route the asynchronous alert signal directly to the highest severity
 countermeasure device. Examples for alert conditions of this sort would be
 attacks on the secure clock.
@@ -981,17 +989,16 @@ added in the future.
 
 {{% section1 Register Table }}
 
-The below register description can be generated with `reg_alert_handler.py`
-script. The reason of having yet another script for register is that the alert
-handler is configurable with the number of alert sources (similarly to the rv_
-plic design).
+The below register description can be generated with the `reg_alert_handler.py`
+script. The reason for having yet another script for register generation is
+that the alert handler is configurable for the number of alert sources
+(similar to the rv_plic design).
 
 The register description below may not match with the actual instance in Top
 Earlgrey, since the alert handler is generated by the topgen tool so that the
 number of alert sources matches.
 
-In order to generate the register file below, step into the
-`hw/ip/alert_handler/doc` folder and do:
+In order to generate the register file below, from `hw/ip/alert_handler/doc`:
 
 ```console
 $ ./reg_alert_handler.py alert_handler.tpl.hjson -n 4 > alert_handler.hjson
