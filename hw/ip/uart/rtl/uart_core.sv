@@ -346,7 +346,7 @@ module uart_core (
     end
   end
 
-  assign event_rx_overflow  = rx_valid & ~rx_fifo_wready;
+  assign event_rx_overflow  = rx_fifo_wvalid & ~rx_fifo_wready;
   assign event_tx_overflow  = reg2hw.wdata.qe & ~tx_fifo_wready;
   assign event_rx_break_err = break_err && (break_st == BRK_CHK);
 
