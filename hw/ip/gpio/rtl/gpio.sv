@@ -134,4 +134,9 @@ module gpio (
     .devmode_i  (1'b1)
   );
 
+  // Assert Known: Outputs
+  `ASSERT_KNOWN(intrGpioKnown, intr_gpio_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o, clk_i, !rst_ni)
+
 endmodule
