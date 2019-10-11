@@ -42,6 +42,11 @@ ifeq (${TEST_NAME},hmac_back_pressure)
   RUN_OPTS      += +zero_delays=1
 endif
 
+ifeq (${TEST_NAME},hmac_datapath_stress)
+  UVM_TEST_SEQ   = hmac_datapath_stress_vseq
+  RUN_OPTS      += +zero_delays=1
+endif
+
 ifeq (${TEST_NAME},hmac_burst_wr)
   UVM_TEST_SEQ   = hmac_burst_wr_vseq
 endif

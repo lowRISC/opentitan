@@ -26,6 +26,7 @@ package hmac_env_pkg;
   parameter uint32 HMAC_MSG_FIFO_SIZE        = 2048;
   parameter uint32 HMAC_MSG_FIFO_BASE        = 32'h800;
   parameter uint32 HMAC_MSG_FIFO_LAST_ADDR   = HMAC_MSG_FIFO_BASE + HMAC_MSG_FIFO_SIZE - 1;
+  parameter uint32 HMAC_HASH_SIZE            = 64;
   // 48 cycles of hashing, 16 cycles to rd next 16 words, 1 cycle to update digest
   parameter uint32 HMAC_MSG_PROCESS_CYCLES   = 65;
   // 80 cycles for hmac key padding
