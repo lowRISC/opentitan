@@ -48,10 +48,9 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
 
       scoreboard.add_item_queue({"a_chan_", xbar_devices[i].device_name},
                          scoreboard_pkg::kOutOfOrderCheck);
+      scoreboard.add_item_queue({"d_chan_", xbar_devices[i].device_name},
+                         scoreboard_pkg::kOutOfOrderCheck);
     end
-    // TODO should be same structure as a_chan
-    // all the d_channals share one queue as we can't know which host to return from device side
-    scoreboard.add_item_queue(D_CHAN_QUEUE_NAME, scoreboard_pkg::kOutOfOrderCheck);
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);

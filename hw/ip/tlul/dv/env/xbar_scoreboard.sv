@@ -25,22 +25,24 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard#(tl_seq_item);
     string tl_channel;
     string tl_port;
     tl_channel = port_name.substr(0, chan_prefix_len-1);
-    if (tl_channel == "d_chan_") return D_CHAN_QUEUE_NAME;
 
     tl_port = port_name.substr(chan_prefix_len, port_name.len()-1);
     if (!port_dir.exists(port_name)) begin
       `uvm_fatal(get_full_name(), $sformatf("Unexpected port name %0s", tl_port))
-    end else if (port_dir[port_name] == scoreboard_pkg::kSrcPort) begin
-      queue_name = {tl_channel, get_pair_dst_port_name(tr, tl_port)};
-    end else begin
-      queue_name = {tl_channel, tl_port};
+    end begin
+      queue_name = {tl_channel, get_queue_suffix_name(tr, tl_port)};
     end
     `uvm_info(get_full_name(), $sformatf("Scoreboard queue name : %0s", queue_name), UVM_HIGH)
     return queue_name;
   endfunction
 
-  // when port_name is src, need to find the pair dst port_name
-  virtual function string get_pair_dst_port_name(tl_seq_item tr, string port_name);
+  // queue name is a_chan_``device_name`` or d_chan_``device_name``, device name is its suffix
+  // if port is a device, return device name
+  // if port is a host, need to find the pair device_name
+  virtual function string get_queue_suffix_name(tl_seq_item tr, string port_name);
+    foreach (xbar_devices[i]) begin
+      if (xbar_devices[i].device_name == port_name) return port_name;
+    end
     foreach (xbar_hosts[i]) begin
       if (xbar_hosts[i].host_name == port_name) begin
         // Current port is a host port, get pair device port from the address
