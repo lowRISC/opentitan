@@ -48,7 +48,8 @@ pre_run:
 #       sw build dependency does not appear to be fully working with the DV flow
 #       This should be investigated later or replaced with the new build system
 sw_build: pre_run
-	rm -rf ${SW_BUILD_DIR};
+ifneq (${SW_NAME},)
+	rm -rf ${SW_BUILD_DIR}
 	mkdir -p ${SW_BUILD_DIR}
 	$(MAKE) -C $(SW_ROOT_DIR) \
 	  SW_DIR=boot_rom \
@@ -59,7 +60,7 @@ sw_build: pre_run
 	  SW_NAME=$(SW_NAME) \
 	  SW_BUILD_DIR=$(SW_BUILD_DIR)/sw \
 	  MAKEFLAGS="$(SW_OPTS)"
-
+endif
 
 simulate: sw_build
 	$(RUN_JOB_OPTS) cd ${RUN_DIR} && ${SIMX} ${RUN_OPTS} ${CL_RUN_OPTS}
