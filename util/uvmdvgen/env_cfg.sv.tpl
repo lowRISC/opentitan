@@ -30,9 +30,14 @@ class ${name}_env_cfg extends dv_base_env_cfg #(.RAL_T(${name}_reg_block));
 % endfor
 % if is_cip:
 
-    // set num_interrupts & num_alerts which will be used to create coverage and more
-    num_interrupts = ral.intr_state.get_n_used_bits();
-    num_alerts = 0;
+    // set num_interrupts & num_alerts
+    begin
+      uvm_reg rg = ral.get_reg_by_name("intr_state");
+      if (rg != null) begin
+        num_interrupts = ral.intr_state.get_n_used_bits();
+      end
+      num_alerts = 0;
+    end
 % endif
   endfunction
 

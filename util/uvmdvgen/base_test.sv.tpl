@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+% if is_cip:
+class ${name}_base_test extends cip_base_test #(
+% else:
 class ${name}_base_test extends dv_base_test #(
+% endif
     .ENV_T(${name}_env),
     .CFG_T(${name}_env_cfg)
   );
+
   `uvm_component_utils(${name}_base_test)
   `uvm_component_new
 

@@ -52,6 +52,20 @@ def main():
     )
 
     parser.add_argument(
+        "-hi",
+        "--has_interrupts",
+        default=False,
+        action='store_true',
+        help="""CIP has interrupts. Create interrupts interface in tb""")
+
+    parser.add_argument(
+        "-ha",
+        "--has_alerts",
+        default=False,
+        action='store_true',
+        help="""CIP has alerts. Create alerts interface in tb""")
+
+    parser.add_argument(
         "-ea",
         "--env_agents",
         nargs="+",
@@ -91,6 +105,8 @@ def main():
         if not args.env_agents: args.env_agents = []
         gen_env.gen_env(args.name, \
                         args.is_cip, \
+                        args.has_interrupts, \
+                        args.has_alerts, \
                         args.env_agents, \
                         args.env_outdir)
 

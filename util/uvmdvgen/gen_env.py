@@ -10,7 +10,7 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 
-def gen_env(name, is_cip, env_agents, root_dir):
+def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
     # yapf: disable
     # 4-tuple - sub-path, ip name, class name, file ext
     env_srcs = [('env',         name + '_', 'env_cfg',            '.sv'),
@@ -41,8 +41,6 @@ def gen_env(name, is_cip, env_agents, root_dir):
         src = tup[2]
         src_suffix = tup[3]
 
-        if env_agents == [] and src == "virtual_sequencer": continue
-
         ftpl = src + src_suffix + '.tpl'
         fname = src_prefix + src + src_suffix
 
@@ -53,7 +51,11 @@ def gen_env(name, is_cip, env_agents, root_dir):
         with open(path_dir + "/" + fname, 'w') as fout:
             try:
                 fout.write(
-                    tpl.render(name=name, is_cip=is_cip,
-                               env_agents=env_agents))
+                    tpl.render(
+                        name=name,
+                        is_cip=is_cip,
+                        has_interrupts=has_interrupts,
+                        has_alerts=has_alerts,
+                        env_agents=env_agents))
             except:
                 log.error(exceptions.text_error_template().render())
