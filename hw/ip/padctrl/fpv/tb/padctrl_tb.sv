@@ -13,8 +13,8 @@ module padctrl_tb #(
   output logic                                  rst_no,
   input  tlul_pkg::tl_h2d_t                     tl_i,
   output tlul_pkg::tl_d2h_t                     tl_o,
-  inout  wire  [padctrl_reg_pkg::NMioPads-1:0]  mio_io,
-  inout  wire  [padctrl_reg_pkg::NDioPads-1:0]  dio_io,
+  inout  wire  [padctrl_reg_pkg::NMioPads-1:0]  mio_pad_io,
+  inout  wire  [padctrl_reg_pkg::NDioPads-1:0]  dio_pad_io,
   input        [padctrl_reg_pkg::NMioPads-1:0]  mio_out_i,
   input        [padctrl_reg_pkg::NMioPads-1:0]  mio_oe_i,
   output logic [padctrl_reg_pkg::NMioPads-1:0]  mio_in_o,
@@ -40,12 +40,12 @@ module padctrl_tb #(
   padring #(
     .Impl(Impl)
   ) i_padring (
-    .clk_i     ,
-    .rst_ni    ,
+    .clk_pad_i(clk_i),
+    .rst_pad_ni(rst_ni),
     .clk_o     ,
     .rst_no    ,
-    .mio_io    ,
-    .dio_io    ,
+    .mio_pad_io,
+    .dio_pad_io,
     .mio_out_i ,
     .mio_oe_i  ,
     .mio_in_o  ,
