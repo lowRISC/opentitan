@@ -28,8 +28,6 @@ package xbar_env_pkg;
 
   `include "xbar_params.svh"
 
-  parameter string D_CHAN_QUEUE_NAME   = "D_CHAN_COMMON_QUEUE";
-
   function automatic int get_host_id(string name);
     foreach (xbar_hosts[i]) begin
       if (xbar_hosts[i].host_name == name) return i;
