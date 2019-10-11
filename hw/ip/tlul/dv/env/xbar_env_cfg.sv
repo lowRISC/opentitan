@@ -5,12 +5,16 @@
 // ---------------------------------------------
 // Xbar environment configuration class
 // ---------------------------------------------
-class xbar_env_cfg extends uvm_object;
+class xbar_env_cfg extends dv_base_env_cfg;
 
   rand tl_agent_cfg  host_agent_cfg[];
   rand tl_agent_cfg  device_agent_cfg[];
   int                num_of_hosts;
   int                num_of_devices;
+  uint               min_req_delay = 0;
+  uint               max_req_delay = 20;
+  uint               min_rsp_delay = 0;
+  uint               max_rsp_delay = 20;
 
   `uvm_object_utils_begin(xbar_env_cfg)
     `uvm_field_array_object(host_agent_cfg,    UVM_DEFAULT)
@@ -19,11 +23,16 @@ class xbar_env_cfg extends uvm_object;
     `uvm_field_int(num_of_devices,             UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new (string name = "");
-    super.new(name);
-  endfunction : new
+  `uvm_object_new
 
-  function void init_cfg();
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
+                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
+    has_ral = 0; // no csr in xbar
+    void'($value$plusargs("min_req_delay=%d", min_req_delay));
+    void'($value$plusargs("max_req_delay=%d", max_req_delay));
+    void'($value$plusargs("min_rsp_delay=%d", min_rsp_delay));
+    void'($value$plusargs("max_rsp_delay=%d", max_rsp_delay));
+
     // Host TL agent cfg
     num_of_hosts = xbar_hosts.size();
     host_agent_cfg = new[num_of_hosts];
@@ -41,5 +50,4 @@ class xbar_env_cfg extends uvm_object;
       device_agent_cfg[i].is_host = 0;
     end
   endfunction
-
 endclass

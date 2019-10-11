@@ -5,12 +5,13 @@
 // ---------------------------------------------
 // Xbar environment virtual sequencer
 // ---------------------------------------------
-class xbar_vseqr extends uvm_sequencer;
+class xbar_virtual_sequencer extends dv_base_virtual_sequencer #(.CFG_T(xbar_env_cfg),
+                                                                 .COV_T(xbar_env_cov));
 
   tl_sequencer host_seqr[];
   tl_sequencer device_seqr[];
 
-  `uvm_component_utils(xbar_vseqr)
+  `uvm_component_utils(xbar_virtual_sequencer)
 
   function new (string name, uvm_component parent);
     super.new(name, parent);

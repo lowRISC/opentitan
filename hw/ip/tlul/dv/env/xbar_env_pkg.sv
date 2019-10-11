@@ -8,8 +8,11 @@
 package xbar_env_pkg;
 
   import uvm_pkg::*;
+  import top_pkg::*;
+  import dv_utils_pkg::*;
   import tl_agent_pkg::*;
   import tl_main_pkg::*;
+  import dv_lib_pkg::*;
 
   typedef struct {
     string                      device_name;
@@ -46,9 +49,11 @@ package xbar_env_pkg;
     return 0;
   endfunction
 
-  `include "xbar_vseqr.sv"
-  `include "xbar_scoreboard.sv"
   `include "xbar_env_cfg.sv"
+  `include "xbar_env_cov.sv"
+  `include "xbar_virtual_sequencer.sv"
+  `include "xbar_scoreboard.sv"
   `include "xbar_env.sv"
+  `include "xbar_vseq_list.sv"
 
 endpackage

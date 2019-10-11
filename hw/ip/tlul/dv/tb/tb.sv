@@ -5,11 +5,12 @@
 module tb;
 
   import uvm_pkg::*;
+  import dv_utils_pkg::*;
   import xbar_test_pkg::*;
 
 
-  logic clk;
-  logic rst_n;
+  wire clk, rst_n;
+  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
 
   xbar_main dut(
     .clk_main_i(clk),
@@ -19,26 +20,12 @@ module tb;
   `include "tl_if_connect_macros.svh"
   `include "xbar_tl_if_connection.sv"
 
-  clk_if xbar_clk_if(.clk(clk));
-
   initial begin
-    uvm_config_db#(virtual clk_if)::set(null, "*", "clk_if", xbar_clk_if);
+    // drive clk and rst_n from clk_if
+    clk_rst_if.set_active();
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
+    $timeformat(-12, 0, " ps", 12);
     run_test();
-  end
-
-  // Generate clk
-  initial begin
-    clk = 1'b0;
-    forever begin
-      #10 clk = ~clk;
-    end
-  end
-
-  // Generate reset
-  initial begin
-    rst_n = 1'b0;
-    repeat(100) @(posedge clk);
-    rst_n = 1'b1;
   end
 
 endmodule

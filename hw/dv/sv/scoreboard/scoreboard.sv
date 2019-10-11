@@ -29,7 +29,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
   semaphore                         token;
   string                            log_filename;
   int                               log_fd;
-  virtual clk_if                    clk_vif;
+  virtual clk_rst_if                clk_vif;
   bit                               allow_packet_drop;
   bit                               disable_scoreboard;
 
@@ -41,13 +41,13 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(virtual clk_if)::get(this, "", "clk_if", clk_vif)) begin
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_vif", clk_vif)) begin
       `uvm_fatal(get_full_name(), "Cannot get clk interface")
     end
     if (enable_logging) begin
       log_filename = {get_full_name(), ".log"};
       `uvm_info(get_full_name(), $sformatf(
-                "Trasnaction logging enabled, log will be saved to %0s", log_filename), UVM_LOW)
+                "Transaction logging enabled, log will be saved to %0s", log_filename), UVM_LOW)
       log_fd = $fopen(log_filename, "w");
     end
     // Add a default in order check queue

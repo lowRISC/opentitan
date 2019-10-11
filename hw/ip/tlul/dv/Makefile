@@ -24,9 +24,14 @@ COMPILE_KEY     ?= default
 ####################################################################################################
 TEST_NAME       ?= xbar_sanity
 UVM_TEST        ?= xbar_base_test
-UVM_TEST_SEQ    ?= xbar_vseq
+UVM_TEST_SEQ    ?= xbar_base_vseq
 
 ifeq (${TEST_NAME},xbar_sanity)
+  UVM_TEST_SEQ    = xbar_sanity_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_random)
+  UVM_TEST_SEQ    = xbar_random_vseq
 endif
 
 ####################################################################################################
