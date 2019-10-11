@@ -10,14 +10,14 @@ module padring #(
   parameter Impl = "generic" // this determines the pad implementation
 ) (
   // pad input
-  input wire                                   clk_i,
-  input wire                                   rst_ni,
+  input wire                                   clk_pad_i,
+  input wire                                   rst_pad_ni,
   // to clocking/reset infrastructure
   output logic                                 clk_o,
   output logic                                 rst_no,
   // pads
-  inout wire   [padctrl_reg_pkg::NMioPads-1:0] mio_io,
-  inout wire   [padctrl_reg_pkg::NDioPads-1:0] dio_io,
+  inout wire   [padctrl_reg_pkg::NMioPads-1:0] mio_pad_io,
+  inout wire   [padctrl_reg_pkg::NDioPads-1:0] dio_pad_io,
   // muxed IO signals coming from pinmux
   input        [padctrl_reg_pkg::NMioPads-1:0] mio_out_i,
   input        [padctrl_reg_pkg::NMioPads-1:0] mio_oe_i,
@@ -43,8 +43,8 @@ module padring #(
   // connection of input wire to an inout pad causes lint problems
   // (even though oe is hardwired to 0).
   wire clk, rst_n;
-  assign clk   = clk_i;
-  assign rst_n = rst_ni;
+  assign clk   = clk_pad_i;
+  assign rst_n = rst_pad_ni;
 
   prim_pad_wrapper #(
     .Impl(Impl),
@@ -77,7 +77,7 @@ module padring #(
       .Impl(Impl),
       .AttrDw(padctrl_reg_pkg::AttrDw)
     ) i_mio_pad (
-      .inout_io ( mio_io[k]     ),
+      .inout_io ( mio_pad_io[k] ),
       .in_o     ( mio_in_o[k]   ),
       .out_i    ( mio_out_i[k]  ),
       .oe_i     ( mio_oe_i[k]   ),
@@ -94,7 +94,7 @@ module padring #(
       .Impl(Impl),
       .AttrDw(padctrl_reg_pkg::AttrDw)
     ) i_dio_pad (
-      .inout_io ( dio_io[k]     ),
+      .inout_io ( dio_pad_io[k] ),
       .in_o     ( dio_in_o[k]   ),
       .out_i    ( dio_out_i[k]  ),
       .oe_i     ( dio_oe_i[k]   ),

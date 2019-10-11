@@ -86,10 +86,10 @@ The number of IOs is parametric, and hence the signals are stacked in packed arr
 
 Signal                                 | Direction        | Type                | Description
 ---------------------------------------|------------------|---------------------|---------------
-`clk_i`                                | `input`          | `wire`              | Clock pad input.
-`rst_ni`                               | `input`          | `wire`              | Reset pad input.
-`mio_io[NMioPads-1:0]`                 | `inout`          | packed `wire`       | Bidirectional IOs of the muxed IO pads.
-`dio_io[NDioPads-1:0]`                 | `inout`          | packed `wire`       | Bidirectional IOs of the dedicated IO pads.
+`clk_pad_i`                            | `input`          | `wire`              | Clock pad input.
+`rst_pad_ni`                           | `input`          | `wire`              | Reset pad input.
+`mio_pad_io[NMioPads-1:0]`             | `inout`          | packed `wire`       | Bidirectional IOs of the muxed IO pads.
+`dio_pad_io[NDioPads-1:0]`             | `inout`          | packed `wire`       | Bidirectional IOs of the dedicated IO pads.
 `clk_o`                                | `output`         | `logic`             | Clock output (to clocking infrastructure).
 `rst_no`                               | `output`         | `logic`             | Reset output (to reset infrastructure).
 `mio_attr_i[NMioPads-1:0][AttrDw-1:0]` | `input`          | packed `logic`      | Packed array containing the pad attributes of all muxed IOs.
