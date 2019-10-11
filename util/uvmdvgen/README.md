@@ -27,10 +27,11 @@ $ pip3 install --user mako
 
 Running the tool with `-h` switch provides a brief description of all available
 switches.
-```
+```console
 $ util/uvmdvgen.py -h
-usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-ea [name] [[name] ...]]
-                   [-ao [hw/dv/sv]] [-eo [hw/ip/<ip>/dv]]
+usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hi] [-ha]
+                   [-ea agt1 agt2 [agt1 agt2 ...]] [-ao [hw/dv/sv]]
+                   [-eo [hw/ip/<ip>/dv]]
                    [ip/block name]
 
 Command-line tool to autogenerate boilerplate DV testbench code extended from dv_lib / cip_lib
@@ -45,16 +46,19 @@ optional arguments:
   -s, --has_separate_host_device_driver
                         IP / block agent creates a separate driver for host
                         and device modes. (ignored if -a switch is not passed)
-  -e, --gen_env         Generate testbench UVM environment code
+  -e, --gen_env         Generate testbench UVM env code
   -c, --is_cip          Is comportable IP - this will result in code being
                         extended from CIP library. If switch is not passed,
                         then the code will be extended from DV library
                         instead. (ignored if -e switch is not passed)
+  -hi, --has_interrupts
+                        CIP has interrupts. Create interrupts interface in tb
+  -ha, --has_alerts     CIP has alerts. Create alerts interface in tb
   -ea agt1 agt2 [agt1 agt2 ...], --env_agents agt1 agt2 [agt1 agt2 ...]
-                        Env creates an interface agent specified here. They are
-                        assumed to already exist. Note that the list is space-
-                        separated, and not comma-separated. (ignored if -e
-                        switch is not passed)
+                        Env creates an interface agent specified here. They
+                        are assumed to already exist. Note that the list is
+                        space-separated, and not comma-separated. (ignored if
+                        -e switch is not passed)
   -ao [hw/dv/sv], --agent_outdir [hw/dv/sv]
                         Path to place the agent code. A directory called
                         <name>_agent is created at this location. (default set
@@ -161,6 +165,12 @@ includes the sanity and CSR test suite and more. With just a few tweaks, this
 enables the user to reach the V1 milestone much quicker.  Let's take `i2c_host`
 as the argument passed for the name of the IP. The following is the list of
 files generated with a brief description of their contents:
+
+Switches to indicate whether the CIP DUT contains interrupts or alerts are
+provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
+(don't create interrupts or alerts). When set, it will create `intr_if` and
+`alerts_if` in the testbench and set them into `uvm_config_db` for the
+`cip_base_env` to pick up.
 
 * **env/i2c_host_env_cfg**
 
@@ -287,36 +297,51 @@ files generated with a brief description of their contents:
 
 #### Examples
 
-```
-util/uvmdvgen.py i2c -a
+```console
+$ util/uvmdvgen.py i2c -a
 ```
 This will create `./i2c/i2c_agent` and place all sources there.
 
-```
-util/uvmdvgen.py jtag -a -ao hw/dv/sv
+```console
+$ util/uvmdvgen.py jtag -a -ao hw/dv/sv
 ```
 This will create `hw/dv/sv/jtag_agent` directory and place all the sources
 there.
 
-```
-util/uvmdvgen.py i2c -a -s -ao hw/dv/sv
+```console
+$ util/uvmdvgen.py i2c -a -s -ao hw/dv/sv
 ```
 This will create the I2C agent with separate 'host' mode and 'device' mode drivers.
 
+```console
+$ util/uvmdvgen.py i2c_host -e -c -hi -ea i2c -eo hw/ip/i2c_host/dv
 ```
-util/uvmdvgen.py i2c_host -e -c -ea i2c -eo hw/ip/i2c_host/dv
+This will create the complete i2c_host DV testbench extended from CIP lib and will
+instantiate `i2c_agent`. It will also create and hook up the interrupt interface
+in the testbench.
+
+```console
+$ util/uvmdvgen.py foo -e -c -hi -ha -ea foo -eo hw/ip/i2c_host/dv
+```
+This will create the complete foo DV testbench extended from CIP lib and
+will instantiate `foo_agent`. It will also create and hook up the interrupt interface
+as well as alerts interface in the testbench.
+
+```console
+$ util/uvmdvgen.py aes -e -c -ea i2c -eo hw/ip/i2c_host/dv
 ```
 This will create the complete i2c_host DV testbench extended from CIP lib and will
 instantiate `i2c_agent`.
 
-```
-util/uvmdvgen.py dma -e -eo hw/ip/dma/dv
+
+```console
+$ util/uvmdvgen.py dma -e -eo hw/ip/dma/dv
 ```
 This will create the complete dma DV testbench extended from DV lib. It does not
 instantiate any downstream agents due to absence of `-ea` switch.
 
-```
-util/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_earlgrey/dv
+```console
+$ util/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_earlgrey/dv
 ```
 This will create the complete chip testbench DV lib and will instantiate
 `uart_agent`, `i2c_agent` and `jtag_agent` in the env.

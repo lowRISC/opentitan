@@ -29,10 +29,12 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     end
 
     // get vifs
-    if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif)) begin
+    if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
+        cfg.num_interrupts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(alerts_vif)::get(this, "", "alerts_vif", cfg.alerts_vif)) begin
+    if (!uvm_config_db#(alerts_vif)::get(this, "", "alerts_vif", cfg.alerts_vif) &&
+        cfg.num_alerts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get alerts_vif from uvm_config_db")
     end
     if (!uvm_config_db#(devmode_vif)::get(this, "", "devmode_vif", cfg.devmode_vif)) begin
