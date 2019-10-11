@@ -28,7 +28,7 @@ filesets:
       - ip/rv_plic/rtl/autogen/rv_plic_reg_top.sv
       - ip/rv_plic/rtl/autogen/rv_plic.sv
       - rtl/padctl.sv
-      - rtl/top_earlgrey.sv
+      - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
 
 parameters:

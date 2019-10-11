@@ -42,7 +42,7 @@ def generate_rtl(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    xbar_path = out_path / 'ip/xbar/doc'
+    xbar_path = out_path / 'ip/xbar/doc/autogen'
     xbar_path.mkdir(parents=True, exist_ok=True)
     gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
               "-o hw/top_earlgrey/\n\n")
@@ -354,7 +354,8 @@ def main():
         # TODO: Add conversion logic from top to top.complete.hjson
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
-        genhjson_path = hjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
+        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
+                                     completecfg["name"])
         gencmd = (
             "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --hjson-only "
             "-o hw/top_earlgrey/\n")
@@ -393,7 +394,7 @@ def main():
         top_tplpath = tpl_path / ("top_%s.tpl.sv" % (top_name))
         out_top = generate_rtl(completecfg, str(top_tplpath))
 
-        rtl_path = out_path / 'rtl'
+        rtl_path = out_path / 'rtl/autogen'
         rtl_path.mkdir(parents=True, exist_ok=True)
         top_path = rtl_path / ("top_%s.sv" % top_name)
 
