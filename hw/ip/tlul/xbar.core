@@ -2,6 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+# TODO this file should be auto-generated in top_earlgrey/ip/xbar/rtl/autogen/
 name: "lowrisc:ip:xbar:0.1"
 description: "xbar for top_earlgray"
 
@@ -10,8 +11,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
     files:
-      - ../../top_earlgrey/rtl/tl_main_pkg.sv
-      - ../../top_earlgrey/rtl/xbar_main.sv
+      - ../../top_earlgrey/ip/xbar/rtl/autogen/tl_main_pkg.sv
+      - ../../top_earlgrey/ip/xbar/rtl/autogen/xbar_main.sv
     file_type: systemVerilogSource
 
 targets:

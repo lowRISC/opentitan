@@ -3,4 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "xbar_seq_lib.sv"
-`include "xbar_vseq.sv"
+`include "xbar_base_vseq.sv"
+`include "xbar_sanity_vseq.sv"
+`include "xbar_random_vseq.sv"

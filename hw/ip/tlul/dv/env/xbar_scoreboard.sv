@@ -9,7 +9,9 @@
 // ------------------------------------------------------------------------
 class xbar_scoreboard extends scoreboard_pkg::scoreboard#(tl_seq_item);
 
-  int chan_prefix_len = 7;
+  xbar_env_cfg cfg;
+  xbar_env_cov cov;
+  int          chan_prefix_len = 7;
 
   `uvm_component_utils(xbar_scoreboard)
 

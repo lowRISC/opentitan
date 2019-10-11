@@ -14,10 +14,7 @@ class xbar_tl_host_seq extends tl_host_seq;
   int valid_device_id[$];
 
   `uvm_object_utils(xbar_tl_host_seq)
-
-  function new (string name = "");
-    super.new(name);
-  endfunction : new
+  `uvm_object_new
 
   virtual function void randomize_req(tl_seq_item req, int idx);
     int unsigned device_id;
