@@ -19,8 +19,6 @@ filesets:
       - rtl/aes_shift_rows.sv
       - rtl/aes_mix_columns.sv
       - rtl/aes_mix_single_column.sv
-      - rtl/aes_mul2.sv
-      - rtl/aes_mul4.sv
       - rtl/aes_key_expand.sv
       - rtl/aes_control.sv
       - rtl/aes.sv
