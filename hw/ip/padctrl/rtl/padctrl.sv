@@ -72,13 +72,13 @@ module padctrl #(
       // dedicated pads
       for (int kk = 0; kk < padctrl_reg_pkg::NDioPads; kk++) begin
         if (reg2hw.dio_pads[kk].qe) begin
-          dio_attr_q[kk] <= (reg2hw.dio_pads[kk].q & warl_mask);
+          dio_attr_q[kk] <= reg2hw.dio_pads[kk].q;
         end
       end
       // muxed pads
       for (int kk = 0; kk < padctrl_reg_pkg::NMioPads; kk++) begin
         if (reg2hw.mio_pads[kk].qe) begin
-          mio_attr_q[kk] <= (reg2hw.mio_pads[kk].q & warl_mask);
+          mio_attr_q[kk] <= reg2hw.mio_pads[kk].q;
         end
       end
     end
@@ -88,15 +88,16 @@ module padctrl #(
   // Connect attributes
   //////////////////////////////////////////////////////
 
+  // using the warl_mask here instead instead of in the register assignment above
+  // avoids lint errors. the unused registers can be removed automatically by most tools.
   for (genvar k = 0; k < padctrl_reg_pkg::NDioPads; k++) begin : gen_dio_attr
-    assign dio_attr_o[k]        = dio_attr_q[k];
-    assign hw2reg.dio_pads[k].d = dio_attr_q[k];
+    assign dio_attr_o[k]        = dio_attr_q[k] & warl_mask;
+    assign hw2reg.dio_pads[k].d = dio_attr_q[k] & warl_mask;
   end
 
   for (genvar k = 0; k < padctrl_reg_pkg::NMioPads; k++) begin : gen_mio_attr
-    assign mio_attr_o[k]        = mio_attr_q[k];
-    assign hw2reg.mio_pads[k].d = mio_attr_q[k];
+    assign mio_attr_o[k]        = mio_attr_q[k] & warl_mask;
+    assign hw2reg.mio_pads[k].d = mio_attr_q[k] & warl_mask;
   end
-
 
 endmodule : padctrl
