@@ -24,7 +24,7 @@ By default, the system will first execute out of ROM and then jump to flash.
 A program needs to be built for each until ROM functionality for code download is ready.
 
 For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
-In the instrcutions below, `SW_DIR` is a requirement argument, while `SW_BUILD_DIR` is not a required argument.
+In the instructions below, `SW_DIR` is a requirement argument, while `SW_BUILD_DIR` is not a required argument.
 If `SW_BUILD_DIR` argument is not supplied, the default location of the of output files are in `SW_DIR`
 Please see [SW build flow](../../sw/doc/sw_build_flow.md) for more details.
 
