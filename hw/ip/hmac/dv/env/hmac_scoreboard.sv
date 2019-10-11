@@ -9,7 +9,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_new
 
   bit [7:0]         msg_q[$];
-  bit [TL_DW*2-1:0] msg_length_bits;
   bit               hmac_start, hmac_process;
   int               hmac_wr_cnt;
   int               hmac_rd_cnt;
@@ -67,16 +66,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         // csr write: predict and update according to the csr names
         csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
         case (csr.get_name())
-          "msg_length_lower": msg_length_bits[TL_DW-1:0]       = item.a_data;
-          "msg_length_upper": msg_length_bits[TL_DW*2-1:TL_DW] = item.a_data;
           "cmd":              {hmac_process, hmac_start} = item.a_data[1:0];
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
             ral.intr_state.predict(.value(item.a_data), .kind(UVM_PREDICT_DIRECT));
           end
-          "cfg", "wipe_secret", "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
-          "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
+          "cfg": cov.cfg_cg.sample(item.a_data);
+          "wipe_secret", "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
           "intr_enable", "intr_state": begin
             // Do nothing
+          end
+          "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
+          "status", "msg_length_lower", "msg_length_upper": begin
+            `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s", csr.get_full_name()))
           end
           default: begin
             `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -109,25 +110,38 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write) begin
-      if (csr.get_name() inside {"intr_state"}) begin
-        // TODO: cycle accurate checking on hmac_done
-        if (item.d_data[HmacDone] == 1) begin
-          do_read_check = 1'b0;
-          hmac_wr_cnt = 0;
-          hmac_rd_cnt = 0;
+      case (csr.get_name())
+        "intr_state": begin
+          // TODO: cycle accurate checking on hmac_done
+          cov.intr_cg.sample(item.a_data, ral.cfg.get_mirrored_value());
+          if (item.d_data[HmacDone] == 1) begin
+            do_read_check = 1'b0;
+            hmac_wr_cnt = 0;
+            hmac_rd_cnt = 0;
+          end
         end
-      end
-      if (!uvm_re_match("digest*", csr.get_name())) begin
-        // HW default output Littie Endian for each digest (32 bits)
-        // But standard DPI function expect output is in Big Endian
-        // So digest_swap = 0 will require flip the expect value
-        if (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) begin
-          bit [TL_AW-1:0] digest_data = {<<8{csr.get_mirrored_value()}};
-          `DV_CHECK_EQ(item.d_data, digest_data);
-          // do not want to update mirror value here, directly return
-          return;
+        "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7":
+        begin
+          // HW default output Littie Endian for each digest (32 bits)
+          // But standard DPI function expect output is in Big Endian
+          // So digest_swap = 0 will require flip the expect value
+          if (ral.cfg.digest_swap.get_mirrored_value() == 1'b0) begin
+            bit [TL_AW-1:0] digest_data = {<<8{csr.get_mirrored_value()}};
+            `DV_CHECK_EQ(item.d_data, digest_data);
+            // do not want to update mirror value here, directly return
+            return;
+          end
         end
-      end
+        "status": cov.status_cg.sample(item.a_data, ral.cfg.get_mirrored_value());
+        "msg_length_lower": cov.msg_len_cg.sample(item.a_data, ral.cfg.get_mirrored_value());
+        "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "cfg", "cmd",
+        "intr_enable", "intr_test", "wipe_secret", "msg_length_upper", "intr_state": begin
+          // Do nothing
+        end
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
+      endcase
       if (do_read_check) begin
         `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
                                   csr.get_name(), csr.get_mirrored_value()), UVM_HIGH);

@@ -42,6 +42,13 @@ package hmac_env_pkg;
     HmacStaMsgFifoDepth = 4
   } hmac_sta_e;
 
+  typedef enum {
+    HmacEn,
+    ShaEn,
+    EndianSwap,
+    DigestSwap
+  } hmac_cfg_e;
+
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
