@@ -31,34 +31,25 @@ module aes_mix_single_column (
   assign x[2] = data_i[2] ^ data_i[1];
   assign x[3] = data_i[1] ^ data_i[0];
 
-  // Mul2 blocks for x
+  // Mul2(x)
   for (genvar i = 0; i < 4; i++) begin : gen_x_mul2
-    aes_mul2 x_mul2_i (
-      .data_i ( x[i]      ),
-      .data_o ( x_mul2[i] )
-    );
+    assign x_mul2[i] = aes_mul2(x[i]);
   end
 
   // Drive y_pre_mul4
   assign y_pre_mul4[0] = data_i[3] ^ data_i[1];
   assign y_pre_mul4[1] = data_i[2] ^ data_i[0];
 
-  // Mul4 blocks for y
+  // Mul4(y_pre_mul4)
   for (genvar i = 0; i < 2; i++) begin : gen_mul4
-    aes_mul4 y_mul4_i (
-      .data_i ( y_pre_mul4[i] ),
-      .data_o ( y[i]          )
-    );
+    assign y[i] = aes_mul4(y_pre_mul4[i]);
   end
 
   // Drive y2_pre_mul2
   assign y2_pre_mul2 = y[0] ^ y[1];
 
-  // Mul2 block for y
-  aes_mul2 y_mul2 (
-    .data_i ( y2_pre_mul2 ),
-    .data_o ( y2          )
-  );
+  // Mul2(y)
+  assign y2 = aes_mul2(y2_pre_mul2);
 
   // Drive z
   assign z[0] = y2 ^ y[0];
