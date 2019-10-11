@@ -1,0 +1,55 @@
+{
+  // 'name' is mandatory field
+  name: "foo"
+  intf: ["", "_jtag"]
+
+  // 'import_testplans' is a list of imported common testplans
+  // paths are relative to repo top
+  // all key_value pairs in this file other than 'import_testplans' and 'entries'
+  // can be used for wildcard substitutions in imported testplans
+  import_testplans: ["util/testplanner/examples/common_testplan.hjson"]
+  entries: [
+    {
+      // name of the testplan entry - should be unique
+      name: sanity
+      desc: '''Basic FOO sanity test. Describe this test in sufficient detail. You can
+            split the description on multiple lines like this (with 3 single-inverted
+            commas. Note that the subsequent lines are indented right below where the
+            inverted commas start.'''
+      // milestone for which this test is targeted for - v1, v2 or v3
+      milestone: v1
+      // tests of actual written tests that maps to this entry
+      tests: ["foo_sanity"]
+    }
+    {
+      name: feature1
+      desc: "A single line description with single double-inverted commas."
+      milestone: v2
+      // testplan entry with no tests added
+      tests: []
+    }
+    {
+      name: feature2
+      desc: '''**Goal**: How-to description
+
+            **Stimulus**: If possible, in the description indicate a brief one-liner
+            goal on the first line. Then, describe the stimulus and check procedures like
+            this.
+
+            **Check**: This style is not mandatory, but highly recommended. Also note that
+            the description supports markdown formatting. Add things:
+            - like bullets
+            - something in **bold** and in *italic*
+              - A sub-bullet item<br>
+                Continue describing above bullet on a new line with a html line break.
+
+            Start a new para with with 2 newlines.
+            '''
+      milestone: v2
+      // testplan entry with multiple tests added
+      tests: ["foo_feature2_type1",
+              "foo_feature2_type2",
+              "foo_feature2_type3"]
+    }
+  ]
+}
