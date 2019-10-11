@@ -40,6 +40,7 @@ import reggen.gen_html as gen_html
 import reggen.validate as validate
 from docgen import html_data, mathjax
 from docgen.hjson_lexer import HjsonLexer
+from testplanner import class_defs, testplan_utils
 from wavegen import wavesvg
 
 
@@ -353,6 +354,18 @@ class LowriscRenderer(mathjax.MathJaxRenderer):
                     link=rel_md_path.with_suffix('.html'),
                     text=rel_md_path.with_suffix(''))
             return html_data.doctree_head + return_string + html_data.doctree_tail
+        if token.type == "import_testplan":
+            self.testplan = testplan_utils.parse_testplan(
+                path.join(self.basedir, token.text))
+            return ""
+        if token.type == "add_testplan":
+            if self.testplan == None:
+                return "<B>Errors parsing testplan prevents insertion.</B>"
+            outbuf = io.StringIO()
+            testplan_utils.gen_html_testplan_table(self.testplan, outbuf)
+            generated = outbuf.getvalue()
+            outbuf.close()
+            return generated
 
         bad_tag = '{{% ' + token.type + ' ' + token.text + ' }}'
         log.warn("Unknown lowRISC tag " + bad_tag)

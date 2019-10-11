@@ -1,0 +1,20 @@
+{
+  // only 'entries' supported in imported testplans for now
+  entries: [
+    {
+      name: csr
+      desc: '''Standard CSR suite of tests run from all valid interfaces to prove SW
+            accessibility.'''
+      milestone: v1
+      // {name} and {intf} are wildcards in tests
+      // importer needs to provide substitutions for these as string or a list
+      // if list, then substitution occurs on all values in the list
+      // if substitution is not provided, it will be replaced with an empty string
+      tests: ["{name}{intf}_csr_hw_reset",
+              "{name}{intf}_csr_rw",
+              "{name}{intf}_csr_bit_bash",
+              "{name}{intf}_csr_aliasing",]
+    }
+  ]
+}
+

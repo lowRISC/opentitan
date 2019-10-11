@@ -1,0 +1,11 @@
+{
+  entries: [
+    {
+      name: intr_test
+      desc: "Verify common intr_test CSRs to force interrupts via SW."
+      milestone: v2
+      tests: ["{name}{intf}_intr_test"]
+    }
+  ]
+}
+
