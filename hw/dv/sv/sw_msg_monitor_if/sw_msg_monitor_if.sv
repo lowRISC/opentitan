@@ -125,8 +125,11 @@ interface sw_msg_monitor_if #(
 
   // function to add the msg dat files
   function automatic void add_sw_msg_data_files(string img_name, string img_file);
+    sw_msg_data_file_t sw_msg_data_file;
     if (_ready) msg_fatal(.msg("this function cannot be called after calling ready()"));
-    sw_msg_data_files.push_back({name:img_name, file:img_file});
+    sw_msg_data_file.name = img_name;
+    sw_msg_data_file.file = img_file;
+    sw_msg_data_files.push_back(sw_msg_data_file);
   endfunction
 
   // signal to indicate all monitor is good to go - all initializations are done
