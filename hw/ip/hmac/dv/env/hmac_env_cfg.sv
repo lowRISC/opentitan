@@ -8,7 +8,7 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
                                    bit [TL_AW-1:0] csr_addr_map_size = 2048);
-    super.initialize();
+    super.initialize(csr_base_addr, csr_addr_map_size);
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values
