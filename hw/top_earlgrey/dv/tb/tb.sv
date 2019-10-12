@@ -9,6 +9,7 @@ module tb;
   import tl_agent_pkg::*;
   import chip_env_pkg::*;
   import top_pkg::*;
+  import chip_test_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

@@ -55,8 +55,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       `DV_CHECK_EQ_FATAL(is_aligned, 1'b1)
     end else begin
       // base address needs to be aligned to csr_addr_map_size
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(this.csr_base_addr,
-                                         ~|(this.csr_base_addr & (this.csr_addr_map_size - 1));)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(csr_base_addr,
+                                         ~|(csr_base_addr & (csr_addr_map_size - 1));)
+      this.csr_base_addr = csr_base_addr;
     end
     // build the ral model
     if (has_ral) begin
