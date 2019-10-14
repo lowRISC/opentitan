@@ -5,7 +5,7 @@
 module ${name}_bind;
 % if is_cip:
 
-  bind ${name} tlul_assert tlul_assert (
+  bind ${name} tlul_assert tlul_assert_host (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),
