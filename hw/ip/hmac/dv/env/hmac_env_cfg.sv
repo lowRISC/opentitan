@@ -7,8 +7,12 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
+                                   bit [TL_AW-1:0] csr_addr_map_size = ADDR_MAP_SIZE);
+    mem_addr_s mem_addr;
     super.initialize(csr_base_addr, csr_addr_map_size);
+    mem_addr.start_addr = HMAC_MSG_FIFO_BASE;
+    mem_addr.end_addr   = HMAC_MSG_FIFO_LAST_ADDR;
+    mem_addrs.push_back(mem_addr);
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values
