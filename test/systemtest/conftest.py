@@ -19,6 +19,7 @@ def pytest_addoption(parser):
     parser.addoption("--rom_bin", action="store", default="")
     parser.addoption("--verilator_model", action="store", default="")
     parser.addoption("--openocd", action="store", default="openocd")
+    parser.addoption("--uart_timeout", action="store", default="60")
 
 
 @pytest.hookimpl(tryfirst=True)
@@ -93,3 +94,8 @@ def sim_top_build(pytestconfig):
 def openocd(pytestconfig):
     """Return path to OpenOCD executable."""
     return pytestconfig.getoption('openocd')
+
+@pytest.fixture(scope="session")
+def uart_timeout(pytestconfig):
+    """Return the timeout in seconds for UART to print PASS."""
+    return int(pytestconfig.getoption('uart_timeout'))
