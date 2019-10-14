@@ -178,8 +178,8 @@ class rv_timer_base_vseq extends cip_base_vseq #(
         join_none
         fork
           while (1) begin
-            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
             csr_rd(.ptr(intr_state_rg), .value(read_data));
+            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
             if ((read_data == exp_data) | (reset_asserted == 1)) break;
           end
           begin

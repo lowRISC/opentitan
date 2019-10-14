@@ -46,12 +46,25 @@ class tl_monitor extends uvm_monitor;
     fork
       a_channel_thread();
       d_channel_thread();
+      reset_thread();
     join_none
   endtask : run_phase
 
   virtual task wait_for_reset_done();
     @(posedge vif.rst_n);
   endtask : wait_for_reset_done
+
+  // on reset flush pending request and drop objection
+  virtual task reset_thread();
+    forever begin
+      @(posedge vif.rst_n);
+      pending_a_req.delete();
+      if (objection_raised) begin
+        run_phase_h.drop_objection(this);
+        objection_raised = 1'b0;
+      end
+    end
+  endtask : reset_thread
 
   virtual task a_channel_thread();
     tl_seq_item req;

@@ -11,6 +11,7 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
   virtual tl_if  vif;
   tl_seq_item    pending_a_req[$];
   tl_agent_cfg   cfg;
+  bit reset_asserted;
 
   `uvm_component_utils(tl_host_driver)
 
@@ -43,8 +44,21 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
         end
       end
       d_channel_thread();
+      reset_thread();
     join_none
   endtask : run_phase
+
+  virtual task reset_thread();
+    forever begin
+      @(negedge vif.rst_n);
+      reset_asserted = 1'b1;
+      @(posedge vif.rst_n == 1);
+      reset_asserted = 1'b0;
+      // Check for seq_item_port FIFO & pending req queue is empty when coming out of reset
+      `DV_CHECK_EQ(pending_a_req.size(), 0)
+      `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
+    end
+  endtask : reset_thread
 
   virtual task wait_for_reset_done();
     vif.host_cb.h2d.a_valid <= 1'b0;
@@ -62,9 +76,13 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     end else begin
       a_valid_delay = $urandom_range(cfg.a_valid_delay_min, cfg.a_valid_delay_max);
     end
-    repeat (a_valid_delay) @(vif.host_cb);
+    // break delay loop if reset asserted to release blocking
+    repeat (a_valid_delay) begin
+      if (reset_asserted) break;
+      else @(vif.host_cb);
+    end
     // wait until no outstanding transaction with same source id
-    while (is_source_in_pending_req(req.a_source)) @(vif.host_cb);
+    while (is_source_in_pending_req(req.a_source) & !reset_asserted) @(vif.host_cb);
     vif.host_cb.h2d.a_address <= req.a_addr;
     vif.host_cb.h2d.a_opcode  <= req.a_opcode;
     vif.host_cb.h2d.a_size    <= req.a_size;
@@ -74,14 +92,15 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     vif.host_cb.h2d.a_user    <= '0;
     vif.host_cb.h2d.a_source  <= req.a_source;
     vif.host_cb.h2d.a_valid   <= 1'b1;
-    @(vif.host_cb);
-    while(!vif.host_cb.d2h.a_ready) @(vif.host_cb);
+    // bypass delay in case of reset
+    if (!reset_asserted) @(vif.host_cb);
+    while(!vif.host_cb.d2h.a_ready && !reset_asserted) @(vif.host_cb);
     vif.host_cb.h2d.a_valid   <= 1'b0;
     seq_item_port.item_done();
     pending_a_req.push_back(req);
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
     while((cfg.max_outstanding_req > 0) &&
-          (pending_a_req.size() >= cfg.max_outstanding_req)) begin
+          (pending_a_req.size() >= cfg.max_outstanding_req) && !reset_asserted) begin
       @(vif.host_cb);
     end
   endtask : send_a_channel_request
@@ -93,13 +112,17 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     forever begin
       bit req_found;
       d_ready_delay = $urandom_range(cfg.d_ready_delay_min, cfg.d_ready_delay_max);
-      repeat(d_ready_delay) @(vif.host_cb);
+      // break delay loop if reset asserted to release blocking
+      repeat (d_ready_delay) begin
+        if (reset_asserted & (pending_a_req.size() != 0)) break;
+        else @(vif.host_cb);
+      end
       vif.host_cb.h2d.d_ready <= 1'b1;
-      @(vif.host_cb);
-      if (vif.host_cb.d2h.d_valid) begin
+      if (!(reset_asserted & (pending_a_req.size() != 0))) @(vif.host_cb);
+      if (vif.host_cb.d2h.d_valid | ((pending_a_req.size() != 0) & reset_asserted)) begin
         // Use the source ID to find the matching request
         foreach (pending_a_req[i]) begin
-          if (pending_a_req[i].a_source == vif.host_cb.d2h.d_source) begin
+          if ((pending_a_req[i].a_source == vif.host_cb.d2h.d_source) | reset_asserted) begin
             rsp = pending_a_req[i];
             rsp.d_opcode = vif.host_cb.d2h.d_opcode;
             rsp.d_data   = vif.host_cb.d2h.d_data;
@@ -114,9 +137,10 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
             pending_a_req.delete(i);
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
-            break;
+            if (!reset_asserted) break;
           end
         end
+
         if (!req_found) begin
           `uvm_error(get_full_name(), $sformatf(
                      "Cannot find request matching d_source 0x%0x", vif.host_cb.d2h.d_source))
