@@ -33,8 +33,17 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
     fork
       a_channel_thread();
       d_channel_thread();
+      reset_thread();
     join_none
   endtask : run_phase
+
+  virtual task reset_thread();
+    forever begin
+      @(posedge vif.rst_n);
+      // Check for seq_item_port FIFO is empty when coming out of reset
+      `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
+    end
+  endtask : reset_thread
 
   virtual task wait_for_reset_done();
     vif.device_cb.d2h.d_valid <= 1'b0;
@@ -64,7 +73,11 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
       end else begin
         d_valid_delay = $urandom_range(cfg.d_valid_delay_min, cfg.d_valid_delay_max);
       end
-      repeat (d_valid_delay) @(vif.device_cb);
+      // break delay loop if reset asserted to release blocking
+      repeat (d_valid_delay) begin
+        if (!vif.rst_n) break;
+        else @(vif.device_cb);
+      end
       vif.device_cb.d2h.d_valid  <= 1'b1;
       vif.device_cb.d2h.d_opcode <= rsp.d_opcode;
       vif.device_cb.d2h.d_data   <= rsp.d_data;
@@ -74,8 +87,9 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
       vif.device_cb.d2h.d_sink   <= rsp.d_sink;
       vif.device_cb.d2h.d_user   <= rsp.d_user;
       vif.device_cb.d2h.d_size   <= rsp.d_size;
-      @(vif.device_cb);
-      while(!vif.device_cb.h2d.d_ready) @(vif.device_cb);
+      // bypass delay in case of reset
+      if (vif.rst_n) @(vif.device_cb);
+      while (!vif.device_cb.h2d.d_ready && vif.rst_n) @(vif.device_cb);
       vif.device_cb.d2h.d_valid <= 1'b0;
       seq_item_port.item_done();
     end
