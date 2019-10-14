@@ -76,7 +76,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // function to add csr exclusions of the given type using the csr_excl_item item
-  // arg csr_test_type: this the the type of csr test run - we may way aditional exclusions
+  // arg csr_test_type: this the the type of csr test run - we may want additional exclusions
   // depending on what test seq we are running
   // arg csr_excl: this is the csr exclusion object that maintains the list of exclusions
   // the same object handle is to be passed to csr sequences in csr_seq_lib so that they can query
