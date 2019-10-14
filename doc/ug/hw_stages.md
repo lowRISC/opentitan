@@ -102,9 +102,9 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | V0 | Initial Work | Testbench being developed, not functional; test plan being written |
-| V1 | Under Test | <li>DV Plan Complete: <ul> <li>Verification Plan: verification strategy, intent, details of DV environment (with diagrams): TB, BFMs, checkers, scoreboard, interfaces, coverage objects <li>Detailed test plan, including test descriptions, and priorities <li>Identify list of assertions: interfaces, functionalities <li>Reviewed with designer </ul> <li>Nightly regression setup </ul> |
-| V2 | Testing Complete | <ul> <li>All planned tests written <li>All assertions written and enabled </ul> |
-| V3 | Verification Complete | <ul> <li>DV coverage closure, reach 100% coverage, with exclusions written and reviewed with designers <li>Review assertions, regression and coverage with designers <li>Regression clean with random seeds <li>No unaddressed design bugs </ul> |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li>DV Plan available, testplan completed and reviewed </ul> <li> Testbench: <ul><li>DUT instantiated with major interfaces hooked up <li>All available interface assertion monitors hooked up <li>X / unknown checks on DUT outputs added <li>Skeleton environment created with UVCs <li>TLM connections made from interface monitors to the scoreboard </ul> <li>Tests (written and passing): <ul> <li>Sanity test accessing basic functionality <li>CSR / mem test suite </ul> <li>Regressions: <ul> <li>Sanity and nightly regression set up </ul></ul> |
+| V2 | Testing Complete | <ul> <li>Documentation: DV plan completely written <li>Testbench: all interfaces hooked up and exercised, all assertions written and enabled <li>UVM environment: fully developed with end-to-end checks in scoreboard <li>Tests (written and passing): all tests planned for in the testplan <li>Regression: all tests passing in nightly regression with multiple seeds (> 90%) <li>Design Issues: all high priority bugs addressed, low priority bugs root-caused <li>Coverage: code: 90% across the board, functional: 100% coverpoints covered, 75% crosses covered</ul> |
+| V3 | Verification Complete | <ul><li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li>Regression: all tests with all seeds passing <li>Design Issues: all bugs addressed  <li>Coverage: 100% code, 100% functional with waivers</ul> |
 
 ## Signoff Review
 
@@ -148,9 +148,11 @@ The final content, location, and name of that file will be updated in this space
 
 ## Versioning
 
+**Note:** this is only an initial definition of versioning; our versioning scheme will be refined in future RFCs.
+
 The _Version_ of a design element indicates its progress towards its _final feature set for expected product_.
 Typically all designs are expected to simply be in 1.0 version, but there are reasons for exceptions.
-Designs which have a specification towards an _intermediate goal_ where it is useful to drive towards this goal are indicated as a 0.5 version.
+Designs which have a specification that defines an _intermediate goal_ are indicated as a 0.5 version.
 There are many times where this is useful: when the intermediate goal is a beneficial subset of functionality to enable other development; when the final feature set is not known but a sufficient set is ready for development; when the final feature set is postponed until a future date, but owners are keen to get the design started; etc.
 In essence, the 0.5 designation indicates that it is understood that the stage metrics are temporary pending a final feature set.
 Rarely will a 0.5 design be taken past Feature Complete and Testing Complete stages.
@@ -166,8 +168,6 @@ Possibility 2: if a small collection of new features are requested, a new versio
 The expectation is that this would create its life as a newly tracked revision number, while the previous (assumedly 1.0) version retains its status.
 Possibility 3: if enough new features are requested to greatly change the spirit of the design, a new version increment of 1.0 would be created in a fashion similar to above.
 This would require a new RFC process, and thus the Life Stage would start again as L0 - Specification.
-
-**Note** the thinking on versioning is still early and is likely to be refined with time.
 
 ## Reporting of Stages
 
