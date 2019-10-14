@@ -27,6 +27,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   bit [TL_DW-1:0] last_intr_update_except_clearing;
   // Value seen in last Interrupt Test write
   bit [TL_DW-1:0] last_intr_test_event;
+  // Flag to:
+  //  (i) indicate that write to INTR_STATE register just happened, and
+  // (ii) store information of which all interupt bits were cleared
+  bit [TL_DW-1:0] cleared_intr_bits;
 
   `uvm_component_utils(gpio_scoreboard)
 
@@ -110,6 +114,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           `uvm_info(`gfn, $sformatf("Write on intr_state: write data = %0h", item.a_data), UVM_HIGH)
           if (intr_state_update_queue.size() > 0) begin
             gpio_reg_update_due_t intr_state_write_to_clear_update = intr_state_update_queue[$];
+            `uvm_info(`gfn, $sformatf("Entry taken out for clearing is %0p", intr_state_write_to_clear_update), UVM_HIGH)
             // Update time
             intr_state_write_to_clear_update.eval_time = $time;
             for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
@@ -117,6 +122,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                   intr_state_write_to_clear_update.reg_value[each_bit] == 1'b1 &&
                   item.a_data[each_bit] == 1'b1) begin
                 intr_state_write_to_clear_update.reg_value[each_bit] = 1'b0;
+                cleared_intr_bits[each_bit] = 1'b1;
                 // Coverage Sampling: gpio interrupt cleared
                 if (cfg.en_cov) begin
                   cov.intr_state_cov_obj[each_bit].sample(1'b0);
@@ -132,6 +138,23 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
               intr_state_write_to_clear_update.reg_value |= last_intr_update_except_clearing;
               // Delete last entry with same time stamp
               intr_state_update_queue.delete(intr_state_update_queue.size()-1);
+              // Coverage Sampling: cover a scenario wherein cleared interrupt state bit
+              // is re-asserted due to still active interrupt event
+              // Note: In this case, both interrupt clearing event and INTR_STATE reg write
+              // have occurred at the same time.
+              if (cfg.en_cov) begin
+                foreach (cleared_intr_bits[each_bit]) begin
+                  if (cleared_intr_bits[each_bit]) begin
+                    if (last_intr_update_except_clearing[each_bit]) begin
+                      cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
+                                          $sformatf("%0d", each_bit)}].sample(1'b1);
+                    end else begin
+                      cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
+                                          $sformatf("%0d", each_bit)}].sample(1'b0);
+                    end
+                  end
+                end
+              end
             end
             // Push new interrupt state update entry into queue
             intr_state_update_queue.push_back(intr_state_write_to_clear_update);
@@ -460,14 +483,11 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       for (uint pin_num = 0; pin_num < NUM_GPIOS; pin_num++) begin
         if (data_out_effect_on_gpio_i[pin_num] === 1'bz) begin
           pred_val_gpio_pins[pin_num] = gpio_i_driven[pin_num];
-        end
-        else if (gpio_i_driven[pin_num] === 1'bz) begin
+        end else if (gpio_i_driven[pin_num] === 1'bz) begin
           pred_val_gpio_pins[pin_num] = data_out_effect_on_gpio_i[pin_num];
-        end
-        else if (data_out_effect_on_gpio_i[pin_num] === gpio_i_driven[pin_num]) begin
+        end else if (data_out_effect_on_gpio_i[pin_num] === gpio_i_driven[pin_num]) begin
           pred_val_gpio_pins[pin_num] = data_out_effect_on_gpio_i[pin_num];
-        end
-        else begin
+        end else begin
           pred_val_gpio_pins[pin_num] = 1'bx;
         end
         if (pred_val_gpio_pins[pin_num] === 1'bz) begin
@@ -492,9 +512,15 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         current_data_in_update.eval_time = $time;
         data_in_update_queue.push_back(current_data_in_update);
         // Coverage Sampling: data_in register coverage
+        // Coverage Sampling: Cross coverage between data_out, data_oe and data_in
+        // values per bit
         if (cfg.en_cov) begin
           for (uint each_bit = 0; each_bit < NUM_GPIOS; each_bit++) begin
             cov.data_in_cov_obj[each_bit].sample(pred_val_gpio_pins[each_bit]);
+            cov.data_out_data_oe_data_in_cross_cg.sample(each_bit, data_out[each_bit],
+                data_oe[each_bit], pred_val_gpio_pins[each_bit]);
+            cov.gpio_pins_data_in_cross_cg.sample(each_bit, cfg.gpio_vif.pins[each_bit],
+                pred_val_gpio_pins[each_bit]);
           end
         end
       end
@@ -518,7 +544,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // This function computes expected value of gpio intr_status based on
   // changes of gpio_i data or interrupt control registers
   virtual function void gpio_interrupt_predict(
-    input gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
+      input gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
 
     string msg_id = {`gfn, $sformatf(" gpio_interrupt_predict: ")};
     bit [TL_DW-1:0] intr_enable          = ral.intr_enable.get_mirrored_value();
@@ -632,12 +658,24 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     end
     // 3. Apply effect of "Interrupt Test"
     exp_intr_status |= last_intr_test_event;
+    `uvm_info(`gfn, $sformatf("updated intr_state is %0h", exp_intr_status), UVM_HIGH)
     // Coverage Sampling: Coverage on Interrupt Index, Interrupt Enable,
     // Interrupt Status and their cross coverage
     if (cfg.en_cov) begin
       foreach (exp_intr_status[each_bit]) begin
         cov.intr_cg.sample(each_bit, intr_enable[each_bit], exp_intr_status[each_bit]);
         cov.intr_state_cov_obj[each_bit].sample(last_intr_update_except_clearing[each_bit]);
+        // Coverage Sampling: cover a scenario wherein cleared interrupt state bit
+        // is re-asserted due to still active interrupt event
+        if (cleared_intr_bits[each_bit]) begin
+          if (exp_intr_status[each_bit]) begin
+            cov.sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_bit)}].sample(1'b1);
+          end else begin
+            cov.sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_bit)}].sample(1'b0);
+          end
+          // Clear the flag
+          cleared_intr_bits[each_bit] = 1'b0;
+        end
       end
     end
     // Clear last_intr_test_event

@@ -184,7 +184,7 @@
 
 // Shorthand for common std::randomize(foo) with { } + fatal check
 `ifndef DV_CHECK_STD_RANDOMIZE_WITH_FATAL
-  `define DV_CHECK_STD_RANDOMIZE_WITH_FATAL(VAR_, WITH_C_,MSG_="Randomization failed!",ID_=`gfn) \
+  `define DV_CHECK_STD_RANDOMIZE_WITH_FATAL(VAR_, WITH_C_, MSG_="Randomization failed!",ID_=`gfn) \
     `DV_CHECK_FATAL(std::randomize(VAR_) with {WITH_C_}, MSG_, ID_)
 `endif
 
