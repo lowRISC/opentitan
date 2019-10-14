@@ -5,25 +5,24 @@
 // TODO - We are enclosing generic covergroups inside class so that we can
 // take avoid tool limitation of not allowing arrays of covergroup
 // Refer to Issue#375 for more details
-class dv_base_generic_cov_obj extends uvm_object;
-  `uvm_object_utils(dv_base_generic_cov_obj)
+class dv_base_generic_cov_obj;
 
   // Covergroup: bit_toggle_cg
   // Generic covergroup definition
-  covergroup bit_toggle_cg(string name) with function sample(bit value);
+  covergroup bit_toggle_cg(string name, bit toggle_cov_en = 1) with function sample(bit value);
     option.per_instance = 1;
     option.name = name;
     cp_value: coverpoint value;
     cp_transitions: coverpoint value {
+      option.weight = toggle_cov_en;
       bins rising  = (0 => 1);
       bins falling = (1 => 0);
     }
   endgroup : bit_toggle_cg
 
   // Function: new
-  function new(string name="dv_base_generic_cov_obj");
-    super.new(name);
-    bit_toggle_cg = new(name);
+  function new(string name = "dv_base_generic_cov_obj", bit toggle_cov_en = 1);
+    bit_toggle_cg = new(name, toggle_cov_en);
   endfunction : new
 
   // Function: sample

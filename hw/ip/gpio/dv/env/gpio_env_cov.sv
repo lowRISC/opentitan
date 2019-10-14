@@ -29,12 +29,12 @@ class gpio_intr_type_cov_obj extends uvm_object;
   endfunction : new
 endclass : gpio_intr_type_cov_obj
 
-class gpio_two_vars_generic_cov_obj extends uvm_object;
-  `uvm_object_utils(gpio_two_vars_generic_cov_obj)
+class gpio_out_oe_cov_obj extends uvm_object;
+  `uvm_object_utils(gpio_out_oe_cov_obj)
 
   // Covergroup: var1_var2_cg
-  // Generic covergroup that samples two bit variables and
-  // looks for their individual coverage as well as cross coverage.
+  // Covergroup invovling two variables of bit type and are meant to
+  // be used for cross coverage related to *out* and *oe* registers
   covergroup var1_var2_cg(string name) with function sample(bit var1, bit var2);
     option.per_instance = 1;
     option.name = name;
@@ -44,11 +44,11 @@ class gpio_two_vars_generic_cov_obj extends uvm_object;
   endgroup : var1_var2_cg
 
   // Function: new
-  function new(string name="gpio_two_vars_generic_cov_obj");
+  function new(string name="gpio_out_oe_cov_obj");
     super.new(name);
     var1_var2_cg = new(name);
   endfunction : new
-endclass : gpio_two_vars_generic_cov_obj
+endclass : gpio_out_oe_cov_obj
 
 class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
   `uvm_component_utils(gpio_env_cov)
@@ -59,17 +59,38 @@ class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
   dv_base_generic_cov_obj intr_state_cov_obj[NUM_GPIOS];
   // Interrupt Control Enable registers' values
   dv_base_generic_cov_obj intr_ctrl_en_cov_objs[NUM_GPIOS][string];
-  // Different gpio interrupt types' occurrences
-  gpio_intr_type_cov_obj intr_event_type_cov_objs[NUM_GPIOS][string];
-  // Per bit coverage on *out* and *oe* registers
-  dv_base_generic_cov_obj out_oe_cov_objs[NUM_GPIOS][string];
-
-  // Coverage on data and mask fields of masked* registers
-  gpio_two_vars_generic_cov_obj out_oe_mask_data_cov_objs[NUM_GPIOS/2][string];
-  // Coverage on effective values of DATA_OUT and DATA_OE
-  gpio_two_vars_generic_cov_obj data_out_data_oe_cov_obj[NUM_GPIOS];
   // data_in register per bit value coverage
   dv_base_generic_cov_obj data_in_cov_obj[NUM_GPIOS];
+  // Per bit coverage on *out* and *oe* registers
+  dv_base_generic_cov_obj out_oe_cov_objs[NUM_GPIOS][string];
+  // Different gpio interrupt types' occurrences
+  gpio_intr_type_cov_obj intr_event_type_cov_objs[NUM_GPIOS][string];
+  // Coverage on data and mask fields of masked* registers
+  gpio_out_oe_cov_obj out_oe_mask_data_cov_objs[NUM_GPIOS/2][string];
+  // Coverage on effective values of DATA_OUT and DATA_OE
+  gpio_out_oe_cov_obj data_out_data_oe_cov_obj[NUM_GPIOS];
+  // Cross Coverage between per pin values of data_out value, data_oe value
+  // and data_in value
+  covergroup data_out_data_oe_data_in_cross_cg(string name) with function sample(uint pin,
+                                                                                 bit data_out,
+                                                                                 bit data_oe,
+                                                                                 bit data_in);
+    option.name = name;
+    cp_pin: coverpoint pin {
+      bins bins_for_gpio_bits[] = {[0:NUM_GPIOS-1]};
+    }
+    cp_cross_all: cross cp_pin, data_out, data_oe, data_in;
+  endgroup : data_out_data_oe_data_in_cross_cg
+  // Cross coverage between gpio pin value and effective data_in value
+  covergroup gpio_pins_data_in_cross_cg(string name) with function sample(uint pin,
+                                                                          bit gpio_value,
+                                                                          bit data_in);
+    option.name = name;
+    cp_pin: coverpoint pin {
+      bins bins_for_gpio_bits[] = {[0:NUM_GPIOS-1]};
+    }
+    cp_cross_pins_data_in: cross cp_pin, gpio_value, data_in;
+  endgroup : gpio_pins_data_in_cross_cg
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -104,6 +125,10 @@ class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
         data_out_data_oe_cov_obj[each_pin] = new($sformatf("data_out_data_oe_cov_obj_pin%0d",
                                                            each_pin));
         data_in_cov_obj[each_pin] = new($sformatf("data_in_cov_obj_pin%0d", each_pin));
+        // Create sticky interrupt coverage per pin
+        // No toggle coverage is required in this case, so specify toggle_cov_en = 0
+        sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_pin)}] =
+            new(.name({"gpio_sticky_intr_pin", $sformatf("%0d", each_pin)}), .toggle_cov_en(0));
       end
       // Per pin coverage and cross coverage for mask and data
       // fields within masked_* registers
@@ -115,6 +140,8 @@ class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
           end
         end
       end
+      data_out_data_oe_data_in_cross_cg = new("data_out_data_oe_data_in_cross_cg");
+      gpio_pins_data_in_cross_cg = new("gpio_pins_data_in_cross_cg");
     end
   endfunction : new
 

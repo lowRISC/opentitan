@@ -75,7 +75,14 @@ interface pins_if #(
     for (genvar i = 0; i < Width; i++) begin : each_pin
       assign pins_int[i] = pins_pd[i] ? 1'b0 :
                            pins_pu[i] ? 1'b1 : 1'bz;
-      assign (pull0, pull1) pins[i] = pins_oe[i] ? pins_o[i] : pins_int[i];
+      // If output enable is 1, strong driver assigns pin to 'value to be driven out';
+      // the external strong driver can still affect pin, if exists.
+      // Else if output enable is 0, weak pullup or pulldown is applied to pin.
+      // By doing this, we make sure that weak pullup or pulldown does not override
+      // any 'x' value on pin, that may result due to conflicting values
+      // between 'value to be driven out' and the external driver's value.
+      assign pins[i] = pins_oe[i] ? pins_o[i] : 1'bz;
+      assign (pull0, pull1) pins[i] = ~pins_oe[i] ? pins_int[i] : 1'bz;
     end
   endgenerate
 

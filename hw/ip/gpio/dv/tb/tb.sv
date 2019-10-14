@@ -16,6 +16,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire devmode;
   wire [NUM_GPIOS-1:0] gpio_pins;
   wire [NUM_GPIOS-1:0] gpio_i;
   wire [NUM_GPIOS-1:0] gpio_o;
@@ -28,7 +29,7 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   pins_if #(NUM_MAX_ALERTS) alerts_if(.pins(alerts));
-  pins_if #(1) devmode_if();
+  pins_if #(1) devmode_if(.pins(devmode));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
 

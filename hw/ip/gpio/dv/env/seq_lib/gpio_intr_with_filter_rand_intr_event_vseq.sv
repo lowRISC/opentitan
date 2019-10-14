@@ -155,7 +155,7 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
                   1: csr_rd_check(.ptr(ral.data_in), .compare_value(expected_value_data_in));
                 endcase
               end
-              while(num_cycles_elapsed < (FILTER_CYCLES -2));
+              while (num_cycles_elapsed < (FILTER_CYCLES -2));
             end // csr_rd_and_check
           join // end fork..join
         end // csr_read_and_check

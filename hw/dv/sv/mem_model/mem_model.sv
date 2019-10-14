@@ -24,7 +24,7 @@ class mem_model #(int AddrWidth = top_pkg::TL_AW,
                 $sformatf("Read Mem  : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     end
     else begin
-      std::randomize(data);
+      `DV_CHECK_STD_RANDOMIZE_FATAL(data)
       `uvm_error(get_full_name(), $sformatf("read to uninitialzed addr 0x%0h", addr))
     end
     return data;
