@@ -391,6 +391,11 @@ module hmac (
           hmac_en != $past(hmac_en) |-> !in_process && !initiated,
           clk_i, !rst_ni)
 
+  // All outputs should be known value after reset
+  `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrFifoFullOKnown, intr_fifo_full_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
   //---------------------------------------------------------------------------
 
 endmodule
