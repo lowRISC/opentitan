@@ -19,6 +19,8 @@ package hmac_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
+  // csr and mem total size for IP
+  parameter uint   ADDR_MAP_SIZE             = 4096;
   parameter uint32 HMAC_MSG_FIFO_DEPTH       = 16;
   parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES = HMAC_MSG_FIFO_DEPTH * 4;
   parameter uint32 HMAC_MSG_FIFO_SIZE        = 2048;
