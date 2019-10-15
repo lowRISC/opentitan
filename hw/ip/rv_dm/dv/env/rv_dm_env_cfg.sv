@@ -20,7 +20,7 @@ class rv_dm_env_cfg extends dv_base_env_cfg #(.RAL_T(rv_dm_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
+                                   bit [TL_AW-1:0] csr_addr_map_size = ADDR_MAP_SIZE);
     super.initialize(csr_base_addr, csr_addr_map_size);
     // create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");

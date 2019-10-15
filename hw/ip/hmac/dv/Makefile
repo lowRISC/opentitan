@@ -26,6 +26,9 @@ TEST_NAME       ?= hmac_sanity
 UVM_TEST        ?= hmac_base_test
 UVM_TEST_SEQ    ?= hmac_base_vseq
 
+# common tests/seqs
+include ${DV_DIR}/../../../dv/tools/common_tests.mk
+
 ifeq (${TEST_NAME},hmac_sanity)
   UVM_TEST_SEQ   = hmac_sanity_vseq
 endif
@@ -63,35 +66,6 @@ ifeq (${TEST_NAME},hmac_reset)
   UVM_TEST_SEQ   = hmac_reset_vseq
   RUN_OPTS      += +test_vectors_dir=${DV_DIR}/../../../dv/sv/test_vectors/
   RUN_OPTS      += +test_timeout_ns=10_000_000_000
-endif
-
-ifeq (${TEST_NAME},hmac_intr_test)
-  UVM_TEST_SEQ   = hmac_common_vseq
-  RUN_OPTS      += +run_intr_test
-endif
-
-ifeq (${TEST_NAME},hmac_csr_hw_reset)
-  UVM_TEST_SEQ   = hmac_common_vseq
-  RUN_OPTS      += +csr_hw_reset
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},hmac_csr_rw)
-  UVM_TEST_SEQ   = hmac_common_vseq
-  RUN_OPTS      += +csr_rw
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},hmac_csr_bit_bash)
-  UVM_TEST_SEQ   = hmac_common_vseq
-  RUN_OPTS      += +csr_bit_bash
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},hmac_csr_aliasing)
-  UVM_TEST_SEQ   = hmac_common_vseq
-  RUN_OPTS      += +csr_aliasing
-  RUN_OPTS      += +en_scb=0
 endif
 
 ####################################################################################################

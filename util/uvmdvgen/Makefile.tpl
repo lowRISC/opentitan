@@ -30,7 +30,7 @@ UVM_TEST        ?= ${name}_base_test
 UVM_TEST_SEQ    ?= ${name}_base_vseq
 
 # common tests/seqs
-include ${'$'}{DV_DIR}/../../../dv/tools//common_tests.mk
+include ${'$'}{DV_DIR}/../../../dv/tools/common_tests.mk
 
 ifeq (${'$'}{TEST_NAME},${name}_sanity)
   UVM_TEST_SEQ   = ${name}_sanity_vseq

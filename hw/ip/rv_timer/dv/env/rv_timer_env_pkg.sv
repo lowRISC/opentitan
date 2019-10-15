@@ -17,6 +17,8 @@ package rv_timer_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
+  // csr and mem total size for IP
+  parameter uint ADDR_MAP_SIZE = 512;
   // TODO: these are currently hardcoded to 1 - this will need to change if design is modified
   parameter uint NUM_HARTS = 1;
   parameter uint NUM_TIMERS = 1;

@@ -26,6 +26,9 @@ TEST_NAME       ?= rv_timer_sanity
 UVM_TEST        ?= rv_timer_base_test
 UVM_TEST_SEQ    ?= rv_timer_base_vseq
 
+# common tests/seqs
+include ${DV_DIR}/../../../dv/tools/common_tests.mk
+
 ifeq (${TEST_NAME},rv_timer_sanity)
   UVM_TEST_SEQ   = rv_timer_sanity_vseq
 endif
@@ -44,38 +47,9 @@ ifeq (${TEST_NAME},rv_timer_random_reset)
   UVM_TEST_SEQ   = rv_timer_random_reset_vseq
 endif
 
-ifeq (${TEST_NAME},rv_timer_intr_test)
-  UVM_TEST_SEQ   = rv_timer_common_vseq
-  RUN_OPTS      += +run_intr_test
-endif
-
 ifeq (${TEST_NAME},rv_timer_stress_all)
   UVM_TEST_SEQ   = rv_timer_stress_all_vseq
   RUN_OPTS      += +test_timeout_ns=10_000_000_000
-endif
-
-ifeq (${TEST_NAME},rv_timer_csr_hw_reset)
-  UVM_TEST_SEQ   = rv_timer_common_vseq
-  RUN_OPTS      += +csr_hw_reset
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},rv_timer_csr_rw)
-  UVM_TEST_SEQ   = rv_timer_common_vseq
-  RUN_OPTS      += +csr_rw
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},rv_timer_csr_bit_bash)
-  UVM_TEST_SEQ   = rv_timer_common_vseq
-  RUN_OPTS      += +csr_bit_bash
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},rv_timer_csr_aliasing)
-  UVM_TEST_SEQ   = rv_timer_common_vseq
-  RUN_OPTS      += +csr_aliasing
-  RUN_OPTS      += +en_scb=0
 endif
 
 ####################################################################################################

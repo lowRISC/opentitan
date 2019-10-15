@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Shorthand to create and send a TL error seq
+// TODO use low priority to send error item to TL agent, so when crossing error item with normal
+// seq, normal seq has the priority to access TL driver
 `define create_tl_access_error_case(task_name_, with_c_, seq_t_ = tl_host_custom_seq) \
   begin \
     seq_t_ tl_seq; \
@@ -13,11 +15,13 @@
       tl_seq.max_req_delay = 0; \
     end \
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_) \
+    csr_utils_pkg::increment_outstanding_access(); \
     `uvm_send(tl_seq) \
+    csr_utils_pkg::decrement_outstanding_access(); \
   end
 
 virtual task tl_access_unmapped_addr();
-  repeat ($urandom_range(50, 100)) begin
+  repeat ($urandom_range(10, 100)) begin
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
         foreach (cfg.csr_addrs[i]) {
@@ -31,11 +35,15 @@ virtual task tl_access_unmapped_addr();
   end
 endtask
 
-virtual task tl_write_unaligned_addr();
-  repeat ($urandom_range(50, 100)) begin
+virtual task tl_write_csr_word_unaligned_addr();
+  repeat ($urandom_range(10, 100)) begin
     `create_tl_access_error_case(
-        tl_write_unaligned_addr,
+        tl_write_csr_word_unaligned_addr,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
+        foreach (cfg.mem_addrs[i]) {
+          !(addr % cfg.csr_addr_map_size
+              inside {[cfg.mem_addrs[i].start_addr : cfg.mem_addrs[i].end_addr]});
+        }
         addr[1:0] != 2'b00;)
   end
 endtask
@@ -67,10 +75,17 @@ virtual task tl_write_less_than_csr_width();
   end
 endtask
 
+virtual task tl_protocol_err();
+  repeat ($urandom_range(10, 100)) begin
+    `create_tl_access_error_case(
+        tl_protocol_err, , tl_host_protocol_err_seq
+        )
+  end
+endtask
+
 virtual task tl_write_mem_less_than_word();
   uint mem_idx;
-  if (cfg.mem_addrs.size == 0) return;
-  repeat ($urandom_range(50, 100)) begin
+  repeat ($urandom_range(10, 100)) begin
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, cfg.mem_addrs.size - 1);
     `create_tl_access_error_case(
@@ -83,42 +98,47 @@ virtual task tl_write_mem_less_than_word();
   end
 endtask
 
-virtual task tl_protocol_err();
-  repeat ($urandom_range(50, 100)) begin
+virtual task tl_read_mem_err();
+  uint mem_idx;
+  repeat ($urandom_range(10, 100)) begin
+    // if more than one memories, randomly select one memory
+    mem_idx = $urandom_range(0, cfg.mem_addrs.size - 1);
     `create_tl_access_error_case(
-        tl_protocol_err, , tl_host_protocol_err_seq
+        tl_read_mem_err,
+        opcode == tlul_pkg::Get;
+        addr inside {[cfg.mem_addrs[mem_idx].start_addr : cfg.mem_addrs[mem_idx].end_addr]};
         )
   end
 endtask
 
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq(int num_times = 1);
+  bit test_mem_err_byte_write = (cfg.mem_addrs.size > 0) && !cfg.en_mem_byte_write;
+  bit test_mem_err_read       = (cfg.mem_addrs.size > 0) && !cfg.en_mem_read;
   `uvm_info(`gfn, "Running run_tl_errors_vseq", UVM_LOW)
-  cfg.tlul_assert_vif.disable_sva_legalAOpcode();
-  cfg.tlul_assert_vif.disable_sva_sizeMatchesMask();
-  cfg.tlul_assert_vif.disable_sva_addressAlignedToSize();
-  cfg.tlul_assert_vif.disable_sva_maskMustBeContiguous();
-  cfg.tlul_assert_vif.disable_sva_sizeGTEMask();
-  cfg.tlul_assert_vif.disable_sva_d_data_known();
+  cfg.tlul_assert_vif.disable_sva_for_tl_errors();
 
-  for (int trans = 1; trans <= num_times * 20; trans++) begin
+  for (int trans = 1; trans <= num_times; trans++) begin
     if (cfg.en_devmode == 1) begin
       cfg.devmode_vif.drive($urandom_range(0, 1));
     end
-    randcase
-      1: tl_access_unmapped_addr();
-      1: tl_write_unaligned_addr();
-      1: tl_write_less_than_csr_width();
-      1: tl_write_mem_less_than_word();
-      1: tl_protocol_err();
-    endcase
-  end
-  cfg.tlul_assert_vif.enable_sva_legalAOpcode();
-  cfg.tlul_assert_vif.enable_sva_sizeMatchesMask();
-  cfg.tlul_assert_vif.enable_sva_addressAlignedToSize();
-  cfg.tlul_assert_vif.enable_sva_maskMustBeContiguous();
-  cfg.tlul_assert_vif.enable_sva_sizeGTEMask();
-  cfg.tlul_assert_vif.enable_sva_d_data_known();
+    // use multiple thread to create outstanding access
+    repeat ($urandom_range(5, 10)) fork
+      begin
+        randcase
+          1: tl_access_unmapped_addr();
+          1: tl_write_csr_word_unaligned_addr();
+          1: tl_write_less_than_csr_width();
+          1: tl_protocol_err();
+          // only run this task when the mem supports error response
+          test_mem_err_byte_write: tl_write_mem_less_than_word();
+          test_mem_err_read:       tl_read_mem_err();
+        endcase
+      end
+    join_none
+    wait fork;
+  end // for
+  cfg.tlul_assert_vif.enable_sva_for_tl_errors();
 endtask : run_tl_errors_vseq
 
 `undef create_tl_access_error_case

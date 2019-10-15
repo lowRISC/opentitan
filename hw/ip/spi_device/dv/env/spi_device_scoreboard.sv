@@ -106,9 +106,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       return;
     end
     else begin
-      // we hit an oob addr - expect error response and return
-      `DV_CHECK_EQ(item.d_error, 1'b1)
-      return;
+      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
     // if incoming access is a write to a valid csr, then make updates right away
