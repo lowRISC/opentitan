@@ -50,10 +50,11 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     end
   endfunction : pre_randomize
 
-  virtual task run_device_seq_nonblocking();
+  virtual task run_device_seq_nonblocking(bit out_of_order_rsp = 1);
     foreach (device_seq[i]) begin
       fork
         automatic int device_id = i;
+        device_seq[device_id].out_of_order_rsp = out_of_order_rsp;
         device_seq[device_id].start(p_sequencer.device_seqr[device_id]);
       join_none
     end
