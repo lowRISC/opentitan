@@ -46,7 +46,7 @@ module alert_handler_reg_wrap (
     prim_intr_hw #(
       .Width(1)
     ) i_irq_classa (
-      .event_intr_i           ( hw2reg_wrap.class_trig[0] & reg2hw_wrap.class_en[0] ),
+      .event_intr_i           ( hw2reg_wrap.class_trig[0]    ),
       .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.classa.q  ),
       .reg2hw_intr_test_q_i   ( reg2hw.intr_test.classa.q    ),
       .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.classa.qe   ),
@@ -59,7 +59,7 @@ module alert_handler_reg_wrap (
     prim_intr_hw #(
       .Width(1)
     ) i_irq_classb (
-      .event_intr_i           ( hw2reg_wrap.class_trig[1] & reg2hw_wrap.class_en[1] ),
+      .event_intr_i           ( hw2reg_wrap.class_trig[1]    ),
       .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.classb.q  ),
       .reg2hw_intr_test_q_i   ( reg2hw.intr_test.classb.q    ),
       .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.classb.qe   ),
@@ -72,7 +72,7 @@ module alert_handler_reg_wrap (
     prim_intr_hw #(
       .Width(1)
     ) i_irq_classc (
-      .event_intr_i           ( hw2reg_wrap.class_trig[2] & reg2hw_wrap.class_en[2] ),
+      .event_intr_i           ( hw2reg_wrap.class_trig[2]    ),
       .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.classc.q  ),
       .reg2hw_intr_test_q_i   ( reg2hw.intr_test.classc.q    ),
       .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.classc.qe   ),
@@ -85,7 +85,7 @@ module alert_handler_reg_wrap (
     prim_intr_hw #(
       .Width(1)
     ) i_irq_classd (
-      .event_intr_i           ( hw2reg_wrap.class_trig[3] & reg2hw_wrap.class_en[3] ),
+      .event_intr_i           ( hw2reg_wrap.class_trig[3]    ),
       .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.classd.q  ),
       .reg2hw_intr_test_q_i   ( reg2hw.intr_test.classd.q    ),
       .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.classd.qe   ),

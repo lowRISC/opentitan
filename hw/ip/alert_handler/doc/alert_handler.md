@@ -918,6 +918,11 @@ the interrupt as follows:
       class A interrupt state bit also clears and stops the interrupt timeout
       counter (if enabled).
 
+Note that testing interrupts by writing to the interrupt test registers does
+also trigger the internal interrupt timeout (if enabled), since the interrupt
+state is used as enable signal for the timer. However, alert accumulation will
+not be triggered by this testing mechanism.
+
 
 {{% section1 Additional Notes}}
 
