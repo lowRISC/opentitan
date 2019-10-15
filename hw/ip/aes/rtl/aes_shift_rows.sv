@@ -12,42 +12,36 @@ module aes_shift_rows (
 
   import aes_pkg::*;
 
+  logic [3:0][3:0][7:0] state_i;
+  logic [3:0][3:0][7:0] state_o;
+
+  always_comb begin : conv_bytes_1d_to_2d
+    for (int i=0; i<4; i++) begin : rows
+      for (int j=0; j<4; j++) begin : columns
+        state_i[i][j] = data_i[4*j+i];
+      end
+    end
+  end
+
   // Row 0 is left untouched
-  assign data_o[0]  = data_i[0];
-  assign data_o[4]  = data_i[4];
-  assign data_o[8]  = data_i[8];
-  assign data_o[12] = data_i[12];
+  assign state_o[0] = state_i[0];
 
   // Row 2 does not depend on mode_i
-  assign data_o[2]  = data_i[10];
-  assign data_o[6]  = data_i[14];
-  assign data_o[10] = data_i[2];
-  assign data_o[14] = data_i[6];
+  assign state_o[2] = aes_circ_byte_shift(state_i[2], 2);
 
-  // Rows 1 and 3
-  always_comb begin : shift_row_1_3
-    if (mode_i == AES_ENC) begin
-      // Row 1
-      data_o[1]  = data_i[5];
-      data_o[5]  = data_i[9];
-      data_o[9]  = data_i[13];
-      data_o[13] = data_i[1];
-      // Row 3
-      data_o[3]  = data_i[15];
-      data_o[7]  = data_i[3];
-      data_o[11] = data_i[7];
-      data_o[15] = data_i[11];
-    end else begin
-      // Row 1
-      data_o[1]  = data_i[13];
-      data_o[5]  = data_i[1];
-      data_o[9]  = data_i[5];
-      data_o[13] = data_i[9];
-      // Row 3
-      data_o[3]  = data_i[7];
-      data_o[7]  = data_i[11];
-      data_o[11] = data_i[15];
-      data_o[15] = data_i[3];
+  // Row 1
+  assign state_o[1] = (mode_i == AES_ENC) ? aes_circ_byte_shift(state_i[1], -1)
+                                          : aes_circ_byte_shift(state_i[1],  1);
+
+  // Row 3
+  assign state_o[3] = (mode_i == AES_ENC) ? aes_circ_byte_shift(state_i[3],  1)
+                                          : aes_circ_byte_shift(state_i[3], -1);
+
+  always_comb begin : conv_bytes_2d_to_1d
+    for (int i=0; i<4; i++) begin : rows
+      for (int j=0; j<4; j++) begin : columns
+        data_o[4*j+i] = state_o[i][j];
+      end
     end
   end
 

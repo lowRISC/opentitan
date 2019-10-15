@@ -73,4 +73,11 @@ function logic [7:0] aes_mul4(input logic [7:0] in);
   aes_mul4 = aes_mul2(aes_mul2(in));
 endfunction
 
+// Circular byte shift to the left
+function logic [31:0] aes_circ_byte_shift(input logic [31:0] in, int shift);
+  int s = shift % 4;
+  aes_circ_byte_shift = {in[8*((3-s)%4) +: 8], in[8*((2-s)%4) +: 8],
+                         in[8*((1-s)%4) +: 8], in[8*((0-s)%4) +: 8]};
+endfunction
+
 endpackage
