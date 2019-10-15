@@ -119,6 +119,24 @@ void aes_key_expand(unsigned char *round_key, unsigned char *key,
 void aes_inv_key_expand(unsigned char *round_key, unsigned char *key,
                         const int key_len, unsigned char *rcon, const int rnd);
 
+/**
+ * Update Rcon value for next round during encryption.
+ * If the input value is 0, rcon is initialized to the start value.
+ *
+ * @param  rcon Rcon value
+ */
+void aes_rcon_next(unsigned char *rcon);
+
+/**
+ * Update Rcon value for next round during decryption.
+ * If the input value is 0, rcon is initialized to the start value
+ * depening on key length.
+ *
+ * @param  rcon    Rcon value
+ * @param  key_len Key length in bytes (16, 24, 32)
+ */
+void aes_rcon_prev(unsigned char *rcon, int key_len);
+
 static const unsigned char sbox[256] = {
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5,
     0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,

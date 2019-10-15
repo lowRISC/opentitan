@@ -13,9 +13,8 @@
 #include "aes_model_dpi.h"
 
 void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
-                   const svBitVecVal *key_len_i, const svOpenArrayHandle key_i,
-                   const svOpenArrayHandle data_i,
-                   const svOpenArrayHandle data_o) {
+                   const svBitVecVal *key_len_i, const svBitVecVal *key_i,
+                   const svBitVecVal *data_i, svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *key = aes_key_get(key_i);
   unsigned char *ref_in = aes_data_get(data_i);
@@ -90,13 +89,12 @@ void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
   return;
 }
 
-void aes_sub_bytes_dpi(const unsigned char mode_i,
-                       const svOpenArrayHandle data_i,
-                       const svOpenArrayHandle data_o) {
+void aes_sub_bytes_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
+                       svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
-  // perform shift rows
+  // perform sub bytes
   if (!mode_i) {
     aes_sub_bytes(data);
   } else {
@@ -109,9 +107,8 @@ void aes_sub_bytes_dpi(const unsigned char mode_i,
   return;
 }
 
-void aes_shift_rows_dpi(const unsigned char mode_i,
-                        const svOpenArrayHandle data_i,
-                        const svOpenArrayHandle data_o) {
+void aes_shift_rows_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
+                        svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
@@ -128,13 +125,12 @@ void aes_shift_rows_dpi(const unsigned char mode_i,
   return;
 }
 
-void aes_mix_columns_dpi(const unsigned char mode_i,
-                         const svOpenArrayHandle data_i,
-                         const svOpenArrayHandle data_o) {
+void aes_mix_columns_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
+                         svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
-  // perform shift rows
+  // perform mix columns
   if (!mode_i) {
     aes_mix_columns(data);
   } else {
@@ -147,16 +143,15 @@ void aes_mix_columns_dpi(const unsigned char mode_i,
   return;
 }
 
-void aes_key_expand_dpi(const unsigned char mode_i, const svBitVecVal *rcon_old,
+void aes_key_expand_dpi(const unsigned char mode_i, const svBitVecVal *rcon_i,
                         const svBitVecVal *round_i,
-                        const svBitVecVal *key_len_i,
-                        const svOpenArrayHandle key_i,
-                        const svOpenArrayHandle key_o) {
+                        const svBitVecVal *key_len_i, const svBitVecVal *key_i,
+                        svBitVecVal *key_o) {
   unsigned char round_key[16];  // just used by model
 
   // get input data
   unsigned char *key = aes_key_get(key_i);
-  unsigned char rcon = (unsigned char)*rcon_old;
+  unsigned char rcon = (unsigned char)*rcon_i;
   int rnd = (int)*round_i;
 
   // key_len_i is one-hot encoded
@@ -169,10 +164,12 @@ void aes_key_expand_dpi(const unsigned char mode_i, const svBitVecVal *rcon_old,
     key_len = 32;
   }
 
-  // perform shift rows
+  // perform key expand
   if (!mode_i) {
+    aes_rcon_prev(&rcon, key_len);
     aes_key_expand(round_key, key, key_len, &rcon, rnd);
   } else {
+    aes_rcon_next(&rcon);
     aes_inv_key_expand(round_key, key, key_len, &rcon, rnd);
   }
 
@@ -182,7 +179,47 @@ void aes_key_expand_dpi(const unsigned char mode_i, const svBitVecVal *rcon_old,
   return;
 }
 
-unsigned char *aes_data_get(const svOpenArrayHandle data_i) {
+unsigned char *aes_data_get(const svBitVecVal *data_i) {
+  unsigned char *data;
+  svBitVecVal value;
+
+  // alloc data buffer
+  data = (unsigned char *)malloc(16 * sizeof(unsigned char));
+  if (!data) {
+    printf("ERROR: malloc() for aes_data_get failed");
+    return 0;
+  }
+
+  // get data from simulator, convert from 2D to 1D
+  for (int i = 0; i < 4; i++) {
+    value = data_i[i];
+    for (int j = 0; j < 4; j++) {
+      data[i + j * 4] = (unsigned char)(value >> (8 * j));
+    }
+  }
+
+  return data;
+}
+
+void aes_data_put(svBitVecVal *data_o, unsigned char *data) {
+  svBitVecVal value;
+
+  // convert from 1D to 2D, write output data to simulation
+  for (int i = 0; i < 4; i++) {
+    value = 0;
+    for (int j = 0; j < 4; j++) {
+      value |= (svBitVecVal)((data[i + 4 * j]) << (8 * j));
+    }
+    data_o[i] = value;
+  }
+
+  // free data
+  free(data);
+
+  return;
+}
+
+unsigned char *aes_data_unpacked_get(const svOpenArrayHandle data_i) {
   unsigned char *data;
   int len;
   svBitVecVal value;
@@ -191,7 +228,7 @@ unsigned char *aes_data_get(const svOpenArrayHandle data_i) {
   len = svSize(data_i, 1);
   data = (unsigned char *)malloc(len * sizeof(unsigned char));
   if (!data) {
-    printf("ERROR: malloc() for aes_data_get failed");
+    printf("ERROR: malloc() for aes_data_unpacked_get failed");
     return 0;
   }
 
@@ -204,7 +241,8 @@ unsigned char *aes_data_get(const svOpenArrayHandle data_i) {
   return data;
 }
 
-void aes_data_put(const svOpenArrayHandle data_o, unsigned char *data) {
+void aes_data_unpacked_put(const svOpenArrayHandle data_o,
+                           unsigned char *data) {
   int len;
   svBitVecVal value;
 
@@ -223,22 +261,20 @@ void aes_data_put(const svOpenArrayHandle data_o, unsigned char *data) {
   return;
 }
 
-unsigned char *aes_key_get(const svOpenArrayHandle key_i) {
+unsigned char *aes_key_get(const svBitVecVal *key_i) {
   unsigned char *key;
-  int len;
   svBitVecVal value;
 
   // alloc data buffer
-  len = svSize(key_i, 1);
-  key = (unsigned char *)malloc(len * 4 * sizeof(unsigned char));
+  key = (unsigned char *)malloc(32 * sizeof(unsigned char));
   if (!key) {
     printf("ERROR: malloc() for aes_key_get failed");
     return 0;
   }
 
   // get data from simulator
-  for (int i = 0; i < len; i++) {
-    svGetBitArrElem1VecVal(&value, key_i, i);
+  for (int i = 0; i < 8; i++) {
+    value = key_i[i];
     key[4 * i + 0] = (unsigned char)(value >> 0);
     key[4 * i + 1] = (unsigned char)(value >> 8);
     key[4 * i + 2] = (unsigned char)(value >> 16);
@@ -248,20 +284,16 @@ unsigned char *aes_key_get(const svOpenArrayHandle key_i) {
   return key;
 }
 
-void aes_key_put(const svOpenArrayHandle key_o, unsigned char *key) {
-  int len;
+void aes_key_put(svBitVecVal *key_o, unsigned char *key) {
   svBitVecVal value;
 
-  // get size of data buffer
-  len = svSize(key_o, 1);
-
   // write output data to simulation
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < 8; i++) {
     value = (svBitVecVal)(((key[4 * i + 0] << 0) & 0xFF) +
                           ((key[4 * i + 1] << 8) & 0xFF00) +
                           ((key[4 * i + 2] << 16) & 0xFF0000) +
                           ((key[4 * i + 3] << 24) & 0xFF000000));
-    svPutBitArrElem1VecVal(key_o, &value, i);
+    key_o[i] = value;
   }
 
   // free data

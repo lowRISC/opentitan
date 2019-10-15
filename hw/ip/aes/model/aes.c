@@ -151,68 +151,6 @@ int aes_get_num_rounds(int key_len) {
   return num_rounds;
 }
 
-static void aes_rcon_next(unsigned char *rcon) {
-  unsigned char rcon_tmp;
-
-  // rcon cannot be 0
-  if (*rcon) {
-    // update rcon - actually this is aes_mul2
-    rcon_tmp = *rcon;
-
-    // set individual bits of rcon
-    *rcon = 0x0;
-    //            extract bits             possible xor      shift to right
-    //            position
-    *rcon |= (((rcon_tmp >> 7) & 0x1)) << 0;
-    *rcon |= (((rcon_tmp >> 0) & 0x1) ^ ((rcon_tmp >> 7) & 0x1)) << 1;
-    *rcon |= (((rcon_tmp >> 1) & 0x1)) << 2;
-    *rcon |= (((rcon_tmp >> 2) & 0x1) ^ ((rcon_tmp >> 7) & 0x1)) << 3;
-    *rcon |= (((rcon_tmp >> 3) & 0x1) ^ ((rcon_tmp >> 7) & 0x1)) << 4;
-    *rcon |= (((rcon_tmp >> 4) & 0x1)) << 5;
-    *rcon |= (((rcon_tmp >> 5) & 0x1)) << 6;
-    *rcon |= (((rcon_tmp >> 6) & 0x1)) << 7;
-  } else {
-    // init rcon to first round value
-    *rcon = 0x1;
-  }
-
-  return;
-}
-
-static void aes_rcon_prev(unsigned char *rcon, int key_len) {
-  unsigned char rcon_tmp;
-
-  // rcon cannot be 0
-  if (*rcon) {
-    // update rcon - actually this is aes_mul2
-    rcon_tmp = *rcon;
-
-    // set individual bits of rcon
-    *rcon = 0x0;
-    //            extract bits             possible xor      shift to right
-    //            position
-    *rcon |= (((rcon_tmp >> 1) & 0x1) ^ ((rcon_tmp >> 0) & 0x1)) << 0;
-    *rcon |= (((rcon_tmp >> 2) & 0x1)) << 1;
-    *rcon |= (((rcon_tmp >> 3) & 0x1) ^ ((rcon_tmp >> 0) & 0x1)) << 2;
-    *rcon |= (((rcon_tmp >> 4) & 0x1) ^ ((rcon_tmp >> 0) & 0x1)) << 3;
-    *rcon |= (((rcon_tmp >> 5) & 0x1)) << 4;
-    *rcon |= (((rcon_tmp >> 6) & 0x1)) << 5;
-    *rcon |= (((rcon_tmp >> 7) & 0x1)) << 6;
-    *rcon |= (((rcon_tmp >> 0) & 0x1)) << 7;
-  } else {
-    // init rcon to first round value
-    if (key_len == 16) {
-      *rcon = 0x36;
-    } else if (key_len == 24) {
-      *rcon = 0x80;
-    } else {  // key_len == 32
-      *rcon = 0x40;
-    }
-  }
-
-  return;
-}
-
 static unsigned char aes_mul2(unsigned char in) {
   // set individual bits of out
   unsigned char out = 0x0;
@@ -1014,6 +952,53 @@ void aes_inv_key_expand(unsigned char *round_key, unsigned char *key,
   }
 
   free(old_key);
+
+  return;
+}
+
+void aes_rcon_next(unsigned char *rcon) {
+  // rcon cannot be 0
+  if (*rcon) {
+    // update rcon
+    *rcon = aes_mul2(*rcon);
+  } else {
+    // init rcon to first round value
+    *rcon = 0x1;
+  }
+
+  return;
+}
+
+void aes_rcon_prev(unsigned char *rcon, int key_len) {
+  unsigned char rcon_tmp;
+
+  // rcon cannot be 0
+  if (*rcon) {
+    // update rcon - actually this is the inverse of aes_mul2
+    rcon_tmp = *rcon;
+
+    // set individual bits of rcon
+    *rcon = 0x0;
+    //            extract bits             possible xor      shift to right
+    //            position
+    *rcon |= (((rcon_tmp >> 1) & 0x1) ^ ((rcon_tmp >> 0) & 0x1)) << 0;
+    *rcon |= (((rcon_tmp >> 2) & 0x1)) << 1;
+    *rcon |= (((rcon_tmp >> 3) & 0x1) ^ ((rcon_tmp >> 0) & 0x1)) << 2;
+    *rcon |= (((rcon_tmp >> 4) & 0x1) ^ ((rcon_tmp >> 0) & 0x1)) << 3;
+    *rcon |= (((rcon_tmp >> 5) & 0x1)) << 4;
+    *rcon |= (((rcon_tmp >> 6) & 0x1)) << 5;
+    *rcon |= (((rcon_tmp >> 7) & 0x1)) << 6;
+    *rcon |= (((rcon_tmp >> 0) & 0x1)) << 7;
+  } else {
+    // init rcon to first round value
+    if (key_len == 16) {
+      *rcon = 0x36;
+    } else if (key_len == 24) {
+      *rcon = 0x80;
+    } else {  // key_len == 32
+      *rcon = 0x40;
+    }
+  }
 
   return;
 }
