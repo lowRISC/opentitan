@@ -5,37 +5,43 @@
 class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   `uvm_component_utils(i2c_driver)
 
+  `uvm_component_new
+
   // the base class provides the following handles for use:
   i2c_agent_cfg cfg;
 
-  `uvm_component_new
+  uvm_reg  csrs[$];
+
+  bit      under_reset;
+  bit      is_start;
+
+  event    is_start_e;
+  event    is_stop_e;
 
   virtual task run_phase(uvm_phase phase);
     // base class forks off reset_signals() and get_and_drive() tasks
-    super.run_phase(phase);
-    reset_signals();
-    get_and_drive();
+    fork
+      reset_signals();
+      get_and_drive();
+    join
   endtask
 
-  // reset signals
   virtual task reset_signals();
-    cfg.vif.scl_i <= 1'b1;
-    cfg.vif.sda_i <= 1'b1;
+    wait(cfg.vif.rst_ni === 1'b0);
+    cfg.vif.scl_o = 1'bx;
+    cfg.vif.sda_o = 1'bx;
+    under_reset   = 1'b1;
+    is_start      = 1'bx;
+
+    wait(cfg.vif.rst_ni === 1'b1);
+    cfg.vif.scl_o = 1'b1;
+    cfg.vif.sda_o = 1'b1;
+    under_reset   = 1'b0;
+    is_start      = 1'b0;
   endtask : reset_signals
 
-  // drive trans received from sequencer
   virtual task get_and_drive();
-    forever begin
-      seq_item_port.get_next_item(req);
-      $cast(rsp, req.clone());
-      rsp.set_id_info(req);
-      `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
-      // TODO: do the driving part
-      //
-      // send rsp back to seq
-      `uvm_info(`gfn, "item sent", UVM_HIGH)
-      seq_item_port.item_done(rsp);
-    end
+    //`uvm_fatal(`gfn, "this is implemented as pure virtual task - please extend")
   endtask
 
 endclass : i2c_driver

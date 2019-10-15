@@ -16,6 +16,8 @@ filesets:
       - i2c_agent_cov.sv: {is_include_file: true}
       - i2c_item.sv: {is_include_file: true}
       - i2c_driver.sv: {is_include_file: true}
+      - i2c_host_driver.sv: {is_include_file: true}
+      - i2c_drive_driver.sv: {is_include_file: true}
       - i2c_monitor.sv: {is_include_file: true}
       - i2c_agent.sv: {is_include_file: true}
       - seq_lib/i2c_base_seq.sv: {is_include_file: true}

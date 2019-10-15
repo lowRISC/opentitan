@@ -6,7 +6,7 @@ class i2c_agent_cov extends dv_base_agent_cov #(i2c_agent_cfg);
   `uvm_component_utils(i2c_agent_cov)
 
   // the base class provides the following handles for use:
-  // i2c_agent_cfg: cfg
+  i2c_agent_cfg cfg;
 
   // covergroups
 

@@ -22,6 +22,15 @@ COMPILE_KEY     ?= default
 UVM_TEST        ?= i2c_base_test
 UVM_TEST_SEQ    ?= i2c_base_vseq
 
+
+export TEST_NAME     ?= i2c_reg_access
+export WAVES         ?= 1
+export UVM_VERBOSITY ?= UVM_LOW
+
+ifeq (${TEST_NAME},i2c_reg_access)
+  UVM_TEST_SEQ   = i2c_reg_access_vseq
+endif
+
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
