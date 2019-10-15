@@ -117,50 +117,64 @@ endclass
 // Device sequence, currently support in-order response
 class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
 
-  int unsigned             rsp_cnt;
   int                      min_rsp_delay = 0;
   int                      max_rsp_delay = 10;
   mem_model_pkg::mem_model mem;
+  tl_seq_item              req_q[$];
+  bit                      out_of_order_rsp = 0;
 
   `uvm_object_utils(tl_device_seq)
   `uvm_declare_p_sequencer(tl_sequencer)
-
-  function new (string name = "");
-    super.new(name);
-  endfunction : new
+  `uvm_object_new
 
   virtual task body();
-    tl_seq_item req;
-    tl_seq_item rsp;
-    forever begin
-      p_sequencer.a_chan_req_fifo.get(req);
-      rsp = randomize_rsp(req);
-      `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
-                                 rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
-      start_item(rsp);
-      finish_item(rsp);
-      `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s",
-                                 rsp_cnt, rsp.convert2string()), UVM_HIGH)
-      rsp_cnt++;
-    end
+    fork
+      forever begin // collect req thread
+        int         req_cnt;
+        tl_seq_item req;
+
+        p_sequencer.a_chan_req_fifo.get(req);
+        req_q.push_back(req);
+        `uvm_info(`gfn, $sformatf("Received req[%0d] : %0s",
+                                   req_cnt, req.convert2string()), UVM_HIGH)
+        req_cnt++;
+      end
+      forever begin // response thread
+        int         rsp_cnt;
+        tl_seq_item req, rsp;
+
+        wait (req_q.size > 0);
+        if (out_of_order_rsp) req_q.shuffle();
+        req = req_q.pop_front();
+        $cast(rsp, req.clone());
+        randomize_rsp(rsp);
+        update_mem(rsp);
+        start_item(rsp);
+        finish_item(rsp);
+        `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
+                                   rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
+        rsp_cnt++;
+      end
+    join
   endtask
 
-  virtual function tl_seq_item randomize_rsp(tl_seq_item req);
-    tl_seq_item rsp;
-    $cast(rsp, req.clone());
+  virtual function void randomize_rsp(tl_seq_item rsp);
     rsp.disable_a_chan_randomization();
     if (!(rsp.randomize() with
            {rsp.d_valid_delay inside {[min_rsp_delay : max_rsp_delay]};
-            if (rsp.a_opcode inside {PutFullData, PutPartialData}) {
-              rsp.d_opcode == tlul_pkg::AccessAck;
-            } else {
+            if (rsp.a_opcode == tlul_pkg::Get) {
               rsp.d_opcode == tlul_pkg::AccessAckData;
+            } else {
+              rsp.d_opcode == tlul_pkg::AccessAck;
             }
             rsp.d_size == rsp.a_size;
             rsp.d_user == '0; // TODO: Not defined yet, tie it to zero
             rsp.d_source == rsp.a_source;})) begin
       `uvm_fatal(`gfn, "Cannot randomize rsp")
     end
+  endfunction
+
+  virtual function void update_mem(tl_seq_item rsp);
     if (mem != null) begin
       if (req.a_opcode inside {PutFullData, PutPartialData}) begin
         bit [tl_agent_pkg::DataWidth-1:0] data;
@@ -178,7 +192,6 @@ class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
         end
       end
     end
-    return rsp;
   endfunction
 
 endclass : tl_device_seq

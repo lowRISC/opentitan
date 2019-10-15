@@ -27,11 +27,53 @@ UVM_TEST        ?= xbar_base_test
 UVM_TEST_SEQ    ?= xbar_base_vseq
 
 ifeq (${TEST_NAME},xbar_sanity)
-  UVM_TEST_SEQ    = xbar_sanity_vseq
+  UVM_TEST_SEQ   = xbar_sanity_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_sanity_zero_delays)
+  UVM_TEST_SEQ   = xbar_sanity_vseq
+  RUN_OPTS      += +zero_delays=1
+endif
+
+ifeq (${TEST_NAME},xbar_sanity_large_delays)
+  UVM_TEST_SEQ   = xbar_sanity_vseq
+  RUN_OPTS      += +min_req_delay=0
+  RUN_OPTS      += +max_req_delay=1000
+  RUN_OPTS      += +min_rsp_delay=0
+  RUN_OPTS      += +max_rsp_delay=1000
+endif
+
+ifeq (${TEST_NAME},xbar_sanity_slow_rsp)
+  UVM_TEST_SEQ   = xbar_sanity_vseq
+  RUN_OPTS      += +min_req_delay=0
+  RUN_OPTS      += +max_req_delay=10
+  RUN_OPTS      += +min_rsp_delay=0
+  RUN_OPTS      += +max_rsp_delay=1000
 endif
 
 ifeq (${TEST_NAME},xbar_random)
-  UVM_TEST_SEQ    = xbar_random_vseq
+  UVM_TEST_SEQ   = xbar_random_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_random_zero_delays)
+  UVM_TEST_SEQ   = xbar_random_vseq
+  RUN_OPTS      += +zero_delays=1
+endif
+
+ifeq (${TEST_NAME},xbar_random_large_delays)
+  UVM_TEST_SEQ   = xbar_random_vseq
+  RUN_OPTS      += +min_req_delay=0
+  RUN_OPTS      += +max_req_delay=1000
+  RUN_OPTS      += +min_rsp_delay=0
+  RUN_OPTS      += +max_rsp_delay=1000
+endif
+
+ifeq (${TEST_NAME},xbar_random_slow_rsp)
+  UVM_TEST_SEQ   = xbar_random_vseq
+  RUN_OPTS      += +min_req_delay=0
+  RUN_OPTS      += +max_req_delay=10
+  RUN_OPTS      += +min_rsp_delay=0
+  RUN_OPTS      += +max_rsp_delay=1000
 endif
 
 ####################################################################################################
