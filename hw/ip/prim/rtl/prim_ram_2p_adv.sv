@@ -84,8 +84,7 @@ module prim_ram_2p_adv #(
   if (MemT == "REGISTER") begin : gen_regmem
     prim_ram_2p #(
       .Width (TotalWidth),
-      .Depth (Depth),
-      .Impl  ("generic")
+      .Depth (Depth)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),

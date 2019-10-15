@@ -27,7 +27,7 @@ parameters:
 targets:
   sim:
     parameters:
-      - PRIM_DEFAULT_IMPL=generic
+      - PRIM_DEFAULT_IMPL=0
     default_tool: verilator
     filesets:
       - files_sim_verilator

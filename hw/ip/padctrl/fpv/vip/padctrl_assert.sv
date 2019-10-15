@@ -5,9 +5,11 @@
 // Assertions for padring. Intended to use with a formal tool.
 // Note that only the mandatory pad attributes are tested here.
 
-module padctrl_assert #(
-  parameter Impl = "generic"
-) (
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL prim_abstract_pkg::Generic
+`endif
+
+module padctrl_assert (
   input                                       clk_i,
   input                                       rst_ni,
   // Bus Interface (device)
@@ -19,6 +21,8 @@ module padctrl_assert #(
   input logic[padctrl_reg_pkg::NDioPads-1:0]
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o
 );
+  import prim_abstract_pkg::*;
+  localparam int Impl = `PRIM_DEFAULT_IMPL;
 
   // symbolic vars for FPV
   int unsigned mio_sel;
@@ -31,14 +35,14 @@ module padctrl_assert #(
   `ASSUME(NMioRange_M, mio_sel < padctrl_reg_pkg::NMioPads, clk_i, !rst_ni)
   `ASSUME(NMioStable_M, ##1 $stable(mio_sel), clk_i, !rst_ni)
 
-  if (Impl == "generic") begin : gen_mio_generic
+  if (Impl == Generic) begin : gen_mio_generic
     `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
         !(|padctrl.mio_attr_q[mio_sel][padctrl_reg_pkg::AttrDw-1:6]),
         clk_i, !rst_ni)
     `ASSERT(MioAttr_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
       mio_attr_o[mio_sel][5:0] == $past(padctrl.reg2hw.mio_pads[mio_sel].q[5:0]),
       clk_i, !rst_ni)
-  end else if (Impl == "xilinx") begin : gen_mio_xilinx
+  end else if (Impl == Xilinx) begin : gen_mio_xilinx
     `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
         !(|padctrl.mio_attr_q[mio_sel][padctrl_reg_pkg::AttrDw-1:2]),
         clk_i, !rst_ni)

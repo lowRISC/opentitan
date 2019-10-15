@@ -4,9 +4,7 @@
 //
 // Testbench module for padctrl. Intended to use with a formal tool.
 
-module padctrl_tb #(
-  parameter Impl = "generic"
-) (
+module padctrl_tb (
   input wire                                    clk_i,
   input wire                                    rst_ni,
   output logic                                  clk_o,
@@ -26,9 +24,7 @@ module padctrl_tb #(
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
 
-  padctrl #(
-    .Impl(Impl)
-  ) i_padctrl (
+  padctrl i_padctrl (
     .clk_i     ,
     .rst_ni    ,
     .tl_i      ,
@@ -37,9 +33,7 @@ module padctrl_tb #(
     .dio_attr_o(dio_attr)
   );
 
-  padring #(
-    .Impl(Impl)
-  ) i_padring (
+  padring i_padring (
     .clk_i     ,
     .rst_ni    ,
     .clk_o     ,

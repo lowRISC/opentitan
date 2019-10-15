@@ -33,7 +33,7 @@ module prim_xilinx_rom #(
    // is actually being written to through $readmemh(). If no ROM_INIT_FILE is
    // given and hence the mem initialization is missing, registers are inferred
    // instead. This severely degrades the synthesis quality for no good reason.
-   logic [Width-1:0] mem [Depth];
+   (* rom_style = "block" *) logic [Width-1:0] mem [Depth];
 
    localparam MEM_FILE = `"`ROM_INIT_FILE`";
    initial

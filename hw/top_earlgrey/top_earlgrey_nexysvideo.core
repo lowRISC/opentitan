@@ -29,10 +29,14 @@ parameters:
   ROM_INIT_FILE:
     datatype: str
     description: SRAM initialization file in vmem hex format
-    default: "../../../../../sw/boot_rom/boot_rom.vmem"
+    default: "../../../../../sw/boot_rom/rom.vmem"
     paramtype: vlogdefine
+  # Refer to hw/ip/prim/abstract/prim_abstract_pkg.sv for implementation to value
+  # mapping
+  # 0 - Generic
+  # 1 - Xilinx
   PRIM_DEFAULT_IMPL:
-    datatype: str
+    datatype: int
     paramtype: vlogdefine
     description: Primitives implementation to use
 
@@ -45,7 +49,7 @@ targets:
     toplevel: top_earlgrey_nexysvideo
     parameters:
       - ROM_INIT_FILE
-      - PRIM_DEFAULT_IMPL=xilinx
+      - PRIM_DEFAULT_IMPL=1
     tools:
       vivado:
         part: "xc7a200tsbg484-1" # Nexys Video

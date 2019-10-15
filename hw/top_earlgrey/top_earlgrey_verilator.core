@@ -21,7 +21,7 @@ filesets:
 
 parameters:
   PRIM_DEFAULT_IMPL:
-    datatype: str
+    datatype: int
     paramtype: vlogdefine
     description: Primitives implementation to use
   RVFI:
@@ -32,7 +32,7 @@ parameters:
 targets:
   sim:
     parameters:
-      - PRIM_DEFAULT_IMPL=generic
+      - PRIM_DEFAULT_IMPL=0
       - RVFI=true
     default_tool: verilator
     filesets:

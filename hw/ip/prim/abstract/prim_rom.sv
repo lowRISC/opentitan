@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL prim_abstract_pkg::Generic
+`endif
+
 module prim_rom #(
   parameter  int Width     = 32,
   parameter  int Depth     = 2048, // 8kB default
-  parameter      Impl      = "generic",
   parameter  int Aw        = $clog2(Depth)
 ) (
   input                        clk_i,
@@ -16,7 +19,10 @@ module prim_rom #(
   output logic                 dvalid_o
 );
 
-  if (Impl == "generic") begin: gen_mem_generic
+  import prim_abstract_pkg::*;
+  localparam int Impl = `PRIM_DEFAULT_IMPL;
+
+  if (Impl == Generic) begin: gen_mem_generic
     prim_generic_rom #(
       .Width(Width),
       .Depth(Depth)
@@ -28,7 +34,7 @@ module prim_rom #(
       .dout_o,
       .dvalid_o
     );
-  end else if (Impl == "xilinx") begin: gen_rom_xilinx
+  end else if (Impl == Xilinx) begin: gen_rom_xilinx
     prim_xilinx_rom #(
       .Width(Width),
       .Depth(Depth)

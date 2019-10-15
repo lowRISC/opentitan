@@ -6,8 +6,12 @@
 // "abstract module". This module is to be replaced by generated code.
 
 // prim_pad_wrapper using the generic implementation
+
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL prim_abstract_pkg::Generic
+`endif
+
 module prim_pad_wrapper #(
-  parameter              Impl   = "generic",
   parameter int unsigned AttrDw = 6
 ) (
   inout  wire        inout_io, // bidirectional pad
@@ -18,8 +22,11 @@ module prim_pad_wrapper #(
   input [AttrDw-1:0] attr_i
 );
 
+  import prim_abstract_pkg::*;
+  localparam int Impl = `PRIM_DEFAULT_IMPL;
+
   // The generic implementation is NOT synthesizable
-  if (Impl == "generic") begin : gen_pad_generic
+  if (Impl == Generic) begin : gen_pad_generic
     prim_generic_pad_wrapper #(
       .AttrDw(AttrDw)
     ) i_pad_wrapper (
@@ -29,7 +36,7 @@ module prim_pad_wrapper #(
       .oe_i,
       .attr_i
     );
-  end else if (Impl == "xilinx") begin : gen_pad_xilinx
+  end else if (Impl == Xilinx) begin : gen_pad_xilinx
     prim_xilinx_pad_wrapper #(
       .AttrDw(AttrDw)
     ) i_pad_wrapper (

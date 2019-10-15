@@ -6,9 +6,7 @@
 // The module instantiates the technology dependent pads, and connects them
 // to the MIOs/DIOs and pad attributes coming from the padctrl block.
 //
-module padring #(
-  parameter Impl = "generic" // this determines the pad implementation
-) (
+module padring (
   // pad input
   input wire                                   clk_i,
   input wire                                   rst_ni,
@@ -47,7 +45,6 @@ module padring #(
   assign rst_n = rst_ni;
 
   prim_pad_wrapper #(
-    .Impl(Impl),
     .AttrDw(padctrl_reg_pkg::AttrDw)
   ) i_clk_pad (
     .inout_io ( clk   ),
@@ -58,7 +55,6 @@ module padring #(
   );
 
   prim_pad_wrapper #(
-    .Impl(Impl),
     .AttrDw(padctrl_reg_pkg::AttrDw)
   ) i_rst_pad (
     .inout_io ( rst_n  ),
@@ -74,7 +70,6 @@ module padring #(
 
   for (genvar k = 0; k < padctrl_reg_pkg::NMioPads; k++) begin : gen_mio_pads
     prim_pad_wrapper #(
-      .Impl(Impl),
       .AttrDw(padctrl_reg_pkg::AttrDw)
     ) i_mio_pad (
       .inout_io ( mio_io[k]     ),
@@ -91,7 +86,6 @@ module padring #(
 
   for (genvar k = 0; k < padctrl_reg_pkg::NDioPads; k++) begin : gen_dio_pads
     prim_pad_wrapper #(
-      .Impl(Impl),
       .AttrDw(padctrl_reg_pkg::AttrDw)
     ) i_dio_pad (
       .inout_io ( dio_io[k]     ),

@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim_generic:ram_1p
       - lowrisc:prim:assert
+      - lowrisc:prim:abstract_pkg
     files:
       - abstract/prim_ram_1p.sv
     file_type: systemVerilogSource
