@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // CSR suite of sequences that do writes and reads to csrs
-// includes hw_reset, rw, bit_bash and alising tests for csrs, and mem_walk for uvm_mems
+// includes hw_reset, rw, bit_bash and aliasing tests for csrs, and mem_walk for uvm_mems
 // TODO: when mem backdoor is implemented, add uvm_mem_access_seq for backdoor rd
 // The sequences perform csr writes and reads and follow the standard csr test suite. If external
 // checker is enabled, then the external entity is required to update the mirrored value on

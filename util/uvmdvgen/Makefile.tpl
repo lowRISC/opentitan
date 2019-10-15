@@ -3,7 +3,7 @@ ${'## Copyright lowRISC contributors.                                           
 ${'## Licensed under the Apache License, Version 2.0, see LICENSE for details.                       ##'}
 ${'## SPDX-License-Identifier: Apache-2.0                                                            ##'}
 ${'####################################################################################################'}
-${'## Entry point test Makefile forr building and running tests.                                     ##'}
+${'## Entry point test Makefile for building and running tests.                                      ##'}
 ${'## These are generic set of option groups that apply to all testbenches.                          ##'}
 ${'## This flow requires the following options to be set:                                            ##'}
 ${'## DV_DIR       - current dv directory that contains the test Makefile                            ##'}
