@@ -85,7 +85,8 @@ module uart_core (
 
 
   assign allzero_cnt_next = (break_st == BRK_WAIT || not_allzero_char) ? 5'h0 :
-                            allzero_cnt[4] ? allzero_cnt :
+                            //allzero_cnt[4] never be 1b without break_st as BRK_WAIT
+                            //allzero_cnt[4] ? allzero_cnt :
                             allzero_err ? allzero_cnt + 5'd1 :
                             allzero_cnt;
 
@@ -329,7 +330,9 @@ module uart_core (
               // reset count if no bytes are pending
               (rx_fifo_depth == 5'd0)             ? 24'd0 :
               // stop the count at timeout value (this will set the interrupt)
-              (rx_timeout_count == uart_rxto_val) ? rx_timeout_count :
+              //   Removed below line as when the timeout reaches the value,
+              //   event occured, and timeout value reset to 0h.
+              //(rx_timeout_count == uart_rxto_val) ? rx_timeout_count :
               // increment if at rx baud tick
               rx_tick_baud                        ? (rx_timeout_count + 24'd1) :
               rx_timeout_count;
