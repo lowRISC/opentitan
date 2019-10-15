@@ -138,10 +138,10 @@ module alert_handler (
       .clk_i,
       .rst_ni,
       .clr_i        ( reg2hw_wrap.class_clr[k]          ),
-      .trig_i       ( hw2reg_wrap.class_trig[k]         ),
+      .class_trig_i ( hw2reg_wrap.class_trig[k]         ),
       .thresh_i     ( reg2hw_wrap.class_accum_thresh[k] ),
-      .cnt_o        ( hw2reg_wrap.class_accum_cnt[k]    ),
-      .trig_o       ( class_accum_trig[k]               )
+      .accu_cnt_o   ( hw2reg_wrap.class_accum_cnt[k]    ),
+      .accu_trig_o  ( class_accum_trig[k]               )
     );
 
     alert_handler_esc_timer i_esc_timer (

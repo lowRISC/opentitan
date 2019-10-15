@@ -238,12 +238,12 @@ module alert_handler_esc_timer (
   `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == alert_pkg::Timeout && en_i |=>
       state_q == alert_pkg::Phase0, clk_i, !rst_ni)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0, !accum_trig_i && state_q == alert_pkg::Idle && timeout_en_i && en_i |=>
-      state_q == alert_pkg::Timeout, clk_i, !rst_ni)
-  `ASSERT(CheckTimeout1, !accum_trig_i && state_q == alert_pkg::Timeout && timeout_en_i |=>
-      state_q == alert_pkg::Timeout, clk_i, !rst_ni)
-  `ASSERT(CheckTimeout2, !accum_trig_i && state_q == alert_pkg::Timeout && !timeout_en_i |=>
-      state_q == alert_pkg::Idle, clk_i, !rst_ni)
+  `ASSERT(CheckTimeout0, state_q == alert_pkg::Idle && timeout_en_i && en_i && !cnt_ge |=>
+      state_q == alert_pkg::Timeout, clk_i, !rst_ni || accum_trig_i)
+  `ASSERT(CheckTimeout1, state_q == alert_pkg::Timeout && timeout_en_i  |=>
+      state_q == alert_pkg::Timeout, clk_i, !rst_ni || accum_trig_i)
+  `ASSERT(CheckTimeout2, state_q == alert_pkg::Timeout && !timeout_en_i |=>
+      state_q == alert_pkg::Idle, clk_i, !rst_ni || accum_trig_i)
   // Check if timeout correctly triggers escalation
   `ASSERT(CheckTimeoutTrig, state_q == alert_pkg::Timeout && timeout_en_i &&
       cnt_q == timeout_cyc_i |=> state_q == alert_pkg::Phase0, clk_i, !rst_ni)
