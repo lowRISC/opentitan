@@ -10,6 +10,10 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
                                    bit [TL_AW-1:0] csr_addr_map_size = ADDR_MAP_SIZE);
     mem_addr_s mem_addr;
     super.initialize(csr_base_addr, csr_addr_map_size);
+    en_mem_byte_write   = 1;
+    // TODO uncommented below to test mem read trigger error
+    // when issue is solved at github.com/lowRISC/opentitan/issues/236
+    // en_mem_read       = 0;
     mem_addr.start_addr = HMAC_MSG_FIFO_BASE;
     mem_addr.end_addr   = HMAC_MSG_FIFO_LAST_ADDR;
     mem_addrs.push_back(mem_addr);

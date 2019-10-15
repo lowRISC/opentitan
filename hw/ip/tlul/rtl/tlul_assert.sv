@@ -179,20 +179,38 @@ interface tlul_assert (
 
   `undef create_sva_ctrl_function
 
-    function void enable_sva_d_data_known();
-      // TODO, for loop, generate block isn't allowed
-      $asserton(1, gen_assert_d_data_known[0].dDataKnown);
-      $asserton(1, gen_assert_d_data_known[1].dDataKnown);
-      $asserton(1, gen_assert_d_data_known[2].dDataKnown);
-      $asserton(1, gen_assert_d_data_known[3].dDataKnown);
-    endfunction
+  function void enable_sva_d_data_known();
+    // TODO, for loop, generate block isn't allowed
+    $asserton(1, gen_assert_d_data_known[0].dDataKnown);
+    $asserton(1, gen_assert_d_data_known[1].dDataKnown);
+    $asserton(1, gen_assert_d_data_known[2].dDataKnown);
+    $asserton(1, gen_assert_d_data_known[3].dDataKnown);
+  endfunction
 
-    function void disable_sva_d_data_known();
-      $assertoff(1, gen_assert_d_data_known[0].dDataKnown);
-      $assertoff(1, gen_assert_d_data_known[1].dDataKnown);
-      $assertoff(1, gen_assert_d_data_known[2].dDataKnown);
-      $assertoff(1, gen_assert_d_data_known[3].dDataKnown);
-    endfunction
+  function void disable_sva_d_data_known();
+    $assertoff(1, gen_assert_d_data_known[0].dDataKnown);
+    $assertoff(1, gen_assert_d_data_known[1].dDataKnown);
+    $assertoff(1, gen_assert_d_data_known[2].dDataKnown);
+    $assertoff(1, gen_assert_d_data_known[3].dDataKnown);
+  endfunction
+
+  function void enable_sva_for_tl_errors();
+    enable_sva_legalAOpcode();
+    enable_sva_sizeMatchesMask();
+    enable_sva_addressAlignedToSize();
+    enable_sva_maskMustBeContiguous();
+    enable_sva_sizeGTEMask();
+    enable_sva_d_data_known();
+  endfunction
+
+  function void disable_sva_for_tl_errors();
+    disable_sva_legalAOpcode();
+    disable_sva_sizeMatchesMask();
+    disable_sva_addressAlignedToSize();
+    disable_sva_maskMustBeContiguous();
+    disable_sva_sizeGTEMask();
+    disable_sva_d_data_known();
+  endfunction
 `endif
 endinterface
 

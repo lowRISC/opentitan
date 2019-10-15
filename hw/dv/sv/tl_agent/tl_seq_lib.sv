@@ -109,6 +109,8 @@ class tl_host_protocol_err_seq extends tl_host_single_seq;
 
   // forever randomize the item until we find one that violates the TL protocol
   virtual function void randomize_req(REQ req, int idx);
+    req.a_valid_delay = $urandom_range(min_req_delay, max_req_delay);
+    req.a_valid_delay.rand_mode(0);
     req.randomize_a_chan_with_protocol_error();
   endfunction
 

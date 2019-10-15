@@ -25,36 +25,11 @@ UVM_TEST_SEQ    ?= i2c_base_vseq
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
+# common tests/seqs
+include ${DV_DIR}/../../../dv/tools/common_tests.mk
+
 ifeq (${TEST_NAME},i2c_sanity)
   UVM_TEST_SEQ   = i2c_sanity_vseq
-endif
-
-ifeq (${TEST_NAME},i2c_csr_hw_reset)
-  UVM_TEST_SEQ   = i2c_common_vseq
-  RUN_OPTS      += +csr_hw_reset
-  RUN_OPTS      += +en_scb=0
-  RUN_OPTS      += +do_clear_all_interrupts=0
-endif
-
-ifeq (${TEST_NAME},i2c_csr_rw)
-  UVM_TEST_SEQ   = i2c_common_vseq
-  RUN_OPTS      += +csr_rw
-  RUN_OPTS      += +en_scb=0
-  RUN_OPTS      += +do_clear_all_interrupts=0
-endif
-
-ifeq (${TEST_NAME},i2c_csr_bit_bash)
-  UVM_TEST_SEQ   = i2c_common_vseq
-  RUN_OPTS      += +csr_bit_bash
-  RUN_OPTS      += +en_scb=0
-  RUN_OPTS      += +do_clear_all_interrupts=0
-endif
-
-ifeq (${TEST_NAME},i2c_csr_aliasing)
-  UVM_TEST_SEQ   = i2c_common_vseq
-  RUN_OPTS      += +csr_aliasing
-  RUN_OPTS      += +en_scb=0
-  RUN_OPTS      += +do_clear_all_interrupts=0
 endif
 
 ####################################################################################################

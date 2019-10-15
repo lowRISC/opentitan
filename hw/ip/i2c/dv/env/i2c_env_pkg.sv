@@ -31,10 +31,12 @@ package i2c_env_pkg;
     NumI2cIntr     = 9
   } i2c_intr_e;
 
+  // csr and mem total size for IP, TODO confirm below value with spec
+  parameter uint ADDR_MAP_SIZE      = 128;
   // local types
   parameter uint I2C_FMT_FIFO_DEPTH = 32;
   parameter uint I2C_RX_FIFO_DEPTH  = 32;
-  
+
   // functions
   // get the number of bytes that triggers watermark interrupt
   function automatic int get_watermark_bytes_by_level(int lvl);

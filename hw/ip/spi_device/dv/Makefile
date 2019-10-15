@@ -27,7 +27,7 @@ UVM_TEST        ?= spi_device_base_test
 UVM_TEST_SEQ    ?= spi_device_base_vseq
 
 # common tests/seqs
-include ${DV_DIR}/../../../dv/tools//common_tests.mk
+include ${DV_DIR}/../../../dv/tools/common_tests.mk
 
 ifeq (${TEST_NAME},spi_device_sanity)
   UVM_TEST_SEQ   = spi_device_sanity_vseq

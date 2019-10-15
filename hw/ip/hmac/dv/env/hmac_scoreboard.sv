@@ -26,7 +26,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
+    uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
+
+    super.process_tl_access(item, channel);
+    if (is_tl_err_exp || is_tl_unmapped_addr) return;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
@@ -34,9 +37,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       `DV_CHECK_NE_FATAL(csr, null)
     // if addr inside msg fifo, no ral model
     end else if (!(item.a_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]})) begin
-      // we hit an oob addr - expect error response and return
-      `DV_CHECK_EQ(item.d_error, 1'b1)
-      return;
+      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
     // if incoming access is a write to a valid csr or mem, then update right away on addr channel

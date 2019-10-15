@@ -16,6 +16,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   RAL_T                 ral;
   bit [TL_AW-1:0]       csr_addrs[$];
   mem_addr_s            mem_addrs[$];
+  // mem access support, if not enabled, will trigger error
+  bit                   en_mem_byte_write = 0;
+  bit                   en_mem_read       = 1;
 
   // ral base address and size
   bit [TL_AW-1:0]       csr_base_addr;              // base address where csr map begins

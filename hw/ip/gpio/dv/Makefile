@@ -26,6 +26,9 @@ TEST_NAME       ?= gpio_sanity
 UVM_TEST        ?= gpio_base_test
 UVM_TEST_SEQ    ?= gpio_base_vseq
 
+# common tests/seqs
+include ${DV_DIR}/../../../dv/tools/common_tests.mk
+
 ifeq (${TEST_NAME},gpio_sanity)
   UVM_TEST_SEQ   = gpio_sanity_vseq
 endif
@@ -33,37 +36,6 @@ endif
 ifeq (${TEST_NAME},gpio_sanity_no_pullup_pulldown)
   UVM_TEST_SEQ   = gpio_sanity_vseq
   RUN_OPTS      += +no_pullup_pulldown=1
-endif
-
-ifeq (${TEST_NAME},gpio_intr_test)
-  UVM_TEST_SEQ   = gpio_common_vseq
-  RUN_OPTS      += +run_intr_test
-endif
-
-ifeq (${TEST_NAME},gpio_csr_hw_reset)
-  UVM_TEST_SEQ   = gpio_common_vseq
-  RUN_OPTS      += +csr_hw_reset
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},gpio_csr_rw)
-  UVM_TEST_SEQ   = gpio_common_vseq
-  RUN_OPTS      += +csr_rw
-  RUN_OPTS      += +do_clear_all_interrupts=0
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},gpio_csr_bit_bash)
-  UVM_TEST_SEQ   = gpio_common_vseq
-  RUN_OPTS      += +csr_bit_bash
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},gpio_csr_aliasing)
-  UVM_TEST_SEQ   = gpio_common_vseq
-  RUN_OPTS      += +csr_aliasing
-  RUN_OPTS      += +do_clear_all_interrupts=0
-  RUN_OPTS      += +en_scb=0
 endif
 
 ifeq ($(TEST_NAME),gpio_random_dout_din)
@@ -98,6 +70,15 @@ endif
 
 ifeq ($(TEST_NAME),gpio_random_long_reg_writes_reg_reads)
   UVM_TEST_SEQ   = gpio_random_long_reg_writes_reg_reads_vseq
+  RUN_OPTS      += +do_clear_all_interrupts=0
+endif
+
+# gpio interrupt is sticky. Don't do clear interrupt and check at the end of 2 csr seq
+ifeq (${TEST_NAME},gpio_csr_rw)
+  RUN_OPTS      += +do_clear_all_interrupts=0
+endif
+
+ifeq (${TEST_NAME},gpio_csr_aliasing)
   RUN_OPTS      += +do_clear_all_interrupts=0
 endif
 

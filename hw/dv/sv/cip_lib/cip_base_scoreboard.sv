@@ -63,12 +63,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // only lsb addr is used, the other can be ignored, use this function to normalize the addr to
   // the format that RAL uses
   virtual function uvm_reg_addr_t get_normalized_addr(uvm_reg_addr_t addr);
-    return {addr[TL_AW-1:2], 2'b00} & (cfg.csr_addr_map_size - 1) + cfg.csr_base_addr;
+    return ({addr[TL_AW-1:2], 2'b00} & (cfg.csr_addr_map_size - 1)) + cfg.csr_base_addr;
   endfunction
 
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item);
-    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr) - cfg.csr_base_addr;
     foreach (cfg.mem_addrs[i]) begin
       if (addr inside {[cfg.mem_addrs[i].start_addr : cfg.mem_addrs[i].end_addr]}) begin
         return 1;
@@ -94,9 +94,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    if (!is_tl_mem_write_full_word(item)      ||
-        !is_tl_write_addr_word_align(item)    ||
-        !is_tl_write_size_gte_csr_width(item) ||
+    if (!is_tl_mem_access_allowed(item)           ||
+        !is_tl_csr_write_addr_word_aligned(item)  ||
+        !is_tl_csr_write_size_gte_csr_width(item) ||
         item.get_exp_d_error())begin
       is_tl_err_exp = 1;
     end
@@ -110,24 +110,28 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     else                                                  return 0;
   endfunction
 
-  // check if tl mem access full word
-  virtual function bit is_tl_mem_write_full_word(tl_seq_item item);
-    // check if it's mem addr
+  // check if tl mem access will trigger error or not
+  virtual function bit is_tl_mem_access_allowed(tl_seq_item item);
     if (is_mem_addr(item)) begin
-      // check if write isn't full word
-      if (item.a_size != 2 || item.a_mask != '1) return 0;
+      // check if write isn't full word for mem that doesn't allow byte access
+      if (!cfg.en_mem_byte_write && (item.a_size != 2 || item.a_mask != '1) &&
+           item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
+        return 0;
+      end
+      // check if mem read happens while mem doesn't allow read
+      if (!cfg.en_mem_read && (item.a_opcode == tlul_pkg::Get)) return 0;
     end
     return 1;
   endfunction
 
-  // check if memory/register write word-aligned
-  virtual function bit is_tl_write_addr_word_align(tl_seq_item item);
-    if (item.is_write() && item.a_addr[1:0] != 0) return 0;
-    else                                          return 1;
+  // check if csr write word-aligned
+  virtual function bit is_tl_csr_write_addr_word_aligned(tl_seq_item item);
+    if (item.is_write() && item.a_addr[1:0] != 0 && !is_mem_addr(item)) return 0;
+    else                                                                return 1;
   endfunction
 
-  // check if write size greater or equal to csr width
-  virtual function bit is_tl_write_size_gte_csr_width(tl_seq_item item);
+  // check if csr write size greater or equal to csr width
+  virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item);
     if (is_tl_unmapped_addr || is_mem_addr(item)) return 1;
     if (item.is_write()) begin
       dv_base_reg    csr;

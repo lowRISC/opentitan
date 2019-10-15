@@ -14,7 +14,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
+                                   bit [TL_AW-1:0] csr_addr_map_size = ADDR_MAP_SIZE);
     super.initialize(csr_base_addr, csr_addr_map_size);
     // create i2c agent config obj
     m_i2c_agent_cfg = i2c_agent_cfg::type_id::create("m_i2c_agent_cfg");
