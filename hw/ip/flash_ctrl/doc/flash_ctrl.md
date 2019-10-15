@@ -30,8 +30,8 @@ The diagram below summarizes a high level breakdown.
 *  Parameterized support for number of flash banks (default to 2)
 *  For each flash bank, parameterized support for number of flash pages (default to 256)
 *  For each flash page, parameterized support for number of words and word size (default to 256 words of 4B each)
-*  Parameterized support, up to 64B of burst writes
-   *  Controller currently does not support page boundary checks; it is thus legal for software to burst writes across a page boundary
+*  Parameterized support for burst writes, up to 64B
+   *  Controller currently does not support page boundary checks; it is thus legal for software to burst write across a page boundary
 *  Features to be added if required in flash 0.5+
    *  Program verification
       *  may not be required if flash physical controller supports alternative mechanisms of verification.
@@ -51,7 +51,7 @@ The diagram below summarizes a high level breakdown.
 {{% section2 Flash Physical Controller Features }}
 
 As the flash physical controller is highly dependent on flash memory selected, the default flash physical controller simply emulates real flash behavior with on-chip memories.
-The goal of the emulated flash is to provide software developments with a reasonable representation of a well-behaving flash operating under nominal conditions.
+The goal of the emulated flash is to provide software developers with a reasonable representation of a well-behaving flash operating under nominal conditions.
 
 Below are the emulated properties
 *  Flash reset to all 1's
@@ -66,7 +66,7 @@ The flash physical controller does NOT emulate the following properties
 *  Flash lifetime
    *  Typically flash memory has an upward limit of 100K program / erase cycles
 *  Flash line disturb
-   *  Typically flash memory has limits of how many programmings (2~16) can be subjected to a single memory line before erase is required
+   *  Typically flash memory has limits on the number of accesses to a single memory line (2 ~ 16) before erase is required
 *  Flash power loss corruption
    *  Typically flash memory has strict requirements how power loss should be handled to prevent flash failure.
 *  Dedicated flash power supplies
@@ -86,13 +86,13 @@ Depending on need, in flash 0.5+, it may be necessary to add controller logic to
 
 The flash protocol controller uses a simple FIFO interface to communicate between the software and flash physical controller.
 There is a read fifo for read operations, and a program fifo for program operations.
-Note, this suggests flash can be read both through the controller and the main bus entry.
+Note, this means flash can be read both through the controller and the main bus interface.
 This may prove useful if the controller wishes to allocate specific regions to HW FSMs only, but is not a necessary feature.
 
 When software initiates a read transaction of a programmable number of flash words, the flash controller will fill up the read FIFO for software to consume.
 Likewise, when software initiates a program transaction, software will fill up the program FIFO for the controller to consume.
 
-The controller is designed such that the overall number of words during the transaction can significantly exceed the FIFO depth.
+The controller is designed such that the overall number of words in a transaction can significantly exceed the FIFO depth.
 In the case of read, once the FIFO is full, the controller will cease writing more entries and wait for software to consume the contents (an interrupt will be triggered to the software to alert it to such an event).
 In the case of program, the controller will stop writing to flash once all existing data is consumed - it will likewise trigger an interrupt to software to prepare more data.
 See detailed steps in theory of operation.
@@ -110,6 +110,7 @@ As the physical controller is IP specific, this section will only try to describ
 | host_addr_i     | Address of host initiated direct read
 | host_req_rdy_o  | Host request ready, '1' implies transaction has been accepted, but not necessarily finished
 | host_req_done_o | Host request completed
+| host_rdata_o    | Host read data, 1 flash word wide
 | req_i           | Controller initiated transaction
 | addr_i          | Address of controller initiated transaction
 | rd_i            | Controller initiated read
@@ -121,11 +122,12 @@ As the physical controller is IP specific, this section will only try to describ
 | prog_done_o     | Controller initiated program done
 | erase_done_o    | Controller initiated erase done
 | init_busy_o     | Physical controller reset release initialization in progress
-| rd_data_o       | Read data return.  Broadcast to both host / controller
+| rd_data_o       | Controller read data, 1 flash word wide
 
 {{% section2 Host Read}}
 
-Unlike the controller initiated reads, the host reads have separate rdy / done signals to ensure transactions can be properly pipelined.
+Unlike controller initiated reads, host reads have separate rdy / done signals to ensure transactions can be properly pipelined.
+As host reads are usually tied to host execution upstream, additional latency can severely harm performance and is not desired.
 The protocol expected waveform is shown below.
 ```wavejson
 {signal: [
@@ -135,14 +137,13 @@ The protocol expected waveform is shown below.
   {name: 'host_addr_i',     wave: 'x..3x.3.33x....', data: ['Adr0', 'Adr1', 'Adr2', 'Adr3']},
   {name: 'host_req_rdy_o',  wave: '1...0..1.......'},
   {name: 'host_req_done_o', wave: '0...10..1110...'},
-  {name: 'rdata_o',         wave: 'x...4x..444x...',data: ['Dat0', 'Dat1', 'Dat2', 'Dat3']},
+  {name: 'host_rdata_o',    wave: 'x...4x..444x...',data: ['Dat0', 'Dat1', 'Dat2', 'Dat3']},
 ]}
 ```
 
-The host_req_done_o is always single cycle pulsed and upstream logic is expected to always accept and correctly handle the return.
+The `host_req_done_o` is always single cycle pulsed and upstream logic is expected to always accept and correctly handle the return.
 The same cycle the return data is posted a new command / address can be accepted.
-While this example shows flash reads completing in back to back cycles, that is typically not the case.
-As host reads are usually tied to host execution upstream, additional latency can severely harm performance and is not desired.
+While the example shows flash reads completing in back to back cycles, this is typically not the case.
 
 {{% section2 Controller Read}}
 
@@ -210,7 +211,7 @@ void read_flash (uint32_t addr, uint32_t num, uint32_t *data) {
 
 It is acceptable for total number of flash words to be significantly greater than the depth of the read FIFO.
 In this situation, the read FIFO will fill up (or hit programmable fill value), pause the flash read and trigger an interrupt to software.
-Once there is space inside the FIFO, the controller will resume reading all the appropriate number of words have been read.
+Once there is space inside the FIFO, the controller will resume reading until the appropriate number of words have been read.
 Once the total count has been reached, the flash controller will post OP_DONE in the !!OP_STATUS register.
 
 {{% section2 Issuing a Controller Program}}
