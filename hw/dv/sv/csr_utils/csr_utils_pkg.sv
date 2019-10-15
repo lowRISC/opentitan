@@ -337,7 +337,8 @@ package csr_utils_pkg;
             if (compare) begin
               obs = obs & compare_mask;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;
-              `DV_CHECK_EQ(obs, exp, err_msg, error, msg_id)
+              `DV_CHECK_EQ(obs, exp, {"Regname: ", ptr.get_full_name(), " ", err_msg},
+                    error, msg_id)
             end
             decrement_outstanding_access();
           end
