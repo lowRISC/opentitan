@@ -14,11 +14,11 @@ module rv_core_ibex #(
   parameter int unsigned PMPNumRegions    = 4,
   parameter int unsigned MHPMCounterNum   = 8,
   parameter int unsigned MHPMCounterWidth = 40,
-  parameter bit RV32E                     = 0,
-  parameter bit RV32M                     = 1,
+  parameter bit          RV32E            = 0,
+  parameter bit          RV32M            = 1,
   parameter int unsigned DmHaltAddr       = 32'h1A110800,
   parameter int unsigned DmExceptionAddr  = 32'h1A110808,
-  parameter bit PipeLine                  = 0
+  parameter bit          PipeLine         = 0
 ) (
   // Clock and Reset
   input  logic        clk_i,
