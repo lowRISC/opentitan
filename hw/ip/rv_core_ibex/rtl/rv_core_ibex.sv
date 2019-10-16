@@ -9,6 +9,9 @@
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
 module rv_core_ibex #(
+  parameter bit          PMPEnable        = 1'b0,
+  parameter int unsigned PMPGranularity   = 0,
+  parameter int unsigned PMPNumRegions    = 4,
   parameter int unsigned MHPMCounterNum   = 8,
   parameter int unsigned MHPMCounterWidth = 40,
   parameter bit RV32E                     = 0,
@@ -106,6 +109,9 @@ module rv_core_ibex #(
 `endif
 
   ibex_core #(
+     .PMPEnable        ( PMPEnable         ),
+     .PMPGranularity   ( PMPGranularity    ),
+     .PMPNumRegions    ( PMPNumRegions     ),
      .MHPMCounterNum   ( MHPMCounterNum    ),
      .MHPMCounterWidth ( MHPMCounterWidth  ),
      .RV32E            ( RV32E             ),
