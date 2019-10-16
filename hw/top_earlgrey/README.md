@@ -13,7 +13,7 @@ Top module `rtl/top_earlgrey.sv` is created by `topgen.py`. Current top module
 is created with below command.
 
 ```console
-../../util/topgen.py -t doc/top_earlgrey.hjson -c doc/top_earlgrey.tpl.sv -o . -v
+../../util/topgen.py -t doc/top_earlgrey.hjson -c doc -o . -v
 ```
 
 It generates files below:
