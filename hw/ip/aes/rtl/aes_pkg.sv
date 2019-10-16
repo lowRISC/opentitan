@@ -56,7 +56,7 @@ typedef enum logic {
 // Multiplication by {02} (i.e. x) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)
 // Sometimes also denoted by xtime().
-function logic [7:0] aes_mul2(input logic [7:0] in);
+function automatic logic [7:0] aes_mul2(input logic [7:0] in);
   aes_mul2[7] = in[6];
   aes_mul2[6] = in[5];
   aes_mul2[5] = in[4];
@@ -69,14 +69,14 @@ endfunction
 
 // Multiplication by {04} (i.e. x^2) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)
-function logic [7:0] aes_mul4(input logic [7:0] in);
+function automatic logic [7:0] aes_mul4(input logic [7:0] in);
   aes_mul4 = aes_mul2(aes_mul2(in));
 endfunction
 
 // Division by {02} (i.e. x) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)
 // This is the inverse of aes_mul2() or xtime().
-function logic [7:0] aes_div2(input logic [7:0] in);
+function automatic logic [7:0] aes_div2(input logic [7:0] in);
   aes_div2[7] = in[0];
   aes_div2[6] = in[7];
   aes_div2[5] = in[6];
