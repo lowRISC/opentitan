@@ -1,0 +1,13 @@
+{signal: [
+  {name: 'clk', wave:            'p...|....|....|....'},
+  {name: 'dmi_req.op',   wave:   'x=.x|....|x=.x|....', data: ['READ', 'WRITE']},
+  {name: 'dmi_req.addr', wave:   'x=.x|....|x=.x|....', data: ['0x12', '0x34']},
+  {name: 'dmi_req.data', wave:   'x...|....|x=.x|....', data: ['0xabcd']},
+  {name: 'dmi_req_valid', wave:  '01.0|....|.1.0|....'},
+  {name: 'dmi_req_ready', wave:  '0.1.|..0.|..1.|....'},
+  {},
+  {name: 'dmi_resp.resp',wave:   'x...|x=.x|....|x=.x', data: ['SUCCESS', 'SUCCESS']},
+  {name: 'dmi_resp.data',wave:   'x...|x=.x|....|....', data: ['0x1234']},
+  {name: 'dmi_resp_valid', wave: '0...|.1.0|....|..10'},
+  {name: 'dmi_resp_ready', wave: '1...|0.1.|....|....'},
+]}
