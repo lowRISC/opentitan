@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ftdi_spi_interface.h"
+#include "sw/host/spiflash/ftdi_spi_interface.h"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -16,7 +16,7 @@
 
 // Include MPSSE SPI library
 extern "C" {
-#include <mpsse.h>
+#include "sw/host/vendor/mpsse/mpsse.h"
 }
 
 namespace opentitan {

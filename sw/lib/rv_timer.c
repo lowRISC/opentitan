@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "rv_timer.h"
+#include "sw/lib/rv_timer.h"
 
-#include "common.h"
-#include "rv_timer_regs.h"
+#include "rv_timer_regs.h"  // Generated.
+
+#include "sw/lib/common.h"
 
 #define RV_TIMER0_BASE_ADDR 0x40080000
 #define HART_CFG_ADDR_GAP 0x100

@@ -10,10 +10,10 @@
 #include <sstream>
 #include <string>
 
-#include "ftdi_spi_interface.h"
-#include "spi_interface.h"
-#include "updater.h"
-#include "verilator_spi_interface.h"
+#include "sw/host/spiflash/ftdi_spi_interface.h"
+#include "sw/host/spiflash/spi_interface.h"
+#include "sw/host/spiflash/updater.h"
+#include "sw/host/spiflash/verilator_spi_interface.h"
 
 namespace {
 

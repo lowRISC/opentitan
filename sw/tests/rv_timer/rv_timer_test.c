@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
-#include "irq.h"
-#include "rv_timer.h"
-#include "uart.h"
+#include "sw/lib/common.h"
+#include "sw/lib/irq.h"
+#include "sw/lib/rv_timer.h"
+#include "sw/lib/uart.h"
 
 static uint32_t intr_handling_success = 0;
 static const uint32_t hart = 0;

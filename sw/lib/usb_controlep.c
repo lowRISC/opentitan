@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "common.h"
+#include "sw/lib/common.h"
 #include "usb_consts.h"
 #include "usbdev.h"
 

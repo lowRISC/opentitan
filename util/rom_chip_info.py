@@ -50,6 +50,7 @@ def main():
     else:
         outdir = Path(args.outdir)
 
+    outdir.mkdir(parents=True, exist_ok=True)
     out_path = outdir / "chip_info.h"
 
 

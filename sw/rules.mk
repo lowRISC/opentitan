@@ -121,8 +121,8 @@ $(LIB_BUILD_DIR)/%_regs.h: $(SW_ROOT_DIR)/../hw/ip/$$*/data/$$*_regs.hjson
 	$(REGTOOL) -D -o $@ $<
 
 # chip_info
-$(LIB_BUILD_DIR)/chip_info.h: $(INFOTOOL)
-	$(INFOTOOL) -o $(LIB_BUILD_DIR)
+$(LIB_BUILD_DIR)/sw/boot_rom/chip_info.h: $(INFOTOOL)
+	$(INFOTOOL) -o $(LIB_BUILD_DIR)/sw/boot_rom
 
 -include $(DEPS)
 

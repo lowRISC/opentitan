@@ -15,9 +15,29 @@ if target == 'verilator'
   add_project_arguments('-DSIMULATION', language: 'c')
 endif
 
-# The following flags are applied to all native builds.
-add_project_arguments('-Wall', '-Werror', 'cpp_std=c++14', language: 'cpp')
-add_project_arguments('-std=gnu99', '-Wall', '-Werror', language: 'c')
+# The following flags are applied to *all* builds, both cross builds
+# and native builds.
+add_project_arguments(
+  '-std=c++14', '-Wall', '-Werror',
+  '-I' + meson.source_root(),
+  '-I' + meson.build_root(),
+  language: 'cpp', native: false)
+add_project_arguments(
+  '-std=c++14', '-Wall', '-Werror',
+  '-I' + meson.source_root(),
+  '-I' + meson.build_root(),
+  language: 'cpp', native: true)
+
+add_project_arguments(
+  '-std=gnu99', '-Wall', '-Werror',
+  '-I' + meson.source_root(),
+  '-I' + meson.build_root(),
+  language: 'c', native: false)
+add_project_arguments(
+  '-std=gnu99', '-Wall', '-Werror',
+  '-I' + meson.source_root(),
+  '-I' + meson.build_root(),
+  language: 'c', native: true)
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
@@ -40,7 +60,8 @@ embedded_target_args = [prog_python, '../util/embedded_target.py',
   '--objcopy', prog_objcopy, '--srec_cat', prog_srec_cat,
   '--input', '@INPUT@', '--basename', '@BASENAME@', '--outdir', '@OUTDIR@']
 
-# HW headers. Placed here to avoid adding meson build files in the hw directory.
+# Hardware register headers. These are generated from HJSON files, and accesible
+# in C via |#include "{IP_NAME}_regs.h"|.
 gen_hw_hdr = generator(
   prog_python,
   output: '@BASENAME@_regs.h',

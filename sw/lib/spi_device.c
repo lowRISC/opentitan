@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "spi_device.h"
+#include "sw/lib/spi_device.h"
 
-#include "common.h"
-#include "spi_device_regs.h"
+#include "spi_device_regs.h"  // Generated.
+
+#include "sw/lib/common.h"
 
 #define SPI_DEVICE0_BASE_ADDR 0x40020000
 #define SPID_SRAM_ADDR SPI_DEVICE_BUFFER(0)

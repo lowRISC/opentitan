@@ -4,8 +4,8 @@
 
 #include "handler.h"
 
-#include "common.h"
-#include "uart.h"
+#include "sw/lib/common.h"
+#include "sw/lib/uart.h"
 
 /**
  * Default exception handler. Can be overidden.

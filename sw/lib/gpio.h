@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "gpio_regs.h"
+#include "gpio_regs.h"  // Generated.
 
 #define GPIO0_BASE_ADDR 0x40010000
 

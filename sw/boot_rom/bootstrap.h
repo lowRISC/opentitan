@@ -5,7 +5,7 @@
 #ifndef _F_BOOTSTRAP_H__
 #define _F_BOOTSTRAP_H__
 
-#include "bootstrap_msgs.h"
+#include "sw/boot_rom/bootstrap_msgs.h"
 
 /**
  * Bootstrap Flash with payload received on SPI device.

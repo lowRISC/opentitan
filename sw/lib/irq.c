@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "irq.h"
+#include "sw/lib/irq.h"
 
-#include "common.h"
+#include "sw/lib/common.h"
 
 static const uint32_t IRQ_EXT_ENABLE_OFFSET = 11;
 static const uint32_t IRQ_TIMER_ENABLE_OFFSET = 7;

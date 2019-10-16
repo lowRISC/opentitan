@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "common.h"
-#include "flash_ctrl.h"
-#include "gpio.h"
-#include "uart.h"
+#include "sw/lib/common.h"
+#include "sw/lib/flash_ctrl.h"
+#include "sw/lib/gpio.h"
+#include "sw/lib/uart.h"
 
 /**
  * Delay loop executing within 8 cycles on ibex

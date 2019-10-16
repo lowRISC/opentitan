@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "verilator_spi_interface.h"
+#include "sw/host/spiflash/verilator_spi_interface.h"
 
 #include <fcntl.h>
 #include <termios.h>

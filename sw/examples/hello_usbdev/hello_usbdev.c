@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "common.h"
-#include "gpio.h"
-#include "uart.h"
-#include "usb_controlep.h"
-#include "usb_simpleserial.h"
-#include "usbdev.h"
+#include "sw/lib/common.h"
+#include "sw/lib/gpio.h"
+#include "sw/lib/uart.h"
+#include "sw/lib/usb_controlep.h"
+#include "sw/lib/usb_simpleserial.h"
+#include "sw/lib/usbdev.h"
 
 // These just for the '/' printout
 #define USBDEV_BASE_ADDR 0x40020000
-#include "usbdev_regs.h"
+#include "usbdev_regs.h"  // Generated.
 
 // Build Configuration descriptor array
 static uint8_t cfg_dscr[] = {

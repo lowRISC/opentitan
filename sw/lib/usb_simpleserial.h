@@ -5,7 +5,7 @@
 #ifndef __USB_SIMPLESERIAL_H__
 #define __USB_SIMPLESERIAL_H__
 
-#include "common.h"
+#include "sw/lib/common.h"
 #include "usbdev.h"
 
 // This is only here because caller of _init needs it

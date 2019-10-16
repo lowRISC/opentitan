@@ -14,8 +14,8 @@
 
 #include <sys/types.h>
 
-#include "common.h"
-#include "uart.h"
+#include "sw/lib/common.h"
+#include "sw/lib/uart.h"
 
 extern unsigned int _stack_start;
 
