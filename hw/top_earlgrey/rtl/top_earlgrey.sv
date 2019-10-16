@@ -138,6 +138,9 @@ module top_earlgrey #(
 
   // processor core
   rv_core_ibex #(
+    .PMPEnable           (0),
+    .PMPGranularity      (0),
+    .PMPNumRegions       (4),
     .MHPMCounterNum      (8),
     .MHPMCounterWidth    (40),
     .RV32E               (0),
