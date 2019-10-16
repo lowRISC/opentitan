@@ -31,8 +31,10 @@ LIB_OBJS      += $(addprefix $(LIB_BUILD_DIR)/, $(addsuffix .o, $(basename $(not
 LIB_PPOS      += $(LIB_OBJS:.o=.ppo)
 LIB_BUILD_DIR ?= $(SW_BUILD_DIR)/lib
 
+GEN_HDRS_DIR  ?= $(SW_ROOT_DIR)/generated
+
 DEPS          += $(SW_OBJS:%.o=%.d) $(LIB_OBJS:%.o=%.d)
-INCS          += -I$(SW_DIR) -I$(LIB_DIR) -I$(SW_BUILD_DIR) -I$(LIB_BUILD_DIR)
+INCS          += -I.. -I$(LIB_BUILD_DIR)
 
 LINK_OPTS     += -T $(LINKER_SCRIPT)
 LINK_OPTS     += $(SW_OBJS) -L$(LIB_BUILD_DIR) -l$(LIB_NAME)

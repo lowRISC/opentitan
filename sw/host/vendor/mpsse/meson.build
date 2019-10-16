@@ -3,12 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 libmpsse = declare_dependency(
-  include_directories : include_directories('.'),
   link_with: static_library(
     'mpsse',
     sources: [
       'mpsse.c',
       'support.c'
+    ],
+    c_args: [
+      '-I' + meson.source_root() + '/sw/host/vendor/mpsse'
     ],
     dependencies: [
       dependency('libftdi1', native: true),

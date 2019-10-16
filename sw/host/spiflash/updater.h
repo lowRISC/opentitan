@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "spi_interface.h"
+#include "sw/host/spiflash/spi_interface.h"
 
 namespace opentitan {
 namespace spiflash {

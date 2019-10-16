@@ -6,7 +6,7 @@
 #define __USB_CONTROLEP_H__
 #include <stddef.h>
 
-#include "common.h"
+#include "sw/lib/common.h"
 #include "usbdev.h"
 
 typedef enum ctstate {

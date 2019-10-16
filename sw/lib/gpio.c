@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "gpio.h"
+#include "sw/lib/gpio.h"
 
-#include "assert.h"
-#include "common.h"
+#include <assert.h>
+
+#include "sw/lib/common.h"
 
 /**
  * @param oe bits to use as output

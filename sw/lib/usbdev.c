@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
-#include "common.h"
+#include "sw/lib/common.h"
 
 #define USBDEV_BASE_ADDR 0x40020000
+#include "usbdev_regs.h"  // Generated.
 
-#include "usbdev_regs.h"
 #define EXTRACT(n, f) ((n >> USBDEV_##f##_OFFSET) & USBDEV_##f##_MASK)
 
 // Free buffer pool is held on a simple stack

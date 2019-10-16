@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "bootstrap.h"
-#include "chip_info.h"
-#include "common.h"
-#include "flash_ctrl.h"
-#include "gpio.h"
-#include "spi_device.h"
-#include "uart.h"
+#include "sw/boot_rom/chip_info.h"  // Generated.
+
+#include "sw/boot_rom/bootstrap.h"
+#include "sw/lib/common.h"
+#include "sw/lib/flash_ctrl.h"
+#include "sw/lib/gpio.h"
+#include "sw/lib/spi_device.h"
+#include "sw/lib/uart.h"
 
 static inline void try_launch(void) {
   __asm__ volatile(

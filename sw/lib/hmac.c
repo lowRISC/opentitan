@@ -4,8 +4,9 @@
 
 #include "hmac.h"
 
-#include "common.h"
-#include "hmac_regs.h"
+#include "hmac_regs.h"  // Generated.
+
+#include "sw/lib/common.h"
 
 #define HMAC0_BASE_ADDR 0x40120000
 #define HMAC_FIFO_MAX 16

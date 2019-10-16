@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
-#include "flash_ctrl.h"
-#include "hw_sha256.h"
-#include "uart.h"
+#include "sw/lib/common.h"
+#include "sw/lib/flash_ctrl.h"
+#include "sw/lib/hw_sha256.h"
+#include "sw/lib/uart.h"
 
 typedef struct test_data {
   uint32_t digest[8];

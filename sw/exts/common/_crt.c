@@ -1,7 +1,7 @@
 #include <string.h>
 
-#include "common.h"
-#include "irq.h"
+#include "sw/lib/common.h"
+#include "sw/lib/irq.h"
 
 extern int main(void);
 

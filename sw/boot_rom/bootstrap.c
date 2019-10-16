@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "bootstrap.h"
+#include "sw/boot_rom/bootstrap.h"
 
-#include "common.h"
-#include "flash_ctrl.h"
-#include "gpio.h"
-#include "hw_sha256.h"
-#include "spi_device.h"
-#include "uart.h"  // TODO: Wrap uart in DEBUG macros.
+#include "sw/lib/common.h"
+#include "sw/lib/flash_ctrl.h"
+#include "sw/lib/gpio.h"
+#include "sw/lib/hw_sha256.h"
+#include "sw/lib/spi_device.h"
+#include "sw/lib/uart.h"  // TODO: Wrap uart in DEBUG macros.
 
 /* Checks if flash is blank to determine if bootstrap is needed. */
 /* TODO: Update this to check bootstrap pin instead in Verilator. */

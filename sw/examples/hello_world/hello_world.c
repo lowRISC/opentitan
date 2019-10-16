@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "common.h"
-#include "gpio.h"
-#include "spi_device.h"
-#include "uart.h"
+#include "sw/lib/common.h"
+#include "sw/lib/gpio.h"
+#include "sw/lib/spi_device.h"
+#include "sw/lib/uart.h"
 
 #define SPI_MAX 32
 

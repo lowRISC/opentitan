@@ -175,7 +175,7 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
 void usbdev_init(usbdev_ctx_t *ctx);
 
 // Used for tracing what is going on
-#include "uart.h"
+#include "sw/lib/uart.h"
 #define TRC_S(s) uart_send_str(s)
 #define TRC_I(i, b) uart_send_uint(i, b)
 #define TRC_C(c) uart_send_char(c)
