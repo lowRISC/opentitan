@@ -12,11 +12,26 @@
 #include "uart_regs.h"  // Generated.
 
 void uart_send_char(char c);
+
+/**
+ * Send unsigned int over UART
+ */
 void uart_send_uint(uint32_t n, int size);
 void uart_init(unsigned int baud);
+
+/**
+ * Send a NULL-terminated string over UART
+ */
 void uart_send_str(char *str);
 int uart_rx_empty(void);
 int uart_tx_empty(void);
+
+/**
+ * Receive a single character from UART
+ *
+ * @param c received character, caller-allocated
+ * @return 0 on success, -1 if no data is available
+ */
 int uart_rcv_char(char *c);
 
 #endif

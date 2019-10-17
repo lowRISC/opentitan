@@ -38,14 +38,14 @@ void hmac_init(hmac_cfg_t hmac_cfg);
  * Write |size_in_bytes| bytes of |data| to HMAC input buffer
  *
  * @param data pointer to input buffer.
- * @size_in_bytes number of bytes to write.
+ * @param size_in_bytes number of bytes to write.
  */
 void hmac_update(const void *data, size_t size_in_bytes);
 
 /**
  * Poll for hmac done and read out digest.
  *
- * @param pointer to output digest buffer.
+ * @param digest pointer to output digest buffer.
  */
 void hmac_done(uint32_t *digest);
 

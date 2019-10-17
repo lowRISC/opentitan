@@ -35,9 +35,6 @@ int uart_tx_empty(void) {
   return !!(REG32(UART_STATUS(0)) & (1 << UART_STATUS_TXEMPTY));
 }
 
-/**
- * Send a NULL-terminated string over UART
- */
 void uart_send_str(char *str) {
   while (*str != '\0') {
     uart_send_char(*str++);
@@ -46,9 +43,6 @@ void uart_send_str(char *str) {
 
 #define hexchar(i) (((i & 0xf) > 9) ? (i & 0xf) - 10 + 'A' : (i & 0xf) + '0')
 
-/**
- * Send unsigned int over UART
- */
 void uart_send_uint(uint32_t n, int bits) {
   for (int i = bits - 4; i >= 0; i -= 4) {
     uart_send_char(hexchar(n >> i));
@@ -59,12 +53,6 @@ int uart_rx_empty(void) {
   return !!(REG32(UART_STATUS(0)) & (1 << UART_STATUS_RXEMPTY));
 }
 
-/**
- * Receive a single character from UART
- *
- * @param c received character, caller-allocated
- * @return 0 on success, -1 if no data is available
- */
 int uart_rcv_char(char *c) {
   if (uart_rx_empty()) {
     return -1;

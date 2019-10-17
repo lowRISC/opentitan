@@ -8,9 +8,6 @@
 
 #include "sw/lib/common.h"
 
-/**
- * @param oe bits to use as output
- */
 void gpio_init(uint32_t oe) { REG32(GPIO_DIRECT_OE(0)) = oe; }
 
 void gpio_write_bit(unsigned int bit, unsigned int val) {
