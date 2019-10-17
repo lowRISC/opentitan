@@ -86,3 +86,22 @@ toc_title = """
 
 toc_mark_head = "<!--TOC "
 toc_mark_tail = "-->\n"
+
+dashboard_header = """
+  <table class="hw-project-dashboard">
+    <thead>
+      <tr>
+        <th>Module</th>
+        <th>Version</th>
+        <th>Life Stage</th>
+        <th>Design Stage</th>
+        <th>Verification Stage</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+"""
+dashboard_trailer = """
+    </tbody>
+  </table>
+"""

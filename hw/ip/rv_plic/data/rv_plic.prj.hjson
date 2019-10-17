@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "rv_plic",
+    version:            "0.5",
+    life_stage:         "L1",
+    design_stage:       "D0",
+    verification_stage: "V0",
+    notes:              "will be verified at top level; formal at block level",
+}

@@ -35,6 +35,7 @@ from pygments.lexers import get_lexer_by_name as get_lexer
 from pygments.lexers import guess_lexer
 from pygments.styles import get_style_by_name as get_style
 
+import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
 import reggen.validate as validate
@@ -363,6 +364,21 @@ class LowriscRenderer(mathjax.MathJaxRenderer):
                 return "<B>Errors parsing testplan prevents insertion.</B>"
             outbuf = io.StringIO()
             testplan_utils.gen_html_testplan_table(self.testplan, outbuf)
+            generated = outbuf.getvalue()
+            outbuf.close()
+            return generated
+        if token.type == "dashboard":
+            hjson_paths = []
+            # find all of the .prj.hjson files in the given path
+            hjson_paths.extend(
+                sorted(
+                    Path(path.join(self.basedir,
+                                   token.text)).rglob('*.prj.hjson')))
+            outbuf = io.StringIO()
+            outbuf.write(html_data.dashboard_header)
+            for hjson_path in hjson_paths:
+                gen_dashboard_entry.gen_html(hjson_path, outbuf)
+            outbuf.write(html_data.dashboard_trailer)
             generated = outbuf.getvalue()
             outbuf.close()
             return generated
