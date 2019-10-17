@@ -124,6 +124,24 @@ Macros are often necessary and reasonable coding practice C (as opposed to C++) 
 In contrast to the recommendation in the Google C++ style guide, exporting macros as part of the public API is allowed in C code.
 A typical use case is a header with register definitions.
 
+### Aggregate Initialization
+
+C99 introduces designated initializers: when initializing a type of struct, array, or union type, it is possible to *designate* an initializer as being for a particular field or array index.
+For example:
+```c
+my_struct_t s = { .my_field = 42 };
+int arr[5] = { [3] = 0xff, [4] = 0x1b };
+```
+With judicious use, designated initializers can make code more readable and robust; struct field reordering will not affect downstream users, and weak typing will not lead to surprising union initialization.
+
+When initializing a struct or union, initializers within *must* be designated; array-style initialization (or mixing designated and undesignated initializers) is forbidden.
+
+Furthermore, the nested forms of designated initialization are forbidden (e.g., `.x.y = foo` and `.x[0] = bar`), to discourage initialization of deeply nested structures with flat syntax.
+This may change if we find cases where this initialization improves readability.
+
+When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed). Mixing designated and undesignated initializers, or using nested initializers, is still
+forbidden.
+
 ## Code Lint
 
 The clang-format tool can check for adherence to this style guide.
