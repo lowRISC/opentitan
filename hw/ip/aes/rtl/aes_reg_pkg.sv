@@ -7,9 +7,8 @@
 package aes_reg_pkg;
 
   // Param list
-  localparam int KEY = 8;
-  localparam int DATA_IN = 4;
-  localparam int DATA_OUT = 4;
+  localparam int NumRegsKey = 8;
+  localparam int NumRegsData = 4;
 
 /////////////////////////////////////////////////////////////////////
 // Typedefs for multiregs
