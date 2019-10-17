@@ -11,7 +11,7 @@
   font-size: 16px;
   word-wrap: break-word;
   width: 80%;
-  margin-left:auto; 
+  margin-left:auto;
   margin-right:auto;
 }
 
@@ -122,4 +122,23 @@ table.subsection_heading td {
     background-color:white;
     border: 0px;
     float: center;
+}
+
+table.hw-project-dashboard table,
+table.hw-project-dashboard td,
+table.hw-project-dashboard th {
+    border: 1px solid #000080;
+}
+table.hw-project-dashboard table {
+    font-family: sans-serif;
+}
+table.hw-project-dashboard .fixleft {
+    font-family: monospace;
+    text-align: left;
+}
+table.hw-project-dashboard th {
+    background-color: #e0e0ff;
+}
+table.hw-project-dashboard td, tr, th {
+    padding: 4px;
 }
