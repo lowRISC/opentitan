@@ -95,19 +95,34 @@ module prim_fifo_sync #(
     assign  full       = (fifo_wptr == (fifo_rptr ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
     assign  fifo_empty = (fifo_wptr ==  fifo_rptr);
 
-    logic [Width-1:0] storage [0:Depth-1];
 
-    always_ff @(posedge clk_i)
-      if (fifo_incr_wptr) begin
-        storage[fifo_wptr[PTR_WIDTH-2:0]] <= wdata;
-      end
+    // the generate blocks below are needed to avoid lint errors due to array indexing
+    // in the where the fifo only has one storage element
+    logic [Width-1:0] storage [0:Depth-1];
+    logic [Width-1:0] storage_rdata;
+    if (Depth == 1) begin : gen_depth_eq1
+      assign storage_rdata = storage[0];
+
+      always_ff @(posedge clk_i)
+        if (fifo_incr_wptr) begin
+          storage[0] <= wdata;
+        end
+    // fifo with more than one storage element
+    end else begin : gen_depth_gt1
+      assign storage_rdata = storage[fifo_rptr[PTR_WIDTH-2:0]];
+
+      always_ff @(posedge clk_i)
+        if (fifo_incr_wptr) begin
+          storage[fifo_wptr[PTR_WIDTH-2:0]] <= wdata;
+        end
+    end
 
     if (Pass == 1'b1) begin : gen_pass
+      assign rdata = (fifo_empty && wvalid) ? wdata : storage_rdata;
       assign empty = fifo_empty & ~wvalid;
-      assign rdata = (fifo_empty && wvalid) ? wdata : storage[fifo_rptr[PTR_WIDTH-2:0]];
     end else begin : gen_nopass
+      assign rdata = storage_rdata;
       assign empty = fifo_empty;
-      assign rdata = storage[fifo_rptr[PTR_WIDTH-2:0]];
     end
 
     `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth <= DepthW'(Depth), clk_i, !rst_ni)
