@@ -26,3 +26,20 @@ Read the design documentation for the requirements on the specific design/target
 * [Build software](getting_started_sw.html)
 * [Getting started with Verilator](getting_started_verilator.html)
 * [Getting started on FPGAs](getting_started_fpga.html)
+
+## Understanding device software flow
+This section discusses the general software operating flow.
+
+Under the sw directory, there are numerous sub-directories each containing code for [different purposes](directory_structure.md#directory-structure-underneath-`sw`).
+In general however, software execution can be divided into two execution stages - ROM and embedded memory (currently emulated embedded flash).
+
+The ROM stage software, built from `sw/boot_ROM` is always run first on all platforms (DV / Verilator / FPGA).
+In DV / Verilator, both the ROM and embedded memory contents are backdoor loaded into their respective storage, thus the ROM code simply checks for the presence of code and jumps to it.
+ROM at the moment does not perform validation of the backdoor loaded code.
+
+On FPGA, we do not backdoor load the embedded memory.
+Instead, the ROM code proceeds through a code download process where a [host](../../host/spiflash/README.md) feeds an image frame by frame.
+The ROM code then integrity checks each received image and programs it into the embedded memory.
+At the conclusion of this process, the ROM then jumps to the newly downloaded executable code.
+Again, just like the DV / Verilator case, there is currently no additional validation of the downloaded code.
+That feature is expected to be added later.
