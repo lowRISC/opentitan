@@ -30,3 +30,6 @@ updatemem -force --meminfo util/fpga/bram_load.mmi \
   --data ${TARGET_PREFIX}.mem \
   --bit "${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit"  --proc dummy \
   --out "${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.splice.bit"
+
+mv ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit.orig
+mv ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.splice.bit ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit
