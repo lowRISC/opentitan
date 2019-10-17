@@ -32,6 +32,7 @@ module top_earlgrey #(
   output cio_spi_device_miso_en_d2p_o,
   // flash_ctrl
   // rv_timer
+  // aes
   // hmac
   // rv_plic
 
@@ -65,6 +66,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_flash_ctrl_d_d2h;
   tl_h2d_t  tl_rv_timer_d_h2d;
   tl_d2h_t  tl_rv_timer_d_d2h;
+  tl_h2d_t  tl_aes_d_h2d;
+  tl_d2h_t  tl_aes_d_d2h;
   tl_h2d_t  tl_hmac_d_h2d;
   tl_d2h_t  tl_hmac_d_d2h;
   tl_h2d_t  tl_rv_plic_d_h2d;
@@ -428,6 +431,14 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
+  aes aes (
+      .tl_i (tl_aes_d_h2d),
+      .tl_o (tl_aes_d_d2h),
+
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
+
   hmac hmac (
       .tl_i (tl_hmac_d_h2d),
       .tl_o (tl_hmac_d_d2h),
@@ -511,6 +522,8 @@ module top_earlgrey #(
     .tl_rv_timer_i   (tl_rv_timer_d_d2h),
     .tl_hmac_o       (tl_hmac_d_h2d),
     .tl_hmac_i       (tl_hmac_d_d2h),
+    .tl_aes_o        (tl_aes_d_h2d),
+    .tl_aes_i        (tl_aes_d_d2h),
     .tl_rv_plic_o    (tl_rv_plic_d_h2d),
     .tl_rv_plic_i    (tl_rv_plic_d_d2h),
 

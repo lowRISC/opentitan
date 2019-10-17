@@ -37,6 +37,7 @@
       spi_device
       flash_ctrl
       rv_timer
+      aes
       hmac
       rv_plic
     ]
@@ -50,6 +51,7 @@
       spi_device
       flash_ctrl
       rv_timer
+      aes
       hmac
       rv_plic
     ]
@@ -177,6 +179,16 @@
       pipeline_byp: "false"
       inst_type: hmac
       base_addr: 0x40120000
+      size_byte: 0x1000
+      pipeline: "true"
+    }
+    {
+      name: aes
+      type: device
+      clock: main
+      pipeline_byp: "false"
+      inst_type: aes
+      base_addr: 0x40110000
       size_byte: 0x1000
       pipeline: "true"
     }
