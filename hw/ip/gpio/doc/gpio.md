@@ -25,7 +25,7 @@ pins in a flexible manner. Each of 32 independent bits can be written
 as peripheral outputs in two modes. Each of the 32 bits can be read
 by software as peripheral inputs.  How these peripheral inputs and
 outputs are connected to the chip IO is not within the scope of this
-document. See the Comportability Specification for periphal IO options
+document. See the Comportability Specification for peripheral IO options
 at the top chip level.
 
 In the output direction, this module provides direct 32b access to each
@@ -40,7 +40,7 @@ in the Programmer's Guide below.
 In the input direction, software can read the contents of any of the GPIO
 peripheral inputs.  In addition, software can request the detection of an
 interrupt event for any of the 32 bits in a configurable manner, either
-as positive- or negative-edge detection events, or level events. A noise
+as positive or negative edge detection events, or level events. A noise
 filter is available through configuration for any of the 32 GPIO inputs.
 This requires the input to be stable for 16 cycles of the main GPIO
 module clock before the input register reflects the change and interrupt
@@ -97,7 +97,7 @@ values, then switch to masked access for both `DATA_OUT` and `DATA_OE`.
 
 For GPIO outputs that are not used (either not wired to a pin output or
 not selected for pin multiplexing), the output values are disconnected
-and have no affect on the GPIO input, regardless of output enable values.
+and have no effect on the GPIO input, regardless of output enable values.
 
 ### GPIO Input
 
@@ -110,8 +110,8 @@ The GPIO module provides optional independent noise filter control for
 each of the 32 input signals. Each input can be independently enabled with
 the !!CTRL_EN_INPUT_FILTER (one bit per input).  This 16-cycle filter
 is applied to both the !!DATA_IN register as well as to the interrupt
-detection logic. The timing for !!DATA_IN if !!CTRL_EN_INPUT_FILTER is not
-true is still not instantaneous, as there is top-level routing involved,
+detection logic. The timing for !!DATA_IN is still not instantaneous if
+!!CTRL_EN_INPUT_FILTER is false as there is top-level routing involved,
 but no flops are between the chip input and the !!DATA_IN register.
 
 The contents of !!DATA_IN are always readable and reflect the value
