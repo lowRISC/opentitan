@@ -21,13 +21,9 @@ Follow the install instructions to [prepare the system](install_instructions.md#
 
 Synthesizing a design for a FPGA board is done with the following commands.
 
-The FPGA build will pull in a program to run from the internal
-SRAM. This is pulled in from the `sw/examples/hello_world directory` (see the
-`parameters:` section of the `top_earlgrey_nexysvideo.core` file). At
-the moment there is no check that the `hello_world.vmem` is up to
-date, so it is best to follow the instructions to [Build
-software](getting_started_sw.html) and run `make` to check the vmem is
-up to date before starting an FPGA build.
+The FPGA build will pull in a program to act as the boot ROM.
+This is pulled in from the `sw/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/top_earlgrey_nexysvideo.core` file).
+At the moment there is no check that the `rom.vmem` file is up to date, so it is best to follow the instructions to [Build software](getting_started_sw.md) and understand the FPGA's overall software flow
 
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
 
@@ -39,22 +35,23 @@ $ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
 
 The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
 
-## Create an FPGA bitstream loaded with boot rom elf
-This uses FPGA splice flow to load SW boot rom contents onto FPGA BRAMs
-and creates a embedded FPGA bitstream.
-Script assumes there is a pre-generated fpga bit file in the build directory at
-`build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
-The SW boot rom mem file is auto generated.
+## Updating an FPGA bitstream with a new ROM
 
-* Usage:
+When creating an FPGA bitstream, the existing `rom.vmem` is used to construct the FPGA ROM.
+To expedite developement on FPGA, it is possible to update ROM contents without building another bitstream from scratch.
+To do so, the FPGA splice flow is used to load new boot ROM contents into FPGA and create a new embedded FPGA bitstream.
+The script assumes there is a pre-generated FPGA bitstream in the build directory at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
+The updated `rom.vmem` file is auto generated as part of this flow.
+
+See example below
+
 ```console
 $ cd $REPO_TOP
 $ ./util/fpga/splice_nexysvideo.sh
 ```
 
-The resulting updated bitfile is located at the same place as
-raw vivado bitfile with a name `splice.bit` appended at
-`build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.splice.bit`
+After the script is successfully run, `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` is automatically updated.
+The original bitstream is moved to `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit.orig`.
 
 
 ## Flash the bitstream onto the FPGA
@@ -95,7 +92,32 @@ Now the Vivado GUI opens and loads the project.
 
 ## Testing the demo design
 
-The Earl Grey toplevel design comes with demo software that shows off some capabilities of the design.
+By default, the FPGA bitstream is built with only the boot ROM.
+Using this boot ROM, the FPGA is able to load additional software to the emulated flash, such as the software in the `sw/examples/` and `sw/tests/` directories.
+To load additional software, a custom load tool named [spiflash](../../sw/host/spiflash/README.md) is required.
+
+Once the tool is built, also build the binary you wish to load.
+For the purpose of this demonstration, we will use `sw/examples/hello_world`.
+The example below builds the `hello_world` image and loads it onto the FPGA.
+The loading output is also shown.
+
+```console
+$ cd ${REPO_TOP}
+$ make -C sw SW_DIR=examples/hello_world SW_BUILD_DIR=out clean all
+$ make -C sw/host/spiflash clean all
+$ ./sw/host/spiflash/spiflash --input=sw/out/sw.bin
+
+Running SPI flash update.
+Image divided into 6 frames.
+frame: 0x00000000 to offset: 0x00000000
+frame: 0x00000001 to offset: 0x000003d8
+frame: 0x00000002 to offset: 0x000007b0
+frame: 0x00000003 to offset: 0x00000b88
+frame: 0x00000004 to offset: 0x00000f60
+frame: 0x80000005 to offset: 0x00001338
+```
+
+The `hello_world` demo software shows off some capabilities of the design.
 
 * Use a Micro USB cable to connect the PC with the *PROG*-labeled connector on the board.
 * Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
