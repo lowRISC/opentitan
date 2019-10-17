@@ -101,13 +101,15 @@
 // Digest output. If HMAC is disabled, the register shows result of SHA256
 #define HMAC_DIGEST7(id) (HMAC##id##_BASE_ADDR + 0x5c)
 
-// Received Message Length in bits [31:0].
+// Received Message Length calculated by the HMAC in bits [31:0]
 #define HMAC_MSG_LENGTH_LOWER(id) (HMAC##id##_BASE_ADDR + 0x60)
 
-// Received Message Length in bits [63:32]
+// Received Message Length calculated by the HMAC in bits [63:32]
 #define HMAC_MSG_LENGTH_UPPER(id) (HMAC##id##_BASE_ADDR + 0x64)
 
-// Memory area: Message FIFO. Any address starts from offset 0x800 to 0xFFF
+// Memory area: Message FIFO. Any write to this window will be appended to
+// the FIFO. Only the lower [1:0] bits of the address matter to writes within
+// the window (for correctly dealing with non 32-bit writes)
 #define HMAC_MSG_FIFO(id) (HMAC##id##_BASE_ADDR + 0x800)
 #define HMAC_MSG_FIFO_SIZE_WORDS 512
 #define HMAC_MSG_FIFO_SIZE_BYTES 2048

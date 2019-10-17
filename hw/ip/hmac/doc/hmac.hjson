@@ -44,7 +44,9 @@
         }
         { bits: "1",
           name: "sha_en",
-          desc: "SHA256 enable. If 0, SHA engine won't initiate compression"
+          desc: '''SHA256 enable. If 0, SHA engine won't initiate compression,
+          this is used to stop operation of the SHA engine until configuration
+          has been done. When the SHA engine is disabled the digest is cleared.'''
         }
         { bits: "2",
           name: "endian_swap",
@@ -53,7 +55,7 @@
         }
         { bits: "3",
           name: "digest_swap",
-          desc: "DIGEST register byte-order. If 1, it swaps the each DIGEST registers' byte-order.",
+          desc: "DIGEST register byte-order. If 1, it swaps each DIGEST registers' byte-order.",
           resval: "0",
         }
       ]
@@ -93,7 +95,7 @@
         }
         { bits: "1",
           name: "fifo_full",
-          desc: "FIFO full. Software shouldn't write data into FIFO. It will be discarded"
+          desc: "FIFO full. Data written to the FIFO whilst it is full will cause back-pressure on the interconnect"
         }
         { bits: "8:4",
           name: "fifo_depth",
@@ -141,25 +143,29 @@
         swaccess: "wo",
         hwaccess: "hrw",
         fields: [
-          { bits: "31:0", name: "key", desc: "Secret Key" }
+          { bits: "31:0", name: "key", desc: "32-bit chunk of 256-bit Secret Key" }
         ],
       }
     }
     { multireg: {
         name: "DIGEST",
-        desc: "Digest output. If HMAC is disabled, the register shows result of SHA256",
+        desc: '''Digest output. If HMAC is disabled, the register shows result of SHA256
+
+               Order of the digest is:
+               digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
+               ''',
         count: "NumWords",
         cname: "HMAC",
         swaccess: "ro",
         hwaccess: "hwo",
         hwext: "true",
         fields: [
-          { bits: "31:0", name: "digest", desc: "Digest" }
+          { bits: "31:0", name: "digest", desc: "32-bit chunk of 256-bit Digest" }
         ]
       }
     }
     { name: "MSG_LENGTH_LOWER",
-      desc: '''Received Message Length in bits [31:0].
+      desc: '''Received Message Length calculated by the HMAC in bits [31:0]
 
             Message is byte granularity.
             lower 3bits [2:0] are ignored.''',
@@ -170,7 +176,7 @@
       ]
     }
     { name: "MSG_LENGTH_UPPER",
-      desc: "Received Message Length in bits [63:32]",
+      desc: "Received Message Length calculated by the HMAC in bits [63:32]",
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
@@ -183,8 +189,7 @@
         items: "512"      // 2kB
         swaccess: "wo",
         byte-write: "true",
-        desc: '''Message FIFO. Any address starts from offset 0x800 to 0xFFF
-              updates MSG FIFO entry.
+        desc: '''Message FIFO. Any write to this window will be appended to the FIFO. Only the lower [1:0] bits of the address matter to writes within the window (for correctly dealing with non 32-bit writes)
               '''
       }
     }
