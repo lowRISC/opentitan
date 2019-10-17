@@ -9,8 +9,8 @@ package ibex_mem_intf_agent_pkg;
   import uvm_pkg::*;
   import mem_model_pkg::*;
 
-  parameter DATA_WIDTH = 32;
-  parameter ADDR_WIDTH = 32;
+  parameter int DATA_WIDTH = 32;
+  parameter int ADDR_WIDTH = 32;
 
   typedef enum { READ, WRITE } rw_e;
 

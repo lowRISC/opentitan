@@ -27,11 +27,33 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
 
   virtual task run_phase(uvm_phase phase);
     reset_signals();
-    fork
-      send_grant();
-    join_none
-    get_and_drive();
+    wait(vif.reset === 1'b0);
+    forever begin
+      fork : drive_stimulus
+        send_grant();
+        get_and_drive();
+        wait(vif.reset === 1'b1);
+      join_any
+      // Will only be reached after mid-test reset
+      disable drive_stimulus;
+      handle_reset();
+    end
   endtask : run_phase
+
+  virtual protected task handle_reset();
+    ibex_mem_intf_seq_item req;
+    // Clear mailbox
+    while (rdata_queue.try_get(req));
+    // Clear seq_item_port
+    do begin
+      seq_item_port.try_next_item(req);
+      if (req != null) begin
+        seq_item_port.item_done();
+      end
+    end while (req != null);
+    reset_signals();
+    wait(vif.reset === 1'b0);
+  endtask
 
   virtual protected task reset_signals();
     vif.rvalid  <= 1'b0;
@@ -41,20 +63,24 @@ class ibex_mem_intf_slave_driver extends uvm_driver #(ibex_mem_intf_seq_item);
   endtask : reset_signals
 
   virtual protected task get_and_drive();
-    @(negedge vif.reset);
+    wait(vif.reset === 1'b0);
     fork
-      forever begin
-        ibex_mem_intf_seq_item req, req_c;
-        @(posedge vif.clock);
-        seq_item_port.get_next_item(req);
-        $cast(req_c, req.clone());
-        if(~vif.reset) begin
-          rdata_queue.put(req_c);
+      begin
+        forever begin
+          ibex_mem_intf_seq_item req, req_c;
+          @(posedge vif.clock);
+          seq_item_port.get_next_item(req);
+          $cast(req_c, req.clone());
+          if(~vif.reset) begin
+            rdata_queue.put(req_c);
+          end
+          seq_item_port.item_done();
         end
-        seq_item_port.item_done();
       end
-      send_read_data();
-    join_none
+      begin
+        send_read_data();
+      end
+    join
   endtask : get_and_drive
 
   virtual protected task send_grant();

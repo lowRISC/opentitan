@@ -31,9 +31,6 @@ jobs:
   # Installing six is a workaround for pip dependency resolution: six is already
   # installed as system package with a version below the required one.
   # Explicitly installing six through pip gets us a supported version.
-  #
-  # attrs is correctly declared as dependency, but currently broken.
-  # Tracked in https://github.com/enthought/sat-solver/issues/270
   - bash: |
       sudo apt-get install -y \
           python3 \
@@ -48,7 +45,7 @@ jobs:
           flex \
           bison \
           curl \
-        && sudo pip3 install -U six attrs==19.1.0 fusesoc
+        && sudo pip3 install -U six fusesoc
     displayName: Install dependencies
 
   - bash: |

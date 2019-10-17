@@ -19,6 +19,7 @@ class core_ibex_base_test extends uvm_test;
   bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]    signature_data;
   uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) item_collected_port;
   uvm_tlm_analysis_fifo #(irq_seq_item)           irq_collected_port;
+  uvm_phase                                       run;
 
   `uvm_component_utils(core_ibex_base_test)
 
@@ -52,7 +53,8 @@ class core_ibex_base_test extends uvm_test;
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    env.data_if_slave_agent.monitor.item_collected_port.connect(this.item_collected_port.analysis_export);
+    env.data_if_slave_agent.monitor.item_collected_port.connect(
+      this.item_collected_port.analysis_export);
     if (cfg.enable_irq_seq) begin
       env.irq_agent.monitor.irq_port.connect(this.irq_collected_port.analysis_export);
     end
@@ -60,6 +62,7 @@ class core_ibex_base_test extends uvm_test;
 
   virtual task run_phase(uvm_phase phase);
     phase.raise_objection(this);
+    run = phase;
     dut_vif.fetch_enable = 1'b0;
     clk_vif.wait_clks(100);
     load_binary_to_mem();
@@ -132,7 +135,8 @@ class core_ibex_base_test extends uvm_test;
     forever begin
       // The first write to this address is guaranteed to contain the signature type in bits [7:0]
       item_collected_port.get(mem_txn);
-      if (mem_txn.addr == ref_addr && mem_txn.data[7:0] === ref_type && mem_txn.read_write == WRITE) begin
+      if (mem_txn.addr == ref_addr && mem_txn.data[7:0] === ref_type &&
+          mem_txn.read_write == WRITE) begin
         signature_data = mem_txn.data;
         case (ref_type)
           // The very first write to the signature address in every test is guaranteed to be a write
@@ -161,7 +165,9 @@ class core_ibex_base_test extends uvm_test;
             signature_data_q.push_back(mem_txn.data);
           end
           default: begin
-            `uvm_fatal(`gfn, $sformatf("The data 0x%0h written to the signature address is formatted incorrectly.", signature_data))
+            `uvm_fatal(`gfn,
+              $sformatf("The data 0x%0h written to the signature address is formatted incorrectly.",
+                        signature_data))
           end
         endcase
         return;
@@ -175,20 +181,49 @@ class core_ibex_base_test extends uvm_test;
 
   // Gets the next CORE_STATUS signature write and compares it against the provided core_status
   // type, throws uvm_error on mismatch
-  virtual task check_next_core_status(core_status_t core_status, string error_msg = "");
-    wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
-    signature_data = signature_data_q.pop_front();
-    `DV_CHECK_EQ_FATAL(signature_data, core_status, error_msg);
+  virtual task check_next_core_status(core_status_t core_status, string error_msg = "",
+                                      int timeout = 9999999);
+    run.raise_objection(this);
+    fork
+      begin
+        wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
+        signature_data = signature_data_q.pop_front();
+        `DV_CHECK_EQ_FATAL(signature_data, core_status, error_msg);
+      end
+      begin : wait_timeout
+        clk_vif.wait_clks(timeout);
+        `uvm_fatal(`gfn,
+                   $sformatf("Did not receive core_status 0x%0x within %0d cycle timeout period",
+                   core_status, timeout))
+      end
+    join_any
+    // Will only get here if we successfully beat the timeout period
+    disable wait_timeout;
+    run.drop_objection(this);
   endtask
 
   // Waits for a write to the address of the specified CSR and retrieves the csr data
-  virtual task wait_for_csr_write(csr_num_e csr);
+  virtual task wait_for_csr_write(csr_num_e csr, int timeout = 9999999);
     bit [11:0] csr_addr;
-    do begin
-      wait_for_mem_txn(cfg.signature_addr, WRITE_CSR);
-      csr_addr = signature_data_q.pop_front();
-      signature_data = signature_data_q.pop_front();
-    end while (csr_addr != csr);
+    run.raise_objection(this);
+    fork
+      begin
+        do begin
+          wait_for_mem_txn(cfg.signature_addr, WRITE_CSR);
+          csr_addr = signature_data_q.pop_front();
+          signature_data = signature_data_q.pop_front();
+        end while (csr_addr != csr);
+      end
+      begin : wait_timeout
+        clk_vif.wait_clks(timeout);
+        `uvm_fatal(`gfn,
+                   $sformatf("Did not receive write to csr 0x%0x within %0d cycle timeout period",
+                   csr, timeout))
+      end
+    join_any
+    // Will only get here if we successfully beat the timeout period
+    disable wait_timeout;
+    run.drop_objection(this);
   endtask
 
   // Waits until the next time the given core_status is written to the signature address

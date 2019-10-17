@@ -26,7 +26,7 @@ class core_ibex_vseq extends uvm_sequence;
     instr_intf_seq = ibex_mem_intf_slave_seq::type_id::create("instr_intf_seq");
     data_intf_seq  = ibex_mem_intf_slave_seq::type_id::create("data_intf_seq");
     if (cfg.enable_irq_seq) begin
-      irq_single_seq_h = irq_raise_single_seq::type_id::create("irq_seq_single_h");
+      irq_single_seq_h = irq_raise_single_seq::type_id::create("irq_single_seq_h");
       irq_single_seq_h.num_of_iterations = 1;
       irq_single_seq_h.max_interval = 1;
       irq_single_seq_h.max_delay = 500;

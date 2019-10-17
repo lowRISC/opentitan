@@ -18,14 +18,32 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
   endfunction: build_phase
 
   virtual task run_phase(uvm_phase phase);
-    fork
-      get_and_drive();
-      reset_signals();
-    join
+    reset_signals();
+    forever begin
+      fork : drive_irq
+        get_and_drive();
+        wait(vif.reset === 1'b1);
+      join_any
+      // Will only reach here on mid-test reset
+      disable drive_irq;
+      handle_reset();
+    end
   endtask : run_phase
 
+  virtual protected task handle_reset();
+    irq_seq_item req;
+    // Clear seq_item_port
+    do begin
+      seq_item_port.try_next_item(req);
+      if (req != null) begin
+        seq_item_port.item_done();
+      end
+    end while (req != null);
+    reset_signals();
+  endtask
+
   virtual protected task get_and_drive();
-    @(negedge vif.reset);
+    wait(vif.reset === 1'b0);
     forever begin
       seq_item_port.try_next_item(req);
       if (req != null) begin

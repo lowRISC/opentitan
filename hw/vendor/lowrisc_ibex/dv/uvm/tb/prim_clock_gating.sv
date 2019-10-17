@@ -5,7 +5,7 @@
 // Dummy clock gating module compatible with latch-based register file
 
 module prim_clock_gating #(
-    parameter Impl = "default"
+    parameter string Impl = "default"
 ) (
     input        clk_i,
     input        en_i,

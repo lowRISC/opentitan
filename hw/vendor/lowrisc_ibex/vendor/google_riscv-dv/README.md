@@ -3,7 +3,7 @@
 RISCV-DV is a SV/UVM based open-source instruction generator for RISC-V
 processor verification. It currently supports the following features:
 
-- Supported instruction set: RV32IMAC, RV64IMAC
+- Supported instruction set: RV32IMAFDC, RV64IMAFDC
 - Supported privileged mode: machine mode, supervisor mode, user mode
 - Page table randomization and exception
 - Privileged CSR setup randomization
@@ -324,7 +324,7 @@ one of below to run ISS simulation.
 
 - [spike](https://github.com/riscv/riscv-isa-sim#) setup
   - Follow the [steps](https://github.com/riscv/riscv-isa-sim#build-steps) to build spike
-     - Make sure RISCV_ENABLE_COMMITLOG is defined in [config.h.in](https://github.com/riscv/riscv-isa-sim/blob/master/config.h.in)
+  - Install spike with "--enable-commitlog"
   - Set environment variable SPIKE_PATH to the directory of the spike binary
 - [riscv-ovpsim](https://github.com/riscv/riscv-ovpsim) setup
   - Download the riscv-ovpsim binary
@@ -389,8 +389,8 @@ it as a reference to setup end-to-end co-simulation flow.
 This repo is still under active development, here's recommended approach to
 customize the instruction generator while keeping the minimum effort of merging
 upstream changes.
-- Do not modify the upstream classes directly. When possible, extending from
-  the upstream classses and implment your own functionalities.
+- Do not modify the upstream classes directly. When possible, extend from
+  the upstream classses and implement your own functionalities.
 - Add your extensions under user_extension directory, and add the files to
   user_extension/user_extension.svh. If you prefer to put your extensions in a
   different directory, you can use "-ext <user_extension_path>" to override the

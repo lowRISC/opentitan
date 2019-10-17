@@ -207,6 +207,7 @@ module ibex_core #(
   logic        debug_csr_save;
   logic        debug_single_step;
   logic        debug_ebreakm;
+  logic        debug_ebreaku;
 
   // performance counter related signals
   logic        instr_ret;
@@ -448,6 +449,7 @@ module ibex_core #(
       .debug_req_i                  ( debug_req_i            ),
       .debug_single_step_i          ( debug_single_step      ),
       .debug_ebreakm_i              ( debug_ebreakm          ),
+      .debug_ebreaku_i              ( debug_ebreaku          ),
 
       // write data to commit in the register file
       .regfile_wdata_lsu_i          ( regfile_wdata_lsu      ),
@@ -618,6 +620,7 @@ module ibex_core #(
       .debug_csr_save_i        ( debug_csr_save         ),
       .debug_single_step_o     ( debug_single_step      ),
       .debug_ebreakm_o         ( debug_ebreakm          ),
+      .debug_ebreaku_o         ( debug_ebreaku          ),
 
       .pc_if_i                 ( pc_if                  ),
       .pc_id_i                 ( pc_id                  ),

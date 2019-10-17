@@ -214,7 +214,7 @@
     +no_csr_instr=1
     +no_fence=1
     +no_wfi=1
-    +no_ebreak=0
+    +no_ebreak=1
     +instr_cnt=6000
     +randomize_csr=1
   rtl_test: core_ibex_debug_ebreak_test
@@ -340,3 +340,27 @@
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
+
+- test: riscv_reset_test
+  description: >
+    Randomly reset the core once in the middle of program execution
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+  rtl_test: core_ibex_reset_test
+  compare_opts:
+    compare_final_value_only: 1
+    verbose: 1
+
+- test: riscv_rv32im_instr_test
+  description: >
+    Random instruction test without compressed instructions
+  iterations: 5
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +disable_compressed_instr=1
+  gcc_opts: >
+    -march=rv32im
+  rtl_test: core_ibex_base_test

@@ -37,4 +37,9 @@ class core_ibex_env extends uvm_env;
     vseqr.irq_seqr = irq_agent.sequencer;
   endfunction : connect_phase
 
+  function void reset();
+    data_if_slave_agent.reset();
+    instr_if_slave_agent.reset();
+  endfunction
+
 endclass

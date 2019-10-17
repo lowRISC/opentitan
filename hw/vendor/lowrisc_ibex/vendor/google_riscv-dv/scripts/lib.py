@@ -110,7 +110,7 @@ def run_cmd(cmd, timeout_s = 999):
   """
   logging.debug(cmd)
   try:
-    ps = subprocess.Popen(cmd,
+    ps = subprocess.Popen("exec " + cmd,
                           shell=True,
                           universal_newlines=True,
                           stdout=subprocess.PIPE,
@@ -139,7 +139,7 @@ def run_parallel_cmd(cmd_list, timeout_s = 999):
   """
   children = []
   for cmd in cmd_list:
-    ps = subprocess.Popen(cmd,
+    ps = subprocess.Popen("exec " + cmd,
                           shell=True,
                           universal_newlines=True,
                           stdout=subprocess.PIPE,

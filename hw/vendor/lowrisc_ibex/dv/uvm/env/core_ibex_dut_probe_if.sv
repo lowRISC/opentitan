@@ -4,6 +4,7 @@
 
 // Interface to probe DUT internal signal
 interface core_ibex_dut_probe_if(input logic clk);
+  logic reset;
   logic illegal_instr;
   logic ecall;
   logic wfi;
@@ -13,4 +14,9 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic fetch_enable;
   logic core_sleep;
   logic debug_req;
+
+  initial begin
+    debug_req = 1'b0;
+  end
+
 endinterface

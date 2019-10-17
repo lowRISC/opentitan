@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface ibex_mem_intf#(ADDR_WIDTH = 32, DATA_WIDTH = 32);
+interface ibex_mem_intf#(parameter int ADDR_WIDTH = 32,
+                         parameter int DATA_WIDTH = 32);
 
   logic                    clock;
   logic                    reset;

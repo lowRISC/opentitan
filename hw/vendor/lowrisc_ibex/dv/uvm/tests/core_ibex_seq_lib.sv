@@ -33,13 +33,13 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
     if(!uvm_config_db#(virtual clk_if)::get(null, "", "clk_if", clk_vif)) begin
        `uvm_fatal(get_full_name(), "Cannot get clk_if")
     end
-    void'(randomize(delay));
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
     clk_vif.wait_clks(delay);
     `uvm_info(get_full_name(), "Starting sequence...", UVM_LOW)
     while (!stop_seq) begin
       send_req();
       iteration_cnt++;
-      void'(randomize(interval));
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(interval)
       clk_vif.wait_clks(interval);
       if (num_of_iterations > 0 && iteration_cnt >= num_of_iterations) begin
         break;

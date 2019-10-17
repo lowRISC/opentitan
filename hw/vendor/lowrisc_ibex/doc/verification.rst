@@ -30,11 +30,13 @@ Please note that this work is still working in progress.
 Getting Started
 ---------------
 
-Prerequisites
-~~~~~~~~~~~~~
+Prerequisites & Environment Setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  VCS RTL simulator (need to support UVM 1.2)
--  `Setup the RISC-V instruction generator and ISS sim environment <https://github.com/google/riscv-dv#getting-started>`_
+- VCS RTL simulator (needed to support UVM 1.2)
+- RISCV-DV Prerequisites - https://github.com/google/riscv-dv#prerequisites
+- GCC setup - https://github.com/google/riscv-dv#compile-generated-programs-with-gcc
+- ISS setup - https://github.com/google/riscv-dv#run-iss-instruction-set-simulator-simulation - note that commit log must be enabled in spike by passing ``--enable-commitlog`` to the configure script.
 
 End-to-end RTL/ISS co-simulation flow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,8 +46,7 @@ End-to-end RTL/ISS co-simulation flow
 
    RTL/ISS co-simulation flow chart
 
-The flow is controlled by a `Makefile <https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile>`_, here’s the list of frequently
-used commands:
+The flow is controlled by a `Makefile <https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile>`_, here is the list of frequently used commands:
 
 .. code-block:: bash
 
