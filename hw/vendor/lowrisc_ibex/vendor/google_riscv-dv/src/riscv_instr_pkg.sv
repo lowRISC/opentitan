@@ -42,6 +42,14 @@ package riscv_instr_pkg;
     SV64 = 4'b1011
   } satp_mode_t;
 
+  typedef enum bit [2:0] {
+    RNE = 3'b000,
+    RTZ = 3'b001,
+    RDN = 3'b010,
+    RUP = 3'b011,
+    RMM = 3'b100
+  } f_rounding_mode_t;
+
   typedef enum bit [1:0] {
     DIRECT   = 2'b00,
     VECTORED = 2'b01
@@ -173,10 +181,45 @@ package riscv_instr_pkg;
     FCVT_S_W,
     FCVT_S_WU,
     FMV_W_X,
+    // RV64F instruction
     FCVT_L_S,
     FCVT_LU_S,
     FCVT_S_L,
     FCVT_S_LU,
+    // RV32D instructions
+    FLD,
+    FSD,
+    FMADD_D,
+    FMSUB_D,
+    FNMSUB_D,
+    FNMADD_D,
+    FADD_D,
+    FSUB_D,
+    FMUL_D,
+    FDIV_D,
+    FSQRT_D,
+    FSGNJ_D,
+    FSGNJN_D,
+    FSGNJX_D,
+    FMIN_D,
+    FMAX_D,
+    FCVT_S_D,
+    FCVT_D_S,
+    FEQ_D,
+    FLT_D,
+    FLE_D,
+    FCLASS_D,
+    FCVT_W_D,
+    FCVT_WU_D,
+    FCVT_D_W,
+    FCVT_D_WU,
+    // RV64D
+    FCVT_L_D,
+    FCVT_LU_D,
+    FMV_X_D,
+    FCVT_D_L,
+    FCVT_D_LU,
+    FMV_D_X,
     // RV64I
     LWU,
     LD,
@@ -284,38 +327,14 @@ package riscv_instr_pkg;
 
   typedef enum bit [4:0] {
     ZERO = 5'b00000,
-    RA,
-    SP,
-    GP,
-    TP,
-    T0,
-    T1,
-    T2,
-    S0,
-    S1,
-    A0,
-    A1,
-    A2,
-    A3,
-    A4,
-    A5,
-    A6,
-    A7,
-    S2,
-    S3,
-    S4,
-    S5,
-    S6,
-    S7,
-    S8,
-    S9,
-    S10,
-    S11,
-    T3,
-    T4,
-    T5,
-    T6
+    RA, SP, GP, TP, T0, T1, T2, S0, S1, A0, A1, A2, A3, A4, A5, A6, A7,
+    S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, T3, T4, T5, T6
   } riscv_reg_t;
+
+  typedef enum bit [4:0] {
+    F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15,
+    F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27, F28, F29, F30, F31
+  } riscv_fpr_t;
 
   typedef enum bit [3:0] {
     J_FORMAT = 0,
@@ -324,6 +343,7 @@ package riscv_instr_pkg;
     B_FORMAT,
     R_FORMAT,
     S_FORMAT,
+    R4_FORMAT,
     CI_FORMAT,
     CB_FORMAT,
     CJ_FORMAT,

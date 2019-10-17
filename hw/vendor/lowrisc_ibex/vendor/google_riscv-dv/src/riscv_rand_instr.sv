@@ -113,6 +113,21 @@ class riscv_rand_instr extends riscv_instr_base;
     }
   }
 
+  constraint floating_point_c {
+    if (!cfg.enable_floating_point) {
+      !(group inside {RV32F, RV64F, RV32D, RV64D});
+    }
+  }
+
+  function void pre_randomize();
+    if (!cfg.enable_floating_point) begin
+      fs1.rand_mode(0);
+      fs2.rand_mode(0);
+      fs3.rand_mode(0);
+      fd.rand_mode(0);
+    end
+  endfunction
+
   // No label is needed if there's no branch/jump instruction
   function void post_randomize();
     super.post_randomize();

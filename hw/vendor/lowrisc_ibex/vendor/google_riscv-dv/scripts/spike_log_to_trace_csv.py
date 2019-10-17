@@ -28,7 +28,7 @@ from riscv_trace_csv import *
 from lib import *
 
 RD_RE    = re.compile(r"(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
-                      "\((?P<bin>.*?)\) x\s*(?P<reg>\d*?) 0x(?P<val>[a-f0-9]+)")
+                      "\((?P<bin>.*?)\) (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
 CORE_RE  = re.compile(r"core.*0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
 INSTR_RE = re.compile(r"(?P<instr>[a-z\.0-9]+?)(\s+?)(?P<operand>.*)")
 GPR_RE   = re.compile(r"^[a-z][0-9a-z]$")
@@ -85,7 +85,7 @@ def process_spike_sim_log(spike_log, csv, full_trace = 0):
           if m:
             # Extract RD information
             instr_cnt += 1
-            rv_instr_trace.rd = gpr_to_abi("x%0s" % m.group("reg"))
+            rv_instr_trace.rd = gpr_to_abi(m.group("reg").replace(" ",""))
             rv_instr_trace.rd_val = m.group("val")
             rv_instr_trace.privileged_mode = m.group("pri")
             gpr[rv_instr_trace.rd] = rv_instr_trace.rd_val

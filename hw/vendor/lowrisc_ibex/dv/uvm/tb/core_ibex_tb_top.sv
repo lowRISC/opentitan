@@ -7,11 +7,11 @@ module core_ibex_tb_top;
   import uvm_pkg::*;
   import core_ibex_test_pkg::*;
 
-  logic clk;
-  logic rst_n;
+  wire clk;
+  wire rst_n;
   logic fetch_enable;
 
-  clk_if         ibex_clk_if(.clk(clk));
+  clk_if         ibex_clk_if(.clk(clk), .rst_n(rst_n));
   irq_if         irq_vif();
   ibex_mem_intf  data_mem_vif();
   ibex_mem_intf  instr_mem_vif();
@@ -94,6 +94,7 @@ module core_ibex_tb_top;
   assign dut_if.dret            = dut.u_ibex_core.id_stage_i.dret_insn_dec;
   assign dut_if.mret            = dut.u_ibex_core.id_stage_i.mret_insn_dec;
   assign dut_if.core_sleep      = dut.u_ibex_core.core_sleep_o;
+  assign dut_if.reset           = ~rst_n;
 
 
   initial begin
@@ -104,22 +105,6 @@ module core_ibex_tb_top;
     uvm_config_db#(virtual ibex_mem_intf)::set(null, "*instr_if_slave*", "vif", instr_mem_vif);
     uvm_config_db#(virtual irq_if)::set(null, "*", "vif", irq_vif);
     run_test();
-  end
-
-  // Generate clk
-  initial begin
-    clk = 1'b0;
-    forever begin
-      #10 clk = ~clk;
-    end
-  end
-
-  // Generate reset
-  initial begin
-    rst_n = 1'b0;
-    repeat(100) @(posedge clk);
-    rst_n = 1'b1;
-    dut_if.debug_req = 1'b0;
   end
 
 endmodule

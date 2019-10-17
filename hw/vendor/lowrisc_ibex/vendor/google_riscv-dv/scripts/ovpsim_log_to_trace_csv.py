@@ -55,18 +55,18 @@ def process_ovpsim_sim_log(ovpsim_log, csv):
         instr_cnt += 1
       else:
         # Extract register value information
-        n = re.search(r" (?P<rd>[a-z0-9]{2,3}?) (?P<pre>[a-f0-9]+?)" \
+        n = re.search(r" (?P<rd>[a-z]{1,3}[0-9]{0,2}?) (?P<pre>[a-f0-9]+?)" \
                        " -> (?P<val>[a-f0-9]+?)$", line)
         if n:
           # Write the extracted instruction to a csvcol buffer file
-          # print("%0s %0s = %0s" % (trace_instr, m.group("rd"), m.group("val")))
-          rv_instr_trace = RiscvInstructiontTraceEntry()
-          rv_instr_trace.rd = n.group("rd")
-          rv_instr_trace.rd_val = n.group("val")
-          rv_instr_trace.instr_str = trace_instr
-          rv_instr_trace.binary = trace_bin
-          rv_instr_trace.addr = trace_addr
-          trace_csv.write_trace_entry(rv_instr_trace)
+          if n.group("rd") != "frm":
+            rv_instr_trace = RiscvInstructiontTraceEntry()
+            rv_instr_trace.rd = n.group("rd")
+            rv_instr_trace.rd_val = n.group("val")
+            rv_instr_trace.instr_str = trace_instr
+            rv_instr_trace.binary = trace_bin
+            rv_instr_trace.addr = trace_addr
+            trace_csv.write_trace_entry(rv_instr_trace)
   logging.info("Processed instruction count : %d" % instr_cnt)
 
 

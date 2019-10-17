@@ -32,4 +32,8 @@ class ibex_mem_intf_slave_agent extends uvm_agent;
     end
   endfunction : connect_phase
 
+  function void reset();
+    sequencer.reset();
+  endfunction
+
 endclass : ibex_mem_intf_slave_agent

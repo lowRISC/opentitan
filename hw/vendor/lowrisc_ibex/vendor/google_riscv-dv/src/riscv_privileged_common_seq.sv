@@ -56,20 +56,18 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus = riscv_privil_reg::type_id::create("mstatus");
     mstatus.init_reg(MSTATUS);
     if (cfg.randomize_csr) begin
-      mstatus.set_val({cfg.mstatus[XLEN-1:XLEN-21], cfg.mstatus_tvm, cfg.mstatus_mxr,
-                     cfg.mstatus_sum, cfg.mstatus_mprv, cfg.mstatus[16:0]});
-    end else begin
-      mstatus.set_field("MPRV", cfg.mstatus_mprv);
-      mstatus.set_field("MXR", cfg.mstatus_mxr);
-      mstatus.set_field("SUM", cfg.mstatus_sum);
-      mstatus.set_field("TVM", cfg.mstatus_tvm);
+      mstatus.set_val(cfg.mstatus);
     end
+    mstatus.set_field("MPRV", cfg.mstatus_mprv);
+    mstatus.set_field("MXR", cfg.mstatus_mxr);
+    mstatus.set_field("SUM", cfg.mstatus_sum);
+    mstatus.set_field("TVM", cfg.mstatus_tvm);
+    mstatus.set_field("FS", cfg.mstatus_fs);
     if(XLEN==64) begin
       mstatus.set_field("UXL", 2'b10);
       mstatus.set_field("SXL", 2'b10);
     end
     mstatus.set_field("XS", 0);
-    mstatus.set_field("FS", 0);
     mstatus.set_field("SD", 0);
     mstatus.set_field("UIE", 0);
     // Set the previous privileged mode as the target mode
@@ -121,8 +119,8 @@ class riscv_privileged_common_seq extends uvm_sequence;
     if(XLEN==64) begin
       sstatus.set_field("UXL", 2'b10);
     end
+    sstatus.set_field("FS", cfg.mstatus_fs);
     sstatus.set_field("XS", 0);
-    sstatus.set_field("FS", 0);
     sstatus.set_field("SD", 0);
     sstatus.set_field("UIE", 0);
     sstatus.set_field("SPP", 0);

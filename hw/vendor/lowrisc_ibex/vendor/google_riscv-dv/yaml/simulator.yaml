@@ -66,7 +66,7 @@
     cmd: >
       vsim -64 -c <cov_opts> -do <cwd>/questa_sim.tcl design_opt <sim_opts>  -sv_seed <seed>
     cov_opts: >
-      -do "coverage save -onexit cov.ucdb;"
+      -do "coverage save -onexit <out>/cov.ucdb;"
 
 - tool: dsim
   env_var: DSIM,DSIM_LIB_PATH

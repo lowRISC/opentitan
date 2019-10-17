@@ -18,4 +18,9 @@ class ibex_mem_intf_slave_sequencer extends uvm_sequencer #(ibex_mem_intf_seq_it
     addr_ph_port = new("addr_ph_port_sequencer", this);
   endfunction : new
 
+  // On reset, empty the tlm fifo
+  function void reset();
+    addr_ph_port.flush();
+  endfunction
+
 endclass : ibex_mem_intf_slave_sequencer

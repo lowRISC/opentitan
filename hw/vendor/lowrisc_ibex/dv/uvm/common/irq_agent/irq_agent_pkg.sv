@@ -8,8 +8,8 @@ package irq_agent_pkg;
 
   import uvm_pkg::*;
 
-  parameter DATA_WIDTH = 32;
-  parameter ADDR_WIDTH = 32;
+  parameter int DATA_WIDTH = 32;
+  parameter int ADDR_WIDTH = 32;
 
   `include "uvm_macros.svh"
   `include "irq_seq_item.sv"

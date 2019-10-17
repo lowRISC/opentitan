@@ -27,4 +27,4 @@ Ibex User Manual
 .. toctree::
    :hidden:
 
-   copyright
+   licensing

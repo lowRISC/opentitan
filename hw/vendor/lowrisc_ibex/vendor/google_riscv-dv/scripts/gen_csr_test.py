@@ -212,8 +212,6 @@ def gen_setup(test_file):
   test_file.write(f".section .text.init\n")
   test_file.write(f".globl _start\n")
   test_file.write(f".option norvc\n")
-  for i in range(32):
-    test_file.write(f"j csr_fail\n")
   test_file.write(f"_start:\n")
 
 

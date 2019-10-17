@@ -15,7 +15,7 @@
 - iss: spike
   path_var: SPIKE_PATH
   cmd: >
-    <path_var>/spike --isa=<variant> -l <elf>
+    <path_var>/spike --log-commits --isa=<variant> -l <elf>
 
 - iss: ovpsim
   path_var: OVPSIM_PATH

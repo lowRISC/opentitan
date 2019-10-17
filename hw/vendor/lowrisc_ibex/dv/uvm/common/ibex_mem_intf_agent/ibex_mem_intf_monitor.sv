@@ -29,11 +29,24 @@ class ibex_mem_intf_monitor extends uvm_monitor;
 
   virtual task run_phase(uvm_phase phase);
     wait(vif.reset === 1'b0);
-    fork
-      collect_address_phase();
-      collect_data_phase();
-    join
+    forever begin
+      fork : check_mem_intf
+        collect_address_phase();
+        collect_data_phase();
+        wait(vif.reset === 1'b1);
+      join_any
+      // Will only reach this point when mid-test reset is asserted
+      disable check_mem_intf;
+      handle_reset();
+    end
   endtask : run_phase
+
+  virtual protected task handle_reset();
+    ibex_mem_intf_seq_item mailbox_result;
+    // Clear the mailbox of any content
+    while (collect_data_queue.try_get(mailbox_result));
+    wait(vif.reset === 1'b0);
+  endtask
 
   virtual protected task collect_address_phase();
     ibex_mem_intf_seq_item trans_collected;

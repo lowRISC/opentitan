@@ -337,6 +337,9 @@ class riscv_asm_program_gen extends uvm_object;
     // Init stack pointer to point to the end of the user stack
     str = {indent, $sformatf("la x%0d, _user_stack_end", cfg.sp)};
     instr_stream.push_back(str);
+    if (cfg.enable_floating_point) begin
+      init_floating_point_gpr();
+    end
     core_is_initialized();
   endfunction
 
@@ -354,7 +357,10 @@ class riscv_asm_program_gen extends uvm_object;
         RV32I, RV64I, RV128I : misa[MISA_EXT_I] = 1'b1;
         RV32M, RV64M         : misa[MISA_EXT_M] = 1'b1;
         RV32A, RV64A         : misa[MISA_EXT_A] = 1'b1;
-        default : `uvm_fatal(`gfn, $sformatf("%0s is not yet supported", supported_isa[i].name()))
+        RV32F, RV64F, RV32FC : misa[MISA_EXT_F] = 1'b1;
+        RV32D, RV64D, RV32DC : misa[MISA_EXT_D] = 1'b1;
+        default : `uvm_fatal(`gfn, $sformatf("%0s is not yet supported",
+                                   supported_isa[i].name()))
       endcase
     end
     if (SUPERVISOR_MODE inside {supported_privileged_mode}) begin
@@ -396,6 +402,26 @@ class riscv_asm_program_gen extends uvm_object;
       str = $sformatf("%0sli x%0d, 0x%0x", indent, i, reg_val);
       instr_stream.push_back(str);
     end
+  endfunction
+
+  // Initialize floating point general purpose registers
+  virtual function void init_floating_point_gpr();
+    int int_gpr;
+    string str;
+    // TODO: Initialize floating point GPR with more interesting numbers
+    for(int i = 0; i < 32; i++) begin
+      int_gpr = $urandom_range(0, 31);
+      // Use a random integer GPR to initialize floating point GPR
+      if (RV64F inside {supported_isa}) begin
+        str = $sformatf("%0sfcvt.d.l f%0d, x%0d", indent, i, int_gpr);
+      end else begin
+        str = $sformatf("%0sfcvt.s.w f%0d, x%0d", indent, i, int_gpr);
+      end
+      instr_stream.push_back(str);
+    end
+    // Initialize rounding mode of FCSR
+    str = $sformatf("%0sfsrmi %0d", indent, cfg.fcsr_rm);
+    instr_stream.push_back(str);
   endfunction
 
   // Generate "test_done" section, test is finished by an ECALL instruction
@@ -1173,14 +1199,8 @@ class riscv_asm_program_gen extends uvm_object;
           // than 0, for ebreak loops.
           // Use dscratch1 to store original GPR value.
           str = {$sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
-                 $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0)};
-          instr = {instr, str};
-          // send dpc and dcsr to testbench, as this handshake will be
-          // executed twice due to the ebreak loop, there should be no change
-          // in their values as by the Debug Mode Spec Ch. 4.1.8
-          gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DCSR));
-          gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DPC));
-          str = {$sformatf("beq x%0d, x0, 1f", cfg.scratch_reg),
+                 $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
+                 $sformatf("beq x%0d, x0, 1f", cfg.scratch_reg),
                  $sformatf("j debug_end"),
                  $sformatf("1: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)};
           instr = {instr, str};
@@ -1192,6 +1212,13 @@ class riscv_asm_program_gen extends uvm_object;
         // having to execute unnecessary push/pop of GPRs on the stack ever
         // time a debug request is sent
         gen_signature_handshake(instr, CORE_STATUS, IN_DEBUG_MODE);
+        if (cfg.enable_ebreak_in_debug_rom) begin
+          // send dpc and dcsr to testbench, as this handshake will be
+          // executed twice due to the ebreak loop, there should be no change
+          // in their values as by the Debug Mode Spec Ch. 4.1.8
+          gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DCSR));
+          gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(DPC));
+        end
         if (cfg.set_dcsr_ebreak) begin
           // We want to set dcsr.ebreak(m/s/u) to 1'b1, depending on what modes
           // are available.
@@ -1279,6 +1306,11 @@ class riscv_asm_program_gen extends uvm_object;
         // mode, and write dscratch0 and dcsr to the testbench for any
         // analysis
         if (cfg.enable_ebreak_in_debug_rom) begin
+          // send dpc and dcsr to testbench, as this handshake will be
+          // executed twice due to the ebreak loop, there should be no change
+          // in their values as by the Debug Mode Spec Ch. 4.1.8
+          gen_signature_handshake(.instr(debug_end), .signature_type(WRITE_CSR), .csr(DCSR));
+          gen_signature_handshake(.instr(debug_end), .signature_type(WRITE_CSR), .csr(DPC));
           str = {$sformatf("csrwi 0x%0x, 0x0", DSCRATCH0)};
           debug_end = {debug_end, str};
         end

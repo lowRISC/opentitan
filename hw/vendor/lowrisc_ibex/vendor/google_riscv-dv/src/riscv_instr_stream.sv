@@ -203,7 +203,7 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     riscv_instr_name_t instr_name;
     // if set_dcsr_ebreak is set, we do not want to generate any ebreak
     // instructions inside the debug_rom
-    if (!cfg.enable_ebreak_in_debug_rom && is_in_debug) begin
+    if ((cfg.no_ebreak && !is_in_debug) || (!cfg.enable_ebreak_in_debug_rom && is_in_debug)) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_name,
                                         instr_name inside {allowed_instr};
                                         !(instr_name inside {EBREAK, C_EBREAK});)
@@ -247,7 +247,20 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     end
     if ((instr.category == CSR) && !skip_csr) begin
       instr.gen_rand_csr(.privileged_mode(cfg.init_privileged_mode),
+                         .enable_floating_point(cfg.enable_floating_point),
                          .illegal_csr_instr(cfg.enable_illegal_csr_instruction));
+    end
+    if (instr.has_fs1) begin
+      instr.fs1 = instr.gen_rand_fpr();
+    end
+    if (instr.has_fs2) begin
+      instr.fs2 = instr.gen_rand_fpr();
+    end
+    if (instr.has_fs3) begin
+      instr.fs3 = instr.gen_rand_fpr();
+    end
+    if (instr.has_fd) begin
+      instr.fd = instr.gen_rand_fpr();
     end
   endfunction
 

@@ -67,6 +67,7 @@ module ibex_cs_registers #(
     output logic [31:0]          csr_depc_o,
     output logic                 debug_single_step_o,
     output logic                 debug_ebreakm_o,
+    output logic                 debug_ebreaku_o,
 
     input  logic [31:0]          pc_if_i,
     input  logic [31:0]          pc_id_i,
@@ -244,6 +245,7 @@ module ibex_cs_registers #(
         csr_rdata_int[CSR_MSTATUS_MPIE_BIT]                             = mstatus_q.mpie;
         csr_rdata_int[CSR_MSTATUS_MPP_BIT_HIGH:CSR_MSTATUS_MPP_BIT_LOW] = mstatus_q.mpp;
         csr_rdata_int[CSR_MSTATUS_MPRV_BIT]                             = mstatus_q.mprv;
+        csr_rdata_int[CSR_MSTATUS_TW_BIT]                               = mstatus_q.tw;
       end
 
       // misa
@@ -551,7 +553,7 @@ module ibex_cs_registers #(
   end
 
   // only write CSRs during one clock cycle
-  assign csr_we_int  = csr_wreq & ~illegal_csr_priv & instr_new_id_i;
+  assign csr_we_int  = csr_wreq & ~illegal_csr_insn_o & instr_new_id_i;
 
   assign csr_rdata_o = csr_rdata_int;
 
@@ -569,6 +571,7 @@ module ibex_cs_registers #(
   assign csr_mstatus_tw_o    = mstatus_q.tw;
   assign debug_single_step_o = dcsr_q.step;
   assign debug_ebreakm_o     = dcsr_q.ebreakm;
+  assign debug_ebreaku_o     = dcsr_q.ebreaku;
 
   assign irq_pending_o = csr_msip_o | csr_mtip_o | csr_meip_o | (|csr_mfip_o);
 

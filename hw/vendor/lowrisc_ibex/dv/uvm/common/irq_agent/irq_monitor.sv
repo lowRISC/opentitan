@@ -22,7 +22,15 @@ class irq_monitor extends uvm_monitor;
   endfunction: build_phase
 
   virtual task run_phase(uvm_phase phase);
-    collect_irq();
+    forever begin
+      wait(vif.reset === 1'b0);
+      fork : monitor_irq
+        collect_irq();
+        wait(vif.reset === 1'b1);
+      join_any
+      // Will only reach here on mid-test reset
+      disable monitor_irq;
+    end
   endtask : run_phase
 
   // We know that for Ibex, any given interrupt stimulus will be asserted until the core signals the

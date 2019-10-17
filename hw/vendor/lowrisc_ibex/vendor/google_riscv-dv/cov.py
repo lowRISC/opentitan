@@ -31,7 +31,7 @@ from scripts.sail_log_to_trace_csv import *
 
 LOGGER = logging.getLogger()
 
-def collect_cov(log_dir, out, iss, testlist, batch_size, lsf_cmd, steps, opts, timeout):
+def collect_cov(log_dir, out, iss, testlist, batch_size, lsf_cmd, steps, opts, timeout, si):
   """Collect functional coverage from the instruction trace
 
   Args:
@@ -44,6 +44,7 @@ def collect_cov(log_dir, out, iss, testlist, batch_size, lsf_cmd, steps, opts, t
     steps      : csv:log to CSV, cov:sample coverage
     opts       : Additional options to the instruction generator
     timeout    : Timeout limit in seconds
+    si         : Simulator used to run
   """
   log_list = []
   csv_list = []
@@ -67,11 +68,11 @@ def collect_cov(log_dir, out, iss, testlist, batch_size, lsf_cmd, steps, opts, t
         logging.error("Full trace for %s is not supported yet" % iss)
         sys.exit(1)
   if steps == "all" or re.match("cov", steps):
-    build_cmd = ("python3 run.py --co -o %s --cov -tl %s %s" %
-                 (out, testlist, opts))
-    base_sim_cmd = ("python3 run.py --so -o %s --cov -tl %s %s "
+    build_cmd = ("python3 run.py -si %s --co -o %s --cov -tl %s %s" %
+                 (si, out, testlist, opts))
+    base_sim_cmd = ("python3 run.py -si %s --so -o %s --cov -tl %s %s "
                     "-tn riscv_instr_cov_test --steps gen --sim_opts \"<trace_csv_opts>\"" %
-                    (out, testlist, opts))
+                    (si, out, testlist, opts))
     logging.info("Building the coverage collection framework")
     run_cmd(build_cmd)
     file_idx = 0
@@ -106,7 +107,7 @@ def collect_cov(log_dir, out, iss, testlist, batch_size, lsf_cmd, steps, opts, t
     logging.info("Collecting functional coverage from %0d trace CSV...done" % len(csv_list))
 
 
-def run_cov_debug_test(out, instr_cnt, testlist, batch_size, opts, lsf_cmd, timeout):
+def run_cov_debug_test(out, instr_cnt, testlist, batch_size, opts, lsf_cmd, timeout, si):
   """Collect functional coverage from the instruction trace
 
   Args:
@@ -117,16 +118,17 @@ def run_cov_debug_test(out, instr_cnt, testlist, batch_size, opts, lsf_cmd, time
     lsf_cmd    : LSF command used to run the instruction generator
     opts       : Additional options to the instruction generator
     timeout    : Timeout limit in seconds
+    si         : Simulator used to run
   """
   sim_cmd_list = []
   logging.info("Building the coverage collection framework")
-  build_cmd = ("python3 run.py --co -o %s --cov -tl %s %s" %
-               (out, testlist, opts))
+  build_cmd = ("python3 run.py -si %s --co -o %s --cov -tl %s %s" %
+               (si, out, testlist, opts))
   run_cmd(build_cmd)
-  base_sim_cmd = ("python3 run.py --so -o %s --cov -tl %s %s "
+  base_sim_cmd = ("python3 run.py -si %s --so -o %s --cov -tl %s %s "
                   "-tn riscv_instr_cov_debug_test --steps gen "
                   "--sim_opts \"+num_of_iterations=<instr_cnt>\"" %
-                  (out, testlist, opts))
+                  (si, out, testlist, opts))
   if batch_size > 0:
     batch_cnt = int((instr_cnt+batch_size-1)/batch_size)
     logging.info("Batch size: %0d, Batch cnt:%0d" % (batch_size, batch_cnt))
@@ -186,6 +188,8 @@ def setup_parser():
   parser.add_argument("--lsf_cmd", type=str, default="",
                       help="LSF command. Run in local sequentially if lsf \
                             command is not specified")
+  parser.add_argument("-si", "--simulator", type=str, default="vcs",
+                      help="Simulator used to run the generator, default VCS", dest="simulator")
   parser.set_defaults(verbose=False)
   parser.set_defaults(debug_mode=False)
   return parser
@@ -213,10 +217,10 @@ def main():
 
   if args.debug_mode:
     run_cov_debug_test(output_dir, args.instr_cnt, args.testlist,
-                       args.batch_size, args.opts, args.lsf_cmd, args.timeout)
+                       args.batch_size, args.opts, args.lsf_cmd, args.timeout, args.simulator)
   else:
     collect_cov(args.dir, output_dir, args.iss, args.testlist, args.batch_size,
-                args.lsf_cmd, args.steps, args.opts, args.timeout)
+                args.lsf_cmd, args.steps, args.opts, args.timeout, args.simulator)
 
 if __name__ == "__main__":
   main()
