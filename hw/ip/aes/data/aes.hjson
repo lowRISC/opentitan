@@ -5,10 +5,23 @@
 # AES register template
 {
   name: "aes",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
-
+  param_list: [
+    { name:    "NumRegsKey",
+      type:    "int",
+      default: "8",
+      desc:    "Number registers for key",
+      local:   "true"
+    },
+    { name:    "NumRegsData",
+      type:    "int",
+      default: "4",
+      desc:    "Number registers for input and output data",
+      local:   "true"
+    }
+  ],
   registers: [
 ##############################################################################
 # initial key registers
@@ -19,7 +32,7 @@
         starting encryption/decryption of the next block. Can only be updated
         when the AES unit is idle.
       '''
-      count: 8,
+      count: "NumRegsKey",
       cname: "KEY",
       swaccess: "wo",
       hwaccess: "hro",
@@ -38,7 +51,7 @@
         starting encryption/decryption of the next block. After that, the processor
         can update the Input Data Register.
       '''
-      count: 4,
+      count: "NumRegsData",
       cname: "DATA_IN",
       swaccess: "wo",
       hwaccess: "hro",
@@ -58,7 +71,7 @@
         (see Control Register), the AES unit is stalled when the previous output
         data has not yet been read and is about to be overwritten.
       '''
-      count: 4,
+      count: "NumRegsData",
       cname: "DATA_OUT",
       swaccess: "ro",
       hwaccess: "hrw",
