@@ -41,7 +41,7 @@ void flash_init_block(void);
  */
 int flash_check_empty(void);
 
-/*
+/**
  * Erase flash bank |bank_idx|. Blocks until erase is complete.
  *
  * @param idx Flash bank index.

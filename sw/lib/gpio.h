@@ -13,7 +13,11 @@
 
 #define GPIO_BOOTSTRAP_BIT_MASK 0x20000
 
+/**
+ * @param oe bits to use as output
+ */
 void gpio_init(uint32_t oe);
+
 void gpio_write_bit(unsigned int bit, unsigned int val);
 void gpio_write_all(uint32_t val);
 uint32_t gpio_read(void);
