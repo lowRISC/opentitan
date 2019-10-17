@@ -80,6 +80,7 @@ assume -from_assert -remove_original -regexp {^\w*\.u_reg\.reqParity}
 assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.legalAOpcode}
 assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.legalAParam}
 assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.sizeMatchesMask}
+assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.sizeGTEMask}
 assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.onlyOnePendingReqPerSourceID}
 assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.addressAlignedToSize}
 assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.maskMustBeContiguous}
