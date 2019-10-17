@@ -86,6 +86,12 @@ module xbar_main_bind;
     .h2d    (tl_hmac_o),
     .d2h    (tl_hmac_i)
   );
+  bind xbar_main tlul_assert tlul_assert_device_aes (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_aes_o),
+    .d2h    (tl_aes_i)
+  );
   bind xbar_main tlul_assert tlul_assert_device_rv_plic (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
