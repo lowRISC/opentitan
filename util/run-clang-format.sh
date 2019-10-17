@@ -6,6 +6,8 @@
 find sw hw \
     -not \( -path '*/vendor' -prune \) \
     -not \( -path 'sw/coremark' -prune \) \
+    -not \( -name '*.tpl.h' -prune \) \
+    -not \( -name '*.tpl.c' -prune \) \
     \( -name '*.cpp' \
     -o -name '*.cc' \
     -o -name '*.c' \
@@ -18,6 +20,8 @@ braces_missing=$(
     find sw hw \
        -not \( -path '*/vendor' -prune \) \
        -not \( -path 'sw/coremark' -prune \) \
+       -not \( -name '*.tpl.h' -prune \) \
+       -not \( -name '*.tpl.c' -prune \) \
         \( -name '*.cpp' \
         -o -name '*.cc' \
         -o -name '*.c' \
