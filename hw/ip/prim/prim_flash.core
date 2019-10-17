@@ -4,7 +4,7 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:flash"
-description: "prim"
+description: "Flash memory primitive"
 filesets:
   files_rtl:
     depend:
