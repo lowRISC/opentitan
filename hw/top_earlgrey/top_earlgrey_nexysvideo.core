@@ -29,7 +29,7 @@ parameters:
   ROM_INIT_FILE:
     datatype: str
     description: SRAM initialization file in vmem hex format
-    default: "../../../../../sw/boot_rom/boot_rom.vmem"
+    default: "../../../../../sw/boot_rom/rom.vmem"
     paramtype: vlogdefine
   PRIM_DEFAULT_IMPL:
     datatype: str

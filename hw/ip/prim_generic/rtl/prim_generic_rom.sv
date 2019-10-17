@@ -52,7 +52,7 @@ module prim_generic_rom #(
     endtask
   `endif
 
-  `ifdef ROM_INIT_FILEE
+  `ifdef ROM_INIT_FILE
 
     localparam MEM_FILE = `"`ROM_INIT_FILE`";
     initial begin
