@@ -65,7 +65,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                          bit endian_swap = 1'b1,
                          bit digest_swap = 1'b1,
                          bit intr_fifo_full_en = 1'b1,
-                         bit intr_hmac_done_en = 1'b1);
+                         bit intr_hmac_done_en = 1'b1,
+                         bit intr_hmac_err_en  = 1'b1);
     bit [TL_DW-1:0] interrupts;
     // enable sha, hmac data paths and writing to msg_fifo
     ral.cfg.sha_en.set(sha_en);
@@ -75,13 +76,22 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_update(.csr(ral.cfg));
 
     // enable interrupts
-    interrupts = (intr_hmac_done_en << HmacDone) | (intr_fifo_full_en << HmacMsgFifoFull);
+    interrupts = (intr_hmac_err_en << HmacErr) | (intr_hmac_done_en << HmacDone) |
+                 (intr_fifo_full_en << HmacMsgFifoFull);
     cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
+  endtask
+
+  // keep all the config values, but enable sha_en
+  virtual task sha_enable();
+    ral.cfg.sha_en.set(1'b1);
+    csr_update(.csr(ral.cfg));
   endtask
 
   // trigger hash computation to start
   virtual task trigger_hash();
     csr_wr(.csr(ral.cmd), .value(1'b1 << HashStart));
+    // if sha is not enabled, assert error interrupt and check error code
+    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
   virtual task trigger_process();
@@ -140,7 +150,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       bit [7:0] word_unpack[4];
       bit [TL_DW-1:0] word;
 
-      if (!do_back_pressure) begin
+      if (!do_back_pressure && ral.cfg.sha_en.get_mirrored_value()) begin
         // if not back pressure sequence, wait until fifo_full status cleared then write
         bit msg_fifo_full;
         csr_rd(ral.status.fifo_full, msg_fifo_full);
@@ -164,8 +174,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size),
                 .blocking($urandom_range(0, 1)));
 
-      if (!do_back_pressure) check_status_intr_fifo_full();
-      else clear_intr_fifo_full();
+      if (ral.cfg.sha_en.get_mirrored_value()) begin
+        if (!do_back_pressure) check_status_intr_fifo_full();
+        else clear_intr_fifo_full();
+      end else begin
+        check_error_code();
+      end
     end
     // ensure all msg fifo are written before trigger hmac_process
     csr_utils_pkg::wait_no_outstanding_access();
@@ -191,7 +205,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
           tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size),
                     .blocking($urandom_range(0, 1)));
         end
-        clear_intr_fifo_full();
+        if (ral.cfg.sha_en.get_mirrored_value()) begin
+          clear_intr_fifo_full();
+        end else begin
+          check_error_code();
+        end
       end else begin // remaining msg is smaller than the burst_wr_length
         wr_msg(msg_q);
         break;
@@ -211,13 +229,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
   virtual task check_status_intr_fifo_full();
     bit msg_fifo_full;
+    csr_utils_pkg::wait_no_outstanding_access();
     csr_rd(ral.status.fifo_full, msg_fifo_full);
     if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
       check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(msg_fifo_full));
     end else begin
       csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
                    .compare_mask(1 << HmacMsgFifoFull));
-      csr_wr(.csr(ral.intr_state), .value(1 << HmacMsgFifoFull));
+      csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacMsgFifoFull));
     end
   endtask
 
@@ -236,6 +255,20 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end
   endtask
 
+  // this task is called when sha_en=0 and sequence set hash_start, or streamed in msg
+  // it will check intr_pin, intr_state, and error_code register
+  virtual task check_error_code();
+    bit [TL_DW-1:0] error_code;
+    csr_utils_pkg::wait_no_outstanding_access();
+    if (ral.intr_enable.hmac_err.get_mirrored_value()) begin
+      check_interrupts(.interrupts((1 << HmacErr)), .check_set(1'b1));
+    end else begin
+      csr_rd_check(.ptr(ral.intr_state), .compare_value(1 << HmacErr));
+      csr_wr(.csr(ral.intr_state), .value(1 << HmacErr));
+    end
+    csr_rd(ral.err_code, error_code);
+  endtask
+
   virtual task compare_digest(bit [TL_DW-1:0] exp_digest[8]);
     logic [TL_DW-1:0] act_digest[8];
     csr_rd_digest(act_digest);
@@ -247,7 +280,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // task to read all csrs and check against ral expected value
   // used after reset
   virtual task read_and_check_all_csrs();
-    uvm_reg       csrs[$];
+    uvm_reg csrs[$];
     ral.get_registers(csrs);
     csrs.shuffle();
 

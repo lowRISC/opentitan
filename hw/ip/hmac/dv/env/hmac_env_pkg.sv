@@ -34,7 +34,8 @@ package hmac_env_pkg;
 
   typedef enum {
     HmacDone,
-    HmacMsgFifoFull
+    HmacMsgFifoFull,
+    HmacErr
   } hmac_intr_e;
 
   typedef enum {
@@ -54,6 +55,12 @@ package hmac_env_pkg;
     HashStart,
     HashProcess
   } hmac_cmd_e;
+
+  typedef enum {
+    NoError,
+    SwPushMsgWhenShaDisabled,
+    SwHashStartWhenShaDisabled
+  } err_code_e;
 
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;
