@@ -111,7 +111,6 @@ module rv_dm #(
   ) i_dm_csrs (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
-    .testmode_i              ( testmode_i            ),
     .dmi_rst_ni              ( dmi_rst_n             ),
     .dmi_req_valid_i         ( dmi_req_valid         ),
     .dmi_req_ready_o         ( dmi_req_ready         ),
