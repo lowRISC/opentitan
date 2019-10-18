@@ -121,16 +121,24 @@ module hmac_reg_top (
   logic intr_state_fifo_full_qs;
   logic intr_state_fifo_full_wd;
   logic intr_state_fifo_full_we;
+  logic intr_state_hmac_err_qs;
+  logic intr_state_hmac_err_wd;
+  logic intr_state_hmac_err_we;
   logic intr_enable_hmac_done_qs;
   logic intr_enable_hmac_done_wd;
   logic intr_enable_hmac_done_we;
   logic intr_enable_fifo_full_qs;
   logic intr_enable_fifo_full_wd;
   logic intr_enable_fifo_full_we;
+  logic intr_enable_hmac_err_qs;
+  logic intr_enable_hmac_err_wd;
+  logic intr_enable_hmac_err_we;
   logic intr_test_hmac_done_wd;
   logic intr_test_hmac_done_we;
   logic intr_test_fifo_full_wd;
   logic intr_test_fifo_full_we;
+  logic intr_test_hmac_err_wd;
+  logic intr_test_hmac_err_we;
   logic cfg_hmac_en_qs;
   logic cfg_hmac_en_wd;
   logic cfg_hmac_en_we;
@@ -153,6 +161,7 @@ module hmac_reg_top (
   logic status_fifo_full_re;
   logic [4:0] status_fifo_depth_qs;
   logic status_fifo_depth_re;
+  logic [31:0] err_code_qs;
   logic [31:0] wipe_secret_wd;
   logic wipe_secret_we;
   logic [31:0] key0_wd;
@@ -245,6 +254,32 @@ module hmac_reg_top (
   );
 
 
+  //   F[hmac_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_hmac_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_hmac_err_we),
+    .wd     (intr_state_hmac_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.hmac_err.de),
+    .d      (hw2reg.intr_state.hmac_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.hmac_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_hmac_err_qs)
+  );
+
+
   // R[intr_enable]: V(False)
 
   //   F[hmac_done]: 0:0
@@ -299,6 +334,32 @@ module hmac_reg_top (
   );
 
 
+  //   F[hmac_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_hmac_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_hmac_err_we),
+    .wd     (intr_enable_hmac_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.hmac_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_hmac_err_qs)
+  );
+
+
   // R[intr_test]: V(True)
 
   //   F[hmac_done]: 0:0
@@ -327,6 +388,21 @@ module hmac_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.fifo_full.qe),
     .q      (reg2hw.intr_test.fifo_full.q ),
+    .qs     ()
+  );
+
+
+  //   F[hmac_err]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_hmac_err (
+    .re     (1'b0),
+    .we     (intr_test_hmac_err_we),
+    .wd     (intr_test_hmac_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.hmac_err.qe),
+    .q      (reg2hw.intr_test.hmac_err.q ),
     .qs     ()
   );
 
@@ -513,6 +589,32 @@ module hmac_reg_top (
     .qe     (),
     .q      (),
     .qs     (status_fifo_depth_qs)
+  );
+
+
+  // R[err_code]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_err_code (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.de),
+    .d      (hw2reg.err_code.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_qs)
   );
 
 
@@ -926,7 +1028,7 @@ module hmac_reg_top (
 
 
 
-  logic [24:0] addr_hit;
+  logic [25:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == HMAC_INTR_STATE_OFFSET);
@@ -935,25 +1037,26 @@ module hmac_reg_top (
     addr_hit[ 3] = (reg_addr == HMAC_CFG_OFFSET);
     addr_hit[ 4] = (reg_addr == HMAC_CMD_OFFSET);
     addr_hit[ 5] = (reg_addr == HMAC_STATUS_OFFSET);
-    addr_hit[ 6] = (reg_addr == HMAC_WIPE_SECRET_OFFSET);
-    addr_hit[ 7] = (reg_addr == HMAC_KEY0_OFFSET);
-    addr_hit[ 8] = (reg_addr == HMAC_KEY1_OFFSET);
-    addr_hit[ 9] = (reg_addr == HMAC_KEY2_OFFSET);
-    addr_hit[10] = (reg_addr == HMAC_KEY3_OFFSET);
-    addr_hit[11] = (reg_addr == HMAC_KEY4_OFFSET);
-    addr_hit[12] = (reg_addr == HMAC_KEY5_OFFSET);
-    addr_hit[13] = (reg_addr == HMAC_KEY6_OFFSET);
-    addr_hit[14] = (reg_addr == HMAC_KEY7_OFFSET);
-    addr_hit[15] = (reg_addr == HMAC_DIGEST0_OFFSET);
-    addr_hit[16] = (reg_addr == HMAC_DIGEST1_OFFSET);
-    addr_hit[17] = (reg_addr == HMAC_DIGEST2_OFFSET);
-    addr_hit[18] = (reg_addr == HMAC_DIGEST3_OFFSET);
-    addr_hit[19] = (reg_addr == HMAC_DIGEST4_OFFSET);
-    addr_hit[20] = (reg_addr == HMAC_DIGEST5_OFFSET);
-    addr_hit[21] = (reg_addr == HMAC_DIGEST6_OFFSET);
-    addr_hit[22] = (reg_addr == HMAC_DIGEST7_OFFSET);
-    addr_hit[23] = (reg_addr == HMAC_MSG_LENGTH_LOWER_OFFSET);
-    addr_hit[24] = (reg_addr == HMAC_MSG_LENGTH_UPPER_OFFSET);
+    addr_hit[ 6] = (reg_addr == HMAC_ERR_CODE_OFFSET);
+    addr_hit[ 7] = (reg_addr == HMAC_WIPE_SECRET_OFFSET);
+    addr_hit[ 8] = (reg_addr == HMAC_KEY0_OFFSET);
+    addr_hit[ 9] = (reg_addr == HMAC_KEY1_OFFSET);
+    addr_hit[10] = (reg_addr == HMAC_KEY2_OFFSET);
+    addr_hit[11] = (reg_addr == HMAC_KEY3_OFFSET);
+    addr_hit[12] = (reg_addr == HMAC_KEY4_OFFSET);
+    addr_hit[13] = (reg_addr == HMAC_KEY5_OFFSET);
+    addr_hit[14] = (reg_addr == HMAC_KEY6_OFFSET);
+    addr_hit[15] = (reg_addr == HMAC_KEY7_OFFSET);
+    addr_hit[16] = (reg_addr == HMAC_DIGEST0_OFFSET);
+    addr_hit[17] = (reg_addr == HMAC_DIGEST1_OFFSET);
+    addr_hit[18] = (reg_addr == HMAC_DIGEST2_OFFSET);
+    addr_hit[19] = (reg_addr == HMAC_DIGEST3_OFFSET);
+    addr_hit[20] = (reg_addr == HMAC_DIGEST4_OFFSET);
+    addr_hit[21] = (reg_addr == HMAC_DIGEST5_OFFSET);
+    addr_hit[22] = (reg_addr == HMAC_DIGEST6_OFFSET);
+    addr_hit[23] = (reg_addr == HMAC_DIGEST7_OFFSET);
+    addr_hit[24] = (reg_addr == HMAC_MSG_LENGTH_LOWER_OFFSET);
+    addr_hit[25] = (reg_addr == HMAC_MSG_LENGTH_UPPER_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -986,6 +1089,7 @@ module hmac_reg_top (
     if (addr_hit[22] && reg_we && (HMAC_PERMIT[22] != (HMAC_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[23] && reg_we && (HMAC_PERMIT[23] != (HMAC_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[24] && reg_we && (HMAC_PERMIT[24] != (HMAC_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[25] && reg_we && (HMAC_PERMIT[25] != (HMAC_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_hmac_done_we = addr_hit[0] & reg_we & ~wr_err;
@@ -994,17 +1098,26 @@ module hmac_reg_top (
   assign intr_state_fifo_full_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_fifo_full_wd = reg_wdata[1];
 
+  assign intr_state_hmac_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_hmac_err_wd = reg_wdata[2];
+
   assign intr_enable_hmac_done_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_hmac_done_wd = reg_wdata[0];
 
   assign intr_enable_fifo_full_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_fifo_full_wd = reg_wdata[1];
 
+  assign intr_enable_hmac_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_hmac_err_wd = reg_wdata[2];
+
   assign intr_test_hmac_done_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_hmac_done_wd = reg_wdata[0];
 
   assign intr_test_fifo_full_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_fifo_full_wd = reg_wdata[1];
+
+  assign intr_test_hmac_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_hmac_err_wd = reg_wdata[2];
 
   assign cfg_hmac_en_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_hmac_en_wd = reg_wdata[0];
@@ -1030,48 +1143,49 @@ module hmac_reg_top (
 
   assign status_fifo_depth_re = addr_hit[5] && reg_re;
 
-  assign wipe_secret_we = addr_hit[6] & reg_we & ~wr_err;
+
+  assign wipe_secret_we = addr_hit[7] & reg_we & ~wr_err;
   assign wipe_secret_wd = reg_wdata[31:0];
 
-  assign key0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key0_we = addr_hit[8] & reg_we & ~wr_err;
   assign key0_wd = reg_wdata[31:0];
 
-  assign key1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign key1_we = addr_hit[9] & reg_we & ~wr_err;
   assign key1_wd = reg_wdata[31:0];
 
-  assign key2_we = addr_hit[9] & reg_we & ~wr_err;
+  assign key2_we = addr_hit[10] & reg_we & ~wr_err;
   assign key2_wd = reg_wdata[31:0];
 
-  assign key3_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key3_we = addr_hit[11] & reg_we & ~wr_err;
   assign key3_wd = reg_wdata[31:0];
 
-  assign key4_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key4_we = addr_hit[12] & reg_we & ~wr_err;
   assign key4_wd = reg_wdata[31:0];
 
-  assign key5_we = addr_hit[12] & reg_we & ~wr_err;
+  assign key5_we = addr_hit[13] & reg_we & ~wr_err;
   assign key5_wd = reg_wdata[31:0];
 
-  assign key6_we = addr_hit[13] & reg_we & ~wr_err;
+  assign key6_we = addr_hit[14] & reg_we & ~wr_err;
   assign key6_wd = reg_wdata[31:0];
 
-  assign key7_we = addr_hit[14] & reg_we & ~wr_err;
+  assign key7_we = addr_hit[15] & reg_we & ~wr_err;
   assign key7_wd = reg_wdata[31:0];
 
-  assign digest0_re = addr_hit[15] && reg_re;
+  assign digest0_re = addr_hit[16] && reg_re;
 
-  assign digest1_re = addr_hit[16] && reg_re;
+  assign digest1_re = addr_hit[17] && reg_re;
 
-  assign digest2_re = addr_hit[17] && reg_re;
+  assign digest2_re = addr_hit[18] && reg_re;
 
-  assign digest3_re = addr_hit[18] && reg_re;
+  assign digest3_re = addr_hit[19] && reg_re;
 
-  assign digest4_re = addr_hit[19] && reg_re;
+  assign digest4_re = addr_hit[20] && reg_re;
 
-  assign digest5_re = addr_hit[20] && reg_re;
+  assign digest5_re = addr_hit[21] && reg_re;
 
-  assign digest6_re = addr_hit[21] && reg_re;
+  assign digest6_re = addr_hit[22] && reg_re;
 
-  assign digest7_re = addr_hit[22] && reg_re;
+  assign digest7_re = addr_hit[23] && reg_re;
 
 
 
@@ -1082,16 +1196,19 @@ module hmac_reg_top (
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_hmac_done_qs;
         reg_rdata_next[1] = intr_state_fifo_full_qs;
+        reg_rdata_next[2] = intr_state_hmac_err_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_hmac_done_qs;
         reg_rdata_next[1] = intr_enable_fifo_full_qs;
+        reg_rdata_next[2] = intr_enable_hmac_err_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[3]: begin
@@ -1113,7 +1230,7 @@ module hmac_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = err_code_qs;
       end
 
       addr_hit[7]: begin
@@ -1149,42 +1266,46 @@ module hmac_reg_top (
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[31:0] = digest0_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[31:0] = digest1_qs;
+        reg_rdata_next[31:0] = digest0_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = digest2_qs;
+        reg_rdata_next[31:0] = digest1_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = digest3_qs;
+        reg_rdata_next[31:0] = digest2_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = digest4_qs;
+        reg_rdata_next[31:0] = digest3_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = digest5_qs;
+        reg_rdata_next[31:0] = digest4_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[31:0] = digest6_qs;
+        reg_rdata_next[31:0] = digest5_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = digest7_qs;
+        reg_rdata_next[31:0] = digest6_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = msg_length_lower_qs;
+        reg_rdata_next[31:0] = digest7_qs;
       end
 
       addr_hit[24]: begin
+        reg_rdata_next[31:0] = msg_length_lower_qs;
+      end
+
+      addr_hit[25]: begin
         reg_rdata_next[31:0] = msg_length_upper_qs;
       end
 

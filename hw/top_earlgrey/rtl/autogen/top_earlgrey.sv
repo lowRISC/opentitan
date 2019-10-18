@@ -85,7 +85,7 @@ module top_earlgrey #(
   //clock wires declaration
   logic main_clk;
 
-  logic [53:0]  intr_vector;
+  logic [54:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -111,6 +111,7 @@ module top_earlgrey #(
   logic intr_rv_timer_timer_expired_0_0;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_full;
+  logic intr_hmac_hmac_err;
 
 
   logic [0:0]   irq_plic;
@@ -432,6 +433,7 @@ module top_earlgrey #(
       .tl_o (tl_hmac_d_d2h),
       .intr_hmac_done_o (intr_hmac_hmac_done),
       .intr_fifo_full_o (intr_hmac_fifo_full),
+      .intr_hmac_err_o (intr_hmac_hmac_err),
 
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
@@ -453,6 +455,7 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_hmac_hmac_err,
       intr_hmac_fifo_full,
       intr_hmac_hmac_done,
       intr_flash_ctrl_op_error,

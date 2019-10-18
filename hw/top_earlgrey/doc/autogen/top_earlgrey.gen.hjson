@@ -338,6 +338,11 @@
           width: 1
           type: interrupt
         }
+        {
+          name: hmac_err
+          width: 1
+          type: interrupt
+        }
       ]
       scan: "false"
     }
@@ -725,6 +730,11 @@
     }
     {
       name: hmac_fifo_full
+      width: 1
+      type: interrupt
+    }
+    {
+      name: hmac_hmac_err
       width: 1
       type: interrupt
     }
