@@ -85,6 +85,9 @@ int main(int argc, char **argv) {
     prog_array[i] = (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
   }
 
+  // initialize test regions
+  break_on_error(flash_page_erase(bank1_addr));
+  break_on_error(flash_page_erase(bank0_last_page));
   for (iteration = 0; iteration < 2; iteration++) {
     test_addr = iteration ? bank1_addr : bank0_last_page;
     break_on_error(flash_write(test_addr, prog_array, ARRAYSIZE(prog_array)));
