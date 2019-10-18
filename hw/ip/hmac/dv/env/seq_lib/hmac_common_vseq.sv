@@ -10,7 +10,7 @@ class hmac_common_vseq extends hmac_base_vseq;
     num_trans inside {[1:3]};
   }
 
-  virtual task pre_body();
+  virtual task pre_start();
     do_hmac_init = 1'b0;
     super.pre_start();
   endtask
