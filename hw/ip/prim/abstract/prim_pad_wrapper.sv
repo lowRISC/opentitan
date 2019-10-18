@@ -5,7 +5,6 @@
 // TODO: This module is a hard-coded stopgap to select an implementation of an
 // "abstract module". This module is to be replaced by generated code.
 
-// prim_pad_wrapper using the generic implementation
 module prim_pad_wrapper #(
   parameter              Impl   = "generic",
   parameter int unsigned AttrDw = 6
