@@ -104,4 +104,4 @@ issues. Here's how to run a basic sanity test:
 ```
 
 ## Testplan
-{{% add_testplan x }}
+{{% insert_testplan x }}

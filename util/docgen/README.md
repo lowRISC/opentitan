@@ -27,6 +27,13 @@ The following extensions have been made for the lowRISC version:
 * `{{% registers x }}` Insert the register tables at this point in the
   document. Must be after the regfile extension! TODO fix the need for `x`
 
+* `{{% import_testplan testplan.hjson }}` Pointer to the testplan
+  hjson. This is expected to go early in the document. After this line
+  the testplan entries are available as markup items.
+
+* `{{% insert_testplan x }}` Insert the testplan table at this point in the
+  document. Must be after the `import_testplan` extension! TODO fix the need for `x`
+
 * `{{% include file }}` Insert the file into the markdown
   document. Any other text on the same line as the include directive
   will be inserted, then a newline and then the included file. The
