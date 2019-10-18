@@ -6,9 +6,11 @@
 
 #include "hmac.h"
 
-static const HASH_VTAB HW_SHA256_VTAB = {hw_SHA256_init, hw_SHA256_update,
-                                         hw_SHA256_final, hw_SHA256_hash,
-                                         SHA256_DIGEST_SIZE};
+static const HASH_VTAB HW_SHA256_VTAB = {.init = &hw_SHA256_init,
+                                         .update = &hw_SHA256_update,
+                                         .final = &hw_SHA256_final,
+                                         .hash = &hw_SHA256_hash,
+                                         .size = SHA256_DIGEST_SIZE};
 
 static void sha256_init() {
   hmac_cfg_t config = {.mode = HMAC_OP_SHA256,

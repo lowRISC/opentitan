@@ -109,14 +109,12 @@ int main(int argc, char **argv) {
   uint32_t bad_words = 3;
   uint32_t chk_addr = bad_addr_start - (FLASH_WORD_SZ * good_words);
 
-  mp_region_t region0 = {
-      0,                 // region 0
-      region_base_page,  // page 1 of bank1
-      region_size,       // size of 1 page
-      1,                 // allow read
-      1,                 // allow program
-      1                  // allow erase
-  };
+  mp_region_t region0 = {.num = 0,
+                         .base = region_base_page,
+                         .size = region_size,
+                         .rd_en = 1,
+                         .prog_en = 1,
+                         .erase_en = 1};
 
   // initialize good and bad regions.
   break_on_error(flash_page_erase(good_addr_start));
