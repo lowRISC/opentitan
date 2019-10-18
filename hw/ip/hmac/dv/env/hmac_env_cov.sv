@@ -17,7 +17,8 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     endian_swap:    coverpoint cfg[EndianSwap];
     digest_swap:    coverpoint cfg[DigestSwap];
     intr_fifo_full: coverpoint intr[HmacMsgFifoFull];
-    intr_cross:     cross intr_fifo_full, hmac_en, endian_swap, digest_swap;
+    err:            coverpoint intr[HmacErr];
+    intr_cross:     cross intr_fifo_full, err, hmac_en, endian_swap, digest_swap;
   endgroup : intr_cg
 
   covergroup status_cg with function sample (bit [TL_DW-1:0] sta, bit [TL_DW-1:0] cfg);

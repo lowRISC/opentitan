@@ -21,6 +21,7 @@ module tb;
 
   wire intr_hmac_done;
   wire intr_fifo_full;
+  wire intr_hmac_err;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -38,11 +39,13 @@ module tb;
     .tl_o           (tl_if.d2h ),
 
     .intr_hmac_done_o   (intr_hmac_done),
-    .intr_fifo_full_o   (intr_fifo_full)
+    .intr_fifo_full_o   (intr_fifo_full),
+    .intr_hmac_err_o    (intr_hmac_err)
   );
 
   assign interrupts[HmacDone]        = intr_hmac_done;
   assign interrupts[HmacMsgFifoFull] = intr_fifo_full;
+  assign interrupts[HmacErr]         = intr_hmac_err;
 
   initial begin
     // drive clk and rst_n from clk_if

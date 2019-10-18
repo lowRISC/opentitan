@@ -27,4 +27,8 @@ class hmac_datapath_stress_vseq extends hmac_sanity_vseq;
     hmac_en == 1;
   }
 
+  constraint sha_en_c {
+    sha_en == 1;
+  }
+
 endclass : hmac_datapath_stress_vseq
