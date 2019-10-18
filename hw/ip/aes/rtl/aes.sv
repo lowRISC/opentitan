@@ -39,4 +39,8 @@ module aes #(
     .hw2reg
   );
 
+  // All outputs should have a known value after reset
+  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
+
 endmodule
