@@ -358,7 +358,7 @@ class LowriscRenderer(mathjax.MathJaxRenderer):
             self.testplan = testplan_utils.parse_testplan(
                 path.join(self.basedir, token.text))
             return ""
-        if token.type == "add_testplan":
+        if token.type == "insert_testplan":
             if self.testplan == None:
                 return "<B>Errors parsing testplan prevents insertion.</B>"
             outbuf = io.StringIO()
