@@ -1,84 +1,97 @@
 { name: "main",
   type: "xbar",
-  clock: "main",
   clock_primary: "clk_main_i", // Main clock, used in sockets
+  other_clock_list: [ "clk_fixed_i" ] // Secondary clocks used by specific nodes
   reset_primary: "rst_main_ni", // Main reset, used in sockets
+  other_reset_list: [ "rst_fixed_ni" ] // Secondary clocks used by specific nodes
 
   nodes: [
     { name:  "corei",
       type:  "host",
-      clock: "main",
-
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
       pipeline: "false"
 
     },
     { name:  "cored",
       type:  "host",
-      clock: "main",
-
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
       pipeline: "false"
 
     },
     { name:  "dm_sba", // DM
       type:  "host",
-      clock: "main",
-
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
       pipeline_byp: "false"
 
     },
     { name:      "rom",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       pipeline:  "false",
     },
     { name:      "debug_mem",
       type:      "device",
       clock:     "main",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       pipeline_byp: "false"
     },
     { name:      "ram_main",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       pipeline:  "false",
     },
     { name:      "eflash",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       pipeline:  "false",
     },
     { name:      "uart",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_fixed_i",
+      reset:     "rst_fixed_ni",
       pipeline_byp: "false"
     },
     { name:      "gpio",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_fixed_i",
+      reset:     "rst_fixed_ni",
       pipeline_byp: "false"
     },
     { name:      "spi_device",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_fixed_i",
+      reset:     "rst_fixed_ni",
       pipeline_byp: "false"
     },
     { name:      "flash_ctrl",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       pipeline_byp: "false"
     },
     { name:      "rv_timer",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_fixed_i",
+      reset:     "rst_fixed_ni",
       pipeline_byp: "false"
     },
     { name:      "hmac",
       type:      "device",
-      clock:     "main"
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       pipeline_byp: "false"
     },
     { name:      "rv_plic",
       type:      "device",
-      clock:     "main",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
       inst_type: "rv_plic",
       base_addr: "0x40090000",
       size_byte: "0x1000",

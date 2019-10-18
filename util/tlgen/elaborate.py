@@ -29,10 +29,12 @@ def elaborate(xbar):  # xbar: Xbar -> bool
     ## Build address map
     ## Each socket_1n should have address map
 
-    ## Gather clocks and resets
-    xbar.clocks = {xbar.clock
-                   } | {clk
-                        for node in xbar.nodes for clk in node.clocks}
+   ## Gather clocks and resets
+   ##xbar.clocks = {xbar.clock
+   ##               } | {clk
+   ##                    for node in xbar.nodes for clk in node.clocks}
+
+
 
     return True
 
@@ -66,12 +68,16 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # (New Node) Create ASYNC_FIFO node
         new_node = Node(name="asf_" + str(len(xbar.nodes)),
                         node_type=NodeType.ASYNC_FIFO,
-                        clock=xbar.clock)
+                        clock=xbar.clock,reset=xbar.reset)
 
+        # if node is HOST, host clock synchronizes into xbar domain
+        # if node is DEVICE, xbar synchronizes into device clock domain
         if node.node_type == NodeType.HOST:
             new_node.clocks.insert(0, node.clocks[0])
+            new_node.resets.insert(0, node.resets[0])
         else:
             new_node.clocks.append(node.clocks[0])
+            new_node.resets.append(node.resets[0])
 
         xbar.insert_node(new_node, node)
 
@@ -82,7 +88,7 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # (New node) Create SOCKET_M1 node
         new_node = Node(name="sm1_" + str(len(xbar.nodes)),
                         node_type=NodeType.SOCKET_M1,
-                        clock=xbar.clock)
+                        clock=xbar.clock,reset=xbar.reset)
         new_node.hdepth = 2
         new_node.hpass = 2**len(node.us) - 1
         new_node.ddepth = 2
@@ -95,7 +101,7 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # (New node) Create SOCKET_1N node
         new_node = Node(name="s1n_" + str(len(xbar.nodes)),
                         node_type=NodeType.SOCKET_1N,
-                        clock=xbar.clock)
+                        clock=xbar.clock,reset=xbar.reset)
         new_node.hdepth = 2
         new_node.hpass = 1
         new_node.ddepth = 2

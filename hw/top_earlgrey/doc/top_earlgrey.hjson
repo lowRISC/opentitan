@@ -10,6 +10,7 @@
 
   clocks: [
     { name: "main", freq: "100000000" }
+    { name: "fixed", freq: "100000000" }
   ]
 
   // Reset attributes
@@ -20,7 +21,8 @@
   resets: [
     { name: "lc", type: "root", clk: "main"}
     { name: "sys", type: "root", clk: "main"}
-    { name: "spi_device", type: "leaf", root: "sys", clk: "main"}
+    { name: "sys_fixed", type: "leaf", root: "sys", clk: "fixed"}
+    { name: "spi_device", type: "leaf", root: "sys", clk: "fixed"}
   ]
 
   // Number of cores: used in rv_plic and timer
@@ -37,25 +39,25 @@
       // clock connections defines the port to top level clock connection
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
-      clock_connections: {clk_i: "main"},
+      clock_connections: {clk_i: "fixed"},
 
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys"},
+      reset_connections: {rst_ni: "sys_fixed"},
 
       base_addr: "0x40000000",
     },
     { name: "gpio",
       type: "gpio",
-      clock_connections: {clk_i: "main"},
-      reset_connections: {rst_ni: "sys"},
+      clock_connections: {clk_i: "fixed"},
+      reset_connections: {rst_ni: "sys_fixed"},
       base_addr: "0x40010000",
     }
 
     { name: "spi_device",
       type: "spi_device",
-      clock_connections: {clk_i: "main"},
+      clock_connections: {clk_i: "fixed"},
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40020000",
     },
@@ -67,8 +69,8 @@
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock_connections: {clk_i: "main"},
-      reset_connections: {rst_ni: "sys"},
+      clock_connections: {clk_i: "fixed"},
+      reset_connections: {rst_ni: "sys_fixed"},
       base_addr: "0x40080000",
     },
     { name: "hmac",
@@ -122,9 +124,9 @@
   // Assume xbar.hjson is located in the same directory of top.hjson
   xbar: [
     { name: "main",
-      clock_connections: {clk_main_i: "main"},
+      clock_connections: {clk_main_i: "main", clk_fixed_i: "fixed"},
       reset: "sys",
-      reset_connections: {rst_main_ni: "sys"}
+      reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_fixed"}
     },
   ],
 
