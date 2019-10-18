@@ -31,7 +31,8 @@ def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
                 ('tests',       name + '_', 'test_pkg',           '.sv'),
                 ('tests',       name + '_', 'test',               '.core'),
                 ('.',           '',         'Makefile',           ''),
-                ('.',           '',         'plan',               '.md'),
+                ('.',           name + '_', 'dv_plan',            '.md'),
+                ('.',           name + '_', 'testplan',           '.hjson'),
                 ('.',           name + '_', 'sim',                '.core')]
     # yapf: enable
 
