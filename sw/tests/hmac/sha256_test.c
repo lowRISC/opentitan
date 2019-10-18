@@ -15,11 +15,13 @@ typedef struct test_data {
   char data[512];
 } test_data_t;
 
-test_data_t test = {
-    {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2, 0xb8a8379d, 0x426dc745,
-     0x19f5cff7, 0x4ec9c6d6},
-    "Every one suspects himself of at least one of the cardinal virtues, and "
-    "this is mine: I am one of the few honest people that I have ever known"};
+test_data_t test = {.digest = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2,
+                               0xb8a8379d, 0x426dc745, 0x19f5cff7, 0x4ec9c6d6},
+                    .data =
+                        "Every one suspects himself of at least one of "
+                        "the cardinal virtues, and this is mine: I am "
+                        "one of the few honest people that I have ever "
+                        "known"};
 
 int main(int argc, char **argv) {
   uint32_t error = 0;
