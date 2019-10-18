@@ -24,6 +24,6 @@ tl_device_t xbar_devices[$] = '{
 tl_host_t xbar_hosts[$] = '{
     '{"TlCorei", 0, '{"TlRom", "TlDebugMem", "TlRamMain", "TlEflash"}},
     '{"TlCored", 1, '{"TlRom", "TlDebugMem", "TlRamMain", "TlEflash", "TlUart", "TlGpio",
-                      "TlFlashCtrl", "TlRvTimer", "TlRvPlic"}},
+                       "TlSpiDevice", "TlFlashCtrl", "TlRvTimer", "TlHmac", "TlRvPlic"}},
     '{"TlDmSba", 2, '{"TlRom", "TlRamMain", "TlEflash", "TlUart", "TlGpio",
-                      "TlFlashCtrl", "TlRvTimer", "TlRvPlic"}}};
+                      "TlSpiDevice", "TlFlashCtrl", "TlRvTimer", "TlHmac", "TlRvPlic"}}};
