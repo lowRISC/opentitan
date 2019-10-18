@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// TODO: This module is a hard-coded stopgap to select an implementation of an
+// "abstract module". This module is to be replaced by generated code.
+
 module prim_rom #(
   parameter  int Width     = 32,
   parameter  int Depth     = 2048, // 8kB default
