@@ -11,15 +11,36 @@ class xbar_base_test extends dv_base_test #(.ENV_T(xbar_env), .CFG_T(xbar_env_cf
     test_timeout_ns = 600_000_000; // 600ms
     super.build_phase(phase);
 
-    void'($value$plusargs("min_req_delay=%d", cfg.min_req_delay));
-    void'($value$plusargs("max_req_delay=%d", cfg.max_req_delay));
-    void'($value$plusargs("min_rsp_delay=%d", cfg.min_rsp_delay));
-    void'($value$plusargs("max_rsp_delay=%d", cfg.max_rsp_delay));
     if (cfg.zero_delays) begin
-      cfg.min_req_delay = 0;
-      cfg.max_req_delay = 0;
-      cfg.min_rsp_delay = 0;
-      cfg.max_rsp_delay = 0;
+      cfg.min_host_req_delay   = 0;
+      cfg.max_host_req_delay   = 0;
+      cfg.min_host_rsp_delay   = 0;
+      cfg.max_host_rsp_delay   = 0;
+      cfg.min_device_req_delay = 0;
+      cfg.max_device_req_delay = 0;
+      cfg.min_device_rsp_delay = 0;
+      cfg.max_device_rsp_delay = 0;
+    end
+    void'($value$plusargs("min_host_req_delay=%d",   cfg.min_host_req_delay));
+    void'($value$plusargs("max_host_req_delay=%d",   cfg.max_host_req_delay));
+    void'($value$plusargs("min_host_rsp_delay=%d",   cfg.min_host_rsp_delay));
+    void'($value$plusargs("max_host_rsp_delay=%d",   cfg.max_host_rsp_delay));
+    void'($value$plusargs("min_device_req_delay=%d", cfg.min_device_req_delay));
+    void'($value$plusargs("max_device_req_delay=%d", cfg.max_device_req_delay));
+    void'($value$plusargs("min_device_rsp_delay=%d", cfg.min_device_rsp_delay));
+    void'($value$plusargs("max_device_rsp_delay=%d", cfg.max_device_rsp_delay));
+    void'($value$plusargs("num_enabled_hosts=%d",    cfg.num_enabled_hosts));
+    foreach (cfg.host_agent_cfg[i]) begin
+      cfg.host_agent_cfg[i].a_valid_delay_min = cfg.min_host_req_delay;
+      cfg.host_agent_cfg[i].a_valid_delay_max = cfg.max_host_req_delay;
+      cfg.host_agent_cfg[i].d_ready_delay_min = cfg.min_host_rsp_delay;
+      cfg.host_agent_cfg[i].d_ready_delay_max = cfg.max_host_rsp_delay;
+    end
+    foreach (cfg.device_agent_cfg[i]) begin
+      cfg.device_agent_cfg[i].d_valid_delay_min = cfg.min_device_req_delay;
+      cfg.device_agent_cfg[i].d_valid_delay_max = cfg.max_device_req_delay;
+      cfg.device_agent_cfg[i].a_ready_delay_min = cfg.min_device_rsp_delay;
+      cfg.device_agent_cfg[i].a_ready_delay_max = cfg.max_device_rsp_delay;
     end
   endfunction : build_phase
 

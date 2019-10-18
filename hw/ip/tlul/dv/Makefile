@@ -35,20 +35,21 @@ ifeq (${TEST_NAME},xbar_sanity_zero_delays)
   RUN_OPTS      += +zero_delays=1
 endif
 
+# max outstanding 64, max 1000 cycle seems big enough
 ifeq (${TEST_NAME},xbar_sanity_large_delays)
   UVM_TEST_SEQ   = xbar_sanity_vseq
-  RUN_OPTS      += +min_req_delay=0
-  RUN_OPTS      += +max_req_delay=1000
-  RUN_OPTS      += +min_rsp_delay=0
-  RUN_OPTS      += +max_rsp_delay=1000
+  RUN_OPTS      += +max_host_req_delay=1000
+  RUN_OPTS      += +max_host_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=1000
+  RUN_OPTS      += +max_device_rsp_delay=1000
 endif
 
 ifeq (${TEST_NAME},xbar_sanity_slow_rsp)
   UVM_TEST_SEQ   = xbar_sanity_vseq
-  RUN_OPTS      += +min_req_delay=0
-  RUN_OPTS      += +max_req_delay=10
-  RUN_OPTS      += +min_rsp_delay=0
-  RUN_OPTS      += +max_rsp_delay=1000
+  RUN_OPTS      += +max_host_req_delay=10
+  RUN_OPTS      += +max_host_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=10
+  RUN_OPTS      += +max_device_rsp_delay=1000
 endif
 
 ifeq (${TEST_NAME},xbar_random)
@@ -62,18 +63,48 @@ endif
 
 ifeq (${TEST_NAME},xbar_random_large_delays)
   UVM_TEST_SEQ   = xbar_random_vseq
-  RUN_OPTS      += +min_req_delay=0
-  RUN_OPTS      += +max_req_delay=1000
-  RUN_OPTS      += +min_rsp_delay=0
-  RUN_OPTS      += +max_rsp_delay=1000
+  RUN_OPTS      += +max_host_req_delay=1000
+  RUN_OPTS      += +max_host_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=1000
+  RUN_OPTS      += +max_device_rsp_delay=1000
 endif
 
 ifeq (${TEST_NAME},xbar_random_slow_rsp)
   UVM_TEST_SEQ   = xbar_random_vseq
-  RUN_OPTS      += +min_req_delay=0
-  RUN_OPTS      += +max_req_delay=10
-  RUN_OPTS      += +min_rsp_delay=0
-  RUN_OPTS      += +max_rsp_delay=1000
+  RUN_OPTS      += +max_host_req_delay=10
+  RUN_OPTS      += +max_host_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=10
+  RUN_OPTS      += +max_device_rsp_delay=1000
+endif
+
+ifeq (${TEST_NAME},xbar_access_same_device)
+  UVM_TEST_SEQ   = xbar_access_same_device_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_access_same_device_slow_rsp)
+  UVM_TEST_SEQ   = xbar_access_same_device_vseq
+  RUN_OPTS      += +max_host_req_delay=10
+  RUN_OPTS      += +max_host_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=10
+  RUN_OPTS      += +max_device_rsp_delay=1000
+endif
+
+ifeq (${TEST_NAME},xbar_same_source)
+  UVM_TEST_SEQ   = xbar_same_source_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_error_random)
+  UVM_TEST       = xbar_error_test
+  UVM_TEST_SEQ   = xbar_random_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_unmapped_addr)
+  UVM_TEST_SEQ   = xbar_unmapped_addr_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_error_and_unmapped_addr)
+  UVM_TEST       = xbar_error_test
+  UVM_TEST_SEQ   = xbar_unmapped_addr_vseq
 endif
 
 ####################################################################################################

@@ -14,5 +14,6 @@ package xbar_test_pkg;
   import dv_lib_pkg::*;
 
   `include "xbar_base_test.sv"
+  `include "xbar_error_test.sv"
 
 endpackage

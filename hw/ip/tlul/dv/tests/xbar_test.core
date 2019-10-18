@@ -11,6 +11,7 @@ filesets:
     files:
       - xbar_test_pkg.sv
       - xbar_base_test.sv: {is_include_file: true}
+      - xbar_error_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

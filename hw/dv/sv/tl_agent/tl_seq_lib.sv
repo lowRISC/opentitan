@@ -8,7 +8,7 @@
 
 // Host sequence, support multiple outstanding request
 // generates 'req_cnt' number of completely random requests
-class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item));
+class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item), .RSP(tl_seq_item));
   `uvm_declare_p_sequencer(tl_sequencer)
 
   rand int unsigned req_cnt;
@@ -23,12 +23,26 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item));
     fork
       begin : wait_response_thread
         for (int i = 0; i < req_cnt; i++) begin
+          tl_seq_item req;
+          bit         found_req;
           get_response(rsp);
           `uvm_info(`gfn, $sformatf("Received rsp[%0d] : %0s",
-                                     i, req.convert2string()), UVM_HIGH)
-          process_response(pending_req.pop_front(), rsp);
-        end
-      end
+                                     i, rsp.convert2string()), UVM_HIGH)
+          // in case of out of order rsp, find req that has same source as rsp
+          foreach (pending_req[i]) begin
+            if (rsp.d_source == pending_req[i].a_source) begin
+              req = pending_req[i];
+              pending_req.delete(i);
+              process_response(req, rsp);
+              found_req = 1;
+              break;
+            end
+          end // foreach
+          if (!found_req) begin
+            `uvm_error(`gfn, $sformatf("fail to find matching req for rsp[%0d]: %0s", i, rsp))
+          end
+        end // for
+      end : wait_response_thread
       begin : request_thread
         `uvm_info(`gfn, $sformatf("Start sending %0d host requests", req_cnt), UVM_HIGH)
         for (int i = 0; i < req_cnt; i++) begin
@@ -40,7 +54,7 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item));
                                      i, req.convert2string()), UVM_HIGH)
           pending_req.push_back(req);
         end
-      end
+      end : request_thread
     join
     `uvm_info(`gfn, $sformatf("Finished sending %0d host requests", req_cnt), UVM_HIGH)
   endtask
@@ -145,7 +159,7 @@ class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
         int         rsp_cnt;
         tl_seq_item req, rsp;
 
-        wait (req_q.size > 0);
+        wait(req_q.size > 0);
         if (out_of_order_rsp) req_q.shuffle();
         req = req_q.pop_front();
         $cast(rsp, req.clone());

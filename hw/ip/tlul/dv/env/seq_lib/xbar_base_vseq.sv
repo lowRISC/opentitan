@@ -25,14 +25,18 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   `uvm_object_utils(xbar_base_vseq)
   `uvm_object_new
 
+  // call seq_init to create and configure host/device seq
+  // seq_init needs to be called before randomize as host_seq/device_seq are rand
   function void pre_randomize();
+    seq_init();
+  endfunction : pre_randomize
+
+  virtual function void seq_init();
     host_seq = new[xbar_hosts.size()];
     device_seq = new[xbar_devices.size()];
     foreach (host_seq[i]) begin
       host_seq[i] = xbar_tl_host_seq::type_id::create(
                     $sformatf("%0s_seq", xbar_hosts[i].host_name));
-      host_seq[i].min_req_delay = p_sequencer.cfg.min_req_delay;
-      host_seq[i].max_req_delay = p_sequencer.cfg.max_req_delay;
       // Default only send request to valid devices that is accessible by the host
       foreach (xbar_devices[j]) begin
         if (is_valid_path(xbar_hosts[i].host_name, xbar_devices[j].device_name)) begin
@@ -45,12 +49,10 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (device_seq[i]) begin
       device_seq[i] = tl_device_seq::type_id::create(
                       $sformatf("%0s_seq", xbar_devices[i].device_name));
-      device_seq[i].min_rsp_delay = p_sequencer.cfg.min_rsp_delay;
-      device_seq[i].max_rsp_delay = p_sequencer.cfg.max_rsp_delay;
     end
-  endfunction : pre_randomize
+  endfunction : seq_init
 
-  virtual task run_device_seq_nonblocking(bit out_of_order_rsp = 1);
+  virtual task run_all_device_seq_nonblocking(bit out_of_order_rsp = 1);
     foreach (device_seq[i]) begin
       fork
         automatic int device_id = i;
@@ -66,4 +68,29 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
                                host_seq[host_id].get_full_name(),
                                host_seq[host_id].req_cnt), UVM_LOW)
   endtask
+
+  // run host seq in parallel and use num_enabled_hosts to decide how many hosts to run
+  virtual task run_all_host_seq_in_parallel();
+    int completed_seq_cnt;
+    int host_cnt;
+    int host_id_q[$];
+
+    // make host_id_q store all host_id in random order
+    foreach (host_seq[i]) host_id_q.push_back(i);
+    host_id_q.shuffle();
+
+    foreach (host_id_q[i]) begin
+      fork
+        automatic int host_id = host_id_q[i];
+        begin
+          run_host_seq(host_id);
+          completed_seq_cnt += 1;
+        end
+      join_none
+      host_cnt++;
+      if (host_cnt >= cfg.num_enabled_hosts) break;
+    end
+    wait(completed_seq_cnt == cfg.num_enabled_hosts);
+  endtask
+
 endclass
