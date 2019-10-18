@@ -2,17 +2,13 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:prim:prim_pkg:0.1"
+description: "Constants used by the primitives"
 
-name: "lowrisc:prim:ram_1p"
-description: "prim"
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:prim_generic:ram_1p
-      - lowrisc:prim:assert
-      - lowrisc:prim:prim_pkg
     files:
-      - abstract/prim_ram_1p.sv
+      - rtl/prim_pkg.sv
     file_type: systemVerilogSource
 
 targets:

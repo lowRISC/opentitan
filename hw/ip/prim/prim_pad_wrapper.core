@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim_generic:pad_wrapper
       - lowrisc:prim_xilinx:pad_wrapper
       - lowrisc:prim:assert
+      - lowrisc:prim:prim_pkg
     files:
       - abstract/prim_pad_wrapper.sv
     file_type: systemVerilogSource

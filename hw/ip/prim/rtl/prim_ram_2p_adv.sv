@@ -85,7 +85,7 @@ module prim_ram_2p_adv #(
     prim_ram_2p #(
       .Width (TotalWidth),
       .Depth (Depth),
-      .Impl  ("generic")
+      .Impl  (prim_pkg::ImplGeneric)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),

@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/padctrl_reg_pkg.sv
       - rtl/padctrl_reg_top.sv

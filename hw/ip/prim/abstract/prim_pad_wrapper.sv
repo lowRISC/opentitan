@@ -5,8 +5,13 @@
 // TODO: This module is a hard-coded stopgap to select an implementation of an
 // "abstract module". This module is to be replaced by generated code.
 
+
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+`endif
+
 module prim_pad_wrapper #(
-  parameter              Impl   = "generic",
+  parameter int          Impl   = `PRIM_DEFAULT_IMPL,
   parameter int unsigned AttrDw = 6
 ) (
   inout  wire        inout_io, // bidirectional pad
@@ -17,8 +22,10 @@ module prim_pad_wrapper #(
   input [AttrDw-1:0] attr_i
 );
 
+  import prim_pkg::*;
+
   // The generic implementation is NOT synthesizable
-  if (Impl == "generic") begin : gen_pad_generic
+  if (impl_e'(Impl) == ImplGeneric) begin : gen_pad_generic
     prim_generic_pad_wrapper #(
       .AttrDw(AttrDw)
     ) i_pad_wrapper (
@@ -28,7 +35,7 @@ module prim_pad_wrapper #(
       .oe_i,
       .attr_i
     );
-  end else if (Impl == "xilinx") begin : gen_pad_xilinx
+  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_pad_xilinx
     prim_xilinx_pad_wrapper #(
       .AttrDw(AttrDw)
     ) i_pad_wrapper (

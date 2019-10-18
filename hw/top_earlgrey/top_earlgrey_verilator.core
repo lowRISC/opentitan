@@ -20,10 +20,11 @@ filesets:
       - top_earlgrey_verilator.cc: { file_type: cppSource }
 
 parameters:
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
-    datatype: str
+    datatype: int
     paramtype: vlogdefine
-    description: Primitives implementation to use
+    description: Primitives implementation to use. 0=Generic, 1=Xilinx
   RVFI:
     datatype: bool
     paramtype: vlogdefine
@@ -32,7 +33,7 @@ parameters:
 targets:
   sim:
     parameters:
-      - PRIM_DEFAULT_IMPL=generic
+      - PRIM_DEFAULT_IMPL=0 # generic
       - RVFI=true
     default_tool: verilator
     filesets:

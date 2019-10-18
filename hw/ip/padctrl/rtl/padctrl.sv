@@ -7,9 +7,13 @@
 // to be consumed on the chiplevel.
 //
 
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+`endif
+
 module padctrl #(
-  parameter Impl = "generic" // "generic", "xilinx"...
-  ) (
+  parameter integer Impl = `PRIM_DEFAULT_IMPL
+) (
   input                                       clk_i,
   input                                       rst_ni,
   // Bus Interface (device)
@@ -22,6 +26,8 @@ module padctrl #(
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o
 );
 
+  import prim_pkg::*;
+
   //////////////////////////////////////////////////////
   // This controls the WARL'ness of the CSRs
   // needs to be in line with the corresponding
@@ -29,10 +35,10 @@ module padctrl #(
   //////////////////////////////////////////////////////
 
   logic [padctrl_reg_pkg::AttrDw-1:0] warl_mask;
-  if (Impl == "generic") begin : gen_generic
+  if (impl_e'(Impl) == ImplGeneric) begin : gen_generic
     // all attributes supported
     assign warl_mask = padctrl_reg_pkg::AttrDw'(6'h3F);
-  end else if (Impl == "xilinx") begin : gen_xilinx
+  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_xilinx
     // only OD and INV supported
     assign warl_mask = padctrl_reg_pkg::AttrDw'(2'h3);
   end else begin : gen_failure

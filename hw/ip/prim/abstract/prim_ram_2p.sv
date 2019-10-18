@@ -5,14 +5,19 @@
 // TODO: This module is a hard-coded stopgap to select an implementation of an
 // "abstract module". This module is to be replaced by generated code.
 
+
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+`endif
+
 module prim_ram_2p #(
-  parameter int Width    = 32, // bit
-  parameter int Depth    = 128,
+  parameter integer Impl  = `PRIM_DEFAULT_IMPL,
+
+  parameter int Width = 32, // bit
+  parameter int Depth = 128,
 
   // Do not touch
-  parameter int Aw = $clog2(Depth), // derived parameter
-
-  parameter Impl = "generic"
+  parameter int Aw    = $clog2(Depth) // derived parameter
 ) (
   input clk_a_i,
   input clk_b_i,
@@ -30,9 +35,11 @@ module prim_ram_2p #(
   output logic [Width-1:0] b_rdata_o
 );
 
+  import prim_pkg::*;
+
   `ASSERT_INIT(paramCheckAw, Aw == $clog2(Depth))
 
-  if (Impl == "generic") begin : gen_mem_generic
+  if (impl_e'(Impl) == ImplGeneric) begin : gen_mem_generic
     prim_generic_ram_2p #(
       .Width(Width),
       .Depth(Depth)
@@ -50,7 +57,7 @@ module prim_ram_2p #(
       .b_wdata_i,
       .b_rdata_o
     );
-  end else if (Impl == "xilinx") begin : gen_xilinx
+  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_mem_xilinx
     prim_xilinx_ram_2p #(
       .Width(Width),
       .Depth(Depth)

@@ -38,14 +38,24 @@ parameters:
   ASIC_SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  PRIM_DEFAULT_IMPL:
+    datatype: int
+    paramtype: vlogdefine
+    description: Primitives implementation to use. 0=Generic, 1=Xilinx
+    default: 0 # generic
 
 targets:
   default: &default_target
     filesets:
       - files_rtl_generic
+    parameters:
+      - PRIM_DEFAULT_IMPL=0 # generic
     toplevel: top_earlgrey
   sim:
     default_tool: icarus
     filesets:
       - files_rtl_generic
+    parameters:
+      - PRIM_DEFAULT_IMPL=0 # generic
     toplevel: top_earlgrey

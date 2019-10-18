@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim_generic:ram_2p
       - lowrisc:prim_xilinx:ram_2p
       - lowrisc:prim:assert
+      - lowrisc:prim:prim_pkg
     files:
       - abstract/prim_ram_2p.sv
     file_type: systemVerilogSource

@@ -5,8 +5,13 @@
 // Assertions for padring. Intended to use with a formal tool.
 // Note that only the mandatory pad attributes are tested here.
 
+
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+`endif
+
 module padctrl_assert #(
-  parameter Impl = "generic"
+  parameter integer Impl = `PRIM_DEFAULT_IMPL
 ) (
   input                                       clk_i,
   input                                       rst_ni,
@@ -20,6 +25,8 @@ module padctrl_assert #(
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o
 );
 
+  import prim_pkg::*;
+
   // symbolic vars for FPV
   int unsigned mio_sel;
   int unsigned dio_sel;
@@ -31,14 +38,14 @@ module padctrl_assert #(
   `ASSUME(NMioRange_M, mio_sel < padctrl_reg_pkg::NMioPads, clk_i, !rst_ni)
   `ASSUME(NMioStable_M, ##1 $stable(mio_sel), clk_i, !rst_ni)
 
-  if (Impl == "generic") begin : gen_mio_generic
+  if (impl_e'(Impl) == ImplGeneric) begin : gen_mio_generic
     `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
         !(|padctrl.mio_attr_q[mio_sel][padctrl_reg_pkg::AttrDw-1:6]),
         clk_i, !rst_ni)
     `ASSERT(MioAttr_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
       mio_attr_o[mio_sel][5:0] == $past(padctrl.reg2hw.mio_pads[mio_sel].q[5:0]),
       clk_i, !rst_ni)
-  end else if (Impl == "xilinx") begin : gen_mio_xilinx
+  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_mio_xilinx
     `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
         !(|padctrl.mio_attr_q[mio_sel][padctrl_reg_pkg::AttrDw-1:2]),
         clk_i, !rst_ni)
@@ -56,15 +63,14 @@ module padctrl_assert #(
 
   `ASSUME(NDioRange_M, dio_sel < padctrl_reg_pkg::NDioPads, clk_i, !rst_ni)
   `ASSUME(NDioStable_M, ##1 $stable(dio_sel), clk_i, !rst_ni)
-
-  if (Impl == "generic") begin : gen_dio_generic
+  if (impl_e'(Impl) == ImplGeneric) begin : gen_dio_generic
     `ASSERT(DioWarl_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
         !(|padctrl.dio_attr_q[dio_sel][padctrl_reg_pkg::AttrDw-1:6]),
         clk_i, !rst_ni)
     `ASSERT(DioAttr_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
       dio_attr_o[dio_sel][5:0] == $past(padctrl.reg2hw.dio_pads[dio_sel].q[5:0]),
       clk_i, !rst_ni)
-  end else if (Impl == "xilinx") begin : gen_dio_xilinx
+  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_dio_xilinx
     `ASSERT(DioWarl_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
         !(|padctrl.dio_attr_q[dio_sel][5:2]),
         clk_i, !rst_ni)
