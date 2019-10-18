@@ -14,7 +14,7 @@ static uint32_t intr_handling_success = 0;
 static const uint32_t hart = 0;
 
 int main(int argc, char **argv) {
-  uint64_t cmp = 0x00000000000000FF;
+  const uint64_t cmp = 0x000000000000000F;
 
   uart_init(UART_BAUD_RATE);
 
@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 
 // Override weak default function
 void handler_irq_timer(void) {
+  uart_send_str("In Interrupt handler!\r\n");
   rv_timer_ctrl(hart, false);
   rv_timer_clr_all_intrs();
   intr_handling_success = 1;
