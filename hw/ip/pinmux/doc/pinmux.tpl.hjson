@@ -60,7 +60,7 @@
                   regwen:   "REGEN",
                   cname:    "IN",
                   fields: [
-                    { bits: "${int(math.ceil(math.log2(n_mio_pads+2))-1)}:0",
+                    { bits: "${(n_mio_pads+1).bit_length()-1}:0",
                       name: "IN",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1.
@@ -80,7 +80,7 @@
                   regwen:   "REGEN",
                   cname:    "OUT",
                   fields: [
-                    { bits: "${int(math.ceil(math.log2(n_periph_out+3))-1)}:0",
+                    { bits: "${(n_periph_out+2).bit_length()-1}:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1. 2: high-Z
@@ -93,5 +93,3 @@
     },
   ],
 }
-
-
