@@ -83,4 +83,10 @@ package hmac_pkg;
     calc_w = w_0 + sum0 + w_9 + sum1;
   endfunction : calc_w
 
+  typedef enum logic [31:0] {
+    NoError                    = 32'h 0000_0000,
+    SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
+    SwHashStartWhenShaDisabled = 32'h 0000_0002
+  } err_code_e;
+
 endpackage : hmac_pkg
