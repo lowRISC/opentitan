@@ -1094,7 +1094,8 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
 def make_intr_regs(regs, offset, addrsep, fullwidth):
     iregs = []
     intrs = regs['interrupt_list']
-    if len(intrs) > fullwidth:
+    if sum([int(x['width'], 0) if 'width' in x else 1
+            for x in intrs]) > fullwidth:
         log.error('More than ' + str(fullwidth) + ' interrupts in list')
         return iregs, 1
 
@@ -1214,7 +1215,8 @@ def check_wen_regs(regs):
     tuple_swaccess = 2
 
     reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'])
-                for reg in regs['registers'] if 'name' in reg and 'genresval' in reg]
+                for reg in regs['registers']
+                if 'name' in reg and 'genresval' in reg]
     mreg_list = [
         reg['multireg'] for reg in regs['registers'] if 'multireg' in reg
     ]
