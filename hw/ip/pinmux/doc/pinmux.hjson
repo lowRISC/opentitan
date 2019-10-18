@@ -54,7 +54,7 @@
 # inputs
     { multireg: { name:     "PERIPH_INSEL",
                   desc:     "Mux select for peripheral inputs.",
-                  count:    "NPeriphOut",
+                  count:    "NPeriphIn",
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGEN",
@@ -93,6 +93,4 @@
     },
   ],
 }
-
-
 
