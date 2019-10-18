@@ -6,14 +6,15 @@
 // "abstract module". This module is to be replaced by generated code.
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL generic
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
 `endif
 
 module prim_flash #(
+  parameter integer Impl = `PRIM_DEFAULT_IMPL,
+
   parameter int PagesPerBank = 256, // pages per bank
   parameter int WordsPerPage = 256, // words per page
   parameter int DataWidth   = 32, // bits per word
-  parameter Impl = "generic",
 
   //Do not touch - Derived parameters
   parameter int PageW = $clog2(PagesPerBank),
@@ -40,7 +41,9 @@ module prim_flash #(
   output logic                 init_busy_o
 );
 
-  if (Impl == "generic" || Impl == "xilinx") begin : gen_flash
+  import prim_pkg::*;
+
+  if (impl_e'(Impl) == ImplGeneric || impl_e'(Impl) == ImplXilinx) begin : gen_flash
     prim_generic_flash #(
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),

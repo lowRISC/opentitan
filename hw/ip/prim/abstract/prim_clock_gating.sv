@@ -6,11 +6,11 @@
 // "abstract module". This module is to be replaced by generated code.
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL generic
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
 `endif
 
 module prim_clock_gating #(
-  parameter Impl = "generic"
+  parameter integer Impl = `PRIM_DEFAULT_IMPL
 ) (
   input        clk_i,
   input        en_i,
@@ -18,14 +18,16 @@ module prim_clock_gating #(
   output logic clk_o
 );
 
-  if (Impl == "generic") begin : gen_generic
+  import prim_pkg::*;
+
+  if (impl_e'(Impl) == ImplGeneric) begin : gen_generic
     prim_generic_clock_gating u_impl_generic (
       .clk_i,
       .en_i,
       .test_en_i,
       .clk_o
     );
-  end else if (Impl == "xilinx") begin : gen_xilinx
+  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_xilinx
     prim_xilinx_clock_gating u_impl_xilinx (
       .clk_i,
       .en_i,

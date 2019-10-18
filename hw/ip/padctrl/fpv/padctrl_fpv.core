@@ -8,6 +8,7 @@ filesets:
   files_fpv:
     depend:
       - lowrisc:ip:padctrl
+      - lowrisc:prim:prim_pkg
     files:
       - tb/padctrl_tb.sv
       - tb/padctrl_bind.sv

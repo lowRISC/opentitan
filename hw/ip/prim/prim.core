@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:diff_decode # for prim_alert_sender/receiver
       - lowrisc:prim:pad_wrapper
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/prim_clock_inverter.sv
       - rtl/prim_alert_receiver.sv

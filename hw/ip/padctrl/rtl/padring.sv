@@ -6,8 +6,13 @@
 // The module instantiates the technology dependent pads, and connects them
 // to the MIOs/DIOs and pad attributes coming from the padctrl block.
 //
+
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+`endif
+
 module padring #(
-  parameter Impl = "generic" // this determines the pad implementation
+  parameter integer Impl = `PRIM_DEFAULT_IMPL // this determines the pad implementation
 ) (
   // pad input
   input wire                                   clk_pad_i,

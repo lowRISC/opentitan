@@ -4,8 +4,12 @@
 //
 // Testbench module for padctrl. Intended to use with a formal tool.
 
+`ifndef PRIM_DEFAULT_IMPL
+  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+`endif
+
 module padctrl_tb #(
-  parameter Impl = "generic"
+  parameter integer Impl = `PRIM_DEFAULT_IMPL
 ) (
   input wire                                    clk_i,
   input wire                                    rst_ni,
