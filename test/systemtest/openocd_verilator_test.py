@@ -5,13 +5,13 @@
 r"""Runs OpenOCD compliance test against Verilator target.
 
 This test requires some configuration options. Use the following steps to
-run the test manually after building Verilator and the sw/boot_rom and
-sw/examples/hello_world targets.
+run the test manually after building Verilator and the sw/device/boot_rom and
+sw/device/examples/hello_world targets.
 
 $ cd ${REPO_TOP}
 $ pytest -s -v test/systemtest/openocd_verilator_test.py \
-  --test_bin sw/examples/hello_world/sw.vmem \
-  --rom_bin sw/boot_rom/rom.vmem \
+  --test_bin sw/device/examples/hello_world/sw.vmem \
+  --rom_bin sw/device/boot_rom/rom.vmem \
   --verilator_model build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 
 In some cases the pytest environment may not be able to find the openocd binary.

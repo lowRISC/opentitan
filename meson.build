@@ -46,12 +46,12 @@ prog_srec_cat = find_program('srec_cat')
 prog_git = find_program('git')
 
 # RISCV linker parameters.
-riscv_linkfile = files(['sw/exts/common/link.ld'])
+riscv_linkfile = files(['sw/device/exts/common/link.ld'])
 riscv_link_args = ['-Wl,-T,@0@/@1@'.format('..', riscv_linkfile[0])]
 riscv_link_deps = [riscv_linkfile]
 
 # RISCV CRT parameters
-startup_files = files(['sw/exts/common/_crt.c'])
+startup_files = files(['sw/device/exts/common/_crt.c'])
 
 # Additional arguments for utility in charge of generating bin and vmem outputs
 # These variables are expected to be used in custom_target rules.

@@ -18,7 +18,7 @@ device path for the FPGA, and the spiflash executable. For example:
 
 $ cd ${REPO_TOP}
 $ pytest -s -v test/systemtest/functional_fpga_test.py \
-  --test_bin sw/tests/hmac/sw.bin \
+  --test_bin sw/device/tests/hmac/sw.bin \
   --fpga_uart /dev/ttyUSB2 \
   --spiflash sw/host/spiflash/spiflash
 """

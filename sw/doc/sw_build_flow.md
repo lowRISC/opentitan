@@ -24,13 +24,13 @@ main software tests.
   from the `SW_ROOT_DIR`. It is **mandatory** to set this variable on the command
   line.
 
-- **SW_NAME**: A `SW_DIR` could cotain one or more unique SW build targets.
+- **SW_NAME**: A `SW_DIR` could contain one or more unique SW build targets.
   This variable is used to indicate which one is to be built, on the command
   line.
 
 - **lib**: This refers to the library code generated from the shared common
-  sources. These sources are currently placed in `sw/lib`, `sw/util` and
-  `sw/exts` directories. More such directories can be added in future.
+  sources. These sources are currently placed in `sw/device/lib`, `sw/device/util` and
+  `sw/device/exts` directories. More such directories can be added in future.
   Also, this is one of the goals of the make flow.
 
 - **LIB_SRCS**: This is a list of all common / shared sources compiled into the
@@ -68,11 +68,11 @@ sources for building the SW needs to have an associated `srcs.mk` sub-make file
 within that directory. These `srcs.mk` files are then required to be added to the
 top level SW build Makefile.
 
-- **`exts/common/srcs.mk`**: Additional extended common sources. This includes
+- **`device/exts/common/srcs.mk`**: Additional extended common sources. This includes
     the default `CRT_SRCS` and the `LINKER_SCRIPT` which can be overridden for
     sw specific requirements.
 
-- **`lib/srcs.mk`**: Directory containing sources to compile the lib elements and
+- **`device/lib/srcs.mk`**: Directory containing sources to compile the lib elements and
   its dependencies.
 
 - **`$(SW_DIR)/srcs.mk`**: This sub-make file contains sources for building a SW
@@ -85,7 +85,7 @@ top level SW build Makefile.
   same name as the directory and the C source) in this file. In that case, indicating
   `SW_NAME` on the command line is not required.
 
-- **`exts/common/srcs.mk`**: Additional extended common sources. This includes
+- **`device/exts/common/srcs.mk`**: Additional extended common sources. This includes
     the default `CRT_SRCS` and the `LINKER_SCRIPT` which can be overridden for
     sw specific requirements.
 
@@ -98,24 +98,24 @@ is optional if `SW_DIR` has only one SW target and `SW_NAME` is set in
 
 Build boot_rom:
 ```console
-$ make SW_DIR=boot_rom SW_NAME=boot_rom
+$ make SW_DIR=device/boot_rom SW_NAME=boot_rom
 ```
 
-This will build the boot_rom image in the boot_rom directly itself. SW_NAME in
-boot_rom/srcs.mk is already set to boot_rom, so there is no need to specify it
+This will build the boot_rom image in the device/boot_rom directly itself. SW_NAME in
+device/boot_rom/srcs.mk is already set to boot_rom, so there is no need to specify it
 on the command line.
 
 - Build the boot_rom in a separate build directory:
 ```console
-$ make SW_DIR=boot_rom SW_BUILD_DIR=path/to/scratch
+$ make SW_DIR=device/boot_rom SW_BUILD_DIR=path/to/scratch
 ```
 
 - Build hello_world test:
 ```console
-$ make SW_DIR=examples/hello_world SW_NAME=hello_world SW_BUILD_DIR=path/to/scratch
+$ make SW_DIR=device/examples/hello_world SW_NAME=hello_world SW_BUILD_DIR=path/to/scratch
 ```
 
 - Build sha256 test:
 ```console
-$ make SW_DIR=tests/hmac SW_NAME=sha256_test
+$ make SW_DIR=device/tests/hmac SW_NAME=sha256_test
 ```

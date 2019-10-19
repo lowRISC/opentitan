@@ -22,7 +22,7 @@ Follow the install instructions to [prepare the system](install_instructions.md#
 Synthesizing a design for a FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to act as the boot ROM.
-This is pulled in from the `sw/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/top_earlgrey_nexysvideo.core` file).
+This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/top_earlgrey_nexysvideo.core` file).
 At the moment there is no check that the `rom.vmem` file is up to date, so it is best to follow the instructions to [Build software](getting_started_sw.md) and understand the FPGA's overall software flow
 
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
@@ -157,7 +157,7 @@ An example connection with GDB, which prints the registers after the connection 
 
 ```console
 $ cd $REPO_TOP
-$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/boot_rom/boot_rom.elf
+$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/boot_rom/boot_rom.elf
 ```
 
 #### Common operations with GDB
@@ -190,7 +190,7 @@ This will update the symbols which are used to get information about the program
 It is especially useful in the context of our `boot_rom.elf`, which resides in the ROM region, which will eventually jump to a different executable as part of the flash region.
 
 ```console
-(gdb) file sw/examples/hello_world/hello_world.elf
+(gdb) file sw/device/examples/hello_world/hello_world.elf
 (gdb) disassemble 0x200005c0,0x200005c0+16*4
 ```
 

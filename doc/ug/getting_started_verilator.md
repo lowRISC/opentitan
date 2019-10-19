@@ -184,6 +184,6 @@ Tracing slows down the simulation by roughly factor of 1000.
 
 ```console
 $ cd $REPO_TOP
-$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --meminit=sw/examples/hello_world/hello_world.vmem --trace
+$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --meminit=sw/device/examples/hello_world/hello_world.vmem --trace
 $ gtkwave sim.fst
 ```
