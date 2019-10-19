@@ -11,10 +11,10 @@ Build the simulator and the software and then run the simulation
 ```console
 $ cd $REPO_TOP
 $ fusesoc --cores-root . run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
-$ make SIM=1 -C sw/boot_rom clean all
-$ make SIM=1 -C sw/examples/hello_world clean all
-$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --rominit=sw/boot_rom/boot_rom.vmem \
-$ --flashinit=sw/examples/hello_world/hello_world.vmem
+$ make SIM=1 -C sw/device/boot_rom clean all
+$ make SIM=1 -C sw/device/examples/hello_world clean all
+$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --rominit=sw/device/boot_rom/boot_rom.vmem \
+$ --flashinit=sw/device/examples/hello_world/hello_world.vmem
 ```
 
 See the [Getting Started with Verilator Guide](getting_started_verilator.md) for more information.

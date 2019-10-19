@@ -7,13 +7,13 @@ one of "PASS!\r\n" or "FAIL!\r\n" to UART to determine success or failure.
 Failing to write either will result in a timeout.
 
 This test requires some configuration options. Use the following steps to
-run the test manually after building Verilator and the sw/boot_rom and
-sw/examples/hello_world targets.
+run the test manually after building Verilator and the sw/device/boot_rom and
+sw/device/examples/hello_world targets.
 
 $ cd ${REPO_TOP}
 $ pytest -s -v test/systemtest/functional_verilator_test.py \
-  --test_bin sw/tests/hmac/sw.vmem \
-  --rom_bin sw/boot_rom/rom.vmem \
+  --test_bin sw/device/tests/hmac/sw.vmem \
+  --rom_bin sw/device/boot_rom/rom.vmem \
   --verilator_model build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 """
 

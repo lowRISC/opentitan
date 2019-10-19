@@ -24,7 +24,7 @@ SW_DEPS       ?= lib
 SW_BUILD_DIR  ?= $(SW_ROOT_DIR)/$(SW_DIR)
 
 LIB_NAME      ?= ot
-LIB_DIR       ?= $(SW_ROOT_DIR)/lib
+LIB_DIR       ?= $(SW_ROOT_DIR)/device/lib
 LIB_TARGET    ?= $(LIB_BUILD_DIR)/lib${LIB_NAME}.a
 LIB_SRCS      +=
 LIB_OBJS      += $(addprefix $(LIB_BUILD_DIR)/, $(addsuffix .o, $(basename $(notdir $(LIB_SRCS)))))
@@ -56,7 +56,7 @@ GEN_HEADER_OUTPUTS = $(addprefix $(LIB_BUILD_DIR)/, $(GEN_HEADERS))
 
 # defaults
 CRT_SRCS      ?= $(EXT_COMMON_DIR)/_crt.c
-LINKER_SCRIPT ?= $(SW_ROOT_DIR)/exts/common/link.ld
+LINKER_SCRIPT ?= $(SW_ROOT_DIR)/device/exts/common/link.ld
 
 # tools and opts
 REGTOOL       ?= $(SW_ROOT_DIR)/../util/regtool.py

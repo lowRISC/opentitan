@@ -49,7 +49,7 @@ Run Verilator with boot_rom enabled:
 ```console
 $ cd ${REPO_TOP}
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=sw/boot_rom/rom.vmem
+  --rominit=sw/device/boot_rom/rom.vmem
 ```
 
 Run spiflash. In this example we use SPI device `/dev/pts/3` as an example.
@@ -57,7 +57,7 @@ After the transmission is complete, you should be able to see the hello_world ou
 
 ```console
 $ cd ${REPO_TOP}
-$ ./sw/host/spiflash/spiflash --input=sw/examples/hello_world/sw.bin --verilator=/dev/pts/3
+$ ./sw/host/spiflash/spiflash --input=sw/device/examples/hello_world/sw.bin --verilator=/dev/pts/3
 ```
 
 ## Run the tool in FPGA
@@ -69,5 +69,5 @@ If there are two FPGAs or multiple valid targets attached at the same time, it i
 
 ```console
 $ cd ${REPO_TOP}
-$ ./sw/host/spiflash/spiflash --input=sw/examples/hello_world/sw.bin
+$ ./sw/host/spiflash/spiflash --input=sw/device/examples/hello_world/sw.bin
 ```
