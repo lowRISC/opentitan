@@ -3,42 +3,48 @@ title: "Flash Controller HWIP Technical Specification"
 ---
 # Overview
 
-This document specifies the general functionality of flash.
-As the final feature set will largely depend on how similar vendor flash IPs are, it is at the moment unclear where the open-source / proprietary boundaries should lie.
-This document thus makes a best effort guess as to what that boundary should be and breaks the functionality down accordingly.
+This document describes the general functionality of flash.
+As the final feature set will largely depend on how similar flash IPs are, it is at the moment unclear where the open-source / proprietary boundaries should lie.
+This document thus makes a best effort estimate as to what that boundary should be and breaks the functionality down accordingly.
 
 This document assumes flash functionality shall be divided into two partitions.
 * Flash protocol controller
 * Flash physical controller
 
+# Theory of Operation
+
+## Flash Protocol Controller
 The Flash Protocol Controller sits between the host software interface and the physical flash.
 Its primary function is to translate software requests into a high level protocol for the actual flash block.
 Importantly, the flash protocol controller shall not be responsible for the detailed timing and waveform control of the flash.
 Instead, it shall maintain FIFOs / interrupts for the software to process data.
 
+## Flash Physical Controller
 The Flash Physical Controller is the wrapper module that contains the actual flash memory instantiation.
-It is responsible for converting high level protocol commands (such as read, program, erase) into low level signal and timing specific to a particular flash IP.
+It is responsible for converting high level protocol commands (such as read, program, erase) into low level signaling and timing specific to a particular flash IP.
 It is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash memory.
 
 The diagram below summarizes a high level breakdown.
 
 ![Flash High Level Abstraction](flash_abstraction.svg)
 
+# Features
+
 ## Flash Protocol Controller Features
 
-*  Support controller initiated read, program and erase of flash.  Erase can be either of a page, or an entire bank.
+*  Support controller initiated read, program and erase of flash.
+   *  Erase can be either of a page, or an entire bank.
 *  Parameterized support for number of flash banks (default to 2)
 *  For each flash bank, parameterized support for number of flash pages (default to 256)
-*  For each flash page, parameterized support for number of words and word size (default to 256 words of 4B each)
+*  For each flash page, parameterized support for number of words and word size (default to 256 words of 4-bytes each)
 *  Parameterized support for burst writes, up to 64B
    *  Controller currently does not support page boundary checks; it is thus legal for software to burst write across a page boundary
-*  Features to be added if required in flash 0.5+
+*  Features to be added if required
+   *  Parameterizable data width
    *  Program verification
       *  may not be required if flash physical controller supports alternative mechanisms of verification.
    *  Erase verification
       *  may not be required if flash physical controller supports alternative mechanisms of verification.
-   *  Memory protection mechanisms to prevent read, program or erases to specific address blocks
-      *  may not be required depending on system level security strategy.
    *  Parity / ECC support on a per flash page granularity
       *  may not be required depending on flash reliability or overall system security strategy.
    *  Flash redundant pages
@@ -59,19 +65,24 @@ Below are the emulated properties
 *  Erasing of a page will take 200 (parameterizable) clock cycles
 *  Erasing of a bank will take 2000 (parameterizable) clock cycles
 *  A bit, once written to 0, cannot be written back to 1 until an erase operation has been performed
-*  Support for simultaneous controller (read / program / erase) and host (read) operations.  Host operations are always prioritized unless controller operation is already ongoing.
+*  Support for simultaneous controller (read / program / erase) and host (read) operations.
+   *  Host operations are always prioritized unless controller operation is already ongoing.
+*  The arbitration resolution is done at the bank level
+   *  If a bank is busy with an operation, a new operation can be issued to a different bank in parallel.
+   *  If a bank is busy with an operation, a new operation issued to the same bank will block until the operation completes.
+
 
 The flash physical controller does NOT emulate the following properties
 
 *  Flash lifetime
-   *  Typically flash memory has an upward limit of 100K program / erase cycles
-*  Flash line disturb
-   *  Typically flash memory has limits on the number of accesses to a single memory line (2 ~ 16) before erase is required
+   *  Typically flash memory has an upward limit of 100K+ program / erase cycles.
+*  Flash line program disturb
+   *  Typically flash memory has limits on the number of program accesses to a single memory line (2 ~ 16) before erase is required,
 *  Flash power loss corruption
    *  Typically flash memory has strict requirements how power loss should be handled to prevent flash failure.
 *  Dedicated flash power supplies
 
-Depending on need, in flash 0.5+, it may be necessary to add controller logic to perform the following functions
+Depending on need, it may be necessary to add controller logic to perform the following functions
 *  Flash BIST
    * Technology dependent mechanism to perform flash self test during manufacuring.
 *  Flash custom controls
@@ -101,28 +112,54 @@ The following is a diagram of the controller construction as well as its over co
 ![Flash Protocol Controller](flash_protocol_controller.svg)
 
 ## Flash Physical Controller Description
+The table below lists the flash protocol controller signals.
+
+Signal                  | Direction | Description
+------------------------|-----------|---------------
+`tl_i`                  | `input`   | TileLink-UL input for register access
+`tl_o`                  | `output`  | TileLink-UL output for register access
+`flash_i`               | `input`   | Inputs from physical controller, connects to `flash_ctrl_o` of physical controller
+`flash_o`               | `output`  | Outputs to physical controller, connects to `flash_ctrl_i` of physical controller
+`intr_prog_empty_o`     | `output`  | Interrupt indicating program fifo is empty
+`intr_prog_lvl_o`       | `output`  | Interrupt indicating program fifo has reached configurable threshold
+`intr_rd_full_o`        | `output`  | Interrupt indicating read fifo is full
+`intr_rd_lvl_o`         | `output`  | Interrupt indicating read fifo has reached configurable threshold
+`intr_op_done_o`        | `output`  | Interrupt indicating flash operation is complete
+`intr_op_error_o`       | `output`  | Interrupt indicating there is a flash operation error
+
+Each of `flash_i` and `flash_o` is a struct that packs together additional signals, as shown below
+
+| Signal          | Source               | Destination         | Description
+| --------------  | ---------------------| ------------------- | -------------------------------------------------------
+| `req`           | protocol controller  | physical controller | Protocol controller initiated transaction
+| `addr`          | protocol controller  | physical controller | Protocol controller initiated transaction address
+| `rd`            | protocol controller  | physical controller | Protocol controller initiated read
+| `prog`          | protocol controller  | physical controller | Protocol controller initiated program
+| `pg_erase`      | protocol controller  | physical controller | Protocol controller initiated page erase
+| `prog_data`     | protocol controller  | physical controller | Protocol controller initiated program data, 1 flash word wide
+| `bk_erase`      | protocol controller  | physical controller | Protocol controller initiated bank erase
+| `rd_done`       | physical controller  | protocol controller | Physical controller read done
+| `prog_done`     | physical controller  | protocol controller | Physical controller program done
+| `erase_done`    | physical controller  | protocol controller | Physical controller erase done
+| `init_busy`     | physical controller  | protocol controller | Physical controller reset release initialization in progress
+| `rd_data`       | physical controller  | protocol controller | Physical Controller read data, 1 flash word wide
+
 
 As the physical controller is IP specific, this section will only try to describe the connecting protocol signals, its function, and the memory allocation of configuration registers.
 
-| Signal          | Purpose
-| --------------  | -------
-| host_req_i      | Host initiated direct read, should always be highest priority.  Host is only able to perform direct reads
-| host_addr_i     | Address of host initiated direct read
-| host_req_rdy_o  | Host request ready, '1' implies transaction has been accepted, but not necessarily finished
-| host_req_done_o | Host request completed
-| host_rdata_o    | Host read data, 1 flash word wide
-| req_i           | Controller initiated transaction
-| addr_i          | Address of controller initiated transaction
-| rd_i            | Controller initiated read
-| prog_i          | Controller initiated program
-| pg_erase_i      | Controller initiated page erase
-| prog_data_i     | Controller initiated program data, 1 flash word wide
-| bk_erase_i      | Controller initiated bank erase
-| rd_done_o       | Controller initiated read done
-| prog_done_o     | Controller initiated program done
-| erase_done_o    | Controller initiated erase done
-| init_busy_o     | Physical controller reset release initialization in progress
-| rd_data_o       | Controller read data, 1 flash word wide
+| Signal            | Direction | Description
+| ----------------- | ----------| -------
+| `host_req_i`      | input     | Host initiated direct read, should always be highest priority.  Host is only able to perform direct reads
+| `host_addr_i`     | input     | Address of host initiated direct read
+| `host_req_rdy_o`  | output    | Host request ready, '1' implies transaction has been accepted, but not necessarily finished
+| `host_req_done_o` | output    | Host request completed
+| `host_rdata_o`    | output    | Host read data, 1 flash word wide
+| `flash_ctrl_i`    | input     | Inputs from protocol controller, connects to `flash_o` of protocol controller
+| `flash_ctrl_o`    | output    | Outputs to protocol controller, connects to `flash_i` of protcol controller
+
+# Operation Description
+
+The operation section describes the detailed signaling from the perspective of the physical controller interface
 
 ## Host Read
 
@@ -155,13 +192,13 @@ See expected waveform below.
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',        wave: 'p..............'},
-  {name: 'rst_ni',       wave: '0.1............'},
-  {name: 'req_i',        wave: '0..1.....0.....'},
-  {name: 'addr_i',       wave: 'x..3..3..x.3..x', data: ['Adr0', 'Adr1', 'Adr2']},
-  {name: 'rd_i',         wave: '0..1.....0.1..0'},
-  {name: 'rd_done_o',    wave: '0....10.10...10'},
-  {name: 'rdata_o',      wave: 'x....4x.4x...4x', data: ['Dat0', 'Dat1', 'Dat2']},
+  {name: 'clk_i',                 wave: 'p..............'},
+  {name: 'rst_ni',                wave: '0.1............'},
+  {name: 'flash_ctrl_i.req',      wave: '0..1.....0.....'},
+  {name: 'flash_ctrl_i.addr',     wave: 'x..3..3..x.3..x', data: ['Adr0', 'Adr1', 'Adr2']},
+  {name: 'flash_ctrl_i.rd',       wave: '0..1.....0.1..0'},
+  {name: 'flash_ctrl_o.rd_done',  wave: '0....10.10...10'},
+  {name: 'flash_ctrl_o.rdata',    wave: 'x....4x.4x...4x', data: ['Dat0', 'Dat1', 'Dat2']},
 ]}
 {{< /wavejson >}}
 
@@ -172,13 +209,13 @@ The protocol controller will hold the request, address and data lines until the 
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',        wave: 'p..............'},
-  {name: 'rst_ni',       wave: '0.1............'},
-  {name: 'req_i',        wave: '0..1.....0.....'},
-  {name: 'addr_i',       wave: 'x..3..3..x.3..x', data: ['Adr0', 'Adr1', 'Adr2']},
-  {name: 'prog_i',       wave: '0..1.....0.1..0'},
-  {name: 'prog_data_i',  wave: 'x..4..4..x.4..x', data: ['Dat0', 'Dat1', 'Dat2']},
-  {name: 'prog_done_o',  wave: '0....10.10...10'},
+  {name: 'clk_i',                  wave: 'p..............'},
+  {name: 'rst_ni',                 wave: '0.1............'},
+  {name: 'flash_ctrl_i.req',       wave: '0..1.....0.....'},
+  {name: 'flash_ctrl_i.addr',      wave: 'x..3..3..x.3..x', data: ['Adr0', 'Adr1', 'Adr2']},
+  {name: 'flash_ctrl_i.prog',      wave: '0..1.....0.1..0'},
+  {name: 'flash_ctrl_o.prog_data', wave: 'x..4..4..x.4..x', data: ['Dat0', 'Dat1', 'Dat2']},
+  {name: 'flash_ctrl_o.prog_done', wave: '0....10.10...10'},
 ]}
 {{< /wavejson >}}
 
@@ -191,24 +228,9 @@ To issue a flash read, the programmer must
 *  Specify the number of total flash words to read, beginning at the supplied address
 *  Specify the operation to be 'READ' type
 *  Set the 'START' bit for the operation to begin
+
 The above fields can be set in the {{< regref "CONTROL" >}} and {{< regref "ADDR" >}} registers.
-See code below for example
-
-```
-void read_flash (uint32_t addr, uint32_t num, uint32_t *data) {
-  uint32_t val;
-
-  // Setup address
-  REG32(FLASH_CTRL_ADDR) = addr;
-
-  // kick off flash operation
-  val = FlashRead << FLASH_CTRL_CONTROL_OP_OFFSET |
-        (num-1) << FLASH_CTRL_CONTROL_NUM_OFFSET |
-        0x1 << FLASH_CTRL_CONTROL_START;
-
-  REG32(FLASH_CTRL_CONTROL(0)) = val;
-
-```
+See [library code](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/flash_ctrl.c) for implementation.
 
 It is acceptable for total number of flash words to be significantly greater than the depth of the read FIFO.
 In this situation, the read FIFO will fill up (or hit programmable fill value), pause the flash read and trigger an interrupt to software.
