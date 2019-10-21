@@ -108,14 +108,18 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     end // forever
   endtask
 
-  virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
+  virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size, bit just_cleared = 0);
     uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
     intr_exp[TxWatermark] |= (tx_q_size >= watermark);
+    // cover the interrupt sticky behavior
+    if (cfg.en_cov) cov.sticky_intr_cov["TxWatermark"].sample(just_cleared & intr_exp[TxWatermark]);
   endfunction
 
-  virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
+  virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size, bit just_cleared = 0);
     uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value());
     intr_exp[RxWatermark] |= (rx_q_size >= watermark);
+    // cover the interrupt sticky behavior
+    if (cfg.en_cov) cov.sticky_intr_cov["RxWatermark"].sample(just_cleared & intr_exp[RxWatermark]);
   endfunction
 
   // we don't model uart cycle-acurrately, ignore checking when item is just/almost finished
@@ -232,7 +236,13 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           intr_exp |= item.a_data;
+          if (cfg.en_cov) begin
+            foreach (intr_exp[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+            end
+          end
           // this field is WO - always returns 0
           void'(csr.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
         end
@@ -309,13 +319,16 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         if (write && channel == AddrChannel) begin // write & address phase
           bit[TL_DW-1:0] intr_wdata = item.a_data;
           fork begin
+            bit [NumUartIntr-1:0] pre_intr = intr_exp;
             // add 1 cycle delay to avoid race condition when fifo changing and interrupt clearing
             // occur simultaneously
             cfg.clk_rst_vif.wait_clks(1);
             intr_exp &= ~intr_wdata;
             // recalculate tx/rx watermark, will be set again if fifo size >= watermark
-            predict_tx_watermark_intr();
-            predict_rx_watermark_intr();
+            predict_tx_watermark_intr(.just_cleared(pre_intr[TxWatermark] &
+                                                    intr_wdata[TxWatermark]));
+            predict_rx_watermark_intr(.just_cleared(pre_intr[RxWatermark] &
+                                                    intr_wdata[RxWatermark]));
           end join_none
         end else if (!write && channel == AddrChannel) begin // read & addr phase
           intr_exp_at_addr_phase = intr_exp;
@@ -325,7 +338,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           do_read_check = 1'b0;
           foreach (intr_exp[i]) begin
             intr = i; // cast to enum to get interrupt name
-            if (cfg.en_cov) cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+            end
             // don't check it when it's in ignored period
             if (intr inside {TxWatermark, TxOverflow}) begin // TX interrupts
               if (is_in_ignored_period(UartTx)) continue;
