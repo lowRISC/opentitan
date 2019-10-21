@@ -52,7 +52,7 @@ struct spidpi_ctx {
 #define P2D_MOSI 0x4
 
 void *spidpi_create(const char *name, int mode, int loglevel);
-char spidpi_tick(void *ctx_void, svBitVecVal *d2p);
+char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data);
 void spidpi_close(void *ctx_void);
 
 // monitor
