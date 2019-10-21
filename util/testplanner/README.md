@@ -2,7 +2,7 @@
 
 # Testplanner tool
 
-Testplanner is a python3 based tool for parsing testplans written in hjson
+Testplanner is a python3 based tool for parsing testplans written in Hjson
 format into a data structure that can be used for:
 * Expanding the testplan inline within the DV plan as a table
 * Annotate the regression results with testplan entries for a document driven DV execution
@@ -10,9 +10,9 @@ format into a data structure that can be used for:
 <!-- TODO : fix links -->
 Please see [DV methodology](../../doc/ug/dv_methodology.md) for more details on the
 rationale and motivation for writing and maintaining testplans in a machine-parsable
-format (`hjson`).
+format (`Hjson`).
 
-This document will focus on the anatomy of a hjson testplan,
+This document will focus on the anatomy of a Hjson testplan,
 list of features supported and some of the ways of using the tool.
 
 ## Hjson Testplan
@@ -27,7 +27,7 @@ intent of a planned test:
 
 * **milestone: verification milestone**
 
-  This is one of {"`v1`", "`v2`" and "`v3`"}. This allows us concretely indicate that
+  This is one of {"`V1`", "`V2`" and "`V3`"}. This allows us concretely indicate that
   all goals for a particular milestone have been achieved and we can transition
   to the next.
 
@@ -38,7 +38,8 @@ intent of a planned test:
   that the reader gets the full picture of what and how the said feature is being
   tested.
 
-  Full markdown syntax is supported when writing the description.
+  Full [markdown](../doc/rm/markdown_usage_style.md) syntax is supported when writing
+  the description.
 
 * **tests: list of actual written tests that maps to this planned test**
 
@@ -61,7 +62,7 @@ like this:
   entries: [
     {
       name: feature1
-      milestone: v1
+      milestone: V1
       desc: '''**Goal**: High level goal of this test
 
             **Stimulus**: Describe the stimulus procedure.
@@ -71,7 +72,7 @@ like this:
     }
     {
       name: feature2
-      milestone: v2
+      milestone: V2
       desc: '''**Goal**: High level goal of this test
 
             **Stimulus**: Describe the stimulus procedure.
@@ -208,7 +209,7 @@ $ util/testplanner.py testplanner/examples/foo_testplan.hjson \
 
 ### APIs for external tools
 The [docgen](../docgen/README.md) invokes the testplanner utility functions
-directly to parse the hjson testplan and insert a HTML table within the DV
+directly to parse the Hjson testplan and insert a HTML table within the DV
 plan document. This is done by invoking:
 ```console
 Example 1:
@@ -221,7 +222,7 @@ See following snippet of code for the APIs in use:
 ```python
 from testplanner import class_defs, testplan_utils
 
-  # hjson_testplan_path: a string pointing to the path to hjson tesplan
+  # hjson_testplan_path: a string pointing to the path to Hjson tesplan
   # outbuf: file buffer opened for writing
   testplan = testplan_utils.parse_testplan(hjson_testplan_path)
   testplan_utils.gen_html_testplan_table(testplan, outbuf)

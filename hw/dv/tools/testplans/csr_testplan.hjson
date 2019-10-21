@@ -4,7 +4,7 @@
       name: csr
       desc: '''Standard CSR suite of tests run from all valid interfaces to prove SW
             accessibility.'''
-      milestone: v1
+      milestone: V1
       tests: ["{name}{intf}_csr_hw_reset",
               "{name}{intf}_csr_rw",
               "{name}{intf}_csr_bit_bash",

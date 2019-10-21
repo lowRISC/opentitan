@@ -22,7 +22,7 @@ class TestplanEntry():
     tests = []
 
     fields = ("name", "desc", "milestone", "tests")
-    milestones = ("na", "v1", "v2", "v3")
+    milestones = ("na", "V1", "V2", "V3")
 
     def __init__(self, name, desc, milestone, tests, substitutions=[]):
         self.name = name
