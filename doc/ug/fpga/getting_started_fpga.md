@@ -34,24 +34,7 @@ $ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
 The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
-
-## Updating an FPGA bitstream with a new ROM
-
-When creating an FPGA bitstream, the existing `rom.vmem` is used to construct the FPGA ROM.
-To expedite developement on FPGA, it is possible to update ROM contents without building another bitstream from scratch.
-To do so, the FPGA splice flow is used to load new boot ROM contents into FPGA and create a new embedded FPGA bitstream.
-The script assumes there is a pre-generated FPGA bitstream in the build directory at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
-The updated `rom.vmem` file is auto generated as part of this flow.
-
-See example below
-
-```console
-$ cd $REPO_TOP
-$ ./util/fpga/splice_nexysvideo.sh
-```
-
-After the script is successfully run, `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` is automatically updated.
-The original bitstream is moved to `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit.orig`.
+See the [reference manual](ref_manual_fpga.md) for more information.
 
 
 ## Flash the bitstream onto the FPGA
@@ -92,20 +75,15 @@ Now the Vivado GUI opens and loads the project.
 
 ## Testing the demo design
 
-By default, the FPGA bitstream is built with only the boot ROM.
-Using this boot ROM, the FPGA is able to load additional software to the emulated flash, such as the software in the `sw/examples/` and `sw/tests/` directories.
-To load additional software, a custom load tool named [spiflash](../../sw/host/spiflash/README.md) is required.
-
-Once the tool is built, also build the binary you wish to load.
-For the purpose of this demonstration, we will use `sw/examples/hello_world`.
-The example below builds the `hello_world` image and loads it onto the FPGA.
-The loading output is also shown.
+The `hello_world` demo software shows off some capabilities of the design.
+In order to load `hello_world` into the FPGA, both the binary and the [loading tool](../../sw/host/spiflash) must be compiled.
+Please follow the steps below.
 
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw SW_DIR=examples/hello_world SW_BUILD_DIR=out clean all
+$ make -C sw/device SW_DIR=examples/hello_world SW_BUILD_DIR=out clean all
 $ make -C sw/host/spiflash clean all
-$ ./sw/host/spiflash/spiflash --input=sw/out/sw.bin
+$ ./sw/host/spiflash/spiflash --input=sw/device/out/sw.bin
 
 Running SPI flash update.
 Image divided into 6 frames.
@@ -117,7 +95,7 @@ frame: 0x00000004 to offset: 0x00000f60
 frame: 0x80000005 to offset: 0x00001338
 ```
 
-The `hello_world` demo software shows off some capabilities of the design.
+
 
 * Use a Micro USB cable to connect the PC with the *PROG*-labeled connector on the board.
 * Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
