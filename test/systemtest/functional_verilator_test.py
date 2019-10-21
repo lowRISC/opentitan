@@ -18,19 +18,12 @@ $ pytest -s -v test/systemtest/functional_verilator_test.py \
 """
 
 import logging
-import os
-from pathlib import Path
 import re
-import select
-import subprocess
-import time
-
 import pytest
 
 import test_utils
 
 logging.basicConfig(level=logging.DEBUG)
-
 
 class TestFunctionalVerilator:
     """
@@ -39,14 +32,10 @@ class TestFunctionalVerilator:
     """
     @pytest.fixture
     def sim_top_earlgrey(self, tmp_path, sim_top_build, sw_test_bin, rom_bin):
-        assert Path(sw_test_bin).is_file()
-        assert Path(rom_bin).is_file()
-        assert Path(sim_top_build).is_file()
-
         cmd_sim = [
-            str(Path(sim_top_build).resolve()), '--flashinit',
-            str(Path(sw_test_bin).resolve()), '--rominit',
-            str(Path(rom_bin).resolve())
+            str(sim_top_build),
+            '--flashinit', str(sw_test_bin),
+            '--rominit', str(rom_bin)
         ]
         p_sim = test_utils.Process(cmd_sim,
                                    logdir=str(tmp_path),
