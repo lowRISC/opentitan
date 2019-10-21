@@ -6,11 +6,11 @@
 
 #include <iostream>
 
+
 #include "Vtop_earlgrey_verilator.h"
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
 
-VERILATED_TOPLEVEL(top_earlgrey_verilator)
 
 top_earlgrey_verilator *top;
 VerilatorSimCtrl *simctrl;
