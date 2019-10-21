@@ -10,7 +10,6 @@
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
 
-VERILATED_TOPLEVEL(top_earlgrey_usb_verilator)
 
 top_earlgrey_usb_verilator *top;
 VerilatorSimCtrl *simctrl;
