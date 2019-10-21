@@ -1,22 +1,53 @@
-### dv_base_reg_block
-This class extends from uvm_reg_block and is used as the base class of all
-auto-generated UVM RAL models for all IPs. This class provides a virtualized
-`build(base_addr)` method that is used by the actual derived RAL models to build
-the entire RAL structure. An instance of the RAL model is created in `cip_base_cfg`.
-The model is however, locked by calling `uvm_reg_block::lock_model()` during
-`cip_base_env::end_of_elaboration_phase()` to allow any customizations to
-the RAL structures if needed during the`build_phase`.
+# DV library classes
 
-There are a few enhancement planned in future to this base ral model, that will
-automatically be available in the extended IP specific RAL models through
-inheritance:
-* CSR exclusion automation:
-  We will add cip_base_reg and cip_base_field extensions to add attributes that
-  can be automated during the IP ral model auto-generation, which can be used to
-  exclude certain CSRs and fields from the CSR suite of tests.
-* Support parameterized RAL model generation:
-  In future, we may have parameterized IPs that will have parameterized number of
-  CSRs / fields. Having this base class provides a path to support this.
+{{% toc 4 }}
 
-TODO add description for the other classes
+## Overview
+The DV library classes form the base layer / framework for constructing UVM
+testbenches. These classes provide features (settings, methods, hooks and other
+constructs used in verification) that are generic enough to be reused across
+all testbenches.
 
+In this doc, we will capture some of the most salient / frequently used features
+in extended classes. These classes are being updated frequently. So, for a more
+detailed understanding, please read the class definitions directly.
+
+The DV library classes fall into 3 categories - UVM RAL (register abstraction
+layer), UVM agent, and UVM environment extensions.
+
+### UVM RAL extensions
+The RAL model generated using the [reggen](../../../util/reggen/README.md) tool
+extend from these classes. These themselves extend from the corresponding RAL
+classes provided in UVM.
+
+#### `dv_base_reg_field`
+Currently, this class does not provide any additional features. One of the
+features planned for future is setting exclusion tags at the field level for the
+CSR suite of tests that will be extracted automatically from the Hjson-based
+IP CSR specification.
+
+#### `dv_base_reg`
+This class provides the following functions to support verification:
+* `gen_n_used_bits()`: This function returns the actual number of bits used in
+  the CSR (sum of all available field widths).
+* `get_msb_pos()`: This function returns the MSB bit position of all available
+  fields. CSR either ends at this bit (bit `TL_DW - 1) or has reserved / invalid
+  bits beyond this bit.
+
+#### `dv_base_reg_block`
+* ` build(uvm_reg_addr_t base_addr)`: This function is implemented as a pseudo
+  pure virtual function (returns a fatal error if called directly). It is used
+  for building the complete RAL model. For a polymorphic approach, the DV user
+  can use this class handle to create the extended (IP specific) class instance
+  and call this function to build the acuual RAL model. This is exactly how it
+  is done in [dv_base_env_cfg](# dv_base_env_cfg).
+
+#### `dv_base_reg_map`
+Currently, this class does not provide any additional features. Having this
+extension provides an opportunity to add common features in future.
+
+### UVM Agent extensions
+TODO
+
+### UVM Environment extensions
+TODO

@@ -1,3 +1,5 @@
-{{% lowrisc-doc-hdr JTAG DV UVM Agent }}
+# JTAG UVM Agent
 
-JTAG DV UVM Agent is extended from DV library agent classes.
+{{% toc 4 }}
+
+JTAG UVM Agent is extended from DV library agent classes.
