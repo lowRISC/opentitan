@@ -3,13 +3,13 @@
     {
       name: mem_walk
       desc: "Walk 1 through memory addresses from all interfaces"
-      milestone: v1
+      milestone: V1
       tests: ["{name}{intf}_mem_walk"]
     }
     {
       name: mem_partial_access
       desc: "Do partial accesses to memories."
-      milestone: v1
+      milestone: V1
       // mem_walk does partial writes, so we can reuse that test here
       tests: ["{name}{intf}_mem_walk"]
     }

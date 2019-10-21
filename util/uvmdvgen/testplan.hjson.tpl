@@ -18,13 +18,13 @@
               describe second bullet
 
             Start a new paragraph.'''
-      milestone: v1
+      milestone: V1
       tests: ["${name}_sanity"]
     }
     {
       name: feature1
       desc: '''Add more test entries here like above.'''
-      milestone: v1
+      milestone: V1
       tests: []
     }
   ]
