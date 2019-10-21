@@ -113,7 +113,7 @@ stages:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
           && sudo pip3 install -r python-requirements.txt \
-          && sudo apt-get install git make autoconf g++ flex bison curl
+          && sudo apt-get install -y git make autoconf g++ flex bison curl libelf-dev
       displayName: 'Install dependencies'
     - bash: |
         set -e

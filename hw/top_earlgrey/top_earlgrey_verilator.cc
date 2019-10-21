@@ -60,6 +60,25 @@ int main(int argc, char **argv) {
 
   SetupSignalHandler();
 
+  // Initialize ROM
+  simctrl->RegisterMemoryArea(
+      "rom",
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom"
+      ".gen_mem_generic.u_impl_generic");
+
+  // Initialize Ram
+  simctrl->RegisterMemoryArea(
+      "ram",
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main"
+      ".gen_mem_generic.u_impl_generic");
+
+  simctrl->RegisterMemoryArea(
+      "flash",
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash."
+      "gen_flash_banks[0].u_flash.gen_flash.u_impl_generic.u_mem.gen_mem_"
+      "generic.u_impl_"
+      "generic");
+
   if (!simctrl->ParseCommandArgs(argc, argv, retcode)) {
     goto free_return;
   }
@@ -73,27 +92,6 @@ int main(int argc, char **argv) {
               << std::endl
               << "$ kill -USR1 " << getpid() << std::endl;
   }
-
-  // Initialize ROM
-  simctrl->InitRom(
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom"
-      ".gen_mem_generic.u_impl_generic");
-
-  // Initialize Ram
-  simctrl->InitRam(
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main"
-      ".gen_mem_generic.u_impl_generic");
-
-  // Initialize Flash
-  //  simctrl->InitFlash(
-  //      "TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash.gen_flash."
-  //      "u_impl_generic.gen_flash_banks[0].u_impl_generic.gen_mem_generic.u_impl_"
-  //      "generic");
-  simctrl->InitFlash(
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash."
-      "gen_flash_banks[0].u_flash.gen_flash.u_impl_generic.u_mem.gen_mem_"
-      "generic.u_impl_"
-      "generic");
 
   simctrl->Run();
   simctrl->PrintStatistics();

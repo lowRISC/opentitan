@@ -44,12 +44,25 @@ module prim_generic_rom #(
   `endif // VERILATOR
 
   `ifdef VERILATOR
+    // Task for loading 'mem' with SystemVerilog system task readmemh
     export "DPI-C" task simutil_verilator_memload;
+    // Function for setting a specific element in 'mem'
+    export "DPI-C" function simutil_verilator_set_mem;
 
     task simutil_verilator_memload;
       input string file;
       $readmemh(file, mem);
     endtask
+
+    function int simutil_verilator_set_mem(input int index,
+      input logic[Width-1:0] val);
+      if (index < Depth) begin
+        mem[index] = val;
+        return 1;
+      end else begin
+        return 0;
+      end
+    endfunction
   `endif
 
   `ifdef ROM_INIT_FILE

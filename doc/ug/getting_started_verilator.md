@@ -35,13 +35,16 @@ $ make -C sw SIM=1 SW_DIR=examples/hello_world SW_BUILD_DIR=${SW_BUILD_DIR} clea
 ```
 
 Now the simulation can be run.
-The program listed after `--rominit` and `--flashinit` are loaded into the system's respective memories and start executing immediately.
+The programs listed after `--meminit` are loaded into the system's memories, as defined by the argument, and start executing immediately.
+The format for the option `--meminit` follows the scheme `name,file[,type]`, in which `name` specifies the memory, `file` the path to the program built in the previous step and the optional `type` to set a specific file type for the program.
+Possible options for `type` are `elf` and `vmem`.
+Available memories can be printed by using `--meminit list` or the short version `-m list`.
 
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=${ROM_BUILD_DIR}/rom.vmem \
-  --flashinit=${SW_BUILD_DIR}/sw.vmem
+  --meminit=rom,${ROM_BUILD_DIR}/rom.elf \
+  --meminit=flash,${SW_BUILD_DIR}/sw.elf
 ```
 
 To stop the simulation press CTRL-c.
