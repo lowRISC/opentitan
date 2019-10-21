@@ -69,31 +69,40 @@ def localconf(request):
 def topsrcdir(request):
     """Return the top-level source directory as Path object."""
     # TODO: Consider making this configurable using a pytest arg.
-    return str(Path(os.path.dirname(__file__)) / '..' / '..')
+    path = (Path(os.path.dirname(__file__)) / '..' / '..').resolve()
+    assert path.is_dir()
+    return path
 
 
 @pytest.fixture(scope="session")
 def sw_test_bin(pytestconfig):
     """Return path to software test binary."""
-    return pytestconfig.getoption('test_bin')
-
+    path = Path(pytestconfig.getoption('test_bin')).resolve()
+    assert path.is_file()
+    return path
 
 @pytest.fixture(scope="session")
 def rom_bin(pytestconfig):
     """Return path to boot_rom binary."""
-    return pytestconfig.getoption('rom_bin')
+    path = Path(pytestconfig.getoption('rom_bin')).resolve()
+    assert path.is_file()
+    return path
 
 
 @pytest.fixture(scope="session")
 def sim_top_build(pytestconfig):
     """Return path to Verilator sim model."""
-    return pytestconfig.getoption('verilator_model')
+    path = Path(pytestconfig.getoption('verilator_model')).resolve()
+    assert path.is_file()
+    return path
 
 
 @pytest.fixture(scope="session")
 def openocd(pytestconfig):
     """Return path to OpenOCD executable."""
-    return pytestconfig.getoption('openocd')
+    path = Path(pytestconfig.getoption('openocd')).resolve()
+    assert path.is_file()
+    return path
 
 @pytest.fixture(scope="session")
 def uart_timeout(pytestconfig):

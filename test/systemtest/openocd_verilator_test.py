@@ -21,32 +21,24 @@ To work around this issue, run the test with an additional configuration option:
 """
 
 import logging
-import os
-from pathlib import Path
 import re
 import subprocess
 import time
-
 import pytest
 
 import test_utils
 
 logging.basicConfig(level=logging.DEBUG)
 
-
 class TestCoreVerilator:
     """Test core functionality in a Verilator-simulated hardware build."""
 
     @pytest.fixture
     def sim_top_earlgrey(self, tmp_path, sim_top_build, sw_test_bin, rom_bin):
-        assert Path(sw_test_bin).is_file()
-        assert Path(rom_bin).is_file()
-        assert Path(sim_top_build).is_file()
-
         cmd_sim = [
-            str(Path(sim_top_build).resolve()),
-            '--meminit', str(Path(sw_test_bin).resolve()),
-            '--rominit', str(Path(rom_bin).resolve())
+            str(sim_top_build),
+            '--meminit', str(sw_test_bin)),
+            '--rominit', str(rom_bin))
         ]
         p_sim = test_utils.Process(
             cmd_sim,
@@ -66,7 +58,7 @@ class TestCoreVerilator:
         assert subprocess.call([openocd, '--version']) == 0
         cmd_openocd = [
             openocd,
-            '-s', str(Path(topsrcdir) / 'util' / 'openocd'),
+            '-s', str(topsrcdir / 'util' / 'openocd'),
             '-f', 'board/lowrisc-earlgrey-verilator.cfg',
             '-c', 'init; riscv test_compliance; shutdown'
         ]
