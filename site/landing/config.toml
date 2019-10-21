@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[[deployment.targets]]
+name = "staging"
+URL = "gs://gold-hybrid-255313-staging"
+
+[[deployment.targets]]
+name = "public"
+URL = "gs://gold-hybrid-255313"
+googleCloudCDNOrigin = "opentitan-dot-org"
