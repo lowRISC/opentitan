@@ -1,0 +1,66 @@
+{
+  name: "rv_timer"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''Basic rv_timer sanity test perform following steps for number of iterations
+            - Program zero to CTRL.active* Register(deactivate timer)
+            - Program random legal values in CFG*, TIMER_V_*, COMPARE_*, INTR_ENABLE*
+            - Program one to CTRL.active* (activate timer)
+            - Wait for number of cycles to have mTime>= mTimeCmp
+            - Check Interrupt state register and Interrupt signal (scoreboard logic)'''
+      milestone: V1
+      tests: ["rv_timer_sanity"]
+    }
+    {
+      name: random_reset
+      desc: '''This test is to exercise on the fly reset(timer is active)
+            - Assert reset randomly in the middle of sanity test steps
+            - Scoreboard check for all register go back to reset value'''
+      milestone: V2
+      tests: ["rv_timer_random_reset"]
+    }
+    {
+      name: disabled
+      desc: '''This test to verify no activity in mTime, Interrupt Status, Interrupt signal,
+            When all timers are deactive (ctrl.active = 0).
+            - Program 1 in interrupt enable and 0 in control register and random value for
+              rest of the registers
+            - Scoreboard check for no activity and no interrupt whatever is setting'''
+      milestone: V2
+      tests: ["rv_timer_disabled"]
+    }
+    {
+      name: cfg_update_on_fly
+      desc: '''This test will verify update timer configuration on running timer.
+            - Program timer.Active to zero
+            - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
+            - After some clocks update timer config values
+            - Check for interrupt as per new config set'''
+      milestone: V2
+      tests: ["rv_timer_cfg_update_on_fly"]
+    }
+    {
+      name: no_interrupt_test
+      desc: '''This test will update timer value and compare value just before timer is going to
+            expire (multiple times) and verify no interrupt is asserted
+            - Program timer.Active to zero
+            - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
+            - Update timer config values just before timer is about to expire
+            - Check for no interrupt set'''
+      milestone: V2
+      tests: ["rv_timer_cfg_update_on_fly"]
+    }
+    {
+      name: stress
+      desc: '''Do combinations of multiple of above scenarios to get multiple interrupts
+            asserted at the same time. Scoreboard should be robust enough to deal with all
+            scenarios.'''
+      milestone: V2
+      tests: ["rv_timer_stress_all"]
+    }
+  ]
+}
