@@ -100,6 +100,20 @@ can derive coverage on some of the env cfg settings.
 class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends uvm_component;
 ```
 
+The following covergroups are defined outside of the class for use by all IP
+testbenches:
+* `intr_cg`: Covers individual and cross coverage on intr_enable and intr_state for all interrupts in IP
+* `intr_test_cg`: Covers intr_test coverage and its cross with intr_enable and intr_state for all interrupts in IP
+* `intr_pins_cg`: Covers values and transitions on all interrupt output pins of IP
+* `alert_cg`: Covers all alerts, if alerts exist in the IP
+* `sticky_intr_cov`: Covers sticky interrupt functionality of all applicable interrupts in IP
+
+Covergroups `intr_cg`, `intr_test_cg`, `intr_pins_cg` and `alert_cg` are instantiated
+and allocated in `cip_base_env_cov` by default in all IPs.
+On the other hand, `sticky_intr_cov` is instantiated with string key.
+The string key represents the interrupts names that are sticky. This is specific
+to each IP and is required to be created and instantiated in extended `cov` class.
+
 ### cip_base_virtual_sequencer
 This is the base virtual sequencer class that contains a handle to the
 `tl_sequencer` to allow layered test sequences to be created. The extended IP
