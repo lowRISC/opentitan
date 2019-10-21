@@ -11,6 +11,5 @@
   },
 
   exclude_from_upstream: [
-    "dv/verilator/simutil_verilator",
   ]
 }
