@@ -116,10 +116,10 @@ void *spidpi_create(const char *name, int mode, int loglevel) {
   return (void *)ctx;
 }
 
-char spidpi_tick(void *ctx_void, svBitVecVal *d2p_data) {
+char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
   struct spidpi_ctx *ctx = (struct spidpi_ctx *)ctx_void;
   assert(ctx);
-  int d2p = d2p_data[0];
+  int d2p = d2p_data->aval;
 
   // Will tick at the master clock
   ctx->tick++;

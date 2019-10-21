@@ -30,7 +30,7 @@ module spidpi
     void spidpi_close(input chandle ctx);
 
   import "DPI-C" function
-    byte spidpi_tick(input chandle ctx, input [1:0] d2p);
+    byte spidpi_tick(input chandle ctx_void, input [1:0] d2p_data);
 
   chandle ctx;
 
