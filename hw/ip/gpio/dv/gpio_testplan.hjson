@@ -1,0 +1,20 @@
+{
+  name: "gpio"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''Basic GPIO sanity test that exercises gpio pins as inputs or outputs, and performs
+            data integrity checks by triggering scoreboard checks by reading data_in register.
+            This test repeats following steps are random no. of times:
+            - configures all gpio pins as inputs, drives random value on cio_gpio_i signal and
+              reads data_in register after random delay
+            - configures all gpio pins as outputs, programs direct_out and direct_oe registers to
+              random values and reads data_in register after random delay'''
+      milestone: V1
+      tests: ["gpio_sanity"]
+    }
+  ]
+}
