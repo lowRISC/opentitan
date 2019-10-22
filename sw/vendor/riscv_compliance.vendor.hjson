@@ -11,6 +11,8 @@
   },
 
   exclude_from_upstream: [
+    "doc",
+    "spec",
     "riscv-target",
     "riscv-ovpsim",
     "riscv-test-suite/rv32mi",
