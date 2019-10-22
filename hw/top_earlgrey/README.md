@@ -19,7 +19,7 @@ is created with below command.
 It generates files below:
 
 - `rtl/top_earlgrey.sv`: Top module generated from the template
-    `doc/top_earlgrey.tpl.sv` with the configuration file
+    `doc/top_earlgrey.sv.tpl` with the configuration file
     `doc/top_earlgrey.hjson`
 - `rtl/xbar_main.sv` and `rtl/tl_main_pkg.sv`: Crossbar module. As of now,
     earlgrey has only one main crossbar. tlgen library is used to generate
@@ -57,7 +57,7 @@ uses.
 
 ### Modify the template
 
-Main top template file is `doc/top_earlgrey.tpl.sv`. In most cases, it isn't
+Main top template file is `doc/top_earlgrey.sv.tpl`. In most cases, it isn't
 require to modify the template file. For instance, to add new IP into the top,
 the user just needs to add the IP to the `module` field and revise the crossbar
 connections in the crossbar configuration.
