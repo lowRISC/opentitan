@@ -85,6 +85,7 @@ Once all bugs have fixed, lint and CDC violations cleaned up, the design moves i
 The following development milestones are for hardware peripheral verification work.
 They are similar to typical chip verification milestones, but less rigid in the movement from one stage to the next.
 The metric here is the progress towards testing completion and proof of testing coverage.
+The verification stages can be applied to simulation-based DV and formal property verification (FPV) approaches.
 
 The first verification stage is **Initial Work**.
 This indicates the period of time between the beginning of verification planning and the testbench up and running.
@@ -99,12 +100,23 @@ The third verification stage is **Testing Complete**.
 In this phase, no changes are expected on the testplan, no changes expected on the testbench, and no new tests are expected except to complete full coverage of the design.
 Once all coverage metrics have been met, waivers checked, the verification moves into its final stage: **Verification Complete**.
 
+**Stages for simulation-based DV**:
+
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
-| V0 | Initial Work | Testbench being developed, not functional; test plan being written |
-| V1 | Under Test | <ul> <li> Documentation: <ul> <li>DV Plan available, testplan completed and reviewed </ul> <li> Testbench: <ul><li>DUT instantiated with major interfaces hooked up <li>All available interface assertion monitors hooked up <li>X / unknown checks on DUT outputs added <li>Skeleton environment created with UVCs <li>TLM connections made from interface monitors to the scoreboard </ul> <li>Tests (written and passing): <ul> <li>Sanity test accessing basic functionality <li>CSR / mem test suite </ul> <li>Regressions: <ul> <li>Sanity and nightly regression set up </ul></ul> |
-| V2 | Testing Complete | <ul> <li>Documentation: DV plan completely written <li>Testbench: all interfaces hooked up and exercised, all assertions written and enabled <li>UVM environment: fully developed with end-to-end checks in scoreboard <li>Tests (written and passing): all tests planned for in the testplan <li>Regression: all tests passing in nightly regression with multiple seeds (> 90%) <li>Design Issues: all high priority bugs addressed, low priority bugs root-caused <li>Coverage: code: 90% across the board, functional: 100% coverpoints covered, 75% crosses covered</ul> |
-| V3 | Verification Complete | <ul><li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li>Regression: all tests with all seeds passing <li>Design Issues: all bugs addressed  <li>Coverage: 100% code, 100% functional with waivers</ul> |
+| V0 | Initial Work | Testbench being developed, not functional; test plan being written; decided which methodology to use (sim-based DV, FPV, or both). |
+| V1 | Under Test | <ul> <li> Documentation: DV Plan available, testplan completed and reviewed <li> Testbench: <ul><li>DUT instantiated with major interfaces hooked up <li>All available interface assertion monitors hooked up <li>X / unknown checks on DUT outputs added <li>Skeleton environment created with UVCs <li>TLM connections made from interface monitors to the scoreboard </ul> <li>Tests (written and passing): <ul> <li>Sanity test accessing basic functionality <li>CSR / mem test suite </ul> <li>Regressions: Sanity and nightly regression set up</ul> |
+| V2 | Testing Complete | <ul> <li>Documentation: DV plan completely written <li>Design Issues: <ul><li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li>Testbench: <ul><li>all interfaces hooked up and exercised <li> all assertions written and enabled </ul> <li>UVM environment: fully developed with end-to-end checks in scoreboard <li>Tests (written and passing): all tests planned for in the testplan <li>Regression: all tests passing in nightly regression with multiple seeds (> 90%)  <li>Coverage: 90% code coverage across the board, 100% functional coverpoints covered and 75% crosses covered</ul></ul> |
+| V3 | Verification Complete | <ul> <li>Design Issues: all bugs addressed  <li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li>Regression: all tests with all seeds passing <li>Coverage: 100% code and 100% functional coverage with waivers </ul> </ul> |
+
+**Stages for FPV approaches**:
+
+| **Stage** | **Name** | **Definition** |
+| --- | --- | --- |
+| V0 | Initial Work | Testbench being developed, not functional; test plan being written; decided which methodology to use (sim-based DV, FPV, or both). |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li> DV Plan available, testplan completed and reviewed </ul> <li> Testbench: <ul><li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li>All functional properties identified and described in testplan <li>Assertions for main functional path implemented and passing (sanity check)<li> Each input and each output is part of at least one assertion</ul><li>Regressions: Sanity and nightly regression set up</ul> |
+| V2 | Testing Complete | <ul> <li>Documentation: DV plan completely written <li>Design Issues: <ul><li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li>Testbench: <ul><li>all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li>Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
+| V3 | Verification Complete | <ul> <li>Design Issues: all bugs addressed  <li> Assertions (written and proven): all assertions including newly added post-V2 assertions (if any) <li>Regression: 100% of properties proven (with reviewed assumptions) <li> Coverage: 100% code coverage and 100% COI coverage</ul> |
 
 ## Signoff Review
 
