@@ -8,7 +8,8 @@ diagram section below. Please update / modify / remove sections below as
 applicable. Once done, remove this comment before making a PR. -->
 
 {{% lowrisc-doc-hdr ${name.upper()} DV Plan }}
-{{% import_testplan ${name}_testplan.hjson }}
+<!-- TODO: uncomment the line below after adding the testplan -->
+<!-- {{% import_testplan ${name}_testplan.hjson }} -->
 
 {{% toc 4 }}
 
@@ -124,4 +125,5 @@ $ make TEST_NAME=${name}_sanity
 ```
 
 ${'##'} Testplan
-{{% insert_testplan x }}
+<!-- TODO: uncomment the line below after adding the testplan -->
+<!-- {{% insert_testplan x }} -->
