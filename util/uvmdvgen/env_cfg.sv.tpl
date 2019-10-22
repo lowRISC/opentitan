@@ -22,8 +22,8 @@ class ${name}_env_cfg extends dv_base_env_cfg #(.RAL_T(${name}_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
-    super.initialize();
+                                   bit [TL_AW-1:0] csr_addr_map_size = ADDR_MAP_SIZE);
+    super.initialize(csr_base_addr, csr_addr_map_size);
 % for agent in env_agents:
     // create ${agent} agent config obj
     m_${agent}_agent_cfg = ${agent}_agent_cfg::type_id::create("m_${agent}_agent_cfg");
