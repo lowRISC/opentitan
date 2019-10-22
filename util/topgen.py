@@ -106,8 +106,8 @@ def generate_plic(top, out_path):
     # So, topgen reads template files from rv_plic directory directly.
     # Next, if the ip top gen tool is placed in util/ we can import the library.
     tpl_path = out_path / '../ip/rv_plic/doc'
-    hjson_tpl_path = tpl_path / 'rv_plic.tpl.hjson'
-    rtl_tpl_path = tpl_path / 'rv_plic.tpl.sv'
+    hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
+    rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
 
     # Generate Register Package and RTLs
     out = StringIO()
@@ -199,7 +199,7 @@ def main():
         '--tpl',
         '-c',
         help=
-        "The directory having top_{name}_core.tpl.sv and top_{name}.tpl.sv.")
+        "The directory having top_{name}_core.sv.tpl and top_{name}.tpl.sv.")
     parser.add_argument(
         '--outdir',
         '-o',
@@ -391,7 +391,7 @@ def main():
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)
-        top_tplpath = tpl_path / ("top_%s.tpl.sv" % (top_name))
+        top_tplpath = tpl_path / ("top_%s.sv.tpl" % (top_name))
         out_top = generate_rtl(completecfg, str(top_tplpath))
 
         rtl_path = out_path / 'rtl/autogen'

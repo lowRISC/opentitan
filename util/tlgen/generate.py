@@ -16,13 +16,13 @@ def generate(xbar):  #xbar: Xbar -> str
     """
 
     xbar_rtl_tpl = Template(
-        filename=resource_filename('tlgen', 'xbar.rtl.tpl.sv'))
+        filename=resource_filename('tlgen', 'xbar.rtl.sv.tpl'))
     xbar_pkg_tpl = Template(
-        filename=resource_filename('tlgen', 'xbar.pkg.tpl.sv'))
+        filename=resource_filename('tlgen', 'xbar.pkg.sv.tpl'))
     #xbar_dv_tpl = Template(
-    #    filename=resource_filename('tlgen', 'xbar.dv.tpl.sv'))
+    #    filename=resource_filename('tlgen', 'xbar.dv.sv.tpl'))
     xbar_bind_tpl = Template(
-        filename=resource_filename('tlgen', 'xbar.bind.tpl.sv'))
+        filename=resource_filename('tlgen', 'xbar.bind.sv.tpl'))
 
     try:
         out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)

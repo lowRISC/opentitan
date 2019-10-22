@@ -179,9 +179,9 @@ def gen_rtl(obj, outdir):
 
     # Read Register templates
     reg_top_tpl = Template(
-        filename=resource_filename('reggen', 'reg_top.tpl.sv'))
+        filename=resource_filename('reggen', 'reg_top.sv.tpl'))
     reg_pkg_tpl = Template(
-        filename=resource_filename('reggen', 'reg_pkg.tpl.sv'))
+        filename=resource_filename('reggen', 'reg_pkg.sv.tpl'))
 
     # Generate pkg.sv with block name
     with open(outdir + "/" + block.name + "_reg_pkg.sv", 'w',

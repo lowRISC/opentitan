@@ -1006,7 +1006,7 @@ number of alert sources matches.
 In order to generate the register file below, from `hw/ip/alert_handler/doc`:
 
 ```console
-$ ./reg_alert_handler.py alert_handler.tpl.hjson -n 4 > alert_handler.hjson
+$ ./reg_alert_handler.py alert_handler.hjson.tpl -n 4 > alert_handler.hjson
 ```
 
 This creates the register file for 4 alert sources.
@@ -1015,7 +1015,7 @@ Note that you should also update the regfile wrapper after updating the
 regfile using
 
 ```console
-$ ./alert_handler_reg_wrap.tpl.sv -n 4 > ../rtl/alert_handler_reg_wrap.sv
+$ ./alert_handler_reg_wrap.sv.tpl -n 4 > ../rtl/alert_handler_reg_wrap.sv
 ```
 
 
