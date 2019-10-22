@@ -212,12 +212,12 @@ module top_earlgrey #(
 
   // ROM device
   logic        rom_req;
-  logic [10:0] rom_addr;
+  logic [11:0] rom_addr;
   logic [31:0] rom_rdata;
   logic        rom_rvalid;
 
   tlul_adapter_sram #(
-    .SramAw(11),
+    .SramAw(12),
     .SramDw(32),
     .Outstanding(1),
     .ErrOnWrite(1)
@@ -241,7 +241,7 @@ module top_earlgrey #(
 
   prim_rom #(
     .Width(32),
-    .Depth(2048)
+    .Depth(4096)
   ) u_rom_rom (
     .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),

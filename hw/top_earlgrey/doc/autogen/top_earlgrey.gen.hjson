@@ -382,7 +382,7 @@
       }
       type: rom
       base_addr: 0x00008000
-      size: 0x2000
+      size: 0x4000
     }
     {
       name: ram_main
@@ -496,7 +496,7 @@
           pipeline: "false"
           inst_type: rom
           base_addr: 0x00008000
-          size_byte: 0x2000
+          size_byte: 0x4000
           pipeline_byp: "true"
         }
         {

@@ -6,56 +6,19 @@
 // Do Not Edit directly
 
 // Forward declare all register/memory/block classes
-typedef class spi_device_reg_intr_state;
-typedef class spi_device_reg_intr_enable;
-typedef class spi_device_reg_intr_test;
-typedef class spi_device_reg_control;
-typedef class spi_device_reg_cfg;
-typedef class spi_device_reg_fifo_level;
-typedef class spi_device_reg_async_fifo_level;
-typedef class spi_device_reg_status;
-typedef class spi_device_reg_rxf_ptr;
-typedef class spi_device_reg_txf_ptr;
-typedef class spi_device_reg_rxf_addr;
-typedef class spi_device_reg_txf_addr;
-typedef class spi_device_mem_buffer;
-typedef class spi_device_reg_block;
-
-typedef class flash_ctrl_reg_intr_state;
-typedef class flash_ctrl_reg_intr_enable;
-typedef class flash_ctrl_reg_intr_test;
-typedef class flash_ctrl_reg_control;
-typedef class flash_ctrl_reg_addr;
-typedef class flash_ctrl_reg_region_cfg_regwen;
-typedef class flash_ctrl_reg_mp_region_cfg0;
-typedef class flash_ctrl_reg_mp_region_cfg1;
-typedef class flash_ctrl_reg_mp_region_cfg2;
-typedef class flash_ctrl_reg_mp_region_cfg3;
-typedef class flash_ctrl_reg_mp_region_cfg4;
-typedef class flash_ctrl_reg_mp_region_cfg5;
-typedef class flash_ctrl_reg_mp_region_cfg6;
-typedef class flash_ctrl_reg_mp_region_cfg7;
-typedef class flash_ctrl_reg_default_region;
-typedef class flash_ctrl_reg_bank_cfg_regwen;
-typedef class flash_ctrl_reg_mp_bank_cfg;
-typedef class flash_ctrl_reg_op_status;
-typedef class flash_ctrl_reg_status;
-typedef class flash_ctrl_reg_scratch;
-typedef class flash_ctrl_reg_fifo_lvl;
-typedef class flash_ctrl_mem_prog_fifo;
-typedef class flash_ctrl_mem_rd_fifo;
-typedef class flash_ctrl_reg_block;
-
-typedef class rv_timer_reg_ctrl;
-typedef class rv_timer_reg_cfg0;
-typedef class rv_timer_reg_timer_v_lower0;
-typedef class rv_timer_reg_timer_v_upper0;
-typedef class rv_timer_reg_compare_lower0_0;
-typedef class rv_timer_reg_compare_upper0_0;
-typedef class rv_timer_reg_intr_enable0;
-typedef class rv_timer_reg_intr_state0;
-typedef class rv_timer_reg_intr_test0;
-typedef class rv_timer_reg_block;
+typedef class uart_reg_intr_state;
+typedef class uart_reg_intr_enable;
+typedef class uart_reg_intr_test;
+typedef class uart_reg_ctrl;
+typedef class uart_reg_status;
+typedef class uart_reg_rdata;
+typedef class uart_reg_wdata;
+typedef class uart_reg_fifo_ctrl;
+typedef class uart_reg_fifo_status;
+typedef class uart_reg_ovrd;
+typedef class uart_reg_val;
+typedef class uart_reg_timeout_ctrl;
+typedef class uart_reg_block;
 
 typedef class gpio_reg_intr_state;
 typedef class gpio_reg_intr_enable;
@@ -73,6 +36,21 @@ typedef class gpio_reg_intr_ctrl_en_lvlhigh;
 typedef class gpio_reg_intr_ctrl_en_lvllow;
 typedef class gpio_reg_ctrl_en_input_filter;
 typedef class gpio_reg_block;
+
+typedef class spi_device_reg_intr_state;
+typedef class spi_device_reg_intr_enable;
+typedef class spi_device_reg_intr_test;
+typedef class spi_device_reg_control;
+typedef class spi_device_reg_cfg;
+typedef class spi_device_reg_fifo_level;
+typedef class spi_device_reg_async_fifo_level;
+typedef class spi_device_reg_status;
+typedef class spi_device_reg_rxf_ptr;
+typedef class spi_device_reg_txf_ptr;
+typedef class spi_device_reg_rxf_addr;
+typedef class spi_device_reg_txf_addr;
+typedef class spi_device_mem_buffer;
+typedef class spi_device_reg_block;
 
 typedef class hmac_reg_intr_state;
 typedef class hmac_reg_intr_enable;
@@ -102,19 +80,41 @@ typedef class hmac_reg_msg_length_upper;
 typedef class hmac_mem_msg_fifo;
 typedef class hmac_reg_block;
 
-typedef class uart_reg_intr_state;
-typedef class uart_reg_intr_enable;
-typedef class uart_reg_intr_test;
-typedef class uart_reg_ctrl;
-typedef class uart_reg_status;
-typedef class uart_reg_rdata;
-typedef class uart_reg_wdata;
-typedef class uart_reg_fifo_ctrl;
-typedef class uart_reg_fifo_status;
-typedef class uart_reg_ovrd;
-typedef class uart_reg_val;
-typedef class uart_reg_timeout_ctrl;
-typedef class uart_reg_block;
+typedef class rv_timer_reg_ctrl;
+typedef class rv_timer_reg_cfg0;
+typedef class rv_timer_reg_timer_v_lower0;
+typedef class rv_timer_reg_timer_v_upper0;
+typedef class rv_timer_reg_compare_lower0_0;
+typedef class rv_timer_reg_compare_upper0_0;
+typedef class rv_timer_reg_intr_enable0;
+typedef class rv_timer_reg_intr_state0;
+typedef class rv_timer_reg_intr_test0;
+typedef class rv_timer_reg_block;
+
+typedef class flash_ctrl_reg_intr_state;
+typedef class flash_ctrl_reg_intr_enable;
+typedef class flash_ctrl_reg_intr_test;
+typedef class flash_ctrl_reg_control;
+typedef class flash_ctrl_reg_addr;
+typedef class flash_ctrl_reg_region_cfg_regwen;
+typedef class flash_ctrl_reg_mp_region_cfg0;
+typedef class flash_ctrl_reg_mp_region_cfg1;
+typedef class flash_ctrl_reg_mp_region_cfg2;
+typedef class flash_ctrl_reg_mp_region_cfg3;
+typedef class flash_ctrl_reg_mp_region_cfg4;
+typedef class flash_ctrl_reg_mp_region_cfg5;
+typedef class flash_ctrl_reg_mp_region_cfg6;
+typedef class flash_ctrl_reg_mp_region_cfg7;
+typedef class flash_ctrl_reg_default_region;
+typedef class flash_ctrl_reg_bank_cfg_regwen;
+typedef class flash_ctrl_reg_mp_bank_cfg;
+typedef class flash_ctrl_reg_op_status;
+typedef class flash_ctrl_reg_status;
+typedef class flash_ctrl_reg_scratch;
+typedef class flash_ctrl_reg_fifo_lvl;
+typedef class flash_ctrl_mem_prog_fifo;
+typedef class flash_ctrl_mem_rd_fifo;
+typedef class flash_ctrl_reg_block;
 
 typedef class rv_plic_reg_ip0;
 typedef class rv_plic_reg_ip1;
@@ -186,6 +186,1579 @@ typedef class chip_mem_ram_main;
 typedef class chip_mem_eflash;
 typedef class chip_reg_block;
 
+// Block: uart
+// Class: uart_reg_intr_state
+class uart_reg_intr_state extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field tx_watermark;
+  rand dv_base_reg_field rx_watermark;
+  rand dv_base_reg_field tx_overflow;
+  rand dv_base_reg_field rx_overflow;
+  rand dv_base_reg_field rx_frame_err;
+  rand dv_base_reg_field rx_break_err;
+  rand dv_base_reg_field rx_timeout;
+  rand dv_base_reg_field rx_parity_err;
+
+  `uvm_object_utils(uart_reg_intr_state)
+
+  function new(string       name = "uart_reg_intr_state",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    tx_watermark = dv_base_reg_field::type_id::create("tx_watermark");
+    tx_watermark.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
+    rx_watermark.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    tx_overflow = dv_base_reg_field::type_id::create("tx_overflow");
+    tx_overflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
+    rx_overflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_frame_err = dv_base_reg_field::type_id::create("rx_frame_err");
+    rx_frame_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_break_err = dv_base_reg_field::type_id::create("rx_break_err");
+    rx_break_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_timeout = dv_base_reg_field::type_id::create("rx_timeout");
+    rx_timeout.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_parity_err = dv_base_reg_field::type_id::create("rx_parity_err");
+    rx_parity_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_intr_state
+
+// Class: uart_reg_intr_enable
+class uart_reg_intr_enable extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field tx_watermark;
+  rand dv_base_reg_field rx_watermark;
+  rand dv_base_reg_field tx_overflow;
+  rand dv_base_reg_field rx_overflow;
+  rand dv_base_reg_field rx_frame_err;
+  rand dv_base_reg_field rx_break_err;
+  rand dv_base_reg_field rx_timeout;
+  rand dv_base_reg_field rx_parity_err;
+
+  `uvm_object_utils(uart_reg_intr_enable)
+
+  function new(string       name = "uart_reg_intr_enable",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    tx_watermark = dv_base_reg_field::type_id::create("tx_watermark");
+    tx_watermark.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
+    rx_watermark.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    tx_overflow = dv_base_reg_field::type_id::create("tx_overflow");
+    tx_overflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
+    rx_overflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_frame_err = dv_base_reg_field::type_id::create("rx_frame_err");
+    rx_frame_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_break_err = dv_base_reg_field::type_id::create("rx_break_err");
+    rx_break_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_timeout = dv_base_reg_field::type_id::create("rx_timeout");
+    rx_timeout.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_parity_err = dv_base_reg_field::type_id::create("rx_parity_err");
+    rx_parity_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_intr_enable
+
+// Class: uart_reg_intr_test
+class uart_reg_intr_test extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field tx_watermark;
+  rand dv_base_reg_field rx_watermark;
+  rand dv_base_reg_field tx_overflow;
+  rand dv_base_reg_field rx_overflow;
+  rand dv_base_reg_field rx_frame_err;
+  rand dv_base_reg_field rx_break_err;
+  rand dv_base_reg_field rx_timeout;
+  rand dv_base_reg_field rx_parity_err;
+
+  `uvm_object_utils(uart_reg_intr_test)
+
+  function new(string       name = "uart_reg_intr_test",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    tx_watermark = dv_base_reg_field::type_id::create("tx_watermark");
+    tx_watermark.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
+    rx_watermark.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    tx_overflow = dv_base_reg_field::type_id::create("tx_overflow");
+    tx_overflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
+    rx_overflow.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_frame_err = dv_base_reg_field::type_id::create("rx_frame_err");
+    rx_frame_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_break_err = dv_base_reg_field::type_id::create("rx_break_err");
+    rx_break_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_timeout = dv_base_reg_field::type_id::create("rx_timeout");
+    rx_timeout.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx_parity_err = dv_base_reg_field::type_id::create("rx_parity_err");
+    rx_parity_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_intr_test
+
+// Class: uart_reg_ctrl
+class uart_reg_ctrl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field tx;
+  rand dv_base_reg_field rx;
+  rand dv_base_reg_field nf;
+  rand dv_base_reg_field slpbk;
+  rand dv_base_reg_field llpbk;
+  rand dv_base_reg_field parity_en;
+  rand dv_base_reg_field parity_odd;
+  rand dv_base_reg_field rxblvl;
+  rand dv_base_reg_field nco;
+
+  `uvm_object_utils(uart_reg_ctrl)
+
+  function new(string       name = "uart_reg_ctrl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    tx = dv_base_reg_field::type_id::create("tx");
+    tx.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rx = dv_base_reg_field::type_id::create("rx");
+    rx.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    nf = dv_base_reg_field::type_id::create("nf");
+    nf.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    slpbk = dv_base_reg_field::type_id::create("slpbk");
+    slpbk.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    llpbk = dv_base_reg_field::type_id::create("llpbk");
+    llpbk.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    parity_en = dv_base_reg_field::type_id::create("parity_en");
+    parity_en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(6),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    parity_odd = dv_base_reg_field::type_id::create("parity_odd");
+    parity_odd.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(7),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxblvl = dv_base_reg_field::type_id::create("rxblvl");
+    rxblvl.configure(
+      .parent(this),
+      .size(2),
+      .lsb_pos(8),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    nco = dv_base_reg_field::type_id::create("nco");
+    nco.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_ctrl
+
+// Class: uart_reg_status
+class uart_reg_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field txfull;
+  rand dv_base_reg_field rxfull;
+  rand dv_base_reg_field txempty;
+  rand dv_base_reg_field txidle;
+  rand dv_base_reg_field rxidle;
+  rand dv_base_reg_field rxempty;
+
+  `uvm_object_utils(uart_reg_status)
+
+  function new(string       name = "uart_reg_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    txfull = dv_base_reg_field::type_id::create("txfull");
+    txfull.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxfull = dv_base_reg_field::type_id::create("rxfull");
+    rxfull.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txempty = dv_base_reg_field::type_id::create("txempty");
+    txempty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txidle = dv_base_reg_field::type_id::create("txidle");
+    txidle.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxidle = dv_base_reg_field::type_id::create("rxidle");
+    rxidle.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(4),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxempty = dv_base_reg_field::type_id::create("rxempty");
+    rxempty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(5),
+      .access("RO"),
+      .volatile(1),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_status
+
+// Class: uart_reg_rdata
+class uart_reg_rdata extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rdata;
+
+  `uvm_object_utils(uart_reg_rdata)
+
+  function new(string       name = "uart_reg_rdata",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rdata = dv_base_reg_field::type_id::create("rdata");
+    rdata.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_rdata
+
+// Class: uart_reg_wdata
+class uart_reg_wdata extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field wdata;
+
+  `uvm_object_utils(uart_reg_wdata)
+
+  function new(string       name = "uart_reg_wdata",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    wdata = dv_base_reg_field::type_id::create("wdata");
+    wdata.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_wdata
+
+// Class: uart_reg_fifo_ctrl
+class uart_reg_fifo_ctrl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rxrst;
+  rand dv_base_reg_field txrst;
+  rand dv_base_reg_field rxilvl;
+  rand dv_base_reg_field txilvl;
+
+  `uvm_object_utils(uart_reg_fifo_ctrl)
+
+  function new(string       name = "uart_reg_fifo_ctrl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rxrst = dv_base_reg_field::type_id::create("rxrst");
+    rxrst.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txrst = dv_base_reg_field::type_id::create("txrst");
+    txrst.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxilvl = dv_base_reg_field::type_id::create("rxilvl");
+    rxilvl.configure(
+      .parent(this),
+      .size(3),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txilvl = dv_base_reg_field::type_id::create("txilvl");
+    txilvl.configure(
+      .parent(this),
+      .size(2),
+      .lsb_pos(5),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_fifo_ctrl
+
+// Class: uart_reg_fifo_status
+class uart_reg_fifo_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field txlvl;
+  rand dv_base_reg_field rxlvl;
+
+  `uvm_object_utils(uart_reg_fifo_status)
+
+  function new(string       name = "uart_reg_fifo_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    txlvl = dv_base_reg_field::type_id::create("txlvl");
+    txlvl.configure(
+      .parent(this),
+      .size(6),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
+    rxlvl.configure(
+      .parent(this),
+      .size(6),
+      .lsb_pos(16),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_fifo_status
+
+// Class: uart_reg_ovrd
+class uart_reg_ovrd extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field txen;
+  rand dv_base_reg_field txval;
+
+  `uvm_object_utils(uart_reg_ovrd)
+
+  function new(string       name = "uart_reg_ovrd",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    txen = dv_base_reg_field::type_id::create("txen");
+    txen.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    txval = dv_base_reg_field::type_id::create("txval");
+    txval.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_ovrd
+
+// Class: uart_reg_val
+class uart_reg_val extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field rx;
+
+  `uvm_object_utils(uart_reg_val)
+
+  function new(string       name = "uart_reg_val",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    rx = dv_base_reg_field::type_id::create("rx");
+    rx.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_val
+
+// Class: uart_reg_timeout_ctrl
+class uart_reg_timeout_ctrl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field val;
+  rand dv_base_reg_field en;
+
+  `uvm_object_utils(uart_reg_timeout_ctrl)
+
+  function new(string       name = "uart_reg_timeout_ctrl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    val = dv_base_reg_field::type_id::create("val");
+    val.configure(
+      .parent(this),
+      .size(24),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    en = dv_base_reg_field::type_id::create("en");
+    en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(31),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : uart_reg_timeout_ctrl
+
+// Class: uart_reg_block
+class uart_reg_block extends dv_base_reg_block;
+  // registers
+  rand uart_reg_intr_state intr_state;
+  rand uart_reg_intr_enable intr_enable;
+  rand uart_reg_intr_test intr_test;
+  rand uart_reg_ctrl ctrl;
+  rand uart_reg_status status;
+  rand uart_reg_rdata rdata;
+  rand uart_reg_wdata wdata;
+  rand uart_reg_fifo_ctrl fifo_ctrl;
+  rand uart_reg_fifo_status fifo_status;
+  rand uart_reg_ovrd ovrd;
+  rand uart_reg_val val;
+  rand uart_reg_timeout_ctrl timeout_ctrl;
+
+  `uvm_object_utils(uart_reg_block)
+
+  function new(string name = "uart_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    intr_state = uart_reg_intr_state::type_id::create("intr_state");
+    intr_state.configure(.blk_parent(this));
+    intr_state.build();
+    default_map.add_reg(.rg(intr_state),
+                        .offset(32'h0),
+                        .rights("RW"));
+    intr_enable = uart_reg_intr_enable::type_id::create("intr_enable");
+    intr_enable.configure(.blk_parent(this));
+    intr_enable.build();
+    default_map.add_reg(.rg(intr_enable),
+                        .offset(32'h4),
+                        .rights("RW"));
+    intr_test = uart_reg_intr_test::type_id::create("intr_test");
+    intr_test.configure(.blk_parent(this));
+    intr_test.build();
+    default_map.add_reg(.rg(intr_test),
+                        .offset(32'h8),
+                        .rights("WO"));
+    ctrl = uart_reg_ctrl::type_id::create("ctrl");
+    ctrl.configure(.blk_parent(this));
+    ctrl.build();
+    default_map.add_reg(.rg(ctrl),
+                        .offset(32'hc),
+                        .rights("RW"));
+    status = uart_reg_status::type_id::create("status");
+    status.configure(.blk_parent(this));
+    status.build();
+    default_map.add_reg(.rg(status),
+                        .offset(32'h10),
+                        .rights("RO"));
+    rdata = uart_reg_rdata::type_id::create("rdata");
+    rdata.configure(.blk_parent(this));
+    rdata.build();
+    default_map.add_reg(.rg(rdata),
+                        .offset(32'h14),
+                        .rights("RO"));
+    wdata = uart_reg_wdata::type_id::create("wdata");
+    wdata.configure(.blk_parent(this));
+    wdata.build();
+    default_map.add_reg(.rg(wdata),
+                        .offset(32'h18),
+                        .rights("WO"));
+    fifo_ctrl = uart_reg_fifo_ctrl::type_id::create("fifo_ctrl");
+    fifo_ctrl.configure(.blk_parent(this));
+    fifo_ctrl.build();
+    default_map.add_reg(.rg(fifo_ctrl),
+                        .offset(32'h1c),
+                        .rights("RW"));
+    fifo_status = uart_reg_fifo_status::type_id::create("fifo_status");
+    fifo_status.configure(.blk_parent(this));
+    fifo_status.build();
+    default_map.add_reg(.rg(fifo_status),
+                        .offset(32'h20),
+                        .rights("RO"));
+    ovrd = uart_reg_ovrd::type_id::create("ovrd");
+    ovrd.configure(.blk_parent(this));
+    ovrd.build();
+    default_map.add_reg(.rg(ovrd),
+                        .offset(32'h24),
+                        .rights("RW"));
+    val = uart_reg_val::type_id::create("val");
+    val.configure(.blk_parent(this));
+    val.build();
+    default_map.add_reg(.rg(val),
+                        .offset(32'h28),
+                        .rights("RO"));
+    timeout_ctrl = uart_reg_timeout_ctrl::type_id::create("timeout_ctrl");
+    timeout_ctrl.configure(.blk_parent(this));
+    timeout_ctrl.build();
+    default_map.add_reg(.rg(timeout_ctrl),
+                        .offset(32'h2c),
+                        .rights("RW"));
+  endfunction : build
+
+endclass : uart_reg_block
+// Block: gpio
+// Class: gpio_reg_intr_state
+class gpio_reg_intr_state extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field gpio;
+
+  `uvm_object_utils(gpio_reg_intr_state)
+
+  function new(string       name = "gpio_reg_intr_state",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    gpio = dv_base_reg_field::type_id::create("gpio");
+    gpio.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_state
+
+// Class: gpio_reg_intr_enable
+class gpio_reg_intr_enable extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field gpio;
+
+  `uvm_object_utils(gpio_reg_intr_enable)
+
+  function new(string       name = "gpio_reg_intr_enable",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    gpio = dv_base_reg_field::type_id::create("gpio");
+    gpio.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_enable
+
+// Class: gpio_reg_intr_test
+class gpio_reg_intr_test extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field gpio;
+
+  `uvm_object_utils(gpio_reg_intr_test)
+
+  function new(string       name = "gpio_reg_intr_test",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    gpio = dv_base_reg_field::type_id::create("gpio");
+    gpio.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_test
+
+// Class: gpio_reg_data_in
+class gpio_reg_data_in extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data_in;
+
+  `uvm_object_utils(gpio_reg_data_in)
+
+  function new(string       name = "gpio_reg_data_in",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data_in = dv_base_reg_field::type_id::create("data_in");
+    data_in.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_data_in
+
+// Class: gpio_reg_direct_out
+class gpio_reg_direct_out extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field direct_out;
+
+  `uvm_object_utils(gpio_reg_direct_out)
+
+  function new(string       name = "gpio_reg_direct_out",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    direct_out = dv_base_reg_field::type_id::create("direct_out");
+    direct_out.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_direct_out
+
+// Class: gpio_reg_masked_out_lower
+class gpio_reg_masked_out_lower extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_out_lower)
+
+  function new(string       name = "gpio_reg_masked_out_lower",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_out_lower
+
+// Class: gpio_reg_masked_out_upper
+class gpio_reg_masked_out_upper extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_out_upper)
+
+  function new(string       name = "gpio_reg_masked_out_upper",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_out_upper
+
+// Class: gpio_reg_direct_oe
+class gpio_reg_direct_oe extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field direct_oe;
+
+  `uvm_object_utils(gpio_reg_direct_oe)
+
+  function new(string       name = "gpio_reg_direct_oe",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    direct_oe = dv_base_reg_field::type_id::create("direct_oe");
+    direct_oe.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_direct_oe
+
+// Class: gpio_reg_masked_oe_lower
+class gpio_reg_masked_oe_lower extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_oe_lower)
+
+  function new(string       name = "gpio_reg_masked_oe_lower",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_oe_lower
+
+// Class: gpio_reg_masked_oe_upper
+class gpio_reg_masked_oe_upper extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field data;
+  rand dv_base_reg_field mask;
+
+  `uvm_object_utils(gpio_reg_masked_oe_upper)
+
+  function new(string       name = "gpio_reg_masked_oe_upper",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    data = dv_base_reg_field::type_id::create("data");
+    data.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    mask = dv_base_reg_field::type_id::create("mask");
+    mask.configure(
+      .parent(this),
+      .size(16),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_masked_oe_upper
+
+// Class: gpio_reg_intr_ctrl_en_rising
+class gpio_reg_intr_ctrl_en_rising extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_rising;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_rising)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_rising",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_rising = dv_base_reg_field::type_id::create("intr_ctrl_en_rising");
+    intr_ctrl_en_rising.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_rising
+
+// Class: gpio_reg_intr_ctrl_en_falling
+class gpio_reg_intr_ctrl_en_falling extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_falling;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_falling)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_falling",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_falling = dv_base_reg_field::type_id::create("intr_ctrl_en_falling");
+    intr_ctrl_en_falling.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_falling
+
+// Class: gpio_reg_intr_ctrl_en_lvlhigh
+class gpio_reg_intr_ctrl_en_lvlhigh extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_lvlhigh;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvlhigh)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_lvlhigh",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_lvlhigh = dv_base_reg_field::type_id::create("intr_ctrl_en_lvlhigh");
+    intr_ctrl_en_lvlhigh.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_lvlhigh
+
+// Class: gpio_reg_intr_ctrl_en_lvllow
+class gpio_reg_intr_ctrl_en_lvllow extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field intr_ctrl_en_lvllow;
+
+  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvllow)
+
+  function new(string       name = "gpio_reg_intr_ctrl_en_lvllow",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    intr_ctrl_en_lvllow = dv_base_reg_field::type_id::create("intr_ctrl_en_lvllow");
+    intr_ctrl_en_lvllow.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_intr_ctrl_en_lvllow
+
+// Class: gpio_reg_ctrl_en_input_filter
+class gpio_reg_ctrl_en_input_filter extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field ctrl_en_input_filter;
+
+  `uvm_object_utils(gpio_reg_ctrl_en_input_filter)
+
+  function new(string       name = "gpio_reg_ctrl_en_input_filter",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    ctrl_en_input_filter = dv_base_reg_field::type_id::create("ctrl_en_input_filter");
+    ctrl_en_input_filter.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : gpio_reg_ctrl_en_input_filter
+
+// Class: gpio_reg_block
+class gpio_reg_block extends dv_base_reg_block;
+  // registers
+  rand gpio_reg_intr_state intr_state;
+  rand gpio_reg_intr_enable intr_enable;
+  rand gpio_reg_intr_test intr_test;
+  rand gpio_reg_data_in data_in;
+  rand gpio_reg_direct_out direct_out;
+  rand gpio_reg_masked_out_lower masked_out_lower;
+  rand gpio_reg_masked_out_upper masked_out_upper;
+  rand gpio_reg_direct_oe direct_oe;
+  rand gpio_reg_masked_oe_lower masked_oe_lower;
+  rand gpio_reg_masked_oe_upper masked_oe_upper;
+  rand gpio_reg_intr_ctrl_en_rising intr_ctrl_en_rising;
+  rand gpio_reg_intr_ctrl_en_falling intr_ctrl_en_falling;
+  rand gpio_reg_intr_ctrl_en_lvlhigh intr_ctrl_en_lvlhigh;
+  rand gpio_reg_intr_ctrl_en_lvllow intr_ctrl_en_lvllow;
+  rand gpio_reg_ctrl_en_input_filter ctrl_en_input_filter;
+
+  `uvm_object_utils(gpio_reg_block)
+
+  function new(string name = "gpio_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    intr_state = gpio_reg_intr_state::type_id::create("intr_state");
+    intr_state.configure(.blk_parent(this));
+    intr_state.build();
+    default_map.add_reg(.rg(intr_state),
+                        .offset(32'h0),
+                        .rights("RW"));
+    intr_enable = gpio_reg_intr_enable::type_id::create("intr_enable");
+    intr_enable.configure(.blk_parent(this));
+    intr_enable.build();
+    default_map.add_reg(.rg(intr_enable),
+                        .offset(32'h4),
+                        .rights("RW"));
+    intr_test = gpio_reg_intr_test::type_id::create("intr_test");
+    intr_test.configure(.blk_parent(this));
+    intr_test.build();
+    default_map.add_reg(.rg(intr_test),
+                        .offset(32'h8),
+                        .rights("WO"));
+    data_in = gpio_reg_data_in::type_id::create("data_in");
+    data_in.configure(.blk_parent(this));
+    data_in.build();
+    default_map.add_reg(.rg(data_in),
+                        .offset(32'hc),
+                        .rights("RO"));
+    direct_out = gpio_reg_direct_out::type_id::create("direct_out");
+    direct_out.configure(.blk_parent(this));
+    direct_out.build();
+    default_map.add_reg(.rg(direct_out),
+                        .offset(32'h10),
+                        .rights("RW"));
+    masked_out_lower = gpio_reg_masked_out_lower::type_id::create("masked_out_lower");
+    masked_out_lower.configure(.blk_parent(this));
+    masked_out_lower.build();
+    default_map.add_reg(.rg(masked_out_lower),
+                        .offset(32'h14),
+                        .rights("RW"));
+    masked_out_upper = gpio_reg_masked_out_upper::type_id::create("masked_out_upper");
+    masked_out_upper.configure(.blk_parent(this));
+    masked_out_upper.build();
+    default_map.add_reg(.rg(masked_out_upper),
+                        .offset(32'h18),
+                        .rights("RW"));
+    direct_oe = gpio_reg_direct_oe::type_id::create("direct_oe");
+    direct_oe.configure(.blk_parent(this));
+    direct_oe.build();
+    default_map.add_reg(.rg(direct_oe),
+                        .offset(32'h1c),
+                        .rights("RW"));
+    masked_oe_lower = gpio_reg_masked_oe_lower::type_id::create("masked_oe_lower");
+    masked_oe_lower.configure(.blk_parent(this));
+    masked_oe_lower.build();
+    default_map.add_reg(.rg(masked_oe_lower),
+                        .offset(32'h20),
+                        .rights("RW"));
+    masked_oe_upper = gpio_reg_masked_oe_upper::type_id::create("masked_oe_upper");
+    masked_oe_upper.configure(.blk_parent(this));
+    masked_oe_upper.build();
+    default_map.add_reg(.rg(masked_oe_upper),
+                        .offset(32'h24),
+                        .rights("RW"));
+    intr_ctrl_en_rising = gpio_reg_intr_ctrl_en_rising::type_id::create("intr_ctrl_en_rising");
+    intr_ctrl_en_rising.configure(.blk_parent(this));
+    intr_ctrl_en_rising.build();
+    default_map.add_reg(.rg(intr_ctrl_en_rising),
+                        .offset(32'h28),
+                        .rights("RW"));
+    intr_ctrl_en_falling = gpio_reg_intr_ctrl_en_falling::type_id::create("intr_ctrl_en_falling");
+    intr_ctrl_en_falling.configure(.blk_parent(this));
+    intr_ctrl_en_falling.build();
+    default_map.add_reg(.rg(intr_ctrl_en_falling),
+                        .offset(32'h2c),
+                        .rights("RW"));
+    intr_ctrl_en_lvlhigh = gpio_reg_intr_ctrl_en_lvlhigh::type_id::create("intr_ctrl_en_lvlhigh");
+    intr_ctrl_en_lvlhigh.configure(.blk_parent(this));
+    intr_ctrl_en_lvlhigh.build();
+    default_map.add_reg(.rg(intr_ctrl_en_lvlhigh),
+                        .offset(32'h30),
+                        .rights("RW"));
+    intr_ctrl_en_lvllow = gpio_reg_intr_ctrl_en_lvllow::type_id::create("intr_ctrl_en_lvllow");
+    intr_ctrl_en_lvllow.configure(.blk_parent(this));
+    intr_ctrl_en_lvllow.build();
+    default_map.add_reg(.rg(intr_ctrl_en_lvllow),
+                        .offset(32'h34),
+                        .rights("RW"));
+    ctrl_en_input_filter = gpio_reg_ctrl_en_input_filter::type_id::create("ctrl_en_input_filter");
+    ctrl_en_input_filter.configure(.blk_parent(this));
+    ctrl_en_input_filter.build();
+    default_map.add_reg(.rg(ctrl_en_input_filter),
+                        .offset(32'h38),
+                        .rights("RW"));
+  endfunction : build
+
+endclass : gpio_reg_block
 // Block: spi_device
 // Class: spi_device_reg_intr_state
 class spi_device_reg_intr_state extends dv_base_reg;
@@ -1073,6 +2646,1454 @@ class spi_device_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : spi_device_reg_block
+// Block: hmac
+// Class: hmac_reg_intr_state
+class hmac_reg_intr_state extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field hmac_done;
+  rand dv_base_reg_field fifo_full;
+
+  `uvm_object_utils(hmac_reg_intr_state)
+
+  function new(string       name = "hmac_reg_intr_state",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    hmac_done = dv_base_reg_field::type_id::create("hmac_done");
+    hmac_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
+    fifo_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_intr_state
+
+// Class: hmac_reg_intr_enable
+class hmac_reg_intr_enable extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field hmac_done;
+  rand dv_base_reg_field fifo_full;
+
+  `uvm_object_utils(hmac_reg_intr_enable)
+
+  function new(string       name = "hmac_reg_intr_enable",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    hmac_done = dv_base_reg_field::type_id::create("hmac_done");
+    hmac_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
+    fifo_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_intr_enable
+
+// Class: hmac_reg_intr_test
+class hmac_reg_intr_test extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field hmac_done;
+  rand dv_base_reg_field fifo_full;
+
+  `uvm_object_utils(hmac_reg_intr_test)
+
+  function new(string       name = "hmac_reg_intr_test",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    hmac_done = dv_base_reg_field::type_id::create("hmac_done");
+    hmac_done.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
+    fifo_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_intr_test
+
+// Class: hmac_reg_cfg
+class hmac_reg_cfg extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field hmac_en;
+  rand dv_base_reg_field sha_en;
+  rand dv_base_reg_field endian_swap;
+  rand dv_base_reg_field digest_swap;
+
+  `uvm_object_utils(hmac_reg_cfg)
+
+  function new(string       name = "hmac_reg_cfg",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    hmac_en = dv_base_reg_field::type_id::create("hmac_en");
+    hmac_en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    sha_en = dv_base_reg_field::type_id::create("sha_en");
+    sha_en.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    endian_swap = dv_base_reg_field::type_id::create("endian_swap");
+    endian_swap.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    digest_swap = dv_base_reg_field::type_id::create("digest_swap");
+    digest_swap.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(3),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_cfg
+
+// Class: hmac_reg_cmd
+class hmac_reg_cmd extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field hash_start;
+  rand dv_base_reg_field hash_process;
+
+  `uvm_object_utils(hmac_reg_cmd)
+
+  function new(string       name = "hmac_reg_cmd",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    hash_start = dv_base_reg_field::type_id::create("hash_start");
+    hash_start.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    hash_process = dv_base_reg_field::type_id::create("hash_process");
+    hash_process.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("W1C"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_cmd
+
+// Class: hmac_reg_status
+class hmac_reg_status extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field fifo_empty;
+  rand dv_base_reg_field fifo_full;
+  rand dv_base_reg_field fifo_depth;
+
+  `uvm_object_utils(hmac_reg_status)
+
+  function new(string       name = "hmac_reg_status",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    fifo_empty = dv_base_reg_field::type_id::create("fifo_empty");
+    fifo_empty.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
+    fifo_full.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(1),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    fifo_depth = dv_base_reg_field::type_id::create("fifo_depth");
+    fifo_depth.configure(
+      .parent(this),
+      .size(5),
+      .lsb_pos(4),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_status
+
+// Class: hmac_reg_wipe_secret
+class hmac_reg_wipe_secret extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field secret;
+
+  `uvm_object_utils(hmac_reg_wipe_secret)
+
+  function new(string       name = "hmac_reg_wipe_secret",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    secret = dv_base_reg_field::type_id::create("secret");
+    secret.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_wipe_secret
+
+// Class: hmac_reg_key0
+class hmac_reg_key0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key0;
+
+  `uvm_object_utils(hmac_reg_key0)
+
+  function new(string       name = "hmac_reg_key0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key0 = dv_base_reg_field::type_id::create("key0");
+    key0.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key0
+
+// Class: hmac_reg_key1
+class hmac_reg_key1 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key1;
+
+  `uvm_object_utils(hmac_reg_key1)
+
+  function new(string       name = "hmac_reg_key1",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key1 = dv_base_reg_field::type_id::create("key1");
+    key1.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key1
+
+// Class: hmac_reg_key2
+class hmac_reg_key2 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key2;
+
+  `uvm_object_utils(hmac_reg_key2)
+
+  function new(string       name = "hmac_reg_key2",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key2 = dv_base_reg_field::type_id::create("key2");
+    key2.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key2
+
+// Class: hmac_reg_key3
+class hmac_reg_key3 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key3;
+
+  `uvm_object_utils(hmac_reg_key3)
+
+  function new(string       name = "hmac_reg_key3",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key3 = dv_base_reg_field::type_id::create("key3");
+    key3.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key3
+
+// Class: hmac_reg_key4
+class hmac_reg_key4 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key4;
+
+  `uvm_object_utils(hmac_reg_key4)
+
+  function new(string       name = "hmac_reg_key4",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key4 = dv_base_reg_field::type_id::create("key4");
+    key4.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key4
+
+// Class: hmac_reg_key5
+class hmac_reg_key5 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key5;
+
+  `uvm_object_utils(hmac_reg_key5)
+
+  function new(string       name = "hmac_reg_key5",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key5 = dv_base_reg_field::type_id::create("key5");
+    key5.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key5
+
+// Class: hmac_reg_key6
+class hmac_reg_key6 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key6;
+
+  `uvm_object_utils(hmac_reg_key6)
+
+  function new(string       name = "hmac_reg_key6",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key6 = dv_base_reg_field::type_id::create("key6");
+    key6.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key6
+
+// Class: hmac_reg_key7
+class hmac_reg_key7 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field key7;
+
+  `uvm_object_utils(hmac_reg_key7)
+
+  function new(string       name = "hmac_reg_key7",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    key7 = dv_base_reg_field::type_id::create("key7");
+    key7.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_key7
+
+// Class: hmac_reg_digest0
+class hmac_reg_digest0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest0;
+
+  `uvm_object_utils(hmac_reg_digest0)
+
+  function new(string       name = "hmac_reg_digest0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest0 = dv_base_reg_field::type_id::create("digest0");
+    digest0.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest0
+
+// Class: hmac_reg_digest1
+class hmac_reg_digest1 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest1;
+
+  `uvm_object_utils(hmac_reg_digest1)
+
+  function new(string       name = "hmac_reg_digest1",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest1 = dv_base_reg_field::type_id::create("digest1");
+    digest1.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest1
+
+// Class: hmac_reg_digest2
+class hmac_reg_digest2 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest2;
+
+  `uvm_object_utils(hmac_reg_digest2)
+
+  function new(string       name = "hmac_reg_digest2",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest2 = dv_base_reg_field::type_id::create("digest2");
+    digest2.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest2
+
+// Class: hmac_reg_digest3
+class hmac_reg_digest3 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest3;
+
+  `uvm_object_utils(hmac_reg_digest3)
+
+  function new(string       name = "hmac_reg_digest3",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest3 = dv_base_reg_field::type_id::create("digest3");
+    digest3.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest3
+
+// Class: hmac_reg_digest4
+class hmac_reg_digest4 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest4;
+
+  `uvm_object_utils(hmac_reg_digest4)
+
+  function new(string       name = "hmac_reg_digest4",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest4 = dv_base_reg_field::type_id::create("digest4");
+    digest4.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest4
+
+// Class: hmac_reg_digest5
+class hmac_reg_digest5 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest5;
+
+  `uvm_object_utils(hmac_reg_digest5)
+
+  function new(string       name = "hmac_reg_digest5",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest5 = dv_base_reg_field::type_id::create("digest5");
+    digest5.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest5
+
+// Class: hmac_reg_digest6
+class hmac_reg_digest6 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest6;
+
+  `uvm_object_utils(hmac_reg_digest6)
+
+  function new(string       name = "hmac_reg_digest6",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest6 = dv_base_reg_field::type_id::create("digest6");
+    digest6.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest6
+
+// Class: hmac_reg_digest7
+class hmac_reg_digest7 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field digest7;
+
+  `uvm_object_utils(hmac_reg_digest7)
+
+  function new(string       name = "hmac_reg_digest7",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    digest7 = dv_base_reg_field::type_id::create("digest7");
+    digest7.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_digest7
+
+// Class: hmac_reg_msg_length_lower
+class hmac_reg_msg_length_lower extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(hmac_reg_msg_length_lower)
+
+  function new(string       name = "hmac_reg_msg_length_lower",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_msg_length_lower
+
+// Class: hmac_reg_msg_length_upper
+class hmac_reg_msg_length_upper extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(hmac_reg_msg_length_upper)
+
+  function new(string       name = "hmac_reg_msg_length_upper",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_msg_length_upper
+
+// Class: hmac_mem_msg_fifo
+class hmac_mem_msg_fifo extends dv_base_mem;
+
+  `uvm_object_utils(hmac_mem_msg_fifo)
+
+  function new(string           name = "hmac_mem_msg_fifo",
+               longint unsigned size = 512,
+               int unsigned     n_bits = 32,
+               string           access = "RW"/* TODO:"WO"*/,
+               int              has_coverage = UVM_NO_COVERAGE);
+    super.new(name, size, n_bits, access, has_coverage);
+  endfunction : new
+
+endclass : hmac_mem_msg_fifo
+
+// Class: hmac_reg_block
+class hmac_reg_block extends dv_base_reg_block;
+  // registers
+  rand hmac_reg_intr_state intr_state;
+  rand hmac_reg_intr_enable intr_enable;
+  rand hmac_reg_intr_test intr_test;
+  rand hmac_reg_cfg cfg;
+  rand hmac_reg_cmd cmd;
+  rand hmac_reg_status status;
+  rand hmac_reg_wipe_secret wipe_secret;
+  rand hmac_reg_key0 key0;
+  rand hmac_reg_key1 key1;
+  rand hmac_reg_key2 key2;
+  rand hmac_reg_key3 key3;
+  rand hmac_reg_key4 key4;
+  rand hmac_reg_key5 key5;
+  rand hmac_reg_key6 key6;
+  rand hmac_reg_key7 key7;
+  rand hmac_reg_digest0 digest0;
+  rand hmac_reg_digest1 digest1;
+  rand hmac_reg_digest2 digest2;
+  rand hmac_reg_digest3 digest3;
+  rand hmac_reg_digest4 digest4;
+  rand hmac_reg_digest5 digest5;
+  rand hmac_reg_digest6 digest6;
+  rand hmac_reg_digest7 digest7;
+  rand hmac_reg_msg_length_lower msg_length_lower;
+  rand hmac_reg_msg_length_upper msg_length_upper;
+  // memories
+  rand hmac_mem_msg_fifo msg_fifo;
+
+  `uvm_object_utils(hmac_reg_block)
+
+  function new(string name = "hmac_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    intr_state = hmac_reg_intr_state::type_id::create("intr_state");
+    intr_state.configure(.blk_parent(this));
+    intr_state.build();
+    default_map.add_reg(.rg(intr_state),
+                        .offset(32'h0),
+                        .rights("RW"));
+    intr_enable = hmac_reg_intr_enable::type_id::create("intr_enable");
+    intr_enable.configure(.blk_parent(this));
+    intr_enable.build();
+    default_map.add_reg(.rg(intr_enable),
+                        .offset(32'h4),
+                        .rights("RW"));
+    intr_test = hmac_reg_intr_test::type_id::create("intr_test");
+    intr_test.configure(.blk_parent(this));
+    intr_test.build();
+    default_map.add_reg(.rg(intr_test),
+                        .offset(32'h8),
+                        .rights("WO"));
+    cfg = hmac_reg_cfg::type_id::create("cfg");
+    cfg.configure(.blk_parent(this));
+    cfg.build();
+    default_map.add_reg(.rg(cfg),
+                        .offset(32'hc),
+                        .rights("RW"));
+    cmd = hmac_reg_cmd::type_id::create("cmd");
+    cmd.configure(.blk_parent(this));
+    cmd.build();
+    default_map.add_reg(.rg(cmd),
+                        .offset(32'h10),
+                        .rights("RW"));
+    status = hmac_reg_status::type_id::create("status");
+    status.configure(.blk_parent(this));
+    status.build();
+    default_map.add_reg(.rg(status),
+                        .offset(32'h14),
+                        .rights("RO"));
+    wipe_secret = hmac_reg_wipe_secret::type_id::create("wipe_secret");
+    wipe_secret.configure(.blk_parent(this));
+    wipe_secret.build();
+    default_map.add_reg(.rg(wipe_secret),
+                        .offset(32'h18),
+                        .rights("WO"));
+    key0 = hmac_reg_key0::type_id::create("key0");
+    key0.configure(.blk_parent(this));
+    key0.build();
+    default_map.add_reg(.rg(key0),
+                        .offset(32'h1c),
+                        .rights("WO"));
+    key1 = hmac_reg_key1::type_id::create("key1");
+    key1.configure(.blk_parent(this));
+    key1.build();
+    default_map.add_reg(.rg(key1),
+                        .offset(32'h20),
+                        .rights("WO"));
+    key2 = hmac_reg_key2::type_id::create("key2");
+    key2.configure(.blk_parent(this));
+    key2.build();
+    default_map.add_reg(.rg(key2),
+                        .offset(32'h24),
+                        .rights("WO"));
+    key3 = hmac_reg_key3::type_id::create("key3");
+    key3.configure(.blk_parent(this));
+    key3.build();
+    default_map.add_reg(.rg(key3),
+                        .offset(32'h28),
+                        .rights("WO"));
+    key4 = hmac_reg_key4::type_id::create("key4");
+    key4.configure(.blk_parent(this));
+    key4.build();
+    default_map.add_reg(.rg(key4),
+                        .offset(32'h2c),
+                        .rights("WO"));
+    key5 = hmac_reg_key5::type_id::create("key5");
+    key5.configure(.blk_parent(this));
+    key5.build();
+    default_map.add_reg(.rg(key5),
+                        .offset(32'h30),
+                        .rights("WO"));
+    key6 = hmac_reg_key6::type_id::create("key6");
+    key6.configure(.blk_parent(this));
+    key6.build();
+    default_map.add_reg(.rg(key6),
+                        .offset(32'h34),
+                        .rights("WO"));
+    key7 = hmac_reg_key7::type_id::create("key7");
+    key7.configure(.blk_parent(this));
+    key7.build();
+    default_map.add_reg(.rg(key7),
+                        .offset(32'h38),
+                        .rights("WO"));
+    digest0 = hmac_reg_digest0::type_id::create("digest0");
+    digest0.configure(.blk_parent(this));
+    digest0.build();
+    default_map.add_reg(.rg(digest0),
+                        .offset(32'h3c),
+                        .rights("RO"));
+    digest1 = hmac_reg_digest1::type_id::create("digest1");
+    digest1.configure(.blk_parent(this));
+    digest1.build();
+    default_map.add_reg(.rg(digest1),
+                        .offset(32'h40),
+                        .rights("RO"));
+    digest2 = hmac_reg_digest2::type_id::create("digest2");
+    digest2.configure(.blk_parent(this));
+    digest2.build();
+    default_map.add_reg(.rg(digest2),
+                        .offset(32'h44),
+                        .rights("RO"));
+    digest3 = hmac_reg_digest3::type_id::create("digest3");
+    digest3.configure(.blk_parent(this));
+    digest3.build();
+    default_map.add_reg(.rg(digest3),
+                        .offset(32'h48),
+                        .rights("RO"));
+    digest4 = hmac_reg_digest4::type_id::create("digest4");
+    digest4.configure(.blk_parent(this));
+    digest4.build();
+    default_map.add_reg(.rg(digest4),
+                        .offset(32'h4c),
+                        .rights("RO"));
+    digest5 = hmac_reg_digest5::type_id::create("digest5");
+    digest5.configure(.blk_parent(this));
+    digest5.build();
+    default_map.add_reg(.rg(digest5),
+                        .offset(32'h50),
+                        .rights("RO"));
+    digest6 = hmac_reg_digest6::type_id::create("digest6");
+    digest6.configure(.blk_parent(this));
+    digest6.build();
+    default_map.add_reg(.rg(digest6),
+                        .offset(32'h54),
+                        .rights("RO"));
+    digest7 = hmac_reg_digest7::type_id::create("digest7");
+    digest7.configure(.blk_parent(this));
+    digest7.build();
+    default_map.add_reg(.rg(digest7),
+                        .offset(32'h58),
+                        .rights("RO"));
+    msg_length_lower = hmac_reg_msg_length_lower::type_id::create("msg_length_lower");
+    msg_length_lower.configure(.blk_parent(this));
+    msg_length_lower.build();
+    default_map.add_reg(.rg(msg_length_lower),
+                        .offset(32'h5c),
+                        .rights("RO"));
+    msg_length_upper = hmac_reg_msg_length_upper::type_id::create("msg_length_upper");
+    msg_length_upper.configure(.blk_parent(this));
+    msg_length_upper.build();
+    default_map.add_reg(.rg(msg_length_upper),
+                        .offset(32'h60),
+                        .rights("RO"));
+
+    // create memories
+    msg_fifo = hmac_mem_msg_fifo::type_id::create("msg_fifo");
+    msg_fifo.configure(.parent(this));
+    default_map.add_mem(.mem(msg_fifo),
+                        .offset(32'h800),
+                        .rights("WO"));
+  endfunction : build
+
+endclass : hmac_reg_block
+// Block: rv_timer
+// Class: rv_timer_reg_ctrl
+class rv_timer_reg_ctrl extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field active0;
+
+  `uvm_object_utils(rv_timer_reg_ctrl)
+
+  function new(string       name = "rv_timer_reg_ctrl",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    active0 = dv_base_reg_field::type_id::create("active0");
+    active0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_ctrl
+
+// Class: rv_timer_reg_cfg0
+class rv_timer_reg_cfg0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field prescale;
+  rand dv_base_reg_field step;
+
+  `uvm_object_utils(rv_timer_reg_cfg0)
+
+  function new(string       name = "rv_timer_reg_cfg0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    prescale = dv_base_reg_field::type_id::create("prescale");
+    prescale.configure(
+      .parent(this),
+      .size(12),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    step = dv_base_reg_field::type_id::create("step");
+    step.configure(
+      .parent(this),
+      .size(8),
+      .lsb_pos(16),
+      .access("RW"),
+      .volatile(0),
+      .reset(1),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_cfg0
+
+// Class: rv_timer_reg_timer_v_lower0
+class rv_timer_reg_timer_v_lower0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_timer_v_lower0)
+
+  function new(string       name = "rv_timer_reg_timer_v_lower0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_timer_v_lower0
+
+// Class: rv_timer_reg_timer_v_upper0
+class rv_timer_reg_timer_v_upper0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_timer_v_upper0)
+
+  function new(string       name = "rv_timer_reg_timer_v_upper0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_timer_v_upper0
+
+// Class: rv_timer_reg_compare_lower0_0
+class rv_timer_reg_compare_lower0_0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_compare_lower0_0)
+
+  function new(string       name = "rv_timer_reg_compare_lower0_0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(4294967295),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_compare_lower0_0
+
+// Class: rv_timer_reg_compare_upper0_0
+class rv_timer_reg_compare_upper0_0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field v;
+
+  `uvm_object_utils(rv_timer_reg_compare_upper0_0)
+
+  function new(string       name = "rv_timer_reg_compare_upper0_0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    v = dv_base_reg_field::type_id::create("v");
+    v.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(4294967295),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_compare_upper0_0
+
+// Class: rv_timer_reg_intr_enable0
+class rv_timer_reg_intr_enable0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field ie0;
+
+  `uvm_object_utils(rv_timer_reg_intr_enable0)
+
+  function new(string       name = "rv_timer_reg_intr_enable0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    ie0 = dv_base_reg_field::type_id::create("ie0");
+    ie0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_intr_enable0
+
+// Class: rv_timer_reg_intr_state0
+class rv_timer_reg_intr_state0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field is0;
+
+  `uvm_object_utils(rv_timer_reg_intr_state0)
+
+  function new(string       name = "rv_timer_reg_intr_state0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    is0 = dv_base_reg_field::type_id::create("is0");
+    is0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_intr_state0
+
+// Class: rv_timer_reg_intr_test0
+class rv_timer_reg_intr_test0 extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field t0;
+
+  `uvm_object_utils(rv_timer_reg_intr_test0)
+
+  function new(string       name = "rv_timer_reg_intr_test0",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    t0 = dv_base_reg_field::type_id::create("t0");
+    t0.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(0),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : rv_timer_reg_intr_test0
+
+// Class: rv_timer_reg_block
+class rv_timer_reg_block extends dv_base_reg_block;
+  // registers
+  rand rv_timer_reg_ctrl ctrl;
+  rand rv_timer_reg_cfg0 cfg0;
+  rand rv_timer_reg_timer_v_lower0 timer_v_lower0;
+  rand rv_timer_reg_timer_v_upper0 timer_v_upper0;
+  rand rv_timer_reg_compare_lower0_0 compare_lower0_0;
+  rand rv_timer_reg_compare_upper0_0 compare_upper0_0;
+  rand rv_timer_reg_intr_enable0 intr_enable0;
+  rand rv_timer_reg_intr_state0 intr_state0;
+  rand rv_timer_reg_intr_test0 intr_test0;
+
+  `uvm_object_utils(rv_timer_reg_block)
+
+  function new(string name = "rv_timer_reg_block",
+               int    has_coverage = UVM_NO_COVERAGE);
+    super.new(name, has_coverage);
+  endfunction : new
+
+  virtual function void build(uvm_reg_addr_t base_addr);
+    // create default map
+    this.default_map = create_map(.name("default_map"),
+                                  .base_addr(base_addr),
+                                  .n_bytes(4),
+                                  .endian(UVM_LITTLE_ENDIAN));
+
+    // create registers
+    ctrl = rv_timer_reg_ctrl::type_id::create("ctrl");
+    ctrl.configure(.blk_parent(this));
+    ctrl.build();
+    default_map.add_reg(.rg(ctrl),
+                        .offset(32'h0),
+                        .rights("RW"));
+    cfg0 = rv_timer_reg_cfg0::type_id::create("cfg0");
+    cfg0.configure(.blk_parent(this));
+    cfg0.build();
+    default_map.add_reg(.rg(cfg0),
+                        .offset(32'h100),
+                        .rights("RW"));
+    timer_v_lower0 = rv_timer_reg_timer_v_lower0::type_id::create("timer_v_lower0");
+    timer_v_lower0.configure(.blk_parent(this));
+    timer_v_lower0.build();
+    default_map.add_reg(.rg(timer_v_lower0),
+                        .offset(32'h104),
+                        .rights("RW"));
+    timer_v_upper0 = rv_timer_reg_timer_v_upper0::type_id::create("timer_v_upper0");
+    timer_v_upper0.configure(.blk_parent(this));
+    timer_v_upper0.build();
+    default_map.add_reg(.rg(timer_v_upper0),
+                        .offset(32'h108),
+                        .rights("RW"));
+    compare_lower0_0 = rv_timer_reg_compare_lower0_0::type_id::create("compare_lower0_0");
+    compare_lower0_0.configure(.blk_parent(this));
+    compare_lower0_0.build();
+    default_map.add_reg(.rg(compare_lower0_0),
+                        .offset(32'h10c),
+                        .rights("RW"));
+    compare_upper0_0 = rv_timer_reg_compare_upper0_0::type_id::create("compare_upper0_0");
+    compare_upper0_0.configure(.blk_parent(this));
+    compare_upper0_0.build();
+    default_map.add_reg(.rg(compare_upper0_0),
+                        .offset(32'h110),
+                        .rights("RW"));
+    intr_enable0 = rv_timer_reg_intr_enable0::type_id::create("intr_enable0");
+    intr_enable0.configure(.blk_parent(this));
+    intr_enable0.build();
+    default_map.add_reg(.rg(intr_enable0),
+                        .offset(32'h114),
+                        .rights("RW"));
+    intr_state0 = rv_timer_reg_intr_state0::type_id::create("intr_state0");
+    intr_state0.configure(.blk_parent(this));
+    intr_state0.build();
+    default_map.add_reg(.rg(intr_state0),
+                        .offset(32'h118),
+                        .rights("RW"));
+    intr_test0 = rv_timer_reg_intr_test0::type_id::create("intr_test0");
+    intr_test0.configure(.blk_parent(this));
+    intr_test0.build();
+    default_map.add_reg(.rg(intr_test0),
+                        .offset(32'h11c),
+                        .rights("WO"));
+  endfunction : build
+
+endclass : rv_timer_reg_block
 // Block: flash_ctrl
 // Class: flash_ctrl_reg_intr_state
 class flash_ctrl_reg_intr_state extends dv_base_reg;
@@ -2842,3027 +5863,6 @@ class flash_ctrl_reg_block extends dv_base_reg_block;
   endfunction : build
 
 endclass : flash_ctrl_reg_block
-// Block: rv_timer
-// Class: rv_timer_reg_ctrl
-class rv_timer_reg_ctrl extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field active0;
-
-  `uvm_object_utils(rv_timer_reg_ctrl)
-
-  function new(string       name = "rv_timer_reg_ctrl",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    active0 = dv_base_reg_field::type_id::create("active0");
-    active0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_ctrl
-
-// Class: rv_timer_reg_cfg0
-class rv_timer_reg_cfg0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field prescale;
-  rand dv_base_reg_field step;
-
-  `uvm_object_utils(rv_timer_reg_cfg0)
-
-  function new(string       name = "rv_timer_reg_cfg0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    prescale = dv_base_reg_field::type_id::create("prescale");
-    prescale.configure(
-      .parent(this),
-      .size(12),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    step = dv_base_reg_field::type_id::create("step");
-    step.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_cfg0
-
-// Class: rv_timer_reg_timer_v_lower0
-class rv_timer_reg_timer_v_lower0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_timer_v_lower0)
-
-  function new(string       name = "rv_timer_reg_timer_v_lower0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_timer_v_lower0
-
-// Class: rv_timer_reg_timer_v_upper0
-class rv_timer_reg_timer_v_upper0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_timer_v_upper0)
-
-  function new(string       name = "rv_timer_reg_timer_v_upper0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_timer_v_upper0
-
-// Class: rv_timer_reg_compare_lower0_0
-class rv_timer_reg_compare_lower0_0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_compare_lower0_0)
-
-  function new(string       name = "rv_timer_reg_compare_lower0_0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(4294967295),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_compare_lower0_0
-
-// Class: rv_timer_reg_compare_upper0_0
-class rv_timer_reg_compare_upper0_0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(rv_timer_reg_compare_upper0_0)
-
-  function new(string       name = "rv_timer_reg_compare_upper0_0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(4294967295),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_compare_upper0_0
-
-// Class: rv_timer_reg_intr_enable0
-class rv_timer_reg_intr_enable0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field ie0;
-
-  `uvm_object_utils(rv_timer_reg_intr_enable0)
-
-  function new(string       name = "rv_timer_reg_intr_enable0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    ie0 = dv_base_reg_field::type_id::create("ie0");
-    ie0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_intr_enable0
-
-// Class: rv_timer_reg_intr_state0
-class rv_timer_reg_intr_state0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field is0;
-
-  `uvm_object_utils(rv_timer_reg_intr_state0)
-
-  function new(string       name = "rv_timer_reg_intr_state0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    is0 = dv_base_reg_field::type_id::create("is0");
-    is0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_intr_state0
-
-// Class: rv_timer_reg_intr_test0
-class rv_timer_reg_intr_test0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field t0;
-
-  `uvm_object_utils(rv_timer_reg_intr_test0)
-
-  function new(string       name = "rv_timer_reg_intr_test0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    t0 = dv_base_reg_field::type_id::create("t0");
-    t0.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : rv_timer_reg_intr_test0
-
-// Class: rv_timer_reg_block
-class rv_timer_reg_block extends dv_base_reg_block;
-  // registers
-  rand rv_timer_reg_ctrl ctrl;
-  rand rv_timer_reg_cfg0 cfg0;
-  rand rv_timer_reg_timer_v_lower0 timer_v_lower0;
-  rand rv_timer_reg_timer_v_upper0 timer_v_upper0;
-  rand rv_timer_reg_compare_lower0_0 compare_lower0_0;
-  rand rv_timer_reg_compare_upper0_0 compare_upper0_0;
-  rand rv_timer_reg_intr_enable0 intr_enable0;
-  rand rv_timer_reg_intr_state0 intr_state0;
-  rand rv_timer_reg_intr_test0 intr_test0;
-
-  `uvm_object_utils(rv_timer_reg_block)
-
-  function new(string name = "rv_timer_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    ctrl = rv_timer_reg_ctrl::type_id::create("ctrl");
-    ctrl.configure(.blk_parent(this));
-    ctrl.build();
-    default_map.add_reg(.rg(ctrl),
-                        .offset(32'h0),
-                        .rights("RW"));
-    cfg0 = rv_timer_reg_cfg0::type_id::create("cfg0");
-    cfg0.configure(.blk_parent(this));
-    cfg0.build();
-    default_map.add_reg(.rg(cfg0),
-                        .offset(32'h100),
-                        .rights("RW"));
-    timer_v_lower0 = rv_timer_reg_timer_v_lower0::type_id::create("timer_v_lower0");
-    timer_v_lower0.configure(.blk_parent(this));
-    timer_v_lower0.build();
-    default_map.add_reg(.rg(timer_v_lower0),
-                        .offset(32'h104),
-                        .rights("RW"));
-    timer_v_upper0 = rv_timer_reg_timer_v_upper0::type_id::create("timer_v_upper0");
-    timer_v_upper0.configure(.blk_parent(this));
-    timer_v_upper0.build();
-    default_map.add_reg(.rg(timer_v_upper0),
-                        .offset(32'h108),
-                        .rights("RW"));
-    compare_lower0_0 = rv_timer_reg_compare_lower0_0::type_id::create("compare_lower0_0");
-    compare_lower0_0.configure(.blk_parent(this));
-    compare_lower0_0.build();
-    default_map.add_reg(.rg(compare_lower0_0),
-                        .offset(32'h10c),
-                        .rights("RW"));
-    compare_upper0_0 = rv_timer_reg_compare_upper0_0::type_id::create("compare_upper0_0");
-    compare_upper0_0.configure(.blk_parent(this));
-    compare_upper0_0.build();
-    default_map.add_reg(.rg(compare_upper0_0),
-                        .offset(32'h110),
-                        .rights("RW"));
-    intr_enable0 = rv_timer_reg_intr_enable0::type_id::create("intr_enable0");
-    intr_enable0.configure(.blk_parent(this));
-    intr_enable0.build();
-    default_map.add_reg(.rg(intr_enable0),
-                        .offset(32'h114),
-                        .rights("RW"));
-    intr_state0 = rv_timer_reg_intr_state0::type_id::create("intr_state0");
-    intr_state0.configure(.blk_parent(this));
-    intr_state0.build();
-    default_map.add_reg(.rg(intr_state0),
-                        .offset(32'h118),
-                        .rights("RW"));
-    intr_test0 = rv_timer_reg_intr_test0::type_id::create("intr_test0");
-    intr_test0.configure(.blk_parent(this));
-    intr_test0.build();
-    default_map.add_reg(.rg(intr_test0),
-                        .offset(32'h11c),
-                        .rights("WO"));
-  endfunction : build
-
-endclass : rv_timer_reg_block
-// Block: gpio
-// Class: gpio_reg_intr_state
-class gpio_reg_intr_state extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field gpio;
-
-  `uvm_object_utils(gpio_reg_intr_state)
-
-  function new(string       name = "gpio_reg_intr_state",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    gpio = dv_base_reg_field::type_id::create("gpio");
-    gpio.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_state
-
-// Class: gpio_reg_intr_enable
-class gpio_reg_intr_enable extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field gpio;
-
-  `uvm_object_utils(gpio_reg_intr_enable)
-
-  function new(string       name = "gpio_reg_intr_enable",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    gpio = dv_base_reg_field::type_id::create("gpio");
-    gpio.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_enable
-
-// Class: gpio_reg_intr_test
-class gpio_reg_intr_test extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field gpio;
-
-  `uvm_object_utils(gpio_reg_intr_test)
-
-  function new(string       name = "gpio_reg_intr_test",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    gpio = dv_base_reg_field::type_id::create("gpio");
-    gpio.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_test
-
-// Class: gpio_reg_data_in
-class gpio_reg_data_in extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data_in;
-
-  `uvm_object_utils(gpio_reg_data_in)
-
-  function new(string       name = "gpio_reg_data_in",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data_in = dv_base_reg_field::type_id::create("data_in");
-    data_in.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_data_in
-
-// Class: gpio_reg_direct_out
-class gpio_reg_direct_out extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field direct_out;
-
-  `uvm_object_utils(gpio_reg_direct_out)
-
-  function new(string       name = "gpio_reg_direct_out",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    direct_out = dv_base_reg_field::type_id::create("direct_out");
-    direct_out.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_direct_out
-
-// Class: gpio_reg_masked_out_lower
-class gpio_reg_masked_out_lower extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_out_lower)
-
-  function new(string       name = "gpio_reg_masked_out_lower",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_out_lower
-
-// Class: gpio_reg_masked_out_upper
-class gpio_reg_masked_out_upper extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_out_upper)
-
-  function new(string       name = "gpio_reg_masked_out_upper",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_out_upper
-
-// Class: gpio_reg_direct_oe
-class gpio_reg_direct_oe extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field direct_oe;
-
-  `uvm_object_utils(gpio_reg_direct_oe)
-
-  function new(string       name = "gpio_reg_direct_oe",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    direct_oe = dv_base_reg_field::type_id::create("direct_oe");
-    direct_oe.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_direct_oe
-
-// Class: gpio_reg_masked_oe_lower
-class gpio_reg_masked_oe_lower extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_oe_lower)
-
-  function new(string       name = "gpio_reg_masked_oe_lower",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_oe_lower
-
-// Class: gpio_reg_masked_oe_upper
-class gpio_reg_masked_oe_upper extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field data;
-  rand dv_base_reg_field mask;
-
-  `uvm_object_utils(gpio_reg_masked_oe_upper)
-
-  function new(string       name = "gpio_reg_masked_oe_upper",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    data = dv_base_reg_field::type_id::create("data");
-    data.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    mask = dv_base_reg_field::type_id::create("mask");
-    mask.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_masked_oe_upper
-
-// Class: gpio_reg_intr_ctrl_en_rising
-class gpio_reg_intr_ctrl_en_rising extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_rising;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_rising)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_rising",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_rising = dv_base_reg_field::type_id::create("intr_ctrl_en_rising");
-    intr_ctrl_en_rising.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_rising
-
-// Class: gpio_reg_intr_ctrl_en_falling
-class gpio_reg_intr_ctrl_en_falling extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_falling;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_falling)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_falling",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_falling = dv_base_reg_field::type_id::create("intr_ctrl_en_falling");
-    intr_ctrl_en_falling.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_falling
-
-// Class: gpio_reg_intr_ctrl_en_lvlhigh
-class gpio_reg_intr_ctrl_en_lvlhigh extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_lvlhigh;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvlhigh)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_lvlhigh",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_lvlhigh = dv_base_reg_field::type_id::create("intr_ctrl_en_lvlhigh");
-    intr_ctrl_en_lvlhigh.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_lvlhigh
-
-// Class: gpio_reg_intr_ctrl_en_lvllow
-class gpio_reg_intr_ctrl_en_lvllow extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field intr_ctrl_en_lvllow;
-
-  `uvm_object_utils(gpio_reg_intr_ctrl_en_lvllow)
-
-  function new(string       name = "gpio_reg_intr_ctrl_en_lvllow",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    intr_ctrl_en_lvllow = dv_base_reg_field::type_id::create("intr_ctrl_en_lvllow");
-    intr_ctrl_en_lvllow.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_intr_ctrl_en_lvllow
-
-// Class: gpio_reg_ctrl_en_input_filter
-class gpio_reg_ctrl_en_input_filter extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field ctrl_en_input_filter;
-
-  `uvm_object_utils(gpio_reg_ctrl_en_input_filter)
-
-  function new(string       name = "gpio_reg_ctrl_en_input_filter",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    ctrl_en_input_filter = dv_base_reg_field::type_id::create("ctrl_en_input_filter");
-    ctrl_en_input_filter.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : gpio_reg_ctrl_en_input_filter
-
-// Class: gpio_reg_block
-class gpio_reg_block extends dv_base_reg_block;
-  // registers
-  rand gpio_reg_intr_state intr_state;
-  rand gpio_reg_intr_enable intr_enable;
-  rand gpio_reg_intr_test intr_test;
-  rand gpio_reg_data_in data_in;
-  rand gpio_reg_direct_out direct_out;
-  rand gpio_reg_masked_out_lower masked_out_lower;
-  rand gpio_reg_masked_out_upper masked_out_upper;
-  rand gpio_reg_direct_oe direct_oe;
-  rand gpio_reg_masked_oe_lower masked_oe_lower;
-  rand gpio_reg_masked_oe_upper masked_oe_upper;
-  rand gpio_reg_intr_ctrl_en_rising intr_ctrl_en_rising;
-  rand gpio_reg_intr_ctrl_en_falling intr_ctrl_en_falling;
-  rand gpio_reg_intr_ctrl_en_lvlhigh intr_ctrl_en_lvlhigh;
-  rand gpio_reg_intr_ctrl_en_lvllow intr_ctrl_en_lvllow;
-  rand gpio_reg_ctrl_en_input_filter ctrl_en_input_filter;
-
-  `uvm_object_utils(gpio_reg_block)
-
-  function new(string name = "gpio_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    intr_state = gpio_reg_intr_state::type_id::create("intr_state");
-    intr_state.configure(.blk_parent(this));
-    intr_state.build();
-    default_map.add_reg(.rg(intr_state),
-                        .offset(32'h0),
-                        .rights("RW"));
-    intr_enable = gpio_reg_intr_enable::type_id::create("intr_enable");
-    intr_enable.configure(.blk_parent(this));
-    intr_enable.build();
-    default_map.add_reg(.rg(intr_enable),
-                        .offset(32'h4),
-                        .rights("RW"));
-    intr_test = gpio_reg_intr_test::type_id::create("intr_test");
-    intr_test.configure(.blk_parent(this));
-    intr_test.build();
-    default_map.add_reg(.rg(intr_test),
-                        .offset(32'h8),
-                        .rights("WO"));
-    data_in = gpio_reg_data_in::type_id::create("data_in");
-    data_in.configure(.blk_parent(this));
-    data_in.build();
-    default_map.add_reg(.rg(data_in),
-                        .offset(32'hc),
-                        .rights("RO"));
-    direct_out = gpio_reg_direct_out::type_id::create("direct_out");
-    direct_out.configure(.blk_parent(this));
-    direct_out.build();
-    default_map.add_reg(.rg(direct_out),
-                        .offset(32'h10),
-                        .rights("RW"));
-    masked_out_lower = gpio_reg_masked_out_lower::type_id::create("masked_out_lower");
-    masked_out_lower.configure(.blk_parent(this));
-    masked_out_lower.build();
-    default_map.add_reg(.rg(masked_out_lower),
-                        .offset(32'h14),
-                        .rights("RW"));
-    masked_out_upper = gpio_reg_masked_out_upper::type_id::create("masked_out_upper");
-    masked_out_upper.configure(.blk_parent(this));
-    masked_out_upper.build();
-    default_map.add_reg(.rg(masked_out_upper),
-                        .offset(32'h18),
-                        .rights("RW"));
-    direct_oe = gpio_reg_direct_oe::type_id::create("direct_oe");
-    direct_oe.configure(.blk_parent(this));
-    direct_oe.build();
-    default_map.add_reg(.rg(direct_oe),
-                        .offset(32'h1c),
-                        .rights("RW"));
-    masked_oe_lower = gpio_reg_masked_oe_lower::type_id::create("masked_oe_lower");
-    masked_oe_lower.configure(.blk_parent(this));
-    masked_oe_lower.build();
-    default_map.add_reg(.rg(masked_oe_lower),
-                        .offset(32'h20),
-                        .rights("RW"));
-    masked_oe_upper = gpio_reg_masked_oe_upper::type_id::create("masked_oe_upper");
-    masked_oe_upper.configure(.blk_parent(this));
-    masked_oe_upper.build();
-    default_map.add_reg(.rg(masked_oe_upper),
-                        .offset(32'h24),
-                        .rights("RW"));
-    intr_ctrl_en_rising = gpio_reg_intr_ctrl_en_rising::type_id::create("intr_ctrl_en_rising");
-    intr_ctrl_en_rising.configure(.blk_parent(this));
-    intr_ctrl_en_rising.build();
-    default_map.add_reg(.rg(intr_ctrl_en_rising),
-                        .offset(32'h28),
-                        .rights("RW"));
-    intr_ctrl_en_falling = gpio_reg_intr_ctrl_en_falling::type_id::create("intr_ctrl_en_falling");
-    intr_ctrl_en_falling.configure(.blk_parent(this));
-    intr_ctrl_en_falling.build();
-    default_map.add_reg(.rg(intr_ctrl_en_falling),
-                        .offset(32'h2c),
-                        .rights("RW"));
-    intr_ctrl_en_lvlhigh = gpio_reg_intr_ctrl_en_lvlhigh::type_id::create("intr_ctrl_en_lvlhigh");
-    intr_ctrl_en_lvlhigh.configure(.blk_parent(this));
-    intr_ctrl_en_lvlhigh.build();
-    default_map.add_reg(.rg(intr_ctrl_en_lvlhigh),
-                        .offset(32'h30),
-                        .rights("RW"));
-    intr_ctrl_en_lvllow = gpio_reg_intr_ctrl_en_lvllow::type_id::create("intr_ctrl_en_lvllow");
-    intr_ctrl_en_lvllow.configure(.blk_parent(this));
-    intr_ctrl_en_lvllow.build();
-    default_map.add_reg(.rg(intr_ctrl_en_lvllow),
-                        .offset(32'h34),
-                        .rights("RW"));
-    ctrl_en_input_filter = gpio_reg_ctrl_en_input_filter::type_id::create("ctrl_en_input_filter");
-    ctrl_en_input_filter.configure(.blk_parent(this));
-    ctrl_en_input_filter.build();
-    default_map.add_reg(.rg(ctrl_en_input_filter),
-                        .offset(32'h38),
-                        .rights("RW"));
-  endfunction : build
-
-endclass : gpio_reg_block
-// Block: hmac
-// Class: hmac_reg_intr_state
-class hmac_reg_intr_state extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field hmac_done;
-  rand dv_base_reg_field fifo_full;
-
-  `uvm_object_utils(hmac_reg_intr_state)
-
-  function new(string       name = "hmac_reg_intr_state",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    hmac_done = dv_base_reg_field::type_id::create("hmac_done");
-    hmac_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
-    fifo_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_intr_state
-
-// Class: hmac_reg_intr_enable
-class hmac_reg_intr_enable extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field hmac_done;
-  rand dv_base_reg_field fifo_full;
-
-  `uvm_object_utils(hmac_reg_intr_enable)
-
-  function new(string       name = "hmac_reg_intr_enable",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    hmac_done = dv_base_reg_field::type_id::create("hmac_done");
-    hmac_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
-    fifo_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_intr_enable
-
-// Class: hmac_reg_intr_test
-class hmac_reg_intr_test extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field hmac_done;
-  rand dv_base_reg_field fifo_full;
-
-  `uvm_object_utils(hmac_reg_intr_test)
-
-  function new(string       name = "hmac_reg_intr_test",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    hmac_done = dv_base_reg_field::type_id::create("hmac_done");
-    hmac_done.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
-    fifo_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_intr_test
-
-// Class: hmac_reg_cfg
-class hmac_reg_cfg extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field hmac_en;
-  rand dv_base_reg_field sha_en;
-  rand dv_base_reg_field endian_swap;
-  rand dv_base_reg_field digest_swap;
-
-  `uvm_object_utils(hmac_reg_cfg)
-
-  function new(string       name = "hmac_reg_cfg",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    hmac_en = dv_base_reg_field::type_id::create("hmac_en");
-    hmac_en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    sha_en = dv_base_reg_field::type_id::create("sha_en");
-    sha_en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    endian_swap = dv_base_reg_field::type_id::create("endian_swap");
-    endian_swap.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    digest_swap = dv_base_reg_field::type_id::create("digest_swap");
-    digest_swap.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_cfg
-
-// Class: hmac_reg_cmd
-class hmac_reg_cmd extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field hash_start;
-  rand dv_base_reg_field hash_process;
-
-  `uvm_object_utils(hmac_reg_cmd)
-
-  function new(string       name = "hmac_reg_cmd",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    hash_start = dv_base_reg_field::type_id::create("hash_start");
-    hash_start.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    hash_process = dv_base_reg_field::type_id::create("hash_process");
-    hash_process.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("W1C"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_cmd
-
-// Class: hmac_reg_status
-class hmac_reg_status extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field fifo_empty;
-  rand dv_base_reg_field fifo_full;
-  rand dv_base_reg_field fifo_depth;
-
-  `uvm_object_utils(hmac_reg_status)
-
-  function new(string       name = "hmac_reg_status",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    fifo_empty = dv_base_reg_field::type_id::create("fifo_empty");
-    fifo_empty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    fifo_full = dv_base_reg_field::type_id::create("fifo_full");
-    fifo_full.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    fifo_depth = dv_base_reg_field::type_id::create("fifo_depth");
-    fifo_depth.configure(
-      .parent(this),
-      .size(5),
-      .lsb_pos(4),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_status
-
-// Class: hmac_reg_wipe_secret
-class hmac_reg_wipe_secret extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field secret;
-
-  `uvm_object_utils(hmac_reg_wipe_secret)
-
-  function new(string       name = "hmac_reg_wipe_secret",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    secret = dv_base_reg_field::type_id::create("secret");
-    secret.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_wipe_secret
-
-// Class: hmac_reg_key0
-class hmac_reg_key0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key0;
-
-  `uvm_object_utils(hmac_reg_key0)
-
-  function new(string       name = "hmac_reg_key0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key0 = dv_base_reg_field::type_id::create("key0");
-    key0.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key0
-
-// Class: hmac_reg_key1
-class hmac_reg_key1 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key1;
-
-  `uvm_object_utils(hmac_reg_key1)
-
-  function new(string       name = "hmac_reg_key1",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key1 = dv_base_reg_field::type_id::create("key1");
-    key1.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key1
-
-// Class: hmac_reg_key2
-class hmac_reg_key2 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key2;
-
-  `uvm_object_utils(hmac_reg_key2)
-
-  function new(string       name = "hmac_reg_key2",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key2 = dv_base_reg_field::type_id::create("key2");
-    key2.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key2
-
-// Class: hmac_reg_key3
-class hmac_reg_key3 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key3;
-
-  `uvm_object_utils(hmac_reg_key3)
-
-  function new(string       name = "hmac_reg_key3",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key3 = dv_base_reg_field::type_id::create("key3");
-    key3.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key3
-
-// Class: hmac_reg_key4
-class hmac_reg_key4 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key4;
-
-  `uvm_object_utils(hmac_reg_key4)
-
-  function new(string       name = "hmac_reg_key4",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key4 = dv_base_reg_field::type_id::create("key4");
-    key4.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key4
-
-// Class: hmac_reg_key5
-class hmac_reg_key5 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key5;
-
-  `uvm_object_utils(hmac_reg_key5)
-
-  function new(string       name = "hmac_reg_key5",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key5 = dv_base_reg_field::type_id::create("key5");
-    key5.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key5
-
-// Class: hmac_reg_key6
-class hmac_reg_key6 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key6;
-
-  `uvm_object_utils(hmac_reg_key6)
-
-  function new(string       name = "hmac_reg_key6",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key6 = dv_base_reg_field::type_id::create("key6");
-    key6.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key6
-
-// Class: hmac_reg_key7
-class hmac_reg_key7 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field key7;
-
-  `uvm_object_utils(hmac_reg_key7)
-
-  function new(string       name = "hmac_reg_key7",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    key7 = dv_base_reg_field::type_id::create("key7");
-    key7.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_key7
-
-// Class: hmac_reg_digest0
-class hmac_reg_digest0 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest0;
-
-  `uvm_object_utils(hmac_reg_digest0)
-
-  function new(string       name = "hmac_reg_digest0",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest0 = dv_base_reg_field::type_id::create("digest0");
-    digest0.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest0
-
-// Class: hmac_reg_digest1
-class hmac_reg_digest1 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest1;
-
-  `uvm_object_utils(hmac_reg_digest1)
-
-  function new(string       name = "hmac_reg_digest1",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest1 = dv_base_reg_field::type_id::create("digest1");
-    digest1.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest1
-
-// Class: hmac_reg_digest2
-class hmac_reg_digest2 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest2;
-
-  `uvm_object_utils(hmac_reg_digest2)
-
-  function new(string       name = "hmac_reg_digest2",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest2 = dv_base_reg_field::type_id::create("digest2");
-    digest2.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest2
-
-// Class: hmac_reg_digest3
-class hmac_reg_digest3 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest3;
-
-  `uvm_object_utils(hmac_reg_digest3)
-
-  function new(string       name = "hmac_reg_digest3",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest3 = dv_base_reg_field::type_id::create("digest3");
-    digest3.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest3
-
-// Class: hmac_reg_digest4
-class hmac_reg_digest4 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest4;
-
-  `uvm_object_utils(hmac_reg_digest4)
-
-  function new(string       name = "hmac_reg_digest4",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest4 = dv_base_reg_field::type_id::create("digest4");
-    digest4.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest4
-
-// Class: hmac_reg_digest5
-class hmac_reg_digest5 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest5;
-
-  `uvm_object_utils(hmac_reg_digest5)
-
-  function new(string       name = "hmac_reg_digest5",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest5 = dv_base_reg_field::type_id::create("digest5");
-    digest5.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest5
-
-// Class: hmac_reg_digest6
-class hmac_reg_digest6 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest6;
-
-  `uvm_object_utils(hmac_reg_digest6)
-
-  function new(string       name = "hmac_reg_digest6",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest6 = dv_base_reg_field::type_id::create("digest6");
-    digest6.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest6
-
-// Class: hmac_reg_digest7
-class hmac_reg_digest7 extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field digest7;
-
-  `uvm_object_utils(hmac_reg_digest7)
-
-  function new(string       name = "hmac_reg_digest7",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    digest7 = dv_base_reg_field::type_id::create("digest7");
-    digest7.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_digest7
-
-// Class: hmac_reg_msg_length_lower
-class hmac_reg_msg_length_lower extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(hmac_reg_msg_length_lower)
-
-  function new(string       name = "hmac_reg_msg_length_lower",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_msg_length_lower
-
-// Class: hmac_reg_msg_length_upper
-class hmac_reg_msg_length_upper extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field v;
-
-  `uvm_object_utils(hmac_reg_msg_length_upper)
-
-  function new(string       name = "hmac_reg_msg_length_upper",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    v = dv_base_reg_field::type_id::create("v");
-    v.configure(
-      .parent(this),
-      .size(32),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : hmac_reg_msg_length_upper
-
-// Class: hmac_mem_msg_fifo
-class hmac_mem_msg_fifo extends dv_base_mem;
-
-  `uvm_object_utils(hmac_mem_msg_fifo)
-
-  function new(string           name = "hmac_mem_msg_fifo",
-               longint unsigned size = 512,
-               int unsigned     n_bits = 32,
-               string           access = "RW"/* TODO:"WO"*/,
-               int              has_coverage = UVM_NO_COVERAGE);
-    super.new(name, size, n_bits, access, has_coverage);
-  endfunction : new
-
-endclass : hmac_mem_msg_fifo
-
-// Class: hmac_reg_block
-class hmac_reg_block extends dv_base_reg_block;
-  // registers
-  rand hmac_reg_intr_state intr_state;
-  rand hmac_reg_intr_enable intr_enable;
-  rand hmac_reg_intr_test intr_test;
-  rand hmac_reg_cfg cfg;
-  rand hmac_reg_cmd cmd;
-  rand hmac_reg_status status;
-  rand hmac_reg_wipe_secret wipe_secret;
-  rand hmac_reg_key0 key0;
-  rand hmac_reg_key1 key1;
-  rand hmac_reg_key2 key2;
-  rand hmac_reg_key3 key3;
-  rand hmac_reg_key4 key4;
-  rand hmac_reg_key5 key5;
-  rand hmac_reg_key6 key6;
-  rand hmac_reg_key7 key7;
-  rand hmac_reg_digest0 digest0;
-  rand hmac_reg_digest1 digest1;
-  rand hmac_reg_digest2 digest2;
-  rand hmac_reg_digest3 digest3;
-  rand hmac_reg_digest4 digest4;
-  rand hmac_reg_digest5 digest5;
-  rand hmac_reg_digest6 digest6;
-  rand hmac_reg_digest7 digest7;
-  rand hmac_reg_msg_length_lower msg_length_lower;
-  rand hmac_reg_msg_length_upper msg_length_upper;
-  // memories
-  rand hmac_mem_msg_fifo msg_fifo;
-
-  `uvm_object_utils(hmac_reg_block)
-
-  function new(string name = "hmac_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    intr_state = hmac_reg_intr_state::type_id::create("intr_state");
-    intr_state.configure(.blk_parent(this));
-    intr_state.build();
-    default_map.add_reg(.rg(intr_state),
-                        .offset(32'h0),
-                        .rights("RW"));
-    intr_enable = hmac_reg_intr_enable::type_id::create("intr_enable");
-    intr_enable.configure(.blk_parent(this));
-    intr_enable.build();
-    default_map.add_reg(.rg(intr_enable),
-                        .offset(32'h4),
-                        .rights("RW"));
-    intr_test = hmac_reg_intr_test::type_id::create("intr_test");
-    intr_test.configure(.blk_parent(this));
-    intr_test.build();
-    default_map.add_reg(.rg(intr_test),
-                        .offset(32'h8),
-                        .rights("WO"));
-    cfg = hmac_reg_cfg::type_id::create("cfg");
-    cfg.configure(.blk_parent(this));
-    cfg.build();
-    default_map.add_reg(.rg(cfg),
-                        .offset(32'hc),
-                        .rights("RW"));
-    cmd = hmac_reg_cmd::type_id::create("cmd");
-    cmd.configure(.blk_parent(this));
-    cmd.build();
-    default_map.add_reg(.rg(cmd),
-                        .offset(32'h10),
-                        .rights("RW"));
-    status = hmac_reg_status::type_id::create("status");
-    status.configure(.blk_parent(this));
-    status.build();
-    default_map.add_reg(.rg(status),
-                        .offset(32'h14),
-                        .rights("RO"));
-    wipe_secret = hmac_reg_wipe_secret::type_id::create("wipe_secret");
-    wipe_secret.configure(.blk_parent(this));
-    wipe_secret.build();
-    default_map.add_reg(.rg(wipe_secret),
-                        .offset(32'h18),
-                        .rights("WO"));
-    key0 = hmac_reg_key0::type_id::create("key0");
-    key0.configure(.blk_parent(this));
-    key0.build();
-    default_map.add_reg(.rg(key0),
-                        .offset(32'h1c),
-                        .rights("WO"));
-    key1 = hmac_reg_key1::type_id::create("key1");
-    key1.configure(.blk_parent(this));
-    key1.build();
-    default_map.add_reg(.rg(key1),
-                        .offset(32'h20),
-                        .rights("WO"));
-    key2 = hmac_reg_key2::type_id::create("key2");
-    key2.configure(.blk_parent(this));
-    key2.build();
-    default_map.add_reg(.rg(key2),
-                        .offset(32'h24),
-                        .rights("WO"));
-    key3 = hmac_reg_key3::type_id::create("key3");
-    key3.configure(.blk_parent(this));
-    key3.build();
-    default_map.add_reg(.rg(key3),
-                        .offset(32'h28),
-                        .rights("WO"));
-    key4 = hmac_reg_key4::type_id::create("key4");
-    key4.configure(.blk_parent(this));
-    key4.build();
-    default_map.add_reg(.rg(key4),
-                        .offset(32'h2c),
-                        .rights("WO"));
-    key5 = hmac_reg_key5::type_id::create("key5");
-    key5.configure(.blk_parent(this));
-    key5.build();
-    default_map.add_reg(.rg(key5),
-                        .offset(32'h30),
-                        .rights("WO"));
-    key6 = hmac_reg_key6::type_id::create("key6");
-    key6.configure(.blk_parent(this));
-    key6.build();
-    default_map.add_reg(.rg(key6),
-                        .offset(32'h34),
-                        .rights("WO"));
-    key7 = hmac_reg_key7::type_id::create("key7");
-    key7.configure(.blk_parent(this));
-    key7.build();
-    default_map.add_reg(.rg(key7),
-                        .offset(32'h38),
-                        .rights("WO"));
-    digest0 = hmac_reg_digest0::type_id::create("digest0");
-    digest0.configure(.blk_parent(this));
-    digest0.build();
-    default_map.add_reg(.rg(digest0),
-                        .offset(32'h3c),
-                        .rights("RO"));
-    digest1 = hmac_reg_digest1::type_id::create("digest1");
-    digest1.configure(.blk_parent(this));
-    digest1.build();
-    default_map.add_reg(.rg(digest1),
-                        .offset(32'h40),
-                        .rights("RO"));
-    digest2 = hmac_reg_digest2::type_id::create("digest2");
-    digest2.configure(.blk_parent(this));
-    digest2.build();
-    default_map.add_reg(.rg(digest2),
-                        .offset(32'h44),
-                        .rights("RO"));
-    digest3 = hmac_reg_digest3::type_id::create("digest3");
-    digest3.configure(.blk_parent(this));
-    digest3.build();
-    default_map.add_reg(.rg(digest3),
-                        .offset(32'h48),
-                        .rights("RO"));
-    digest4 = hmac_reg_digest4::type_id::create("digest4");
-    digest4.configure(.blk_parent(this));
-    digest4.build();
-    default_map.add_reg(.rg(digest4),
-                        .offset(32'h4c),
-                        .rights("RO"));
-    digest5 = hmac_reg_digest5::type_id::create("digest5");
-    digest5.configure(.blk_parent(this));
-    digest5.build();
-    default_map.add_reg(.rg(digest5),
-                        .offset(32'h50),
-                        .rights("RO"));
-    digest6 = hmac_reg_digest6::type_id::create("digest6");
-    digest6.configure(.blk_parent(this));
-    digest6.build();
-    default_map.add_reg(.rg(digest6),
-                        .offset(32'h54),
-                        .rights("RO"));
-    digest7 = hmac_reg_digest7::type_id::create("digest7");
-    digest7.configure(.blk_parent(this));
-    digest7.build();
-    default_map.add_reg(.rg(digest7),
-                        .offset(32'h58),
-                        .rights("RO"));
-    msg_length_lower = hmac_reg_msg_length_lower::type_id::create("msg_length_lower");
-    msg_length_lower.configure(.blk_parent(this));
-    msg_length_lower.build();
-    default_map.add_reg(.rg(msg_length_lower),
-                        .offset(32'h5c),
-                        .rights("RO"));
-    msg_length_upper = hmac_reg_msg_length_upper::type_id::create("msg_length_upper");
-    msg_length_upper.configure(.blk_parent(this));
-    msg_length_upper.build();
-    default_map.add_reg(.rg(msg_length_upper),
-                        .offset(32'h60),
-                        .rights("RO"));
-
-    // create memories
-    msg_fifo = hmac_mem_msg_fifo::type_id::create("msg_fifo");
-    msg_fifo.configure(.parent(this));
-    default_map.add_mem(.mem(msg_fifo),
-                        .offset(32'h800),
-                        .rights("WO"));
-  endfunction : build
-
-endclass : hmac_reg_block
-// Block: uart
-// Class: uart_reg_intr_state
-class uart_reg_intr_state extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field tx_watermark;
-  rand dv_base_reg_field rx_watermark;
-  rand dv_base_reg_field tx_overflow;
-  rand dv_base_reg_field rx_overflow;
-  rand dv_base_reg_field rx_frame_err;
-  rand dv_base_reg_field rx_break_err;
-  rand dv_base_reg_field rx_timeout;
-  rand dv_base_reg_field rx_parity_err;
-
-  `uvm_object_utils(uart_reg_intr_state)
-
-  function new(string       name = "uart_reg_intr_state",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    tx_watermark = dv_base_reg_field::type_id::create("tx_watermark");
-    tx_watermark.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
-    rx_watermark.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    tx_overflow = dv_base_reg_field::type_id::create("tx_overflow");
-    tx_overflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
-    rx_overflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_frame_err = dv_base_reg_field::type_id::create("rx_frame_err");
-    rx_frame_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_break_err = dv_base_reg_field::type_id::create("rx_break_err");
-    rx_break_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_timeout = dv_base_reg_field::type_id::create("rx_timeout");
-    rx_timeout.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(6),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_parity_err = dv_base_reg_field::type_id::create("rx_parity_err");
-    rx_parity_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(7),
-      .access("W1C"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_intr_state
-
-// Class: uart_reg_intr_enable
-class uart_reg_intr_enable extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field tx_watermark;
-  rand dv_base_reg_field rx_watermark;
-  rand dv_base_reg_field tx_overflow;
-  rand dv_base_reg_field rx_overflow;
-  rand dv_base_reg_field rx_frame_err;
-  rand dv_base_reg_field rx_break_err;
-  rand dv_base_reg_field rx_timeout;
-  rand dv_base_reg_field rx_parity_err;
-
-  `uvm_object_utils(uart_reg_intr_enable)
-
-  function new(string       name = "uart_reg_intr_enable",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    tx_watermark = dv_base_reg_field::type_id::create("tx_watermark");
-    tx_watermark.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
-    rx_watermark.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    tx_overflow = dv_base_reg_field::type_id::create("tx_overflow");
-    tx_overflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
-    rx_overflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_frame_err = dv_base_reg_field::type_id::create("rx_frame_err");
-    rx_frame_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_break_err = dv_base_reg_field::type_id::create("rx_break_err");
-    rx_break_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_timeout = dv_base_reg_field::type_id::create("rx_timeout");
-    rx_timeout.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(6),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_parity_err = dv_base_reg_field::type_id::create("rx_parity_err");
-    rx_parity_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(7),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_intr_enable
-
-// Class: uart_reg_intr_test
-class uart_reg_intr_test extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field tx_watermark;
-  rand dv_base_reg_field rx_watermark;
-  rand dv_base_reg_field tx_overflow;
-  rand dv_base_reg_field rx_overflow;
-  rand dv_base_reg_field rx_frame_err;
-  rand dv_base_reg_field rx_break_err;
-  rand dv_base_reg_field rx_timeout;
-  rand dv_base_reg_field rx_parity_err;
-
-  `uvm_object_utils(uart_reg_intr_test)
-
-  function new(string       name = "uart_reg_intr_test",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    tx_watermark = dv_base_reg_field::type_id::create("tx_watermark");
-    tx_watermark.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_watermark = dv_base_reg_field::type_id::create("rx_watermark");
-    rx_watermark.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    tx_overflow = dv_base_reg_field::type_id::create("tx_overflow");
-    tx_overflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_overflow = dv_base_reg_field::type_id::create("rx_overflow");
-    rx_overflow.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_frame_err = dv_base_reg_field::type_id::create("rx_frame_err");
-    rx_frame_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_break_err = dv_base_reg_field::type_id::create("rx_break_err");
-    rx_break_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_timeout = dv_base_reg_field::type_id::create("rx_timeout");
-    rx_timeout.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(6),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx_parity_err = dv_base_reg_field::type_id::create("rx_parity_err");
-    rx_parity_err.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(7),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_intr_test
-
-// Class: uart_reg_ctrl
-class uart_reg_ctrl extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field tx;
-  rand dv_base_reg_field rx;
-  rand dv_base_reg_field nf;
-  rand dv_base_reg_field slpbk;
-  rand dv_base_reg_field llpbk;
-  rand dv_base_reg_field parity_en;
-  rand dv_base_reg_field parity_odd;
-  rand dv_base_reg_field rxblvl;
-  rand dv_base_reg_field nco;
-
-  `uvm_object_utils(uart_reg_ctrl)
-
-  function new(string       name = "uart_reg_ctrl",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    tx = dv_base_reg_field::type_id::create("tx");
-    tx.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rx = dv_base_reg_field::type_id::create("rx");
-    rx.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    nf = dv_base_reg_field::type_id::create("nf");
-    nf.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    slpbk = dv_base_reg_field::type_id::create("slpbk");
-    slpbk.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    llpbk = dv_base_reg_field::type_id::create("llpbk");
-    llpbk.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    parity_en = dv_base_reg_field::type_id::create("parity_en");
-    parity_en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(6),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    parity_odd = dv_base_reg_field::type_id::create("parity_odd");
-    parity_odd.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(7),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxblvl = dv_base_reg_field::type_id::create("rxblvl");
-    rxblvl.configure(
-      .parent(this),
-      .size(2),
-      .lsb_pos(8),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    nco = dv_base_reg_field::type_id::create("nco");
-    nco.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(16),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_ctrl
-
-// Class: uart_reg_status
-class uart_reg_status extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field txfull;
-  rand dv_base_reg_field rxfull;
-  rand dv_base_reg_field txempty;
-  rand dv_base_reg_field txidle;
-  rand dv_base_reg_field rxidle;
-  rand dv_base_reg_field rxempty;
-
-  `uvm_object_utils(uart_reg_status)
-
-  function new(string       name = "uart_reg_status",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    txfull = dv_base_reg_field::type_id::create("txfull");
-    txfull.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxfull = dv_base_reg_field::type_id::create("rxfull");
-    rxfull.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txempty = dv_base_reg_field::type_id::create("txempty");
-    txempty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(2),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txidle = dv_base_reg_field::type_id::create("txidle");
-    txidle.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(3),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxidle = dv_base_reg_field::type_id::create("rxidle");
-    rxidle.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(4),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxempty = dv_base_reg_field::type_id::create("rxempty");
-    rxempty.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(5),
-      .access("RO"),
-      .volatile(1),
-      .reset(1),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_status
-
-// Class: uart_reg_rdata
-class uart_reg_rdata extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rdata;
-
-  `uvm_object_utils(uart_reg_rdata)
-
-  function new(string       name = "uart_reg_rdata",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rdata = dv_base_reg_field::type_id::create("rdata");
-    rdata.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_rdata
-
-// Class: uart_reg_wdata
-class uart_reg_wdata extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field wdata;
-
-  `uvm_object_utils(uart_reg_wdata)
-
-  function new(string       name = "uart_reg_wdata",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    wdata = dv_base_reg_field::type_id::create("wdata");
-    wdata.configure(
-      .parent(this),
-      .size(8),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_wdata
-
-// Class: uart_reg_fifo_ctrl
-class uart_reg_fifo_ctrl extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rxrst;
-  rand dv_base_reg_field txrst;
-  rand dv_base_reg_field rxilvl;
-  rand dv_base_reg_field txilvl;
-
-  `uvm_object_utils(uart_reg_fifo_ctrl)
-
-  function new(string       name = "uart_reg_fifo_ctrl",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rxrst = dv_base_reg_field::type_id::create("rxrst");
-    rxrst.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txrst = dv_base_reg_field::type_id::create("txrst");
-    txrst.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("WO"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxilvl = dv_base_reg_field::type_id::create("rxilvl");
-    rxilvl.configure(
-      .parent(this),
-      .size(3),
-      .lsb_pos(2),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txilvl = dv_base_reg_field::type_id::create("txilvl");
-    txilvl.configure(
-      .parent(this),
-      .size(2),
-      .lsb_pos(5),
-      .access("RW"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_fifo_ctrl
-
-// Class: uart_reg_fifo_status
-class uart_reg_fifo_status extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field txlvl;
-  rand dv_base_reg_field rxlvl;
-
-  `uvm_object_utils(uart_reg_fifo_status)
-
-  function new(string       name = "uart_reg_fifo_status",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    txlvl = dv_base_reg_field::type_id::create("txlvl");
-    txlvl.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    rxlvl = dv_base_reg_field::type_id::create("rxlvl");
-    rxlvl.configure(
-      .parent(this),
-      .size(6),
-      .lsb_pos(16),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_fifo_status
-
-// Class: uart_reg_ovrd
-class uart_reg_ovrd extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field txen;
-  rand dv_base_reg_field txval;
-
-  `uvm_object_utils(uart_reg_ovrd)
-
-  function new(string       name = "uart_reg_ovrd",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    txen = dv_base_reg_field::type_id::create("txen");
-    txen.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    txval = dv_base_reg_field::type_id::create("txval");
-    txval.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(1),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_ovrd
-
-// Class: uart_reg_val
-class uart_reg_val extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field rx;
-
-  `uvm_object_utils(uart_reg_val)
-
-  function new(string       name = "uart_reg_val",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    rx = dv_base_reg_field::type_id::create("rx");
-    rx.configure(
-      .parent(this),
-      .size(16),
-      .lsb_pos(0),
-      .access("RO"),
-      .volatile(1),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_val
-
-// Class: uart_reg_timeout_ctrl
-class uart_reg_timeout_ctrl extends dv_base_reg;
-  // fields
-  rand dv_base_reg_field val;
-  rand dv_base_reg_field en;
-
-  `uvm_object_utils(uart_reg_timeout_ctrl)
-
-  function new(string       name = "uart_reg_timeout_ctrl",
-               int unsigned n_bits = 32,
-               int          has_coverage = UVM_NO_COVERAGE);
-    super.new(name, n_bits, has_coverage);
-  endfunction : new
-
-  virtual function void build();
-    // create fields
-    val = dv_base_reg_field::type_id::create("val");
-    val.configure(
-      .parent(this),
-      .size(24),
-      .lsb_pos(0),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-    en = dv_base_reg_field::type_id::create("en");
-    en.configure(
-      .parent(this),
-      .size(1),
-      .lsb_pos(31),
-      .access("RW"),
-      .volatile(0),
-      .reset(0),
-      .has_reset(1),
-      .is_rand(1),
-      .individually_accessible(1));
-  endfunction : build
-
-endclass : uart_reg_timeout_ctrl
-
-// Class: uart_reg_block
-class uart_reg_block extends dv_base_reg_block;
-  // registers
-  rand uart_reg_intr_state intr_state;
-  rand uart_reg_intr_enable intr_enable;
-  rand uart_reg_intr_test intr_test;
-  rand uart_reg_ctrl ctrl;
-  rand uart_reg_status status;
-  rand uart_reg_rdata rdata;
-  rand uart_reg_wdata wdata;
-  rand uart_reg_fifo_ctrl fifo_ctrl;
-  rand uart_reg_fifo_status fifo_status;
-  rand uart_reg_ovrd ovrd;
-  rand uart_reg_val val;
-  rand uart_reg_timeout_ctrl timeout_ctrl;
-
-  `uvm_object_utils(uart_reg_block)
-
-  function new(string name = "uart_reg_block",
-               int    has_coverage = UVM_NO_COVERAGE);
-    super.new(name, has_coverage);
-  endfunction : new
-
-  virtual function void build(uvm_reg_addr_t base_addr);
-    // create default map
-    this.default_map = create_map(.name("default_map"),
-                                  .base_addr(base_addr),
-                                  .n_bytes(4),
-                                  .endian(UVM_LITTLE_ENDIAN));
-
-    // create registers
-    intr_state = uart_reg_intr_state::type_id::create("intr_state");
-    intr_state.configure(.blk_parent(this));
-    intr_state.build();
-    default_map.add_reg(.rg(intr_state),
-                        .offset(32'h0),
-                        .rights("RW"));
-    intr_enable = uart_reg_intr_enable::type_id::create("intr_enable");
-    intr_enable.configure(.blk_parent(this));
-    intr_enable.build();
-    default_map.add_reg(.rg(intr_enable),
-                        .offset(32'h4),
-                        .rights("RW"));
-    intr_test = uart_reg_intr_test::type_id::create("intr_test");
-    intr_test.configure(.blk_parent(this));
-    intr_test.build();
-    default_map.add_reg(.rg(intr_test),
-                        .offset(32'h8),
-                        .rights("WO"));
-    ctrl = uart_reg_ctrl::type_id::create("ctrl");
-    ctrl.configure(.blk_parent(this));
-    ctrl.build();
-    default_map.add_reg(.rg(ctrl),
-                        .offset(32'hc),
-                        .rights("RW"));
-    status = uart_reg_status::type_id::create("status");
-    status.configure(.blk_parent(this));
-    status.build();
-    default_map.add_reg(.rg(status),
-                        .offset(32'h10),
-                        .rights("RO"));
-    rdata = uart_reg_rdata::type_id::create("rdata");
-    rdata.configure(.blk_parent(this));
-    rdata.build();
-    default_map.add_reg(.rg(rdata),
-                        .offset(32'h14),
-                        .rights("RO"));
-    wdata = uart_reg_wdata::type_id::create("wdata");
-    wdata.configure(.blk_parent(this));
-    wdata.build();
-    default_map.add_reg(.rg(wdata),
-                        .offset(32'h18),
-                        .rights("WO"));
-    fifo_ctrl = uart_reg_fifo_ctrl::type_id::create("fifo_ctrl");
-    fifo_ctrl.configure(.blk_parent(this));
-    fifo_ctrl.build();
-    default_map.add_reg(.rg(fifo_ctrl),
-                        .offset(32'h1c),
-                        .rights("RW"));
-    fifo_status = uart_reg_fifo_status::type_id::create("fifo_status");
-    fifo_status.configure(.blk_parent(this));
-    fifo_status.build();
-    default_map.add_reg(.rg(fifo_status),
-                        .offset(32'h20),
-                        .rights("RO"));
-    ovrd = uart_reg_ovrd::type_id::create("ovrd");
-    ovrd.configure(.blk_parent(this));
-    ovrd.build();
-    default_map.add_reg(.rg(ovrd),
-                        .offset(32'h24),
-                        .rights("RW"));
-    val = uart_reg_val::type_id::create("val");
-    val.configure(.blk_parent(this));
-    val.build();
-    default_map.add_reg(.rg(val),
-                        .offset(32'h28),
-                        .rights("RO"));
-    timeout_ctrl = uart_reg_timeout_ctrl::type_id::create("timeout_ctrl");
-    timeout_ctrl.configure(.blk_parent(this));
-    timeout_ctrl.build();
-    default_map.add_reg(.rg(timeout_ctrl),
-                        .offset(32'h2c),
-                        .rights("RW"));
-  endfunction : build
-
-endclass : uart_reg_block
 // Block: rv_plic
 // Class: rv_plic_reg_ip0
 class rv_plic_reg_ip0 extends dv_base_reg;
@@ -10096,7 +10096,7 @@ class chip_mem_rom extends dv_base_mem;
   `uvm_object_utils(chip_mem_rom)
 
   function new(string           name = "chip_mem_rom",
-               longint unsigned size = 2048,
+               longint unsigned size = 4096,
                int unsigned     n_bits = 32,
                string           access = "RW"/* TODO:"RW"*/,
                int              has_coverage = UVM_NO_COVERAGE);
@@ -10138,12 +10138,12 @@ endclass : chip_mem_eflash
 // Class: chip_reg_block
 class chip_reg_block extends dv_base_reg_block;
   // sub blocks
-  rand spi_device_reg_block spi_device;
-  rand flash_ctrl_reg_block flash_ctrl;
-  rand rv_timer_reg_block rv_timer;
-  rand gpio_reg_block gpio;
-  rand hmac_reg_block hmac;
   rand uart_reg_block uart;
+  rand gpio_reg_block gpio;
+  rand spi_device_reg_block spi_device;
+  rand hmac_reg_block hmac;
+  rand rv_timer_reg_block rv_timer;
+  rand flash_ctrl_reg_block flash_ctrl;
   rand rv_plic_reg_block rv_plic;
   // memories
   rand chip_mem_rom rom;
@@ -10165,36 +10165,36 @@ class chip_reg_block extends dv_base_reg_block;
                                   .endian(UVM_LITTLE_ENDIAN));
 
     // create sub blocks and add their maps
-    spi_device = spi_device_reg_block::type_id::create("spi_device");
-    spi_device.configure(.parent(this));
-    spi_device.build(.base_addr(base_addr + 32'h40020000));
-    default_map.add_submap(.child_map(spi_device.default_map),
-                           .offset(base_addr + 32'h40020000));
-    flash_ctrl = flash_ctrl_reg_block::type_id::create("flash_ctrl");
-    flash_ctrl.configure(.parent(this));
-    flash_ctrl.build(.base_addr(base_addr + 32'h40030000));
-    default_map.add_submap(.child_map(flash_ctrl.default_map),
-                           .offset(base_addr + 32'h40030000));
-    rv_timer = rv_timer_reg_block::type_id::create("rv_timer");
-    rv_timer.configure(.parent(this));
-    rv_timer.build(.base_addr(base_addr + 32'h40080000));
-    default_map.add_submap(.child_map(rv_timer.default_map),
-                           .offset(base_addr + 32'h40080000));
-    gpio = gpio_reg_block::type_id::create("gpio");
-    gpio.configure(.parent(this));
-    gpio.build(.base_addr(base_addr + 32'h40010000));
-    default_map.add_submap(.child_map(gpio.default_map),
-                           .offset(base_addr + 32'h40010000));
-    hmac = hmac_reg_block::type_id::create("hmac");
-    hmac.configure(.parent(this));
-    hmac.build(.base_addr(base_addr + 32'h40120000));
-    default_map.add_submap(.child_map(hmac.default_map),
-                           .offset(base_addr + 32'h40120000));
     uart = uart_reg_block::type_id::create("uart");
     uart.configure(.parent(this));
     uart.build(.base_addr(base_addr + 32'h40000000));
     default_map.add_submap(.child_map(uart.default_map),
                            .offset(base_addr + 32'h40000000));
+    gpio = gpio_reg_block::type_id::create("gpio");
+    gpio.configure(.parent(this));
+    gpio.build(.base_addr(base_addr + 32'h40010000));
+    default_map.add_submap(.child_map(gpio.default_map),
+                           .offset(base_addr + 32'h40010000));
+    spi_device = spi_device_reg_block::type_id::create("spi_device");
+    spi_device.configure(.parent(this));
+    spi_device.build(.base_addr(base_addr + 32'h40020000));
+    default_map.add_submap(.child_map(spi_device.default_map),
+                           .offset(base_addr + 32'h40020000));
+    hmac = hmac_reg_block::type_id::create("hmac");
+    hmac.configure(.parent(this));
+    hmac.build(.base_addr(base_addr + 32'h40120000));
+    default_map.add_submap(.child_map(hmac.default_map),
+                           .offset(base_addr + 32'h40120000));
+    rv_timer = rv_timer_reg_block::type_id::create("rv_timer");
+    rv_timer.configure(.parent(this));
+    rv_timer.build(.base_addr(base_addr + 32'h40080000));
+    default_map.add_submap(.child_map(rv_timer.default_map),
+                           .offset(base_addr + 32'h40080000));
+    flash_ctrl = flash_ctrl_reg_block::type_id::create("flash_ctrl");
+    flash_ctrl.configure(.parent(this));
+    flash_ctrl.build(.base_addr(base_addr + 32'h40030000));
+    default_map.add_submap(.child_map(flash_ctrl.default_map),
+                           .offset(base_addr + 32'h40030000));
     rv_plic = rv_plic_reg_block::type_id::create("rv_plic");
     rv_plic.configure(.parent(this));
     rv_plic.build(.base_addr(base_addr + 32'h40090000));
