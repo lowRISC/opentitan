@@ -35,6 +35,12 @@ int uart_tx_empty(void) {
   return !!(REG32(UART_STATUS(0)) & (1 << UART_STATUS_TXEMPTY));
 }
 
+
+int uart_tx_idle(void) {
+  return !!(REG32(UART_STATUS(0)) & (1 << UART_STATUS_TXIDLE));
+}
+
+
 void uart_send_str(char *str) {
   while (*str != '\0') {
     uart_send_char(*str++);

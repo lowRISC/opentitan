@@ -1,0 +1,62 @@
+## Copyright lowRISC contributors.
+## Licensed under the Apache License, Version 2.0, see LICENSE for details.
+## SPDX-License-Identifier: Apache-2.0
+
+OT           = $(ROOTDIR)/riscv-target/$(RISCV_TARGET)/device/rv32imc
+OTSW         = $(ROOTDIR)/../../device
+OTROOT       = $(OTSW)/../../
+LDSCRIPT     = $(OT)/link.ld
+TRAPHANDLER  = $(OT)/handler.S
+DEFINES      = -DSIMULATION=1 -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DTRAPHANDLER="\"$(TRAPHANDLER)\""
+RV_TOOLS    ?= /tools/riscv/bin
+TARGET_SIM  ?= $(OTROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
+
+##RUN_TARGET=\
+##    timeout 30 \
+##    $(TARGET_SIM) \
+##        --rominit=$(OTSW)/boot_rom/rom.vmem \
+##        --flashinit=$(work_dir_isa)/$<.vmem; \
+##        grep "^SIG: " $(act_dir)/uart0.log | sed 's/SIG: //' \
+##        > $(work_dir_isa)/$(*).signature.temp.output; \
+##        tr '[:upper:]' '[:lower:]' < $(work_dir_isa)/$(*).signature.temp.output > $(work_dir_isa)/$(*).signature.output
+
+## An upperbound of 30 seconds is placed for each test to ensure the simulation will still terminate
+## even if the test gets into an infinite loop
+RUN_TARGET=\
+    timeout 30 \
+        pytest -s -v $(OTROOT)/test/systemtest/functional_verilator_test.py \
+        --verilator_model $(TARGET_SIM) \
+        --test_bin $(work_dir_isa)/$<.vmem \
+        --rom_bin $(OTSW)/boot_rom/rom.vmem \
+        --log $(work_dir_isa)/$<.uart.log; \
+        grep -o 'SIG: [a-zA-Z0-9_]*' $(work_dir_isa)/$<.uart.log | sed 's/SIG: //' \
+        > $(work_dir_isa)/$(*).signature.temp.output; \
+        tr '[:upper:]' '[:lower:]' < $(work_dir_isa)/$(*).signature.temp.output > $(work_dir_isa)/$(*).signature.output; \
+
+RISCV_PREFIX   ?= ${RV_TOOLS}/riscv32-unknown-elf-
+RISCV_GCC      ?= ${RV_TOOLS}/riscv32-unknown-elf-gcc
+RISCV_OBJDUMP  ?= ${RV_TOOLS}/riscv32-unknown-elf-objdump
+RISCV_OBJCOPY  ?= ${RV_TOOLS}/riscv32-unknown-elf-objcopy
+RISCV_NM       ?= ${RV_TOOLS}/riscv32-unknown-elf-nm
+RISCV_READELF  ?= ${RV_TOOLS}/riscv32-unknown-elf-readelf
+RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g
+
+COMPILE_TARGET=\
+        make -C $$(OTSW) SW_DIR=boot_rom SIM=1 clean all; \
+	$$(RISCV_GCC) $(2) $$(RISCV_GCC_OPTS) \
+		-I$(ROOTDIR)/riscv-test-env/ \
+		-I$(ROOTDIR)/riscv-test-env/p/ \
+                -I$(OTSW)/boot_rom/lib \
+                -I$(OTSW)/lib \
+		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
+		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
+		$(DEFINES) -T$(LDSCRIPT) $$< \
+                $(OT)/wrap.c \
+                -L$(OTSW)/boot_rom/lib \
+                -lot \
+		-o $(work_dir_isa)/$$@; \
+    $$(RISCV_OBJDUMP) -SD $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.objdump; \
+    $$(RISCV_READELF) -a $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.readelf; \
+    $$(RISCV_NM) $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.nm; \
+    $$(RISCV_OBJCOPY) -O binary $(work_dir_isa)/$$@ $(work_dir_isa)/$$@.bin; \
+    srec_cat $(work_dir_isa)/$$@.bin -binary -offset 0x0000 -byte-swap 4 -o $(work_dir_isa)/$$@.vmem -vmem

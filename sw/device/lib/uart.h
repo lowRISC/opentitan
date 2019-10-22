@@ -25,6 +25,7 @@ void uart_init(unsigned int baud);
 void uart_send_str(char *str);
 int uart_rx_empty(void);
 int uart_tx_empty(void);
+int uart_tx_idle(void);
 
 /**
  * Receive a single character from UART
@@ -33,5 +34,10 @@ int uart_tx_empty(void);
  * @return 0 on success, -1 if no data is available
  */
 int uart_rcv_char(char *c);
+
+
+
+
+
 
 #endif
