@@ -189,7 +189,8 @@ module hmac (
     .SramAw (9),
     .SramDw (32),
     .Outstanding (1),
-    .ByteAccess  (1)
+    .ByteAccess  (1),
+    .ErrOnRead   (1)
   ) u_tlul_adapter (
     .clk_i,
     .rst_ni,
