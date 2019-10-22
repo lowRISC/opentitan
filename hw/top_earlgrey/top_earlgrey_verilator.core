@@ -29,12 +29,22 @@ parameters:
     datatype: bool
     paramtype: vlogdefine
     description: Enable the RISC-V Verification Interface and instruction tracing
+  VERILATOR_MEM_BASE:
+    datatype: int
+    paramtype: vlogdefine
+    description: Main memory mem base.
+  VERILATOR_END_SIM_ADDR:
+    datatype: int
+    paramtype: vlogdefine
+    description: Verilator specific address to write to terminate the sim.  This value should be word offset from mem base.
 
 targets:
   sim:
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
       - RVFI=true
+      - VERILATOR_MEM_BASE=0x10000000
+      - VERILATOR_END_SIM_ADDR=0x10008000
     default_tool: verilator
     filesets:
       - files_sim_verilator
@@ -51,6 +61,7 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
+
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_earlgrey_verilator -g"'
           - '-LDFLAGS "-pthread -lutil"'
           - "-Wall"
