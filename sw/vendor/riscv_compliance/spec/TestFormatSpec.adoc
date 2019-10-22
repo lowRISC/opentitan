@@ -1,0 +1,667 @@
+﻿= RISC-V Compliance Test Format Specification =
+RISC-V Foundation Compliance Task Group
+Issue 1.0 Draft
+:toc:
+:icons: font
+:numbered:
+:source-highlighter: rouge
+
+////
+SPDX-License-Identifier: CC-BY-4.0
+
+Document conventions:
+- one line per paragraph (don't fill lines - this makes changes clearer)
+- Wikipedia heading conventions (First word only capitalized)
+- US spelling throughout.
+- Run "make spell" before committing changes.
+- Build the HTML and commit it with any changed source.
+- Do not commit the PDF!
+////
+
+== Introduction
+=== About
+
+This document contains the RISC-V <<The RISC-V compliance test pool,_compliance test pool_>> structure and <<The compliance test,_compliance test_>> format specification which shall be used as a reference document for those who write or are going to write tests for the RISC-V compliance test pool and for those who are going to use the <<The RISC-V compliance test pool,_compliance test pool_>> in their own compliance test framework.
+
+* It includes, as example, source code listing and detailed description of one <<The compliance test,_compliance test_>>
+
+Framework specification which includes description of how the <<The RISC-V compliance test suite,_compliance test suites_>> are built and used for the appropriate RISC-V configurations is given in the complementary Framework Specification document. This document is made freely available under a <<app_cc_by_4.0>>.
+
+
+=== Intended audience
+
+This document is intended for design and verification engineers who wish to develop new compliance tests and also for those who wish to write or adapt their own test framework. 
+
+=== Future work
+
+Recently is this document under initial review and its content may change. However primary aim is to get a long term stable version. 
+
+=== Feedback and how to contribute
+
+Comments on this document should be made through the RISC-V Compliance Task Group mailing list. Proposed changes may be submitted as git pull requests.
+
+You are encouraged to contribute to this repository by submitting pull requests and by commenting on pull requests submitted by other people as described in the link:../README.md[`README.md`] file in the top level directory.
+
+NOTE: Don't forget to add your own name to the list of contributors in the document.
+
+==== AsciiDoc
+
+This is a structured text format used by this document.  Simple usage should be fairly self evident.
+
+* Comprehensive information on the format is on the http://www.methods.co.nz/asciidoc/[AsciiDoc website].
+
+* Comprehensive information on the tooling on the https://asciidoctor.org/[AsciiDoctor website].
+
+* You may find this https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[cheat sheet] helpful.
+
+==== Installing tools
+
+To generate the documentation as HTML you need _asciidoctor_ and to generate as
+PDF you need _asciidoctor-pdf_.
+
+* These are the https://asciidoctor.org/docs/install-toolchain/[installation instructions for asciidoctor].
+
+* These are the https://asciidoctor.org/docs/asciidoctor-pdf/#install-the-published-gem[installation instructions for asciidoctor-pdf].
+
+To spell check you need _aspell_ installed.
+
+==== Building the documentation
+
+To build HTML:
+[source,make]
+----
+make html
+----
+
+To build PDF:
+[source,make]
+----
+make pdf
+----
+
+To build both:
+[source,make]
+----
+make
+----
+
+To check the spelling (excludes any listing or code phrases):
+[source,make]
+----
+make spell
+----
+
+Any custom words for spell checking should be added to link:./custom.wordlist[`custom.wordlist`].
+
+=== Contributors
+
+This document has been created by the following people (in alphabetical order of surname).
+
+[quote]
+Jeremy Bennett, Radek Hajek, Premysl Vaclavik.
+
+=== Document history
+[cols="<1,<2,<3,<4",options="header,pagewidth",]
+|================================================================================
+| _Revision_ | _Date_            | _Author_ | _Modification_
+
+| 1.1 Draft  | 15 Feb 2019      |
+
+Radek Hajek |
+
+Appendix A: example assertions update
+
+| 1.0 Draft  | 10 Dec 2018      |
+
+Radek Hajek, Premysl Vaclavik |
+
+First version of the document under this file name. Document may contain some segments of the README.adoc from the compatibility reasons.
+
+|================================================================================
+== Foreword
+The compliance test pool shall become a complete set of compliance tests which will allow to build a  compliance test suite for any legal RISC-V configuration. The compliance tests will be very likely written by various authors and therefore it is very important to define the compliance test pool structure and compliance test form, which will be obligatory for all tests. Unification of tests will guarantee optimal compliance test pool management and also better quality and readability of the tests. Last but not least, it will simplify the process of adding new tests into the existing compliance test pool and the formal revision process.
+
+== Vocabulary
+=== The compliance test
+The compliance test is a nonfunctional testing technique which is done to validate, whether the system developed meets the prescribed standard or not. In this particular case the golden reference is the RISC-V ISA standard. 
+
+For purpose of this document we understand that the compliance test is pass:[<u> one </u>] test which represents minimum test code that can be compiled and run. It is written in assembler code and its product is a <<The test signature,_test signature_>>. A compliance test may consists of several <<The test case,_test cases_>>.
+
+=== The RISC-V compliance test pool
+The RISC-V compliance test pool consists of all approved <<The compliance test,_compliance  tests_>> that can be used by the test framework to assemble them forming the <<The RISC-V compliance test suite,_compliance test suite_>>, which is in next steps compiled and then executed by the processor or the processor model to certify its RISC-V compliance. RISC-V compliance test pool has to be test target independent. Note that this nonfunctional testing does not substitute any verification or device test.
+
+=== The RISC-V compliance test suite
+The RISC-V compliance test suite is a group of tests selected from the <<The RISC-V compliance test pool,_compliance test pool_>> to test compliance for the specific RISC-V configuration. Test results are obtained in a form of the unique test suite signature (the <<The test suite signature,_test suite signature_>>). Compliant processor or processor model shall exhibit the same test suite signature as the RISC-V ISA golden reference model or golden reference <<The test suite signature,_test suite signature_>>.
+
+=== The test case
+The _test case_ is a test code part of the compliance test testing just one feature of the specification.
+
+=== The test case signature
+The _test case signature_ is represented by single or multiple values. Every 4-byte value is written in one line, starting with the most-significant byte on the left-hand side. Each test case signature has the format <hex_address>:<value>. Note that the address may be either a physical or virtual address, that the length of the hex_address is indicative of the virtual address mode (Sv32, Sv39, Sv48, etc) in the case of virtual address, and the length of the value is indicative of width of the data to be checked
+
+=== The test signature
+The <<The test signature,_test signature_>> is a characteristic value which is generated by the compliance test run. The <<The test signature,_test signature_>> may consist of several <<The test case signature,_test case signatures_>>, prefixed with a separate line containing the name of the test and a unique value indicating its version (e.g. git checkin#). 
+
+=== The test suite signature
+The _test suite signature_ is defined as a set of <<The test signature,_test signatures_>> valid for given <<The RISC-V compliance test suite,_compliance test suite_>>. It represents the test signature of the particular RISC-V configuration selected for the compliance test. 
+
+=== The test target
+The test target can be either a RISC-V Instruction Set Simulator (ISS), a RISC-V emulator, a RISC-V RTL model running on an HDL simulator, a RISC-V FPGA implementation or a physical chip. Each of the target types offers specific features and represents specific interface challenge. It is a role of the Compliance Test Framework to handle different targets while using the same <<The RISC-V compliance test pool,_compliance test pool_>> as a test source.
+
+=== The RISC-V processor configuration (device configuration)
+The RISC-V ISA specification allows many optional instructions, registers, and other features. Production directed targets have typically a fixed subset of available options. A simulator on the other hand may implement all known options which may be constrained to mimic the behavior of the RISC-V processor with the particular configuration.  It is a role of the Compliance Test Framework to build and use the <<The RISC-V compliance test suite,_compliance test suite_>> suitable for the selected RISC-V configuration. On the other hand it is a role of the well-defined <<The RISC-V compliance test pool,_compliance test pool_>> structure to provide the tests in a form suitable for the  Compliance Test Framework selection engine. 
+
+=== The compliance test framework
+The compliance test framework is a master engine which selects, configures, builds and executes a <<The RISC-V compliance test suite,_compliance test suite_>> from the <<The RISC-V compliance test pool,_compliance test pool_>> for the selected <<The test target,_test target_>> that apply to the specific architectural choices made by an implementation and are required by the Execution Environment. It is expected that compliance test framework also  evaluates the test signatures and summarizes them in the RISC-V compliance report.
+
+== Compliance test pool 
+=== Test pool structure
+
+The structure of <<The compliance test,_compliance tests_>> in the <<The RISC-V compliance test pool,_compliance test pool_>> shall be based on defined RISC-V extensions and privileged mode selection. This will provide a good overview of which parts of the ISA specification are already covered in the <<The RISC-V compliance test suite,_compliance test suite_>>, and which tests are suitable for certain configurations. A proposed compliance test pool structure:
+
+----
+compliance-tests-suite (root)
+|-- <architecture>              // rv32i / rv64i / rv32e /  …
+  |-- <ISA extension(s)>           // I / M / C / …
+    |-- ISA                     // un-privileged tests (User-level spec.)
+    |-- M                       // Machine mode tests
+    |-- U                       // User mode tests
+    `-- S                       // Supervisor mode tests
+----
+
+=== _To Be Discussed:_
+
+. Should the directory structure be <arch><extension><mode> or <arch><mode><extension>? Note that the current test suite does not match the structure in the figure above in several different ways, but primarily follows the <arch><mode><extension> definition (with some very significant differences/bugs)
+. We suggest to separate user-level and privileged (user, supervisor and machine-mode) tests. ISA tests are tests that can be executed in any privilege mode and must avoid dealing with the trap mechanism. The same test may be executed in a privileged mode test suite test suite if exceptions are expected.
+. How to handle C extension which is part of other extension (e.g. F)
+-  C extension set may depend on other extensions as it is not a fix set of instructions but it is rather extended by other extensions. In other words other extension may have "its own" C extension. For example there are C.FLWSP, C.FSWSP and other instructions in RV32ICF. Note that they are not present in RV32IC containing only C extension. We have to state the right location for these tests. Shall we put them in hierarchy (RV32i/C/ISA, RV32i/F/ISA or somewhere else?).
+- _[AJB] My preference: when extension A requires extension B, is that the test suite should be named <architecture><mode>BA._
+. Binary tests shall be a part of the suite. Binary tests are the only way to prove the compliance of a SDK.
+- There were binary coding tests in the first compliance test set delivery. Their purpose was to check whether assembler tool recognizes all instructions and whether binary coding matches specification. Unfortunately the binary coding tests were later removed from the compliance testing.
+In our opinion there shall be at least some compliance tests for binary coding as the binary coding is important part of the specification which shall be examined by compliance tests. The binary coding tests help to detect and localize binary code bugs in SDKs containing proprietary or accommodated compiler. Without binary coding tests SDK may produce wrong binary code for a DUT using the same wrong coding. Under these circumstances all compliance tests will pass but the RISC-V unit and SDK will be not compliant.
+. Tests of instructions interpreted using software emulation shall not be included in the <<The RISC-V compliance test pool,_compliance test pool_>>. Emulation shall only use already tested instructions. Note that this kind of test would only check for compliance of emulation library.  Instead, if the Execution Environment requires an instruction that is not provided by the target, then tests that include that instruction will trap to a framework provided exception trap handler stub that confirm that the target properly traps with an illegal opcode cause, value, and exception PC and which will terminate the test. This stub is part of the framework, and not part of the tests, so is not an exception to the requirement that user mode tests don’t access privileged mode resources.
+
+=== Test naming
+
+The naming convention of a single test:
+
+<__test objective__>-<__test number__>.S
+
+* __test objective__ – an aspect that the test is focused on. Test_objective may be instruction for ISA tests (ADD, SUB, ...), exception event (misalign fetch, misalign load, store) and others.
+
+* __test number__ – number of the test. It is expected that multiple tests may be specified for one test objective. We recommend to break down complex test to a bunch of small ones. Simple rule of thumb is one simple test objective = one simple test. The code becomes more readable and the test of the objective can be improved just by adding <<The test case,_test cases_>>. The typical example are instruction tests for the F extension.
+
+==== _To Be Discussed:_
+
+. Test names shall not include an ISA category. We have learned from the first version of the naming convention that including ISA category in the test name led to very long test names. With respect to this fact we have introduced the <<Test pool structure,test pool structure>> where the long name information is composed of the test path in the <<Test pool structure,test pool structure>> and the simple test name. As the long names can be reconstructed easily it is not necessary to have them for each of the test anymore. 
+
+=== The test structure of a compliance test
+
+All tests must use a signature approach. Each test shall be written in the same style, with defined mandatory items. There are user-defined macros which shall be used in every test to guarantee their portability. Note that they are already used in several compliance tests. 
+
+----
+//
+// User defined macros
+//
+RV_COMPLIANCE_HALT         //  defines halt mechanism of DUT
+RV_COMPLIANCE_CODE_BEGIN   //  start of code (test) section = startup routine
+RV_COMPLIANCE_CODE_END     //  end of code (test) section
+RV_COMPLIANCE_DATA_BEGIN   //  start of output data (signature) section
+RV_COMPLIANCE_DATA_END     //  end of output data (signature) section
+----
+
+The test structure of a compliance test is described as follows:
+
+.  Header + license (including a specification link and a brief test description)
+.  Includes of header files (see Common Header Files section)
+.  Test Virtual Machine (TVM) specification
+.  Test code between “RV_COMPLIANCE_CODE_BEGIN” and “RV_COMPLIANCE_CODE_END”
+.  Input data section
+.  Output data section between “RV_COMPLIANCE_DATA_BEGIN” and “RV_COMPLIANCE_DATA_END”
+
+==== Common test format rules
+
+There are the following common rules that shall be applied to each <<The compliance test,_compliance test_>>:
+
+. For better readability, always use “//” as commentary. “#” is used for includes and defines.
+. A test shall be divided into logical blocks (<<The test case,_test cases_>>) according to the test goals. Each test case shall include a clear description of its function.
+. In case macros for debug purposes are needed, only the macros from compliance_io.h shall be used. Note that using this feature shall have no impact on the test run.
+. It is forbidden to include other tests (e. g. #include “../add.S”) to prevent non-complete tests, compilation issues, and problems with code maintenance.
+. Tests shall be skipped if not required for a specific model under test configuration. We do not recommend to use #ifdef method to prevent “empty” test data in the signature. In other words recommended flow is to run compliance test suite built by the <<The compliance test framework,_Compliance Test Framework_>>  or by the other means from the <<The RISC-V compliance test pool,_compliance test pool_>>. The framework will use embedded keywords (in macros) in each test case to determine how to configure tests and determine which tests to run.
+. Tests shall not store absolute addresses from the program in the signature. Note: we will need macros to define absolute addresses such as hardcoded reset vectors, and interrupt vectors that are defined/configured outside the tests.
+. Tests shall not depend on tool specific features. For example test shall avoid usage of internal GCC macros (e..g. ____risc_xlen__), specific syntax (char 'a' instead of 'a) or simulator features (e.g. tohost) etc.
+. Each test shall be ended by the “RV_COMPLIANCE_HALT“ macro.
+
+===== _To Be Discussed_
+
+. RISC-V does not support Harvard Architectures.
+. We allow the usage of macros, however, they shall only be defined in a single file, and once they are in use, they may be modified only if the function of all affected tests remains unchanged. It is acceptable that using macros may lead to operands repetition (register X is used every time).
+- The aim of this restriction is to have test code more readable and to avoid side effects which may occur when different contributors will include new <<The compliance test,_compliance tests_>> or updates of existing ones in the <<The RISC-V compliance test pool,_compliance test pool_>>. This measure results from the negative experience, where the <<The RISC-V compliance test suite,_compliance test suite_>> could be used just for one target while the compliance test code changes were necessary to have it running also for other ones.
+. Shall there be additional macros that :
+- automatically store values in the output signature area using a predefined base register, increment an internal displacement, and optionally test the resulting value against an assertion value?
+
+- label different parts of a test along with the minimal architectural options required to run the test?
+
+===== Common header files
+
+Each test shall include only the following header files:
+
+
+. _compliance_test.h_ – defines target-specific macros: RV_COMPLIANCE_HALT, RV_COMPLIANCE_CODE_BEGIN, etc.
+. _compliance_io.h_ – defines target-specific debug propose macros (RVTEST_IO_ASSERT_GPR_EQ, RVTEST_IO_WRITE_STR, etc.). Empty definition by default.
+. _test_macros.h_ – defines common test macros used in all tests.
+
+Adding new header files is forbidden. It may lead to macros redefinition and compilation issues.
+
+Note that there are other header files (riscv_test.h, encoding.h, ..) that are already included and should not be modified for testing purposes.
+
+===== To Be Discussed
+
+. We recommend to add extra header file for future configuration settings. It may be generated file with configuration definition which will allow conditional execution of the test. For example:
+
+----
+header file:
+#define CONF_C_EXT
+
+test:
+#ifdef CONF_C_EXT
+// do C extension stuff
+#endif
+----
+
+NOTE: _[AJB]this conflicts with sec 4.3.1 #5. Recommend the Shakti approach of standard macros with operand tags which are interpreted by the framework or adding standard macros that are invoked with the extension name string to perform this function._
+
+=== Common compliance test pool reference document
+
+There shall be one master compliance _test pool reference_ document which shall contain the description of every <<The compliance test,_compliance test_>> from the <<The RISC-V compliance test pool,_compliance test pool_>>, including a version of the referred specification, a link to the documentation, the RISC-V configuration which the <<The compliance test,_compliance test_>> applies to, and configuration which the <<The compliance test,_compliance test_>> does not apply to. For example, the test MISALING_JMP is valid for the configuration with the I extension, but is not valid to any configuration with the C extension.
+
+The aim is to improve the management and maintenance of implemented tests, and to have a test reference in case of doubt during examination of compliance test results.  Note that the document content may be generated if each of the tests include the information in well-defined format.   Master test reference document can be seen as a table of content with the brief test, validity and status description and shall be automatically updated as soon as a new or modified <<The compliance test,_compliance test_>> is added to the <<The RISC-V compliance test suite,_compliance test suite_>>.  Having it nobody will need to retrieve all compliance tests to find out which tests are implemented and approved for certain RISC-V option.
+
+NOTE: _[AJB] this test pool reference document should be automatically generated, derived from the directory structure, and tags in embedded test macros._
+
+==== Example - test reference item
+
+[cols="1,1,2,1", options="header"]
+.rv32i - I - ISA
+|===
+| Name
+| Title
+| Description
+| Requirement
+
+| ADD-01.S
+| Instruction ADD test
+| RV32I Base Integer Instruction Set, Version 2.0
+| not C extension
+|===
+
+[cols="1,1,2,1", options="header"]
+.rv32i - M - ISA
+|===
+| Name
+| Title
+| Description
+| Requirement
+
+| MUL-01.S
+| Instruction MUL test
+| ...
+| ...
+|===
+
+Detailed test example can be seen in  <<Example - ISA test _ADD-01.S_, ISA test _ADD-01.S_>>
+
+[appendix]
+
+=== Example - ISA test _ADD-01.S_
+
+.a) Header and license
+
+----
+// RISC-V Compliance Test ADD-01
+//
+// Copyright (c) 2017, Codasip Ltd.
+// Copyright (c) 2018, Imperas Software Ltd. Additions
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//    * Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+//    * Neither the name of the Codasip Ltd., Imperas Software Ltd. nor the
+//      names of its contributors may be used to endorse or promote products
+//      derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+// IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Codasip Ltd., Imperas Software Ltd.
+// BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+// THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Specification: RV32I Base Integer Instruction Set, Version 2.0
+// Description: Testing instruction ADD.
+----
+
+.b) Includes of header files
+
+----
+#include "compliance_test.h"
+#include "compliance_io.h"
+#include "test_macros.h"
+----
+
+.c) TVM selection
+
+----
+// Test Virtual Machine (TVM) used by program.
+RV_COMPLIANCE_RV32M
+----
+
+.d) Test code
+
+ISA test is divided into several test cases marked as “A“,“B“,“C“, etc. These test cases distinguish various logical tests. The test uses macros from compliance_io.h for debug purposes.
+
+----
+// Test code region.
+RV_COMPLIANCE_CODE_BEGIN
+
+   RVTEST_IO_INIT
+   RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
+   RVTEST_IO_WRITE_STR(x31, "# Test Begin\n")
+----
+
+.d.A) Test code - test case A
+
+Test case “A“ focuses on checking corner case values of the ADD instruction. In particular, 0, 1, -1, 0x7FFFFFFF, 0x80000000 with 0, 1, -1, MIN, MAX values.
+
+----
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case A1 - general test of value 0 with 0, 1, -1, MIN, MAX register values\n");
+
+// Addresses for test data and results
+la x1, test_A1_data
+la x2, test_A1_res
+
+// Load testdata
+lw x3, 0(x1)
+
+// Register initialization
+li x4, 0
+li x5, 1
+li x6, -1
+li x7, 0x7FFFFFFF
+li x8, 0x80000000
+
+// Test
+add x4, x3, x4
+add x5, x3, x5
+add x6, x3, x6
+add x7, x3, x7
+add x8, x3, x8
+
+// Store results
+sw x3, 0(x2)
+sw x4, 4(x2)
+sw x5, 8(x2)
+sw x6, 12(x2)
+sw x7, 16(x2)
+sw x8, 20(x2)
+
+// Assert
+RVTEST_IO_CHECK()
+RVTEST_IO_ASSERT_GPR_EQ(x2, x3, 0x00000000)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x4, 0x00000000)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x5, 0x00000000)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x6, 0xFFFFFFFF)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x7, 0x7FFFFFFF)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x8, 0x80000000)
+
+RVTEST_IO_WRITE_STR(x31, "// Test case A1 - Complete\n");
+
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case A2 - general test of value 1 with 0, 1, -1, MIN, MAX register values\n");
+
+<similar code to A1>
+
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case A3 - general test of value -1 with 0, 1, -1, MIN, MAX register values\n");
+
+<similar code to A1>
+
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case A4 - general test of value 0x7FFFFFFF with 0, 1, -1, MIN, MAX register values\n");
+
+<similar code to A1>
+
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case A5 - general test of value 0x80000000 with 0, 1, -1, MIN, MAX register values\n");
+
+<similar code to A1>
+
+----
+
+.d.B) Test code - test case B
+
+Test case “B“ focuses on forwarding between instruction. It means that a result of an instruction is immediately passed to another instruction.
+
+----
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case B - testing forwarding between instructions\n");
+
+// Addresses for test data and results
+la x25, test_B_data
+la x26, test_B_res
+
+// Load testdata
+lw x28, 0(x25)
+
+// Register initialization
+li x27, 0x1
+
+// Test
+add x29, x28, x27
+add x30, x29, x27
+add x31, x30, x27
+add x1, x31, x27
+add x2, x1, x27
+add x3, x2, x27
+
+// store results
+sw x27, 0(x26)
+sw x28, 4(x26)
+sw x29, 8(x26)
+sw x30, 12(x26)
+sw x31, 16(x26)
+sw x1, 20(x26)
+sw x2, 24(x26)
+sw x3, 28(x26)
+
+// Assert
+RVTEST_IO_ASSERT_GPR_EQ(x26, x27, 0x00000001)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x28, 0x0000ABCD)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x29, 0x0000ABCE)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x30, 0x0000ABCF)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x31, 0x0000ABD0)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x1,  0x0000ABD1)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x2,  0x0000ABD2)
+RVTEST_IO_ASSERT_GPR_EQ(x26, x3,  0x0000ABD3)
+
+RVTEST_IO_WRITE_STR(x31, "// Test case B - Complete\n");
+----
+
+.d.C) Test code - test case C
+
+Test case “C“ focuses on writing to x0. This register is hardwired to the 0 value, so in any RISC-V implementation, it must not be overwritten.
+
+----
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case C - testing writing to x0\n");
+
+// Addresses for test data and results
+la x1, test_C_data
+la x2, test_C_res
+
+// Load testdata
+lw x28, 0(x1)
+
+// Register initialization
+li x27, 0xF7FF8818
+
+// Test
+add x0, x28, x27
+
+// store results
+sw x0, 0(x2)
+
+// Assert
+RVTEST_IO_ASSERT_GPR_EQ(x2, x0, 0x00000000)
+
+RVTEST_IO_WRITE_STR(x31, "// Test case C - Complete\n");
+----
+
+.d.D) Test code - test case D
+
+Test case “D“ focuses on forwarding through x0. This register is hardwired to the 0 value, so a temporary non-zero result must not be passed to another instruction.
+
+----
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case D - testing forwarding throught x0\n");
+
+// Addresses for test data and results
+la x1, test_D_data
+la x2, test_D_res
+
+// Load testdata
+lw x28, 0(x1)
+
+// Register initialization
+li x27, 0xF7FF8818
+
+// Test
+add x0, x28, x27
+add x5, x0, x0
+
+// store results
+sw x0, 0(x2)
+sw x5, 4(x2)
+
+// Assert
+RVTEST_IO_ASSERT_GPR_EQ(x2, x0, 0x00000000)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x5, 0x00000000)
+
+RVTEST_IO_WRITE_STR(x31, "// Test case D - Complete\n");
+----
+
+.d.E) Test code - test case E
+
+Test case “E“ focuses on ADD with x0. The ADD instruction performs the MOVE operation in that case.
+
+----
+// ---------------------------------------------------------------------------------------------
+RVTEST_IO_WRITE_STR(x31, "// Test case E - testing moving (add with x0)\n");
+
+// Addresses for test data and results
+la x1, test_E_data
+la x2, test_E_res
+
+// Load testdata
+lw x3, 0(x1)
+
+// Test
+add x4, x3, x0
+add x5, x4, x0
+add x6, x0, x5
+add x14, x6, x0
+add x15, x14, x0
+add x16, x15, x0
+add x25, x0, x16
+add x26, x0, x25
+add x27, x26, x0
+
+// Store results
+sw x4, 0(x2)
+sw x26, 4(x2)
+sw x27, 8(x2)
+
+// Assert
+RVTEST_IO_ASSERT_GPR_EQ(x2, x4,  0x36925814)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x26, 0x36925814)
+RVTEST_IO_ASSERT_GPR_EQ(x2, x27, 0x36925814)
+
+RVTEST_IO_WRITE_STR(x31, "// Test case E - Complete\n");
+----
+
+.d.F) Test code - section Test End
+
+Every test environment should implement the HALT macro. When the macro is called, operation of DUT is stopped and a comparison to the reference results can be performed.
+
+----
+RVTEST_IO_WRITE_STR(x31, "// Test End\n")
+// ---------------------------------------------------------------------------------------------
+// HALT
+RV_COMPLIANCE_HALT
+RV_COMPLIANCE_CODE_END
+----
+
+.e) Test code - section Input Data
+
+Addresses used for storing input data.
+
+----
+// Input data section.
+.data
+test_A1_data:
+.word 0
+test_A2_data:
+.word 1
+test_A3_data:
+.word -1
+test_A4_data:
+.word 0x7FFFFFFF
+test_A5_data:
+.word 0x80000000
+test_B_data:
+.word 0x0000ABCD
+test_C_data:
+.word 0x12345678
+test_D_data:
+.word 0xFEDCBA98
+test_E_data:
+.word 0x36925814
+----
+
+.f) Test code - section Output Data
+
+Addresses used for storing results.
+
+----
+// Output data section.
+RV_COMPLIANCE_DATA_BEGIN
+test_A1_res:
+.fill 6, 4, -1
+test_A2_res:
+.fill 6, 4, -1
+test_A3_res:
+.fill 6, 4, -1
+test_A4_res:
+.fill 6, 4, -1
+test_A5_res:
+.fill 6, 4, -1
+test_B_res:
+.fill 8, 4, -1
+test_C_res:
+.fill 1, 4, -1
+test_D_res:
+.fill 2, 4, -1
+test_E_res:
+.fill 3, 4, -1
+RV_COMPLIANCE_DATA_END
+----

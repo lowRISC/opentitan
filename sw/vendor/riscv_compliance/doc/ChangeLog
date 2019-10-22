@@ -1,0 +1,147 @@
+2019-02-21  Deborah Soung  <debs@sifive.com>
+	* README.adoc: Documentation for rocket chip as target.
+
+2019-02-05  Deborah Soung  <debs@sifive.com>
+	* README.adoc: Update documentation for rocket chip as target (fixed rv32si/ma_fetch.S).
+	* README.adoc: Update documentation for rocket chip as target (fixed breakpoint.S).
+
+2019-01-29  Deborah Soung  <debs@sifive.com>
+	* README.adoc: Documentation for rocket chip as target.
+
+2018-11-21 Olof Kindgren <olof.kindgren@gmail.com>
+
+	* README.adoc (Repository structure) Added documentation for the $TARGETDIR environmental variable
+
+2018-11-21  Neel Gala  <neelgala@incoresemi.com>
+	* README.adoc: Added new signature format spec.
+
+2018-06-18  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* README.adoc (Future work): Reflect changes made to support
+	Codasip simulator.
+	(Repository structure): Diagrammatic representation of the file
+	structure deleted.
+
+2018-06-12  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* .gitignore: Add custom.dict.
+
+2018-06-12  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	Document issue 1.8 Draft.
+
+	* README.adoc (Introduction): Add Future work section and bump
+	version.
+	* custom.wordlist: Add words needed for Future work section.
+
+2018-06-12  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* README.adoc: Remove special apostrophe from "licensor's".
+	* custom.wordlist: Updated with more words to be ignored.
+
+2018-06-12  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* README-old.md: Deleted.
+	* README.adoc: Include details of how to contribute and installing
+	the tools from the old README and reference the licence as an
+	appendix.
+
+2018-06-11  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	This makes the document appear directly as the README of the doc
+	directory, so there is now no longer a need to publish to GitHub
+	pages.
+
+	* .gitignore: Change name of files ignored.
+	* Makefile: Remove publish target.
+	* README.adoc: Symbolic link removed and replaced by design.adoc,
+	to which the CC license text has been added.
+	* design.adoc: Renamed as README.adoc.
+	* publish.sh: Deleted.
+
+2018-06-11  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* README.md: Previous version moved to README-old.md for the time
+	being.
+	* README.adoc: Created as symbolic link to design.adoc.
+
+2018-06-10  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* README.md: Note about make publish.
+	* design.adoc (Overall structure): Make list or instruction sets
+	and extensions compact representation.
+
+2018-06-10  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* publish.sh: Only publish from clean and committed master branch
+	to avoid difficult use of git stash.
+
+2018-06-10  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* publish.sh: Don't rely on doc directory being available on
+	gh-pages branch.
+
+2018-06-10  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* publish.sh: Make executable and correctly set top level
+	repository directory.
+
+2018-06-10  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	Add a mechanism to make the latest documentation available via
+	GitHub pages.  This means that design.html is no longer part of
+	the master branch, but is published by copying to index.html on
+	the gh-pages branch.
+
+	* .gitignore: Ignore design.html.
+	* Makefile: Add publish target and delete design.html when cleaning.
+	* README.md: Link to GitHub pages for latest documentation.
+	* design.adoc: Deal with AsciiDoc apparent bug with consecutive
+	comment blogs.
+	* design.html: Deleted.
+	* publish.sh: Created.
+
+2018-06-10  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* README.md: Fix link to generated documentation.
+	* design.html: Regenerated.
+
+2018-06-09  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* Makefile: Add sanity check for version number and spell target.
+	* design.adoc: Fix trivial typo.
+	* design.html: Regenerated.
+
+2018-06-09  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* .gitignore: Don't ignore .html or .xml
+	* README.md: Note location of old documentation, give link to HTML
+	and explain how to contribute.
+	* custom.wordlist: Created.
+	* design.adoc: Cleaned up from top to bottom and spell checked.
+	* design.html: Generated.
+
+2018-06-08  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* Makefile: Clean up and add license header.
+	* README.md: Created.
+	* design.adoc: Add licensing and SPDX license identifier.
+	* legacy.adoc: Deleted.
+
+2018-06-04  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	This is the first version of the document taken from Simon
+	Davidmann's MS Word document. The main document is design.adoc,
+	legacy material, currently just appendices C and D has been moved
+	to legacy.adoc.
+
+	design.adoc is correct AsciiDoc.  legacy.adoc is just a raw dump,
+	which needs cleaning up.
+
+	The next step will be restructuring design.adoc as agreed.
+
+	* .gitignore: Created.
+	* ChangeLog: Created.
+	* Makefile: Created.
+	* design.adoc: Created.
+	* legacy.adoc: Created.

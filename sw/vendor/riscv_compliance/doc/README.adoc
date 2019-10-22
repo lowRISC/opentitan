@@ -1,0 +1,636 @@
+= RISC-V Compliance Tests =
+RISC-V Foundation Compliance Task Group
+Issue 1.11 Draft
+:toc:
+:icons: font
+:numbered:
+:source-highlighter: rouge
+
+////
+SPDX-License-Identifier: CC-BY-4.0
+
+Document conventions:
+- one line per paragraph (don't fill lines - this makes changes clearer)
+- Wikipedia heading conventions (First word only capitalized)
+- US spelling throughout.
+- Run "make spell" before committing changes.
+- Build the HTML and commit it with any changed source.
+- Do not commit the PDF!
+////
+
+== Introduction
+=== About
+
+This document describes the RISC-V Compliance Testing framework which is used to test a RISC-V device's compliance  to the different RISC-V specifications.
+
+* It explains the required structure of a test, the framework around the tests, the running of individual tests, and the suites of tests.
+
+* It includes, as reference, details of the first suite of tests for the RV32I and their reference signatures.
+
+* It explains how to set up different targets to run the tests.
+
+* It is an expansion of the work carried out by Codasip in the second half of 2017.
+
+This document is made freely available under a <<app_cc_by_4.0>>.
+
+=== Purpose of compliance tests
+
+The goal of compliance tests is to check whether the processor under development meets the open RISC-V standards or not. It is considered as non-functional testing meaning that it doesn’t substitute for design verification. This can be interpreted as testing to check all important aspects of the specification but without focusing on details, for example, on all possible values of instruction operands or all combinations of possible registers.
+
+The result that compliance tests provide to the user is an assurance that the specification has been interpreted correctly and the design under test (DUT) can be declared as RISC-V compliant.
+
+=== Intended audience
+
+This document is intended for design and verification engineers who wish to develop new compliance tests and also those who wish check if their implementation (simulation models, HDL models, etc.) of a RISC-V processor is compliant to the RISC-V specifications.
+
+=== Future work
+
+This is a work in progress. A number of areas need resolving before the work is complete, and are recorded here so they do not get forgotten.
+
+Consider whether `compliance_test.h` is needed :: It's not clear if this belongs in target directories, or if it is needed at all.
+
+Generalize Makefile configuration :: At present each platform requires editing of the makefile, and many areas are not even fully parameterized.  Again we wish to explore a wider range of platforms before deciding what needs parameterization.  For now `COMPILE_TARGET` allows a choice between GCC and LLVM.  More generally, we know that with tools like _autotools_ and _cmake_ this is a well understood problem to solve.
+
+Free up all registers for compliance testing :: At present some platforms have macros which use some registers in set up and verification, thus excluding them from compliance testing. We believe careful structuring of the macros will mean this problem can be avoided in the future, thus avoiding any registers being excluded from compliance testing.
+
+=== Feedback and how to contribute
+
+Comments on this document should be made through the RISC-V Compliance Task Group mailing list. Proposed changes may be submitted as git pull requests.
+
+You are encouraged to contribute to this repository by submitting pull requests and by commenting on pull requests submitted by other people as described in the link:../README.md[`README.md`] file in the top level directory.
+
+NOTE: Don't forget to add your own name to the list of contributors in the document.
+
+==== AsciiDoc
+
+This is a structured text format used by this document.  Simple usage should be fairly self evident.
+
+* Comprehensive information on the format is on the http://www.methods.co.nz/asciidoc/[AsciiDoc website].
+
+* Comprehensive information on the tooling on the https://asciidoctor.org/[AsciiDoctor website].
+
+* You may find this https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[cheat sheet] helpful.
+
+==== Installing tools
+
+To generate the documentation as HTML you need _asciidoctor_ and to generate as
+PDF you need _asciidoctor-pdf_.
+
+* These are the https://asciidoctor.org/docs/install-toolchain/[installation instructions for asciidoctor].
+
+* These are the https://asciidoctor.org/docs/asciidoctor-pdf/#install-the-published-gem[installation instructions for asciidoctor-pdf].
+
+To spell check you need _aspell_ installed.
+
+==== Building the documentation
+
+To build HTML:
+[source,make]
+----
+make html
+----
+
+To build PDF:
+[source,make]
+----
+make pdf
+----
+
+To build both:
+[source,make]
+----
+make
+----
+
+To check the spelling (excludes any listing or code phrases):
+[source,make]
+----
+make spell
+----
+
+Any custom words for spell checking should be added to link:./custom.wordlist[`custom.wordlist`].
+
+=== Contributors
+
+This document has been created by the following people (in alphabetical order of surname).
+
+[quote]
+Jeremy Bennett, Mary Bennett, Simon Davidmann, Neel Gala, Radek Hajek, Lee Moore, Milan Nostersky, Marcela Zachariasova.
+
+=== Document history
+[cols="<1,<2,<3,<4",options="header,pagewidth",]
+|================================================================================
+| _Revision_ | _Date_            | _Author_ | _Modification_
+| 1.15 Draft | 14 March 2019     |
+Prashanth Mundkur |
+
+Added support and instructions for using the C and OCaml simulators from the Sail RISC-V formal model as targets.
+| 1.14 Draft  | 21 February 2019      |
+Deborah Soung |
+
+Documented how to use SiFive's RISC-V ISA Formal Specification model as a target.
+| 1.13 Draft  | 29 January 2019      |
+Deborah Soung |
+
+Added documentation on how to use Rocket Chip generated cores as targets.
+| 1.12 Draft  | 22 November 2018      |
+Simon Davidmann |
+
+Updated notes on Test Suites.
+| 1.11 Draft  | 21 November 2018      |
+Neel Gala |
+
+Added new signature format specs .
+| 1.10 Draft  | 20 June 2018      |
+
+Simon Davidmann, Lee Moore |
+
+Cleaned up description of updated framework and inclusion of riscvOVPsim.
+
+| 1.9 Draft  | 12 June 2018      |
+
+Jeremy Bennett |
+
+Update Future work section to take account of Codasip changes. Remove diagrammatic directory structure.
+
+| 1.8 Draft  | 12 June 2018      |
+
+Jeremy Bennett |
+
+Add Future work section.
+
+| 1.7 Draft  | 12 June 2018      |
+
+Jeremy Bennett |
+
+Add CC license as an appendix.
+
+| 1.6 Draft  | 10 June 2018      |
+
+Jeremy Bennett |
+
+Tidy up areas that are flawed in HTML version.
+
+| 1.5 Draft  |  8 June 2018      |
+
+Jeremy Bennett |
+
+General tidy up.
+
+| 1.4 Draft  |  8 June 2018      |
+
+Jeremy Bennett |
+
+Added license preamble.
+
+| 1.3 Draft  |  5 June 2018      |
+
+Simon Davidmann |
+
+Updated to reflect directory structure and trace macros.
+
+| 1.2 Draft  |  3 June 2018      |
+
+Jeremy Bennett |
+
+Converted to AsciiDoc, cleaned up and restructured.
+
+| 1.1 Draft  |  1 June 2018      |
+
+Simon Davidmann
+Lee Moore |
+
+Revised format and expand to describe framework, usage of many tests groups,
+and different Targets
+
+|1.0         | 24 December 2017  |
+
+Radek Hajek
+Milan Nostersky
+Marcela Zachariasova |
+
+First version of the document.
+
+|================================================================================
+
+== Overall structure
+=== The compliance test
+
+At the heart of the testing infrastructure is the detailed compliance test.  This is the RISC-V assembler code that is executed on the processor and that provides results in a defined memory area (the _signature_).  The test should only use the minimum of instructions and only those absolutely necessary.  It should only use instructions and registers from the ISA instruction set on which it is targeted.
+
+=== The Test Virtual Machine
+
+The test runs in the context of a _Test Virtual Machine_ (TVM) as defined and available at https://github.com/riscv/riscv-tests. There will be a different TVM for each instruction subset and each profile.
+
+=== The target environment
+
+A specific target will need to be chosen and setup to run the Test. This can be an Instruction Set Simulator (ISS), full system simulator (emulator), HDL simulator, FPGA prototype, or a board/chip, etc.  The test runs in the context of a TVM and is set up to run on the specific target.  The _target environment_ controls the loading of the test plus TVM onto the target, configures the device if needed, controls the execution, and then extracts the signature.
+
+=== The processor configuration (device configuration)
+
+The RISC-V specification allows many optional instructions, registers, and other features.  Many targets have a fixed selection of these optional items which cannot be changed. For example, a chip is fixed in the mask.  A simulator on the other hand may implement all known options and will need to be constrained to have only the required options available.  There will need to be processor configuration for those target devices which need to be constrained to only reflect the features of the device being compliance tested. This is essential when writing compliance tests to ensure that only available options are used in the tests.
+
+=== The test signature
+
+The _test signature_ is defined as reference data written into memory during the execution of the test.  It should record values and results of the operation of the Test. It is expected that an implementation, at the end of a test, dumps the signature in to a file such that only 4-bytes are written per line, starting with the most-significant byte on the left.
+
+=== The test reference signature
+
+The _test reference signature_ is the _test signature_ saved from an execution run of the RISC‑V _golden model_.  This is currently from a RISC-V ISS, but the intention is that the RISC-V Formal Model from the RISCV.org Formal Working Group will be used when it is complete, functional, and available. 
+
+=== The test suites
+
+Tests are grouped into different functional test suites targeting the different subsets of the full RISC-V specifications.  There will be ISA and privilege suites.
+
+For information on the status of the different test suites, look here: link:../riscv-test-suite/README.md[../riscv-test-suite/README.md]
+
+
+=== The test framework
+
+This works at several levels.  At the lowest level it runs a test with a TVM on a specific configured target device and compares the test’s output test signature against the test reference signature and reports if there is any difference. A difference indicates that the target has failed that specific compliance test.
+
+The test framework allows different test suites to be run depending on the capabilities of the target
+
+The test framework collates the results of all the Tests that comprise a Test Suite and reports the overall results.
+
+== Developing new tests
+=== Structure
+
+* Clone directory structure of an existing test suite alongside the RV32I tree.
+
+* This must include test and reference signature directories (`src` and `references`).
+
+* Check the target environment setup files.
+
+* Check the processor configuration files.
+
+=== Process
+
+This description assumes the use of a configurable simulator with good trace and debug capabilities.
+
+* Work on one test at a time.
+
+* Ensure that the processor configuration is set appropriately.
+
+* Use the `RVTEST` macros (defined in `compliance_io.h`) to make it easy to see the details of a Test’s execution. There are macros for assertions (`RVTEST_IO_ASSERT_GPR_EQ`) and tracing (`RVTEST_IO_WRITE_STR`) which are empty on targets that can not implement them.
+
+* Assuming you are developing the test on a simulator, use the simulator’s tracing capabilities, especially a register change mode to single step your test examining all changing registers etc. to ensure your test is stimulating what is intending.
+
+* Make sure that the signature you generate at the end of the run shows adequate internal test state such that any checks do report as fails if wrong.
+
+* When you are satisfied that the test does what is intended and that the test signature is correct, copy this into a test reference signature (in the references directory).
+
+For a test suite to be complete it needs to have tests that exercise the full functionality of what it is intended to test. There are tools available to measure instruction and other resource coverage. These should be used to ensure that 100% of the intended instructions have been tested.
+
+== Test framework
+
+For running compliance tests, the Test Virtual Machine (TVM) “p” available at https://github.com/riscv/riscv-tests is utilized.
+
+In addition to using the basic functionality of the TVM, the script for running compliance tests runs the test on the target and then performs comparison of the target’s generated test signature to the manually reviewed test reference signature.
+
+See the chapter below for selecting and setting up the target (simulator, or hardware, etc.).
+
+If using a target that requires the processor to be configured, see the chapter below on processor configuration.
+
+You will also need to have a suitable compiler tool chain (GCC or LLVM) installed in your environment and available on your path.
+
+Tests are run by commands in the top level `Makefile` which has targets for simulate and verify
+
+[source,make]
+----
+RISCV_TARGET ?= riscvOVPsim
+RISCV_DEVICE ?= rv32i
+RISCV_PREFIX ?= riscv64-unknown-elf-
+
+simulate:
+        make RISCV_TARGET=$(RISCV_TARGET) \
+             RISCV_DEVICE=$(RISCV_DEVICE) \
+             RISCV_PREFIX=$(RISCV_PREFIX) \
+             run -C $(SUITEDIR)
+
+verify:
+    riscv-test-env/verify.sh
+----
+
+== Setting the target environment
+
+The target environment needs setting up to allow the compliance tests to be run on the target.  This can be used while developing compliance test suites or it can be used with new targets to see if they correctly execute the compliance test suites and are compliant!
+
+This chapter provides information on the currently available targets and includes a short tutorial on how to add a new target.
+
+=== Imperas riscvOVPsim compliance simulator
+
+For tracing the test the following  macros are defined in `riscv-target/riscvOVPsim/compliance_io.h`:
+
+[source,make]
+----
+RVTEST_IO_INIT
+RVTEST_IO_WRITE_STR(_SP, _STR)
+RVTEST_IO_ASSERT_GPR_EQ(_SP, _R, _I)
+----
+
+An example of a test that uses the tracing macros is `riscv-test-suite/rv32i/ISA/src/I-IO.S`.
+
+To configure the simulator for different target devices there needs to be a Makefile fragment in the `device` directory.
+
+The Makefile fragment for RV32I is in `riscv-target/riscvOVPsim/device/rv32i`
+
+In the top level Makefile there needs to be a selection for the target and device:
+[source,make]
+----
+RISCV_TARGET?=riscvOVPsim
+RISCV_DEVICE?=rv32i
+----
+
+The path to the RUN_TARGET is defined within the riscv-target Makefile.include.
+
+
+=== Codasip ISA simulator
+
+tbd
+
+=== GNU CGEN ISS
+==== Within GDB
+
+tbd
+
+==== Via GDB Remote Serial Protocol
+
+tbd
+
+=== Berkeley Spike ISA simulator
+For spike the file `riscv-target/spike/compliance_io.h` has the trace macros defined as empty.  The Makefile fragment in `riscv-target/spike/device/rv32i` has the spike run command for the RV32I device.
+
+=== Berkeley Rocket Chip emulators
+Additional environment variables:
+
+* `ROCKET_DIR`: Specifies link:https://github.com/freechipsproject/rocket-chip[Rocket Chip] directory. Required.
+* `ROCKET_CONFIG`: Specifies Rocket Chip link:https://github.com/freechipsproject/rocket-chip/blob/master/src/main/scala/system/Configs.scala[configuration]. **Usually** defaults to `DefaultConfig` or `DefaultRV32Config`, unless the aforementioned configurations do not support a test suite's ISA extensions (for example, in the case of `rv32ud`).
+
+Before running the compliance test, make sure that the correct emulator is built, following the link:https://github.com/freechipsproject/rocket-chip#emulator[instructions in the Rocket Chip repository].
+
+**Note**: Rocket Chip's `DefaultRV32Config` is currently failing the following test — link:https://github.com/riscv/riscv-compliance/issues/31[rv32i/I-MISALIGN_JMP-01.S].
+
+=== SiFive RISC-V ISA Formal Specification
+Additional environment variables:
+
+* `FORMALSPEC_DIR`: Specifies link:https://github.com/sifive/RiscvSpecFormal[formal specification] directory. Required.
+
+Build the link:https://github.com/sifive/RiscvSpecFormal[formal model] before running compliance tests. The model currently supports `RV32i` with `a`, `c`, and `f` extensions.
+
+**Note**: Some tests in the `rv32i` suite will fail because privileged CSRs are not yet implemented in the formal specification.
+
+=== GRIFT (Galois RISC-V Formal Tools) Simulator
+
+To run the compliance test suite on the GRIFT simulator, first build/install GRIFT (https://github.com/GaloisInc/grift). The GRIFT simulation tool `grift-sim` needs to be on your PATH.
+
+Then, we can run the compliance suite via:
+
+[source,make]
+----
+make RISCV_TARGET=grift
+----
+
+We have ported the rv32i, rv32im, rv32imc, rv64i, and rv64im tests. You can also run these individually, e.g.:
+
+[source,make]
+----
+make RISCV_TARGET=grift RISCV_ISA=rv64i RISCV_DEVICE=rv64i
+----
+
+=== SiFive Freedom Unleashed 540 board (tbd)
+
+tbd
+
+=== Verilator Verilog RI5CY RTL processor
+==== With GDB Server
+
+tbd
+
+==== With testbench monitor
+
+tbd
+
+=== Adding a new Target
+
+In this section, a short tutorial how to add a user target in the TVM is provided.
+
+If you do not want to use the TVM at all, it is recommended to just take the tests and references and incorporate them into your testing environment.  The only requirement needed in this case is that there must be an option to dump the results from the target in the test environment so as the comparison to test reference signature is possible.
+
+The following steps demonstrate an example in which a target was replaced by Codasip ISA simulator. In a similar way, any RISC-V ISA simulator or any RTL simulation model of the RISC-V processor can be connected.
+
+* Redefine macros in `ISA/src/compliance_test.h` and `binary_coding/src/compliance_test.h`.
++
+For example, to support Codasip ISA simulator as Target, it was necessary to redefine `RV_COMPLIANCE_HALT macro`, `RV_COMPLIANCE_DATA_BEGIN` macro and `RV_COMPLIANCE_DATA_END` macro in `ISA/compliance_test.h` in the following way:
++
+[source,c]
+----
+#define RV_COMPLIANCE_HALT
+        add     x31, x0, 1
+        sw      x31, codasip_syscall, t0
+----
+
+* This means that on the address defined by `codasip_syscall`, the 1 value is stored and this is interpreted as `HALT` for the Codasip ISA simulator.
++
+[source,c]
+----
+#define RV_COMPLIANCE_DATA_BEGIN
+        .align  4;
+        .global codasip_signature_start;
+codasip_signature_start:
+----
++
+[source,c]
+----
+#define RV_COMPLIANCE_DATA_END
+        .align  4;
+        .global codasip_signature_end;
+codasip_signature_end:
+----
+
+* The Codasip ISA simulator dumps data from the addresses bounded by labels `codasip_signature_start` and `codasip_signature_end` to `stdout`.  The dumped data represent the results of the tests.
+
+* Modify Makefiles in `ISA/Makefile` and `binary_coding/Makefile`.  It is important to change tools that are evaluated and parameters that are passed to the tools.
++
+For example, to support the Codasip ISA simulator as the device under test
+(DUT), it was necessary to change `RISCV_SIM` from `spike` to
+`codix_berkelium-ia-isimulator –r` and parameters for running the simulator
+from `+signature=$(work_dir)/$<.signature.output` to `–info 5` plus handle
+redirection to a file by `1>$(work_dir)/$<.signature.output`.
+
+== Configuring the target device
+
+This section is for how to specify which optional parts are being used
+
+NOTE: This is primarily for simulators.
+
+In the directory `riscv-target/*/device` there are directories that have Makefile fragments that configure the simulator to simulate only those parts of the RISC-V specification that is required for the specific target device being tested.
+
+For example for the riscvOVPsim to be configured to be a RV32I
+[source,make]
+----
+RUN_TARGET= \
+        riscvOVPsim.exe --variant RV32I --program $(work_dir_isa)/$< \
+            --signaturedump \
+            --override riscvOVPsim/cpu/sigdump/SignatureFile=$(work_dir_isa)/$(*).signature.output \
+            --override riscvOVPsim/cpu/sigdump/ResultReg=3 \
+            --override riscvOVPsim/cpu/simulateexceptions=T \
+            --logfile $(work_dir_isa)/$@
+----
+[appendix]
+== One ISA Test
+
+For a detailed description of one ISA test please have a look at the example: link:../riscv-test-suite/rv32i/src/I-IO.S[`I-IO.S`].
+
+This includes use of all the logging and assertion macros and shows how a test is split into sections.
+
+[appendix]
+== Repository structure
+
+The top level directory contains a `README.md` file giving an overview of the project, top level `Makefile`, `ChangeLog`, the `verify.sh` script and complete license files for the Creative Commons and BSD licenses used by the task group.  There are then four top level directories.
+
+`doc`:: All the documentation for the project, written using _AsciiDoc_.
+
+`riscv-target`:: Contains a further subdirectory for each target, within which are placed the `compliance_io.h` header for that target and a `device` directory for all the devices of that target. If the `$TARGETDIR` environment variable is set to another directory, the scripts will search this directory for targets instead.
+
+`riscv-test-env`:: This contains headers common to all environments, and then a directory for each TVM variant, with `link.ld` linker script and `riscv_test.h` header.
+
+`riscv-test-suite`:: This contains a subdirectory for each instruction set or instruction set extension.  Within each subdirectory the source code and reference output for each test are in the `ISA` directory.
+
+`riscv-ovpsim`:: This contains a copy of the Imperas OVP riscvOVPsim simulator for use in compliance testing. It includes a subdirectory of examples with pre-compiled .elf files and has binaries of the simulator for Linux64 and Windows64. This is referenced by the makefiles for developing and running the compliance suites. riscvOVPsim can run all the tracing and assertion macros used in the tests.
+
+[appendix]
+== Creative Commons Attribution 4.0 International License
+
+Creative Commons Corporation (“Creative Commons”) is not a law firm and does not provide legal services or legal advice. Distribution of Creative Commons public licenses does not create a lawyer-client or other relationship. Creative Commons makes its licenses and related information available on an “as-is” basis. Creative Commons gives no warranties regarding its licenses, any material licensed under their terms and conditions, or any related information. Creative Commons disclaims all liability for damages resulting from their use to the fullest extent possible.
+
+=== Using Creative Commons Public Licenses
+
+Creative Commons public licenses provide a standard set of terms and conditions that creators and other rights holders may use to share original works of authorship and other material subject to copyright and certain other rights specified in the public license below. The following considerations are for informational purposes only, are not exhaustive, and do not form part of our licenses.
+
+[horizontal]
+*Considerations for licensors*:: Our public licenses are intended for use by those authorized to give the public permission to use material in ways otherwise restricted by copyright and certain other rights. Our licenses are irrevocable. Licensors should read and understand the terms and conditions of the license they choose before applying it. Licensors should also secure all rights necessary before applying our licenses so that the public can reuse the material as expected. Licensors should clearly mark any material not subject to the license. This includes other CC-licensed material, or material used under an exception or limitation to copyright.  https://wiki.creativecommons.org/wiki/Considerations_for_licensors_and_licensees#Considerations_for_licensors[More considerations for licensors].
+
+*Considerations for the public*:: By using one of our public licenses, a licensor grants the public permission to use the licensed material under specified terms and conditions. If the licensor's permission is not necessary for any reason–for example, because of any applicable exception or limitation to copyright–then that use is not regulated by the license. Our licenses grant only permissions under copyright and certain other rights that a licensor has authority to grant. Use of the licensed material may still be restricted for other reasons, including because others have copyright or other rights in the material. A licensor may make special requests, such as asking that all changes be marked or described. Although not required by our licenses, you are encouraged to respect those requests where reasonable.  https://wiki.creativecommons.org/Considerations_for_licensors_and_licensees#Considerations_for_licensees[More considerations for the public].
+
+[[app_cc_by_4.0]]
+=== Creative Commons Attribution 4.0 International Public License
+
+By exercising the Licensed Rights (defined below), You accept and agree to be bound by the terms and conditions of this Creative Commons Attribution 4.0 International Public License ("Public License"). To the extent this Public License may be interpreted as a contract, You are granted the Licensed Rights in consideration of Your acceptance of these terms and conditions, and the Licensor grants You such rights in consideration of benefits the Licensor receives from making the Licensed Material available under these terms and conditions.
+
+:numbered!:
+==== Section 1--Definitions.
+
+a. *Adapted Material* means material subject to Copyright and Similar Rights that is derived from or based upon the Licensed Material and in which the Licensed Material is translated, altered, arranged, transformed, or otherwise modified in a manner requiring permission under the Copyright and Similar Rights held by the Licensor. For purposes of this Public License, where the Licensed Material is a musical work, performance, or sound recording, Adapted Material is always produced where the Licensed Material is synched in timed relation with a moving image.
+
+b. *Adapter's License* means the license You apply to Your Copyright and Similar Rights in Your contributions to Adapted Material in accordance with the terms and conditions of this Public License.
+
+c. *Copyright and Similar Rights* means copyright and/or similar rights closely related to copyright including, without limitation, performance, broadcast, sound recording, and Sui Generis Database Rights, without regard to how the rights are labeled or categorized. For purposes of this Public License, the rights specified in Section 2(b)(1)-(2) are not Copyright and Similar Rights.
+
+d. *Effective Technological Measures* means those measures that, in the absence of proper authority, may not be circumvented under laws fulfilling obligations under Article 11 of the WIPO Copyright Treaty adopted on December 20, 1996, and/or similar international agreements.
+
+e. *Exceptions and Limitations* means fair use, fair dealing, and/or any other exception or limitation to Copyright and Similar Rights that applies to Your use of the Licensed Material.
+
+f. *Licensed Material* means the artistic or literary work, database, or other material to which the Licensor applied this Public License.
+
+g. *Licensed Rights* means the rights granted to You subject to the terms and conditions of this Public License, which are limited to all Copyright and Similar Rights that apply to Your use of the Licensed Material and that the Licensor has authority to license.
+
+h. *Licensor* means the individual(s) or entity(ies) granting rights under this Public License.
+
+i. *Share* means to provide material to the public by any means or process that requires permission under the Licensed Rights, such as reproduction, public display, public performance, distribution, dissemination, communication, or importation, and to make material available to the public including in ways that members of the public may access the material from a place and at a time individually chosen by them.
+
+j. *Sui Generis Database Rights* means rights other than copyright resulting from Directive 96/9/EC of the European Parliament and of the Council of 11 March 1996 on the legal protection of databases, as amended and/or succeeded, as well as other essentially equivalent rights anywhere in the world.
+
+k. *You* means the individual or entity exercising the Licensed Rights under this Public License. Your has a corresponding meaning.
+
+==== Section 2 – Scope
+
+a. *License grant*.
+   1. Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to:
+      A. reproduce and Share the Licensed Material, in whole or in part; and
+      B. produce, reproduce, and Share Adapted Material.
+   2. _Exceptions and Limitations_. For the avoidance of doubt, where Exceptions and Limitations apply to Your use, this Public License does not apply, and You do not need to comply with its terms and conditions.
+   3. _Term_. The term of this Public License is specified in Section 6(a).
+   4. _Media and formats; technical modifications allowed_. The Licensor authorizes You to exercise the Licensed Rights in all media and formats whether now known or hereafter created, and to make technical modifications necessary to do so. The Licensor waives and/or agrees not to assert any right or authority to forbid You from making technical modifications necessary to exercise the Licensed Rights, including technical modifications necessary to circumvent Effective Technological Measures. For purposes of this Public License, simply making modifications authorized by this Section 2(a)(4) never produces Adapted Material.
+   5. _Downstream recipients_.
+      A. _Offer from the Licensor – Licensed Material_. Every recipient of the Licensed Material automatically receives an offer from the Licensor to exercise the Licensed Rights under the terms and conditions of this Public License.
+      B. _No downstream restrictions_. You may not offer or impose any additional or different terms or conditions on, or apply any Effective Technological Measures to, the Licensed Material if doing so restricts exercise of the Licensed Rights by any recipient of the Licensed Material.
+   6. _No endorsement_. Nothing in this Public License constitutes or may be construed as permission to assert or imply that You are, or that Your use of the Licensed Material is, connected with, or sponsored, endorsed, or granted official status by, the Licensor or others designated to receive attribution as provided in Section 3(a)(1)(A)(i).
+
+b. *Other rights*.
+   1. Moral rights, such as the right of integrity, are not licensed under this Public License, nor are publicity, privacy, and/or other similar personality rights; however, to the extent possible, the Licensor waives and/or agrees not to assert any such rights held by the Licensor to the limited extent necessary to allow You to exercise the Licensed Rights, but not otherwise.
+   2. Patent and trademark rights are not licensed under this Public License.
+   3. To the extent possible, the Licensor waives any right to collect royalties from You for the exercise of the Licensed Rights, whether directly or through a collecting society under any voluntary or waivable statutory or compulsory licensing scheme. In all other cases the Licensor expressly reserves any right to collect such royalties.
+
+==== Section 3 -- License Conditions.
+
+Your exercise of the Licensed Rights is expressly made subject to the
+following conditions.
+ 
+a. Attribution.
+   1. If You Share the Licensed Material (including in modified form), You must:
+      A. retain the following if it is supplied by the Licensor with the Licensed Material:
+      	 i) identification of the creator(s) of the Licensed Material and any others designated to receive attribution, in any reasonable manner requested by the Licensor (including by pseudonym if designated);
+	 ii) a copyright notice;
+	 iii) notice that refers to this Public License;
+	 iv) a notice that refers to the disclaimer of warranties;
+	 v) a URI or hyperlink to the Licensed Material to the extent reasonably practicable;
+      B. indicate if You modified the Licensed Material and retain an indication of any previous modifications; and
+      C. indicate the Licensed Material is licensed under this Public License, and include the text of, or the URI or hyperlink to, this Public License.
+   2. You may satisfy the conditions in Section 3(a)(1) in any reasonable manner based on the medium, means, and context in which You Share the Licensed Material. For example, it may be reasonable to satisfy the conditions by providing a URI or hyperlink to a resource that includes the required information.
+   3. If requested by the Licensor, You must remove any of the information required by Section 3(a)(1)(A) to the extent reasonably practicable.
+   4. If You Share Adapted Material You produce, the Adapter's License You apply must not prevent recipients of the Adapted Material from complying with this Public License.
+
+==== Section 4 -- Sui Generis Database Rights.
+
+Where the Licensed Rights include Sui Generis Database Rights that apply to Your use of the Licensed Material:
+
+a. for the avoidance of doubt, Section 2(a)(1) grants You the right to extract, reuse, reproduce, and Share all or a substantial portion of the contents of the database;
+
+b. if You include all or a substantial portion of the database contents in a database in which You have Sui Generis Database Rights, then the database in which You have Sui Generis Database Rights (but not its individual contents) is Adapted Material; and
+
+c. You must comply with the conditions in Section 3(a) if You Share all or a substantial portion of the contents of the database.
+For the avoidance of doubt, this Section 4 supplements and does not replace Your obligations under this Public License where the Licensed Rights include other Copyright and Similar Rights.
+
+==== Section 5 -- Disclaimer of Warranties and Limitation of Liability.
+
+a. *Unless otherwise separately undertaken by the Licensor, to the extent possible, the Licensor offers the Licensed Material as-is and as-available, and makes no representations or warranties of any kind concerning the Licensed Material, whether express, implied, statutory, or other. This includes, without limitation, warranties of title, merchantability, fitness for a particular purpose, non-infringement, absence of latent or other defects, accuracy, or the presence or absence of errors, whether or not known or discoverable. Where disclaimers of warranties are not allowed in full or in part, this disclaimer may not apply to You.*
+
+b. *To the extent possible, in no event will the Licensor be liable to You on any legal theory (including, without limitation, negligence) or otherwise for any direct, special, indirect, incidental, consequential, punitive, exemplary, or other losses, costs, expenses, or damages arising out of this Public License or use of the Licensed Material, even if the Licensor has been advised of the possibility of such losses, costs, expenses, or damages. Where a limitation of liability is not allowed in full or in part, this limitation may not apply to You.*
+
+c. The disclaimer of warranties and limitation of liability provided above shall be interpreted in a manner that, to the extent possible, most closely approximates an absolute disclaimer and waiver of all liability.
+
+==== Section 6 -- Term and Termination.
+
+a. This Public License applies for the term of the Copyright and Similar Rights licensed here. However, if You fail to comply with this Public License, then Your rights under this Public License terminate automatically.
+
+b. Where Your right to use the Licensed Material has terminated under Section 6(a), it reinstates:
+   1. automatically as of the date the violation is cured, provided it is cured within 30 days of Your discovery of the violation; or
+   2. upon express reinstatement by the Licensor.
+
+c. For the avoidance of doubt, this Section 6(b) does not affect any right the Licensor may have to seek remedies for Your violations of this Public License.
+
+d. For the avoidance of doubt, the Licensor may also offer the Licensed Material under separate terms or conditions or stop distributing the Licensed Material at any time; however, doing so will not terminate this Public License.
+Sections 1, 5, 6, 7, and 8 survive termination of this Public License.
+
+==== Section 7 -- Other Terms and Conditions.
+
+a. The Licensor shall not be bound by any additional or different terms or conditions communicated by You unless expressly agreed.
+
+b. Any arrangements, understandings, or agreements regarding the Licensed Material not stated herein are separate from and independent of the terms and conditions of this Public License.
+
+==== Section 8 -- Interpretation.
+
+a. For the avoidance of doubt, this Public License does not, and shall not be interpreted to, reduce, limit, restrict, or impose conditions on any use of the Licensed Material that could lawfully be made without permission under this Public License.
+
+b. To the extent possible, if any provision of this Public License is deemed unenforceable, it shall be automatically reformed to the minimum extent necessary to make it enforceable. If the provision cannot be reformed, it shall be severed from this Public License without affecting the enforceability of the remaining terms and conditions.
+
+c. No term or condition of this Public License will be waived and no failure to comply consented to unless expressly agreed to by the Licensor.
+
+d. Nothing in this Public License constitutes or may be interpreted as a limitation upon, or waiver of, any privileges and immunities that apply to the Licensor or You, including from the legal processes of any jurisdiction or authority.
+
+=== Supplementary
+
+Creative Commons is not a party to its public licenses. Notwithstanding, Creative Commons may elect to apply one of its public licenses to material it publishes and in those instances will be considered the “Licensor.” The text of the Creative Commons public licenses is dedicated to the public domain under the https://creativecommons.org/publicdomain/zero/1.0/legalcode[CC0 Public Domain Dedication]. Except for the limited purpose of indicating that material is shared under a Creative Commons public license or as otherwise permitted by the Creative Commons policies published at https://creativecommons.org/policies[creativecommons.org/policies], Creative Commons does not authorize the use of the trademark “Creative Commons” or any other trademark or logo of Creative Commons without its prior written consent including, without limitation, in connection with any unauthorized modifications to any of its public licenses or any other arrangements, understandings, or agreements concerning use of licensed material. For the avoidance of doubt, this paragraph does not form part of the public licenses.
+
+Creative Commons may be contacted at https://creativecommons.org/[creativecommons.org].
