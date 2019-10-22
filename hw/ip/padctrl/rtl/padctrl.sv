@@ -8,11 +8,11 @@
 //
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
 module padctrl #(
-  parameter integer Impl = `PRIM_DEFAULT_IMPL
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL
 ) (
   input                                       clk_i,
   input                                       rst_ni,
@@ -35,10 +35,10 @@ module padctrl #(
   //////////////////////////////////////////////////////
 
   logic [padctrl_reg_pkg::AttrDw-1:0] warl_mask;
-  if (impl_e'(Impl) == ImplGeneric) begin : gen_generic
+  if (Impl == ImplGeneric) begin : gen_generic
     // all attributes supported
     assign warl_mask = padctrl_reg_pkg::AttrDw'(6'h3F);
-  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_xilinx
+  end else if (Impl == ImplXilinx) begin : gen_xilinx
     // only OD and INV supported
     assign warl_mask = padctrl_reg_pkg::AttrDw'(2'h3);
   end else begin : gen_failure
