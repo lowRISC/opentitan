@@ -81,11 +81,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // trigger hash computation to start
   virtual task trigger_hash();
-    csr_wr(.csr(ral.cmd), .value(1'b1));
+    csr_wr(.csr(ral.cmd), .value(1'b1 << HashStart));
   endtask
 
   virtual task trigger_process();
-    csr_wr(.csr(ral.cmd), .value(2'b10));
+    csr_wr(.csr(ral.cmd), .value(1'b1 << HashProcess));
   endtask
 
   // read digest value
@@ -217,13 +217,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end else begin
       csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
                    .compare_mask(1 << HmacMsgFifoFull));
-      csr_wr(.csr(ral.intr_state), .value(1 << HmacDone));
+      csr_wr(.csr(ral.intr_state), .value(1 << HmacMsgFifoFull));
     end
   endtask
 
   // when msg fifo full interrupt is set, this task clears the interrupt
   // checking the correctness of the fifo full interrupt is done in scb
   virtual task clear_intr_fifo_full();
+    csr_utils_pkg::wait_no_outstanding_access();
     if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
       if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
         check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(1'b1));

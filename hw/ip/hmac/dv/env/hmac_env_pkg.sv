@@ -50,6 +50,11 @@ package hmac_env_pkg;
     DigestSwap
   } hmac_cfg_e;
 
+  typedef enum {
+    HashStart,
+    HashProcess
+  } hmac_cmd_e;
+
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
