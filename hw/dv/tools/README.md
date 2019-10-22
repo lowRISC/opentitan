@@ -69,7 +69,7 @@ This is not an exhaustive list of Make variables. Please see `./Makefile` and
 #### RAL generation tool specific mk file
 This lists tools and options to generate the ral model by simply running the
 command `make ral` from the same directory as the Test Makefile. For generating
-the UVM REG based RAL model, we use the same [in-house tool](../../../doc/rm/register_tool.md) for autogenerating
+the UVM REG based RAL model, we use the same [in-house tool]({{< relref "doc/rm/register_tool" >}}) for autogenerating
 RTL with mako template.
 
 ### fusesoc.mk

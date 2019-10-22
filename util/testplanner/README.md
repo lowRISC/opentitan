@@ -1,4 +1,5 @@
-{{% toc 4 }}
+---
+---
 
 # Testplanner tool
 
@@ -38,13 +39,13 @@ intent of a planned test:
   that the reader gets the full picture of what and how the said feature is being
   tested.
 
-  Full [markdown](../doc/rm/markdown_usage_style.md) syntax is supported when writing
+  Full [markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported when writing
   the description.
 
 * **tests: list of actual written tests that maps to this planned test**
 
   Testplan is written very early in the V0 stage of the HW development
-  [life-cycle](../../doc/ug/hw_stages.md). When the DV engineer gets to actually
+  [life-cycle]({{< relref "doc/ug/hw_stages" >}}). When the DV engineer gets to actually
   developing the test, it may not map 1:1 to the planned test - it may be possible
   that an already written test that mapped to another planned test also satisfies
   the current one; OR it may also be possible that the planned test needs to be
@@ -160,10 +161,10 @@ a starting point.
 - **common_testplan.hjson**: shared testplan imported within the DUT tesplan
 - **foo_dv_plan.md**: DUT testplan imported within the DV plan doc in markdown
 
-In addition, see [UART DV Plan](../../hw/ip/uart/doc/uart_dv_plan.md) for a
+In addition, see [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
 real 'production' example of inline expansion of an imported testplan as a table
-within the DV Plan document done using [docgen](../docgen/README.md).
-The [UART tesplan](../../hw/ip/uart/data/uart_testplan.hjson) imports the shared
+within the DV Plan document.
+The [UART tesplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson) imports the shared
 testplans located at `hw/dv/tools/testplans` area.
 
 ### Limitations
@@ -185,11 +186,6 @@ Generate the testplan table in HTML to a file:
 $ util/testplanner.py testplanner/examples/foo_testplan.hjson -o /tmp/foo_testplan_table.html
 ```
 
-Generate the testplan table in HTML styled with [docgen](../docgen/README.md):
-```console
-$ util/testplanner.py testplanner/examples/foo_testplan.hjson | ./docgen.py -c -o /tmp/foo_testplan_table.html
-```
-
 Generate regression results table in HTML to stdout:
 ```console
 $ util/testplanner.py testplanner/examples/foo_testplan.hjson -r testplanner/examples/foo_regr_results.hjson
@@ -201,14 +197,8 @@ $ util/testplanner.py testplanner/examples/foo_testplan.hjson \
     -r testplanner/examples/foo_regr_results.hjson -o /tmp/foo_regr_results.html
 ```
 
-Generate regression results table in HTML styled with [docgen](../docgen/README.md):
-```console
-$ util/testplanner.py testplanner/examples/foo_testplan.hjson \
-    -r testplanner/examples/foo_regr_results.hjson | ./docgen.py -c -o /tmp/foo_regr_results.html
-```
-
 ### APIs for external tools
-The [docgen](../docgen/README.md) invokes the testplanner utility functions
+The `util/build_docs.py` invokes the testplanner utility functions
 directly to parse the Hjson testplan and insert a HTML table within the DV
 plan document. This is done by invoking:
 ```console

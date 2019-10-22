@@ -1,4 +1,6 @@
-{{% lowrisc-doc-hdr: vendor_hw: vendor-in hardware components }}
+---
+title: "vendor_hw: vendor-in hardware components"
+---
 
 Not all hardware code contained in this repository is actually developed within this repository.
 Code which we include from external sources is placed in the `hw/vendor` directory and copied into this directory from its upstream source.

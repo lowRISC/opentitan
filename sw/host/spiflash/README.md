@@ -25,7 +25,7 @@ $ ninja -C build-fpga sw/host/spiflash/spiflash
 ```
 
 ## Setup instructions for Verilator and FPGA
-Please refer to [verilator](../../../doc/ug/getting_started_verilator.md) and [fpga](../../../doc/ug/getting_started_verilator.md) docs for more information.
+Please refer to [verilator]({{< relref "doc/ug/getting_started_verilator" >}}) and [fpga]({{< relref "doc/ug/getting_started_fpga" >}}) docs for more information.
 
 ## Build boot ROM and demo program
 

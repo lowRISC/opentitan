@@ -72,7 +72,7 @@ optional arguments:
 
 The boilerplate code for a UVM agent for an interface can be generated using the
 `-a` switch. This results in the generation of complete agent with classes that
-extend from the [DV library](../../hw/dv/sv/dv_lib/README.md). Please see
+extend from the [DV library]({{< relref "hw/dv/sv/dv_lib/README.md" >}}). Please see
 description for more details.
 
 The tool generates an interface, item, cfg, cov, monitor, driver and sequence
@@ -154,8 +154,8 @@ more is typically needed.
 
 The boilerplate code for a UVM environment and the testbench for a DUT can be
 generated using the `-e` switch. This results in the generation of classes that
-extend from [DV library](../../hw/dv/sv/dv_lib/README.md). If the `-c` switch is
-passed, it extends from [cip library](../../hw/dv/sv/cip_lib/README.md). With
+extend from [DV library]({{< relref "hw/dv/sv/dv_lib/README.md" >}}). If the `-c` switch is
+passed, it extends from [cip library]({{< relref "hw/dv/sv/cip_lib/doc" >}}). With
 `-ea` switch, user can provide a list of downstream agents to create within the
 environment. Please see description for more details.
 
@@ -190,7 +190,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 
   This is the UVM reg based RAL model. This is created for completeness. The
   actual RAL model needs to be generated prior to running simulations using the
-  [regtool](../reggen/README.md).
+  [regtool]({{< relref "util/reggen/README.md" >}}).
 
 * **env/i2c_host_scoreboard**
 
@@ -286,14 +286,14 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 * **Makefile**
 
   This is the simulation Makefile that is used as the starting point for
-  building and running tests using the [make flow](../../hw/dv/tools/README.md).
+  building and running tests using the [make flow]({{< relref "hw/dv/tools/README.md" >}}).
   It already includes the sanity and CSR suite of tests to allow users to start
   running tests right away.
 
 * **plan.md**
 
   This is the empty DV plan document that will describe the entire testbench. A
-  template for this is available [here](../../hw/dv/doc/dv_plan_template.md).
+  template for this is available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_plan_template.md).
 
 #### Examples
 

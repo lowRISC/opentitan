@@ -1,4 +1,6 @@
-{{% lowrisc-doc-hdr C and C++ Coding Style Guide }}
+---
+title: "C and C++ Coding Style Guide"
+---
 
 ## Basics
 
@@ -13,7 +15,6 @@ As with all style guides the intention is to:
 *   promote best practices
 *   increase code sharing and re-use
 
-{{% toc 3 }}
 
 ### Terminology Conventions
 

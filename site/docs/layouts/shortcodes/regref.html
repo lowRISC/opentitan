@@ -1,0 +1,1 @@
+{{ $name := .Get 0 }}{{ $ref := lower (index (split $name ".") 0) }}<a href="#Reg_{{ $ref }}">{{ $name }}</a>{{- "" -}}

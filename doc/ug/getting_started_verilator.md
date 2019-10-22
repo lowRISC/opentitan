@@ -7,7 +7,7 @@ It translates synthesizable Verilog code into a simulation program in C++, which
 
 ## Prerequisites
 
-_Make sure you followed the install instructions to [prepare the system](install_instructions.md#system-preparation) and to install the [software development tools](install_instructions.md#software-development) and [Verilator](install_instructions.md#verilator)._
+_Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "doc/ug/install_instructions#software-development" >}}) and [Verilator]({{< relref "install_instructions#verilator" >}})._
 
 ## Simulating a design with Verilator
 
@@ -26,7 +26,7 @@ A program needs to be built for each until ROM functionality for code download i
 For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
 In the instructions below, `SW_DIR` is a requirement argument, while `SW_BUILD_DIR` is not a required argument.
 If `SW_BUILD_DIR` argument is not supplied, the default location of the of output files are in `SW_DIR`
-Please see [SW build flow](../../sw/doc/sw_build_flow.md) for more details.
+Please see [SW build flow]({{< relref "sw/device/doc/sw_build_flow" >}}) for more details.
 
 ```console
 $ cd $REPO_TOP

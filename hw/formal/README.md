@@ -1,8 +1,9 @@
-{{% lowrisc-doc-hdr OpenTitan Assertions }}
+---
+title: "OpenTitan Assertions"
+---
 
 # OpenTitan Assertions
 
-{{% toc 3 }}
 
 ## What Are Assertions?
 Assertions are statements about your design that are expected to be always
@@ -23,7 +24,7 @@ Assertions are usually added by the designer in the RTL file. Assertions can
 also be added in a separate module, see for example
 [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv)
 and its
-[documentation](../ip/tlul/doc/TlulProtocolChecker.md),
+[documentation]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}),
 which contains a generic protocol checker for the
 TileLink-UL standard.
 
@@ -91,7 +92,7 @@ a value that is not X.
 *   Also see
 [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv)
 and its
-[documentation](../ip/tlul/doc/TlulProtocolChecker.md).
+[documentation]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}).
 
 ## Useful SVA System Functions
 Below table lists useful SVA (system verilog assertion) functions that can be

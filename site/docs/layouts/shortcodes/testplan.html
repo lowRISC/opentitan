@@ -1,0 +1,6 @@
+{{ $baseName := .Get 0 }}
+{{ $path := path.Join .Site.Params.generatedRoot (printf "%s.testplan" $baseName) }}
+{{ if not (fileExists $path) }}
+  {{ errorf "Testplan has not been generated for %s" $baseName }}
+{{ end }}
+{{ readFile $path | safeHTML }}

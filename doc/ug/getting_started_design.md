@@ -1,7 +1,11 @@
+---
+title: "Getting Started with an OpenTitan Hardware Design"
+---
+
 # Getting Started with an OpenTitan Hardware Design
 
 This document aims to clarify how to get started with a hardware design within the OpenTitan project.
-Design in this context nominally refers to a new [Comportable Peripheral](../rm/comportability_specification.md) but can include high level constructs like device reset strategy, etc.
+Design in this context nominally refers to a new [Comportable Peripheral]({{< relref "../rm/comportability_specification" >}}) but can include high level constructs like device reset strategy, etc.
 This is primarily aimed at creating a new design from scratch, but has sections on how to contribute to an existing design.
 It is targeted to RTL designers to give clarity on the typical process for declaring features, finding others to review, etc.
 We aim for a healthy balance between adding clarity while not over prescribing rules and process.
@@ -11,7 +15,7 @@ Feedback and improvements are welcome.
 
 ## Stages of a Design
 
-The life stages of a design within the OpenTitan are described in the [Hardware Development Stages](hw_stages.md) document.
+The life stages of a design within the OpenTitan are described in the [Hardware Development Stages]({{< relref "hw_stages.md" >}}) document.
 This separates the life of the design into three broad stages: Specification, In Development, and Signed off.
 This document attempts to give guidance on how to get going with the first stage and have a smooth transition into the Development stage.
 They are not hard and fast rules but methods we have seen work well in the project.
@@ -25,7 +29,7 @@ This is as opposed to minor modification proposals to an existing design, which 
 This proposal should be in **Google Doc** medium for agile review capability.
 Ideally this proposal document would be created in the Team Drive, but if the author does not have access to the team drive, they can share a privately-created document.
 
-Design proposals should follow the recommended [RFC (Request for Comment)](../project/rfc_process.md) process, which handles all such proposals.
+Design proposals should follow the recommended [RFC (Request for Comment)]({{< relref "../project/rfc_process.md" >}}) process, which handles all such proposals.
 If the RFC may contain certification sensitive material (guidance to be shared), it should be first sent to
 [cert-sensitive-priv@lowrisc.org](mailto:cert-sensitive-priv@lowrisc.org)
 for clearance before sharing more widely.
@@ -37,7 +41,7 @@ An example of a canonical RFC can be found *here* (TODO).
 ## Detailed Specification
 
 Once past initial review of the feature set and high level description, as well as potential security review, the full detailed specification should be completed, still in Google Doc form.
-The content, form, and format are discussed in the [design methodology](design.md) and [documentation methodology](../rm/markdown_usage_style.md) guides.
+The content, form, and format are discussed in the [design methodology]({{< relref "design.md" >}}) and [documentation methodology]({{< relref "../rm/markdown_usage_style.md" >}}) guides.
 The outcome of this process should be a specification that is ready for further detailed review by other project members.
 The content and the status of the proposal can be shared with the team.
 
@@ -59,12 +63,12 @@ There are many ways to get past this "big bang" of necessary implementation and 
 One recommended method is as follows:
 * Start with a skeleton that includes a complete or near-complete definition of the register content in .hjson format
 * Combine with a basic markdown including that file
-* Combine with an IP-top-level verilog module that instantiates the auto-generated register model (see the [register tool documentation](../rm/register_tool.md)), includes all of the known IP-level IO, clocking and reset.
+* Combine with an IP-top-level verilog module that instantiates the auto-generated register model (see the [register tool documentation]({{< relref "../rm/register_tool" >}})), includes all of the known IP-level IO, clocking and reset.
 
 This is not mandatory but allows the basics to come in first with one review, and the full custom details over time.
 Regardless the first check-ins of course should be compilable, syntax error free,
 [coding style guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
-friendly, [Comportability](../rm/comportability_specification.md) equivalent, etc., as indicated by the [design methodology user guide](design.md).
+friendly, [Comportability]({{< relref "../rm/comportability_specification" >}}) equivalent, etc., as indicated by the [design methodology user guide]({{< relref "design.md" >}}).
 
 A good example of an initial skeleton design can be seen in
 [Pull Request #166](https://github.com/lowRISC/opentitan/pull/166)
@@ -78,7 +82,7 @@ This applies only for those specifications that originated on the Drive.
 
 ## Full Design
 
-As the design develops within the OpenTitan repo, it transitions into "D0", "D1", etc., [design stages](hw_stages.md) and will be eventually plugged into the top level.
+As the design develops within the OpenTitan repo, it transitions into "D0", "D1", etc., [design stages]({{< relref "hw_stages.md" >}}) and will be eventually plugged into the top level.
 Following the recommended best practices for digestible pull requests suggests that continuing to stage the design from the initial skeleton into the full featured design is a good way to make steady progress without over-burdening the reviewers.
 
 ## Top Level Inclusion

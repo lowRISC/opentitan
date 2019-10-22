@@ -1,8 +1,8 @@
 # Hardware Designs Dashboard
 
 This dashboard gives the current status of
-[Comportable](../rm/comportability_specification.md)
+[Comportable](/doc/rm/comportability_specification)
 designs within the OpenTitan project.
-See the [Hardware Development Stages](../ug/hw_stages.md) for description of the hardware stages and how they are determined.
+See the [Hardware Development Stages](/doc/ug/hw_stages) for description of the hardware stages and how they are determined.
 
-{{% dashboard ../../hw/ip }}
+{{< dashboard "hw/ip" >}}

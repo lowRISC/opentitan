@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-_Make sure you followed the install instructions to [prepare the system](install_instructions.html#system-preparation) and install the [compiler toolchain](install_instructions.html#compiler-toolchain)._
+_Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and install the [compiler toolchain]({{< relref "install_instructions#compiler-toolchain" >}})._
 
 ## Building software
 
@@ -18,4 +18,4 @@ The build process produces a variety of output files.
 * `.dis`: the disassembled program
 * `.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code
 
-Please see [SW build flow](../../sw/doc/sw_build_flow.md) for more details.
+Please see [SW build flow]("/sw/doc/sw_build_flow.md") for more details.
