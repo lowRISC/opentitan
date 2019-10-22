@@ -238,7 +238,7 @@ class csr_rw_seq extends csr_base_seq;
       // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
       // might pick up stale mirrored value
       if (!external_checker) begin
-        test_csrs[i].predict(.value(wdata), .kind(UVM_PREDICT_WRITE));
+        void'(test_csrs[i].predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
       end
 
       // check if parent block or register is excluded from read-check
@@ -382,7 +382,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
       // might pick up stale mirrored value
       if (!external_checker) begin
-        rg.predict(.value(val), .kind(UVM_PREDICT_WRITE));
+        void'(rg.predict(.value(val), .kind(UVM_PREDICT_WRITE)));
       end
 
       // TODO, outstanding access to same reg isn't supported in uvm_reg. Need to add another seq
@@ -429,7 +429,7 @@ class csr_aliasing_seq extends csr_base_seq;
       // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
       // might pick up stale mirrored value
       if (!external_checker) begin
-        test_csrs[i].predict(.value(wdata), .kind(UVM_PREDICT_WRITE));
+        void'(test_csrs[i].predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
       end
 
       all_csrs.shuffle();

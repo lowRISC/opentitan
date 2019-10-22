@@ -11,12 +11,17 @@ class gpio_base_vseq extends cip_base_vseq #(
 
   // Delay between consecutive transactions
   rand uint delay;
+
   constraint delay_c {
     delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
   }
-  `uvm_object_utils(gpio_base_vseq)
+  constraint num_trans_c {
+    num_trans inside {[20:200]};
+  }
 
+  `uvm_object_utils(gpio_base_vseq)
   `uvm_object_new
+
   virtual task dut_init(string reset_kind = "HARD");
     // Check for weak pullup or weak pulldown requirement
     if (cfg.pullup_en) begin

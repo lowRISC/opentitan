@@ -111,7 +111,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (write && channel == AddrChannel) begin
-      csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
     // process the csr req
@@ -134,7 +134,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
       end
-      csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ));
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
 

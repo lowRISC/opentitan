@@ -136,7 +136,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(intr_state_rg, null)
     timer_intr_state_fld = intr_state_rg.get_field_by_name($sformatf("is%0d", timer));
     `DV_CHECK_NE_FATAL(timer_intr_state_fld, null)
-    timer_intr_state_fld.predict(.value(exp_intr_state), .kind(UVM_PREDICT_DIRECT));
+    void'(timer_intr_state_fld.predict(.value(exp_intr_state), .kind(UVM_PREDICT_DIRECT)));
     csr_rd_check(.ptr(intr_state_rg), .compare_vs_ral(1));
     // also check intr output
     `DV_CHECK_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), exp_intr_pin)
