@@ -140,7 +140,7 @@ stages:
       displayName: 'Display environment'
     - bash: |
         export PATH=$VERILATOR_PATH/bin:$PATH
-        fusesoc --cores-root=. sim --build-only lowrisc:systems:top_earlgrey_verilator
+        fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
       displayName: 'Build simulation with Verilator'
 
   - job: "top_earlgrey_nexysvideo"
@@ -155,5 +155,5 @@ stages:
     - bash: |
         set -e
         source /opt/xilinx/Vivado/2018.3/settings64.sh
-        fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
+        fusesoc --cores-root . run --target=synth --setup --build lowrisc:systems:top_earlgrey_nexysvideo
       displayName: 'Build bitstream with Vivado'

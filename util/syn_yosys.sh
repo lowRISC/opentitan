@@ -18,7 +18,7 @@
 # use fusesoc to generate files and file list
 #-------------------------------------------------------------------------
 \rm -Rf build
-fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+fusesoc --cores-root .. run --target=sim --setup --build formal > /dev/null 2>&1
 
 # copy all files into directory "syn_out"
 \rm -Rf syn_out

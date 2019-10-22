@@ -23,7 +23,7 @@ export FPV_TOP=$1
 # use fusesoc to generate file list
 #-------------------------------------------------------------------------
 \rm -Rf build jgproject
-fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+fusesoc --cores-root .. run --target=sim --setup --build formal > /dev/null 2>&1
 
 #-------------------------------------------------------------------------
 # run Jasper Gold
