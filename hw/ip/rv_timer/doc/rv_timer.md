@@ -60,12 +60,12 @@ signal. This allows creation of a call-clock timer tick such as 1us or 10us
 regardless of the system clock period. It is useful if the system has more than
 one clock as a clock source. The firmware just needs to adjust the
 !!CFG0.prescaler value and the actual timer interrupt handling routine does not
-need variable clock period to update `mtimecmp`.
+need a variable clock period to update `mtimecmp`.
 
 For instance, if a system switches between 48MHz and 200MHz clocks, a prescaler
-value of **47** for 48MHz and **199** for 200MHz generate a 1us tick. In this
-version, timer only supports single fixed clock, so the firmware shall change
-!!CFG0.prescaler appropriately.
+value of **47** for 48MHz and **199** for 200MHz will generate a 1us tick.
+In this version, the timer only supports a single fixed clock, so the firmware
+should change !!CFG0.prescaler appropriately.
 
 ### Configurable number of timers and harts
 
@@ -73,12 +73,13 @@ The timer IP supports more than one HART and/or more than one timer per hart.
 Each hart has a set of tick generator and counter. It means the timer IP has the
 same number of prescalers, steps, and `mtime` registers as the number of harts.
 
-Each hart can have multiple set of `mtimecmp`, comparater logic, and the timer
-expire interrupt signal. This version of IP is set to have one Hart and one
+Each hart can have multiple sets of `mtimecmp`, comparater logic, and expire
+interrupt signals. This version of the IP is fixed to have one Hart and one
 Timer per Hart.
 
-Below is an example of `N_TIMER` 2 and `N_HARTS` 2. It has separate interrupt
-per timer and a set of interrupt enable, state registers per Hart.
+Below is an example configuration file for `N_TIMER` 2 and `N_HARTS` 2.
+It has separate interrupts per timer and a set of interrupt enable and state
+registers per Hart.
 
 ```.hjson
 {
@@ -164,17 +165,17 @@ per timer and a set of interrupt enable, state registers per Hart.
 
 {{% section2 Initialization }}
 
-The software is expected to configure `prescaler`, `step` before activate the
-timer. These two fields needs to be stable to correctly increment the timer
-value. If the software wants to change these fields, it should de-activate the
-timer and proceed.
+Software is expected to configure `prescaler` and `step` before activating the
+timer. These two fields need to be stable to correctly increment the timer
+value. If software wants to change these fields, it should de-activate the
+timer and then proceed.
 
 {{% section2 Register Access }}
 
 The timer IP has 64-bit timer value registers and 64-bit compare registers. The
-register interface, however, is set to 32-bit data width. The CPU cannot get
-64-bit data in a single request. However, when two reads are done, it is
-possible the timer value can increment between two read requests.
+register interface, however, is set to 32-bit data width. The CPU cannot access
+64-bit data in a single request. However, when split into two reads, it is
+possible the timer value can increment between the two requests.
 
 The IP doesn't have a latching or blocking mechanism to avoid this issue. It is
 the programmer's responsibility to ensure the correct value is read. For
@@ -185,8 +186,8 @@ from `0x0_FFFF_FFFF` to `0x1_0000_0000` between the two reads. If there is the
 possibility of an interrupt between the two reads then the counter could have
 advanced even more.
 
-This condition can be detected in a standard way using a third read. Figure 2.5
-in RISC-V user-level specification explains how to avoid this.
+This condition can be detected in a standard way using a third read. Figure 10.1
+in the RISC-V unprivileged specification explains how to avoid this.
 
 ```asm
 again:
@@ -196,13 +197,13 @@ again:
     bne       x3, x4, again
 ```
 
-Updating `mtimecmp` register also follows similar approach to avoid a spurious
-interrupt during the register update. Please refer `mtimecmp` section in RISC-V
-privileged specification.
+Updating `mtimecmp` register also follows a similar approach to avoid a spurious
+interrupt during the register update. Please refer to the `mtimecmp` section in
+the RISC-V privileged specification.
 
 ```asm
 # New comparand is in a1:a0.
-li   t0, -1
+li t0, -1
 sw t0, mtimecmp   # No smaller than old value.
 sw a1, mtimecmp+4 # No smaller than new value.
 sw a0, mtimecmp   # New value.
@@ -217,15 +218,15 @@ between `mtime` and `mtimecmp` care is needed. A couple of cases are:
 1. `mtimecmp` close to 0xFFFF_FFFF_FFFF_FFFF. In this case the time-out event
    will be signaled when `mtime` passes the comparison value, the interrupt will
    be raised and the source indicated in the corresponding bit of the interrupt
-   status. However, if there is a delay in servicing the interrupt the timer the
+   status register. However, if there is a delay in servicing the interrupt the
    `mtime` value could wrap to zero (and continue to increment) so the value
    read by the interrupt service routine will be less than the comparison value.
 
 2. When the timer is setup to trigger a `timeout` some number of timer ticks
    into the future, the computation of the comparison value `mtime + timeout`
    may overflow. If this value is set in `mtimecmp` it would make `mtime`
-   immediately greater than `mtimecmp` and immediately signal an interrupt. A
-   possible solution is to have an intermediate interrupt by setting the
+   greater than `mtimecmp` and immediately signal an interrupt.
+   A possible solution is to have an intermediate interrupt by setting the
    `mtimecmp` to 64-bit all-ones, `0xFFFF_FFFF_FFFF_FFFF`. Then the service
    routine for that interrupt will need to poll `mtime` until it wraps (which
    could take up to a timer clock tick) before scheduling the required interrupt
