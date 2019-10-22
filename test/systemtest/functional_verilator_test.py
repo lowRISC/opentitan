@@ -48,12 +48,22 @@ class TestFunctionalVerilator:
 
         p_sim.terminate()
 
-    def test_execute_binary(self, sim_top_earlgrey, uart_timeout):
+    def test_execute_binary(self, sim_top_earlgrey, uart_timeout, logfile):
         """
         Executes the binary and inspects its UART for "PASS!\r\n" or "FAIL!\r\n".
         """
 
+        #if logfile:
         logger = logging.getLogger(__name__)
+
+        if logfile:
+            logger.debug("Logfile at" + logfile)
+            # create logger with 'spam_application'
+            logger.setLevel(logging.DEBUG)
+            # create file handler which logs even debug messages
+            fh = logging.FileHandler(filename=logfile, mode='w')
+            fh.setLevel(logging.DEBUG)
+            logger.addHandler(fh)
 
         # Verilator will print the string "UART: created /dev/pts/#" to
         # indicate which pseudoterminal the UART port is bound to.

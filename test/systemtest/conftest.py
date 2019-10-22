@@ -22,6 +22,7 @@ def pytest_addoption(parser):
     parser.addoption("--uart_timeout", action="store", default="60")
     parser.addoption("--fpga_uart", action="store", default="")
     parser.addoption("--spiflash", action="store", default="")
+    parser.addoption("--log", action="store", default="")
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_exception_interact(node, call, report):
@@ -125,3 +126,8 @@ def spiflash(pytestconfig):
     path = Path(pytestconfig.getoption('spiflash')).resolve()
     assert path.is_file()
     return path
+
+@pytest.fixture(scope="session")
+def logfile(pytestconfig):
+    """Return path to logfile."""
+    return pytestconfig.getoption('log')
