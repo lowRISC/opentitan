@@ -98,4 +98,26 @@ module top_earlgrey_verilator (
     .spi_device_miso_en_i (cio_spi_device_miso_en_d2p)
   );
 
+  // monitor for termination
+`ifndef END_MON_PATH
+  `define END_MON_PATH top_earlgrey.u_ram1p_ram_main
+`endif
+
+  logic valid;
+  logic [31:0] addr;
+  logic end_valid;
+
+  // mem address in design is offset from base, re-create the full address here
+  assign addr = `VERILATOR_MEM_BASE + {`END_MON_PATH.addr_i, 2'h0};
+  assign valid = `END_MON_PATH.req_i & `END_MON_PATH.write_i & `END_MON_PATH.rst_ni;
+  assign end_valid = valid & (addr == `VERILATOR_END_SIM_ADDR);
+
+  always_ff @(posedge clk_i) begin
+    if (end_valid) begin
+      $display("Verilator sim termination requested");
+      $display("Your simulation wrote to 0x%h", `VERILATOR_END_SIM_ADDR);
+      $finish;
+    end
+  end
+
 endmodule
