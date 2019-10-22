@@ -61,7 +61,6 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_earlgrey_verilator -g"'
           - '-LDFLAGS "-pthread -lutil"'
           - "-Wall"
