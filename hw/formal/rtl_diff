@@ -19,7 +19,7 @@ export LEC_REVISED=../../../${2}
 # use fusesoc to generate file list
 #-------------------------------------------------------------------------
 \rm -Rf build rtl_diff.log
-fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+fusesoc --cores-root .. run --target=sim --setup --build formal > /dev/null 2>&1
 
 #-------------------------------------------------------------------------
 # run Conformal LEC

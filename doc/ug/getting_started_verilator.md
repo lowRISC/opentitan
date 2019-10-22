@@ -15,7 +15,7 @@ First the simulation needs to built itself.
 
 ```console
 $ cd $REPO_TOP
-$ fusesoc --cores-root . sim --build-only lowrisc:systems:top_earlgrey_verilator
+$ fusesoc --cores-root . run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
 ```
 
 Then we need to build software to run on the simulated system.

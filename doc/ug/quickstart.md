@@ -10,7 +10,7 @@ Build the simulator and the software and then run the simulation
 
 ```console
 $ cd $REPO_TOP
-$ fusesoc --cores-root . sim --build-only lowrisc:systems:top_earlgrey_verilator
+$ fusesoc --cores-root . run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
 $ make SIM=1 -C sw/boot_rom clean all
 $ make SIM=1 -C sw/examples/hello_world clean all
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator --rominit=sw/boot_rom/boot_rom.vmem \
@@ -32,8 +32,8 @@ $ cd $REPO_TOP
 $ make -C sw/boot_rom clean all
 $ make -C sw/examples/hello_world clean all
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
-$ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
-$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
+$ fusesoc --cores-root . run --target=synth --setup --build lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
 See the [getting started](getting_started_fpga.md) for a complete guide.

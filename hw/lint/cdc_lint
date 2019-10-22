@@ -20,7 +20,7 @@
 export LINT_TOP=$1
 
 # use fusesoc to generate file list
-fusesoc --cores-root .. sim --build-only formal > /dev/null 2>&1
+fusesoc --cores-root .. run --target=sim --setup --build formal > /dev/null 2>&1
 
 # run meridian CDC lint
 mcdc -i cdc_lint.tcl -wait -log cdc.log
