@@ -25,7 +25,7 @@ def gen_cfg_html(cfgs, outfile):
     genout(outfile, "<p>Referring to the \n")
     genout(
         outfile,
-        "<a href=\"https://github.com/lowRISC/opentitan/blob/master/doc/rm/comportability_specification.md\">\n"
+        "<a href=\"https://docs.opentitan.org/doc/rm/comportability_specification\">\n"
     )
     genout(outfile, "Comportable guideline for peripheral device functionality</a>,\n")
     genout(outfile,

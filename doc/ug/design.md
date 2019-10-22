@@ -1,3 +1,7 @@
+---
+title: "Design Methodology within OpenTitan"
+---
+
 # Design Methodology within OpenTitan
 
 The design methodology within OpenTitan combines the challenges of industry-strength design methodologies with open source ambitions.
@@ -19,7 +23,7 @@ The discussions on how the design tools are used and which ones are chosen are g
 ## Comportability and the Importance of Architectural Conformity
 
 The OpenTitan program is adopting a design methodology aimed at unifying as much as possible the interfaces between individual designs and the rest of the SOC.
-These are detailed in the [Comportability Specification](../rm/comportability_specification.md).
+These are detailed in the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
 This document details how peripheral IP interconnects with the embedded processor, the chip IO, other designs, and the security infrastructure within the SOC.
 Not all of the details are complete at this time, but will be tracked and finalized within that specification.
 
@@ -33,7 +37,7 @@ TODO: briefly discuss key architectural decisions, and how we came to the conclu
 Designs within the OpenTitan project come in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of a design is important to gauge the confidence in its advertised feature set.
-To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages](hw_stages.md) document.
+To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "hw_stages.md" >}}) document.
 This document defines the design stages and references where one can find the current status of each of the designs in the repository.
 
 ## Documentation
@@ -41,24 +45,24 @@ This document defines the design stages and references where one can find the cu
 Documentation is a critical part of any design methodology.
 Within the OpenTitan project there are two important tooling components to efficient and effective documentation.
 
-The first is the [docgen](../../util/docgen/README.md) tool, which converts an annotated markdown file into a rendered HTML file (including this document).
-See the linked docgen specification for information about the annotations and how to use it to create enhanced auto-generated additions to standard Markdown files.
+The first is the [Hugo](https://gohugo.io) tool, which converts an annotated markdown file into a rendered HTML file (including this document).
+See the linked manual for information about the annotations and how to use it to create enhanced auto-generated additions to standard Markdown files.
 
-The second is the [reggen](../rm/register_tool.md) register tool that helps define the methodology and description language for specifying hardware registers.
+The second is the [reggen]({{< relref "doc/rm/register_tool" >}}) register tool that helps define the methodology and description language for specifying hardware registers.
 These descriptions are fed into docgen through annotations and ensure that the technical specifications for the IP are accurate and up to date with the hardware being built.
 
 Underlying and critical to this tooling is the human-written content that goes into the source markdown and register descriptions.
 Clarity and consistency is key.
-See the [Markdown Style Guide](../rm/markdown_usage_style.md) for details and guidelines on the description language.
+See the [Markdown Style Guide]({{< relref "doc/rm/markdown_usage_style.md" >}}) for details and guidelines on the description language.
 
 ## Usage of Register Tool
 
 One design element that is prime for consistent definitions and usages is in the area of register definitions.
 Registers are critical, being at the intersection of hardware and software, where uniformity can reduce confusion and increase re-usability.
-The [register tool](../rm/register_tool.md) used within OpenTitan is custom for the project's needs, but flexible to add new features as they arise.
+The [register tool]({{< relref "doc/rm/register_tool" >}}) used within OpenTitan is custom for the project's needs, but flexible to add new features as they arise.
 It attempts to stay lightweight yet solve most of the needs in this space.
 The description language (using HJSON format) described within that specification also details other features described in the
-[Comportability Specification](../rm/comportability_specification.md).
+[Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
 
 ## Linting Methodology
 
@@ -77,7 +81,7 @@ Due to the proprietary nature of this particular linting tool, content towards r
 In the current state of the project, all lint scripts, policy files, and waivers are **not** provided, but are being kept privately until we can suggest a workable open source solution.
 When this methodology is finalized the details will be given here. (TODO)
 
-Goals for linting closure per design milestone are given in the [OpenTitan Development Stages](hw_stages.md) document.
+Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "hw_stages.md" >}}) document.
 
 ## Assertion Methodology
 
@@ -87,7 +91,7 @@ Often these will eventually result in a downstream error (incorrect data, bus co
 
 Within OpenTitan we attempt to maintain uniformity in assertion style and syntax using SystemVerilog Assertions and a list of common macros.
 An overview of the included macros and how to use them is given in this
-[Design Assertion README file](../../hw/formal/README.md).
+[Design Assertion README file]({{< relref "hw/formal/README.md" >}}).
 This document also describes how to formally verify assertions using
 [JasperGold](https://www.cadence.com/content/cadence-www/global/en_US/home/tools/system-design-and-verification/formal-and-static-verification/jasper-gold-verification-platform/formal-property-verification-app.html)
 from the company Cadence.
@@ -132,7 +136,7 @@ In this context, our primary concern at this stage is what impact does this have
 
 DFT in OpenTitan is particularly interesting for two primary reasons:
 the RTL in the OpenTitan repository is targeted towards an FPGA implementation, but must be prepared for a silicon implementation
-(see the FPGA vs Silicon discussion in the [OpenTitan Product](../../doc/product.md) document);
+(see the FPGA vs Silicon discussion in the [OpenTitan Product]({{< relref "doc/product.md" >}}) document);
 the whole purpose of a DFT methodology is full and efficient access to all logic and storage content,
 while the whole purpose of a security microcontroller is restricting access to private secured information.
 In light of the latter dilemma, special care must be taken in a security design to ensure DFT has access at only the appropriate times, but not while in use in production.
@@ -153,7 +157,7 @@ But our first goal is to take full advantage of the language as much as possible
 At the moment, all generated code is checked in with the source files.
 The pros and cons of this decision are still being discussed, and the decision may be reversed, to be replaced with a master build-all script to prepare a final design as source files changed.
 Until that time, all generated files (see for example the output files from the
-[register generation tool](../rm/register_tool.md))
+[register generation tool]({{< relref "doc/rm/register_tool" >}}))
 are checked in.
 There is a master build file in the repository under `hw/Makefile` that builds all of the `regtool` content.
 This is used by an Azure Pipelines pre-submit check script to ensure that the source files produce a generated file that is identical to the one being submitted.
@@ -161,4 +165,4 @@ This is used by an Azure Pipelines pre-submit check script to ensure that the so
 ## Getting Started with a Design
 
 The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship assignments, documentation, etc.
-These are discussed in the [Getting Started with a Design](getting_started_design.md) document.
+These are discussed in the [Getting Started with a Design]({{< relref "getting_started_design.md" >}}) document.

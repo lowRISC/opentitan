@@ -7,11 +7,10 @@ to hw/ip/foo/doc/tb.svg. It should get linked and rendered under the block
 diagram section below. Please update / modify / remove sections below as
 applicable. Once done, remove this comment before making a PR. -->
 
-{{% lowrisc-doc-hdr FOO DV Plan }}
-<!-- TODO: uncomment the line below after adding the testplan -->
-<!-- {{% import_testplan ../data/foo_testplan.hjson }} -->
+---
+title: "FOO DV Plan"
+---
 
-{{% toc 4 }}
 
 ## Goals
 * **DV**
@@ -21,15 +20,15 @@ applicable. Once done, remove this comment before making a PR. -->
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage](../../../../doc/project/hw_dashboard.md)
-  * [HW development stages](../../../../doc/ug/hw_stages.md)
+* [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
+  * [HW development stages]({{< relref "doc/ug/hw_stages" >}})
 * DV regression results dashboard (link TBD)
 
 ## Design features
 For detailed information on FOO design features, please see the [FOO design specification](foo.md).
 
 ## Testbench architecture
-FOO testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+FOO testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
 ![Block diagram](tb.svg)
@@ -37,17 +36,17 @@ FOO testbench has been constructed based on the [CIP testbench architecture](../
 ### Top level testbench
 Top level testbench is located at `hw/ip/foo/dv/tb/tb.sv`. It instantiates the FOO DUT module `hw/ip/foo/rtl/foo.sv`.
 In addition, it instantiates the following interfaces and sets their handle into `uvm_config_db`:
-* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
-* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
+* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs/README" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * FOO IOs
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}}))
+* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}}))
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
-* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
@@ -59,7 +58,7 @@ All common types and methods defined at the package level can be found in
 [list a few parameters, types & methods; no need to mention all]
 ```
 ### TL_agent
-FOO testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
+FOO testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into FOO device.
 
@@ -70,7 +69,7 @@ TL host interface into FOO device.
 [Describe here or add link to its README]
 
 ### RAL
-The FOO RAL model is constructed using the [regtool.py script](../../../../util/reggen/README.md) and is placed at `env/foo_reg_block.sv`.
+The FOO RAL model is constructed using the [regtool.py script]({{< relref "util/reggen/README.md" >}}) and is placed at `env/foo_reg_block.sv`.
 
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
@@ -100,13 +99,13 @@ It creates the following analysis ports to retrieve the data monitored by corres
 <!-- explain inputs monitored, flow of data and outputs checked -->
 
 #### Assertions
-* TLUL assertions: The `tb/foo_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/foo_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * assert prop 1:
 * assert prop 2:
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../dv/tools/README.md) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
@@ -116,4 +115,4 @@ $ make TEST_NAME=foo_sanity
 
 ## Testplan
 <!-- TODO: uncomment the line below after adding the testplan -->
-<!-- {{% insert_testplan x }} -->
+{{</* testplan "../data/foo_testplan.hjson" */>}}

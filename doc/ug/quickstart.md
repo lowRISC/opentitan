@@ -1,10 +1,14 @@
+---
+title: "Quickstart"
+---
+
 # Quickstart
 
 The environment variable `$REPO_TOP` is the top-level of the git source tree.
 
 ## Simulation with Verilator
 
-_Make sure you followed the install instructions to [prepare the system](install_instructions.md#system-preparation) and to install the [software development tools](install_instructions.md#software-development) and [Verilator](install_instructions.md#verilator)._
+_Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "install_instructions#software-development" >}}) and [Verilator]({{< relref "install_instructions#verilator" >}})._
 
 Build the simulator and the software and then run the simulation
 
@@ -17,11 +21,11 @@ $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_v
 $ --flashinit=sw/device/examples/hello_world/sw.vmem
 ```
 
-See the [Getting Started with Verilator Guide](getting_started_verilator.md) for more information.
+See the [Getting Started with Verilator Guide]({{< relref "getting_started_verilator.md" >}}) for more information.
 
 ## Running on an FPGA
 
-_Make sure you followed the install instructions to [prepare the system](install_instructions.md#system-preparation) and to install the [software development tools](install_instructions.md#software-development)._
+_Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "install_instructions#software-development" >}})._
 
 Do you want to try out the design without installing EDA tools and waiting for a long build?
 Then you have come to the right place!
@@ -41,4 +45,4 @@ Once you have obtained these things, follow these steps to get started.
 4. TODO: include steps on how to build software, spiflash it, and expectations on what should be seen on the board when the software works.
 
 
-See the [Getting Started on FPGAs Guide](getting_started_fpga.md) for full instructions how to build your own bitstream.
+See the [Getting Started on FPGAs Guide]({{< relref "getting_started_fpga.md" >}}) for full instructions how to build your own bitstream.

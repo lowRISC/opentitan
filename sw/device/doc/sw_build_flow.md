@@ -1,6 +1,6 @@
-{{% lowrisc-doc-hdr SW build flow }}
-
-{{% toc 3 }}
+---
+title: "SW build flow"
+---
 
 **The custom Makefile flow has been deprecated in favor of Meson; see sw/README.md for details.** 
 **Makefiles will eventually be deleted from SW, and should not be relied upon.**

@@ -1,6 +1,8 @@
-{{% lowrisc-doc-hdr Primitive Component: LFSR }}
+---
+title: "Primitive Component: LFSR"
+---
 
-{{% section1 Overview }}
+# Overview
 
 `prim_lfsr` is a parameterized linear feedback shift register (LFSR)
 implementation that supports Galois (XOR form) and Fibonacci (XNOR form)
@@ -14,7 +16,7 @@ the Galois type and fall back to the Fibonacci type depending on the polynomial
 width availability in the lookup table (see below).
 
 
-{{% section2 Parameters }}
+## Parameters
 
 Name      | type   | Description
 ----------|--------|----------------------------------------------------------
@@ -26,7 +28,7 @@ Seed      | logic  | Initial state of the LFSR, must be nonzero for XOR and non-
 Custom    | logic  | Custom polynomial coefficients of length LfsrDw.
 MaxLenSVA | bit    | Enables maximum length assertions, use only in sim and FPV.
 
-{{% section2 Signal Interfaces }}
+## Signal Interfaces
 
 Name          | In/Out | Description
 --------------|--------|---------------------------------
@@ -34,7 +36,7 @@ en_i          | input  | Lfsr enable
 data_i[InDw]  | input  | Entropy input
 data_o[OutDw] | output | LFSR state output.
 
-{{% section1 Theory of Opeations }}
+# Theory of Opeations
 
 ```
            /-----------\

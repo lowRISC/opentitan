@@ -1,0 +1,6 @@
+{{ $baseName := .Get 0 }}
+{{ $path := path.Join .Site.Params.generatedRoot (printf "%s.hwcfg" $baseName) }}
+{{ if not (fileExists $path) }}
+  {{ errorf "hwcfg has not been generated for %s" $baseName }}
+{{ end }}
+{{ readFile $path | safeHTML }}

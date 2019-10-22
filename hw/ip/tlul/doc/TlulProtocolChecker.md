@@ -1,8 +1,9 @@
-{{% lowrisc-doc-hdr TL-UL Protocol Checker }}
+---
+title: "TL-UL Protocol Checker"
+---
 
 # TileLink-UL Protocol Checker
 
-{{% toc 3 }}
 
 ## **Overview**
 

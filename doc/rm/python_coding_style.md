@@ -1,4 +1,6 @@
-{{% lowrisc-doc-hdr Python Coding Style Guide }}
+---
+title: "Python Coding Style Guide"
+---
 
 ## Basics
 
@@ -17,7 +19,6 @@ The goals are to:
 *   promote best practices
 *   increase code sharing and re-use
 
-{{% toc 3 }}
 
 ### Terminology Conventions
 

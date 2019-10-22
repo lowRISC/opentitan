@@ -1,6 +1,7 @@
 ## Boot ROM Overview
 The boot ROM is always the first piece of code run in the system.
 At the moment, it serves 2 functions:
+
 * Bootstrap additional code if requested.
 * Jump to embedded flash and begin execution.
 
@@ -18,7 +19,7 @@ If bootstrap is true (the connected pin is driven to 1), the boot ROM initialize
 The executable image is broken down into 1KB frames and sent one by one by the host over spi.
 Each frame is made up of a header and associated payload.
 The header contains information such as a SHA256 hash of the entire frame, the frame numer and the flash location to which it should be programmed.
-See [spiflash](../host/spiflash/README.md) for more details.
+See [spiflash]({{< relref "sw/host/spiflash/README.md" >}}) for more details.
 
 The boot ROM and host communicate through a request / ACK interface.
 Upon receiving each frame, boot ROM computes the hash of that frame and sends it back to the host.

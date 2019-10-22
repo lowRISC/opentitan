@@ -1,4 +1,6 @@
-{{% lowrisc-doc-hdr Verilog Coding Style Guide }}
+---
+title: "Verilog Coding Style Guide"
+---
 
 ## Basics
 
@@ -22,7 +24,6 @@ Additionally, this style guide defines style for both synthesizable and test ben
 
 See the [Appendix](#appendix---condensed-style-guide) for a condensed tabular representation of this style guide.
 
-{{% toc 3 }}
 
 ### Terminology Conventions
 

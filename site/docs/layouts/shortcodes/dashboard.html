@@ -1,0 +1,15 @@
+<table class="hw-project-dashboard">
+	<thead>
+		<tr>
+			<th>Module</th>
+			<th>Version</th>
+			<th>Life Stage</th>
+			<th>Design Stage</th>
+			<th>Verification Stage</th>
+			<th>Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+{{ readFile (path.Join .Site.Params.generatedRoot (.Get 0) "dashboard") | safeHTML }}
+	</tbody>
+</table>

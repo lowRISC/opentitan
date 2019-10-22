@@ -1,17 +1,20 @@
+---
+title: "FPGA Reference Manual"
+---
+
 # FPGA Reference Manual
 
 This manual provides additional usage details about the FPGA.
 Specifically, it provides instructions on SW development flows, testing and bitfile release procedures.
 
-{{% toc 3 }}
 
 ## Usage Options
 
 There are two ways to use OpenTitan on the FPGA.
 - The first is to build the design from scratch using Vivado.
-  Refer to the [Getting Started FPGA](../ug/getting_started_fpga.md) guide for more information.
+  Refer to the [Getting Started FPGA]({{< relref "doc/ug/getting_started_fpga" >}}) guide for more information.
 - The second is to program the FPGA with a released bitfile using storage devices.
-  Refer to the [Quickstart Guide](../ug/quickstart.md) guide for instructions on this approach.
+  Refer to the [Quickstart Guide]({{< relref "doc/ug/quickstart" >}}) guide for instructions on this approach.
 
 ## FPGA SW Development Flow
 
@@ -41,7 +44,7 @@ $ ./util/fpga/splice_nexysvideo.sh
 $ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
-The script assumes that there is an existing bitfile `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga](../ug/fpga/getting_started_fpga.md)).
+The script assumes that there is an existing bitfile `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga]({{< relref "doc/ug/getting_started_fpga" >}})).
 
 The script rebuilds the contents in `sw/devices/boot_rom` and then creates a new bitfile of the same name at the same location.
 The original input bitfile is moved to `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit.orig`.
@@ -52,7 +55,7 @@ The fusesoc command can then be directly invoked to flash the FPGA.
 
 After building, the FPGA bitstream contains only the boot ROM.
 Using this boot ROM, the FPGA is able to load additional software to the emulated flash, such as software in the `sw/device/benchmark`, `sw/device/examples` and `sw/device/tests` directories.
-To load additional software, a custom load tool named [spiflash](../../sw/host/spiflash/README.md) is required.
+To load additional software, a custom load tool named [spiflash]({{< relref "sw/host/spiflash/README.md" >}}) is required.
 
 Once the tool is built, also build the binary you wish to load.
 For the purpose of this demonstration, we will use `sw/device/examples/hello_world`, but it applies to any software image that is able to fit in the emulated flash space.
@@ -75,11 +78,11 @@ frame: 0x00000004 to offset: 0x00000f60
 frame: 0x80000005 to offset: 0x00001338
 ```
 
-For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme](../../sw/device/boot_rom/README.md).
+For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/boot_rom/README.md" >}}).
 
 ## FPGA Testing and Release Procedure
 
-As mentioned in [quick_start](../ug/fpga/quick_start_fpga.md), golden bitfiles will be released.
+As mentioned in [quick_start]({{< relref "doc/ug/quickstart" >}}), golden bitfiles will be released.
 Before release, a check process will be performed on the release git-tag to ensure the FPGA bitstream is functional.
 The [checks to be performed are](link script later):
     * FPGA is built without issues.

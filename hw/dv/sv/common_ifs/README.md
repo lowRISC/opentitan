@@ -1,6 +1,5 @@
 # Common interfaces
 
-{{% toc 4 }}
 
 ## Overview
 In this directory, we provide commonly used interfaces to construct testbenches for DV.

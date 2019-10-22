@@ -1,6 +1,5 @@
 # CSR utilities
 
-{{% toc 4 }}
 
 This csr_utils folder intends to implement CSR related methods and test sequences for DV
 to share across all testbenches.
@@ -117,6 +116,6 @@ Examples of useful functions in this class are:
   and is not intended to use externally
 
 ### CSR sequence framework
-The [cip_lib](../cip_lib/README.md) includes a virtual sequence named `cip_base_vseq`,
+The [cip_lib]({{< relref "hw/dv/sv/cip_lib/doc" >}}) includes a virtual sequence named `cip_base_vseq`,
 that provides a common framework for all testbenchs to run these CSR test sequences and
 add exclusions.

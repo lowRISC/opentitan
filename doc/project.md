@@ -1,6 +1,6 @@
 # Introduction to the OpenTitan Project
 
-&lt;Deeper dive into what the project is all about, as compared to intro paragraph on bubble server.
+&lt;Deeper dive into what the project is all about, as compared to intro paragraph.
 Open source strategy; History; Who are we?; Etc (more deep from the intro paragraph)&gt;
 
 ## OpenTitan project governance

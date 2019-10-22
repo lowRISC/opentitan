@@ -1,0 +1,46 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# CAUTION: Use util/build_docs.py to generate the documentation site.  There
+# are pre-processing steps that are not yet integrated into the hugo-based
+# build.
+
+assetDir = "site/docs/assets"
+baseURL = "https://docs.opentitan.org"
+disablePathToLower = true
+contentDir = "../.."
+resourceDir = "build/docs-resources"
+ignoreFiles = [
+  ".*\\.S$",
+  ".*\\.bin$",
+  ".*\\.c$",
+  ".*\\.cfg$",
+  ".*\\.core$",
+  ".*\\.dat$",
+  ".*\\.f$",
+  ".*\\.h$",
+  ".*\\.hjson$",
+  ".*\\.ld$",
+  ".*\\.mk$",
+  ".*\\.o$",
+  ".*\\.py$",
+  ".*\\.sh$",
+  ".*\\.sv$",
+  ".*\\.svh$",
+  ".*\\.tcl$",
+  ".*\\.tpl$",
+  ".*\\.txt$",
+  ".*\\.xdc$",
+  ".*\\.yml$",
+  "/build/*",
+  "/hw/vendor/*",
+  "/site/*",
+  "Makefile$",
+]
+pygmentsCodeFences = true
+pygmentsStyle = "github"
+disableKinds = ["taxonomy", "taxonomyTerm", "RSS", "sitemap"]
+
+[params]
+generatedRoot = "build/docs-generated"
