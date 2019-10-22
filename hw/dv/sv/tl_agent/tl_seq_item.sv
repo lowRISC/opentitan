@@ -195,9 +195,9 @@ class tl_seq_item extends uvm_sequence_item;
                                    cm_mask_w_addr, cm_mask_in_enabled_lanes,
                                    cm_addr_size_align, cm_max_size) with {
                                    // at least one constraint_mode is off
-                                   !(cm_a_opcode & & cm_mask_w_PutFullData &
-                                   cm_mask_w_addr & cm_mask_in_enabled_lanes &
-                                   cm_addr_size_align & cm_max_size);
+                                   !(cm_a_opcode && cm_mask_w_PutFullData &&
+                                   cm_mask_w_addr && cm_mask_in_enabled_lanes &&
+                                   cm_addr_size_align && cm_max_size);
                                    })
     a_opcode_c.constraint_mode(cm_a_opcode);
     mask_w_PutFullData_c.constraint_mode(cm_mask_w_PutFullData);
