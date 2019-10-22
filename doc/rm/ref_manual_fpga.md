@@ -26,10 +26,10 @@ This binary is used to initialize internal FPGA memory and is part of the bitstr
 
 To update this content without rebuilding the FPGA, a flow is required to splice a new boot ROM binary into the bitstream.
 There are two prerequisites in order for this flow to work:
-    * The boot ROM during the build process must be correctly inferred by the tool.
-      * See [prim_rom](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim_xilinx/rtl/prim_xilinx_rom.sv).
-    * The boot ROM's physical location must be fixed.
-      * See [placement.xdc](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/data/placement.xdc).
+* The boot ROM during the build process must be correctly inferred by the tool.
+  * See [prim_rom](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim_xilinx/rtl/prim_xilinx_rom.sv).
+* The boot ROM's physical location must be fixed.
+  * See [placement.xdc](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/data/placement.xdc).
 
 With these steps in place, a script can be invoked to take a new binary and push its contents into an existing bitfile.
 For details, please see the [`splice_nexysvideo.sh` script](https://github.com/lowRISC/opentitan/blob/master/util/fpga/splice_nexysvideo.sh).
@@ -42,7 +42,7 @@ $ ./util/fpga/splice_nexysvideo.sh
 $ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
-The script assumes that there is an existing bitfile `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga](getting_started_fpga.md)).
+The script assumes that there is an existing bitfile `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga](../ug/fpga/getting_started_fpga.md)).
 
 The script rebuilds the contents in `sw/devices/boot_rom` and then creates a new bitfile of the same name at the same location.
 The original input bitfile is moved to `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit.orig`.
@@ -76,7 +76,7 @@ frame: 0x00000004 to offset: 0x00000f60
 frame: 0x80000005 to offset: 0x00001338
 ```
 
-For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to [here](../../sw/device/boot_rom/README.md).
+For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme](../../sw/device/boot_rom/README.md).
 
 ## FPGA Testing and Release Procedure
 
