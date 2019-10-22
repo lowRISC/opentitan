@@ -9,7 +9,7 @@
   * [Getting started on FPGAs](getting_started_fpga.md)
     * [Obtaining an FPGA board](fpga_boards.md)
     * [Installing Xilinx Vivado](install_instructions.md#xilinx-vivado)
-  * *Getting started with a design* (TODO)
+  * [Getting started with a design](getting_started_design.md)
   * *Getting started with verification* (TODO)
 * [Work with hardware code in external repositories](vendor_hw.md)
 * [Hardware Development Stages](hw_stages.md)
