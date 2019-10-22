@@ -29,9 +29,14 @@ module uartdpi #(
     void uartdpi_write(input chandle ctx, int data);
 
   chandle ctx;
+  int file_handle;
+  string file_name;
 
   initial begin
     ctx = uartdpi_create(NAME);
+    $sformat(file_name, "%s.log", NAME);
+    file_handle = $fopen(file_name, "w");
+    $fwrite(file_handle, $sformatf("this file is opened %s\n", 32'h60616263));
   end
 
   // TX
@@ -107,6 +112,7 @@ module uartdpi #(
             rxactive <= 0;
             if (rx_i) begin
               uartdpi_write(ctx, rxsymbol);
+              $fwrite(file_handle, "%c", rxsymbol);
             end
           end
         end
