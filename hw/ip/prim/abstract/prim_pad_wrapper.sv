@@ -7,11 +7,11 @@
 
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
 module prim_pad_wrapper #(
-  parameter int          Impl   = `PRIM_DEFAULT_IMPL,
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL,
   parameter int unsigned AttrDw = 6
 ) (
   inout  wire        inout_io, // bidirectional pad
@@ -25,7 +25,7 @@ module prim_pad_wrapper #(
   import prim_pkg::*;
 
   // The generic implementation is NOT synthesizable
-  if (impl_e'(Impl) == ImplGeneric) begin : gen_pad_generic
+  if (Impl == ImplGeneric) begin : gen_pad_generic
     prim_generic_pad_wrapper #(
       .AttrDw(AttrDw)
     ) i_pad_wrapper (
@@ -35,7 +35,7 @@ module prim_pad_wrapper #(
       .oe_i,
       .attr_i
     );
-  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_pad_xilinx
+  end else if (Impl == ImplXilinx) begin : gen_pad_xilinx
     prim_xilinx_pad_wrapper #(
       .AttrDw(AttrDw)
     ) i_pad_wrapper (

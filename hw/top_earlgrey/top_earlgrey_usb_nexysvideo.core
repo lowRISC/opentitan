@@ -31,9 +31,9 @@ parameters:
     default: "../../../../../sw/examples/hello_usbdev/hello_usbdev.vmem"
     paramtype: vlogdefine
   PRIM_DEFAULT_IMPL:
-    datatype: int
+    datatype: str
     paramtype: vlogdefine
-    description: Primitives implementation to use. 0=Generic, 1=Xilinx
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
 
 targets:
   synth:
@@ -44,7 +44,7 @@ targets:
     toplevel: top_earlgrey_usb_nexysvideo
     parameters:
       - SRAM_INIT_FILE
-      - PRIM_DEFAULT_IMPL=1 # xilinx
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:
         part: "xc7a200tsbg484-1" # Nexys Video

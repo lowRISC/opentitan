@@ -21,14 +21,14 @@ filesets:
 parameters:
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
-    datatype: int
+    datatype: str
     paramtype: vlogdefine
-    description: Primitives implementation to use. 0=Generic, 1=Xilinx
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
 
 targets:
   sim:
     parameters:
-      - PRIM_DEFAULT_IMPL=0 # generic
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     default_tool: verilator
     filesets:
       - files_sim_verilator

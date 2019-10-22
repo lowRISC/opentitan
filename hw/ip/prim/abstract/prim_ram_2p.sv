@@ -7,11 +7,11 @@
 
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
 module prim_ram_2p #(
-  parameter integer Impl  = `PRIM_DEFAULT_IMPL,
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL,
 
   parameter int Width = 32, // bit
   parameter int Depth = 128,
@@ -39,7 +39,7 @@ module prim_ram_2p #(
 
   `ASSERT_INIT(paramCheckAw, Aw == $clog2(Depth))
 
-  if (impl_e'(Impl) == ImplGeneric) begin : gen_mem_generic
+  if (Impl == ImplGeneric) begin : gen_mem_generic
     prim_generic_ram_2p #(
       .Width(Width),
       .Depth(Depth)
@@ -57,7 +57,7 @@ module prim_ram_2p #(
       .b_wdata_i,
       .b_rdata_o
     );
-  end else if (impl_e'(Impl) == ImplXilinx) begin : gen_mem_xilinx
+  end else if (Impl == ImplXilinx) begin : gen_mem_xilinx
     prim_xilinx_ram_2p #(
       .Width(Width),
       .Depth(Depth)

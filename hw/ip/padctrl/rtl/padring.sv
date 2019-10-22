@@ -8,11 +8,11 @@
 //
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
 module padring #(
-  parameter integer Impl = `PRIM_DEFAULT_IMPL // this determines the pad implementation
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL // this determines the pad implementation
 ) (
   // pad input
   input wire                                   clk_pad_i,

@@ -6,10 +6,10 @@
 // "abstract module". This module is to be replaced by generated code.
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 module prim_rom #(
-  parameter integer Impl  = `PRIM_DEFAULT_IMPL,
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL,
   parameter int Width = 32,
   parameter int Depth = 2048, // 8kB default
   parameter int Aw    = $clog2(Depth)
@@ -24,7 +24,7 @@ module prim_rom #(
 
   import prim_pkg::*;
 
-  if (impl_e'(Impl) == ImplGeneric) begin: gen_mem_generic
+  if (Impl == ImplGeneric) begin: gen_mem_generic
     prim_generic_rom #(
       .Width(Width),
       .Depth(Depth)
@@ -36,7 +36,7 @@ module prim_rom #(
       .dout_o,
       .dvalid_o
     );
-  end else if (impl_e'(Impl) == ImplXilinx) begin: gen_rom_xilinx
+  end else if (Impl == ImplXilinx) begin: gen_rom_xilinx
     prim_xilinx_rom #(
       .Width(Width),
       .Depth(Depth)

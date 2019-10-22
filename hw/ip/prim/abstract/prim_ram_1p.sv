@@ -6,11 +6,11 @@
 // "abstract module". This module is to be replaced by generated code.
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL integer'(prim_pkg::ImplGeneric)
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
 module prim_ram_1p #(
-  parameter integer Impl            = `PRIM_DEFAULT_IMPL,
+  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL,
 
   parameter int Width           = 32, // bit
   parameter int Depth           = 128,
@@ -33,7 +33,7 @@ module prim_ram_1p #(
 
   `ASSERT_INIT(paramCheckAw, Aw == $clog2(Depth))
 
-  if (impl_e'(Impl) == ImplGeneric || impl_e'(Impl) == ImplXilinx) begin : gen_mem_generic
+  if (Impl == ImplGeneric || Impl == ImplXilinx) begin : gen_mem_generic
     prim_generic_ram_1p #(
       .Width(Width),
       .Depth(Depth),
