@@ -144,7 +144,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
-      if (write) csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+      if (write) begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
 
       // need to store uart_tx/tx_clk_pulses earlier to predict reg value correctly
       uart_tx_clk_pulses   = uart_vif.uart_tx_clk_pulses;
@@ -216,12 +218,12 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               tx_processing_item_q.push_back(tx_q.pop_front());
             end
             tx_q.delete();
-            ral.fifo_ctrl.txrst.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+            void'(ral.fifo_ctrl.txrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
             if (!tx_enabled) process_objections(1'b0);
           end
           if (ral.fifo_ctrl.rxrst.get_mirrored_value()) begin
             rx_q.delete();
-            ral.fifo_ctrl.rxrst.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+            void'(ral.fifo_ctrl.rxrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
           end
           // recalculate watermark when RXILVL/TXILVL is updated
           predict_tx_watermark_intr();
@@ -232,7 +234,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         if (write && channel == AddrChannel) begin
           intr_exp |= item.a_data;
           // this field is WO - always returns 0
-          csr.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+          void'(csr.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
         end
       end
       "status": begin
@@ -355,7 +357,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               `uvm_error(`gfn, "unexpected read when fifo is empty")
             end // rx_q.size() == 0
           end else begin //DataChannel
-            csr.predict(.value(rdata_exp), .kind(UVM_PREDICT_READ));
+            void'(csr.predict(.value(rdata_exp), .kind(UVM_PREDICT_READ)));
           end // channel == DataChannel
         end // !write
       end
@@ -369,7 +371,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             DataChannel: begin // check at data phase
               bit [5:0] txlvl_act, rxlvl_act;
 
-              csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ));
+              void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
               txlvl_act = ral.fifo_status.txlvl.get_mirrored_value();
               rxlvl_act = ral.fifo_status.rxlvl.get_mirrored_value();
 
@@ -424,7 +426,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ));
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
 

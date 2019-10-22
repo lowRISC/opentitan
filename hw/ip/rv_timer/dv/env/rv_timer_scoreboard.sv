@@ -57,7 +57,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
         for (int i = 0; i < NUM_HARTS; i++) begin
           if (csr_name == $sformatf("intr_state%0d", i)) begin
             if ((intr_status_exp[i] != csr.get_mirrored_value()) & (ignore_period[i] == 'b0)) begin
-              csr.predict(.value(intr_status_exp[i]), .kind(UVM_PREDICT_READ));
+              void'(csr.predict(.value(intr_status_exp[i]), .kind(UVM_PREDICT_READ)));
             end
             break;
           end
@@ -72,7 +72,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (write && channel == AddrChannel) begin
-      csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
       // process the csr req
       case (1)
@@ -143,7 +143,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
             if (csr_name == intr_test_str) begin
               uint intr_test_val = get_reg_fld_mirror_value(ral, intr_test_str);
               // this field is WO - always returns 0
-              csr.predict(.value(0), .kind(UVM_PREDICT_WRITE));
+              void'(csr.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
               foreach (intr_test_val[j]) begin
                 int intr_pin_idx = i * NUM_TIMERS + j;
                 if (intr_test_val[j]) intr_status_exp[i][j] = intr_test_val[j];
@@ -196,7 +196,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
           `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
         end
 
-        csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ));
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       end
     end
   endtask

@@ -14,10 +14,6 @@
 //      gpio masked output enable upper
 class gpio_random_dout_din_vseq extends gpio_base_vseq;
 
-  constraint num_trans_c {
-    num_trans inside {[20:200]};
-  }
-
   `uvm_object_utils(gpio_random_dout_din_vseq)
   `uvm_object_new
 

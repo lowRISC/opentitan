@@ -15,10 +15,6 @@
 //      INTR_CTRL_EN_RISING
 class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
 
-  constraint num_trans_c {
-    num_trans inside {[20:200]};
-  }
-
   `uvm_object_utils(gpio_intr_rand_pgm_vseq)
   `uvm_object_new
 

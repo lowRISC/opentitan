@@ -9,10 +9,6 @@
 //      gpio masked outputs and gpio masked output enables.
 class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
 
-  constraint num_trans_c {
-    num_trans inside {[20:200]};
-  }
-
   `uvm_object_utils(gpio_dout_din_regs_random_rw_vseq)
   `uvm_object_new
 

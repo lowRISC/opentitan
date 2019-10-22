@@ -65,11 +65,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         end
       end else begin
         // csr write: predict and update according to the csr names
-        csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
         case (csr.get_name())
           "cmd":              {hmac_process, hmac_start} = item.a_data[1:0];
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
-            ral.intr_state.predict(.value(item.a_data), .kind(UVM_PREDICT_DIRECT));
+            void'(ral.intr_state.predict(.value(item.a_data), .kind(UVM_PREDICT_DIRECT)));
           end
           "cfg": cov.cfg_cg.sample(item.a_data);
           "wipe_secret", "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
@@ -104,7 +104,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           bit [TL_DW-1:0] hmac_status_data = (fifo_empty << HmacStaMsgFifoEmpty) |
                                              (fifo_full << HmacStaMsgFifoFull) |
                                              (hmac_fifo_depth << HmacStaMsgFifoDepth);
-          ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ));
+          void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
         end
       return;
     end
@@ -148,7 +148,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                                   csr.get_name(), csr.get_mirrored_value()), UVM_HIGH);
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
       end
-      csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ));
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
 
@@ -170,7 +170,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     @(negedge cfg.clk_rst_vif.clk);
     hmac_wr_cnt ++;
     if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
-      ral.intr_state.fifo_full.predict(1);
+      void'(ral.intr_state.fifo_full.predict(1));
     end
   endtask
 
@@ -265,20 +265,20 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         exp_digest = '{default:0};
       end
     endcase
-    ral.digest0.predict(exp_digest[0]);
-    ral.digest1.predict(exp_digest[1]);
-    ral.digest2.predict(exp_digest[2]);
-    ral.digest3.predict(exp_digest[3]);
-    ral.digest4.predict(exp_digest[4]);
-    ral.digest5.predict(exp_digest[5]);
-    ral.digest6.predict(exp_digest[6]);
-    ral.digest7.predict(exp_digest[7]);
+    void'(ral.digest0.predict(exp_digest[0]));
+    void'(ral.digest1.predict(exp_digest[1]));
+    void'(ral.digest2.predict(exp_digest[2]));
+    void'(ral.digest3.predict(exp_digest[3]));
+    void'(ral.digest4.predict(exp_digest[4]));
+    void'(ral.digest5.predict(exp_digest[5]));
+    void'(ral.digest6.predict(exp_digest[6]));
+    void'(ral.digest7.predict(exp_digest[7]));
   endfunction
 
   virtual function update_wr_msg_length(int size_bytes);
     uint64 size_bits = size_bytes * 8;
-    ral.msg_length_upper.predict(size_bits[TL_DW*2-1:TL_DW]);
-    ral.msg_length_lower.predict(size_bits[TL_DW-1:0]);
+    void'(ral.msg_length_upper.predict(size_bits[TL_DW*2-1:TL_DW]));
+    void'(ral.msg_length_lower.predict(size_bits[TL_DW-1:0]));
   endfunction
 
 endclass

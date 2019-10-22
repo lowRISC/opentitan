@@ -18,10 +18,6 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
   // gpio input pin value stable
   rand uint stable_cycles_per_pin [NUM_GPIOS];
 
-  constraint num_trans_c {
-    num_trans inside {[20:200]};
-  }
-
   constraint stable_cycles_for_input_c {
     foreach (stable_cycles_per_pin[i])
       stable_cycles_per_pin[i] dist { [1:FILTER_CYCLES-1] :/ 70,
