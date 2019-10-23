@@ -77,6 +77,27 @@ Optional parts can be removed if they are not used.
 }
 ```
 
+If only the contents of a single subdirectory (including its children) of an upstream repository are to be copied in, the optional `only_subdir` key of can be used in the `upstream` section to specify the subdirectory to be copied in.
+The contents of that subdirectory will populate the `target_dir` directly (without any intervening directory levels).
+
+In the example vendor description file below, the mpsse directory is populated from the chromiumos platform2 repository, extracting just the few files in the trunks/ftdi subdirectory.
+
+```
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "mpsse",
+  target_dir: "mpsse",
+
+  upstream: {
+    url: "https://chromium.googlesource.com/chromiumos/platform2/",
+    rev: "master",
+    only_subdir: "trunks/ftdi",
+  },
+}
+```
+
 ## Examples
 
 ### Update code and commit the new code

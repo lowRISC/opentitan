@@ -149,7 +149,7 @@ def produce_shortlog(clone_dir, old_rev, new_rev):
     cmd = [
         'git', '-C',
         str(clone_dir), 'log', '--pretty=format:%s (%aN)', '--no-merges',
-        old_rev + '..' + new_rev
+        old_rev + '..' + new_rev, '.'
     ]
     try:
         proc = subprocess.run(cmd,
@@ -363,6 +363,16 @@ def main(argv):
         upstream_new_rev = clone_git_repo(desc['upstream']['url'], clone_dir,
                                           desc['upstream']['rev'])
 
+        upstream_only_subdir = ''
+        clone_subdir = clone_dir
+        if 'only_subdir' in desc['upstream']:
+            upstream_only_subdir = desc['upstream']['only_subdir']
+            clone_subdir = clone_dir / upstream_only_subdir
+            if not clone_subdir.is_dir():
+                log.fatal("subdir '%s' does not exist in repo", upstream_only_subdir)
+                raise SystemExit(1)
+
+
         # apply patches to upstream sources
         if 'patch_dir' in desc:
             patches = path_resolve(desc['patch_dir'],
@@ -378,7 +388,7 @@ def main(argv):
         exclude_files += EXCLUDE_ALWAYS
 
         import_from_upstream(
-            clone_dir, path_resolve(desc['target_dir'], vendor_file_base_dir),
+            clone_subdir, path_resolve(desc['target_dir'], vendor_file_base_dir),
             exclude_files)
 
         # get shortlog
@@ -398,7 +408,7 @@ def main(argv):
 
         shortlog = None
         if get_shortlog:
-            shortlog = produce_shortlog(clone_dir, lock['upstream']['rev'],
+            shortlog = produce_shortlog(clone_subdir, lock['upstream']['rev'],
                                         upstream_new_rev)
 
             # Ensure fully-qualified issue/PR references for GitHub repos
@@ -422,7 +432,7 @@ def main(argv):
 
         # Commit changes
         if args.commit:
-            sha_short = git_get_short_rev(clone_dir, upstream_new_rev)
+            sha_short = git_get_short_rev(clone_subdir, upstream_new_rev)
 
             repo_info = github_parse_url(desc['upstream']['url'])
             if repo_info is not None:
@@ -430,8 +440,11 @@ def main(argv):
                                           sha_short)
 
             commit_msg_subject = 'Update %s to %s' % (desc['name'], sha_short)
-            intro = 'Update code from upstream repository %s to revision %s' % (
-                desc['upstream']['url'], upstream_new_rev)
+            subdir_msg = ' '
+            if upstream_only_subdir:
+                subdir_msg = ' subdir %s in ' % upstream_only_subdir
+            intro = 'Update code from%supstream repository %s to revision %s' % (
+                subdir_msg, desc['upstream']['url'], upstream_new_rev)
             commit_msg_body = textwrap.fill(intro, width=70)
 
             if shortlog:
