@@ -40,11 +40,6 @@ $(ips_reg):
 		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 		${PRJ_DIR}/util/regtool.py -s -t ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/dv/env \
 		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
-	else if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson ]; then \
-		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson; \
-		${PRJ_DIR}/util/regtool.py -s -t ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/dv/env \
-		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson; \
-	fi \
 	fi
 
 regs-header: $(ips_reg_header)
@@ -53,11 +48,6 @@ $(ips_reg_header):
 		[[ -d ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/sw ]] || mkdir ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/sw; \
 		${PRJ_DIR}/util/regtool.py -D -o ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/sw/$(subst _reg_header,_reg_headers,$@).h\
 		${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson; \
-	else if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$@.hjson ]; then \
-		[[ -d ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/sw ]] || mkdir ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/sw; \
-		${PRJ_DIR}/util/regtool.py -D -o ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/sw/$(subst _reg_header,_reg_headers,$@).h \
-		${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$@.hjson; \
-	fi \
 	fi
 
 clean-regs-header:
