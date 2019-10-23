@@ -2,16 +2,13 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:common_ifs"
+name: "lowrisc:dv:pins_if"
 description: "Common interfaces used in DV"
 
 filesets:
   files_dv:
-    depend:
-      - lowrisc:dv:pins_if
     files:
-      - clk_if.sv
-      - clk_rst_if.sv
+      - pins_if.sv
     file_type: systemVerilogSource
 
 targets:

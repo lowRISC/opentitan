@@ -7,6 +7,7 @@ description: "PIINMUX FPV target"
 filesets:
   files_fpv:
     depend:
+      - lowrisc:ip:tlul
       - lowrisc:ip:pinmux
     files:
       - tb/pinmux_tb.sv

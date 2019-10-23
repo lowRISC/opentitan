@@ -4,7 +4,9 @@
 
 module usbdev_bind;
 
-  bind usbdev tlul_assert tlul_assert_host (
+  bind usbdev tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_d_i),

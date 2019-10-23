@@ -159,6 +159,15 @@
      else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end \
 `endif
 
+// Assume an immediate property
+`define ASSUME_I(__name, __prop)                                       \
+`ifndef VERILATOR                                                      \
+  //pragma translate_off                                               \
+  __name: assume (__prop)                                              \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) \
+  //pragma translate_on                                                \
+`endif
+
 //////////////////////////////////
 // For formal verification only //
 //////////////////////////////////
@@ -171,6 +180,13 @@
 `define ASSUME_FPV(__name, __prop, __clk, __rst) \
 `ifdef FPV_ON                                    \
    `ASSUME(__name, __prop, __clk, __rst)         \
+`endif
+
+// ASSUME_I_FPV
+// Assume a concurrent property during formal verification only.
+`define ASSUME_I_FPV(__name, __prop)             \
+`ifdef FPV_ON                                    \
+   `ASSUME_I(__name, __prop)                     \
 `endif
 
 // COVER_FPV

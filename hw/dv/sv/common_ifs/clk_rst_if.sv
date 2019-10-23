@@ -19,10 +19,12 @@ interface clk_rst_if #(
   inout rst_n
 );
 
+`ifndef VERILATOR
   // include macros and import pkgs
   `include "dv_macros.svh"
   `include "uvm_macros.svh"
   import uvm_pkg::*;
+`endif
 
   bit drive_clk;              // enable clk generation
   logic o_clk;                // output clk
@@ -81,7 +83,11 @@ interface clk_rst_if #(
       drive_rst_n = drive_rst_n_val;
     end
     else begin
+`ifdef VERILATOR
+      $error({msg_id, "this function can only be called at t=0"});
+`else
       `uvm_fatal(msg_id, "this function can only be called at t=0")
+`endif
     end
   endfunction
 
@@ -95,7 +101,11 @@ interface clk_rst_if #(
   // set the duty cycle (1-99)
   function automatic void set_duty_cycle(int duty);
     if (!(duty inside {[1:99]})) begin
+`ifdef VERILATOR
+      $error({msg_id, $sformatf("duty cycle %0d is not inside [1:99]", duty)});
+`else
       `uvm_fatal(msg_id, $sformatf("duty cycle %0d is not inside [1:99]", duty))
+`endif
     end
     duty_cycle = duty;
     recompute = 1'b1;
@@ -110,7 +120,11 @@ interface clk_rst_if #(
   // 0 - dont add any jitter; 100 - add jitter on every clock edge
   function automatic void set_jitter_chance_pc(int jitter_chance);
     if (!(jitter_chance inside {[0:100]})) begin
+`ifdef VERILATOR
+      $error({msg_id, $sformatf("jitter_chance %0d is not inside [0:100]", jitter_chance)});
+`else
       `uvm_fatal(msg_id, $sformatf("jitter_chance %0d is not inside [0:100]", jitter_chance))
+`endif
     end
     jitter_chance_pc = jitter_chance;
   endfunction
@@ -130,13 +144,17 @@ interface clk_rst_if #(
   function automatic void add_jitter();
     int jitter_ps;
     if ($urandom_range(1, 100) <= jitter_chance_pc) begin
+`ifndef VERILATOR
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(jitter_ps,
           jitter_ps inside {[-1*max_jitter_ps:max_jitter_ps]};, "", msg_id)
+`endif
       clk_hi_ps += jitter_ps;
     end
     if ($urandom_range(1, 100) <= jitter_chance_pc) begin
+`ifndef VERILATOR
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(jitter_ps,
           jitter_ps inside {[-1*max_jitter_ps:max_jitter_ps]};, "", msg_id)
+`endif
       clk_lo_ps += jitter_ps;
     end
   endfunction

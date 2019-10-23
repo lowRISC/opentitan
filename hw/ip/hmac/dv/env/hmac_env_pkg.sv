@@ -65,6 +65,7 @@ package hmac_env_pkg;
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
+  typedef virtual pins_if #(1) d2h_a_ready_vif;
 
   // functions
 

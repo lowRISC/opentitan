@@ -4,7 +4,9 @@
 
 module tlul_adapter_sram_bind;
 
-  bind tlul_adapter_sram tlul_assert tlul_assert_host (
+  bind tlul_adapter_sram tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_host (
     .clk_i,
     .rst_ni,
     .h2d    (tl_i),

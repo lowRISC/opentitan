@@ -4,7 +4,9 @@
 
 module uart_bind;
 
-  bind uart tlul_assert tlul_assert_host (
+  bind uart tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),

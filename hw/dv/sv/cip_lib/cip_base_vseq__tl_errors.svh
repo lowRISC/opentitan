@@ -116,7 +116,7 @@ virtual task run_tl_errors_vseq(int num_times = 1);
   bit test_mem_err_byte_write = (cfg.mem_addrs.size > 0) && !cfg.en_mem_byte_write;
   bit test_mem_err_read       = (cfg.mem_addrs.size > 0) && !cfg.en_mem_read;
   `uvm_info(`gfn, "Running run_tl_errors_vseq", UVM_LOW)
-  cfg.tlul_assert_vif.disable_sva_for_tl_errors();
+  cfg.tlul_assert_ctrl_vif.drive(1'b0);
 
   for (int trans = 1; trans <= num_times; trans++) begin
     if (cfg.en_devmode == 1) begin
@@ -138,7 +138,7 @@ virtual task run_tl_errors_vseq(int num_times = 1);
     join_none
     wait fork;
   end // for
-  cfg.tlul_assert_vif.enable_sva_for_tl_errors();
+  cfg.tlul_assert_ctrl_vif.drive(1'b1);
 endtask : run_tl_errors_vseq
 
 `undef create_tl_access_error_case
