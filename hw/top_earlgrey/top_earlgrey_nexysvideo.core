@@ -19,6 +19,13 @@ filesets:
       - data/placement.xdc
     file_type: xdc
 
+  files_tcl:
+    files:
+      - util/vivado_setup_hooks.tcl: { file_type: tclSource }
+      # File copied by fusesoc into the workroot (the file containing the
+      # .eda.yml file), and referenced from vivado_setup_hooks.tcl
+      - util/vivado_hook_write_bitstream_pre.tcl: { file_type: data, copyto: vivado_hook_write_bitstream_pre.tcl }
+
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
@@ -42,6 +49,7 @@ targets:
     filesets:
       - files_rtl_nexysvideo
       - files_constraints
+      - files_tcl
     toplevel: top_earlgrey_nexysvideo
     parameters:
       - ROM_INIT_FILE
