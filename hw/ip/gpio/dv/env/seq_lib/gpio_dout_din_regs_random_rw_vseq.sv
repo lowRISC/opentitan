@@ -43,8 +43,6 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
         1: begin
           `uvm_info(`gfn, $sformatf("Transaction-%0d: program a random gpio register", tr_num),
                     UVM_HIGH)
-          // TODO-Rather than not driving all gpio inputs, drive them such that
-          // there is no "multiple drivers" case on any of the pins
           // First, stop driving gpio_i
           undrive_gpio_in();
           // Randomize csr value
