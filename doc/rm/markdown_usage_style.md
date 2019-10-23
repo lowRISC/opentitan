@@ -150,7 +150,10 @@ Note that there are several incomplete descriptions of wavejson, the syntax supp
 An online editor for wavejson can be found on the [WaveDrom](https://wavedrom.com/) website.
 The processor built in to `docgen` should produce the identical output, but has one extension that `cdata` may be used in place of `data` to allow labeling all bit positions not just the `2345` ones.
 
+### Text Format
 
+Where possible, please restrict markdown text to the ASCII character set to avoid downstream tool issues.
+Unicode may be used when referring to proper names.
 
 ### Comments
 
