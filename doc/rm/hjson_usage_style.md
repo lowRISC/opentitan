@@ -56,6 +56,11 @@ For example:
         '''
 ```
 
+### Text Format
+
+Where possible, please restrict Hjson text to the ASCII character set to avoid downstream tool issues.
+Unicode may be used when referring to proper names.
+
 ### File delimiters and header
 
 ***Use `{}` to delimit the file***
@@ -100,7 +105,7 @@ The quotes may be included as an exception to the style guide if there is an exp
 The valid keys for each tool are described in the tool documentation.
 The style is for a simple value to be in quotes (even if it is a number) and the tool should manage any type conversions.
 
-In some cases hjson allows the quotes to be omitted from values, but this is not recommended because the value string will not be terminated by a comma so there is potential for confusion when multiple key-value pairs are put on the same line.
+In some cases Hjson allows the quotes to be omitted from values, but this is not recommended because the value string will not be terminated by a comma so there is potential for confusion when multiple key-value pairs are put on the same line.
 For example:
 
 ```hjson {.good}
