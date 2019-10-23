@@ -26,8 +26,9 @@ class hmac_stress_all_vseq extends hmac_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(hmac_vseq, seq)
 
-      // dut_init (reset) can be skipped after the 1st seq
-      if (i > 0) hmac_vseq.do_dut_init = $urandom_range(0, 1);
+      // dut_init (reset) can be skipped
+      if (do_dut_init) hmac_vseq.do_dut_init = $urandom_range(0, 1);
+      else hmac_vseq.do_dut_init = 0;
 
       hmac_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(hmac_vseq)

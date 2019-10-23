@@ -279,20 +279,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task compare_digest(bit [TL_DW-1:0] exp_digest[8]);
     logic [TL_DW-1:0] act_digest[8];
     csr_rd_digest(act_digest);
-    foreach (act_digest[i]) begin
-      `DV_CHECK_EQ(act_digest[i], exp_digest[i], $sformatf("for index %0d", i))
+    if (cfg.clk_rst_vif.rst_n) begin
+      foreach (act_digest[i]) begin
+        `DV_CHECK_EQ(act_digest[i], exp_digest[i], $sformatf("for index %0d", i))
+      end
+    end else begin
+      `uvm_info(`gfn, "skipped comparison due to reset", UVM_LOW)
     end
   endtask
 
-  // task to read all csrs and check against ral expected value
-  // used after reset
-  virtual task read_and_check_all_csrs();
-    uvm_reg csrs[$];
-    ral.get_registers(csrs);
-    csrs.shuffle();
-
-    foreach (csrs[i]) begin
-      csr_rd_check(.ptr(csrs[i]), .compare_vs_ral(1));
-    end
-  endtask
 endclass : hmac_base_vseq

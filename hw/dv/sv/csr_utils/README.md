@@ -33,6 +33,10 @@ accesses made in the testbench:
   task automatic wait_no_outstanding_access();
     wait(outstanding_accesses == 0);
   endtask
+
+  function automatic void clear_outstanding_access();
+    outstanding_accesses = 0;
+  endfunction
 ```
 
 ##### CSR spinwait
@@ -45,6 +49,23 @@ Example below uses the `csr_spinwait` to wait until the CSR `fifo_status` field
 ```systemverilog
 csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
 ```
+
+##### Under_reset
+Due to `csr_utils_pkg` is not connected to any interface, methods inside
+this package are not able to get reset information. Current the `under_reset`
+bit is declared with two functions:
+```systemverilog
+function automatic void reset_occurred();
+  under_reset = 1;
+endfunction
+
+function automatic void reset_cleared();
+  under_reset = 0;
+endfunction
+```
+This reset information is updated in `dv_lib/dv_base_vseq.sv`. When the
+`apply_reset` task is triggered, it will set and reset the `under_reset` bit
+via the functions above.
 
 #### Global CSR util methods
 ##### Global methods for CSR and MEM attributes

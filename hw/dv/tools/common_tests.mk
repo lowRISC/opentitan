@@ -52,4 +52,11 @@ ifeq (${TEST_NAME},${TEST_PREFIX}_intr_test)
   RUN_OPTS      += +run_intr_test
 endif
 
+ifeq (${TEST_NAME},${TEST_PREFIX}_stress_all_with_rand_reset)
+  UVM_TEST_SEQ   = ${TEST_PREFIX}_common_vseq
+  RUN_OPTS      += +run_stress_all_with_rand_reset
+  RUN_OPTS      += +test_timeout_ns=10_000_000_000
+  RUN_OPTS      += +stress_seq=${TEST_PREFIX}_stress_all_vseq
+endif
+
 

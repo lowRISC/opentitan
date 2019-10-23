@@ -17,6 +17,7 @@ package csr_utils_pkg;
   uint       default_spinwait_timeout_ns = 10_000_000; // 10ms
   string     msg_id                      = "csr_utils";
   bit        default_csr_blocking        = 1;
+  bit        under_reset                 = 0;
 
   // csr field struct - hold field specific params
   typedef struct {
@@ -47,6 +48,18 @@ package csr_utils_pkg;
   task automatic wait_no_outstanding_access();
     wait(outstanding_accesses == 0);
   endtask
+
+  function automatic void clear_outstanding_access();
+    outstanding_accesses = 0;
+  endfunction
+
+  function automatic void reset_occurred();
+    under_reset = 1;
+  endfunction
+
+  function automatic void reset_cleared();
+    under_reset = 0;
+  endfunction
 
   // Get all valid csr addrs - useful to check if incoming addr falls in the csr range.
   function automatic void get_csr_addrs(input uvm_reg_block ral, ref uvm_reg_addr_t csr_addrs[$]);
@@ -334,7 +347,7 @@ package csr_utils_pkg;
             end
             csr_rd(.ptr(ptr), .value(obs), .check(check), .path(path),
                    .blocking(1), .timeout_ns(timeout_ns), .map(map));
-            if (compare) begin
+            if (compare && !under_reset) begin
               obs = obs & compare_mask;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;
               `DV_CHECK_EQ(obs, exp, {"Regname: ", ptr.get_full_name(), " ", err_msg},
