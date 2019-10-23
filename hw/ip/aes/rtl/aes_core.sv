@@ -25,7 +25,7 @@ module aes_core #(
   logic     [7:0] key_init_qe;
 
   mode_e          mode, key_expand_mode;
-  key_len_e       key_len;
+  key_len_e       key_len_q, key_len;
 
   logic     [7:0] state_init[16];
   logic     [7:0] state_d[16];
@@ -66,6 +66,9 @@ module aes_core #(
 
   // Unused signals
   logic    [31:0] unused_data_out_q[4];
+  logic           unused_mode_qe;
+  logic           unused_manual_start_trigger_qe;
+  logic           unused_force_data_overwrite_qe;
 
   // Inputs
   assign key_init[0] = reg2hw.key[0].q;
@@ -99,8 +102,9 @@ module aes_core #(
 
   assign mode = mode_e'(reg2hw.ctrl.mode.q);
 
+  assign key_len_q = key_len_e'(reg2hw.ctrl.key_len.q);
   always_comb begin : get_key_len
-    unique case (key_len_e'(reg2hw.ctrl.key_len.q))
+    unique case (key_len_q)
       AES_128: key_len = AES_128;
       AES_256: key_len = AES_256;
       AES_192: begin
@@ -119,6 +123,11 @@ module aes_core #(
   assign unused_data_out_q[1] = reg2hw.data_out[1].q;
   assign unused_data_out_q[2] = reg2hw.data_out[2].q;
   assign unused_data_out_q[3] = reg2hw.data_out[3].q;
+
+  // key_len is hrw and hwqe, other fields of ctrl reg are hro and don't need hwqe
+  assign unused_mode_qe                 = reg2hw.ctrl.mode.qe;
+  assign unused_manual_start_trigger_qe = reg2hw.ctrl.manual_start_trigger.qe;
+  assign unused_force_data_overwrite_qe = reg2hw.ctrl.force_data_overwrite.qe;
 
   // State registers
   always_comb begin : state_mux
