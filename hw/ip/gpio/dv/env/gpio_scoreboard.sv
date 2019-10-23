@@ -476,8 +476,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       `uvm_info(msg_id, $sformatf("gpio_i_driven = 0x%0h [%0b]", gpio_i_driven, gpio_i_driven),
                 UVM_HIGH)
 
-      // TODO-Should we have a logic for 'x' and 'z' values of data_oe[pin_num]?
-
       // Predict effective value of common wire that-
       // (i) drives gpio_i, and
       // (ii) gets driven by gpio_o based on gpiooe value

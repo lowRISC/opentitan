@@ -55,10 +55,6 @@ class gpio_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask
 
-  virtual task dut_shutdown();
-    // TODO(sriyerg): nothing to do yet
-  endtask
-
   // Task: drive_gpio_in
   // task to drive dut gpio inputs (gpio_en_o from dut must be configured to 0)
   virtual task drive_gpio_in(bit [NUM_GPIOS-1:0] val);
