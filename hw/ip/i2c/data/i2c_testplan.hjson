@@ -1,0 +1,169 @@
+{
+  name: "i2c"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''Basic I2C sanity test with few bytes transmitted and received asynchronously
+            and in parallel with scoreboard checks (support options for ro, wo, or rw)
+
+            Stimulus:
+              - Enable I2C host.
+              - Clear/Enable interrupt (if nedded).
+              - Program OVRD, FDATA register.
+              - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent delays
+              - Randomize address and data for write and read transfers sent to the device.
+
+            Checking:
+              - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START.
+              - Read and write transfer matching.'''
+      milestone: V1
+      tests: ["i2c_sanity_ro", "i2c_sanity_wo", "i2c_sanity_rw"]
+    }
+    {
+      name: override
+      desc: '''Test SCL/SDA override
+
+            Stimulus:
+              - Program OVRD register.
+
+            Checking:
+              - Check scl_o, sda_o override by programmed values in the OVRD register.'''
+      milestone: V1
+      tests: ["i2c_override"]
+    }
+    {
+      name: fmt_watermark
+      desc: '''Test fmt_watermark interrupt.
+
+            Stimulus:
+              - Program random fmt (format) fifo watermark level and keep pushing data out by writing to
+            wdata.
+
+            Checking:
+              - As the number of pending data entries in the fmt fifo reaches the programmed
+                watermark level, ensure that the fmt watermark interrupt is asserted.
+              - Read the fifo status to cross-check, ensure interrupt stays asserted until cleared.'''
+      milestone: V2
+      tests: ["i2c_fmt_watermark"]
+    }
+    {
+      name: rx_watermark
+      desc: '''Test rx_watermark interrupt.
+
+            Stimulus:
+              - Program random rx watermark level. Keep sending data over rx and read rdata
+                register in parallel with randomized delays large enough to reach a point where
+                the number of pending data items in rx fifo reaches the watermark level.
+
+            Checking:
+              - When that happens, check that the interrupt is asserted.'''
+      milestone: V2
+      tests: ["i2c_rx_watermark"]
+    }
+    {
+      name: fmt_reset
+      desc: '''Test fmt_fifo reset.
+
+            Stimulus:
+              - Fill up the fmt fifo with data to be sent out. After a random number (less than
+                filled fifo size) of bytes shows up on fmt, reset the fifo.
+
+            Checking:
+              - Ensure that the remaining data bytes do not show up after fmt_fifo is reset.'''
+      milestone: V2
+      tests: ["i2c_fmt_reset"]
+    }
+    {
+      name: rx_reset
+      desc: '''Test rx_reset reset.
+
+            Stimulus:
+              - Fill up the rx fifo by sending data bytes in over rx. After a random number
+                (less than filled fifo size) of bytes sent over rx, reset the fifo.
+
+            Checking:
+              - Ensure that reads to rdata register yield 0s after rx_fifo is reset.'''
+      milestone: V2
+      tests: ["i2c_rx_reset"]
+    }
+    {
+      name: fmt_overflow
+      desc: '''Test fmt_overflow interrupt.
+
+            Stimulus:
+              - Keep writing over 32 bytes of data into wdata register.
+
+            Checking:
+              - Ensure excess data bytes are dropped and overflow interrupt is asserted.'''
+      milestone: V2
+      tests: ["i2c_fmt_overflow"]
+    }
+    {
+      name: rx_overflow
+      desc: '''Test rx_overflow interrupt.
+
+            Stimulus:
+              - Keep sending over 32 bytes of data over rx.
+
+            Checking:
+              - Ensure excess data bytes are dropped.'''
+      milestone: V2
+      tests: ["i2c_rx_overflow"]
+    }
+    {
+      name: fmt_rx_fifo_full
+      desc: '''Test fmt_fifo and rx_fifo in full states.
+
+            Stimulus:
+              - Send over 32 bytes of data but stop when fmt/rx fifo is full.
+
+            Checking:
+              - Check full states by reading fifo status register.'''
+      milestone: V2
+      tests: ["i2c_fmt_rx_fifo_full"]
+    }
+    {
+      name: rx_timeout
+      desc: '''Test rx_timeout state.
+
+            Stimulus:
+              - Program timeout_ctrl register to randomize the timeout. Send random number of
+                data over rx and read fewer data than sent and let the DUT sit idle or the
+                programmed timeout duration.
+
+            Checking:
+              - Ensure timeout interrupt fires.'''
+      milestone: V2
+      tests: ["i2c_rx_timeout"]
+    }
+    {
+      name: stress
+      desc: '''Test multiple interrupts asserted.
+
+            Stimulus:
+              - Do combinations of multiple of above scenarios to get multiple interrupts
+                asserted at the same time. Scoreboard should be robust enough to deal with all
+                scenarios.
+
+            Checking:
+              - Ensure all interrupt asserted.'''
+      milestone: V2
+      tests: ["i2c_stress"]
+    }
+    {
+      name: rw_loopback
+      desc: '''Test write data, read loopback, then compare.
+
+            Stimulus:
+              - Drive i2c host to write data to the device then read loopback.
+
+            Checking:
+              - After loopback is done, read data should be match with write data.'''
+      milestone: V2
+      tests: ["i2c_rw_loopback"]
+    }
+  ]
+}
