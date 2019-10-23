@@ -53,6 +53,7 @@ $(ips_reg_header):
 clean-regs-header:
 	rm -r -f ip/*/sw
 
+top: $(tops_gen)
 $(tops_gen):
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
