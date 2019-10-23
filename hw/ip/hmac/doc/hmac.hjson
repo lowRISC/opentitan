@@ -14,6 +14,9 @@
     { name: "fifo_full",
       desc: "Message FIFO full condition"
     }
+    { name: "hmac_err",
+      desc: "HMAC error occurred. ERR_CODE register shows which error occurred"
+    }
   ],
   alert_list: [
   ],
@@ -95,6 +98,19 @@
         { bits: "8:4",
           name: "fifo_depth",
           desc: "FIFO entry count."
+        }
+      ]
+    }
+    { name: "ERR_CODE",
+      desc: "HMAC Error Code",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "err_code",
+          desc: '''If error interrupt occurs, this register has information of error cause.
+          Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type.
+          '''
         }
       ]
     }

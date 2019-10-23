@@ -20,7 +20,8 @@ def pytest_addoption(parser):
     parser.addoption("--verilator_model", action="store", default="")
     parser.addoption("--openocd", action="store", default="openocd")
     parser.addoption("--uart_timeout", action="store", default="60")
-
+    parser.addoption("--fpga_uart", action="store", default="")
+    parser.addoption("--spiflash", action="store", default="")
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_exception_interact(node, call, report):
@@ -110,3 +111,17 @@ def openocd(pytestconfig):
 def uart_timeout(pytestconfig):
     """Return the timeout in seconds for UART to print PASS."""
     return int(pytestconfig.getoption('uart_timeout'))
+
+@pytest.fixture(scope="session")
+def fpga_uart(pytestconfig):
+    """Return the path to the UART attached to the FPGA."""
+    path = Path(pytestconfig.getoption('fpga_uart')).resolve()
+    assert path.is_file()
+    return path
+
+@pytest.fixture(scope="session")
+def spiflash(pytestconfig):
+    """Return the path to the spiflash executable."""
+    path = Path(pytestconfig.getoption('spiflash')).resolve()
+    assert path.is_file()
+    return path

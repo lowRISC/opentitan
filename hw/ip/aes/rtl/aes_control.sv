@@ -85,6 +85,7 @@ module aes_control #(
 
   logic [3:0] round_d, round_q;
   logic [3:0] num_rounds_d, num_rounds_q;
+  logic [3:0] num_rounds_regular;
   logic       dec_key_gen_d, dec_key_gen_q;
 
   logic       start, finish;
@@ -165,9 +166,9 @@ module aes_control #(
 
           // Load num_rounds, round
           round_d      = '0;
-          num_rounds_d = (key_len_i == AES_128) ? 10 :
-                         (key_len_i == AES_192) ? 12 :
-                                                  14;
+          num_rounds_d = (key_len_i == AES_128) ? 4'd10 :
+                         (key_len_i == AES_192) ? 4'd12 :
+                                                  4'd14;
 
           idle_o      = 1'b0;
           idle_we_o   = 1'b1;
@@ -229,7 +230,7 @@ module aes_control #(
         end
 
         // Make key expand advance - AES-256 has two round keys available right from beginning
-        if (key_len_i != AES_256 ) begin
+        if (key_len_i != AES_256) begin
           key_expand_step_o = 1'b1;
           key_full_we_o     = 1'b1;
         end
@@ -287,7 +288,7 @@ module aes_control #(
         round_d = round_q+1;
 
         // Are we doing the last regular round?
-        if (round_q == num_rounds_q-2) begin
+        if (round_q == num_rounds_regular) begin
           if (dec_key_gen_q) begin
             // Write decryption key and finish
             key_dec_we_o  = 1'b1;
@@ -367,6 +368,9 @@ module aes_control #(
       dec_key_gen_q <= dec_key_gen_d;
     end
   end
+
+  // Use separate signal for number of regular rounds
+  assign num_rounds_regular = num_rounds_q - 4'd2;
 
   // Detect new key, new input, output read
   // Edge detectors are cleared by the FSM

@@ -1,5 +1,8 @@
-{{% lowrisc-doc-hdr Comportable IP Testbench Architecture }}
+# Comportable IP Testbench Architecture
 
+{{% toc 4 }}
+
+## Overview
 Going along the lines of what it takes to design an IP that adheres to the
 [Comportability Specifications](../../../../doc/rm/comportability_specification.md),
 we attempt to standardize the DV methodology for developing the IP level
@@ -13,8 +16,6 @@ course of development, we also periodically identify pieces of verification logi
 might be developed for one IP but is actually a good candidate to be added to
 these library classes instead. This doc is instead intended to provide the user
 a foray into what these are and how are the meant to be used.
-
-{{% toc 3 }}
 
 
 ## CIP environment block diagram
@@ -42,7 +43,7 @@ sequencer and coverage objects so that all such common settings and features
 are instantly accessible everywhere.
 
 This class is type parameterized in the following way:
-```
+```systemverilog
 class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 ```
 The IP env cfg class will then extend from this class with the RAL_T parameter set
@@ -95,7 +96,7 @@ scoreboard as well as the test sequences.
 
 This class is type parameterized with the env cfg class type `CFG_T` so that it
 can derive coverage on some of the env cfg settings.
-```
+```systemverilog
 class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends uvm_component;
 ```
 
@@ -104,11 +105,11 @@ This is the base virtual sequencer class that contains a handle to the
 `tl_sequencer` to allow layered test sequences to be created. The extended IP
 virtual sequencer class will include handles to the IP specific agent
 sequencers.
-G
+
 This class is type-parameterized with the env cfg class type `CFG_T` and coverage
 class type `COV_T` so that all test sequences can access the env cfg settings and
 sample the coverage via the `p_sequencer` handle.
-```
+```systemverilog
 class cip_base_virtual_sequencer #(type CFG_T = cip_base_env_cfg,
                                    type COV_T = cip_base_env_cov) extends uvm_sequencer;
 ```
@@ -123,7 +124,7 @@ if applicable to grab items from those analysis ports.
 
 This class is type-parameterized with the env cfg class type `CFG_T`, ral class
 type `RAL_T` and the coverage class type `COV_T`.
-```
+```systemverilog
 class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                             type CFG_T = cip_base_env_cfg,
                             type COV_T = cip_base_env_cov) extends uvm_component;
@@ -148,7 +149,7 @@ set to be used with the TileLink interface.
 This class is type parameterized with env cfg class type CFG_T, coverage class type
 `COV_T`, virtual sequencer class type `VIRTUAL_SEQUENCER_T` and scoreboard class
 type `SCOREBOARD_T`.
-```
+```systemverilog
 class cip_base_env #(type CFG_T               = cip_base_env_cfg,
                      type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer,
                      type SCOREBOARD_T        = cip_base_scoreboard,
@@ -181,7 +182,7 @@ This class is type parameterized with the env cfg class type `CFG_T`, ral class 
 env cfg settings, the ral CSRs are accessible and the `p_sequencer` type can be
 declared.
 
-```
+```systemverilog
 class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       type CFG_T               = cip_base_env_cfg,
                       type COV_T               = cip_base_env_cov,
@@ -204,20 +205,20 @@ points to the extended IP test class), and only change the `UVM_TEST_SEQ` plusar
 This class is type parameterized with the env cfg class type `CFG_T` and the env
 class type `ENV_T` so that when extended IP test class creates the env and env cfg
 specific to that IP.
-```
+```systemverilog
 class cip_base_test #(type CFG_T = cip_base_env_cfg,
                       type ENV_T = cip_base_env) extends uvm_test;
 ```
 
-# Extending from CIP library classes
+## Extending from CIP library classes
 Let's say we are verifying an actual comportable IP `uart` which has `uart_tx`
 and `uart_rx` interface. User then develops the `uart_agent` to be able to talk
 to that interface. User invokes the `ralgen` tool to generate the `uart_reg_block`,
 and then starts developing UVM environment by extending from the CIP library
 classes in the following way.
 
-## uart_env_cfg
-```
+### uart_env_cfg
+```systemverilog
 class uart_env_cfg extends cip_base_env_cfg #(.RAL_T(uart_reg_block));
 ```
 User adds the `uart_agent_cfg` object as a member so that it remains as a
@@ -225,23 +226,23 @@ part of the env cfg and can be accessed everywhere. In the base class's
 `initialize()` function call, an instance of `uart_reg_block` is created, not
 the `dv_base_reg_block`, since we override the `RAL_T` type.
 
-## uart_env_cov
-```
+### uart_env_cov
+```systemverilog
 class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
 ```
 User adds `uart` IP specific coverage items and uses the `cov` handle in
 scoreboard and test sequences to sample the coverage.
 
-## uart_virtual_sequencer
-```
+### uart_virtual_sequencer
+```systemverilog
 class uart_virtual_sequencer extends cip_base_virtual_sequencer #(.CFG_T(uart_env_cfg),
                                                                   .COV_T(uart_env_cov));
 ```
 User adds the `uart_sequencer` handle to allow layered test sequences
 to send traffic to / from TileLink as well as `uart` interfaces.
 
-## uart_scoreboard
-```
+### uart_scoreboard
+```systemverilog
 class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                                                     .RAL_T(uart_reg_block),
                                                     .COV_T(uart_env_cov));
@@ -249,8 +250,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 User adds analysis ports to grab packets from the `uart_monitor` to
 perform end-to-end checking.
 
-## uart_env
-```
+### uart_env
+```systemverilog
 class uart_env extends cip_base_env #(.CFG_T               (uart_env_cfg),
                                       .COV_T               (uart_env_cov),
                                       .VIRTUAL_SEQUENCER_T (uart_virtual_sequencer),
@@ -260,8 +261,8 @@ User creates `uart_agent` object in the env and use it to connect with the
 virtual sequencer and the scoreboard. User also uses the env cfg settings to
 manipulate the uart agent cfg settings if required.
 
-## uart_base_vseq
-```
+### uart_base_vseq
+```systemverilog
 class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg),
                                              .RAL_T               (uart_reg_block),
                                              .COV_T               (uart_env_cov),
@@ -271,8 +272,8 @@ User adds a base virtual sequence as a starting point and adds common tasks and
 functions to perform `uart` specific operations. User then extends from
 `uart_base_vseq` to add layered test sequences.
 
-## uart_base_test
-```
+### uart_base_test
+```systemverilog
 class uart_base_test extends cip_base_test #(.ENV_T(uart_env), .CFG_T(uart_env_cfg));
 ```
 User sets `UVM_TEST` plus arg to `uart_base_test` so that all tests create the UVM env
@@ -280,7 +281,7 @@ that is automatically tailored to UART IP. Each test then sets the
 `UVM_TEST_SEQ` plusarg to run the specific test sequence, along with additional
 plusargs as required.
 
-# CIP Testbench
+## CIP Testbench
 ![CIP testbench diagram](tb.svg)
 The block diagram above shows the CIP testbench architecture, that puts
 together the static side `tb` which instantiates the `dut`, and the dynamic

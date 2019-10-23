@@ -1,64 +1,73 @@
 # SPI Flash
 
-`spiflash` is a tool used to update the firmware stored in OpenTitan's flash.
+`spiflash` is a tool used to update the firmware stored in OpenTitan's embedded flash.
 The tool resets OpenTitan and signals the boot ROM to enter bootstrap mode
 before sending the update payload.
 
-Currently, the tool only supports Verilator targets.
+Currently, the tool supports both Verilator and FPGA targets.
 
-## Build instructions
+## Build instructions for spiflash tool
 
-`spiflash` is written in C++17.
+`spiflash` is written in C++14.
 
 Required packages:
 
-```shell
+```console
 $ sudo apt-get install libssl-dev libftdi1-dev
 ```
 
-Build command:
+Build command for tool:
 
-```shell
-$ cd ${REPO_TOP}/util/spiflash
-$ make clean && make
+```console
+$ cd ${REPO_TOP}
+$ make -C sw/host/spiflash clean all
+```
+
+## Setup instructions for Verilator and FPGA
+Please refer to [verilator](../../../doc/ug/getting_started_verilator.md) and [fpga](../../../doc/ug/getting_started_verilator.md) docs for more information.
+
+## Build boot ROM and demo program
+
+_If building for verilator, please add the extra option `SIM=1`._
+
+Build `boot_rom`:
+```console
+$ cd ${REPO_TOP}
+$ make -C sw SW_DIR=boot_rom clean all
+```
+
+Build `hello_world` program:
+```console
+$ cd ${REPO_TOP}
+$ make -C sw SW_DIR=examples/hello_world clean all
 ```
 
 ## Run the tool in Verilator
 
-Build boot_rom:
+Run Verilator with boot_rom enabled:
 
-```shell
-$ cd ${REPO_TOP}/sw/boot_rom
-$ make clean && make SIM=1
-```
-
-Build and run Verilator with boot_rom enabled:
-
-```shell
+```console
 $ cd ${REPO_TOP}
-$ fusesoc --cores-root . sim --build-only lowrisc:systems:top_earlgrey_verilator
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=sw/boot_rom/boot_rom.vmem
-```
-
-Build hello_world program:
-
-```shell
-$ cd ${REPO_TOP}/sw/examples/hello_world
-$ make clean && make SIM=1
+  --rominit=sw/boot_rom/rom.vmem
 ```
 
 Run spiflash. In this example we use SPI device `/dev/pts/3` as an example.
-After the transmission is complete, you should be able to see the hello_world
-output in the UART console.
+After the transmission is complete, you should be able to see the hello_world output in the UART console.
 
-```shell
-$ cd ${REPO_TOP}/util/spiflash
-$ make clean && make
-$ ./spiflash --input=../../sw/examples/hello_world/hello_world.bin --verilator=/dev/pts/3
+```console
+$ cd ${REPO_TOP}
+$ ./sw/host/spiflash/spiflash --input=sw/examples/hello_world/sw.bin --verilator=/dev/pts/3
 ```
 
-## TODOs
+## Run the tool in FPGA
 
-- Implement ACK handshake between boot_rom and spiflash.
-- Add support for FPGA targets via FTDI interface.
+To run spiflash for an FPGA, the instructions are similar.
+There is no requirement to enable the FPGA with ROM.
+Note, for FPGA, the tool simply searches for a valid interface to attach.
+If there are two FPGAs or multiple valid targets attached at the same time, it is possible for the tool to connect to the incorrect device.
+
+```console
+$ cd ${REPO_TOP}
+$ ./sw/host/spiflash/spiflash --input=sw/examples/hello_world/sw.bin
+```

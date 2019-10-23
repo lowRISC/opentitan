@@ -112,6 +112,9 @@ After this there should be a blank line and the main description of
 the change. If you are fixing an issue then add a line at the end of
 the message `Fixes #nn` where `nn` is the issue number. This will link
 the fix and close out the issue when it is added to the lowRISC repo.
+If the change is an attempted fix that has not yet had confirmation from
+verification engineers, it should not close the related issue. In this case,
+write `Related to #nn` in the commit message rather than `Fixes #nn`.
 
 When you have finished everything locally (it is good practice to do a
 status check to ensure things are clean) you can push your branch (eg
@@ -141,13 +144,30 @@ $ git status
 $ git push -f origin forchange
 ```
 
-Once the reviewers are happy you can "Squash and merge" the Pull
+Once the reviewers are happy you can "Rebase and Merge" the Pull
 Request on GitHub, delete the branch there (it offers to do this when
 you do the merge). You can delete the branch in your local repo with:
 
 ```console
 $ git checkout master
 $ git branch -D forchange
+```
+
+When a Pull Request contain multiple commits, those commits should be logically
+independent. Interactive rebase can be used to manipulate commits in a pull
+request to achieve that goal. Commonly, it might be used to squash commits that
+fix up issues reported during review back into the relevant commit.
+
+```console
+$ git rebase -i `git merge-base {current_branch} master`
+```
+
+Then, an editor will open. Follow the instructions given there, to reorder and
+combine commits, or to change the commit message. Then update the PR branch in
+the Github remote repository.
+
+```console
+$ git push -f origin HEAD
 ```
 
 ## Update your repo with changes in the lowRISC repo

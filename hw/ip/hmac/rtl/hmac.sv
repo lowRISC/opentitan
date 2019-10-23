@@ -12,7 +12,8 @@ module hmac (
   output tlul_pkg::tl_d2h_t tl_o,
 
   output logic intr_hmac_done_o,
-  output logic intr_fifo_full_o
+  output logic intr_fifo_full_o,
+  output logic intr_hmac_err_o
 );
 
   import hmac_pkg::*;
@@ -73,6 +74,7 @@ module hmac (
 
   logic        reg_hash_start;
   logic        sha_hash_start;
+  logic        hash_start;      // Valid hash_start_signal
   logic        reg_hash_process;
   logic        sha_hash_process;
 
@@ -81,6 +83,9 @@ module hmac (
 
   logic [63:0] message_length;
   logic [63:0] sha_message_length;
+
+  err_code_e   err_code;
+  logic        err_valid;
 
   sha_word_t [7:0] digest;
 
@@ -112,6 +117,13 @@ module hmac (
   assign reg_hash_start   = reg2hw.cmd.hash_start.qe   & reg2hw.cmd.hash_start.q;
   assign reg_hash_process = reg2hw.cmd.hash_process.qe & reg2hw.cmd.hash_process.q;
 
+  // Error code register
+  assign hw2reg.err_code.de = err_valid;
+  assign hw2reg.err_code.d  = err_code;
+
+  // Control signals ==========================================================
+  assign hash_start = reg_hash_start & sha_en;
+
   // Interrupts ===============================================================
   logic fifo_full_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -122,8 +134,8 @@ module hmac (
   logic fifo_full_event;
   assign fifo_full_event = fifo_full & !fifo_full_d;
 
-  logic [1:0] event_intr;
-  assign event_intr = {fifo_full_event, reg_hash_done};
+  logic [2:0] event_intr;
+  assign event_intr = {err_valid, fifo_full_event, reg_hash_done};
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
@@ -145,6 +157,16 @@ module hmac (
     .hw2reg_intr_state_de_o (hw2reg.intr_state.fifo_full.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.fifo_full.d),
     .intr_o                 (intr_fifo_full_o)
+  );
+  prim_intr_hw #(.Width(1)) intr_hw_hmac_err (
+    .event_intr_i           (event_intr[2]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_err.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_err.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.hmac_err.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.hmac_err.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.hmac_err.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.hmac_err.d),
+    .intr_o                 (intr_hmac_err_o)
   );
   // Instances ================================================================
 
@@ -173,7 +195,7 @@ module hmac (
     .clk_i,
     .rst_ni,
 
-    .wvalid (fifo_wvalid),
+    .wvalid (fifo_wvalid & sha_en),
     .wready (fifo_wready),
     .wdata  (fifo_wdata),
 
@@ -189,7 +211,8 @@ module hmac (
     .SramAw (9),
     .SramDw (32),
     .Outstanding (1),
-    .ByteAccess  (1)
+    .ByteAccess  (1),
+    .ErrOnRead   (1)
   ) u_tlul_adapter (
     .clk_i,
     .rst_ni,
@@ -225,7 +248,7 @@ module hmac (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       message_length <= '0;
-    end else if (reg_hash_start) begin // or reg_hash_start
+    end else if (hash_start) begin
       message_length <= '0;
     end else if (reg_fifo_wvalid && fifo_wready && !hmac_fifo_wsel) begin
       message_length <= message_length + 64'(wmask_ones);
@@ -253,7 +276,7 @@ module hmac (
     .clk_i,
     .rst_ni,
 
-    .valid_i      (msg_write),
+    .valid_i      (msg_write & sha_en),
     .data_i       (msg_fifo_wdata_endian),
     .mask_i       (msg_fifo_wmask_endian),
     .ready_o      (packer_ready),
@@ -279,7 +302,7 @@ module hmac (
 
     .hmac_en,
 
-    .reg_hash_start,
+    .reg_hash_start   (hash_start),
     .reg_hash_process (packer_flush_done), // Trigger after all msg written
     .hash_done      (reg_hash_done),
     .sha_hash_start,
@@ -340,8 +363,35 @@ module hmac (
     .devmode_i  (1'b1)
   );
 
-  //===========================================================================
-  // Assertions, Assumptions, and Coverpoints
+  // HMAC Error Handling ======================================================
+  logic msg_push_sha_disabled, hash_start_sha_disabled;
+  assign msg_push_sha_disabled = msg_write & ~sha_en;
+  assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
+
+  // Update ERR_CODE register and interrupt only when no pending interrupt.
+  // This ensures only the first event of the series of events can be seen to sw.
+  // It is recommended that the software reads ERR_CODE register when interrupt
+  // is pending to avoid any race conditions.
+  assign err_valid = ~reg2hw.intr_state.hmac_err.q &
+                   ( msg_push_sha_disabled | hash_start_sha_disabled );
+
+  always_comb begin
+    err_code = NoError;
+    case (1'b1)
+      msg_push_sha_disabled: begin
+        err_code = SwPushMsgWhenShaDisabled;
+      end
+      hash_start_sha_disabled: begin
+        err_code = SwHashStartWhenShaDisabled;
+      end
+
+      default: begin
+        err_code = NoError;
+      end
+    endcase
+  end
+
+  // Assertions, Assumptions, and Coverpoints =================================
   //
   // HMAC assumes TL-UL mask is byte-aligned.
   `ifndef VERILATOR
@@ -369,7 +419,7 @@ module hmac (
   logic initiated;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)               initiated <= 1'b0;
-    else if (reg_hash_start)   initiated <= 1'b1;
+    else if (hash_start)       initiated <= 1'b1;
     else if (reg_hash_process) initiated <= 1'b0;
   end
 
@@ -378,7 +428,7 @@ module hmac (
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process, clk_i, !rst_ni)
 
   // `hash_process` shall be toggle and paired with `hash_start`.
-  `ASSERT(ValidHashStartAssert, reg_hash_start |-> !initiated, clk_i, !rst_ni)
+  `ASSERT(ValidHashStartAssert, hash_start |-> !initiated, clk_i, !rst_ni)
   `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated, clk_i, !rst_ni)
 
   // between `hash_done` and `hash_start`, message FIFO should be empty

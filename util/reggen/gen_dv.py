@@ -54,7 +54,7 @@ def gen_dv(obj, outdir):
 def gen_ral(block, outdir):
     # Read Register templates
     uvm_reg_tpl = Template(
-        filename=resource_filename('reggen', 'uvm_reg.tpl.sv'))
+        filename=resource_filename('reggen', 'uvm_reg.sv.tpl'))
 
     # Generate pkg.sv with block name
     with open(outdir + "/" + block.name + "_reg_block.sv", 'w') as fout:

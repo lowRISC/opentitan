@@ -12,6 +12,7 @@ typedef class hmac_reg_intr_test;
 typedef class hmac_reg_cfg;
 typedef class hmac_reg_cmd;
 typedef class hmac_reg_status;
+typedef class hmac_reg_err_code;
 typedef class hmac_reg_wipe_secret;
 typedef class hmac_reg_key0;
 typedef class hmac_reg_key1;
@@ -40,6 +41,7 @@ class hmac_reg_intr_state extends dv_base_reg;
   // fields
   rand dv_base_reg_field hmac_done;
   rand dv_base_reg_field fifo_full;
+  rand dv_base_reg_field hmac_err;
 
   `uvm_object_utils(hmac_reg_intr_state)
 
@@ -73,6 +75,17 @@ class hmac_reg_intr_state extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
+    hmac_err = dv_base_reg_field::type_id::create("hmac_err");
+    hmac_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("W1C"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
   endfunction : build
 
 endclass : hmac_reg_intr_state
@@ -82,6 +95,7 @@ class hmac_reg_intr_enable extends dv_base_reg;
   // fields
   rand dv_base_reg_field hmac_done;
   rand dv_base_reg_field fifo_full;
+  rand dv_base_reg_field hmac_err;
 
   `uvm_object_utils(hmac_reg_intr_enable)
 
@@ -115,6 +129,17 @@ class hmac_reg_intr_enable extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
+    hmac_err = dv_base_reg_field::type_id::create("hmac_err");
+    hmac_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
+      .access("RW"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
   endfunction : build
 
 endclass : hmac_reg_intr_enable
@@ -124,6 +149,7 @@ class hmac_reg_intr_test extends dv_base_reg;
   // fields
   rand dv_base_reg_field hmac_done;
   rand dv_base_reg_field fifo_full;
+  rand dv_base_reg_field hmac_err;
 
   `uvm_object_utils(hmac_reg_intr_test)
 
@@ -151,6 +177,17 @@ class hmac_reg_intr_test extends dv_base_reg;
       .parent(this),
       .size(1),
       .lsb_pos(1),
+      .access("WO"),
+      .volatile(0),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+    hmac_err = dv_base_reg_field::type_id::create("hmac_err");
+    hmac_err.configure(
+      .parent(this),
+      .size(1),
+      .lsb_pos(2),
       .access("WO"),
       .volatile(0),
       .reset(0),
@@ -322,6 +359,36 @@ class hmac_reg_status extends dv_base_reg;
   endfunction : build
 
 endclass : hmac_reg_status
+
+// Class: hmac_reg_err_code
+class hmac_reg_err_code extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field err_code;
+
+  `uvm_object_utils(hmac_reg_err_code)
+
+  function new(string       name = "hmac_reg_err_code",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build();
+    // create fields
+    err_code = dv_base_reg_field::type_id::create("err_code");
+    err_code.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(1),
+      .reset(0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(1));
+  endfunction : build
+
+endclass : hmac_reg_err_code
 
 // Class: hmac_reg_wipe_secret
 class hmac_reg_wipe_secret extends dv_base_reg;
@@ -917,6 +984,7 @@ class hmac_reg_block extends dv_base_reg_block;
   rand hmac_reg_cfg cfg;
   rand hmac_reg_cmd cmd;
   rand hmac_reg_status status;
+  rand hmac_reg_err_code err_code;
   rand hmac_reg_wipe_secret wipe_secret;
   rand hmac_reg_key0 key0;
   rand hmac_reg_key1 key1;
@@ -990,119 +1058,125 @@ class hmac_reg_block extends dv_base_reg_block;
     default_map.add_reg(.rg(status),
                         .offset(32'h14),
                         .rights("RO"));
+    err_code = hmac_reg_err_code::type_id::create("err_code");
+    err_code.configure(.blk_parent(this));
+    err_code.build();
+    default_map.add_reg(.rg(err_code),
+                        .offset(32'h18),
+                        .rights("RO"));
     wipe_secret = hmac_reg_wipe_secret::type_id::create("wipe_secret");
     wipe_secret.configure(.blk_parent(this));
     wipe_secret.build();
     default_map.add_reg(.rg(wipe_secret),
-                        .offset(32'h18),
+                        .offset(32'h1c),
                         .rights("WO"));
     key0 = hmac_reg_key0::type_id::create("key0");
     key0.configure(.blk_parent(this));
     key0.build();
     default_map.add_reg(.rg(key0),
-                        .offset(32'h1c),
+                        .offset(32'h20),
                         .rights("WO"));
     key1 = hmac_reg_key1::type_id::create("key1");
     key1.configure(.blk_parent(this));
     key1.build();
     default_map.add_reg(.rg(key1),
-                        .offset(32'h20),
+                        .offset(32'h24),
                         .rights("WO"));
     key2 = hmac_reg_key2::type_id::create("key2");
     key2.configure(.blk_parent(this));
     key2.build();
     default_map.add_reg(.rg(key2),
-                        .offset(32'h24),
+                        .offset(32'h28),
                         .rights("WO"));
     key3 = hmac_reg_key3::type_id::create("key3");
     key3.configure(.blk_parent(this));
     key3.build();
     default_map.add_reg(.rg(key3),
-                        .offset(32'h28),
+                        .offset(32'h2c),
                         .rights("WO"));
     key4 = hmac_reg_key4::type_id::create("key4");
     key4.configure(.blk_parent(this));
     key4.build();
     default_map.add_reg(.rg(key4),
-                        .offset(32'h2c),
+                        .offset(32'h30),
                         .rights("WO"));
     key5 = hmac_reg_key5::type_id::create("key5");
     key5.configure(.blk_parent(this));
     key5.build();
     default_map.add_reg(.rg(key5),
-                        .offset(32'h30),
+                        .offset(32'h34),
                         .rights("WO"));
     key6 = hmac_reg_key6::type_id::create("key6");
     key6.configure(.blk_parent(this));
     key6.build();
     default_map.add_reg(.rg(key6),
-                        .offset(32'h34),
+                        .offset(32'h38),
                         .rights("WO"));
     key7 = hmac_reg_key7::type_id::create("key7");
     key7.configure(.blk_parent(this));
     key7.build();
     default_map.add_reg(.rg(key7),
-                        .offset(32'h38),
+                        .offset(32'h3c),
                         .rights("WO"));
     digest0 = hmac_reg_digest0::type_id::create("digest0");
     digest0.configure(.blk_parent(this));
     digest0.build();
     default_map.add_reg(.rg(digest0),
-                        .offset(32'h3c),
+                        .offset(32'h40),
                         .rights("RO"));
     digest1 = hmac_reg_digest1::type_id::create("digest1");
     digest1.configure(.blk_parent(this));
     digest1.build();
     default_map.add_reg(.rg(digest1),
-                        .offset(32'h40),
+                        .offset(32'h44),
                         .rights("RO"));
     digest2 = hmac_reg_digest2::type_id::create("digest2");
     digest2.configure(.blk_parent(this));
     digest2.build();
     default_map.add_reg(.rg(digest2),
-                        .offset(32'h44),
+                        .offset(32'h48),
                         .rights("RO"));
     digest3 = hmac_reg_digest3::type_id::create("digest3");
     digest3.configure(.blk_parent(this));
     digest3.build();
     default_map.add_reg(.rg(digest3),
-                        .offset(32'h48),
+                        .offset(32'h4c),
                         .rights("RO"));
     digest4 = hmac_reg_digest4::type_id::create("digest4");
     digest4.configure(.blk_parent(this));
     digest4.build();
     default_map.add_reg(.rg(digest4),
-                        .offset(32'h4c),
+                        .offset(32'h50),
                         .rights("RO"));
     digest5 = hmac_reg_digest5::type_id::create("digest5");
     digest5.configure(.blk_parent(this));
     digest5.build();
     default_map.add_reg(.rg(digest5),
-                        .offset(32'h50),
+                        .offset(32'h54),
                         .rights("RO"));
     digest6 = hmac_reg_digest6::type_id::create("digest6");
     digest6.configure(.blk_parent(this));
     digest6.build();
     default_map.add_reg(.rg(digest6),
-                        .offset(32'h54),
+                        .offset(32'h58),
                         .rights("RO"));
     digest7 = hmac_reg_digest7::type_id::create("digest7");
     digest7.configure(.blk_parent(this));
     digest7.build();
     default_map.add_reg(.rg(digest7),
-                        .offset(32'h58),
+                        .offset(32'h5c),
                         .rights("RO"));
     msg_length_lower = hmac_reg_msg_length_lower::type_id::create("msg_length_lower");
     msg_length_lower.configure(.blk_parent(this));
     msg_length_lower.build();
     default_map.add_reg(.rg(msg_length_lower),
-                        .offset(32'h5c),
+                        .offset(32'h60),
                         .rights("RO"));
     msg_length_upper = hmac_reg_msg_length_upper::type_id::create("msg_length_upper");
     msg_length_upper.configure(.blk_parent(this));
     msg_length_upper.build();
     default_map.add_reg(.rg(msg_length_upper),
-                        .offset(32'h60),
+                        .offset(32'h64),
                         .rights("RO"));
 
     // create memories

@@ -293,7 +293,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 * **plan.md**
 
   This is the empty DV plan document that will describe the entire testbench. A
-  template for this is available [here](../../hw/dv/doc/plan.tpl.md).
+  template for this is available [here](../../hw/dv/doc/dv_plan_template.md).
 
 #### Examples
 
