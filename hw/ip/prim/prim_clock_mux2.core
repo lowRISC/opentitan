@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:clock_mux2"
+description: "two-input clock multiplexer primitive"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_generic:clock_mux2
+      - lowrisc:prim_xilinx:clock_mux2
+      - lowrisc:prim:prim_pkg
+    files:
+      - abstract/prim_clock_mux2.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
