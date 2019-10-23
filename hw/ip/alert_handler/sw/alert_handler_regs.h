@@ -36,7 +36,8 @@
 #define ALERT_HANDLER_REGEN 0
 
 // Ping timeout cycle count.
-#define ALERT_HANDLER_PING_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x10)
+#define ALERT_HANDLER_PING_TIMEOUT_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x10)
 #define ALERT_HANDLER_PING_TIMEOUT_CYC_MASK 0xffffff
 #define ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET 0
 
@@ -98,7 +99,8 @@
 #define ALERT_HANDLER_LOC_ALERT_CAUSE_LA2 2
 #define ALERT_HANDLER_LOC_ALERT_CAUSE_LA3 3
 
-// Escalation control register for alert Class A. Can not be modified if !!REGEN is false.
+// Escalation control register for alert Class A. Can not be modified if
+// !!REGEN is false.
 #define ALERT_HANDLER_CLASSA_CTRL(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x2c)
 #define ALERT_HANDLER_CLASSA_CTRL_EN 0
 #define ALERT_HANDLER_CLASSA_CTRL_LOCK 1
@@ -123,30 +125,38 @@
 #define ALERT_HANDLER_CLASSA_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x34)
 #define ALERT_HANDLER_CLASSA_CLR 0
 
-// Current accumulation value for alert Class A. Software can clear this register
-#define ALERT_HANDLER_CLASSA_ACCUM_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x38)
+// Current accumulation value for alert Class A. Software can clear this
+// register
+#define ALERT_HANDLER_CLASSA_ACCUM_CNT(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x38)
 #define ALERT_HANDLER_CLASSA_ACCUM_CNT_MASK 0xffff
 #define ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET 0
 
 // Accumulation threshold value for alert Class A.
-#define ALERT_HANDLER_CLASSA_ACCUM_THRESH(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x3c)
+#define ALERT_HANDLER_CLASSA_ACCUM_THRESH(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x3c)
 #define ALERT_HANDLER_CLASSA_ACCUM_THRESH_MASK 0xffff
 #define ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET 0
 
 // Interrupt timeout in cycles.
-#define ALERT_HANDLER_CLASSA_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x40)
+#define ALERT_HANDLER_CLASSA_TIMEOUT_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x40)
 
 // Duration of escalation phase 0 for Class A.
-#define ALERT_HANDLER_CLASSA_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x44)
+#define ALERT_HANDLER_CLASSA_PHASE0_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x44)
 
 // Duration of escalation phase 1 for Class A.
-#define ALERT_HANDLER_CLASSA_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x48)
+#define ALERT_HANDLER_CLASSA_PHASE1_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x48)
 
 // Duration of escalation phase 2 for Class A.
-#define ALERT_HANDLER_CLASSA_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x4c)
+#define ALERT_HANDLER_CLASSA_PHASE2_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x4c)
 
 // Duration of escalation phase 3 for Class A.
-#define ALERT_HANDLER_CLASSA_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x50)
+#define ALERT_HANDLER_CLASSA_PHASE3_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x50)
 
 // Escalation counter in cycles for Class A.
 #define ALERT_HANDLER_CLASSA_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x54)
@@ -163,7 +173,8 @@
 #define ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_PHASE2 0b110
 #define ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_PHASE3 0b111
 
-// Escalation control register for alert Class B. Can not be modified if !!REGEN is false.
+// Escalation control register for alert Class B. Can not be modified if
+// !!REGEN is false.
 #define ALERT_HANDLER_CLASSB_CTRL(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x5c)
 #define ALERT_HANDLER_CLASSB_CTRL_EN 0
 #define ALERT_HANDLER_CLASSB_CTRL_LOCK 1
@@ -188,30 +199,38 @@
 #define ALERT_HANDLER_CLASSB_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x64)
 #define ALERT_HANDLER_CLASSB_CLR 0
 
-// Current accumulation value for alert Class B. Software can clear this register
-#define ALERT_HANDLER_CLASSB_ACCUM_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x68)
+// Current accumulation value for alert Class B. Software can clear this
+// register
+#define ALERT_HANDLER_CLASSB_ACCUM_CNT(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x68)
 #define ALERT_HANDLER_CLASSB_ACCUM_CNT_MASK 0xffff
 #define ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET 0
 
 // Accumulation threshold value for alert Class B.
-#define ALERT_HANDLER_CLASSB_ACCUM_THRESH(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x6c)
+#define ALERT_HANDLER_CLASSB_ACCUM_THRESH(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x6c)
 #define ALERT_HANDLER_CLASSB_ACCUM_THRESH_MASK 0xffff
 #define ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET 0
 
 // Interrupt timeout in cycles.
-#define ALERT_HANDLER_CLASSB_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x70)
+#define ALERT_HANDLER_CLASSB_TIMEOUT_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x70)
 
 // Duration of escalation phase 0 for Class B.
-#define ALERT_HANDLER_CLASSB_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x74)
+#define ALERT_HANDLER_CLASSB_PHASE0_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x74)
 
 // Duration of escalation phase 1 for Class B.
-#define ALERT_HANDLER_CLASSB_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x78)
+#define ALERT_HANDLER_CLASSB_PHASE1_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x78)
 
 // Duration of escalation phase 2 for Class B.
-#define ALERT_HANDLER_CLASSB_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x7c)
+#define ALERT_HANDLER_CLASSB_PHASE2_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x7c)
 
 // Duration of escalation phase 3 for Class B.
-#define ALERT_HANDLER_CLASSB_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x80)
+#define ALERT_HANDLER_CLASSB_PHASE3_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x80)
 
 // Escalation counter in cycles for Class B.
 #define ALERT_HANDLER_CLASSB_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x84)
@@ -228,7 +247,8 @@
 #define ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_PHASE2 0b110
 #define ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_PHASE3 0b111
 
-// Escalation control register for alert Class C. Can not be modified if !!REGEN is false.
+// Escalation control register for alert Class C. Can not be modified if
+// !!REGEN is false.
 #define ALERT_HANDLER_CLASSC_CTRL(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x8c)
 #define ALERT_HANDLER_CLASSC_CTRL_EN 0
 #define ALERT_HANDLER_CLASSC_CTRL_LOCK 1
@@ -253,30 +273,38 @@
 #define ALERT_HANDLER_CLASSC_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x94)
 #define ALERT_HANDLER_CLASSC_CLR 0
 
-// Current accumulation value for alert Class C. Software can clear this register
-#define ALERT_HANDLER_CLASSC_ACCUM_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x98)
+// Current accumulation value for alert Class C. Software can clear this
+// register
+#define ALERT_HANDLER_CLASSC_ACCUM_CNT(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x98)
 #define ALERT_HANDLER_CLASSC_ACCUM_CNT_MASK 0xffff
 #define ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET 0
 
 // Accumulation threshold value for alert Class C.
-#define ALERT_HANDLER_CLASSC_ACCUM_THRESH(id) (ALERT_HANDLER##id##_BASE_ADDR + 0x9c)
+#define ALERT_HANDLER_CLASSC_ACCUM_THRESH(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0x9c)
 #define ALERT_HANDLER_CLASSC_ACCUM_THRESH_MASK 0xffff
 #define ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET 0
 
 // Interrupt timeout in cycles.
-#define ALERT_HANDLER_CLASSC_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xa0)
+#define ALERT_HANDLER_CLASSC_TIMEOUT_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xa0)
 
 // Duration of escalation phase 0 for Class C.
-#define ALERT_HANDLER_CLASSC_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xa4)
+#define ALERT_HANDLER_CLASSC_PHASE0_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xa4)
 
 // Duration of escalation phase 1 for Class C.
-#define ALERT_HANDLER_CLASSC_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xa8)
+#define ALERT_HANDLER_CLASSC_PHASE1_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xa8)
 
 // Duration of escalation phase 2 for Class C.
-#define ALERT_HANDLER_CLASSC_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xac)
+#define ALERT_HANDLER_CLASSC_PHASE2_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xac)
 
 // Duration of escalation phase 3 for Class C.
-#define ALERT_HANDLER_CLASSC_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xb0)
+#define ALERT_HANDLER_CLASSC_PHASE3_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xb0)
 
 // Escalation counter in cycles for Class C.
 #define ALERT_HANDLER_CLASSC_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xb4)
@@ -293,7 +321,8 @@
 #define ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_PHASE2 0b110
 #define ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_PHASE3 0b111
 
-// Escalation control register for alert Class D. Can not be modified if !!REGEN is false.
+// Escalation control register for alert Class D. Can not be modified if
+// !!REGEN is false.
 #define ALERT_HANDLER_CLASSD_CTRL(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xbc)
 #define ALERT_HANDLER_CLASSD_CTRL_EN 0
 #define ALERT_HANDLER_CLASSD_CTRL_LOCK 1
@@ -318,30 +347,38 @@
 #define ALERT_HANDLER_CLASSD_CLR(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xc4)
 #define ALERT_HANDLER_CLASSD_CLR 0
 
-// Current accumulation value for alert Class D. Software can clear this register
-#define ALERT_HANDLER_CLASSD_ACCUM_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xc8)
+// Current accumulation value for alert Class D. Software can clear this
+// register
+#define ALERT_HANDLER_CLASSD_ACCUM_CNT(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xc8)
 #define ALERT_HANDLER_CLASSD_ACCUM_CNT_MASK 0xffff
 #define ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET 0
 
 // Accumulation threshold value for alert Class D.
-#define ALERT_HANDLER_CLASSD_ACCUM_THRESH(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xcc)
+#define ALERT_HANDLER_CLASSD_ACCUM_THRESH(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xcc)
 #define ALERT_HANDLER_CLASSD_ACCUM_THRESH_MASK 0xffff
 #define ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET 0
 
 // Interrupt timeout in cycles.
-#define ALERT_HANDLER_CLASSD_TIMEOUT_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xd0)
+#define ALERT_HANDLER_CLASSD_TIMEOUT_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xd0)
 
 // Duration of escalation phase 0 for Class D.
-#define ALERT_HANDLER_CLASSD_PHASE0_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xd4)
+#define ALERT_HANDLER_CLASSD_PHASE0_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xd4)
 
 // Duration of escalation phase 1 for Class D.
-#define ALERT_HANDLER_CLASSD_PHASE1_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xd8)
+#define ALERT_HANDLER_CLASSD_PHASE1_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xd8)
 
 // Duration of escalation phase 2 for Class D.
-#define ALERT_HANDLER_CLASSD_PHASE2_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xdc)
+#define ALERT_HANDLER_CLASSD_PHASE2_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xdc)
 
 // Duration of escalation phase 3 for Class D.
-#define ALERT_HANDLER_CLASSD_PHASE3_CYC(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xe0)
+#define ALERT_HANDLER_CLASSD_PHASE3_CYC(id) \
+  (ALERT_HANDLER##id##_BASE_ADDR + 0xe0)
 
 // Escalation counter in cycles for Class D.
 #define ALERT_HANDLER_CLASSD_ESC_CNT(id) (ALERT_HANDLER##id##_BASE_ADDR + 0xe4)
