@@ -303,7 +303,7 @@ module spi_device #(
   logic sck_n;
   logic rst_spi_n;
 
-  prim_clock_inverter u_clk_spi (.clk_i(cio_sck_i), .clk_n_o(sck_n), .scanmode_i);
+  prim_clock_inverter u_clk_spi (.clk_i(cio_sck_i), .clk_no(sck_n), .scanmode_i);
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 
