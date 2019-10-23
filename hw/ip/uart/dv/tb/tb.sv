@@ -73,8 +73,8 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(alerts_vif)::set(null, "*.env", "alerts_vif", alerts_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(tlul_assert_vif)::set(null, "*.env", "tlul_assert_vif",
-                                         tb.dut.tlul_assert_host);
+    uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
+        dut.tlul_assert_device.tlul_assert_ctrl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual uart_if)::set(null, "*.env.m_uart_agent*", "vif", uart_if);
     $timeformat(-12, 0, " ps", 12);

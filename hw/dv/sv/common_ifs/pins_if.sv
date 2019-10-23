@@ -82,7 +82,11 @@ interface pins_if #(
       // any 'x' value on pin, that may result due to conflicting values
       // between 'value to be driven out' and the external driver's value.
       assign pins[i] = pins_oe[i] ? pins_o[i] : 1'bz;
+`ifdef VERILATOR
+      assign pins[i] = ~pins_oe[i] ? pins_int[i] : 1'bz;
+`else
       assign (pull0, pull1) pins[i] = ~pins_oe[i] ? pins_int[i] : 1'bz;
+`endif
     end
   endgenerate
 

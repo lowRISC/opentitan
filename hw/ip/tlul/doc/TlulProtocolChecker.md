@@ -33,10 +33,18 @@ requests and thereafter responses.
 defines the structs for channels A and D.
 *   In below tables, "known" means that a signal should have a value other
 than X.
+* The protocol checker has a parameter `EndpointType` which can either be
+`"Host"` or `"Device"`. The difference between the `"Host"` and `"Device"`
+variant is that some of the properties are formulated as SV assumptions in the
+former, whereas the same properties are formulated as SV assertions in the
+latter (and vice versa).  The behavior of these two checkers in DV simulations
+is identical, but in formal verification, this distinction is needed (otherwise
+some of the assertions would have to be disabled).
 
 ## **Request Channel (Channel A)**
 
 Below table lists all channel A signals and their checks.
+In `"Device"` mode some of these properties are assumptions (`_M` suffix) and in `"Host"` mode they are assertions (`_A` suffix).
 
 <table>
   <tr>
@@ -48,60 +56,60 @@ Below table lists all channel A signals and their checks.
   <tr>
    <td>a_opcode
    </td>
-   <td><strong>legalAOpcode</strong>: Only the following 3 opcodes are legal:
+   <td><strong>legalAOpcode_[M/A]</strong>: Only the following 3 opcodes are legal:
 Get, PutFullData, PutPartialData. See spec section 6.2.
    </td>
   </tr>
   <tr>
    <td>a_param
    </td>
-   <td><strong>legalAParam</strong>: This field is reserved, it must be 0. See
+   <td><strong>legalAParam_[M/A]</strong>: This field is reserved, it must be 0. See
 spec section 6.2.
    </td>
   </tr>
   <tr>
    <td>a_size
    </td>
-   <td><strong>sizeMatchesMask</strong>: a_size can be calculated from a_mask
+   <td><strong>sizeMatchesMask_[M/A]</strong>: a_size can be calculated from a_mask
 as follows: 2<sup>a_size</sup> must equal $countones(a_mask). See spec section
 4.6.
 <p>
-<strong>aKnown</strong>: Make sure it's not X when a_valid is high.
+<strong>aKnown_A</strong>: Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
    <td>a_source
    </td>
-   <td><strong>onlyOnePendingReqPerSourceID</strong>: There should be no more
+   <td><strong>pendingReqPerSrc_[M/A]</strong>: There should be no more
 than one pending request per each source ID. See spec section 5.4.
 <p>
-<strong>aKnown</strong>: Make sure it's not X when a_valid is high.
+<strong>aKnown_A</strong>: Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
    <td>a_address
    </td>
-   <td><strong>addressAlignedToSize</strong>: a_address must be aligned to
+   <td><strong>addrSizeAligned_[M/A]</strong>: a_address must be aligned to
 a_size: a_address & ((1 << a_size) - 1) == 0. See spec section 4.6.
 <p>
-<strong>aKnown: </strong>Make sure it's not X when a_valid is high.
+<strong>aKnown_A</strong>Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
    <td>a_mask
    </td>
-   <td><strong>maskMustBeContiguous</strong>: a_mask must be contiguous for Get
+   <td><strong>contigMask_[M/A]</strong>: a_mask must be contiguous for Get
 and PutFullData (but not for PutPartialData). See spec sections 4.6 and 6.2.
 <p>
-<strong>sizeMatchesMask</strong>: See a_size above.
+<strong>sizeMatchesMask_[M/A]</strong>: See a_size above.
 <p>
-<strong>aKnown: </strong>Make sure it's not X when a_valid is high.
+<strong>aKnown_A</strong>Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
    <td>a_data
    </td>
-   <td><strong>aDataKnown</strong>: a_data should not be X for opcodes
+   <td><strong>aDataKnown_[M/A]</strong>: a_data should not be X for opcodes
 PutFullData and PutPartialData (it can be X for Get). Bytes of a_data, whose
 corresponding a_mask bits are 0, can be X. See spec section 4.6.
    </td>
@@ -109,19 +117,19 @@ corresponding a_mask bits are 0, can be X. See spec section 4.6.
   <tr>
    <td>a_user
    </td>
-   <td><strong>aKnown: </strong>Make sure it's not X when a_valid is high.
+   <td><strong>aKnown_A</strong>Make sure it's not X when a_valid is high.
    </td>
   </tr>
   <tr>
    <td>a_valid
    </td>
-   <td><strong>aKnown</strong>: Make sure it's not X (except during reset).
+   <td><strong>aKnown_A</strong>: Make sure it's not X (except during reset).
    </td>
   </tr>
   <tr>
    <td>a_ready
    </td>
-   <td><strong>aReadyKnown</strong>: Make sure it's not X (except during
+   <td><strong>aReadyKnown_A</strong>: Make sure it's not X (except during
 reset).
    </td>
   </tr>
@@ -130,6 +138,7 @@ reset).
 ## **Response Channel (Channel D)**
 
 Below table lists all channel D signals and their checks.
+In `"Device"` mode some of these properties are assertions (`_A` suffix) and in `"Host"` mode they are assumptions (`_M` suffix).
 
 <table>
   <tr>
@@ -141,7 +150,7 @@ Below table lists all channel D signals and their checks.
   <tr>
    <td>d_opcode
    </td>
-   <td><strong>checkResponseOpcode</strong>: If the original request was Get,
+   <td><strong>respOpcode_[A/M]</strong>: If the original request was Get,
 then the corresponding response must be AccessAckData. Otherwise, the response
 must be AccessAck. See spec section 6.2.
    </td>
@@ -149,40 +158,40 @@ must be AccessAck. See spec section 6.2.
   <tr>
    <td>d_param
    </td>
-   <td><strong>legalDParam</strong>: This field is reserved, it must be 0. See
+   <td><strong>legalDParam_[A/M]</strong>: This field is reserved, it must be 0. See
 spec section 6.2.
    </td>
   </tr>
   <tr>
    <td>d_size
    </td>
-   <td><strong>responseSizeMustEqualReqSize</strong>: The response must have
+   <td><strong>respSzEqReqSz_[A/M]</strong>: The response must have
 the same size as the original request. See spec section 6.2.
    </td>
   </tr>
   <tr>
    <td>d_source
    </td>
-   <td><strong>responseMustHaveReq</strong>: For each response, there must have
+   <td><strong>respMustHaveReq_[A/M]</strong>: For each response, there must have
 been a corresponding request with the same source ID value. See spec section
 5.4.
 <p>
-<strong>noOutstandingReqsAtEndOfSim</strong>: Make sure that there are no
+<strong>noOutstandingReqsAtEndOfSim_A</strong>: Make sure that there are no
 outstanding requests at the end of the simulation.
 <p>
-<strong>dKnown</strong>: Make sure it's not X when d_valid is high.
+<strong>dKnown_A</strong>: Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_sink
    </td>
-   <td><strong>dKnown</strong>: Make sure it's not X when d_valid is high.
+   <td><strong>dKnown_A</strong>: Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_data
    </td>
-   <td><strong>dDataKnown</strong>: d_data should not be X for AccessAckData.
+   <td><strong>dDataKnown_[A/M]</strong>: d_data should not be X for AccessAckData.
 Bytes of d_data, whose corresponding mask bits of the original request are 0,
 can be X. See spec section 4.6.
    </td>
@@ -190,25 +199,25 @@ can be X. See spec section 4.6.
   <tr>
    <td>d_error
    </td>
-   <td><strong>dKnown: </strong>Make sure it's not X when d_valid is high.
+   <td><strong>dKnown_A</strong>Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_user
    </td>
-   <td><strong>dKnown: </strong>Make sure it's not X when d_valid is high.
+   <td><strong>dKnown_A</strong>Make sure it's not X when d_valid is high.
    </td>
   </tr>
   <tr>
    <td>d_valid
    </td>
-   <td><strong>dKnown</strong>: Make sure it's not X (except during reset).
+   <td><strong>dKnown_A</strong>: Make sure it's not X (except during reset).
    </td>
   </tr>
   <tr>
    <td>d_ready
    </td>
-   <td><strong>dReadyKnown: </strong>Make sure it's not X (except during
+   <td><strong>dReadyKnown_A</strong>Make sure it's not X (except during
 reset).
    </td>
   </tr>

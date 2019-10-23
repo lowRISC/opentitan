@@ -40,9 +40,9 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     if (!uvm_config_db#(devmode_vif)::get(this, "", "devmode_vif", cfg.devmode_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(tlul_assert_vif)::get(this, "", "tlul_assert_vif",
-                                              cfg.tlul_assert_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get tlul_assert_vif from uvm_config_db")
+    if (!uvm_config_db#(tlul_assert_ctrl_vif)::get(this, "", "tlul_assert_ctrl_vif",
+          cfg.tlul_assert_ctrl_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get tlul_assert_ctrl_vif from uvm_config_db")
     end
 
     // create components

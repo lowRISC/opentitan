@@ -4,14 +4,18 @@
 
 module rv_dm_bind;
 
-  bind rv_dm tlul_assert tlul_assert_host (
+  bind rv_dm tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_d_i),
     .d2h  (tl_d_o)
   );
 
-  bind rv_dm tlul_assert tlul_assert_device (
+  bind rv_dm tlul_assert #(
+    .EndpointType("Host")
+  ) tlul_assert_host (
     .clk_i,
     .rst_ni,
     .h2d  (tl_h_o),

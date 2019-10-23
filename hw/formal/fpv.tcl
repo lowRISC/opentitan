@@ -69,29 +69,6 @@ if {$env(FPV_TOP) == "rv_dm"} {
 # assume properties for inputs
 #-------------------------------------------------------------------------
 
-# For generated *_reg_top modules, below assertion solely depends on
-# module inputs a_valid and a_user.parity_en, and therefore is
-# assumed to be correct
-assume -from_assert -remove_original -regexp {^\w*\.u_reg\.reqParity}
-
-# For all TL-UL host-interfaces (i.e. ports interfacing a host), A-channel is
-# an input, so inputs a_opcode, a_param, etc. are constrained by below assuames.
-# Note that all tlul_assert checkers for host interfaces are called tlul_assert_host*
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.legalAOpcode}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.legalAParam}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.sizeMatchesMask}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.sizeGTEMask}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.onlyOnePendingReqPerSourceID}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.addressAlignedToSize}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_host\w*\.maskMustBeContiguous}
-
-# For all TL-UL device-interfaces (i.e. ports interfacing a device), D-channel is an
-# input, so inputs d_* are constrained by below assumes
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_device\w*\.checkResponseOpcode}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_device\w*\.legalDParam}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_device\w*\.responseSizeMustEqualReqSize}
-assume -from_assert -remove_original -regexp {^\w*\.tlul_assert_device\w*\.responseMustHaveReq}
-
 # Notes on above regular expressions: ^ indicates the beginning of the string;
 # \w* includes all letters a-z, A-Z, and the underscore, but not the period.
 # And \. is for period (with escape). These regular expressions make sure that

@@ -4,14 +4,19 @@
 
 module tlul_socket_m1_bind;
 
-  bind tlul_socket_m1 tlul_assert_multiple #(M) tlul_assert_host (
+  bind tlul_socket_m1 tlul_assert_multiple #(
+    .N(M),
+    .EndpointType("Host")
+  ) tlul_assert_host (
     .clk_i,
     .rst_ni,
     .h2d    (tl_h_i),
     .d2h    (tl_h_o)
   );
 
-  bind tlul_socket_m1 tlul_assert tlul_assert_device (
+  bind tlul_socket_m1 tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d    (tl_d_o),

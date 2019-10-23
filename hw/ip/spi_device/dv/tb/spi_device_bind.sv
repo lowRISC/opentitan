@@ -4,7 +4,9 @@
 
 module spi_device_bind;
 
-  bind spi_device tlul_assert tlul_assert_host (
+  bind spi_device tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),

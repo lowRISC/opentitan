@@ -4,7 +4,9 @@
 
 module flash_ctrl_bind;
 
-  bind flash_ctrl tlul_assert tlul_assert_host (
+  bind flash_ctrl tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),

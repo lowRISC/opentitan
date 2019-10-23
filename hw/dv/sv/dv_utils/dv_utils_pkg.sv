@@ -26,7 +26,7 @@ package dv_utils_pkg;
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
   typedef virtual pins_if #(NUM_MAX_ALERTS)     alerts_vif;
   typedef virtual pins_if #(1)                  devmode_vif;
-  typedef virtual tlul_assert                   tlul_assert_vif;
+  typedef virtual pins_if #(1)                  tlul_assert_ctrl_vif;
 
   // interface direction / mode - Host or Device
   typedef enum bit {

@@ -101,8 +101,8 @@ module tb;
     uvm_config_db#(esc_en_vif)::set(null, "*.env", "esc_en_vif", esc_en_if);
     uvm_config_db#(entropy_vif)::set(null, "*.env", "entropy_vif", entropy_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(tlul_assert_vif)::set(null, "*.env", "tlul_assert_vif",
-                                         tb.dut.tlul_assert_host);
+    uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
+        dut.tlul_assert_device.tlul_assert_ctrl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

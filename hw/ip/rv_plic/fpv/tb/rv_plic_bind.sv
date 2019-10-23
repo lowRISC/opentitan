@@ -11,7 +11,9 @@ module rv_plic_bind;
     .irq_id_o,
     .msip_o
   );
-  bind rv_plic tlul_assert tlul_assert_host(
+  bind rv_plic tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d(tl_i),

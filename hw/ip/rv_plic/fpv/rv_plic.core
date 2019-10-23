@@ -10,11 +10,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:rv_plic_example
     files:
-      - ../rtl/rv_plic_reg_pkg.sv
-      - ../rtl/rv_plic_reg_top.sv
-      - ../rtl/rv_plic.sv
       - tb/rv_plic_bind.sv
       - vip/rv_plic_assert.sv
     file_type: systemVerilogSource
@@ -22,7 +19,7 @@ filesets:
 targets:
   default: &default_target
     toplevel:
-      - ../rtl/rv_plic.sv
+      - rv_plic
     filesets:
       - files_fpv
     default_tool: jg
