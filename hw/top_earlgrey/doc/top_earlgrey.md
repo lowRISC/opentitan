@@ -121,7 +121,7 @@ The main processor (`core_ibex`) is a RISC-V core based upon the PULPino
 zero-riscy core, modified to meet Comportability requirements. See the
 [core_ibex specification](https://ibex-core.readthedocs.io/en/latest/)
 for more details of the core.
-In addition to the standard RISC-V functionality, Ibex will eventually implement M (machine) and U (user) mode (currently just M) per the RISC-V standard.
+In addition to the standard RISC-V functionality, Ibex implements M (machine) and U (user) mode per the RISC-V standard.
 Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
 #### JTAG / Debug module
@@ -144,6 +144,25 @@ See the details in the Ibex specification.
 See also the
 [OpenTitan PLIC specification](https://bubble.servers.lowrisc.org/hw/ip/rv_plic/doc/rv_plic.html)
 for more details.
+
+#### Performance
+
+Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 2.36 on the earlgrey verilator system.
+Performance improvements are ongoing, including the following items being considered:
+
+1. Adding a new ALU to calculate branch targets to remove a cycle of latency on taken conditional branches (currently the single ALU is used to compute the branch condition then the branch target the cycle following if the branch is taken).
+2. A 3rd pipeline stage to perform register writeback, this will remove a cycle of latency from all loads and stores and prevent a pipeline stall where a response to a load or store is available the cycle after the request.
+3. Implement a single-cycle multiplier.
+4. Produce an imprecise exception on an error response to a store allowing Ibex to continue executing past a store without waiting for the response.
+
+The method for including these features, e.g. whether they will be configurable options or not, is still being discussed.
+
+The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/pipeline_details.html) section.
+
+The CoreMark performance achieved relies in part on single-cycle access to instruction memory.
+An instruction cache is planned to help maintain this performance when using flash memory that will likely not have single-cycle access times.
+
+CoreMark was compiled with GCC 9.2.0 with flags: `-march=rv32imc -mabi=ilp32 -mcmodel=medany -mtune=sifive-3-series -O3 -falign-functions=16 -funroll-all-loops -finline-functions -falign-jumps=4 -mstrict-align`
 
 ### Memory
 
