@@ -12,6 +12,9 @@ build*/
 # Sphinx result
 _build/
 
+# Generated register headers
+hw/ip/*/sw
+
 # JasperGold FPV Result
 jgproject/
 
