@@ -202,6 +202,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       exp_pins = '0;
       exp_intr_state = ~interrupts;
     end
+    // if reset, pin should be reset to 0
+    if (!cfg.clk_rst_vif.rst_n) begin
+      exp_pins = '0;
+      exp_intr_state = '0;
+      `uvm_info(`gfn, "interrupt pin expect value set to 0 due to reset", UVM_LOW)
+    end
     `DV_CHECK_EQ(act_pins, exp_pins)
     csr = get_interrupt_csr("intr_state", "", indices, scope);
     csr_rd_check(.ptr(csr), .compare_value(exp_intr_state), .compare_mask(interrupts));
@@ -215,9 +221,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     // check which test type
     case (common_seq_type)
-      "intr_test": run_intr_test_vseq(num_times);
-      "tl_errors": run_tl_errors_vseq(num_times);
-      default    : run_csr_vseq_wrapper(num_times);
+      "intr_test":                  run_intr_test_vseq(num_times);
+      "tl_errors":                  run_tl_errors_vseq(num_times);
+      "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
+      default:                      run_csr_vseq_wrapper(num_times);
     endcase
   endtask
 
@@ -303,6 +310,63 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     end
     `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
+  endtask
+
+  // task to insert random reset within the input vseqs list, then check all CSR values
+  virtual task run_stress_all_with_rand_reset_vseq(int num_times=1);
+    string stress_seq_name;
+    void'($value$plusargs("stress_seq=%0s", stress_seq_name));
+
+    for (int i = 1; i <= num_times; i++) begin
+      bit ongoing_reset;
+      bit do_read_and_check_all_csrs;
+      fork
+        begin: isolation_fork
+          fork : run_test_seqs
+            begin : seq_wo_reset
+              uvm_sequence seq;
+              dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) dv_vseq;
+
+              seq = create_seq_by_name(stress_seq_name);
+              `downcast(dv_vseq, seq)
+              dv_vseq.do_dut_init = 0;
+              dv_vseq.set_sequencer(p_sequencer);
+              `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
+              dv_vseq.start(p_sequencer);
+              wait (ongoing_reset == 0)
+               `uvm_info(`gfn, $sformatf("Finished run %0d/%0d w/o reset", i, num_trans), UVM_LOW)
+            end
+            begin : issue_rand_reset
+              cfg.clk_rst_vif.wait_clks(delay);
+              ongoing_reset = 1'b1;
+              `uvm_info(`gfn, $sformatf("Reset is issued for run %0d/%0d", i, num_trans), UVM_LOW)
+              apply_reset("HARD");
+              ongoing_reset = 1'b0;
+              do_read_and_check_all_csrs = 1'b1;
+              csr_utils_pkg::clear_outstanding_access();
+            end
+          join_any
+          p_sequencer.tl_sequencer_h.stop_sequences();
+          disable fork;
+          // delay to avoid race condition when sending item and checking no item after reset occur at
+          // the same time
+          #1ps;
+          if (do_read_and_check_all_csrs) read_and_check_all_csrs();
+        end : isolation_fork
+      join
+    end
+  endtask
+
+  // task to read all csrs and check against ral expected value
+  // used after reset
+  virtual task read_and_check_all_csrs();
+    uvm_reg       csrs[$];
+    ral.get_registers(csrs);
+    csrs.shuffle();
+
+    foreach (csrs[i]) begin
+      csr_rd_check(.ptr(csrs[i]), .compare_vs_ral(1));
+    end
   endtask
 
 endclass

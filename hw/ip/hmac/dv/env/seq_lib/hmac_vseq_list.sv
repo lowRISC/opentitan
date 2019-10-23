@@ -12,4 +12,3 @@
 `include "hmac_common_vseq.sv"
 `include "hmac_datapath_stress_vseq.sv"
 `include "hmac_stress_all_vseq.sv"
-`include "hmac_reset_vseq.sv"

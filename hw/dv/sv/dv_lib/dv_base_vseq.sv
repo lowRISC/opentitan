@@ -12,6 +12,16 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // number of iterations to run the test seq - please override constraint in extended vseq
   // randomization for this is disabled in pre_start since we don't want to re-randomize it again
   rand uint num_trans;
+  rand uint delay;
+  constraint delay_c {
+    delay dist {
+        0                   :/ 1,
+        [1      :100]       :/ 1,
+        [101    :10_000]    :/ 8,
+        [10_001 :1_000_000] :/ 1
+    };
+  }
+
   constraint num_trans_c {
     num_trans inside {[1:20]};
   }
@@ -60,8 +70,12 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    if (kind == "HARD") cfg.clk_rst_vif.apply_reset();
-    if (cfg.has_ral)    ral.reset(kind);
+    if (kind == "HARD") begin
+      csr_utils_pkg::reset_occurred();
+      cfg.clk_rst_vif.apply_reset();
+      csr_utils_pkg::reset_cleared();
+    end
+    if (cfg.has_ral) ral.reset(kind);
   endtask
 
   virtual task wait_for_reset(string reset_kind = "HARD");

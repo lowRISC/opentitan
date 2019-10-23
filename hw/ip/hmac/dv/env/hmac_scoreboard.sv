@@ -84,6 +84,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 // any bytes left after hmac_process will be added to the wr_cnt
                 if (msg_q.size() % 4 != 0) incr_wr_and_check_fifo_full();
                 msg_q.delete();
+              end else if (hmac_start) begin
+                msg_q.delete(); // make sure did not include previous msg
               end
             end else if (item.a_data[HashStart] == 1) begin
               void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
