@@ -37,8 +37,8 @@ class TestCoreVerilator:
     def sim_top_earlgrey(self, tmp_path, sim_top_build, sw_test_bin, rom_bin):
         cmd_sim = [
             str(sim_top_build),
-            '--meminit', str(sw_test_bin)),
-            '--rominit', str(rom_bin))
+            '--meminit', str(sw_test_bin),
+            '--rominit', str(rom_bin)
         ]
         p_sim = test_utils.Process(
             cmd_sim,
@@ -55,9 +55,9 @@ class TestCoreVerilator:
     def test_openocd_riscv_compliancetest(self, tmp_path, sim_top_earlgrey,
                                           topsrcdir, openocd):
         """Run RISC-V Debug compliance test built into OpenOCD."""
-        assert subprocess.call([openocd, '--version']) == 0
+        assert subprocess.call([str(openocd), '--version']) == 0
         cmd_openocd = [
-            openocd,
+            str(openocd),
             '-s', str(topsrcdir / 'util' / 'openocd'),
             '-f', 'board/lowrisc-earlgrey-verilator.cfg',
             '-c', 'init; riscv test_compliance; shutdown'

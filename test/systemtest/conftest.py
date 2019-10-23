@@ -100,8 +100,10 @@ def sim_top_build(pytestconfig):
 @pytest.fixture(scope="session")
 def openocd(pytestconfig):
     """Return path to OpenOCD executable."""
-    path = Path(pytestconfig.getoption('openocd')).resolve()
-    assert path.is_file()
+    path = Path(pytestconfig.getoption('openocd'))
+    # TODO: Require that the OpenOCD executable be passed as a command-line
+    # argument in the future, rather than relying on $PATH lookup.
+    # assert path.is_file()
     return path
 
 @pytest.fixture(scope="session")
