@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr AES HWIP Technical Specification }}
-{{% regfile aes.hjson}}
+{{% regfile ../data/aes.hjson}}
 
 
 {{% section1 Overview }}

@@ -40,9 +40,9 @@ testlist = [
     ["wave.html", False,
      "./wavetool.py wavegen/examples/* > ", ""],
     ["uart_rtl", True,
-     "./regtool.py -r -t ", " ../hw/ip/uart/doc/uart.hjson"],
+     "./regtool.py -r -t ", " ../hw/ip/uart/data/uart.hjson"],
     ["uart_dv", True,
-     "./regtool.py -s -t ", " ../hw/ip/uart/doc/uart.hjson"],
+     "./regtool.py -s -t ", " ../hw/ip/uart/data/uart.hjson"],
     # gp test multireg
     ["gp.html", False,
      "./docgen.py docgen/examples/gp.md > ", ""],
@@ -64,11 +64,11 @@ testlist = [
      "./docgen.py docgen/examples/badwen.md > ", ""],
     # generating include define headers
     ["uart.h", False,
-     "./regtool.py -D ../hw/ip/uart/doc/uart.hjson > ", ""],
+     "./regtool.py -D ../hw/ip/uart/data/uart.hjson > ", ""],
     ["gpio.h", False,
-     "./regtool.py -D ../hw/ip/gpio/doc/gpio.hjson > ", ""],
+     "./regtool.py -D ../hw/ip/gpio/data/gpio.hjson > ", ""],
     ["spi_device.h", False,
-     "./regtool.py -D ../hw/ip/spi_device/doc/spi_device.hjson > ", ""]
+     "./regtool.py -D ../hw/ip/spi_device/data/spi_device.hjson > ", ""]
 ] # yapf: disable
 
 

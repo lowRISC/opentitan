@@ -23,6 +23,7 @@ ifeq ($(VERBOSE),1)
   toolflags      += -v
 endif
 
+dir_hjson = data
 
 ips_reg = $(addsuffix _reg, $(IPS))
 
@@ -33,18 +34,18 @@ all: $(ips_reg) $(tops_gen)
 regs: $(ips_reg)
 
 $(ips_reg):
-	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/doc/$(subst _reg,,$@).hjson ]; then \
-		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/doc/$(subst _reg,,$@).hjson; \
+	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
+		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 		${PRJ_DIR}/util/regtool.py -D -o ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/sw/$(subst _reg,_regs,$@).h\
-		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/doc/$(subst _reg,,$@).hjson; \
+		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 		${PRJ_DIR}/util/regtool.py -s -t ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/dv/env \
-		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)//doc/$(subst _reg,,$@).hjson; \
-	else if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/doc/$@.hjson ]; then \
-		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/doc/$@.hjson; \
+		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
+	else if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson ]; then \
+		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson; \
 		${PRJ_DIR}/util/regtool.py -D -o ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/sw/$(subst _reg,_regs,$@).h \
-		${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/doc/$@.hjson; \
+		${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson; \
 		${PRJ_DIR}/util/regtool.py -s -t ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/dv/env \
-		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)//doc/$@.hjson; \
+		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$@.hjson; \
 	fi \
 	fi
 

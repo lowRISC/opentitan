@@ -67,7 +67,7 @@ Generate RTL from register definition:
 ```
 $ cd $REPO_TOP/util
 $ mkdir /tmp/rtl
-$ ./regtool.py -r -t /tmp/rtl ../hw/ip/uart/doc/uart_reg.hjson
+$ ./regtool.py -r -t /tmp/rtl ../hw/ip/uart/data/uart_reg.hjson
 ```
 
 Generate DV UVM class from register definition:
@@ -75,7 +75,7 @@ Generate DV UVM class from register definition:
 ```console
 $ cd $REPO_TOP/util
 $ mkdir /tmp/dv
-$ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/doc/uart_reg.hjson
+$ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart_reg.hjson
 ```
 
 If target directory is not specified, tool creates `{module}_regs.sv` file under

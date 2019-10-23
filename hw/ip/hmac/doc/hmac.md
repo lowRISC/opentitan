@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr HMAC HWIP Technical Specification }}
-{{% regfile hmac.hjson }}
+{{% regfile ../data/hmac.hjson }}
 
 {{% section1 Overview }}
 

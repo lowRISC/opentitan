@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr GPIO HWIP Technical Specification }}
-{{% regfile gpio.hjson }}
+{{% regfile ../data/gpio.hjson }}
 
 {{% section1 Overview }}
 

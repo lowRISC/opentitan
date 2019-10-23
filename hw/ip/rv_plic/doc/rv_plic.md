@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Interrupt Controller Technical Specification }}
-{{% regfile rv_plic.hjson }}
+{{% regfile ../data/rv_plic.hjson }}
 
 {{% section1 Overview }}
 

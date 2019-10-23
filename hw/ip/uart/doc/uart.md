@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr UART HWIP Technical Specification }}
-{{% regfile uart.hjson}}
+{{% regfile ../data/uart.hjson}}
 
 {{% section1 Overview }}
 

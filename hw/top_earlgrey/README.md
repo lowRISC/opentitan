@@ -40,7 +40,7 @@ Main configuration for Top Earlgrey is in `doc/top_earlgrey.hjson`. The users
 need to specify the list of peripherals, memories, crossbars, and the interrupts
 in the configuration file. The tool then reads relavant information from the
 each peripheral blocks' configuration. For instance, if `uart` module is used,
-the tool reads `hw/ip/uart/doc/uart{_reg}.hjson` and parses the information such
+the tool reads `hw/ip/uart/data/uart{_reg}.hjson` and parses the information such
 as input/output, the size of its register space, and interrupts.
 
 For the memories, the tool utilizes the `type` and instantiates relavant modules

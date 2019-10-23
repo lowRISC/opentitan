@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Timer HWIP Technical Specification }}
-{{% regfile rv_timer.hjson }}
+{{% regfile ../data/rv_timer.hjson }}
 
 {{% section1 Overview }}
 

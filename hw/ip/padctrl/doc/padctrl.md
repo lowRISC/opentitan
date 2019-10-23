@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Padctrl Technical Specification }}
-{{% regfile padctrl.hjson }}
+{{% regfile ../data/padctrl.hjson }}
 
 
 {{% section1 Overview }}
