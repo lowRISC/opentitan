@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Pinmux Technical Specification }}
-{{% regfile pinmux.hjson }}
+{{% regfile ../data/pinmux.hjson }}
 
 
 {{% section1 Overview }}

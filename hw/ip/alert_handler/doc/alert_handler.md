@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Alert Handler Technical Specification }}
-{{% regfile alert_handler.hjson }}
+{{% regfile ../data/alert_handler.hjson }}
 
 
 {{% section1 Overview }}

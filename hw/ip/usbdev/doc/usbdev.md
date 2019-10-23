@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Simple USB Full Speed Device IP Technical Specification }}
-{{% regfile usbdev.hjson }}
+{{% regfile ../data/usbdev.hjson }}
 
 {{% section1 Overview }}
 

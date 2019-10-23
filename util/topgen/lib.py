@@ -24,9 +24,9 @@ def is_ipcfg(ip: Path) -> bool:  # return bool
 
 def search_ips(ip_path):  # return list of config files
     # list the every hjson file
-    p = ip_path.glob('*/doc/*.hjson')
+    p = ip_path.glob('*/data/*.hjson')
 
-    # filter only ip_name/doc/ip_name{_reg|''}.hjson
+    # filter only ip_name/data/ip_name{_reg|''}.hjson
     ips = [x for x in p if is_ipcfg(x)]
 
     log.info("Filtered-in IP files: %s" % repr(ips))

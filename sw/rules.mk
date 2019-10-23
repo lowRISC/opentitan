@@ -114,10 +114,10 @@ $(LIB_BUILD_DIR)/%.ppo: $(EXT_COMMON_DIR)/$$*.S
 	$(CC) $(CFLAGS) -E -MMD -c $(INCS) -o $@ $<
 
 # regtool
-$(LIB_BUILD_DIR)/%_regs.h: $(SW_ROOT_DIR)/../hw/ip/$$*/doc/$$*.hjson
+$(LIB_BUILD_DIR)/%_regs.h: $(SW_ROOT_DIR)/../hw/ip/$$*/data/$$*.hjson
 	$(REGTOOL) -D -o $@ $<
 
-$(LIB_BUILD_DIR)/%_regs.h: $(SW_ROOT_DIR)/../hw/ip/$$*/doc/$$*_regs.hjson
+$(LIB_BUILD_DIR)/%_regs.h: $(SW_ROOT_DIR)/../hw/ip/$$*/data/$$*_regs.hjson
 	$(REGTOOL) -D -o $@ $<
 
 # chip_info

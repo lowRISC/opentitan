@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr USB UART HWIP Technical Specification }}
-{{% regfile usbuart.hjson}}
+{{% regfile ../data/usbuart.hjson}}
 
 {{% section1 Overview }}
 

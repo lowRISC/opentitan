@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr SPI Device HWIP Technical Specification }}
-{{% regfile spi_device.hjson }}
+{{% regfile ../data/spi_device.hjson }}
 
 {{% section1 Overview }}
 

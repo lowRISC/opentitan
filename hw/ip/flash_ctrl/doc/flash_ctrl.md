@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr Flash Controller HWIP Technical Specification }}
-{{% regfile flash_ctrl.hjson }}
+{{% regfile ../data/flash_ctrl.hjson }}
 {{% toc 3 }}
 {{% section1 Overview }}
 

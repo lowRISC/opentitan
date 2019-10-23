@@ -105,7 +105,7 @@ def generate_plic(top, out_path):
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from rv_plic directory directly.
     # Next, if the ip top gen tool is placed in util/ we can import the library.
-    tpl_path = out_path / '../ip/rv_plic/doc'
+    tpl_path = out_path / '../ip/rv_plic/data'
     hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
     rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
 
