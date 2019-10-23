@@ -28,14 +28,14 @@ Please refer to [verilator](../../../doc/ug/getting_started_verilator.md) and [f
 
 ## Build boot ROM and demo program
 
-If building for verilator, please add the extra option `SIM=1`
+_If building for verilator, please add the extra option `SIM=1`._
+
 Build `boot_rom`:
 ```console
 $ cd ${REPO_TOP}
 $ make -C sw SW_DIR=boot_rom clean all
 ```
 
-if building for verilator, please add the extra optoin `SIM=1`
 Build `hello_world` program:
 ```console
 $ cd ${REPO_TOP}
