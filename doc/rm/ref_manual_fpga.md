@@ -8,11 +8,10 @@ Specifically, it provides instructions on SW development flows, testing and bitf
 ## Usage Options
 
 There are two ways to use OpenTitan on the FPGA.
-The first is to build the design from scratch using Vivado tools.
-The second is to program the FPGA with a released bitfile using storage devices.
-
-For the first option, please refer to the [getting_started_fpga](../ug/fpga/getting_started_fpga.md) guide.
-For the second option, please refer to the [quick_start_fpga](../ug/fpga/quick_start_fpga.md) guide.
+- The first is to build the design from scratch using Vivado.
+  Refer to the [Getting Started FPGA](../ug/getting_started_fpga.md) guide for more information.
+- The second is to program the FPGA with a released bitfile using storage devices.
+  Refer to the [Quickstart Guide](../ug/quickstart.md) guide for instructions on this approach.
 
 ## FPGA SW Development Flow
 

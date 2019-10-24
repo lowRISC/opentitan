@@ -17,23 +17,28 @@ $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_v
 $ --flashinit=sw/examples/hello_world/hello_world.vmem
 ```
 
-See the [getting started](getting_started_verilator.md) for a complete guide.
+See the [Getting Started with Verilator Guide](getting_started_verilator.md) for more information.
 
 ## Running on an FPGA
 
-This description assumes the usage of the Nexys Video board.
+_Make sure you followed the install instructions to [prepare the system](install_instructions.md#system-preparation) and to install the [software development tools](install_instructions.md#software-development)._
 
-_Make sure you followed the install instructions to [prepare the system](install_instructions.md#system-preparation) and to install the [software development tools](install_instructions.md#software-development) and [Xilinx Vivado](install_instructions.md#xilinx-vivado)._
+Do you want to try out the design without installing EDA tools and waiting for a long build?
+Then you have come to the right place!
 
-Build the software and the bitstream and then program the board
+You need the following things:
 
-```console
-$ cd $REPO_TOP
-$ make -C sw/boot_rom clean all
-$ make -C sw/examples/hello_world clean all
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
-$ fusesoc --cores-root . run --target=synth --setup --build lowrisc:systems:top_earlgrey_nexysvideo
-$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
-```
+* A [Nexys Video FPGA board](https://store.digilentinc.com/nexys-video-artix-7-fpga-trainer-board-for-multimedia-applications/)
+  (Unfortunately we do not provide presynthesized bitstreams for other FPGA boards right now.)
+* A USB pen drive or a microSD card (TODO: specify minimum size)
 
-See the [getting started](getting_started_fpga.md) for a complete guide.
+Once you have obtained these things, follow these steps to get started.
+
+1. Download a release bitstream from the [OpenTitan Github Releases page](https://github.com/lowRISC/opentitan/releases).
+2. Connect the Nexys Video board to your PC over USB.
+   TODO: Give good instructions on permission problems/udev rules.
+3. Follow the instructions in Section 2.3 of [NexysVideo reference manual](https://reference.digilentinc.com/_media/reference/programmable-logic/nexys-video/nexysvideo_rm.pdf) to prepare the MicroSD card or the USB pen drive, and to configure the FPGA with this bitstream.
+4. TODO: include steps on how to build software, spiflash it, and expectations on what should be seen on the board when the software works.
+
+
+See the [Getting Started on FPGAs Guide](getting_started_fpga.md) for full instructions how to build your own bitstream.
