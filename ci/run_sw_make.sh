@@ -31,6 +31,7 @@ fi
 readonly BUILD_TARGETS=("boot_rom"
   "examples/hello_usbdev"
   "examples/hello_world"
+  "tests/aes"
   "tests/flash_ctrl"
   "tests/hmac"
   "tests/rv_timer"

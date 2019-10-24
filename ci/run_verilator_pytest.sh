@@ -15,6 +15,7 @@ SW_BUILD_PATH="${SW_BUILD_PATH:-$SW_BUILD_DEFAULT}"
 BOOT_ROM_TARGET="boot_rom/boot_rom.elf"
 
 TEST_TARGETS=(
+  "tests/aes/aes_test.elf"
   "tests/flash_ctrl/flash_test.elf"
   "tests/hmac/sha256_test.elf"
   "tests/rv_timer/rv_timer_test.elf"
@@ -23,6 +24,7 @@ TEST_TARGETS=(
 if [[ ! -z ${MAKE_BUILD+x} ]]; then
   BOOT_ROM_TARGET="sw/device/sim/boot_rom/rom.elf"
   TEST_TARGETS=(
+    "sw/device/sim/tests/aes/sw.elf"
     "sw/device/sim/tests/flash_ctrl/sw.elf"
     "sw/device/sim/tests/hmac/sw.elf"
     "sw/device/sim/tests/rv_timer/sw.elf"
