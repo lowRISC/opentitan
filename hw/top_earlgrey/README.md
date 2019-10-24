@@ -25,7 +25,7 @@ It generates files below:
     earlgrey has only one main crossbar. tlgen library is used to generate
     these files.
 - `rtl/rv_plic*.sv` and `doc/rv_plic.hjson`: Interrupt controller module.
-    `hw/ip/rv_plic/doc/reg_rv_plic.py` tool is used to create RV_PLIC having
+    `hw/ip/rv_plic/util/reg_rv_plic.py` tool is used to create RV_PLIC having
     the number of interrupts specified in the hjson.
 
 ### Adding new blocks into top level
