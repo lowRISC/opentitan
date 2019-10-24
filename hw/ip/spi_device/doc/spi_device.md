@@ -8,7 +8,7 @@
 {{% section2 Features }}
 
 - Single-bit wide SPI device interface implementing a raw data transfer protocol
-  termed "firmware mode"
+  termed "Generic Mode"
   - No address bits, data is sent and received from peripheral pins to/from an
     internal buffer
   - Intended to be used to bulk-load data into and out of the chip
@@ -72,7 +72,7 @@ edges, polarities, and bit orders are described later.
 
 {{% section2 Defining "Generic Mode" }}
 
-Firmware mode, as implemented by this SPI device, is used to bulk copy data in
+Generic mode, as implemented by this SPI device, is used to bulk copy data in
 and out of the chip using the pins as shown above. In general, it is used to
 load firmware into the chip, but can be used for any data transfer into or out
 of the chip. The transfers are "generic" in the sense that there is no
@@ -103,10 +103,10 @@ The following diagram shows the expected data transfer in SPI Generic mode.
 
 In this diagram, bursts of data transfer are shown as "pages" of firmware
 content being driven into the device. The size of the page is not relevant,
-though it must be less than the size of the internal SPI Device SRAM. (Typically
+though it must be less than the size of the internal SPI Device SRAM. Typically
 the SRAM is divided in half for RX and TX buffers, but the boundary is
 configurable. The total size of RX and TX buffer must fit in the SPI device
-SRAM.) Since the external SPI Host is in charge of the clock (SCK), it controls
+SRAM. Since the external SPI Host is in charge of the clock (SCK), it controls
 all aspects of the transfer, including the size of the page. But it is done in
 coordination with software running on the device that manages the higher level
 protocol.
@@ -117,7 +117,7 @@ during every received page, the first transmitted page can be ignored. After the
 first page is received, software will get alerted as to its completion (via an
 RX interrupt), and will execute whatever integrity check is required on that
 data. It can then prepare its response to page zero by writing into the SPI
-Device TX buffer. What it writes into the TX buffer is of the concern of the
+Device TX buffer. What it writes into the TX buffer the concern of the
 higher level protocol. It could be a "good" indication, a full echo of the RX
 data, or a hash of the received contents. The decision is not in scope for this
 specification.
@@ -133,16 +133,16 @@ The transfer continues until all received data is taken in, and responded back.
 In this protocol the last "received" page of data is a "don't care" as long
 as the response is transmitted successfully.
 
-### Generic Firmware Mode
+### Generic Mode
 
-Taking this example as a guide, we can see the generic method of the SPI
-firmware mode. On every active SCK clock edge, data is received from the MOSI
-pin into the SPI device, and data is transmitted on the MISO pin.. Received data
+Taking this example as a guide, we can see the general method of the SPI
+Generic Mode. On every active SCK clock edge, data is received from the MOSI
+pin into the SPI device, and data is transmitted on the MISO pin. Received data
 is gathered into bytes and written into the RX circular buffer in the SPI Device
 SRAM as it is accumulated. Whatever data exists in the TX circular buffer is
 serialized and transmitted. Transfers are framed using the active low chip
-select pin SCB. What happens when receive data arrives and the RX circular
-buffer is full, or when transmits encounter an empty TX circular buffer are
+select pin SCB. What happens when data arrives and the RX circular buffer is
+full, or when the transmitter encounters an empty TX circular buffer are
 error conditions discussed in the Design Details section that follows.
 
 {{% section2 Block Diagram }}
@@ -164,16 +164,16 @@ The interface module also serializes data from the small transmit FIFO
 active edge. The bit order within the byte can be configured with configuration
 register field !!CFG.tx_order. It is expected that software has prepared TX data
 as per the SPI Flash or general Firmware Mode described in the "Defining
-Firmware Mode" section above. But because SCK is not under the control of
+Generic Mode" section above. But because SCK is not under the control of
 software or the device (it is driven by the external SPI host), it is possible
 that there is no data ready in the TXFIFO when chip select becomes active and
 the interface needs to send data on the MISO pin. Either software has not
-prepared TX data  or software does not care about the contents of the TX data -
+prepared TX data or software does not care about the contents of the TX data -
 then the hardware will send whatever lingering data is in the empty TXFIFO. If
 this is a security risk, then software should at least soft-reset the contents
 of the TXFIFO using the !!CONTROL.rst_txfifo register. The soft-reset signal
-doesn't have synchronizer to SCK clock, so the software shall control the reset
-signal when SPI interface is in idle state.
+is not synchronized to the SCK clock, so software should drive the reset
+signal when the SPI interface is idle.
 
 ### RXFIFO, TXFIFO, and DP_SRAM
 
@@ -184,12 +184,12 @@ section has its own read and write pointer. The SRAM may be read and written by
 software at any time, but for correct normal operation it will only write the
 empty area of the TXF (between the write pointer and read pointer) and only read
 the full area of the RXF (between the read pointer and write pointer) with the
-other areas used by the hardware  It is first worth noting that the hardware
+other areas used by the hardware. It is first worth noting that the hardware
 implications of the asynchronous nature of SCK and the fact it may not be free
 running, complicate some of the logic. The full feature set of that interface
 logic (clocked by SCK) includes the serial to parallel converter for RX data,
 the parallel-to-serial converter for TX data, and the interfaces to RXFIFO and
-TXFIFO. Before the first bit transfer and after the last SCK is stopped, so
+TXFIFO. Before the first bit transfer and after the last SCK is stopped,
 there is no clock for any of this logic.  So for instance there is no guarantee
 of the two-clock-edges normally required for asynchronous handshaking protocols.
 The RXFIFO and TXFIFO exist to facilitate this situation.
@@ -198,15 +198,15 @@ In the receive direction, data gathered from the MOSI pin is written into the
 RXFIFO (see details below) at appropriate size boundaries. This data is
 handshake-received on the core clock side, gathered into byte or word quantity,
 and written into the RX circular buffer of the dual-port SRAM. On each write,
-the RXF write pointer(!!RXF_PTR.wptr) is incremented by hardware, wrapping at
+the RXF write pointer (!!RXF_PTR.wptr) is incremented by hardware, wrapping at
 the size of the circular buffer. Software can watch (via polling or interrupts)
 the incrementing of this write pointer to determine how much valid data has been
 received, and determine when and what data to act upon. Once it has acted upon
-data, the software should update the RXF read pointer to indicate the space in
+data, the software should update the RXF read pointer to indicate that space in
 the SRAM is available for future writes by the hardware. If incrementing the
 write pointer would result in it becoming equal to the read pointer then the RXF
 is full and any subsequently received data will be discarded. Thus in normal
-operation the RXF write pointer is updated automatically by hardware and the RXF
+operation, the RXF write pointer is updated automatically by hardware and the RXF
 read pointer is managed by software. As an optimization the hardware will
 normally only write to the 32-bit wide SRAM when an entire word can be written.
 Since the end of the received data may not be aligned, there is a timer that
@@ -218,8 +218,8 @@ sub-word data in 255 cycles if no further bit stream from SPI is received.
 In the transmit direction, things are a little more tricky. Since the pin
 interface logic begins transmitting data on its very first SCK edge, there are
 no previous clock edges in the interface side of the fifo to allow an empty flag
-to be updated. So the interface  must *blindly* take whatever data is at the
-read pointer of the TXFIFO. (In a typical asynchronous FIFO with free-running
+to be updated. The interface  must *blindly* take whatever data is at the
+read pointer of the TXFIFO (in a typical asynchronous FIFO with free-running
 clocks the pointers can always be sent across the asynchronous boundary to
 determine if the FIFO is truly empty or not). Hence the need to potentially send
 out garbage data if software has not prepared the TXFIFO in time.
@@ -253,7 +253,7 @@ auto-generated register file control logic.
 
 The SPI device module has two programmable register bits to control the SPI
 clock, !!CFG.CPOL and !!CFG.CPHA. CPOL controls clock polarity and CPHA controls the clock
-phase. Please take a look at the link below from Wikipedia.
+phase. For further details, please refer to this diagram from Wikipedia:
 [File:SPI_timing_diagram2.svg](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg)
 
 {{% section2 SPI Device Generic Mode }}
@@ -266,9 +266,9 @@ higher level protocol. Data is sent from the TXF SRAM contents via TXFIFO.
 
 It is important that the data path inside the block should meet the timing that
 is a half cycle of SCK. As SCK clock is shut off right after the last bit of the
-last byte is received, the hardware module cannot latch MOSI signal. The signal
-is directly connected to RXFIFO and other bits [7:1] are shifted out values of
-MOSI. This is detailed in the waveform below.
+last byte is received, the hardware module cannot register the MOSI signal. The
+module registers bits [7:1] and combines them with the MOSI signal directly to
+form the input to RXFIFO. This is detailed in the waveform below.
 
 ```wavejson
 { signal: [
@@ -289,15 +289,14 @@ MOSI. This is detailed in the waveform below.
 As shown above, the RXFIFO write request signal (`RX_WEN`) is asserted when
 BitCount reaches 0h. Bitcount is reset by CSB asynchronously, returning to 7h
 for the next round. RXFIFO input data changes on the half clock cycle. RXFIFO
-latches WEN at the positive edge of SCK. So Bit 0 (or Bit 7 in reverse order
-case, see !!CFG.rx_order configuration field) cannot be latched. When BitCount
-is 0h, bit 0 of FIFO data shows bit1 value for the first half clock cycle then
-shows correct value after MOSI value is changed.
+latches WEN at the positive edge of SCK. When BitCount is 0h, bit 0 of FIFO data
+shows the bit 1 value for the first half clock cycle then shows correct value
+once the incoming MOSI value is updated.
 
 TXFIFO is similar. TX_REN is asserted when Tx BitCount reaches 1, and the
 current entry of TXFIFO is popped at the negative edge of SCK. It results in a
-change of MISO value at the negative edge of SCK. MISO_OE is bounded by CSB
-signal. If CSB goes to high, MISO is returned to High-Z state.
+change of MISO value at the negative edge of SCK. MISO_OE is controlled by the
+CSB signal. If CSB goes to high, MISO is returned to High-Z state.
 
 ```wavejson
 { signal: [
@@ -317,30 +316,31 @@ signal. If CSB goes to high, MISO is returned to High-Z state.
 }
 ```
 
-Please keep in mind that in the mode 3 configuration, the logic isn't able to
-pop the entry from the TX async FIFO at the end of the bit at the last byte in a
-transaction. In the mode 3, no further SCK edge is given after sending the last
-bit before the CSB de-assertion. The design is chosen to pop the entry at the
-7th bit position.  This introduces unavoidable behavior of dropping the last
-byte if CSB is de-asserted before a byte transfer is completed. If CSB is
-de-asserted in bit 1 to 6 position, the FIFO entry isn't popped. TX logic will
-re-send the byte in next transaction. If CSB is de-asserted in 7th or 8th bit
-position, the data is dropped and begins with next byte in the next transaction.
+Note that in the SPI mode 3 configuration (!!CFG.CPOL=1, !!CFG.CPHA=1), the
+logic isn't able to pop the entry from the TX async FIFO after the last bit
+in the last byte of a transaction. In mode 3, no further SCK edge is given
+after sending the last bit before the CSB de-assertion. The design is chosen to
+pop the entry at the 7th bit position. This introduces unavoidable behavior of
+dropping the last byte if CSB is de-asserted before a byte transfer is
+completed. If CSB is de-asserted in bit 1 to 6 position, the FIFO entry isn't
+popped. TX logic will re-send the byte in next transaction. If CSB is
+de-asserted in the 7th or 8th bit position, the data is dropped and will
+re-commence with the next byte in the next transaction.
 
 ### RXFIFO control
 
 ![RXF CTRL State Machine](rxf_ctrl_fsm.svg)
 
 The RXFIFO Control module controls data flow from RXFIFO to SRAM. It connects
-two FIFOs having different data widths. RXFIFO is a byte width. SRAM storing
-incoming data to serve FW has TL-UL interface width.
+two FIFOs having different data widths. RXFIFO is byte width, SRAM storing
+incoming data to serve FW is TL-UL interface width.
 
 To reduce traffic to SRAM, the control logic gathers FIFO entries up to full
 SRAM data width, then does a full-word SRAM write. A programmable timer exists
 in the case when partial bytes are received at the end of a transfer. If the
 timer expires while bytes are still in the RXFIFO, the logic writes partial
-words to SRAM. Following received data triggers read-modify-write operation to
-update partially.
+words to SRAM. A read-modify-write operation is triggered to perform the partial
+update.
 
 ![State Machine](rxf_ctrl_fsm_table.png)
 
@@ -353,9 +353,9 @@ the TXF write pointer.
 
 ![TXF CTRL Data Path](txf_ctrl_dp.svg)
 
-The TXFIFO control module latches the write pointer then use it internally. This
-scheme prevents HW from using incorrect data from sram_rdata if write pointer
-and read pointer are pointing at the same location in the SRAM. It is
+The TXFIFO control module latches the write pointer then uses it internally.
+This prevents HW from using incorrect data from SRAM if the write pointer
+and read pointer are pointing at the same location. It is
 recommended for the software to update the write pointer at the SRAM data width
 granularity if it has more than 1 DWord data to send out. If software updates
 write pointer every byte, HW tries to fetch data from SRAM every time it hits
@@ -373,11 +373,11 @@ example, internal software could prepare FFh values for first page.
 
 {{% section2 Data Storage Sizes }}
 
-SPI Device IP uses 2kB internal Dual-Port SRAM. Firmware can resize RX/ TX
-circular buffer within the SRAM size. For example, the firmware is able to set
+SPI Device IP uses a 2kB internal Dual-Port SRAM. Firmware can resize RX / TX
+circular buffers within the SRAM size. For example, the firmware is able to set
 RX circular buffer to be 1.5kB and 512B for TX circular buffer.
 
-If it is need to increase SRAM size, `SramAw` local parameter in `spi_device.sv`
+To increase SRAM size, the `SramAw` local parameter in `spi_device.sv`
 should be changed. It cannot exceed 13 (32kB) due to the read and write
 pointers' widths.
 
@@ -391,14 +391,12 @@ the !!TXF_ADDR register)  are 0x200 and 0x3FC. If FW wants bigger spaces, it can
 change the values of the above registers !!RXF_ADDR and !!TXF_ADDR.
 
 Software can configure the timer value !!CFG.timer_v to change the delay between
-DATA received from SPI interface to be written into the SRAM. Value of the field
-is the number of the core clock cycles that the logic waits for. Note that if
-receiver gathers full SRAM words, 4 bytes, it writes to RX SRAM FIFO regardless
-of the timer.
+partial DATA received from SPI interface being written into the SRAM. The value
+of the field is the number of the core clock cycles that the logic waits for.
 
 {{% section2 Pointers }}
 
-RX/ TX SRAM FIFO has read and write pointers, !!RXF_PTR and !!TXF_PTR . Those
+RX / TX SRAM FIFO has read and write pointers, !!RXF_PTR and !!TXF_PTR . Those
 pointers are used to manage circular FIFOs inside the SRAM. The pointer width in
 the register description is 16 bit but the number of valid bits in the pointers
 depends on the size of the SRAM.
@@ -408,11 +406,11 @@ representing a byte offset and 1 most-significant bit for indicating phase of
 the FIFO. Since they represent bytes, the low 2 bits indicate the offset within
 the 32-bit wide SRAM word. The pointers indicate the offset into the area
 described by the base and limit values, so the lower bits (11 bits in this case)
-of a pointer shall not exceed the size in bytes (4 * (limit address - base
+of a pointer should not exceed the size in bytes (4 * (limit address - base
 address)) reserved for the region (RXF or TXF) that the pointer is in. For
-instance, if FW sets RXFIFO depth to 128 (default value), it shall not update
-the read pointer outside the range 0x000 -  0x1FF (128*4 = 512Bytes) ignoring
-the phase bit, bit 11.
+instance, if FW sets RXFIFO depth to 128 (default value), it should not update
+the read pointer outside the range 0x000 -  0x1FF (128*4 = 512Bytes ignoring
+the phase bit, bit 11).
 
 {{% section2 Register Table }}
 
