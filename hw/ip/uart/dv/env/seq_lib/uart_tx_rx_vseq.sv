@@ -186,8 +186,15 @@ class uart_tx_rx_vseq extends uart_base_vseq;
       end
       begin // read RX data through register
         while (!send_rx_done) begin
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_trans)
-          cfg.clk_rst_vif.wait_clks(dly_to_next_trans);
+          uint dly_to_rx_read;
+          // csr read is much faster than uart transfer, use bigger delay
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dly_to_rx_read,
+                                             dly_to_rx_read dist {
+                                               0           :/ 1,
+                                               [1:100]     :/ 1,
+                                               [100:10000] :/ 20
+                                             };)
+          cfg.clk_rst_vif.wait_clks(dly_to_rx_read);
           wait_when_in_ignored_period(.rx(1));
           rand_read_rx_byte(weight_to_skip_rx_read);
         end

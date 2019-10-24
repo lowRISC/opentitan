@@ -34,9 +34,10 @@ class uart_fifo_full_vseq extends uart_tx_rx_vseq;
   }
 
   constraint wait_for_idle_c {
+    // fifo is 32 depth, wait/not_wait = 1/40, higher change to have fifo full
     wait_for_idle dist {
       1       :/ 1,
-      0       :/ 20
+      0       :/ 40
     };
   }
 
