@@ -14,7 +14,8 @@ easier.
     - fusesoc.mk
     - modes.mk
     - rules.mk
-  - $VCS_PRIV_DIR/vcs.mk
+    - vcs/vcs.mk          # if SIMULATOR=vcs
+    - xcelium/xcelium.mk  # if SIMULATOR=xcelium
 ```
 
 ### Test Makefile
@@ -39,10 +40,10 @@ together. Please see following table for more details:
 Make variable | Description | Overridable (O) or Appendable (A) |
 --------------|-------------|-----------------------------------|
 DV_DIR | This is the top level DV directory for the IP containing the Test Makefile. | |
-DUT_TOP | This is the top level dut module under test. This is used in common `vcs.tcl` file placed in the $VCS_PRIV_DIR directory. | |
-TB_TOP | This is the top level tb module under test. This is used in common `vcs.tcl` file placed in the $VCS_PRIV_DIR directory. | |
+DUT_TOP | This is the top level dut module under test. This is used in `{vcs, xcelium}_fsdb.tcl` file. | |
+TB_TOP | This is the top level tb module under test. This is used in `{vcs, xcelium}_fsdb.tcl` file. | |
 FUSESOC_CORE | This is the testbench fusesoc .core name that contains the simulation target. This .core file is typically placed in the same directory as the test Makefile. | |
-COMPILE_KEY | Users need to define COMPILE_KEY sets for building Test Makefile, CL with a unique sets of compile time options. This is to be done in the Test Makefile in this way: <br>ifeq (${COMPILE_KEY},foo) <br>   BUILD_OPTS += +define+FOO <br>endif<br> There is a 'default' compile key already added which implies no additional compile time options are required. Within each test specification, the COMPILE_KEY can be overridden to use the specific compile key. <br>ifeq (${TEST_NAME},foo_test)<br>  COMPILE_KEY = foo )<br>  # other test opts <br>endif | O (Within tests,  & command line) |
+COMPILE_KEY | Users need to define COMPILE_KEY sets for building Test Makefile, CL with a unique sets of compile time options. This is to be done in the Test Makefile in this way: <br>`ifeq ($(COMPILE_KEY),foo)`<br> &emsp;`BUILD_OPTS += +define+FOO` <br>`endif`<br> There is a 'default' compile key already added which implies no additional compile time options are required. Within each test specification, the COMPILE_KEY can be overridden to use the specific compile key. <br>`ifeq ($(TEST_NAME),foo_test)`<br> &emsp;`COMPILE_KEY = foo` <br> &emsp;`# other test opts` <br>`endif` | O (Within tests,  & command line) |
 UVM_TEST | SV UVM test class to create in the test. This is set to the 'base_test' by default and is overridden in the test specifications if needed. | O (Test Makefile) |
 UVM_TEST_SEQ | SV UVM test sequence to create in the test. This is set to the 'base_test' by default and is overridden in the test specifications if needed. | O (Test Makefile) |
 TEST_NAME | Name of the test to run. These are specified in the test Makefile. By default, it is set to run the sanity test (simply calling 'make' will run this test). | O (command line only) |
@@ -50,7 +51,7 @@ SIMULATOR | What simulator to use. Currently only 'vcs' is supported and is set 
 BUILD_OPTS | Options to pass for build. | A (Test Makefile :: COMPILE_KEY specifications only) |
 CL_BUILD_OPTS | Pass additional build options on the command line. | A (command line only) |
 RUN_OPTS | Options to pass for run. | A (Test Makefile :: test specifications only) |
-CL_RUN_OPTS | Pass additional run options on the command line. | A (command line only |)
+CL_RUN_OPTS | Pass additional run options on the command line. | A (command line only) |
 WAVES | Enable wave dumps (fsdb). Set to 0 by default; override with WAVES=1. | O |
 SIMPROFILE | Turn on sim profiling (time option by default). Set to 0 by default; override with SIMPROFILE=1. | O |
 COV | Turn on coverage collection. Set to 0 by default; override with COV=1. | O |
@@ -93,37 +94,46 @@ This is the only file in the make flow that contains targets and recipes that
 are completely agnostic to the tools used. It sequences the build and run set
 of targets.
 
-### vcs.mk
-#### VCS tool specific options
-The top level Makefile uses `SIMULATOR` variable (which is set to vcs by
+### Simulator mk ({vcs, xcelium}.mk)
+#### Simulator tool specific options
+The top level Makefile uses `SIMULATOR` variable (which is set to `vcs` by
 default) to enable tool specific options. If support for new tools need to be
 added, then those tool specific mk files need to be supplied. It sets the
 following mandatory variables - `SIMCC` & `SIMX`. It also exports additional
 tool specific variables to the sub shell when the recipes are executed. This
-file has been placed in the $VCS_PRIV_DIR directory, which is outside of this
-OpenTitan repo. The reason for that is it contains sensitive tool specific
-options that cannot be exposed. The private repo specific to VCS tools (TBD)
-needs to be cloned and the path to the directory containing this file needs
-to be set with `VCS_PRIV_DIR` environment variable prior to invoking the
-simulation.
+file has been placed in the respective tool directory.
 
 ### Simulation targets
+* **build**: Compile and elaborate the testbench
+* **gen_sv_flist**: Generate the full file list which will be used by the
+  simulator to build the simulation executable
+* **run**: Run the test (the simulation executable needs to be built already)
+* **env/\<ip\>_reg_block.sv**: Generate the RAL model only
+* **sw_build**: Only compile the C SW test
 
 ### Building and running tests
 All of the below command examples are to be run from the 'dv' directory
 containing the Test Makefile.
 
 ##### Run the following command to build and run tests:
-```make TEST_NAME=[test-name] [overrides]```
+```console
+$ make TEST_NAME=[test-name] [overrides]
+```
 
 ##### To only buld the simv:
-```make build TEST_NAME=[test-name] [overrides]```
+```console
+$ make build TEST_NAME=[test-name] [overrides]
+```
 
 ##### To run the sim after build is complete:
-```make run TEST_NAME=[test-name] [overrides]```
+```console
+$ make run TEST_NAME=[test-name] [overrides]
+```
 
 ##### To build and run the sanity test:
-```make```
+```console
+$ make
+```
 This will work provided user has specified a set a 'default' value to the
 `TEST_NAME` Make variable.
 
@@ -131,16 +141,24 @@ This will work provided user has specified a set a 'default' value to the
 
 ###### Build and run a test:
 This builds the 'default' compile key and runs the 'uart_sanity' test
-```make TEST_NAME=uart_sanity```
+```console
+$ make TEST_NAME=uart_sanity
+```
 
 ###### Run with specific seed:
-```make TEST_NAME=<test-name> SEED=123423334```
+```console
+$ make TEST_NAME=<test-name> SEED=123423334
+```
 
 ###### Dump waves:
-```make TEST_NAME=<test-name> SEED=123423334 WAVES=1```
+```console
+$ make TEST_NAME=<test-name> SEED=123423334 WAVES=1
+```
 
 ###### Run with coverage option enabled:
-```make TEST_NAME=<test-name> COV=1```
+```console
+$ make TEST_NAME=<test-name> COV=1
+```
 
 The options.mk file lists several tool options passed to the build and run steps
 for enabling coverage collection. One of the options is adding a hier file (with
@@ -150,29 +168,57 @@ switch automatically when coverage is enabled. If another hier file is desired
  (or with another name), it can be placed anywhere as the user desires and user can
  add the following line to the Test Makefile:
 
-```CM_HIER := <path-to-hier-file```
+```gnumake
+CM_HIER := <path-to-hier-file
+```
 
 ###### Enable sim profiling:
-```make TEST_NAME=<test-name> SIMPROFILE=1```
+```console
+$ make TEST_NAME=<test-name> SIMPROFILE=1
+```
 
 ###### Override UVM verbosity:
-```make TEST_NAME=<test-name> WAVES=1 UVM_VERBOSITY=UVM_DEBUG```
+```console
+$ make TEST_NAME=<test-name> WAVES=1 UVM_VERBOSITY=UVM_DEBUG
+```
 
-###### Build only:
-This will build the 'default' compile key
-```make build```
+###### Build only (This will build the 'default' compile key):
+```console
+$ make build
+```
 
 ###### Build 'foo' compile key instead:
-```make build COMPILE_KEY=foo```
+```console
+$ make build COMPILE_KEY=foo
+```
 
 ###### Build with 'FOO' preprocessor flag:
-```make build CL_BUILD_OPTS+=+define+FOO```
+```console
+$ make build CL_BUILD_OPTS+=+define+FOO
+```
 
 ###### Run with 'FOO' runtime plusarg:
-```make TEST_NAME=<test-name> CL_RUN_OPTS+=+FOO```
+```console
+$ make TEST_NAME=<test-name> CL_RUN_OPTS+=+FOO
+```
 
-###### Run only:
-This assumes the simv executable for the specified compile key is available in
-the default directory and will use it to run the test
+###### Run test with Xcelium:
+```
+$ make TEST_NAME=<test-name> SIMULATOR=xcelium
+```
 
-```make run TEST_NAME=<test-name> SEED=123423334 WAVES=1```
+###### Run test with Xcelium and dump WAVES in fsdb:
+```console
+$ make TEST_NAME=<test-name> SIMULATOR=xcelium WAVES=1
+```
+
+###### Run test with Xcelium and dump WAVES in shm:
+```console
+$ make TEST_NAME=<test-name> SIMULATOR=xcelium WAVES=1 DUMP=shm
+```
+
+###### Run only (This assumes the sim executable for the specified compile key is available):
+
+```console
+$ make run TEST_NAME=<test-name> SEED=123423334 WAVES=1
+```
