@@ -160,10 +160,10 @@ a starting point.
 - **common_testplan.hjson**: shared testplan imported within the DUT tesplan
 - **foo_dv_plan.md**: DUT testplan imported within the DV plan doc in markdown
 
-In addition, see [UART DV Plan](../../hw/ip/uart/dv/uart_dv_plan.md) for a
+In addition, see [UART DV Plan](../../hw/ip/uart/doc/uart_dv_plan.md) for a
 real 'production' example of inline expansion of an imported testplan as a table
 within the DV Plan document done using [docgen](../docgen/README.md).
-The [UART tesplan](../../hw/ip/uart/dv/uart_testplan.hjson) imports the shared
+The [UART tesplan](../../hw/ip/uart/data/uart_testplan.hjson) imports the shared
 testplans located at `hw/dv/tools/testplans` area.
 
 ### Limitations
@@ -213,7 +213,7 @@ directly to parse the Hjson testplan and insert a HTML table within the DV
 plan document. This is done by invoking:
 ```console
 Example 1:
-$ util/docgen.py -c ../hw/ip/uart/dv/uart_dv_plan.md -o /tmp/uart_dv_plan.html
+$ util/docgen.py -c ../hw/ip/uart/doc/uart_dv_plan.md -o /tmp/uart_dv_plan.html
 
 Example 2:
 $ util/docgen.py -c testplanner/examples/foo_dv_plan.md -o /tmp/foo_dv_plan.html

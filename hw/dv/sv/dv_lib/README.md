@@ -31,7 +31,7 @@ This class provides the following functions to support verification:
 * `gen_n_used_bits()`: This function returns the actual number of bits used in
   the CSR (sum of all available field widths).
 * `get_msb_pos()`: This function returns the MSB bit position of all available
-  fields. CSR either ends at this bit (bit `TL_DW - 1) or has reserved / invalid
+  fields. CSR either ends at this bit (bit \`TL_DW - 1) or has reserved / invalid
   bits beyond this bit.
 
 #### `dv_base_reg_block`
@@ -39,8 +39,8 @@ This class provides the following functions to support verification:
   pure virtual function (returns a fatal error if called directly). It is used
   for building the complete RAL model. For a polymorphic approach, the DV user
   can use this class handle to create the extended (IP specific) class instance
-  and call this function to build the acuual RAL model. This is exactly how it
-  is done in [dv_base_env_cfg](# dv_base_env_cfg).
+  and call this function to build the actual RAL model. This is exactly how it
+  is done in [dv_base_env_cfg](#dv_base_env_cfg).
 
 #### `dv_base_reg_map`
 Currently, this class does not provide any additional features. Having this
@@ -51,3 +51,4 @@ TODO
 
 ### UVM Environment extensions
 TODO
+

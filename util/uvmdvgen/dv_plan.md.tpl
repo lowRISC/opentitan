@@ -1,15 +1,14 @@
-<!-- Copy this file to hw/ip/${name}/dv/${name}_dv_plan.md and make changes as needed.
+<!-- Copy this file to hw/ip/${name}/doc/${name}_dv_plan.md and make changes as needed.
 For convenience '${name}' in the document can be searched and replaced easily with the
 desired IP (with case sensitivity!). Also, use the testbench block diagram here:
 https://drive.google.com/open?id=1LfnTSutIW5E6zSCOCf4-scS8MQ8lXhPAPgSfFx2Aqh0
 as a starting point and modify it to reflect your ${name} testbench and save it
-to hw/ip/${name}/dv/tb.svg. It should get linked and rendered under the block
+to hw/ip/${name}/doc/tb.svg. It should get linked and rendered under the block
 diagram section below. Please update / modify / remove sections below as
 applicable. Once done, remove this comment before making a PR. -->
 
 {{% lowrisc-doc-hdr ${name.upper()} DV Plan }}
-<!-- TODO: uncomment the line below after adding the testplan -->
-<!-- {{% import_testplan ${name}_testplan.hjson }} -->
+{{% import_testplan ../data/${name}_testplan.hjson }}
 
 {{% toc 4 }}
 
@@ -26,12 +25,10 @@ ${'##'} Current status
 * DV regression results dashboard (link TBD)
 
 ${'##'} Design features
-For detailed information on ${name.upper()} design features, please see the
-[${name.upper()} design specification](../doc/${name}.md).
+For detailed information on ${name.upper()} design features, please see the [${name.upper()} design specification](${name}.md).
 
 ${'##'} Testbench architecture
-${name.upper()} testbench has been constructed based on the
-[CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+${name.upper()} testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ${'###'} Block diagram
 ![Block diagram](tb.svg)
@@ -80,7 +77,7 @@ ${'###'} UVC/agent 2
 [Describe here or add link to its README]
 
 ${'###'} RAL
-The ${name.upper()} RAL model is constructed using the [regtool.py script](../../../../util/doc/rm/RegisterTool.md) and is placed at `env/${name}_reg_block.sv`.
+The ${name.upper()} RAL model is constructed using the [regtool.py script](../../../../util/reggen/README.md) and is placed at `env/${name}_reg_block.sv`.
 
 ${'###'} Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
@@ -125,5 +122,4 @@ $ make TEST_NAME=${name}_sanity
 ```
 
 ${'##'} Testplan
-<!-- TODO: uncomment the line below after adding the testplan -->
-<!-- {{% insert_testplan x }} -->
+{{% insert_testplan x }}

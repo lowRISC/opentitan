@@ -13,27 +13,27 @@ from pkg_resources import resource_filename
 def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
     # yapf: disable
     # 4-tuple - sub-path, ip name, class name, file ext
-    env_srcs = [('env',         name + '_', 'env_cfg',            '.sv'),
-                ('env',         name + '_', 'env_cov',            '.sv'),
-                ('env',         name + '_', 'env_pkg',            '.sv'),
-                ('env',         name + '_', 'reg_block',          '.sv'),
-                ('env',         name + '_', 'scoreboard',         '.sv'),
-                ('env',         name + '_', 'virtual_sequencer',  '.sv'),
-                ('env',         name + '_', 'env',                '.sv'),
-                ('env',         name + '_', 'env',                '.core'),
-                ('env/seq_lib', name + '_', 'base_vseq',          '.sv'),
-                ('env/seq_lib', name + '_', 'sanity_vseq',        '.sv'),
-                ('env/seq_lib', name + '_', 'common_vseq',        '.sv'),
-                ('env/seq_lib', name + '_', 'vseq_list',          '.sv'),
-                ('tb',          '',         'tb',                 '.sv'),
-                ('tb',          name + '_', 'bind',               '.sv'),
-                ('tests',       name + '_', 'base_test',          '.sv'),
-                ('tests',       name + '_', 'test_pkg',           '.sv'),
-                ('tests',       name + '_', 'test',               '.core'),
-                ('.',           '',         'Makefile',           ''),
-                ('.',           name + '_', 'dv_plan',            '.md'),
-                ('.',           name + '_', 'testplan',           '.hjson'),
-                ('.',           name + '_', 'sim',                '.core')]
+    env_srcs = [('dv/env',          name + '_', 'env_cfg',            '.sv'),
+                ('dv/env',          name + '_', 'env_cov',            '.sv'),
+                ('dv/env',          name + '_', 'env_pkg',            '.sv'),
+                ('dv/env',          name + '_', 'reg_block',          '.sv'),
+                ('dv/env',          name + '_', 'scoreboard',         '.sv'),
+                ('dv/env',          name + '_', 'virtual_sequencer',  '.sv'),
+                ('dv/env',          name + '_', 'env',                '.sv'),
+                ('dv/env',          name + '_', 'env',                '.core'),
+                ('dv/env/seq_lib',  name + '_', 'base_vseq',          '.sv'),
+                ('dv/env/seq_lib',  name + '_', 'sanity_vseq',        '.sv'),
+                ('dv/env/seq_lib',  name + '_', 'common_vseq',        '.sv'),
+                ('dv/env/seq_lib',  name + '_', 'vseq_list',          '.sv'),
+                ('dv/tb',           '',         'tb',                 '.sv'),
+                ('dv/tb',           name + '_', 'bind',               '.sv'),
+                ('dv/tests',        name + '_', 'base_test',          '.sv'),
+                ('dv/tests',        name + '_', 'test_pkg',           '.sv'),
+                ('dv/tests',        name + '_', 'test',               '.core'),
+                ('dv',              '',         'Makefile',           ''),
+                ('doc',             name + '_', 'dv_plan',            '.md'),
+                ('data',            name + '_', 'testplan',           '.hjson'),
+                ('dv',              name + '_', 'sim',                '.core')]
     # yapf: enable
 
     for tup in env_srcs:
@@ -52,11 +52,10 @@ def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
         with open(path_dir + "/" + fname, 'w') as fout:
             try:
                 fout.write(
-                    tpl.render(
-                        name=name,
-                        is_cip=is_cip,
-                        has_interrupts=has_interrupts,
-                        has_alerts=has_alerts,
-                        env_agents=env_agents))
+                    tpl.render(name=name,
+                               is_cip=is_cip,
+                               has_interrupts=has_interrupts,
+                               has_alerts=has_alerts,
+                               env_agents=env_agents))
             except:
                 log.error(exceptions.text_error_template().render())
