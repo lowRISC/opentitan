@@ -31,6 +31,7 @@ static const unsigned long UART_BAUD_RATE = 230400;
 #define CLRBIT(val, bit) (val & ~(1 << bit))
 
 #define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
+#define NO_RETURN __attribute__((noreturn))
 
 /* Hamming weight */
 #define BITLENGTH_1(X) ((X) - (((X) >> 1) & 0x55555555))

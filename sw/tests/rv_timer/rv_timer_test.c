@@ -32,7 +32,6 @@ int main(int argc, char **argv) {
   }
 
   uart_send_str("PASS!\r\n");
-  __asm__ volatile("wfi;");
 }
 
 // Override weak default function

@@ -42,10 +42,7 @@ int main(int argc, char **argv) {
 
   if (error) {
     uart_send_str("FAIL!\r\n");
-    while (1) {
-    }
   } else {
     uart_send_str("PASS!\r\n");
-    __asm__ volatile("wfi;");
   }
 }

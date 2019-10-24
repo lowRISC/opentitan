@@ -64,10 +64,10 @@ zero_loop_end:
 
 
 main_entry:
-  /* jump to main program entry point (argc = argv = 0) */
-  addi x10, x0, 0
-  addi x11, x0, 0
-  jal x1, main
+  call _boot_main
+loop_forever:
+  wfi
+  j loop_forever
 
 /* ====================== [ exceptions & interrupts ] =================== */
 /* This section has to be down here, since we have to disable rvc for it  */
