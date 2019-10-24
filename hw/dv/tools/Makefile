@@ -90,11 +90,9 @@ include ${MAKE_ROOT}/modes.mk
 
 # add tool specific mk file
 ifeq (${SIMULATOR},vcs)
-  include ${VCS_PRIV_DIR}/vcs.mk
-else ifeq (${SIMULATOR},incisive)
-  include ${INCISIVE_PRIV_DIR}/incisive.mk
+  include ${MAKE_ROOT}/vcs/vcs.mk
 else ifeq (${SIMULATOR},xcelium)
-  include ${XCELIUM_PRIV_DIR}/xcelium.mk
+  include ${MAKE_ROOT}/xcelium/xcelium.mk
 # else add other tool specific mk files
 endif
 
