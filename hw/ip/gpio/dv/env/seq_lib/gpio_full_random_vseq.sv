@@ -15,6 +15,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
   bit [NUM_GPIOS-1:0] data_out;
   // predicted updated value of DATA_OE rtl implementation register
   bit [NUM_GPIOS-1:0] data_oe;
+  // Previous value of gpio pins
+  bit [NUM_GPIOS-1:0] prev_gpio_val;
 
   `uvm_object_utils(gpio_full_random_vseq)
   `uvm_object_new
@@ -25,11 +27,12 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
     // gpio pins_if pins_oe value to drive
     bit [NUM_GPIOS-1:0] gpio_i_oen;
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
-
     // Wait for minimum 1 clock cycle initially to avoid reading of data_in
     // immediately as the first iteration after reset, while data_in prediction
     // is still being processed
     cfg.clk_rst_vif.wait_clks(1);
+    // Initialize prev_gpio_val
+    prev_gpio_val = (cfg.pullup_en) ? '1 : '0;
 
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
@@ -68,9 +71,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
           // drive gpio_vif after setting all output enables to 0's
           cfg.gpio_vif.pins_oe = gpio_i_oen;
           cfg.gpio_vif.pins_o = gpio_i;
-          // Wait for (FILTER_CYCLES + 1) clock cycles to make sure we can
-          // reliably read updated value of data_in even with filter enabled
-          cfg.clk_rst_vif.wait_clks(FILTER_CYCLES + 1);
+          wait_for_filter_cyles();
+          prev_gpio_val = cfg.gpio_vif.sample();
         end
         1: begin
           pgm_out_oe_regs(.gpio_if_pins_o_val(gpio_i), .gpio_if_pins_oe_val(gpio_i_oen));
@@ -127,6 +129,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       // Update value of data_out
       data_out = csr_wr_value;
       `uvm_info(`gfn, $sformatf("data_out updated to value %0h", data_out), UVM_HIGH)
+      // Check if there is update on gpio pins due to register update
+      gpio_pins_update_check();
     end
 
     // write to masked_out_lower reg
@@ -152,6 +156,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         end
       end
       `uvm_info(`gfn, $sformatf("data_out updated to value %0h", data_out), UVM_HIGH)
+      // Check if there is update on gpio pins due to register update
+      gpio_pins_update_check();
     end
 
     // write to masked_out_upper reg
@@ -179,6 +185,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         end
       end
       `uvm_info(`gfn, $sformatf("data_out updated to value %0h", data_out), UVM_HIGH)
+      // Check if there is update on gpio pins due to register update
+      gpio_pins_update_check();
     end
 
     // write to direct_oe reg
@@ -193,6 +201,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       // Update data_oe value
       data_oe = csr_wr_value;
       `uvm_info(`gfn, $sformatf("data_oe updated to value %0h", data_oe), UVM_HIGH)
+      // Check if there is update on gpio pins due to register update
+      gpio_pins_update_check();
     end
 
     // write to masked_oe_lower reg
@@ -218,6 +228,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         end
       end
       `uvm_info(`gfn, $sformatf("data_oe updated to value %0h", data_oe), UVM_HIGH)
+      // Check if there is update on gpio pins due to register update
+      gpio_pins_update_check();
     end
 
     // write to masked_oe_upper
@@ -244,6 +256,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         end
       end
       `uvm_info(`gfn, $sformatf("data_oe updated to value %0h", data_oe), UVM_HIGH)
+      // Check if there is update on gpio pins due to register update
+      gpio_pins_update_check();
     end
   endtask : pgm_out_oe_regs
 
@@ -270,11 +284,26 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl_en_input_filter)
         `uvm_info(`gfn, "Writing to ctrl_en_input_filter", UVM_NONE)
         csr_update(.csr(ral.ctrl_en_input_filter));
-        // Wait for (FILTER_CYCLES + 1) clock cycles to make sure we can
-        // reliably read updated value of data_in even with filter enabled
-        cfg.clk_rst_vif.wait_clks(FILTER_CYCLES + 1);
+        wait_for_filter_cyles();
       end
     endcase
   endtask : pgm_misc_reg
+
+  // Function: gpio_pins_update_check
+  task gpio_pins_update_check();
+    if (cfg.gpio_vif.sample() != prev_gpio_val) begin
+      // Wait until GPIO pins are stable
+      wait_for_filter_cyles();
+      // Update prev_gpio_val
+      prev_gpio_val = cfg.gpio_vif.sample();
+    end
+  endtask : gpio_pins_update_check
+
+  // Task: wait_for_filter_cyles
+  task wait_for_filter_cyles;
+    // Wait for (FILTER_CYCLES + 1) clock cycles to make sure we can
+    // reliably read updated value of data_in even with filter enabled
+    cfg.clk_rst_vif.wait_clks(FILTER_CYCLES + 1);
+  endtask : wait_for_filter_cyles
 
 endclass : gpio_full_random_vseq
