@@ -16,12 +16,10 @@
 * DV regression results dashboard (link TBD)
 
 ## Design features
-For detailed information on UART design features, please see the
-[UART design specification](uart.md).
+For detailed information on UART design features, please see the [UART design specification](uart.md).
 
 ## Testbench architecture
-UART testbench has been constructed based on the
-[CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+UART testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
 [Block diagram](tb.svg)
@@ -58,7 +56,7 @@ TL host interface into UART device.
 data, parity, baud rate etc.
 
 ### RAL
-The UART RAL model is constructed using the [regtool.py script](../../../../util/doc/rm/RegisterTool.md) and is placed at `env/uart_reg_block.sv`.
+The UART RAL model is constructed using the [regtool.py script](../../../../util/reggen/README.md) and is placed at `env/uart_reg_block.sv`.
 
 ### Stimulus strategy
 #### Test sequences

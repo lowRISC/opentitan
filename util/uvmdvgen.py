@@ -35,11 +35,10 @@ def main():
         """IP / block agent creates a separate driver for host and device modes.
                               (ignored if -a switch is not passed)""")
 
-    parser.add_argument(
-        "-e",
-        "--gen_env",
-        action='store_true',
-        help="Generate testbench UVM env code")
+    parser.add_argument("-e",
+                        "--gen_env",
+                        action='store_true',
+                        help="Generate testbench UVM env code")
 
     parser.add_argument(
         "-c",
@@ -88,9 +87,14 @@ def main():
         "-eo",
         "--env_outdir",
         default="name",
-        metavar="[hw/ip/<ip>/dv]",
-        help="""Path to place the env code. 3 directories are created - env,
-                              tb and tests. (default set to './<name>')""")
+        metavar="[hw/ip/<ip>]",
+        help=
+        """Path to place the full tetsbench code. It creates 3 directories - dv, data and doc.
+                The DV plan and the testplan Hjson files are placed in the doc and data directories
+                respectively. These are to be merged into the IP's root directory (with the existing
+                data and doc directories). Under dv, it creates 3 sub-directories - env,
+                tb and tests to place all of the testbench sources. (default set to './<name>')"""
+    )
 
     args = parser.parse_args()
     if args.agent_outdir == "name": args.agent_outdir = args.name
