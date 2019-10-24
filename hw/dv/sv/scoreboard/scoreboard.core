@@ -7,6 +7,8 @@ description: "DV Scoreboard"
 
 filesets:
   files_dv:
+    depend:
+      - lowrisc:dv:dv_lib
     files:
       - scoreboard_pkg.sv
       - scoreboard_queue.sv: {is_include_file: true}

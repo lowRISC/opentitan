@@ -107,6 +107,24 @@ ifeq (${TEST_NAME},xbar_error_and_unmapped_addr)
   UVM_TEST_SEQ   = xbar_unmapped_addr_vseq
 endif
 
+ifeq (${TEST_NAME},xbar_stress_all)
+  UVM_TEST_SEQ   = xbar_stress_all_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_stress_all_with_error)
+  UVM_TEST       = xbar_error_test
+  UVM_TEST_SEQ   = xbar_stress_all_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_stress_all_with_reset)
+  UVM_TEST_SEQ   = xbar_stress_all_with_reset_vseq
+endif
+
+ifeq (${TEST_NAME},xbar_stress_all_with_reset_error)
+  UVM_TEST       = xbar_error_test
+  UVM_TEST_SEQ   = xbar_stress_all_with_reset_vseq
+endif
+
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##
 ## Dont add anything else below it!                                                               ##

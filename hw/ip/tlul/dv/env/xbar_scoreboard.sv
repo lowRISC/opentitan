@@ -7,10 +7,10 @@
 // Extend from common multi-streams scoreboard
 // Use the device address map to determine the queue ID
 // ------------------------------------------------------------------------
-class xbar_scoreboard extends scoreboard_pkg::scoreboard#(tl_seq_item);
-
-  xbar_env_cfg cfg;
-  xbar_env_cov cov;
+class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
+                                                           .RAL_T (dv_base_reg_block),
+                                                           .CFG_T (xbar_env_cfg),
+                                                           .COV_T (xbar_env_cov));
   int          chan_prefix_len = 7;
 
   `uvm_component_utils(xbar_scoreboard)
