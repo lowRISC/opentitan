@@ -4,10 +4,8 @@
 // Testbench module for rv_plic. Intended to use with a formal tool.
 
 module rv_plic_assert  #( //TODO: randomize the parameters
-  parameter int    N_SOURCE = 54,
+  parameter int    N_SOURCE = 55,
   parameter int    N_TARGET = 1,
-  parameter string FIND_MAX = "SEQUENTIAL", // SEQUENTIAL | MATRIX
-
   parameter int    SRCW     = $clog2(N_SOURCE+1)  // derived parameter
 ) (
   input clk_i,
@@ -60,14 +58,15 @@ module rv_plic_assert  #( //TODO: randomize the parameters
   end
 
   always_comb begin
-    automatic logic [31:0] max_prio = rv_plic.threshold[i_tgt];
-    for (int i = 0; i < N_SOURCE; i++) begin
-      if (rv_plic.ip[i] && rv_plic.ie[i_tgt][i] && rv_plic.prio[i] > max_prio) begin
+    automatic logic [31:0] max_prio = 0;
+    for (int i = N_SOURCE-1; i >= 0; i--) begin
+      if (rv_plic.ip[i] && rv_plic.ie[i_tgt][i] && rv_plic.prio[i] >= max_prio) begin
         max_prio = rv_plic.prio[i];
         i_high_prio = i; // i is the smallest id if have IPs with the same priority
       end
     end
     if (max_prio > rv_plic.threshold[i_tgt]) irq = 1'b1;
+    else irq = 1'b0;
   end
 
   // when IP is set, previous cycle should follow edge or level triggered criteria
@@ -89,19 +88,20 @@ module rv_plic_assert  #( //TODO: randomize the parameters
           rv_plic.ip[i_src], clk_i, !rst_ni)
   `ASSERT(IpClearAfterClaim_A, rv_plic.ip[i_src] && rv_plic.claim[i_src] |=>
           !rv_plic.ip[i_src], clk_i, !rst_ni)
-  `ASSERT(IpStableAfterClaimed_A, claimed |=> !rv_plic.ip[i_src], clk_i, !rst_ni) // state based
+  `ASSERT(IpStableAfterClaimed_A, claimed |=> !rv_plic.ip[i_src], clk_i, !rst_ni)
 
   // when ip is set and priority is the largest and above threshold, and interrupt enable is set,
   // assertion irq_o at next cycle
   `ASSERT(TriggerIrqForwardCheck_A, rv_plic.ip[i_src] &&
           rv_plic.prio[i_src] > rv_plic.threshold[i_tgt] &&
-          max_priority && rv_plic.ie[i_tgt][i_src]
-          |=> irq_o[i_tgt] && irq_id_o[i_tgt] == SRCW'(i_src + 1), clk_i, !rst_ni)
+          max_priority && rv_plic.ie[i_tgt][i_src] |=> irq_o[i_tgt], clk_i, !rst_ni)
 
   `ASSERT(TriggerIrqBackwardCheck_A, $rose(irq_o[i_tgt]) |->
           $past(irq) && (irq_id_o[i_tgt] - 1) == $past(i_high_prio), clk_i, !rst_ni)
 
-  // when irq ID changed, but not to ID=0, irq_o should be high
+  // when irq ID changed, but not to ID=0, irq_o should be high, or irq represents the largest prio
+  // but smaller than the threshold
   `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[i_tgt]) && irq_id_o[i_tgt] != 0 |->
-          irq_o[i_tgt], clk_i, !rst_ni)
+          irq_o[i_tgt] || ((irq_id_o[i_tgt] - 1) == $past(i_high_prio) && !$past(irq)),
+          clk_i, !rst_ni)
 endmodule
