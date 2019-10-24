@@ -27,8 +27,6 @@ covergroup intr_test_cg (uint num_interrupts) with function sample(uint intr,
   cp_intr_en: coverpoint intr_en;
   cp_intr_state: coverpoint intr_state;
   cross cp_intr, cp_intr_test, cp_intr_en, cp_intr_state {
-    illegal_bins test_0_state_1 = binsof(cp_intr_test) intersect {0} &&
-                                  binsof(cp_intr_state) intersect {1};
     illegal_bins test_1_state_0 = binsof(cp_intr_test) intersect {1} &&
                                   binsof(cp_intr_state) intersect {0};
   }
