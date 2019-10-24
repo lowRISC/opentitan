@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr UART DV Plan }}
-{{% import_testplan uart_testplan.hjson }}
+{{% import_testplan ../data/uart_testplan.hjson }}
 
 {{% toc 4 }}
 
@@ -17,14 +17,14 @@
 
 ## Design features
 For detailed information on UART design features, please see the
-[UART design specification](../doc/uart.md).
+[UART design specification](uart.md).
 
 ## Testbench architecture
 UART testbench has been constructed based on the
 [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-<!-- ![Block diagram](tb.svg) -->
+[Block diagram](tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/uart/dv/tb/tb.sv`. It instantiates the UART DUT module `hw/ip/uart/rtl/uart.sv`.
@@ -44,6 +44,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `uart_env_pkg`. Some of them in use are:
 ```systemverilog
+parameter uint ADDR_MAP_SIZE   = 64;
 parameter uint UART_FIFO_DEPTH = 32;
 ```
 
@@ -53,7 +54,8 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into UART device.
 
 ### UART agent
-[describe or provide link to UART agent documentation]
+[UART agent](../../../dv/sv/uart_agent/README.md) is used to drive and monitor UART items, which also provides basic coverage on
+data, parity, baud rate etc.
 
 ### RAL
 The UART RAL model is constructed using the [regtool.py script](../../../../util/doc/rm/RegisterTool.md) and is placed at `env/uart_reg_block.sv`.
@@ -65,27 +67,28 @@ The `uart_base_vseq` virtual sequence is extended from `cip_base_vseq` and serve
 All test sequences are extended from `uart_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* uart_init:    Configure uart control and fifo related csr with random values
+* send_tx_byte: Program one TX byte to enable DUT to send a TX byte to UART interface
+* send_rx_byte: Drive a RX byte to DUT through UART interface
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* common covergroup for interrupts: Cover interrupt value, interrupt enable, intr_test, interrup pin
+* uart_cg in uart_agent:            Cover direction, uart data, en_parity, odd_parity and baud rate
+* fifo_level_cg:                    Cover all fifo level with fifo reset for both TX and RX
 
 ### Self-checking strategy
 #### Scoreboard
 The `uart_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
+It creates the following analysis fifos to retrieve the data monitored by corresponding interface agents:
+* tl_a_chan_fifo, tl_d_chan_fifo: These 2 fifos provides transaction items at the end of address channel and
+  data channel respectively
+* uart_tx_fifo, uart_rx_fifo:     These 2 fifos provides UART TX and RX item when its transfer completes
 
 #### Assertions
 * TLUL assertions: The `tb/uart_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assertion 1
-* assertion 2
 
 ## Building and running tests
 We are using our in-house developed [regression tool](../../../dv/tools/README.md) for building and running our tests and regressions.
