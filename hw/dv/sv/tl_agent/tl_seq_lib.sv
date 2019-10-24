@@ -39,7 +39,8 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item), .RSP(tl_seq_item));
             end
           end // foreach
           if (!found_req) begin
-            `uvm_error(`gfn, $sformatf("fail to find matching req for rsp[%0d]: %0s", i, rsp))
+            `uvm_error(`gfn, $sformatf("fail to find matching req for rsp[%0d]: %0s",
+                                       i, rsp.convert2string()))
           end
         end // for
       end : wait_response_thread
