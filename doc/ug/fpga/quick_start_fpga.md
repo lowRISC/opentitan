@@ -17,4 +17,38 @@ The OpenTitan releases are tagged with the [CalVer convention](https://calver.or
 
 NexysVideo FPGA boards support the ability to program the FPGA from a USB pen drive or a microSD card (see section 2.3 of [NexysVideo reference manual](https://reference.digilentinc.com/_media/reference/programmable-logic/nexys-video/nexysvideo_rm.pdf).
 
-To do so, please follow the steps below: TODO
+To do so, please follow the steps below:
+### Preparing the microSD
+
+1.  Insert microSD Card to your machine.
+1.  Run `fdisk -l` to find where the device was mapped (see an example mapping
+    below, where the device was mapped as */dev/mmcblk0*):
+    ```
+    ...
+    Disk /dev/mmcblk0: 14.9 GiB, 15931539456 bytes, 31116288 sectors
+    Units: sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical): 512 bytes / 512 bytes
+    I/O size (minimum/optimal): 512 bytes / 512 bytes
+    Disklabel type: dos
+    Disk identifier: 0x00000000
+
+    Device         Boot Start      End  Sectors  Size Id Type
+    /dev/mmcblk0p1       8192 31116287 31108096 14.9G  c W95 FAT32 (LBA)
+    ```
+1.  Make sure the device is formatted as FAT32. If not, format it to FAT32.
+1.  Mount the device by running the following commands:
+    ```bash
+    mkdir -p /mnt/OT-SD  # Can be other name
+    mount -t vfat /dev/mmcblk0p1 /mnt/OT-SD  # Change according to mount/dev name
+    ```
+1.  Remove all files from the microSD. It must contain a single bit file.
+1.  Copy the required bit file to the micorSD.
+
+### Loading FPGA Image From microSD
+
+1.  On the NexysVideo board, mount the microSD (the microSD slot sits on the
+    bottom of the board).
+1.  Place JP4 on the pins marked USB/SD.
+1.  Place JP2 on the pin marked SD.
+1.  Push the PROG button and wait for the device to be flashed.
+1.  Monitor Done LED (LD14) and wait for it to be turned off.
