@@ -257,7 +257,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 if (cfg.en_cov) begin
                   int timer_idx = a_i * NUM_TIMERS + a_j;
                   //Sample cfg coverage for each timer
-                  cov.cfg_values_cov_obj[timer_idx].cfg_cg.sample(step[a_i],
+                  cov.cfg_values_cov_obj[timer_idx].timer_cfg_cg.sample(step[a_i],
                       prescale[a_i], timer_val[a_i], compare_val[a_i][a_j]);
                   //Sample toggle coverage for each prescale bit
                   for (int i = 0; i < 12; i++) begin

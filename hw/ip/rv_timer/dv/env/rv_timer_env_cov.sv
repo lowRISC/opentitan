@@ -9,9 +9,9 @@
 class rv_timer_cfg_cov_obj extends uvm_object;
   `uvm_object_utils(rv_timer_cfg_cov_obj)
 
-  // Covergroup: cfg_cg
+  // Covergroup: timer_cfg_cg
   // timer config covergroup definition
-  covergroup cfg_cg(string name) with function sample(bit [7:0]  step,
+  covergroup timer_cfg_cg(string name) with function sample(bit [7:0]  step,
                                                       bit [11:0] prescale,
                                                       uint64 mtime,
                                                       uint64 mtime_cmp);
@@ -27,11 +27,11 @@ class rv_timer_cfg_cov_obj extends uvm_object;
     cp_mtime_cmp: coverpoint mtime_cmp {
       option.auto_bin_max = 50;
     }
-  endgroup : cfg_cg
+  endgroup : timer_cfg_cg
 
   function new(string name="rv_timer_cfg_cov");
     super.new(name);
-    cfg_cg = new(name);
+    timer_cfg_cg = new(name);
   endfunction : new
 endclass : rv_timer_cfg_cov_obj
 
