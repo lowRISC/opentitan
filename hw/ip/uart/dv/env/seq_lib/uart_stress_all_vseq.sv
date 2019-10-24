@@ -20,6 +20,8 @@ class uart_stress_all_vseq extends uart_base_vseq;
                           "uart_intr_vseq",
                           "uart_noise_filter_vseq",
                           "uart_rx_start_bit_filter_vseq",
+                          "uart_rx_parity_err_vseq",
+                          "uart_tx_ovrd_vseq",
                           "uart_perf_vseq",
                           "uart_loopback_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
@@ -30,8 +32,8 @@ class uart_stress_all_vseq extends uart_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(uart_vseq, seq)
 
-      // dut_init (reset) can be skipped after the 1st seq
-      if (i > 0) uart_vseq.do_dut_init = $urandom_range(0, 1);
+      // dut_init (reset) can be skipped as reset is done in this seq
+      uart_vseq.do_dut_init = $urandom_range(0, 1);
 
       uart_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(uart_vseq)

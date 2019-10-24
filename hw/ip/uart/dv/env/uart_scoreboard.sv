@@ -224,10 +224,20 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             tx_q.delete();
             void'(ral.fifo_ctrl.txrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
             if (!tx_enabled) process_objections(1'b0);
+            if (cfg.en_cov) begin
+              cov.fifo_level_cg.sample(.dir(UartTx),
+                                       .lvl(ral.fifo_status.txlvl.get_mirrored_value()),
+                                       .rst(1));
+            end
           end
           if (ral.fifo_ctrl.rxrst.get_mirrored_value()) begin
             rx_q.delete();
             void'(ral.fifo_ctrl.rxrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+            if (cfg.en_cov) begin
+              cov.fifo_level_cg.sample(.dir(UartRx),
+                                       .lvl(ral.fifo_status.rxlvl.get_mirrored_value()),
+                                       .rst(1));
+            end
           end
           // recalculate watermark when RXILVL/TXILVL is updated
           predict_tx_watermark_intr();
@@ -415,8 +425,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               do_read_check = 1'b0;
 
               if (cfg.en_cov) begin
-                cov.fifo_level_cg.sample(UartTx, txlvl_act);
-                cov.fifo_level_cg.sample(UartRx, rxlvl_act);
+                cov.fifo_level_cg.sample(.dir(UartTx), .lvl(txlvl_act), .rst(0));
+                cov.fifo_level_cg.sample(.dir(UartRx), .lvl(rxlvl_act), .rst(0));
               end
             end
           endcase

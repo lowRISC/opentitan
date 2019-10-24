@@ -12,9 +12,9 @@ class uart_fifo_reset_vseq extends uart_fifo_overflow_vseq;
     bit do_clear_rx_fifo;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(do_clear_tx_fifo,
-                                       do_clear_tx_fifo dist {0 :/ 2, 1 :/ 1};)
+                                       do_clear_tx_fifo dist {0 :/ 1, 1 :/ 4};)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(do_clear_rx_fifo,
-                                       do_clear_rx_fifo dist {0 :/ 2, 1 :/ 1};)
+                                       do_clear_rx_fifo dist {0 :/ 1, 1 :/ 4};)
 
     fork
       begin
