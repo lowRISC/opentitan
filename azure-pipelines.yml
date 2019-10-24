@@ -98,7 +98,7 @@ stages:
     pool: "Default"
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
           && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
@@ -106,6 +106,18 @@ stages:
         export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
         REQUEST_UPDATE=true ci/run_sw_build.sh
       displayName: 'Build embedded targets'
+    - bash: |
+        make -C sw/host/spiflash clean all
+        # TODO: build system updates needed to copy build output to a dist
+        # staging directory.
+        mkdir -p $(System.DefaultWorkingDirectory)/sw/build/host/bin
+        cp sw/host/spiflash/spiflash $(System.DefaultWorkingDirectory)/sw/build/host/bin
+      displayName: 'Build host targets'
+    - publish: $(System.DefaultWorkingDirectory)/sw/build
+      artifact: sw_build-build
+      displayName: "Upload software artifacts"
+
+
   - job: "top_earlgrey_verilator"
     displayName: "Build Verilator simulation of the Earl Grey toplevel design"
     pool: "Default"
@@ -143,17 +155,78 @@ stages:
         fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
       displayName: 'Build simulation with Verilator'
 
+
   - job: "top_earlgrey_nexysvideo"
     displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
     pool: "Default"
     timeoutInMinutes: 120 # 2 hours
+    dependsOn:
+      # The bootrom is built into the FPGA image at synthesis time.
+      - sw_build
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+        sudo apt-get install -y python3 python3-pip build-essential srecord \
+            python3-setuptools zlib1g-dev libusb-1.0 \
           && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: sw_build-build
+        targetPath: '$(System.DefaultWorkingDirectory)/sw/build'
     - bash: |
         set -e
         source /opt/xilinx/Vivado/2018.3/settings64.sh
-        fusesoc --cores-root . run --target=synth --setup --build lowrisc:systems:top_earlgrey_nexysvideo
+        fusesoc --cores-root . run --target=synth --setup --build \
+          lowrisc:systems:top_earlgrey_nexysvideo \
+          --ROM_INIT_FILE=$(System.DefaultWorkingDirectory)/sw/build/boot_rom/rom.vmem
       displayName: 'Build bitstream with Vivado'
+    - publish: $(System.DefaultWorkingDirectory)/build
+      artifact: top_earlgrey_nexysvideo-build
+      displayName: "Upload Nexys Video artifacts"
+
+
+  - job: "systemtest_fpga_nexysvideo"
+    displayName: "Systemtest on a Nexys Video FPGA"
+    pool: "FPGA"
+    dependsOn:
+      - sw_build
+      - top_earlgrey_nexysvideo
+    steps:
+      # Use long version instead of download shortcut to specify the target directory
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: top_earlgrey_nexysvideo-build
+          targetPath: '$(System.DefaultWorkingDirectory)/build'
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: sw_build-build
+          targetPath: '$(System.DefaultWorkingDirectory)/sw/build'
+      - bash: |
+          set -e
+          # TODO: Workaround to get our environment setup loaded
+          . /etc/profile.d/modules.sh
+          . /etc/profile.d/lowrisc-environment.sh
+
+          module load xilinx/vivado/2018.3
+
+          # Check if USB ports are available
+          ls -l /dev/ttyUSB*
+
+          pip3 install -U --user -r python-requirements.txt
+          # pip-installed binaries are living in $HOME/.local/bin
+          export PATH=$HOME/.local/bin:$PATH
+
+          # Host tools, generated in previous build steps
+          export PATH=$(System.DefaultWorkingDirectory)/sw/build/host/bin:$PATH
+          # Azure pipeline artifacts don't retain file metadata; restore it
+          # https://github.com/microsoft/azure-pipelines-tasks/issues/6364
+          # TODO: Use a better workaround, e.g. taring artifacts for transfer.
+          chmod +x $(System.DefaultWorkingDirectory)/sw/build/host/bin/*
+
+          # Flash FPGA through fusesoc
+          fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
+
+          # Program emulated flash on device through SPI (over USB)
+          spiflash --input=sw/build/tests/flash_ctrl/sw.bin
+
+
