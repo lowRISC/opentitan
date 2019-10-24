@@ -14,6 +14,7 @@ supported)
 
 To change the value and to re-create hjson,
 
-    $ reg_rv_plic.py -s 64 -t 2 -p 15 rv_plic.hjson.tpl > rv_plic.hjson
-    $ reg_rv_plic.py -s 64 -t 2 -p 15 rv_plic.sv.tpl > ../rtl/rv_plic.sv
-
+```console
+$ util/reg_rv_plic.py -s 64 -t 2 -p 15 data/rv_plic.hjson.tpl > data/rv_plic.hjson
+$ util/reg_rv_plic.py -s 64 -t 2 -p 15 data/rv_plic.sv.tpl > rtl/rv_plic.sv
+```
