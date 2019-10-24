@@ -17,7 +17,8 @@ The OpenTitan releases are tagged with the [CalVer convention](https://calver.or
 
 NexysVideo FPGA boards support the ability to program the FPGA from a USB pen drive or a microSD card (see section 2.3 of [NexysVideo reference manual](https://reference.digilentinc.com/_media/reference/programmable-logic/nexys-video/nexysvideo_rm.pdf).
 
-To do so, please follow the steps below:
+The steps below describe how to preapre and use a microSD card in order to flash the NexysVideo board with the Golden Images.
+
 ### Preparing the microSD
 
 1.  Insert microSD Card to your machine.
