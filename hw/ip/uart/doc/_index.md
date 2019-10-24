@@ -53,10 +53,11 @@ as parity have been added.
 
 ### Serial interface (both directions)
 
-TX/RX serial lines are high when idle. Data starts with START bit (1-->0)
-followed by 8 data bits. Least significant bit is sent first. If parity feature
-is turned on, at the end of the data bit, odd or even parity bit follows then
-STOP bit completes one byte data transfer.
+The TX/RX serial lines are high when idle. Data starts with a START bit (high
+idle state deasserts, **1**-->**0**) followed by 8 data bits. The least
+significant bit is sent first. If the parity feature is turned on then an odd or
+even parity bit follows after the data bits. Finally a STOP (**1**) bit
+completes one byte of data transfer.
 
 {{< wavejson >}}
 {
@@ -89,13 +90,16 @@ STOP bit completes one byte data transfer.
 
 ### Transmission
 
-A write to {{< regref "WDATA" >}} enqueues a data byte into the 32 depth write
-FIFO, which triggers the transmit module to start UART TX serial data
-transfer. The TX module dequeues the byte from the FIFO and shifts it
-bit by bit out to the UART TX pin when baud tick is asserted.
+A write to {{< regref "WDATA" >}} enqueues a data byte into the 32 depth write FIFO, which
+triggers the transmit module to start UART TX serial data transfer. The TX
+module dequeues the byte from the FIFO and shifts it bit by bit out to the UART
+TX pin on positive edges of the baud clock.
 
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
+
+If the FIFO is full when data is written to {{< regref "WDATA" >}} that data will be discarded
+and a TX FIFO overflow interrupt raised.
 
 ### Reception
 
@@ -108,8 +112,7 @@ the RX module samples at the center of each bit-time and gathers
 incoming serial bits into a charcter buffer. If the STOP bit is
 detected as high and the optional partity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
-reading {{< regref "RDATA" >}} register. It is expected that the software reads all
-the pending data from RX FIFO if RX needs to be disabled.
+reading {{< regref "RDATA" >}} register.
 
 This behaviour of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
@@ -153,9 +156,9 @@ the ideal baud rate.
 
 ### Setting the baud rate
 
-The baud rate is set by programming the {{< regref "CTRL.NCO" >}} register
-field. This should be set to `(2^20*baud)/freq`, where `freq` is the
-system clock frequency provided to the UART.
+The baud rate is set by writing to the {{< regref "CTRL.NCO" >}} register field. This should be
+set using the equation below, where `f_pclk` is the system clock frequency
+provided to the UART. and `f_baud` is the desired baud rate (in bits per second).
 
 $$ NCO = {{2^{20} * f\_{baud}} \over {f\_{pclk}}} $$
 
@@ -200,15 +203,18 @@ and below if the system clock is under 32MHz.
 UART module has a few interrupts including general data flow interrupts
 and unexpected event interrupts.
 
-If the TX or RX FIFO hits (meaning greater than or equal to) the designated
-depth of entries, interrupts `tx_watermark` or `rx_watermark` are raised to
-inform FW.  FW can configure the watermark value via registers
-{{< regref "FIFO_CTRL.RXILVL" >}} or {{< regref "FIFO_CTRL.TXILVL" >}}.
+#### tx_watermark / rx_watermark
+If the TX or RX FIFO level becomes greater than or equal to their respective
+high-water mark levels (configurable via {{< regref "FIFO_CTRL.RXILVL" >}} and
+{{< regref "FIFO_CTRL.TXILVL" >}}), interrupts `tx_watermark` or `rx_watermark` are raised to
+inform SW.
 
+#### tx_overflow / rx_overflow
 If either FIFO receives an additional write request when its FIFO is full,
 the interrupt `tx_overflow` or `rx_overflow` is asserted and the character
 is dropped.
 
+#### rx_break_err
 The `rx_break_err` interrupt is triggered if a break condition has
 been detected. A break condition is defined as the RX pin being
 continuously low for more than a programmable number of
@@ -232,15 +238,17 @@ on. If {{< regref "STATUS.BREAK" >}} is clear but {{< regref "INTR_STATE.BREAK" 
 there has been a line break for which software has not cleared the
 interrupt but the line is now back to normal.
 
-The `rx_frame_err` interrupt is triggered if RX module receives the
-`START` bit and series of data bits but did not detect `STOP` bit
-(`1`). This can happen because of noise affecting the line or if the
-transmitter clock is fast or slow compared to the receiver. In a real
-frame error the stop bit will be present just at an incorrect time so
-the line will continue to signal both high and low. The start of a
-line break (described above) matches a frame error with all data bits
-zero and one frame error interrupt will be raised. If the line stays zero until
-the break error occurs, the frame error will be set at every char-times.
+#### rx_frame_err
+The `rx_frame_err` interrupt is triggered if the RX module receives the `START`
+bit (**0**) and a series of data bits but did not detect the `STOP` bit
+(**1**). This can happen because of noise affecting the line or if the
+transmitter clock is fast or slow compared to the receiver. In a real frame
+error the stop bit will be present just at an incorrect time so the line will
+continue to signal both high and low. The start of a line break (described
+above) matches a frame error with all data bits zero and one frame error
+interrupt will be raised. If the line stays zero until the break error occurs,
+the frame error will be set at every char-time. Frame errors will continue to
+be reported after a break error.
 
 {{< wavejson >}}
 {
@@ -276,22 +284,24 @@ in the table:
 |10 (with parity)     | No         | No     | Normal zero data with STOP=1 |
 |10 (no parity)       | Yes        | No     | Frame error since STOP=0 |
 |11 - RXBLVL*char     | Yes        | No     | Break less than detect level |
-|\>RXBLVL*char        | Yes        | Once   | Frame signalled at every char-times, break at RXBLVL char-times|
+|\>RXBLVL*char        | Yes        | Once   | Frame error signalled at every char-time, break at RXBLVL char-times|
 
-The `rx_timeout` interrupt is triggered when the RX FIFO has data sitting
-in it without software reading it for a programmable number of bit times
-(with baud rate clock as reference, programmable via {{< regref "TIMEOUT_CTRL" >}}). This
-is used to alert software that it has data still waiting in the FIFO that
-has not been handled yet. The timeout counter is reset whenever the FIFO depth
-is changed or `rx_timeout` event occurs. If FIFO is full and new character is
-received, it won't reset the timeout value. The software is responsible to keep
-the FIFO in the level below the watermark. The actual timeout time can vary
-based on the reset of the timeout timer and the start of the transaction. For
-instance, if the software reset the timeout timer by reading the character from
-the FIFO and right next to it the baud tick asserted and start RX transaction
-from the host, it can have shortest timeout value reduced by 1 and half baud
-clock period.
+#### rx_timeout
+The `rx_timeout` interrupt is triggered when the RX FIFO has data sitting in it
+without software reading it for a programmable number of bit times (using the
+baud rate clock as reference, programmable via {{< regref "TIMEOUT_CTRL" >}}). This is used to
+alert software that it has data still waiting in the FIFO that has not been
+handled yet. The timeout counter is reset whenever the FIFO depth is changed or
+an `rx_timeout` event occurs. If the RX FIFO is full and new character is
+received, it won't reset the timeout value. The software is responsible for
+keeping the RX FIFO in the level below the watermark. The actual timeout time
+can vary based on the reset of the timeout timer and the start of the
+transaction. For instance, if the software resets the timeout timer by reading a
+character from the RX FIFO and right after it there is a baud clock tick and the
+start of a new RX transaction from the host, the timeout time is reduced by 1
+and half baud clock periods.
 
+## rx_partity_err
 The `rx_parity_err` interrupt is triggered if parity is enabled and
 the RX parity bit does not match the expected polarity as programmed
 in {{< regref "CTRL.PARITY_ODD" >}}.
@@ -300,11 +310,12 @@ in {{< regref "CTRL.PARITY_ODD" >}}.
 
 ## Initialization
 
-The following code snippet shows initializing the UART to a programmable
+The following code snippet demonstrates initializing the UART to a programmable
 baud rate, clearing the RX and TX FIFO, setting up the FIFOs for interrupt
-levels, and enabling some interrupts. The NCO register controls the baud
-rate, and should be set to `(2^20*baud)/freq`, where `freq` is the fixed
-clock frequency. The UART uses `clock_primary` as a clock source.
+levels, and enabling some interrupts. The NCO register controls the baud rate,
+and should be set using the equation below, where `f_pclk` is the fixed clock
+frequency and `f_baud` is the baud rate in bits per second. The UART uses the
+primary clock `clk_i` as a clock source.
 
 $$ NCO = {{2^{20} * f\_{baud}} \over {f\_{pclk}}} $$
 
