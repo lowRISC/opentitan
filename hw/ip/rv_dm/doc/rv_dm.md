@@ -19,11 +19,11 @@ The debug system follows the execution-based debug approach described in the [RI
 {{% section2 Description }}
 
 This module provides a RISC-V Debug Specification-compliant debug system with TileLink Uncached Light bus interfaces.
-The main functionality is provided by the [PULP RISV-V Debug System](https://github.com/pulp-platform/riscv-dbg), which is instantiated by this module.
+The main functionality is provided by the [PULP RISC-V Debug System](https://github.com/pulp-platform/riscv-dbg), which is instantiated by this module.
 All bus interfaces are converted into TL-UL.
 
 See the [PULP RISC-V Debug System Documentation](../../../vendor/pulp_riscv_dbg/doc/debug-system.md) for a full list of features and further design documentation.
-This document only describes the additional logic provided on top of the PULP Debug System IP.
+This document only describes the additional logic provided on top of the PULP RISC-V Debug System.
 
 {{% section2 Compatibility }}
 
@@ -80,7 +80,7 @@ input  logic [NrHarts-1:0]    unavailable_i, // communicate whether the hart is 
 The debug system implements execution-based debug according to the RISC-V Debug Specification.
 Most interactions between the core and the debug system are performed through the debug memory, a bus-exposed memory.
 The memory needs to be accessible from the core instruction *and* data interfaces.
-A full memory map is part of the [PULP Debug System documentation](../../../vendor/pulp_riscv_dbg/doc/debug-system.md).
+A full memory map is part of the [PULP RISC-V Debug System Documentation](../../../vendor/pulp_riscv_dbg/doc/debug-system.md).
 
 ```verilog
 input  tlul_pkg::tl_h2d_t tl_d_i,
