@@ -1,0 +1,10 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+VIVADO=${VIVADO:-vivado}
+
+bitstream=$1
+device=$2
+
+$VIVADO -mode batch -source $DIR/xilinx-vivado.tcl -tclargs $device $bitstream
