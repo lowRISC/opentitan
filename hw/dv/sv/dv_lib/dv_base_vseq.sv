@@ -55,6 +55,8 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task dut_init(string reset_kind = "HARD");
     if (do_apply_reset)         apply_reset(reset_kind);
     else if (do_wait_for_reset) wait_for_reset(reset_kind);
+    // delay after reset for tl agent check seq_item_port empty
+    #1ps;
   endtask
 
   virtual task apply_reset(string kind = "HARD");

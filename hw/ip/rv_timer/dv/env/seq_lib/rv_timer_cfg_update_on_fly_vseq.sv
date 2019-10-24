@@ -56,7 +56,9 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
             // Wait and read intr status for clks before updating timer cfg
             num_clks = calculate_num_clks(hart, timer);
             if (upd_cfg_in_end) begin
-              num_clks -= prescale[hart] + 4;
+              // subtract one prescale value i.e.(prescale+1) +
+              // 8 (clks to update timer and compare val) + 2 (read timer val)
+              num_clks -= (prescale[hart] + 1) + 8 + 2;
             end
             else begin
               num_clks = $urandom_range((num_clks / 10), (num_clks / 2));
