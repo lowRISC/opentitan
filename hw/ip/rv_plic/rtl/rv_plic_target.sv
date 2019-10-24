@@ -43,16 +43,17 @@ module rv_plic_target #(
     logic irq_next;
     logic [SRCW-1:0] irq_id_next;
     always_comb begin
-      max_prio = threshold + 1'b1; // Priority strictly greater than threshold
+      // Threshold doesn't matter for interrupt claim, it only factors into
+      // whether irq is raised for a target
+      max_prio = 1'b0;
       irq_id_next = '0; // default: No Interrupt
-      irq_next = 1'b0;
       for (int i = N_SOURCE-1 ; i >= 0 ; i--) begin
         if ((ip[i] & ie[i]) == 1'b1 && prio[i] >= max_prio) begin
           max_prio = MAX_PRIOW'(prio[i]);
           irq_id_next = SRCW'(i+1);
-          irq_next = 1'b1;
         end
       end // for i
+      irq_next = (max_prio > threshold) ? 1'b1 : 1'b0;
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -74,19 +75,19 @@ module rv_plic_target #(
     // So if above approach(ALGORITHM 1) meets timing, don't use this algorithm.
     logic [N_SOURCE-1:0] is;
 
-    logic [N_SOURCE-1:0][N_SOURCE-1:0] mat;
     logic [N_SOURCE-1:0] merged_row;
 
     assign is = ip & ie;
     always_comb begin
-      merged_row[N_SOURCE-1] = is[N_SOURCE-1] & (prio[N_SOURCE-1] > threshold);
+      merged_row[N_SOURCE-1] = is[N_SOURCE-1] ;
       for (int i = 0 ; i < N_SOURCE-1 ; i++) begin
         merged_row[i] = 1'b1;
         for (int j = i+1 ; j < N_SOURCE ; j++) begin
-          mat[i][j] = (prio[i] <= threshold) ? 1'b0 :         // No compare if less than TH
-                      (is[i] & is[j]) ? prio[i] >= prio[j] :
-                      (is[i]) ? 1'b 1 : 1'b 0 ;
-          merged_row[i] = merged_row[i] & mat[i][j]; // all should be 1
+          if (is[i] && is[j]) begin
+            merged_row[i] = merged_row[i] & (prio[i] >= prio[j]);
+          end else if (!is[i]) begin
+            merged_row[i] = 1'b0;
+          end
         end // for j
       end // for i
     end // always_comb
@@ -103,7 +104,7 @@ module rv_plic_target #(
         // so, safely run for loop
         for (int i = N_SOURCE-1 ; i >= 0 ; i--) begin
           if (lod[i] == 1'b1) begin
-            irq <= 1'b 1;
+            if (prio[i] > threshold) irq <= 1'b 1;
             irq_id <= SRCW'(i + 1);
           end
         end // for
