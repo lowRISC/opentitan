@@ -13,9 +13,9 @@
   ],
   interrupt_list: [
     { name: "tx_watermark"
-      desc: "raised if the transmit FIFO is past the highwater mark."}
+      desc: "raised if the transmit FIFO is past the high-water mark."}
     { name: "rx_watermark"
-      desc: "raised if the receive FIFO is past the highwater mark."}
+      desc: "raised if the receive FIFO is past the high-water mark."}
     { name: "tx_overflow"
       desc: "raised if the transmit FIFO has overflowed."}
     { name: "rx_overflow"
@@ -256,17 +256,17 @@
       ]
     }
     { name: "OVRD",
-      desc: "UART override control register",
+      desc: "TX pin override control. Gives direct SW control over TX pin state",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
         { bits: "0",
           name: "TXEN",
-          desc: "Override the TX signal"
+          desc: "Enable TX pin override control"
         }
         { bits: "1",
           name: "TXVAL",
-          desc: "Value for TX Override"
+          desc: "Write to set the value of the TX pin"
         }
       ]
     }
