@@ -10,20 +10,23 @@
 // - Support multi-cast
 // - Support data transform from source to destination
 
-class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
+class scoreboard#(type ITEM_T = uvm_object,
+                  type RAL_T  = dv_base_reg_block,
+                  type CFG_T  = dv_base_env_cfg,
+                  type COV_T  = dv_base_env_cov) extends dv_base_scoreboard#(RAL_T, CFG_T, COV_T);
 
-  uvm_tlm_analysis_fifo #(SEQ_ITEM) item_fifos[string];
+  uvm_tlm_analysis_fifo #(ITEM_T)   item_fifos[string];
   // Port direction
   port_dir_e                        port_dir[string];
   // Queues for pending items
-  scoreboard_queue#(SEQ_ITEM)       item_queues[string];
+  scoreboard_queue#(ITEM_T)         item_queues[string];
   int unsigned                      timeout_cycle_limit = 10000;
   bit [63:0]                        ref_timer;
   bit [63:0]                        last_activity_cycle;
   int unsigned                      num_of_exp_item;
   int unsigned                      num_of_act_item;
   int unsigned                      timeout_check_cycle_interval = 100;
-  bit                               enable_logging = 1'b1;
+  bit                               enable_logging = 1'b0;
   uvm_phase                         run_phase_h;
   bit                               objection_raised;
   semaphore                         token;
@@ -33,7 +36,8 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
   bit                               allow_packet_drop;
   bit                               disable_scoreboard;
 
-  `uvm_component_param_utils(scoreboard#(SEQ_ITEM))
+  `uvm_component_param_utils(scoreboard#(ITEM_T, dv_base_reg_block,
+                                         dv_base_env_cfg, dv_base_env_cov))
 
   function new (string name, uvm_component parent);
     super.new(name, parent);
@@ -41,6 +45,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    void'($value$plusargs("scb_logging=%d", enable_logging));
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_vif", clk_vif)) begin
       `uvm_fatal(get_full_name(), "Cannot get clk interface")
     end
@@ -74,12 +79,13 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
     end
     `uvm_info(get_full_name(), $sformatf(
               "Adding queue :%0s(%0s)", queue_name, policy.name()), UVM_HIGH)
-    item_queues[queue_name] = scoreboard_queue#(SEQ_ITEM)::type_id::
+    item_queues[queue_name] = scoreboard_queue#(ITEM_T)::type_id::
                               create($sformatf("%0s_%0s", get_full_name(), queue_name));
     item_queues[queue_name].policy = policy;
   endfunction
 
   task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     run_phase_h = phase;
     if (disable_scoreboard) return;
     fork
@@ -97,8 +103,8 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
 
   // Collect items from analysis FIFO, send to corresponding queues
   virtual task port_monitor(string port_name);
-    SEQ_ITEM tr;
-    SEQ_ITEM transformed_tr[$];
+    ITEM_T tr;
+    ITEM_T transformed_tr[$];
     string queue_name;
     while(1) begin
       item_fifos[port_name].get(tr);
@@ -124,7 +130,7 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
           item_queues[queue_name].add_expected_item(transformed_tr[i], ref_timer);
         end
       end else begin
-        SEQ_ITEM tr_modified;
+        ITEM_T tr_modified;
         queue_name = get_queue_name(tr, port_name);
         // destination ports
         if (!item_queues.exists(queue_name)) begin
@@ -177,22 +183,22 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
   // - Support multi-cast original transaction to multiple destinations
   // This step is optional, the default implementation is pass through the original
   // transaction without any modification.
-  virtual function void process_src_packet(input SEQ_ITEM  tr,
-                                           input string    port_name,
-                                           output SEQ_ITEM transformed_tr[$]);
+  virtual function void process_src_packet(input ITEM_T  tr,
+                                           input string  port_name,
+                                           output ITEM_T transformed_tr[$]);
     transformed_tr = {tr};
   endfunction
 
   // Process the destination packet before comparing
-  virtual function void process_dst_packet(input SEQ_ITEM  tr,
-                                           input string    port_name,
-                                           output SEQ_ITEM transformed_tr);
+  virtual function void process_dst_packet(input ITEM_T  tr,
+                                           input string  port_name,
+                                           output ITEM_T transformed_tr);
     transformed_tr = tr;
   endfunction
 
   // Get scoreboard queue name based on the transaction and port name
   // This function should be implemented with actual transaction to queue mapping
-  virtual function string get_queue_name(SEQ_ITEM tr, string port_name);
+  virtual function string get_queue_name(ITEM_T tr, string port_name);
     return "default";
   endfunction
 
@@ -233,5 +239,14 @@ class scoreboard#(type SEQ_ITEM = uvm_object) extends uvm_component;
       ref_timer++;
     end
   endtask
+
+  virtual function void reset(string kind = "HARD");
+    last_activity_cycle = ref_timer;
+    foreach (item_fifos[i])  item_fifos[i].flush();
+    foreach (item_queues[i]) item_queues[i].reset();
+    num_of_act_item = 0;
+    num_of_exp_item = 0;
+    handle_objection();
+  endfunction
 
 endclass

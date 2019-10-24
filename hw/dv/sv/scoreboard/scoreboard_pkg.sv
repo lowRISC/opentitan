@@ -5,6 +5,7 @@
 package scoreboard_pkg;
 
   import uvm_pkg::*;
+  import dv_lib_pkg::*;
 
   typedef enum bit {
     kSrcPort = 1'b0,

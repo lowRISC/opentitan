@@ -126,18 +126,20 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
             rsp = pending_a_req[i];
             rsp.d_opcode = vif.host_cb.d2h.d_opcode;
             rsp.d_data   = vif.host_cb.d2h.d_data;
-            rsp.d_source = vif.host_cb.d2h.d_source;
             rsp.d_param  = vif.host_cb.d2h.d_param;
             rsp.d_error  = vif.host_cb.d2h.d_error;
             rsp.d_sink   = vif.host_cb.d2h.d_sink;
             rsp.d_size   = vif.host_cb.d2h.d_size;
             rsp.d_user   = vif.host_cb.d2h.d_user;
+            // make sure every req has a rsp with same source even during reset
+            if (reset_asserted) rsp.d_source = rsp.a_source;
+            else                rsp.d_source = vif.host_cb.d2h.d_source;
             req_found = 1'b1;
             seq_item_port.put_response(rsp);
             pending_a_req.delete(i);
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
-            if (!reset_asserted) break;
+            break;
           end
         end
 

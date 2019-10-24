@@ -16,6 +16,9 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   uint                   min_req_cnt = 100;
   uint                   max_req_cnt = 200;
 
+  // if seq crosses with the other seq, only need to enable device rsp thread
+  bit                    do_device_rsp = 1;
+
   constraint req_cnt_c {
     foreach (host_seq[i]) {
       host_seq[i].req_cnt inside {[min_req_cnt : max_req_cnt]};
@@ -37,6 +40,7 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (host_seq[i]) begin
       host_seq[i] = xbar_tl_host_seq::type_id::create(
                     $sformatf("%0s_seq", xbar_hosts[i].host_name));
+      host_seq[i].set_max_outstanding(1 << VALID_HOST_ID_WIDTH);
       // Default only send request to valid devices that is accessible by the host
       foreach (xbar_devices[j]) begin
         if (is_valid_path(xbar_hosts[i].host_name, xbar_devices[j].device_name)) begin
@@ -53,12 +57,14 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   endfunction : seq_init
 
   virtual task run_all_device_seq_nonblocking(bit out_of_order_rsp = 1);
-    foreach (device_seq[i]) begin
-      fork
-        automatic int device_id = i;
-        device_seq[device_id].out_of_order_rsp = out_of_order_rsp;
-        device_seq[device_id].start(p_sequencer.device_seqr[device_id]);
-      join_none
+    if (do_device_rsp) begin
+      foreach (device_seq[i]) begin
+        fork
+          automatic int device_id = i;
+          device_seq[device_id].out_of_order_rsp = out_of_order_rsp;
+          device_seq[device_id].start(p_sequencer.device_seqr[device_id]);
+        join_none
+      end
     end
   endtask
 

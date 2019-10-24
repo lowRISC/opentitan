@@ -126,4 +126,12 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
     `uvm_fatal(get_full_name(), "custom_check must be implemented for kCustomCheck policy")
   endfunction
 
+  // delete all the queues once reset
+  virtual function void reset();
+    expected_items.delete();
+    actual_items.delete();
+    expected_items_timestamp.delete();
+    actual_items_timestamp.delete();
+  endfunction
+
 endclass
