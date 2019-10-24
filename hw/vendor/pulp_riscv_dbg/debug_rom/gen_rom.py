@@ -42,28 +42,35 @@ license = """\
 
 module = """\
 module $filename (
-   input  logic         clk_i,
-   input  logic         req_i,
-   input  logic [63:0]  addr_i,
-   output logic [63:0]  rdata_o
+  input  logic         clk_i,
+  input  logic         req_i,
+  input  logic [63:0]  addr_i,
+  output logic [63:0]  rdata_o
 );
-    localparam int RomSize = $size;
 
-    const logic [RomSize-1:0][63:0] mem = {
+  localparam int unsigned RomSize = $size;
+
+  const logic [RomSize-1:0][63:0] mem = {
 $content
-    };
+  };
 
-    logic [$$clog2(RomSize)-1:0] addr_q;
+  logic [$$clog2(RomSize)-1:0] addr_q;
 
-    always_ff @(posedge clk_i) begin
-        if (req_i) begin
-            addr_q <= addr_i[$$clog2(RomSize)-1+3:3];
-        end
+  always_ff @(posedge clk_i) begin
+    if (req_i) begin
+      addr_q <= addr_i[$$clog2(RomSize)-1+3:3];
     end
+  end
 
-    // this prevents spurious Xes from propagating into
-    // the speculative fetch stage of the core
-    assign rdata_o = (addr_q < RomSize) ? mem[addr_q] : '0;
+  // this prevents spurious Xes from propagating into
+  // the speculative fetch stage of the core
+  always_comb begin : p_outmux
+    rdata_o = '0;
+    if (addr_q < $clog2(RomSize)'(RomSize)) begin
+        rdata_o = mem[addr_q];
+    end
+  end
+
 endmodule
 """
 
@@ -116,7 +123,7 @@ with open(filename + ".sv", "w") as f:
     rom_str = ""
     # process in junks of 64 bit (8 byte)
     for i in reversed(range(int(len(rom)/8))):
-        rom_str += "        64'h" + "".join(rom[i*8+4:i*8+8][::-1]) + "_" + "".join(rom[i*8:i*8+4][::-1]) + ",\n"
+        rom_str += "    64'h" + "".join(rom[i*8+4:i*8+8][::-1]) + "_" + "".join(rom[i*8:i*8+4][::-1]) + ",\n"
 
     # remove the trailing comma
     rom_str = rom_str[:-2]
