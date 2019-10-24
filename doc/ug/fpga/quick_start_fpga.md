@@ -38,10 +38,10 @@ To do so, please follow the steps below:
 1.  Make sure the device is formatted as FAT32. If not, format it to FAT32.
 1.  Mount the device by running the following commands:
     ```bash
-    mkdir -p /mnt/OT-SD  # Can be other name
+    mkdir -p /mnt/OT-SD  # Can be a different name
     mount -t vfat /dev/mmcblk0p1 /mnt/OT-SD  # Change according to mount/dev name
     ```
-1.  Remove all files from the microSD. It must contain a single bit file.
+1.  Remove all files from the microSD. By the end of the process, it must contain a single bit file.
 1.  Copy the required bit file to the micorSD.
 
 ### Loading FPGA Image From microSD
