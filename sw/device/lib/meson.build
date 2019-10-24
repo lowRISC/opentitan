@@ -66,6 +66,18 @@ sw_lib_pinmux = declare_dependency(
   )
 )
 
+# AES library (sw_lib_aes)
+sw_lib_aes = declare_dependency(
+  sources: [hw_ip_aes_reg_h],
+  link_with: static_library(
+    'aes_ot',
+    sources: [
+      hw_ip_aes_reg_h,
+      'aes.c',
+    ]
+  )
+)
+
 # HMAC library (sw_lib_hmac)
 sw_lib_hmac = declare_dependency(
   sources: [hw_ip_hmac_reg_h],
