@@ -29,7 +29,7 @@ gen_sv_flist: pre_compile
 	cd ${BUILD_DIR} && ${SV_FLIST_GEN_TOOL} ${SV_FLIST_GEN_OPTS}
 
 compile: gen_sv_flist
-	$(BUILD_JOB_OPTS) cd ${SV_FLIST_GEN_DIR} && ${SIMCC} ${BUILD_OPTS} ${CL_BUILD_OPTS}
+	cd ${SV_FLIST_GEN_DIR} && $(BUILD_JOB_OPTS) ${SIMCC} ${BUILD_OPTS} ${CL_BUILD_OPTS}
 
 post_compile: compile
 
@@ -63,7 +63,7 @@ ifneq (${SW_NAME},)
 endif
 
 simulate: sw_build
-	$(RUN_JOB_OPTS) cd ${RUN_DIR} && ${SIMX} ${RUN_OPTS} ${CL_RUN_OPTS}
+	cd ${RUN_DIR} && $(RUN_JOB_OPTS) ${SIMX} ${RUN_OPTS} ${CL_RUN_OPTS}
 
 post_run: simulate
 
