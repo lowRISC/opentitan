@@ -1,0 +1,11 @@
+diff -u a/support.c b/support.c
+--- a/support.c	2019-10-29 15:26:49.785057144 -0400
++++ b/support.c	2019-10-29 15:28:09.184385584 -0400
+@@ -22,6 +22,7 @@
+  * Craig Heffner
+  * 27 December 2011
+  */
++#include <stdlib.h>
+ #include <string.h>
+ 
+ #include "support.h"

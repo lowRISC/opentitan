@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "mpsse",
+  target_dir: "mpsse",
+  patch_dir: "patches/mpsse",
+
+
+  upstream: {
+    url: "https://chromium.googlesource.com/chromiumos/platform2/",
+    rev: "master",
+    only_subdir: "trunks/ftdi",
+  },
+}
