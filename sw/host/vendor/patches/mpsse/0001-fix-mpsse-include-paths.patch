@@ -1,0 +1,36 @@
+diff -u a/mpsse.c b/mpsse.c
+--- a/mpsse.c	2019-10-29 12:33:31.320820373 -0400
++++ b/mpsse.c	2019-10-29 12:37:39.902739820 -0400
+@@ -27,7 +27,7 @@
+ #include <stdint.h>
+ #include <unistd.h>
+ 
+-#include "trunks/ftdi/support.h"
++#include "support.h"
+ 
+ /* List of known FT2232-based devices */
+ struct vid_pid supported_devices[] = {
+diff -u a/support.c b/support.c
+--- a/support.c	2019-10-29 12:33:31.320820373 -0400
++++ b/support.c	2019-10-29 12:49:02.917016570 -0400
+@@ -24,7 +24,7 @@
+  */
+ #include <string.h>
+ 
+-#include "trunks/ftdi/support.h"
++#include "support.h"
+ 
+ /* Write data to the FTDI chip */
+ int raw_write(struct mpsse_context* mpsse, uint8_t* buf, int size) {
+diff -u a/support.h b/support.h
+--- a/support.h	2019-10-29 12:33:31.320820373 -0400
++++ b/support.h	2019-10-29 12:37:10.578985323 -0400
+@@ -21,7 +21,7 @@
+ #ifndef TRUNKS_FTDI_SUPPORT_H_
+ #define TRUNKS_FTDI_SUPPORT_H_
+ 
+-#include "trunks/ftdi/mpsse.h"
++#include "mpsse.h"
+ 
+ int raw_write(struct mpsse_context* mpsse, uint8_t* buf, int size);
+ int raw_read(struct mpsse_context* mpsse, uint8_t* buf, int size);

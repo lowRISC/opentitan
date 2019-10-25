@@ -1,0 +1,12 @@
+diff -u a/support.h b/support.h
+--- a/support.h	2019-10-29 12:37:10.578985323 -0400
++++ b/support.h	2019-10-29 13:42:46.177892181 -0400
+@@ -21,6 +21,8 @@
+ #ifndef TRUNKS_FTDI_SUPPORT_H_
+ #define TRUNKS_FTDI_SUPPORT_H_
+ 
++#include <stddef.h>
++
+ #include "mpsse.h"
+ 
+ int raw_write(struct mpsse_context* mpsse, uint8_t* buf, int size);
