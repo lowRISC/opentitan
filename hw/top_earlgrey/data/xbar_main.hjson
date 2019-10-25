@@ -96,13 +96,27 @@
       base_addr: "0x40070000",
       size_byte: "0x1000",
       pipeline_byp: "false"
+    },
+    { name:      "alert_handler",
+      type:      "device",
+      clock:     "main",
+      inst_type: "alert_handler",
+      pipeline_byp: "false"
+    },
+    // dummy module to capture the alert handler escalation signals
+    // and test them by converting them into IRQs
+    { name:      "nmi_gen",
+      type:      "device",
+      clock:     "main",
+      inst_type: "nmi_gen",
+      pipeline_byp: "false"
     }
   ],
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
-    "rv_timer", "aes", "hmac", "rv_plic", "pinmux"],
+    "rv_timer", "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
     dm_sba: ["rom",              "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
-    "rv_timer", "aes", "hmac", "rv_plic", "pinmux"],
+    "rv_timer", "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
   },
 }

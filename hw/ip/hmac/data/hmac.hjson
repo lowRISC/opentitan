@@ -5,8 +5,6 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   bus_host: "none",
-  available_input_list: [],
-  available_output_list: [],
   interrupt_list: [
     { name: "hmac_done",
       desc: "HMAC-256 completes a message with key"
@@ -19,6 +17,9 @@
     }
   ],
   alert_list: [
+    { name: "msg_push_sha_disabled",
+      desc: "Dummy alert which is triggered upon writing a message when SHA is disabled",
+    }
   ],
   param_list: [
     { name:    "NumWords",

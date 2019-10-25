@@ -10,17 +10,17 @@
 // does not wrap around.
 //
 
-module alert_handler_accu (
-  input                                   clk_i,
-  input                                   rst_ni,
-  input                                   clr_i,        // clear the accumulator
-  input                                   class_trig_i, // increments the accu
-  input        [alert_pkg::AccuCntDw-1:0] thresh_i,     // escalation trigger threshold
-  output logic [alert_pkg::AccuCntDw-1:0] accu_cnt_o,   // output of current accu value
-  output logic                            accu_trig_o   // escalation trigger output
+module alert_handler_accu import alert_pkg::*; (
+  input                        clk_i,
+  input                        rst_ni,
+  input                        clr_i,        // clear the accumulator
+  input                        class_trig_i, // increments the accu
+  input        [AccuCntDw-1:0] thresh_i,     // escalation trigger threshold
+  output logic [AccuCntDw-1:0] accu_cnt_o,   // output of current accu value
+  output logic                 accu_trig_o   // escalation trigger output
 );
 
-  logic [alert_pkg::AccuCntDw-1:0] accu_d, accu_q;
+  logic [AccuCntDw-1:0] accu_d, accu_q;
 
   assign accu_d = (clr_i)                      ? '0            : // clear
                   (class_trig_i && !(&accu_q)) ? accu_q + 1'b1 : // saturate counter at maximum

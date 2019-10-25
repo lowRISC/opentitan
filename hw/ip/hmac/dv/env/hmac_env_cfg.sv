@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
+
+  ping_en_vif    ping_en_vif;
+  ping_ok_vif    ping_ok_vif;
+  integ_fail_vif integ_fail_vif;
+
   `uvm_object_utils(hmac_env_cfg)
   `uvm_object_new
 

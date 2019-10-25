@@ -4,10 +4,22 @@
 
 {
     name:               "hmac",
-    version:            "0.5",
-    life_stage:         "L2",
-    design_stage:       "D3",
-    verification_stage: "V3",
-    commit_id:          "635afdb8dedbb50c235bd772b36002925c499884",
-    notes:              ""
+    revisions: [
+      {
+	    version:            "0.5",
+	    life_stage:         "L2",
+	    design_stage:       "D3",
+	    verification_stage: "V3",
+	    commit_id:          "635afdb8dedbb50c235bd772b36002925c499884",
+	    notes:              ""
+      }
+      {
+        version:            "0.6",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V1",
+        commit_id:          "",
+        notes:              "Rolled back to D2 in order to add the first alert",
+      }
+    ]
 }

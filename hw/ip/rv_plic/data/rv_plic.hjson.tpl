@@ -87,7 +87,8 @@
       ],
     }
     { name: "CC${i}",
-      desc: "Claim interrupt by read, complete interrupt by write for Target ${i}. Value read/written is interrupt ID. Reading a value of 0 means no pending interrupts.",
+      desc: '''Claim interrupt by read, complete interrupt by write for Target ${i}.
+      Value read/written is interrupt ID. Reading a value of 0 means no pending interrupts.''',
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -98,7 +99,8 @@
       ],
     }
     { name: "MSIP${i}",
-      desc: "msip for Hart ${i}. Write 1 to here asserts software interrupt for Hart msip_o[${i}], write 0 to clear",
+      desc: '''msip for Hart ${i}.
+      Write 1 to here asserts software interrupt for Hart msip_o[${i}], write 0 to clear.''',
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
