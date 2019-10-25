@@ -80,7 +80,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end
           end
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
-            void'(ral.intr_state.predict(.value(item.a_data), .kind(UVM_PREDICT_DIRECT)));
+            bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
+            void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
           end
           "cfg": begin
             cov.cfg_cg.sample(item.a_data);
