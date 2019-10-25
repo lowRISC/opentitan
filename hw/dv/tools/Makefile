@@ -29,6 +29,7 @@ SCRATCH_PATH      ?= ${SCRATCH_ROOT}/${SCRATCH_LOC}
 BUILD_DIR         := ${SCRATCH_PATH}/${BUILD_LOC}
 RUN_PATH          ?= ${SCRATCH_PATH}/${TEST_NAME}
 RUN_DIR           := ${RUN_PATH}/${RUN_LOC}
+COV_REPORT_DIR    ?= ${SCRATCH_PATH}/cov_report
 SW_BUILD_DIR      ?= ${RUN_DIR}/sw_build
 SW_ROOT_DIR       := ${PRJ_DIR}/sw
 

@@ -19,8 +19,8 @@ export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:dv:${name}_sim:0.1
 COMPILE_KEY     ?= default
 
-UVM_TEST        ?= ${name}_base_test
-UVM_TEST_SEQ    ?= ${name}_base_vseq
+# Add coverage exclusion file below
+COV_IP_EXCL     ?=
 
 ${'####################################################################################################'}
 ${'##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##'}

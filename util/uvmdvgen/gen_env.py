@@ -30,6 +30,7 @@ def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
                 ('dv/tests',        name + '_', 'base_test',          '.sv'),
                 ('dv/tests',        name + '_', 'test_pkg',           '.sv'),
                 ('dv/tests',        name + '_', 'test',               '.core'),
+                ('dv/cov',          '',         '',                   ''),
                 ('dv',              '',         'Makefile',           ''),
                 ('doc',             name + '_', 'dv_plan',            '.md'),
                 ('data',            name + '_', 'testplan',           '.hjson'),
@@ -45,10 +46,13 @@ def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
         ftpl = src + src_suffix + '.tpl'
         fname = src_prefix + src + src_suffix
 
+        if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
+        if fname == "": continue
+
         # read template
         tpl = Template(filename=resource_filename('uvmdvgen', ftpl))
 
-        if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
+        # create rendered file
         with open(path_dir + "/" + fname, 'w') as fout:
             try:
                 fout.write(

@@ -8,13 +8,10 @@
 all: build run
 
 ########################
-## standalone targets ##
+## RAL target         ##
 ########################
 ral:
 	${RAL_TOOL} ${RAL_TOOL_OPTS}
-
-cov_merge:
-	# TODO: add script to merge coverage in scratch scope
 
 ###############################
 ## sim build and run targets ##
@@ -70,10 +67,25 @@ post_run: simulate
 run_result: post_run
 	/bin/bash ${MAKE_ROOT}/pass_fail ${RUN_LOG} ${MAKE_ROOT}/pass_patterns ${MAKE_ROOT}/fail_patterns
 
+############################
+## coverage rated targets ##
+############################
+cov_merge:
+	# TODO: add script to merge coverage in scratch scope
+
+# open coverage tool to review and create report or exclusion file
+cov_analyze:
+	cd ${SCRATCH_PATH} && ${COV_ANALYZE_TOOL} ${COV_ANALYZE_OPTS}
+
+# generate coverage report directly
+cov_report:
+	cd ${SCRATCH_PATH} && ${COV_REPORT_TOOL} ${COV_REPORT_OPTS}
+
 clean:
 	rm -rf ${SCRATCH_PATH}/*
 
-.PHONY: build \
+.PHONY: ral \
+	build \
 	run \
 	reg \
 	pre_compile \
@@ -84,4 +96,8 @@ clean:
 	pre_run \
 	simulate \
 	post_run \
-	run_result
+	run_result \
+	cov_merge \
+	cov_analyze \
+	cov_report \
+	clean
