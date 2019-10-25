@@ -19,23 +19,21 @@
 //
 // See also: prim_esc_receiver, prim_diff_decode, alert_handler
 
-module prim_esc_sender (
-  input        clk_i,
-  input        rst_ni,
+module prim_esc_sender import prim_pkg::*; (
+  input           clk_i,
+  input           rst_ni,
   // this triggers a ping test. keep asserted
   // until either ping_ok_o or ping_fail_o is asserted.
-  input        ping_en_i,
-  output logic ping_ok_o,
+  input           ping_en_i,
+  output logic    ping_ok_o,
   // asserted if signal integrity issue detected
-  output logic integ_fail_o,
+  output logic    integ_fail_o,
   // escalation enable signal
-  input        esc_en_i,
+  input           esc_en_i,
   // escalation / ping response
-  input        resp_pi,
-  input        resp_ni,
+  input esc_rx_t  esc_rx_i,
   // escalation output diff pair
-  output logic esc_po,
-  output logic esc_no
+  output esc_tx_t esc_tx_o
 );
 
   /////////////////////////////////
@@ -49,8 +47,8 @@ module prim_esc_sender (
   ) i_decode_resp (
     .clk_i,
     .rst_ni,
-    .diff_pi  ( resp_pi         ),
-    .diff_ni  ( resp_ni         ),
+    .diff_pi  ( esc_rx_i.resp_p ),
+    .diff_ni  ( esc_rx_i.resp_n ),
     .level_o  ( resp            ),
     .rise_o   (                 ),
     .fall_o   (                 ),
@@ -70,8 +68,8 @@ module prim_esc_sender (
 
   // ping enable is 1 cycle pulse
   // escalation pulse is always longer than 2 cycles
-  assign esc_po = esc_en_i | esc_en_q | ( ping_en_d & ~ping_en_q);
-  assign esc_no = ~esc_po;
+  assign esc_tx_o.esc_p = esc_en_i | esc_en_q | ( ping_en_d & ~ping_en_q);
+  assign esc_tx_o.esc_n = ~esc_tx_o.esc_p;
 
   //////////////
   // RX Logic //
@@ -212,28 +210,29 @@ module prim_esc_sender (
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(EscPKnownO_A, esc_po, clk_i, !rst_ni)
-  `ASSERT_KNOWN(EscNKnownO_A, esc_no, clk_i, !rst_ni)
+  `ASSERT_KNOWN(EscPKnownO_A, esc_tx_o, clk_i, !rst_ni)
 
   // diff encoding of output
-  `ASSERT(DiffEncCheck_A, esc_po ^ esc_no, clk_i, !rst_ni)
+  `ASSERT(DiffEncCheck_A, esc_tx_o.esc_p ^ esc_tx_o.esc_n, clk_i, !rst_ni)
   // signal integrity check propagation
-  `ASSERT(SigIntCheck0_A, resp_pi == resp_ni  |-> integ_fail_o, clk_i, !rst_ni)
+  `ASSERT(SigIntCheck0_A, esc_rx_i.resp_p == esc_rx_i.resp_n  |-> integ_fail_o, clk_i, !rst_ni)
   // this happens in case we did not get a correct escalation response
   `ASSERT(SigIntCheck1_A, ##1 $rose(esc_en_i) &&
-      state_q inside {Idle, CheckPingResp1, CheckPingResp3} ##1 !resp_pi |->
-      integ_fail_o, clk_i, !rst_ni || (resp_pi == resp_ni) || (state_q == Idle && resp))
+      state_q inside {Idle, CheckPingResp1, CheckPingResp3} ##1 !esc_rx_i.resp_p |->
+      integ_fail_o, clk_i, !rst_ni || (esc_rx_i.resp_p == esc_rx_i.resp_n) ||
+      (state_q == Idle && resp))
   `ASSERT(SigIntCheck2_A, ##1 $rose(esc_en_i) &&
-      state_q inside {CheckPingResp0, CheckPingResp2} ##1 resp_pi |->
-      integ_fail_o, clk_i, !rst_ni || (resp_pi == resp_ni) || (state_q == Idle && resp))
+      state_q inside {CheckPingResp0, CheckPingResp2} ##1 esc_rx_i.resp_p |->
+      integ_fail_o, clk_i, !rst_ni || (esc_rx_i.resp_p == esc_rx_i.resp_n) ||
+      (state_q == Idle && resp))
   // unexpected response
   `ASSERT(SigIntCheck3_A, state_q == Idle && resp |-> integ_fail_o, clk_i, !rst_ni)
   // check that escalation signal is at least 2 cycles high
-  `ASSERT(EscCheck_A, esc_en_i |-> esc_po [*2] , clk_i, !rst_ni)
+  `ASSERT(EscCheck_A, esc_en_i |-> esc_tx_o.esc_p [*2] , clk_i, !rst_ni)
   // escalation / ping collision
   `ASSERT(EscPingCheck_A, esc_en_i && ping_en_i |-> ping_ok_o, clk_i, !rst_ni || integ_fail_o)
   // check that ping request results in only a single cycle pulse
-  `ASSERT(PingCheck_A, ##1 $rose(ping_en_i) |-> esc_po ##1 !esc_po , clk_i,
+  `ASSERT(PingCheck_A, ##1 $rose(ping_en_i) |-> esc_tx_o.esc_p ##1 !esc_tx_o.esc_p , clk_i,
       !rst_ni || esc_en_i || integ_fail_o)
 
 endmodule : prim_esc_sender
