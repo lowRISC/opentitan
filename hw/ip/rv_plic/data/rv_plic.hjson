@@ -17,7 +17,7 @@
     { name: "NumSrc",
       desc: "Number of interrupt sources",
       type: "int",
-      default: "32",
+      default: "55",
       local: "true"
     },
     { name: "NumTarget",
@@ -303,6 +303,190 @@
     }
     { name: "PRIO31",
       desc: "Interrupt Source 31 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO32",
+      desc: "Interrupt Source 32 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO33",
+      desc: "Interrupt Source 33 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO34",
+      desc: "Interrupt Source 34 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO35",
+      desc: "Interrupt Source 35 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO36",
+      desc: "Interrupt Source 36 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO37",
+      desc: "Interrupt Source 37 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO38",
+      desc: "Interrupt Source 38 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO39",
+      desc: "Interrupt Source 39 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO40",
+      desc: "Interrupt Source 40 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO41",
+      desc: "Interrupt Source 41 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO42",
+      desc: "Interrupt Source 42 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO43",
+      desc: "Interrupt Source 43 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO44",
+      desc: "Interrupt Source 44 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO45",
+      desc: "Interrupt Source 45 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO46",
+      desc: "Interrupt Source 46 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO47",
+      desc: "Interrupt Source 47 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO48",
+      desc: "Interrupt Source 48 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO49",
+      desc: "Interrupt Source 49 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO50",
+      desc: "Interrupt Source 50 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO51",
+      desc: "Interrupt Source 51 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO52",
+      desc: "Interrupt Source 52 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO53",
+      desc: "Interrupt Source 53 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+    { name: "PRIO54",
+      desc: "Interrupt Source 54 Priority",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [

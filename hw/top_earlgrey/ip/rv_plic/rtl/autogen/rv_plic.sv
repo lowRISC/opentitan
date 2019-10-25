@@ -23,7 +23,7 @@
 //   MAX_PRIO: Maximum value of interrupt priority
 
 module rv_plic import rv_plic_reg_pkg::*; #(
-  parameter      FIND_MAX = "SEQUENTIAL", // SEQUENTIAL | MATRIX
+  parameter      FIND_MAX = "BINTREE", // SEQUENTIAL | MATRIX | BINTREE
   // derived parameter
   localparam int SRCW    = $clog2(NumSrc+1)
 ) (
