@@ -19,22 +19,22 @@
 // requested), the ping timer will also raise an internal alert.
 //
 
-module alert_handler_ping_timer (
-  input                                     clk_i,
-  input                                     rst_ni,
-  input                                     entropy_i,          // from TRNG
-  input                                     en_i,               // enable ping testing
-  input        [alert_pkg::NAlerts-1:0]     alert_en_i,         // determines which alerts to ping
-  input        [alert_pkg::PING_CNT_DW-1:0] ping_timeout_cyc_i, // timeout in cycles
-  output logic [alert_pkg::NAlerts-1:0]     alert_ping_en_o,    // enable to alert receivers
-  output logic [alert_pkg::N_ESC_SEV-1:0]   esc_ping_en_o,      // enable to esc senders
-  input        [alert_pkg::NAlerts-1:0]     alert_ping_ok_i,    // response from alert receivers
-  input        [alert_pkg::N_ESC_SEV-1:0]   esc_ping_ok_i,      // response from esc senders
-  output logic                              alert_ping_fail_o,  // any of the alert receivers failed
-  output logic                              esc_ping_fail_o     // any of the esc senders failed
+module alert_handler_ping_timer import alert_pkg::*; (
+  input                          clk_i,
+  input                          rst_ni,
+  input                          entropy_i,          // from TRNG
+  input                          en_i,               // enable ping testing
+  input        [NAlerts-1:0]     alert_en_i,         // determines which alerts to ping
+  input        [PING_CNT_DW-1:0] ping_timeout_cyc_i, // timeout in cycles
+  output logic [NAlerts-1:0]     alert_ping_en_o,    // enable to alert receivers
+  output logic [N_ESC_SEV-1:0]   esc_ping_en_o,      // enable to esc senders
+  input        [NAlerts-1:0]     alert_ping_ok_i,    // response from alert receivers
+  input        [N_ESC_SEV-1:0]   esc_ping_ok_i,      // response from esc senders
+  output logic                   alert_ping_fail_o,  // any of the alert receivers failed
+  output logic                   esc_ping_fail_o     // any of the esc senders failed
 );
 
-  localparam int unsigned NModsToPing = alert_pkg::NAlerts + alert_pkg::N_ESC_SEV;
+  localparam int unsigned NModsToPing = NAlerts + N_ESC_SEV;
   localparam int unsigned IdDw        = $clog2(NModsToPing);
 
   // this defines a random permutation
@@ -53,6 +53,7 @@ module alert_handler_ping_timer (
 
   logic lfsr_en;
   logic [31:0] lfsr_state, perm_state;
+  logic [16-IdDw-1:0] unused_perm_state;
 
   prim_lfsr #(
     .LfsrDw      ( 32                  ),
@@ -74,18 +75,19 @@ module alert_handler_ping_timer (
   end
 
   logic [IdDw-1:0] id_to_ping;
-  logic [alert_pkg::PING_CNT_DW-1:0] wait_cyc;
+  logic [PING_CNT_DW-1:0] wait_cyc;
   // we only use bits up to 23, as IdDw is 8bit maximum
   assign id_to_ping = perm_state[16 +: IdDw];
+  assign unused_perm_state = perm_state[31:16+IdDw];
   // concatenate with constant offset, introduce some stagger
   // by concatenating the lower bits below
   assign wait_cyc   = {perm_state[15:2], 8'h01, perm_state[1:0]};
 
   logic [2**IdDw-1:0] enable_mask;
   always_comb begin : p_enable_mask
-    enable_mask                                   = '0;         // tie off unused
-    enable_mask[alert_pkg::NAlerts-1:0]           = alert_en_i; // alerts
-    enable_mask[NModsToPing-1:alert_pkg::NAlerts] = '1;         // escalation senders
+    enable_mask                        = '0;         // tie off unused
+    enable_mask[NAlerts-1:0]           = alert_en_i; // alerts
+    enable_mask[NModsToPing-1:NAlerts] = '1;         // escalation senders
   end
 
   logic id_vld;
@@ -96,7 +98,7 @@ module alert_handler_ping_timer (
   // Counter //
   /////////////
 
-  logic [alert_pkg::PING_CNT_DW-1:0] cnt_d, cnt_q;
+  logic [PING_CNT_DW-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
   logic wait_ge, timeout_ge;
 
@@ -116,9 +118,9 @@ module alert_handler_ping_timer (
   logic spurious_alert_ping, spurious_esc_ping;
 
   // generate ping enable vector
-  assign ping_sel        = (alert_pkg::NAlerts+alert_pkg::N_ESC_SEV)'(ping_en) << id_to_ping;
-  assign alert_ping_en_o = ping_sel[alert_pkg::NAlerts-1:0];
-  assign esc_ping_en_o   = ping_sel[NModsToPing-1:alert_pkg::NAlerts];
+  assign ping_sel        = NModsToPing'(ping_en) << id_to_ping;
+  assign alert_ping_en_o = ping_sel[NAlerts-1:0];
+  assign esc_ping_en_o   = ping_sel[NModsToPing-1:NAlerts];
 
   // mask out response
   assign ping_ok             = |({esc_ping_ok_i, alert_ping_ok_i} & ping_sel);
@@ -126,8 +128,8 @@ module alert_handler_ping_timer (
   // under normal operation, these signals should never be asserted.
   // double check that these signals are not optimized away during synthesis.
   // this may need "don't touch" or "no boundary optimization" constraints
-  assign spurious_alert_ping = |spurious_ping[alert_pkg::NAlerts-1:0];
-  assign spurious_esc_ping   = |spurious_ping[NModsToPing-1:alert_pkg::NAlerts];
+  assign spurious_alert_ping = |spurious_ping[NAlerts-1:0];
+  assign spurious_esc_ping   = |spurious_ping[NModsToPing-1:NAlerts];
 
   always_comb begin : p_fsm
     // default
@@ -174,7 +176,7 @@ module alert_handler_ping_timer (
           state_d = RespWait;
           cnt_clr = 1'b1;
           if (timeout_ge) begin
-            if (id_to_ping < alert_pkg::NAlerts) begin
+            if (id_to_ping < NAlerts) begin
               alert_ping_fail_o = 1'b1;
             end else begin
               esc_ping_fail_o   = 1'b1;

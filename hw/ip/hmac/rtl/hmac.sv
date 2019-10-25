@@ -4,7 +4,11 @@
 //
 // HMAC-SHA256
 
-module hmac (
+module hmac
+  import prim_pkg::*;
+  import hmac_pkg::*;
+  import hmac_reg_pkg::*;
+(
   input clk_i,
   input rst_ni,
 
@@ -13,11 +17,13 @@ module hmac (
 
   output logic intr_hmac_done_o,
   output logic intr_fifo_full_o,
-  output logic intr_hmac_err_o
+  output logic intr_hmac_err_o,
+
+  // alerts
+  input  alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output alert_tx_t [NumAlerts-1:0] alert_tx_o
 );
 
-  import hmac_pkg::*;
-  import hmac_reg_pkg::*;
 
   /////////////////////////
   // Signal declarations //
@@ -461,6 +467,26 @@ module hmac (
     endcase
   end
 
+  /////////////////////
+  // Hardware Alerts //
+  /////////////////////
+
+  // TODO: add CSR with REGWEN to test alert via SW
+  logic [NumAlerts-1:0] alerts;
+  assign alerts = {msg_push_sha_disabled};
+
+  for (genvar j = 0; j < hmac_pkg::NumAlerts; j++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(hmac_pkg::AlertAsyncOn[j])
+    ) i_prim_alert_sender (
+      .clk_i      ( clk_i         ),
+      .rst_ni     ( rst_ni        ),
+      .alert_i    ( alerts[j]     ),
+      .alert_rx_i ( alert_rx_i[j] ),
+      .alert_tx_o ( alert_tx_o[j] )
+    );
+  end : gen_alert_tx
+
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
   //////////////////////////////////////////////
@@ -518,5 +544,8 @@ module hmac (
   `ASSERT_KNOWN(IntrFifoFullOKnown, intr_fifo_full_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
+
+  // Alert outputs
+  `ASSERT_KNOWN(AlertTxOKnown, alert_tx_o, clk_i, !rst_ni)
 
 endmodule

@@ -303,7 +303,7 @@ top_optional = {
     'no_auto_intr_regs': ['s', "Set to true to suppress automatic "\
                           "generation of interrupt registers. " \
                           "Defaults to false if not present."],
-    'alert_list': ['ln', "list of peripheral alerts"],
+    'alert_list': ['lnw', "list of peripheral alerts"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'param_list': ['lp', "list of parameters of the IP"],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],

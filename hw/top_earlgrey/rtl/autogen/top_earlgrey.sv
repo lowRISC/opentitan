@@ -81,6 +81,10 @@ module top_earlgrey #(
   tl_d2h_t  tl_rv_plic_d_d2h;
   tl_h2d_t  tl_pinmux_d_h2d;
   tl_d2h_t  tl_pinmux_d_d2h;
+  tl_h2d_t  tl_alert_handler_d_h2d;
+  tl_d2h_t  tl_alert_handler_d_d2h;
+  tl_h2d_t  tl_nmi_gen_d_h2d;
+  tl_d2h_t  tl_nmi_gen_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -121,9 +125,11 @@ module top_earlgrey #(
   // hmac
   // rv_plic
   // pinmux
+  // alert_handler
+  // nmi_gen
 
 
-  logic [54:0]  intr_vector;
+  logic [62:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -150,6 +156,15 @@ module top_earlgrey #(
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_full;
   logic intr_hmac_hmac_err;
+  logic intr_alert_handler_classa;
+  logic intr_alert_handler_classb;
+  logic intr_alert_handler_classc;
+  logic intr_alert_handler_classd;
+  logic intr_nmi_gen_esc0;
+  logic intr_nmi_gen_esc1;
+  logic intr_nmi_gen_esc2;
+  logic intr_nmi_gen_esc3;
+
 
   
   logic [0:0] irq_plic;
@@ -159,6 +174,14 @@ module top_earlgrey #(
 
   // this avoids lint errors
   assign unused_irq_id = irq_id;
+
+  // Alert list
+  prim_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
+  prim_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  // Escalation outputs
+  prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
+  prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
+
 
   // clock assignments
   assign main_clk = clk_i;
@@ -389,6 +412,7 @@ module top_earlgrey #(
   );
 
 
+
   uart uart (
       .tl_i (tl_uart_d_h2d),
       .tl_o (tl_uart_d_d2h),
@@ -452,7 +476,6 @@ module top_earlgrey #(
       .intr_rxerr_o       (intr_spi_device_rxerr),
       .intr_rxoverflow_o  (intr_spi_device_rxoverflow),
       .intr_txunderflow_o (intr_spi_device_txunderflow),
-
       .scanmode_i   (scanmode_i),
 
       .clk_i (main_clk),
@@ -505,6 +528,10 @@ module top_earlgrey #(
       .intr_hmac_done_o (intr_hmac_hmac_done),
       .intr_fifo_full_o (intr_hmac_fifo_full),
       .intr_hmac_err_o  (intr_hmac_hmac_err),
+      
+      // [0]: msg_push_sha_disabled 
+      .alert_tx_o  ( alert_tx[0:0] ),
+      .alert_rx_i  ( alert_rx[0:0] ),
 
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
@@ -539,8 +566,57 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
+  alert_handler alert_handler (
+      .tl_i (tl_alert_handler_d_h2d),
+      .tl_o (tl_alert_handler_d_d2h),
+
+      // Interrupt
+      .intr_classa_o (intr_alert_handler_classa),
+      .intr_classb_o (intr_alert_handler_classb),
+      .intr_classc_o (intr_alert_handler_classc),
+      .intr_classd_o (intr_alert_handler_classd),
+      // TODO: wire this to hardware debug circuit
+      .crashdump_o (          ),
+      // TODO: wire this to TRNG
+      .entropy_i   ( 1'b0     ),
+      // alert signals
+      .alert_rx_o  ( alert_rx ),
+      .alert_tx_i  ( alert_tx ),
+      // escalation outputs
+      .esc_rx_i    ( esc_rx   ),
+      .esc_tx_o    ( esc_tx   ),
+
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
+
+  nmi_gen nmi_gen (
+      .tl_i (tl_nmi_gen_d_h2d),
+      .tl_o (tl_nmi_gen_d_d2h),
+
+      // Interrupt
+      .intr_esc0_o (intr_nmi_gen_esc0),
+      .intr_esc1_o (intr_nmi_gen_esc1),
+      .intr_esc2_o (intr_nmi_gen_esc2),
+      .intr_esc3_o (intr_nmi_gen_esc3),
+      // escalation signal inputs
+      .esc_rx_o    ( esc_rx   ),
+      .esc_tx_i    ( esc_tx   ),
+
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
+      intr_nmi_gen_esc3,
+      intr_nmi_gen_esc2,
+      intr_nmi_gen_esc1,
+      intr_nmi_gen_esc0,
+      intr_alert_handler_classd,
+      intr_alert_handler_classc,
+      intr_alert_handler_classb,
+      intr_alert_handler_classa,
       intr_hmac_hmac_err,
       intr_hmac_fifo_full,
       intr_hmac_hmac_done,
@@ -571,38 +647,42 @@ module top_earlgrey #(
   xbar_main u_xbar_main (
     .clk_main_i (main_clk),
     .rst_main_ni (sys_rst_n),
-    .tl_corei_i      (tl_corei_h_h2d),
-    .tl_corei_o      (tl_corei_h_d2h),
-    .tl_cored_i      (tl_cored_h_h2d),
-    .tl_cored_o      (tl_cored_h_d2h),
-    .tl_dm_sba_i     (tl_dm_sba_h_h2d),
-    .tl_dm_sba_o     (tl_dm_sba_h_d2h),
-    .tl_rom_o        (tl_rom_d_h2d),
-    .tl_rom_i        (tl_rom_d_d2h),
-    .tl_debug_mem_o  (tl_debug_mem_d_h2d),
-    .tl_debug_mem_i  (tl_debug_mem_d_d2h),
-    .tl_ram_main_o   (tl_ram_main_d_h2d),
-    .tl_ram_main_i   (tl_ram_main_d_d2h),
-    .tl_eflash_o     (tl_eflash_d_h2d),
-    .tl_eflash_i     (tl_eflash_d_d2h),
-    .tl_uart_o       (tl_uart_d_h2d),
-    .tl_uart_i       (tl_uart_d_d2h),
-    .tl_gpio_o       (tl_gpio_d_h2d),
-    .tl_gpio_i       (tl_gpio_d_d2h),
-    .tl_spi_device_o (tl_spi_device_d_h2d),
-    .tl_spi_device_i (tl_spi_device_d_d2h),
-    .tl_flash_ctrl_o (tl_flash_ctrl_d_h2d),
-    .tl_flash_ctrl_i (tl_flash_ctrl_d_d2h),
-    .tl_rv_timer_o   (tl_rv_timer_d_h2d),
-    .tl_rv_timer_i   (tl_rv_timer_d_d2h),
-    .tl_hmac_o       (tl_hmac_d_h2d),
-    .tl_hmac_i       (tl_hmac_d_d2h),
-    .tl_aes_o        (tl_aes_d_h2d),
-    .tl_aes_i        (tl_aes_d_d2h),
-    .tl_rv_plic_o    (tl_rv_plic_d_h2d),
-    .tl_rv_plic_i    (tl_rv_plic_d_d2h),
-    .tl_pinmux_o     (tl_pinmux_d_h2d),
-    .tl_pinmux_i     (tl_pinmux_d_d2h),
+    .tl_corei_i         (tl_corei_h_h2d),
+    .tl_corei_o         (tl_corei_h_d2h),
+    .tl_cored_i         (tl_cored_h_h2d),
+    .tl_cored_o         (tl_cored_h_d2h),
+    .tl_dm_sba_i        (tl_dm_sba_h_h2d),
+    .tl_dm_sba_o        (tl_dm_sba_h_d2h),
+    .tl_rom_o           (tl_rom_d_h2d),
+    .tl_rom_i           (tl_rom_d_d2h),
+    .tl_debug_mem_o     (tl_debug_mem_d_h2d),
+    .tl_debug_mem_i     (tl_debug_mem_d_d2h),
+    .tl_ram_main_o      (tl_ram_main_d_h2d),
+    .tl_ram_main_i      (tl_ram_main_d_d2h),
+    .tl_eflash_o        (tl_eflash_d_h2d),
+    .tl_eflash_i        (tl_eflash_d_d2h),
+    .tl_uart_o          (tl_uart_d_h2d),
+    .tl_uart_i          (tl_uart_d_d2h),
+    .tl_gpio_o          (tl_gpio_d_h2d),
+    .tl_gpio_i          (tl_gpio_d_d2h),
+    .tl_spi_device_o    (tl_spi_device_d_h2d),
+    .tl_spi_device_i    (tl_spi_device_d_d2h),
+    .tl_flash_ctrl_o    (tl_flash_ctrl_d_h2d),
+    .tl_flash_ctrl_i    (tl_flash_ctrl_d_d2h),
+    .tl_rv_timer_o      (tl_rv_timer_d_h2d),
+    .tl_rv_timer_i      (tl_rv_timer_d_d2h),
+    .tl_hmac_o          (tl_hmac_d_h2d),
+    .tl_hmac_i          (tl_hmac_d_d2h),
+    .tl_aes_o           (tl_aes_d_h2d),
+    .tl_aes_i           (tl_aes_d_d2h),
+    .tl_rv_plic_o       (tl_rv_plic_d_h2d),
+    .tl_rv_plic_i       (tl_rv_plic_d_d2h),
+    .tl_pinmux_o        (tl_pinmux_d_h2d),
+    .tl_pinmux_i        (tl_pinmux_d_d2h),
+    .tl_alert_handler_o (tl_alert_handler_d_h2d),
+    .tl_alert_handler_i (tl_alert_handler_d_d2h),
+    .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
+    .tl_nmi_gen_i       (tl_nmi_gen_d_d2h),
 
     .scanmode_i
   );

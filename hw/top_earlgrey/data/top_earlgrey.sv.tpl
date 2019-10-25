@@ -154,6 +154,7 @@ module top_${top["name"]} #(
     % endfor
 % endfor
 
+
   <% add_spaces = " " * len(str((interrupt_num).bit_length()-1)) %>
   logic [0:0]${add_spaces}irq_plic;
   logic [0:0]${add_spaces}msip;
@@ -162,6 +163,21 @@ module top_${top["name"]} #(
 
   // this avoids lint errors
   assign unused_irq_id = irq_id;
+
+  // Alert list
+  prim_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
+  prim_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  // Escalation outputs
+  prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
+  prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
+
+% if not top["alert"]:
+  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_tie_off
+    // tie off if no alerts present in the system
+    assign alert_tx[k].alert_p = 1'b0;
+    assign alert_tx[k].alert_n = 1'b1;
+  end
+% endif
 
   // clock assignments
 % for clock in top['clocks']:
@@ -452,6 +468,7 @@ module top_${top["name"]} #(
 % endfor
 ## Peripheral Instantiation
 
+<% alert_idx = 0 %>
 % for m in top["module"]:
 <%
 port_list = m["available_input_list"] + m["available_output_list"] + m["available_inout_list"]
@@ -511,6 +528,17 @@ else:
       % endif
       .${lib.ljust("intr_"+intr["name"]+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr["name"]}),
     % endfor
+    % if m["alert_list"]:
+      <%
+      w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
+      slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+      %>
+      % for alert in m["alert_list"] if "alert_list" in m else []:
+      // [${alert_idx}]: ${alert["name"]} <% alert_idx += 1 %>
+      % endfor
+      .alert_tx_o  ( alert_tx[${slice}] ),
+      .alert_rx_i  ( alert_rx[${slice}] ),
+    % endif
     ## TODO: Inter-module Connection
     % if m["type"] == "flash_ctrl":
 
@@ -534,11 +562,27 @@ else:
       .mio_oe_o             (mio_oe_o ),
       .mio_in_i             (mio_in_i ),
     % endif
-
+    % if m["type"] == "alert_handler":
+      // TODO: wire this to hardware debug circuit
+      .crashdump_o (          ),
+      // TODO: wire this to TRNG
+      .entropy_i   ( 1'b0     ),
+      // alert signals
+      .alert_rx_o  ( alert_rx ),
+      .alert_tx_i  ( alert_tx ),
+      // escalation outputs
+      .esc_rx_i    ( esc_rx   ),
+      .esc_tx_o    ( esc_tx   ),
+    % endif
+    % if m["type"] == "nmi_gen":
+      // escalation signal inputs
+      .esc_rx_o    ( esc_rx   ),
+      .esc_tx_i    ( esc_tx   ),
+    % endif
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
-
     % endif
+
     % for k, v in m["clock_connections"].items():
       .${k} (${v}_clk),
     % endfor

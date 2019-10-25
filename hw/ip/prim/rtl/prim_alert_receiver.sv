@@ -186,11 +186,13 @@ module prim_alert_receiver import prim_pkg::*; #(
 
   if (AsyncOn) begin : gen_async_assert
     // signal integrity check propagation
-    `ASSERT(SigInt_A, alert_tx_i.alert_p == alert_tx_i.alert_n [*2] |-> ##2 integ_fail_o, clk_i, !rst_ni)
+    `ASSERT(SigInt_A, alert_tx_i.alert_p == alert_tx_i.alert_n [*2] |->
+        ##2 integ_fail_o, clk_i, !rst_ni)
     // TODO: need to add skewed cases as well, the assertions below assume no skew at the moment
     // ping response
-    `ASSERT(PingResponse1_A, ##1 $rose(alert_tx_i.alert_p) && (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
-        state_q == Idle && ping_pending_q |-> ping_ok_o, clk_i, !rst_ni || integ_fail_o)
+    `ASSERT(PingResponse1_A, ##1 $rose(alert_tx_i.alert_p) &&
+        (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2 state_q == Idle && ping_pending_q |->
+        ping_ok_o, clk_i, !rst_ni || integ_fail_o)
     // alert
     `ASSERT(Alert_A, ##1 $rose(alert_tx_i.alert_p) && (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
         state_q == Idle && !ping_pending_q |-> alert_o, clk_i, !rst_ni || integ_fail_o)

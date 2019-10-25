@@ -71,6 +71,11 @@ package hmac_env_pkg;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
   typedef virtual pins_if #(1) d2h_a_ready_vif;
 
+  // TODO: need to standardize this and move into uvm generator
+  typedef virtual pins_if #(NUM_MAX_ALERTS) ping_en_vif;
+  typedef virtual pins_if #(NUM_MAX_ALERTS) ping_ok_vif;
+  typedef virtual pins_if #(NUM_MAX_ALERTS) integ_fail_vif;
+
   // functions
 
   // package sources

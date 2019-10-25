@@ -4,20 +4,20 @@
 //
 // Breakout / remapping wrapper for register file. Generated from template.
 
-module alert_handler_reg_wrap (
+module alert_handler_reg_wrap import alert_pkg::*; (
   input                                   clk_i,
   input                                   rst_ni,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t               tl_i,
   output tlul_pkg::tl_d2h_t               tl_o,
   // interrupt
-  output logic [alert_pkg::N_CLASSES-1:0] irq_o,
+  output logic [N_CLASSES-1:0] irq_o,
   // State information for HW crashdump
-  output alert_pkg::alert_crashdump_t     crashdump_o,
+  output alert_crashdump_t     crashdump_o,
   // hw2reg
-  input  alert_pkg::hw2reg_wrap_t         hw2reg_wrap,
+  input  hw2reg_wrap_t         hw2reg_wrap,
   // reg2hw
-  output alert_pkg::reg2hw_wrap_t         reg2hw_wrap
+  output reg2hw_wrap_t         reg2hw_wrap
 );
 
 
@@ -25,7 +25,7 @@ module alert_handler_reg_wrap (
   // reg instance //
   //////////////////
 
-  logic [alert_pkg::N_CLASSES-1:0] class_autolock_en;
+  logic [N_CLASSES-1:0] class_autolock_en;
   alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw;
   alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg;
 
@@ -101,16 +101,18 @@ module alert_handler_reg_wrap (
 
   // if an alert is enabled and it fires,
   // we have to set the corresponding cause bit
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_cause
+  for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_cause
     assign hw2reg.alert_cause[k].d  = 1'b1;
-    assign hw2reg.alert_cause[k].de = hw2reg_wrap.alert_cause[k];
+    assign hw2reg.alert_cause[k].de = reg2hw.alert_cause[k].q |
+                                      hw2reg_wrap.alert_cause[k];
   end
 
   // if a local alert is enabled and it fires,
   // we have to set the corresponding cause bit
-  for (genvar k = 0; k < alert_pkg::N_LOC_ALERT; k++) begin : gen_loc_alert_cause
+  for (genvar k = 0; k < N_LOC_ALERT; k++) begin : gen_loc_alert_cause
     assign hw2reg.loc_alert_cause[k].d  = 1'b1;
-    assign hw2reg.loc_alert_cause[k].de = hw2reg_wrap.loc_alert_cause[k];
+    assign hw2reg.loc_alert_cause[k].de = reg2hw.loc_alert_cause[k].q |
+                                          hw2reg_wrap.loc_alert_cause[k];
   end
 
   // ping timeout in cycles
@@ -154,13 +156,13 @@ module alert_handler_reg_wrap (
   assign reg2hw_wrap.config_locked = ~reg2hw.regen.q;
 
   // alert enable and class assignments
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_en_class
+  for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_en_class
     assign reg2hw_wrap.alert_en[k]    = reg2hw.alert_en[k].q;
     assign reg2hw_wrap.alert_class[k] = reg2hw.alert_class[k].q;
   end
 
   // local alert enable and class assignments
-  for (genvar k = 0; k < alert_pkg::N_LOC_ALERT; k++) begin : gen_loc_alert_en_class
+  for (genvar k = 0; k < N_LOC_ALERT; k++) begin : gen_loc_alert_en_class
     assign reg2hw_wrap.loc_alert_en[k]    = reg2hw.loc_alert_en[k].q;
     assign reg2hw_wrap.loc_alert_class[k] = reg2hw.loc_alert_class[k].q;
   end
@@ -267,12 +269,12 @@ module alert_handler_reg_wrap (
   //////////////////////
 
   // alert cause output
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_cause_dump
+  for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_cause_dump
     assign crashdump_o.alert_cause[k]  = reg2hw.alert_cause[k].q;
   end
 
   // local alert cause register output
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_loc_alert_cause_dump
+  for (genvar k = 0; k < N_LOC_ALERT; k++) begin : gen_loc_alert_cause_dump
     assign crashdump_o.loc_alert_cause[k]  = reg2hw.loc_alert_cause[k].q;
   end
 

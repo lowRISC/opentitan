@@ -113,6 +113,7 @@
           type: interrupt
         }
       ]
+      alert_list: []
       scan: "false"
     }
     {
@@ -148,6 +149,7 @@
           type: interrupt
         }
       ]
+      alert_list: []
       scan: "false"
     }
     {
@@ -225,6 +227,7 @@
           type: interrupt
         }
       ]
+      alert_list: []
       scan: "true"
     }
     {
@@ -278,6 +281,7 @@
           type: interrupt
         }
       ]
+      alert_list: []
       scan: "false"
     }
     {
@@ -306,6 +310,7 @@
           type: interrupt
         }
       ]
+      alert_list: []
       scan: "false"
     }
     {
@@ -327,6 +332,7 @@
       available_output_list: []
       available_inout_list: []
       interrupt_list: []
+      alert_list: []
       scan: "false"
     }
     {
@@ -365,6 +371,15 @@
           type: interrupt
         }
       ]
+      alert_list:
+      [
+        {
+          name: msg_push_sha_disabled
+          width: 1
+          type: alert
+          async: 0
+        }
+      ]
       scan: "false"
     }
     {
@@ -387,6 +402,7 @@
       available_output_list: []
       available_inout_list: []
       interrupt_list: []
+      alert_list: []
       scan: "false"
     }
     {
@@ -410,6 +426,102 @@
       available_output_list: []
       available_inout_list: []
       interrupt_list: []
+      alert_list: []
+      scan: "false"
+    }
+    {
+      name: alert_handler
+      type: alert_handler
+      clock_connections:
+      {
+        clk_i: main
+      }
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40130000
+      generated: "true"
+      localparam:
+      {
+        EscCntDw: 32
+        AccuCntDw: 16
+        LfsrSeed: 0x7FFFFFFF
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: classa
+          width: 1
+          type: interrupt
+        }
+        {
+          name: classb
+          width: 1
+          type: interrupt
+        }
+        {
+          name: classc
+          width: 1
+          type: interrupt
+        }
+        {
+          name: classd
+          width: 1
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
+    {
+      name: nmi_gen
+      type: nmi_gen
+      clock_connections:
+      {
+        clk_i: main
+      }
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40140000
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: esc0
+          width: 1
+          type: interrupt
+        }
+        {
+          name: esc1
+          width: 1
+          type: interrupt
+        }
+        {
+          name: esc2
+          width: 1
+          type: interrupt
+        }
+        {
+          name: esc3
+          width: 1
+          type: interrupt
+        }
+      ]
+      alert_list: []
       scan: "false"
     }
   ]
@@ -495,6 +607,8 @@
           hmac
           rv_plic
           pinmux
+          alert_handler
+          nmi_gen
         ]
         dm_sba:
         [
@@ -510,6 +624,8 @@
           hmac
           rv_plic
           pinmux
+          alert_handler
+          nmi_gen
         ]
       }
       nodes:
@@ -668,6 +784,26 @@
           pipeline_byp: "false"
           pipeline: "true"
         }
+        {
+          name: alert_handler
+          type: device
+          clock: main
+          inst_type: alert_handler
+          pipeline_byp: "false"
+          base_addr: 0x40130000
+          size_byte: 0x1000
+          pipeline: "true"
+        }
+        {
+          name: nmi_gen
+          type: device
+          clock: main
+          inst_type: nmi_gen
+          pipeline_byp: "false"
+          base_addr: 0x40140000
+          size_byte: 0x1000
+          pipeline: "true"
+        }
       ]
       clock: main
     }
@@ -679,6 +815,8 @@
     spi_device
     flash_ctrl
     hmac
+    alert_handler
+    nmi_gen
   ]
   interrupt:
   [
@@ -801,6 +939,59 @@
       name: hmac_hmac_err
       width: 1
       type: interrupt
+    }
+    {
+      name: alert_handler_classa
+      width: 1
+      type: interrupt
+    }
+    {
+      name: alert_handler_classb
+      width: 1
+      type: interrupt
+    }
+    {
+      name: alert_handler_classc
+      width: 1
+      type: interrupt
+    }
+    {
+      name: alert_handler_classd
+      width: 1
+      type: interrupt
+    }
+    {
+      name: nmi_gen_esc0
+      width: 1
+      type: interrupt
+    }
+    {
+      name: nmi_gen_esc1
+      width: 1
+      type: interrupt
+    }
+    {
+      name: nmi_gen_esc2
+      width: 1
+      type: interrupt
+    }
+    {
+      name: nmi_gen_esc3
+      width: 1
+      type: interrupt
+    }
+  ]
+  alert_module:
+  [
+    hmac
+  ]
+  alert:
+  [
+    {
+      name: hmac_msg_push_sha_disabled
+      width: 1
+      type: alert
+      async: 0
     }
   ]
   pinmux:
