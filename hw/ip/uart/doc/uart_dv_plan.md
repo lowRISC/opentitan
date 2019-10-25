@@ -22,7 +22,7 @@ For detailed information on UART design features, please see the [UART design sp
 UART testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-[Block diagram](tb.svg)
+![Block diagram](tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/uart/dv/tb/tb.sv`. It instantiates the UART DUT module `hw/ip/uart/rtl/uart.sv`.
