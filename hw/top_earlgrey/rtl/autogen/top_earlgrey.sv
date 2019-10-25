@@ -510,9 +510,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  rv_plic #(
-    .FIND_MAX("MATRIX")
-  ) rv_plic (
+  rv_plic rv_plic (
       .tl_i (tl_rv_plic_d_h2d),
       .tl_o (tl_rv_plic_d_d2h),
 

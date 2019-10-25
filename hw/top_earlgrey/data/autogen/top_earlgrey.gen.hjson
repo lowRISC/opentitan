@@ -380,10 +380,6 @@
       }
       base_addr: 0x40090000
       generated: "true"
-      parameter:
-      {
-        FIND_MAX: MATRIX
-      }
       size: 0x1000
       bus_device: tlul
       bus_host: none

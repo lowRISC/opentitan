@@ -11,10 +11,12 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:xbar_dv
       # include top-earlgrey in order to test
       # with the top-level configuration
       - lowrisc:systems:top_earlgrey
     files:
+      - ../dv/rv_plic_bind.sv
       - vip/rv_plic_assert_fpv.sv
       - tb/rv_plic_bind_fpv.sv
       - tb/rv_plic_fpv.sv

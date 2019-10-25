@@ -6,11 +6,15 @@
 //
 // This module basically doing IE & IP based on priority and threshold.
 // Keep in mind that increasing MAX_PRIO affects logic size a lot.
+//
+// The module implements a binary tree to find the maximal entry. the solution
+// has O(N) area and O(log(N)) delay complexity, and thus scales well with
+// many input sources.
+//
 
 module rv_plic_target #(
   parameter int N_SOURCE = 32,
   parameter int MAX_PRIO = 7,
-  parameter     ALGORITHM = "SEQUENTIAL", // SEQUENTIAL | MATRIX
 
   // Local param (Do not change this through parameter
   localparam int unsigned SRCW  = $clog2(N_SOURCE+1),  // derived parameter
@@ -29,91 +33,88 @@ module rv_plic_target #(
   output logic [SRCW-1:0] irq_id
 );
 
+  // this only works with 2 or more sources
+  `ASSERT_INIT(NumSources_A, N_SOURCE >= 2)
   `ASSERT_INIT(paramCheckSRCW,  SRCW  == $clog2(N_SOURCE+1))
   `ASSERT_INIT(paramCheckPRIOW, PRIOW == $clog2(MAX_PRIO+1))
 
   // To occupy threshold + 1 value
   localparam int unsigned MAX_PRIOW = $clog2(MAX_PRIO+2);
 
-  if (ALGORITHM == "SEQUENTIAL") begin : gen_sequential
-    // Let first implementation be brute-force
-    // As N_SOURCE increasing logic depth increases O(logN)
-    // This approach slows down the simulation.
-    logic [MAX_PRIOW-1:0] max_prio;
-    logic irq_next;
-    logic [SRCW-1:0] irq_id_next;
-    always_comb begin
-      // Threshold doesn't matter for interrupt claim, it only factors into
-      // whether irq is raised for a target
-      max_prio = 1'b0;
-      irq_id_next = '0; // default: No Interrupt
-      for (int i = N_SOURCE-1 ; i >= 0 ; i--) begin
-        if ((ip[i] & ie[i]) == 1'b1 && MAX_PRIOW'(prio[i]) >= max_prio) begin
-          max_prio = MAX_PRIOW'(prio[i]);
-          irq_id_next = SRCW'(i+1);
-        end
-      end // for i
-      irq_next = (max_prio > MAX_PRIOW'(threshold)) ? 1'b1 : 1'b0;
-    end
+  // align to powers of 2 for simplicity
+  // a full binary tree with N levels has 2**N + 2**N-1 nodes
+  localparam int unsigned N_LEVELS = $clog2(N_SOURCE);
+  logic [2**(N_LEVELS+1)-2:0]                is_tree;
+  logic [2**(N_LEVELS+1)-2:0][SRCW-1:0]      id_tree;
+  logic [2**(N_LEVELS+1)-2:0][MAX_PRIOW-1:0] max_tree;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        irq <= 1'b0;
-        irq_id <= '0;
-      end else begin
-        irq <= irq_next;
-        irq_id <= irq_id_next;
-      end
-    end
-  end else if (ALGORITHM == "MATRIX") begin : gen_mat
-    // Second trial : N X N matrix
-    // Set mat[i][j] to 1 if prio[i] >= prio[j] and ip[i] & ie[i] & ip[j] & ie[j]
-    // Comparator depth is just 1 then logN AND gate then Leading One detector
-    // It is to find the max value of priority
+  for (genvar level = 0; level < N_LEVELS+1; level++) begin : gen_tree
     //
-    // This uses a lot of comparators: (N x (N-1))/2.
-    // So if above approach(ALGORITHM 1) meets timing, don't use this algorithm.
-    logic [N_SOURCE-1:0] is;
+    // level+1   c0   c1   <- "base1" points to the first node on "level+1",
+    //            \  /         these nodes are the children of the nodes one level below
+    // level       pa      <- "base0", points to the first node on "level",
+    //                         these nodes are the parents of the nodes one level above
+    //
+    // hence we have the following indices for the pa, c0, c1 nodes:
+    // pa = 2**level     - 1 + offset       = base0 + offset
+    // c0 = 2**(level+1) - 1 + 2*offset     = base1 + 2*offset
+    // c1 = 2**(level+1) - 1 + 2*offset + 1 = base1 + 2*offset + 1
+    //
+    localparam int unsigned base0 = (2**level)-1;
+    localparam int unsigned base1 = (2**(level+1))-1;
 
-    logic [N_SOURCE-1:0] merged_row;
+    for (genvar offset = 0; offset < 2**level; offset++) begin : gen_level
+      localparam int unsigned pa = base0 + offset;
+      localparam int unsigned c0 = base1 + 2*offset;
+      localparam int unsigned c1 = base1 + 2*offset + 1;
 
-    assign is = ip & ie;
-    always_comb begin
-      merged_row[N_SOURCE-1] = is[N_SOURCE-1] ;
-      for (int i = 0 ; i < N_SOURCE-1 ; i++) begin
-        merged_row[i] = 1'b1;
-        for (int j = i+1 ; j < N_SOURCE ; j++) begin
-          if (is[i] && is[j]) begin
-            merged_row[i] = merged_row[i] & (prio[i] >= prio[j]);
-          end else if (!is[i]) begin
-            merged_row[i] = 1'b0;
-          end
-        end // for j
-      end // for i
-    end // always_comb
-
-    // Leading One detector
-    logic [N_SOURCE-1:0] lod;
-    assign lod = merged_row & (~merged_row + 1'b1);
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        irq <= 1'b0;
-        irq_id <= '0; // No interrupt
-      end else if (|lod) begin
-        // as $onehot0(lod), at most one bit set.
-        // so, safely run for loop
-        for (int i = N_SOURCE-1 ; i >= 0 ; i--) begin
-          if (lod[i] == 1'b1) begin
-            if (prio[i] > threshold) irq <= 1'b 1;
-            irq_id <= SRCW'(i + 1);
-          end
-        end // for
-      end else begin
-        // No pending interrupt
-        irq <= 1'b0;
-        irq_id <= '0;
+      // this assigns the gated interrupt source signals, their
+      // corresponding IDs and priorities to the tree leafs
+      if (level == N_LEVELS) begin : gen_leafs
+        if (offset < N_SOURCE) begin : gen_assign
+          assign is_tree[pa]  = ip[offset] & ie[offset];
+          assign id_tree[pa]  = unsigned'(SRCW'(offset))+1'b1;
+          assign max_tree[pa] = unsigned'(MAX_PRIOW'(prio[offset]));
+        end else begin : gen_tie_off
+          assign is_tree[pa]  = '0;
+          assign id_tree[pa]  = '0;
+          assign max_tree[pa] = '0;
+        end
+      // this creates the node assignments
+      end else begin : gen_nodes
+        logic sel; // local helper variable
+        // in case only one of the parent has a pending irq, forward that one
+        // in case both irqs are pending, forward the one with higher priority
+        assign sel = (!is_tree[c0] && is_tree[c1])                               ? 1'b1 :
+                     (is_tree[c0] && is_tree[c1] && max_tree[c1] > max_tree[c0]) ? 1'b1 :
+                                                                                   1'b0;
+        // forwarding muxes
+        assign is_tree[pa]  = (sel) ? is_tree[c1]  : is_tree[c0];
+        assign id_tree[pa]  = (sel) ? id_tree[c1]  : id_tree[c0];
+        assign max_tree[pa] = (sel) ? max_tree[c1] : max_tree[c0];
       end
-    end // always_ff
-  end // ALGORITHM
+    end : gen_level
+  end : gen_tree
+
+  logic irq_d, irq_q;
+  logic [SRCW-1:0] irq_id_d, irq_id_q;
+
+  // the results can be found at the tree root
+  assign irq_d    = (max_tree[0] > unsigned'(MAX_PRIOW'(threshold))) ? is_tree[0] : 1'b0;
+  assign irq_id_d = (is_tree[0]) ? id_tree[0] : '0;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : gen_regs
+    if (!rst_ni) begin
+      irq_q    <= 1'b0;
+      irq_id_q <= '0;
+    end else begin
+      irq_q    <= irq_d;
+      irq_id_q <= irq_id_d;
+    end
+  end
+
+  assign irq    = irq_q;
+  assign irq_id = irq_id_q;
 
 endmodule
+
