@@ -16,7 +16,7 @@ SIMX        ?= ${BUILD_DIR}/simv
 SIM_SETUP   ?= ${MAKE_ROOT}/vcs/vcs_fsdb.tcl
 
 # set standard build options
-BUILD_OPTS  += -sverilog -full64 -licqueue -lca -timescale=1ns/1ps -kdb
+BUILD_OPTS  += -sverilog -full64 -licqueue -timescale=1ns/1ps -kdb
 BUILD_OPTS  += -ntb_opts uvm-1.2
 BUILD_OPTS  += -Mdir=${BUILD_DIR}/simv.csrc
 BUILD_OPTS  += -l ${BUILD_LOG}
@@ -24,8 +24,6 @@ BUILD_OPTS  += -o ${SIMX}
 BUILD_OPTS  += -f ${SV_FLIST}
 BUILD_OPTS  += +incdir+${BUILD_DIR}
 BUILD_OPTS  += -debug_access+pp
-BUILD_OPTS  += +warn=noLCA_FEATURES_ENABLED
-BUILD_OPTS  += +warn=noLCA_FEATURES_WARN_OPTION
 BUILD_OPTS  += +warn=noUII-L
 # turn on warnings if functions are called with return value ignored
 BUILD_OPTS  += +warn=SV-NFIVC
@@ -33,14 +31,13 @@ BUILD_OPTS  += +warn=SV-NFIVC
 BUILD_OPTS  += -assert svaext
 
 # set standard run options
-RUN_OPTS    += -licqueue -lca
+RUN_OPTS    += -licqueue
 RUN_OPTS    += -ucli -do ${SIM_SETUP}
 RUN_OPTS    += +ntb_random_seed=${SEED}
 RUN_OPTS    += +UVM_VERBOSITY=${UVM_VERBOSITY}
 RUN_OPTS    += +UVM_TESTNAME=${UVM_TEST}
 RUN_OPTS    += +UVM_TEST_SEQ=${UVM_TEST_SEQ}
 RUN_OPTS    += -l ${RUN_LOG}
-RUN_OPTS    += +warn=noLCA_FEATURES_ENABLED
 
 #########################
 ## Tool Specific Modes ##
