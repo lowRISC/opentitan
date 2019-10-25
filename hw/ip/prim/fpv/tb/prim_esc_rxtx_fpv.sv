@@ -5,7 +5,7 @@
 // Testbench module for escalation sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_esc_rxtx_fpv (
+module prim_esc_rxtx_fpv import prim_pkg::*; (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -21,10 +21,13 @@ module prim_esc_rxtx_fpv (
   output logic esc_en_o
 );
 
-  logic resp_p;
-  logic resp_n;
-  logic esc_p;
-  logic esc_n;
+  esc_rx_t esc_rx_in, esc_rx_out;
+  esc_tx_t esc_tx_in, esc_tx_out;
+
+  assign esc_rx_in.resp_p = esc_rx_out.resp_p ^ resp_err_pi;
+  assign esc_rx_in.resp_n = esc_rx_out.resp_n ^ resp_err_ni;
+  assign esc_tx_in.esc_p  = esc_tx_out.esc_p  ^ esc_err_pi;
+  assign esc_tx_in.esc_n  = esc_tx_out.esc_n  ^ esc_err_ni;
 
   prim_esc_sender i_prim_esc_sender (
     .clk_i        ,
@@ -33,20 +36,16 @@ module prim_esc_rxtx_fpv (
     .ping_ok_o    ,
     .integ_fail_o ,
     .esc_en_i     ,
-    .resp_pi      ( resp_p ^ resp_err_pi ),
-    .resp_ni      ( resp_n ^ resp_err_ni ),
-    .esc_po       ( esc_p                ),
-    .esc_no       ( esc_n                )
+    .esc_rx_i     ( esc_rx_in  ),
+    .esc_tx_o     ( esc_tx_out )
   );
 
   prim_esc_receiver i_prim_esc_receiver (
     .clk_i    ,
     .rst_ni   ,
     .esc_en_o ,
-    .resp_po  ( resp_p          ),
-    .resp_no  ( resp_n          ),
-    .esc_pi   ( esc_p  ^ esc_err_pi ),
-    .esc_ni   ( esc_n  ^ esc_err_ni )
+    .esc_rx_o     ( esc_rx_out ),
+    .esc_tx_i     ( esc_tx_in  )
   );
 
 endmodule : prim_esc_rxtx_fpv

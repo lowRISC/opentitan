@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_fpv (
+module prim_alert_rxtx_fpv import prim_pkg::*; (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -26,12 +26,16 @@ module prim_alert_rxtx_fpv (
   // synchronous case
   localparam bit AsyncOn = 1'b0;
 
-  logic ping_p;
-  logic ping_n;
-  logic ack_p;
-  logic ack_n;
-  logic alert_p;
-  logic alert_n;
+  alert_rx_t alert_rx_out, alert_rx_in;
+  alert_tx_t alert_tx_out, alert_tx_in;
+
+  assign alert_rx_in.ping_p = alert_rx_out.ping_p ^ ping_err_pi;
+  assign alert_rx_in.ping_n = alert_rx_out.ping_n ^ ping_err_ni;
+  assign alert_rx_in.ack_p  = alert_rx_out.ack_p  ^ ack_err_pi;
+  assign alert_rx_in.ack_n  = alert_rx_out.ack_n  ^ ack_err_ni;
+
+  assign alert_tx_in.alert_p = alert_tx_out.alert_p ^ alert_err_pi;
+  assign alert_tx_in.alert_n = alert_tx_out.alert_n ^ alert_err_ni;
 
   prim_alert_sender #(
     .AsyncOn ( AsyncOn )
@@ -39,12 +43,8 @@ module prim_alert_rxtx_fpv (
     .clk_i    ,
     .rst_ni   ,
     .alert_i  ,
-    .ping_pi  ( ping_p ^ ping_err_pi ),
-    .ping_ni  ( ping_n ^ ping_err_ni ),
-    .ack_pi   ( ack_p  ^ ack_err_pi  ),
-    .ack_ni   ( ack_n  ^ ack_err_ni  ),
-    .alert_po ( alert_p  ),
-    .alert_no ( alert_n  )
+    .alert_rx_i ( alert_rx_in  ),
+    .alert_tx_o ( alert_tx_out )
   );
 
   prim_alert_receiver #(
@@ -56,12 +56,8 @@ module prim_alert_rxtx_fpv (
     .ping_ok_o    ,
     .integ_fail_o ,
     .alert_o      ,
-    .ping_po      ( ping_p       ),
-    .ping_no      ( ping_n       ),
-    .ack_po       ( ack_p        ),
-    .ack_no       ( ack_n        ),
-    .alert_pi     ( alert_p ^ alert_err_pi ),
-    .alert_ni     ( alert_n ^ alert_err_ni )
+    .alert_rx_o ( alert_rx_out ),
+    .alert_tx_i ( alert_tx_in  )
   );
 
 endmodule : prim_alert_rxtx_fpv

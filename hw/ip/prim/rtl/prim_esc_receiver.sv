@@ -16,17 +16,15 @@
 //
 // See also: prim_esc_sender, prim_diff_decode, alert_handler
 
-module prim_esc_receiver (
-  input        clk_i,
-  input        rst_ni,
+module prim_esc_receiver import prim_pkg::*; (
+  input           clk_i,
+  input           rst_ni,
   // escalation enable
-  output logic esc_en_o,
+  output logic    esc_en_o,
   // escalation / ping response
-  output logic resp_po,
-  output logic resp_no,
+  output esc_rx_t esc_rx_o,
   // escalation output diff pair
-  input        esc_pi,
-  input        esc_ni
+  input esc_tx_t  esc_tx_i
 );
 
   /////////////////////////////////
@@ -40,8 +38,8 @@ module prim_esc_receiver (
   ) i_decode_esc (
     .clk_i,
     .rst_ni,
-    .diff_pi  ( esc_pi          ),
-    .diff_ni  ( esc_ni          ),
+    .diff_pi  ( esc_tx_i.esc_p  ),
+    .diff_ni  ( esc_tx_i.esc_n  ),
     .level_o  ( esc_level       ),
     .rise_o   (                 ),
     .fall_o   (                 ),
@@ -57,8 +55,8 @@ module prim_esc_receiver (
   state_e state_d, state_q;
   logic resp_pd, resp_pq, resp_nd, resp_nq;
 
-  assign resp_po = resp_pq;
-  assign resp_no = resp_nq;
+  assign esc_rx_o.resp_p = resp_pq;
+  assign esc_rx_o.resp_n = resp_nq;
 
 
   always_comb begin : p_fsm
@@ -155,21 +153,24 @@ module prim_esc_receiver (
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(EscEnKnownO_A, esc_en_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(RespPKnownO_A, resp_po, clk_i, !rst_ni)
-  `ASSERT_KNOWN(RespNKnownO_A, resp_no, clk_i, !rst_ni)
+  `ASSERT_KNOWN(RespPKnownO_A, esc_rx_o, clk_i, !rst_ni)
 
-  `ASSERT(SigIntCheck0_A, esc_pi == esc_ni |=> resp_po == resp_no, clk_i, !rst_ni)
-  `ASSERT(SigIntCheck1_A, esc_pi == esc_ni |=> state_q == SigInt, clk_i, !rst_ni)
+  `ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=>
+      esc_rx_o.resp_p == esc_rx_o.resp_n, clk_i, !rst_ni)
+  `ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt, clk_i, !rst_ni)
   // correct diff encoding
-  `ASSERT(DiffEncCheck_A, esc_pi ^ esc_ni |=> resp_po ^ resp_no, clk_i, !rst_ni)
+  `ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=>
+      esc_rx_o.resp_p ^ esc_rx_o.resp_n, clk_i, !rst_ni)
   // disable in case of ping integrity issue
-  `ASSERT(PingRespCheck_A, $rose(esc_pi) |=> $fell(esc_pi) |-> $rose(resp_po) |=> $fell(resp_po),
-      clk_i, !rst_ni || (esc_pi == esc_ni))
+  `ASSERT(PingRespCheck_A, $rose(esc_tx_i.esc_p) |=> $fell(esc_tx_i.esc_p) |->
+      $rose(esc_rx_o.resp_p) |=> $fell(esc_rx_o.resp_p),
+      clk_i, !rst_ni || (esc_tx_i.esc_p == esc_tx_i.esc_n))
   // escalation response needs to continuously toggle
-  `ASSERT(EscRespCheck_A, esc_pi && $past(esc_pi) && (esc_pi ^ esc_ni) && $past(esc_pi ^ esc_ni)
-      |=> resp_po != $past(resp_po), clk_i, !rst_ni)
+  `ASSERT(EscRespCheck_A, esc_tx_i.esc_p && $past(esc_tx_i.esc_p) &&
+      (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && $past(esc_tx_i.esc_p ^ esc_tx_i.esc_n)
+      |=> esc_rx_o.resp_p != $past(esc_rx_o.resp_p), clk_i, !rst_ni)
   // detect escalation pulse
-  `ASSERT(EscEnCheck_A, esc_pi && (esc_pi ^ esc_ni) && state_q != SigInt |=>
-      esc_pi && (esc_pi ^ esc_ni) |-> esc_en_o, clk_i, !rst_ni )
+  `ASSERT(EscEnCheck_A, esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
+      |=> esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_en_o, clk_i, !rst_ni )
 
 endmodule : prim_esc_receiver

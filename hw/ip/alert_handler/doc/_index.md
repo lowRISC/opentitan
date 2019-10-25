@@ -153,15 +153,14 @@ instances is parametric and hence alert and ping diff pairs are grouped together
 in packed arrays. The diff pair signals are indexed with the corresponding alert
 instance `<number>`.
 
-Signal                  | Direction        | Type           | Description
-------------------------|------------------|----------------|---------------
-`crashdump_o`           | `output`         | packed `struct`| This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
-`entropy_i`             | `input`          | `logic`        | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
-`alert_pi/ni[<number>]` | `input`          | packed `logic` | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
-`ack_po/no[<number>]`   | `output`         | packed `logic` | Outgoing alert acknowledgment, differentially encoded. Index range: `[NAlerts-1:0]`
-`ping_po/no[<number>]`  | `output`         | packed `logic` | Ping request to alert sender, differentially encoded. Index range: `[NAlerts-1:0]`
-`esc_po/no[<sev>]`      | `output`         | packed `logic` | Escalation or ping request, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
-`resp_pi/ni[<sev>]`     | `input`          | packed `logic` | Escalation ping response, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
+Signal                  | Direction        | Type                      | Description
+------------------------|------------------|----------------           |---------------
+`crashdump_o`           | `output`         | packed `struct`           | This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
+`entropy_i`             | `input`          | `logic`                   | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
+`alert_tx_i[<number>]`  | `input`          | packed `alert_tx_t` array | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
+`alert_rx_o[<number>]`  | `output`         | packed `alert_rx_t` array | Outgoing alert acknowledgment and ping requests, differentially encoded. Index range: `[NAlerts-1:0]`
+`esc_tx_o[<sev>]`       | `output`         | packed `esc_tx_t` array   | Escalation or ping request, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
+`esc_rx_i[<sev>]`       | `input`          | packed `esc_rx_t` array   | Escalation ping response, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
 
 
 For each alert, there is a pair of input and two pairs of output signals. These
@@ -203,11 +202,11 @@ transferred is a single discrete event.
 
 ### Differential Alert Signaling
 
-Each alert sender is connected to the corresponding alert receiver via the 3 differential pairs `alert_p*/n*`, `ack_p*/n*` and `ping_p*/n*`, as illustrated below:
+Each alert sender is connected to the corresponding alert receiver via the 3 differential pairs `alert_tx_i/o.alert_p/n`, `alert_rx_i/o.ack_p/n` and `alert_rx_i/o.ping_p/n`, as illustrated below:
 
 ![Alert Handler Alert RXTX](alert_handler_alert_rxtx.svg)
 
-Alerts are encoded differentially and signaled using a full handshake on the `alert_p*/n*` and `ack_p*/n*` wires.
+Alerts are encoded differentially and signaled using a full handshake on the `alert_tx_i/o.alert_p/n` and `alert_rx_i/o.ack_p/n` wires.
 The use of a full handshake protocol allows this mechanism to be used with an asynchronous clocking strategy, where peripherals may reside in a different clock domain than the alert handler.
 The full handshake guarantees that alert messages are correctly back-pressured and no alert is "lost" at the asynchronous boundary due to (possibly variable) clock ratios greater or less than 1.0.
 The "native alert message" will be repeated on the output wires as long as the alert event is still true within the peripheral.
@@ -217,13 +216,13 @@ The wave pattern below illustrates differential full handshake mechanism.
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',        wave: 'p...............' },
-    { name: 'alert_i',      wave: '01.|..|..|...|..' },
-    { name: 'alert_po/pi',  wave: '01.|..|0.|..1|..' , node: '.a.....c....e'},
-    { name: 'alert_no/ni',  wave: '10.|..|1.|..0|..' },
-    { name: 'ack_pi/po',    wave: '0..|1.|..|0..|1.' , node: '....b.....d..'},
-    { name: 'ack_ni/no',    wave: '1..|0.|..|1..|0.' },
-    { name: 'alert_o',      wave: '0..|10|..|...|10' },
+    { name: 'clk_i',                wave: 'p...............' },
+    { name: 'alert_i',              wave: '01.|..|..|...|..' },
+    { name: 'alert_tx_o/i.alert_p', wave: '01.|..|0.|..1|..' , node: '.a.....c....e'},
+    { name: 'alert_tx_o/i.alert_n', wave: '10.|..|1.|..0|..' },
+    { name: 'alert_rx_i/o.ack_p',   wave: '0..|1.|..|0..|1.' , node: '....b.....d..'},
+    { name: 'alert_rx_i/o.ack_n',   wave: '1..|0.|..|1..|0.' },
+    { name: 'alert_o',              wave: '0..|10|..|...|10' },
   ],
   edge: [
    'a~>b Phase 0/1',
@@ -244,7 +243,7 @@ The wave pattern below illustrates differential full handshake mechanism.
 The handshake pattern is repeated as long as the alert is true.  The sender will
 wait for 2 cycles between handshakes.
 
-Note that the alert is immediately propagated to `alert_o` once the initial level change on `alert_pi/ni` has been received and synchronized to the local clock on the receiver side.
+Note that the alert is immediately propagated to `alert_o` once the initial level change on `alert_tx_i.alert_p/n` has been received and synchronized to the local clock on the receiver side.
 This ensures that the first occurrence of an alert is always propagated - even if the handshake lines have been manipulated to emulate backpressure.
 (In such a scenario, all subsequent alerts would be back-pressured and eventually the ping testing mechanism described in the next subsection would detect that the wires have been tampered with.)
 
@@ -262,7 +261,7 @@ appearance can not be predicted.
 
 
 The ping timing is generated by a central LFSR-based timer within the alert handler that randomly asserts the `ping_en_i` signal of a particular `prim_alert_receiver` module.
-Once `ping_en_i` is asserted, the receiver module encodes the ping message as a level change on the differential `ping_po/no` output, and waits until the sender responds with a full handshake on the `alert_pi/ni` and `ack_po/no` lines.
+Once `ping_en_i` is asserted, the receiver module encodes the ping message as a level change on the differential `alert_rx_o.ping_p/n` output, and waits until the sender responds with a full handshake on the `alert_tx_i.alert_p/n` and `alert_rx_o.ack_p/n` lines.
 Once that handshake is complete, the `ping_ok_o` signal is asserted.
 The LFSR timer has a programmable ping timeout, after which it will automatically assert a "pingfail" alert.
 That timeout is a function of the clock ratios present in the system, and has to be programmed accordingly at system startup (as explained later in the LFSR timer subsection).
@@ -272,15 +271,15 @@ The following wave diagram illustrates a correct ping sequence, viewed from the 
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',        wave: 'p..............' },
-    { name: 'ping_en_i',    wave: '01.|..|..|..|.0' },
-    { name: 'ping_ok_o',    wave: '0..|..|..|..|10' , node: '.............e'},
-    { name: 'ping_po',      wave: '01.|..|..|..|..' , node: '.a'},
-    { name: 'ping_no',      wave: '10.|..|..|..|..' , node: '.b'},
-    { name: 'alert_pi',     wave: '0..|1.|..|0.|..' , node: '....c'},
-    { name: 'alert_ni',     wave: '1..|0.|..|1.|..' },
-    { name: 'ack_po',       wave: '0..|..|1.|..|0.' , node: '.............d'},
-    { name: 'ack_no',       wave: '1..|..|0.|..|1.' },
+    { name: 'clk_i',              wave: 'p..............' },
+    { name: 'ping_en_i',          wave: '01.|..|..|..|.0' },
+    { name: 'ping_ok_o',          wave: '0..|..|..|..|10' , node: '.............e'},
+    { name: 'alert_rx_o.ping_p',  wave: '01.|..|..|..|..' , node: '.a'},
+    { name: 'alert_rx_o.ping_n',  wave: '10.|..|..|..|..' , node: '.b'},
+    { name: 'alert_tx_i.alert_p', wave: '0..|1.|..|0.|..' , node: '....c'},
+    { name: 'alert_tx_i.alert_n', wave: '1..|0.|..|1.|..' },
+    { name: 'alert_rx_o.ack_p',   wave: '0..|..|1.|..|0.' , node: '.............d'},
+    { name: 'alert_rx_o.ack_n',   wave: '1..|..|0.|..|1.' },
   ],
   edge: [
    'a-b',
@@ -318,11 +317,11 @@ encoding failure is detected, the receiver module asserts a signal integrity
 alert via `integ_fail_o`. In particular, this covers the following failure
 cases:
 
-1. The `alert_pi/ni` pair is not correctly encoded on the receiver side.
+1. The `alert_tx_i.alert_p/n` pair is not correctly encoded on the receiver side.
 This can be directly flagged as an integrity failure on the receiver side.
 
-2. The `ping_pi/ni` or the `ack_pi/ni` pairs are not correctly encoded on the sender side.
-This is signaled to the receiver by setting the `alert_po/no` wires to the same value, and that value will be continuously toggled.
+2. The `alert_rx_i.ping_p/n` or the `alert_rx_i.ack_p/n` pairs are not correctly encoded on the sender side.
+This is signaled to the receiver by setting the `alert_tx_o.alert_p/n` wires to the same value, and that value will be continuously toggled.
 This implicitly triggers a signal integrity alert on the receiver side.
 
 Some of these failure patterns are illustrated in the wave diagram below:
@@ -330,12 +329,12 @@ Some of these failure patterns are illustrated in the wave diagram below:
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',        wave: 'p..............' },
-    { name: 'alert_pi',     wave: '0.1...|0..10101' , node: '..a.......d'},
-    { name: 'alert_ni',     wave: '1.....|....0101' },
-    { name: 'ack_pi',       wave: '0.....|.1......' , node: '........c'},
-    { name: 'ack_ni',       wave: '1.....|........' },
-    { name: 'integ_fail_o', wave: '0...1.|0....1..' , node: '....b.......e'},
+    { name: 'clk_i',               wave: 'p..............' },
+    { name: 'alert_tx_o.alert_p',  wave: '0.1...|0..10101' , node: '..a.......d'},
+    { name: 'alert_tx_o.alert_n',  wave: '1.....|....0101' },
+    { name: 'alert_rx_i.ack_p',    wave: '0.....|.1......' , node: '........c'},
+    { name: 'alert_rx_i.ack_n',    wave: '1.....|........' },
+    { name: 'integ_fail_o',        wave: '0...1.|0....1..' , node: '....b.......e'},
   ],
   edge: [
    'a~>b sigint issue detected',
@@ -579,14 +578,14 @@ shown.
     { name: 'irq_o[0]',             wave: '01.|................' },
     { name: 'CLASSA_STATE',         wave: '3..|.3|3.|3..|3..|3.', data: ['Idle', '   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',       wave: '3..|.3|33|333|333|3.', data: ['0','1','1','2','1','2','3','1','2','3','0'] },
-    { name: 'esc_po[0]',            wave: '0..|.1|0............', node: '.....a.b' },
-    { name: 'esc_no[0]',            wave: '1..|.0|1............' },
-    { name: 'esc_po[1]',            wave: '0..|..|1.|0.........', node: '.......c..d' },
-    { name: 'esc_no[1]',            wave: '1..|..|0.|1.........' },
-    { name: 'esc_po[2]',            wave: '0..|.....|1..|0.....', node: '..........e...f' },
-    { name: 'esc_no[2]',            wave: '1..|.....|0..|1.....' },
-    { name: 'esc_po[3]',            wave: '0..|.........|1..|0.', node: '..............g...h' },
-    { name: 'esc_no[3]',            wave: '1..|.........|0..|1.' },
+    { name: 'esc_tx_o.esc_p[0]',    wave: '0..|.1|0............', node: '.....a.b' },
+    { name: 'esc_tx_o.esc_n[0]',    wave: '1..|.0|1............' },
+    { name: 'esc_tx_o.esc_p[1]',    wave: '0..|..|1.|0.........', node: '.......c..d' },
+    { name: 'esc_tx_o.esc_n[1]',    wave: '1..|..|0.|1.........' },
+    { name: 'esc_tx_o.esc_p[2]',    wave: '0..|.....|1..|0.....', node: '..........e...f' },
+    { name: 'esc_tx_o.esc_n[2]',    wave: '1..|.....|0..|1.....' },
+    { name: 'esc_tx_o.esc_p[3]',    wave: '0..|.........|1..|0.', node: '..............g...h' },
+    { name: 'esc_tx_o.esc_n[3]',    wave: '1..|.........|0..|1.' },
   ],
   edge: [
    'a->b 1e3 cycles',
@@ -627,14 +626,14 @@ interrupt timeout counter triggers escalation.
     { name: 'irq_o[0]',                wave: '01..|.................', node: '.a..|.b' },
     { name: 'CLASSA_ESC_STATE',        wave: '33..|.3|3.|3..|3...|3.', data: ['Idle', 'Timeout','   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',          wave: '3333|33|33|333|3333|3.', data: ['0', '1','2','3','1e4','1','1','2','1','2','3','1','2','3','4','0'] },
-    { name: 'esc_po[0]',               wave: '0...|.1|0.............' },
-    { name: 'esc_no[0]',               wave: '1...|.0|1.............' },
-    { name: 'esc_po[1]',               wave: '0...|..|1.|0..........' },
-    { name: 'esc_no[1]',               wave: '1...|..|0.|1..........' },
-    { name: 'esc_po[2]',               wave: '0...|.....|1..|0......' },
-    { name: 'esc_no[2]',               wave: '1...|.....|0..|1......' },
-    { name: 'esc_po[3]',               wave: '0...|.........|1...|0.' },
-    { name: 'esc_no[3]',               wave: '1...|.........|0...|1.' },
+    { name: 'esc_tx_o.esc_p[0]',       wave: '0...|.1|0.............' },
+    { name: 'esc_tx_o.esc_n[0]',       wave: '1...|.0|1.............' },
+    { name: 'esc_tx_o.esc_p[1]',       wave: '0...|..|1.|0..........' },
+    { name: 'esc_tx_o.esc_n[1]',       wave: '1...|..|0.|1..........' },
+    { name: 'esc_tx_o.esc_p[2]',       wave: '0...|.....|1..|0......' },
+    { name: 'esc_tx_o.esc_n[2]',       wave: '1...|.....|0..|1......' },
+    { name: 'esc_tx_o.esc_p[3]',       wave: '0...|.........|1...|0.' },
+    { name: 'esc_tx_o.esc_n[3]',       wave: '1...|.........|0...|1.' },
   ],
   edge: [
    'a->b 1e4 cycles',
@@ -667,26 +666,26 @@ the other going from receiver to sender.
 
 Upon receiving an escalation enable pulse of width N > 0 at the `esc_en_i`
 input, the escalation sender encodes that signal as a differential pulse of
-width N+1 on `esc_po/no`. The receiver decodes that message and asserts the
-`esc_en_o` output after one cycle of delay. Further, it acknowledges the
-receipt of that message by continuously toggling the `resp_po/no` signals as
-long as the escalation signal is asserted. Any failure to respond correctly
-will trigger a `integ_fail_o` alert, as illustrated below:
+width N+1 on `esc_tx.esc_p/n`. The receiver decodes that message and asserts the
+`esc_en_o` output after one cycle of delay. Further, it acknowledges the receipt
+of that message by continuously toggling the `esc_rx.resp_p/n` signals as long
+as the escalation signal is asserted. Any failure to respond correctly will
+trigger a `integ_fail_o` alert, as illustrated below:
 
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',        wave: 'p..................' },
-    { name: 'ping_en_i',    wave: '0........|.........' },
-    { name: 'ping_ok_o',    wave: '0........|.........' },
-    { name: 'integ_fail_o', wave: '0........|..1010...' , node: '............b.d' },
-    { name: 'ping_fail_o',  wave: '0........|.........' },
-    { name: 'esc_en_i',     wave: '01....0..|.1....0..' },
-    { name: 'resp_pi/po',   wave: '0.101010.|.........',  node: '............a.c' },
-    { name: 'resp_ni/no',   wave: '1.010101.|.........' },
-    { name: 'esc_po/pi',    wave: '01.....0.|.1.....0.' },
-    { name: 'esc_no/ni',    wave: '10.....1.|.0.....1.' },
-    { name: 'esc_en_o',     wave: '0.1....0.|..?....0.'},
+    { name: 'clk_i',             wave: 'p..................' },
+    { name: 'ping_en_i',         wave: '0........|.........' },
+    { name: 'ping_ok_o',         wave: '0........|.........' },
+    { name: 'integ_fail_o',      wave: '0........|..1010...' , node: '............b.d' },
+    { name: 'ping_fail_o',       wave: '0........|.........' },
+    { name: 'esc_en_i',          wave: '01....0..|.1....0..' },
+    { name: 'esc_rx_i/o.resp_p', wave: '0.101010.|.........',  node: '............a.c' },
+    { name: 'esc_rx_i/o.resp_n', wave: '1.010101.|.........' },
+    { name: 'esc_tx_o/i.esc_p',  wave: '01.....0.|.1.....0.' },
+    { name: 'esc_tx_o/i.esc_n',  wave: '10.....1.|.0.....1.' },
+    { name: 'esc_en_o',          wave: '0.1....0.|..?....0.'},
   ],
   edge: [
    'a~>b missing response',
@@ -702,9 +701,9 @@ will trigger a `integ_fail_o` alert, as illustrated below:
 }
 {{< /wavejson >}}
 
-Further, any differential signal mismatch on both the `esc_pi/ni` and `resp_pi/ni` lines will trigger an `integ_fail_o` alert.
-Mismatches on `resp_pi/ni` can be directly detected at the sender.
-Mismatches on the `esc_pi/ni` line will be signaled back to the sender by setting both the positive and negative response wires to the same value - and that value is being toggled each cycle.
+Further, any differential signal mismatch on both the `esc_tx_i.esc_p/n` and `esc_rx_i.resp_p/n` lines will trigger an `integ_fail_o` alert.
+Mismatches on `esc_rx_i.resp_p/n` can be directly detected at the sender.
+Mismatches on the `esc_tx_i.esc_p/n` line will be signaled back to the sender by setting both the positive and negative response wires to the same value - and that value is being toggled each cycle.
 This implicitly triggers a signal integrity alert on the sender side.
 
 This back-signaling mechanism can be leveraged to fast-track escalation and use
@@ -716,16 +715,16 @@ Some signal integrity failure cases are illustrated in the wave diagram below:
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',        wave: 'p...........' },
-    { name: 'ping_en_i',    wave: '0....|......' },
-    { name: 'ping_ok_o',    wave: '0....|......' },
-    { name: 'integ_fail_o', wave: '0.1.0|.1....' , node: '..b....e' },
-    { name: 'esc_en_i',     wave: '0....|......' },
-    { name: 'resp_pi',      wave: '0.1.0|..1010',  node: '..a..' },
-    { name: 'resp_ni',      wave: '1....|.01010',  node: '.......d' },
-    { name: 'esc_pi',       wave: '0....|1.....',  node: '......c..' },
-    { name: 'esc_ni',       wave: '1....|......' },
-    { name: 'esc_en_o',     wave: '0....|......'},
+    { name: 'clk_i',           wave: 'p...........' },
+    { name: 'ping_en_i',       wave: '0....|......' },
+    { name: 'ping_ok_o',       wave: '0....|......' },
+    { name: 'integ_fail_o',    wave: '0.1.0|.1....' , node: '..b....e' },
+    { name: 'esc_en_i',        wave: '0....|......' },
+    { name: 'esc_rx_i.resp_p', wave: '0.1.0|..1010',  node: '..a..' },
+    { name: 'esc_rx_i.resp_n', wave: '1....|.01010',  node: '.......d' },
+    { name: 'esc_tx_i.esc_p',  wave: '0....|1.....',  node: '......c..' },
+    { name: 'esc_tx_i.esc_n',  wave: '1....|......' },
+    { name: 'esc_en_o',        wave: '0....|......'},
   ],
   edge: [
    'a~>b',
@@ -745,10 +744,11 @@ Some signal integrity failure cases are illustrated in the wave diagram below:
 
 ### Ping Testing of the Escalation Signals
 
+
 Similarly to the alert signaling scheme, the escalation signaling lines can be pinged / line tested in order to test whether the escalation receiver has been tampered with.
 This is achieved by asserting `ping_en_i` at the escalation sender module.
-A ping request is encoded as a single cycle pulse on the `esc_po/no` outputs.
-Hence, the receiver module will not decode this single cycle pulse as an escalation enable message, but it will respond to it with a "1010" pattern on the `resp_pi/ni` lines.
+A ping request is encoded as a single cycle pulse on the `esc_tx_o.esc_p/n` outputs.
+Hence, the receiver module will not decode this single cycle pulse as an escalation enable message, but it will respond to it with a "1010" pattern on the `esc_rx_i.resp_p/n` lines.
 The escalation sender module will assert `ping_ok_o` if that pattern is received correctly after one cycle of latency.
 Otherwise the LFSR timer will raise a "pingfail" alert after the programmable timeout is reached.
 This mechanism is illustrated below from the viewpoint of the sender module.
@@ -756,15 +756,15 @@ This mechanism is illustrated below from the viewpoint of the sender module.
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',        wave: 'p..............' },
-    { name: 'ping_en_i',    wave: '01....0|.1.0...' ,  node: '.a'},
-    { name: 'ping_ok_o',    wave: '0....10|.......' ,  node: '.....e....g'},
-    { name: 'integ_fail_o', wave: '0......|.......' },
-    { name: 'esc_en_i',     wave: '0......|.......' },
-    { name: 'resp_pi',      wave: '0.1010.|.......' ,  node: '..c..d....f'},
-    { name: 'resp_ni',      wave: '1.0101.|.......' },
-    { name: 'esc_po',       wave: '010....|.10....' ,  node: '.b'},
-    { name: 'esc_no',       wave: '101....|.01....' },
+    { name: 'clk_i',           wave: 'p..............' },
+    { name: 'ping_en_i',       wave: '01....0|.1.0...' ,  node: '.a'},
+    { name: 'ping_ok_o',       wave: '0....10|.......' ,  node: '.....e....g'},
+    { name: 'integ_fail_o',    wave: '0......|.......' },
+    { name: 'esc_en_i',        wave: '0......|.......' },
+    { name: 'esc_rx_i.resp_p', wave: '0.1010.|.......' ,  node: '..c..d....f'},
+    { name: 'esc_rx_i.resp_n', wave: '1.0101.|.......' },
+    { name: 'esc_tx_o.esc_p',  wave: '010....|.10....' ,  node: '.b'},
+    { name: 'esc_tx_o.esc_n',  wave: '101....|.01....' },
   ],
   edge: [
   'a->b',

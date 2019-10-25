@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_async_fpv (
+module prim_alert_rxtx_async_fpv import prim_pkg::*; (
   input        clk_i,
   input        rst_ni,
   // for sigint error and skew injection only
@@ -35,6 +35,12 @@ module prim_alert_rxtx_async_fpv (
   logic ack_nd;
   logic alert_pd;
   logic alert_nd;
+
+  alert_rx_t alert_rx_out, alert_rx_in;
+  alert_tx_t alert_tx_out, alert_tx_in;
+
+  // for the purposes of FPV, we currently emulate the asynchronous transition
+  // only in terms of the skew it may introduce (which is limited to +- 1 cycle)
   logic [1:0] ping_pq;
   logic [1:0] ping_nq;
   logic [1:0] ack_pq;
@@ -42,8 +48,19 @@ module prim_alert_rxtx_async_fpv (
   logic [1:0] alert_pq;
   logic [1:0] alert_nq;
 
-  // for the purposes of FPV, we currently emulate the asynchronous transition
-  // only in terms of the skew it may introduce (which is limited to +- 1 cycle)
+  assign ping_pd = alert_rx_out.ping_p;
+  assign ping_nd = alert_rx_out.ping_n;
+  assign ack_pd  = alert_rx_out.ack_p;
+  assign ack_nd  = alert_rx_out.ack_n;
+  assign alert_rx_in.ping_p = ping_pq[ping_skew_i[0]] ^ ping_err_pi;
+  assign alert_rx_in.ping_n = ping_nq[ping_skew_i[1]] ^ ping_err_ni;
+  assign alert_rx_in.ack_p  = ack_pq[ack_skew_i[0]] ^ ack_err_pi;
+  assign alert_rx_in.ack_n  = ack_nq[ack_skew_i[1]] ^ ack_err_ni;
+
+  assign alert_pd = alert_tx_out.alert_p;
+  assign alert_nd = alert_tx_out.alert_n;
+  assign alert_tx_in.alert_p = alert_pq[alert_skew_i[0]] ^ alert_err_pi;
+  assign alert_tx_in.alert_n = alert_nq[alert_skew_i[1]] ^ alert_err_ni;
 
   prim_alert_sender #(
     .AsyncOn ( AsyncOn )
@@ -51,12 +68,8 @@ module prim_alert_rxtx_async_fpv (
     .clk_i    ,
     .rst_ni   ,
     .alert_i  ,
-    .ping_pi  ( ping_pq[ping_skew_i[0]] ^ ping_err_pi ),
-    .ping_ni  ( ping_nq[ping_skew_i[1]] ^ ping_err_ni ),
-    .ack_pi   ( ack_pq[ack_skew_i[0]]  ^ ack_err_pi  ),
-    .ack_ni   ( ack_nq[ack_skew_i[1]]  ^ ack_err_ni  ),
-    .alert_po ( alert_pd  ),
-    .alert_no ( alert_nd  )
+    .alert_rx_i ( alert_rx_in  ),
+    .alert_tx_o ( alert_tx_out )
   );
 
   prim_alert_receiver #(
@@ -68,12 +81,8 @@ module prim_alert_rxtx_async_fpv (
     .ping_ok_o    ,
     .integ_fail_o ,
     .alert_o      ,
-    .ping_po      ( ping_pd       ),
-    .ping_no      ( ping_nd       ),
-    .ack_po       ( ack_pd        ),
-    .ack_no       ( ack_nd        ),
-    .alert_pi     ( alert_pq[alert_skew_i[0]] ^ alert_err_pi ),
-    .alert_ni     ( alert_nq[alert_skew_i[1]] ^ alert_err_ni )
+    .alert_rx_o ( alert_rx_out ),
+    .alert_tx_i ( alert_tx_in  )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_skew_delay
