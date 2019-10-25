@@ -38,6 +38,18 @@ module top_earlgrey #(
   input               scanmode_i  // 1 for Scan
 );
 
+  // JTAG IDCODE for development versions of this code.
+  // Manufacturers of OpenTitan chips must replace this code with one of their
+  // own IDs.
+  // Field structure as defined in the IEEE 1149.1 (JTAG) specification,
+  // section 12.1.1.
+  localparam JTAG_IDCODE = {
+    4'h0,     // Version
+    16'h4F54, // Part Number: "OT"
+    11'h4A6,  // Manufacturer Identity: Google
+    1'b1      // (fixed)
+  };
+
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
@@ -179,12 +191,8 @@ module top_earlgrey #(
   //
 
   rv_dm #(
-    .NrHarts     (  1),
-    .IdcodeValue (32'h00000001) // Temporary value
-                                // xxxx             version
-                                // xxxxxxxxxxxxxxxx part number
-                                // xxxxxxxxxxx      manufacturer id
-                                // 1                required by standard
+    .NrHarts     (1),
+    .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
     .clk_i         (main_clk),
     .rst_ni        (lc_rst_n),
