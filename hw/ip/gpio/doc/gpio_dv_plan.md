@@ -1,5 +1,5 @@
 {{% lowrisc-doc-hdr GPIO DV Plan }}
-{{% import_testplan gpio_testplan.hjson }}
+{{% import_testplan ../data/gpio_testplan.hjson }}
 
 {{% toc 4 }}
 
@@ -16,7 +16,7 @@
 * DV regression results dashboard (link TBD)
 
 ## Design features
-For detailed information on GPIO design features, please see the [GPIO design specification](../doc/gpio.md).
+For detailed information on GPIO design features, please see the [GPIO design specification](gpio.md).
 
 ## Testbench architecture
 GPIO testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
