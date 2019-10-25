@@ -15,7 +15,6 @@
 //   MAX_PRIO: Maximum value of interrupt priority
 
 module rv_plic import rv_plic_reg_pkg::*; #(
-  parameter      FIND_MAX = "SEQUENTIAL", // SEQUENTIAL | MATRIX
   // derived parameter
   localparam int SRCW    = $clog2(NumSrc+1)
 ) (
@@ -166,8 +165,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
     rv_plic_target #(
       .N_SOURCE (NumSrc),
-      .MAX_PRIO (MAX_PRIO),
-      .ALGORITHM(FIND_MAX)
+      .MAX_PRIO (MAX_PRIO)
     ) u_target (
       .clk_i,
       .rst_ni,

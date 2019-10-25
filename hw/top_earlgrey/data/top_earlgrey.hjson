@@ -89,11 +89,6 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40090000",
       generated: "true"         // Indicate this module is generated in the topgen
-      parameter: {
-        // FIND_MAX determines the algorithm for searching highest priority interrupt.
-        // Available: { SEQUENTIAL, MATRIX }
-        FIND_MAX: "MATRIX",     // Parameter as key
-      }
     }
     { name: "pinmux",
       type: "pinmux",

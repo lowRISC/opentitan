@@ -15,7 +15,7 @@ filesets:
       - lowrisc:dv:mem_model
       - lowrisc:dv:xbar_test:0.1
     files:
-      - tb/xbar_macros.svh
+      - tb/xbar_macros.svh: {is_include_file: true}
       - tb/tb.sv
       - tb/xbar_main_bind.sv
       - tb/xbar_tl_if_connection.sv: {is_include_file: true}
