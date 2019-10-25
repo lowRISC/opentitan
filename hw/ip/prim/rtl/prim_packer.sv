@@ -59,7 +59,7 @@ module prim_packer #(
     end else if (flush_ready) begin
       pos <= '0;
     end else if (ack_out) begin
-      `ASSERT_I(pos_next_gte_outw_p, pos_next >= OutW)
+      `ASSERT_I(PosOrPosNextGTEOutW_A, (pos >= OutW) || (pos_next >= OutW))
       pos <= pos_next - OutW;
     end else if (ack_in) begin
       pos <= pos_next;
@@ -171,8 +171,28 @@ module prim_packer #(
 
   assign flush_done_o = flush_ready;
 
-  assign valid_next = (pos_next >= OutW) ? 1'b 1 : flush_ready & (pos != '0);
-  assign ready_next = ack_out ? 1'b1 : pos_next <= OutW; // New `we` needs to be hold.
+  always_comb begin
+    if (pos >= OutW) begin
+      // Pending transactions in the storage
+      valid_next = 1'b1;
+    end else if (pos_next >= OutW) begin
+      valid_next = 1'b1;
+    end else begin
+      valid_next = flush_ready & (pos != '0);
+    end
+  end
+  always_comb begin
+    if (ack_out) begin
+      // As OutW size of data can be sent out, it can accept new data always.
+      ready_next = 1'b1;
+    end else if (pos >= OutW) begin
+      // It has out data remained inside, shouldn't accept new data
+      ready_next = 1'b0;
+    end else begin
+      // Regardless of pos_next, it can store the data
+      ready_next = 1'b1;
+    end
+  end
 
   // Output request
   assign valid_o = valid_next;
@@ -182,30 +202,51 @@ module prim_packer #(
   // ready_o
   assign ready_o = ready_next;
 
-  // TODO: Implement Pipelined logic
-  //       Need to change pos logic, mask&data calculation logic too
-
-  //===========================================================================
-  // Assertions, Assumptions, and Coverpoints
-  //
-  `ifndef VERILATOR
-  //pragma translate_off
-    // Assumption: mask_i should be contiguous ones
-    // e.g: 0011100 --> OK
-    //      0100011 --> Not OK
-    property contiguous_ones_p(en, sig, clk, rst_n);
-      @(posedge clk) disable iff (!rst_n)
-        en |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2;
-    endproperty
-    mask_contiguous_ast: assert property (contiguous_ones_p(valid_i, mask_i, clk_i, rst_ni));
-    mask_contiguous_ass: assume property (contiguous_ones_p(valid_i, mask_i, clk_i, rst_ni));
-  //pragma translate_on
-  `endif // VERILATOR
+  //////////////////////////////////////////////
+  // Assertions, Assumptions, and Coverpoints //
+  //////////////////////////////////////////////
+  // Assumption: mask_i should be contiguous ones
+  // e.g: 0011100 --> OK
+  //      0100011 --> Not OK
+  `ASSUME(ContiguousOnesMask_M,
+          valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2,
+          clk_i, !rst_ni)
 
   // Flush and Write Enable cannot be asserted same time
-  `ASSERT(exclusive_flush_valid_a, flush_i |-> !valid_i, clk_i, rst_ni)
+  `ASSUME(ExFlushValid_M, flush_i |-> !valid_i, clk_i, !rst_ni)
+
   // While in flush state, new request shouldn't come
-  `ASSERT(valid_zero_while_flush_a, (flush_st == FlushWait) |-> $stable(valid_i), clk_i, rst_ni)
-  //---------------------------------------------------------------------------
+  `ASSUME(ValidIDeassertedOnFlush_M,
+          flush_st == FlushWait |-> $stable(valid_i),
+          clk_i, !rst_ni)
+
+  // If not acked, input port keeps asserting valid and data
+  `ASSUME(DataIStable_M,
+          ##1 valid_i && $past(valid_i) && !$past(ready_o)
+          |-> $stable(data_i) && $stable(mask_i),
+          clk_i, !rst_ni)
+  `ASSUME(ValidIPairedWithReadyO_M,
+          valid_i && !ready_o |=> valid_i,
+          clk_i, !rst_ni)
+
+  `ASSERT(FlushFollowedByDone_A,
+          ##1 $rose(flush_i) && !flush_done_o |-> !flush_done_o [*0:$] ##1 flush_done_o,
+          clk_i, !rst_ni)
+
+  // If not acked, valid_o should keep asserting
+  `ASSERT(ValidOPairedWidthReadyI_A,
+          valid_o && !ready_i |=> valid_o,
+          clk_i, !rst_ni)
+
+  // If input mask is greater than output width, valid should be asserted
+  `ASSERT(ValidOAssertedForInputGTEOutW_A,
+          valid_i && ($countones(mask_i) >= OutW) |-> valid_o,
+          clk_i, !rst_ni)
+
+  // If output port doesn't accept the data, the data should be stable
+  `ASSERT(DataOStableWhenPending_A,
+          ##1 valid_o && $past(valid_o)
+          && !$past(ready_i) |-> $stable(data_o),
+          clk_i, !rst_ni)
 
 endmodule
