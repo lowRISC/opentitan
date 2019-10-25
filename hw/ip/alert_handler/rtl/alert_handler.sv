@@ -15,7 +15,10 @@ module alert_handler (
   input  tlul_pkg::tl_h2d_t                tl_i,
   output tlul_pkg::tl_d2h_t                tl_o,
   // Interrupt Requests
-  output logic [alert_pkg::N_CLASSES-1:0]  irq_o,
+  output logic                             intr_classa_o,
+  output logic                             intr_classb_o,
+  output logic                             intr_classc_o,
+  output logic                             intr_classd_o,
   // State information for HW crashdump
   output alert_pkg::alert_crashdump_t      crashdump_o,
   // Entropy Input from TRNG
@@ -46,7 +49,11 @@ module alert_handler (
     .rst_ni      ,
     .tl_i        ,
     .tl_o        ,
-    .irq_o       ,
+    // todo: make this fully parametric at some point
+    .irq_o ({intr_classd_o,
+             intr_classc_o,
+             intr_classb_o,
+             intr_classa_o}),
     .crashdump_o ,
     .hw2reg_wrap ,
     .reg2hw_wrap

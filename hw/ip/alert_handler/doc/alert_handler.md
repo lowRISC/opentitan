@@ -155,7 +155,7 @@ Signal                  | Direction        | Type           | Description
 ------------------------|------------------|----------------|---------------
 `tl_i`                  | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
 `tl_o`                  | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
-`irq_o[<class>]`        | `output`         | packed `logic` | Interrupt outputs, level sensitive, active high. Indices 0-3 correspond to classes A-D.
+`intr_class<abcd>_o`    | `output`         | packed `logic` | Interrupt outputs, level sensitive, active high. Indices 0-3 correspond to classes A-D.
 `crashdump_o`           | `output`         | packed `struct`| This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
 `entropy_i`             | `input`          | `logic`        | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
 `alert_pi/ni[<number>]` | `input`          | packed `logic` | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
@@ -593,7 +593,7 @@ shown.
     { name: 'alert_triggered[0]',   wave: '010|.10.............' },
     { name: 'alert_triggered[1]',   wave: '0..|10..............' },
     { name: 'CLASSA_ACCUM_CNT',     wave: '33.|33..............', data: ['0', '1','15','16'] },
-    { name: 'irq_o[0]',             wave: '01.|................' },
+    { name: 'intr_classa_o',        wave: '01.|................' },
     { name: 'CLASSA_STATE',         wave: '3..|.3|3.|3..|3..|3.', data: ['Idle', '   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',       wave: '3..|.3|33|333|333|3.', data: ['0','1','1','2','1','2','3','1','2','3','0'] },
     { name: 'esc_po[0]',            wave: '0..|.1|0............', node: '.....a.b' },
@@ -641,7 +641,7 @@ interrupt timeout counter triggers escalation.
     { name: 'clk_i',                   wave: 'p.....................' },
     { name: 'CLASSA_TIMEOUT_CYC',      wave: '2.....................', data: ['1e4 cycles'] },
     { name: 'alert_triggered[0]',      wave: '010.|.................' },
-    { name: 'irq_o[0]',                wave: '01..|.................', node: '.a..|.b' },
+    { name: 'intr_classa_o',           wave: '01..|.................', node: '.a..|.b' },
     { name: 'CLASSA_ESC_STATE',        wave: '33..|.3|3.|3..|3...|3.', data: ['Idle', 'Timeout','   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',          wave: '3333|33|33|333|3333|3.', data: ['0', '1','2','3','1e4','1','1','2','1','2','3','1','2','3','4','0'] },
     { name: 'esc_po[0]',               wave: '0...|.1|0.............' },

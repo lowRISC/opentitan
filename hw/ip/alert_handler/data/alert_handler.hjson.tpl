@@ -17,9 +17,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
   name: "ALERT_HANDLER",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
+##############################################################################
+  available_input_list: []
+  available_output_list: []
 ##############################################################################
   param_list: [
     { name: "NAlerts",
@@ -99,7 +102,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 # interrupt registers for the classes
   interrupt_list: [
 % for i in range(n_classes):
-    { name: "CLASS${chars[i]}",
+    { name: "class${chars[i].lower()}",
       desc: '''
             Interrupt state bit of Class ${chars[i]}. Set by HW in case an alert within this class triggered. Defaults true, write one to clear.
             ''',
