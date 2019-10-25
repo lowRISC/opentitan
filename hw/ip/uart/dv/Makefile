@@ -19,9 +19,7 @@ export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:dv:uart_sim:0.1
 COMPILE_KEY     ?= default
 
-UVM_TEST        ?= uart_base_test
-UVM_TEST_SEQ    ?= uart_base_vseq
-
+COV_DUT_EXCL    ?= ${DV_DIR}/cov/uart_cov_excl.el
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################

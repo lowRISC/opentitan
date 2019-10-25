@@ -90,6 +90,16 @@ ifeq (${VCS_COV},1)
   RUN_OPTS    += -assert nopostproc
 endif
 
+# Coverage analyze/report options
+COV_COMMON_EXCL  ?= ${MAKE_ROOT}/vcs/common_cov_excl.el
+COV_EXCL         += ${COV_COMMON_EXCL} ${COV_DUT_EXCL}
+COV_ANALYZE_TOOL ?= verdi
+COV_REPORT_TOOL  ?= urg
+COV_DIR          ?= ${BUILD_DIR}/cov.vdb
+COV_EXCL_OPTS    ?= -line nocasedef -elfile ${COV_EXCL}
+COV_ANALYZE_OPTS ?= -cov -covdir ${COV_DIR} ${COV_EXCL_OPTS}
+COV_REPORT_OPTS  ?= -dir ${COV_DIR} ${COV_EXCL_OPTS} -report ${COV_REPORT_DIR}
+
 # env variables to be exported for VCS
 export VCS_ARCH_OVERRIDE      := linux
 export VCS_LIC_EXPIRE_WARNING := 1
