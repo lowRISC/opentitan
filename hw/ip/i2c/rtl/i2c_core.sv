@@ -189,7 +189,7 @@ module  i2c_core (
   ) u_i2c_fmtfifo (
     .clk_i,
     .rst_ni(fmt_fifo_rst_n),
-    .wvalid(fmt_fifo_wen),
+    .wvalid(fmt_fifo_wvalid),
     .wready(fmt_fifo_wready),
     .wdata(fmt_fifo_wdata),
     .depth(fmt_fifo_depth),
