@@ -207,6 +207,38 @@ Below table lists useful operators that can be used for assertion properties.
 There are also powerful repetition operators, see
 [here](https://www.systemverilog.io/sva-basics) for more details.
 
+## Symbolic Variables
+
+When design has a set of modules or signals that share same properties,
+symbolic variables can be used to reduce duplicated assertions.
+For example, in the [rv_plic design](../ip/rv_plic/doc/rv_plic.md), the array of
+input `intr_src_i` are signals sharing same properties. Each
+`intr_src_i[index]` will trigger the interrupt pending (`ip`) signal depending
+on the corresponding level indicator (`le`) is set to level triggered or edge
+triggered.
+Without symbolic variables, the above assertions can be implemented as below:
+```systemverilog
+  genvar i;
+  generate for (i = 0; i < N_SOURCE; i++) begin : gen_rv_plic_fpv
+    `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[i]) |->
+            $past(rv_plic.le[i]) || $past(intr_src_i[i]), clk_i, !rst_ni)
+  end
+```
+
+In constrast, symbolic variable can abstract the design by declaring the index with
+constraints. To ensure the symbolic variable performs the expected behaviors,
+two assumptions need to be written:
+* Constraint the symoblic variable with the correct bound
+* Randomize the variable at the beginning of the simulation, then keep it stable
+  throughout the rest of the simulation
+```systemverilog
+  logic [$clog2(N_SOURCE)-1:0] src_sel;
+  `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
+  `ASSUME_FPV(IsrcStable_M, ##1 $stable(src_sel), clk_i, !rst_ni)
+  `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
+          $past(rv_plic.le[src_sel]) || $past(intr_src_i[src_sel]), clk_i, !rst_ni)
+```
+
 ## Coverpoints
 Coverpoints are used for properties and corner cases that the designer wants to
 make sure are being exercised by the testbench (e.g. FIFO-full checks). The
@@ -267,6 +299,15 @@ my_module3
 ERROR (ENL024): Combinational loop found within the cone of
 influence for "u_sha2.u_pad.shaf_ren".
 ...
+```
+
+## Naming Convenctions
+For assertions, it is preferred to use postfix `_A`, while for assumptions, use
+`_M`. For example:
+```systemverilog
+  `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
+  `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
+          $past(rv_plic.le[src_sel]) || $past(intr_src_i[src_sel]), clk_i, !rst_ni)
 ```
 
 ## References
