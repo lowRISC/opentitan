@@ -67,19 +67,15 @@ Capturing fast and efficient feedback on syntactic and semantic (as well as styl
 Running lint is especially useful with SystemVerilog, a weakly-typed language, unlike more modern hardware description languages.
 Running lint is faster than running a simulation.
 
-The tool [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint) from the company Real Intent was chosen for this project.
-It has the benefit of fast execution times, and provides a list of concise lint errors and warnings.
-It is understandable that not all partner members will have access to this tool.
-The project will use AscentLint as its linting sign-off tool, and results will be shared in some form through continuous integration build results, published tool outputs, pre-submit checks, and/or linting summaries of tool output (TODO: publication details).
-For partners without access to this tool, the recommendation is to run their code through whatever linting tool they have available at their disposal before creating a design Pull Request, then work with the maintainers of the linting sign-off methodology to close linting errors.
+Currently, due to the proprietary nature of tool collateral, all linting activity is done offline and reported back to designers.
+The project will standardize on a particular linting tool, and results will be shared in some form through continuous integration build results, published tool outputs, pre-submit checks, and/or linting summaries of tool output (TODO: publication details).
+For developers of design IP, the recommendation is to run their code through whatever linting tool they have available at their disposal before creating a design Pull Request, then work with the maintainers of the linting sign-off methodology to close linting errors.
 (TODO: decide on available pre-submit linting options).
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
 
-Due to the proprietary nature of this particular linting tool, content towards running the tool can not be checked in in an open source repository.
+Due to the proprietary nature of this particular linting tool, content towards running the tool can not be checked in in this open source repository.
 In the current state of the project, all lint scripts, policy files, and waivers are **not** provided, but are being kept privately until we can suggest a workable open source solution.
 When this methodology is finalized the details will be given here. (TODO)
-See the [Linting README](../../hw/lint/README.md) for details on how the tool is being run internally.
-This shows the methodology that we are aiming to release in a fully open manner, but for now is being run internally, with results shared among partner members.
 
 Goals for linting closure per design milestone are given in the [OpenTitan Development Stages](hw_stages.md) document.
 
@@ -108,18 +104,19 @@ enforce the usage of these submodules;
 use a production-worthy tool to check all signals within the design conform to correct crossing rules.
 The *CDC Methodology document* (TODO:Coming Soon) gives details on the submodules and explains more rationale for the designs chosen.
 
-The tool chosen for this program is
-[Meridian]([https://www.realintent.com/clock-domain-crossing-meridian-cdc](https://www.realintent.com/clock-domain-crossing-meridian-cdc))
-from RealIntent.
-It is a sign-off-grade CDC checking tool that provides the features needed for CDC assurance.
-It is understandable that not all partner members will have access to this tool.
-The project will use it as its sign-off tool, and results will be shared in some form (TODO: final decision).
+The tool chosen for this program is not finalized.
+We will choose a sign-off-grade CDC checking tool that provides the features needed for CDC assurance.
+It is understandable that not all partner members will have access to the tool.
+Once chosen, the project will use it as its sign-off tool, and results will be shared in some form (TODO: final decision).
 CDC checking errors can be closed by fixing the code in question (preferred), or waiving the error.
 CDC waivers should be reviewed as part of the Pull Request review process.
-See the *CDC README* (TODO:Coming Soon) for details on how to run the tool if you have a Meridian license.
+Details on how to run the tool will be provided once the decision has been finalized.
 
-Similar to the linting tool, due to the proprietary nature of the CDC tool, some content towards running the tool can not be checked in in an open source repository.
-For those items, the tool provider will be giving us a method to check in encrypted content that still allows for full functionality without exposing their tool's feature set.
+The team will standardize on a suite of clock-crossing modules that can be used for most multi-clock designs.
+Many of those will be documented in the `hw/ip/prim/doc` directory.
+
+Similar to the linting tool, due to the proprietary nature of the CDC tool, it is possible that not all content towards running the tool will be checked in in the open source repository.
+For those items, we will work with the tool provider to allow other partners to also use the tool.
 When this methodology is finalized the details will be given here. (TODO)
 
 ## DFT
@@ -163,5 +160,5 @@ This is used by an Azure Pipelines pre-submit check script to ensure that the so
 
 ## Getting Started with a Design
 
-The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, ownership assignments, documentation, etc.
-These are discussed in the *Getting Started with a Design* (TODO) document that is still being developed.
+The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship assignments, documentation, etc.
+These are discussed in the [Getting Started with a Design](getting_started_design.md) document.
