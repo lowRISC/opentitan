@@ -52,6 +52,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
+    // TODO: need agent for full alert protocol
+    cfg.ping_en_vif.drive('0);
     if (do_hmac_init) hmac_init();
   endtask
 

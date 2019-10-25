@@ -5,6 +5,11 @@
 
 package hmac_pkg;
 
+  // this currently uses the
+  // fully asynchronous implemenation
+  localparam int NumAlerts = 1;
+  localparam logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b1);
+
   localparam int MsgFifoDepth = 16;
 
   localparam NumRound = 64;   // SHA-224, SHA-256
