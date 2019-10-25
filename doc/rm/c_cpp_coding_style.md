@@ -81,6 +81,28 @@ Example:
 // (Bug lowrisc/reponame#27)
 ```
 
+### Included files
+
+***`#include` directives must, with exceptions, be rooted at `$REPO_TOP`.***
+
+Every `#include` directive must be rooted at the repository base, including files in the same directory.
+This helps the reader quickly find headers in the repository, without having to worry about local include-search rules.
+
+Example: `my/device/library.c` would start with a directive like the following:
+
+```c
+#include "my/device/library.h"
+```
+
+This rule does not apply to generated headers, since they do not yet have a designated location in the source tree, and are instead included from ad-hoc locations.
+Until these questions are resolved, these includes must be marked as follows:
+```c
+#include "my_generated_file.h"  // Generated.
+```
+This convention helps readers distinguish which files they should not expect to find in-tree.
+
+The above rules also do not apply to system includes, which should be included by the names dictated by the ISO standard, e.g. `#include <stddef.h>`.
+
 
 ### Public function (API) documentation
 
