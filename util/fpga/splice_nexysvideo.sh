@@ -19,7 +19,7 @@ TARGET_PREFIX="sw/${BUILD_DIR}/rom"
 FPGA_BUILD_DIR=build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/
 FPGA_BIT_NAME=lowrisc_systems_top_earlgrey_nexysvideo_0.1
 
-make -C sw "SW_BUILD_DIR=${BUILD_DIR}" SW_DIR=boot_rom distclean all
+make -C sw/device "SW_BUILD_DIR=../${BUILD_DIR}" SW_DIR=boot_rom distclean all
 
 srec_cat ${TARGET_PREFIX}.bin -binary -offset 0x0 -o ${TARGET_PREFIX}.brammem \
   -vmem -Output_Block_Size 4;

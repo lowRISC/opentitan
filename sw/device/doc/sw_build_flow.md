@@ -50,18 +50,18 @@ the users the most typical use cases. Users are encouraged to read through
 the files listed below for more details.
 
 ## Organization
-The SW build Makefiles are organized as follows:
+The SW device build Makefiles are organized as follows:
 
-- **`sw/Makefile`**: The top level SW build Makefile (`sw/Makefile`). All of the
+- **`sw/device/Makefile`**: The top level SW build Makefile (`sw/device/Makefile`). All of the
   sub-make files are included directly or indirectly into this. This is the
   starting point for compiling any target.
 
-- **`sw/opts.mk`**: All commonly used Make variables in one place. This sub-make
+- **`sw/device/opts.mk`**: All commonly used Make variables in one place. This sub-make
   file is also used to check if certain switches are enabled and further modify /
   customize the flow for target being built. An example of this is using the `TARGET`
   variable to change how SW is built for DV vs FPGA / Verilator / production SW.
 
-- **`sw/rules.mk`**: All rules for generating all the outputs in one place.
+- **`sw/device/rules.mk`**: All rules for generating all the outputs in one place.
 
 These three form the *base-make files* for the SW build. Any directory containing
 sources for building the SW needs to have an associated `srcs.mk` sub-make file
@@ -91,14 +91,14 @@ top level SW build Makefile.
 
 ## How to build SW
 The examples indicated below assume that the present working directory is
-`SW_ROOT_DIR`. As indicated in the previous sections, `SW_DIR` and `SW_NAME` are
+`$(SW_ROOT_DIR)/device`. As indicated in the previous sections, `SW_DIR` and `SW_NAME` are
 mandatory variables that need to be set correctly on the command line. `SW_NAME`
 is optional if `SW_DIR` has only one SW target and `SW_NAME` is set in
 `$(SW_DIR)/srcs.mk` file. `SW_BUILD_DIR` is optional.
 
 Build boot_rom:
 ```console
-$ make SW_DIR=device/boot_rom SW_NAME=boot_rom
+$ make SW_DIR=boot_rom SW_NAME=boot_rom
 ```
 
 This will build the boot_rom image in the device/boot_rom directly itself. SW_NAME in
@@ -107,15 +107,15 @@ on the command line.
 
 - Build the boot_rom in a separate build directory:
 ```console
-$ make SW_DIR=device/boot_rom SW_BUILD_DIR=path/to/scratch
+$ make SW_DIR=boot_rom SW_BUILD_DIR=path/to/scratch
 ```
 
 - Build hello_world test:
 ```console
-$ make SW_DIR=device/examples/hello_world SW_NAME=hello_world SW_BUILD_DIR=path/to/scratch
+$ make SW_DIR=examples/hello_world SW_NAME=hello_world SW_BUILD_DIR=path/to/scratch
 ```
 
 - Build sha256 test:
 ```console
-$ make SW_DIR=device/tests/hmac SW_NAME=sha256_test
+$ make SW_DIR=tests/hmac SW_NAME=sha256_test
 ```

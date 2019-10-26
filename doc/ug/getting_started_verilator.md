@@ -30,8 +30,8 @@ Please see [SW build flow](../../sw/doc/sw_build_flow.md) for more details.
 
 ```console
 $ cd $REPO_TOP
-$ make -C sw SIM=1 SW_DIR=boot_rom SW_BUILD_DIR=${ROM_BUILD_DIR} clean all
-$ make -C sw SIM=1 SW_DIR=examples/hello_world SW_BUILD_DIR=${SW_BUILD_DIR} clean all
+$ make -C sw/device SIM=1 SW_DIR=boot_rom SW_BUILD_DIR=${ROM_BUILD_DIR} clean all
+$ make -C sw/device SIM=1 SW_DIR=examples/hello_world SW_BUILD_DIR=${SW_BUILD_DIR} clean all
 ```
 
 Now the simulation can be run.

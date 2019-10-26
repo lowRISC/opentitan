@@ -21,7 +21,7 @@ SW_SRCS       += $(CRT_SRCS)
 SW_OBJS       += $(addprefix $(SW_BUILD_DIR)/, $(addsuffix .o, $(basename $(notdir $(SW_SRCS)))))
 SW_PPOS       += $(SW_OBJS:.o=.ppo)
 SW_DEPS       ?= lib
-SW_BUILD_DIR  ?= $(SW_ROOT_DIR)/$(SW_DIR)
+SW_BUILD_DIR  ?= $(SW_ROOT_DIR)/device/$(SW_DIR)
 
 LIB_NAME      ?= ot
 LIB_DIR       ?= $(SW_ROOT_DIR)/device/lib
@@ -31,10 +31,10 @@ LIB_OBJS      += $(addprefix $(LIB_BUILD_DIR)/, $(addsuffix .o, $(basename $(not
 LIB_PPOS      += $(LIB_OBJS:.o=.ppo)
 LIB_BUILD_DIR ?= $(SW_BUILD_DIR)/lib
 
-GEN_HDRS_DIR  ?= $(SW_ROOT_DIR)/generated
+GEN_HDRS_DIR  ?= $(SW_ROOT_DIR)/device/generated
 
 DEPS          += $(SW_OBJS:%.o=%.d) $(LIB_OBJS:%.o=%.d)
-INCS          += -I.. -I$(LIB_BUILD_DIR)
+INCS          += -I../.. -I$(LIB_BUILD_DIR)
 
 LINK_OPTS     += -T $(LINKER_SCRIPT)
 LINK_OPTS     += $(SW_OBJS) -L$(LIB_BUILD_DIR) -l$(LIB_NAME)

@@ -38,7 +38,7 @@ FAIL_TARGETS=()
 PASS_TARGETS=()
 for target in "${BUILD_TARGETS[@]}"; do
   echo "Building target ${target}"
-  if make -C sw "SW_DIR=device/${target}" "SW_BUILD_DIR=build/${target}"; then
+  if make -C sw/device "SW_DIR=${target}" "SW_BUILD_DIR=../build/${target}"; then
     PASS_TARGETS=("${PASS_TARGETS[@]}" "${target}")
   else
     FAIL_TARGETS=("${FAIL_TARGETS[@]}" "${target}")
