@@ -377,8 +377,24 @@ class LowriscRenderer(mathjax.MathJaxRenderer):
             outbuf = io.StringIO()
             outbuf.write(html_data.dashboard_header)
             for hjson_path in hjson_paths:
-                gen_dashboard_entry.gen_html(hjson_path, outbuf)
+                gen_dashboard_entry.gen_dashboard_html(hjson_path, outbuf)
             outbuf.write(html_data.dashboard_trailer)
+            generated = outbuf.getvalue()
+            outbuf.close()
+            return generated
+        if token.type == "specboard":
+            hjson_paths = []
+            # find all of the .prj.hjson files in the given path
+            hjson_paths.extend(
+                sorted(
+                    Path(path.join(self.basedir,
+                                   token.text)).rglob('*.prj.hjson')))
+            outbuf = io.StringIO()
+            outbuf.write(html_data.specboard_header)
+            for hjson_path in hjson_paths:
+                gen_dashboard_entry.gen_specboard_html(hjson_path,
+                    hjson_path.relative_to(self.basedir), outbuf)
+            outbuf.write(html_data.specboard_trailer)
             generated = outbuf.getvalue()
             outbuf.close()
             return generated

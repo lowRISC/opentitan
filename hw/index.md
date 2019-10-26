@@ -1,13 +1,13 @@
 # Hardware Specifications
 
-## Top Earlgrey
+## Available Top Earlgrey Specifications
 
 {{% doctree top_earlgrey }}
 
-## Ibex Core
+## Available Ibex Core Specifications
 
 {{% doctree vendor/lowrisc_ibex }}
 
-## Comportable IP Blocks
+## Available Comportable IP Block Specifications
 
-{{% doctree ip }}
+{{% specboard ip }}

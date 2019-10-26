@@ -105,3 +105,19 @@ dashboard_trailer = """
     </tbody>
   </table>
 """
+
+specboard_header = """
+  <table class="hw-project-dashboard">
+    <thead>
+      <tr>
+        <th>Module</th>
+        <th>Design Spec</th>
+        <th>DV Plan</th>
+      </tr>
+    </thead>
+    <tbody>
+"""
+specboard_trailer = """
+    </tbody>
+  </table>
+"""
