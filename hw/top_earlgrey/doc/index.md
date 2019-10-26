@@ -4,12 +4,11 @@ title: "Earl Grey Top Level Specification"
 
 # Overview
 
-<img src="earlgrey.png" align="right" alt="Earl Grey logo" title="Earl Grey" hspace="25"/>
-This document specifies the top level functionality of the "Earl Grey"
-chip.  This version of the chip specification is equivalent to the "0.5
-netlist", not the final implementation.
-It is the expected subset of functionality needed to correspond with the public launch of the OpenTitan development endeavor.
-The new features and methodologies expected for 0.5 are detailed here, with discussions about the totality of its content w.r.t. our goals for the public launch.
+<img src="earlgrey.png" align="right" alt="Earl Grey logo" width=200 title="Earl Grey" hspace="20"/>
+
+This document specifies the top level functionality of the "Earl Grey" chip (`top_earlgrey`).
+This version of the chip specification is intended to be kept up to date with the current content of the project repository, but might lag or contain *coming soon* placeholders.
+This is not a specification of the final implementation.
 
 ## Features
 
@@ -26,41 +25,37 @@ The new features and methodologies expected for 0.5 are detailed here, with disc
   - AES-ECB module
   - SHA-256/HMAC module
   - Basic alert responder
-  - (stretch goal) key manager
-  - (stretch goal) emulated TRNG
+  - (coming soon) emulated TRNG entropy source
 - IO peripherals
-  - 24 multiplexable IO pads
-  - Two UART peripherals (using multiplexable IO)
+  - 32 multiplexable IO pads with pin multiplexing unit and pad control
+  - One UART peripheral (using multiplexable IO)
   - GPIO peripheral (using multiplexable IO)
-  - I2C host (using multiplexable IO)
-  - (stretch goal) I2C device (using multiplexable IO)
-  - SPI device (using fixed IO), with passthrough feature
-  - SPI host (using fixed IO), with passthrough feature
+  - (coming soon) I2C host (using multiplexable IO)
+  - SPI device (using fixed IO)
 - Other peripherals
   - Fixed-frequency timer
 - clock and reset IO and management
 - Software
   - Boot ROM implementing code signing of e-flash contents
-  - Rudimentary operating system
-  - Example applications and validation tests
+  - Bare metal applications and validation tests
 
 ## Description
 
-The netlist `top_earlgrey` is defined to contain just enough features to
-prove basic functionality of the Ibex RISC-V processor core on an FPGA
-development environment. The chosen features as defined include code
-space for boot and application, UART for terminal communication, and
-GPIO for basic outside-world driving and receiving.
-Potential features include SPI communication for boot-time code loading, but the fallback is to use JTAG, or have the FPGA environment push code into the SRAM before reset and have the processor boot from there.
+The netlist `top_earlgrey` contains the features listed above, proving basic functionality of the Ibex RISC-V processor core on an FPGA development environment, with a suite of peripherals and memories.
+The functionality as specified at this point in time is an incomplete subset of the final functionality required to meet OpenTitan root of trust goals.
+This specification will continue to grow to add those features as the contents of the repository are updated.
 
-The netlist `top_earlgrey` is defined to contain enough features to prove some security functionality heading towards the final OpenTitan definition, working in an FPGA development environment.
-The chosen features add on top of the basic proof-of-concept functionality of the 0.1 netlist, adding in I2C and SPI host peripheral functionality, secure boot using ROM and emulated e-flash macros, some cryptography basics in AES and SHA/HMAC, and the beginnings of some physical defense in the alert responder.
-As a stretch goal - depending upon schedule and staffing realities - it adds an emulated TRNG (a digital wrapper around a behavioral model representing an analog design) and a key manager.
-On the IO side, it adds multiplexable IO pins to show the flexible routing concepts there, but still retains external clock and reset control rather than fundamentally secure internally generated clock and reset structures.
-Another primary improvement in 0.5 is the methodology that generates the chip itself.
-Rather than a hand-crafted top-level netlist, the top is stitched together with a script that reads content files in `hjson` that describe the full design.
-This script (or set of scripts) generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
-It also feeds into the document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
+The center of the Earl Grey design is the Ibex RISC-V compliant processor.
+The code for Ibex is developed in its own [lowRISC repo](http://github.com/lowrisc/ibex), and is [*vendored in*]({{< relref "doc/ug/vendor_hw.md" >}}) to this repository.
+Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines]({{< relref "doc/rm/comportability_specification" >}}) for lowRISC peripheral IP.
+Each of these IP has its own specification.
+See the table produced in the [hardware documentation page]({{< relref "hw" >}}) for links to those specifications.
+
+At this time, the top-level netlist for earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
+There is a script for this auto-generation, centered around the top-level descriptor file `top_earlgrey.hjson` found in the repository.
+A full definition of this descriptor file, its features, and related scripting is forthcoming.
+This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
+It also feeds into this document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
 
 # Theory of Operations
 
@@ -83,46 +78,34 @@ It also feeds into the document generation to ensure that the chosen address loc
 | `IO_SDCS`   | input  | SPI device chip select |
 | `IO_SDDI`   | input  | SPI device input data |
 | `IO_SDDO`   | output | SPI device output data |
-| `IO_SHCK`   | output | SPI host clock |
-| `IO_SHCS`   | output | SPI host chip select |
-| `IO_SHDI`   | output | SPI host input data |
-| `IO_SHDO`   | input  | SPI host output data |
-| `MIO_00` .. `MIO_23` | inout  | Multiplexible pins available for input or output connections with peripheral units' (UART, GPIO, etc.) IO |
+| `MIO_00` .. `MIO_31` | inout  | Multiplexible pins available for input or output connections with peripheral units' (UART, GPIO, etc.) IO |
 
 ## Design Details
 
-This 0.5 version of the top level design contains features to prove some fundamental security functionality through some basic peripherals.
 This section provides some details for the processor and the peripherals.
 See their representative specifications for more information.
-This section also contains an overview of the holistic security features in this version, with a hint to the direction of the security features of the final product.
+This section also contains a brief overview of some of the features of the final product.
 
 ### Clocking and Reset
 
-For this version of the chip, clock and reset come from outside the
-device.  Eventually these will be generated internally to reduce risk
-of security attack, but the complexity for internal clock generation
-is not warranted for initial implementation. The clock pin is `IO_CLK`
-and all of the design is synchronous to this one clock. (Exceptions are
-peripheral IO that might be synchronized to a local peripheral clock
-like JTAG TCK or SPI device clock).
+In the current version of the chip, clock and reset come from outside the device.
+Eventually these will be generated internally to reduce risk of security attack, but internal clock generation is not implemented at this time.
+The clock pin is `IO_CLK` and all of the design is synchronous to this one clock.
+(Exceptions are peripheral IO that might be synchronized to a local peripheral clock like JTAG TCK or SPI device clock).
 
-Deassertion of the active low reset pin `IO_RST_N` causes the processor to
-come out of reset and begin executing code at its reset vector.
+Deassertion of the active low reset pin `IO_RST_N` causes the processor to come out of reset and begin executing code at its reset vector.
 The reset vector begins in ROM, whose job is to validate code in the emulated e-flash before jumping to it.
 The assumption is that the code has been instantiated into the e-flash before reset is released.
-This can be done with JTAG commands (see that section),
-or through virtual assignment in verification.
-The SPI device can be used to load e-flash instruction content.
-Resets throughout the design are asynchronous active low.
+This can be done with JTAG commands (see that section), through virtual assignment in verification, or through the `spi_device` peripheral.
+Resets throughout the design are asynchronous active low as per the Comportability specification.
 Other resets may be generated internally via the alert responder, watchdog timer, etc., and other resets for subunits may be disseminated.
 These will be detailed in this section over time.
 
 ### Main processor (`core_ibex`)
 
-The main processor (`core_ibex`) is a RISC-V core based upon the PULPino
-zero-riscy core, modified to meet Comportability requirements. See the
-[core_ibex specification](https://ibex-core.readthedocs.io/en/latest/)
-for more details of the core.
+The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMC instruction set architecture.
+It was initially developed as part of the [PULP platform](https://www.pulp-platform.org) under the name "Zero-riscy" [\[1\]](https://doi.org/10.1109/PATMOS.2017.8106976), and has been contributed to [lowRISC](https://www.lowrisc.org) who maintains it and develops it further.
+See the [core_ibex specification](https://ibex-core.readthedocs.io/en/latest/) for more details of the core.
 In addition to the standard RISC-V functionality, Ibex implements M (machine) and U (user) mode per the RISC-V standard.
 Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
@@ -130,22 +113,13 @@ Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
 One feature available for Earl Grey processor core is debug access.
 By interfacing with JTAG pins, logic in the debug module allows the core to enter debug mode (per RISC-V 0.13 debug spec), and gives the design the ability to inject code either into the device - by emulating an instruction - or into memory.
-
-The commands and addresses to implement these features are TBD at this
-time, and will be further detailed in later specification releases.
-
-[DM Specification](https://github.com/pulp-platform/riscv-dbg/)
+Full details can be found in the [rv_dm specification]({{< relref "hw/ip/rv_dm/doc" >}}).
 
 #### Interrupt Controller
 
 Adjacent to the Ibex core is an interrupt controller that implements the RISC-V PLIC standard.
 This accepts a vector of interrupt sources within the device, and assigns leveling and priority to them before sending to the core for handling.
-See the details in the Ibex specification.
-
-
-See also the
-[OpenTitan PLIC specification]({{< relref "hw/ip/rv_plic/doc" >}})
-for more details.
+See the details in the [rv_plic specification]({{< relref "hw/ip/rv_plic/doc" >}}).
 
 #### Performance
 
@@ -175,32 +149,30 @@ The ROM contains hard-coded instructions whose purpose is to do a minimal subset
 The next stage - a boot loader stored in embedded flash memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
 The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
 The details of this check will come at a later date.
-For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details also TBD).
+For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
 Earl Grey contains 512kB of emulated embedded-flash (e-flash) memory for code storage.
 This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
-For the 0.5 version the expectation is that the operating system will be very lightweight, and the "application" will be simple proof of concept code to show that the chip can do.
-One example will be validation code that tests the validity and stability of the full chip environment itself.
+At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
 Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
 It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
-Earl Grey, as an FPGA-only proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
+Earl Grey, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
 This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
 Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
 We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
 
-Details on how e-flash memory is used by software will be detailed in the Secure Boot Process and Software sections that follow.
+Details on how e-flash memory is used by software will be detailed in future Secure Boot Process and Software sections over time.
 
 The intent is for the contents of the embedded flash code to survive FPGA reset as it would as a NVM in silicon.
-How this functions in FPGA is TBD.
-Loading of the FPGA with initial content, or updating with new content, is also TBD at this time.
-The SPI device peripheral is intended as a method to bulk-load e-flash memory.
+Loading of the FPGA with initial content, or updating with new content, is described in other software specifications.
+The SPI device peripheral is provided as a method to bulk-load e-flash memory.
 The processor debug port (via JTAG) is also available for code loading.
-Details will follow.
+See those specifications for more details.
 
 Also included is a 64kB scratch pad SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
-It is also available for code storage, but that is not its intended purpose.
+It is also available for code storage, though that is not its intended purpose.
 
 The base address of the ROM, Flash, and SRAM are given in the address map section later in this document.
 
@@ -209,36 +181,35 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
 Each of these peripherals follows an interface scheme dictated in the
 [Comportability Specification.]({{< relref "doc/rm/comportability_specification" >}})
-This specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
+That specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
 See that specification for generic details on this scheme.
 
-The peripherals included within Earl Grey for 0.5 functionality were chosen to give some basic outside-world communication, the beginnings of a security roadmap for the device, internal housekeeping, and processor control.
+The peripherals included within Earl Grey for at this time give some basic outside-world communication, the beginnings of a security roadmap for the device, internal housekeeping, and processor control.
 These are described briefly for each peripheral below.
-Where available today, detailed specifications will be linked.
+Where available today, detailed specifications will be linked, or one can find an up-to-date list at the [hardware landing page]({{< relref "hw" >}}).
 In other cases, the details will come as the peripherals are fully specified.
-Some of the peripherals are aspirational for this release, and are a function of the staffing realities between the time of this writing and 0.5 release.
-Those are noted in the descriptions below.
 The address for each of the peripherals will be given at the end of this document in an auto-generate address map based upon the source configuration files for Earl Grey.
 
 #### Chip IO Peripherals
 
-##### Pin Multiplexor (`pinmux`)
+##### Pin Multiplexor (`pinmux`) and Pad Control (`padctrl`)
 
-The pin multiplexor serves two purposes: routing between peripherals and the available multiplexable IO (`MIO_00 .. MIO_23`); and pin control (drive strength and technology (OD, OS, etc)) for the MIO and fixed-function IO.
-For the 0.5 release, this routing and pin control is a subset of the final features required in OpenTitan, but gives an example of the flexibility allowed by this multiplexing scheme.
+The pin multiplexor's purpose is to route between peripherals and the available multiplexable IO (`MIO_00 .. MIO_31`) of the chip.
+At this time, the pin multiplexor is provided, but it is not used to its full potential.
+In addition, the `padctrl` device manages control or pad attributes like drive strength, technology (OD, OS, etc), pull up, pull down, etc., of the chip's external IO.
+At this time, the `padctrl` module is provided, but not yet wired up.
+It is notable that there are many differences between an FPGA implementation of Earl Grey and an ASIC version when it comes to pins and pads.
+For both, the `pinmux` and `padctrl` are expected to play the same role.
+Their effect, however, over things like drive strength and Open Drain technology are highly platform-dependent, and are not finalized at this time.
 
-The pinmux is itself a peripheral on the TLUL bus, with its collection of registers that define the connectivity between other peripherals with IO and the chip pads.
-These registers include a selection of every chip output as to which peripheral output drives it; a selection of every peripheral input as to what chip input drives it; and pad control for all pin IO.
-Details for this module will come at a later date.
-See the
-[pinmux specification]({{< relref "hw/ip/pinmux/doc" >}})
-for how to connect peripheral IO to chip IO.
+Both `pinmux` and `padctrl` are themselves peripherals on the TLUL bus, with collections of registers that provide software configurability.
+See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO.
+See the [padctrl specification]({{< relref "hw/ip/padctrl/doc" >}}) for information on pad control features available in the future.
 
 ##### UART
 
-The chip contains two UART peripherals that implement single-lane duplex UART functionality.
-There are two versions of the same UART included in the 0.5 release.
-Their outputs and inputs can be configured to any chip IO via the pinmux.
+The chip contains one UART peripheral that implement single-lane duplex UART functionality.
+The outputs and inputs can be configured to any chip IO via the pinmux.
 See the
 [UART specification]({{< relref "hw/ip/uart/doc" >}})
 for more details on this peripheral.
@@ -246,64 +217,28 @@ for more details on this peripheral.
 ##### GPIO
 
 The chip contains one GPIO peripheral that creates 32 bits of bidrectional communication with the outside world via the pinmux.
-Since currently only 24 pins of multiplexable IO (MIO) are specified for Earl Grey, not all of its capability can be realized at this time.
-But via pinmux any of the 32 pins of GPIO can be connected to any of the 24 chip pins, in any direction.
-See the
-[GPIO specification]({{< relref "hw/ip/gpio/doc" >}})
-for more details on this peripheral.
-See the
-[pinmux specification]({{< relref "hw/ip/pinmux/doc" >}})
-for how to connect peripheral IO to chip IO.
+Via pinmux any of the 32 pins of GPIO can be connected to any of the 32 MIO chip pins, in any direction.
+See the [GPIO specification]({{< relref "hw/ip/gpio/doc" >}}) for more details on this peripheral.
+See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO.
 
 ##### SPI device
 
-In addition to the SPI passthrough functionality (see below), the SPI device for the 0.5 release will implement Firmware Mode as was included in the 0.1 release.
-This feature provides the ability for external drivers to send firmware upgrade code into a bank of embedded flash memory for in-field firmware updates.
-Firmware mode has no addressing, and at the moment no other addressing modes are anticipated for the 0.5 release though this might change as the detailed specification for the proof of concept for SPI passthrough is crafted.
-For the 0.5 release only single-mode functionality is required.
+The SPI device implements Firmware Mode, a feature that provides the ability for external drivers to send firmware upgrade code into a bank of embedded flash memory for in-field firmware updates.
+Firmware mode has no addressing, and at the moment no other addressing modes are provided, though future improvements will include the ability to address internal Earl Grey memory through SPI transactions.
 
-See the
-[SPI device specification]({{< relref "hw/ip/spi_device/doc" >}})
-for more details on the Firmware Mode implementation.
-
-For SPI passthrough timing reasons, the SPI device pins will be hardwired to Earl Grey chip IO pins as shown in the block diagram above.
-
-##### SPI host
-
-In addition to the SPI passthrough functionality (see below), the SPI host is able to originate SPI transactions as directed by software.
-This functionality will require addressing modes, as well as "generic transfer" where the data is simply sent as contained packets by the host hardware state machine.
-The specification for SPI host is not defined at this time, and will depend upon conversations with the software team which are still in development.
-Only single-mode functionality is expected at this time.
-
-For SPI passthrough timing reasons, the SPI host pins will be hardwired to Earl Grey chip IO pins as shown in the block diagram above.
-
-##### SPI passthrough (utilizing SPI device and host)
-
-One primary feature of the 0.5 release is to develop at least rudimentary SPI Passthrough functionality.
-This feature allows Earl Grey to interpose on SPI, watching transactions coming in to the SPI device port, and passing them on to the SPI host port.
-The involvement of the SPI device and host components (working together) requires logic to inspect the activities of the SPI transfer, and potentially modify them on the way out, with minimal latency impact.
-This is implemented with a simple MUX between the device and host pins to select either the inbound device traffic, or pre-created "safe" content.
-The MUX is simple, but the selection of it requires inspection logic and a lookup table to determine safe and unsafe behavior, as well as the replacement safe transaction.
-The specification for this functionality will be created in conjunction with systems designers who are using similar behavior in products today.
-The goal is for this subset of functionality provide enough proving ground to a) show the direction of the concept; b) test out software interfaces with the system to be developed around it.
-It is within the realm of possibility that we do not get enough system- and software-feedback in order to specify this sufficiently to be worth including within 0.5 release (in which case SPI host can also be dropped), but it is an important enough feature in the long run for OpenTitan to attempt to tackle it early.
+See the [SPI device specification]({{< relref "hw/ip/spi_device/doc" >}}) for more details on the Firmware Mode implementation.
 
 ##### I2C host
 
-In order to be able to command I2C devices on systems where Earl Grey will be included, I2C host functionality is required.
+In order to be able to command I2C devices on systems where Earl Grey will be included, I2C host functionality will be required.
 This will include standard, full, and fast mode, up to 1Mbaud.
-The details of the I2C host module will come in a later specification.
+More details of the I2C host module will come in a later specification update.
 The pins of the I2C host will be available to connect to any of the multiplexable IO (MIO) of the Earl Grey device.
-More than one I2C host module might be instantiated in this release.
-I2C device (aspirational)
-It is a stretch goal to include an independent I2C device module, receiving I2C commands up to fast mode speed.
-This is not a hard requirement for 0.5 and is considered of lowest priority at this time.
-If included, a full specification will be given at that time.
-The pins of the I2C device would be available to connect to any of the multiplexable IO (MIO) of the Earl Grey device.
+More than one I2C host module might be instantiated in the top level.
 
 #### Security Peripherals
 
-The 0.5 release will include the beginnings of some security peripherals and subsystems to head towards the full silicon security architecture required for the final OpenTitan device.
+The netlist contains a few functionality-only security peripherals and subsystems to head towards the full silicon security architecture required for the final OpenTitan device.
 A security section will follow later to show how these work together.
 
 ##### AES
@@ -319,14 +254,13 @@ Other modes (say
 [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR),
 [CBC mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC),
 etc) can be implemented in software on top of the results of ECB, though future versions of this AES IP will likely add such overlayed modes in hardware to improve performance and increase security (risk of secret exposure).
-For this version, all data transfer is "front door" in the sense that key and data material is passed into the module via register writes.
-Future versions will have provisions for private transfer of key and data material to reduce exposure from potentially untrusted local firmware.
+For this version, all data transfer is processor-available, i.e. key and data material is passed into the module via register writes.
+Future versions might have provisions for private transfer of key and data material to reduce exposure from potentially untrusted processor activity.
 This version does not attempt to add any side-channel or fault-injection resistance into the design.
-Future versions will begin to add in such countermeasures.
 
 In short, this version of AES is a functional proof of concept of the algorithm that will be augmented to its final hardened state for silicon implementation purposes.
 
-Details on how to write key and data material into the peripheral, how to initiate encryption and decryption, and how to read out results, will be given in a forthcoming AES specification.
+Details on how to write key and data material into the peripheral, how to initiate encryption and decryption, and how to read out results, are available in the [AES specification]({{< relref "hw/ip/aes/doc" >}}).
 
 ##### SHA-256/HMAC
 
@@ -338,9 +272,9 @@ SHA-256 is a member of the
 family of hashing algorithms, where the digest (or hash output) is of 256b length, regardless of the data size of the input to be hashed.
 The data is sent into the SHA peripheral after declaring the beginning of a hash request (effectively zeroing out the internal state to initial conditions), 32b at a time.
 Once all data has been sent, the user can indicate the completion of the hash request (with optional partial-word final write).
-The peripheral will produce the hash result available for register read by the user.
-All data transfer is "front door" in the sense that it is passed into the module via register writes.
-Future versions will have provisions for private transfer of data to reduce exposure from potentially untrusted local firmware.
+The peripheral produces the hash result available for register read by the user.
+All data transfer is processor-available, i.e. data is passed into the module via register writes.
+Future versions will have provisions for private transfer of data to reduce exposure from potentially untrusted processor activity.
 This version does not attempt to add any side-channel or fault-injection resistance into the design.
 Future versions will begin to add in such countermeasures.
 
@@ -350,82 +284,24 @@ HMAC is a particular application of appending the secret key in a prescribed man
 It is a stretch goal to add HMAC functionality on top of the SHA-256 functionality for the Earl Grey SHA-256 peripheral.
 For this functionality, a 256b key must be programmed into the module before the message hash can begin.
 Otherwise the interface to the peripheral is as described above.
-The timing of authentication completion will vary, being longer in latency than native SHA-256.
+The timing of authentication completion varies, being longer in latency than native SHA-256.
 The similar commentary about the security of data transfer on SHA-256 above applies to HMAC, especially as regards the secret key.
-Details on how to write key and data material into the peripheral, how to initiate hashing / authentication, and how to read out results, will be given in a forthcoming SHA specification.
+Details on how to write key and data material into the peripheral, how to initiate hashing / authentication, and how to read out results, are available in the [SHA/HMAC specification]({{< relref "hw/ip/hmac/doc" >}}).
 
-##### Key Manager (aspirational)
+##### Alert Handler
 
-The creation, dissemination, and storage of key material is one of the critical functions of the final OpenTitan design.
-The primary facilitator of these functions is the key manager module.
-This module operates in four primary modes:
-the initial personalization and creation of the identity key at manufacturing time;
-the communication of the identity at manufacturing time;
-the regeneration of the identity key as needed during production use;
-and the wrapping of other keys based upon the identity key during production use.
-
-**Mode 1**: Personalization
-
-The initial personalization of the device converts a raw unpersonalized part into one that has a unique cryptographically strong identity that is permanently paired with the device.
-This process can only be done once, and one done in manufacturing.
-This process does not require any communication with the outside world other than the loading of the software to execute the steps.
-These steps include gathering partial identity material (numerical values) stored in various parts of the device.
-Some of these parts are common across all devices; others are unique per device, stored in non-volatile memory components.
-The latter must be randomly generated during this personalization step, then locked down so that they are never modifiable again.
-Then, the gathering process uses the key manager, which executes a repeatable sequence of steps implementing a mixing (hashing) process using the HMAC module.
-A likely example is the DRBG process as outlined by
-[NIST publication 800-90A](http://dx.doi.org/10.6028/NIST.SP.800-90Ar1).
-The personalization step (creation of the random partial secrets) is only done once, and only at manufacturing.
-
-**Mode 2**: Communication of Identity
-
-After the personalization step, and after the first gathering of the identity, the part must communicate the identity to the outside world.
-This is done with a secure delivery channel that is set up in the communication process.
-The key manager ensures that the channel has been set up correctly before allowing the transmission of an encrypted message containing the identity.
-The communication step is only done once, and only at manufacturing.
-
-**Mode 3**: Regeneration of the Identity
-
-The identity of the device is never stored at rest.
-Any time the identity is required during production mode execution, it must be regenerated from the stored partial secret material.
-This regeneration step is identical to the one executed in mode 1 during manufacturing, but the identity can now never leave the device.
-The key manager executes the same mixing steps to generate the identity, which stays within the key manager.
-Software can test the identity during production mode, but can not extract it from the manager.
-After it is used, software should wipe the identity so that it is not stored internally on the device for any length of time.
-
-**Mode 4**: Key wrapping
-
-The device can create other less security-critical keys as a function of the basic identity key.
-It can do this by executing hashing steps with the key manager, starting with the identity key and adding other values writeable by software.
-These keys can be shared with firmware and used as needed by the application running on the device.
-The wrapping uses the key manager to execute similar steps as the DRBG process, adding in software writeable constants as needed.
-
-In all of these modes, the key manager needs to be commanded to execute particular steps using the SHA/HMAC (for hashing) and AES (for encryption) engines.
-Data must be kept in private buses between the different engines and from the storage of the partial secret material.
-The management of these steps and the transmission of the data is the job of the key manager, as is the protection of the resultant material based upon the state of the device and the mode of execution.
-
-Further details of the key manager are TBD.
-As of this writing, the key manager is a goal not a requirement of the 0.5 release.
-If included, it will likely not include all of the required features, but a subset to allow for early testing.
-
-##### Alert Manager
-
-Alerts, as defined in the Comportability Specification, are defined as security-sensitive interrupts that need to be handled in a timely manner to respond to a security threat.
+Alerts, as defined in the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}), are defined as security-sensitive interrupts that need to be handled in a timely manner to respond to a security threat.
 Unlike standard interrupts, they are not solely handled by software.
-Alerts trigger a first-stage request to be handled by software in the standard mode as interrupts, but trigger a second-stage response by the alert manager if software is not able to respond.
+Alerts trigger a first-stage request to be handled by software in the standard mode as interrupts, but trigger a second-stage response by the alert handler if software is not able to respond.
 This ensures that the underlying concern is guaranteed to be addressed if the processor is busy, wedged, or itself under attack.
 
 Each peripheral has an option to present a list of individual alerts, representing individual threats that require handling.
-These alerts are sent in a particular encoding method to the alert manager module, itself a peripheral on the system bus.
-The alert manager creates one processor interrupt per alert, but also keeps track of the amount of time between reception (setting) and handling (clearing) of the interrupt.
-If the time is beyond a configurable duration, then the manager raises the response, either via an NMI (higher level non-maskable interrupt), a lowering of the current execution privilege level, a request of wipe sensitive chip state, or a reset of the device.
-These responses are not described in further detail at this time, but the basics of the configuration methods will be designed in this version of the alert manager.
+These alerts are sent in a particular encoding method to the alert handler module, itself a peripheral on the system bus.
+See the details of the [alert handler specification]({{< relref "hw/ip/alert_handler/doc" >}}) for more information.
 
-In addition, signaling exists between the alert manager and each peripheral to ensure that all monitors are active.
-This "heartbeat check" requests a response from the alert senders over the same wires to ensure that their reporting mechanism has not itself been compromised.
-More details about the alert manager will come in an independent alert manager specification.
+At this time, the alert handler module is not wired into the top level.
 
-##### TRNG (aspirational)
+##### TRNG entropy source (coming soon)
 
 Randomness is a critical part of any security chip.
 It provides variations in execution that can keep attackers from predicting when the best time is to attack.
@@ -448,8 +324,7 @@ Reading of entropy that is not available should immediately trigger an interrupt
 In FPGA we can emulate the randomness with something akin to a
 [PRBS](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence).
 
-At this time the TRNG is aspirational in the sense that it is not a committed design for the 0.5 release, but will be implemented if staffing allows.
-At that time a detailed specification for the pseudo-TRNG implemented in FPGA would be given.
+At this time, more details on the TRNG and its entropy source are not available.
 
 #### Other peripherals
 
@@ -457,80 +332,73 @@ At that time a detailed specification for the pseudo-TRNG implemented in FPGA wo
 
 Timers are critical for operating systems to ensure guaranteed performance for users.
 To some level they are even required by the RISC-V specification.
-At this time, two primary timers are envisioned for this version of the netlist.
-First is a 64b free running timer with a guaranteed (within a certain percentage) frequency.
-Second is a watchdog timer that can be used to backstop the processor in the case of it being unresponsive (usually due to development code that is wedged, rather than for instance due to security attack).
-The goal is for both of these to be satisfied in a unified timer module, which may have different timers for different purposes.
-In future, requirements for low power functionality (when the primary high precision high speed system clock is inactive) will likely be added.
+At this time, one timer is provided, a 64b free running timer with a guaranteed (within a certain percentage) frequency.
+A second one acting as a watchdog timer that can be used to backstop the processor in the case of it being unresponsive (usually due to development code that is wedged, rather than for instance due to security attack) will be provided in the future.
+The goal is for both of these to be satisfied with the same timer module.
 
-The specification for the timer can be found
-[here]({{< relref "hw/ip/rv_timer/doc" >}}).
+The specification for the timer can be found [here]({{< relref "hw/ip/rv_timer/doc" >}}).
 
 ##### Flash Controller
 
 The final peripheral discussed in this release of the netlist is an emulated flash controller.
-As mentioned in the memory section, up to 512kB of emulated embedded flash will be available for code and data storage.
+As mentioned in the memory section, up to 512kB of emulated embedded flash is available for code and data storage.
 The primary read path for this data is in the standard memory address space.
 Writes to that address space are ignored, however, since one can not write to flash in a standard way.
-Instead, to write to flash, software must interaction with the flash controller.
+Instead, to write to flash, software must interact with the flash controller.
 
 Flash functionality include three primary commands: read, erase, and program.
-Read as mentioned above is standard, and will use the memory address space.
-Erase is done at a page level, where a page is dependent upon the flash macro block that will eventually be defined by the silicon provider.
-For our purposes, we define a page as 1kB in size.
-Upon receiving an erase request, the flash controller will wipe all contents of that 1kB page, rendering the data in all `1`s state (`0xFFFFFFFF` per word).
+Read, as mentioned above, is standard, and uses the chip memory address space.
+Erase is done at a page level, where the page size is parameterizable in the flash controller.
+Upon receiving an erase request, the flash controller wipes all contents of that page, rendering the data in all `1`s state (`0xFFFFFFFF` per word).
 Afterwards, software can program individual words to any value.
 It is notable that software can continue to attempt to program words even before another erase, but it is not physically possible to return a flash bit back to a `'1'` state without another erase.
 So future content is in effect an AND of the current content and the written value.
 
-  `next_value = AND(current_value, write_word)`
+```
+next_value = AND(current_value, write_word)
+```
 
 Erase and program are slow.
 A typical erase time is measured in milliseconds, program times in microseconds.
-Bulk (multi-word) program options will be provided to alleviate this impact, but this clearly changes the behavioral model of software, and thus emulating this in FPGA is critical to begin developing code with these times in mind.
-The flash controller peripheral in this release will approximate those expected times.
+The flash controller peripheral in this release approximates those expected times.
 
 Security is also a concern, since secret data can be stored in the flash.
-At this time the data protection around the flash macro is not discussed, but future protection in the form of ECC or CRC checks will be detailed.
-A fully specified flash controller module will be specified in the future.
+Some memory protection is provided by the flash controller.
+For more details see the [flash controller module specification]({{< relref "hw/ip/flash_ctrl/doc" >}}).
 
 ### Interconnection
 
-Interconnecting the processor and peripheral and memory units is a bus
-network built upon the TileLink-Uncached-Light protocol. See the
-[OpenTitan bus specification]({{< relref "hw/ip/tlul/doc" >}})
-for more details.
+Interconnecting the processor and peripheral and memory units is a bus network built upon the TileLink-Uncached-Light protocol.
+See the [OpenTitan bus specification]({{< relref "hw/ip/tlul/doc" >}}) for more details.
 
 ## Register Table
 
-The base and bound addresses of the memory and peripherals are given in this
-table below. This is cut/paste at the moment, will be automated in the future.
+The base and bound addresses of the memory and peripherals are given in this table below.
+This is cut/paste at the moment, and will be automated into this document in the future.
 
-The choice of memory, or lack thereof at location 0x0 confers two exclusive benefits
-* If there are no memories at location 0x0, then null pointers will immediately error and be noticed by software (the xbar will fail to decode and route)
-* If SRAM is placed at 0, accesses to data located within 2KB of 0x0 can be accomplished with a single instruction and thus reduce code size.
+The choice of memory, or lack thereof at location 0x0 confers two exclusive benefits:
+- If there are no memories at location 0x0, then null pointers will immediately error and be noticed by software (the xbar will fail to decode and route)
+- If SRAM is placed at 0, accesses to data located within 2KB of 0x0 can be accomplished with a single instruction and thus reduce code size.
 
-For the purpose of top_earlgrey, the first option has been chosen to benefit software development and testing
+For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing
 
 | Item | base address | bound address |
 | --- | --- | --- |
-| ROM           | `0x00008000` | `0x00001fff` |
-| SRAM          | `0x10000000` | `0x1000ffff` |
-| debug\_ram    | `0x1a110000` | `0x1a11ffff` |
-| Flash (read)  | `0x20000000` | `0x2007ffff` |
-| UART0         | `0x40000000` | `0x4000ffff` |
-| UART1         | `0x40010000` | `0x4001ffff` |
-| GPIO          | `0x40020000` | `0x4002ffff` |
-| SPI device    | `0x40030000` | `0x4003ffff` |
-| SPI host      | `0x40040000` | `0x4004ffff` |
-| I2C device    | `0x40050000` | `0x4005ffff` |
-| I2C host      | `0x40060000` | `0x4006ffff` |
-| pinmux        | `0x40070000` | `0x4007ffff` |
-| timer         | `0x40080000` | `0x4008ffff` |
-| rv\_plic      | `0x40090000` | `0x4009ffff` |
-| flash\_ctrl   | `0x40100000` | `0x4010ffff` |
-| aes           | `0x40110000` | `0x4011ffff` |
-| hmac          | `0x40120000` | `0x4012ffff` |
-| keymgr        | `0x40130000` | `0x4013ffff` |
-| trng          | `0x40140000` | `0x4014ffff` |
-| alert\_handler| `0x40150000` | `0x4015ffff` |
+| `ROM`        | `0x00008000` | `0x00009fff` |
+| `SRAM`       | `0x10000000` | `0x1000ffff` |
+| `Flash`      | `0x20000000` | `0x2007ffff` |
+| `uart`       | `0x40000000` | `0x4000ffff` |
+| `gpio`       | `0x40010000` | `0x4001ffff` |
+| `spi_device` | `0x40020000` | `0x4002ffff` |
+| `flash_ctrl` | `0x40030000` | `0x4003ffff` |
+| `rv_timer`   | `0x40040000` | `0x4004ffff` |
+| `rv_plic`    | `0x40090000` | `0x4009ffff` |
+| `aes`        | `0x40110000` | `0x4011ffff` |
+| `hmac`       | `0x40120000` | `0x4012ffff` |
+| `debug_ram`  | `0x1a110000` | `0x1a11ffff` |
+
+## References
+1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of
+ ultra-low-power RISC-V cores for Internet-of-Things applications."
+ _27th International Symposium on Power and Timing Modeling, Optimization and Simulation
+ (PATMOS 2017)_](https://doi.org/10.1109/PATMOS.2017.8106976)
