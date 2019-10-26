@@ -27,30 +27,30 @@ UVM_TEST        ?= chip_base_test
 UVM_TEST_SEQ    ?= chip_base_vseq
 
 ifeq (${TEST_NAME},chip_sanity)
-  SW_DIR         = device/examples/hello_world
+  SW_DIR         = examples/hello_world
   SW_NAME        = hello_world
 endif
 
 ifeq (${TEST_NAME},chip_flash_test)
-  SW_DIR         = device/tests/flash_ctrl
+  SW_DIR         = tests/flash_ctrl
   SW_NAME        = flash_test
   RUN_OPTS      += +cpu_test_timeout_ns=15000000
 endif
 
 ifeq (${TEST_NAME},chip_sha256_test)
-  SW_DIR         = device/tests/hmac
+  SW_DIR         = tests/hmac
   SW_NAME        = sha256_test
   RUN_OPTS      += +cpu_test_timeout_ns=4000000
 endif
 
 ifeq (${TEST_NAME},chip_rv_timer_test)
-  SW_DIR         = device/tests/rv_timer
+  SW_DIR         = tests/rv_timer
   SW_NAME        = rv_timer_test
   RUN_OPTS      += +cpu_test_timeout_ns=4000000
 endif
 
 ifeq (${TEST_NAME},coremark)
-  SW_DIR           = device/benchmarks/coremark
+  SW_DIR           = benchmarks/coremark
   SW_NAME          = coremark
   RUN_OPTS        += +cpu_test_timeout_ns=20000000
   SW_OPTS         += ITERATIONS=1

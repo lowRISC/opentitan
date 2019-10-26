@@ -23,14 +23,14 @@
 
 
 # Generate a baremetal application for the microcontroller
-SW_ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-SW_DIR        ?= device/examples/hello_world
+SW_ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))/..
+SW_DIR        ?= examples/hello_world
 
 # sources
 STANDALONE_SW ?= 0
 include ${SW_DIR}/srcs.mk
-include device/exts/common/srcs.mk
-include device/lib/srcs.mk
+include exts/common/srcs.mk
+include lib/srcs.mk
 
 # common options and rules
 include opts.mk

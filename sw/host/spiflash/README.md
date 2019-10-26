@@ -33,13 +33,13 @@ _If building for verilator, please add the extra option `SIM=1`._
 Build `boot_rom`:
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw SW_DIR=boot_rom clean all
+$ make -C sw/device SW_DIR=boot_rom clean all
 ```
 
 Build `hello_world` program:
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw SW_DIR=examples/hello_world clean all
+$ make -C sw/device SW_DIR=examples/hello_world clean all
 ```
 
 ## Run the tool in Verilator
