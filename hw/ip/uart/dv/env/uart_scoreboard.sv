@@ -347,7 +347,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           do_read_check = 1'b0;
           foreach (intr_exp[i]) begin
-            intr = i; // cast to enum to get interrupt name
+            intr = uart_intr_e'(i); // cast to enum to get interrupt name
             if (cfg.en_cov) begin
               cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);

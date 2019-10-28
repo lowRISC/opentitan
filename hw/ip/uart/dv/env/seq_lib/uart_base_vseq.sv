@@ -174,7 +174,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   // override this function to control RX fifo level
   virtual task rand_read_rx_byte(uint weight_to_skip);
     bit [TL_DW-1:0] rdata;
-    bit [4:0]       rxlvl;
+    int             rxlvl;
 
     randcase
       1: begin // read & check one byte
@@ -232,7 +232,10 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   // task to wait for rx fifo not full, will be overriden in overflow test
   virtual task wait_for_rx_fifo_not_full();
     if (ral.ctrl.rx.get_mirrored_value()) begin
-      csr_spinwait(.ptr(ral.status.rxfull), .exp_data(1'b0));
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
+      csr_spinwait(.ptr(ral.status.rxfull), .exp_data(1'b0),
+                   .spinwait_delay_ns(dly_to_access_fifo),
+                   .timeout_ns(50_000_000)); // use longer timeout as uart freq is low
     end
     `uvm_info(`gfn, "wait_for_rx_fifo_not_full is done", UVM_HIGH)
   endtask : wait_for_rx_fifo_not_full
