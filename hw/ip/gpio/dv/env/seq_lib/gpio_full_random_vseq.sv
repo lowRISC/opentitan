@@ -73,6 +73,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
           cfg.gpio_vif.pins_o = gpio_i;
           wait_for_filter_cyles();
           prev_gpio_val = cfg.gpio_vif.sample();
+          `uvm_info(`gfn, $sformatf("prev_gpio_val updated to %0h", prev_gpio_val), UVM_HIGH)
         end
         1: begin
           pgm_out_oe_regs(.gpio_if_pins_o_val(gpio_i), .gpio_if_pins_oe_val(gpio_i_oen));
@@ -108,13 +109,6 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
                        bit [NUM_GPIOS-1:0] gpio_if_pins_oe_val);
     bit [TL_DW-1:0] csr_wr_value;
     `DV_CHECK_STD_RANDOMIZE_FATAL(csr_wr_value)
-
-    `uvm_info(`gfn, $sformatf("Latest data_out value is 0x%0h [%0b]", data_out, data_out), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("Latest data_oe value is 0x%0h [%0b]", data_oe, data_oe), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("Latest gpio_if_pins_o_val = 0x%0x [%0b]",
-                              gpio_if_pins_o_val, gpio_if_pins_o_val), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("Latest gpio_if_pins_oe_val = 0x%0x [%0b]",
-                              gpio_if_pins_oe_val, gpio_if_pins_oe_val), UVM_HIGH)
 
     // write to direct_out reg
     if ($urandom_range(0, 1)) begin
@@ -282,7 +276,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       end
       1 : begin
         `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl_en_input_filter)
-        `uvm_info(`gfn, "Writing to ctrl_en_input_filter", UVM_NONE)
+        wait_for_filter_cyles();
         csr_update(.csr(ral.ctrl_en_input_filter));
         wait_for_filter_cyles();
       end
