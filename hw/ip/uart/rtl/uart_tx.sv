@@ -22,56 +22,58 @@ module uart_tx (
 );
 
 
-  logic    [3:0] baud_div;
-  logic          tick_baud;
+  logic    [3:0] baud_div_q;
+  logic          tick_baud_q;
 
-  logic    [3:0] bit_cnt, bit_cnt_next;
-  logic   [10:0] sreg, sreg_next;
-  logic          tx_next;
+  logic    [3:0] bit_cnt_q, bit_cnt_d;
+  logic   [10:0] sreg_q, sreg_d;
+  logic          tx_q, tx_d;
+
+  assign tx = tx_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      baud_div  <= 4'h0;
-      tick_baud <= 1'b0;
+      baud_div_q  <= 4'h0;
+      tick_baud_q <= 1'b0;
     end else if (tick_baud_x16) begin
-      {tick_baud, baud_div} <= {1'b0,baud_div} + 5'h1;
+      {tick_baud_q, baud_div_q} <= {1'b0,baud_div_q} + 5'h1;
     end else begin
-      tick_baud <= 1'b0;
+      tick_baud_q <= 1'b0;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      bit_cnt <= 4'h0;
-      sreg    <= 11'h7ff;
-      tx      <= 1'b1;
+      bit_cnt_q <= 4'h0;
+      sreg_q    <= 11'h7ff;
+      tx_q      <= 1'b1;
     end else begin
-      bit_cnt <= bit_cnt_next;
-      sreg    <= sreg_next;
-      tx      <= tx_next;
+      bit_cnt_q <= bit_cnt_d;
+      sreg_q    <= sreg_d;
+      tx_q      <= tx_d;
     end
   end
 
   always_comb begin
     if (!tx_enable) begin
-      bit_cnt_next = 4'h0;
-      sreg_next    = 11'h7ff;
-      tx_next      = 1'b1;
+      bit_cnt_d = 4'h0;
+      sreg_d    = 11'h7ff;
+      tx_d      = 1'b1;
     end else begin
-      bit_cnt_next = bit_cnt;
-      sreg_next    = sreg;
-      tx_next      = tx;
+      bit_cnt_d = bit_cnt_q;
+      sreg_d    = sreg_q;
+      tx_d      = tx_q;
       if (wr) begin
-        sreg_next    = {1'b1, (parity_enable ? wr_parity : 1'b1), wr_data, 1'b0};
-        bit_cnt_next = (parity_enable ? 4'd11 : 4'd10);
-      end else if (tick_baud && (bit_cnt != 4'h0)) begin
-        sreg_next    = {1'b1, sreg[10:1]};
-        tx_next      = sreg[0];
-        bit_cnt_next = bit_cnt - 4'h1;
+        sreg_d    = {1'b1, (parity_enable ? wr_parity : 1'b1), wr_data, 1'b0};
+        bit_cnt_d = (parity_enable ? 4'd11 : 4'd10);
+      end else if (tick_baud_q && (bit_cnt_q != 4'h0)) begin
+        sreg_d    = {1'b1, sreg_q[10:1]};
+        tx_d      = sreg_q[0];
+        bit_cnt_d = bit_cnt_q - 4'h1;
       end
     end
   end
 
-  assign idle = (tx_enable) ? (bit_cnt == 4'h0) : 1'b1;
+  assign idle = (tx_enable) ? (bit_cnt_q == 4'h0) : 1'b1;
 
 endmodule

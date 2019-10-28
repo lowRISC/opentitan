@@ -28,13 +28,13 @@ module uart_core (
 
   import uart_reg_pkg::*;
 
-  logic   [15:0]  rx_val;
+  logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;
   logic           tick_baud_x16, rx_tick_baud;
   logic           tx_fifo_rst_n, rx_fifo_rst_n;
   logic   [5:0]   tx_fifo_depth, rx_fifo_depth;
-  logic   [5:0]   rx_fifo_depth_prev;
-  logic   [23:0]  rx_timeout_count, rx_timeout_count_next, uart_rxto_val;
+  logic   [5:0]   rx_fifo_depth_prev_q;
+  logic   [23:0]  rx_timeout_count_d, rx_timeout_count_q, uart_rxto_val;
   logic           rx_fifo_depth_changed, uart_rxto_en;
   logic           tx_enable, rx_enable;
   logic           sys_loopback, line_loopback, rxnf_enable;
@@ -53,8 +53,7 @@ module uart_core (
   logic           rx_sync;
   logic           rx_in;
   logic           break_err;
-  logic   [4:0]   allzero_cnt;
-  logic   [4:0]   allzero_cnt_next;
+  logic   [4:0]   allzero_cnt_d, allzero_cnt_q;
   logic           allzero_err, not_allzero_char;
   logic           event_tx_watermark, event_rx_watermark, event_tx_overflow, event_rx_overflow;
   logic           event_rx_frame_err, event_rx_break_err, event_rx_timeout, event_rx_parity_err;
@@ -78,21 +77,21 @@ module uart_core (
     BRK_WAIT
   } break_st_e ;
 
-  break_st_e break_st;
+  break_st_e break_st_q;
 
   assign not_allzero_char = rx_valid & (~event_rx_frame_err | (rx_fifo_data != 8'h0));
   assign allzero_err = event_rx_frame_err & (rx_fifo_data == 8'h0);
 
 
-  assign allzero_cnt_next = (break_st == BRK_WAIT || not_allzero_char) ? 5'h0 :
-                            //allzero_cnt[4] never be 1b without break_st as BRK_WAIT
-                            //allzero_cnt[4] ? allzero_cnt :
-                            allzero_err ? allzero_cnt + 5'd1 :
-                            allzero_cnt;
+  assign allzero_cnt_d = (break_st_q == BRK_WAIT || not_allzero_char) ? 5'h0 :
+                          //allzero_cnt_q[4] never be 1b without break_st_q as BRK_WAIT
+                          //allzero_cnt_q[4] ? allzero_cnt_q :
+                          allzero_err ? allzero_cnt_q + 5'd1 :
+                          allzero_cnt_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)        allzero_cnt <= '0;
-    else if (rx_enable) allzero_cnt <= allzero_cnt_next;
+    if (!rst_ni)        allzero_cnt_q <= '0;
+    else if (rx_enable) allzero_cnt_q <= allzero_cnt_d;
   end
 
   // break_err edges in same cycle as event_rx_frame_err edges ; that way the
@@ -100,33 +99,33 @@ module uart_core (
 
   always_comb begin
     unique case (reg2hw.ctrl.rxblvl.q)
-      2'h0:    break_err = allzero_cnt_next >= 5'd2;
-      2'h1:    break_err = allzero_cnt_next >= 5'd4;
-      2'h2:    break_err = allzero_cnt_next >= 5'd8;
-      default: break_err = allzero_cnt_next >= 5'd16;
+      2'h0:    break_err = allzero_cnt_d >= 5'd2;
+      2'h1:    break_err = allzero_cnt_d >= 5'd4;
+      2'h2:    break_err = allzero_cnt_d >= 5'd8;
+      default: break_err = allzero_cnt_d >= 5'd16;
     endcase
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) break_st <= BRK_CHK;
+    if (!rst_ni) break_st_q <= BRK_CHK;
     else begin
-      unique case (break_st)
+      unique case (break_st_q)
         BRK_CHK: begin
-          if (event_rx_break_err) break_st <= BRK_WAIT;
+          if (event_rx_break_err) break_st_q <= BRK_WAIT;
         end
 
         BRK_WAIT: begin
-          if (rx_in) break_st <= BRK_CHK;
+          if (rx_in) break_st_q <= BRK_CHK;
         end
 
         default: begin
-          break_st <= BRK_CHK;
+          break_st_q <= BRK_CHK;
         end
       endcase
     end
   end
 
-  assign hw2reg.val.d  = rx_val;
+  assign hw2reg.val.d  = rx_val_q;
 
   assign hw2reg.rdata.d = uart_rdata;
 
@@ -151,17 +150,17 @@ module uart_core (
   //      Fin * (NCO/2**16)
   // So, with a 16 bit accumulator, the output clock is
   //      Fin * (NCO/65536)
-  logic   [16:0]     nco_sum; // extra bit to get the carry
+  logic   [16:0]     nco_sum_q; // extra bit to get the carry
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      nco_sum <= 17'h0;
+      nco_sum_q <= 17'h0;
     end else if (tx_enable || rx_enable) begin
-      nco_sum <= {1'b0,nco_sum[15:0]} + {1'b0,reg2hw.ctrl.nco.q};
+      nco_sum_q <= {1'b0,nco_sum_q[15:0]} + {1'b0,reg2hw.ctrl.nco.q};
     end
   end
 
-  assign tick_baud_x16 = nco_sum[16];
+  assign tick_baud_x16 = nco_sum_q[16];
 
   // ######################################################################
   //              TX Logic
@@ -226,7 +225,7 @@ module uart_core (
   );
 
   // Based on: en.wikipedia.org/wiki/Repetition_code mentions the use of a majority filter
-  // in uarts to ignore brief noise spikes
+  // in UART to ignore brief noise spikes
   logic   rx_sync_q1, rx_sync_q2, rx_in_mx, rx_in_maj;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -284,8 +283,8 @@ module uart_core (
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)            rx_val <= 16'h0;
-    else if (tick_baud_x16) rx_val <= {rx_val[14:0], rx_in};
+    if (!rst_ni)            rx_val_q <= 16'h0;
+    else if (tick_baud_x16) rx_val_q <= {rx_val_q[14:0], rx_in};
   end
 
   // ######################################################################
@@ -317,9 +316,9 @@ module uart_core (
   assign uart_rxto_en  = reg2hw.timeout_ctrl.en.q;
   assign uart_rxto_val = reg2hw.timeout_ctrl.val.q;
 
-  assign rx_fifo_depth_changed = (rx_fifo_depth != rx_fifo_depth_prev);
+  assign rx_fifo_depth_changed = (rx_fifo_depth != rx_fifo_depth_prev_q);
 
-  assign rx_timeout_count_next =
+  assign rx_timeout_count_d =
               // don't count if timeout feature not enabled ;
               // will never reach timeout val + lower power
               (uart_rxto_en == 1'b0)              ? 24'd0 :
@@ -332,26 +331,26 @@ module uart_core (
               // stop the count at timeout value (this will set the interrupt)
               //   Removed below line as when the timeout reaches the value,
               //   event occured, and timeout value reset to 0h.
-              //(rx_timeout_count == uart_rxto_val) ? rx_timeout_count :
+              //(rx_timeout_count_q == uart_rxto_val) ? rx_timeout_count_q :
               // increment if at rx baud tick
-              rx_tick_baud                        ? (rx_timeout_count + 24'd1) :
-              rx_timeout_count;
+              rx_tick_baud                        ? (rx_timeout_count_q + 24'd1) :
+              rx_timeout_count_q;
 
-  assign event_rx_timeout = (rx_timeout_count == uart_rxto_val) & uart_rxto_en;
+  assign event_rx_timeout = (rx_timeout_count_q == uart_rxto_val) & uart_rxto_en;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rx_timeout_count   <= 24'd0;
-      rx_fifo_depth_prev <= 6'd0;
+      rx_timeout_count_q   <= 24'd0;
+      rx_fifo_depth_prev_q <= 6'd0;
     end else begin
-      rx_timeout_count    <= rx_timeout_count_next;
-      rx_fifo_depth_prev  <= rx_fifo_depth;
+      rx_timeout_count_q    <= rx_timeout_count_d;
+      rx_fifo_depth_prev_q  <= rx_fifo_depth;
     end
   end
 
   assign event_rx_overflow  = rx_fifo_wvalid & ~rx_fifo_wready;
   assign event_tx_overflow  = reg2hw.wdata.qe & ~tx_fifo_wready;
-  assign event_rx_break_err = break_err && (break_st == BRK_CHK);
+  assign event_rx_break_err = break_err & (break_st_q == BRK_CHK);
 
   // instantiate interrupt hardware primitives
 
