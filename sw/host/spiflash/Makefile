@@ -24,7 +24,7 @@ all: $(PROGRAM)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(PROGRAM): $(PROGRAM).cc $(OBJS) $(MPSSE_OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) spiflash.cc -o spiflash $(DEPS) $(OBJS) $(MPSSE_OBJS)
+	$(CXX) $(CXXFLAGS) spiflash.cc -o spiflash $(DEPS) $(OBJS) $(MPSSE_OBJS) $(LDFLAGS)
 
 clean:
 	rm -f $(PROGRAM) *.o ${MPSSE_OBJS}
