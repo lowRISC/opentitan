@@ -18,7 +18,6 @@ package i2c_agent_pkg;
   // local macros
   `define I2C_DEVICE_DEFAULT_ADDR  7'h25
   `define I2C_DEVICE_MAX_ADDR      7'h7E
-  `define I2C_HOST_MAX_WR_DATA     50
   `define I2C_DEVICE_ADDR_WIDTH    7        // only support 7 bit address mode
   `define I2C_FIFO_DATA_WIDTH      8
   `define I2C_FIFO_FLAG_WIDTH      5
@@ -32,7 +31,7 @@ package i2c_agent_pkg;
   } i2c_rw_direction_e;
 
   typedef enum logic[2:0] {
-    UNKNOWN    = 3'd0,
+    RESET      = 3'd0,
     FREE       = 3'd1,
     STOP       = 3'd2,
     START      = 3'd3,

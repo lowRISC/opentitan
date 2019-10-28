@@ -15,11 +15,10 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   //*** host mode cfg knobs
   bit en_host_drv   = 1'b0;     // enable host drive in agent
-  int num_host_wr_data;         // max write data from host before a NACK returned
 
   //*** host drive cfg knobs
   bit en_device_drv = 1'b1;     // enable device drive in agent
-  bit is_read_device;
+  bit is_rw_device;
   // device target address to which the device will respond
   logic [`I2C_DEVICE_ADDR_WIDTH-1:0] device_addr;
 
@@ -28,8 +27,8 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   logic [`I2C_RX_FIFO_WIDTH-1:0]  device_rx_fifo[$];
 
   // debug signal
-  i2c_bus_status_e   i2c_bus_status;
-  i2c_rw_direction_e i2c_rw_direction;
+  i2c_bus_status_e    i2c_bus_status;
+  i2c_rw_direction_e  i2c_rw_direction;
 
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual i2c_if vif;

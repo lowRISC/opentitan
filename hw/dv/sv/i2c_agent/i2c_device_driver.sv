@@ -5,8 +5,8 @@
 `ifndef __I2C_DRIVE_DRIVER__
 `define __I2C_DRIVE_DRIVER__
 
-class i2c_drive_driver extends i2c_driver;
-  `uvm_component_utils(i2c_drive_driver)
+class i2c_device_driver extends i2c_driver;
+  `uvm_component_utils(i2c_device_driver)
 
   `uvm_component_new
 
@@ -18,23 +18,92 @@ class i2c_drive_driver extends i2c_driver;
 
   virtual task run_phase(uvm_phase phase);
     // base class forks off reset_signals() and get_and_drive() tasks
-    reset_signals;
+    super.run_phase(phase);
     get_and_drive();
   endtask : run_phase
 
-  // resets signals.
-  virtual task reset_signals();
-    super.reset_signals();
-  endtask : reset_signals
-
   // drive trans received from sequencer
   virtual task get_and_drive();
+    bit      rd_bit;
+    i2c_item item;
+
+    item = i2c_item::type_id::create("item");
+    if ( item  == null )
+      `uvm_fatal(`gtn, "failed due to null item")
+
     forever begin
       seq_item_port.get_next_item(req);
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_LOW)
-      // TODO: do the driving part
+
+      // do the driving part
+      fork
+        begin
+          // randomize item
+
+          item.randomize();
+          // get r/w bit
+          @(posedge cfg.vif.drv_cb.scl_i)
+            cfg.i2c_rw_direction = cfg.vif.drv_cb.sda_i ? READ : WRITE;
+
+          // get address bits
+          for(int i = 0; i < `I2C_DEVICE_ADDR_WIDTH; i++) begin
+            @(posedge cfg.vif.drv_cb.scl_i)
+            cfg.device_addr[i] = cfg.vif.drv_cb.sda_i;
+          end
+
+          // send out ACK
+          wait_for_ack_by_host();
+          wait_for_rand_dly(item.dly_to_send_ack);
+          send_ack_by_device();
+        end
+
+        begin
+          // READ transaction
+          if (cfg.i2c_rw_direction == READ) begin
+            for (int i = 0; i < item.max_host_rd_byte; i++) begin
+              `DV_CHECK_RANDOMIZE_FATAL(this)
+              for (int j = 0; j < 8; j++) begin
+                cfg.vif.drv_cb.scl_o <= 1'b0;
+                wait_for_rand_dly(item.dly_to_send_rd_data);
+                @(posedge cfg.vif.clk_i)
+                cfg.vif.drv_cb.scl_o <= 1'b1;
+                cfg.vif.drv_cb.sda_o <= rd_bit;
+                req.data[i] = rd_bit;
+              end
+              if (i === item.max_host_rd_byte-1) begin // last rd data byte
+                wait_for_rand_dly(item.dly_to_send_nack);
+                wait_for_nack_by_host();
+                wait_for_rand_dly(item.dly_to_send_stop);
+                wait_for_stop_by_host();
+                wait_for_rand_dly(item.dly_to_back_to_back);
+              end else begin
+                wait_for_rand_dly(item.dly_to_send_ack);
+                wait_for_ack_by_host();
+              end
+            end
+          end else begin
+          // WRITE transaction
+            for (int i = 0; i < item.max_host_wr_byte; i++) begin
+              `DV_CHECK_RANDOMIZE_FATAL(this)
+              for (int j = 0; j < 8; j++) begin
+                @(posedge cfg.vif.clk_i)
+                if (cfg.vif.drv_cb.scl_i === 1'b1) begin
+                  rsp.data[i] = cfg.vif.drv_cb.sda_i;
+                end
+              end
+              wait_for_rand_dly(item.dly_to_send_ack);
+              send_ack_by_device();
+              if (i === item.max_host_wr_byte) begin
+                wait_for_rand_dly(item.dly_to_send_stop);
+                wait_for_stop_by_host();
+                wait_for_rand_dly(item.dly_to_back_to_back);
+              end
+            end
+          end
+        end
+      join_any
 
       // send rsp back to seq
       `uvm_info(`gfn, "item sent", UVM_LOW)
@@ -42,49 +111,7 @@ class i2c_drive_driver extends i2c_driver;
     end
   endtask : get_and_drive
 
-  // wait for start
-  task wait_for_start (uvm_phase phase);
-    mon_start(is_start_e);
-    if (is_start_e.triggered) begin
-      `uvm_info(`gtn, "detected start event, raise object", UVM_LOW)
-      is_start = 1'b1;
-      phase.raise_objection(this);
-    end
-  endtask: wait_for_start
 
-  // wait for stop
-  task wait_for_stop (uvm_phase phase);
-    mon_stop(is_stop_e);
-    if (is_stop_e.triggered) begin
-      `uvm_info(`gtn, "detected stop event", UVM_LOW)
-      if (is_start) begin
-        `uvm_info(`gtn, "start event issued before, drop object", UVM_LOW)
-        is_start = 1'b0;
-        phase.drop_objection(this);
-      end
-    end
-  endtask: wait_for_stop
-
-  // monitor start condition
-  task mon_start( ref event start_e );
-    wait(cfg.vif.drv_cb.sda_i !== 1'bx);
-    @(negedge cfg.vif.drv_cb.sda_i);
-    if (cfg.vif.drv_cb.scl_i === 1'b1) begin
-      ->start_e;
-      cfg.i2c_bus_status = START;
-    end
-  endtask: mon_start
-
-  // monitor stop condition
-  task mon_stop( ref event stop_e );
-    wait(cfg.vif.drv_cb.sda_i !== 1'bx);
-    @(posedge cfg.vif.drv_cb.sda_i);
-    if (cfg.vif.drv_cb.scl_i === 1'b1) begin
-      ->stop_e;
-      cfg.i2c_bus_status = STOP;
-    end
-  endtask: mon_stop
-
-endclass : i2c_drive_driver
+endclass : i2c_device_driver
 
 `endif // __I2C_DRIVE_DRIVER__
