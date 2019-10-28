@@ -192,7 +192,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
                                              dly_to_rx_read dist {
                                                0           :/ 1,
                                                [1:100]     :/ 1,
-                                               [100:10000] :/ 20
+                                               [100:10000] :/ 2
                                              };)
           cfg.clk_rst_vif.wait_clks(dly_to_rx_read);
           wait_when_in_ignored_period(.rx(1));
