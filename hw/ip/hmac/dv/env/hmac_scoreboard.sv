@@ -11,6 +11,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit               sha_en;
   bit [7:0]         msg_q[$];
   bit               hmac_start, hmac_process;
+  bit               fifo_full;
   int               hmac_wr_cnt;
   int               hmac_rd_cnt;
 
@@ -199,15 +200,26 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual task incr_wr_and_check_fifo_full();
     if (sha_en) begin
+      // if fifo full, tlul will not write next data until d_valid is asserted
+      if (fifo_full) begin
+        wait (cfg.tlul_assert_vif.d2h.d_valid == 1);
+        fifo_full = 0;
+      end
       @(negedge cfg.clk_rst_vif.clk);
       hmac_wr_cnt++;
+      `uvm_info(`gfn, $sformatf("increase wr cnt %0d", hmac_wr_cnt), UVM_HIGH)
     end
   endtask
 
   virtual task hmac_process_fifo_full();
     forever @(hmac_wr_cnt, hmac_rd_cnt) begin
+      // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait 1ps to guarantee
+      // get both update
+      #1ps;
       if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
         void'(ral.intr_state.fifo_full.predict(1));
+        `uvm_info(`gfn, "predict interrupt fifo full is set", UVM_HIGH)
+        fifo_full = 1;
       end
     end
   endtask
@@ -258,6 +270,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               #1; // delay 1 ns to make sure did not sample right at negedge clk
               cfg.clk_rst_vif.wait_n_clks(1);
               hmac_rd_cnt++;
+              `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)
               if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_n_clks(HMAC_MSG_PROCESS_CYCLES);
             end
             begin : reset_hmac_fifo_rd
