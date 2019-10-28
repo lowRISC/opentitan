@@ -14,6 +14,7 @@ This guide makes assumes the following system setup.
   8 GB of RAM or more are highly recommended.
 * Physical access to that machine, root permissions and a graphical environment.
 * Python 3.5 or newer. Python 3.6+ is recommended.
+* A C++14 capable compiler. GCC 5 or Clang 3.5 should meet this requirement.
 * 60 GB or more of disk space.
   EDA tools like Xilinx Vivado can easily take up 40 GB each.
 * We develop and test on the following Linux distributions:
