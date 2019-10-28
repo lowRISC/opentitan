@@ -39,6 +39,18 @@ sw_lib_gpio = declare_dependency(
   )
 )
 
+# PINMUX library (sw_lib_pinmux)
+sw_lib_pinmux = declare_dependency(
+  sources: [hw_top_earlgrey_pinmux_h],
+  link_with: static_library(
+    'pinmux_ot',
+    sources: [
+      hw_top_earlgrey_pinmux_h,
+      'pinmux.c',
+    ]
+  )
+)
+
 # HMAC library (sw_lib_hmac)
 sw_lib_hmac = declare_dependency(
   sources: [hw_ip_hmac_reg_h],

@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
+#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
@@ -53,6 +54,7 @@ void trap_handler(uint32_t mepc, char c) {
 int main(int argc, char **argv) {
   uart_init(UART_BAUD_RATE);
 
+  pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
   gpio_init(0xFF00);
 

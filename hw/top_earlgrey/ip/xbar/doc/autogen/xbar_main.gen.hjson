@@ -216,4 +216,5 @@
     }
   ]
   clock: main
+  type: xbar
 }

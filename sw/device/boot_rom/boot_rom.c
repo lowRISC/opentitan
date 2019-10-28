@@ -8,6 +8,7 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/gpio.h"
+#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
@@ -22,6 +23,7 @@ static inline void try_launch(void) {
 }
 
 int main(int argc, char **argv) {
+  pinmux_init();
   uart_init(UART_BAUD_RATE);
   uart_send_str((char *)chip_info);
 

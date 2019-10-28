@@ -12,6 +12,7 @@ custom_target(
     link_args: riscv_link_args,
     link_depends: riscv_link_deps,
     dependencies: [
+      sw_lib_pinmux,
       sw_lib_gpio,
       sw_lib_irq,
       sw_lib_spi_device,

@@ -31,6 +31,7 @@ custom_target(
     link_depends: rom_link_deps,
     dependencies: [
       sw_lib_flash_ctrl,
+      sw_lib_pinmux,
       sw_lib_gpio,
       sw_lib_hmac,
       sw_lib_spi_device,

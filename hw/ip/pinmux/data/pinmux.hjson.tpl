@@ -44,6 +44,7 @@
       fields: [
         {
             bits:   "0",
+            name: "wen",
             desc: ''' When true, all configuration registers can be modified.
             When false, they become read-only. Defaults true, write zero to clear.
             '''

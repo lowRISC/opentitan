@@ -5,6 +5,9 @@
 #ifndef _TOP_EARLGREY_H_
 #define _TOP_EARLGREY_H_
 
+#define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
+#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 2
+
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define NUM_MIO 32
@@ -79,4 +82,4 @@
 #define PINMUX_GPIO_GPIO_30_OUT 33
 #define PINMUX_GPIO_GPIO_31_OUT 34
 
-#endif // _TOP_EARLGREY_H_
+#endif  // _TOP_EARLGREY_H_
