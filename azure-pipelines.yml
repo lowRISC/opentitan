@@ -131,6 +131,17 @@ jobs:
       ninja -C build-verilator all
       ninja -C build-fpga all
     displayName: 'Build embedded targets'
+  # XXX: We do not package build-fpga, only build-verilator, since the results of this
+  # job are only used for testing, not distribution. Eventually, only this job will be
+  # used for distribution.
+  - bash: |
+      dist_tar="$(Build.ArtifactStagingDirectory)/dist-partial-verilator-sw_build.tar"
+      mkdir -p "$(Build.ArtifactStagingDirectory)"
+      tar -cf "$dist_tar" build-verilator
+    displayName: 'Prepare embedded Verilator distribution artifacts'
+  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-verilator-sw_build.tar
+    artifact: dist-partial-verilator-sw_build
+    displayName: "Upload embedded Verilator distribution artifacts"
 
 - job: "deprecated_make_build"
   displayName: "Build Software with Make (deprecated)"
@@ -258,6 +269,35 @@ jobs:
   - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
     artifact: dist-partial-top_earlgrey_nexysvideo
     displayName: 'Upload partial distribution artifacts'
+
+- job: "execute_verilated_tests"
+  displayName: "Execute tests on the Verilated system"
+  pool: "Default"
+  dependsOn:
+    - lint
+    - top_earlgrey_verilator
+    - sw_build
+  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential python3-setuptools
+      sudo pip3 install -r python-requirements.txt
+    displayName: 'Install dependencies'
+  - download: current
+    artifact: 'dist-partial-top_earlgrey_verilator'
+    displayName: 'Download verilated simulator'
+  - download: current
+    artifact: 'dist-partial-verilator-sw_build'
+    displayName: 'Download embedded artifacts'
+  - bash: |
+      tar -xvf "$(Pipeline.Workspace)/dist-partial-top_earlgrey_verilator/dist-partial-top_earlgrey_verilator.tar"
+      tar -xvf "$(Pipeline.Workspace)/dist-partial-verilator-sw_build/dist-partial-verilator-sw_build.tar"
+    displayName: 'Unpack pipeline artifacts'
+  - bash: |
+      export VERILATED_SYSTEM_PATH="dist/hw/top_earlgrey/Vtop_earlgrey_verilator"
+      export SW_BUILD_PATH="build-verilator"
+      ci/run_verilator_pytest.sh
+    displayName: 'Execute tests'
 
 - job: "deploy_releaseartifacts"
   displayName: "Package and deploy release distribution"
