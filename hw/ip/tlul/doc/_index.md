@@ -209,7 +209,7 @@ host when response reordering is required (since TL-UL does not guarantee
 in-order responses). For permission detection, static host identifiers
 will be transmitted in the user field (see below).
 
-Some bus primitives, such as `N:1` sockets, need to add source bits
+Some bus primitives, such as `M:1` sockets, need to add source bits
 during request routing in order to be able to correctly route the
 response. For instance, if one destination is addressed by N potential
 hosts, log<sub>2</sub>N more source ID bits need to be added to the
@@ -295,7 +295,7 @@ The following list gives examples of future usage for `a_user` and
 
 #### Usage of Opcode, Size and Mask
 
-The request opcode (`a_opcode`) can designate between a write (put)
+The request opcode (`a_opcode`) can designate between a write (`'Put'`)
 and a read (`'Get'`) transaction. Writes can be designated as full
 (`'PutFullData'`) or partial (`'PutPartialData'`) within the opcode
 space. The request size (`a_size`) and mask (`a_mask`) is defined for
