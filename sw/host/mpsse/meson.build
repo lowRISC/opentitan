@@ -6,8 +6,8 @@ libmpsse = declare_dependency(
   link_with: static_library(
     'mpsse',
     sources: [
-      'mpsse.c',
-      'support.c'
+      '../vendor/mpsse/mpsse.c',
+      '../vendor/mpsse/support.c'
     ],
     c_args: [
       '-I' + meson.source_root() + '/sw/host/vendor/mpsse'
