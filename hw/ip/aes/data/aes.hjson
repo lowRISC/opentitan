@@ -28,9 +28,10 @@
     { multireg: {
       name: "KEY",
       desc: '''
-        Initial Key Register. Loaded into the internal Full Key register upon
+        Initial Key Registers. Loaded into the internal Full Key register upon
         starting encryption/decryption of the next block. Can only be updated
-        when the AES unit is idle.
+        when the AES unit is idle. All keys registers must be updated when the
+        key is changed, regardless of key length (write 0 for unusued bits).
       '''
       count: "NumRegsKey",
       cname: "KEY",
@@ -47,7 +48,7 @@
     { multireg: {
       name: "DATA_IN",
       desc: '''
-        Input Data Register. Loaded into the internal State register upon
+        Input Data Registers. Loaded into the internal State register upon
         starting encryption/decryption of the next block. After that, the processor
         can update the Input Data Register.
       '''

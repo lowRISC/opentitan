@@ -7,9 +7,8 @@ title: "AES HWIP Technical Specification"
 
 This document specifies the AES hardware IP functionality.
 [Advanced Encryption Standard (AES)](https://www.nist.gov/publications/advanced-encryption-standard-aes) is the primary symmetric encryption and decryption mechanism used in OpenTitan protocols.
-The AES unit is a cryptographic accelerator that accepts requests from the processor to encrypt or decrypt 16B blocks of data.
+The AES unit is a cryptographic accelerator that accepts requests from the processor to encrypt or decrypt 16 byte blocks of data.
 It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
-See that document for integration overview within the broader top level system.
 
 
 ## Features
@@ -18,7 +17,7 @@ The AES unit supports the following features:
 
 - Encryption/Decryption using AES-128/192/256 in Electronic Codebook (ECB) mode
 - Support for AES-192 is optional and can be enabled/disabled using a compile-time parameter
-- Latency per 16B data block of 12/14/16 clock cycles in AES-128/192/256 mode
+- Latency per 16 byte data block of 12/14/16 clock cycles in AES-128/192/256 mode
 - Register-based data and control interface
 - On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see Theory of Operations below)
 
@@ -246,9 +245,10 @@ This section discusses how software can interface with the AES unit.
 
 ## Initialization
 
-The initialize the AES unit, software must write the initial key to the Initial Key register.
-Independent of the selected key length, software must always write all 8 32-bit registers.
-For AES-128 and AES-192, the actual initial key used for encryption is formed by taking the values in Initial Key register 0-3 and 0-5, respectively.
+To initialize the AES unit, software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
+The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
+Independent of the selected key length, software must always write all 8 32-bit registers. Anything can be written to the unused key registers.
+For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
 
 
 ## Block Operation
@@ -256,33 +256,32 @@ For AES-128 and AES-192, the actual initial key used for encryption is formed by
 For block operation, software must initialize the AES unit as described in the previous section and then:
 
 1. Make sure that the AES unit:
-   1. Automatically starts encryption/decryption when new input data indicated by the MANUAL_START_TRIGGER bit in the Control register being 1'b0.
-   2. Does not overwrite previous output data that has not been read by the processor indicated by the FORCE_DATA_OVERWRITE bit in the Control register being 1'b0.
-2. Write Input Data Block 0 to the Input Data register.
-3. Wait for the INPUT_READY bit in the Status register to become 1'b1, i.e. wait for the AES unit to load Input Data Block 0 into the internal State register and start operation.
-4. Write Input Data Block 1 to the Input Data register.
+   1. Automatically starts encryption/decryption when new input data is available by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `0`.
+   2. Does not overwrite previous output data that has not been read by the processor by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `0`.
+2. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
+3. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
+4. Write Input Data Block `1` to the Input Data registers.
 
-Then for every Data Block I=0,..N-1, software must:
+Then for every Data Block `I=0,..,N-2`, software must:
+1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
+   The AES unit then directly starts processing the previously input block `I+1`
+2. Read Output Data Block `I` from the Output Data register.
+3. Write Input Data Block `I+2` into the Input Data register.
+   There is no need to check INPUT_READY as the cycle following OUTPUT_VALID being set the current input is loaded in.
 
-1. Wait for the OUTPUT_VALID bit in the Status register to become 1'b1, i.e., wait for the AES unit to finish encryption/decryption of Block I.
-2. Read Output Data Block I from the Output Data register.
-3. Write Input Data Block I+1 into the Input Data register.
+Once all blocks have been input the final data blocks `I=N-1,N` must be read out
+1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
+2. Read Output Data Block `I` from the Output Data register.
 
-For the last Data Block N, software must:
-
-1. Wait for the OUTPUT_VALID bit in the Status register to become 1'b1, i.e., wait for the AES unit to finish encryption/decryption of Block N.
-2. Read Output Data Block N from the Output Data register.
-
+Note that interrupts are not provided, the latency of the AES unit is such that they are of little utility.
 
 ## De-Initialization
 
 After finishing operation, software must:
-
-1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_START_TRIGGER bit in the Control register to 1'b1.
-2. Clear the configured initial key by overwriting the Initial Key register.
-3. Clear the previous input data by overwriting the Input Data register.
-4. Clear the internal key registers and the Output Data register by setting the KEY_CLEAR and DATA_OUT_CLEAR bits in the TRIGGER register to 1'b1.
-
+1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `1`.
+2. Clear the configured initial key by overwriting the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
+3. Clear the previous input data by overwriting the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
+4. Clear the internal key registers and the Output Data register by setting the KEY_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
 ## Register Table
 
