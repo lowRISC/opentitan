@@ -1353,13 +1353,13 @@ def validate(regs, **kwargs):
             if ierr:
                 error += 1
             elif (skipto < offset):
-                log.error("{skipto " + hex(x['skipto']) + "} at " +
-                          hex(offset) + " evaluates as " + hex(skipto) +
+                log.error("{skipto " + x['skipto'] + "} at " + hex(offset) +
+                          " evaluates as " + hex(skipto) +
                           " which would move backwards")
                 error += 1
             elif (skipto % addrsep) != 0:
-                log.error("{skipto " + hex(x['skipto']) + "} at " +
-                          hex(offset) + " evaluates as " + hex(skipto) +
+                log.error("{skipto " + x['skipto'] + "} at " + hex(offset) +
+                          " evaluates as " + hex(skipto) +
                           " which is not a multiple of the register size " +
                           str(addrsep))
                 error += 1

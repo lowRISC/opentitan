@@ -65,7 +65,7 @@
     }
 % endfor
 % for i in range(target):
-    { skipto: ${0x100*(math.ceil((src*4+8*math.ceil(src/32))/0x100)) + i*0x100 | x} }
+    { skipto: "${0x100*(math.ceil((src*4+8*math.ceil(src/32))/0x100)) + i*0x100 | x}" }
     { multireg: {
         name: "IE${i}",
         desc: "Interrupt Enable for Target ${i}",

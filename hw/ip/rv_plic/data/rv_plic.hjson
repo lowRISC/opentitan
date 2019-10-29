@@ -309,7 +309,7 @@
         { bits: "2:0" }
       ],
     }
-    { skipto: 256 }
+    { skipto: "256" }
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",
