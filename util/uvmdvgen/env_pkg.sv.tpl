@@ -23,7 +23,7 @@ package ${name}_env_pkg;
 
   // parameters
   // TODO update below, or compile error occurs
-  parameter uint ADDR_MAP_SIZE   = ;
+  parameter uint ${name.upper()}_ADDR_MAP_SIZE = ;
 
   // types
 

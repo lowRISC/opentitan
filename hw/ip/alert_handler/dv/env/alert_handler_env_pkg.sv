@@ -17,7 +17,8 @@ package alert_handler_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter int NUM_MAX_ESC_SEV = 8;
+  parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 2048;
+  parameter uint NUM_MAX_ESC_SEV             = 8;
 
   // types
   // forward declare classes to allow typedefs below

@@ -17,7 +17,7 @@ package gpio_env_pkg;
   `include "dv_macros.svh"
 
   // csr and mem total size for IP
-  parameter uint ADDR_MAP_SIZE = 64;
+  parameter uint GPIO_ADDR_MAP_SIZE = 64;
   // no. of gpio pins
   parameter uint NUM_GPIOS     = 32;
   // no. of cycles for noise filter

@@ -32,13 +32,13 @@ package spi_device_env_pkg;
   } sram_avail_type_e;
 
   // csr and mem total size for IP
-  parameter uint ADDR_MAP_SIZE      = 4096;
+  parameter uint SPI_DEVICE_ADDR_MAP_SIZE = 4096;
   // SPI SRAM is 2kB
-  parameter uint SRAM_OFFSET        = 'h800;
-  parameter uint SRAM_SIZE          = 2048;
-  parameter uint SRAM_MSB           = $clog2(SRAM_SIZE) - 1;
-  parameter uint SRAM_PTR_PHASE_BIT = SRAM_MSB + 1;
-  parameter uint SRAM_WORD_SIZE     = 4;
+  parameter uint SRAM_OFFSET              = 'h800;
+  parameter uint SRAM_SIZE                = 2048;
+  parameter uint SRAM_MSB                 = $clog2(SRAM_SIZE) - 1;
+  parameter uint SRAM_PTR_PHASE_BIT       = SRAM_MSB + 1;
+  parameter uint SRAM_WORD_SIZE           = 4;
 
   string msg_id = "spi_device_env_pkg";
 

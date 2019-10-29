@@ -13,9 +13,12 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
 
   `uvm_object_new
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
-    super.initialize(csr_base_addr, csr_addr_map_size);
+  virtual function void initialize_csr_addr_map_size();
+    this.csr_addr_map_size = ALERT_HANDLER_ADDR_MAP_SIZE;
+  endfunction : initialize_csr_addr_map_size
+
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+    super.initialize(csr_base_addr);
 
     // set num_interrupts & num_alerts
     begin

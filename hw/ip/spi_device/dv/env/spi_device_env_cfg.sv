@@ -13,10 +13,13 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
 
   `uvm_object_new
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = 0,
-                                   bit [TL_AW-1:0] csr_addr_map_size = ADDR_MAP_SIZE);
+  virtual function void initialize_csr_addr_map_size();
+    this.csr_addr_map_size = SPI_DEVICE_ADDR_MAP_SIZE;
+  endfunction : initialize_csr_addr_map_size
+
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = 0);
     mem_addr_s mem_addr;
-    super.initialize(csr_base_addr, csr_addr_map_size);
+    super.initialize(csr_base_addr);
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
     // set num_interrupts & num_alerts which will be used to create coverage and more
