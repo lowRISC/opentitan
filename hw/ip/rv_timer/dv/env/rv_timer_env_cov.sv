@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO - We are enclosing covergroups inside class so that we can
+// We are enclosing covergroups inside class so that we can
 // take avoid tool limitation of not allowing arrays of covergroup
 // Refer to Issue#375 for more details
 // class for wrapping timer config covergroup

@@ -19,7 +19,7 @@ package rv_timer_env_pkg;
   // local parameters and types
   // csr and mem total size for IP
   parameter uint RV_TIMER_ADDR_MAP_SIZE = 512;
-  // TODO: these are currently hardcoded to 1 - this will need to change if design is modified
+  // These are currently hardcoded to 1 - this will need to change if design is modified
   parameter uint NUM_HARTS = 1;
   parameter uint NUM_TIMERS = 1;
 
