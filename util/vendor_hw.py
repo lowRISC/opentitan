@@ -379,7 +379,7 @@ def main(argv):
                                    vendor_file_base_dir).glob('*.patch')
             for patch in sorted(patches):
                 log.info("Applying patch %s" % str(patch))
-                apply_patch(clone_dir, str(patch))
+                apply_patch(clone_subdir, str(patch))
 
         # import selected (patched) files from upstream repo
         exclude_files = []
