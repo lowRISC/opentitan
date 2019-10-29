@@ -22,12 +22,22 @@ filesets:
       - lowrisc:prim:flash
       - lowrisc:ip:flash_ctrl:0.1
       - lowrisc:constants:top_pkg
+      - lowrisc:ip:nmi_gen
     files:
       - ip/xbar/rtl/autogen/tl_main_pkg.sv
       - ip/xbar/rtl/autogen/xbar_main.sv
       - ip/rv_plic/rtl/autogen/rv_plic_reg_pkg.sv
       - ip/rv_plic/rtl/autogen/rv_plic_reg_top.sv
       - ip/rv_plic/rtl/autogen/rv_plic.sv
+      - ip/alert_handler/rtl/autogen/alert_handler_reg_pkg.sv
+      - ip/alert_handler/rtl/autogen/alert_handler_reg_top.sv
+      - ../ip/alert_handler/rtl/alert_pkg.sv
+      - ../ip/alert_handler/rtl/alert_handler_reg_wrap.sv
+      - ../ip/alert_handler/rtl/alert_handler_class.sv
+      - ../ip/alert_handler/rtl/alert_handler_ping_timer.sv
+      - ../ip/alert_handler/rtl/alert_handler_esc_timer.sv
+      - ../ip/alert_handler/rtl/alert_handler_accu.sv
+      - ../ip/alert_handler/rtl/alert_handler.sv
       - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource

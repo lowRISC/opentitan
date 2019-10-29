@@ -94,6 +94,26 @@
         // Available: { SEQUENTIAL, MATRIX }
         FIND_MAX: "MATRIX",     // Parameter as key
       }
+    },
+    { name: "alert_handler",
+      type: "alert_handler",
+      clock_connections: {clk_i: "main"},
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x40130000",
+      generated: "true"         // Indicate this module is generated in the topgen
+      localparam: {
+        EscCntDw:  32,
+        AccuCntDw: 16
+        LfsrSeed:  "0xFFFFFFFF"
+      }
+    }
+    // dummy module to capture the alert handler escalation signals
+    // and test them by converting them into IRQs
+    { name: "nmi_gen",
+      type: "nmi_gen",
+      clock_connections: {clk_i: "main"},
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x40140000",
     }
   ]
 
@@ -139,7 +159,8 @@
   // If interrupt is not defined, it uses the order from the module list
   // and include every modules.
   // first item goes to LSB of the interrupt source
-  interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "hmac" ]
+  interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
+                     "hmac", "alert_handler", "nmi_gen" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -149,7 +170,14 @@
   interrupt: [
   ]
 
-  // TODO: ALERT HANDLER
+  // ===== ALERT HANDLER ======================================================
+  // list all modules that expose alerts
+  // first item goes to LSB of the interrupt source
+  alert_module: [ "hmac" ]
+
+  // generated list of alerts:
+  alert: [
+  ]
 
   // TODO: PINMUX
   pinmux: {

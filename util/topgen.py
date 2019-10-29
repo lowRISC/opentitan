@@ -19,7 +19,7 @@ from reggen import gen_rtl, gen_dv, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
 
 # Filter from IP list but adding generated hjson
-filter_list = ['rv_plic', 'alert_h', 'pinmux']
+filter_list = ['rv_plic', 'pinmux']
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -42,7 +42,7 @@ def generate_rtl(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    xbar_path = out_path / 'ip/xbar/doc/autogen'
+    xbar_path = out_path / 'ip/xbar/data/autogen'
     xbar_path.mkdir(parents=True, exist_ok=True)
     gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
               "-o hw/top_earlgrey/\n\n")
@@ -85,6 +85,103 @@ def generate_xbars(top, out_path):
         with bind_filepath.open(mode='w', encoding='UTF-8') as fout:
             fout.write(out_bind)
 
+def generate_alert_handler(top, out_path):
+    # default values
+    esc_cnt_dw=32
+    accu_cnt_dw=16
+    lfsr_seed=2**31-1
+    async_on="'0"
+    # leave this constant
+    n_classes=4
+
+    # check if there are any params to be passed through reggen and placed into
+    # the generated package
+    ip_list_in_top = [x["name"].lower() for x in top["module"]]
+    ah_idx = ip_list_in_top.index("alert_handler")
+    if 'localparam' in top['module'][ah_idx]:
+        if 'EscCntDw' in top['module'][ah_idx]['localparam']:
+            esc_cnt_dw = int(top['module'][ah_idx]['localparam']['EscCntDw'])
+        if 'AccuCntDw' in top['module'][ah_idx]['localparam']:
+            accu_cnt_dw = int(top['module'][ah_idx]['localparam']['AccuCntDw'])
+        if 'LfsrSeed' in top['module'][ah_idx]['localparam']:
+            lfsr_seed = int(top['module'][ah_idx]['localparam']['LfsrSeed'], 0)
+
+    if esc_cnt_dw < 1:
+        log.error("EscCntDw must be larger than 0")
+    if accu_cnt_dw < 1:
+        log.error("AccuCntDw must be larger than 0")
+    if (lfsr_seed & 0xFFFF_FFFF) == 0 or lfsr_seed > 2**32:
+        log.error("LFSR seed out of range or zero")
+
+    # Count number of interrupts
+    n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
+
+    if n_alerts < 1:
+        # set number of alerts to 1 such that the config is still valid
+        # that input will be tied off
+        n_alerts = 1
+        log.warning("no alerts are defined in the system");
+    else:
+        async_on = ""
+        for alert in top['alert']:
+            async_on = str(alert['async']) + async_on
+        async_on = ("%d'b" % n_alerts) + async_on
+
+    log.info("alert handler parameterization:")
+    log.info("NAlerts   = %d" % n_alerts)
+    log.info("EscCntDw  = %d" % esc_cnt_dw)
+    log.info("AccuCntDw = %d" % accu_cnt_dw)
+    log.info("LfsrSeed  = %d" % lfsr_seed)
+    log.info("AsyncOn   = %s" % async_on)
+
+
+    # Define target path
+    rtl_path = out_path / 'ip/alert_handler/rtl/autogen'
+    rtl_path.mkdir(parents=True, exist_ok=True)
+    doc_path = out_path / 'ip/alert_handler/data/autogen'
+    doc_path.mkdir(parents=True, exist_ok=True)
+
+    # Generating IP top module script is not generalized yet.
+    # So, topgen reads template files from alert_handler directory directly.
+    tpl_path = out_path / '../ip/alert_handler/data'
+    hjson_tpl_path = tpl_path / 'alert_handler.hjson.tpl'
+
+    # Generate Register Package and RTLs
+    out = StringIO()
+    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
+        hjson_tpl = Template(fin.read())
+        try:
+            out = hjson_tpl.render(n_alerts=n_alerts,
+                                   esc_cnt_dw=esc_cnt_dw,
+                                   accu_cnt_dw=accu_cnt_dw,
+                                   lfsr_seed=lfsr_seed,
+                                   async_on=async_on,
+                                   n_classes=n_classes)
+        except:
+            log.error(exceptions.text_error_template().render())
+        log.info("alert_handler hjson: %s" % out)
+
+    if out == "":
+        log.error("Cannot generate alert_handler config file")
+        return
+
+    hjson_gen_path = doc_path / "alert_handler.hjson"
+    gencmd = (
+        "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --alert-handler-only "
+        "-o hw/top_earlgrey/\n\n")
+    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
+        fout.write(genhdr + gencmd + out)
+
+    # Generate register RTLs (currently using shell execute)
+    # TODO: More secure way to gneerate RTL
+    hjson_obj = hjson.loads(out,
+                            use_decimal=True,
+                            object_pairs_hook=validate.checking_dict)
+    validate.validate(hjson_obj)
+    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
+
+
 
 def generate_plic(top, out_path):
     # Count number of interrupts
@@ -99,7 +196,7 @@ def generate_plic(top, out_path):
     #   doc: rv_plic.hjson
     rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
     rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/rv_plic/doc/autogen'
+    doc_path = out_path / 'ip/rv_plic/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
 
     # Generating IP top module script is not generalized yet.
@@ -244,6 +341,10 @@ def main():
         action='store_true',
         help="If defined, the tool generates RV_PLIC RTL and hjson only")
     parser.add_argument(
+        '--alert-handler-only',
+        action='store_true',
+        help="If defined, the tool generates alert handler hjson only")
+    parser.add_argument(
         '--hjson-only',
         action='store_true',
         help="If defined, the tool generates complete hjson only")
@@ -267,12 +368,12 @@ def main():
 
     if (args.no_top or args.no_xbar or
             args.no_plic) and (args.top_only or args.xbar_only or
-                               args.plic_only):
+                               args.plic_only or args.alert_handler_only):
         log.error(
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
 
-    if not args.hjson_only and not args.tpl:
+    if not (args.hjson_only or args.plic_only or args.alert_handler_only or args.tpl):
         log.error(
             "Template file can be omitted only if '--hjson-only' is true")
         raise SystemExit(sys.exc_info()[1])
@@ -313,7 +414,7 @@ def main():
         # It needs to run up to amend_interrupt in merge_top function
         # then creates rv_plic.hjson then run xbar generation.
         hjson_dir = Path(args.topcfg).parent
-        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/doc/autogen/rv_plic.hjson'
+        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/data/autogen/rv_plic.hjson'
         ips.append(rv_plic_hjson)
 
         # TODO: Add generated pinmux hjson to ips here
@@ -379,8 +480,18 @@ def main():
             raise SystemExit(sys.exc_info()[1])
 
     # Generate PLIC
-    if not args.no_plic or args.plic_only:
+    if not args.no_plic            and \
+       not args.alert_handler_only and \
+       not args.xbar_only:
         generate_plic(completecfg, out_path)
+        if args.plic_only:
+            sys.exit()
+
+    # Generate Alert Handler
+    if not args.xbar_only:
+        generate_alert_handler(completecfg, out_path)
+        if args.alert_handler_only:
+            sys.exit()
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:

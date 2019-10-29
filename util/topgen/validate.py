@@ -50,6 +50,9 @@ module'],
 top_optional = {
     'interrupt_modules': ['l', 'list of the modules that connects to rv_plic'],
     'interrupt': ['lnw', 'interrupts (generated)'],
+    'alert_modules': ['l', 'list of the modules that connects to alert_handler'],
+    'alert': ['lnw', 'alerts (generated)'],
+    'alert_async': ['l', 'async alerts (generated)'],
     'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
     'padctrl':
     ['g', 'PADS instantiation, if doesn\'t exist, tool creates direct output'],

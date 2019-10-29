@@ -24,7 +24,7 @@ def amend_ip(top, ip):
         - available_output_list: empty list if doesn't exist
         - available_inout_list: empty list if doesn't exist
         - interrupt_list: empty list if doesn't exist
-        - (TBD) alert_list: empty list if doesn't exist
+        - alert_list: empty list if doesn't exist
     """
     ip_list_in_top = [x["name"].lower() for x in top["module"]]
     ipname = ip["name"].lower()
@@ -34,6 +34,8 @@ def amend_ip(top, ip):
 
     # Find index of the IP
     ip_idx = ip_list_in_top.index(ipname)
+    # Needed to detect async alert transitions below
+    ah_idx = ip_list_in_top.index("alert_handler")
 
     ip_module = top["module"][ip_idx]
 
@@ -90,7 +92,21 @@ def amend_ip(top, ip):
     else:
         ip_module["interrupt_list"] = []
 
-    # (TBD) alert_list
+    # alert_list
+    if "alert_list" in ip:
+        ip_module["alert_list"] = ip["alert_list"]
+        for i in ip_module["alert_list"]:
+            i.pop('desc', None)
+            i["type"] = "alert"
+            i["width"] = int(i["width"])
+            # automatically insert asynchronous transition if necessary
+            if ip_module["clock_connections"]["clk_i"] == \
+               top["module"][ah_idx]["clock_connections"]["clk_i"]:
+                i["async"] = 0
+            else:
+                i["async"] = 1
+    else:
+        ip_module["alert_list"] = []
 
     # scan
     if "scan" in ip:
@@ -291,6 +307,26 @@ def amend_interrupt(top):
             map(partial(add_prefix_to_signal, prefix=m.lower()),
                 ip[0]["interrupt_list"]))
 
+def amend_alert(top):
+    """Check interrupt_module if exists, or just use all modules
+    """
+    if not "alert_module" in top:
+        top["alert_module"] = [x["name"] for x in top["module"]]
+
+    if not "alert" in top or top["alert"] == "":
+        top["alert"] = []
+
+    for m in top["alert_module"]:
+        ip = list(filter(lambda module: module["name"] == m, top["module"]))
+        if len(ip) == 0:
+            log.warning(
+                "Cannot find IP %s which is used in the alert_module" % m)
+            continue
+
+        log.info("Adding alert from module %s" % ip[0]["name"])
+        top["alert"] += list(
+            map(partial(add_prefix_to_signal, prefix=m.lower()),
+                ip[0]["alert_list"]))
 
 def amend_pinmux_io(top):
     """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
@@ -421,6 +457,9 @@ def merge_top(topcfg, ipobjs, xbarobjs):
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)
+
+    # Combine the alert (should be processed prior to xbar)
+    amend_alert(gencfg)
 
     # Creates input/output list in the pinmux
     log.info("Processing PINMUX")

@@ -114,11 +114,22 @@ module top_${top["name"]} #(
     % endfor
 % endfor
 
-
   logic [0:0]   irq_plic;
   logic [${(interrupt_num).bit_length()-1}:0] irq_id[1];
   logic [0:0]   msip;
 
+  // Alert list
+  prim_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
+  prim_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  // Escalation outputs
+  prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
+  prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
+
+% if not top["alert"]:
+  // tie off if no alerts present in the system
+  assign alert_handler_alert_p = '0;
+  assign alert_handler_alert_n = '0;
+% endif
 
   // clock assignments
 % for clock in top['clocks']:
@@ -408,6 +419,7 @@ module top_${top["name"]} #(
 % endfor
 ## Peripheral Instantiation
 
+<% alert_idx = 0 %>
 % for m in top["module"]:
 <%
 
@@ -449,6 +461,17 @@ module top_${top["name"]} #(
     % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
       .intr_${intr["name"]}_o (intr_${m["name"]}_${intr["name"]}),
     % endfor
+    % if m["alert_list"]:
+      <%
+      w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
+      slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+      %>
+      % for alert in m["alert_list"] if "alert_list" in m else []:
+      // [${alert_idx}]: ${alert["name"]} <% alert_idx += 1 %>
+      % endfor
+      .alert_tx_o  ( alert_tx[${slice}] ),
+      .alert_rx_i  ( alert_rx[${slice}] ),
+    % endif
     % if m["type"] == "flash_ctrl":
       .flash_o(flash_c2m),
       .flash_i(flash_m2c),
@@ -459,7 +482,23 @@ module top_${top["name"]} #(
       .irq_id_o   (irq_id),
       .msip_o     (msip),
     % endif
-
+    % if m["type"] == "alert_handler":
+      // TODO: wire this to hardware debug circuit
+      .crashdump_o (          ),
+      // TODO: wire this to TRNG
+      .entropy_i   ( 1'b0     ),
+      // alert signals
+      .alert_rx_o  ( alert_rx ),
+      .alert_tx_i  ( alert_tx ),
+      // escalation outputs
+      .esc_rx_i    ( esc_rx   ),
+      .esc_tx_o    ( esc_tx   ),
+    % endif
+    % if m["type"] == "nmi_gen":
+      // escalation signal inputs
+      .esc_rx_o    ( esc_rx   ),
+      .esc_tx_i    ( esc_tx   ),
+    % endif
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
     % endif
