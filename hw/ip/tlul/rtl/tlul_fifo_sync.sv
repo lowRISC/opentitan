@@ -32,6 +32,7 @@ module tlul_fifo_sync #(
   prim_fifo_sync #(.Width(REQFIFO_WIDTH), .Pass(ReqPass), .Depth(ReqDepth)) reqfifo (
     .clk_i,
     .rst_ni,
+    .clr_i         (1'b0          ),
     .wvalid        (tl_h_i.a_valid),
     .wready        (tl_h_o.a_ready),
     .wdata         ({tl_h_i.a_opcode ,
@@ -63,6 +64,7 @@ module tlul_fifo_sync #(
   prim_fifo_sync #(.Width(RSPFIFO_WIDTH), .Pass(RspPass), .Depth(RspDepth)) rspfifo (
     .clk_i,
     .rst_ni,
+    .clr_i         (1'b0          ),
     .wvalid        (tl_d_i.d_valid),
     .wready        (tl_d_o.d_ready),
     .wdata         ({tl_d_i.d_opcode,
