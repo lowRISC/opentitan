@@ -72,7 +72,7 @@ class ${gen_dv.rcname(block, r)} extends dv_base_reg;
       .lsb_pos(${f.lsb}),
       .access("${field_access}"),
       .volatile(${field_volatile}),
-      .reset(${f.resval}),
+      .reset(${reg_width}'h${format(f.resval, 'x')}),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

@@ -60,7 +60,7 @@ class hmac_reg_intr_state extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -71,7 +71,7 @@ class hmac_reg_intr_state extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -82,7 +82,7 @@ class hmac_reg_intr_state extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -114,7 +114,7 @@ class hmac_reg_intr_enable extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -125,7 +125,7 @@ class hmac_reg_intr_enable extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -136,7 +136,7 @@ class hmac_reg_intr_enable extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -168,7 +168,7 @@ class hmac_reg_intr_test extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -179,7 +179,7 @@ class hmac_reg_intr_test extends dv_base_reg;
       .lsb_pos(1),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -190,7 +190,7 @@ class hmac_reg_intr_test extends dv_base_reg;
       .lsb_pos(2),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -223,7 +223,7 @@ class hmac_reg_cfg extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -234,7 +234,7 @@ class hmac_reg_cfg extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -245,7 +245,7 @@ class hmac_reg_cfg extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -256,7 +256,7 @@ class hmac_reg_cfg extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -287,7 +287,7 @@ class hmac_reg_cmd extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -298,7 +298,7 @@ class hmac_reg_cmd extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -330,7 +330,7 @@ class hmac_reg_status extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -341,7 +341,7 @@ class hmac_reg_status extends dv_base_reg;
       .lsb_pos(1),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -352,7 +352,7 @@ class hmac_reg_status extends dv_base_reg;
       .lsb_pos(4),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -382,7 +382,7 @@ class hmac_reg_err_code extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -412,7 +412,7 @@ class hmac_reg_wipe_secret extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -442,7 +442,7 @@ class hmac_reg_key0 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -472,7 +472,7 @@ class hmac_reg_key1 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -502,7 +502,7 @@ class hmac_reg_key2 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -532,7 +532,7 @@ class hmac_reg_key3 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -562,7 +562,7 @@ class hmac_reg_key4 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -592,7 +592,7 @@ class hmac_reg_key5 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -622,7 +622,7 @@ class hmac_reg_key6 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -652,7 +652,7 @@ class hmac_reg_key7 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -682,7 +682,7 @@ class hmac_reg_digest0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -712,7 +712,7 @@ class hmac_reg_digest1 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -742,7 +742,7 @@ class hmac_reg_digest2 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -772,7 +772,7 @@ class hmac_reg_digest3 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -802,7 +802,7 @@ class hmac_reg_digest4 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -832,7 +832,7 @@ class hmac_reg_digest5 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -862,7 +862,7 @@ class hmac_reg_digest6 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -892,7 +892,7 @@ class hmac_reg_digest7 extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -922,7 +922,7 @@ class hmac_reg_msg_length_lower extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -952,7 +952,7 @@ class hmac_reg_msg_length_upper extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

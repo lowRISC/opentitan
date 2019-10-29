@@ -37,7 +37,7 @@ class padctrl_reg_regen extends dv_base_reg;
       .lsb_pos(0),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -70,7 +70,7 @@ class padctrl_reg_dio_pads extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -81,7 +81,7 @@ class padctrl_reg_dio_pads extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -92,7 +92,7 @@ class padctrl_reg_dio_pads extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -103,7 +103,7 @@ class padctrl_reg_dio_pads extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -136,7 +136,7 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -147,7 +147,7 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -158,7 +158,7 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -169,7 +169,7 @@ class padctrl_reg_mio_pads0 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -202,7 +202,7 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -213,7 +213,7 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -224,7 +224,7 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -235,7 +235,7 @@ class padctrl_reg_mio_pads1 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -268,7 +268,7 @@ class padctrl_reg_mio_pads2 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -279,7 +279,7 @@ class padctrl_reg_mio_pads2 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -290,7 +290,7 @@ class padctrl_reg_mio_pads2 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -301,7 +301,7 @@ class padctrl_reg_mio_pads2 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -334,7 +334,7 @@ class padctrl_reg_mio_pads3 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -345,7 +345,7 @@ class padctrl_reg_mio_pads3 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -356,7 +356,7 @@ class padctrl_reg_mio_pads3 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -367,7 +367,7 @@ class padctrl_reg_mio_pads3 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

@@ -93,7 +93,7 @@ class alert_handler_reg_intr_state extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -104,7 +104,7 @@ class alert_handler_reg_intr_state extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -115,7 +115,7 @@ class alert_handler_reg_intr_state extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -126,7 +126,7 @@ class alert_handler_reg_intr_state extends dv_base_reg;
       .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -159,7 +159,7 @@ class alert_handler_reg_intr_enable extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -170,7 +170,7 @@ class alert_handler_reg_intr_enable extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -181,7 +181,7 @@ class alert_handler_reg_intr_enable extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -192,7 +192,7 @@ class alert_handler_reg_intr_enable extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -225,7 +225,7 @@ class alert_handler_reg_intr_test extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -236,7 +236,7 @@ class alert_handler_reg_intr_test extends dv_base_reg;
       .lsb_pos(1),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -247,7 +247,7 @@ class alert_handler_reg_intr_test extends dv_base_reg;
       .lsb_pos(2),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -258,7 +258,7 @@ class alert_handler_reg_intr_test extends dv_base_reg;
       .lsb_pos(3),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -288,7 +288,7 @@ class alert_handler_reg_regen extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -318,7 +318,7 @@ class alert_handler_reg_ping_timeout_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(32),
+      .reset(32'h20),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -351,7 +351,7 @@ class alert_handler_reg_alert_en extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -362,7 +362,7 @@ class alert_handler_reg_alert_en extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -373,7 +373,7 @@ class alert_handler_reg_alert_en extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -384,7 +384,7 @@ class alert_handler_reg_alert_en extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -417,7 +417,7 @@ class alert_handler_reg_alert_class extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -428,7 +428,7 @@ class alert_handler_reg_alert_class extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -439,7 +439,7 @@ class alert_handler_reg_alert_class extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -450,7 +450,7 @@ class alert_handler_reg_alert_class extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -483,7 +483,7 @@ class alert_handler_reg_alert_cause extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -494,7 +494,7 @@ class alert_handler_reg_alert_cause extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -505,7 +505,7 @@ class alert_handler_reg_alert_cause extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -516,7 +516,7 @@ class alert_handler_reg_alert_cause extends dv_base_reg;
       .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -549,7 +549,7 @@ class alert_handler_reg_loc_alert_en extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -560,7 +560,7 @@ class alert_handler_reg_loc_alert_en extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -571,7 +571,7 @@ class alert_handler_reg_loc_alert_en extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -582,7 +582,7 @@ class alert_handler_reg_loc_alert_en extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -615,7 +615,7 @@ class alert_handler_reg_loc_alert_class extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -626,7 +626,7 @@ class alert_handler_reg_loc_alert_class extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -637,7 +637,7 @@ class alert_handler_reg_loc_alert_class extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -648,7 +648,7 @@ class alert_handler_reg_loc_alert_class extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -681,7 +681,7 @@ class alert_handler_reg_loc_alert_cause extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -692,7 +692,7 @@ class alert_handler_reg_loc_alert_cause extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -703,7 +703,7 @@ class alert_handler_reg_loc_alert_cause extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -714,7 +714,7 @@ class alert_handler_reg_loc_alert_cause extends dv_base_reg;
       .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -753,7 +753,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -764,7 +764,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -775,7 +775,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -786,7 +786,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -797,7 +797,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -808,7 +808,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -819,7 +819,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -830,7 +830,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -841,7 +841,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -852,7 +852,7 @@ class alert_handler_reg_classa_ctrl extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(3),
+      .reset(32'h3),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -882,7 +882,7 @@ class alert_handler_reg_classa_clren extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -912,7 +912,7 @@ class alert_handler_reg_classa_clr extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -942,7 +942,7 @@ class alert_handler_reg_classa_accum_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -972,7 +972,7 @@ class alert_handler_reg_classa_accum_thresh extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1002,7 +1002,7 @@ class alert_handler_reg_classa_timeout_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1032,7 +1032,7 @@ class alert_handler_reg_classa_phase0_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1062,7 +1062,7 @@ class alert_handler_reg_classa_phase1_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1092,7 +1092,7 @@ class alert_handler_reg_classa_phase2_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1122,7 +1122,7 @@ class alert_handler_reg_classa_phase3_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1152,7 +1152,7 @@ class alert_handler_reg_classa_esc_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1182,7 +1182,7 @@ class alert_handler_reg_classa_state extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1221,7 +1221,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1232,7 +1232,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1243,7 +1243,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1254,7 +1254,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1265,7 +1265,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1276,7 +1276,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1287,7 +1287,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1298,7 +1298,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1309,7 +1309,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1320,7 +1320,7 @@ class alert_handler_reg_classb_ctrl extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(3),
+      .reset(32'h3),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1350,7 +1350,7 @@ class alert_handler_reg_classb_clren extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1380,7 +1380,7 @@ class alert_handler_reg_classb_clr extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1410,7 +1410,7 @@ class alert_handler_reg_classb_accum_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1440,7 +1440,7 @@ class alert_handler_reg_classb_accum_thresh extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1470,7 +1470,7 @@ class alert_handler_reg_classb_timeout_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1500,7 +1500,7 @@ class alert_handler_reg_classb_phase0_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1530,7 +1530,7 @@ class alert_handler_reg_classb_phase1_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1560,7 +1560,7 @@ class alert_handler_reg_classb_phase2_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1590,7 +1590,7 @@ class alert_handler_reg_classb_phase3_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1620,7 +1620,7 @@ class alert_handler_reg_classb_esc_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1650,7 +1650,7 @@ class alert_handler_reg_classb_state extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1689,7 +1689,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1700,7 +1700,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1711,7 +1711,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1722,7 +1722,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1733,7 +1733,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1744,7 +1744,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1755,7 +1755,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1766,7 +1766,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1777,7 +1777,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1788,7 +1788,7 @@ class alert_handler_reg_classc_ctrl extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(3),
+      .reset(32'h3),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1818,7 +1818,7 @@ class alert_handler_reg_classc_clren extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1848,7 +1848,7 @@ class alert_handler_reg_classc_clr extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1878,7 +1878,7 @@ class alert_handler_reg_classc_accum_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1908,7 +1908,7 @@ class alert_handler_reg_classc_accum_thresh extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1938,7 +1938,7 @@ class alert_handler_reg_classc_timeout_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1968,7 +1968,7 @@ class alert_handler_reg_classc_phase0_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1998,7 +1998,7 @@ class alert_handler_reg_classc_phase1_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2028,7 +2028,7 @@ class alert_handler_reg_classc_phase2_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2058,7 +2058,7 @@ class alert_handler_reg_classc_phase3_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2088,7 +2088,7 @@ class alert_handler_reg_classc_esc_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2118,7 +2118,7 @@ class alert_handler_reg_classc_state extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2157,7 +2157,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2168,7 +2168,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2179,7 +2179,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2190,7 +2190,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2201,7 +2201,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2212,7 +2212,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2223,7 +2223,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2234,7 +2234,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2245,7 +2245,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2256,7 +2256,7 @@ class alert_handler_reg_classd_ctrl extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(3),
+      .reset(32'h3),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2286,7 +2286,7 @@ class alert_handler_reg_classd_clren extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2316,7 +2316,7 @@ class alert_handler_reg_classd_clr extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2346,7 +2346,7 @@ class alert_handler_reg_classd_accum_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2376,7 +2376,7 @@ class alert_handler_reg_classd_accum_thresh extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2406,7 +2406,7 @@ class alert_handler_reg_classd_timeout_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2436,7 +2436,7 @@ class alert_handler_reg_classd_phase0_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2466,7 +2466,7 @@ class alert_handler_reg_classd_phase1_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2496,7 +2496,7 @@ class alert_handler_reg_classd_phase2_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2526,7 +2526,7 @@ class alert_handler_reg_classd_phase3_cyc extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2556,7 +2556,7 @@ class alert_handler_reg_classd_esc_cnt extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2586,7 +2586,7 @@ class alert_handler_reg_classd_state extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

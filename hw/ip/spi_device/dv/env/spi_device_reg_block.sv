@@ -49,7 +49,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -60,7 +60,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -71,7 +71,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -82,7 +82,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -93,7 +93,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .lsb_pos(4),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -104,7 +104,7 @@ class spi_device_reg_intr_state extends dv_base_reg;
       .lsb_pos(5),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -139,7 +139,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -150,7 +150,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -161,7 +161,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -172,7 +172,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -183,7 +183,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -194,7 +194,7 @@ class spi_device_reg_intr_enable extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -229,7 +229,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -240,7 +240,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .lsb_pos(1),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -251,7 +251,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .lsb_pos(2),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -262,7 +262,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .lsb_pos(3),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -273,7 +273,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .lsb_pos(4),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -284,7 +284,7 @@ class spi_device_reg_intr_test extends dv_base_reg;
       .lsb_pos(5),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -317,7 +317,7 @@ class spi_device_reg_control extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -328,7 +328,7 @@ class spi_device_reg_control extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -339,7 +339,7 @@ class spi_device_reg_control extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -350,7 +350,7 @@ class spi_device_reg_control extends dv_base_reg;
       .lsb_pos(17),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -384,7 +384,7 @@ class spi_device_reg_cfg extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -395,7 +395,7 @@ class spi_device_reg_cfg extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -406,7 +406,7 @@ class spi_device_reg_cfg extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -417,7 +417,7 @@ class spi_device_reg_cfg extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -428,7 +428,7 @@ class spi_device_reg_cfg extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(127),
+      .reset(32'h7f),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -459,7 +459,7 @@ class spi_device_reg_fifo_level extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(128),
+      .reset(32'h80),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -470,7 +470,7 @@ class spi_device_reg_fifo_level extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -501,7 +501,7 @@ class spi_device_reg_async_fifo_level extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -512,7 +512,7 @@ class spi_device_reg_async_fifo_level extends dv_base_reg;
       .lsb_pos(16),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -547,7 +547,7 @@ class spi_device_reg_status extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -558,7 +558,7 @@ class spi_device_reg_status extends dv_base_reg;
       .lsb_pos(1),
       .access("RO"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -569,7 +569,7 @@ class spi_device_reg_status extends dv_base_reg;
       .lsb_pos(2),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -580,7 +580,7 @@ class spi_device_reg_status extends dv_base_reg;
       .lsb_pos(3),
       .access("RO"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -591,7 +591,7 @@ class spi_device_reg_status extends dv_base_reg;
       .lsb_pos(4),
       .access("RO"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -602,7 +602,7 @@ class spi_device_reg_status extends dv_base_reg;
       .lsb_pos(5),
       .access("RO"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -633,7 +633,7 @@ class spi_device_reg_rxf_ptr extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -644,7 +644,7 @@ class spi_device_reg_rxf_ptr extends dv_base_reg;
       .lsb_pos(16),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -675,7 +675,7 @@ class spi_device_reg_txf_ptr extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -686,7 +686,7 @@ class spi_device_reg_txf_ptr extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -717,7 +717,7 @@ class spi_device_reg_rxf_addr extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -728,7 +728,7 @@ class spi_device_reg_rxf_addr extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(508),
+      .reset(32'h1fc),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -759,7 +759,7 @@ class spi_device_reg_txf_addr extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(512),
+      .reset(32'h200),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -770,7 +770,7 @@ class spi_device_reg_txf_addr extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(1020),
+      .reset(32'h3fc),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

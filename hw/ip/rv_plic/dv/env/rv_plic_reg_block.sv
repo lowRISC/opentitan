@@ -100,7 +100,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -111,7 +111,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(1),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -122,7 +122,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(2),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -133,7 +133,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(3),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -144,7 +144,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(4),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -155,7 +155,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(5),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -166,7 +166,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(6),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -177,7 +177,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(7),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -188,7 +188,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(8),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -199,7 +199,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(9),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -210,7 +210,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(10),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -221,7 +221,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(11),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -232,7 +232,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(12),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -243,7 +243,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(13),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -254,7 +254,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(14),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -265,7 +265,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(15),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -276,7 +276,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(16),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -287,7 +287,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(17),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -298,7 +298,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(18),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -309,7 +309,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(19),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -320,7 +320,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(20),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -331,7 +331,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(21),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -342,7 +342,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(22),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -353,7 +353,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(23),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -364,7 +364,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(24),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -375,7 +375,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(25),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -386,7 +386,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(26),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -397,7 +397,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(27),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -408,7 +408,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(28),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -419,7 +419,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(29),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -430,7 +430,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(30),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -441,7 +441,7 @@ class rv_plic_reg_ip extends dv_base_reg;
       .lsb_pos(31),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -502,7 +502,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -513,7 +513,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -524,7 +524,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -535,7 +535,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -546,7 +546,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -557,7 +557,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -568,7 +568,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -579,7 +579,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(7),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -590,7 +590,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -601,7 +601,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(9),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -612,7 +612,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -623,7 +623,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(11),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -634,7 +634,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -645,7 +645,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(13),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -656,7 +656,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(14),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -667,7 +667,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(15),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -678,7 +678,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -689,7 +689,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(17),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -700,7 +700,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(18),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -711,7 +711,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(19),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -722,7 +722,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(20),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -733,7 +733,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(21),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -744,7 +744,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(22),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -755,7 +755,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(23),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -766,7 +766,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -777,7 +777,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(25),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -788,7 +788,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(26),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -799,7 +799,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(27),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -810,7 +810,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(28),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -821,7 +821,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(29),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -832,7 +832,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(30),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -843,7 +843,7 @@ class rv_plic_reg_le extends dv_base_reg;
       .lsb_pos(31),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -873,7 +873,7 @@ class rv_plic_reg_prio0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -903,7 +903,7 @@ class rv_plic_reg_prio1 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -933,7 +933,7 @@ class rv_plic_reg_prio2 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -963,7 +963,7 @@ class rv_plic_reg_prio3 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -993,7 +993,7 @@ class rv_plic_reg_prio4 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1023,7 +1023,7 @@ class rv_plic_reg_prio5 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1053,7 +1053,7 @@ class rv_plic_reg_prio6 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1083,7 +1083,7 @@ class rv_plic_reg_prio7 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1113,7 +1113,7 @@ class rv_plic_reg_prio8 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1143,7 +1143,7 @@ class rv_plic_reg_prio9 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1173,7 +1173,7 @@ class rv_plic_reg_prio10 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1203,7 +1203,7 @@ class rv_plic_reg_prio11 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1233,7 +1233,7 @@ class rv_plic_reg_prio12 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1263,7 +1263,7 @@ class rv_plic_reg_prio13 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1293,7 +1293,7 @@ class rv_plic_reg_prio14 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1323,7 +1323,7 @@ class rv_plic_reg_prio15 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1353,7 +1353,7 @@ class rv_plic_reg_prio16 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1383,7 +1383,7 @@ class rv_plic_reg_prio17 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1413,7 +1413,7 @@ class rv_plic_reg_prio18 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1443,7 +1443,7 @@ class rv_plic_reg_prio19 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1473,7 +1473,7 @@ class rv_plic_reg_prio20 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1503,7 +1503,7 @@ class rv_plic_reg_prio21 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1533,7 +1533,7 @@ class rv_plic_reg_prio22 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1563,7 +1563,7 @@ class rv_plic_reg_prio23 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1593,7 +1593,7 @@ class rv_plic_reg_prio24 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1623,7 +1623,7 @@ class rv_plic_reg_prio25 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1653,7 +1653,7 @@ class rv_plic_reg_prio26 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1683,7 +1683,7 @@ class rv_plic_reg_prio27 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1713,7 +1713,7 @@ class rv_plic_reg_prio28 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1743,7 +1743,7 @@ class rv_plic_reg_prio29 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1773,7 +1773,7 @@ class rv_plic_reg_prio30 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1803,7 +1803,7 @@ class rv_plic_reg_prio31 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1864,7 +1864,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1875,7 +1875,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1886,7 +1886,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1897,7 +1897,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1908,7 +1908,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1919,7 +1919,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1930,7 +1930,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1941,7 +1941,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(7),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1952,7 +1952,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1963,7 +1963,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(9),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1974,7 +1974,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1985,7 +1985,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(11),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1996,7 +1996,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2007,7 +2007,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(13),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2018,7 +2018,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(14),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2029,7 +2029,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(15),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2040,7 +2040,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2051,7 +2051,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(17),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2062,7 +2062,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(18),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2073,7 +2073,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(19),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2084,7 +2084,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(20),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2095,7 +2095,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(21),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2106,7 +2106,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(22),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2117,7 +2117,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(23),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2128,7 +2128,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2139,7 +2139,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(25),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2150,7 +2150,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(26),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2161,7 +2161,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(27),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2172,7 +2172,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(28),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2183,7 +2183,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(29),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2194,7 +2194,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(30),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2205,7 +2205,7 @@ class rv_plic_reg_ie0 extends dv_base_reg;
       .lsb_pos(31),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2235,7 +2235,7 @@ class rv_plic_reg_threshold0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2265,7 +2265,7 @@ class rv_plic_reg_cc0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -2295,7 +2295,7 @@ class rv_plic_reg_msip0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

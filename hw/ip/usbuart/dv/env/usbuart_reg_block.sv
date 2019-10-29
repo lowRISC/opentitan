@@ -52,7 +52,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -63,7 +63,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -74,7 +74,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -85,7 +85,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -96,7 +96,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(4),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -107,7 +107,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(5),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -118,7 +118,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(6),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -129,7 +129,7 @@ class usbuart_reg_intr_state extends dv_base_reg;
       .lsb_pos(7),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -166,7 +166,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -177,7 +177,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -188,7 +188,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -199,7 +199,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -210,7 +210,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -221,7 +221,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -232,7 +232,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -243,7 +243,7 @@ class usbuart_reg_intr_enable extends dv_base_reg;
       .lsb_pos(7),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -280,7 +280,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -291,7 +291,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(1),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -302,7 +302,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(2),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -313,7 +313,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(3),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -324,7 +324,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(4),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -335,7 +335,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(5),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -346,7 +346,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(6),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -357,7 +357,7 @@ class usbuart_reg_intr_test extends dv_base_reg;
       .lsb_pos(7),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -395,7 +395,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -406,7 +406,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -417,7 +417,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -428,7 +428,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -439,7 +439,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -450,7 +450,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -461,7 +461,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(7),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -472,7 +472,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -483,7 +483,7 @@ class usbuart_reg_ctrl extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -518,7 +518,7 @@ class usbuart_reg_status extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -529,7 +529,7 @@ class usbuart_reg_status extends dv_base_reg;
       .lsb_pos(1),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -540,7 +540,7 @@ class usbuart_reg_status extends dv_base_reg;
       .lsb_pos(2),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -551,7 +551,7 @@ class usbuart_reg_status extends dv_base_reg;
       .lsb_pos(3),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -562,7 +562,7 @@ class usbuart_reg_status extends dv_base_reg;
       .lsb_pos(4),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -573,7 +573,7 @@ class usbuart_reg_status extends dv_base_reg;
       .lsb_pos(5),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -603,7 +603,7 @@ class usbuart_reg_rdata extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -633,7 +633,7 @@ class usbuart_reg_wdata extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -666,7 +666,7 @@ class usbuart_reg_fifo_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -677,7 +677,7 @@ class usbuart_reg_fifo_ctrl extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -688,7 +688,7 @@ class usbuart_reg_fifo_ctrl extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -699,7 +699,7 @@ class usbuart_reg_fifo_ctrl extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -730,7 +730,7 @@ class usbuart_reg_fifo_status extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -741,7 +741,7 @@ class usbuart_reg_fifo_status extends dv_base_reg;
       .lsb_pos(16),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -772,7 +772,7 @@ class usbuart_reg_ovrd extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -783,7 +783,7 @@ class usbuart_reg_ovrd extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -813,7 +813,7 @@ class usbuart_reg_val extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -844,7 +844,7 @@ class usbuart_reg_timeout_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -855,7 +855,7 @@ class usbuart_reg_timeout_ctrl extends dv_base_reg;
       .lsb_pos(31),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -888,7 +888,7 @@ class usbuart_reg_usbstat extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -899,7 +899,7 @@ class usbuart_reg_usbstat extends dv_base_reg;
       .lsb_pos(14),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -910,7 +910,7 @@ class usbuart_reg_usbstat extends dv_base_reg;
       .lsb_pos(15),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -921,7 +921,7 @@ class usbuart_reg_usbstat extends dv_base_reg;
       .lsb_pos(16),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -952,7 +952,7 @@ class usbuart_reg_usbparam extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -963,7 +963,7 @@ class usbuart_reg_usbparam extends dv_base_reg;
       .lsb_pos(16),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

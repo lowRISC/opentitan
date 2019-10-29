@@ -59,7 +59,7 @@ class flash_ctrl_reg_intr_state extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -70,7 +70,7 @@ class flash_ctrl_reg_intr_state extends dv_base_reg;
       .lsb_pos(1),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -81,7 +81,7 @@ class flash_ctrl_reg_intr_state extends dv_base_reg;
       .lsb_pos(2),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -92,7 +92,7 @@ class flash_ctrl_reg_intr_state extends dv_base_reg;
       .lsb_pos(3),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -103,7 +103,7 @@ class flash_ctrl_reg_intr_state extends dv_base_reg;
       .lsb_pos(4),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -114,7 +114,7 @@ class flash_ctrl_reg_intr_state extends dv_base_reg;
       .lsb_pos(5),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -149,7 +149,7 @@ class flash_ctrl_reg_intr_enable extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -160,7 +160,7 @@ class flash_ctrl_reg_intr_enable extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -171,7 +171,7 @@ class flash_ctrl_reg_intr_enable extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -182,7 +182,7 @@ class flash_ctrl_reg_intr_enable extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -193,7 +193,7 @@ class flash_ctrl_reg_intr_enable extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -204,7 +204,7 @@ class flash_ctrl_reg_intr_enable extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -239,7 +239,7 @@ class flash_ctrl_reg_intr_test extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -250,7 +250,7 @@ class flash_ctrl_reg_intr_test extends dv_base_reg;
       .lsb_pos(1),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -261,7 +261,7 @@ class flash_ctrl_reg_intr_test extends dv_base_reg;
       .lsb_pos(2),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -272,7 +272,7 @@ class flash_ctrl_reg_intr_test extends dv_base_reg;
       .lsb_pos(3),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -283,7 +283,7 @@ class flash_ctrl_reg_intr_test extends dv_base_reg;
       .lsb_pos(4),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -294,7 +294,7 @@ class flash_ctrl_reg_intr_test extends dv_base_reg;
       .lsb_pos(5),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -328,7 +328,7 @@ class flash_ctrl_reg_control extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -339,7 +339,7 @@ class flash_ctrl_reg_control extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -350,7 +350,7 @@ class flash_ctrl_reg_control extends dv_base_reg;
       .lsb_pos(6),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -361,7 +361,7 @@ class flash_ctrl_reg_control extends dv_base_reg;
       .lsb_pos(7),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -372,7 +372,7 @@ class flash_ctrl_reg_control extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -402,7 +402,7 @@ class flash_ctrl_reg_addr extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -439,7 +439,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(0),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -450,7 +450,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(1),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -461,7 +461,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(2),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -472,7 +472,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(3),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -483,7 +483,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(4),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -494,7 +494,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(5),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -505,7 +505,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(6),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -516,7 +516,7 @@ class flash_ctrl_reg_region_cfg_regwen extends dv_base_reg;
       .lsb_pos(7),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -551,7 +551,7 @@ class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -562,7 +562,7 @@ class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -573,7 +573,7 @@ class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -584,7 +584,7 @@ class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -595,7 +595,7 @@ class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -606,7 +606,7 @@ class flash_ctrl_reg_mp_region_cfg0 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -641,7 +641,7 @@ class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -652,7 +652,7 @@ class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -663,7 +663,7 @@ class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -674,7 +674,7 @@ class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -685,7 +685,7 @@ class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -696,7 +696,7 @@ class flash_ctrl_reg_mp_region_cfg1 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -731,7 +731,7 @@ class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -742,7 +742,7 @@ class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -753,7 +753,7 @@ class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -764,7 +764,7 @@ class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -775,7 +775,7 @@ class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -786,7 +786,7 @@ class flash_ctrl_reg_mp_region_cfg2 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -821,7 +821,7 @@ class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -832,7 +832,7 @@ class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -843,7 +843,7 @@ class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -854,7 +854,7 @@ class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -865,7 +865,7 @@ class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -876,7 +876,7 @@ class flash_ctrl_reg_mp_region_cfg3 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -911,7 +911,7 @@ class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -922,7 +922,7 @@ class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -933,7 +933,7 @@ class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -944,7 +944,7 @@ class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -955,7 +955,7 @@ class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -966,7 +966,7 @@ class flash_ctrl_reg_mp_region_cfg4 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1001,7 +1001,7 @@ class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1012,7 +1012,7 @@ class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1023,7 +1023,7 @@ class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1034,7 +1034,7 @@ class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1045,7 +1045,7 @@ class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1056,7 +1056,7 @@ class flash_ctrl_reg_mp_region_cfg5 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1091,7 +1091,7 @@ class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1102,7 +1102,7 @@ class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1113,7 +1113,7 @@ class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1124,7 +1124,7 @@ class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1135,7 +1135,7 @@ class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1146,7 +1146,7 @@ class flash_ctrl_reg_mp_region_cfg6 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1181,7 +1181,7 @@ class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1192,7 +1192,7 @@ class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1203,7 +1203,7 @@ class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1214,7 +1214,7 @@ class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
       .lsb_pos(3),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1225,7 +1225,7 @@ class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1236,7 +1236,7 @@ class flash_ctrl_reg_mp_region_cfg7 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1268,7 +1268,7 @@ class flash_ctrl_reg_default_region extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1279,7 +1279,7 @@ class flash_ctrl_reg_default_region extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1290,7 +1290,7 @@ class flash_ctrl_reg_default_region extends dv_base_reg;
       .lsb_pos(2),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1320,7 +1320,7 @@ class flash_ctrl_reg_bank_cfg_regwen extends dv_base_reg;
       .lsb_pos(0),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1351,7 +1351,7 @@ class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1362,7 +1362,7 @@ class flash_ctrl_reg_mp_bank_cfg extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1393,7 +1393,7 @@ class flash_ctrl_reg_op_status extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1404,7 +1404,7 @@ class flash_ctrl_reg_op_status extends dv_base_reg;
       .lsb_pos(1),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1440,7 +1440,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1451,7 +1451,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(1),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1462,7 +1462,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(2),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1473,7 +1473,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(3),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1484,7 +1484,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(4),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1495,7 +1495,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(8),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1506,7 +1506,7 @@ class flash_ctrl_reg_status extends dv_base_reg;
       .lsb_pos(17),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1536,7 +1536,7 @@ class flash_ctrl_reg_scratch extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1567,7 +1567,7 @@ class flash_ctrl_reg_fifo_lvl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(15),
+      .reset(32'hf),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -1578,7 +1578,7 @@ class flash_ctrl_reg_fifo_lvl extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(15),
+      .reset(32'hf),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
