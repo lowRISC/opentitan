@@ -21,6 +21,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     hmac_process_fifo_rd();
+    hmac_process_fifo_full();
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
@@ -186,7 +187,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   virtual task incr_wr_and_check_fifo_full();
     if (sha_en) begin
       @(negedge cfg.clk_rst_vif.clk);
-      hmac_wr_cnt ++;
+      hmac_wr_cnt++;
+    end
+  endtask
+
+  virtual task hmac_process_fifo_full();
+    forever @(hmac_wr_cnt, hmac_rd_cnt) begin
       if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
         void'(ral.intr_state.fifo_full.predict(1));
       end
@@ -238,7 +244,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
               #1; // delay 1 ns to make sure did not sample right at negedge clk
               cfg.clk_rst_vif.wait_n_clks(1);
-              hmac_rd_cnt ++;
+              hmac_rd_cnt++;
               if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_n_clks(HMAC_MSG_PROCESS_CYCLES);
             end
             begin : reset_hmac_fifo_rd
@@ -294,7 +300,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     void'(ral.digest7.predict(exp_digest[7]));
   endfunction
 
-  virtual function update_wr_msg_length(int size_bytes);
+  virtual function void update_wr_msg_length(int size_bytes);
     uint64 size_bits = size_bytes * 8;
     void'(ral.msg_length_upper.predict(size_bits[TL_DW*2-1:TL_DW]));
     void'(ral.msg_length_lower.predict(size_bits[TL_DW-1:0]));
