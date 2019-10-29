@@ -5,7 +5,8 @@
 {
     name:               "gpio",
     version:            "1.0",
-    life_stage:         "L1",
-    design_stage:       "D0",
-    verification_stage: "V0",
+    life_stage:         "L2",
+    design_stage:       "D3",
+    verification_stage: "V3",
+    notes:              "Signoff commit id: a4638684103da48c793301243759e9d1eb2cb9dc",
 }
