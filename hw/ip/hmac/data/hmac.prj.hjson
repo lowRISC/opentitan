@@ -6,6 +6,7 @@
     name:               "hmac",
     version:            "0.5",
     life_stage:         "L1",
-    design_stage:       "D0",
-    verification_stage: "V0",
+    design_stage:       "D3",
+    verification_stage: "V2",
+    notes:              "D3 commit id: 3471a47c96ba87c77de7b14c39f4faf71a839283",
 }
