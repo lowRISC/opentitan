@@ -174,7 +174,7 @@ module hmac (
   assign msg_fifo_rvalid = msg_fifo_req & ~msg_fifo_we;
   assign msg_fifo_rdata  = '1;  // Return all F
   assign msg_fifo_rerror = '1;  // Return error for read access
-  assign msg_fifo_gnt    = msg_fifo_req & fifo_wready & ~hmac_fifo_wsel & packer_ready;
+  assign msg_fifo_gnt    = msg_fifo_req & ~hmac_fifo_wsel & packer_ready;
 
   // FIFO control
   sha_fifo_t reg_fifo_wentry;

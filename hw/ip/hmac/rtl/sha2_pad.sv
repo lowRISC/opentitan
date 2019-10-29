@@ -84,6 +84,7 @@ module sha2_pad import hmac_pkg::*; (
           2'b 01: shaf_rdata = {fifo_rdata.data[31:24], 24'h 8000_00};
           2'b 10: shaf_rdata = {fifo_rdata.data[31:16], 16'h 8000};
           2'b 11: shaf_rdata = {fifo_rdata.data[31: 8],  8'h 80};
+          default: shaf_rdata = 32'h0;
         endcase
       end
 
