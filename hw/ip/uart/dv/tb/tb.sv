@@ -54,7 +54,9 @@ module tb;
     .intr_rx_frame_err_o  (intr_rx_frame_err ),
     .intr_rx_break_err_o  (intr_rx_break_err ),
     .intr_rx_timeout_o    (intr_rx_timeout   ),
-    .intr_rx_parity_err_o (intr_rx_parity_err)
+    .intr_rx_parity_err_o (intr_rx_parity_err),
+
+    .scanmode_i           (1'b0              )
   );
 
   assign interrupts[TxWatermark] = intr_tx_watermark;

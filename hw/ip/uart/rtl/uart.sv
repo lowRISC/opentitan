@@ -25,12 +25,10 @@ module uart (
   output logic    intr_rx_frame_err_o ,
   output logic    intr_rx_break_err_o ,
   output logic    intr_rx_timeout_o   ,
-  output logic    intr_rx_parity_err_o
-);
+  output logic    intr_rx_parity_err_o,
 
-  // TODO: same as in spi_device.sv, add input scanmode_i to module
-  logic scanmode_i;
-  assign scanmode_i = 1'b0;
+  input           scanmode_i
+);
 
   import uart_reg_pkg::*;
 

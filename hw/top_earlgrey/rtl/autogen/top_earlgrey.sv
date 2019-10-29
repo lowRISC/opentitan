@@ -370,6 +370,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
 
+      .scanmode_i   (scanmode_i),
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );

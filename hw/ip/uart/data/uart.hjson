@@ -33,6 +33,7 @@
     { name: "rx_parity_err"
       desc: "raised if the receiver has detected a parity error."}
   ]
+  scan: "true", // Enable `scanmode_i` port
   regwidth: "32",
   registers: [
     { name: "CTRL",

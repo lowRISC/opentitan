@@ -113,7 +113,7 @@
           type: interrupt
         }
       ]
-      scan: "false"
+      scan: "true"
     }
     {
       name: gpio
