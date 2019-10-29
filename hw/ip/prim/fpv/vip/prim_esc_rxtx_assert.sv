@@ -43,8 +43,8 @@ module prim_esc_rxtx_assert (
       ##[0:4] ping_ok_o, clk_i, !rst_ni || error_present)
 
   // be more specific (i.e. use throughout)
-  `ASSERT(EscRespCheck_A, ##1 esc_en_i |-> ##[0:1] prim_esc_rxtx_tb.resp_p ##1
-      !prim_esc_rxtx_tb.resp_p, clk_i, !rst_ni || error_present)
+  `ASSERT(EscRespCheck_A, ##1 esc_en_i |-> ##[0:1] prim_esc_rxtx_tb.esc_rx_out.resp_p ##1
+      !prim_esc_rxtx_tb.esc_rx_out.resp_p, clk_i, !rst_ni || error_present)
 
   // check correct transmission of escalation within 0-1 cycles
   `ASSERT(EscCheck_A, ##1 esc_en_i |-> ##[0:1] esc_en_o, clk_i, !rst_ni || error_present)
