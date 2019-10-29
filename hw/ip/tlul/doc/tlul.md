@@ -305,6 +305,17 @@ device has an option to support or not support the full variety of
 bus transaction sizes. Their support will be documented in the device
 specification.
 
+It should be noted that, even though non-contiguous `a_mask` values like
+`0b1001` are permitted by the TL-UL spec, the TL-UL hosts within this project
+**do not leverage non-contiguous masks**. I.e., the TL-UL hosts will only assert
+`a_mask` values from the following restricted set for 32bit transfers:
+```
+{0b0000, 0b0001, 0b0010, 0b0100, 0b1000, 0b0011, 0b0110, 0b1100, 0b1111}.
+```
+The TL-UL devices within the project may or may not support certain subword
+masks (both non-contiguous or contiguous ones), and they have the right to
+assert `d_error` if they don't.
+
 | `a_opcode[2:0]` value | Name | Definition |
 | :---: | :---: | --- |
 | `3'b000` | `PutFullData` | Write of full bus width. `a_size` should be `'h2` to indicate 32b write (or `'h3` if/when 64b bus width is supported), though the bus specification allows these to be defined otherwise (see `PutPartialData` below) |
