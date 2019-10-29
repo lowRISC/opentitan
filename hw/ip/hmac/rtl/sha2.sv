@@ -163,43 +163,43 @@ module sha2 import hmac_pkg::*; (
     FifoWait
   } fifoctl_state_e;
 
-  fifoctl_state_e fifo_st, fifo_st_next;
+  fifoctl_state_e fifo_st_q, fifo_st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      fifo_st <= FifoIdle;
+      fifo_st_q <= FifoIdle;
     end else begin
-      fifo_st <= fifo_st_next;
+      fifo_st_q <= fifo_st_d;
     end
   end
 
   always_comb begin
-    fifo_st_next = FifoIdle;
+    fifo_st_d = FifoIdle;
     update_w_from_fifo = 1'b0;
     hash_done_next = 1'b0;
 
-    unique case (fifo_st)
+    unique case (fifo_st_q)
       FifoIdle: begin
         if (hash_start) begin
-          fifo_st_next = FifoLoadFromFifo;
+          fifo_st_d = FifoLoadFromFifo;
         end else begin
-          fifo_st_next = FifoIdle;
+          fifo_st_d = FifoIdle;
         end
       end
 
       FifoLoadFromFifo: begin
         if (!sha_en) begin
-          fifo_st_next = FifoIdle;
+          fifo_st_d = FifoIdle;
           update_w_from_fifo = 1'b0;
         end else if (!shaf_rvalid) begin
           // Wait until it is filled
-          fifo_st_next = FifoLoadFromFifo;
+          fifo_st_d = FifoLoadFromFifo;
           update_w_from_fifo = 1'b0;
         end else if (w_index == 4'd 15) begin
-          fifo_st_next = FifoWait;
+          fifo_st_d = FifoWait;
           update_w_from_fifo = 1'b1;
         end else begin
-          fifo_st_next = FifoLoadFromFifo;
+          fifo_st_d = FifoLoadFromFifo;
           update_w_from_fifo = 1'b1;
         end
       end
@@ -209,21 +209,21 @@ module sha2 import hmac_pkg::*; (
         // TODO: Detect at the end of the message
         if (msg_feed_complete && complete_one_chunk) begin
           // TODO: Should we wait until round hits 63?
-          fifo_st_next = FifoIdle;
+          fifo_st_d = FifoIdle;
 
           hash_done_next = 1'b1;
         // TODO: make below FIFO feeding logic concrete.
         //       currently, with below commented logic, it doesn't fill FIFO correctly.
         //end else if (!in_end_chunk && round == 6'd47) begin
         end else if (complete_one_chunk) begin
-          fifo_st_next = FifoLoadFromFifo;
+          fifo_st_d = FifoLoadFromFifo;
         end else begin
-          fifo_st_next = FifoWait;
+          fifo_st_d = FifoWait;
         end
       end
 
       default: begin
-        fifo_st_next = FifoIdle;
+        fifo_st_d = FifoIdle;
       end
     endcase
   end
@@ -235,13 +235,13 @@ module sha2 import hmac_pkg::*; (
     ShaUpdateDigest
   } sha_st_t;
 
-  sha_st_t sha_st, sha_st_next;
+  sha_st_t sha_st_q, sha_st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      sha_st <= ShaIdle;
+      sha_st_q <= ShaIdle;
     end else begin
-      sha_st <= sha_st_next;
+      sha_st_q <= sha_st_d;
     end
   end
 
@@ -254,13 +254,13 @@ module sha2 import hmac_pkg::*; (
     init_hash        = 1'b0;
     run_hash         = 1'b0;
 
-    unique case (sha_st)
+    unique case (sha_st_q)
       ShaIdle: begin
-        if (fifo_st == FifoWait) begin
+        if (fifo_st_q == FifoWait) begin
           init_hash = 1'b1;
-          sha_st_next = ShaCompress;
+          sha_st_d = ShaCompress;
         end else begin
-          sha_st_next = ShaIdle;
+          sha_st_d = ShaIdle;
         end
       end
 
@@ -272,24 +272,24 @@ module sha2 import hmac_pkg::*; (
         end
 
         if (complete_one_chunk) begin
-          sha_st_next = ShaUpdateDigest;
+          sha_st_d = ShaUpdateDigest;
         end else begin
-          sha_st_next = ShaCompress;
+          sha_st_d = ShaCompress;
         end
       end
 
       ShaUpdateDigest: begin
         update_digest = 1'b1;
-        if (fifo_st == FifoWait) begin
+        if (fifo_st_q == FifoWait) begin
           init_hash = 1'b1;
-          sha_st_next = ShaCompress;
+          sha_st_d = ShaCompress;
         end else begin
-          sha_st_next = ShaIdle;
+          sha_st_d = ShaIdle;
         end
       end
 
       default: begin
-        sha_st_next = ShaIdle;
+        sha_st_d = ShaIdle;
       end
     endcase
   end

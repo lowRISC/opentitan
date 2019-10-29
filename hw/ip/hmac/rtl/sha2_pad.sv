@@ -131,13 +131,13 @@ module sha2_pad import hmac_pkg::*; (
     StLenLo
   } pad_st_e;
 
-  pad_st_e st, st_next;
+  pad_st_e st_q, st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      st <= StIdle;
+      st_q <= StIdle;
     end else begin
-      st <= st_next;
+      st_q <= st_d;
     end
   end
 
@@ -149,9 +149,9 @@ module sha2_pad import hmac_pkg::*; (
     sel_data = FifoIn;
     fifo_rready = 1'b0;
 
-    st_next = StIdle;
+    st_d = StIdle;
 
-    unique case (st)
+    unique case (st_q)
       StIdle: begin
         sel_data = FifoIn;
         shaf_rvalid = 1'b0;
@@ -159,9 +159,9 @@ module sha2_pad import hmac_pkg::*; (
         if (sha_en && hash_start) begin
           inc_txcount = 1'b0;
 
-          st_next = StFifoReceive;
+          st_d = StFifoReceive;
         end else begin
-          st_next = StIdle;
+          st_d = StIdle;
         end
       end
 
@@ -174,26 +174,26 @@ module sha2_pad import hmac_pkg::*; (
           inc_txcount = 1'b0;
           fifo_rready = 1'b0;
 
-          st_next = StPad80;
+          st_d = StPad80;
         end else if (!hash_process_flag) begin
           fifo_rready = shaf_rready;
           shaf_rvalid  = fifo_rvalid;
           inc_txcount = shaf_rready;
 
-          st_next = StFifoReceive;
+          st_d = StFifoReceive;
         end else if (tx_count == message_length) begin
           // already received all msg and was waiting process flag
           shaf_rvalid  = 1'b0;
           inc_txcount = 1'b0;
           fifo_rready = 1'b0;
 
-          st_next = StPad80;
+          st_d = StPad80;
         end else begin
           shaf_rvalid  = fifo_rvalid;
           fifo_rready = shaf_rready; // 0 always
           inc_txcount = shaf_rready; // 0 always
 
-          st_next = StFifoReceive;
+          st_d = StFifoReceive;
         end
       end
 
@@ -205,16 +205,16 @@ module sha2_pad import hmac_pkg::*; (
 
         // exactly 96 bits left, do not need to pad00's
         if (shaf_rready && txcnt_eq_1a0) begin
-          st_next = StLenHi;
+          st_d = StLenHi;
           inc_txcount = 1'b1;
         // it does not matter if value is < or > than 416 bits.  If it's the former, 00 pad until
         // length field.  If >, then the next chunk will contain the length field with appropriate
         // 0 padding.
         end else if (shaf_rready && !txcnt_eq_1a0) begin
-          st_next = StPad00;
+          st_d = StPad00;
           inc_txcount = 1'b1;
         end else begin
-          st_next = StPad80;
+          st_d = StPad80;
           inc_txcount = 1'b0;
         end
 
@@ -222,23 +222,23 @@ module sha2_pad import hmac_pkg::*; (
         // # (80 clk --> 64 clk)
         // # leaving this as a reference but needs to verify it.
         //if (shaf_rready && !txcnt_eq_1a0) begin
-        //  st_next = StPad00;
+        //  st_d = StPad00;
         //
         //  inc_txcount = 1'b1;
         //  shaf_rvalid = (msg_word_aligned) ? 1'b1 : fifo_rvalid;
         //  fifo_rready = (msg_word_aligned) ? 1'b0 : 1'b1;
         //end else if (!shaf_rready && !txcnt_eq_1a0) begin
-        //  st_next = StPad80;
+        //  st_d = StPad80;
         //
         //  inc_txcount = 1'b0;
         //  shaf_rvalid = (msg_word_aligned) ? 1'b1 : fifo_rvalid;
         //
         //end else if (shaf_rready && txcnt_eq_1a0) begin
-        //  st_next = StLenHi;
+        //  st_d = StLenHi;
         //  inc_txcount = 1'b1;
         //end else begin
         //  // !shaf_rready && txcnt_eq_1a0 , just wait until fifo_rready asserted
-        //  st_next = StPad80;
+        //  st_d = StPad80;
         //  inc_txcount = 1'b0;
         //end
       end
@@ -251,12 +251,12 @@ module sha2_pad import hmac_pkg::*; (
           inc_txcount = 1'b1;
 
           if (txcnt_eq_1a0) begin
-            st_next = StLenHi;
+            st_d = StLenHi;
           end else begin
-            st_next = StPad00;
+            st_d = StPad00;
           end
         end else begin
-          st_next = StPad00;
+          st_d = StPad00;
         end
       end
 
@@ -265,11 +265,11 @@ module sha2_pad import hmac_pkg::*; (
         shaf_rvalid = 1'b1;
 
         if (shaf_rready) begin
-          st_next = StLenLo;
+          st_d = StLenLo;
 
           inc_txcount = 1'b1;
         end else begin
-          st_next = StLenHi;
+          st_d = StLenHi;
 
           inc_txcount = 1'b0;
         end
@@ -280,18 +280,18 @@ module sha2_pad import hmac_pkg::*; (
         shaf_rvalid = 1'b1;
 
         if (shaf_rready) begin
-          st_next = StIdle;
+          st_d = StIdle;
 
           inc_txcount = 1'b1;
         end else begin
-          st_next = StLenLo;
+          st_d = StLenLo;
 
           inc_txcount = 1'b0;
         end
       end
 
       default: begin
-        st_next = StIdle;
+        st_d = StIdle;
       end
     endcase
   end
@@ -308,7 +308,7 @@ module sha2_pad import hmac_pkg::*; (
   end
 
   // State machine is in Idle only when it meets tx_count == message length
-  assign msg_feed_complete = hash_process_flag && (st == StIdle);
+  assign msg_feed_complete = hash_process_flag && (st_q == StIdle);
 
   // When fifo_partial, fifo shouldn't be empty and hash_process was set
   `ASSERT(ValidPartialConditionAssert,

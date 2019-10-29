@@ -79,7 +79,7 @@ module hmac_core import hmac_pkg::*; (
   } round_t ;
 
   logic update_round ;
-  round_t round, round_next;
+  round_t round_q, round_d;
 
   typedef enum logic [2:0] {
     StIdle,
@@ -91,7 +91,7 @@ module hmac_core import hmac_pkg::*; (
     StDone              // hmac_done
   } st_e ;
 
-  st_e st, st_next;
+  st_e st_q, st_d;
 
   logic clr_fifo_wdata_sel;
   logic txcnt_eq_blksz ;
@@ -108,7 +108,7 @@ module hmac_core import hmac_pkg::*; (
   assign o_pad = {secret_key, {(BlockSize-256){1'b0}}} ^ {(BlockSize/8){8'h5c}};
 
 
-  assign fifo_rready  = (hmac_en) ? (st == StMsg) & sha_rready : sha_rready ;
+  assign fifo_rready  = (hmac_en) ? (st_q == StMsg) & sha_rready : sha_rready ;
   // sha_rvalid is controlled by State Machine below.
   assign sha_rvalid = (!hmac_en) ? fifo_rvalid : hmac_sha_rvalid ;
   assign sha_rdata =
@@ -157,9 +157,9 @@ module hmac_core import hmac_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      round <= Inner;
+      round_q <= Inner;
     end else if (update_round) begin
-      round <= round_next;
+      round_q <= round_d;
     end
   end
 
@@ -173,11 +173,11 @@ module hmac_core import hmac_pkg::*; (
     end
   end
 
-  assign sel_msglen = (round == Inner) ? SelIPadMsg : SelOPadMsg ;
+  assign sel_msglen = (round_q == Inner) ? SelIPadMsg : SelOPadMsg ;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : state_ff
-    if (!rst_ni) st <= StIdle;
-    else         st <= st_next;
+    if (!rst_ni) st_q <= StIdle;
+    else         st_q <= st_d;
   end
 
   always_comb begin : next_state
@@ -187,7 +187,7 @@ module hmac_core import hmac_pkg::*; (
     clr_txcount = 1'b0;
 
     update_round = 1'b0;
-    round_next = Inner;
+    round_d      = Inner;
 
     fifo_wsel    = 1'b0;   // from register
     fifo_wvalid  = 1'b0;
@@ -196,20 +196,20 @@ module hmac_core import hmac_pkg::*; (
 
     sel_rdata = SelFifo;
 
-    hash_start = 1'b0;
+    hash_start   = 1'b0;
     hash_process = 1'b0;
 
-    unique case (st)
+    unique case (st_q)
       StIdle: begin
         if (hmac_en && reg_hash_start) begin
-          st_next = StIPad;
+          st_d = StIPad;
 
-          clr_txcount = 1'b1;
+          clr_txcount  = 1'b1;
           update_round = 1'b1;
-          round_next = Inner;
-          hash_start = 1'b1;
+          round_d      = Inner;
+          hash_start   = 1'b1;
         end else begin
-          st_next = StIdle;
+          st_d = StIdle;
         end
       end
 
@@ -217,11 +217,11 @@ module hmac_core import hmac_pkg::*; (
         sel_rdata = SelIPad;
 
         if (txcnt_eq_blksz) begin
-          st_next = StMsg;
+          st_d = StMsg;
 
           hmac_sha_rvalid = 1'b0; // block new read request
         end else begin
-          st_next = StIPad;
+          st_d = StIPad;
 
           hmac_sha_rvalid = 1'b1;
         end
@@ -230,14 +230,14 @@ module hmac_core import hmac_pkg::*; (
       StMsg: begin
         sel_rdata = SelFifo;
 
-        if ( (((round == Inner) && reg_hash_process_flag) || (round == Outer))
+        if ( (((round_q == Inner) && reg_hash_process_flag) || (round_q == Outer))
             && (txcount >= sha_message_length)) begin
-          st_next = StWaitResp;
+          st_d = StWaitResp;
 
           hmac_sha_rvalid = 1'b0; // block
-          hash_process = (round == Outer);
+          hash_process = (round_q == Outer);
         end else begin
-          st_next = StMsg;
+          st_d = StMsg;
 
           hmac_sha_rvalid = fifo_rvalid;
         end
@@ -247,32 +247,32 @@ module hmac_core import hmac_pkg::*; (
         hmac_sha_rvalid = 1'b0;
 
         if (sha_hash_done) begin
-          if (round == Outer) begin
-            st_next = StDone;
-          end else begin // round == Inner
-            st_next = StPushToMsgFifo;
+          if (round_q == Outer) begin
+            st_d = StDone;
+          end else begin // round_q == Inner
+            st_d = StPushToMsgFifo;
           end
         end else begin
-          st_next = StWaitResp;
+          st_d = StWaitResp;
         end
       end
 
       StPushToMsgFifo: begin
         // TODO: Accelerate by parallel process of PushToMsgFifo and OPad hash
-        hmac_sha_rvalid = 1'b0;
-        fifo_wsel = 1'b1;
-        fifo_wvalid  = 1'b1;
+        hmac_sha_rvalid    = 1'b0;
+        fifo_wsel          = 1'b1;
+        fifo_wvalid        = 1'b1;
         clr_fifo_wdata_sel = 1'b0;
 
         if (fifo_wready && fifo_wdata_sel == 3'h7) begin
-          st_next = StOPad;
+          st_d = StOPad;
 
-          clr_txcount = 1'b1;
+          clr_txcount  = 1'b1;
           update_round = 1'b1;
-          round_next = Outer;
-          hash_start = 1'b1;
+          round_d      = Outer;
+          hash_start   = 1'b1;
         end else begin
-          st_next = StPushToMsgFifo;
+          st_d = StPushToMsgFifo;
 
         end
       end
@@ -281,11 +281,11 @@ module hmac_core import hmac_pkg::*; (
         sel_rdata = SelOPad;
 
         if (txcnt_eq_blksz) begin
-          st_next = StMsg;
+          st_d = StMsg;
 
           hmac_sha_rvalid = 1'b0; // block new read request
         end else begin
-          st_next = StOPad;
+          st_d = StOPad;
 
           hmac_sha_rvalid = 1'b1;
         end
@@ -293,13 +293,13 @@ module hmac_core import hmac_pkg::*; (
 
       StDone: begin
         // raise interrupt (hash_done)
-        st_next = StIdle;
+        st_d = StIdle;
 
         hmac_hash_done = 1'b1;
       end
 
       default: begin
-        st_next = StIdle;
+        st_d = StIdle;
       end
 
     endcase
