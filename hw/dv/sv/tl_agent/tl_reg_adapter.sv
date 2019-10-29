@@ -30,8 +30,8 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
         `DV_CHECK_RANDOMIZE_WITH_FATAL(reg_item,
             a_opcode          == tlul_pkg::Get;
             a_addr[TL_AW-1:2] == rw.addr[TL_AW-1:2];
-            a_mask dist {'1         :/ 1,
-                         [1:('1-1)] :/ 1};)
+            $countones(a_mask) dist { TL_DBW       :/ 1,
+                                      [0:TL_DBW-1] :/ 1};)
       end else begin // csr field read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(reg_item,
             a_opcode          == tlul_pkg::Get;
