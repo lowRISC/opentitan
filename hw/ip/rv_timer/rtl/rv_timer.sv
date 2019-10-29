@@ -43,9 +43,12 @@ module rv_timer (
 
   logic [N_HARTS*N_TIMERS-1:0] intr_out;
 
-  ///////////////////////////////////////////////////////////////////
-  // Connecting register interface to the signal: need to connect manually
-  //
+  /////////////////////////////////////////////////
+  // Connecting register interface to the signal //
+  /////////////////////////////////////////////////
+
+  // Once reggen supports nested multireg, the following can be automated. For the moment, it must
+  // be connected manually.
   assign active[0]  = reg2hw.ctrl[0].q;
   assign prescaler = '{reg2hw.cfg0.prescale.q};
   assign step      = '{reg2hw.cfg0.step.q};
@@ -64,8 +67,7 @@ module rv_timer (
   assign intr_timer_test_qe       = reg2hw.intr_test0[0].qe;
   assign hw2reg.intr_state0[0].de = intr_timer_state_de;
   assign hw2reg.intr_state0[0].d  = intr_timer_state_d;
-  //
-  //-----------------------------------------------------------------
+
 
   for (genvar h = 0 ; h < N_HARTS ; h++) begin : gen_harts
     prim_intr_hw #(
@@ -117,7 +119,9 @@ module rv_timer (
     .devmode_i  (1'b1)
   );
 
-  // Assertions ===============================================================
+  ////////////////
+  // Assertions //
+  ////////////////
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(IntrTimerExpired00Known, intr_timer_expired_0_0_o, clk_i, !rst_ni)
