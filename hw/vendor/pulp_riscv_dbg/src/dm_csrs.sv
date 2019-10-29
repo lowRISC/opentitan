@@ -557,6 +557,7 @@ module dm_csrs #(
   ) i_fifo (
     .clk_i   ( clk_i                ),
     .rst_ni  ( dmi_rst_ni           ), // reset only when system is re-set
+    .clr_i   ( 1'b0                 ),
     .wdata   ( resp_queue_data      ),
     .wvalid  ( dmi_req_valid_i      ),
     .wready  ( dmi_req_ready_o      ),
