@@ -25,7 +25,7 @@
     { name: "NumSrc",
       desc: "Number of interrupt sources",
       type: "int",
-      default: "55",
+      default: "63",
       local: "true"
     },
     { name: "NumTarget",
@@ -501,7 +501,71 @@
         { bits: "1:0" }
       ],
     }
-    { skipto: "256" }
+    { name: "PRIO55",
+      desc: "Interrupt Source 55 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO56",
+      desc: "Interrupt Source 56 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO57",
+      desc: "Interrupt Source 57 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO58",
+      desc: "Interrupt Source 58 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO59",
+      desc: "Interrupt Source 59 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO60",
+      desc: "Interrupt Source 60 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO61",
+      desc: "Interrupt Source 61 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO62",
+      desc: "Interrupt Source 62 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { skipto: 512 }
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",

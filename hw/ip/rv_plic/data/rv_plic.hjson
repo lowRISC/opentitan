@@ -309,7 +309,7 @@
         { bits: "2:0" }
       ],
     }
-    { skipto: "256" }
+    { skipto: 256 }
     { multireg: {
         name: "IE0",
         desc: "Interrupt Enable for Target 0",
@@ -331,7 +331,7 @@
       ],
     }
     { name: "CC0",
-      desc: "Claim interrupt by read, complete interrupt by write for Target 0. Value read/written is interrupt ID. Reading a value of 0 means no pending interrupts.",
+      desc: "Claim by read, complete by write for Target 0",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -342,7 +342,7 @@
       ],
     }
     { name: "MSIP0",
-      desc: "msip for Hart 0. Write 1 to here asserts software interrupt for Hart msip_o[0], write 0 to clear",
+      desc: "msip for Hart 0. Write 1 to here asserts msip_o[0]",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [

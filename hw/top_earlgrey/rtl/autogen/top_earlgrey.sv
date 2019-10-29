@@ -35,6 +35,8 @@ module top_earlgrey #(
   // aes
   // hmac
   // rv_plic
+  // alert_handler
+  // nmi_gen
 
   input               scanmode_i  // 1 for Scan
 );
@@ -84,6 +86,10 @@ module top_earlgrey #(
   tl_d2h_t  tl_hmac_d_d2h;
   tl_h2d_t  tl_rv_plic_d_h2d;
   tl_d2h_t  tl_rv_plic_d_d2h;
+  tl_h2d_t  tl_alert_handler_d_h2d;
+  tl_d2h_t  tl_alert_handler_d_d2h;
+  tl_h2d_t  tl_nmi_gen_d_h2d;
+  tl_d2h_t  tl_nmi_gen_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -100,7 +106,7 @@ module top_earlgrey #(
   //clock wires declaration
   logic main_clk;
 
-  logic [54:0]  intr_vector;
+  logic [62:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -127,11 +133,25 @@ module top_earlgrey #(
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_full;
   logic intr_hmac_hmac_err;
-
+  logic intr_alert_handler_classa;
+  logic intr_alert_handler_classb;
+  logic intr_alert_handler_classc;
+  logic intr_alert_handler_classd;
+  logic intr_nmi_gen_esc0;
+  logic intr_nmi_gen_esc1;
+  logic intr_nmi_gen_esc2;
+  logic intr_nmi_gen_esc3;
 
   logic [0:0]   irq_plic;
   logic [5:0] irq_id[1];
   logic [0:0]   msip;
+
+  // Alert list
+  prim_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
+  prim_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  // Escalation outputs
+  prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
+  prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
 
 
   // clock assignments
@@ -363,6 +383,7 @@ module top_earlgrey #(
   );
 
 
+
   uart uart (
       .tl_i (tl_uart_d_h2d),
       .tl_o (tl_uart_d_d2h),
@@ -377,7 +398,6 @@ module top_earlgrey #(
       .intr_rx_break_err_o (intr_uart_rx_break_err),
       .intr_rx_timeout_o (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
-
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
@@ -389,7 +409,6 @@ module top_earlgrey #(
       .cio_gpio_o    (cio_gpio_gpio_d2p_o),
       .cio_gpio_en_o (cio_gpio_gpio_en_d2p_o),
       .intr_gpio_o (intr_gpio_gpio),
-
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
@@ -408,7 +427,6 @@ module top_earlgrey #(
       .intr_rxerr_o (intr_spi_device_rxerr),
       .intr_rxoverflow_o (intr_spi_device_rxoverflow),
       .intr_txunderflow_o (intr_spi_device_txunderflow),
-
       .scanmode_i   (scanmode_i),
       .clk_i (main_clk),
       .rst_ni (spi_device_rst_n)
@@ -425,7 +443,6 @@ module top_earlgrey #(
       .intr_op_error_o (intr_flash_ctrl_op_error),
       .flash_o(flash_c2m),
       .flash_i(flash_m2c),
-
       .clk_i (main_clk),
       .rst_ni (lc_rst_n)
   );
@@ -434,7 +451,6 @@ module top_earlgrey #(
       .tl_i (tl_rv_timer_d_h2d),
       .tl_o (tl_rv_timer_d_d2h),
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
-
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
@@ -442,7 +458,6 @@ module top_earlgrey #(
   aes aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
-
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
@@ -453,7 +468,10 @@ module top_earlgrey #(
       .intr_hmac_done_o (intr_hmac_hmac_done),
       .intr_fifo_full_o (intr_hmac_fifo_full),
       .intr_hmac_err_o (intr_hmac_hmac_err),
-
+      
+      // [0]: msg_push_sha_disabled 
+      .alert_tx_o  ( alert_tx[0:0] ),
+      .alert_rx_i  ( alert_rx[0:0] ),
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
@@ -467,13 +485,55 @@ module top_earlgrey #(
       .irq_o      (irq_plic),
       .irq_id_o   (irq_id),
       .msip_o     (msip),
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
 
+  alert_handler alert_handler (
+      .tl_i (tl_alert_handler_d_h2d),
+      .tl_o (tl_alert_handler_d_d2h),
+      .intr_classa_o (intr_alert_handler_classa),
+      .intr_classb_o (intr_alert_handler_classb),
+      .intr_classc_o (intr_alert_handler_classc),
+      .intr_classd_o (intr_alert_handler_classd),
+      // TODO: wire this to hardware debug circuit
+      .crashdump_o (          ),
+      // TODO: wire this to TRNG
+      .entropy_i   ( 1'b0     ),
+      // alert signals
+      .alert_rx_o  ( alert_rx ),
+      .alert_tx_i  ( alert_tx ),
+      // escalation outputs
+      .esc_rx_i    ( esc_rx   ),
+      .esc_tx_o    ( esc_tx   ),
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
+
+  nmi_gen nmi_gen (
+      .tl_i (tl_nmi_gen_d_h2d),
+      .tl_o (tl_nmi_gen_d_d2h),
+      .intr_esc0_o (intr_nmi_gen_esc0),
+      .intr_esc1_o (intr_nmi_gen_esc1),
+      .intr_esc2_o (intr_nmi_gen_esc2),
+      .intr_esc3_o (intr_nmi_gen_esc3),
+      // escalation signal inputs
+      .esc_rx_o    ( esc_rx   ),
+      .esc_tx_i    ( esc_tx   ),
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
   );
 
   // interrupt assignments
   assign intr_vector = {
+      intr_nmi_gen_esc3,
+      intr_nmi_gen_esc2,
+      intr_nmi_gen_esc1,
+      intr_nmi_gen_esc0,
+      intr_alert_handler_classd,
+      intr_alert_handler_classc,
+      intr_alert_handler_classb,
+      intr_alert_handler_classa,
       intr_hmac_hmac_err,
       intr_hmac_fifo_full,
       intr_hmac_hmac_done,
