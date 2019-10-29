@@ -24,7 +24,6 @@ BUILD_OPTS  += -messages
 BUILD_OPTS  += -errormax ${ERROR_MAX}
 BUILD_OPTS  += -sv
 BUILD_OPTS  += -timescale 1ns/1ps
-BUILD_OPTS  += +incdir+${UVM_HOME}/sv/src
 BUILD_OPTS  += -uvmhome ${UVM_HOME}
 BUILD_OPTS  += -xmlibdirname ${SV_FLIST_GEN_DIR}/xcelium.d
 BUILD_OPTS  += -f ${SV_FLIST}
