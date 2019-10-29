@@ -6,6 +6,7 @@
 set -o errexit
 set -o pipefail
 set -o nounset
+set -x
 
 readonly BUILD_DIR_PREFIX="build"
 readonly TARGET_VERILATOR="verilator"
@@ -72,7 +73,14 @@ if [[ ! -n "${FLAGS_reconfigure}" ]] ; then
   done
 fi
 
-# purge_includes $target deletes any -I command line arguments that are not
+readonly DEFAULT_RISCV_TOOLS=/tools/riscv
+TOOLCHAIN_PATH="${TOOLCHAIN_PATH:-$DEFAULT_RISCV_TOOLS}"
+CROSS_FILE=$(mktemp /tmp/toolchain.XXXXXX.txt)
+cp toolchain.txt "$CROSS_FILE"
+perl -pi -e "s#$DEFAULT_RISCV_TOOLS#$TOOLCHAIN_PATH#g" "$CROSS_FILE"
+echo "Set up toolchain file at $CROSS_FILE." >&2
+
+# purge_includes $build_dir deletes any -I command line arguments that are not
 # - Absolute paths.
 # - Ephemeral build directories.
 #
@@ -87,14 +95,23 @@ function purge_includes() {
     return
   fi
   echo "Purging superfluous -I arguments from $1."
-  local ninja_file="${BUILD_DIR_PREFIX}-$1/build.ninja"
+  local ninja_file="$1/build.ninja"
   perl -pi -e 's#-I[^/][^@ ]+ # #g' -- "$ninja_file"
 }
 
-meson ${FLAGS_reconfigure} "-Dtarget=${TARGET_VERILATOR}" --cross-file=toolchain.txt \
-    --buildtype=plain "${BUILD_DIR_PREFIX}-${TARGET_VERILATOR}"
-purge_includes ${TARGET_VERILATOR}
+# configure_meson $target generates a build directory at build-$target.
+function configure_meson() {
+  local target="$1"
+  local build_dir="${BUILD_DIR_PREFIX}-$target"
 
-meson ${FLAGS_reconfigure} "-Dtarget=${TARGET_FPGA}" --cross-file=toolchain.txt \
-    --buildtype=plain "${BUILD_DIR_PREFIX}-${TARGET_FPGA}"
-purge_includes ${TARGET_FPGA}
+  mkdir -p "$build_dir"
+  meson ${FLAGS_reconfigure} \
+    -Dtarget="$target" \
+    --cross-file="$CROSS_FILE" \
+    --buildtype=plain \
+    "$build_dir"
+  purge_includes "$build_dir"
+}
+
+configure_meson "${TARGET_VERILATOR}"
+configure_meson "${TARGET_FPGA}"

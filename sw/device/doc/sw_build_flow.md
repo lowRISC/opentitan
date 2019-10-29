@@ -2,6 +2,9 @@
 
 {{% toc 3 }}
 
+**The custom Makefile flow has been deprecated in favor of Meson; see sw/README.md for details.** 
+**Makefiles will eventually be deleted from SW, and should not be relied upon.**
+
 ## Overview
 The centralized Makefile flow attempts to maximize reuse of commonly used
 variables and rules among various software build targets (boot_rom, lib and
