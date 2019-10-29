@@ -5,7 +5,7 @@
 {
     name:               "rv_timer",
     version:            "0.5",
-    life_stage:         "L1",
-    design_stage:       "D0",
-    verification_stage: "V0",
+    life_stage:         "L2",
+    design_stage:       "D3",
+    verification_stage: "V3",
 }
