@@ -21,7 +21,7 @@ mkdir -p $STAGING_DIR
 # Collect hardware release files
 mkdir -p $STAGING_DIR/hw
 cp build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit $STAGING_DIR/hw
-cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator $STAGING_DIR/hw
+#cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator $STAGING_DIR/hw
 
 # Collect software
 mkdir -p $STAGING_DIR/sw
