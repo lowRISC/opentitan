@@ -69,6 +69,12 @@ ifeq ($(TEST_NAME),gpio_intr_with_filter_rand_intr_event)
   RUN_OPTS      += +do_clear_all_interrupts=0
 endif
 
+ifeq ($(TEST_NAME),gpio_filter_stress)
+  UVM_TEST_SEQ   = gpio_filter_stress_vseq
+  RUN_OPTS      += +en_scb=0
+  RUN_OPTS      += +do_clear_all_interrupts=0
+endif
+
 ifeq ($(TEST_NAME),gpio_random_long_reg_writes_reg_reads)
   UVM_TEST_SEQ   = gpio_random_long_reg_writes_reg_reads_vseq
   RUN_OPTS      += +do_clear_all_interrupts=0
