@@ -25,6 +25,7 @@ filesets:
       # File copied by fusesoc into the workroot (the file containing the
       # .eda.yml file), and referenced from vivado_setup_hooks.tcl
       - util/vivado_hook_write_bitstream_pre.tcl: { file_type: data, copyto: vivado_hook_write_bitstream_pre.tcl }
+      - util/vivado_hook_opt_design_post.tcl: { file_type: data, copyto: vivado_hook_opt_design_post.tcl }
 
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1

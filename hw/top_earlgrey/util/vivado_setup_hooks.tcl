@@ -8,6 +8,9 @@
 # fusesoc-generated workroot containing the Vivado project file
 set workroot [pwd]
 
+# Hook to check BRAM implementation for ROM memory
+set_property STEPS.OPT_DESIGN.TCL.POST "${workroot}/vivado_hook_opt_design_post.tcl" [get_runs impl_1]
+
 # TODO: This hook is not getting called by Vivado when running through our
 # fusesoc flow (it gets called when writing a bitstream through the GUI).
 # Requires an update to edalize, see https://github.com/olofk/edalize/pull/60.
