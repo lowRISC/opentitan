@@ -19,7 +19,7 @@ package rv_dm_env_pkg;
 
   // parameters
   // csr and mem total size for IP, TODO update below value
-  parameter uint ADDR_MAP_SIZE = 4096;
+  parameter uint RV_DM_ADDR_MAP_SIZE = 4096;
 
   // types
 

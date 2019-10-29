@@ -42,8 +42,8 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `uart_env_pkg`. Some of them in use are:
 ```systemverilog
-parameter uint ADDR_MAP_SIZE   = 64;
-parameter uint UART_FIFO_DEPTH = 32;
+parameter uint UART_ADDR_MAP_SIZE = 64;
+parameter uint UART_FIFO_DEPTH    = 32;
 ```
 
 ### TL_agent

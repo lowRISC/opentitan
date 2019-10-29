@@ -45,10 +45,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   `uvm_object_new
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1,
-                                   bit [TL_AW-1:0] csr_addr_map_size);
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+    initialize_csr_addr_map_size();
     `DV_CHECK_NE_FATAL(csr_addr_map_size, 0, "csr_addr_map_size can't be 0")
-    this.csr_addr_map_size = csr_addr_map_size;
     // use locally randomized csr base address, unless provided as arg to this function
     if (csr_base_addr != '1) begin
       bit is_aligned;
@@ -69,6 +68,12 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       apply_ral_fixes();
     end
   endfunction
+
+  // This function must be implemented in extended class to
+  // initialize value of csr_addr_map_size member
+  virtual function void initialize_csr_addr_map_size();
+    `uvm_fatal(`gfn, "This task must be implemented in the extended class!")
+  endfunction : initialize_csr_addr_map_size
 
   // ral flow is limited in terms of setting correct field access policies and reset values
   // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
