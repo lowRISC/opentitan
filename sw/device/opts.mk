@@ -5,7 +5,7 @@
 ####################################################################################################
 ## SW build infrastructure - common opts                                                          ##
 ##                                                                                                ##
-## Documentation: doc/sw_build_flow.md                                                            ##
+## Documentation: doc/deprecated_make_flow.md                                                     ##
 ##                                                                                                ##
 ## Two types of embedded SW is built typically for a test - boot_rom and sw test application.     ##
 ## Each has two components - top level sources (indicated with SW_ prefix) and libraries          ##

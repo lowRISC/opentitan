@@ -10,17 +10,14 @@ the VMEM file is generated using srec_cat.
 """
 import argparse
 import os
-from pathlib import Path
 import subprocess
 import sys
 
 
 def run_objcopy(objcopy, input, basename, outdir):
     filename = basename + '.bin'
-    output = outdir / filename
-    cmd = [
-        objcopy, '-O', 'binary', input, output
-    ]
+    output = os.path.join(outdir, filename)
+    cmd = [objcopy, '-O', 'binary', input, output]
     subprocess.run(cmd, check=True)
     return output
 
@@ -29,7 +26,7 @@ def run_srec_cat(srec_cat, input, basename, outdir):
     # TODO: Replace command for objcopy once this bug is fixed and released.
     # https://sourceware.org/bugzilla/show_bug.cgi?id=19921
     filename = basename + '.vmem'
-    output = outdir / filename
+    output = os.path.join(outdir, filename)
     cmd = [
         srec_cat, input, '-binary', '-offset', '0x0', '-byte-swap', '4', '-o',
         output, '-vmem'
@@ -69,9 +66,8 @@ def main():
     if not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
-    outdir = Path(args.outdir)
-    bin_file = run_objcopy(args.objcopy, args.input, args.basename, outdir)
-    run_srec_cat(args.srec_cat, bin_file, args.basename, outdir)
+    bin_file = run_objcopy(args.objcopy, args.input, args.basename, args.outdir)
+    run_srec_cat(args.srec_cat, bin_file, args.basename, args.outdir)
 
 
 if __name__ == "__main__":

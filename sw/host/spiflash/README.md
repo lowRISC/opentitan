@@ -20,7 +20,8 @@ Build command for tool:
 
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw/host/spiflash clean all
+$ ./meson-init.sh -r
+$ ninja -C build-fpga sw/host/spiflash/spiflash
 ```
 
 ## Setup instructions for Verilator and FPGA
@@ -28,18 +29,18 @@ Please refer to [verilator](../../../doc/ug/getting_started_verilator.md) and [f
 
 ## Build boot ROM and demo program
 
-_If building for verilator, please add the extra option `SIM=1`._
+_If building for verilator, build in `build-verilator` instead._
 
 Build `boot_rom`:
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw/device SW_DIR=boot_rom clean all
+$ ninja -C build-fpga sw/boot_rom/boot_rom.vmem
 ```
 
-Build `hello_world` program:
+Build the `hello_world` program:
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw/device SW_DIR=examples/hello_world clean all
+$ ninja -C build-fpga sw/examples/hello_world/hello_world.bin
 ```
 
 ## Run the tool in Verilator
@@ -49,7 +50,7 @@ Run Verilator with boot_rom enabled:
 ```console
 $ cd ${REPO_TOP}
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=sw/device/boot_rom/rom.vmem
+  --rominit=build-verilator/sw/boot_rom/boot_rom.vmem
 ```
 
 Run spiflash. In this example we use SPI device `/dev/pts/3` as an example.
@@ -57,7 +58,9 @@ After the transmission is complete, you should be able to see the hello_world ou
 
 ```console
 $ cd ${REPO_TOP}
-$ ./sw/host/spiflash/spiflash --input=sw/device/examples/hello_world/sw.bin --verilator=/dev/pts/3
+$ build-verilator/sw/host/spiflash/spiflash \
+  --input=build-verilator/sw/examples/hello_world/hello_world.bin \
+  --verilator=/dev/pts/3
 ```
 
 ## Run the tool in FPGA
@@ -69,5 +72,6 @@ If there are two FPGAs or multiple valid targets attached at the same time, it i
 
 ```console
 $ cd ${REPO_TOP}
-$ ./sw/host/spiflash/spiflash --input=sw/device/examples/hello_world/sw.bin
+$ build-fpga/sw/host/spiflash/spiflash \
+  --input=build-fpga/sw/examples/hello_world/hello_world.bin
 ```

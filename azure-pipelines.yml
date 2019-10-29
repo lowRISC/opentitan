@@ -24,11 +24,11 @@ stages:
   - job: "lint"
     displayName: "Run code quality checks (lint)"
     pool:
-      vmImage: "ubuntu-16.04"
+      vmImage: "ubuntu-latest"
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
-        sudo pip3 install -r python-requirements.txt
+        sudo pip3 install -U -r python-requirements.txt
       displayName: 'Install dependencies'
 
     - bash: |
@@ -96,17 +96,42 @@ stages:
   jobs:
   - job: "sw_build"
     displayName: "Build Software"
-    pool: "Default"
+    pool:
+      vmImage: "ubuntu-latest"
+    steps:
+    - bash: |
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev ninja-build \
+          && sudo pip3 install -U -r python-requirements.txt \
+          && sudo pip3 install -U meson
+      displayName: 'Install dependencies'
+    - bash: |
+        set -x
+        sudo util/get-toolchain.py \
+          --target-dir="${TOOLCHAIN_PATH}" \
+          --release-version="${TOOLCHAIN_VERSION}" \
+          --update \
+          --force
+      displayName: 'Install toolchain'
+    - bash: |
+        ./meson_init.sh -f
+        ninja -C build-verilator all
+        ninja -C build-fpga all
+      displayName: 'Build embedded targets'
+
+  - job: "deprecated_make_build"
+    displayName: "Build Software with Make (deprecated)"
+    pool:
+      vmImage: "ubuntu-latest"
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
-          && sudo pip3 install -r python-requirements.txt
+          && sudo pip3 install -U -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
         export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
         export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
         export DIST_DIR="$(Build.ArtifactStagingDirectory)/dist"
-        REQUEST_UPDATE=true ci/run_sw_build.sh
+        REQUEST_UPDATE=true ci/run_sw_make.sh
       displayName: 'Build embedded targets'
     - bash: |
         make -C sw/host/spiflash clean all
@@ -123,14 +148,14 @@ stages:
       artifact: dist-partial-sw_build
       displayName: "Upload partial distribution artifacts"
 
-
   - job: "top_earlgrey_verilator"
     displayName: "Build Verilator simulation of the Earl Grey toplevel design"
-    pool: "Default"
+    pool:
+      vmImage: "ubuntu-latest"
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install -r python-requirements.txt \
+          && sudo pip3 install -U -r python-requirements.txt \
           && sudo apt-get install git make autoconf g++ flex bison curl
       displayName: 'Install dependencies'
     - bash: |
@@ -174,11 +199,11 @@ stages:
 
   - job: "top_earlgrey_nexysvideo"
     displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
-    pool: "Default"
+    pool: Default
     timeoutInMinutes: 120 # 2 hours
     dependsOn:
       # The bootrom is built into the FPGA image at synthesis time.
-      - sw_build
+      - deprecated_make_build
     steps:
     - task: DownloadPipelineArtifact@2
       inputs:
@@ -193,7 +218,7 @@ stages:
       displayName: 'Restore partial dist directory'
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install -r python-requirements.txt
+          && sudo pip3 install -U -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
         set -e
@@ -219,9 +244,9 @@ stages:
   - job: "deploy_releaseartifacts"
     displayName: "Package and deploy release distribution"
     pool:
-      vmImage: "ubuntu-16.04"
+      vmImage: "ubuntu-latest"
     dependsOn:
-      - sw_build
+      - deprecated_make_build
       - top_earlgrey_verilator
       - top_earlgrey_nexysvideo
     steps:

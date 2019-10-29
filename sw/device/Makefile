@@ -2,10 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+## NOTE: MAKEFILE IS DEPRECATED IN SW. DO NOT RELY ON THIS FILE CONTINUING TO WORK.
+
 ####################################################################################################
 ## Generate a baremetal application for the microcontroller                                       ##
 ##                                                                                                ##
-## Documentation: doc/sw_build_flow.md                                                            ##
+## Documentation: doc/deprecated_make_flow.md                                                     ##
 ##                                                                                                ##
 ## Mandatory variables that need to be set over the command line:                                 ##
 ## SW_DIR:       this is the partial directory path to the SW test being built starting from sw/  ##
