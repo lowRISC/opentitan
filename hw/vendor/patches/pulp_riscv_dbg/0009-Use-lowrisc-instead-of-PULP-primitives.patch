@@ -1,16 +1,16 @@
-From 0ab62b475e0ab6b8cc0507131c687b0001d50404 Mon Sep 17 00:00:00 2001
+From 6a037bd7e07ba9e1aa0445ab53b845ee74ceecc2 Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
 Subject: [PATCH 9/9] Use lowrisc instead of PULP primitives
 
 ---
- src/dm_csrs.sv      | 41 ++++++++++++++-------------------
+ src/dm_csrs.sv      | 42 +++++++++++++++-------------------
  src/dmi_cdc.sv      | 56 +++++++++++++++++++++++++++------------------
  src/dmi_jtag_tap.sv | 20 +++++++---------
- 3 files changed, 59 insertions(+), 58 deletions(-)
+ 3 files changed, 60 insertions(+), 58 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 807bb19..9e893d4 100644
+index 807bb19..6f9028b 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -78,6 +78,7 @@ module dm_csrs #(
@@ -42,7 +42,7 @@ index 807bb19..9e893d4 100644
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -550,27 +544,26 @@ module dm_csrs #(
+@@ -550,27 +544,27 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -76,6 +76,7 @@ index 807bb19..9e893d4 100644
 -    .pop_i            ( resp_queue_pop       )
 +    .clk_i   ( clk_i                ),
 +    .rst_ni  ( dmi_rst_ni           ), // reset only when system is re-set
++    .clr_i   ( 1'b0                 ),
 +    .wdata   ( resp_queue_data      ),
 +    .wvalid  ( dmi_req_valid_i      ),
 +    .wready  ( dmi_req_ready_o      ),
@@ -189,5 +190,5 @@ index f8b282a..9771cd9 100644
  
    // TDO changes state at negative edge of TCK
 -- 
-2.23.0.866.gb869b98d4c-goog
+2.24.0.rc0.303.g954a862665-goog
 
