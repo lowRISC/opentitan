@@ -31,7 +31,6 @@ module uart_core (
   logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;
   logic           tick_baud_x16, rx_tick_baud;
-  logic           tx_fifo_rst_n, rx_fifo_rst_n;
   logic   [5:0]   tx_fifo_depth, rx_fifo_depth;
   logic   [5:0]   rx_fifo_depth_prev_q;
   logic   [23:0]  rx_timeout_count_d, rx_timeout_count_q, uart_rxto_val;
@@ -166,7 +165,6 @@ module uart_core (
   //              TX Logic
 
   assign tx_fifo_rready = tx_uart_idle & tx_fifo_rvalid & tx_enable;
-  assign tx_fifo_rst_n  = scanmode_i ? rst_ni : (rst_ni & ~uart_fifo_txrst);
 
   prim_fifo_sync #(
     .Width(8),
@@ -174,7 +172,8 @@ module uart_core (
     .Depth(32)
   ) u_uart_txfifo (
     .clk_i,
-    .rst_ni (tx_fifo_rst_n),
+    .rst_ni,
+    .clr_i  (uart_fifo_txrst),
     .wvalid (reg2hw.wdata.qe),
     .wready (tx_fifo_wready),
     .wdata  (reg2hw.wdata.q),
@@ -264,15 +263,15 @@ module uart_core (
   );
 
   assign rx_fifo_wvalid = rx_valid & ~event_rx_frame_err & ~event_rx_parity_err;
-  assign rx_fifo_rst_n = scanmode_i ? rst_ni : (rst_ni & ~uart_fifo_rxrst);
 
   prim_fifo_sync #(
     .Width (8),
     .Pass  (1'b0),
     .Depth (32)
   ) u_uart_rxfifo (
-    .clk_i  (clk_i),
-    .rst_ni (rx_fifo_rst_n),
+    .clk_i,
+    .rst_ni,
+    .clr_i  (uart_fifo_rxrst),
     .wvalid (rx_fifo_wvalid),
     .wready (rx_fifo_wready),
     .wdata  (rx_fifo_data),

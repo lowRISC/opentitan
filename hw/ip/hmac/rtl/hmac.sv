@@ -194,6 +194,7 @@ module hmac (
   ) u_msg_fifo (
     .clk_i,
     .rst_ni,
+    .clr_i  (1'b0),
 
     .wvalid (fifo_wvalid & sha_en),
     .wready (fifo_wready),

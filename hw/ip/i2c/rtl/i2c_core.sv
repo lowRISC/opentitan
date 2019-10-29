@@ -59,7 +59,6 @@ module  i2c_core (
 
   logic override;
 
-  logic        fmt_fifo_rst_n;
   logic        fmt_fifo_wvalid;
   logic        fmt_fifo_wready;
   logic [12:0] fmt_fifo_wdata;
@@ -77,7 +76,6 @@ module  i2c_core (
   logic [1:0]  i2c_fifo_fmtilvl;
   logic [2:0]  i2c_fifo_rxilvl;
 
-  logic        rx_fifo_rst_n;
   logic        rx_fifo_wvalid;
   logic        rx_fifo_wready;
   logic [7:0]  rx_fifo_wdata;
@@ -180,15 +178,15 @@ module  i2c_core (
   assign fmt_flag_read_bytes    = fmt_fifo_rdata[11];
   assign fmt_flag_nak_ok        = fmt_fifo_rdata[12];
 
-  assign fmt_fifo_rst_n         = scanmode_i ? rst_ni : (rst_ni & ~reg2hw.fifo_ctrl.fmtrst.q);
-
   prim_fifo_sync #(
     .Width(13),
     .Pass(1'b1),
     .Depth(32)
   ) u_i2c_fmtfifo (
     .clk_i,
-    .rst_ni(fmt_fifo_rst_n),
+    .rst_ni,
+    // TODO: check whether qe could be used as clear strobe
+    .clr_i  (reg2hw.fifo_ctrl.fmtrst.q),
     .wvalid(fmt_fifo_wvalid),
     .wready(fmt_fifo_wready),
     .wdata(fmt_fifo_wdata),
@@ -199,7 +197,6 @@ module  i2c_core (
   );
 
   assign rx_fifo_rready = reg2hw.rdata.re;
-  assign rx_fifo_rst_n  = scanmode_i ? rst_ni : (rst_ni & ~reg2hw.fifo_ctrl.rxrst.q);
 
   prim_fifo_sync #(
     .Width(8),
@@ -207,7 +204,9 @@ module  i2c_core (
     .Depth(32)
   ) u_i2c_rxfifo (
     .clk_i,
-    .rst_ni(rx_fifo_rst_n),
+    .rst_ni,
+    // TODO: check whether qe could be used as clear strobe
+    .clr_i(reg2hw.fifo_ctrl.rxrst.q),
     .wvalid(rx_fifo_wvalid),
     .wready(rx_fifo_wready),
     .wdata(rx_fifo_wdata),

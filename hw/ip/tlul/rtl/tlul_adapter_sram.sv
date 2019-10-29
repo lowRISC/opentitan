@@ -225,6 +225,7 @@ module tlul_adapter_sram #(
   ) u_reqfifo (
     .clk_i,
     .rst_ni,
+    .clr_i  (1'b0),
     .wvalid (reqfifo_wvalid),
     .wready (reqfifo_wready),
     .wdata  (reqfifo_wdata),
@@ -247,6 +248,7 @@ module tlul_adapter_sram #(
   ) u_rspfifo (
     .clk_i,
     .rst_ni,
+    .clr_i  (1'b0),
     .wvalid (rspfifo_wvalid),
     .wready (rspfifo_wready),
     .wdata  (rspfifo_wdata),

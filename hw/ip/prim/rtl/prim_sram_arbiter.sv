@@ -84,6 +84,7 @@ module prim_sram_arbiter #(
   ) u_req_fifo (
     .clk_i,
     .rst_ni,
+    .clr_i    (1'b0),
     .wvalid   (sram_req && !sram_write),  // Push only for read
     .wready   (),     // TODO: Generate Error
     .wdata    (gnt),

@@ -13,6 +13,8 @@ module prim_fifo_sync #(
 ) (
   input                   clk_i,
   input                   rst_ni,
+  // synchronous clear / flush port
+  input                   clr_i,
   // write port
   input                   wvalid,
   output                  wready,
@@ -70,25 +72,31 @@ module prim_fifo_sync #(
     assign wready = ~full;
     assign rvalid = ~empty;
 
-    always_ff @(posedge clk_i or negedge rst_ni)
+    always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
+        fifo_wptr <= {(PTR_WIDTH){1'b0}};
+      end else if (clr_i) begin
         fifo_wptr <= {(PTR_WIDTH){1'b0}};
       end else if (fifo_incr_wptr) begin
         if (fifo_wptr[PTR_WIDTH-2:0] == (Depth-1)) begin
           fifo_wptr <= {~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
         end else begin
           fifo_wptr <= fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
+        end
       end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni)
+    always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
+        fifo_rptr <= {(PTR_WIDTH){1'b0}};
+      end else if (clr_i) begin
         fifo_rptr <= {(PTR_WIDTH){1'b0}};
       end else if (fifo_incr_rptr) begin
         if (fifo_rptr[PTR_WIDTH-2:0] == (Depth-1)) begin
           fifo_rptr <= {~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
         end else begin
           fifo_rptr <= fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
+        end
       end
     end
 
