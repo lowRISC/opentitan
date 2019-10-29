@@ -229,4 +229,40 @@ stages:
           # Program emulated flash on device through SPI (over USB)
           spiflash --input=sw/build/tests/flash_ctrl/sw.bin
 
-
+  - job: "deploy_releaseartifacts"
+    displayName: "Deploy release artifacts"
+    pool: "Default"
+    dependsOn:
+      - sw_build
+      - top_earlgrey_nexysvideo
+    steps:
+      # Use long version instead of download shortcut to specify the target directory
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: top_earlgrey_nexysvideo-build
+          targetPath: '$(System.DefaultWorkingDirectory)/build'
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: sw_build-build
+          targetPath: '$(System.DefaultWorkingDirectory)/sw/build'
+      - bash: |
+          ./ci/create_release_tarball.sh $ARTIFACT_STAGING_DIR
+        env:
+          ARTIFACT_STAGING_DIR: $(Build.ArtifactStagingDirectory)
+        displayName: "Create release tarball"
+      - publish: $(Build.ArtifactStagingDirectory)
+        artifact: releaseartifacts
+        displayName: "Upload release artifacts as Azure artifact"
+      - task: GithubRelease@0
+        displayName: 'Upload to GitHub releases'
+        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+        inputs:
+          gitHubConnection: opentitan-release-upload
+          repositoryName: lowrisc/opentitan
+          tagSource: manual
+          tag: "$(ReleaseTag)"
+          action: edit
+          addChangeLog: false
+          assetUploadMode: replace
+          assets: |
+              $(Build.ArtifactStagingDirectory)/*.tar.xz
