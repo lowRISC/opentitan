@@ -930,7 +930,7 @@ $ ./alert_handler_reg_wrap.sv.tpl -n 4 > ../rtl/alert_handler_reg_wrap.sv
 {{< registers "hw/ip/alert_handler/data/alert_handler.hjson" >}}
 
 
-# Additiona Notes
+# Additional Notes
 
 ## Timing Constraints
 

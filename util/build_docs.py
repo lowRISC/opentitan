@@ -52,6 +52,7 @@ config = {
         "hw/ip/gpio/data/gpio.hjson",
         "hw/ip/hmac/data/hmac.hjson",
         "hw/ip/i2c/data/i2c.hjson",
+        "hw/ip/nmi_gen/data/nmi_gen.hjson",
         "hw/ip/padctrl/data/padctrl.hjson",
         "hw/ip/pinmux/data/pinmux.hjson",
         "hw/ip/rv_plic/data/rv_plic.hjson",

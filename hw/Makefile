@@ -12,7 +12,8 @@ IPS ?= uart          \
        usbuart       \
        alert_handler \
        pinmux        \
-       padctrl
+       padctrl       \
+       nmi_gen
 
 TOPS ?= top_earlgrey
 
