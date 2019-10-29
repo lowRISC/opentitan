@@ -89,8 +89,9 @@ module gpio (
   end
 
   logic [31:0] data_in_q;
-  always_ff @(posedge clk_i) begin
-    data_in_q <= data_in;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) data_in_q <= '0;
+    else data_in_q <= data_in;
   end
 
   logic [31:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
@@ -135,7 +136,7 @@ module gpio (
   );
 
   // Assert Known: Outputs
-  `ASSERT_KNOWN(intrGpioKnown, intr_gpio_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o, clk_i, !rst_ni)
 
