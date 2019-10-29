@@ -36,7 +36,7 @@ class pinmux_reg_regen extends dv_base_reg;
       .lsb_pos(0),
       .access("W0C"),
       .volatile(1),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -73,7 +73,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -84,7 +84,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -95,7 +95,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -106,7 +106,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -117,7 +117,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -128,7 +128,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(20),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -139,7 +139,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -150,7 +150,7 @@ class pinmux_reg_periph_insel0 extends dv_base_reg;
       .lsb_pos(28),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -187,7 +187,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -198,7 +198,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(4),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -209,7 +209,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(8),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -220,7 +220,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(12),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -231,7 +231,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -242,7 +242,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(20),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -253,7 +253,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(24),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -264,7 +264,7 @@ class pinmux_reg_periph_insel1 extends dv_base_reg;
       .lsb_pos(28),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -299,7 +299,7 @@ class pinmux_reg_mio_outsel0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -310,7 +310,7 @@ class pinmux_reg_mio_outsel0 extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -321,7 +321,7 @@ class pinmux_reg_mio_outsel0 extends dv_base_reg;
       .lsb_pos(10),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -332,7 +332,7 @@ class pinmux_reg_mio_outsel0 extends dv_base_reg;
       .lsb_pos(15),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -343,7 +343,7 @@ class pinmux_reg_mio_outsel0 extends dv_base_reg;
       .lsb_pos(20),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -354,7 +354,7 @@ class pinmux_reg_mio_outsel0 extends dv_base_reg;
       .lsb_pos(25),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -385,7 +385,7 @@ class pinmux_reg_mio_outsel1 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -396,7 +396,7 @@ class pinmux_reg_mio_outsel1 extends dv_base_reg;
       .lsb_pos(5),
       .access("RW"),
       .volatile(0),
-      .reset(2),
+      .reset(32'h2),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

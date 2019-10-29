@@ -185,6 +185,10 @@ def generate_top_ral(top, ip_objs, out_path):
             if block.name == module["name"]:
                 block.base_addr = module["base_addr"]
                 break
+
+    top_block.blocks.sort(key=lambda block: block.base_addr)
+    top_block.wins.sort(key=lambda win: win.base_addr)
+
     # generate the top ral model with template
     gen_dv.gen_ral(top_block, str(out_path))
 

@@ -46,7 +46,7 @@ class gpio_reg_intr_state extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -76,7 +76,7 @@ class gpio_reg_intr_enable extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -106,7 +106,7 @@ class gpio_reg_intr_test extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -136,7 +136,7 @@ class gpio_reg_data_in extends dv_base_reg;
       .lsb_pos(0),
       .access("RO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -166,7 +166,7 @@ class gpio_reg_direct_out extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -197,7 +197,7 @@ class gpio_reg_masked_out_lower extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -208,7 +208,7 @@ class gpio_reg_masked_out_lower extends dv_base_reg;
       .lsb_pos(16),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -239,7 +239,7 @@ class gpio_reg_masked_out_upper extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -250,7 +250,7 @@ class gpio_reg_masked_out_upper extends dv_base_reg;
       .lsb_pos(16),
       .access("WO"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -280,7 +280,7 @@ class gpio_reg_direct_oe extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -311,7 +311,7 @@ class gpio_reg_masked_oe_lower extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -322,7 +322,7 @@ class gpio_reg_masked_oe_lower extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -353,7 +353,7 @@ class gpio_reg_masked_oe_upper extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -364,7 +364,7 @@ class gpio_reg_masked_oe_upper extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -394,7 +394,7 @@ class gpio_reg_intr_ctrl_en_rising extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -424,7 +424,7 @@ class gpio_reg_intr_ctrl_en_falling extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -454,7 +454,7 @@ class gpio_reg_intr_ctrl_en_lvlhigh extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -484,7 +484,7 @@ class gpio_reg_intr_ctrl_en_lvllow extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -514,7 +514,7 @@ class gpio_reg_ctrl_en_input_filter extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));

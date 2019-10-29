@@ -40,7 +40,7 @@ class rv_timer_reg_ctrl extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -71,7 +71,7 @@ class rv_timer_reg_cfg0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -82,7 +82,7 @@ class rv_timer_reg_cfg0 extends dv_base_reg;
       .lsb_pos(16),
       .access("RW"),
       .volatile(0),
-      .reset(1),
+      .reset(32'h1),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -112,7 +112,7 @@ class rv_timer_reg_timer_v_lower0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -142,7 +142,7 @@ class rv_timer_reg_timer_v_upper0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -172,7 +172,7 @@ class rv_timer_reg_compare_lower0_0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(4294967295),
+      .reset(32'hffffffff),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -202,7 +202,7 @@ class rv_timer_reg_compare_upper0_0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(4294967295),
+      .reset(32'hffffffff),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -232,7 +232,7 @@ class rv_timer_reg_intr_enable0 extends dv_base_reg;
       .lsb_pos(0),
       .access("RW"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -262,7 +262,7 @@ class rv_timer_reg_intr_state0 extends dv_base_reg;
       .lsb_pos(0),
       .access("W1C"),
       .volatile(1),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
@@ -292,7 +292,7 @@ class rv_timer_reg_intr_test0 extends dv_base_reg;
       .lsb_pos(0),
       .access("WO"),
       .volatile(0),
-      .reset(0),
+      .reset(32'h0),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(1));
