@@ -90,8 +90,8 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
             // ((1 << 64)-1) - (max_step_value*300) = 'hFFFFFFFFFFFED52B
             // min_timer_val is calculated using max random value subtracted from
             // timer_val with below randomiztion which is (max_step_value*300) = 'h12AD4
-            if ((compare_val[hart][timer] >= 'hFFFFFFFFFFFED52B) |
-                (timer_val[hart] <= 'h12AD4)) begin
+            if ((compare_val[hart][timer] >= 64'hFFFFFFFFFFFED52B) |
+                (timer_val[hart] <= 64'h12AD4)) begin
               timer_at_min_max_val = 1'b1;
               break;
             end
@@ -103,13 +103,13 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
                 compare_val[hart][timer] += step[hart] * $urandom_range(30, 300);
               end
               else begin
-                compare_val[hart][timer] -= $urandom_range((mtime_diff / 20), (mtime_diff / 4));
+                compare_val[hart][timer] -= mtime_diff / ($urandom_range(4, 20));
               end
               set_compare_val(.hart(hart), .timer(timer), .val(compare_val[hart][timer]));
 
               mtime_diff = compare_val[hart][timer] - timer_val[hart];
               if (!upd_cfg_in_end | $urandom_range(0, 1)) begin
-                timer_val[hart] += $urandom_range((mtime_diff / 20), (mtime_diff / 4));
+                timer_val[hart] += mtime_diff / ($urandom_range(4, 20));
               end
               else begin
                 timer_val[hart] -= step[hart] * $urandom_range(30, 300);

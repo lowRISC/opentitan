@@ -38,16 +38,6 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-    // TODO: nothing extra to do yet
-  endtask
-
-  virtual task dut_shutdown();
-    super.dut_shutdown();
-    // TODO: nothing extra to do yet
-  endtask
-
   // cfg rv_timer - set a particular timer active or inactive
   virtual task cfg_timer(int hart = 0, int timer = 0, bit enable = 1'b1);
     uvm_reg       ctrl_rg;
