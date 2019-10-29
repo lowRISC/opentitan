@@ -1,9 +1,12 @@
 ---
-title: "${name.upper()} Checklist"
+title: "UART Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/ug/hw_stages.md" >}}) transitions for the [${name.upper()} peripheral.]({{< relref "index.md" >}})
-All checklist items refer to the content in the [Checklist.]({{< relref "/doc/rm/checklist.md" >}})
+This checklist is for [Hardware Stage][] transitions for the [UART peripheral.](../)
+All checklist items refer to the content in the [Checklist.]({{<relref "/doc/rm/checklist.md">}})
+
+[Hardware Stage]: {{<relref "/doc/ug/hw_stages.md" >}}
+
 
 ## Design Checklist
 
@@ -11,17 +14,17 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/rm
 
 Type          | Item                  | Resolution  | Note/Collaterals
 --------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Not Started |
-Documentation | [CSR_DEFINED][]       | Not Started |
-RTL           | [CLKRST_CONNECTED][]  | Not Started |
-RTL           | [IP_TOP][]            | Not Started |
-RTL           | [IP_INSTANCED][]      | Not Started |
-RTL           | [MEM_INSTANCED_80][]  | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]  | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]| Not Started |
-Code Quality  | [LINT_SETUP][]        | Not Started |
-Review        | Reviewer(s)           | Not Started |
-Review        | Signoff date          | Not Started |
+Documentation | [SPEC_COMPLETE][]     | Done        | [UART Spec](../)
+Documentation | [CSR_DEFINED][]       | Done        |
+RTL           | [CLKRST_CONNECTED][]  | Done        |
+RTL           | [IP_TOP][]            | Done        |
+RTL           | [IP_INSTANCED][]      | Done        |
+RTL           | [MEM_INSTANCED_80][]  | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]  | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
+Code Quality  | [LINT_SETUP][]        | Done        |
+Review        | Reviewer(s)           | Done        | @weicaiyang @sjgitty
+Review        | Signoff date          | Done        | 2019-10-28
 
 
 [SPEC_COMPLETE]:      {{<relref "/doc/rm/checklist.md#spec-complete" >}}
@@ -33,29 +36,32 @@ Review        | Signoff date          | Not Started |
 [FUNC_IMPLEMENTED]:   {{<relref "/doc/rm/checklist.md#func-implemented" >}}
 [ASSERT_KNOWN_ADDED]: {{<relref "/doc/rm/checklist.md#assert-known-added" >}}
 [LINT_SETUP]:         {{<relref "/doc/rm/checklist.md#lint-setup" >}}
-[D1_REVIEWED]:        {{<relref "/doc/rm/checklist.md#d1-reviewed" >}}
+
+### D1 Exceptions
+
+[MEM_INSTANCED_80][] is waived as UART doesn't have memories inside.
 
 ### D2
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started | 
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_SANITY_CHECK][]   | Not Started |
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Review        | Reviewer(s)             | Not Started |
-Review        | Signoff date            | Not Started |
+Documentation | [NEW_FEATURES][]        | N/A         | 
+Documentation | [BLOCK_DIAGRAM][]       | N/A         |
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | N/A         |
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_SANITY_CHECK][]   | Done        | Area Sanity Check Done (on FPGA)
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        |
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | N/A         | No assignment of X
+Code Quality  | [LINT_PASS][]           | Done        | Lint waivers reviewed
+Code Quality  | [CDC_SETUP][]           | N/A         | No CDC path
+Code Quality  | [FPGA_TIMING][]         | Done        | Fmax 50MHz on NexysVideo
+Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
+Review        | Reviewer(s)             | Done        | @msfschaffner @weicaiyang @sriyerg @sjgitty
+Review        | Signoff date            | Done        | 2019-10-28
 
 [NEW_FEATURES]:        {{<relref "/doc/rm/checklist.md#new-features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/rm/checklist.md#block-diagram" >}}
@@ -74,24 +80,23 @@ Review        | Signoff date            | Not Started |
 [CDC_SETUP]:           {{<relref "/doc/rm/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/rm/checklist.md#cdc-syncmacro" >}}
 [FPGA_TIMING]:         {{<relref "/doc/rm/checklist.md#fpga-timing" >}}
-[D2_REVIEWED]:         {{<relref "/doc/rm/checklist.md#d2-reviewed" >}}
 
 ### D3
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Not Started |
-RTL           | [TODO_COMPLETE][]       | Not Started |
-Code Quality  | [LINT_COMPLETE][]       | Not Started |
-Code Quality  | [CDC_COMPLETE][]        | Not Started |
-Review        | [REVIEW_RTL][]          | Not Started |
-Review        | [REVIEW_DELETED_FF][]   | Not Started |
-Review        | [REVIEW_SW_CSR][]       | Not Started |
-Review        | [REVIEW_SW_FATAL_ERR][] | Not Started |
-Review        | [REVIEW_SW_CHANGE][]    | Not Started |
-Review        | [REVIEW_SW_ERRATA][]    | Not Started |
-Review        | Reviewer(s)             | Not Started |
-Review        | Signoff date            | Not Started |
+Documentation | [NEW_FEATURES_D3][]     | N/A         |
+RTL           | [TODO_COMPLETE][]       | Done        |
+Code Quality  | [LINT_COMPLETE][]       | Done        |
+Code Quality  | [CDC_COMPLETE][]        | N/A         |
+Review        | [REVIEW_RTL][]          | Done        | by @msfschaffner
+Review        | [REVIEW_DELETED_FF][]   | N/A         | Not reported by FPGA (@eunchan double-check)
+Review        | [REVIEW_SW_CSR][]       | Done        |
+Review        | [REVIEW_SW_FATAL_ERR][] | Done        | by @moidx
+Review        | [REVIEW_SW_CHANGE][]    | N/A         |
+Review        | [REVIEW_SW_ERRATA][]    | Done        |
+Review        | Reviewer(s)             | Done        | @weicaiyang @sjgitty @msfschaffner
+Review        | Signoff date            | Done        | 2019-10-31
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/rm/checklist.md#new-features-d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/rm/checklist.md#todo-complete" >}}
@@ -104,34 +109,32 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/rm/checklist.md#review-sw-fatal-err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/rm/checklist.md#review-sw-change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/rm/checklist.md#review-sw-errata" >}}
-[D3_REVIEWED]:          {{<relref "/doc/rm/checklist.md#d3-reviewed" >}}
 
 ## Verification Checklist
 
 ### Checklists for milestone V1
-
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started | 
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [TB_ENV_CREATED][]                    | Not Started |
-Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SANITY_TEST_PASSING][]               | Not Started |
-Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Not Started |
-Tool Setup    | [ALT_TOOL_SETUP][]                    | Not Started |
-Regression    | [SANITY_REGRESSION_SETUP][]           | Not Started |
-Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Not Started |
-Coverage      | [COVERAGE_MODEL_ADDED][]              | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started |
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
-Review        | Reviewer(s)                           | Not Started |
-Review        | Signoff date                          | Not Started |
+Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done        | [uart_dv_plan]({{<relref "dv_plan/" >}})
+Documentation | [TESTPLAN_COMPLETED][]                | Done        |
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [TB_ENV_CREATED][]                    | Done        |
+Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
+Tests         | [SANITY_TEST_PASSING][]               | Done        |
+Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Done        |
+Tool Setup    | [ALT_TOOL_SETUP][]                    | Done        |
+Regression    | [SANITY_REGRESSION_SETUP][]           | Done        | Exception (implemented in local)
+Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done        | Exception (implemented in local)
+Coverage      | [COVERAGE_MODEL_ADDED][]              | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         | Except for IP module
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
+Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Done        |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power, Debug)
+Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
+Review        | Reviewer(s)                           | Done        | @eunchan @sjgitty @sriyerg
+Review        | Signoff date                          | Done        | 2019-10-28
 
 
 [DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/rm/checklist.md#dv-plan-draft-completed" >}}
@@ -140,8 +143,7 @@ Review        | Signoff date                          | Not Started |
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/rm/checklist.md#preliminary-assertion-checks-added" >}}
 [TB_ENV_CREATED]:                     {{<relref "/doc/rm/checklist.md#tb-env-created" >}}
 [RAL_MODEL_GEN_AUTOMATED]:            {{<relref "/doc/rm/checklist.md#ral-model-gen-automated" >}}
-[TB_GEN_AUTOMATED]:                   {{<relref "/doc/rm/checklist.md#tb-gen-automated"
->}}
+[TB_GEN_AUTOMATED]:                   {{<relref "/doc/rm/checklist.md#tb-gen-automated" >}}
 [SANITY_TEST_PASSING]:                {{<relref "/doc/rm/checklist.md#sanity-test-passing" >}}
 [CSR_MEM_TEST_SUITE_PASSING]:         {{<relref "/doc/rm/checklist.md#csr-mem-test-suite-passing" >}}
 [ALT_TOOL_SETUP]:                     {{<relref "/doc/rm/checklist.md#alt-tool-setup" >}}
@@ -155,40 +157,35 @@ Review        | Signoff date                          | Not Started |
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/rm/checklist.md#v2-checklist-scoped" >}}
 
 ### Checklists for milestone V2
-
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED][]              | Not Started |
-Documentation | [DV_PLAN_COMPLETED][]                   | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [TB_ENV_COMPLETED][]                    | Not Started |
-Tests         | [ALL_TESTS_PASSING][]                   | Not Started |
-Tests         | [FW_SIMULATED][]                        | Not Started |
-Regression    | [NIGHTLY_REGRESSION_V2][]               | Not Started |
-Coverage      | [CODE_COVERAGE_V2][]                    | Not Started |
-Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
-Review        | Reviewer(s)                             | Not Started |
-Review        | Signoff date                            | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED][]              | N/A         |
+Documentation | [DV_PLAN_COMPLETED][]                   | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
+Testbench     | [TB_ENV_COMPLETED][]                    | Done        |
+Tests         | [ALL_TESTS_PASSING][]                   | Done        |
+Tests         | [FW_SIMULATED][]                        | N/A         |
+Regression    | [NIGHTLY_REGRESSION_V2][]               | Done        |
+Coverage      | [CODE_COVERAGE_V2][]                    | Done        |
+Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Done        |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
+Review        | Reviewer(s)                             | Done        | @eunchan @sjgitty @sriyerg
+Review        | Signoff date                            | Done        | 2019-10-28
 
 
 [DESIGN_DELTAS_CAPTURED]:             {{<relref "/doc/rm/checklist.md#design-deltas-captured" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/rm/checklist.md#dv-plan-completed"
->}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/rm/checklist.md#dv-plan-completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/rm/checklist.md#all-interfaces-exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/rm/checklist.md#all-assertion-checks-added" >}}
-[TB_ENV_COMPLETED]:                   {{<relref "/doc/rm/checklist.md#tb-env-completed"
->}}
-[ALL_TESTS_PASSING]:                  {{<relref "/doc/rm/checklist.md#all-tests-passing"
->}}
+[TB_ENV_COMPLETED]:                   {{<relref "/doc/rm/checklist.md#tb-env-completed" >}}
+[ALL_TESTS_PASSING]:                  {{<relref "/doc/rm/checklist.md#all-tests-passing" >}}
 [FW_SIMULATED]:                       {{<relref "/doc/rm/checklist.md#fw-simulated" >}}
 [NIGHTLY_REGRESSION_V2]:              {{<relref "/doc/rm/checklist.md#nightly-regression-v2" >}}
-[CODE_COVERAGE_V2]:                   {{<relref "/doc/rm/checklist.md#code-coverage-v2"
->}}
+[CODE_COVERAGE_V2]:                   {{<relref "/doc/rm/checklist.md#code-coverage-v2" >}}
 [FUNCTIONAL_COVERAGE_V2]:             {{<relref "/doc/rm/checklist.md#functional-coverage-v2" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/rm/checklist.md#no-high-priority-issues-pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/rm/checklist.md#all-low-priority-issues-root-caused" >}}
@@ -196,20 +193,19 @@ Review        | Signoff date                            | Not Started |
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/rm/checklist.md#v3-checklist-scoped" >}}
 
 ### Checklists for milestone V3
-
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | Not Started |
-Testbench     | [ALL_TODOS_RESOLVED][]            | Not Started |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
-Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Not Started |
-Coverage      | [CODE_COVERAGE_AT_100][]          | Not Started |
-Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Not Started |
-Issues        | [NO_ISSUES_PENDING][]             | Not Started |
-Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
-Review        | Reviewer(s)                       | Not Started |
-Review        | Signoff date                      | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | N/A         |
+Testbench     | [ALL_TODOS_RESOLVED][]            | Done        |
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress
+Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Done        |
+Coverage      | [CODE_COVERAGE_AT_100][]          | Done        |[common_cov_excl.el][], [uart_cov_excl.el][]
+Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Done        |
+Issues        | [NO_ISSUES_PENDING][]             | Done        |
+Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
+Review        | Reviewer(s)                       | Done        | @eunchan @sjgitty @sriyerg
+Review        | Signoff date                      | Done        | 2019-11-01
 
 [DESIGN_DELTAS_CAPTURED_IF_ANY]:{{<relref "/doc/rm/checklist.md#design-deltas-captured-if-any" >}}
 [ALL_TODOS_RESOLVED]:           {{<relref "/doc/rm/checklist.md#all-todos-resolved" >}}
@@ -220,3 +216,5 @@ Review        | Signoff date                      | Not Started |
 [NO_ISSUES_PENDING]:            {{<relref "/doc/rm/checklist.md#no-issues-pending" >}}
 [NO_TOOL_WARNINGS_THROWN]:      {{<relref "/doc/rm/checklist.md#no-tool-warnings-thrown" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:  {{<relref "/doc/rm/checklist.md#pre-verified-sub-modules-v3" >}}
+[common_cov_excl.el]:https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.el
+[uart_cov_excl.el]:  https://github.com/lowRISC/opentitan/blob/04bb36e0ae1430262b048d400102b0fed43377ac/hw/ip/uart/dv/cov/uart_cov_excl.el

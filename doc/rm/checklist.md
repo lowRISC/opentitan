@@ -47,10 +47,6 @@ All the outputs of the IP have `ASSERT_KNOWN` assertions.
 Lint run setup, compiles and runs. It is acceptable to have lint errors and
 warnings at this stage.
 
-### D1_REVIEWED
-
-D1 checklist reviewed, and signed off. Exception rationales documented.
-
 ## D2
 
 ### NEW_FEATURES
@@ -119,10 +115,6 @@ FPGA synthesis timing meet (Fmax-10%) target or better
 CDC Sync flops use behavioral synchronization macros(`prim_flop_2sync`) not
 2flops.
 
-### D2_REVIEWED
-
-D2 checklist reviewed, and signed off. Exception rationales documented
-
 ## D3
 
 ### NEW_FEATURES_D3
@@ -165,10 +157,6 @@ Review Design Change with SW: Review other SW visible changes
 
 Review Design Change with SW: Review known "Won't Fix" bugs and "Errata".
 
-### D3_REVIEWED
-
-D3 checklist reviewed, and signed off. Exception rationales documented.
-
 ## V1
 
 For a transition from V0 to V1, the following items are expected be completed.
@@ -191,7 +179,6 @@ A fully completed Testplan written in Hjson, indicating the list of planned test
 ### PRELIMINARY_ASSERTION_CHECKS_ADDED
 
 - All available interface assertion monitors hooked up (example: tlul_assert)
-- All DUT outputs have X / unknown checks when out of reset
 
 ### TB_ENV_CREATED
 
@@ -334,6 +321,9 @@ It is possible for the design to undergo changes even at this stage (when it is 
 
 Ensure that the complete testbench code is free from TODOs.
 
+### X_PROP_ANALYSIS_COMPLETED
+
+X Propagation Analysis complete
 
 ### NIGHTLY_REGRESSION_AT_100
 
