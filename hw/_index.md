@@ -22,6 +22,7 @@ This includes: top level specification(s); processor core(s) specifications; and
 | `gpio`          | [design spec]({{< relref "hw/ip/gpio/doc" >}})          | [DV plan]({{< relref "hw/ip/gpio/doc/dv_plan" >}}) |
 | `hmac`          | [design spec]({{< relref "hw/ip/hmac/doc" >}})          | [DV plan]({{< relref "hw/ip/hmac/doc/dv_plan" >}}) |
 | `i2c`           | [design spec]({{< relref "hw/ip/i2c/doc" >}})           | [DV plan]({{< relref "hw/ip/i2c/doc/dv_plan" >}})  |
+| `nmi_gen`       | [design spec]({{< relref "hw/ip/nmi_gen/doc" >}})       | |
 | `padctrl`       | [design spec]({{< relref "hw/ip/padctrl/doc" >}})       | |
 | `pinmux`        | [design spec]({{< relref "hw/ip/pinmux/doc" >}})        | |
 | `rv_core_ibex`  | [design spec]({{< relref "hw/ip/rv_core_ibex/doc" >}})  | |

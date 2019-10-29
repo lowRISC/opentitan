@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# NMI_GEN register template
+{
+  name: "NMI_GEN",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  regwidth: "32",
+  interrupt_list: [
+    { name: "esc0",
+      desc: '''
+            Escalation interrupt 0
+            ''',
+    },
+    { name: "esc1",
+      desc: '''
+            Escalation interrupt 1
+            ''',
+    },
+    { name: "esc2",
+      desc: '''
+            Escalation interrupt 2
+            ''',
+    },
+    { name: "esc3",
+      desc: '''
+            Escalation interrupt 3
+            ''',
+    },
+  ],
+  registers: [
+  ],
+}
+
