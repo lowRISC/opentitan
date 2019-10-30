@@ -16,6 +16,12 @@ class hmac_back_pressure_vseq extends hmac_sanity_vseq;
         [3001:10_000] :/ 1  // temp set to 10KB as max length, spec max size is 2^64 bits
     };
   }
+  constraint wr_mask_c {
+    $countones(wr_mask) dist {
+        TL_DBW       :/ 9,
+        [1:TL_DBW-1] :/ 1
+    };
+  }
 
   virtual task pre_start();
     do_back_pressure = 1'b1;
