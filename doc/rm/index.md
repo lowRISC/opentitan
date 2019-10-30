@@ -10,3 +10,4 @@
   * [Hjson Usage and Style Guide](hjson_usage_style.md)
   * [Markdown Usage and Style Guide](markdown_usage_style.md)
   * [C/C++ Style Guide](c_cpp_coding_style.md)
+* [FPGA Manual](ref_manual_fpga.md)
