@@ -63,9 +63,9 @@ If the `fusesoc` binary is not found, add `~/.local/bin` to your `PATH`, e.g. by
 
 ## Software development
 
-### Compiler toolchain
+### Device compiler toolchain (RV32IMC)
 
-To build software you need a baremetal rv32imc compiler toolchain.
+To build device software you need a baremetal RV32IMC compiler toolchain.
 You can either build your own or use a prebuilt one.
 We recommend installing the toolchain to `/tools/riscv`.
 
