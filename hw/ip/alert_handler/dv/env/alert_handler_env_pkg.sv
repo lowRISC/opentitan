@@ -11,6 +11,7 @@ package alert_handler_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import alert_handler_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -28,7 +29,6 @@ package alert_handler_env_pkg;
   // functions
 
   // package sources
-  `include "alert_handler_reg_block.sv"
   `include "alert_handler_env_cfg.sv"
   `include "alert_handler_env_cov.sv"
   `include "alert_handler_virtual_sequencer.sv"

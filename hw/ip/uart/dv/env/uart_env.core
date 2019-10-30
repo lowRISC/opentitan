@@ -9,12 +9,12 @@ filesets:
     depend:
       - lowrisc:dv:uart_agent
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:gen_ral_pkg
     files:
       - uart_env_pkg.sv
       - uart_env_cfg.sv: {is_include_file: true}
       - uart_env_cov.sv: {is_include_file: true}
       - uart_env.sv: {is_include_file: true}
-      - uart_reg_block.sv: {is_include_file: true}
       - uart_virtual_sequencer.sv: {is_include_file: true}
       - uart_scoreboard.sv: {is_include_file: true}
       - seq_lib/uart_vseq_list.sv: {is_include_file: true}

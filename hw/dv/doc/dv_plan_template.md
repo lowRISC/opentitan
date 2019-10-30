@@ -68,8 +68,11 @@ TL host interface into FOO device.
 ### UVC/agent 2
 [Describe here or add link to its README]
 
-### RAL
-The FOO RAL model is constructed using the [regtool.py script]({{< relref "util/reggen/README.md" >}}) and is placed at `env/foo_reg_block.sv`.
+### UVM RAL Model
+The FOO RAL model is created with the `hw/dv/tools/gen_ral_pkg.py` wrapper script at the start of the simulation automatically and is placed in the build area, along with a corresponding `fusesoc` core file.
+The wrapper script invokes the [regtool.py]({{< relref "util/reggen/README.md" >}}) script from within to generate the RAL model.
+
+It can be created manually by running `make ral` command from the `dv` area.
 
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]

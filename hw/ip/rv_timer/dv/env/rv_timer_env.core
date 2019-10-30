@@ -8,12 +8,12 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:gen_ral_pkg
     files:
       - rv_timer_env_pkg.sv
       - rv_timer_env_cfg.sv: {is_include_file: true}
       - rv_timer_env_cov.sv: {is_include_file: true}
       - rv_timer_env.sv: {is_include_file: true}
-      - rv_timer_reg_block.sv: {is_include_file: true}
       - rv_timer_scoreboard.sv: {is_include_file: true}
       - seq_lib/rv_timer_vseq_list.sv: {is_include_file: true}
       - seq_lib/rv_timer_base_vseq.sv: {is_include_file: true}

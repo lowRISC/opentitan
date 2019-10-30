@@ -13,6 +13,7 @@ package hmac_env_pkg;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import test_vectors_pkg::*;
+  import hmac_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -72,7 +73,6 @@ package hmac_env_pkg;
   // functions
 
   // package sources
-  `include "hmac_reg_block.sv"
   `include "hmac_env_cfg.sv"
   `include "hmac_env_cov.sv"
   `include "hmac_scoreboard.sv"

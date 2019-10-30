@@ -57,8 +57,11 @@ TL host interface into UART device.
 data, parity, baud rate etc.
 These baud rates are supported: 9600, 115200, 230400, 1Mbps(1048576), 2Mbps(2097152)
 
-### RAL
-The UART RAL model is constructed using the [regtool.py script]({{< relref "util/reggen/README.md" >}}) and is placed at `env/uart_reg_block.sv`.
+### UVM RAL Model
+The UART RAL model is created with the `hw/dv/tools/gen_ral_pkg.py` wrapper script at the start of the simulation automatically and is placed in the build area, along with a corresponding `fusesoc` core file.
+The wrapper script invokes the [regtool.py]({{< relref "util/reggen/README.md" >}}) script from within to generate the RAL model.
+
+It can be created manually by running `make ral` command from the `dv` area.
 
 ### Stimulus strategy
 #### Test sequences

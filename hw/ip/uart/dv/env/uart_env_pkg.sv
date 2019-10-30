@@ -12,6 +12,7 @@ package uart_env_pkg;
   import uart_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import uart_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -89,7 +90,6 @@ package uart_env_pkg;
   `define RX_IGNORED_PERIOD {1}
 
   // package sources
-  `include "uart_reg_block.sv"
   `include "uart_env_cfg.sv"
   `include "uart_env_cov.sv"
   `include "uart_virtual_sequencer.sv"

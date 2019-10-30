@@ -13,6 +13,7 @@ package spi_device_env_pkg;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import mem_model_pkg::*;
+  import spi_device_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -103,7 +104,6 @@ package spi_device_env_pkg;
                                   ral.rxf_addr.limit.get_mirrored_value())
 
   // package sources
-  `include "spi_device_reg_block.sv"
   `include "spi_device_env_cfg.sv"
   `include "spi_device_env_cov.sv"
   `include "spi_device_virtual_sequencer.sv"

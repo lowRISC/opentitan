@@ -57,3 +57,7 @@ ifeq (${COV},1)
     XCELIUM_COV = 1
   endif
 endif
+
+# Simulation flow control options
+# Skip RAL model generation
+SKIP_RAL_GEN ?= 0

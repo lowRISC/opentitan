@@ -13,6 +13,7 @@
               "{name}{intf}_csr_bit_bash",
               "{name}{intf}_csr_aliasing",]
     }
+    // TODO: add CSR accesses with reset
   ]
 }
 

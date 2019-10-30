@@ -11,7 +11,8 @@
 ####################################################################################################
 # fusesoc tool and options
 SV_FLIST_GEN_TOOL  ?= fusesoc
-SV_FLIST_GEN_OPTS  += --cores-root ${PROJ_ROOT} run --target=sim --setup --no-export ${FUSESOC_CORE}
+SV_FLIST_GEN_OPTS  += --cores-root ${PROJ_ROOT} --cores-root ${RAL_MODEL_DIR} \
+                      run --target=sim --setup --no-export ${FUSESOC_CORE}
 FUSESOC_CORE_       = $(shell echo "${FUSESOC_CORE}" | tr ':' '_')
 SV_FLIST_GEN_DIR    = ${BUILD_DIR}/build/${FUSESOC_CORE_}/sim-vcs
 SV_FLIST           := ${SV_FLIST_GEN_DIR}/${FUSESOC_CORE_}.scr

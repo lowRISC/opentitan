@@ -16,6 +16,7 @@ package ${name}_env_pkg;
 % if is_cip:
   import cip_base_pkg::*;
 % endif
+  import ${name}_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -30,7 +31,6 @@ package ${name}_env_pkg;
   // functions
 
   // package sources
-  `include "${name}_reg_block.sv"
   `include "${name}_env_cfg.sv"
   `include "${name}_env_cov.sv"
   `include "${name}_virtual_sequencer.sv"

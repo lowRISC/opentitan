@@ -16,6 +16,7 @@
       // mem_walk does partial writes, so we can reuse that test here
       tests: ["{name}{intf}_mem_walk"]
     }
+    // TODO: add mem access with reset
   ]
 }
 

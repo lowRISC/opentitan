@@ -16,7 +16,6 @@ def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir):
     env_srcs = [('dv/env',          name + '_', 'env_cfg',            '.sv'),
                 ('dv/env',          name + '_', 'env_cov',            '.sv'),
                 ('dv/env',          name + '_', 'env_pkg',            '.sv'),
-                ('dv/env',          name + '_', 'reg_block',          '.sv'),
                 ('dv/env',          name + '_', 'scoreboard',         '.sv'),
                 ('dv/env',          name + '_', 'virtual_sequencer',  '.sv'),
                 ('dv/env',          name + '_', 'env',                '.sv'),
