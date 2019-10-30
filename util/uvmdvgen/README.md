@@ -1,6 +1,6 @@
 # uvmdvgen: UVM agent & complete testbench boilerplate code auto-generation tool
 
-uvmdvgen is a python3 based tool to generate the boilerplate code for a UVM
+`uvmdvgen` is a Python based tool to generate the boilerplate code for a UVM
 agent as well as the complete UVM testbench for a given DUT. The tool generates
 all the relevant UVM-based classes including the package and the fusesoc core
 file to make it quickly plug-and-playable. The packages import the standard
@@ -14,14 +14,6 @@ eliminate that. Also, as a part of the OpenTitan DV methodology, we have
 several utilities and base class structures (such as DV lib and CIP lib) that
 share all of the common code. By extending a new DV environment from the common
 code, the effort is drastically reduced.
-
-### Setup
-
-The tool uses the mako based templates, so the following tool is required as
-dependency:
-```
-$ pip3 install --user mako
-```
 
 ### Help switch (-h)
 
@@ -73,49 +65,49 @@ optional arguments:
 The boilerplate code for a UVM agent for an interface can be generated using the
 `-a` switch. This results in the generation of complete agent with classes that
 extend from the [DV library]({{< relref "hw/dv/sv/dv_lib/README.md" >}}). Please see
-description for more details.
+that description for more details.
 
 The tool generates an interface, item, cfg, cov, monitor, driver and sequence
 library classes. Let's take `jtag` as the argument passed for the name of the
 IP. The following describes their contents in each source generated:
 
-* **jtag_if**
+* `jtag_if`
 
   This is an empty shell of an interface. User is required to add content.
 
-* **jtag_item**
+* `jtag_item`
 
   This is an empty transaction packet extended from `uvm_sequence_item`.
 
-* **jtag_agent_cfg**
+* `jtag_agent_cfg`
 
   This is the agent configuration object, it contains the virtual interface
   handle for `jtag_if` and is called `vif`.
 
-* **jtag_agent_cov**
+* `jtag_agent_cov`
 
   This is a coverage component extended from `dv_base_agent_cov`.
 
-* **jtag_monitor**
+* `jtag_monitor`
 
   This is the monitor component extended from `dv_base_monitor`. It provides
   the following items:
-  * **virtual protected task collect_trans(uvm_phase phase)**
+  * `virtual protected task collect_trans(uvm_phase phase)`
 
     This is a shell task within which user is required to add logic to detect
     an event, sample the interface and create a transaction object and write
     to the analysis port. This task is called in `dv_base_monitor::run_phase`.
 
-* **jtag_driver**
+* `jtag_driver`
 
   This is the monitor component extended from `jtag_driver` which is typedef'ed
   in the pkg to `dv_base_driver` with the right parameter set. It provides the
   following items:
-  * **virtual task reset_signals()**
+  * `virtual task reset_signals()`
 
     This task is for resetting the initial value of the `vif` signals.
 
-  * **virtual task get_and_drive()**
+  * `virtual task get_and_drive()`
 
     This task is used to get the next item from the sequencer, apply it to the
     interface and return the response back. This is again, an empty task at the
@@ -124,26 +116,26 @@ IP. The following describes their contents in each source generated:
   If the `-s` switch is passed, the tool creates `jtag_host_driver` and
   `jtag_device_driver` instead, and their contents are exactly the same.
 
-* **seq_lib/jtag_base_seq**
+* `seq_lib/jtag_base_seq`
 
   This is extended from `dv_base_seq`.
 
-* **seq_lib/jtag_seq_list**
+* `seq_lib/jtag_seq_list`
 
   This is a list of sequences included in one place.
 
-* **jtag_agent_pkg**
+* `jtag_agent_pkg`
 
   This is the package file that includes all of the above sources and the
   imports the dependent packages.
 
-* **jtag_agent.core**
+* `jtag_agent.core`
 
   This is the fusesoc core file that is used to generate the filelist for
   the build.
 
 The tool does not create `jtag_sequencer` or `jtag_agent` classes separately.
-Instead, it typedef's the `dv_base_sequencer` and `dv_base_agent` respectively
+Instead, it `typedef`'s the `dv_base_sequencer` and `dv_base_agent` respectively
 with the right type-parameters in the pkg. The reason for this is having a
 dedicated sequencer and agent is not required since the `dv_base_agent` already
 has all the sub-component instantiations and connections; and
@@ -172,7 +164,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 `alerts_if` in the testbench and set them into `uvm_config_db` for the
 `cip_base_env` to pick up.
 
-* **env/i2c_host_env_cfg**
+* `env/i2c_host_env_cfg`
 
   This is the env cfg object. It creates the downstream agent cfg objects that
   were passed using the `-ea` switch in the `initialize()` function which is
@@ -180,19 +172,19 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
   all env components, those downstream agent cfg objects can be hierarchically
   referenced.
 
-* **env/i2c_host_env_cov**
+* `env/i2c_host_env_cov`
 
   This is the coverage component class. A handle of this class is passed to the
   scoreboard and the virtual sequencer so that covergroups can be sampled in the
   scoreboard as well as sequences.
 
-* **env/i2c_host_reg_block**
+* `env/i2c_host_reg_block`
 
   This is the UVM reg based RAL model. This is created for completeness. The
   actual RAL model needs to be generated prior to running simulations using the
   [regtool]({{< relref "util/reggen/README.md" >}}).
 
-* **env/i2c_host_scoreboard**
+* `env/i2c_host_scoreboard`
 
   This is the scoreboard component that already creates the analysis fifos and
   queues for the agents passed via `-ea` switch. It adds starter tasks for
@@ -201,36 +193,36 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
   `process_tl_access` task that is extended from `cip_base_scoreboard`. This
   task provides a tilelink access packet for further processing.
 
-* **env/i2c_host_virtual_sequencer**
+* `env/i2c_host_virtual_sequencer`
 
   This is the virtual sequencer used by all test sequences to run the traffic.
   It adds handles to downstream agent sequencers passed via `-ea` switch.
   Sub-sequences can be started on them via the `p_sequencer` handle.
 
-* **env/seq_lib/i2c_host_base_vseq**
+* `env/seq_lib/i2c_host_base_vseq`
 
   This is the base virtual sequence that user can use to add common tasks,
   functions and variables that other extended test sequences can reuse. For
   starters, it provides the `i2s_host_init()` task and `do_i2c_host_init` knob
   for controllability.
 
-* **env/seq_lib/i2c_host_sanity_vseq**
+* `env/seq_lib/i2c_host_sanity_vseq`
 
   This is the basic sanity test sequence that user needs to develop as the first
   test sequence. It extends from `i2s_host_base_vseq`.
 
-* **env/seq_lib/i2c_host_csr_vseq**
+* `env/seq_lib/i2c_host_csr_vseq`
 
   This is the test sequence for the entire CSR suite of tests. It calls
   `dv_base_vseq::run_csr_vseq_wrapper()` task which is a complete test sequence.
   All the user needs to do is run the CSR tests and add exclusions if needed
   using the `add_csr_exclusions()` function provided.
 
-* **env/seq_lib/i2c_host_vseq_list**
+* `env/seq_lib/i2c_host_vseq_list`
 
   This is a list of test sequences included in one place.
 
-* **env/i2c_host_env**
+* `env/i2c_host_env`
 
   This is the env class that creates the downstream agents passed via `-ea`
   switch. It sets their correspodnding cfg objects (which are members of env cfg
@@ -238,38 +230,38 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
   in the `connect_phase` and sets the sequencer handles in the virtual
   sequencer.
 
-* **env/i2c_host_env_pkg**
+* `env/i2c_host_env_pkg`
 
   This is the env pkg file which includes all env classes and imports the
   dependent packages.
 
-* **env/i2c_host_env.core**
+* `env/i2c_host_env.core`
 
   This is the fusesoc core file for the env pkg compile unit.
 
-* **tests/i2c_host_base_test**
+* `tests/i2c_host_base_test`
 
   This is the base test class. The base test class it extends from already
   creates the `env` and `cfg` objects, which are available for manipulation in
   UVM phases. This class's name would be supplied to UVM_TESTNAME plusarg to run
   tests using the UVM methodology.
 
-* **tests/i2c_host_test_pkg**
+* `tests/i2c_host_test_pkg`
 
   This is the test pkg file which includes all test classes and imports the
   dependent packages.
 
-* **tests/i2c_host_test.core**
+* `tests/i2c_host_test.core`
 
   This is the fusesoc core file for the test pkg compile unit.
 
-* **tb/i2c_host_bind**
+* `tb/i2c_host_bind`
 
   This is the assertion bind file that is compiled along with the testbench in a
   multi-top architecture. If the `-c` switch is passed, it adds the
   `tlul_assert` module bind to the `i2c_host` DUT.
 
-* **tb/tb**
+* `tb/tb`
 
   This is the top level testbench module that instantiates the DUT along with
   some of the interfaces that are required to be instantiated and connected and
@@ -277,20 +269,20 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
   retrieve them. The user needs to look through the RTL and make additional
   connections as needed.
 
-* **i2c_host_sim.core**
+* `i2c_host_sim.core`
 
   This is the top level fusesoc core file with the sim target. It adds the RTL
   and DV dependencies to construct the complete filelist to pass to simulator's
   build step.
 
-* **Makefile**
+* `Makefile`
 
   This is the simulation Makefile that is used as the starting point for
   building and running tests using the [make flow]({{< relref "hw/dv/tools/README.md" >}}).
   It already includes the sanity and CSR suite of tests to allow users to start
   running tests right away.
 
-* **plan.md**
+* `plan.md`
 
   This is the empty DV plan document that will describe the entire testbench. A
   template for this is available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_plan_template.md).
@@ -316,7 +308,7 @@ This will create the I2C agent with separate 'host' mode and 'device' mode drive
 ```console
 $ util/uvmdvgen.py i2c_host -e -c -hi -ea i2c -eo hw/ip/i2c_host/dv
 ```
-This will create the complete i2c_host DV testbench extended from CIP lib and will
+This will create the complete `i2c_host` DV testbench extended from CIP lib and will
 instantiate `i2c_agent`. It will also create and hook up the interrupt interface
 in the testbench.
 
@@ -330,7 +322,7 @@ as well as alerts interface in the testbench.
 ```console
 $ util/uvmdvgen.py aes -e -c -ea i2c -eo hw/ip/i2c_host/dv
 ```
-This will create the complete i2c_host DV testbench extended from CIP lib and will
+This will create the complete `i2c_host` DV testbench extended from CIP lib and will
 instantiate `i2c_agent`.
 
 

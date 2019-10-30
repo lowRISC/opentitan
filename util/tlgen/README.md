@@ -1,5 +1,4 @@
-# TL-UL Xbar generator
+# TL-UL Crossbar RTL generator
 
-This is the TL-UL generator.
-
-TODO: Add more documentation, or link to documentation.
+`tlgen.py` is a generation script for building TileLink-based RTL crossbar files.
+See the full [reference manual](../doc/rm/crossbar_tool.md) for details on this utility script.
