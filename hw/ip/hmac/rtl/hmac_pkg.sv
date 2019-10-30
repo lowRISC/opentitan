@@ -18,12 +18,12 @@ package hmac_pkg;
   } sha_fifo_t;
 
 
-  localparam sha_word_t init_h [8]= '{
+  localparam sha_word_t InitHash [8]= '{
     32'h 6a09_e667, 32'h bb67_ae85, 32'h 3c6e_f372, 32'h a54f_f53a,
     32'h 510e_527f, 32'h 9b05_688c, 32'h 1f83_d9ab, 32'h 5be0_cd19
   };
 
-  localparam sha_word_t k [64] = '{
+  localparam sha_word_t CubicRootPrime [64] = '{
     32'h 428a_2f98, 32'h 7137_4491, 32'h b5c0_fbcf, 32'h e9b5_dba5,
     32'h 3956_c25b, 32'h 59f1_11f1, 32'h 923f_82a4, 32'h ab1c_5ed5,
     32'h d807_aa98, 32'h 1283_5b01, 32'h 2431_85be, 32'h 550c_7dc3,

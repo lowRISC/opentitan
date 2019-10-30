@@ -99,7 +99,7 @@ module sha2 import hmac_pkg::*; (
     end else if (init_hash) begin
       hash <= digest;
     end else if (run_hash) begin
-      hash <= compress( w[0], k[round], hash);
+      hash <= compress( w[0], CubicRootPrime[round], hash);
     end
   end : compress_round
 
@@ -113,7 +113,7 @@ module sha2 import hmac_pkg::*; (
       end
     end else if (hash_start) begin
       for (int i = 0 ; i < 8 ; i++) begin
-        digest[i] <= init_h[i];
+        digest[i] <= InitHash[i];
       end
     end else if (!sha_en || clear_digest) begin
       digest <= '0;
