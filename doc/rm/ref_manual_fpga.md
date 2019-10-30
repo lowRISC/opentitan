@@ -5,7 +5,7 @@ title: "FPGA Reference Manual"
 # FPGA Reference Manual
 
 This manual provides additional usage details about the FPGA.
-Specifically, it provides instructions on SW development flows, testing and bitfile release procedures.
+Specifically, it provides instructions on SW development flows and testing procedures.
 
 
 ## Usage Options
@@ -80,11 +80,10 @@ frame: 0x80000005 to offset: 0x00001338
 
 For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/boot_rom/README.md" >}}).
 
-## FPGA Testing and Release Procedure
+## FPGA Testing
 
-As mentioned in [quick_start]({{< relref "doc/ug/quickstart" >}}), golden bitfiles will be released.
-Before release, a check process will be performed on the release git-tag to ensure the FPGA bitstream is functional.
-The [checks to be performed are](link script later):
+To sanity check FPGA functionality, there is a [test script](https://github.com/lowRISC/opentitan/blob/master/test/fpga_manual_test.sh) that can be invoked.
+The test script checks the following:
     * FPGA is built without issues.
       * There are no timing violations.
       * There are no resource issues.
@@ -98,12 +97,50 @@ In the future, this process will be enhanced to check for the following:
     * RISCV compliance test-suite.
     * Additional self contained tests.
 
+If the user does not wish to build and program the FPGA (for example the quick start flow), the test can also be invoked to assume the FPGA is already programmed.
 
-Once the above checks all pass, the tested  git commit is tagged through the [CalVer convention](https://calver.org).
-The bitfile is the associated with the tag in the github release flow.
-
-See sample usage below.
+See sample usage below for a successful test.
+`${test}` represents a single test under `sw/device/tests` diretory.
 
 ```console
-TO BE FILLED IN
+$ cd $REPO_TOP
+$ ./test/fpga_manual_test.sh -h
+
+Usage: ./test/fpga_manual_test.sh -u <UART PORT ATTACHED> -n -p.
+Example : ./test/fpga_manual_test.sh /dev/ttyUSB0"
+-n Controls whether a new fpga bitfile is built
+-p Controls whether the existing bitfile at build/lowrisc_systems_top_earlgrey_nexysvideo_0.1
+is programmed.
+
+...
+
+$ ./test/fpga_manual_test.sh -u /dev/ttyUSB0 -n -p
+
+Compiling ROM - this is needed in order for the build step below to correctly infer ROM
+
+...
+
+Building FPGA.
+
+...
+
+Splice latest boot ROM and program FPGA
+
+...
+
+
+Build spiflash tool.
+
+...
+
+Building ${test} binaries
+
+...
+
+Flashing binaries onto FPGA for tests.
+
+...
+
+TESTS PASS!
+
 ```
