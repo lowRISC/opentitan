@@ -21,8 +21,8 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit                   en_mem_read       = 1;
 
   // ral base address and size
-  bit [TL_AW-1:0]       csr_base_addr;              // base address where csr map begins
-  bit [TL_AW-1:0]       csr_addr_map_size;          // csr addr region allocated to the ip
+  bit [TL_AW-1:0]       csr_base_addr;     // base address where csr map begins
+  bit [TL_AW:0]         csr_addr_map_size; // csr addr region allocated to the ip, max: 1 << TL_AW
 
   // clk_rst_if & freq
   virtual clk_rst_if    clk_rst_vif;
