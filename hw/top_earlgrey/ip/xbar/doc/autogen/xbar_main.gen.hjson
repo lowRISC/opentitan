@@ -40,6 +40,7 @@
       aes
       hmac
       rv_plic
+      pinmux
     ]
     dm_sba:
     [
@@ -54,6 +55,7 @@
       aes
       hmac
       rv_plic
+      pinmux
     ]
   }
   nodes:
@@ -198,6 +200,16 @@
       clock: main
       inst_type: rv_plic
       base_addr: 0x40090000
+      size_byte: 0x1000
+      pipeline_byp: "false"
+      pipeline: "true"
+    }
+    {
+      name: pinmux
+      type: device
+      clock: main
+      inst_type: pinmux
+      base_addr: 0x40070000
       size_byte: 0x1000
       pipeline_byp: "false"
       pipeline: "true"

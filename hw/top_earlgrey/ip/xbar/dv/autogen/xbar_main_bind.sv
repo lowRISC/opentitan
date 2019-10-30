@@ -98,6 +98,12 @@ module xbar_main_bind;
     .h2d    (tl_rv_plic_o),
     .d2h    (tl_rv_plic_i)
   );
+  bind xbar_main tlul_assert tlul_assert_device_pinmux (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_pinmux_o),
+    .d2h    (tl_pinmux_i)
+  );
 
 endmodule
 

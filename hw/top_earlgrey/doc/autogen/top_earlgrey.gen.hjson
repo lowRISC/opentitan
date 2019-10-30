@@ -393,6 +393,29 @@
       interrupt_list: []
       scan: "false"
     }
+    {
+      name: pinmux
+      type: pinmux
+      clock: main
+      clock_connections:
+      {
+        clk_i: main
+      }
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40070000
+      generated: "true"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      scan: "false"
+    }
   ]
   memory:
   [
@@ -475,6 +498,7 @@
           aes
           hmac
           rv_plic
+          pinmux
         ]
         dm_sba:
         [
@@ -489,6 +513,7 @@
           aes
           hmac
           rv_plic
+          pinmux
         ]
       }
       nodes:
@@ -637,6 +662,16 @@
           pipeline_byp: "false"
           pipeline: "true"
         }
+        {
+          name: pinmux
+          type: device
+          clock: main
+          inst_type: pinmux
+          base_addr: 0x40070000
+          size_byte: 0x1000
+          pipeline_byp: "false"
+          pipeline: "true"
+        }
       ]
       clock: main
     }
@@ -774,6 +809,7 @@
   ]
   pinmux:
   {
+    num_mio: 32
     dio_modules:
     [
       {
@@ -784,10 +820,10 @@
         ]
       }
       {
-        name: uart.tx
+        name: uart
         pad:
         [
-          ChA[0]
+          ChA[0..1]
         ]
       }
     ]
@@ -852,9 +888,9 @@
         ]
       }
       {
-        name: uart_tx
+        name: uart_rx
         width: 1
-        type: output
+        type: input
         pad:
         [
           {
@@ -863,15 +899,20 @@
           }
         ]
       }
-    ]
-    inputs:
-    [
       {
-        name: uart_rx
+        name: uart_tx
         width: 1
-        type: input
+        type: output
+        pad:
+        [
+          {
+            name: ChA
+            index: 1
+          }
+        ]
       }
     ]
+    inputs: []
     outputs: []
     inouts:
     [

@@ -16,25 +16,20 @@ module top_earlgrey #(
   input               jtag_td_i,
   output              jtag_td_o,
 
-  // uart
-  input  cio_uart_rx_p2d_i,
-  output cio_uart_tx_d2p_o,
-  output cio_uart_tx_en_d2p_o,
-  // gpio
-  input  [31:0] cio_gpio_gpio_p2d_i,
-  output [31:0] cio_gpio_gpio_d2p_o,
-  output [31:0] cio_gpio_gpio_en_d2p_o,
-  // spi_device
-  input  cio_spi_device_sck_p2d_i,
-  input  cio_spi_device_csb_p2d_i,
-  input  cio_spi_device_mosi_p2d_i,
-  output cio_spi_device_miso_d2p_o,
-  output cio_spi_device_miso_en_d2p_o,
-  // flash_ctrl
-  // rv_timer
-  // aes
-  // hmac
-  // rv_plic
+  // Multiplexed I/O
+  input        [31:0] mio_in_i,
+  output logic [31:0] mio_out_o,
+  output logic [31:0] mio_oe_o,
+
+  // Dedicated I/O
+  input               dio_spi_device_sck_i,
+  input               dio_spi_device_csb_i,
+  input               dio_spi_device_mosi_i,
+  output logic        dio_spi_device_miso_o,
+  output logic        dio_spi_device_miso_en_o,
+  input               dio_uart_rx_i,
+  output logic        dio_uart_tx_o,
+  output logic        dio_uart_tx_en_o,
 
   input               scanmode_i  // 1 for Scan
 );
@@ -84,6 +79,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_hmac_d_d2h;
   tl_h2d_t  tl_rv_plic_d_h2d;
   tl_d2h_t  tl_rv_plic_d_d2h;
+  tl_h2d_t  tl_pinmux_d_h2d;
+  tl_d2h_t  tl_pinmux_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -99,6 +96,32 @@ module top_earlgrey #(
 
   //clock wires declaration
   logic main_clk;
+
+  // Signals
+  logic [31:0] m2p;
+  logic [31:0] p2m;
+  logic [31:0] p2m_en;
+  // uart
+  logic        cio_uart_rx_p2d;
+  logic        cio_uart_tx_d2p;
+  logic        cio_uart_tx_en_d2p;
+  // gpio
+  logic [31:0] cio_gpio_gpio_p2d;
+  logic [31:0] cio_gpio_gpio_d2p;
+  logic [31:0] cio_gpio_gpio_en_d2p;
+  // spi_device
+  logic        cio_spi_device_sck_p2d;
+  logic        cio_spi_device_csb_p2d;
+  logic        cio_spi_device_mosi_p2d;
+  logic        cio_spi_device_miso_d2p;
+  logic        cio_spi_device_miso_en_d2p;
+  // flash_ctrl
+  // rv_timer
+  // aes
+  // hmac
+  // rv_plic
+  // pinmux
+
 
   logic [54:0]  intr_vector;
   // Interrupt source list
@@ -366,16 +389,22 @@ module top_earlgrey #(
   uart uart (
       .tl_i (tl_uart_d_h2d),
       .tl_o (tl_uart_d_d2h),
-      .cio_rx_i (cio_uart_rx_p2d_i),
-      .cio_tx_o    (cio_uart_tx_d2p_o),
-      .cio_tx_en_o (cio_uart_tx_en_d2p_o),
-      .intr_tx_watermark_o (intr_uart_tx_watermark),
-      .intr_rx_watermark_o (intr_uart_rx_watermark),
-      .intr_tx_overflow_o (intr_uart_tx_overflow),
-      .intr_rx_overflow_o (intr_uart_rx_overflow),
-      .intr_rx_frame_err_o (intr_uart_rx_frame_err),
-      .intr_rx_break_err_o (intr_uart_rx_break_err),
-      .intr_rx_timeout_o (intr_uart_rx_timeout),
+
+      // Input
+      .cio_rx_i    (cio_uart_rx_p2d),
+
+      // Output
+      .cio_tx_o    (cio_uart_tx_d2p),
+      .cio_tx_en_o (cio_uart_tx_en_d2p),
+
+      // Interrupt
+      .intr_tx_watermark_o  (intr_uart_tx_watermark),
+      .intr_rx_watermark_o  (intr_uart_rx_watermark),
+      .intr_tx_overflow_o   (intr_uart_tx_overflow),
+      .intr_rx_overflow_o   (intr_uart_rx_overflow),
+      .intr_rx_frame_err_o  (intr_uart_rx_frame_err),
+      .intr_rx_break_err_o  (intr_uart_rx_break_err),
+      .intr_rx_timeout_o    (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
 
       .clk_i (main_clk),
@@ -385,9 +414,15 @@ module top_earlgrey #(
   gpio gpio (
       .tl_i (tl_gpio_d_h2d),
       .tl_o (tl_gpio_d_d2h),
-      .cio_gpio_i (cio_gpio_gpio_p2d_i),
-      .cio_gpio_o    (cio_gpio_gpio_d2p_o),
-      .cio_gpio_en_o (cio_gpio_gpio_en_d2p_o),
+
+      // Input
+      .cio_gpio_i    (cio_gpio_gpio_p2d),
+
+      // Output
+      .cio_gpio_o    (cio_gpio_gpio_d2p),
+      .cio_gpio_en_o (cio_gpio_gpio_en_d2p),
+
+      // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
 
       .clk_i (main_clk),
@@ -397,19 +432,26 @@ module top_earlgrey #(
   spi_device spi_device (
       .tl_i (tl_spi_device_d_h2d),
       .tl_o (tl_spi_device_d_d2h),
-      .cio_sck_i (cio_spi_device_sck_p2d_i),
-      .cio_csb_i (cio_spi_device_csb_p2d_i),
-      .cio_mosi_i (cio_spi_device_mosi_p2d_i),
-      .cio_miso_o    (cio_spi_device_miso_d2p_o),
-      .cio_miso_en_o (cio_spi_device_miso_en_d2p_o),
-      .intr_rxf_o (intr_spi_device_rxf),
-      .intr_rxlvl_o (intr_spi_device_rxlvl),
-      .intr_txlvl_o (intr_spi_device_txlvl),
-      .intr_rxerr_o (intr_spi_device_rxerr),
-      .intr_rxoverflow_o (intr_spi_device_rxoverflow),
+
+      // Input
+      .cio_sck_i     (cio_spi_device_sck_p2d),
+      .cio_csb_i     (cio_spi_device_csb_p2d),
+      .cio_mosi_i    (cio_spi_device_mosi_p2d),
+
+      // Output
+      .cio_miso_o    (cio_spi_device_miso_d2p),
+      .cio_miso_en_o (cio_spi_device_miso_en_d2p),
+
+      // Interrupt
+      .intr_rxf_o         (intr_spi_device_rxf),
+      .intr_rxlvl_o       (intr_spi_device_rxlvl),
+      .intr_txlvl_o       (intr_spi_device_txlvl),
+      .intr_rxerr_o       (intr_spi_device_rxerr),
+      .intr_rxoverflow_o  (intr_spi_device_rxoverflow),
       .intr_txunderflow_o (intr_spi_device_txunderflow),
 
       .scanmode_i   (scanmode_i),
+
       .clk_i (main_clk),
       .rst_ni (spi_device_rst_n)
   );
@@ -417,12 +459,15 @@ module top_earlgrey #(
   flash_ctrl flash_ctrl (
       .tl_i (tl_flash_ctrl_d_h2d),
       .tl_o (tl_flash_ctrl_d_d2h),
+
+      // Interrupt
       .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
-      .intr_prog_lvl_o (intr_flash_ctrl_prog_lvl),
-      .intr_rd_full_o (intr_flash_ctrl_rd_full),
-      .intr_rd_lvl_o (intr_flash_ctrl_rd_lvl),
-      .intr_op_done_o (intr_flash_ctrl_op_done),
-      .intr_op_error_o (intr_flash_ctrl_op_error),
+      .intr_prog_lvl_o   (intr_flash_ctrl_prog_lvl),
+      .intr_rd_full_o    (intr_flash_ctrl_rd_full),
+      .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
+      .intr_op_done_o    (intr_flash_ctrl_op_done),
+      .intr_op_error_o   (intr_flash_ctrl_op_error),
+
       .flash_o(flash_c2m),
       .flash_i(flash_m2c),
 
@@ -433,6 +478,8 @@ module top_earlgrey #(
   rv_timer rv_timer (
       .tl_i (tl_rv_timer_d_h2d),
       .tl_o (tl_rv_timer_d_d2h),
+
+      // Interrupt
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
 
       .clk_i (main_clk),
@@ -450,9 +497,11 @@ module top_earlgrey #(
   hmac hmac (
       .tl_i (tl_hmac_d_h2d),
       .tl_o (tl_hmac_d_d2h),
+
+      // Interrupt
       .intr_hmac_done_o (intr_hmac_hmac_done),
       .intr_fifo_full_o (intr_hmac_fifo_full),
-      .intr_hmac_err_o (intr_hmac_hmac_err),
+      .intr_hmac_err_o  (intr_hmac_hmac_err),
 
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
@@ -463,10 +512,27 @@ module top_earlgrey #(
   ) rv_plic (
       .tl_i (tl_rv_plic_d_h2d),
       .tl_o (tl_rv_plic_d_d2h),
+
       .intr_src_i (intr_vector),
       .irq_o      (irq_plic),
       .irq_id_o   (irq_id),
       .msip_o     (msip),
+
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
+
+  pinmux pinmux (
+      .tl_i (tl_pinmux_d_h2d),
+      .tl_o (tl_pinmux_d_d2h),
+
+      .periph_to_mio_i      (p2m    ),
+      .periph_to_mio_oe_i   (p2m_en ),
+      .mio_to_periph_o      (m2p    ),
+
+      .mio_out_o            (mio_out_o),
+      .mio_oe_o             (mio_oe_o ),
+      .mio_in_i             (mio_in_i ),
 
       .clk_i (main_clk),
       .rst_ni (sys_rst_n)
@@ -534,9 +600,31 @@ module top_earlgrey #(
     .tl_aes_i        (tl_aes_d_d2h),
     .tl_rv_plic_o    (tl_rv_plic_d_h2d),
     .tl_rv_plic_i    (tl_rv_plic_d_d2h),
+    .tl_pinmux_o     (tl_pinmux_d_h2d),
+    .tl_pinmux_i     (tl_pinmux_d_d2h),
 
     .scanmode_i
   );
+
+  // Pinmux connections
+  assign p2m = {
+    cio_gpio_gpio_d2p
+  };
+  assign p2m_en = {
+    cio_gpio_gpio_en_d2p
+  };
+  assign {
+    cio_gpio_gpio_p2d
+  } = m2p;
+
+  assign cio_spi_device_sck_p2d   = dio_spi_device_sck_i;
+  assign cio_spi_device_csb_p2d   = dio_spi_device_csb_i;
+  assign cio_spi_device_mosi_p2d  = dio_spi_device_mosi_i;
+  assign dio_spi_device_miso_o    = cio_spi_device_miso_d2p;
+  assign dio_spi_device_miso_en_o = cio_spi_device_miso_en_d2p;
+  assign cio_uart_rx_p2d          = dio_uart_rx_i;
+  assign dio_uart_tx_o            = cio_uart_tx_d2p;
+  assign dio_uart_tx_en_o         = cio_uart_tx_en_d2p;
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
