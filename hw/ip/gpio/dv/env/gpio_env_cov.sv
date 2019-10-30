@@ -79,7 +79,15 @@ class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
     cp_pin: coverpoint pin {
       bins bins_for_gpio_bits[] = {[0:NUM_GPIOS-1]};
     }
-    cp_cross_all: cross cp_pin, data_out, data_oe, data_in;
+    cp_cross_all: cross cp_pin, data_out, data_oe, data_in {
+      // If data_oe is true, data_in cannot be different from data_out value
+      illegal_bins data_oe_1_data_out_0_data_in_1 = binsof(data_out) intersect {0} &&
+                                                    binsof(data_oe)  intersect {1} &&
+                                                    binsof(data_in)  intersect {1};
+      illegal_bins data_oe_1_data_out_1_data_in_0 = binsof(data_out) intersect {1} &&
+                                                    binsof(data_oe)  intersect {1} &&
+                                                    binsof(data_in)  intersect {0};
+    }
   endgroup : data_out_data_oe_data_in_cross_cg
   // Cross coverage between gpio pin value and effective data_in value
   covergroup gpio_pins_data_in_cross_cg(string name) with function sample(uint pin,
