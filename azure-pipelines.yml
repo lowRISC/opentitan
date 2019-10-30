@@ -98,7 +98,7 @@ stages:
     pool: "Default"
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
           && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
@@ -107,6 +107,13 @@ stages:
         export DIST_DIR="$(Build.ArtifactStagingDirectory)/dist"
         REQUEST_UPDATE=true ci/run_sw_build.sh
       displayName: 'Build embedded targets'
+    - bash: |
+        make -C sw/host/spiflash clean all
+        # TODO: build system updates needed to copy build output to a dist
+        # staging directory.
+        mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
+        cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
+      displayName: 'Build host targets'
     - bash: |
         cd $(Build.ArtifactStagingDirectory)
         tar -cf dist-partial-sw_build.tar dist
