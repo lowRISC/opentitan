@@ -7,10 +7,12 @@ set -e
 readonly DEFAULT_RISCV_TOOLS=/tools/riscv
 readonly DEFAULT_RISCV_TOOLS_VERSION=latest
 readonly DEFAULT_TOOLCHAIN_REQUEST_UPDATE=false
+readonly DEFAULT_DIST_DIR=dist
 
 TOOLCHAIN_PATH="${TOOLCHAIN_PATH:-$DEFAULT_RISCV_TOOLS}"
 TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION:-$DEFAULT_RISCV_TOOLS_VERSION}"
 REQUEST_UPDATE="${REQUEST_UPDATE:-$DEFAULT_TOOLCHAIN_REQUEST_UPDATE}"
+DIST_DIR="${DIST_DIR:-$DEFAULT_DIST_DIR}"
 
 if [ ! -d "${TOOLCHAIN_PATH}/bin" ]; then
   echo "Unable to find toolchain at: ${TOOLCHAIN_PATH}."
@@ -43,6 +45,12 @@ for target in "${BUILD_TARGETS[@]}"; do
   else
     FAIL_TARGETS=("${FAIL_TARGETS[@]}" "${target}")
   fi
+
+  target_staging_dir="${DIST_DIR}/sw/device/${target}"
+  mkdir -p "$target_staging_dir"
+  cp sw/build/${target}/*.elf "${target_staging_dir}"
+  cp sw/build/${target}/*.vmem "${target_staging_dir}"
+  cp sw/build/${target}/*.bin "${target_staging_dir}"
 done
 
 echo "* PASS_TARGETS"
