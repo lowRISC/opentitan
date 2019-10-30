@@ -6,23 +6,6 @@
 // Do Not Edit directly
 <% from reggen import (gen_dv)
 %>\
-##// [PY-COMMENT]: function to generate typedefs recursively for blocks
-<%def name="typedefs(block)">\
-% for b in block.blocks:
-${typedefs(b)}
-% endfor
-<%
-regs_flat = block.get_regs_flat()
-%>\
-% for r in regs_flat:
-typedef class ${gen_dv.rcname(block, r)};
-% endfor
-% for w in block.wins:
-typedef class ${gen_dv.mcname(block, w)};
-% endfor
-typedef class ${gen_dv.bcname(block)};
-</%def>\
-##// [PY-COMMENT]: function to recursively define all classes
 <%def name="construct_classes(block)">\
 % for b in block.blocks:
 ${construct_classes(b)}
@@ -30,7 +13,20 @@ ${construct_classes(b)}
 <%
 regs_flat = block.get_regs_flat()
 %>\
+
 // Block: ${block.name}
+`ifndef ${block.name.upper()}_REG_BLOCK__SV
+`define ${block.name.upper()}_REG_BLOCK__SV
+
+// Forward declare all register/memory/block classes
+% for r in regs_flat:
+typedef class ${gen_dv.rcname(block, r)};
+% endfor
+% for w in block.wins:
+typedef class ${gen_dv.mcname(block, w)};
+% endfor
+typedef class ${gen_dv.bcname(block)};
+
 % for r in regs_flat:
 <%
   reg_width = block.width
@@ -188,9 +184,8 @@ class ${gen_dv.bcname(block)} extends dv_base_reg_block;
 % endfor
   endfunction : build
 
-endclass : ${gen_dv.bcname(block)}\
-</%def>\
+endclass : ${gen_dv.bcname(block)}
 
-// Forward declare all register/memory/block classes
-${typedefs(block)}
+`endif\
+</%def>\
 ${construct_classes(block)}
