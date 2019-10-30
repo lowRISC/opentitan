@@ -159,6 +159,17 @@ stages:
         export PATH=$VERILATOR_PATH/bin:$PATH
         fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
       displayName: 'Build simulation with Verilator'
+    - bash: |
+        DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
+        mkdir -p "${DIST_DIR}"
+        cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+          ${DIST_DIR}
+        cd $(Build.ArtifactStagingDirectory)
+        tar -cf dist-partial-top_earlgrey_verilator.tar dist
+      displayName: 'Prepare partial distribution artifacts'
+    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_verilator.tar
+      artifact: dist-partial-top_earlgrey_verilator
+      displayName: "Upload partial distribution artifacts"
 
   - job: "top_earlgrey_nexysvideo"
     displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
