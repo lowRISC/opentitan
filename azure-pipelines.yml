@@ -104,8 +104,18 @@ stages:
     - bash: |
         export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
         export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
+        export DIST_DIR="$(Build.ArtifactStagingDirectory)/dist"
         REQUEST_UPDATE=true ci/run_sw_build.sh
       displayName: 'Build embedded targets'
+    - bash: |
+        cd $(Build.ArtifactStagingDirectory)
+        tar -cf dist-partial-sw_build.tar dist
+      displayName: 'Prepare partial distribution artifacts'
+    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-sw_build.tar
+      artifact: dist-partial-sw_build
+      displayName: "Upload partial distribution artifacts"
+
+
   - job: "top_earlgrey_verilator"
     displayName: "Build Verilator simulation of the Earl Grey toplevel design"
     pool: "Default"
