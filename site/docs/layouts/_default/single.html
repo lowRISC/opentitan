@@ -1,7 +1,17 @@
-<html>
+<html class="no-js">
   {{ partial "head.html" . }}
   <body onload="WaveDrom.ProcessAll()">
-    {{ .Content }}
+    {{ partial "header.html" . }}
+    <section class="light-bg">
+      <div class="layout">
+        <aside class="toc">
+          {{ .TableOfContents }}
+        </aside>
+        <main id="main" role="main" class="markdown">
+          {{ .Content }}
+        </main>
+      </div>
+    </section>
     {{ partial "footer.html" . }}
   </body>
 </html>

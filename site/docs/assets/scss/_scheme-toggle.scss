@@ -1,0 +1,41 @@
+.no-js .user-toggle {
+  display: none;
+}
+
+.user-toggle {
+  margin-left: 1.5em;
+
+  button {
+    background: transparent;
+    border: none;
+    display: block;
+    color: #FFF;
+    color: var(--text-white);
+    vertical-align: middle;
+    padding: 0;
+    margin-top: 0.25em;
+    height: 1.6875em;
+    cursor: pointer;
+
+    svg {
+      width: 1.5em;
+      height: 1.5em;
+      display: block;
+      transition: transform 1s cubic-bezier(.18,1.64,.66,.94);
+    }
+    &:focus,
+    &:active {
+      outline: none;
+    }
+
+    &:hover svg,
+    &:focus svg {
+      transform: rotate(540deg);
+    }
+
+    &:focus svg {
+      outline: 1px dashed;
+      outline-offset: 0.3em;
+    }
+  }
+}

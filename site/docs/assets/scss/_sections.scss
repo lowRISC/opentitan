@@ -1,0 +1,16 @@
+.light-bg {
+  background: $white;
+  color: $dark-purple;
+  background: var(--background);
+  color: var(--text-color);
+
+  .bodytext {
+    color: $medium-purple;
+    color: var(--text-second);
+    transition: color 0.5s ease;
+  }
+
+  transition: color 0.2s ease;
+}
+
+

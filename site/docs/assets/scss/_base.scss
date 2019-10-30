@@ -1,0 +1,104 @@
+
+// HTML & Body
+
+html {
+  font-size: calc(77% + 6 * (100vw - 320px) / 1680);
+  scroll-behavior: smooth;
+}
+
+body {
+  color: $white;
+  color: var(--text-white);
+  font-family: 'Ubuntu', sans-serif;
+  background: #9380BF;
+  background-image: linear-gradient(90deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
+  background-image: var(--rainbow);
+}
+
+::selection {
+  background-color: #71DBE2;
+  color: #3D1067;
+}
+
+// -----------------------------
+// Typography
+
+.h2 {
+  font-family: 'Livvic', sans-serif;
+  font-size: 3.125em;
+  line-height: 1.28;
+  font-weight: 300;
+  margin-bottom: 1.4em;
+  margin-top: 1.4em;
+}
+
+.h3 {
+  font-size: 1.375em;
+  font-weight: 700;
+  margin-bottom: 0.6363em;
+}
+
+.bodytext {
+  font-size: 1.125em;
+  line-height: 1.778;
+
+  &--large {
+    font-size: 1.375em;
+    line-height: 1.636;
+  }
+}
+
+.quote {
+  font-family: 'Livvic', sans-serif;
+  font-size: calc(2em + 1vw);
+  line-height: 1.28;
+  font-weight: 300;
+}
+
+// -----------------------------
+// Buttons
+
+.btn {
+  display: inline-block;
+  background: $white;
+  background: var(--background);
+  border-radius: 0.3125em;
+  color: $medium-purple;
+  color: var(--text-second);
+  text-transform: uppercase;
+  font-weight: 400;
+  font-size: 1.375em;
+  line-height: 1;
+  letter-spacing: 0.136em;
+  padding: 0.636em 1em;
+  text-decoration: none;
+  transition: background 0.2s ease-out;
+
+  &:hover,
+  &:focus {
+    background: lighten($medium-purple, 40%);
+  }
+
+  &:focus {
+    outline: 1px dashed $dark-purple;
+    outline-offset: -0.3125em;
+  }
+}
+
+// -----------------------------
+// A11y related classes
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: 2px solid transparent;
+}
+
+.sr-only:not(:focus):not(:active) {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
