@@ -43,7 +43,10 @@ All installation instructions below are for Ubuntu 16.04.
 Adjust as necessary for other Linux distributions.
 
 ```console
-$ sudo apt-get install python3 python3-pip python3-setuptools build-essential ninja-build pkgconf srecord zlib1g-dev
+$ sudo apt-get install git python3 python3-pip python3-setuptools \
+    build-essential autoconf flex bison ninja-build pkgconf \
+    srecord zlib1g-dev libftdi1-dev libftdi1-2 libssl-dev \
+    libusb-1.0-0-dev
 ```
 
 Some tools in this repository are written in Python 3 and require
@@ -104,11 +107,7 @@ It also provides a GDB server which is an "intermediate" when debugging software
 Unfortunately the upstream sources of OpenOCD do not contain all necessary patches to support RISC-V, and hence typical distribution packages don't work.
 We therefore need to build OpenOCD from source from a forked repository.
 
-For FTDI support the libraries libftdi > 1.0 and libusb > 1.0 are needed.
-Install those packages prior to building OpenOCD.
-
 ```console
-$ sudo apt-get install libftdi1-dev libusb-1.0-0-dev
 $ git clone https://github.com/riscv/riscv-openocd.git
 $ cd riscv-openocd
 $ ./bootstrap
@@ -123,12 +122,6 @@ $ sudo make install
 
 Even though Verilator is packaged for most Linux distributions these versions tend to be too old to be usable.
 We recommend compiling Verilator from source, as outlined here.
-
-First some build prerequisites need to be installed.
-For Ubuntu the following packages are needed.
-```console
-$ sudo apt-get install git make autoconf g++ flex bison
-```
 
 ### Install Verilator
 
