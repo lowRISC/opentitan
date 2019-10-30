@@ -199,6 +199,17 @@ module alert_handler (
   // Assertions
   //////////////////////////////////////////////////////
 
+  // check whether all outputs have a good known state after reset
+  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IrqKnownO_A, irq_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CrashdumpKnownO_A, crashdump_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(PingPKnownO_A, ping_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(PingNKnownO_A, ping_no, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AckPKnownO_A, ack_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AckNKnownO_A, ack_no, clk_i, !rst_ni)
+  `ASSERT_KNOWN(EscPKnownO_A, esc_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(EscNKnownO_A, esc_no, clk_i, !rst_ni)
+
   // this restriction is due to specifics in the ping selection mechanism
   `ASSERT_INIT(CheckNAlerts,
       alert_pkg::NAlerts  < (256 - alert_pkg::N_CLASSES))

@@ -190,6 +190,10 @@ module prim_alert_sender #(
   // assertions
   //////////////////////////////////////////////////////
 
+  // check whether all outputs have a good known state after reset
+  `ASSERT_KNOWN(AlertPKnownO_A, alert_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AlertNKnownO_A, alert_no, clk_i, !rst_ni)
+
   if (AsyncOn) begin : gen_async_assert
     // check propagation of sigint issues to output within three cycles
     `ASSERT(SigIntPing_A, ping_pi == ping_ni [*2] |-> ##3 alert_po == alert_no, clk_i, !rst_ni)

@@ -158,6 +158,11 @@ module prim_esc_receiver (
   // assertions
   //////////////////////////////////////////////////////
 
+  // check whether all outputs have a good known state after reset
+  `ASSERT_KNOWN(EscEnKnownO_A, esc_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(RespPKnownO_A, resp_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(RespNKnownO_A, resp_no, clk_i, !rst_ni)
+
   `ASSERT(SigIntCheck0_A, esc_pi == esc_ni |=> resp_po == resp_no, clk_i, !rst_ni)
   `ASSERT(SigIntCheck1_A, esc_pi == esc_ni |=> state_q == SigInt, clk_i, !rst_ni)
   // correct diff encoding

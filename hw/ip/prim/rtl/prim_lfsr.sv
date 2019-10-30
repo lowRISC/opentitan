@@ -358,6 +358,8 @@ module prim_lfsr #(
   // shared assertions
   //////////////////////////////////////////////////////
 
+  `ASSERT_KNOWN(DataKnownO_A, data_o, clk_i, !rst_ni)
+
   function automatic logic[LfsrDw-1:0] compute_next_state(logic[LfsrDw-1:0] coeffs,
                                                           logic[InDw-1:0]   data,
                                                           logic[LfsrDw-1:0] state);

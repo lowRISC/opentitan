@@ -106,4 +106,12 @@ module padctrl #(
     assign hw2reg.mio_pads[k].d = mio_attr_q[k] & warl_mask;
   end
 
+  //////////////////////////////////////////////////////
+  // Assertions
+  //////////////////////////////////////////////////////
+
+  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(MioKnownO_A, mio_attr_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(DioKnownO_A, dio_attr_o, clk_i, !rst_ni)
+
 endmodule : padctrl
