@@ -107,13 +107,9 @@ frame: 0x80000005 to offset: 0x00001338
   ```console
   screen /dev/ttyUSB0 230400
   ```
-  Note that the Nexsys Video demo program that comes installed on the
-  board runs the UART at 115200 baud so expect to see garbage
-  characters if that is running (e.g. you connect the serial console
-  before using Vivado to program your new bitstream or you press the
-  *PROG* button that causes the FPGA to reprogram from the code in
-  the on-board SPI flash)
-
+  Note that the Nexsys Video demo program that comes installed on the board runs the UART at 115200 baud;
+  expect to see garbage characters if that is running.
+  This can happen if you connect the serial console before using Vivado to program your new bitstream or you press the *PROG* button that causes the FPGA to reprogram from the code in the on-board SPI flash.
 * On the Nexys Video board, press the red button labeled *CPU_RESET*.
 * Observe the output both on the board and the serial console. Type any text into the console window.
 * Exit `screen` by pressing CTRL-a k, and confirm with y.
