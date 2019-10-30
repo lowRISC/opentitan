@@ -49,7 +49,7 @@ formal/             @cindychip
 # lint/             # TBD
 
 # SW related
-/sw/                @moidx @gkelly @sriyerg
+/sw/                @mcy @moidx @gkelly @sriyerg
 
 # Common docs
 /doc/               @sjgitty @asb
@@ -57,4 +57,9 @@ formal/             @cindychip
 # License related files
 LICENSE*            @asb
 COPYING*            @asb
+
+# CI and testing
+/ci/                @mcy @imphil
+/test/              @mcy @imphil
+azure_pipelines.yml @mcy @imphil
 
