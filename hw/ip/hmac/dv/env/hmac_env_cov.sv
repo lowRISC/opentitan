@@ -12,15 +12,6 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     cfg_cross:   cross hmac_en, endian_swap, digest_swap;
   endgroup : cfg_cg
 
-  covergroup intr_cg with function sample (bit [TL_DW-1:0] intr, bit [TL_DW-1:0] cfg);
-    hmac_en:        coverpoint cfg[HmacEn];
-    endian_swap:    coverpoint cfg[EndianSwap];
-    digest_swap:    coverpoint cfg[DigestSwap];
-    intr_fifo_full: coverpoint intr[HmacMsgFifoFull];
-    err:            coverpoint intr[HmacErr];
-    intr_cross:     cross intr_fifo_full, err, hmac_en, endian_swap, digest_swap;
-  endgroup : intr_cg
-
   covergroup status_cg with function sample (bit [TL_DW-1:0] sta, bit [TL_DW-1:0] cfg);
     hmac_en:          coverpoint cfg[HmacEn];
     endian_swap:      coverpoint cfg[EndianSwap];
@@ -72,7 +63,6 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
   function new(string name, uvm_component parent);
     super.new(name, parent);
     cfg_cg     = new();
-    intr_cg    = new();
     status_cg  = new();
     msg_len_cg = new();
   endfunction : new

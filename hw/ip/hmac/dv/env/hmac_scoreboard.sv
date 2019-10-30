@@ -85,7 +85,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
           end
           "cfg": begin
-            cov.cfg_cg.sample(item.a_data);
+            if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
             sha_en = item.a_data[ShaEn];
             if (!sha_en) predict_digest(msg_q);
           end
@@ -131,7 +131,16 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       case (csr.get_name())
         "intr_state": begin
           // TODO: cycle accurate checking on hmac_done
-          cov.intr_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
+          if (cfg.en_cov) begin
+            hmac_intr_e intr;
+            intr = intr.first;
+            do begin
+              bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+              cov.intr_cg.sample(intr, intr_en[intr], item.d_data[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+              intr = intr.next;
+            end while (intr != intr.first);
+          end
           if (item.d_data[HmacDone] == 1) begin
             do_read_check = 1'b0;
             hmac_wr_cnt = 0;
@@ -150,8 +159,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             return;
           end
         end
-        "status": cov.status_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
-        "msg_length_lower": cov.msg_len_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
+        "status": if (cfg.en_cov) cov.status_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
+        "msg_length_lower": begin
+          if (cfg.en_cov) begin
+            cov.msg_len_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
+          end
+        end
         "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "cfg", "cmd", "err_code",
         "intr_enable", "intr_test", "wipe_secret", "msg_length_upper", "intr_state": begin
           // Do nothing
