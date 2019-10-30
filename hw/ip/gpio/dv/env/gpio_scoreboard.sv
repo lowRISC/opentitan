@@ -114,7 +114,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           `uvm_info(`gfn, $sformatf("Write on intr_state: write data = %0h", item.a_data), UVM_HIGH)
           if (intr_state_update_queue.size() > 0) begin
             gpio_reg_update_due_t intr_state_write_to_clear_update = intr_state_update_queue[$];
-            `uvm_info(`gfn, $sformatf("Entry taken out for clearing is %0p", intr_state_write_to_clear_update), UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("Entry taken out for clearing is %0p",
+                                      intr_state_write_to_clear_update), UVM_HIGH)
             // Update time
             intr_state_write_to_clear_update.eval_time = $time;
             for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
@@ -576,11 +577,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             intr_ctrl_en_lvlhigh[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvllow"].sample(
             intr_ctrl_en_lvllow[each_bit]);
-        // Interrupt Test coverage
-        cov.intr_test_cg.sample(each_bit,
-                                last_intr_test_event[each_bit],
-                                intr_enable[each_bit],
-                                last_intr_test_event[each_bit]);
       end
     end
     // 1. Look for edge triggerred interrupts
@@ -675,6 +671,11 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           // Clear the flag
           cleared_intr_bits[each_bit] = 1'b0;
         end
+        // Interrupt Test coverage
+        cov.intr_test_cg.sample(each_bit,
+                                last_intr_test_event[each_bit],
+                                intr_enable[each_bit],
+                                exp_intr_status[each_bit]);
       end
     end
     // Clear last_intr_test_event
