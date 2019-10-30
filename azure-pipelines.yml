@@ -23,7 +23,8 @@ stages:
   jobs:
   - job: "lint"
     displayName: "Run code quality checks (lint)"
-    pool: "Default"
+    pool:
+      vmImage: "ubuntu-16.04"
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
