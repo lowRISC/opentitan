@@ -175,13 +175,42 @@ stages:
     displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
     pool: "Default"
     timeoutInMinutes: 120 # 2 hours
+    dependsOn:
+      # The bootrom is built into the FPGA image at synthesis time.
+      - sw_build
     steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: current
+        targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+    - bash: |
+        sudo apt-get install -y tree
+        mkdir -p $(Build.ArtifactStagingDirectory)/dist-other
+        cd $(Build.ArtifactStagingDirectory)/dist-other
+        find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --strip-components=1 --overwrite -xf {} \;
+        tree $(Build.ArtifactStagingDirectory)
+      displayName: 'Restore partial dist directory'
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
           && sudo pip3 install -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
         set -e
+        BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/boot_rom/rom.vmem
+        test -f ${BOOTROM_VMEM}
         source /opt/xilinx/Vivado/2018.3/settings64.sh
-        fusesoc --cores-root . run --target=synth --setup --build lowrisc:systems:top_earlgrey_nexysvideo
+        fusesoc --cores-root . run --target=synth --setup --build \
+          lowrisc:systems:top_earlgrey_nexysvideo \
+          --ROM_INIT_FILE=${BOOTROM_VMEM}
       displayName: 'Build bitstream with Vivado'
+    - bash: |
+        DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
+        mkdir -p "${DIST_DIR}"
+        cp build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit \
+          ${DIST_DIR}
+        cd $(Build.ArtifactStagingDirectory)
+        tar -cf dist-partial-top_earlgrey_nexysvideo.tar dist
+      displayName: 'Prepare partial distribution artifacts'
+    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
+      artifact: dist-partial-top_earlgrey_nexysvideo
+      displayName: 'Upload partial distribution artifacts'
