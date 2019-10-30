@@ -11,6 +11,7 @@ package rv_timer_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import rv_timer_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -31,7 +32,6 @@ package rv_timer_env_pkg;
   // functions
 
   // package sources
-  `include "rv_timer_reg_block.sv"
   `include "rv_timer_env_cfg.sv"
   `include "rv_timer_env_cov.sv"
   `include "rv_timer_scoreboard.sv"

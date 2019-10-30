@@ -13,6 +13,7 @@ package chip_env_pkg;
   import jtag_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import chip_ral_pkg::*;
 
   // import individual env IP env pkgs
   import uart_env_pkg::*;
@@ -55,7 +56,6 @@ package chip_env_pkg;
 
   // package sources
   `include "chip_tl_seq_item.sv"
-  `include "chip_reg_block.sv"
   `include "chip_env_cfg.sv"
   `include "chip_env_cov.sv"
   `include "chip_virtual_sequencer.sv"

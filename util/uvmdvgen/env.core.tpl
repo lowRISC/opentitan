@@ -15,12 +15,12 @@ filesets:
 % for agent in env_agents:
       - lowrisc:dv:${agent}_agent
 % endfor
+      - lowrisc:dv:gen_ral_pkg
     files:
       - ${name}_env_pkg.sv
       - ${name}_env_cfg.sv: {is_include_file: true}
       - ${name}_env_cov.sv: {is_include_file: true}
       - ${name}_env.sv: {is_include_file: true}
-      - ${name}_reg_block.sv: {is_include_file: true}
 % if env_agents != []:
       - ${name}_virtual_sequencer.sv: {is_include_file: true}
 % endif

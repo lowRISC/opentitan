@@ -41,20 +41,22 @@ Once done, these documents are to be reviewed with the designer(s) and other pro
 
 ## UVM RAL Model
 
-Before running any test, the [UVM RAL model]({{< relref "dv_methodology.md#uvm-register-abstraction-layer-ral-model" >}}) needs to be created first.
+Before running any test, the [UVM RAL model]({{< relref "dv_methodology.md#uvm-register-abstraction-layer-ral-model" >}}) needs to exist (if the design contains CSRs).
+The [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) has been updated to generate the RAL model automatically at the start of the simulation.
+As such, nothing extra needs to be done.
 A hook for generating it is already provided in the generated `dv/Makefile`.
-It can be created by simply navigating to the `dv` directory and invoking the command:
+It can be created manually by simply navigating to the `dv` directory and invoking the command:
 ```console
 $ cd path-to-dv
 $ make ral
 ```
 
-The generated file is placed in the `dv/env` area and is checked into the repo.
+The generated file is placed in the simulation build scratch area instead of being checked in.
 
 ## Supported Simulators
 
 The use of advanced verification constructs such as SystemVerilog classes (on which UVM is based on) requires commercial simulators.
-The [Makefile based simulation flow]({{< relref "hw/dv/tools/README.md" >}}) fully supports Synopsys VCS.
+The [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) fully supports Synopsys VCS.
 There is support for Cadence Xcelium as well, which is being slowly ramped up.
 
 ## Building and Running Tests
@@ -74,7 +76,7 @@ VCS is used as the default simulator.
 It can be switched to Xcelium by setting `SIMULATOR=xcelium` on the command line.
 The `WAVES=1` switch will cause an `fsdb` dump to be created from the test.
 The Synopsys Verdi tool can be invoked (separately) to debug the waves.
-Please refer to the [Makefile based simulation flow]({{< relref "hw/dv/tools/README.md" >}}) for additional details.
+Please refer to the [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) for additional details.
 
 The `uvmdvgen` script also provides a CSR suite of tests which can be run right out of the box.
 The most basic CSR power-on-reset check test can be run by invoking:

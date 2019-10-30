@@ -12,6 +12,7 @@ package i2c_env_pkg;
   import i2c_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import i2c_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -52,7 +53,7 @@ package i2c_env_pkg;
       end
     endcase
   endfunction : get_watermark_bytes_by_level
-  
+
   // get the number of bytes that triggers break interrupt
   function automatic int get_break_bytes_by_level(int lvl);
     case(lvl)
@@ -80,7 +81,6 @@ package i2c_env_pkg;
   endfunction : get_speed_mode_by_timing_values
 
   // package sources
-  `include "i2c_reg_block.sv"
   `include "i2c_env_cfg.sv"
   `include "i2c_env_cov.sv"
   `include "i2c_virtual_sequencer.sv"

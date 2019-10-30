@@ -11,6 +11,7 @@ package gpio_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import gpio_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -47,7 +48,6 @@ package gpio_env_pkg;
   } gpio_reg_update_due_t;
 
   // package sources
-  `include "gpio_reg_block.sv"
   `include "gpio_env_cfg.sv"
   `include "gpio_env_cov.sv"
   `include "gpio_scoreboard.sv"

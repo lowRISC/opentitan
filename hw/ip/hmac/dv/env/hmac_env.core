@@ -10,12 +10,12 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:cryptoc_dpi:0.1
       - lowrisc:dv:test_vectors
+      - lowrisc:dv:gen_ral_pkg
     files:
       - hmac_env_pkg.sv
       - hmac_env_cfg.sv: {is_include_file: true}
       - hmac_env_cov.sv: {is_include_file: true}
       - hmac_env.sv: {is_include_file: true}
-      - hmac_reg_block.sv: {is_include_file: true}
       - hmac_scoreboard.sv: {is_include_file: true}
       - seq_lib/hmac_vseq_list.sv: {is_include_file: true}
       - seq_lib/hmac_base_vseq.sv: {is_include_file: true}
