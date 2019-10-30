@@ -215,3 +215,36 @@ stages:
     - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
       artifact: dist-partial-top_earlgrey_nexysvideo
       displayName: 'Upload partial distribution artifacts'
+
+  - job: "deploy_releaseartifacts"
+    displayName: "Package and deploy release distribution"
+    pool:
+      vmImage: "ubuntu-16.04"
+    dependsOn:
+      - sw_build
+      - top_earlgrey_verilator
+      - top_earlgrey_nexysvideo
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: current
+        targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+    - bash: |
+        OT_VERSION=$(git describe --always)
+        cd "$(Build.ArtifactStagingDirectory)"
+        find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
+        mv dist opentitan-$OT_VERSION
+        mkdir -p dist-final
+        tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
+      displayName: 'Create final dist directory out of partial ones'
+    - publish: $(Build.ArtifactStagingDirectory)/dist-final
+      artifact: opentitan-dist
+      displayName: "Upload release artifacts as Azure artifact"
+    - task: GithubRelease@0
+      displayName: 'Upload to GitHub releases (only tags)'
+      inputs:
+        gitHubConnection: opentitan-release-upload
+        repositoryName: lowrisc/opentitan
+        addChangeLog: false
+        assets: |
+            $(Build.ArtifactStagingDirectory)/dist-final/*
