@@ -11,7 +11,9 @@ all: build run
 ## RAL target         ##
 ########################
 ral:
-	${RAL_TOOL} ${RAL_TOOL_OPTS}
+	if [ -f ${RAL_SPEC} ]; then \
+	  ${RAL_TOOL} ${RAL_TOOL_OPTS}; \
+	fi
 
 ###############################
 ## sim build and run targets ##
@@ -22,8 +24,11 @@ pre_compile:
 	mkdir -p ${BUILD_DIR} && \
 	env > ${BUILD_DIR}/env_vars
 
-gen_sv_flist: pre_compile
+gen_sv_flist: pre_compile ral
 	cd ${BUILD_DIR} && ${SV_FLIST_GEN_TOOL} ${SV_FLIST_GEN_OPTS}
+	if [ -f ${RAL_SPEC} ]; then \
+	  sed -i -E  "s/^(.*dv_lib_pkg.sv)$$/\1\n$(shell echo ${RAL_PKG} | sed -e 's/\//\\\//g')/" ${SV_FLIST}; \
+	fi
 
 compile: gen_sv_flist
 	cd ${SV_FLIST_GEN_DIR} && $(BUILD_JOB_OPTS) ${SIMCC} ${BUILD_OPTS} ${CL_BUILD_OPTS}

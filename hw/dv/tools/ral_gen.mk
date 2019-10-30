@@ -4,7 +4,9 @@
 ## SPDX-License-Identifier: Apache-2.0                                                            ##
 ####################################################################################################
 # tool and options for generating the UVM RAL model
+RAL_SPEC      ?= ${DV_DIR}/../data/${DUT_TOP}.hjson
+RAL_MODEL_DIR ?= ${BUILD_DIR}
+RAL_PKG        = ${RAL_MODEL_DIR}/${DUT_TOP}_ral_pkg.sv
+
 RAL_TOOL      ?= ${PROJ_ROOT}/util/regtool.py
-RAL_MODEL_DIR ?= ${DV_DIR}/env
-RAL_TOOL_OPTS += -s -t ${RAL_MODEL_DIR} ${DV_DIR}/../data/${DUT_TOP}.hjson
-RAL_MODEL      = ${RAL_MODEL_DIR}/${DUT_TOP}_reg_block.sv
+RAL_TOOL_OPTS += -s -t ${RAL_MODEL_DIR} ${RAL_SPEC}
