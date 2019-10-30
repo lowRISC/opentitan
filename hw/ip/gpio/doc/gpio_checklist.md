@@ -118,28 +118,28 @@ Review        | Signoff date            | Not Started | 2019-10-30
 
 ### Checklists for milestone V1
 
- Type         | Item                                  | Resolution  | Note/Collaterals
---------------|---------------------------------------|-------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started | 
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [TB_ENV_CREATED][]                    | Not Started |
-Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SANITY_TEST_PASSING][]               | Not Started |
-Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Not Started |
-Tool Setup    | [ALT_TOOL_SETUP][]                    | Not Started |
-Regression    | [SANITY_REGRESSION_SETUP][]           | Not Started |
-Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Not Started |
-Coverage      | [COVERAGE_MODEL_ADDED][]              | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started |
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
-Review        | Reviewer(s)                           | Not Started |
-Review        | Signoff date                          | Not Started |
+ Type         | Item                                  | Resolution      | Note/Collaterals
+--------------|---------------------------------------|-----------------|------------------
+Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done            |
+Documentation | [TESTPLAN_COMPLETED][]                | Done            |
+Testbench     | [TB_TOP_CREATED][]                    | Done            |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done            |
+Testbench     | [TB_ENV_CREATED][]                    | Done            |
+Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | Done            |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A             |
+Tests         | [SANITY_TEST_PASSING][]               | Done            |
+Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Done            |
+Tool Setup    | [ALT_TOOL_SETUP][]                    | Done            |
+Regression    | [SANITY_REGRESSION_SETUP][]           | Done w/ waivers | Exception (implemented in local)
+Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done w/ waivers | Exception (implemented in local)
+Coverage      | [COVERAGE_MODEL_ADDED][]              | Done            |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A             |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done            |
+Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Done            |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done            | Exception (Security, Power, Debug)
+Review        | [V2_CHECKLIST_SCOPED][]               | Done            |
+Review        | Reviewer(s)                           | Not Started     |
+Review        | Signoff date                          | Not Started     |
 
 
 [DV_PLAN_DRAFT_COMPLETED]:            ../../../../doc/rm/checklist.md#dv_plan_draft_completed
@@ -165,23 +165,25 @@ Review        | Signoff date                          | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED][]              | Not Started |
-Documentation | [DV_PLAN_COMPLETED][]                   | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [TB_ENV_COMPLETED][]                    | Not Started |
-Tests         | [ALL_TESTS_PASSING][]                   | Not Started |
-Tests         | [FW_SIMULATED][]                        | Not Started |
-Regression    | [NIGHTLY_REGRESSION_V2][]               | Not Started |
-Coverage      | [CODE_COVERAGE_V2][]                    | Not Started |
-Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED][]              | N/A         |
+Documentation | [DV_PLAN_COMPLETED][]                   | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
+Testbench     | [TB_ENV_COMPLETED][]                    | Done        |
+Tests         | [ALL_TESTS_PASSING][]                   | In Progress |
+Tests         | [FW_SIMULATED][]                        | N/A         |
+Regression    | [NIGHTLY_REGRESSION_V2][]               | Done        |
+Coverage      | [CODE_COVERAGE_V2][]                    | Done        |
+Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Done        |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | In Progress | [#41][], [#45][]
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 Review        | Reviewer(s)                             | Not Started |
 Review        | Signoff date                            | Not Started |
 
+[#41]: https://github.com/lowRISC/opentitan/issues/41
+[#45]: https://github.com/lowRISC/opentitan/issues/45
 
 [DESIGN_DELTAS_CAPTURED]:             ../../../../doc/rm/checklist.md#design_deltas_captured
 [DV_PLAN_COMPLETED]:                  ../../../../doc/rm/checklist.md#dv_plan_completed
@@ -202,15 +204,15 @@ Review        | Signoff date                            | Not Started |
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | Not Started |
-Testbench     | [ALL_TODOS_RESOLVED][]            | Not Started |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
-Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Not Started |
-Coverage      | [CODE_COVERAGE_AT_100][]          | Not Started |
-Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Not Started |
-Issues        | [NO_ISSUES_PENDING][]             | Not Started |
-Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | Done        |
+Testbench     | [ALL_TODOS_RESOLVED][]            | Done        |
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress.
+Regression    | [NIGHTLY_REGRESSION_AT_100][]     | In Progress |
+Coverage      | [CODE_COVERAGE_AT_100][]          | In Progress |
+Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | In Progress |
+Issues        | [NO_ISSUES_PENDING][]             | Done        |
+Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
 Review        | Reviewer(s)                       | Not Started |
 Review        | Signoff date                      | Not Started |
 
