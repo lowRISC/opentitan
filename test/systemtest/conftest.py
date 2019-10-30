@@ -116,7 +116,7 @@ def uart_timeout(pytestconfig):
 def fpga_uart(pytestconfig):
     """Return the path to the UART attached to the FPGA."""
     path = Path(pytestconfig.getoption('fpga_uart')).resolve()
-    assert path.is_file()
+    assert path.exists() and not path.is_dir()
     return path
 
 @pytest.fixture(scope="session")
