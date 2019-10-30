@@ -61,7 +61,7 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
   endtask : reset_thread
 
   virtual task wait_for_reset_done();
-    vif.host_cb.h2d.a_valid <= 1'b0;
+    invalidate_a_channel();
     vif.host_cb.h2d.d_ready <= 1'b0;
     @(posedge vif.host_cb.rst_n);
     // wait a clk to make sure a_channel a_valid stay high for a clk cycle if a_valid_delay = 0
@@ -95,7 +95,7 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     // bypass delay in case of reset
     if (!reset_asserted) @(vif.host_cb);
     while(!vif.host_cb.d2h.a_ready && !reset_asserted) @(vif.host_cb);
-    vif.host_cb.h2d.a_valid   <= 1'b0;
+    invalidate_a_channel();
     seq_item_port.item_done();
     pending_a_req.push_back(req);
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
@@ -156,4 +156,17 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     end
     return 0;
   endfunction
+
+  function void invalidate_a_channel();
+    vif.host_cb.h2d.a_opcode <= tlul_pkg::tl_a_op_e'('x);
+    vif.host_cb.h2d.a_param <= '{default:'x};
+    vif.host_cb.h2d.a_size <= '{default:'x};
+    vif.host_cb.h2d.a_source <= '{default:'x};
+    vif.host_cb.h2d.a_address <= '{default:'x};
+    vif.host_cb.h2d.a_mask <= '{default:'x};
+    vif.host_cb.h2d.a_data <= '{default:'x};
+    vif.host_cb.h2d.a_user <= '{default:'x};
+    vif.host_cb.h2d.a_valid <= 1'b0;
+  endfunction : invalidate_a_channel
+
 endclass : tl_host_driver
