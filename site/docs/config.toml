@@ -9,6 +9,7 @@
 assetDir = "site/docs/assets"
 baseURL = "https://docs.opentitan.org"
 disablePathToLower = true
+disableLiveReload = true
 contentDir = "../.."
 resourceDir = "build/docs-resources"
 ignoreFiles = [

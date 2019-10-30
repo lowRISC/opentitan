@@ -1,0 +1,133 @@
+.markdown {
+  flex-grow: 999;
+  flex-basis: 10em;
+  min-width: 65%;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: $m-s;
+  font-size: 1.125em;
+  line-height: 1.778;
+
+  > * + * {
+    margin-top: 1em;
+  }
+
+  h1 {
+    font-size: 2.5em;
+  }
+
+  h2 {
+    padding-top: 0.5em;
+    border-top: 1px solid;
+    font-family: 'Livvic', sans-serif;
+    font-size: 2.5em;
+    line-height: 1.28;
+    font-weight: 300;
+    margin-bottom: .4em;
+
+    &:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+  }
+
+  h3 {
+    font-size: 1.375em;
+    font-weight: 700;
+    margin-bottom: 0.6363em;
+  }
+
+  p {
+    @extend .bodytext;
+    font-size: inherit;
+    max-width: 80ch;
+  }
+
+  a {
+    color: $dark-purple;
+    color: var(--text-color);
+    display: block;
+    
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+
+    &:focus {
+      outline: 1px dashed;
+      outline-offset: 0.3em;
+    }
+  }
+
+  img, svg {
+    max-width: 100%;
+    background: #fff;
+  }
+
+  table {
+    max-width: 100%;
+    overflow: hidden;
+    border-collapse: collapse;
+
+    td, th {
+      color: $medium-purple;
+      color: var(--text-second);
+      vertical-align: top;
+      border: 1px solid var(--text-second);
+      padding: 0.5em;
+    }
+
+    th {
+      font-weight: bold;
+      color: $dark-purple;
+      color: var(--text-color);
+    }
+  }
+
+  pre {
+    width: 100%;
+    max-width: 80ch;
+    overflow-x: auto;
+    display: block;
+    white-space: pre-wrap;
+    padding: 0.5em;
+  }
+  
+  .highlight code {
+    color: $dark-purple;
+  }
+
+  ul, ol {
+    color: $medium-purple;
+    color: var(--text-second);
+    padding-left: 1em;
+
+    > li + li {
+      margin-top: 0.5em;
+    }
+
+    ul,
+    ol {
+      font-size: 0.875em;
+      margin-top: 0.5em;
+    }
+  }
+
+  br + br {
+    display: none;
+  }
+}
+
+.overflow-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.regpic {
+  width: 100%;
+}
+
+table.regdef {
+  border: 2px solid $dark-purple;
+  border: 2px solid var(--text-color);
+}
