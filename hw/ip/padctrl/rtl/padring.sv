@@ -107,4 +107,15 @@ module padring #(
     );
   end
 
+  //////////////////////////////////////////////////////
+  // Assertions
+  //////////////////////////////////////////////////////
+
+  `ASSERT_KNOWN(ClkKnownIO_A, clk_o, clk_pad_i, !rst_pad_ni)
+  `ASSERT_KNOWN(RstKnownIO_A, rst_no, clk_pad_i, !rst_pad_ni)
+  `ASSERT_KNOWN(MioPadKnownIO_A, mio_pad_io, clk_pad_i, !rst_pad_ni)
+  `ASSERT_KNOWN(DioPadKnownIO_A, dio_pad_io, clk_pad_i, !rst_pad_ni)
+  `ASSERT_KNOWN(MioInKnownO_A, mio_in_o, clk_pad_i, !rst_pad_ni)
+  `ASSERT_KNOWN(DioInKnownO_A, dio_in_o, clk_pad_i, !rst_pad_ni)
+
 endmodule : padring

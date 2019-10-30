@@ -68,4 +68,13 @@ module pinmux (
     `ASSUME(OutSelRange_A, reg2hw.mio_outsel[k].q < pinmux_reg_pkg::NPeriphOut + 3, clk_i, !rst_ni)
   end
 
+  //////////////////////////////////////////////////////
+  // Assertions
+  //////////////////////////////////////////////////////
+
+  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(MioOutKnownO_A, mio_out_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o, clk_i, !rst_ni)
+
 endmodule : pinmux

@@ -217,6 +217,12 @@ module prim_esc_sender (
   // assertions
   //////////////////////////////////////////////////////
 
+  // check whether all outputs have a good known state after reset
+  `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(EscPKnownO_A, esc_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(EscNKnownO_A, esc_no, clk_i, !rst_ni)
+
   // diff encoding of output
   `ASSERT(DiffEncCheck_A, esc_po ^ esc_no, clk_i, !rst_ni)
   // signal integrity check propagation

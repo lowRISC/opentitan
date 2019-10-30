@@ -171,7 +171,15 @@ module prim_alert_receiver #(
   // assertions
   //////////////////////////////////////////////////////
 
-  // shared assertions
+  // check whether all outputs have a good known state after reset
+  `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AlertKnownO_A, alert_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(PingPKnownO_A, ping_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(PingNKnownO_A, ping_no, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AckPKnownO_A, ack_po, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AckNKnownO_A, ack_no, clk_i, !rst_ni)
+
   // check encoding of outgoing diffpairs
   `ASSERT(PingDiffOk_A, ping_po ^ ping_no, clk_i, !rst_ni)
   `ASSERT(AckDiffOk_A, ack_po ^ ack_no, clk_i, !rst_ni)
