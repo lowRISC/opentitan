@@ -36,12 +36,15 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   `uvm_object_new
 
   // TODO review value for csr_base_addr, csr_addr_map_size
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = 0,
-                                   bit [TL_AW-1:0] csr_addr_map_size = 2048);
+  virtual function void initialize_csr_addr_map_size();
+    this.csr_addr_map_size = 1 << TL_AW;
+  endfunction : initialize_csr_addr_map_size
+
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
 
     chip_mem_e mems[] = {Rom, FlashBank0, FlashBank1};
 
-    super.initialize(csr_base_addr, csr_addr_map_size);
+    super.initialize(csr_base_addr);
     // create uart agent config obj
     m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
     m_uart_agent_cfg.en_tx_monitor = 1'b0;
