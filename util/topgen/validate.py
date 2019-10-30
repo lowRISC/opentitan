@@ -59,9 +59,12 @@ top_added = {}
 
 pinmux_required = {}
 pinmux_optional = {
-    'dio_modules': ['l', 'List of Dedicated IO.'],
-    'mio_modules': ['l', 'List of Multiplexing IO'],
-    'nc_modules': ['l', 'List of NotConnected IO'],
+    'num_mio': ['d', 'Number of Multiplexed IOs'\
+                ' If padctrl is used, this value will be replaced with #pads'\
+                ' - #DIO'],
+    'dio_modules': ['l', 'List of Dedicated IOs.'],
+    'mio_modules': ['l', 'List of Multiplexed IPs/IOs'],
+    'nc_modules': ['l', 'List of NotConnected IOs'],
 }
 pinmux_added = {
     'inputs': ['l', 'Full list of SoC inputs, `module_name.sig_name`'],

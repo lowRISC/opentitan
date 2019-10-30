@@ -28,6 +28,9 @@ filesets:
       - ip/rv_plic/rtl/autogen/rv_plic_reg_pkg.sv
       - ip/rv_plic/rtl/autogen/rv_plic_reg_top.sv
       - ip/rv_plic/rtl/autogen/rv_plic.sv
+      - ip/pinmux/rtl/autogen/pinmux_reg_pkg.sv
+      - ip/pinmux/rtl/autogen/pinmux_reg_top.sv
+      - ../ip/pinmux/rtl/pinmux.sv
       - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource

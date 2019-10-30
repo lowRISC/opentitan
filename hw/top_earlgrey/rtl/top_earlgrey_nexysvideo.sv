@@ -49,28 +49,28 @@ module top_earlgrey_nexysvideo (
   top_earlgrey #(
     .IbexPipeLine(1)
   ) top_earlgrey (
-    .clk_i                        (clk_sys),
-    .rst_ni                       (rst_sys_n),
+    .clk_i                    (clk_sys),
+    .rst_ni                   (rst_sys_n),
 
-    .jtag_tck_i                   (cio_jtag_tck_p2d),
-    .jtag_tms_i                   (cio_jtag_tms_p2d),
-    .jtag_trst_ni                 (cio_jtag_trst_n_p2d),
-    .jtag_td_i                    (cio_jtag_tdi_p2d),
-    .jtag_td_o                    (cio_jtag_tdo_d2p),
+    .jtag_tck_i               (cio_jtag_tck_p2d),
+    .jtag_tms_i               (cio_jtag_tms_p2d),
+    .jtag_trst_ni             (cio_jtag_trst_n_p2d),
+    .jtag_td_i                (cio_jtag_tdi_p2d),
+    .jtag_td_o                (cio_jtag_tdo_d2p),
 
-    .cio_uart_rx_p2d_i            (cio_uart_rx_p2d),
-    .cio_uart_tx_d2p_o            (cio_uart_tx_d2p),
-    .cio_uart_tx_en_d2p_o         (cio_uart_tx_en_d2p),
+    .mio_in_i                 (cio_gpio_p2d),
+    .mio_out_o                (cio_gpio_d2p),
+    .mio_oe_o                 (cio_gpio_en_d2p),
 
-    .cio_gpio_gpio_p2d_i          (cio_gpio_p2d),
-    .cio_gpio_gpio_d2p_o          (cio_gpio_d2p),
-    .cio_gpio_gpio_en_d2p_o       (cio_gpio_en_d2p),
+    .dio_uart_rx_i            (cio_uart_rx_p2d),
+    .dio_uart_tx_o            (cio_uart_tx_d2p),
+    .dio_uart_tx_en_o         (cio_uart_tx_en_d2p),
 
-    .cio_spi_device_sck_p2d_i     (cio_spi_device_sck_p2d),
-    .cio_spi_device_csb_p2d_i     (cio_spi_device_csb_p2d),
-    .cio_spi_device_mosi_p2d_i    (cio_spi_device_mosi_p2d),
-    .cio_spi_device_miso_d2p_o    (cio_spi_device_miso_d2p),
-    .cio_spi_device_miso_en_d2p_o (cio_spi_device_miso_en_d2p),
+    .dio_spi_device_sck_i     (cio_spi_device_sck_p2d),
+    .dio_spi_device_csb_i     (cio_spi_device_csb_p2d),
+    .dio_spi_device_mosi_i    (cio_spi_device_mosi_p2d),
+    .dio_spi_device_miso_o    (cio_spi_device_miso_d2p),
+    .dio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
 
     .scanmode_i                   (1'b0) // 1 for Scan
   );

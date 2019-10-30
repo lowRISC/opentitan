@@ -22,28 +22,30 @@ module top_earlgrey_verilator (
 
   // Top-level design
   top_earlgrey top_earlgrey (
-    .clk_i                        (clk_i),
-    .rst_ni                       (rst_ni),
+    .clk_i                    (clk_i),
+    .rst_ni                   (rst_ni),
 
-    .jtag_tck_i                   (cio_jtag_tck),
-    .jtag_tms_i                   (cio_jtag_tms),
-    .jtag_trst_ni                 (cio_jtag_trst_n),
-    .jtag_td_i                    (cio_jtag_tdi),
-    .jtag_td_o                    (cio_jtag_tdo),
+    .jtag_tck_i               (cio_jtag_tck),
+    .jtag_tms_i               (cio_jtag_tms),
+    .jtag_trst_ni             (cio_jtag_trst_n),
+    .jtag_td_i                (cio_jtag_tdi),
+    .jtag_td_o                (cio_jtag_tdo),
 
-    .cio_uart_rx_p2d_i            (cio_uart_rx_p2d),
-    .cio_uart_tx_d2p_o            (cio_uart_tx_d2p),
-    .cio_uart_tx_en_d2p_o         (cio_uart_tx_en_d2p),
+    // Multiplexed I/O
+    .mio_in_i                 (cio_gpio_p2d),
+    .mio_out_o                (cio_gpio_d2p),
+    .mio_oe_o                 (cio_gpio_en_d2p),
 
-    .cio_gpio_gpio_p2d_i          (cio_gpio_p2d),
-    .cio_gpio_gpio_d2p_o          (cio_gpio_d2p),
-    .cio_gpio_gpio_en_d2p_o       (cio_gpio_en_d2p),
+    // Dedicated I/O
+    .dio_uart_rx_i            (cio_uart_rx_p2d),
+    .dio_uart_tx_o            (cio_uart_tx_d2p),
+    .dio_uart_tx_en_o         (cio_uart_tx_en_d2p),
 
-    .cio_spi_device_sck_p2d_i     (cio_spi_device_sck_p2d),
-    .cio_spi_device_csb_p2d_i     (cio_spi_device_csb_p2d),
-    .cio_spi_device_mosi_p2d_i    (cio_spi_device_mosi_p2d),
-    .cio_spi_device_miso_d2p_o    (cio_spi_device_miso_d2p),
-    .cio_spi_device_miso_en_d2p_o (cio_spi_device_miso_en_d2p),
+    .dio_spi_device_sck_i     (cio_spi_device_sck_p2d),
+    .dio_spi_device_csb_i     (cio_spi_device_csb_p2d),
+    .dio_spi_device_mosi_i    (cio_spi_device_mosi_p2d),
+    .dio_spi_device_miso_o    (cio_spi_device_miso_d2p),
+    .dio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
 
     .scanmode_i                   (1'b0)
   );

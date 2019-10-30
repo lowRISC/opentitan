@@ -2,7 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-<% import re
+<%
+import re
+import topgen.lib as lib
+
+num_mio_input = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"]])
+num_mio_output = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["outputs"]])
+num_mio_inout = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["inouts"]])
+
+num_dio = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["dio"]])
+
+max_miolength = max([len(x["name"]) for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"] + top["pinmux"]["inouts"]])
+max_diolength = max([len(x["name"]) for x in top["pinmux"]["dio"]])
+
+max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"] +  top["pinmux"]["inouts"]])
+max_sigwidth = len("{}".format(max_sigwidth))
+
 %>\
 module top_${top["name"]} #(
   parameter bit IbexPipeLine = 0
@@ -18,27 +33,25 @@ module top_${top["name"]} #(
   input               jtag_td_i,
   output              jtag_td_o,
 
-% for m in top["module"]:
-  // ${m["name"]}
-%     for p_in in m["available_input_list"] + m["available_inout_list"]:
-          ## assume it passed validate and have available input list always
-%         if "width" in p_in and int(p_in["width"]) != 1:
-  input  [${int(p_in["width"])-1}:0] cio_${m["name"]}_${p_in["name"]}_p2d_i,
-%         else:
-  input  cio_${m["name"]}_${p_in["name"]}_p2d_i,
-%         endif
-%     endfor
-%     for p_out in m["available_output_list"] + m["available_inout_list"]:
-          ## assume it passed validate and have available output list always
-%         if "width" in p_out and int(p_out["width"]) != 1:
-  output [${int(p_out["width"])-1}:0] cio_${m["name"]}_${p_out["name"]}_d2p_o,
-  output [${int(p_out["width"])-1}:0] cio_${m["name"]}_${p_out["name"]}_en_d2p_o,
-%         else:
-  output cio_${m["name"]}_${p_out["name"]}_d2p_o,
-  output cio_${m["name"]}_${p_out["name"]}_en_d2p_o,
-%         endif
-%     endfor
-% endfor
+% if top["pinmux"]["num_mio"] != 0:
+  // Multiplexed I/O
+  input        ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_in_i,
+  output logic ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_out_o,
+  output logic ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_oe_o,
+% endif
+% if num_dio != 0:
+
+  // Dedicated I/O
+  % for sig in top["pinmux"]["dio"]:
+    % if sig["type"] in ["input", "inout"]:
+  input        ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_i,
+    % endif
+    % if sig["type"] in ["output", "inout"]:
+  output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_o,
+  output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_en_o,
+    % endif
+  % endfor
+% endif
 
   input               scanmode_i  // 1 for Scan
 );
@@ -98,6 +111,33 @@ module top_${top["name"]} #(
 % for clock in top['clocks']:
   logic ${clock['name']}_clk;
 % endfor
+
+  // Signals
+  logic [${num_mio_input + num_mio_inout -1}:0] m2p;
+  logic [${num_mio_output + num_mio_inout -1}:0] p2m;
+  logic [${num_mio_output + num_mio_inout -1}:0] p2m_en;
+% for m in top["module"]:
+  // ${m["name"]}
+  % for p_in in m["available_input_list"] + m["available_inout_list"]:
+    ## assume it passed validate and have available input list always
+    % if "width" in p_in:
+  logic ${lib.bitarray(int(p_in["width"]), max_sigwidth)} cio_${m["name"]}_${p_in["name"]}_p2d;
+    % else:
+  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_in["name"]}_p2d;
+    % endif
+  % endfor
+  % for p_out in m["available_output_list"] + m["available_inout_list"]:
+    ## assume it passed validate and have available output list always
+    % if "width" in p_out:
+  logic ${lib.bitarray(int(p_out["width"]), max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_d2p;
+  logic ${lib.bitarray(int(p_out["width"]), max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_en_d2p;
+    % else:
+  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_d2p;
+  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_en_d2p;
+    % endif
+  % endfor
+% endfor
+
 
 <%
   interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]])
@@ -226,16 +266,16 @@ module top_${top["name"]} #(
      dw_byte = data_width // 8
      addr_width = ((int(m["size"], 0) // dw_byte) -1).bit_length()
      sram_depth = (int(m["size"], 0) // dw_byte)
-
+     max_char = len(str(max(data_width, addr_width)))
 %>\
   // sram device
-  logic        ${m["name"]}_req;
-  logic        ${m["name"]}_we;
-  logic [${addr_width-1}:0] ${m["name"]}_addr;
-  logic [${data_width-1}:0] ${m["name"]}_wdata;
-  logic [${data_width-1}:0] ${m["name"]}_wmask;
-  logic [${data_width-1}:0] ${m["name"]}_rdata;
-  logic        ${m["name"]}_rvalid;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
+  logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
+  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
+  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
+  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
 
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
@@ -289,12 +329,13 @@ module top_${top["name"]} #(
      dw_byte = data_width // 8
      addr_width = ((int(m["size"], 0) // dw_byte) -1).bit_length()
      rom_depth = (int(m["size"], 0) // dw_byte)
+     max_char = len(str(max(data_width, addr_width)))
 %>\
   // ROM device
-  logic        ${m["name"]}_req;
-  logic [${addr_width-1}:0] ${m["name"]}_addr;
-  logic [${data_width-1}:0] ${m["name"]}_rdata;
-  logic        ${m["name"]}_rvalid;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
+  logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
+  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
 
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
@@ -410,15 +451,26 @@ module top_${top["name"]} #(
 
 % for m in top["module"]:
 <%
+port_list = m["available_input_list"] + m["available_output_list"] + m["available_inout_list"]
+if len(port_list) == 0:
+    max_sigwidth = 0
+else:
+    max_sigwidth = max([len(x["name"]) for x
+      in m["available_input_list"] + m["available_inout_list"] + m["available_output_list"]])
 
+if len(m["interrupt_list"]) == 0:
+    max_intrwidth = 0
+else:
+    max_intrwidth = max([len(x["name"]) for x
+        in m["interrupt_list"]])
 %>\
   % if "parameter" in m:
   ${m["type"]} #(
     % for k, v in m["parameter"].items():
         % if loop.last:
-    .${k}(${parameterize(v)})
+    .${k}(${v | lib.parameterize})
         % else:
-    .${k}(${parameterize(v)}),
+    .${k}(${v | lib.parameterize}),
         % endif
     % endfor
   ) ${m["name"]} (
@@ -426,7 +478,6 @@ module top_${top["name"]} #(
   ${m["type"]} ${m["name"]} (
   % endif
     % if not "bus_host" in m or m["bus_host"] in ["none", ""]:
-          ## Assume TL-UL
       .tl_i (tl_${m["name"]}_d_h2d),
       .tl_o (tl_${m["name"]}_d_d2h),
     % else:
@@ -435,43 +486,61 @@ module top_${top["name"]} #(
       .tl_h_o (tl_${m["name"]}_h_h2d),
       .tl_h_i (tl_${m["name"]}_h_d2h),
     % endif
-    ## CIO
-    ## TODO: Find a way to handle `scanmode`. It is not cio_ but top-level signal
     % for p_in in m["available_input_list"] + m["available_inout_list"]:
-        ## assume it passed validate and have available input list always
-      .cio_${p_in["name"]}_i (cio_${m["name"]}_${p_in["name"]}_p2d_i),
+      % if loop.first:
+
+      // Input
+      % endif
+      .${lib.ljust("cio_"+p_in["name"]+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in["name"]}_p2d),
     % endfor
-    % for p_in in m["available_output_list"] + m["available_inout_list"]:
-        ## assume it passed validate and have available output list always
-      .cio_${p_in["name"]}_o    (cio_${m["name"]}_${p_in["name"]}_d2p_o),
-      .cio_${p_in["name"]}_en_o (cio_${m["name"]}_${p_in["name"]}_en_d2p_o),
+    % for p_out in m["available_output_list"] + m["available_inout_list"]:
+      % if loop.first:
+
+      // Output
+      % endif
+      .${lib.ljust("cio_"+p_out["name"]+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_d2p),
+      .${lib.ljust("cio_"+p_out["name"]+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_en_d2p),
     % endfor
     % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
-      .intr_${intr["name"]}_o (intr_${m["name"]}_${intr["name"]}),
+      % if loop.first:
+
+      // Interrupt
+      % endif
+      .${lib.ljust("intr_"+intr["name"]+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr["name"]}),
     % endfor
+    ## TODO: Inter-module Connection
     % if m["type"] == "flash_ctrl":
+
       .flash_o(flash_c2m),
       .flash_i(flash_m2c),
     % endif
     % if m["type"] == "rv_plic":
+
       .intr_src_i (intr_vector),
       .irq_o      (irq_plic),
       .irq_id_o   (irq_id),
       .msip_o     (msip),
     % endif
+    % if m["type"] == "pinmux":
+
+      .periph_to_mio_i      (p2m    ),
+      .periph_to_mio_oe_i   (p2m_en ),
+      .mio_to_periph_o      (m2p    ),
+
+      .mio_out_o            (mio_out_o),
+      .mio_oe_o             (mio_oe_o ),
+      .mio_in_i             (mio_in_i ),
+    % endif
 
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
+
     % endif
     % for k, v in m["clock_connections"].items():
       .${k} (${v}_clk),
     % endfor
     % for k, v in m["reset_connections"].items():
-        % if loop.last:
-      .${k} (${v}_rst_n)
-        % else:
-      .${k} (${v}_rst_n),
-        % endif
+      .${k} (${v}_rst_n)${"," if not loop.last else ""}
     % endfor
   );
 
@@ -479,11 +548,7 @@ module top_${top["name"]} #(
   // interrupt assignments
   assign intr_vector = {
   % for intr in top["interrupt"][::-1]:
-    % if loop.last:
-      intr_${intr["name"]}
-    % else:
-      intr_${intr["name"]},
-    % endif
+      intr_${intr["name"]}${"," if not loop.last else ""}
   % endfor
   };
 
@@ -513,17 +578,42 @@ module top_${top["name"]} #(
 % endfor
   );
 
+% if "pinmux" in top:
+  // Pinmux connections
+  % if num_mio_output + num_mio_inout != 0:
+  assign p2m = {
+    % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
+    cio_${sig["name"]}_d2p${"" if loop.last else ","}
+    % endfor
+  };
+  assign p2m_en = {
+  % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
+    cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
+  % endfor
+  };
+  % endif
+  % if num_mio_input + num_mio_inout != 0:
+  assign {
+    % for sig in top["pinmux"]["inouts"] + top["pinmux"]["inputs"]:
+    cio_${sig["name"]}_p2d${"" if loop.last else ","}
+    % endfor
+  } = m2p;
+  % endif
+% endif
+
+% if num_dio != 0:
+  % for sig in top["pinmux"]["dio"]:
+  % if sig["type"] in ["input", "inout"]:
+  assign ${lib.ljust("cio_" + sig["name"] + "_p2d", max_diolength+9)} = dio_${sig["name"]}_i;
+  % endif
+  % if sig["type"] in ["output", "inout"]:
+  assign ${lib.ljust("dio_" + sig["name"] + "_o",   max_diolength+9)} = cio_${sig["name"]}_d2p;
+  assign ${lib.ljust("dio_" + sig["name"] + "_en_o",max_diolength+9)} = cio_${sig["name"]}_en_d2p;
+  % endif
+  % endfor
+% endif
+
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
 
 endmodule
-<%def name="parameterize(v)">\
-    ## value type
-    ## if it is integer, or bit'{h|d|b} digit, just put without quote
-    ## else return with quote
-    % if re.match('(\d+\'[hdb]\s*[0-9a-f_A-F]+|[0-9]+)',v) == None:
-"${v}"\
-    % else:
-${v}\
-    % endif
-</%def>\

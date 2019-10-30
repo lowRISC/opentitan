@@ -89,10 +89,20 @@
       size_byte: "0x1000",
       pipeline_byp: "false"
     },
+    { name:      "pinmux",
+      type:      "device",
+      clock:     "main",
+      inst_type: "pinmux",
+      base_addr: "0x40070000",
+      size_byte: "0x1000",
+      pipeline_byp: "false"
+    }
   ],
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
-    cored:  ["rom", "debug_mem", "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl", "rv_timer", "aes", "hmac", "rv_plic"],
-    dm_sba: ["rom",              "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl", "rv_timer", "aes", "hmac", "rv_plic"],
+    cored:  ["rom", "debug_mem", "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
+    "rv_timer", "aes", "hmac", "rv_plic", "pinmux"],
+    dm_sba: ["rom",              "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
+    "rv_timer", "aes", "hmac", "rv_plic", "pinmux"],
   },
 }

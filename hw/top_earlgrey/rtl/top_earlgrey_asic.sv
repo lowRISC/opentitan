@@ -39,24 +39,24 @@ module top_earlgrey_asic (
 
   // Top-level design
   top_earlgrey top_earlgrey (
-    .clk_i                (IO_CLK),
-    .rst_ni               (IO_RST_N),
+    .clk_i            (IO_CLK),
+    .rst_ni           (IO_RST_N),
 
-    .jtag_tck_i           (IO_JTCK),
-    .jtag_tms_i           (IO_JTMS),
-    .jtag_trst_ni         (IO_JTRST_N),
-    .jtag_td_i            (IO_JTDI),
-    .jtag_td_o            (IO_JTDO),
+    .jtag_tck_i       (IO_JTCK),
+    .jtag_tms_i       (IO_JTMS),
+    .jtag_trst_ni     (IO_JTRST_N),
+    .jtag_td_i        (IO_JTDI),
+    .jtag_td_o        (IO_JTDO),
 
-    .cio_uart_rx_p2d_i    (cio_uart_rx_p2d),
-    .cio_uart_tx_d2p_o    (cio_uart_tx_d2p),
-    .cio_uart_tx_en_d2p_o (cio_uart_tx_en_d2p),
+    .dio_uart_rx_i    (cio_uart_rx_p2d),
+    .dio_uart_tx_o    (cio_uart_tx_d2p),
+    .dio_uart_tx_en_o (cio_uart_tx_en_d2p),
 
-    .cio_gpio_gpio_p2d_i       (cio_gpio_p2d),
-    .cio_gpio_gpio_d2p_o       (cio_gpio_d2p),
-    .cio_gpio_gpio_en_d2p_o    (cio_gpio_en_d2p),
+    .mio_in_i         (cio_gpio_p2d),
+    .mio_out_o        (cio_gpio_d2p),
+    .mio_oe_o         (cio_gpio_en_d2p),
 
-    .scanmode_i           (1'b0)
+    .scanmode_i       (1'b0)
   );
 
   // pad control

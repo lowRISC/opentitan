@@ -11,7 +11,7 @@
 # <% import math %>
 {
   name: "PINMUX",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
   param_list: [

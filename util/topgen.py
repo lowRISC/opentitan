@@ -31,7 +31,7 @@ genhdr = '''// Copyright lowRISC contributors.
 '''
 
 
-def generate_rtl(top, tpl_filename):
+def generate_top(top, tpl_filename):
     top_rtl_tpl = Template(filename=tpl_filename)
 
     try:
@@ -96,7 +96,7 @@ def generate_plic(top, out_path):
 
     # Define target path
     #   rtl: rv_plic.sv & rv_plic_reg_pkg.sv & rv_plic_reg_top.sv
-    #   doc: rv_plic.hjson
+    #   data: rv_plic.hjson
     rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/rv_plic/doc/autogen'
@@ -154,6 +154,68 @@ def generate_plic(top, out_path):
     rtl_gen_path = rtl_path / "rv_plic.sv"
     with rtl_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
+
+
+def generate_pinmux(top, out_path):
+    # MIO Pads
+    num_mio = top["pinmux"]["num_mio"]
+    if num_mio <= 0:
+        log.warning(
+            "No PINMUX is generated. The top %s has no multiplexed IO ports." %
+            top["name"])
+        return
+
+    # Total inputs/outputs
+    num_inputs = sum(
+        [x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"]])
+    num_outputs = sum(
+        [x["width"] if "width" in x else 1 for x in top["pinmux"]["outputs"]])
+    num_inouts = sum(
+        [x["width"] if "width" in x else 1 for x in top["pinmux"]["inouts"]])
+
+    n_periph_in = num_inouts + num_inputs
+    n_periph_out = num_inouts + num_outputs
+
+    # Target path
+    #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
+    #   data: pinmux.hjson
+    rtl_path = out_path / 'ip/pinmux/rtl/autogen'
+    rtl_path.mkdir(parents=True, exist_ok=True)
+    data_path = out_path / 'ip/pinmux/data/autogen'
+    data_path.mkdir(parents=True, exist_ok=True)
+
+    # Template path
+    tpl_path = out_path / '../ip/pinmux/data/pinmux.hjson.tpl'
+
+    # Generate register package and RTLs
+    gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
+              "-o hw/top_earlgrey/\n\n")
+
+    hjson_gen_path = data_path / "pinmux.hjson"
+
+    out = StringIO()
+    with tpl_path.open(mode='r', encoding='UTF-8') as fin:
+        hjson_tpl = Template(fin.read())
+        try:
+            out = hjson_tpl.render(n_periph_in=n_periph_in,
+                                   n_periph_out=n_periph_out,
+                                   n_mio_pads=num_mio)
+        except:
+            log.error(exceptions.text_error_template().render())
+        log.info("PINMUX HJSON: %s" % out)
+
+    if out == "":
+        log.error("Cannot generate pinmux HJSON")
+        return
+
+    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
+        fout.write(genhdr + gencmd + out)
+
+    hjson_obj = hjson.loads(out,
+                            use_decimal=True,
+                            object_pairs_hook=validate.checking_dict)
+    validate.validate(hjson_obj)
+    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
 def generate_top_ral(top, ip_objs, out_path):
@@ -320,7 +382,8 @@ def main():
         rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/doc/autogen/rv_plic.hjson'
         ips.append(rv_plic_hjson)
 
-        # TODO: Add generated pinmux hjson to ips here
+        pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
+        ips.append(pinmux_hjson)
 
         # load hjson and pass validate from reggen
         try:
@@ -350,12 +413,10 @@ def main():
         log.info("Detected crossbars: %s" %
                  (", ".join([x["name"] for x in xbar_objs])))
 
-        # TODO: Add validate
         topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
         if error != 0:
             raise SystemExit("Error occured while validating top.hjson")
 
-        # TODO: Add conversion logic from top to top.complete.hjson
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
         genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
@@ -386,17 +447,18 @@ def main():
     if not args.no_plic or args.plic_only:
         generate_plic(completecfg, out_path)
 
+    generate_pinmux(completecfg, out_path)
+
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
         generate_xbars(completecfg, out_path)
 
-    # TODO: Get name from hjson
     top_name = completecfg["name"]
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)
         top_tplpath = tpl_path / ("top_%s.sv.tpl" % (top_name))
-        out_top = generate_rtl(completecfg, str(top_tplpath))
+        out_top = generate_top(completecfg, str(top_tplpath))
 
         rtl_path = out_path / 'rtl/autogen'
         rtl_path.mkdir(parents=True, exist_ok=True)
@@ -404,6 +466,17 @@ def main():
 
         with top_path.open(mode='w', encoding='UTF-8') as fout:
             fout.write(out_top)
+
+        # C header
+        top_tplpath = tpl_path / ("top_%s.h.tpl" % top_name)
+        out_cheader = generate_top(completecfg, str(top_tplpath))
+
+        sw_path = out_path / "sw/autogen"
+        sw_path.mkdir(parents=True, exist_ok=True)
+        cheader_path = sw_path / ("top_%s.h" % top_name)
+
+        with cheader_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out_cheader)
 
 
 if __name__ == "__main__":
