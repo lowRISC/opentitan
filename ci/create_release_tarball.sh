@@ -44,7 +44,7 @@ done
 
 # host software
 mkdir -p $STAGING_DIR/sw/host
-cp sw/host/spiflash/spiflash $STAGING_DIR/sw/host
+cp sw/build/host/bin/spiflash $STAGING_DIR/sw/host
 
 
 (cd $STAGING_BASE_DIR; tar -cJf $OUT_DIR/opentitan-$VERSION.tar.xz opentitan-$VERSION)
