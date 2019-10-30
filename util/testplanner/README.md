@@ -3,13 +3,12 @@
 
 # Testplanner tool
 
-Testplanner is a python3 based tool for parsing testplans written in Hjson
+Testplanner is a Python based tool for parsing testplans written in Hjson
 format into a data structure that can be used for:
 * Expanding the testplan inline within the DV plan as a table
-* Annotate the regression results with testplan entries for a document driven DV execution
+* Annotating the regression results with testplan entries for a document driven DV execution
 
-<!-- TODO : fix links -->
-Please see [DV methodology](../../doc/ug/dv_methodology.md) for more details on the
+Please see [DV methodology](\{\{\< relref "doc/ug/dv_methodology.md" \>\}\}) for more details on the
 rationale and motivation for writing and maintaining testplans in a machine-parsable
 format (`Hjson`).
 
@@ -44,7 +43,7 @@ intent of a planned test:
 
 * **tests: list of actual written tests that maps to this planned test**
 
-  Testplan is written very early in the V0 stage of the HW development
+  Testplans are written very early in the V0 stage of the HW development
   [life-cycle]({{< relref "doc/ug/hw_stages" >}}). When the DV engineer gets to actually
   developing the test, it may not map 1:1 to the planned test - it may be possible
   that an already written test that mapped to another planned test also satisfies
@@ -97,18 +96,19 @@ almost all DUTs. This can be done using the `import_testplans` key:
                      "hw/dv/tools/csr_testplan.hjson"]
 ```
 
-Note that the paths to common testplans are relative to $REPO_TOP.
+Note that the paths to common testplans are relative to `$REPO_TOP`.
 
 For the sake of discussion below, we will refer to the 'main' or DUT testplan
 as 'DUT' testplan and the shared testplans it imports as 'shared' or 'imported'
 testplans.
 
-The imported testplans actually present a problem - how can we set actual written
-tests that maps to the shared testplan entry generically enough that they apply
-to more than one DUTs? We currently solve this by providing wildcards, which are
-single lower_case strings within braces `'{..}'`. A substitution value (or list
-of values) for the wildcard string can be optionally provided in the DUT tesplan.
-Here's an example:
+The imported testplans actually present a problem - how can we set
+actual written tests that maps to the shared testplan entry generically
+enough that they apply to more than one DUTs? We currently solve this by
+providing wildcards, which are single `lower_snake_case` strings within
+braces `'{..}'`. A substitution value (or list of values) for the wildcard
+string can be optionally provided in the DUT tesplan.  Here's an example:
+
 ```hjson
 -------
   // UART testplan:
@@ -122,17 +122,21 @@ Here's an example:
     tests: ["{name}{intf}_csr_hw_reset"]
   }
 ```
-In the example above, `{name}` and `{intf}` are wildcards used in the shared
-testplan for which substitution values are to be provided in the DUT testplan.
-When the tool parses the DUT testplan along with the imported testplans,
-it substitutes the wildcards with the substition values found in the DUT testplan.
-If substitution is not available, then the wildcard is replaced with an empty string.
-In the example above, the list of written test resolves to `["uart_csr_hw_reset"]`
-after substituting `{name}` with `uart` and `{intf}` with an empty string.
-As many wildcards as needed can be added to the tests in the shared testplans to support
-as wide usecases as possible across different testbenches. Moreover, the substitution
-value can be a list of strings, in which case, the list of written tests will resolve
-to all values being substituted. See example below for illustration:
+
+In the example above, `{name}` and `{intf}` are wildcards used in the
+shared testplan for which substitution values are to be provided in the
+DUT testplan.  When the tool parses the DUT testplan along with the
+imported testplans, it substitutes the wildcards with the substition
+values found in the DUT testplan.  If substitution is not available, then
+the wildcard is replaced with an empty string.  In the example above,
+the list of written test resolves to `["uart_csr_hw_reset"]` after
+substituting `{name}` with `uart` and `{intf}` with an empty string.
+As many wildcards as needed can be added to the tests in the shared
+testplans to support as wide usecases as possible across different
+testbenches. Moreover, the substitution value can be a list of strings,
+in which case, the list of written tests will resolve to all values
+being substituted. See example below for illustration:
+
 ```hjson
 -------
   // Chip testplan:
@@ -148,20 +152,22 @@ to all values being substituted. See example below for illustration:
     tests: ["{name}{intf}_csr_hw_reset_{foo}"]
   }
 ```
+
 This will resolve to the following 6 tests:
+
 ```
 ["chip_csr_hw_reset_x", "chip_csr_hw_reset_y", "chip_csr_hw_reset_z",
  "chip_jtag_csr_hw_reset_x", "chip_jtag_csr_hw_reset_y", "chip_jtag_csr_hw_reset_z"]
 ```
 
 ### Example sources
-The following examples provided at `util/testplanner/examples` can be used as
+The following examples provided within `util/testplanner/examples` can be used as
 a starting point.
-- **foo_testplan.hjson**: DUT testplan
-- **common_testplan.hjson**: shared testplan imported within the DUT tesplan
-- **foo_dv_plan.md**: DUT testplan imported within the DV plan doc in markdown
+- **`foo_testplan.hjson`**: DUT testplan
+- **`common_testplan.hjson`**: shared testplan imported within the DUT tesplan
+- **`foo_dv_plan.md`**: DUT testplan imported within the DV plan doc in markdown
 
-In addition, see [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
+In addition, see the [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
 real 'production' example of inline expansion of an imported testplan as a table
 within the DV Plan document.
 The [UART tesplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson) imports the shared
@@ -169,10 +175,10 @@ testplans located at `hw/dv/tools/testplans` area.
 
 ### Limitations
 The following limitations currently hold:
-* Only the DUT testplan can import shared testplans; the imported testplans cannot further
-  import more testplans
-* All planned test names parsed from the DUT testplan and all of its imported tetsplans
-  need to be unique
+* Only the DUT testplan can import shared testplans; the imported
+  testplans cannot further import more testplans
+* All planned test names parsed from the DUT testplan and all of
+  its imported tetsplans need to be unique
 
 ## Usage examples
 ### Standalone tool invocations
@@ -198,9 +204,10 @@ $ util/testplanner.py testplanner/examples/foo_testplan.hjson \
 ```
 
 ### APIs for external tools
-The `util/build_docs.py` invokes the testplanner utility functions
+The `util/build_docs.py` script invokes the testplanner utility functions
 directly to parse the Hjson testplan and insert a HTML table within the DV
 plan document. This is done by invoking:
+
 ```console
 Example 1:
 $ util/docgen.py -c ../hw/ip/uart/doc/uart_dv_plan.md -o /tmp/uart_dv_plan.html

@@ -1,41 +1,41 @@
 # Wavegen -- Waveform generator in Python
 
-Wavegen is a python3 tool to read waveform descriptions in hjson and
-generate svg pictures of the waveform.
+Wavegen is a Python tool to read waveform descriptions in Hjson and
+generate `svg` pictures of the waveform.
 
 The source is a json representation of the waveform using the wavejson
 format defined for Wavedrom. This is sort of described at
-https://github.com/drom/wavedrom/wiki/WaveJSON
+[here](https://github.com/drom/wavedrom/wiki/WaveJSON)
 
 Note that the same wavejson could be embedded in a webpage and
 wavedrom javascript used to render it directly in the browser. An
-online editor for wavejson can be found at https://wavedrom.com/
+online editor for wavejson can be found at [https://wavedrom.com/](https://wavedrom.com/)
 
-The example commands assume $REPO_TOP is set to the toplevel directory
+The example commands assume `$REPO_TOP` is set to the toplevel directory
 of the repo.
 
 ### Setup
 
 If packages have not previously been installed you will need to set a
 few things up. First use `pip3` to install some required packages:
-```
+```console
 $ pip3 install --user hjson
 ```
 
 ### Examples using standalone wavetool
 
-Normally for documentation the docgen tool will automatically use
+Normally for documentation the `docgen` tool will automatically use
 wavegen when it encounters a code block labeled for wavejson. See the
-examples in the docgen module.
+examples in the `docgen` module README.
 
 The wavetool provides a standalone way to run wavegen.
 
-The basic test mode can be invoked with -T. In this case a builtin
+The basic test mode can be invoked with `-T`. In this case a builtin
 wavejson string is used as the source and is instantiated twice (it
 should look the same but the second svg will not include the defines
 that can be accessed by id from the first).
 
-```
+```console
 $ cd $REPO_TOP/util
 $ ./wavetool.py -T > /tmp/out.html
 ```
@@ -44,7 +44,7 @@ The examples directory contains the example wavejson from the
 [Tutorial](https://wavedrom.com/tutorial.html). These can be formed in
 to a webpage to allow comparison with the tutorial output.
 
-```
+```console
 $ cd $REPO_TOP/util
 $ ./wavetool.py -v wavegen/examples/* > /tmp/out.html
 ```
@@ -63,7 +63,7 @@ labeled for the uart in the -T test).
 The main object in the WaveJSON is the 'signal'. This consists of a
 list of signal values or groups.
 
-```
+```hjson
 { "signal" : [
     value1,
     value2,
@@ -87,7 +87,7 @@ The value is either:
   * `data:` an array of comma separated labels (or a string of space
     separated lables). The labels will be added to any of the value
     types (see below) in the waveform, four or five characters is the
-    maximum that will fit for hscale=1, period=1.
+    maximum that will fit for `hscale=1`, `period=1`.
   * `cdata:` **Extension to wavedrom** an array of comma separated
     labels (or a string of space separated lables). The labels will be
     added to any of the cycle types (see below) in the waveform, four
@@ -178,7 +178,7 @@ These generate extensions of the previous cycle:
 Each element in the `edge:` array is a single string that describes
 an arrow or line and the label that is associated with the arrow/line.
 
-```
+```hjson
 { ...
   "edge"   : ["a->b edge 1", "b-~>c My Second Edge"]
 }
