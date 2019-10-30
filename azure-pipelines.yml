@@ -9,6 +9,9 @@ variables:
   TOOLCHAIN_VERSION: 20191010-1
 
 trigger:
+  tags:
+    include:
+    - '*'
   # Combine builds on master as long as another build is running
   batch: true
   branches:
