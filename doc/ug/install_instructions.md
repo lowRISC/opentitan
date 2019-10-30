@@ -49,12 +49,8 @@ $ sudo apt-get install git python3 python3-pip python3-setuptools \
     libusb-1.0-0-dev
 ```
 
-Some tools in this repository are written in Python 3 and require
-Python dependencies to be installed through `pip`. (Note that the
-`diff_generated_util_output.py` tool works better with Python3.6 or
-later where the order is preserved in `dict` types, earlier versions
-of Python will show spurious differences caused by things being
-reordered.)
+Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
+(Note that the `diff_generated_util_output.py` tool works better with Python 3.6 or later where the order is preserved in `dict` types, earlier versions of Python will show spurious differences caused by things being reordered.)
 
 ```console
 $ cd $REPO_TOP
