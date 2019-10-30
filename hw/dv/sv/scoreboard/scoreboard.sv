@@ -38,10 +38,7 @@ class scoreboard#(type ITEM_T = uvm_object,
 
   `uvm_component_param_utils(scoreboard#(ITEM_T, dv_base_reg_block,
                                          dv_base_env_cfg, dv_base_env_cov))
-
-  function new (string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction : new
+  `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -176,6 +173,7 @@ class scoreboard#(type ITEM_T = uvm_object,
       `uvm_info(get_full_name(), $sformatf("Totally %0d items processed",
                  num_of_act_item), UVM_LOW)
     end
+    foreach (item_queues[i]) item_queues[i].final_queue_size_check(i);
   endfunction
 
   // Transform the original item before sending to queue

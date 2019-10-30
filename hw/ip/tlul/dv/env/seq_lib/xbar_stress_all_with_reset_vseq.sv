@@ -52,6 +52,7 @@ class xbar_stress_all_with_reset_vseq extends xbar_base_vseq;
           `uvm_info(`gfn, $sformatf("Reset is issued for run %0d/%0d", i, num_trans), UVM_LOW)
         end
       join_any
+      p_sequencer.stop_sequences();
       disable fork;
       // delay to avoid race condition when sending item and checking no item after reset occur at
       // the same time

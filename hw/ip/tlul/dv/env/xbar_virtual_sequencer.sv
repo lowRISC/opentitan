@@ -12,9 +12,5 @@ class xbar_virtual_sequencer extends dv_base_virtual_sequencer #(.CFG_T(xbar_env
   tl_sequencer device_seqr[];
 
   `uvm_component_utils(xbar_virtual_sequencer)
-
-  function new (string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction : new
-
+  `uvm_component_new
 endclass
