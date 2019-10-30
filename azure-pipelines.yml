@@ -37,7 +37,7 @@ stages:
         clang-format -version
       displayName: 'Display tool versions'
 
-#   XXX: Python lint checks are until Issue #313 is resolved
+#   XXX: Python lint checks are disabled until Issue #313 is resolved
 #    - bash: find ./util -iname '*.py' -print0 | xargs -0 -n1 $PWD/util/lintpy.py -f
 #      displayName: 'Run Python lint'
 
