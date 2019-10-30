@@ -35,7 +35,8 @@ class hmac_stress_all_vseq extends hmac_base_vseq;
       if (seq_names[seq_idx] == "hmac_common_vseq") begin
         hmac_common_vseq common_vseq;
         `downcast(common_vseq, hmac_vseq)
-        common_vseq.common_seq_type = "intr_test";
+        if ($urandom_range(0, 1)) common_vseq.common_seq_type = "intr_test";
+        else common_vseq.common_seq_type = "tl_errors";
       end
       hmac_vseq.start(p_sequencer);
     end

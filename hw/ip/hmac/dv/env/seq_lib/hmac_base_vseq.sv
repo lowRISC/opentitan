@@ -36,6 +36,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     }
   }
 
+  constraint wr_mask_c {
+    $countones(wr_mask) dist {
+        TL_DBW       :/ 1,
+        [1:TL_DBW-1] :/ 1
+    };
+  }
+
   constraint wr_mask_size_c {
     $countones(wr_mask) <= ('b1 << wr_size);
   }
