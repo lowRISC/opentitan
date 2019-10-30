@@ -134,4 +134,11 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
     actual_items_timestamp.delete();
   endfunction
 
+  // check all the queues are empty at the end of simulation
+  virtual function void final_queue_size_check(string queue_name);
+    `DV_CHECK_EQ(expected_items.size(),           0, {queue_name, "::expected_items"})
+    `DV_CHECK_EQ(actual_items.size(),             0, {queue_name, "::actual_items"})
+    `DV_CHECK_EQ(expected_items_timestamp.size(), 0, {queue_name, "::expected_items_timestamp"})
+    `DV_CHECK_EQ(actual_items_timestamp.size(),   0, {queue_name, "::actual_items_timestamp"})
+  endfunction
 endclass

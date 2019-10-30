@@ -13,6 +13,7 @@
 `CONNECT_TL_DEVICE_IF(flash_ctrl_tl_if, dut.tl_flash_ctrl_o, dut.tl_flash_ctrl_i, TlFlashCtrl)
 `CONNECT_TL_DEVICE_IF(rv_timer_tl_if, dut.tl_rv_timer_o, dut.tl_rv_timer_i, TlRvTimer)
 `CONNECT_TL_DEVICE_IF(hmac_tl_if, dut.tl_hmac_o, dut.tl_hmac_i, TlHmac)
+`CONNECT_TL_DEVICE_IF(aes_tl_if, dut.tl_aes_o, dut.tl_aes_i, TlAes)
 `CONNECT_TL_DEVICE_IF(rv_plic_tl_if, dut.tl_rv_plic_o, dut.tl_rv_plic_i, TlRvPlic)
 
 // Host TileLink interface connections

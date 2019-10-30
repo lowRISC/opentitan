@@ -11,13 +11,10 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
                                                            .RAL_T (dv_base_reg_block),
                                                            .CFG_T (xbar_env_cfg),
                                                            .COV_T (xbar_env_cov));
-  int          chan_prefix_len = 7;
+  int chan_prefix_len = 7;
 
   `uvm_component_utils(xbar_scoreboard)
-
-  function new (string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction : new
+  `uvm_component_new
 
   // Customize the get_queue_name function
   // port_name is {"a/d_chan_", host/devce name}
@@ -46,8 +43,8 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
   // if unmapped addr, src is host a_chan, dst is host d_chan, so,
   // use another prefix and return {"host_unmapped_addr_", host_name}
   virtual function string get_queue_full_name(tl_seq_item tr,
-                                                string tl_port,
-                                                string queue_prefix);
+                                              string      tl_port,
+                                              string      queue_prefix);
     foreach (xbar_devices[i]) begin
       if (xbar_devices[i].device_name == tl_port) return {queue_prefix, tl_port};
     end
@@ -55,8 +52,11 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       if (xbar_hosts[i].host_name == tl_port) begin
         // Current port is a host port, get pair device port from the address
         foreach (xbar_devices[j]) begin
-          if (tr.a_addr inside {[xbar_devices[j].start_address : xbar_devices[j].end_address]})
-            return {queue_prefix, xbar_devices[j].device_name};
+          if (xbar_devices[j].device_name inside {xbar_hosts[i].valid_devices} &&
+              tr.a_addr inside {[xbar_devices[j].start_address :
+                                 xbar_devices[j].end_address]}) begin
+              return {queue_prefix, xbar_devices[j].device_name};
+          end
         end
         // it's unmapped address
         `uvm_info(`gfn, $sformatf("Unmapped addr: 0x%0h at %0s", tr.a_addr, tl_port), UVM_HIGH)
@@ -83,7 +83,8 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
     foreach (xbar_hosts[i]) begin
       if (xbar_hosts[i].host_name == tl_port) begin
         foreach (xbar_devices[j]) begin
-          if (tr.a_addr inside {[xbar_devices[j].start_address :
+          if (xbar_devices[j].device_name inside {xbar_hosts[i].valid_devices} &&
+              tr.a_addr inside {[xbar_devices[j].start_address :
                                  xbar_devices[j].end_address]}) begin
             if (cfg.en_cov) cov.host_access_mapped_addr_cg[tl_port].sample(1);
             return 1; // host port and mapped address
