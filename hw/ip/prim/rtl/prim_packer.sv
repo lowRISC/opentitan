@@ -182,10 +182,7 @@ module prim_packer #(
     end
   end
   always_comb begin
-    if (ack_out) begin
-      // As OutW size of data can be sent out, it can accept new data always.
-      ready_next = 1'b1;
-    end else if (pos >= OutW) begin
+    if (pos >= OutW) begin
       // It has out data remained inside, shouldn't accept new data
       ready_next = 1'b0;
     end else begin
