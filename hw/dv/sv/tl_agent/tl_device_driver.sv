@@ -46,7 +46,7 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
   endtask : reset_thread
 
   virtual task wait_for_reset_done();
-    vif.device_cb.d2h.d_valid <= 1'b0;
+    invalidate_d_channel();
     vif.device_cb.d2h.a_ready <= 1'b0;
     @(posedge vif.device_cb.rst_n);
   endtask : wait_for_reset_done
@@ -90,9 +90,21 @@ class tl_device_driver extends uvm_driver#(tl_seq_item);
       // bypass delay in case of reset
       if (vif.rst_n) @(vif.device_cb);
       while (!vif.device_cb.h2d.d_ready && vif.rst_n) @(vif.device_cb);
-      vif.device_cb.d2h.d_valid <= 1'b0;
+      invalidate_d_channel();
       seq_item_port.item_done();
     end
   endtask : d_channel_thread
+
+  function void invalidate_d_channel();
+    vif.device_cb.d2h.d_opcode <= tlul_pkg::tl_d_op_e'('x);
+    vif.device_cb.d2h.d_param <= '{default:'x};
+    vif.device_cb.d2h.d_size <= '{default:'x};
+    vif.device_cb.d2h.d_source <= '{default:'x};
+    vif.device_cb.d2h.d_sink <= '{default:'x};
+    vif.device_cb.d2h.d_data <= '{default:'x};
+    vif.device_cb.d2h.d_user <= '{default:'x};
+    vif.device_cb.d2h.d_error <= 1'bx;
+    vif.device_cb.d2h.d_valid <= 1'b0;
+  endfunction : invalidate_d_channel
 
 endclass
