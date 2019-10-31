@@ -6,13 +6,15 @@ _Make sure you followed the install instructions to [prepare the system]({{< rel
 
 ## Building software
 
-The following commands build the `boot_rom` and `hello_world` binaries:
+The following commands build the `boot_rom` and `hello_world` binaries for FPGA:
 
 ```console
 $ cd $REPO_TOP
 $ make -C sw/device SW_DIR=boot_rom clean all
 $ make -C sw/device SW_DIR=examples/hello_world clean all
 ```
+
+The `SIM=1` option must be added if building for verilator simulation.
 
 The build process produces a variety of output files.
 

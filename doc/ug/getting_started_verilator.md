@@ -30,8 +30,9 @@ Please see [SW build flow]({{< relref "sw/device/doc/sw_build_flow" >}}) for mor
 
 ```console
 $ cd $REPO_TOP
-$ make -C sw/device SIM=1 SW_DIR=boot_rom SW_BUILD_DIR=${ROM_BUILD_DIR} clean all
-$ make -C sw/device SIM=1 SW_DIR=examples/hello_world SW_BUILD_DIR=${SW_BUILD_DIR} clean all
+$ make -C sw/device SIM=1 SW_DIR=boot_rom SW_BUILD_DIR=sim_boot_rom clean all
+$ make -C sw/device SIM=1 SW_DIR=examples/hello_world \
+  SW_BUILD_DIR=sim_hello_world clean all
 ```
 
 Now the simulation can be run.
@@ -40,8 +41,8 @@ The program listed after `--rominit` and `--flashinit` are loaded into the syste
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=${ROM_BUILD_DIR}/rom.vmem \
-  --flashinit=${SW_BUILD_DIR}/sw.vmem
+  --rominit=sw/device/sim_boot_rom/rom.vmem \
+  --flashinit=sw/device/sim_hello_world/sw.vmem
 ```
 
 To stop the simulation press CTRL-c.
@@ -67,6 +68,8 @@ $ # to interact with the simulation
 $ screen /dev/pts/11
 ```
 
+Note that `screen` will only show output that has been generated after `screen` starts, whilst `cat` will show output that was produced before `cat` started.
+
 You can exit `screen` (in the default configuration) by pressing `CTRL-a k` and confirm with `y`.
 
 ## See GPIO output
@@ -80,7 +83,7 @@ $ cat gpio0
 
 Passing input is currently not supported.
 
-## Connect with OpenOCD to the JTAG port
+## Connect with OpenOCD to the JTAG port and use GDB
 
 The simulation includes a "virtual JTAG" port to which OpenOCD can connect using its `remote_bitbang` driver.
 All necessary configuration files are included in this repository.
@@ -91,6 +94,16 @@ Run the simulation, then connect with OpenOCD using the following command.
 $ cd $REPO_TOP
 $ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
 ```
+
+To connect GDB use the following command (noting it needs to be altered to point to the sw binary in use).
+
+```console
+$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/sim_hello_world/sw.elf
+```
+
+Note that debug support is not yet mature (see https://github.com/lowRISC/opentitan/issues/574).
+In particular GDB cannot set breakpoints as it can't write to the (emulated) flash memory.
+HW breakpoint support is planned for Ibex to allow breakpointing code in flash.
 
 You can also run the debug compliance test suite built into OpenOCD.
 
@@ -131,45 +144,6 @@ The `hello_world` code initially sets the SPI transmitter to return `SPI!` (so t
 The SPI monitor output is written to a file.
 It may be monitored with `tail -f` which conveniently notices when the file is truncated on a new run, so does not need restarting between simulations.
 The output consists of a textual "waveform" representing the SPI signals.
-
-## USB device test interface
-
-
-The simulation contains code to exercise and monitor the USB bus and provide a host interface to allow interaction with the `usbdev` and `usbuart` modules.
-When starting the simulation you should see a message like
-
-```console
-USB: FIFO pipe created at /auto/homes/mdh10/github/opentitan/usb0. Run
-$ cat /auto/homes/mdh10/github/opentitan/usb0
-to observe the output.
-```
-
-The test code currently acts as a host to generate the basic USB control transactions to setup the interface (set the Device ID, read the Device Descriptor), send regular (but not at 1ms spacing) Start-of-Frame packets with incrementing frame number, do an IN bulk transfer from endpoint 1 and occasionally an OUT bulk transfer to endpoint 1.
-The code will finish the simulation after a small number of USB Frames if tracing is enabled and a large number if tracing is not enabled.
-The test code is written directly in the `usbdpi.c` main loop and is fragile with regards to timing. (See [Issue #NNN](https://github.com/lowRISC/opentitan/issues/NNN))
-
-The test code is sufficient to work with the `usbuart` and `hello_world` program and will display the output characters as they arrive in USB packets and send the string `Hi!` to the simulation, which will be echoed and cause the GPIOs to change.
-
-The test code is sufficient to work with the `usbdev` and `hello_usbdev` program and will configure the interface and send the string `Hi!` to the simulation, which will be written to the UART.
-
-The USB mointor can be configured (in the dpi) to output low level bit events from the USB bus, but by default will display higher level packet information. It outputs to a named pipe like the GPIO.
-
-It can be convenient to monitor both the GPIO and USB outputs in the same terminal window.
-
-```console
-$ cd $REPO_TOP
-$ cat gpio0 & cat usb0
-```
-
-Or:
-
-```console
-$ cd $REPO_TOP
-$ tail -f gpio0 usb0
-```
-
-Because the setup process (connect terminal program to `/dev/pts/` for UART, start monitoring the GPIO and USB named pipes) can take some time the `usbdpi` code has a 7 second sleep (with countdown) when it is called for simulation cycle 0.
-This delay starts after all the ptys/pipes/files have been opened but before any action and gives enough time for the correct commands to be started in other terminal windows.
 
 ## DPI Source
 

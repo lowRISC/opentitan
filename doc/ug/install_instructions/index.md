@@ -36,6 +36,19 @@ $ sudo mkdir /tools
 $ sudo chown $(id -un) /tools
 ```
 
+### Clone repository
+
+If you intend to contribute back to OpenTitan you will want your own fork of the repository on GitHub and to work using that, see the [notes for using GitHub]({{< relref "github_notes.md" >}}).
+Otherwise make a simple clone of the main OpenTitan repository.
+
+```console
+$ cd <working-area>
+$ git clone https://github.com/lowRISC/opentitan.git
+```
+
+The repository will be checked out into `<working-area>/opentitan` (this is the
+`$REPO_TOP` path).
+
 ### Install required software
 
 A number of software packages from the distribution's package manager is required.
@@ -254,5 +267,5 @@ ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idPro
 You then need to reload the udev rules:
 
 ```console
-# udevadm control --reload
+# sudo udevadm control --reload
 ```

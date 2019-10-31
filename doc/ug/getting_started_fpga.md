@@ -26,7 +26,15 @@ Follow the install instructions to [prepare the system]({{< relref "install_inst
 Synthesizing a design for a FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to act as the boot ROM.
+This must be built before running the FPGA build.
 This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/top_earlgrey_nexysvideo.core` file).
+
+To build it:
+```console
+$ cd $REPO_TOP
+$ make -C sw/device SW_DIR=boot_rom clean all
+```
+
 At the moment there is no check that the `rom.vmem` file is up to date, so it is best to follow the instructions to [Build software]({{< relref "getting_started_sw.md" >}}) and understand the FPGA's overall software flow.
 
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
@@ -58,6 +66,7 @@ $ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
 
 Note: `fusesoc pgm` is broken for edalize versions up to (and including) v0.1.3.
 You can check the version you're using with `pip3 show edalize`.
+If you have having trouble with programming using the command line, try the GUI.
 
 ### Using the Vivado GUI
 
@@ -110,7 +119,7 @@ frame: 0x80000005 to offset: 0x00001338
 * Open a serial console (use the device file determined before) and connect.
   Settings: 230400 baud, 8N1, no hardware or software flow control.
   ```console
-  screen /dev/ttyUSB0 230400
+  $ screen /dev/ttyUSB0 230400
   ```
   Note that the Nexsys Video demo program that comes installed on the board runs the UART at 115200 baud;
   expect to see garbage characters if that is running.
@@ -161,6 +170,10 @@ $ cd $REPO_TOP
 $ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/boot_rom/rom.elf
 ```
 
+Note that debug support is not yet mature (see https://github.com/lowRISC/opentitan/issues/574).
+In particular GDB cannot set breakpoints as it can't write to the (emulated) flash memory.
+HW breakpoint support is planned for Ibex to allow breakpointing code in flash.
+
 #### Common operations with GDB
 
 Examine 16 memory words in the hex format starting at 0x200005c0
@@ -185,6 +198,16 @@ Displaying the memory content can also be delegated to OpenOCD
 ```
 
 Use `monitor help` to get a list of supported commands.
+
+To single-step use `stepi` or `step`
+
+```console
+(gdb) stepi
+```
+
+`stepi` single-steps an instruction, `step` single-steps a line of source code.
+When testing debugging against the hello_world binary it is likely you will break into a delay loop.
+Here the `step` command will seem to hang as it will attempt to step over the whole delay loop with a sequence of single-step instructions which may take quite some time!
 
 To change the program which is debugged the `file` command can be used.
 This will update the symbols which are used to get information about the program.
