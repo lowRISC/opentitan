@@ -46,8 +46,7 @@
   a {
     color: $dark-purple;
     color: var(--text-color);
-    display: block;
-    
+
     &:hover,
     &:focus {
       text-decoration: none;
