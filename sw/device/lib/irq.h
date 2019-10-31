@@ -11,7 +11,7 @@
 /**
  * Update to the location of vectors as specificed in the linker file
  */
-extern void update_mtvec(void);
+extern void update_mtvec(char *ptr);
 
 /**
  * Enable / disable ibex globlal interrupts
