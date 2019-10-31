@@ -26,7 +26,7 @@ module prim_packer #(
 );
 
   localparam int Width = InW + OutW;
-  localparam int PtrW = $clog2(Width);
+  localparam int PtrW = $clog2(Width+1);
   localparam int MaxW = (InW > OutW) ? InW : OutW;
 
   logic valid_next, ready_next;
@@ -59,7 +59,7 @@ module prim_packer #(
     end else if (flush_ready) begin
       pos <= '0;
     end else if (ack_out) begin
-      `ASSERT_I(PosOrPosNextGTEOutW_A, (pos >= OutW) || (pos_next >= OutW))
+      `ASSERT_I(pos_next_gte_outw_p, pos_next >= OutW)
       pos <= pos_next - OutW;
     end else if (ack_in) begin
       pos <= pos_next;
@@ -171,25 +171,8 @@ module prim_packer #(
 
   assign flush_done_o = flush_ready;
 
-  always_comb begin
-    if (pos >= OutW) begin
-      // Pending transactions in the storage
-      valid_next = 1'b1;
-    end else if (pos_next >= OutW) begin
-      valid_next = 1'b1;
-    end else begin
-      valid_next = flush_ready & (pos != '0);
-    end
-  end
-  always_comb begin
-    if (pos >= OutW) begin
-      // It has out data remained inside, shouldn't accept new data
-      ready_next = 1'b0;
-    end else begin
-      // Regardless of pos_next, it can store the data
-      ready_next = 1'b1;
-    end
-  end
+  assign valid_next = (pos_next >= OutW) ? 1'b 1 : flush_ready & (pos != '0);
+  assign ready_next = ack_out ? 1'b1 : pos_next <= MaxW; // New `we` needs to be hold.
 
   // Output request
   assign valid_o = valid_next;
@@ -198,6 +181,9 @@ module prim_packer #(
 
   // ready_o
   assign ready_o = ready_next;
+
+  // TODO: Implement Pipelined logic
+  //       Need to change pos logic, mask&data calculation logic too
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
@@ -208,6 +194,11 @@ module prim_packer #(
   `ASSUME(ContiguousOnesMask_M,
           valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2,
           clk_i, !rst_ni)
+
+  // Assume data pattern to reduce FPV test time
+  //`ASSUME_FPV(FpvDataWithin_M,
+  //            data_i inside {'0, '1, 32'hDEAD_BEEF},
+  //            clk_i, !rst_ni)
 
   // Flush and Write Enable cannot be asserted same time
   `ASSUME(ExFlushValid_M, flush_i |-> !valid_i, clk_i, !rst_ni)
@@ -235,15 +226,30 @@ module prim_packer #(
           valid_o && !ready_i |=> valid_o,
           clk_i, !rst_ni)
 
-  // If input mask is greater than output width, valid should be asserted
+  // If input mask + stored data is greater than output width, valid should be asserted
   `ASSERT(ValidOAssertedForInputGTEOutW_A,
-          valid_i && ($countones(mask_i) >= OutW) |-> valid_o,
+          valid_i && (($countones(mask_i) + $countones(stored_mask)) >= OutW) |-> valid_o,
           clk_i, !rst_ni)
 
   // If output port doesn't accept the data, the data should be stable
   `ASSERT(DataOStableWhenPending_A,
           ##1 valid_o && $past(valid_o)
           && !$past(ready_i) |-> $stable(data_o),
+          clk_i, !rst_ni)
+
+  // If input data & stored data are greater than OutW, remained should be stored
+  // TODO: Find out how the FPV time can be reduced.
+  //`ASSERT(ExcessiveDataStored_A,
+  //        ack_in && (($countones(mask_i) + $countones(stored_mask)) > OutW) |=>
+  //          (($past(data_i) &  $past(mask_i)) >>
+  //          ($past(lod_idx)+OutW-$countones($past(stored_mask))))
+  //          == stored_data,
+  //        clk_i, !rst_ni)
+  `ASSERT(ExcessiveMaskStored_A,
+          ack_in && (($countones(mask_i) + $countones(stored_mask)) > OutW) |=>
+          ($past(mask_i) >>
+          ($past(lod_idx)+OutW-$countones($past(stored_mask))))
+            == stored_mask,
           clk_i, !rst_ni)
 
 endmodule
