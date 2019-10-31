@@ -54,6 +54,8 @@ For example, a component does not need to know how many clock sources a top has 
 Likewise, the top does not need to know the details of why an interrupt is generated, just how many there are.
 The user supplied `top_*.hjson` thus acts like a integration specification while the remaining details are filled in through lower level inputs.
 
+In addition to design collateral, the tool also generates all the top level RAL (Register Abstraction Layer) models necessary for verification.
+
 ### Validation, Merge and Output
 
 As stated previously, each of the gathered component Hjson files is validated for correctness.
