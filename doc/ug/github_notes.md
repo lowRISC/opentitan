@@ -2,10 +2,12 @@
 
 The OpenTitan source tree is maintained on GitHub in a [monolithic repository](https://github.com/lowRISC/opentitan) called opentitan.
 
-This file provides some notes on using GitHub for developing in the
-monolithic repository based on notes taken by a relatively inexperienced git
-user. There is much more to using git, a possible next step is to
-reference [Resources to learn Git](https://try.github.io/).
+These notes are for people who intend to contribute back to OpenTitan (based on
+notes taken by a relatively inexperienced git user). If you don't intend to do
+this you can simply clone the main repository, instructions are in [install
+instructions]({{< relref "install_instructions" >}}) and this document can be ignored.There
+is much more to using git, a possible next step is to reference [Resources to
+learn Git](https://try.github.io/).
 
 ## Getting a working repository
 

@@ -6,13 +6,15 @@ title: "Getting Started"
 
 Welcome!
 
-This guide helps you to get started with the lowRISC Comportable chip designs.
+This guide helps you to get started with OpenTitan.
 
-## Conventions in this guide
+## OpenTitan Repository
 
-This guide uses the environment variable `$REPO_TOP` to refer to the top-level of the git source tree.
-The master tree is held on GitHub, this should be forked to user trees from which Pull Requests can be made.
-There is a set of [Notes for using GitHub]({{< relref "github_notes.md" >}}).
+The [OpenTitan Repository](https://github.com/lowRISC/opentitan) must be checked out locally.
+If you wish to contribute to OpenTitan you will need to make a fork on GitHub, otherwise you can just locally clone the main repository.
+There is a set of [notes for using GitHub]({{< relref "github_notes.md" >}}) which explains how to work with your own fork.
+
+**Throughout the documentation `$REPO_TOP` refers to the path where the OpenTitan repository is checked out**
 
 ## Setup
 
@@ -37,7 +39,7 @@ This section discusses the general software operating flow.
 Under the sw directory, there are numerous sub-directories each containing code for different purposes.
 In general however, software execution can be divided into two execution stages - ROM and embedded memory (currently emulated embedded flash).
 
-The ROM stage software, built from `sw/boot_ROM` is always run first on all platforms (DV / Verilator / FPGA).
+The ROM stage software, built from `sw/device/boot_rom` is always run first on all platforms (DV / Verilator / FPGA).
 In DV / Verilator, both the ROM and embedded memory contents are backdoor loaded into their respective storage, thus the ROM code simply checks for the presence of code and jumps to it.
 ROM at the moment does not perform validation of the backdoor loaded code.
 

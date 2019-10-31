@@ -2,8 +2,9 @@
 title: "SW build flow"
 ---
 
-**The custom Makefile flow has been deprecated in favor of Meson; see sw/README.md for details.** 
-**Makefiles will eventually be deleted from SW, and should not be relied upon.**
+**The custom Makefile flow has been deprecated in favor of Meson; see [sw/README]({{< relref "sw/README.md" >}}) for details.**
+**Much of the documentation still uses the Makefile flow which works fine for now.**
+**However the Makefile flow will eventually be deleted from SW, and should not be relied upon.**
 
 ## Overview
 The centralized Makefile flow attempts to maximize reuse of commonly used
