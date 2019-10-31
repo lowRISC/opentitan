@@ -29,16 +29,21 @@ title: "User Guides"
   * CDC Methodology
   * DFT
   * Generated Code
-* *Verification Methodology* (TODO)
-  * Verification strategy overview
-  * How do we define Verification completion
-    * Current verification status of IP and definition of milestones
-  * Tools
-  * Test planning
-  * Progress and tracking
-  * Code coverage output
-    * How do we report status
-  * Overview of in-tree helper classes, test benches, etc.
+* [Design Verification Methodology]({{< relref "dv_methodology.md" >}})
+  * Language and Tool Selection
+  * Defining Verification Complete: Stages and Checklists
+  * Documentation
+  * Automation
+  * Code Reuse
+  * DV Efforts in OpenTitan
+  * Key Test Focus Areas
+  * Assertions
+  * Regressions
+  * Coverage Collection
+  * FPV
+  * Reviews
+  * Filing Issues
+  * Pending Work Items
 * *Validation Methodology* (TODO)
   * How to download bit stream
   * What tests exist today
