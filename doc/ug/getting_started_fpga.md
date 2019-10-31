@@ -34,6 +34,7 @@ In the following example we synthesize the Earl Grey design for the Nexys Video 
 ```console
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
+$ make -C sw/device SW_DIR=boot_rom clean all
 $ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
