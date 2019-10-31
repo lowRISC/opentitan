@@ -8,7 +8,6 @@
 module uart_core (
   input                  clk_i,
   input                  rst_ni,
-  input                  scanmode_i,
 
   input  uart_reg_pkg::uart_reg2hw_t reg2hw,
   output uart_reg_pkg::uart_hw2reg_t hw2reg,

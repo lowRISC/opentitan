@@ -28,10 +28,6 @@ module uart (
   output logic    intr_rx_parity_err_o
 );
 
-  // TODO: same as in spi_device.sv, add input scanmode_i to module
-  logic scanmode_i;
-  assign scanmode_i = 1'b0;
-
   import uart_reg_pkg::*;
 
   uart_reg2hw_t reg2hw;
@@ -51,7 +47,6 @@ module uart (
   uart_core uart_core (
     .clk_i,
     .rst_ni,
-    .scanmode_i,
     .reg2hw,
     .hw2reg,
 
@@ -70,9 +65,6 @@ module uart (
 
   // always enable the driving out of TX
   assign cio_tx_en_o = 1'b1;
-
-  // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
 
   // Assert Known for outputs
   `ASSERT_KNOWN(txenKnown, cio_tx_en_o, clk_i, !rst_ni)
