@@ -220,6 +220,8 @@ def main():
         logging.info("Hugo not found. Installing local copy and re-trying.")
         install_hugo(hugo_localinstall_dir)
         invoke_hugo(args.preview)
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":
