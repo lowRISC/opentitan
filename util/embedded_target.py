@@ -14,6 +14,14 @@ import subprocess
 import sys
 
 
+def run_objdump(objdump, input, basename, outdir):
+    filename = basename + '.dis'
+    output = os.path.join(outdir, filename)
+    f = open(output, "w")
+    cmd = [objdump, '-SD', input, ]
+    subprocess.run(cmd, stdout=f, check=True)
+    return output
+
 def run_objcopy(objcopy, input, basename, outdir):
     filename = basename + '.bin'
     output = os.path.join(outdir, filename)
@@ -52,6 +60,11 @@ def main():
         required=True,
         help='Absolute path to objcopy tool.')
     parser.add_argument(
+        '--objdump',
+        '-p',
+        required=True,
+        help='Absolute path to objdump tool.')
+    parser.add_argument(
         '--outdir',
         '-d',
         required=True,
@@ -67,6 +80,7 @@ def main():
         os.makedirs(args.outdir)
 
     bin_file = run_objcopy(args.objcopy, args.input, args.basename, args.outdir)
+    run_objdump(args.objdump, args.input, args.basename, args.outdir)
     run_srec_cat(args.srec_cat, bin_file, args.basename, args.outdir)
 
 

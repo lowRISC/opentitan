@@ -41,6 +41,7 @@ add_project_arguments(
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
+prog_objdump = find_program('objdump')
 prog_objcopy = find_program('objcopy')
 prog_srec_cat = find_program('srec_cat')
 prog_git = find_program('git')
@@ -55,9 +56,9 @@ startup_files = files(['sw/device/exts/common/_crt.c'])
 
 # Additional arguments for utility in charge of generating bin and vmem outputs
 # These variables are expected to be used in custom_target rules.
-embedded_target_output = ['@BASENAME@.bin', '@BASENAME@.vmem']
+embedded_target_output = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.vmem']
 embedded_target_args = [prog_python, '../util/embedded_target.py',
-  '--objcopy', prog_objcopy, '--srec_cat', prog_srec_cat,
+  '--objcopy', prog_objcopy, '--srec_cat', prog_srec_cat, '--objdump', prog_objdump,
   '--input', '@INPUT@', '--basename', '@BASENAME@', '--outdir', '@OUTDIR@']
 
 # Hardware register headers. These are generated from HJSON files, and accesible
