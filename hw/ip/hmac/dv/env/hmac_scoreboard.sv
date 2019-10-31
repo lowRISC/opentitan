@@ -8,12 +8,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit               sha_en;
-  bit [7:0]         msg_q[$];
-  bit               hmac_start, hmac_process;
-  bit               fifo_full;
-  int               hmac_wr_cnt;
-  int               hmac_rd_cnt;
+  bit       sha_en;
+  bit [7:0] msg_q[$];
+  bit       hmac_start, hmac_process;
+  bit       fifo_full;
+  int       hmac_wr_cnt;
+  int       hmac_rd_cnt;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -78,7 +78,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               {hmac_process, hmac_start} = item.a_data[1:0];
             end else if (item.a_data[HashStart] == 1) begin
               void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
-              void'(ral.err_code.predict(.value(SwHashStartWhenShaDisabled), .kind(UVM_PREDICT_DIRECT)));
+              void'(ral.err_code.predict(.value(SwHashStartWhenShaDisabled),
+                                         .kind(UVM_PREDICT_DIRECT)));
             end
           end
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
@@ -96,7 +97,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
           "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
           "status", "msg_length_lower", "msg_length_upper": begin
-            `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s", csr.get_full_name()))
+            `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
+                                       csr.get_full_name()))
           end
           default: begin
             `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -116,11 +118,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     // predict status based on csr read addr channel
     if (!write && channel != DataChannel) begin
         if (csr.get_name() == "status") begin
-          bit [4:0]       hmac_fifo_depth = hmac_wr_cnt - hmac_rd_cnt;
-          bit             fifo_full = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH;
-          bit             fifo_empty = hmac_fifo_depth == 0;
-          bit [TL_DW-1:0] hmac_status_data = (fifo_empty << HmacStaMsgFifoEmpty) |
-                                             (fifo_full << HmacStaMsgFifoFull) |
+          bit [4:0]       hmac_fifo_depth  = hmac_wr_cnt - hmac_rd_cnt;
+          bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH;
+          bit             hmac_fifo_empty  = hmac_fifo_depth == 0;
+          bit [TL_DW-1:0] hmac_status_data = (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
+                                             (hmac_fifo_full << HmacStaMsgFifoFull) |
                                              (hmac_fifo_depth << HmacStaMsgFifoDepth);
           void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
         end
@@ -200,9 +202,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual task incr_wr_and_check_fifo_full();
     if (sha_en) begin
-      // if fifo full, tlul will not write next data until d_valid is asserted
+      // if fifo full, tlul will not write next data until fifo has space again
       if (fifo_full) begin
-        wait (cfg.tlul_assert_vif.d2h.d_valid == 1);
+        wait (hmac_wr_cnt - hmac_rd_cnt < HMAC_MSG_FIFO_DEPTH)
         fifo_full = 0;
       end
       @(negedge cfg.clk_rst_vif.clk);
@@ -271,7 +273,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               cfg.clk_rst_vif.wait_n_clks(1);
               hmac_rd_cnt++;
               `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)
-              if (hmac_rd_cnt % 16 == 0) cfg.clk_rst_vif.wait_n_clks(HMAC_MSG_PROCESS_CYCLES);
+              if (hmac_rd_cnt % HMAC_MSG_FIFO_DEPTH == 0) begin
+                cfg.clk_rst_vif.wait_n_clks(HMAC_MSG_PROCESS_CYCLES);
+              end
             end
             begin : reset_hmac_fifo_rd
               wait(!cfg.clk_rst_vif.rst_n);
@@ -287,6 +291,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     super.check_phase(phase);
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacMsgFifoFull], 1'b0)
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacDone], 1'b0)
+    `DV_CHECK_EQ(cfg.intr_vif.pins[HmacErr], 1'b0)
   endfunction
 
   // query the sha / hmac c model to get expected digest
