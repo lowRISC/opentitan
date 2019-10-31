@@ -36,6 +36,7 @@ ignoreFiles = [
   ".*\\.yml$",
   "/build/*",
   "/hw/vendor/*",
+  "/opentitan-docs/",
   "/site/*",
   "Makefile$",
 ]
