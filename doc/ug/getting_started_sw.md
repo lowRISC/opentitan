@@ -6,9 +6,12 @@ _Make sure you followed the install instructions to [prepare the system]({{< rel
 
 ## Building software
 
+The following commands build the `boot_rom` and `hello_world` binaries:
+
 ```console
-$ cd $REPO_TOP/sw
-$ make SW_DIR=examples/hello_world CC=/tools/riscv/bin/riscv32-unknown-elf-gcc
+$ cd $REPO_TOP
+$ make -C sw/device SW_DIR=boot_rom clean all
+$ make -C sw/device SW_DIR=examples/hello_world clean all
 ```
 
 The build process produces a variety of output files.
@@ -18,4 +21,4 @@ The build process produces a variety of output files.
 * `.dis`: the disassembled program
 * `.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code
 
-Please see [SW build flow]("/sw/doc/sw_build_flow.md") for more details.
+Please see [SW build flow]("/sw/device/doc/sw_build_flow.md") for more details.
