@@ -98,8 +98,9 @@ module rv_plic #(
 
   `ASSERT(onehot0Complete, $onehot0(complete_we), clk_i, !rst_ni)
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Priority
+  //////////////
+  // Priority //
+  //////////////
   assign prio[0] = reg2hw.prio0.q;
   assign prio[1] = reg2hw.prio1.q;
   assign prio[2] = reg2hw.prio2.q;
@@ -155,50 +156,51 @@ module rv_plic #(
   assign prio[52] = reg2hw.prio52.q;
   assign prio[53] = reg2hw.prio53.q;
   assign prio[54] = reg2hw.prio54.q;
-  //----------------------------------------------------------------------------
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Interrupt Enable
+  //////////////////////
+  // Interrupt Enable //
+  //////////////////////
   for (genvar s = 0; s < 55; s++) begin : gen_ie0
     assign ie[0][s] = reg2hw.ie0[s].q;
   end
-  //----------------------------------------------------------------------------
 
-  //////////////////////////////////////////////////////////////////////////////
-  // THRESHOLD register
+  ////////////////////////
+  // THRESHOLD register //
+  ////////////////////////
   assign threshold[0] = reg2hw.threshold0.q;
-  //----------------------------------------------------------------------------
 
-  //////////////////////////////////////////////////////////////////////////////
-  // CC register
+  /////////////////
+  // CC register //
+  /////////////////
   assign claim_re[0]    = reg2hw.cc0.re;
   assign claim_id[0]    = irq_id_o[0];
   assign complete_we[0] = reg2hw.cc0.qe;
   assign complete_id[0] = reg2hw.cc0.q;
   assign hw2reg.cc0.d   = cc_id[0];
-  //----------------------------------------------------------------------------
 
-  //////////////////////////////////////////////////////////////////////////////
-  // MSIP register
+  ///////////////////
+  // MSIP register //
+  ///////////////////
   assign msip_o[0] = reg2hw.msip0.q;
-  //----------------------------------------------------------------------------
 
-  //////////////////////////////////////////////////////////////////////////////
-  // IP
+  ////////
+  // IP //
+  ////////
   for (genvar s = 0; s < 55; s++) begin : gen_ip
     assign hw2reg.ip[s].de = 1'b1; // Always write
     assign hw2reg.ip[s].d  = ip[s];
   end
-  //----------------------------------------------------------------------------
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Detection:: 0: Level, 1: Edge
+  ///////////////////////////////////
+  // Detection:: 0: Level, 1: Edge //
+  ///////////////////////////////////
   for (genvar s = 0; s < 55; s++) begin : gen_le
     assign le[s] = reg2hw.le[s].q;
   end
-  //----------------------------------------------------------------------------
 
-  // Gateways
+  //////////////
+  // Gateways //
+  //////////////
   rv_plic_gateway #(
     .N_SOURCE (N_SOURCE)
   ) u_gateway (
@@ -214,8 +216,9 @@ module rv_plic #(
     .ip
   );
 
-
-  // Target interrupt notification
+  ///////////////////////////////////
+  // Target interrupt notification //
+  ///////////////////////////////////
   for (genvar i = 0 ; i < N_TARGET ; i++) begin : gen_target
     rv_plic_target #(
       .N_SOURCE (N_SOURCE),
@@ -237,7 +240,9 @@ module rv_plic #(
     );
   end
 
-  // Register interface
+  ////////////////////////
+  // Register interface //
+  ////////////////////////
   //  Limitation of register tool prevents the module from having flexibility to parameters
   //  So, signals are manually tied at the top.
   rv_plic_reg_top u_reg (

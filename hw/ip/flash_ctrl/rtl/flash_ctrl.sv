@@ -52,8 +52,6 @@ module flash_ctrl (
   tlul_pkg::tl_h2d_t tl_fifo_h2d [2];
   tlul_pkg::tl_d2h_t tl_fifo_d2h [2];
 
-  //==============================================================================
-
   // Register module
   flash_ctrl_reg_top u_reg (
     .clk_i,

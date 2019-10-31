@@ -23,9 +23,11 @@
   endpackage
 `endif
 
-//------------------------------------------------------------------------------------
-// Helper macros
-//------------------------------------------------------------------------------------
+
+///////////////////
+// Helper macros //
+///////////////////
+
 
 // Converts an arbitrary block of code into a Verilog string
 `define PRIM_STRINGIFY(__x) `"__x`"
@@ -39,11 +41,10 @@
   $error("[ASSERT FAILED] [%m] %s: %s", __name, __msg);                   \
 `endif
 
-//------------------------------------------------------------------------------------
-// Simple assertion and cover macros
-//------------------------------------------------------------------------------------
+///////////////////////////////////////
+// Simple assertion and cover macros //
+///////////////////////////////////////
 
-//------------------------------------------------------------------------------------
 // Immediate assertion
 // Note that immediate assertions are sensitive to simulation glitches.
 `define ASSERT_I(__name, __prop)                                       \
@@ -54,7 +55,6 @@
   //pragma translate_on                                                \
 `endif
 
-//------------------------------------------------------------------------------------
 // Assertion in initial block. Can be used for things like parameter checking.
 `define ASSERT_INIT(__name, __prop)                                      \
 `ifndef VERILATOR                                                        \
@@ -65,7 +65,6 @@
   //pragma translate_on                                                  \
 `endif
 
-//------------------------------------------------------------------------------------
 // Assertion in final block. Can be used for things like queues being empty
 // at end of sim, all credits returned at end of sim, state machines in idle
 // at end of sim.
@@ -78,7 +77,6 @@
   //pragma translate_on                                                      \
 `endif
 
-//------------------------------------------------------------------------------------
 // Assert a concurrent property directly.
 // It can be called as a module (or interface) body item.
 `define ASSERT(__name, __prop, __clk, __rst)                                     \
@@ -93,7 +91,6 @@
 // the beginning of a simulation. For that case, (reset == '1) does not disable the
 // assertion.
 
-//------------------------------------------------------------------------------------
 // Assert a concurrent property NEVER happens
 `define ASSERT_NEVER(__name, __prop, __clk, __rst)                                   \
 `ifndef VERILATOR                                                                    \
@@ -103,7 +100,6 @@
   //pragma translate_on                                                              \
 `endif
 
-//------------------------------------------------------------------------------------
 // Assert that signal has a known value (each bit is either '0' or '1') after reset.
 // It can be called as a module (or interface) body item.
 `define ASSERT_KNOWN(__name, __sig, __clk, __rst)   \
@@ -113,7 +109,6 @@
   //pragma translate_on                             \
 `endif
 
-//------------------------------------------------------------------------------------
 //  Cover a concurrent property
 `define COVER(__name, __prop, __clk, __rst)                                      \
 `ifndef VERILATOR                                                                \
@@ -122,11 +117,10 @@
   //pragma translate_on                                                          \
 `endif
 
-//------------------------------------------------------------------------------------
-// Complex assertion macros
-//------------------------------------------------------------------------------------
+//////////////////////////////
+// Complex assertion macros //
+//////////////////////////////
 
-//------------------------------------------------------------------------------------
 // Assert that signal is an active-high pulse with pulse length of 1 clock cycle
 `define ASSERT_PULSE(__name, __sig, __clk, __rst)          \
 `ifndef VERILATOR                                          \
@@ -135,7 +129,6 @@
   //pragma translate_on                                    \
 `endif
 
-//------------------------------------------------------------------------------------
 // Assert that valid is known after reset and data is known when valid == 1
 `define ASSERT_VALID_DATA(__name, __valid, __dat, __clk, __rst)                  \
 `ifndef VERILATOR                                                                \
@@ -145,7 +138,6 @@
   //pragma translate_on                                                          \
 `endif
 
-//------------------------------------------------------------------------------------
 // Same as ASSERT_VALID_DATA, but also assert that ready is known after reset
 `define ASSERT_VALID_READY_DATA(__name, __valid, __ready, __dat, __clk, __rst)   \
 `ifndef VERILATOR                                                                \
@@ -156,9 +148,9 @@
   //pragma translate_on                                                          \
 `endif
 
-//------------------------------------------------------------------------------------
-// Assumption macros
-//------------------------------------------------------------------------------------
+///////////////////////
+// Assumption macros //
+///////////////////////
 
 // Assume a concurrent property
 `define ASSUME(__name, __prop, __clk, __rst)                                      \
@@ -167,9 +159,9 @@
      else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end \
 `endif
 
-//------------------------------------------------------------------------------------
-// For formal verification only
-//------------------------------------------------------------------------------------
+//////////////////////////////////
+// For formal verification only //
+//////////////////////////////////
 
 // Note that the existing set of ASSERT macros specified above shall be used for FPV,
 // thereby ensuring that the assertions are evaluated during DV simulations as well.

@@ -11,9 +11,9 @@ module usb_serial_ctrl_ep  #(
   input              rst_ni,
   output logic [6:0] dev_addr,
 
-  ////////////////////
-  // out endpoint interface
-  ////////////////////
+  ////////////////////////////
+  // out endpoint interface //
+  ////////////////////////////
   input              out_ep_data_put_i,
   input [PktW - 1:0] out_ep_put_addr_i,
   input [7:0]        out_ep_data_i,
@@ -24,9 +24,9 @@ module usb_serial_ctrl_ep  #(
   output logic       out_ep_stall_o,
 
 
-  ////////////////////
-  // in endpoint interface
-  ////////////////////
+  ///////////////////////////
+  // in endpoint interface //
+  ///////////////////////////
   input              in_ep_rollback_i,
   input              in_ep_acked_i,
   input [PktW - 1:0] in_ep_get_addr_i,
@@ -112,10 +112,9 @@ module usb_serial_ctrl_ep  #(
 
   logic [6:0] rom_addr;
   logic save_dev_addr;
-  ////////////////////////////////////////////////////////////////////////////////
-  // control transfer state machine
-  ////////////////////////////////////////////////////////////////////////////////
-
+  ////////////////////////////////////
+  // control transfer state machine //
+  ////////////////////////////////////
 
   always_comb begin
     setup_stage_end = 1'b0;

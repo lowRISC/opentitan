@@ -142,8 +142,10 @@ module usbuart_core (
       nco_sum <= {1'b0,nco_sum[15:0]} + {1'b0,reg2hw.ctrl.nco.q};
 
   assign tick_baud_x16 = nco_sum[16];
-// ######################################################################
-//              TX Logic
+
+  //////////////
+  // TX Logic //
+  //////////////
 
   assign tx_fifo_rst_n = rst_ni & ~uart_fifo_txrst;
 
@@ -168,8 +170,9 @@ module usbuart_core (
     .rdepth    () // only using empty
   );
 
-  // ######################################################################
-  //              RX Logic
+  //////////////
+  // RX Logic //
+  //////////////
   logic [5:0]        usb_rx_wdepth;
   logic              usb_rx_oflw;
 
@@ -234,8 +237,10 @@ module usbuart_core (
     );
   assign hw2reg.usbstat.host_lost.d = host_lost;
   assign hw2reg.usbstat.host_timeout.d = host_timeout;
-  // ######################################################################
-  //              Interrupt & Status
+
+  ////////////////////////
+  // Interrupt & Status //
+  ////////////////////////
 
   always_comb
     unique case(uart_fifo_txilvl)

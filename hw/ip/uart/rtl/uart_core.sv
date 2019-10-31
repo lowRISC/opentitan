@@ -160,8 +160,9 @@ module uart_core (
 
   assign tick_baud_x16 = nco_sum_q[16];
 
-  // ######################################################################
-  //              TX Logic
+  //////////////
+  // TX Logic //
+  //////////////
 
   assign tx_fifo_rready = tx_uart_idle & tx_fifo_rvalid & tx_enable;
 
@@ -208,8 +209,9 @@ module uart_core (
     end
   end
 
-  // ######################################################################
-  //              RX Logic
+  //////////////
+  // RX Logic //
+  //////////////
 
   //      sync the incoming data
   prim_flop_2sync #(
@@ -285,8 +287,9 @@ module uart_core (
     else if (tick_baud_x16) rx_val_q <= {rx_val_q[14:0], rx_in};
   end
 
-  // ######################################################################
-  //              Interrupt & Status
+  ////////////////////////
+  // Interrupt & Status //
+  ////////////////////////
 
   always_comb begin
     unique case(uart_fifo_txilvl)

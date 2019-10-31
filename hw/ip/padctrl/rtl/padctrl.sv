@@ -28,12 +28,13 @@ module padctrl #(
 
   import prim_pkg::*;
 
-  //////////////////////////////////////////////////////
+  //////////////////
+  // WARL Control //
+  //////////////////
+
   // This controls the WARL'ness of the CSRs
   // needs to be in line with the corresponding
   // prim_pad_wrapper implementation
-  //////////////////////////////////////////////////////
-
   logic [padctrl_reg_pkg::AttrDw-1:0] warl_mask;
   if (Impl == ImplGeneric) begin : gen_generic
     // all attributes supported
@@ -46,9 +47,9 @@ module padctrl #(
     // TODO: Find code that works across tools and causes a compile failure
   end
 
-  //////////////////////////////////////////////////////
-  // Regfile
-  //////////////////////////////////////////////////////
+  /////////////
+  // Regfile //
+  /////////////
 
   padctrl_reg_pkg::padctrl_reg2hw_t reg2hw;
   padctrl_reg_pkg::padctrl_hw2reg_t hw2reg;
@@ -63,9 +64,9 @@ module padctrl #(
     .devmode_i(1'b1)
   );
 
-  //////////////////////////////////////////////////////
-  // HWEXT Regs
-  //////////////////////////////////////////////////////
+  ////////////////
+  // HWEXT Regs //
+  ////////////////
 
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr_q;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr_q;
@@ -90,9 +91,9 @@ module padctrl #(
     end
   end
 
-  //////////////////////////////////////////////////////
-  // Connect attributes
-  //////////////////////////////////////////////////////
+  ////////////////////////
+  // Connect attributes //
+  ////////////////////////
 
   // using the warl_mask here instead instead of in the register assignment above
   // avoids lint errors. the unused registers can be removed automatically by most tools.
@@ -106,9 +107,9 @@ module padctrl #(
     assign hw2reg.mio_pads[k].d = mio_attr_q[k] & warl_mask;
   end
 
-  //////////////////////////////////////////////////////
-  // Assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Assertions //
+  ////////////////
 
   `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(MioKnownO_A, mio_attr_o, clk_i, !rst_ni)

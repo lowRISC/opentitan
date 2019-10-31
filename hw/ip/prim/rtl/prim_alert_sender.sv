@@ -43,9 +43,10 @@ module prim_alert_sender #(
   output logic alert_no
 );
 
-  //////////////////////////////////////////////////////
-  // decode differential signals
-  //////////////////////////////////////////////////////
+
+  /////////////////////////////////
+  // decode differential signals //
+  /////////////////////////////////
   logic ping_sigint, ping_event;
 
   prim_diff_decode #(
@@ -78,9 +79,10 @@ module prim_alert_sender #(
     .sigint_o ( ack_sigint  )
   );
 
-  //////////////////////////////////////////////////////
-  // main protocol FSM that drives the diff output
-  //////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////
+  // main protocol FSM that drives the diff output //
+  ///////////////////////////////////////////////////
   typedef enum logic [2:0] {Idle, HsPhase1, HsPhase2, SigInt, Pause0, Pause1} state_e;
   state_e state_d, state_q;
   logic alert_pq, alert_nq, alert_pd, alert_nd;
@@ -186,9 +188,10 @@ module prim_alert_sender #(
     end
   end
 
-  //////////////////////////////////////////////////////
-  // assertions
-  //////////////////////////////////////////////////////
+
+  ////////////////
+  // assertions //
+  ////////////////
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(AlertPKnownO_A, alert_po, clk_i, !rst_ni)

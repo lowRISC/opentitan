@@ -21,9 +21,9 @@ module pinmux (
   input        [pinmux_reg_pkg::NMioPads-1:0]   mio_in_i
 );
 
-  //////////////////////////////////////////////////////
-  // Regfile Breakout and Mapping
-  //////////////////////////////////////////////////////
+  //////////////////////////////////
+  // Regfile Breakout and Mapping //
+  //////////////////////////////////
 
   pinmux_reg_pkg::pinmux_reg2hw_t reg2hw;
 
@@ -36,9 +36,9 @@ module pinmux (
     .devmode_i(1'b1)
   );
 
-  //////////////////////////////////////////////////////
-  // Input Mux
-  //////////////////////////////////////////////////////
+  ///////////////
+  // Input Mux //
+  ///////////////
 
   for (genvar k = 0; k < pinmux_reg_pkg::NPeriphIn; k++) begin : gen_periph_in
     logic [pinmux_reg_pkg::NMioPads+2-1:0] data_mux;
@@ -51,9 +51,9 @@ module pinmux (
     `ASSUME(InSelRange_A, reg2hw.periph_insel[k].q < pinmux_reg_pkg::NMioPads + 2, clk_i, !rst_ni)
   end
 
-  //////////////////////////////////////////////////////
-  // Output Mux
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Output Mux //
+  ////////////////
 
   for (genvar k = 0; k < pinmux_reg_pkg::NMioPads; k++) begin : gen_mio_out
     logic [pinmux_reg_pkg::NPeriphOut+3-1:0] data_mux, oe_mux;
@@ -68,9 +68,9 @@ module pinmux (
     `ASSUME(OutSelRange_A, reg2hw.mio_outsel[k].q < pinmux_reg_pkg::NPeriphOut + 3, clk_i, !rst_ni)
   end
 
-  //////////////////////////////////////////////////////
-  // Assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Assertions //
+  ////////////////
 
   `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o, clk_i, !rst_ni)

@@ -29,9 +29,9 @@ module prim_esc_receiver (
   input        esc_ni
 );
 
-  //////////////////////////////////////////////////////
-  // decode differential signals
-  //////////////////////////////////////////////////////
+  /////////////////////////////////
+  // decode differential signals //
+  /////////////////////////////////
 
   logic esc_level, sigint_detected;
 
@@ -49,9 +49,9 @@ module prim_esc_receiver (
     .sigint_o ( sigint_detected )
   );
 
-  //////////////////////////////////////////////////////
-  // RX/TX Logic
-  //////////////////////////////////////////////////////
+  /////////////////
+  // RX/TX Logic //
+  /////////////////
 
   typedef enum logic [2:0] {Idle, Check, PingResp, EscResp, SigInt} state_e;
   state_e state_d, state_q;
@@ -69,7 +69,6 @@ module prim_esc_receiver (
     esc_en_o = 1'b0;
 
     unique case (state_q)
-      ///////////////////////////////////
       // wait for the esc_p/n diff pair
       Idle: begin
         if (esc_level) begin
@@ -78,7 +77,6 @@ module prim_esc_receiver (
           resp_nd = 1'b0;
         end
       end
-      ///////////////////////////////////
       // we decide here whether this is only a ping request or
       // whether this is an escalation enable
       Check: begin
@@ -88,7 +86,6 @@ module prim_esc_receiver (
           esc_en_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       // finish ping response. in case esc_level is again asserted,
       // we got an escalation signal (pings cannot occur back to back)
       PingResp: begin
@@ -100,7 +97,6 @@ module prim_esc_receiver (
           esc_en_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       // we have got an escalation enable pulse,
       // keep on toggling the outputs
       EscResp: begin
@@ -112,7 +108,6 @@ module prim_esc_receiver (
           esc_en_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       // we have a signal integrity issue at one of
       // the incoming diff pairs. this condition is
       // signalled to the sender by setting the resp
@@ -126,7 +121,6 @@ module prim_esc_receiver (
           resp_nd = ~resp_pq;
         end
       end
-      ///////////////////////////////////
       default : state_d = Idle;
     endcase
 
@@ -138,9 +132,10 @@ module prim_esc_receiver (
     end
   end
 
-  //////////////////////////////////////////////////////
-  // Flops
-  //////////////////////////////////////////////////////
+
+  ///////////////
+  // Registers //
+  ///////////////
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
@@ -154,9 +149,9 @@ module prim_esc_receiver (
     end
   end
 
-  //////////////////////////////////////////////////////
-  // assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // assertions //
+  ////////////////
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(EscEnKnownO_A, esc_en_o, clk_i, !rst_ni)

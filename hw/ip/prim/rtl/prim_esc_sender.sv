@@ -38,9 +38,9 @@ module prim_esc_sender (
   output logic esc_no
 );
 
-  //////////////////////////////////////////////////////
-  // decode differential signals
-  //////////////////////////////////////////////////////
+  /////////////////////////////////
+  // decode differential signals //
+  /////////////////////////////////
 
   logic resp, sigint_detected;
 
@@ -58,9 +58,9 @@ module prim_esc_sender (
     .sigint_o ( sigint_detected )
   );
 
-  //////////////////////////////////////////////////////
-  // TX Logic
-  //////////////////////////////////////////////////////
+  //////////////
+  // TX Logic //
+  //////////////
 
   logic ping_en_d, ping_en_q;
   logic esc_en_d, esc_en_q, esc_en_q1;
@@ -73,9 +73,9 @@ module prim_esc_sender (
   assign esc_po = esc_en_i | esc_en_q | ( ping_en_d & ~ping_en_q);
   assign esc_no = ~esc_po;
 
-  //////////////////////////////////////////////////////
-  // RX Logic
-  //////////////////////////////////////////////////////
+  //////////////
+  // RX Logic //
+  //////////////
 
   typedef enum logic [2:0] {Idle, CheckEscRespLo, CheckEscRespHi,
     CheckPingResp0, CheckPingResp1, CheckPingResp2, CheckPingResp3} fsm_e;
@@ -89,7 +89,6 @@ module prim_esc_sender (
     integ_fail_o = sigint_detected;
 
     unique case (state_q)
-      ///////////////////////////////////
       // wait for ping or escalation enable
       Idle: begin
         if (esc_en_i) begin
@@ -103,7 +102,6 @@ module prim_esc_sender (
           integ_fail_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       // check whether response is 0
       CheckEscRespLo: begin
         state_d      = CheckEscRespHi;
@@ -112,7 +110,6 @@ module prim_esc_sender (
           integ_fail_o = sigint_detected | resp;
         end
       end
-      ///////////////////////////////////
       // check whether response is 1
       CheckEscRespHi: begin
         state_d = CheckEscRespLo;
@@ -121,7 +118,6 @@ module prim_esc_sender (
           integ_fail_o = sigint_detected | ~resp;
         end
       end
-      ///////////////////////////////////
       // start of ping response sequence
       // we expect the sequence "1010"
       CheckPingResp0: begin
@@ -136,7 +132,6 @@ module prim_esc_sender (
           integ_fail_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       CheckPingResp1: begin
         state_d = CheckPingResp2;
         // abort sequence immediately if escalation is signalled,
@@ -149,7 +144,6 @@ module prim_esc_sender (
           integ_fail_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       CheckPingResp2: begin
         state_d = CheckPingResp3;
         // abort sequence immediately if escalation is signalled,
@@ -162,7 +156,6 @@ module prim_esc_sender (
           integ_fail_o = 1'b1;
         end
       end
-      ///////////////////////////////////
       CheckPingResp3: begin
         state_d = Idle;
         // abort sequence immediately if escalation is signalled,
@@ -176,7 +169,6 @@ module prim_esc_sender (
           ping_ok_o = ping_en_i;
         end
       end
-      ///////////////////////////////////
       default : state_d = Idle;
     endcase
 
@@ -195,9 +187,9 @@ module prim_esc_sender (
     end
   end
 
-  //////////////////////////////////////////////////////
-  // Flops
-  //////////////////////////////////////////////////////
+  ///////////////
+  // Registers //
+  ///////////////
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
@@ -213,9 +205,9 @@ module prim_esc_sender (
     end
   end
 
-  //////////////////////////////////////////////////////
-  // assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // assertions //
+  ////////////////
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o, clk_i, !rst_ni)

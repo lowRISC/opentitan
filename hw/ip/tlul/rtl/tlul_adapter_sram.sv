@@ -155,7 +155,7 @@ module tlul_adapter_sram #(
   end
 
 
-  //== Begin: Request Error Detection =========================================
+  // Begin: Request Error Detection
 
   // wr_attr_error: Check if the request size,mask are permitted.
   //    Basic check of size, mask, addr align is done in tlul_err module.
@@ -184,7 +184,7 @@ module tlul_adapter_sram #(
   );
 
   assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | tlul_error;
-  //-- End: Request Error Detection -------------------------------------------
+  // End: Request Error Detection
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{

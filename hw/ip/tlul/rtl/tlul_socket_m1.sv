@@ -43,7 +43,9 @@ module tlul_socket_m1 #(
 
   `ASSERT_INIT(maxM, M < 16)
 
-  //== Signals==================================================================
+
+  // Signals
+  //
   //  tl_h_i/o[0] |  tl_h_i/o[1] | ... |  tl_h_i/o[M-1]
   //      |              |                    |
   // u_hostfifo[0]  u_hostfifo[1]        u_hostfifo[M-1]

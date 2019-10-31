@@ -37,9 +37,9 @@ module alert_handler_esc_timer (
   output alert_pkg::cstate_e              esc_state_o
 );
 
-  //////////////////////////////////////////////////////
-  // Counter
-  //////////////////////////////////////////////////////
+  /////////////
+  // Counter //
+  /////////////
 
   alert_pkg::cstate_e state_d, state_q;
 
@@ -58,9 +58,9 @@ module alert_handler_esc_timer (
   logic [alert_pkg::EscCntDw-1:0] thresh;
   assign cnt_ge    = (cnt_q >= thresh);
 
-  //////////////////////////////////////////////////////
-  // Main FSM
-  //////////////////////////////////////////////////////
+  //////////////
+  // Main FSM //
+  //////////////
 
   logic [alert_pkg::N_PHASES-1:0] phase_oh;
 
@@ -74,7 +74,6 @@ module alert_handler_esc_timer (
     thresh     = timeout_cyc_i;
 
     unique case (state_q)
-      ////////////////////////////////////
       // wait for an escalation trigger or an alert trigger
       // the latter will trigger an interrupt timeout
       alert_pkg::Idle: begin
@@ -91,7 +90,6 @@ module alert_handler_esc_timer (
           cnt_clr = 1'b1;
         end
       end
-      ////////////////////////////////////
       // we are in interrupt timeout state
       // in case an escalation comes in, we immediately have to
       // switch over to the first escalation phase.
@@ -113,7 +111,6 @@ module alert_handler_esc_timer (
           cnt_clr = 1'b1;
         end
       end
-      ////////////////////////////////////
       // note: autolocking the clear signal is done in the regfile
       alert_pkg::Phase0: begin
         phase_oh[0] = 1'b1;
@@ -130,7 +127,6 @@ module alert_handler_esc_timer (
           cnt_en = 1'b1;
         end
       end
-      ////////////////////////////////////
       alert_pkg::Phase1: begin
         phase_oh[1] = 1'b1;
         thresh      = phase_cyc_i[1];
@@ -146,7 +142,6 @@ module alert_handler_esc_timer (
           cnt_en = 1'b1;
         end
       end
-      ////////////////////////////////////
       alert_pkg::Phase2: begin
         phase_oh[2] = 1'b1;
         thresh      = phase_cyc_i[2];
@@ -162,7 +157,6 @@ module alert_handler_esc_timer (
           cnt_en = 1'b1;
         end
       end
-      ////////////////////////////////////
       alert_pkg::Phase3: begin
         phase_oh[3] = 1'b1;
         thresh      = phase_cyc_i[3];
@@ -177,7 +171,6 @@ module alert_handler_esc_timer (
           cnt_en = 1'b1;
         end
       end
-      ////////////////////////////////////
       // final, terminal state after escalation.
       // if clr is locked down, only a system reset
       // will get us out of this state
@@ -186,7 +179,6 @@ module alert_handler_esc_timer (
           state_d = alert_pkg::Idle;
         end
       end
-      ////////////////////////////////////
       default : state_d = alert_pkg::Idle;
     endcase
   end
@@ -199,9 +191,9 @@ module alert_handler_esc_timer (
     assign esc_sig_en_o[k] = |(esc_map_oh[k] & phase_oh);
   end
 
-  //////////////////////////////////////////////////////
-  // Regs
-  //////////////////////////////////////////////////////
+  ///////////////
+  // Registers //
+  ///////////////
 
   // switch interrupt / escalation mode
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -222,9 +214,9 @@ module alert_handler_esc_timer (
     end
   end
 
-  //////////////////////////////////////////////////////
-  // Assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Assertions //
+  ////////////////
 
   // a clear should always bring us back to idle
   `ASSERT(CheckClr, clr_i && state_q != alert_pkg::Timeout |=>

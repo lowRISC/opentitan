@@ -126,17 +126,15 @@ module flash_mp #(
   assign erase_done_o = erase_done_i | txn_err;
   assign error_o = txn_err;
 
-//===========================================================================
-  // Assertions, Assumptions, and Coverpoints
-  //
+  //////////////////////////////////////////////
+  // Assertions, Assumptions, and Coverpoints //
+  //////////////////////////////////////////////
+
   // Bank erase enable should always be one-hot.  We cannot erase multiple banks
   // at the same time
   `ASSERT(bkEraseEnOnehot_a, (req_o & bk_erase_o) |-> $onehot(bk_erase_en), clk_i, !rst_ni)
   // Requests can only happen one at a time
   `ASSERT(requestTypesOnehot_a, req_o |-> $onehot({rd_o, prog_o, pg_erase_o, bk_erase_o}),
                                                     clk_i, !rst_ni)
-  //---------------------------------------------------------------------------
-
-
 
 endmodule // flash_erase_ctrl

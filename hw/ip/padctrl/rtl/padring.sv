@@ -38,9 +38,9 @@ module padring #(
                [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_i
 );
 
-  //////////////////////////////////////////////////////
-  // Infrastructure
-  //////////////////////////////////////////////////////
+  /////////////////////////
+  // Clock / Reset Infra //
+  /////////////////////////
 
   // use this intermediate assignment to make both lint and fpv happy.
   // the clock/reset wires should be input-only, otherwise fpv
@@ -73,9 +73,9 @@ module padring #(
     .attr_i   (   '0  )
   );
 
-  //////////////////////////////////////////////////////
-  // MIO Pads
-  //////////////////////////////////////////////////////
+  //////////////
+  // MIO Pads //
+  //////////////
 
   for (genvar k = 0; k < padctrl_reg_pkg::NMioPads; k++) begin : gen_mio_pads
     prim_pad_wrapper #(
@@ -90,9 +90,9 @@ module padring #(
     );
   end
 
-  //////////////////////////////////////////////////////
-  // DIO Pads
-  //////////////////////////////////////////////////////
+  //////////////
+  // DIO Pads //
+  //////////////
 
   for (genvar k = 0; k < padctrl_reg_pkg::NDioPads; k++) begin : gen_dio_pads
     prim_pad_wrapper #(
@@ -107,9 +107,9 @@ module padring #(
     );
   end
 
-  //////////////////////////////////////////////////////
-  // Assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Assertions //
+  ////////////////
 
   `ASSERT_KNOWN(ClkKnownIO_A, clk_o, clk_pad_i, !rst_pad_ni)
   `ASSERT_KNOWN(RstKnownIO_A, rst_no, clk_pad_i, !rst_pad_ni)

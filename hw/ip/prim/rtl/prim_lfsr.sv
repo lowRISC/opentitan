@@ -283,8 +283,10 @@ module prim_lfsr #(
   logic [LfsrDw-1:0] lfsr_d, lfsr_q;
   logic [LfsrDw-1:0] next_lfsr_state, coeffs;
 
-  //////////////////////////////////////////////////////
-  // Galois XOR
+
+  ////////////////
+  // Galois XOR //
+  ////////////////
   if (LfsrType == "GAL_XOR") begin : gen_gal_xor
 
     // if custom polynomial is provided
@@ -306,8 +308,10 @@ module prim_lfsr #(
     // check that seed is not all-zero
     `ASSERT_INIT(SeedNzCheck_A, |Seed)
 
-  //////////////////////////////////////////////////////
-  // Fibonacci XNOR
+
+  ////////////////////
+  // Fibonacci XNOR //
+  ////////////////////
   end else if (LfsrType == "FIB_XNOR") begin : gen_fib_xnor
 
     // if custom polynomial is provided
@@ -329,15 +333,18 @@ module prim_lfsr #(
     // check that seed is not all-ones
     `ASSERT_INIT(SeedNzCheck_A, !(&Seed))
 
-  //////////////////////////////////////////////////////
-  // Unknown
+
+  /////////////
+  // Unknown //
+  /////////////
   end else begin : gen_unknown_type
     `ASSERT_INIT(UnknownLfsrType_A, 0)
   end
 
-  //////////////////////////////////////////////////////
-  // Shared logic
-  //////////////////////////////////////////////////////
+
+  //////////////////
+  // Shared logic //
+  //////////////////
 
   assign lfsr_d = (en_i && lockup) ? Seed            :
                   (en_i)           ? next_lfsr_state :
@@ -354,9 +361,9 @@ module prim_lfsr #(
   end
 
 
-  //////////////////////////////////////////////////////
-  // shared assertions
-  //////////////////////////////////////////////////////
+  ///////////////////////
+  // shared assertions //
+  ///////////////////////
 
   `ASSERT_KNOWN(DataKnownO_A, data_o, clk_i, !rst_ni)
 

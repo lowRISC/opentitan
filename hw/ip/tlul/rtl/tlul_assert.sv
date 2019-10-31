@@ -16,9 +16,9 @@ interface tlul_assert (
   import tlul_pkg::*;
   import top_pkg::*;
 
-  //------------------------------------------------------------------------------------
-  // check requests and responses
-  //------------------------------------------------------------------------------------
+  //////////////////////////////////
+  // check requests and responses //
+  //////////////////////////////////
 
   // There are up to 2**TL_AIW possible source-IDs. Below array "pend_req" has one entry
   // for each source-ID. Each entry has the following fields:
@@ -43,9 +43,10 @@ interface tlul_assert (
       end
     end else begin
 
-      //--------------------------------------------------------------------------------
-      // check requests
-      //--------------------------------------------------------------------------------
+
+      ////////////////////
+      // check requests //
+      ////////////////////
       if (h2d.a_valid) begin
 
         // a_opcode: only 3 opcodes are legal for requests
@@ -102,9 +103,9 @@ interface tlul_assert (
         end
       end // h2d.a_valid
 
-      //--------------------------------------------------------------------------------
-      // check responses
-      //--------------------------------------------------------------------------------
+      /////////////////////
+      // check responses //
+      /////////////////////
       if (d2h.d_valid) begin
 
         // d_opcode: if request was Get, then response must be AccessAckData
@@ -141,9 +142,9 @@ interface tlul_assert (
     `ASSERT_FINAL(noOutstandingReqsAtEndOfSim, (pend_req[ii].pend == 0))
   end
 
-  //------------------------------------------------------------------------------------
-  // additional checks for X values
-  //------------------------------------------------------------------------------------
+  ////////////////////////////////////
+  // additional checks for X values //
+  ////////////////////////////////////
 
   // a_* should be known when a_valid == 1 (a_opcode and a_param are already covered above)
   // This also covers ASSERT_KNOWN of a_valid

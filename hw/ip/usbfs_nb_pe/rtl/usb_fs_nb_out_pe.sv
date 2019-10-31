@@ -22,9 +22,9 @@ module usb_fs_nb_out_pe #(
   input                        link_reset_i,
   input [6:0]                  dev_addr_i,
 
-  ////////////////////
-  // endpoint interface
-  ////////////////////
+  ////////////////////////
+  // endpoint interface //
+  ////////////////////////
   output logic [3:0]           out_ep_current_o, // Other signals address to this ep
   output logic                 out_ep_data_put_o, // put the data (put addr advances after)
   output logic [PktW - 1:0]    out_ep_put_addr_o, // Offset to put data (0..pktlen)
@@ -36,9 +36,9 @@ module usb_fs_nb_out_pe #(
   input [NumOutEps-1:0]        out_ep_full_i, // Cannot accept data
   input [NumOutEps-1:0]        out_ep_stall_i, // Stalled
 
-  ////////////////////
-  // rx path
-  ////////////////////
+  /////////////
+  // rx path //
+  /////////////
 
   // Strobed on reception of packet.
   input                        rx_pkt_start_i,
@@ -55,9 +55,9 @@ module usb_fs_nb_out_pe #(
   input [7:0]                  rx_data_i,
 
 
-  ////////////////////
-  // tx path
-  ////////////////////
+  /////////////
+  // tx path //
+  /////////////
 
   // Strobe to send new packet.
   output logic                 tx_pkt_start_o,
@@ -69,9 +69,9 @@ module usb_fs_nb_out_pe #(
   logic                      unused_1;
   assign unused_1 = tx_pkt_end_i;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // out transfer state machine
-  ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////
+  // out transfer state machine //
+  ////////////////////////////////
   import usb_consts_pkg::*;
 
   typedef enum logic [1:0] {
@@ -162,9 +162,9 @@ module usb_fs_nb_out_pe #(
     end
   end
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // out transfer state machine
-  ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////
+  // out transfer state machine //
+  ////////////////////////////////
 
   always_comb begin
     out_ep_acked_o = 1'b0;

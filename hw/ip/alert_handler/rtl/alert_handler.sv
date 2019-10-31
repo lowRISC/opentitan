@@ -34,9 +34,9 @@ module alert_handler (
   input        [alert_pkg::N_ESC_SEV-1:0]  resp_ni
 );
 
-  //////////////////////////////////////////////////////
-  // Regfile Breakout and Mapping
-  //////////////////////////////////////////////////////
+  //////////////////////////////////
+  // Regfile Breakout and Mapping //
+  //////////////////////////////////
 
   alert_pkg::hw2reg_wrap_t hw2reg_wrap;
   alert_pkg::reg2hw_wrap_t reg2hw_wrap;
@@ -52,9 +52,9 @@ module alert_handler (
     .reg2hw_wrap
   );
 
-  //////////////////////////////////////////////////////
-  // Ping Timer
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Ping Timer //
+  ////////////////
 
   logic [alert_pkg::N_LOC_ALERT-1:0] loc_alert_trig;
 
@@ -80,9 +80,9 @@ module alert_handler (
     .esc_ping_fail_o    ( loc_alert_trig[1]             )
   );
 
-  //////////////////////////////////////////////////////
-  // Alert Receivers
-  //////////////////////////////////////////////////////
+  /////////////////////
+  // Alert Receivers //
+  /////////////////////
 
   logic [alert_pkg::NAlerts-1:0] alert_integfail;
   logic [alert_pkg::NAlerts-1:0] alert_trig;
@@ -109,9 +109,9 @@ module alert_handler (
 
   assign loc_alert_trig[2] = |(reg2hw_wrap.alert_en & alert_integfail);
 
-  //////////////////////////////////////////////////////
-  // Set alert cause bits and classify
-  //////////////////////////////////////////////////////
+  ///////////////////////////////////////
+  // Set alert cause bits and classify //
+  ///////////////////////////////////////
 
   alert_handler_class i_class (
     .alert_trig_i      ( alert_trig                  ),
@@ -126,9 +126,9 @@ module alert_handler (
     .class_trig_o      ( hw2reg_wrap.class_trig      )
   );
 
-  //////////////////////////////////////////////////////
-  // Escalation Handling of Classes
-  //////////////////////////////////////////////////////
+  ////////////////////////////////////
+  // Escalation Handling of Classes //
+  ////////////////////////////////////
 
   logic [alert_pkg::N_CLASSES-1:0] class_accum_trig;
   logic [alert_pkg::N_CLASSES-1:0][alert_pkg::N_ESC_SEV-1:0] class_esc_sig_en;
@@ -164,9 +164,9 @@ module alert_handler (
     );
   end
 
-  //////////////////////////////////////////////////////
-  // Escalation Senders
-  //////////////////////////////////////////////////////
+  ////////////////////////
+  // Escalation Senders //
+  ////////////////////////
 
   logic [alert_pkg::N_ESC_SEV-1:0] esc_sig_en;
   logic [alert_pkg::N_ESC_SEV-1:0] esc_integfail;
@@ -195,9 +195,9 @@ module alert_handler (
 
   assign loc_alert_trig[3] = |esc_integfail;
 
-  //////////////////////////////////////////////////////
-  // Assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Assertions //
+  ////////////////
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)

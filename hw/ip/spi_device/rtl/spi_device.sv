@@ -70,9 +70,10 @@ module spi_device #(
   logic [SramDw-1:0] mem_b_rdata;
   logic [1:0]        mem_b_rerror;
 
-  //==============================================================================
-  // Control signals
-  //
+  /////////////////////
+  // Control signals //
+  /////////////////////
+
   logic cpol; // Clock polarity
   logic cpha; // Phase : Not complete
   logic txorder; // TX bitstream order: 0(bit 7 to 0), 1(bit 0 to 7)
@@ -137,11 +138,12 @@ module spi_device #(
   logic        [1:0] fwm_sram_error [2];
 
   logic [AsFifoDepthW-1:0] as_txfifo_depth, as_rxfifo_depth;
-  // -----------------------------------------------------------------------------
 
-  //==============================================================================
-  // Connect phase (between control signals above and register module
-  //
+
+  //////////////////////////////////////////////////////////////////////
+  // Connect phase (between control signals above and register module //
+  //////////////////////////////////////////////////////////////////////
+
   assign cpol = reg2hw.cfg.cpol.q;
   assign cpha = reg2hw.cfg.cpha.q;
   assign txorder = reg2hw.cfg.tx_order.q;
@@ -294,9 +296,10 @@ module spi_device #(
   assign hw2reg.intr_state.txunderflow.d  = 1'b1;
   assign hw2reg.intr_state.txunderflow.de = intr_fwm_txunderflow |
       (reg2hw.intr_test.txunderflow.qe & reg2hw.intr_test.txunderflow.q);
-  // -----------------------------------------------------------------------------
 
-  // Clock & reset control
+  //////////////////////////////
+  // // Clock & reset control //
+  //////////////////////////////
   //  clk_spi cannot use glitch-free clock mux as clock switching in glitch-free
   //  requires two clocks to propagate clock selection and enable but SPI clock
   //  doesn't exist until it transmits data through MOSI
@@ -312,8 +315,10 @@ module spi_device #(
   assign rst_txfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_txfifo_reg;
   assign rst_rxfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_rxfifo_reg;
 
-  //==============================================================================
-  // FW Mode
+
+  /////////////
+  // FW Mode //
+  /////////////
   spi_fwmode u_fwmode (
     .clk_in_i     (clk_spi_in),
     .rst_in_ni    (rst_spi_n),
