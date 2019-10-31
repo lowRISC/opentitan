@@ -253,4 +253,10 @@ module rv_plic #(
     .devmode_i  (1'b1)
   );
 
+    // Assertions
+  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IrqKnownO_A, irq_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(MsipKnownO_A, msip_o, clk_i, !rst_ni)
+
 endmodule
