@@ -6,12 +6,10 @@
 .extern handler_irq_software
 .extern handler_irq_timer
 .extern handler_irq_external
-.extern _svectors
 
 update_mtvec:
   .section .text
   .global update_mtvec
-  la a0, _svectors
   csrw mtvec, a0
   ret
 
