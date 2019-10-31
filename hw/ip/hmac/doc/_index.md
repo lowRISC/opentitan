@@ -241,7 +241,7 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
 }
 ```
 
-## Trigger HMAC/SHA-256 engine }}
+## Trigger HMAC/SHA-256 engine
 
 The following code shows how to send a message to the HMAC, the proceedure is
 the same whether a full HMAC or SHA-256 calculation only is wanted (choose
@@ -277,7 +277,7 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 }
 ```
 
-## Interrupt Handling }}
+## Interrupt Handling
 
 ### FIFO_FULL
 
