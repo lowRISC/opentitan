@@ -1,0 +1,70 @@
+/ Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "aes"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",                         
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+   // {
+   //   name: default_setting
+   //   desc: '''
+   //        '''
+   //   milestone: V1
+   //   tests: []
+   // }
+    {
+      name: wake_up
+      desc: '''
+            Basic hello world,  encrypt a plain text read it back - decrypt and compare to input'''
+      milestone: V1
+      tests: ["aes_wakeup"]
+    }
+    {
+      name: sanity
+      desc: '''
+            Encrypt a plain text read it back - decrypt and compare to input but use reference model to compare after both encryption and decryption'''
+      milestone: V1
+      tests: ["aes_sanity"]
+    }
+    {
+      name: algorithm
+      desc: '''
+            Compare cypher text from AWS module with the output of a C model using same key and data'''
+      milestone: V2
+      tests: ["aes_sanity", "aes_stress"]
+    }
+    {
+      name: key_size
+      desc: '''
+           Randomly select keysize to verify all supported keysizes are working'''
+      milestone: V2
+      tests: ["aes_stress"]
+    }
+    {
+      name: failure_test
+      desc: '''
+            - Tests what happens if a register is written a the wrong time?,
+              if a key does not match the key setting etc. will module ignore or fail gracefully
+            - enter a 256bit key but set AES to use 128 for encryption. 
+              then enter the 128bit of the key and use for decryption. 
+              will result match plain text and vice verca'''
+      milestone: V2
+      tests: ["aes_stress"]
+    }
+    {
+      name: reset_recovery
+      desc: '''
+            Pull reset at random times make sure AES recover/resets correctly'''
+      milestone: V2
+      tests: ["aes_stress"]
+    }
+    {
+      name: deinitialization
+      desc: '''
+            Make sure that there is no residual data from latest operation '''
+      milestone: V2
+      tests: ["aes_stress"]
+    }    
+  ]
+}
