@@ -14,6 +14,7 @@ import argparse
 import io
 import logging
 import os
+import platform
 import shutil
 import subprocess
 from pathlib import Path
@@ -29,6 +30,9 @@ import testplanner.testplan_utils as testplan_utils
 USAGE = """
   build_docs [options]
 """
+
+# Version of hugo extended to be used to build the docs
+HUGO_EXTENDED_VERSION = "0.59.0"
 
 # Configurations
 # TODO: Move to config.yaml
@@ -133,6 +137,37 @@ def generate_testplans():
         testplan_html.close()
 
 
+def install_hugo(install_dir):
+    """Download and "install" hugo into |install_dir|
+
+    install_dir is created if it doesn't exist yet.
+
+    Limitations:
+      Currently only 64 bit Linux is supported."""
+
+    # TODO: Support more configurations
+    if platform.system() != 'Linux' or platform.machine() != 'x86_64':
+        logging.fatal(
+            "Auto-install of hugo only supported for 64 bit Linux "
+            "currently. Manually install hugo and re-run this script.")
+        return False
+
+    download_url = 'https://github.com/gohugoio/hugo/releases/download/v{version}/hugo_extended_{version}_Linux-64bit.tar.gz'.format(
+        version=HUGO_EXTENDED_VERSION)
+
+    install_dir.mkdir(exist_ok=True, parents=True)
+    hugo_bin_path = install_dir / 'hugo'
+
+    # TODO: Investigate the use of Python builtins for downloading. Extracting
+    # the archive will probably will be a call to tar.
+    cmd = 'curl -sL {download_url} | tar -xzO --overwrite hugo > {hugo_bin_file}'.format(
+        hugo_bin_file=str(hugo_bin_path), download_url=download_url)
+    logging.info("Calling %s to download hugo.", cmd)
+    subprocess.run(cmd, shell=True, check=True, cwd=SRCTREE_TOP)
+    hugo_bin_path.chmod(0o755)
+    return True
+
+
 def invoke_hugo(preview):
     site_docs = SRCTREE_TOP.joinpath('site', 'docs')
     config_file = str(site_docs.joinpath('config.toml'))
@@ -175,7 +210,16 @@ def main():
     generate_hardware_blocks()
     generate_dashboards()
     generate_testplans()
-    invoke_hugo(args.preview)
+
+    hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
+    os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
+
+    try:
+        invoke_hugo(args.preview)
+    except FileNotFoundError:
+        logging.info("Hugo not found. Installing local copy and re-trying.")
+        install_hugo(hugo_localinstall_dir)
+        invoke_hugo(args.preview)
 
 
 if __name__ == "__main__":
