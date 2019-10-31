@@ -1,0 +1,13 @@
+diff --git a/Makefile b/Makefile
+index 5f90912..744092b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -91,7 +91,7 @@ endif
+ 
+ $(OUTFILE): $(SRCS) $(HEADERS) Makefile core_portme.mak $(FORCE_REBUILD)
+ 	$(MAKE) port_prebuild
+-	$(MAKE) link
++	$(MAKE) link -$(MAKEFLAGS)
+ 	$(MAKE) port_postbuild
+ 
+ .PHONY: rerun
