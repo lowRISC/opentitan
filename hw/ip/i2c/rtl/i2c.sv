@@ -88,6 +88,20 @@ module i2c (
   assign cio_scl_en_o = ~scl_int;
   assign cio_sda_en_o = ~sda_int;
 
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown_A, scanmode_i, clk_i, 0)
+  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioSclKnownO_A, cio_scl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioSclEnKnownO_A, cio_scl_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioSdaKnownO_A, cio_sda_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioSdaEnKnownO_A, cio_sda_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrFmtWtmkKnownO_A, intr_fmt_watermark_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrRxWtmkKnownO_A, intr_rx_watermark_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrFmtOflwKnownO_A, intr_fmt_overflow_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrRxOflwKnownO_A, intr_rx_overflow_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrNakKnownO_A, intr_nak_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrSclInterfKnownO_A, intr_scl_interference_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrSdaInterfKnownO_A, intr_sda_interference_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrStretchTimeoutKnownO_A, intr_stretch_timeout_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrSdaUnstableKnownO_A, intr_sda_unstable_o, clk_i, !rst_ni)
 
 endmodule
