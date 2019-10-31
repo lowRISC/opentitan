@@ -19,7 +19,9 @@ module hmac (
   import hmac_pkg::*;
   import hmac_reg_pkg::*;
 
-  // Signal declarations =======================================================
+  /////////////////////////
+  // Signal declarations //
+  /////////////////////////
   hmac_reg2hw_t reg2hw;
   hmac_hw2reg_t hw2reg;
 
@@ -89,8 +91,9 @@ module hmac (
 
   sha_word_t [7:0] digest;
 
-  // Connect registers ========================================================
-
+  ///////////////////////
+  // Connect registers //
+  ///////////////////////
   assign hw2reg.status.fifo_full.d  = fifo_full;
   assign hw2reg.status.fifo_empty.d = fifo_empty;
   assign hw2reg.status.fifo_depth.d = fifo_depth;
@@ -121,10 +124,14 @@ module hmac (
   assign hw2reg.err_code.de = err_valid;
   assign hw2reg.err_code.d  = err_code;
 
-  // Control signals ==========================================================
+  /////////////////////
+  // Control signals //
+  /////////////////////
   assign hash_start = reg_hash_start & sha_en;
 
-  // Interrupts ===============================================================
+  ////////////////
+  // Interrupts //
+  ////////////////
   logic fifo_full_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) fifo_full_d <= 1'b0;
@@ -168,7 +175,10 @@ module hmac (
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.hmac_err.d),
     .intr_o                 (intr_hmac_err_o)
   );
-  // Instances ================================================================
+
+  ///////////////
+  // Instances //
+  ///////////////
 
   // TODO: Revise logic to assert rvalid only after grant asserted.
   assign msg_fifo_rvalid = msg_fifo_req & ~msg_fifo_we;
@@ -364,7 +374,9 @@ module hmac (
     .devmode_i  (1'b1)
   );
 
-  // HMAC Error Handling ======================================================
+  /////////////////////////
+  // HMAC Error Handling //
+  /////////////////////////
   logic msg_push_sha_disabled, hash_start_sha_disabled;
   assign msg_push_sha_disabled = msg_write & ~sha_en;
   assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
@@ -392,8 +404,10 @@ module hmac (
     endcase
   end
 
-  // Assertions, Assumptions, and Coverpoints =================================
-  //
+  //////////////////////////////////////////////
+  // Assertions, Assumptions, and Coverpoints //
+  //////////////////////////////////////////////
+
   // HMAC assumes TL-UL mask is byte-aligned.
   `ifndef VERILATOR
   //pragma translate_off
@@ -447,7 +461,6 @@ module hmac (
   `ASSERT_KNOWN(IntrFifoFullOKnown, intr_fifo_full_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
-  //---------------------------------------------------------------------------
 
 endmodule
 

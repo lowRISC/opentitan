@@ -20,9 +20,9 @@ module pinmux_assert (
   input [$clog2(pinmux_reg_pkg::NMioPads)-1:0]  mio_sel_i
 );
 
-  //////////////////////////////////////////////////////
-  // Input Mux
-  //////////////////////////////////////////////////////
+  ///////////////
+  // Input Mux //
+  ///////////////
 
   `ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NPeriphIn, clk_i, !rst_ni)
 
@@ -36,9 +36,9 @@ module pinmux_assert (
   `ASSERT(InSelN_A, periph_insel.q > 1  |->
       mio_to_periph_o[periph_sel_i] == mio_in_i[periph_insel.q - 2], clk_i, !rst_ni)
 
-  //////////////////////////////////////////////////////
-  // Output Mux
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Output Mux //
+  ////////////////
 
   `ASSUME(MioSelRange_M, mio_sel_i < pinmux_reg_pkg::NMioPads, clk_i, !rst_ni)
 

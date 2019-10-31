@@ -93,9 +93,9 @@ module usbdev (
   logic              event_link_reset, event_link_suspend, event_link_resume;
   logic              event_host_lost, event_disconnect;
 
-  //=======================================================================
-  // Receive interface fifos
-  //
+  /////////////////////////////
+  // Receive interface fifos //
+  /////////////////////////////
 
   logic              av_fifo_wready;
   logic              event_pkt_received;
@@ -158,9 +158,10 @@ module usbdev (
   assign event_pkt_received = rx_fifo_rvalid;
   logic [2:0]               unused_re;
   assign unused_re = {reg2hw.rxfifo.ep.re, reg2hw.rxfifo.setup.re, reg2hw.rxfifo.size.re};
-  //======================================================================
-  // IN (Transmit) interface config
-  //
+
+  ////////////////////////////////////
+  // IN (Transmit) interface config //
+  ////////////////////////////////////
   logic [NBufWidth - 1:0] usb_in_buf [12];
   logic [SizeWidth:0] usb_in_size [12];
   logic [3:0]         usb_in_endpoint;
@@ -330,8 +331,9 @@ module usbdev (
   assign hw2reg.configin1.pend1.d   = reg2hw.configin1.rdy1.q   | reg2hw.configin1.pend1.q;
   assign hw2reg.configin0.pend0.d   = reg2hw.configin0.rdy0.q   | reg2hw.configin0.pend0.q;
 
-  //======================================================================
-  // USB interface -- everything is in USB clock domain
+  ////////////////////////////////////////////////////////
+  // USB interface -- everything is in USB clock domain //
+  ////////////////////////////////////////////////////////
 
   assign hw2reg.usbstat.usb_sense.d = cio_usb_sense_i;
 
@@ -435,8 +437,6 @@ module usbdev (
   );
   assign hw2reg.usbctrl.device_address.d = '0;
 
-
-  //======================================================================
 
   logic        unused_mem_a_rerror_d;
 

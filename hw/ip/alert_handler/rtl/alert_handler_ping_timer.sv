@@ -47,9 +47,9 @@ module alert_handler_ping_timer (
                                         13,  8, 29, 31,
                                         20,  6,  9, 17};
 
-  //////////////////////////////////////////////////////
-  // PRNG
-  //////////////////////////////////////////////////////
+  //////////
+  // PRNG //
+  //////////
 
   logic lfsr_en;
   logic [31:0] lfsr_state, perm_state;
@@ -90,9 +90,9 @@ module alert_handler_ping_timer (
   // check if the randomly drawn ID is actually valid and the alert is enabled
   assign id_vld  = enable_mask[id_to_ping];
 
-  //////////////////////////////////////////////////////
-  // Counter
-  //////////////////////////////////////////////////////
+  /////////////
+  // Counter //
+  /////////////
 
   logic [alert_pkg::PING_CNT_DW-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
@@ -102,9 +102,9 @@ module alert_handler_ping_timer (
   assign wait_ge    = (cnt_q >= wait_cyc);
   assign timeout_ge = (cnt_q >= ping_timeout_cyc_i);
 
-  //////////////////////////////////////////////////////
-  // Ping and Timeout Logic
-  //////////////////////////////////////////////////////
+  ////////////////////////////
+  // Ping and Timeout Logic //
+  ////////////////////////////
 
   typedef enum logic [1:0] {Init, RespWait, DoPing} state_e;
   state_e state_d, state_q;
@@ -139,7 +139,6 @@ module alert_handler_ping_timer (
     esc_ping_fail_o   = spurious_esc_ping;
 
     unique case (state_q)
-      ///////////////////////////
       // wait until activiated
       // we never return to this state
       // once activated!
@@ -149,7 +148,6 @@ module alert_handler_ping_timer (
           state_d = RespWait;
         end
       end
-      ///////////////////////////
       // wait for random amount of cycles
       // draw another ID/wait count if the
       // peripheral ID is not valid
@@ -165,7 +163,6 @@ module alert_handler_ping_timer (
           cnt_en = 1'b1;
         end
       end
-      ///////////////////////////
       // send out ping request and wait for a ping
       // response or a ping timeout (whatever comes first)
       DoPing: begin
@@ -183,15 +180,14 @@ module alert_handler_ping_timer (
           end
         end
       end
-      ///////////////////////////
       default : state_d = Init;
     endcase
 
   end
 
-  //////////////////////////////////////////////////////
-  // Flops
-  //////////////////////////////////////////////////////
+  ///////////////
+  // Registers //
+  ///////////////
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
@@ -208,9 +204,9 @@ module alert_handler_ping_timer (
     end
   end
 
-  //////////////////////////////////////////////////////
-  // Assertions
-  //////////////////////////////////////////////////////
+  ////////////////
+  // Assertions //
+  ////////////////
 
   // internals
   `ASSERT(PingOH0, $onehot0(ping_sel), clk_i, !rst_ni)

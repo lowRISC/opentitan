@@ -31,9 +31,9 @@ module padctrl_assert #(
   int unsigned mio_sel;
   int unsigned dio_sel;
 
-  //////////////////////////////////////////////////////
-  // Check muxed IO pads
-  //////////////////////////////////////////////////////
+  /////////////////////////
+  // Check muxed IO pads //
+  /////////////////////////
 
   `ASSUME(NMioRange_M, mio_sel < padctrl_reg_pkg::NMioPads, clk_i, !rst_ni)
   `ASSUME(NMioStable_M, ##1 $stable(mio_sel), clk_i, !rst_ni)
@@ -57,9 +57,9 @@ module padctrl_assert #(
     `ASSERT_INIT(UnknownImpl_A, 0)
   end
 
-  //////////////////////////////////////////////////////
-  // Check dedicated IO pads
-  //////////////////////////////////////////////////////
+  /////////////////////////////
+  // Check dedicated IO pads //
+  /////////////////////////////
 
   `ASSUME(NDioRange_M, dio_sel < padctrl_reg_pkg::NDioPads, clk_i, !rst_ni)
   `ASSUME(NDioStable_M, ##1 $stable(dio_sel), clk_i, !rst_ni)

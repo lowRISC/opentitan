@@ -21,9 +21,9 @@ module alert_handler_reg_wrap (
 );
 
 
-  //////////////////////////////////////////////////////
-  // reg instance
-  //////////////////////////////////////////////////////
+  //////////////////
+  // reg instance //
+  //////////////////
 
   logic [alert_pkg::N_CLASSES-1:0] class_autolock_en;
   alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw;
@@ -39,9 +39,9 @@ module alert_handler_reg_wrap (
     .devmode_i(1'b1)
   );
 
-  //////////////////////////////////////////////////////
-  // interrupts
-  //////////////////////////////////////////////////////
+  ////////////////
+  // interrupts //
+  ////////////////
 
     prim_intr_hw #(
       .Width(1)
@@ -95,9 +95,9 @@ module alert_handler_reg_wrap (
       .intr_o                 ( irq_o[3]                     )
     );
 
-  //////////////////////////////////////////////////////
-  // hw2reg mappings
-  //////////////////////////////////////////////////////
+  /////////////////////
+  // hw2reg mappings //
+  /////////////////////
 
   // if an alert is enabled and it fires,
   // we have to set the corresponding cause bit
@@ -146,9 +146,9 @@ module alert_handler_reg_wrap (
            hw2reg.classb_state.d,
            hw2reg.classa_state.d } = hw2reg_wrap.class_esc_state;
 
-  //////////////////////////////////////////////////////
-  // reg2hw mappings
-  //////////////////////////////////////////////////////
+  /////////////////////
+  // reg2hw mappings //
+  /////////////////////
 
   // config register lock
   assign reg2hw_wrap.config_locked = ~reg2hw.regen.q;
@@ -262,9 +262,9 @@ module alert_handler_reg_wrap (
                                          reg2hw.classa_phase1_cyc.q,
                                          reg2hw.classa_phase0_cyc.q};
 
-  //////////////////////////////////////////////////////
-  // crashdump output
-  //////////////////////////////////////////////////////
+  //////////////////////
+  // crashdump output //
+  //////////////////////
 
   // alert cause output
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_cause_dump

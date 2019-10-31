@@ -31,17 +31,12 @@ module prim_generic_rom #(
     end
   end
 
-  // ******************************************************************************
-  // ASSERTIONS
-  // ******************************************************************************
-  // **************************************
+  ////////////////
+  // ASSERTIONS //
+  ////////////////
+
   // Control Signals should never be X
-  // **************************************
-  `ifndef VERILATOR
-  //pragma translate_off
-    `ASSERT(noXOnCsI, !$isunknown(cs_i),            clk_i, '0)
-  //pragma translate_on
-  `endif // VERILATOR
+  `ASSERT(noXOnCsI, !$isunknown(cs_i), clk_i, '0)
 
   `ifdef VERILATOR
     export "DPI-C" task simutil_verilator_memload;

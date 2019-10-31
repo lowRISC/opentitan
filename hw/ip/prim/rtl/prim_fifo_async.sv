@@ -49,7 +49,9 @@ module prim_fifo_async #(
   assign fifo_incr_wptr = wvalid & wready;
   assign fifo_incr_rptr = rvalid & rready;
 
-  ////// write pointer //////
+  ///////////////////
+  // write pointer //
+  ///////////////////
 
   always_ff @(posedge clk_wr_i or negedge rst_wr_ni)
     if (!rst_wr_ni) begin
@@ -82,7 +84,9 @@ module prim_fifo_async #(
 
   assign fifo_wptr_sync_combi = gray2dec(fifo_wptr_gray_sync);
 
-  ////// read pointer //////
+  //////////////////
+  // read pointer //
+  //////////////////
 
   always_ff @(posedge clk_rd_i or negedge rst_rd_ni)
     if (!rst_rd_ni) begin
@@ -120,7 +124,9 @@ module prim_fifo_async #(
       fifo_rptr_sync <= gray2dec(fifo_rptr_gray_sync);
     end
 
-  ////// empty / full //////
+  //////////////////
+  // empty / full //
+  //////////////////
 
   assign  full_wclk = (fifo_wptr == (fifo_rptr_sync ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
   assign  full_rclk = (fifo_wptr_sync_combi == (fifo_rptr ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
@@ -152,7 +158,9 @@ module prim_fifo_async #(
                   (wptr_sync_msb == rptr_msb) ? DepthW'(wptr_sync_value) - DepthW'(rptr_value) :
                   (DepthW'(Depth) - DepthW'(rptr_value) + DepthW'(wptr_sync_value)) ;
 
-  ////// storage //////
+  /////////////
+  // storage //
+  /////////////
 
   logic [Width-1:0] storage [Depth];
 

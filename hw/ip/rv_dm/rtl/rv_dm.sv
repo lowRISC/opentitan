@@ -2,16 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Top-level debug module (DM)
+//
+// This module implements the RISC-V debug specification version 0.13,
+//
+// This toplevel wraps the PULP debug module available from
+// https://github.com/pulp-platform/riscv-dbg to match the needs of
+// the TL-UL-based lowRISC chip design.
 
-/**
- * Top-level debug module (DM)
- *
- * This module implements the RISC-V debug specification version 0.13,
- *
- * This toplevel wraps the PULP debug module available from
- * https://github.com/pulp-platform/riscv-dbg to match the needs of
- * the TL-UL-based lowRISC chip design.
- */
 module rv_dm #(
   parameter int                 NrHarts = 1,
   parameter logic [31:0]        IdcodeValue = 32'h 0000_0001

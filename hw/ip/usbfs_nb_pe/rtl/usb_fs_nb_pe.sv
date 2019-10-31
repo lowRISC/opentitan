@@ -25,21 +25,14 @@ module usb_fs_nb_pe #(
   input                          link_reset_i, // synchronous with clk_48mhz_i
   input [6:0]                    dev_addr_i,
 
+  ////////////////////////////
+  // USB Endpoint Interface //
+  ////////////////////////////
+  ///////////////////////////////
+  // global endpoint interface //
+  ///////////////////////////////
 
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-  /// USB Endpoint Interface
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-
-  ////////////////////
-  // global endpoint interface
-  ////////////////////
-
-
-  ////////////////////
   // out endpoint interfaces
-  ////////////////////
   output logic [3:0]             out_ep_current_o, // Other signals address to this ep
   output logic                   out_ep_data_put_o, // put the data (put addr advances after)
   output logic [PktW - 1:0]      out_ep_put_addr_o, // Offset to put data (0..pktlen)
@@ -51,9 +44,7 @@ module usb_fs_nb_pe #(
   input [NumOutEps-1:0]          out_ep_full_i, // Cannot accept data
   input [NumOutEps-1:0]          out_ep_stall_i, // Stalled
 
-  ////////////////////
   // in endpoint interfaces
-  ////////////////////
   output logic [3:0]             in_ep_current_o, // Other signals addressed to this ep
   output logic                   in_ep_rollback_o, // Bad termination, rollback transaction
   output logic                   in_ep_acked_o, // good termination, transaction complete
@@ -65,19 +56,13 @@ module usb_fs_nb_pe #(
   input [7:0]                    in_ep_data_i, // Data for current get_addr
   input [NumInEps-1:0]           in_ep_data_done_i, // Set when out of data
 
-  ////////////////////
   // sof interface
-  ////////////////////
   output                         sof_valid_o,
   output [10:0]                  frame_index_o,
 
-
-
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-  /// USB TX/RX Interface
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////
+  // USB TX/RX Interface //
+  /////////////////////////
   output                         usb_p_tx_o,
   output                         usb_n_tx_o,
 

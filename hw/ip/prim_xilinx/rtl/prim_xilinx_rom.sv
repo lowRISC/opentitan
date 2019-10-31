@@ -59,16 +59,11 @@ module prim_xilinx_rom #(
   end
 
 
-  // ******************************************************************************
-  // ASSERTIONS
-  // ******************************************************************************
-  // **************************************
+  ////////////////
+  // ASSERTIONS //
+  ////////////////
+
   // Control Signals should never be X
-  // **************************************
-  `ifndef VERILATOR
-  //pragma translate_off
-    `ASSERT(noXOnCsI, !$isunknown(cs_i),            clk_i, '0)
-  //pragma translate_on
-  `endif // VERILATOR
+  `ASSERT(noXOnCsI, !$isunknown(cs_i), clk_i, '0)
 
 endmodule

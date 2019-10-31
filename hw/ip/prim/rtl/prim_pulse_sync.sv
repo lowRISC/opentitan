@@ -19,9 +19,9 @@ module prim_pulse_sync (
   output logic dst_pulse_o
 );
 
-  //----------------------------------------------------------------------------------
-  // convert src_pulse to a level signal so we can use double-flop synchronizer
-  //----------------------------------------------------------------------------------
+  ////////////////////////////////////////////////////////////////////////////////
+  // convert src_pulse to a level signal so we can use double-flop synchronizer //
+  ////////////////////////////////////////////////////////////////////////////////
   logic src_level;
 
   always_ff @(posedge clk_src_i or negedge rst_src_ni) begin
@@ -32,9 +32,9 @@ module prim_pulse_sync (
     end
   end
 
-  //----------------------------------------------------------------------------------
-  // synchronize level signal to destination clock domain
-  //----------------------------------------------------------------------------------
+  //////////////////////////////////////////////////////////
+  // synchronize level signal to destination clock domain //
+  //////////////////////////////////////////////////////////
   logic dst_level;
 
   prim_flop_2sync #(.Width(1)) prim_flop_2sync (
@@ -46,9 +46,9 @@ module prim_pulse_sync (
     .q      (dst_level)
   );
 
-  //----------------------------------------------------------------------------------
-  // convert level signal back to pulse
-  //----------------------------------------------------------------------------------
+  ////////////////////////////////////////
+  // convert level signal back to pulse //
+  ////////////////////////////////////////
   logic dst_level_q;
 
   // delay dst_level by 1 cycle
