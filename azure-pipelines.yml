@@ -24,10 +24,12 @@ stages:
   - job: "lint"
     displayName: "Run code quality checks (lint)"
     pool:
-      vmImage: "ubuntu-latest"
+      vmImage: "ubuntu-16.04"
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
+        set -e
+        sudo apt-get install -y python3 python3-pip build-essential srecord \
+          python3-setuptools zlib1g-dev libusb-1.0 clang-format
         sudo pip3 install -U -r python-requirements.txt
       displayName: 'Install dependencies'
 
@@ -46,7 +48,8 @@ stages:
         make -C hw regs && git diff --exit-code
         if [ $? != 0 ]; then
           echo -n "##vso[task.logissue type=error]"
-          echo "Register headers not up-to-date. Regenerate them with 'make -C hw regs'."
+          echo "Register headers not up-to-date." \
+              "Regenerate them with 'make -C hw regs'."
           exit 1
         fi
       condition: always()
@@ -57,12 +60,21 @@ stages:
         # get reported to GitHub Checks annotations. Upstream bug report:
         # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
         #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
-        fork_origin=$(git merge-base --fork-point origin/master)
-        changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/)
-        test -z $changed_files || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
-        if [ -s clang-format-output ]; then
+        fork_origin="$(git merge-base --fork-point origin/master)"
+        changed_files="$(git diff --name-only $fork_origin | grep -v /vendor/)"
+
+        # Write the output of clang-format to "clang-format-output", so that
+        # we can check it for emptiness below.
+        if [[ -z "$changed_files" ]]; then
+          git diff -U0 "$fork_origin" "$changed_files" \
+            | clang-format-diff -p1 \
+            | tee clang-format-output
+        fi
+
+        if [[ -s clang-format-output ]]; then
           echo -n "##vso[task.logissue type=error]"
-          echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or 'git clang-format' to format the code."
+          echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or" \
+            "'git clang-format' to format the code."
           exit 1
         fi
       # This check is not idempotent, but checks changes to a base branch.
@@ -71,7 +83,7 @@ stages:
       displayName: 'Use clang-format to check C/C++ coding style'
 
     - bash: |
-        commit_range=$(git merge-base --fork-point origin/master)..HEAD
+        commit_range="$(git merge-base --fork-point origin/master)..HEAD"
         # Notes:
         # * Merge commits are not checked. We always use rebases instead of
         #   merges to keep a linear history, which makes merge commits disappear
@@ -84,7 +96,7 @@ stages:
             --no-merges \
             --error-msg-prefix='##vso[task.logissue type=error]' \
             --warning-msg-prefix='##vso[task.logissue type=error]' \
-            $commit_range
+            "$commit_range"
       # Only run on pull requests to check new commits only
       condition: eq(variables['Build.Reason'], 'PullRequest')
       displayName: "Check commit metadata"
@@ -97,15 +109,19 @@ stages:
   - job: "sw_build"
     displayName: "Build Software"
     pool:
-      vmImage: "ubuntu-latest"
+      # 18.04 is necessary here, to have access to a sufficiently-new version
+      # of Meson.
+      vmImage: "ubuntu-18.04"
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev ninja-build \
-          && sudo pip3 install -U -r python-requirements.txt \
-          && sudo pip3 install -U meson
+        set -e
+        sudo apt-get install -y python3 python3-pip build-essential srecord \
+          python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 \
+          libssl-dev ninja-build \
+        sudo pip3 install -U -r python-requirements.txt \
+        sudo pip3 install -U meson
       displayName: 'Install dependencies'
     - bash: |
-        set -x
         sudo util/get-toolchain.py \
           --target-dir="${TOOLCHAIN_PATH}" \
           --release-version="${TOOLCHAIN_VERSION}" \
@@ -114,17 +130,31 @@ stages:
       displayName: 'Install toolchain'
     - bash: |
         ./meson_init.sh -f
+      displayName: 'Configure Meson build.'
+    - bash: |
         ninja -C build-verilator all
         ninja -C build-fpga all
       displayName: 'Build embedded targets'
+    - bash: |
+        tar -cf build-verilator/artifacts.tar build-verilator
+        tar -cf build-fpga/artifacts.tar build-fpga
+      displayName: 'Create build artifact tarballs'
+    - publish: build-verilator/artifacts.tar
+      artifact: build-verilator-artifacts-sw_build
+      displayName: 'Upload Verilator build artifact tarball'
+    - publish: build-fpga/artifacts.tar
+      artifact: build-fpga-artifacts-sw_build
+      displayName: 'Upload FPGA build artifact tarball'
 
   - job: "deprecated_make_build"
     displayName: "Build Software with Make (deprecated)"
     pool:
-      vmImage: "ubuntu-latest"
+      vmImage: "ubuntu-16.04"
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
+        sudo apt-get install -y python3 python3-pip build-essential srecord \
+          python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 \
+          libssl-dev \
           && sudo pip3 install -U -r python-requirements.txt
       displayName: 'Install dependencies'
     - bash: |
@@ -135,26 +165,15 @@ stages:
       displayName: 'Build embedded targets'
     - bash: |
         make -C sw/host/spiflash clean all
-        # TODO: build system updates needed to copy build output to a dist
-        # staging directory.
-        mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
-        cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
       displayName: 'Build host targets'
-    - bash: |
-        cd $(Build.ArtifactStagingDirectory)
-        tar -cf dist-partial-sw_build.tar dist
-      displayName: 'Prepare partial distribution artifacts'
-    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-sw_build.tar
-      artifact: dist-partial-sw_build
-      displayName: "Upload partial distribution artifacts"
 
   - job: "top_earlgrey_verilator"
     displayName: "Build Verilator simulation of the Earl Grey toplevel design"
-    pool:
-      vmImage: "ubuntu-latest"
+    pool: Default
     steps:
     - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+        sudo apt-get install -y python3 python3-pip build-essential srecord \
+          python3-setuptools zlib1g-dev libusb-1.0 \
           && sudo pip3 install -U -r python-requirements.txt \
           && sudo apt-get install git make autoconf g++ flex bison curl
       displayName: 'Install dependencies'
@@ -244,23 +263,28 @@ stages:
   - job: "deploy_releaseartifacts"
     displayName: "Package and deploy release distribution"
     pool:
-      vmImage: "ubuntu-latest"
+      vmImage: "ubuntu-16.04"
     dependsOn:
-      - deprecated_make_build
+      - sw_build
       - top_earlgrey_verilator
       - top_earlgrey_nexysvideo
     steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: current
-        targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+    - download: current
+      displayName: 'Download distrinbution artifacts'
     - bash: |
-        OT_VERSION=$(git describe --always)
         cd "$(Build.ArtifactStagingDirectory)"
-        find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
-        mv dist opentitan-$OT_VERSION
+        OT_VERSION="$(git describe --always)"
+        dist_dir="opentitan-$OT_VERSION"
+        mkdir -p "$dist_dir"
+        cd "$dist_dir"
+        tar --overwrite -xf "$(Pipeline.Workspace)/build-fpga-artifacts-sw_build/artifacts.tar"
+        tar --overwrite -xf \
+          "$(Pipeline.Workspace)/dist-partial-top_earlgrey_verilator/dist-partial-top_earlgrey_verilator.tar"
+        tar --overwrite -xf \
+          "$(Pipeline.Workspace)/dist-partial-top_earlgrey_nexysvideo/dist-partial-top_earlgrey_nexysvideo.tar"
+        cd ..
         mkdir -p dist-final
-        tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
+        tar -cJf "dist-final/opentitan-$OT_VERSION.tar.xz" "$dist_dir"
       displayName: 'Create final dist directory out of partial ones'
     - publish: $(Build.ArtifactStagingDirectory)/dist-final
       artifact: opentitan-dist
