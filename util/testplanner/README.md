@@ -44,7 +44,7 @@ intent of a planned test:
 * **tests: list of actual written tests that maps to this planned test**
 
   Testplans are written very early in the V0 stage of the HW development
-  [life-cycle]({{< relref "doc/ug/hw_stages" >}}). When the DV engineer gets to actually
+  [life-cycle]({{< relref "doc/project/hw_stages.md" >}}). When the DV engineer gets to actually
   developing the test, it may not map 1:1 to the planned test - it may be possible
   that an already written test that mapped to another planned test also satisfies
   the current one; OR it may also be possible that the planned test needs to be

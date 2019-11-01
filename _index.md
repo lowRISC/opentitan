@@ -1,10 +1,8 @@
 # Introduction to OpenTitan
 
-The OpenTitan project aims to design and ship an open source, industry-leading piece of secure silicon for Root of Trust applications.
-OpenTitan is administered by lowRISC CIC as a collaborative
-[project]({{< relref "doc/project.md" >}})
-to produce high quality, open IP for instantiation as a full-featured
-[product]({{< relref "doc/product.md" >}}).
+[OpenTitan](https://opentitan.org) is an open source silicon Root of Trust (RoT) project.
+OpenTitan will make the silicon RoT design and implementation more transparent, trustworthy, and secure for enterprises, platform providers, and chip manufacturers.
+OpenTitan is administered by lowRISC CIC as a collaborative [project]({{< relref "doc/project" >}}) to produce high quality, open IP for instantiation as a full-featured product.
 This repository exists to enable collaboration across partners participating in the OpenTitan project.
 
 To get started using or contributing to the OpenTitan codebase, see the
@@ -13,6 +11,7 @@ For details on coding styles or how to use our project-specific tooling, see the
 [reference manuals]({{< relref "doc/rm" >}}).
 [This page]({{< relref "hw" >}})
 contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
+For questions about how the project is organized, see the [project]({{< relref "doc/project" >}}) landing spot for more information.
 
 ## Repository Structure
 
@@ -24,28 +23,21 @@ See also [repository readme]({{< relref "README.md" >}}) for licensing informati
 
 ## Documentation Sections
 
-* [Project]({{< relref "doc/project.md" >}})
+* [Project]({{< relref "doc/project" >}})
   * How the OpenTitan project is organized
-  * Governance of the program, how to get involved
   * Progress tracking
-* [Product]({{< relref "doc/product.md" >}})
-  * What is the OpenTitan product
-  * Architecture and technical hardware specifications
-  * Software roadmap
-  * Security and manufacturing
 * [User Guides]({{< relref "doc/ug" >}})
   * How to get started with the repo
   * How to emulate on an FPGA
+  * How hardware design is done in OpenTitan
   * How verification is done in OpenTitan
-  * How validation is done on FPGA in the project
 * [Reference Manuals]({{< relref "doc/rm" >}})
   * Defining comportable IP peripherals
-  * Coding style guides for Verilog, Python, and Markdown
+  * Coding style guides for Verilog, Python, Hjson, C/C++ and Markdown
   * OpenTitan tools
-  * Working with vendor tools
 * [Hardware Specifications]({{< relref "hw" >}})
   * Top-level SoC
   * Ibex processor core
   * Comportable IP blocks
 * [Tools]({{< relref "util" >}})
-  * Readme's of OpenTitan tools
+  * READMEs of OpenTitan tools

@@ -27,7 +27,7 @@ These are detailed in the [Comportability Specification]({{< relref "doc/rm/comp
 This document details how peripheral IP interconnects with the embedded processor, the chip IO, other designs, and the security infrastructure within the SOC.
 Not all of the details are complete at this time, but will be tracked and finalized within that specification.
 
-TODO: briefly discuss key architectural decisions, and how we came to the conclusion, with pointers to more thorough documentation. List?
+TODO: briefly discuss key architectural decisions, and how we came to the conclusion, with pointers to more thorough documentation. Some candidates:
 *   Processor/RISC-V strategy
 *   Bus strategy
 *   Reset strategy
@@ -37,7 +37,7 @@ TODO: briefly discuss key architectural decisions, and how we came to the conclu
 Designs within the OpenTitan project come in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of a design is important to gauge the confidence in its advertised feature set.
-To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "hw_stages.md" >}}) document.
+To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "doc/project/hw_stages.md" >}}) document.
 This document defines the design stages and references where one can find the current status of each of the designs in the repository.
 
 ## Documentation
@@ -81,7 +81,7 @@ Due to the proprietary nature of this particular linting tool, content towards r
 In the current state of the project, all lint scripts, policy files, and waivers are **not** provided, but are being kept privately until we can suggest a workable open source solution.
 When this methodology is finalized the details will be given here. (TODO)
 
-Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "hw_stages.md" >}}) document.
+Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/hw_stages" >}}) document.
 
 ## Assertion Methodology
 
@@ -136,7 +136,7 @@ In this context, our primary concern at this stage is what impact does this have
 
 DFT in OpenTitan is particularly interesting for two primary reasons:
 the RTL in the OpenTitan repository is targeted towards an FPGA implementation, but must be prepared for a silicon implementation
-(see the FPGA vs Silicon discussion in the [OpenTitan Product]({{< relref "doc/product.md" >}}) document);
+(see the FPGA vs Silicon discussion later in this document);
 the whole purpose of a DFT methodology is full and efficient access to all logic and storage content,
 while the whole purpose of a security microcontroller is restricting access to private secured information.
 In light of the latter dilemma, special care must be taken in a security design to ensure DFT has access at only the appropriate times, but not while in use in production.
@@ -164,5 +164,7 @@ This is used by an Azure Pipelines pre-submit check script to ensure that the so
 
 ## Getting Started with a Design
 
-The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship assignments, documentation, etc.
+The process for getting started with a design involves many steps, including getting clarity on its purpose, its feature set, authorship, documentation, etc.
 These are discussed in the [Getting Started with a Design]({{< relref "getting_started_design.md" >}}) document.
+
+## FPGA vs Silicon

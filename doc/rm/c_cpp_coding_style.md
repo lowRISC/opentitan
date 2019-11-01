@@ -75,6 +75,8 @@ Example:
 
 It is recommended to use fully-qualified issue numbers or URLs when referencing issues or pull requests.
 
+TODO comments should not indicate an assignee of the work.
+
 Example:
 
 ```c

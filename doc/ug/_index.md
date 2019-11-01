@@ -2,8 +2,6 @@
 title: "User Guides"
 ---
 
-# User Guides
-
 * Getting Started
   * [Getting started]({{< relref "getting_started.md" >}})
   * [Quickstart]({{< relref "quickstart.md" >}})
@@ -17,7 +15,6 @@ title: "User Guides"
   * [Getting started with a design]({{< relref "getting_started_design.md" >}})
   * *Getting started with verification* (TODO)
 * [Work with hardware code in external repositories]({{< relref "vendor_hw.md" >}})
-* [Hardware Development Stages]({{< relref "hw_stages.md" >}})
 * [Design Methodology]({{< relref "design.md" >}})
   * Language and Tool Selection
   * Comportability and the Importance of Architectural Conformity
@@ -29,7 +26,8 @@ title: "User Guides"
   * CDC Methodology
   * DFT
   * Generated Code
-* [Design Verification Methodology]({{< relref "dv_methodology.md" >}})
+  * FPGA vs ASIC
+* [Design Verification Methodology]({{< relref "doc/ug/dv_methodology" >}})
   * Language and Tool Selection
   * Defining Verification Complete: Stages and Checklists
   * Documentation
@@ -50,4 +48,3 @@ title: "User Guides"
   * How to run tests
   * How does this differ from verification
   * How to add tests
-* [List of Top-Level Designs]({{< relref "system_list.md" >}})

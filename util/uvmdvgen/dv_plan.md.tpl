@@ -21,7 +21,7 @@ ${'##'} Goals
 
 ${'##'} Current status
 * [Design & verification stage](../../../../doc/project/hw_dashboard.md)
-  * [HW development stages](../../../../doc/ug/hw_stages.md)
+  * [HW development stages](../../../../doc/project/hw_stages.md)
 * DV regression results dashboard (link TBD)
 
 ${'##'} Design features

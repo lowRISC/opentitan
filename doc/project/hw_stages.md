@@ -6,7 +6,7 @@ This document describes development stages for hardware within the OpenTitan pro
 This includes design and verification stages meant to give a high-level view of the status of a design.
 OpenTitan being an open-source program aimed at a high quality silicon release, the intent is to find a balance between the rigor of a heavy tapeout process and the more fluid workings of an open source development.
 
-This document also serves as a guide to the *hardware design dashboard* (TODO: link), which gives the status of all of the designs in the OpenTitan repository.
+This document also serves as a guide to the [hardware design dashboard]({{< relref "doc/project/hw_dashboard" >}}), which gives the status of all of the designs in the OpenTitan repository.
 
 This document aims to mostly give a more defined structure to the process that is already followed.
 Proper versioning of RTL designs is a complex topic.
@@ -20,7 +20,7 @@ At the moment, this is strictly limited to a hardware design, but could be expan
 Transitions between these stages are decided by the Technical Committee via the RFC process.
 
 The first life stage is **Specification**.
-The proposed design is written up and submitted through the *RFC process* (TODO: link).
+The proposed design is written up and submitted through the [RFC process]({{< relref "doc/project/rfc_process" >}}).
 Depending on the complexity of the design and the guidance of the Technical Committee, it is possible a single design might require multiple RFCs.
 For example, a first RFC for the rationale, feature list, and a rough overview; followed by a more detailed RFC to get approval for the draft technical specification.
 As part of the specification process, the design author might reach out for feedback from a smaller group of reviewers while formulating an RFC proposal.
@@ -143,10 +143,9 @@ Transitions for Design and Verification stages are _self-nominated_ in the sense
 In this manner other reviewers can challenge the transition in the standard pull request review process.
 These transitions should be done in their own PR (i.e. not interspersed with other changes), and the PR summary and commit message should give any necessary detail on how the transition criteria have been met, as well as any other notes useful for a reviewer.
 
-The content below shows a proposal for the project file that contains the stage information.
-The final content, location, and name of that file will be updated in this space soon. (TODO)
-
-`file: gpio.prj.hjson`
+The content below shows the format of the project file that contains the stage information.
+The file for a design named `name` should be placed under `hw/ip/name/data/name.prj.hjson`.
+For example, `file: gpio.prj.hjson`:
 
 ```hjson
 {
@@ -155,6 +154,7 @@ The final content, location, and name of that file will be updated in this space
   life_stage: "L1",
   design_stage: "D2",
   verification_stage: "V1",
+  notes: "information shown on the dashboard"
 }
 ```
 
@@ -185,4 +185,4 @@ This would require a new RFC process, and thus the Life Stage would start again 
 
 The stages are reported externally via a script-generated table exposed on the external website.
 This status will be a summary of all `prj.hjson` files of all designs in the system.
-The link to that table is here (TODO: link).
+The link to that table is [here]({{< relref "doc/project/hw_dashboard" >}}).
