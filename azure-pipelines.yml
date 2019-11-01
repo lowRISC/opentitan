@@ -120,8 +120,7 @@ stages:
 
   - job: "deprecated_make_build"
     displayName: "Build Software with Make (deprecated)"
-    pool:
-      vmImage: "ubuntu-latest"
+    pool: Default
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
@@ -150,8 +149,7 @@ stages:
 
   - job: "top_earlgrey_verilator"
     displayName: "Build Verilator simulation of the Earl Grey toplevel design"
-    pool:
-      vmImage: "ubuntu-latest"
+    pool: Default
     steps:
     - bash: |
         sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
