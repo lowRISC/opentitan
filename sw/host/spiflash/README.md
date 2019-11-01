@@ -20,7 +20,7 @@ Build command for tool:
 
 ```console
 $ cd ${REPO_TOP}
-$ ./meson-init.sh -r
+$ ./meson_init.sh -f
 $ ninja -C build-fpga sw/host/spiflash/spiflash
 ```
 
@@ -34,13 +34,13 @@ _If building for verilator, build in `build-verilator` instead._
 Build `boot_rom`:
 ```console
 $ cd ${REPO_TOP}
-$ ninja -C build-fpga sw/boot_rom/boot_rom.vmem
+$ ninja -C build-fpga sw/device/boot_rom/boot_rom.vmem
 ```
 
 Build the `hello_world` program:
 ```console
 $ cd ${REPO_TOP}
-$ ninja -C build-fpga sw/examples/hello_world/hello_world.bin
+$ ninja -C build-fpga sw/device/examples/hello_world/hello_world.bin
 ```
 
 ## Run the tool in Verilator
