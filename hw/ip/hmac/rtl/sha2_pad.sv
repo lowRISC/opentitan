@@ -31,8 +31,6 @@ module sha2_pad import hmac_pkg::*; (
   output logic        msg_feed_complete // Indicates, all message is feeded
 );
 
-  // TODO: Thorough scenario for sha_en turn off in the middle of the ops.
-
   //logic [8:0] length_added;
 
   logic [63:0] tx_count;    // fin received data count.
@@ -142,7 +140,6 @@ module sha2_pad import hmac_pkg::*; (
   end
 
   // Next state
-  // TODO: Error handling (shaf_rready with shaf_rvalid == 1)
   always_comb begin
     shaf_rvalid = 1'b0;
     inc_txcount = 1'b0;

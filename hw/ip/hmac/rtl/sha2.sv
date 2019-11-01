@@ -4,8 +4,6 @@
 //
 // SHA-256 algorithm
 //
-// TODO: Consider the input data isn't big endian (should be outside of this module)
-// TODO: Support SHA-224 as it is almost same as SHA-256
 
 module sha2 import hmac_pkg::*; (
   input clk_i,
@@ -24,7 +22,6 @@ module sha2 import hmac_pkg::*; (
   input        hash_start,
   input        hash_process,
   output logic hash_done,
-  // TODO: random pause
 
   input        [63:0] message_length,   // bits but byte based
   output sha_word_t [7:0] digest
@@ -55,8 +52,6 @@ module sha2 import hmac_pkg::*; (
     if (!rst_ni) begin
       w <= '0;
     end else if (wipe_secret) begin
-      // TODO: Determine fill with wipe_v? or XOR?
-      // both can be detected if `wipe_v` can be probed
       w <= w ^ {16{wipe_v}};
     end else if (!sha_en) begin
       w <= '0;
@@ -70,7 +65,7 @@ module sha2 import hmac_pkg::*; (
     //  // to fill the register if available. If FIFO goes to empty, w_index doesn't increase
     //  // and it cannot reach 15. Then the sha engine doesn't start, which introduces latency.
     //  //
-    //  // TODO: But in this case, still w should be shifted to feed SHA compress engine. Then
+    //  // But in this case, still w should be shifted to feed SHA compress engine. Then
     //  // fifo_rdata should be inserted in the middle of w index.
     //  // w[64-round + w_index] <= fifo_rdata;
     //  for (int i = 0 ; i < 16 ; i++) begin
@@ -206,15 +201,10 @@ module sha2 import hmac_pkg::*; (
 
       FifoWait: begin
         // Wait until next fetch begins (begin at round == 48)a
-        // TODO: Detect at the end of the message
         if (msg_feed_complete && complete_one_chunk) begin
-          // TODO: Should we wait until round hits 63?
           fifo_st_d = FifoIdle;
 
           hash_done_next = 1'b1;
-        // TODO: make below FIFO feeding logic concrete.
-        //       currently, with below commented logic, it doesn't fill FIFO correctly.
-        //end else if (!in_end_chunk && round == 6'd47) begin
         end else if (complete_one_chunk) begin
           fifo_st_d = FifoLoadFromFifo;
         end else begin

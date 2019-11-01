@@ -180,7 +180,6 @@ module hmac (
   // Instances //
   ///////////////
 
-  // TODO: Revise logic to assert rvalid only after grant asserted.
   assign msg_fifo_rvalid = msg_fifo_req & ~msg_fifo_we;
   assign msg_fifo_rdata  = '1;  // Return all F
   assign msg_fifo_rerror = '1;  // Return error for read access

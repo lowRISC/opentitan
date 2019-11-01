@@ -118,8 +118,6 @@ module hmac_core import hmac_pkg::*; (
     (sel_rdata == SelFifo) ? fifo_rdata                                               :
     '{default: '0};
 
-  // TODO: Block size and hash size can differ based on the hash algorithm.
-  //       Shall this be flexible or HMAC sticks to SHA256 always?
   assign sha_message_length = (!hmac_en)                 ? message_length             :
                               (sel_msglen == SelIPadMsg) ? message_length + BlockSize :
                               (sel_msglen == SelOPadMsg) ? BlockSize + 256            :
@@ -258,7 +256,6 @@ module hmac_core import hmac_pkg::*; (
       end
 
       StPushToMsgFifo: begin
-        // TODO: Accelerate by parallel process of PushToMsgFifo and OPad hash
         hmac_sha_rvalid    = 1'b0;
         fifo_wsel          = 1'b1;
         fifo_wvalid        = 1'b1;
