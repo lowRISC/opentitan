@@ -292,6 +292,7 @@ jobs:
     displayName: "Upload release artifacts as Azure artifact"
   - task: GithubRelease@0
     displayName: 'Upload to GitHub releases (only tags)'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
     inputs:
       gitHubConnection: opentitan-release-upload
       repositoryName: lowrisc/opentitan
