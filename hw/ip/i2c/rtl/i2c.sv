@@ -89,7 +89,8 @@ module i2c (
   assign cio_sda_en_o = ~sda_int;
 
   `ASSERT_KNOWN(scanmodeKnown_A, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(CioSclKnownO_A, cio_scl_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(CioSclEnKnownO_A, cio_scl_en_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(CioSdaKnownO_A, cio_sda_o, clk_i, !rst_ni)
