@@ -89,7 +89,7 @@ signals per direction to carry chip specific user bits.
 | `a_source[AIW-1:0]` | output | Request identifier of configurable width |
 | `a_size[SZW-1:0]`   | output | Request size (requested size is 2^`a_size`, thus 0 = byte, 1 = 16b, 2 = 32b, 3 = 64b, etc) |
 | `a_mask[DBW-1:0]`   | output | Write strobe, one bit per byte indicating which lanes of data are valid for this write request |
-| `a_user[AUW-1:0]`   | output | Request attributes of configurable width, use TBD. **This is an augmentation to the TL-UL specification.** |
+| `a_user`            | output | Request attributes of configurable width, use TBD. **This is an augmentation to the TL-UL specification.** |
 | `d_valid`           | input  | Response from device is valid |
 | `d_ready`           | output | Response from device is accepted by host |
 | `d_opcode[2:0]`     | input  | Response opcode (Ack or Data) |
@@ -109,7 +109,6 @@ widths based upon the other parameter sizes.
 - `DBW`: number of data bytes, generated == `DW/8`
 - `SZW`: size width, covers 2^(x) <= `DBW`; (2 bit for 4B)
 - `AIW`: width of address source (ID) bus, default 8
-- `AUW`: width of access user bits, default 4
 - `DUW`: width of device user bits, default 4
 - `DIW`: width of sink bits, default 1
 
@@ -159,6 +158,12 @@ package tlul_pkg;
   } tl_d_op_e;
 
   typedef struct packed {
+    logic [6:0] rsvd1; // Reserved for future use
+    logic       parity_en;
+    logic [7:0] parity; // Use only lower TL_DBW bit
+  } tl_a_user_t;
+
+  typedef struct packed {
     logic                         a_valid;
     tl_a_op_e                     a_opcode;
     logic                  [2:0]  a_param;
@@ -167,7 +172,7 @@ package tlul_pkg;
     logic   [top_pkg::TL_AW-1:0]  a_address;
     logic  [top_pkg::TL_DBW-1:0]  a_mask;
     logic   [top_pkg::TL_DW-1:0]  a_data;
-    logic  [top_pkg::TL_AUW-1:0]  a_user;
+    tl_a_user_t                   a_user;
 
     logic                         d_ready;
   } tl_h2d_t;
