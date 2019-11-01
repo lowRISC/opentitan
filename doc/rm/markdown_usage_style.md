@@ -9,7 +9,7 @@ title: "Markdown Usage and Style Guide"
 Markdown files are used to write most documentation.
 The main markdown tool is [Hugo](https://gohugo.io).
 
-The markdown processing is done using the `docgen.py` tool in the `util` directory.
+The markdown processing is done using the `build_docs.py` tool in the `util` directory.
 
 As with all style guides the intention is to:
 
