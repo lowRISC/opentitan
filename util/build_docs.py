@@ -75,6 +75,7 @@ config = {
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/uart/data/uart_testplan.hjson",
+        "hw/ip/tlul/data/tlul_testplan.hjson",
         "util/testplanner/examples/foo_testplan.hjson",
     ],
 
