@@ -9,19 +9,19 @@ filesets:
     depend:
       - lowrisc:prim:all
     files:
-      - vip/prim_alert_rxtx_async_assert.sv
-      - vip/prim_alert_rxtx_assert.sv
-      - tb/prim_alert_rxtx_async_tb.sv
-      - tb/prim_alert_rxtx_tb.sv
-      - tb/prim_alert_rxtx_async_bind.sv
-      - tb/prim_alert_rxtx_bind.sv
+      - vip/prim_alert_rxtx_async_assert_fpv.sv
+      - vip/prim_alert_rxtx_assert_fpv.sv
+      - tb/prim_alert_rxtx_async_fpv.sv
+      - tb/prim_alert_rxtx_fpv.sv
+      - tb/prim_alert_rxtx_async_bind_fpv.sv
+      - tb/prim_alert_rxtx_bind_fpv.sv
     file_type: systemVerilogSource
 
 targets:
   default: &default_target
     toplevel:
-      - prim_alert_rxtx_async_tb
-      - prim_alert_rxtx_tb
+      - prim_alert_rxtx_async_fpv
+      - prim_alert_rxtx_fpv
     filesets:
       - files_fpv
     default_tool: jg

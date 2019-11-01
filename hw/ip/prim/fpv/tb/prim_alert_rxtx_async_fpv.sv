@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_async_tb (
+module prim_alert_rxtx_async_fpv (
   input        clk_i,
   input        rst_ni,
   // for sigint error and skew injection only
@@ -94,4 +94,4 @@ module prim_alert_rxtx_async_tb (
     end
   end
 
-endmodule : prim_alert_rxtx_async_tb
+endmodule : prim_alert_rxtx_async_fpv

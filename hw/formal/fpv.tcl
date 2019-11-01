@@ -18,7 +18,6 @@ analyze -sv09 \
   -f formal_0.scr \
   [glob ../../../../ip/*/dv/*_bind.sv] \
   [glob ../../../../ip/*/dv/tb/*_bind.sv] \
-  [glob ../../../../ip/rv_plic/fpv/tb/rv_plic_bind.sv] \
   +define+ASIC_SYNTHESIS \
   +define+SYNTHESIS      \
   +define+FPV_ON

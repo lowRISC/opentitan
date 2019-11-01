@@ -5,7 +5,7 @@
 // Assertions for alert sender/receiver pair for the asynchronous case.
 // Intended to use with a formal tool.
 
-module prim_alert_rxtx_async_assert (
+module prim_alert_rxtx_async_assert_fpv (
   input        clk_i,
   input        rst_ni,
   // for sigint error and skew injection only
@@ -64,28 +64,28 @@ module prim_alert_rxtx_async_assert (
   // be parameterized accordingly if different clock ratios are to be used here.
   // TODO: tighten bounds if possible
   sequence FullHandshake_S;
-    $rose(prim_alert_rxtx_async_tb.alert_pd)   ##[3:5]
-    $rose(prim_alert_rxtx_async_tb.ack_pd)     &&
-    $stable(prim_alert_rxtx_async_tb.alert_pd) ##[3:5]
-    $fell(prim_alert_rxtx_async_tb.alert_pd)   &&
-    $stable(prim_alert_rxtx_async_tb.ack_pd)   ##[3:5]
-    $fell(prim_alert_rxtx_async_tb.ack_pd)     &&
-    $stable(prim_alert_rxtx_async_tb.alert_pd);
+    $rose(prim_alert_rxtx_async_fpv.alert_pd)   ##[3:5]
+    $rose(prim_alert_rxtx_async_fpv.ack_pd)     &&
+    $stable(prim_alert_rxtx_async_fpv.alert_pd) ##[3:5]
+    $fell(prim_alert_rxtx_async_fpv.alert_pd)   &&
+    $stable(prim_alert_rxtx_async_fpv.ack_pd)   ##[3:5]
+    $fell(prim_alert_rxtx_async_fpv.ack_pd)     &&
+    $stable(prim_alert_rxtx_async_fpv.alert_pd);
   endsequence
 
   // note: injected errors may lockup the FSMs, and hence the full HS can
   // only take place if both FSMs are in a sane state
-  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_async_tb.ping_pd) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
+  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_async_fpv.ping_pd) &&
+      (prim_alert_rxtx_async_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_async_fpv.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
       clk_i, !rst_ni || error_setreg_q)
   `ASSERT(AlertHs_A, alert_i &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
+      (prim_alert_rxtx_async_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_async_fpv.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
       clk_i, !rst_ni || error_setreg_q)
 
   // transmission of pings
@@ -95,8 +95,8 @@ module prim_alert_rxtx_async_assert (
       clk_i, !rst_ni || error_setreg_q)
   // transmission of first alert assertion (no ping collision)
   `ASSERT(AlertCheck0_A, !ping_en_i [*10] ##1 $rose(alert_i) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) |->
+      (prim_alert_rxtx_async_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_sender.Idle) |->
       ##[3:5] alert_o, clk_i, !rst_ni || ping_en_i || error_setreg_q)
   // eventual transmission of alerts in the general case which can include ping collisions
   `ASSERT(AlertCheck1_A, alert_i |-> ##[1:25] alert_o,
@@ -104,16 +104,16 @@ module prim_alert_rxtx_async_assert (
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A, !error_present [*2] ##1 !error_present &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q !=
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle)), clk_i, !rst_ni || error_present)
+      (prim_alert_rxtx_async_fpv.i_prim_alert_sender.state_q !=
+      prim_alert_rxtx_async_fpv.i_prim_alert_sender.Idle) |->
+      strong(##[1:$] (prim_alert_rxtx_async_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_sender.Idle)), clk_i, !rst_ni || error_present)
   `ASSERT(FsmLivenessReceiver_A, !error_present [*2] ##1 !error_present &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q !=
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle)),clk_i, !rst_ni || error_present)
+      (prim_alert_rxtx_async_fpv.i_prim_alert_receiver.state_q !=
+      prim_alert_rxtx_async_fpv.i_prim_alert_receiver.Idle) |->
+      strong(##[1:$] (prim_alert_rxtx_async_fpv.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_async_fpv.i_prim_alert_receiver.Idle)),clk_i, !rst_ni || error_present)
 
   // TODO: add FSM liveness of 3x diff decoder instances
 
-endmodule : prim_alert_rxtx_async_assert
+endmodule : prim_alert_rxtx_async_assert_fpv

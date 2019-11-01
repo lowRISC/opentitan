@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-module pinmux_bind;
+module pinmux_bind_fpv;
 
-  bind pinmux pinmux_assert i_pinmux_assert (
+  bind pinmux pinmux_assert_fpv i_pinmux_assert_fpv (
     // symbolic inputs for FPV
     .periph_sel_i(pinmux_tb.periph_sel_i),
     .mio_sel_i(pinmux_tb.mio_sel_i),
@@ -22,4 +22,4 @@ module pinmux_bind;
     .d2h  (tl_o)
   );
 
-endmodule : pinmux_bind
+endmodule : pinmux_bind_fpv

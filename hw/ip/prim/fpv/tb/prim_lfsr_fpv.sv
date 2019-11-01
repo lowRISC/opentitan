@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Testbench module for prim_lfsr. Intended to use with a formal tool.
+// Testbench module for prim_lfsr. Intended to be used with a formal tool.
 
-module prim_lfsr_tb #(
+module prim_lfsr_fpv #(
   parameter int unsigned   InDw     = 1,
   parameter int unsigned   OutDw    = 1,
   parameter int unsigned   GalXorMinLfsrDw  = 4,
@@ -61,4 +61,4 @@ module prim_lfsr_tb #(
     );
   end
 
-endmodule : prim_lfsr_tb
+endmodule : prim_lfsr_fpv

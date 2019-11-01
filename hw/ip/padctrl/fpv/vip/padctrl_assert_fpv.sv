@@ -10,7 +10,7 @@
   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
-module padctrl_assert #(
+module padctrl_assert_fpv #(
   parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL
 ) (
   input                                       clk_i,
@@ -40,7 +40,7 @@ module padctrl_assert #(
 
   if (Impl == ImplGeneric) begin : gen_mio_generic
     `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
-        !(|padctrl.mio_attr_q[mio_sel][padctrl_reg_pkg::AttrDw-1:6]),
+        !(|mio_attr_o[mio_sel][padctrl_reg_pkg::AttrDw-1:6]),
         clk_i, !rst_ni)
     `ASSERT(MioAttr_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
       mio_attr_o[mio_sel][5:0] == $past(padctrl.reg2hw.mio_pads[mio_sel].q[5:0]),
@@ -65,7 +65,7 @@ module padctrl_assert #(
   `ASSUME(NDioStable_M, ##1 $stable(dio_sel), clk_i, !rst_ni)
   if (Impl == ImplGeneric) begin : gen_dio_generic
     `ASSERT(DioWarl_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
-        !(|padctrl.dio_attr_q[dio_sel][padctrl_reg_pkg::AttrDw-1:6]),
+        !(|dio_attr_o[dio_sel][padctrl_reg_pkg::AttrDw-1:6]),
         clk_i, !rst_ni)
     `ASSERT(DioAttr_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
       dio_attr_o[dio_sel][5:0] == $past(padctrl.reg2hw.dio_pads[dio_sel].q[5:0]),
@@ -82,4 +82,4 @@ module padctrl_assert #(
     `ASSERT_INIT(UnknownImpl_A, 0)
   end
 
-endmodule : padctrl_assert
+endmodule : padctrl_assert_fpv

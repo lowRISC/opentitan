@@ -8,17 +8,19 @@ filesets:
   files_fpv:
     depend:
       - lowrisc:ip:tlul
-      - lowrisc:ip:pinmux
+      # include top-earlgrey in order to test
+      # with the top-level configuration
+      - lowrisc:systems:top_earlgrey
     files:
-      - tb/pinmux_tb.sv
-      - tb/pinmux_bind.sv
-      - vip/pinmux_assert.sv
+      - tb/pinmux_fpv.sv
+      - tb/pinmux_bind_fpv.sv
+      - vip/pinmux_assert_fpv.sv
     file_type: systemVerilogSource
 
 targets:
   default: &default_target
     toplevel:
-      - tb/pinmux_tb.sv
+      - pinmux_fpv
     filesets:
       - files_fpv
     default_tool: jg
