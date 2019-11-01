@@ -27,9 +27,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
+    bit     do_read_check           = 1'b1;
+    bit     do_cycle_accurate_check = 1'b1;
+    bit     write                   = item.is_write();
+    uvm_reg_addr_t csr_addr         = get_normalized_addr(item.a_addr);
 
     super.process_tl_access(item, channel);
     if (is_tl_err_exp || is_tl_unmapped_addr) return;
@@ -76,6 +77,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "cmd": begin
             if (sha_en) begin
               {hmac_process, hmac_start} = item.a_data[1:0];
+              if (hmac_process) begin
+                // check if msg all streamed in, could happen during wr msg or trigger process
+                predict_digest(msg_q);
+                update_wr_msg_length(msg_q.size());
+                // any bytes left after hmac_process will be added to the wr_cnt
+                if (msg_q.size() % 4 != 0) incr_wr_and_check_fifo_full();
+                msg_q.delete();
+              end
             end else if (item.a_data[HashStart] == 1) begin
               void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
               void'(ral.err_code.predict(.value(SwHashStartWhenShaDisabled),
@@ -105,14 +114,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
         endcase
       end
-      // check if msg all streamed in, could happen during write mem_fifo or trigger hmac_cmd
-      if (hmac_process) begin
-        predict_digest(msg_q);
-        update_wr_msg_length(msg_q.size());
-        // any bytes left after hmac_process will be added to the wr_cnt
-        if (msg_q.size() % 4 != 0) incr_wr_and_check_fifo_full();
-        flush();
-      end
     end
 
     // predict status based on csr read addr channel
@@ -133,7 +134,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     if (!write) begin
       case (csr.get_name())
         "intr_state": begin
-          // TODO: cycle accurate checking on hmac_done
+          if (!do_cycle_accurate_check) do_read_check = 0;
           if (cfg.en_cov) begin
             hmac_intr_e intr;
             intr = intr.first;
@@ -145,9 +146,15 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end while (intr != intr.first);
           end
           if (item.d_data[HmacDone] == 1) begin
-            do_read_check = 1'b0;
             hmac_wr_cnt = 0;
             hmac_rd_cnt = 0;
+            // here sanity check DUT should only trigger hmac_done when sha is enabled, and
+            // previously triggered hash_process.
+            // future throughput test should check the accurate cycles
+            if (sha_en && hmac_process) begin
+              void'(ral.intr_state.hmac_done.predict(.value(1), .kind(UVM_PREDICT_READ)));
+              hmac_process = 0;
+            end
           end
         end
         "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7":
@@ -162,14 +169,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             return;
           end
         end
-        "status": if (cfg.en_cov) cov.status_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
+        "status": begin
+          if (!do_cycle_accurate_check) do_read_check = 0;
+          if (cfg.en_cov) cov.status_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
+        end
         "msg_length_lower": begin
           if (cfg.en_cov) begin
             cov.msg_len_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
           end
         end
         "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "cfg", "cmd", "err_code",
-        "intr_enable", "intr_test", "wipe_secret", "msg_length_upper", "intr_state": begin
+        "intr_enable", "intr_test", "wipe_secret", "msg_length_upper": begin
           // Do nothing
         end
         default: begin
