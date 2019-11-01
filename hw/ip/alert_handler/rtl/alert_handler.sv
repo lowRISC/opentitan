@@ -200,7 +200,8 @@ module alert_handler (
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(TlKnownO_A, tl_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(IrqKnownO_A, irq_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(CrashdumpKnownO_A, crashdump_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(PingPKnownO_A, ping_po, clk_i, !rst_ni)
