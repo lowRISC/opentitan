@@ -205,7 +205,7 @@ module rv_core_ibex #(
     a_source:  TL_AIW'(tl_i_source),
     a_address: {instr_addr_o[31:WordSize], {WordSize{1'b0}}},
     a_data:    {TL_DW{1'b0}},
-    a_user:    {TL_AUW{1'b0}},
+    a_user:    '{default:'0},
 
     d_ready:   1'b1
   };
@@ -248,7 +248,7 @@ module rv_core_ibex #(
     a_source:  TL_AIW'(tl_d_source),
     a_address: {data_addr_o[31:WordSize], {WordSize{1'b0}}},
     a_data:    data_wdata_o,
-    a_user:    {TL_AUW{1'b0}},
+    a_user:    '{default:'0},
 
     d_ready:   1'b1
   };

@@ -16,7 +16,7 @@ package tlul_pkg;
   } tl_d_op_e;
 
   typedef struct packed {
-    logic [6:0] rsvd1;
+    logic [6:0] rsvd1; // Reserved for future use
     logic       parity_en;
     logic [7:0] parity; // Use only lower TL_DBW bit
   } tl_a_user_t;
