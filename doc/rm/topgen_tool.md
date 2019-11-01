@@ -1,4 +1,6 @@
-{{% lowrisc-doc-hdr Top Generation Tool }}
+---
+title: "Top Generation Tool"
+---
 
 The top generation tool `topgen.py` is used to build top specific modules for a specific OpenTitan design - for example [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey).
 Currently, as part of this generation process, the following top specific modules are created
@@ -8,8 +10,6 @@ Currently, as part of this generation process, the following top specific module
 * Crossbar
 
 This document explains the overall generation process, the required inputs, the output locations, as well as how the tool should be invoked.
-
-{{% toc 3 }}
 
 ## Generation Process
 

@@ -1,11 +1,11 @@
-# OpenTitan Logical Security Model
+---
+title: "OpenTitan Logical Security Model"
+---
 
 ## Overview
 
 This document explains the overall OpenTitan logical security model as it relates to secure provisioning and run-time operations.
 Due to the open source nature of OpenTitan, this document articulates fundamental requirements to be considered OpenTitan-compliant.
-
-{{% toc 4 }}
 
 ## Logical Entities
 
