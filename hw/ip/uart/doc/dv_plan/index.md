@@ -12,7 +12,7 @@ title: "UART DV Plan"
 
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
-  * [HW development stages]({{< relref "doc/ug/hw_stages" >}})
+  * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
 * DV regression results dashboard (link TBD)
 
 ## Design features

@@ -12,5 +12,4 @@
   * [Hjson Usage and Style Guide]({{< relref "hjson_usage_style.md" >}})
   * [Markdown Usage and Style Guide]({{< relref "markdown_usage_style.md" >}})
   * [C/C++ Style Guide]({{< relref "c_cpp_coding_style.md" >}})
-  * [Signoff Checklist]({{< relref "checklist.md" >}})
 * [FPGA Reference Manua]({{< relref "ref_manual_fpga.md" >}})

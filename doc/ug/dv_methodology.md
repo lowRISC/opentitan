@@ -35,7 +35,7 @@ Understanding the status of verification is important to gauge the confidence in
 To that end, we've designated a spectrum of design and verification stages in the  [OpenTitan Hardware Development Stages]({{< relref "hw_stages.md" >}}) document.
 It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
 Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
-The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists]({{< relref "doc/rm/checklist" >}}) document.
+The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists]({{< relref "doc/project/checklist" >}}) document.
 Verification is said to be complete when the checklist items for all stages are marked as done.
 We will explain some of the key items in those checklists in the remainder of this document.
 
