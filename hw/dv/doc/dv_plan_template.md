@@ -1,16 +1,15 @@
-<!-- Copy this file to hw/ip/foo/doc/foo_dv_plan.md and make changes as needed.
-For convenience 'foo' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram here:
-https://drive.google.com/open?id=1LfnTSutIW5E6zSCOCf4-scS8MQ8lXhPAPgSfFx2Aqh0
-as a starting point and modify it to reflect your foo testbench and save it
-to hw/ip/foo/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ---
 title: "FOO DV Plan"
 ---
 
+<!-- Copy this file to hw/ip/foo/doc/foo_dv_plan.md and make changes as needed.
+For convenience 'foo' in the document can be searched and replaced easily with the
+desired IP (with case sensitivity!). Also, use the testbench block diagram
+located at OpenTitan team drive / 'design verification'
+as a starting point and modify it to reflect your foo testbench and save it
+to hw/ip/foo/doc/tb.svg. It should get linked and rendered under the block
+diagram section below. Please update / modify / remove sections below as
+applicable. Once done, remove this comment before making a PR. -->
 
 ## Goals
 * **DV**
@@ -25,7 +24,8 @@ title: "FOO DV Plan"
 * DV regression results dashboard (link TBD)
 
 ## Design features
-For detailed information on FOO design features, please see the [FOO design specification](foo.md).
+<!-- TODO: uncomment link to the spec below -->
+For detailed information on FOO design features, please see the [FOO  HWIP technical specification]({{</* relref "hw/ip/foo/doc" */>}}).
 
 ## Testbench architecture
 FOO testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
@@ -115,4 +115,4 @@ $ make TEST_NAME=foo_sanity
 
 ## Testplan
 <!-- TODO: uncomment the line below after adding the testplan -->
-{{</* testplan "../data/foo_testplan.hjson" */>}}
+{{</* testplan "hw/ip/foo/data/foo_testplan.hjson" */>}}

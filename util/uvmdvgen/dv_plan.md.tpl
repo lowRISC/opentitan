@@ -1,16 +1,15 @@
+---
+title: "${name.upper()} DV Plan"
+---
+
 <!-- Copy this file to hw/ip/${name}/doc/${name}_dv_plan.md and make changes as needed.
 For convenience '${name}' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram here:
-https://drive.google.com/open?id=1LfnTSutIW5E6zSCOCf4-scS8MQ8lXhPAPgSfFx2Aqh0
+desired IP (with case sensitivity!). Also, use the testbench block diagram
+located at OpenTitan team drive / 'design verification'
 as a starting point and modify it to reflect your ${name} testbench and save it
 to hw/ip/${name}/doc/tb.svg. It should get linked and rendered under the block
 diagram section below. Please update / modify / remove sections below as
 applicable. Once done, remove this comment before making a PR. -->
-
-{{% lowrisc-doc-hdr ${name.upper()} DV Plan }}
-{{% import_testplan ../data/${name}_testplan.hjson }}
-
-{{% toc 4 }}
 
 ${'##'} Goals
 * **DV**
@@ -20,15 +19,15 @@ ${'##'} Goals
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ${'##'} Current status
-* [Design & verification stage](../../../../doc/project/hw_dashboard.md)
-  * [HW development stages](../../../../doc/project/hw_stages.md)
+* [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
+  * [HW development stages]({{< relref "doc/project/hw_stages" >}})
 * DV regression results dashboard (link TBD)
 
 ${'##'} Design features
-For detailed information on ${name.upper()} design features, please see the [${name.upper()} design specification](${name}.md).
+For detailed information on ${name.upper()} design features, please see the [${name.upper()} HWIP technical specification]({{< relref "hw/ip/${name}/doc" >}}).
 
 ${'##'} Testbench architecture
-${name.upper()} testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+${name.upper()} testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ${'###'} Block diagram
 ![Block diagram](tb.svg)
@@ -36,17 +35,17 @@ ${'###'} Block diagram
 ${'###'} Top level testbench
 Top level testbench is located at `hw/ip/${name}/dv/tb/tb.sv`. It instantiates the ${name.upper()} DUT module `hw/ip/${name}/rtl/${name}.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
-* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
+* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ${name.upper()} IOs
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
 
 ${'###'} Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
-* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
 ${'###'} Compile-time configurations
 [list compile time configurations, if any and what are they used for]
@@ -60,7 +59,7 @@ All common types and methods defined at the package level can be found in
 % if is_cip:
 
 ${'###'} TL_agent
-${name.upper()} testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
+${name.upper()} testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ${name.upper()} device.
 % endif
@@ -77,7 +76,7 @@ ${'###'} UVC/agent 2
 [Describe here or add link to its README]
 
 ${'###'} RAL
-The ${name.upper()} RAL model is constructed using the [regtool.py script](../../../../util/reggen/README.md) and is placed at `env/${name}_reg_block.sv`.
+The ${name.upper()} RAL model is constructed using the [regtool.py script]({{< relref "util/reggen/README.md" >}}) and is placed at `env/${name}_reg_block.sv`.
 
 ${'###'} Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
@@ -107,13 +106,13 @@ It creates the following analysis ports to retrieve the data monitored by corres
 <!-- explain inputs monitored, flow of data and outputs checked -->
 
 ${'####'} Assertions
-* TLUL assertions: The `tb/${name}_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/${name}_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * assert prop 1:
 * assert prop 2:
 
 ${'##'} Building and running tests
-We are using our in-house developed [regression tool](../../../dv/tools/README.md) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
@@ -122,4 +121,5 @@ $ make TEST_NAME=${name}_sanity
 ```
 
 ${'##'} Testplan
-{{% insert_testplan x }}
+<!-- TODO: uncomment the line below after adding the testplan -->
+{{</* testplan "hw/ip/${name}/data/${name}_testplan.hjson" */>}}
