@@ -1,0 +1,13 @@
+OpenTitan Snapshot Binary Release
+=================================
+
+This directory contains pre-built material produced from a development snapshot
+of the OpenTitan codebase. It includes content that is Copyright lowRISC
+contributors and licensed under the Apache License, Version 2.0. See the
+LICENSE file for details.
+
+Refer to the Quickstart Guide at https://docs.opentitan.org for information on
+how to get started in simulation and on an FPGA.
+
+For more information about the OpenTitan project please head over to
+https://www.opentitan.org.
