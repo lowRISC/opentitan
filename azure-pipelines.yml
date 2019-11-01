@@ -256,6 +256,11 @@ stages:
         OT_VERSION=$(git describe --always)
         cd "$(Build.ArtifactStagingDirectory)"
         find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
+
+        cp $(Build.SourcesDirectory)/ci/README.snapshot dist/README
+        echo -e "\nVersion $OT_VERSION, built at $(date -u)" >> dist/README
+        cp $(Build.SourcesDirectory)/LICENSE dist/LICENSE
+
         mv dist opentitan-$OT_VERSION
         mkdir -p dist-final
         tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
