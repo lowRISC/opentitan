@@ -41,16 +41,7 @@ The tool raises an error if *Required* keys are missing.
 *Optional* keys may be provided in the input files.
 The tool also may insert the optional keys with default value.
 
-The script-generated tool documentation is shown here for completeness.
-This can be given by executing the following.
-
-```console
-    $ util/tlgen.py --doc
-```
-
-```
-include !../../util/tlgen.py --doc
-```
+{{% selfdoc "tlgen" %}}
 
 ## Fabrication process
 

@@ -25,7 +25,9 @@ import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
 import reggen.validate as validate
+import reggen.gen_selfdoc as reggen_selfdoc
 import testplanner.testplan_utils as testplan_utils
+import tlgen
 
 USAGE = """
   build_docs [options]
@@ -74,6 +76,9 @@ config = {
         "hw/ip/uart/data/uart_testplan.hjson",
         "util/testplanner/examples/foo_testplan.hjson",
     ],
+
+    # Pre-generated utility selfdoc
+    "selfdoc_tools": ["tlgen", "reggen"],
 
     # Output directory for documents
     "outdir":
@@ -135,6 +140,21 @@ def generate_testplans():
         testplan_html = open(plan_path, mode='w')
         testplan_utils.gen_html_testplan_table(plan, testplan_html)
         testplan_html.close()
+
+
+def generate_selfdocs():
+    """Generate documents for the tools in `util/` if `--doc` option exists.
+
+    Each tool creates selfdoc differently. Manually invoked.
+    """
+    for tool in config["selfdoc_tools"]:
+        selfdoc_path = config["outdir-generated"].joinpath(tool + '.selfdoc')
+        selfdoc_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(selfdoc_path, mode='w') as fout:
+            if tool == "reggen":
+                reggen_selfdoc.document(fout)
+            elif tool == "tlgen":
+                fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
 
 def install_hugo(install_dir):
@@ -210,6 +230,7 @@ def main():
     generate_hardware_blocks()
     generate_dashboards()
     generate_testplans()
+    generate_selfdocs()
 
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)

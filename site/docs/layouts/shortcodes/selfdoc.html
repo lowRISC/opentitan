@@ -1,0 +1,6 @@
+{{ $baseName := .Get 0 }}
+{{ $path := path.Join .Site.Params.generatedRoot (printf "%s.selfdoc" $baseName) }}
+{{ if not (fileExists $path) }}
+  {{ errorf "Tool selfdoc has not been generated for %s" $baseName }}
+{{ end }}
+{{ readFile $path | safeHTML }}

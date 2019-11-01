@@ -29,6 +29,8 @@ It is an error if *required* keys are missing from the input json.
 *Optional* keys may be provided in the input file as needed, as noted in the tables the tool may insert them (with default or computed values) during validation so the output generators do not have to special case them.
 Keys marked as "inserted by tool" should not be in the input json (they will be silently overwritten if they are there), they are derived by the tool during validation of the input and available to the output generators.
 
+{{% selfdoc "reggen" %}}
+
 The tool will normally generate the register address offset by starting from 0 and allocating the registers in the order they are in the input file.
 Between each register the offset is incremented by the number of bytes in the `regwidth` (4 bytes for the default 32-bit `regwidth`), so the registers end up packed into the smallest space.
 
