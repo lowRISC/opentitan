@@ -18,264 +18,277 @@ trigger:
     include:
     - master
 
-stages:
-# Stage 1 are fast checks for tools which provide fast turnaround time
-# (< 5 minutes)
-- stage: quick_sanity
-  displayName: Quick sanity checks
-  jobs:
-  - job: "lint"
-    displayName: "Run code quality checks (lint)"
-    pool:
-      vmImage: "ubuntu-latest"
-    steps:
-    - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
-        sudo pip3 install -U -r python-requirements.txt
-      displayName: 'Install dependencies'
+jobs:
+- job: "lint"
+  displayName: "Run code quality checks (lint)"
+  pool:
+    vmImage: "ubuntu-latest"
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
+      sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install dependencies'
 
-    - bash: |
-        python3 --version
-        yapf --version
-        isort --version
-        clang-format -version
-      displayName: 'Display tool versions'
+  - bash: |
+      python3 --version
+      yapf --version
+      isort --version
+      clang-format -version
+    displayName: 'Display tool versions'
 
 #   XXX: Python lint checks are disabled until Issue #313 is resolved
 #    - bash: find ./util -iname '*.py' -print0 | xargs -0 -n1 $PWD/util/lintpy.py -f
 #      displayName: 'Run Python lint'
 
-    - bash: |
-        make -C hw regs && git diff --exit-code
-        if [ $? != 0 ]; then
-          echo -n "##vso[task.logissue type=error]"
-          echo "Register headers not up-to-date. Regenerate them with 'make -C hw regs'."
-          exit 1
-        fi
-      condition: always()
-      displayName: 'Ensure all generated files are clean and up-to-date'
+  - bash: |
+      make -C hw regs && git diff --exit-code
+      if [ $? != 0 ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Register headers not up-to-date. Regenerate them with 'make -C hw regs'."
+        exit 1
+      fi
+    condition: always()
+    displayName: 'Ensure all generated files are clean and up-to-date'
 
-    - bash: |
-        # XXX: As of today, task.logissue comments with 'sourcepath' set don't
-        # get reported to GitHub Checks annotations. Upstream bug report:
-        # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
-        #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
+  - bash: |
+      # XXX: As of today, task.logissue comments with 'sourcepath' set don't
+      # get reported to GitHub Checks annotations. Upstream bug report:
+      # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
+      #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
+      fork_origin=$(git merge-base --fork-point origin/master)
+      changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/)
+      test -z $changed_files || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
+      if [ -s clang-format-output ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or 'git clang-format' to format the code."
+        exit 1
+      fi
+    # This check is not idempotent, but checks changes to a base branch.
+    # Run it only on pull requests.
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: 'Use clang-format to check C/C++ coding style'
+
+  - bash: |
+      commit_range=$(git merge-base --fork-point origin/master)..HEAD
+      # Notes:
+      # * Merge commits are not checked. We always use rebases instead of
+      #   merges to keep a linear history, which makes merge commits disappear
+      #   ultimately, making them only a CI artifact which should not be
+      #   checked.
+      # * 'type=error' is used even for warnings. Only "errors" are shown in
+      #   the GitHub checks API. However, warnings don't return a non-zero
+      #   error code and don't fail the build step.
+      ./util/lint_commits.py \
+          --no-merges \
+          --error-msg-prefix='##vso[task.logissue type=error]' \
+          --warning-msg-prefix='##vso[task.logissue type=error]' \
+          $commit_range
+    # Only run on pull requests to check new commits only
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: "Check commit metadata"
+
+  - bash: |
+      only_doc_changes=0
+      if [ "$(Build.Reason)" = "PullRequest" ]; then
+        # Conservative way of checking for documentation-only changes.
+        # Only relevant for pipelines triggered from pull requests
+        echo "Checking for doc-only changes in this pull request"
         fork_origin=$(git merge-base --fork-point origin/master)
-        changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/)
-        test -z $changed_files || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
-        if [ -s clang-format-output ]; then
-          echo -n "##vso[task.logissue type=error]"
-          echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or 'git clang-format' to format the code."
-          exit 1
-        fi
-      # This check is not idempotent, but checks changes to a base branch.
-      # Run it only on pull requests.
-      condition: eq(variables['Build.Reason'], 'PullRequest')
-      displayName: 'Use clang-format to check C/C++ coding style'
+        only_doc_changes=$(git diff --name-only $fork_origin | grep -v '\.md$' -q; echo $?)
+      fi
+      echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
+    displayName: "Check if the commit only contains documentation changes"
+    name: DetermineBuildType
 
-    - bash: |
-        commit_range=$(git merge-base --fork-point origin/master)..HEAD
-        # Notes:
-        # * Merge commits are not checked. We always use rebases instead of
-        #   merges to keep a linear history, which makes merge commits disappear
-        #   ultimately, making them only a CI artifact which should not be
-        #   checked.
-        # * 'type=error' is used even for warnings. Only "errors" are shown in
-        #   the GitHub checks API. However, warnings don't return a non-zero
-        #   error code and don't fail the build step.
-        ./util/lint_commits.py \
-            --no-merges \
-            --error-msg-prefix='##vso[task.logissue type=error]' \
-            --warning-msg-prefix='##vso[task.logissue type=error]' \
-            $commit_range
-      # Only run on pull requests to check new commits only
-      condition: eq(variables['Build.Reason'], 'PullRequest')
-      displayName: "Check commit metadata"
+- job: "sw_build"
+  displayName: "Build Software"
+  dependsOn: lint
+  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  pool:
+    vmImage: "ubuntu-16.04"
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential pkgconf srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev ninja-build \
+        && sudo pip3 install -U -r python-requirements.txt \
+        && sudo pip3 install -U meson
+    displayName: 'Install dependencies'
+  - bash: |
+      set -x
+      sudo util/get-toolchain.py \
+        --target-dir="${TOOLCHAIN_PATH}" \
+        --release-version="${TOOLCHAIN_VERSION}" \
+        --update \
+        --force
+    displayName: 'Install toolchain'
+  - bash: |
+      ./meson_init.sh -f
+      ninja -C build-verilator all
+      ninja -C build-fpga all
+    displayName: 'Build embedded targets'
 
-# Stage 2 for longer builds and tests. Jobs run in parallel by default, and
-# dependencies should be used for build -> test dependencies.
-- stage: build_test
-  displayName: Build and test
-  jobs:
-  - job: "sw_build"
-    displayName: "Build Software"
-    pool:
-      vmImage: "ubuntu-16.04"
-    steps:
-    - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential pkgconf srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev ninja-build \
-          && sudo pip3 install -U -r python-requirements.txt \
-          && sudo pip3 install -U meson
-      displayName: 'Install dependencies'
-    - bash: |
-        set -x
-        sudo util/get-toolchain.py \
-          --target-dir="${TOOLCHAIN_PATH}" \
-          --release-version="${TOOLCHAIN_VERSION}" \
-          --update \
-          --force
-      displayName: 'Install toolchain'
-    - bash: |
-        ./meson_init.sh -f
-        ninja -C build-verilator all
-        ninja -C build-fpga all
-      displayName: 'Build embedded targets'
+- job: "deprecated_make_build"
+  displayName: "Build Software with Make (deprecated)"
+  dependsOn: lint
+  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  pool: Default
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
+        && sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install dependencies'
+  - bash: |
+      export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
+      export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
+      export DIST_DIR="$(Build.ArtifactStagingDirectory)/dist"
+      REQUEST_UPDATE=true ci/run_sw_make.sh
+    displayName: 'Build embedded targets'
+  - bash: |
+      make -C sw/host/spiflash clean all
+      # TODO: build system updates needed to copy build output to a dist
+      # staging directory.
+      mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
+      cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
+    displayName: 'Build host targets'
+  - bash: |
+      cd $(Build.ArtifactStagingDirectory)
+      tar -cf dist-partial-sw_build.tar dist
+    displayName: 'Prepare partial distribution artifacts'
+  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-sw_build.tar
+    artifact: dist-partial-sw_build
+    displayName: "Upload partial distribution artifacts"
 
-  - job: "deprecated_make_build"
-    displayName: "Build Software with Make (deprecated)"
-    pool: Default
-    steps:
-    - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
-          && sudo pip3 install -U -r python-requirements.txt
-      displayName: 'Install dependencies'
-    - bash: |
-        export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
-        export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
-        export DIST_DIR="$(Build.ArtifactStagingDirectory)/dist"
-        REQUEST_UPDATE=true ci/run_sw_make.sh
-      displayName: 'Build embedded targets'
-    - bash: |
-        make -C sw/host/spiflash clean all
-        # TODO: build system updates needed to copy build output to a dist
-        # staging directory.
-        mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
-        cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
-      displayName: 'Build host targets'
-    - bash: |
-        cd $(Build.ArtifactStagingDirectory)
-        tar -cf dist-partial-sw_build.tar dist
-      displayName: 'Prepare partial distribution artifacts'
-    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-sw_build.tar
-      artifact: dist-partial-sw_build
-      displayName: "Upload partial distribution artifacts"
+- job: "top_earlgrey_verilator"
+  displayName: "Build Verilator simulation of the Earl Grey toplevel design"
+  dependsOn: lint
+  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  pool: Default
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+        && sudo pip3 install -U -r python-requirements.txt \
+        && sudo apt-get install git make autoconf g++ flex bison curl
+    displayName: 'Install dependencies'
+  - bash: |
+      set -e
+      if [ ! -d $(VERILATOR_PATH) ]; then
+        echo "Building verilator (no cached build found)"
+        mkdir -p build/verilator
+        cd build/verilator
+        curl -Ls -o verilator.tgz https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz
+        tar -xf verilator.tgz
+        cd verilator-$(VERILATOR_VERSION)
+        ./configure --prefix=$(VERILATOR_PATH)
+        make -j$(nproc)
+        mkdir -p $VERILATOR_PATH
+        make install
+      else
+        echo "Re-using cached verilator build"
+      fi
+    displayName: 'Build and install Verilator'
+  - bash: |
+      export PATH=$VERILATOR_PATH/bin:$PATH
+      python3 --version
+      fusesoc --version
+      verilator --version
+    displayName: 'Display environment'
+  - bash: |
+      export PATH=$VERILATOR_PATH/bin:$PATH
+      fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
+    displayName: 'Build simulation with Verilator'
+  - bash: |
+      DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
+      mkdir -p "${DIST_DIR}"
+      cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+        ${DIST_DIR}
+      cd $(Build.ArtifactStagingDirectory)
+      tar -cf dist-partial-top_earlgrey_verilator.tar dist
+    displayName: 'Prepare partial distribution artifacts'
+  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_verilator.tar
+    artifact: dist-partial-top_earlgrey_verilator
+    displayName: "Upload partial distribution artifacts"
 
-  - job: "top_earlgrey_verilator"
-    displayName: "Build Verilator simulation of the Earl Grey toplevel design"
-    pool: Default
-    steps:
-    - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install -U -r python-requirements.txt \
-          && sudo apt-get install git make autoconf g++ flex bison curl
-      displayName: 'Install dependencies'
-    - bash: |
-        set -e
-        if [ ! -d $(VERILATOR_PATH) ]; then
-          echo "Building verilator (no cached build found)"
-          mkdir -p build/verilator
-          cd build/verilator
-          curl -Ls -o verilator.tgz https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz
-          tar -xf verilator.tgz
-          cd verilator-$(VERILATOR_VERSION)
-          ./configure --prefix=$(VERILATOR_PATH)
-          make -j$(nproc)
-          mkdir -p $VERILATOR_PATH
-          make install
-        else
-          echo "Re-using cached verilator build"
-        fi
-      displayName: 'Build and install Verilator'
-    - bash: |
-        export PATH=$VERILATOR_PATH/bin:$PATH
-        python3 --version
-        fusesoc --version
-        verilator --version
-      displayName: 'Display environment'
-    - bash: |
-        export PATH=$VERILATOR_PATH/bin:$PATH
-        fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
-      displayName: 'Build simulation with Verilator'
-    - bash: |
-        DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
-        mkdir -p "${DIST_DIR}"
-        cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-          ${DIST_DIR}
-        cd $(Build.ArtifactStagingDirectory)
-        tar -cf dist-partial-top_earlgrey_verilator.tar dist
-      displayName: 'Prepare partial distribution artifacts'
-    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_verilator.tar
-      artifact: dist-partial-top_earlgrey_verilator
-      displayName: "Upload partial distribution artifacts"
+- job: "top_earlgrey_nexysvideo"
+  displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
+  dependsOn:
+    - lint
+    # The bootrom is built into the FPGA image at synthesis time.
+    - deprecated_make_build
+  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  pool: Default
+  timeoutInMinutes: 120 # 2 hours
+  steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: current
+      targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+  - bash: |
+      sudo apt-get install -y tree
+      mkdir -p $(Build.ArtifactStagingDirectory)/dist-other
+      cd $(Build.ArtifactStagingDirectory)/dist-other
+      find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --strip-components=1 --overwrite -xf {} \;
+      tree $(Build.ArtifactStagingDirectory)
+    displayName: 'Restore partial dist directory'
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
+        && sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install dependencies'
+  - bash: |
+      set -e
+      BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/fpga/boot_rom/rom.vmem
+      test -f ${BOOTROM_VMEM}
+      source /opt/xilinx/Vivado/2018.3/settings64.sh
+      fusesoc --cores-root . run --target=synth --setup --build \
+        lowrisc:systems:top_earlgrey_nexysvideo \
+        --ROM_INIT_FILE=${BOOTROM_VMEM}
+    displayName: 'Build bitstream with Vivado'
+  - bash: |
+      DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
+      mkdir -p "${DIST_DIR}"
+      cp build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit \
+        ${DIST_DIR}
+      cd $(Build.ArtifactStagingDirectory)
+      tar -cf dist-partial-top_earlgrey_nexysvideo.tar dist
+    displayName: 'Prepare partial distribution artifacts'
+  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
+    artifact: dist-partial-top_earlgrey_nexysvideo
+    displayName: 'Upload partial distribution artifacts'
 
-  - job: "top_earlgrey_nexysvideo"
-    displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
-    pool: Default
-    timeoutInMinutes: 120 # 2 hours
-    dependsOn:
-      # The bootrom is built into the FPGA image at synthesis time.
-      - deprecated_make_build
-    steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: current
-        targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
-    - bash: |
-        sudo apt-get install -y tree
-        mkdir -p $(Build.ArtifactStagingDirectory)/dist-other
-        cd $(Build.ArtifactStagingDirectory)/dist-other
-        find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --strip-components=1 --overwrite -xf {} \;
-        tree $(Build.ArtifactStagingDirectory)
-      displayName: 'Restore partial dist directory'
-    - bash: |
-        sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-          && sudo pip3 install -U -r python-requirements.txt
-      displayName: 'Install dependencies'
-    - bash: |
-        set -e
-        BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/fpga/boot_rom/rom.vmem
-        test -f ${BOOTROM_VMEM}
-        source /opt/xilinx/Vivado/2018.3/settings64.sh
-        fusesoc --cores-root . run --target=synth --setup --build \
-          lowrisc:systems:top_earlgrey_nexysvideo \
-          --ROM_INIT_FILE=${BOOTROM_VMEM}
-      displayName: 'Build bitstream with Vivado'
-    - bash: |
-        DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
-        mkdir -p "${DIST_DIR}"
-        cp build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit \
-          ${DIST_DIR}
-        cd $(Build.ArtifactStagingDirectory)
-        tar -cf dist-partial-top_earlgrey_nexysvideo.tar dist
-      displayName: 'Prepare partial distribution artifacts'
-    - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
-      artifact: dist-partial-top_earlgrey_nexysvideo
-      displayName: 'Upload partial distribution artifacts'
+- job: "deploy_releaseartifacts"
+  displayName: "Package and deploy release distribution"
+  pool:
+    vmImage: "ubuntu-latest"
+  dependsOn:
+    - lint
+    - deprecated_make_build
+    - top_earlgrey_verilator
+    - top_earlgrey_nexysvideo
+  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: current
+      targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+  - bash: |
+      OT_VERSION=$(git describe --always)
+      cd "$(Build.ArtifactStagingDirectory)"
+      find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
 
-  - job: "deploy_releaseartifacts"
-    displayName: "Package and deploy release distribution"
-    pool:
-      vmImage: "ubuntu-latest"
-    dependsOn:
-      - deprecated_make_build
-      - top_earlgrey_verilator
-      - top_earlgrey_nexysvideo
-    steps:
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: current
-        targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
-    - bash: |
-        OT_VERSION=$(git describe --always)
-        cd "$(Build.ArtifactStagingDirectory)"
-        find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
+      cp $(Build.SourcesDirectory)/ci/README.snapshot dist/README
+      echo -e "\nVersion $OT_VERSION, built at $(date -u)" >> dist/README
+      cp $(Build.SourcesDirectory)/LICENSE dist/LICENSE
 
-        cp $(Build.SourcesDirectory)/ci/README.snapshot dist/README
-        echo -e "\nVersion $OT_VERSION, built at $(date -u)" >> dist/README
-        cp $(Build.SourcesDirectory)/LICENSE dist/LICENSE
-
-        mv dist opentitan-$OT_VERSION
-        mkdir -p dist-final
-        tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
-      displayName: 'Create final dist directory out of partial ones'
-    - publish: $(Build.ArtifactStagingDirectory)/dist-final
-      artifact: opentitan-dist
-      displayName: "Upload release artifacts as Azure artifact"
-    - task: GithubRelease@0
-      displayName: 'Upload to GitHub releases (only tags)'
-      inputs:
-        gitHubConnection: opentitan-release-upload
-        repositoryName: lowrisc/opentitan
-        addChangeLog: false
-        assets: |
-            $(Build.ArtifactStagingDirectory)/dist-final/*
+      mv dist opentitan-$OT_VERSION
+      mkdir -p dist-final
+      tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
+    displayName: 'Create final dist directory out of partial ones'
+  - publish: $(Build.ArtifactStagingDirectory)/dist-final
+    artifact: opentitan-dist
+    displayName: "Upload release artifacts as Azure artifact"
+  - task: GithubRelease@0
+    displayName: 'Upload to GitHub releases (only tags)'
+    inputs:
+      gitHubConnection: opentitan-release-upload
+      repositoryName: lowrisc/opentitan
+      addChangeLog: false
+      assets: |
+          $(Build.ArtifactStagingDirectory)/dist-final/*
