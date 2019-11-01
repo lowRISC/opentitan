@@ -42,7 +42,7 @@ ignoreFiles = [
   "Makefile$",
 ]
 pygmentsCodeFences = true
-pygmentsStyle = "github"
+pygmentsStyle = "tango"
 disableKinds = ["taxonomy", "taxonomyTerm", "RSS", "sitemap"]
 
 [params]
