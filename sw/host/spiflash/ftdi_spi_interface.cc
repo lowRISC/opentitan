@@ -77,8 +77,10 @@ struct MpsseHandle {
 FtdiSpiInterface::FtdiSpiInterface() : spi_(nullptr) {}
 
 FtdiSpiInterface::~FtdiSpiInterface() {
-  // TODO: Add interface to toggle bootstrap pin.
-  PinLow(spi_->ctx, kBootstrapH);
+  if (spi_ != nullptr) {
+    // TODO: Add interface to toggle bootstrap pin.
+    PinLow(spi_->ctx, kBootstrapH);
+  }
 }
 
 bool FtdiSpiInterface::Init() {
