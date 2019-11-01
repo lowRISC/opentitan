@@ -146,8 +146,8 @@ jobs:
       make -C sw/host/spiflash clean all
       # TODO: build system updates needed to copy build output to a dist
       # staging directory.
-      mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
-      cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/bin
+      mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
+      cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
     displayName: 'Build host targets'
   - bash: |
       cd $(Build.ArtifactStagingDirectory)
