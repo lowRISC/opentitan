@@ -1,36 +1,24 @@
 ---
 title: "Flash Controller HWIP Technical Specification"
 ---
+
 # Overview
 
-This document describes the general functionality of flash.
+This document specifies flash hardware IP functionality.
 As the final feature set will largely depend on how similar flash IPs are, it is at the moment unclear where the open-source / proprietary boundaries should lie.
 This document thus makes a best effort estimate as to what that boundary should be and breaks the functionality down accordingly.
 
 This document assumes flash functionality shall be divided into two partitions.
+
 * Flash protocol controller
 * Flash physical controller
 
-# Theory of Operation
+This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+See that document for integration overview within the broader top level system.
 
-## Flash Protocol Controller
-The Flash Protocol Controller sits between the host software interface and the physical flash.
-Its primary function is to translate software requests into a high level protocol for the actual flash block.
-Importantly, the flash protocol controller shall not be responsible for the detailed timing and waveform control of the flash.
-Instead, it shall maintain FIFOs / interrupts for the software to process data.
+## Features
 
-## Flash Physical Controller
-The Flash Physical Controller is the wrapper module that contains the actual flash memory instantiation.
-It is responsible for converting high level protocol commands (such as read, program, erase) into low level signaling and timing specific to a particular flash IP.
-It is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash memory.
-
-The diagram below summarizes a high level breakdown.
-
-![Flash High Level Abstraction](flash_abstraction.svg)
-
-# Features
-
-## Flash Protocol Controller Features
+### Flash Protocol Controller Features
 
 *  Support controller initiated read, program and erase of flash.
    *  Erase can be either of a page, or an entire bank.
@@ -54,7 +42,7 @@ The diagram below summarizes a high level breakdown.
       *  Flash may contain additional pages outside of the data banks to hold manufacturing information (such as wafer location).
       *  Extra logic may not be required if flash information pages is treated as just a separate address.
 
-## Flash Physical Controller Features
+### Flash Physical Controller Features
 
 As the flash physical controller is highly dependent on flash memory selected, the default flash physical controller simply emulates real flash behavior with on-chip memories.
 The goal of the emulated flash is to provide software developers with a reasonable representation of a well-behaving flash operating under nominal conditions.
@@ -93,39 +81,39 @@ Depending on need, it may be necessary to add controller logic to perform the fo
    * As the physical controller represents the final connecting logic to the actual flash memory, additional security considerations may be required to ensure backdoor access paths do not exist.
 
 
-## Flash Protocol Controller Description
+# Theory of Operation
 
-The flash protocol controller uses a simple FIFO interface to communicate between the software and flash physical controller.
-There is a read fifo for read operations, and a program fifo for program operations.
-Note, this means flash can be read both through the controller and the main bus interface.
-This may prove useful if the controller wishes to allocate specific regions to HW FSMs only, but is not a necessary feature.
+## Block Diagram
 
-When software initiates a read transaction of a programmable number of flash words, the flash controller will fill up the read FIFO for software to consume.
-Likewise, when software initiates a program transaction, software will fill up the program FIFO for the controller to consume.
+### Flash Protocol Controller
 
-The controller is designed such that the overall number of words in a transaction can significantly exceed the FIFO depth.
-In the case of read, once the FIFO is full, the controller will cease writing more entries and wait for software to consume the contents (an interrupt will be triggered to the software to alert it to such an event).
-In the case of program, the controller will stop writing to flash once all existing data is consumed - it will likewise trigger an interrupt to software to prepare more data.
-See detailed steps in theory of operation.
-The following is a diagram of the controller construction as well as its over connectivity with the flash module.
+The Flash Protocol Controller sits between the host software interface and the physical flash.
+Its primary function is to translate software requests into a high level protocol for the actual flash block.
+Importantly, the flash protocol controller shall not be responsible for the detailed timing and waveform control of the flash.
+Instead, it shall maintain FIFOs / interrupts for the software to process data.
 
-![Flash Protocol Controller](flash_protocol_controller.svg)
+### Flash Physical Controller
 
-## Flash Physical Controller Description
-The table below lists the flash protocol controller signals.
+The Flash Physical Controller is the wrapper module that contains the actual flash memory instantiation.
+It is responsible for converting high level protocol commands (such as read, program, erase) into low level signaling and timing specific to a particular flash IP.
+It is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash memory.
+
+The diagram below summarizes the high level breakdown.
+
+![Flash High Level Abstraction](flash_abstraction.svg)
+
+## Hardware Interfaces
+
+{{< hwcfg "hw/ip/flash_ctrl/data/flash_ctrl.hjson" >}}
+
+### Signals
+
+In addition to the interrupts and bus signals, the tables below lists the flash protocol controller I/Os.
 
 Signal                  | Direction | Description
 ------------------------|-----------|---------------
-`tl_i`                  | `input`   | TileLink-UL input for register access
-`tl_o`                  | `output`  | TileLink-UL output for register access
 `flash_i`               | `input`   | Inputs from physical controller, connects to `flash_ctrl_o` of physical controller
 `flash_o`               | `output`  | Outputs to physical controller, connects to `flash_ctrl_i` of physical controller
-`intr_prog_empty_o`     | `output`  | Interrupt indicating program fifo is empty
-`intr_prog_lvl_o`       | `output`  | Interrupt indicating program fifo has reached configurable threshold
-`intr_rd_full_o`        | `output`  | Interrupt indicating read fifo is full
-`intr_rd_lvl_o`         | `output`  | Interrupt indicating read fifo has reached configurable threshold
-`intr_op_done_o`        | `output`  | Interrupt indicating flash operation is complete
-`intr_op_error_o`       | `output`  | Interrupt indicating there is a flash operation error
 
 Each of `flash_i` and `flash_o` is a struct that packs together additional signals, as shown below
 
@@ -144,8 +132,7 @@ Each of `flash_i` and `flash_o` is a struct that packs together additional signa
 | `init_busy`     | physical controller  | protocol controller | Physical controller reset release initialization in progress
 | `rd_data`       | physical controller  | protocol controller | Physical Controller read data, 1 flash word wide
 
-
-As the physical controller is IP specific, this section will only try to describe the connecting protocol signals, its function, and the memory allocation of configuration registers.
+The physical controller IOs are listed and described below.
 
 | Signal            | Direction | Description
 | ----------------- | ----------| -------
@@ -157,15 +144,32 @@ As the physical controller is IP specific, this section will only try to describ
 | `flash_ctrl_i`    | input     | Inputs from protocol controller, connects to `flash_o` of protocol controller
 | `flash_ctrl_o`    | output    | Outputs to protocol controller, connects to `flash_i` of protcol controller
 
-# Operation Description
+## Design Detials
 
-The operation section describes the detailed signaling from the perspective of the physical controller interface
+### Flash Protocol Controller Description
 
-## Host Read
+The flash protocol controller uses a simple FIFO interface to communicate between the software and flash physical controller.
+There is a read fifo for read operations, and a program fifo for program operations.
+Note, this means flash can be read both through the controller and the main bus interface.
+This may prove useful if the controller wishes to allocate specific regions to HW FSMs only, but is not a necessary feature.
+
+When software initiates a read transaction of a programmable number of flash words, the flash controller will fill up the read FIFO for software to consume.
+Likewise, when software initiates a program transaction, software will fill up the program FIFO for the controller to consume.
+
+The controller is designed such that the overall number of words in a transaction can significantly exceed the FIFO depth.
+In the case of read, once the FIFO is full, the controller will cease writing more entries and wait for software to consume the contents (an interrupt will be triggered to the software to alert it to such an event).
+In the case of program, the controller will stop writing to flash once all existing data is consumed - it will likewise trigger an interrupt to software to prepare more data.
+See detailed steps in theory of operation.
+The following is a diagram of the controller construction as well as its over connectivity with the flash module.
+
+![Flash Protocol Controller](flash_protocol_controller.svg)
+
+
+### Host Read
 
 Unlike controller initiated reads, host reads have separate rdy / done signals to ensure transactions can be properly pipelined.
 As host reads are usually tied to host execution upstream, additional latency can severely harm performance and is not desired.
-The protocol expected waveform is shown below.
+The expected waveform from the perspective of the physical controller is shown below.
 
 {{< wavejson >}}
 {signal: [
@@ -183,12 +187,12 @@ The `host_req_done_o` is always single cycle pulsed and upstream logic is expect
 The same cycle the return data is posted a new command / address can be accepted.
 While the example shows flash reads completing in back to back cycles, this is typically not the case.
 
-## Controller Read
+### Controller Read
 
 Unlike host reads, controller reads are not as performance critical and do not have command / data pipeline requirements.
 Instead, the protocol controller will hold the read request and address lines until the done is seen.
 Once the done is seen, the controller then transitions to the next read operation.
-See expected waveform below.
+The expected waveform from the perspective of the physical controller is shown below.
 
 {{< wavejson >}}
 {signal: [
@@ -202,10 +206,11 @@ See expected waveform below.
 ]}
 {{< /wavejson >}}
 
-## Controller Program
+### Controller Program
 
 Program behavior is similar to reads.
 The protocol controller will hold the request, address and data lines until the programming is complete.
+The expected waveform from the perspective of the physical controller is shown below.
 
 {{< wavejson >}}
 {signal: [
@@ -219,7 +224,7 @@ The protocol controller will hold the request, address and data lines until the 
 ]}
 {{< /wavejson >}}
 
-# Programmer's Guide
+# Programmers Guide
 
 ## Issuing a Controller Read
 
@@ -245,7 +250,7 @@ Software will then fill the program FIFO and wait for the controller to consume 
 Similar to the read case, the controller will automatically stall when there is insufficient data in the FIFO.
 When all desired words have been programmed, the controller will post OP_DONE in the {{< regref "OP_STATUS" >}} register.
 
-# Register Table
+## Register Table
 
 The flash protocol controller maintains two separate access windows for the FIFO.
 It is implemented this way because the access window supports transaction back-pressure should the FIFO become full (in case of write) or empty (in case of read).
