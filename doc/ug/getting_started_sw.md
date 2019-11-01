@@ -21,4 +21,4 @@ The build process produces a variety of output files.
 * `.dis`: the disassembled program
 * `.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code
 
-Please see [SW build flow]("/sw/device/doc/sw_build_flow.md") for more details.
+Please see [SW build flow]({{< relref "sw/device/doc/sw_build_flow.md" >}}) for more details.
