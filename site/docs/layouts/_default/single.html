@@ -8,6 +8,7 @@
           {{ .TableOfContents }}
         </aside>
         <main id="main" role="main" class="markdown">
+          {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
           {{ .Content }}
         </main>
       </div>
