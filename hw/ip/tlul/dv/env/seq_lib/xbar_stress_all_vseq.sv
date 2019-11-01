@@ -52,7 +52,10 @@ class xbar_stress_all_vseq extends xbar_base_vseq;
           join_none
         end
         wait fork;
-        if ($urandom_range(0, 1)) dut_init();
+        // if this seq is called as a sub-seq, and run with another seq that contains reset,
+        // when reset is issued in both seq at the same time, can't know where is the end of reset
+        // hence, if we want to kill unfinished seq after reset, we may not kill it at a right time
+        if (do_dut_init && $urandom_range(0, 1)) dut_init();
         `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
       end // isolation thread
     join

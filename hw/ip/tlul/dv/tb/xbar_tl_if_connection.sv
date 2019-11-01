@@ -15,6 +15,7 @@
 `CONNECT_TL_DEVICE_IF(hmac_tl_if, dut.tl_hmac_o, dut.tl_hmac_i, TlHmac)
 `CONNECT_TL_DEVICE_IF(aes_tl_if, dut.tl_aes_o, dut.tl_aes_i, TlAes)
 `CONNECT_TL_DEVICE_IF(rv_plic_tl_if, dut.tl_rv_plic_o, dut.tl_rv_plic_i, TlRvPlic)
+`CONNECT_TL_DEVICE_IF(pinmux_tl_if, dut.tl_pinmux_o, dut.tl_pinmux_i, TlPinmux)
 
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(corei_tl_if, dut.tl_corei_i, dut.tl_corei_o, TlCorei)

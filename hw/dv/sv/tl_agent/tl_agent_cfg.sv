@@ -16,7 +16,7 @@ class tl_agent_cfg extends uvm_object;
   // 0: Unlimited from the master perspective, might be back-pressured by the slave
   // 1: Only single transaction at a time
   // n: Number of maximum oustanding requests
-  int unsigned max_outstanding_req = 0;
+  int unsigned max_outstanding_req = 1; // most of IPs only support 1 outstanding req
 
   // TileLink channel valid delay (host mode)
   bit use_seq_item_a_valid_delay;

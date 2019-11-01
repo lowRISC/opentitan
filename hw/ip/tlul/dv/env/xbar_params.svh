@@ -18,13 +18,16 @@ tl_device_t xbar_devices[$] = '{
     '{"TlFlashCtrl", ADDR_SPACE_FLASH_CTRL, ADDR_SPACE_FLASH_CTRL | ADDR_MASK_FLASH_CTRL},
     '{"TlRvTimer",   ADDR_SPACE_RV_TIMER  , ADDR_SPACE_RV_TIMER   | ADDR_MASK_RV_TIMER  },
     '{"TlHmac",      ADDR_SPACE_HMAC      , ADDR_SPACE_HMAC       | ADDR_MASK_HMAC      },
-    '{"TlAes",       ADDR_SPACE_AES      , ADDR_SPACE_AES         | ADDR_MASK_AES       },
-    '{"TlRvPlic",    ADDR_SPACE_RV_PLIC   , ADDR_SPACE_RV_PLIC    | ADDR_MASK_RV_PLIC   }};
+    '{"TlAes",       ADDR_SPACE_AES       , ADDR_SPACE_AES        | ADDR_MASK_AES       },
+    '{"TlRvPlic",    ADDR_SPACE_RV_PLIC   , ADDR_SPACE_RV_PLIC    | ADDR_MASK_RV_PLIC   },
+    '{"TlPinmux",    ADDR_SPACE_PINMUX    , ADDR_SPACE_PINMUX     | ADDR_MASK_PINMUX   }};
 
 // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"TlCorei", 0, '{"TlRom", "TlDebugMem", "TlRamMain", "TlEflash"}},
     '{"TlCored", 1, '{"TlRom", "TlDebugMem", "TlRamMain", "TlEflash", "TlUart", "TlGpio",
-                       "TlSpiDevice", "TlFlashCtrl", "TlRvTimer", "TlHmac", "TlAes", "TlRvPlic"}},
+                      "TlSpiDevice", "TlFlashCtrl", "TlRvTimer", "TlHmac", "TlAes", "TlRvPlic",
+                      "TlPinmux"}},
     '{"TlDmSba", 2, '{"TlRom", "TlRamMain", "TlEflash", "TlUart", "TlGpio",
-                      "TlSpiDevice", "TlFlashCtrl", "TlRvTimer", "TlHmac", "TlAes", "TlRvPlic"}}};
+                      "TlSpiDevice", "TlFlashCtrl", "TlRvTimer", "TlHmac", "TlAes", "TlRvPlic",
+                      "TlPinmux"}}};

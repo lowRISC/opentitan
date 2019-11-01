@@ -52,4 +52,9 @@ class xbar_tl_host_seq extends tl_host_seq;
     end
   endfunction
 
+  // prevent seq runs out of source ID
+  virtual task pre_start_item(tl_seq_item req);
+    wait(pending_req.size < p_sequencer.cfg.max_outstanding_req);
+  endtask
+
 endclass

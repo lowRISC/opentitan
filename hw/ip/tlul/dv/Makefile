@@ -48,8 +48,8 @@ ifeq (${TEST_NAME},xbar_sanity_slow_rsp)
   UVM_TEST_SEQ   = xbar_sanity_vseq
   RUN_OPTS      += +max_host_req_delay=10
   RUN_OPTS      += +max_host_rsp_delay=1000
-  RUN_OPTS      += +max_device_req_delay=10
-  RUN_OPTS      += +max_device_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=1000
+  RUN_OPTS      += +max_device_rsp_delay=10
 endif
 
 ifeq (${TEST_NAME},xbar_random)
@@ -73,8 +73,8 @@ ifeq (${TEST_NAME},xbar_random_slow_rsp)
   UVM_TEST_SEQ   = xbar_random_vseq
   RUN_OPTS      += +max_host_req_delay=10
   RUN_OPTS      += +max_host_rsp_delay=1000
-  RUN_OPTS      += +max_device_req_delay=10
-  RUN_OPTS      += +max_device_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=1000
+  RUN_OPTS      += +max_device_rsp_delay=10
 endif
 
 ifeq (${TEST_NAME},xbar_access_same_device)
@@ -85,8 +85,8 @@ ifeq (${TEST_NAME},xbar_access_same_device_slow_rsp)
   UVM_TEST_SEQ   = xbar_access_same_device_vseq
   RUN_OPTS      += +max_host_req_delay=10
   RUN_OPTS      += +max_host_rsp_delay=1000
-  RUN_OPTS      += +max_device_req_delay=10
-  RUN_OPTS      += +max_device_rsp_delay=1000
+  RUN_OPTS      += +max_device_req_delay=1000
+  RUN_OPTS      += +max_device_rsp_delay=10
 endif
 
 ifeq (${TEST_NAME},xbar_same_source)

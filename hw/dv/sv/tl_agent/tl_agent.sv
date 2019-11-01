@@ -31,6 +31,7 @@ class tl_agent extends uvm_agent;
         device_driver = tl_device_driver::type_id::create("device_driver", this);
       end
       seqr = tl_sequencer::type_id::create("seqr", this);
+      seqr.cfg = cfg;
     end
     mon = tl_monitor::type_id::create("mon", this);
   endfunction : build_phase

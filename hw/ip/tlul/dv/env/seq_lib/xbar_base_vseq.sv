@@ -40,7 +40,6 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (host_seq[i]) begin
       host_seq[i] = xbar_tl_host_seq::type_id::create(
                     $sformatf("%0s_seq", xbar_hosts[i].host_name));
-      host_seq[i].set_max_outstanding(1 << VALID_HOST_ID_WIDTH);
       // Default only send request to valid devices that is accessible by the host
       foreach (xbar_devices[j]) begin
         if (is_valid_path(xbar_hosts[i].host_name, xbar_devices[j].device_name)) begin
