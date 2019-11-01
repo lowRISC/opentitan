@@ -35,6 +35,17 @@ accesses made in the testbench:
   endtask
 ```
 
+##### CSR spinwait
+One of the commonly used tasks in `csr_utils_pkg` is `csr_spinwait`. This task
+can poll a CSR or CSR field continuously or periodically until it reads out the
+expected value. This task also has a timeout check in case due to DUT or testbench
+issue, the CSR or CSR field never returns the expected value.
+Example below uses the `csr_spinwait` to wait until the CSR `fifo_status` field
+`fifo_full` reaches value bit 1:
+```systemverilog
+csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
+```
+
 #### Global CSR util methods
 ##### Global methods for CSR and MEM attributes
 This package provides methods to access CSR or Memory attributes, such as address,
