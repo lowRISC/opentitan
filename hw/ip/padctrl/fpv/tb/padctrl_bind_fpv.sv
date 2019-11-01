@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-module padctrl_bind;
+module padctrl_bind_fpv;
 
-  bind padring padring_assert padring_assert (
+  bind padring padring_assert_fpv i_padring_assert_fpv (
     .*
   );
 
-  bind padctrl padctrl_assert #(
+  bind padctrl padctrl_assert_fpv #(
     .Impl(Impl)
-  ) padctrl_assert (
+  ) i_padctrl_assert_fpv (
     .*
   );
 
@@ -24,4 +24,4 @@ module padctrl_bind;
     .d2h  (tl_o)
   );
 
-endmodule : padctrl_bind
+endmodule : padctrl_bind_fpv

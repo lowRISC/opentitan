@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_tb (
+module prim_alert_rxtx_fpv (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -64,4 +64,4 @@ module prim_alert_rxtx_tb (
     .alert_ni     ( alert_n ^ alert_err_ni )
   );
 
-endmodule : prim_alert_rxtx_tb
+endmodule : prim_alert_rxtx_fpv

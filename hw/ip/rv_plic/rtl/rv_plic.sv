@@ -12,16 +12,12 @@
 //   of area increase if edge-triggered counter isn't implemented.
 //
 // verilog parameter
-//   N_SOURCE: Number of interrupt sources
-//   N_TARGET: Number of interrupt targets (#receptor)
 //   MAX_PRIO: Maximum value of interrupt priority
 
-module rv_plic #(
-  parameter int N_SOURCE    = 32,
-  parameter int N_TARGET    = 1,
-  parameter     FIND_MAX    = "SEQUENTIAL", // SEQUENTIAL | MATRIX
-
-  parameter int SRCW       = $clog2(N_SOURCE+1)  // derived parameter
+module rv_plic import rv_plic_reg_pkg::*; #(
+  parameter      FIND_MAX = "SEQUENTIAL", // SEQUENTIAL | MATRIX
+  // derived parameter
+  localparam int SRCW    = $clog2(NumSrc+1)
 ) (
   input     clk_i,
   input     rst_ni,
@@ -31,13 +27,13 @@ module rv_plic #(
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Interrupt Sources
-  input  [N_SOURCE-1:0] intr_src_i,
+  input  [NumSrc-1:0] intr_src_i,
 
   // Interrupt notification to targets
-  output [N_TARGET-1:0] irq_o,
-  output [SRCW-1:0]     irq_id_o [N_TARGET],
+  output [NumTarget-1:0] irq_o,
+  output [SRCW-1:0]      irq_id_o [NumTarget],
 
-  output logic [N_TARGET-1:0] msip_o
+  output logic [NumTarget-1:0] msip_o
 );
 
   import rv_plic_reg_pkg::*;
@@ -48,37 +44,37 @@ module rv_plic #(
   localparam int MAX_PRIO    = 7;
   localparam int PRIOW = $clog2(MAX_PRIO+1);
 
-  logic [N_SOURCE-1:0] le; // 0:level 1:edge
-  logic [N_SOURCE-1:0] ip;
+  logic [NumSrc-1:0] le; // 0:level 1:edge
+  logic [NumSrc-1:0] ip;
 
-  logic [N_SOURCE-1:0] ie [N_TARGET];
+  logic [NumSrc-1:0] ie [NumTarget];
 
-  logic [N_TARGET-1:0] claim_re; // Target read indicator
-  logic [SRCW-1:0]     claim_id [N_TARGET];
-  logic [N_SOURCE-1:0] claim; // Converted from claim_re/claim_id
+  logic [NumTarget-1:0] claim_re; // Target read indicator
+  logic [SRCW-1:0]      claim_id [NumTarget];
+  logic [NumSrc-1:0]    claim; // Converted from claim_re/claim_id
 
-  logic [N_TARGET-1:0] complete_we; // Target write indicator
-  logic [SRCW-1:0]     complete_id [N_TARGET];
-  logic [N_SOURCE-1:0] complete; // Converted from complete_re/complete_id
+  logic [NumTarget-1:0] complete_we; // Target write indicator
+  logic [SRCW-1:0]      complete_id [NumTarget];
+  logic [NumSrc-1:0]    complete; // Converted from complete_re/complete_id
 
-  logic [SRCW-1:0]     cc_id [N_TARGET]; // Write ID
+  logic [SRCW-1:0]      cc_id [NumTarget]; // Write ID
 
-  logic [PRIOW-1:0] prio [N_SOURCE];
+  logic [PRIOW-1:0] prio [NumSrc];
 
-  logic [PRIOW-1:0] threshold [N_TARGET];
+  logic [PRIOW-1:0] threshold [NumTarget];
 
   // Glue logic between rv_plic_reg_top and others
   assign cc_id = irq_id_o;
 
   always_comb begin
     claim = '0;
-    for (int i = 0 ; i < N_TARGET ; i++) begin
+    for (int i = 0 ; i < NumTarget ; i++) begin
       if (claim_re[i]) claim[claim_id[i] -1] = 1'b1;
     end
   end
   always_comb begin
     complete = '0;
-    for (int i = 0 ; i < N_TARGET ; i++) begin
+    for (int i = 0 ; i < NumTarget ; i++) begin
       if (complete_we[i]) complete[complete_id[i] -1] = 1'b1;
     end
   end
@@ -125,11 +121,34 @@ module rv_plic #(
   assign prio[29] = reg2hw.prio29.q;
   assign prio[30] = reg2hw.prio30.q;
   assign prio[31] = reg2hw.prio31.q;
+  assign prio[32] = reg2hw.prio32.q;
+  assign prio[33] = reg2hw.prio33.q;
+  assign prio[34] = reg2hw.prio34.q;
+  assign prio[35] = reg2hw.prio35.q;
+  assign prio[36] = reg2hw.prio36.q;
+  assign prio[37] = reg2hw.prio37.q;
+  assign prio[38] = reg2hw.prio38.q;
+  assign prio[39] = reg2hw.prio39.q;
+  assign prio[40] = reg2hw.prio40.q;
+  assign prio[41] = reg2hw.prio41.q;
+  assign prio[42] = reg2hw.prio42.q;
+  assign prio[43] = reg2hw.prio43.q;
+  assign prio[44] = reg2hw.prio44.q;
+  assign prio[45] = reg2hw.prio45.q;
+  assign prio[46] = reg2hw.prio46.q;
+  assign prio[47] = reg2hw.prio47.q;
+  assign prio[48] = reg2hw.prio48.q;
+  assign prio[49] = reg2hw.prio49.q;
+  assign prio[50] = reg2hw.prio50.q;
+  assign prio[51] = reg2hw.prio51.q;
+  assign prio[52] = reg2hw.prio52.q;
+  assign prio[53] = reg2hw.prio53.q;
+  assign prio[54] = reg2hw.prio54.q;
 
   //////////////////////
   // Interrupt Enable //
   //////////////////////
-  for (genvar s = 0; s < 32; s++) begin : gen_ie0
+  for (genvar s = 0; s < 55; s++) begin : gen_ie0
     assign ie[0][s] = reg2hw.ie0[s].q;
   end
 
@@ -155,7 +174,7 @@ module rv_plic #(
   ////////
   // IP //
   ////////
-  for (genvar s = 0; s < 32; s++) begin : gen_ip
+  for (genvar s = 0; s < 55; s++) begin : gen_ip
     assign hw2reg.ip[s].de = 1'b1; // Always write
     assign hw2reg.ip[s].d  = ip[s];
   end
@@ -163,7 +182,7 @@ module rv_plic #(
   ///////////////////////////////////
   // Detection:: 0: Level, 1: Edge //
   ///////////////////////////////////
-  for (genvar s = 0; s < 32; s++) begin : gen_le
+  for (genvar s = 0; s < 55; s++) begin : gen_le
     assign le[s] = reg2hw.le[s].q;
   end
 
@@ -171,7 +190,7 @@ module rv_plic #(
   // Gateways //
   //////////////
   rv_plic_gateway #(
-    .N_SOURCE (N_SOURCE)
+    .N_SOURCE (NumSrc)
   ) u_gateway (
     .clk_i,
     .rst_ni,
@@ -188,9 +207,9 @@ module rv_plic #(
   ///////////////////////////////////
   // Target interrupt notification //
   ///////////////////////////////////
-  for (genvar i = 0 ; i < N_TARGET ; i++) begin : gen_target
+  for (genvar i = 0 ; i < NumTarget ; i++) begin : geNumTarget
     rv_plic_target #(
-      .N_SOURCE (N_SOURCE),
+      .N_SOURCE (NumSrc),
       .MAX_PRIO (MAX_PRIO),
       .ALGORITHM(FIND_MAX)
     ) u_target (

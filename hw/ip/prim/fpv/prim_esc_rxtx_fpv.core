@@ -9,15 +9,15 @@ filesets:
     depend:
       - lowrisc:prim:all
     files:
-      - vip/prim_esc_rxtx_assert.sv
-      - tb/prim_esc_rxtx_bind.sv
-      - tb/prim_esc_rxtx_tb.sv
+      - vip/prim_esc_rxtx_assert_fpv.sv
+      - tb/prim_esc_rxtx_bind_fpv.sv
+      - tb/prim_esc_rxtx_fpv.sv
     file_type: systemVerilogSource
 
 targets:
   default: &default_target
     toplevel:
-      - prim_esc_rxtx_tb
+      - prim_esc_rxtx_fpv
     filesets:
       - files_fpv
     default_tool: jg

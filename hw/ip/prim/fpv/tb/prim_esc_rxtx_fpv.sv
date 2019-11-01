@@ -5,7 +5,7 @@
 // Testbench module for escalation sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_esc_rxtx_tb (
+module prim_esc_rxtx_fpv (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -49,4 +49,4 @@ module prim_esc_rxtx_tb (
     .esc_ni   ( esc_n  ^ esc_err_ni )
   );
 
-endmodule : prim_esc_rxtx_tb
+endmodule : prim_esc_rxtx_fpv

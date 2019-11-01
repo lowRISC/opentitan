@@ -5,7 +5,7 @@
 // Assertions for escalation sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_esc_rxtx_assert (
+module prim_esc_rxtx_assert_fpv (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -43,8 +43,8 @@ module prim_esc_rxtx_assert (
       ##[0:4] ping_ok_o, clk_i, !rst_ni || error_present)
 
   // be more specific (i.e. use throughout)
-  `ASSERT(EscRespCheck_A, ##1 esc_en_i |-> ##[0:1] prim_esc_rxtx_tb.resp_p ##1
-      !prim_esc_rxtx_tb.resp_p, clk_i, !rst_ni || error_present)
+  `ASSERT(EscRespCheck_A, ##1 esc_en_i |-> ##[0:1] prim_esc_rxtx_fpv.resp_p ##1
+      !prim_esc_rxtx_fpv.resp_p, clk_i, !rst_ni || error_present)
 
   // check correct transmission of escalation within 0-1 cycles
   `ASSERT(EscCheck_A, ##1 esc_en_i |-> ##[0:1] esc_en_o, clk_i, !rst_ni || error_present)
@@ -56,13 +56,13 @@ module prim_esc_rxtx_assert (
       {resp_err_pi, resp_err_ni} == '0 |-> integ_fail_o, clk_i, !rst_ni)
 
   // basic liveness of FSMs in case no errors are present
-  `ASSERT(FsmLivenessSender_A, (prim_esc_rxtx_tb.i_prim_esc_sender.state_q !=
-      prim_esc_rxtx_tb.i_prim_esc_sender.Idle) |->
-      strong(##[1:$] (prim_esc_rxtx_tb.i_prim_esc_sender.state_q
-      == prim_esc_rxtx_tb.i_prim_esc_sender.Idle)), clk_i, !rst_ni || error_present)
-  `ASSERT(FsmLivenessReceiver_A, (prim_esc_rxtx_tb.i_prim_esc_receiver.state_q !=
-      prim_esc_rxtx_tb.i_prim_esc_receiver.Idle) |->
-      strong(##[1:$] (prim_esc_rxtx_tb.i_prim_esc_receiver.state_q
-      == prim_esc_rxtx_tb.i_prim_esc_receiver.Idle)), clk_i, !rst_ni || error_present)
+  `ASSERT(FsmLivenessSender_A, (prim_esc_rxtx_fpv.i_prim_esc_sender.state_q !=
+      prim_esc_rxtx_fpv.i_prim_esc_sender.Idle) |->
+      strong(##[1:$] (prim_esc_rxtx_fpv.i_prim_esc_sender.state_q
+      == prim_esc_rxtx_fpv.i_prim_esc_sender.Idle)), clk_i, !rst_ni || error_present)
+  `ASSERT(FsmLivenessReceiver_A, (prim_esc_rxtx_fpv.i_prim_esc_receiver.state_q !=
+      prim_esc_rxtx_fpv.i_prim_esc_receiver.Idle) |->
+      strong(##[1:$] (prim_esc_rxtx_fpv.i_prim_esc_receiver.state_q
+      == prim_esc_rxtx_fpv.i_prim_esc_receiver.Idle)), clk_i, !rst_ni || error_present)
 
-endmodule : prim_esc_rxtx_assert
+endmodule : prim_esc_rxtx_assert_fpv

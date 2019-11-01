@@ -5,7 +5,7 @@
 // Assertions for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_assert (
+module prim_alert_rxtx_assert_fpv (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -40,25 +40,25 @@ module prim_alert_rxtx_assert (
       (ping_en_i && ping_ok_o ##1 $fell(ping_en_i)), clk_i, !rst_ni || error_present)
 
   sequence FullHandshake_S;
-    $rose(prim_alert_rxtx_tb.alert_p)                                        ##1
-    $rose(prim_alert_rxtx_tb.ack_p)   && $stable(prim_alert_rxtx_tb.alert_p) ##1
-    $fell(prim_alert_rxtx_tb.alert_p) && $stable(prim_alert_rxtx_tb.ack_p)   ##1
-    $fell(prim_alert_rxtx_tb.ack_p)   && $stable(prim_alert_rxtx_tb.alert_p) ;
+    $rose(prim_alert_rxtx_fpv.alert_p)                                         ##1
+    $rose(prim_alert_rxtx_fpv.ack_p)   && $stable(prim_alert_rxtx_fpv.alert_p) ##1
+    $fell(prim_alert_rxtx_fpv.alert_p) && $stable(prim_alert_rxtx_fpv.ack_p)   ##1
+    $fell(prim_alert_rxtx_fpv.ack_p)   && $stable(prim_alert_rxtx_fpv.alert_p) ;
   endsequence
 
   // note: injected errors may lockup the FSMs, and hence the full HS can
   // only take place if both FSMs are in a sane state
-  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_tb.ping_p) &&
-      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_sender.Idle ) &&
-      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle )|=> FullHandshake_S,
+  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_fpv.ping_p) &&
+      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle ) &&
+      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle )|=> FullHandshake_S,
       clk_i, !rst_ni || error_present)
   `ASSERT(AlertHs_A, alert_i &&
-      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |=>
+      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |=>
       FullHandshake_S, clk_i, !rst_ni || error_present)
 
   // transmission of pings
@@ -66,22 +66,22 @@ module prim_alert_rxtx_assert (
       ##[1:9] ping_ok_o, clk_i, !rst_ni || error_present)
   // transmission of alerts in case of no collision with ping enable
   `ASSERT(AlertCheck0_A, !ping_en_i [*3] ##0 $rose(alert_i) &&
-      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) |=>
+      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) |=>
       alert_o, clk_i, !rst_ni || error_present || ping_en_i)
   // transmission of alerts in the general case which can include ping collisions
   `ASSERT(AlertCheck1_A, alert_i |-> ##[1:9] alert_o, clk_i, !rst_ni || error_present)
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A,
-      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q !=
-      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_sender.Idle)), clk_i, !rst_ni || error_present)
+      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q !=
+      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) |->
+      strong(##[1:$] (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle)), clk_i, !rst_ni || error_present)
   `ASSERT(FsmLivenessReceiver_A,
-      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q !=
-      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle)),clk_i, !rst_ni || error_present)
+      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q !=
+      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |->
+      strong(##[1:$] (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle)),clk_i, !rst_ni || error_present)
 
-endmodule : prim_alert_rxtx_assert
+endmodule : prim_alert_rxtx_assert_fpv

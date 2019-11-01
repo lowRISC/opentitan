@@ -8,7 +8,7 @@
   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
 
-module padctrl_tb #(
+module padctrl_fpv #(
   parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL
 ) (
   input wire                                    clk_i,
@@ -60,4 +60,4 @@ module padctrl_tb #(
     .dio_attr_i(dio_attr)
   );
 
-endmodule : padctrl_tb
+endmodule : padctrl_fpv

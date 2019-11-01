@@ -4,7 +4,7 @@
 //
 // Assertions for pinmux. Intended to use with a formal tool.
 
-module pinmux_assert (
+module pinmux_assert_fpv (
   input                                  clk_i,
   input                                  rst_ni,
   input tlul_pkg::tl_h2d_t               tl_i,
@@ -62,4 +62,4 @@ module pinmux_assert (
   `ASSERT(OutSelOeN_A, mio_outsel.q > 2  |->
       mio_oe_o[mio_sel_i] == periph_to_mio_oe_i[mio_outsel.q - 3], clk_i, !rst_ni)
 
-endmodule : pinmux_assert
+endmodule : pinmux_assert_fpv

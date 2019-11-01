@@ -5,7 +5,7 @@
 // Assertions for padring. Intended to use with a formal tool.
 // Note that only the mandatory pad attributes are tested here.
 
-module padring_assert (
+module padring_assert_fpv (
   input                                 clk_pad_i,
   input                                 rst_pad_ni,
   input                                 clk_o,
@@ -101,4 +101,4 @@ module padring_assert (
       dio_pad_io[dio_sel] === 1'bz ||
       dio_pad_io[dio_sel] === 1'bx, clk_pad_i, !rst_pad_ni)
 
-endmodule : padring_assert
+endmodule : padring_assert_fpv
