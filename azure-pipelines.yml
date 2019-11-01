@@ -220,7 +220,7 @@ stages:
       displayName: 'Install dependencies'
     - bash: |
         set -e
-        BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/boot_rom/rom.vmem
+        BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/fpga/boot_rom/rom.vmem
         test -f ${BOOTROM_VMEM}
         source /opt/xilinx/Vivado/2018.3/settings64.sh
         fusesoc --cores-root . run --target=synth --setup --build \

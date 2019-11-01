@@ -36,21 +36,36 @@ readonly BUILD_TARGETS=("boot_rom"
   "tests/rv_timer"
 )
 
+readonly BUILD_VARIANTS=("sim"
+  "fpga"
+)
+
 FAIL_TARGETS=()
 PASS_TARGETS=()
 for target in "${BUILD_TARGETS[@]}"; do
-  echo "Building target ${target}"
-  if make -C sw/device "SW_DIR=${target}" "SW_BUILD_DIR=../build/${target}"; then
-    PASS_TARGETS=("${PASS_TARGETS[@]}" "${target}")
-  else
-    FAIL_TARGETS=("${FAIL_TARGETS[@]}" "${target}")
-  fi
+  for variant in "${BUILD_VARIANTS[@]}"; do
+    echo "Building target ${target} (variant ${variant})"
 
-  target_staging_dir="${DIST_DIR}/sw/device/${target}"
-  mkdir -p "$target_staging_dir"
-  cp sw/build/${target}/*.elf "${target_staging_dir}"
-  cp sw/build/${target}/*.vmem "${target_staging_dir}"
-  cp sw/build/${target}/*.bin "${target_staging_dir}"
+    if [ "${variant}" = "sim" ]; then
+      make_arg_sim="SIM=1"
+    else
+      make_arg_sim=""
+    fi
+
+    make -C sw/device ${make_arg_sim} "SW_DIR=${target}" \
+      "SW_BUILD_DIR=../build/${variant}/${target}"
+    if [ $? -eq 0 ]; then
+      PASS_TARGETS=("${PASS_TARGETS[@]}" "${target}-${variant}")
+    else
+      FAIL_TARGETS=("${FAIL_TARGETS[@]}" "${target}-${variant}")
+    fi
+
+    target_staging_dir="${DIST_DIR}/sw/device/${variant}/${target}"
+    mkdir -p "$target_staging_dir"
+    cp sw/build/${variant}/${target}/*.elf "${target_staging_dir}"
+    cp sw/build/${variant}/${target}/*.vmem "${target_staging_dir}"
+    cp sw/build/${variant}/${target}/*.bin "${target_staging_dir}"
+  done
 done
 
 echo "* PASS_TARGETS"
