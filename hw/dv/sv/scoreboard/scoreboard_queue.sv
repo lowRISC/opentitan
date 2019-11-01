@@ -39,7 +39,7 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
     end
     expected_items.push_back(tr);
     expected_items_timestamp.push_back(current_cycle_cnt);
-    if (actual_items.size() != 0) check_item();
+    if (actual_items.size() != 0) void'(check_item());
     token.put(1);
   endtask
 
@@ -53,7 +53,7 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
     end
     actual_items.push_back(tr);
     actual_items_timestamp.push_back(current_cycle_cnt);
-    if (expected_items.size() != 0) check_item();
+    if (expected_items.size() != 0) void'(check_item());
     token.put(1);
   endtask
 
@@ -113,7 +113,7 @@ class scoreboard_queue#(type SEQ_ITEM = uvm_object) extends uvm_object;
       end
       // Custom checking policy
       kCustomCheck: begin
-        custom_check();
+        void'(custom_check());
       end
       default: begin
         `uvm_error(get_full_name(), $sformatf("%0s check policy is not supported", policy.name()))

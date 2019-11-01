@@ -6,6 +6,7 @@ class tl_sequencer extends uvm_sequencer#(tl_seq_item);
   `uvm_component_utils(tl_sequencer)
 
   uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_req_fifo;
+  tl_agent_cfg cfg;
 
   `uvm_component_new
 

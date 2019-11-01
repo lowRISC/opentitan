@@ -23,9 +23,9 @@ class xbar_stress_all_with_reset_vseq extends xbar_base_vseq;
   task body();
     for (int i = 1; i <= num_trans; i++) begin
       bit reset_ongoing;
+      xbar_stress_all_vseq xbar_vseq;
       fork
         begin : seq_wo_reset
-          xbar_stress_all_vseq xbar_vseq;
           xbar_vseq = xbar_stress_all_vseq::type_id::create("xbar_stress_all_vseq");
 
           xbar_vseq.do_dut_init = 0;
@@ -52,7 +52,6 @@ class xbar_stress_all_with_reset_vseq extends xbar_base_vseq;
           `uvm_info(`gfn, $sformatf("Reset is issued for run %0d/%0d", i, num_trans), UVM_LOW)
         end
       join_any
-      p_sequencer.stop_sequences();
       disable fork;
       // delay to avoid race condition when sending item and checking no item after reset occur at
       // the same time

@@ -99,10 +99,6 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     seq_item_port.item_done();
     pending_a_req.push_back(req);
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
-    while((cfg.max_outstanding_req > 0) &&
-          (pending_a_req.size() >= cfg.max_outstanding_req) && !reset_asserted) begin
-      @(vif.host_cb);
-    end
   endtask : send_a_channel_request
 
   // Collect ack from D channel

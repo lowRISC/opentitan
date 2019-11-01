@@ -15,12 +15,12 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item), .RSP(tl_seq_item));
   tl_seq_item       pending_req[$];
   int               min_req_delay = 0;
   int               max_req_delay = 10;
-  int               max_outstanding = 8;
 
   `uvm_object_utils(tl_host_seq)
   `uvm_object_new
 
   virtual task body();
+    set_response_queue_depth(p_sequencer.cfg.max_outstanding_req);
     fork
       begin : wait_response_thread
         for (int i = 0; i < req_cnt; i++) begin
@@ -48,8 +48,8 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item), .RSP(tl_seq_item));
       begin : request_thread
         `uvm_info(`gfn, $sformatf("Start sending %0d host requests", req_cnt), UVM_HIGH)
         for (int i = 0; i < req_cnt; i++) begin
-          wait(pending_req.size < max_outstanding);
           req = tl_seq_item::type_id::create("req");
+          pre_start_item(req);
           start_item(req);
           randomize_req(req, i);
           finish_item(req);
@@ -74,11 +74,9 @@ class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item), .RSP(tl_seq_item));
   virtual function void process_response(tl_seq_item req, tl_seq_item rsp);
   endfunction
 
-  virtual function void set_max_outstanding(int value);
-    max_outstanding = value;
-    set_response_queue_depth(value);
-    `uvm_info(`gfn, $sformatf("Max outstanding: %0d", value), UVM_HIGH)
-  endfunction
+  // A reserved task that prevents seq runs out of source ID
+  virtual task pre_start_item(tl_seq_item req);
+  endtask
 
 endclass : tl_host_seq
 
