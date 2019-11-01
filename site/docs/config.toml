@@ -47,3 +47,6 @@ disableKinds = ["taxonomy", "taxonomyTerm", "RSS", "sitemap"]
 
 [params]
 generatedRoot = "build/docs-generated"
+
+[blackfriday]
+  extensions = ["noEmptyLineBeforeBlock"]
