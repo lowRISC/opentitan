@@ -8,7 +8,7 @@ title: "AES HWIP Technical Specification"
 This document specifies the AES hardware IP functionality.
 [Advanced Encryption Standard (AES)](https://www.nist.gov/publications/advanced-encryption-standard-aes) is the primary symmetric encryption and decryption mechanism used in OpenTitan protocols.
 The AES unit is a cryptographic accelerator that accepts requests from the processor to encrypt or decrypt 16 byte blocks of data.
-It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}}).
 
 
 ## Features
@@ -51,9 +51,9 @@ The AES unit then uses this key to generate all round keys as they are needed in
 The benefits of this design compared to passing all round keys via register interface include:
 
 - Reduced storage requirements and smaller circuit area: Instead of storing 15 128-bit round keys, only 3 256-bit key registers are required for AES-256:
-  - one register to which the processor writes the initial key, i.e., the start key for encryption,
-  - one register to hold the current full key, and
-  - one register to hold the full key of the last encryption round, i.e., the start key for decryption.
+  - one set of registers to which the processor writes the initial key, i.e., the start key for encryption,
+  - one set of registers to hold the current full key, and
+  - one set of registers to hold the full key of the last encryption round, i.e., the start key for decryption.
 - Faster re-configuration and key switching: The core just needs to perform 8 write operations instead of 60 write operations for AES-256.
 
 On-the-fly round-key generation comes however at the price of an initial delay whenever the key is changed by the processor before the AES unit can perform decryption using this new key.
@@ -88,6 +88,18 @@ Employing a 128-bit wide data path allows to achieve the latency requirements of
 Both the data paths for the actual cipher (left) and the round key generation (right) are shared between encryption and decryption.
 Consequently, the blocks shown in the diagram always implement the forward and backward (inverse) version of the corresponding operation.
 For example, SubBytes implements both SubBytes and InvSubBytes.
+
+## Hardware Interfaces
+
+{{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
+
+
+## Design Details
+
+This section discusses different design details of the AES module.
+
+
+### Datapath Architecture and Operation
 
 The AES unit implements the Equivalent Inverse Cipher described in the [AES specification](https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf).
 This allows for more efficient cipher data path sharing between encryption/decryption as the operations are applied in the same order (less muxes, simpler control), but requires the round key in decryption mode to be transformed using an inverse MixColumns in all rounds except for the first and the last one.
@@ -127,7 +139,8 @@ If the AES unit wants to finish the encryption/decryption of an output data bloc
 It only continues once the previous output data has been read and the corresponding registers can be safely overwritten.
 In contrast, the initial key can only be updated if the AES unit is idle, which eases design verification (DV).
 
-The architecture of the AES unit is derived from the architecture proposed by Satoh et al.: “A compact Rijndael Hardware Architecture with S-Box Optimization”. The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (AES-128 only).
+The architecture of the AES unit is derived from the architecture proposed by Satoh et al.: [“A compact Rijndael Hardware Architecture with S-Box Optimization”](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
+The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (AES-128 only).
 
 For a description of the various sub modules, see the following sections.
 
@@ -211,17 +224,6 @@ Support for this mode is thus optional and can be enabled/disabled via a design-
 Once we have cost estimates in terms of gate count increase for 192-bit mode, we can decide on whether or not to use it in OpenTitan.
 Typically, systems requiring security above AES-128 go directly for AES-256.
 
-
-## Hardware Interfaces
-
-{{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
-
-
-## Design Details
-
-This section discusses different design details of the AES module.
-
-
 ### System Key-Manager Interface
 
 This version of the AES unit is controlled entirely by the processor.
@@ -235,7 +237,7 @@ Future versions of the AES unit might include a separate interface through which
 The primary focus of the first version of the AES unit lies in having a first functional implementation.
 
 Future efforts on this unit will have a focus on security hardening of the design.
-Future versions of this AES unit thus might employ different means at architectural, microarchitectural and physical levels to reduce information leakage (e.g. power and electromagnetic) and aggravate potential side-channel attacks.
+Future versions of this AES unit thus might employ different means at architectural, microarchitectural and physical levels to reduce side-channel leakage (e.g. power and electromagnetic) and mitigate potential fault injection attacks.
 
 
 # Programmers Guide
