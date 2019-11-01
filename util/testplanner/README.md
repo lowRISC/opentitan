@@ -1,58 +1,58 @@
 ---
+title: "Testplanner tool"
 ---
-
-# Testplanner tool
 
 Testplanner is a Python based tool for parsing testplans written in Hjson
 format into a data structure that can be used for:
 * Expanding the testplan inline within the DV plan as a table
 * Annotating the regression results with testplan entries for a document driven DV execution
 
-Please see [DV methodology](\{\{\< relref "doc/ug/dv_methodology.md" \>\}\}) for more details on the
-rationale and motivation for writing and maintaining testplans in a machine-parsable
-format (`Hjson`).
-
-This document will focus on the anatomy of a Hjson testplan,
-list of features supported and some of the ways of using the tool.
+Please see [DV methodology]({{< relref "doc/ug/dv_methodology.md#documentation" >}})
+for more details on the rationale and motivation for writing and maintaining testplans
+in a machine-parsable format (`Hjson`).
+This document will focus on the anatomy of a Hjson testplan, list of features supported
+and some of the ways of using the tool.
 
 ## Hjson Testplan
-### Testplan entry contents
+
+### Testplan entries
 Minimally, the following items are sufficient to adequately capture the
 intent of a planned test:
 * **name: name of the planned test**
 
-  This is a single `lower_snake_case` string that succinctly describes the intended
-  feature being tested. As an example, a basic sanity test which is typically the
-  first test written on a brand new testbench would be simply named `sanity`.
+    This is a single `lower_snake_case` string that succinctly describes the intended
+    feature being tested. As an example, a basic sanity test which is typically the
+    first test written on a brand new testbench would be simply named `sanity`.
 
 * **milestone: verification milestone**
 
-  This is one of {"`V1`", "`V2`" and "`V3`"}. This allows us concretely indicate that
-  all goals for a particular milestone have been achieved and we can transition
-  to the next.
+    This is one of {"`V1`", "`V2`" and "`V3`"}. This allows us to concretely indicate
+    that all goals for a particular milestone have been achieved and we can
+    transition to the next.
 
 * **desc: description of the planned test**
 
-  A multi-line string that briefly describes the intent of the test. It is
-  recommended to add a high level goal, stimulus and checking procedure so
-  that the reader gets the full picture of what and how the said feature is being
-  tested.
+    A multi-line string that briefly describes the intent of the test. It is
+    recommended to add a high level goal, stimulus and checking procedure so
+    that the reader gets the full picture of what and how the said feature is being
+    tested.
 
-  Full [markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported when writing
-  the description.
+    Full [markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported
+    when writing the description.
 
 * **tests: list of actual written tests that maps to this planned test**
 
-  Testplans are written very early in the V0 stage of the HW development
-  [life-cycle]({{< relref "doc/project/hw_stages.md" >}}). When the DV engineer gets to actually
-  developing the test, it may not map 1:1 to the planned test - it may be possible
-  that an already written test that mapped to another planned test also satisfies
-  the current one; OR it may also be possible that the planned test needs to be
-  split into multiple smaller tests. To cater to these needs, we provide the ability
-  to set a list of actual written tests that maps to each planned test. This
-  information will then be used to map the regression results and annotate them
-  to the tesplan to generate the final table. This list does not have to be populated
-  right away. It can be updated as and when tests are written.
+    Testplan is written in the initial work stage of the verification
+    [life-cycle]({{< relref "doc/project/hw_stages#hardware-verification-stages" >}}).
+    When the DV engineer gets to actually developing the test, it may not map 1:1 to
+    the planned test - it may be possible that an already written test that mapped
+    to another planned test also satisfies the current one; OR it may also be
+    possible that the planned test needs to be split into multiple smaller tests.
+    To cater to these needs, we provide the ability to set a list of actual written
+    tests that maps to each planned test. This information will then be used to map
+    the regression results and annotate them to the tesplan to generate the final
+    table. This list does not have to be populated right away. It can be updated
+    as and when tests are written.
 
 If need arises, more entries can be added to this list relatively easily.
 
@@ -161,19 +161,21 @@ This will resolve to the following 6 tests:
 ```
 
 ### Example sources
+
 The following examples provided within `util/testplanner/examples` can be used as
 a starting point.
-- **`foo_testplan.hjson`**: DUT testplan
-- **`common_testplan.hjson`**: shared testplan imported within the DUT tesplan
-- **`foo_dv_plan.md`**: DUT testplan imported within the DV plan doc in markdown
+* **`foo_testplan.hjson`**: DUT testplan
+* **`common_testplan.hjson`**: shared testplan imported within the DUT tesplan
+* **`foo_dv_plan.md`**: DUT testplan imported within the DV plan doc in markdown
 
 In addition, see the [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
 real 'production' example of inline expansion of an imported testplan as a table
 within the DV Plan document.
-The [UART tesplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson) imports the shared
-testplans located at `hw/dv/tools/testplans` area.
+The [UART tesplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
+imports the shared testplans located at `hw/dv/tools/testplans` area.
 
 ### Limitations
+
 The following limitations currently hold:
 * Only the DUT testplan can import shared testplans; the imported
   testplans cannot further import more testplans
@@ -181,7 +183,9 @@ The following limitations currently hold:
   its imported tetsplans need to be unique
 
 ## Usage examples
+
 ### Standalone tool invocations
+
 Generate the testplan table in HTML to stdout:
 ```console
 $ util/testplanner.py testplanner/examples/foo_testplan.hjson
