@@ -35,20 +35,20 @@ correctness of the received message. The same digest registers above are used to
 represent the hash result. SHA-256 mode doesn't use the given secret key. It
 generates the same result with the same message every time.
 
-The software doesn't need to write the message length to registers. The HMAC IP
+The software doesn't need to provide the message length. The HMAC IP
 will calculate the length of the message received between **1** being written to
 {{< regref "CMD.hash_start" >}} and **1** being written to {{< regref "CMD.hash_process" >}}.
 
-This version doesn't have many defense mechanisms but does have the feature of
-wiping the internal variables such as the secret key, intermediate hash results
-H, and the message FIFO. It does not wipe the software accessible 16x32b FIFO.
+This version doesn't have many defense mechanisms but is able to
+wipe internal variables such as the secret key, intermediate hash results
+H, digest and the message FIFO. It does not wipe the software accessible 16x32b FIFO.
 The software can wipe the variables by writing a 32-bit random value into
 {{< regref "WIPE_SECRET" >}} register. The internal variables will be reset to the written
 value. This version of the HMAC doesn't have a internal pseudo-random number
 generator to derive the random number from the written seed number.
 
-A later update will have an interface for the hardware IPs from the outside of
-the HMAC IP, such as a key manager, to update the secret key. It will also have
+A later update may provide an interface for external hardware IPs, such as a key
+manager, to update the secret key. It will also have
 the ability to send the digest directly to a shared internal bus.
 
 # Theory of Operations
@@ -59,12 +59,12 @@ the ability to send the digest directly to a shared internal bus.
 
 The HMAC block diagram above shows that the HMAC core converts the secret key
 registers into an inner padded key and an outer padded key which are fed to the
-hash engine when appropriate. Also the module feeds the result of the first
+hash engine when appropriate. The module also feeds the result of the first
 round message (which uses the inner padded key) from the SHA-256 hash engine
-into the message FIFO for the second round (which uses the outer padded key).
+into the 16x32b FIFO for the second round (which uses the outer padded key).
 The message length is automatically updated to reflect the size of the outer
 padded key and first round digest result for the second round.  See the details
-at "Design Details".
+at [Design Details](#design-details).
 
 ![SHA-256 Block Diagram](sha2_block_diagram.svg)
 
@@ -81,6 +81,10 @@ block hash, which is stored in the hash registers above. After 64 rounds are
 completed, the SHA-256 updates the digest registers with the addition of the
 hash result and the previous digest registers.
 
+## Hardware Interface
+
+{{< hwcfg "hw/ip/hmac/data/hmac.hjson" >}}
+
 ## Design Details
 
 ### SHA-256 message feed and pad
@@ -95,11 +99,10 @@ The logic assumes the received message is big-endian. If it is little-endian,
 the software must set {{< regref "CFG.endian_swap" >}} to **1**.  The byte order of the digest
 registers, from {{< regref "DIGEST0" >}} to {{< regref "DIGEST7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
 
-The message length is calculated by the packer logic. The packer converts
-non-word writes into full word writes and feeds into the message FIFO. While
-packing the writes, it adds up the recevied message size and calculates the
-message length. The message length value is used in HMAC and SHA-256 to complete
-the hash computation.
+The message length is calculated by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
+The packer converts non-word writes into full word writes and feeds into the message FIFO.
+While packing the writes, it adds up the recevied message size and calculates the message length.
+The message length value is used in HMAC and SHA-256 to complete the hash computation.
 
 The SHA-256 module computes intermediate hashes in every 512-bit block size.
 The message must be padded to fill 512-bit blocks. This is done with an initial
@@ -141,10 +144,9 @@ software can push up to 16 entries to the FIFO for the next hash computation.
 ![Two steps of HMAC](hmac_dataflow.svg)
 
 HMAC can be used with any hash algorithms but this version of HMAC IP only uses
-SHA-256 as the hash algorithm. The first phase of HMAC is to calculate SHA-256
-hash of the message combined the inner secret key and the actual message to be
-authenticated. The inner secret key is created with 256-bit (hashed) secret key
-and `0x36` pad.
+SHA-256 as the hash algorithm. The first phase of HMAC calculates the SHA-256
+hash of the inner secret key and the actual message to be authenticated.
+The inner secret key is created with 256-bit (hashed) secret key and `0x36` pad.
 
 ```verilog
     inner_pad_key = {key[255:0], 256'h0} ^ {64{8'h36}} // big-endian
@@ -154,9 +156,9 @@ The message length used in the SHA-256 module is calculated by the HMAC core by
 adding 512 to the original message length (to account for the length of the
 inner_pad_key which is concatenated to the front of the message).
 
-The result is then fed into the second round in HMAC. It firstly calculates the
-outer secret key then the hash of the first round. As the result of the SHA-256
-is 256-bit digest, it needs to be padded to fit into 512-bit block size.
+The first round digest is fed into the second round in HMAC.
+The second round computes the hash of the outer secret key and the first round digest.
+As the result of SHA-256 is 256-bits, it must be padded to fit into 512-bit block size.
 
 ```verilog
     outer_pad_key = {key[255:0], 256'h0} ^ {64{8'h5c}} // big-endian
@@ -167,7 +169,7 @@ In the second round, the message length is fixed to 768.
 HMAC assumes the secret key is 256-bit. The onus is on software to shrink the
 key to 256-bit using a hash function when setting up the HMAC (e.g. common key
 sizes may be 2048-bit or 4096-bit, software will hash these and write the hashed
-results to the HMAC.
+results to the HMAC).
 
 ### Performance in SHA-256 mode and HMAC mode
 
@@ -194,17 +196,7 @@ for the outer key, and 80 for the result of the first round) to complete a
 message. For instance, if an empty message is given, it takes 360 cycles(80 for
 msg itself and 240 for the extra) to get the HMAC authentication token.
 
-## Hardware Interface
-
-{{< hwcfg "hw/ip/hmac/data/hmac.hjson" >}}
-
-## Defence Mechanism
-
-### Wipe secret
-
-### Add feature or idea here
-
-# Programmer's Guide
+# Programmers Guide
 
 This chapter shows how to use the HMAC-SHA256 IP by showing some snippets such
 as initialization, initiating SHA-256 or HMAC process and processing the
