@@ -9,26 +9,24 @@ This document specifies the functionality of the alert handler mechanism. The
 alert handler is a module that is a peripheral on the chip interconnect bus,
 and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
 It gathers alerts - defined as interrupt-type signals from other peripherals
-that are designated as a potential security threat - from throughout the design,
+that are designated as potential security threats - throughout the design,
 and converts them to interrupts that the processor can handle. If the processor
-does not handle them, the alert handler mechanism will provide hardware
+does not handle them, the alert handler mechanism provides hardware
 responses to handle the threat.
-
-
 
 
 ## Features
 
-- Differentially-signaled, asynchronous alert inputs from NAlerts peripheral
-sources, where NAlerts is a function of the requirements of the peripherals
+- Differentially-signaled, asynchronous alert inputs from `NAlerts` peripheral
+sources, where `NAlerts` is a function of the requirements of the peripherals.
 
 - Ping testing of alert sources: responder module requests periodic alert
-response from each source to ensure proper wiring
+response from each source to ensure proper wiring.
 
-- Register locking on all configuration registers
-    - Once locked, can not be modified by software
+- Register locking on all configuration registers.
+    - Once locked, can not be modified by software until next system reset.
 
-- Register-based assignment of alert to alert-class
+- Register-based assignment of alert to alert-class.
     - Four classes, can be individually disabled.
     - Each class generates one interrupt.
     - Disambiguation history for software to determine which alert caused the
@@ -38,19 +36,19 @@ response from each source to ensure proper wiring
     alerts are faulty. Undesirable access is enforced by locking the register
     state after initial configuration.
 
-- Register-based escalation controls
-    - Number of alerts in class before escalation
-    - Timeout for unhandled alert IRQs can also trigger escalation
-    - Configurable escalation enables for 4 escalation signals
-        - Could map to NMI, wipe secrets signal, lower permission, chip reset,
+- Register-based escalation controls.
+    - Number of alerts in class before escalation.
+    - Timeout for unhandled alert IRQs can also trigger escalation.
+    - Configurable escalation enables for 4 escalation signals.
+        - Could map to NMI, wipe secrets signal, lower privilege, chip reset,
          etc.
-        - Escalation signals differentially-signaled with heartbeat, should
-         trigger response if differential or heartbeat failure at destination
-    * Configurable time in cycles between each escalation level
+        - Escalation signals differentially-signaled with heartbeat, will
+         trigger response if differential or heartbeat failure at destination.
+    * Configurable time in cycles between each escalation level.
 
-- Two locally sourced hardware alerts
-    - Differential signaling from a source has failed
-    - Ping response from a source has failed
+- Two locally sourced hardware alerts.
+    - Differential signaling from a source has failed.
+    - Ping response from a source has failed.
 
 
 ## Description
@@ -81,7 +79,7 @@ attack responses. This could include such functions as wiping secret chip
 material, power down, reset, etc. It is beyond the scope of this document to
 specify what those escalation responses are at the chip level.
 
-To ease in the management of alerts by software, classification is provided
+To ease software management of alerts, classification is provided
 whereby each alert can be classified into one of four classes. How the
 classification is done by software is beyond the scope of this document, but it
 is suggested that alerts of a similar profile (risk of occurring, level of
@@ -91,34 +89,10 @@ exceeds a programmable maximum value, then the escalation protocol for that
 class begins.
 
 The details for alert signaling, classification, and escalation are all given in
-the details section that follows.
+the Theory of Operations section.
 
 
 # Theory of Operations
-
-
-## Parameters
-
-The following table lists the main parameters used throughout the alert handler
-design. Note that the alert handler is generated based on the system
-configuration, and hence these parameters are placed into a package as
-"localparams". The parameterization rules are explained in more detail in the
-architectural description.
-
-Localparam     | Default (Max)         | Description
----------------|-----------------------|---------------
-`NAlerts`      | 8 (248)               | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
-`EscCntWidth`  | 32 (32)               | Width of the escalation counters in bit.
-`AccuCntWidth` | 16 (32)               | Width of the alert accumulation counters in bit.
-`AsyncOn`      | '0 (2^`NAlerts`-1)    | This is a bit array specifying whether a certain alert sender / receiver pair goes across an asynchronous boundary or not.
-`LfsrSeed`     | '1 (2^31-1)           | Seed for the LFSR timer, must be nonzero.
-
-The next table lists free parameters in the `prim_alert_sender` and
-`prim_alert receiver` submodules.
-
-Parameter      | Default (Max)    | Description
----------------|------------------|---------------
-`AsyncOn`      | `1'b0` (`1'b1`)  | 0: Synchronous, 1: Asynchronous, determines whether additional synchronizer flops and logic need to be instantiated.
 
 ## Block Diagram
 
@@ -144,18 +118,43 @@ determining clock-dependent parameters (such as the ping timeout) of the design.
 On the escalation sender / receiver side, the differential signaling blocks
 employ a fully synchronous clocking scheme throughout.
 
-## Signals
+## Hardware Interfaces
 
-The table below lists the alert handler module signals. The number of alert
+### Parameters
+
+The following table lists the main parameters used throughout the alert handler
+design. Note that the alert handler is generated based on the system
+configuration, and hence these parameters are placed into a package as
+"localparams". The parameterization rules are explained in more detail in the
+architectural description.
+
+Localparam     | Default (Max)         | Description
+---------------|-----------------------|---------------
+`NAlerts`      | 8 (248)               | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
+`EscCntWidth`  | 32 (32)               | Width of the escalation counters in bit.
+`AccuCntWidth` | 16 (32)               | Width of the alert accumulation counters in bit.
+`AsyncOn`      | '0 (2^`NAlerts`-1)    | This is a bit array specifying whether a certain alert sender / receiver pair goes across an asynchronous boundary or not.
+`LfsrSeed`     | '1 (2^31-1)           | Seed for the LFSR timer, must be nonzero.
+
+The next table lists free parameters in the `prim_alert_sender` and
+`prim_alert receiver` submodules.
+
+Parameter      | Default (Max)    | Description
+---------------|------------------|---------------
+`AsyncOn`      | `1'b0` (`1'b1`)  | 0: Synchronous, 1: Asynchronous, determines whether additional synchronizer flops and logic need to be instantiated.
+
+
+### Signals
+
+{{< hwcfg "hw/ip/alert_handler/data/alert_handler.hjson" >}}
+
+The table below lists other alert handler module signals. The number of alert
 instances is parametric and hence alert and ping diff pairs are grouped together
 in packed arrays. The diff pair signals are indexed with the corresponding alert
 instance `<number>`.
 
 Signal                  | Direction        | Type           | Description
 ------------------------|------------------|----------------|---------------
-`tl_i`                  | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
-`tl_o`                  | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
-`irq_o[<class>]`        | `output`         | packed `logic` | Interrupt outputs, level sensitive, active high. Indices 0-3 correspond to classes A-D.
 `crashdump_o`           | `output`         | packed `struct`| This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
 `entropy_i`             | `input`          | `logic`        | Entropy input bit for LFSRtimer (can be connected to TRNG, otherwise tie off to `1'b0` if unused).
 `alert_pi/ni[<number>]` | `input`          | packed `logic` | Incoming alert or ping response(s), differentially encoded. Index range: `[NAlerts-1:0]`
@@ -210,8 +209,8 @@ differential pairs `alert_p/n`, `ack_p/n` and `ping_p/n`, as illustrated below:
 ![Alert Handler Alert RXTX](alert_handler_alert_rxtx.svg)
 
 Alerts are encoded differentially and signaled using a full handshake on the
-`alert_p/n` and `ack_p/n` wires. The use of a full handshake protocol enables to
-use this mechanism with an asynchronous clocking strategy, where peripherals may
+`alert_p/n` and `ack_p/n` wires. The use of a full handshake protocol allows
+this mechanism to be used with an asynchronous clocking strategy, where peripherals may
 reside in a different clock domain than the alert handler. The full handshake
 guarantees that alert messages are correctly back-pressured and no alert is
 "lost" at the asynchronous boundary due to (possibly variable) clock ratios
@@ -247,11 +246,10 @@ The wave pattern below illustrates differential full handshake mechanism.
 }
 {{< /wavejson >}}
 
-The repeat pattern for this alert is such that as long as the alert is true,
-the handshake is re-initiated after waiting pausing for 2 cycles on the sender
-side.
+The handshake pattern is repeated as long as the alert is true.  The sender will
+wait for 2 cycles between handshakes.
 
-Note that the alert is immediately propagated to the `alert_o` output once the
+Note that the alert is immediately propagated to `alert_o` once the
 initial level change on `alert_p/n` has been received and synchronized to the
 local clock. This ensures that the first occurrence of an alert is always
 propagated - even if the handshake lines have been manipulated to emulate
@@ -273,11 +271,11 @@ appearance can not be predicted.
 
 
 The ping timing is generated by a central LFSR-based timer within the alert
-handler, that randomly asserts the `ping_en_i` signal of a particular
-`prim_alert_receiver` module. Once the ping enable signal is asserted, the
+handler that randomly asserts the `ping_en_i` signal of a particular
+`prim_alert_receiver` module. Once `ping_en_i` is asserted, the
 receiver module encodes the ping message as a level change on the differential
-`ping_p/n` output, and waits until the sender responds with a full handshake on
-the `alert_p/n` and `ack_p/n` lines. Once that handshake is complete, the
+`ping_po/no` output, and waits until the sender responds with a full handshake on
+the `alert_pi/ni` and `ack_po/no` lines. Once that handshake is complete, the
 `ping_ok_o` signal is asserted. The LFSR timer has a programmable ping timeout,
 after which it will automatically assert a "pingfail" alert. That timeout is a
 function of the clock ratios present in the system, and has to be programmed
@@ -549,7 +547,7 @@ always takes precedence should it be triggered).
 There are four output escalation signals, 0, 1, 2, and 3. There is no
 predetermined definition of an escalation signal, that is left to the
 top-level integration. Examples could be processor Non Maskable Interrupt (NMI),
-permission lowering, secret wiping, chip reset, etc. Typically the assumption
+privilege lowering, secret wiping, chip reset, etc. Typically the assumption
 is that escalation level 0 is the first to trigger, followed by 1, 2, and then
 3, emulating a "fuse" that is lit that can't be stopped once the first triggers
 (this is however not a requirement). See register section for discussion of
@@ -810,7 +808,7 @@ will just be acknowledged with `ping_ok_o` in case `esc_en_i` is already
 asserted. An ongoing ping sequence will be aborted immediately.
 
 
-# Programmer's Guide
+# Programmers Guide
 
 
 ## Power-up and Reset Considerations
@@ -824,10 +822,10 @@ are locked in.
 
 ## Initialization
 
-To initialize the block, software running at a high permission level (early in
+To initialize the block, software running at a high privilege levels (early in
 the security settings process) should do the following:
 
-1. foreach alert and each local alert:
+1. For each alert and each local alert:
 
     - Determine if alert is enabled (should only be false if alert is known to
       be faulty). Set {{< regref "ALERT_EN.EN_A0" >}} and {{< regref "LOC_ALERT_EN.EN_LA0" >}} accordingly.
@@ -838,7 +836,7 @@ the security settings process) should do the following:
 2. Set the ping timeout value {{< regref "PING_TIMEOUT_CYC" >}}. This value is dependent on
    the clock ratios present in the system.
 
-3. foreach class (A..D):
+3. For each class (A..D):
 
     - Determine whether to enable escalation mechanisms (accumulation /
       interrupt timeout) for this particular class. Set {{< regref "CLASSA_CTRL.EN" >}}
@@ -858,11 +856,11 @@ the security settings process) should do the following:
       than zero (zero corresponds to an infinite timeout and disables the
       mechanism).
 
-    - Foreach escalation phase (0..3):
+    - For each escalation phase (0..3):
         - Determine length of each escalation phase by setting
           {{< regref "CLASSA_PHASE0_CYC" >}} accordingly
 
-    - Foreach escalation signal (0..3):
+    - For each escalation signal (0..3):
         - Determine whether to enable the escalation signal, and set the
           {{< regref "CLASSA_CTRL.E0_EN" >}} bit accordingly (default is enabled).
         - Determine the phase -> escalation mapping of this class and
@@ -923,19 +921,47 @@ also trigger the internal interrupt timeout (if enabled), since the interrupt
 state is used as enable signal for the timer. However, alert accumulation will
 not be triggered by this testing mechanism.
 
+## Register Table
 
-# Additional Notes
+The below register description can be generated with the `reg_alert_handler.py`
+script. The reason for having yet another script for register generation is
+that the alert handler is configurable for the number of alert sources
+(similar to the rv_plic design).
+
+The register description below may not match with the actual instance in Top
+Earlgrey, since the alert handler is generated by the topgen tool so that the
+number of alert sources matches.
+
+In order to generate the register file below, from `hw/ip/alert_handler/doc`:
+
+```console
+$ ./reg_alert_handler.py alert_handler.hjson.tpl -n 4 > alert_handler.hjson
+```
+
+This creates the register file for 4 alert sources.
+
+Note that you should also update the regfile wrapper after updating the
+regfile using
+
+```console
+$ ./alert_handler_reg_wrap.sv.tpl -n 4 > ../rtl/alert_handler_reg_wrap.sv
+```
 
 
-### Timing Constraints
+{{< registers "hw/ip/alert_handler/data/alert_handler.hjson" >}}
 
-The skew within all differential signal pairs has to be constrained to be
-strictly smaller than the shortest clock period in the system. The maximum
+
+# Additiona Notes
+
+## Timing Constraints
+
+The skew within all differential signal pairs must be constrained to be
+smaller than the period of the fastest clock operating the alert handler receivers. The maximum
 propagation delay of differential pair should also be constrained (although it
 may be longer than the clock periods involved).
 
 
-### Fast-track Alerts
+## Fast-track Alerts
 
 Note that it is possible to program a certain class to provide a fast-track
 response for critical alerts by setting its accumulation trigger value to 1,
@@ -956,7 +982,7 @@ countermeasure device. Examples for alert conditions of this sort would be
 attacks on the secure clock.
 
 
-### Future Improvements and Enhancements
+## Future Improvements and Enhancements
 
 The list below sketches ideas for features and improvements which might be
 added in the future.
@@ -990,34 +1016,3 @@ added in the future.
   input in the LFSR timer, there is no way to guarantee a safe #pings threshold
   in this case. I.e., there is always a small probability of triggering false
   positives which have to be handled in SW.
-
-
-# Register Table
-
-The below register description can be generated with the `reg_alert_handler.py`
-script. The reason for having yet another script for register generation is
-that the alert handler is configurable for the number of alert sources
-(similar to the rv_plic design).
-
-The register description below may not match with the actual instance in Top
-Earlgrey, since the alert handler is generated by the topgen tool so that the
-number of alert sources matches.
-
-In order to generate the register file below, from `hw/ip/alert_handler/doc`:
-
-```console
-$ ./reg_alert_handler.py alert_handler.hjson.tpl -n 4 > alert_handler.hjson
-```
-
-This creates the register file for 4 alert sources.
-
-Note that you should also update the regfile wrapper after updating the
-regfile using
-
-```console
-$ ./alert_handler_reg_wrap.sv.tpl -n 4 > ../rtl/alert_handler_reg_wrap.sv
-```
-
-
-{{< registers "hw/ip/alert_handler/data/alert_handler.hjson" >}}
-
