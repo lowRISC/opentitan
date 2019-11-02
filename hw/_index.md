@@ -26,7 +26,7 @@ This includes: top level specification(s); processor core(s) specifications; and
 | pinmux         |[design spec]({{< relref "hw/ip/pinmux/doc" >}})
 | rv\_core\_ibex |[design spec]({{< relref "hw/ip/rv_core_ibex/doc" >}})
 | rv\_dm         |[design spec]({{< relref "hw/ip/rv_dm/doc" >}})
-| rv\_plic       |[design spec]({{< relref "hw/ip/rv_plic/doc" >}})
+| rv\_plic       |[design spec]({{< relref "hw/ip/rv_plic/doc" >}}) | [DV plan]({{< relref "hw/ip/rv_plic/doc/dv_plan" >}})
 | rv\_timer      |[design spec]({{< relref "hw/ip/rv_timer/doc" >}}) | [DV plan]({{< relref "hw/ip/rv_timer/doc/dv_plan" >}})
 | spi\_device    |[design spec]({{< relref "hw/ip/spi_device/doc" >}})
 | tlul           |[design spec]({{< relref "hw/ip/tlul/doc" >}})

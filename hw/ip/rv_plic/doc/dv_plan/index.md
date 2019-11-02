@@ -1,11 +1,15 @@
 ---
-title: "RV_PLIC FPV Plan"
+title: "RV_PLIC DV Plan"
 ---
 
 ## Goals
-* Verify all the RV_PLIC outputs by writing assumptions and assertions with a
-  FPV based testbench
-* Verify TileLink device protocol compliance with a FPV based testbench
+* DV:
+  * RV_PLIC is decided to verify in FPV only
+
+* FPV:
+  * Verify all the RV_PLIC outputs by writing assumptions and assertions with a
+    FPV based testbench
+  * Verify TileLink device protocol compliance with a FPV based testbench
 
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
