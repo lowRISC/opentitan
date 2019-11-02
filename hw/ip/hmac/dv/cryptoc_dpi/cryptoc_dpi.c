@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "hmac.h"
+#include "hmac_wrap.h"
 #include "sha.h"
 #include "sha256.h"
 #include "svdpi.h"
@@ -12,7 +14,7 @@
 typedef unsigned long long ull_t;
 
 extern void SHA_hash_dpi(const svOpenArrayHandle msg, ull_t len,
-                         unsigned int hash[8]) {
+                         uint8_t hash[8]) {
   unsigned char *arr;
   unsigned int *arr_ptr;
   ull_t i;
@@ -31,7 +33,7 @@ extern void SHA_hash_dpi(const svOpenArrayHandle msg, ull_t len,
 }
 
 extern void SHA256_hash_dpi(const svOpenArrayHandle msg, ull_t len,
-                            unsigned int hash[8]) {
+                            uint8_t hash[8]) {
   unsigned char *arr;
   unsigned int *arr_ptr;
   ull_t i;
@@ -56,7 +58,7 @@ extern void SHA256_hash_dpi(const svOpenArrayHandle msg, ull_t len,
 
 extern void HMAC_SHA_dpi(const svOpenArrayHandle key, ull_t key_len,
                          const svOpenArrayHandle msg, ull_t msg_len,
-                         unsigned int hmac[8]) {
+                         uint8_t hmac[8]) {
   unsigned char *msg_arr;
   unsigned int *msg_arr_ptr;
   unsigned char *key_arr;
@@ -86,7 +88,7 @@ extern void HMAC_SHA_dpi(const svOpenArrayHandle key, ull_t key_len,
 
 extern void HMAC_SHA256_dpi(const svOpenArrayHandle key, ull_t key_len,
                             const svOpenArrayHandle msg, ull_t msg_len,
-                            unsigned int hmac[8]) {
+                            uint8_t hmac[8]) {
   unsigned char *msg_arr;
   unsigned int *msg_arr_ptr;
   unsigned char *key_arr;

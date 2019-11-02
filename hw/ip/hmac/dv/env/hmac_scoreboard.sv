@@ -65,7 +65,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           foreach (msg[i])  begin
             msg_q.push_back(msg[i]);
             if (msg_q.size() % 4 == 0) begin
-              wait(cfg.d2h_a_ready_vif.sample() == 1); // wait for outstanding transaction
+              wait(cfg.d2h_a_ready_vif.pins == 1); // wait for outstanding transaction
               incr_wr_and_check_fifo_full();
             end
           end
