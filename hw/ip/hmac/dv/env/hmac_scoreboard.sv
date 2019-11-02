@@ -139,12 +139,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             hmac_intr_e intr;
             intr = intr.first;
             do begin
-              bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+              bit [TL_DW-1:0] intr_en   = ral.intr_enable.get_mirrored_value();
+              bit [TL_DW-1:0] intr_test = ral.intr_test.get_mirrored_value();
               cov.intr_cg.sample(intr, intr_en[intr], item.d_data[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+              cov.intr_test_cg.sample(intr, intr_test[intr], intr_en[intr], item.d_data[intr]);
               intr = intr.next;
             end while (intr != intr.first);
           end
+          // intr_test is WO, every time after write for a clk cycle, RTL will reset it, but for
+          // coverage purpose, we will reset intr_test after collected the coverage
+          void'(ral.intr_test.predict(.value(0), .kind(UVM_PREDICT_DIRECT)));
           if (item.d_data[HmacDone] == 1) begin
             hmac_wr_cnt = 0;
             hmac_rd_cnt = 0;
