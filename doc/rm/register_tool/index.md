@@ -565,15 +565,15 @@ For example:
 # define UART_CTRL_RXBLVL_BREAK16        3
 ```
 
-### Titan style headers
+### Alternate style headers
 
-The register generation tool will generate Titan project style headers if it is invoked with the `-T` flag.
+The register generation tool will generate alternate style headers if it is invoked with the `-T` flag.
 The `-o <file.h>` flag may be used to specify the output file.
 As an example the tool can be invoked to generate the uart headers with:
 
 ```console
 $ cd hw/ip/uart/doc
-$ ../../../../util/regtool.py -T -o ~/src/titan/uart.h uart.hjson
+$ ../../../../util/regtool.py -T -o ~/src/alt/uart.h uart.hjson
 ```
 
 This format assumes that there is a base address `NAME`n`_BASE_ADDR` defined where n is an identifying number to allow for multiple instantiations of peripherals.
