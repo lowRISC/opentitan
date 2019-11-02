@@ -39,12 +39,11 @@ def parse_testplan(filename):
     testplan = Testplan(name=name)
     for entry in obj["entries"]:
         if not TestplanEntry.is_valid_entry(entry): sys.exit(1)
-        testplan_entry = TestplanEntry(
-            name=entry["name"],
-            desc=entry["desc"],
-            milestone=entry["milestone"],
-            tests=entry["tests"],
-            substitutions=substitutions)
+        testplan_entry = TestplanEntry(name=entry["name"],
+                                       desc=entry["desc"],
+                                       milestone=entry["milestone"],
+                                       tests=entry["tests"],
+                                       substitutions=substitutions)
         testplan.add_entry(testplan_entry)
     testplan.sort()
     return testplan
@@ -76,7 +75,6 @@ def gen_html_testplan_table(testplan, outbuf):
     '''generate html table from testplan with the following fields
     milestone, planned test name, description
     '''
-
     def print_row(ms, name, desc, tests, cell, outbuf):
         cellb = "<" + cell + ">"
         celle = "</" + cell + ">"
@@ -84,9 +82,10 @@ def gen_html_testplan_table(testplan, outbuf):
         if cell == "td":
             # remove leading and trailing whitespaces
             desc = mistletoe.markdown(desc.strip())
+            tests_str = "<ul>\n"
             for test in tests:
-                if tests_str != "": tests_str += "<br>"
-                tests_str += str(test)
+                tests_str += "<li>" + str(test) + "</li>\n"
+            tests_str += "</ul>"
         else:
             tests_str = tests
 
@@ -116,7 +115,6 @@ def gen_html_regr_results_table(testplan, regr_results, outbuf):
     '''map regr results to testplan and create a table with the following fields
     milestone, planned test name, actual written tests, pass/total
     '''
-
     def print_row(ms, name, tests, results, cell, outbuf):
         cellb = "<" + cell + ">"
         celle = "</" + cell + ">"
