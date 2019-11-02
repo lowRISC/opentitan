@@ -18,7 +18,7 @@ title: "RV_PLIC DV Plan"
 
 ## Design features
 For detailed information on RV_PLIC design features, please see the
-[RV_PLIC design specification]({{< relref "doc/ug/rv_plic.md" >}}).
+[RV_PLIC design specification]({{< relref "hw/ip/rv_plic/doc" >}}).
 
 ## Testbench architecture
 RV_PLIC FPV testbench has been constructed based on the [formal
