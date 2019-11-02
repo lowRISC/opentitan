@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
+#include <string.h>
 
 #include "hmac.h"
 #include "sha.h"
