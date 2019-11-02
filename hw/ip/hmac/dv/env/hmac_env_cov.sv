@@ -28,7 +28,7 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
 
   covergroup msg_len_cg with function sample (bit [TL_DW-1:0] msg_len_lower, bit [TL_DW-1:0] cfg);
     hmac_en: coverpoint cfg[HmacEn];
-    msg_len: coverpoint msg_len_lower {
+    msg_len: coverpoint (msg_len_lower / 8) {
       bins len_0         = {0};
       bins len_1         = {1};
       bins len_256       = {256};
@@ -42,7 +42,7 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
       bins len_1280      = {1280};
       bins len_1281      = {1281};
       bins len_1536      = {1536};
-      bins len_1537      = {1357};
+      bins len_1537      = {1537};
       bins len_1792      = {1792};
       bins len_1793      = {1793};
       bins len_2048      = {2048};
