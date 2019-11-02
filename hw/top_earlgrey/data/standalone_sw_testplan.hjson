@@ -1,0 +1,32 @@
+{
+  name: "self-contained-tests"
+
+  entries: [
+    {
+      name: flash_ctrl
+      desc: '''This test checks for correct sanity behavior of the flash.
+            It ensures the flash controller is able to program, read, and page erase fixed locations in multiple flash banks.
+            It also performs a sanity region protection check to make sure a protected page cannot be modified.
+            When the test passes, it will output "PASS!".'''
+      milestone: V1
+      tests: ["flash_test"]
+    }
+    {
+      name: hmac
+      desc: '''This test checks for basic functionality of the sha256 engine inside HMAC.
+            It computes the hash of a known input and compares it against the known digest.
+            When the test passes, it will output "PASS!".'''
+      milestone: V1
+      tests: ["sha256_test"]
+    }
+    {
+      name: rv_timer
+      desc: '''This test checks for basic timer and interrupt functionality.
+            The test rests in a loop and does not break out until the interrupt handling routine sets a specific value.
+            If the interrupt handling is incorrect, the test will never complete.
+            When the test passes, it will output "PASS!".'''
+      milestone: V1
+      tests: ["rv_timer_test"]
+    }
+  ]
+}
