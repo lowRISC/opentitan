@@ -18,24 +18,78 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
   // gpio input pin value stable
   rand uint stable_cycles_per_pin [NUM_GPIOS];
 
+  // Filter enable value
+  bit [TL_DW-1:0] gpio_filter_value;
+
   constraint stable_cycles_for_input_c {
     foreach (stable_cycles_per_pin[i])
       stable_cycles_per_pin[i] dist { [1:FILTER_CYCLES-1] :/ 70,
                                             FILTER_CYCLES :/ 30 };
   }
 
+  covergroup pins_stable_period_and_filter_cg with function sample(uint pin,
+                                                                   uint stable_cycles,
+                                                                   bit pin_value,
+                                                                   bit filter_en);
+    cp_pins: coverpoint pin {
+      bins all_gpio_pins[] = {[0:NUM_GPIOS-1]};
+    }
+    cp_stable_cycles: coverpoint stable_cycles {
+      bins one_to_filter_cycles_minus_1[] = {[1:FILTER_CYCLES - 1]};
+      bins filter_cycles_or_more          = {[FILTER_CYCLES:$]};
+    }
+    cp_pin_value: coverpoint pin_value;
+    cp_filter_en: coverpoint filter_en;
+    cp_cross: cross cp_pins, cp_stable_cycles, cp_pin_value, cp_filter_en;
+  endgroup : pins_stable_period_and_filter_cg
+
   `uvm_object_utils(gpio_intr_with_filter_rand_intr_event_vseq)
-  `uvm_object_new
+
+  function new(string name = "gpio_intr_with_filter_rand_intr_event_vseq");
+    super.new(name);
+    pins_stable_period_and_filter_cg = new();
+  endfunction : new
+
+  task sample_stable_cycles_and_filter_coverage();
+    // Sampling coverage related to gpio pins' stable cycles
+    bit [NUM_GPIOS-1:0] prev_pins_val = (cfg.pullup_en == 1'b1) ? '1 : '0;
+    bit [NUM_GPIOS-1:0] crnt_pins_val;
+    uint stable_cycles_cnt[NUM_GPIOS];
+    forever @(cfg.clk_rst_vif.cb) begin
+      // Assign current sampled gpio value
+      crnt_pins_val = cfg.gpio_vif.sample();
+      foreach (crnt_pins_val[each_pin]) begin
+        if (crnt_pins_val[each_pin] == prev_pins_val[each_pin]) begin
+          stable_cycles_cnt[each_pin]++;
+        end else begin
+          stable_cycles_cnt[each_pin] = 1;
+        end
+        pins_stable_period_and_filter_cg.sample(each_pin,
+                                                stable_cycles_cnt[each_pin],
+                                                crnt_pins_val[each_pin],
+                                                gpio_filter_value[each_pin]);
+      end
+      // Update previous gpio value
+      prev_pins_val = crnt_pins_val;
+    end
+  endtask : sample_stable_cycles_and_filter_coverage
 
   task body();
     bit [NUM_GPIOS-1:0] gpio_i;
-    bit [TL_DW-1:0] gpio_filter_value;
     bit [NUM_GPIOS-1:0] stable_value = (cfg.pullup_en) ? {NUM_GPIOS{1'b1}} : '0;
     bit [TL_DW-1:0] crnt_intr_status;
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
     // Wait for FILTER_CYCLES to make sure that we start
     // with stable gpio pins value
     cfg.clk_rst_vif.wait_clks(FILTER_CYCLES);
+
+    // Sample coverage for pins' stable cycles and filter
+    if (cfg.en_cov) begin
+      fork
+        sample_stable_cycles_and_filter_coverage();
+      join_none
+    end
+
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
       uint tmp_q[$];

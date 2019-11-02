@@ -26,7 +26,6 @@ class gpio_filter_stress_vseq extends gpio_intr_with_filter_rand_intr_event_vseq
 
   task body();
     bit [NUM_GPIOS-1:0] gpio_i;
-    bit [NUM_GPIOS-1:0] gpio_filter_value;
     bit [NUM_GPIOS-1:0] stable_value = (cfg.pullup_en) ? {NUM_GPIOS{1'b1}} : '0;
     bit [NUM_GPIOS-1:0] crnt_intr_status;
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
