@@ -72,6 +72,7 @@ config = {
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
+        "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/uart/data/uart_testplan.hjson",
         "util/testplanner/examples/foo_testplan.hjson",
