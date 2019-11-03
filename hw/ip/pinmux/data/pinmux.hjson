@@ -8,10 +8,10 @@
 #  - n_periph_in:     Number of peripheral inputs
 #  - n_periph_out:    Number of peripheral outputs
 #  - n_mio_pads:      Number of muxed IO pads
-# 
+#
 {
   name: "PINMUX",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
   param_list: [
@@ -93,4 +93,3 @@
     },
   ],
 }
-
