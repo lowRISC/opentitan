@@ -52,6 +52,11 @@ jobs:
     displayName: 'Ensure all generated files are clean and up-to-date'
 
   - bash: |
+      ./util/build_docs.py
+    condition: always()
+    displayName: 'Render documentation'
+
+  - bash: |
       # XXX: As of today, task.logissue comments with 'sourcepath' set don't
       # get reported to GitHub Checks annotations. Upstream bug report:
       # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
