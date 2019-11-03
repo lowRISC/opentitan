@@ -11,19 +11,17 @@ This module is a peripheral on the chip interconnect bus, and thus follows the
 See that document for integration overview within the broader OpenTitan top level system.
 
 
-
-
 ## Features
 
 - Programmable control of chip pin input/output inversion
 
 - Programmable control of chip pin output locking enable
 
-- Programmable control of chip pin output drive strength, pull up, pull down, open drain
+- Programmable control of chip pin output drive strength, pull up, pull down and virtual open drain
 
 ## Description
 
-The `padctrl` module instantiates all chip pads and provides a software accessible register file to control pad attributes such as pull-up, pull-down, open-drain, drive-strength, keeper and input/output inversion.
+The `padctrl` module instantiates all chip pads and provides a software accessible register file to control pad attributes such as pull-up, pull-down, virtual open-drain, drive-strength, keeper and input/output inversion.
 The `padctrl` module supports a comprehensive set of pin attributes, but it is permissible that some of them may not be supported by the underlying pad implementation.
 For example, certain ASIC libraries may not provide open-drain outputs, and FPGAs typically do not allow all of these attributes to be programmed dynamically at runtime.
 
@@ -51,8 +49,11 @@ This ensures that the pad instance compatible with the target technology can be 
 
 Note that the chip-level `padctrl` module also contains the pads for clock and reset, but these have no associated runtime configurable pad attributes.
 
+## Hardware Interfaces
 
-## Parameters
+{{< hwcfg "hw/ip/padctrl/data/padctrl.hjson" >}}
+
+### Parameters
 
 The following table lists the main parameters used throughout the `padctrl` design.
 Note that the `padctrl` modules are generated based on the system configuration, and hence these parameters are placed into a package as "localparams".
@@ -67,17 +68,13 @@ In addition to these localparams, both the `padctrl` and `padring` modules expos
 The `padring` module uses this parameter to instantiate the correct pad implementation, and the `padctrl` module uses this parameter to determine which attribute bits are programmable (see programming guide below).
 The parameter values can be "generic" or "xilinx" as defined in the pad wrapper primitive.
 
-## Signals
+### Additional IOs
 
-The table below lists the `padctrl` signals.
+The table below lists additional `padctrl` signals.
 The number of IOs is parametric, and hence the signals are stacked in packed arrays.
 
 Signal                                 | Direction        | Type                | Description
 ---------------------------------------|------------------|---------------------|---------------
-`clk_i`                                | `input`          | `logic`             | Clock input.
-`rst_ni`                               | `input`          | `logic`             | Reset input.
-`tl_i`                                 | `input`          | `tl_h2d_t`          | TileLink-UL input for control register access.
-`tl_o`                                 | `output`         | `tl_d2h_t`          | TileLink-UL output for control register access.
 `mio_attr_o[NMioPads-1:0][AttrDw-1:0]` | `output`         | packed `logic`      | Packed array containing the pad attributes of all muxed IOs.
 `dio_attr_o[NDioPads-1:0][AttrDw-1:0]` | `output`         | packed `logic`      | Packed array containing the pad attributes of all dedicated IOs.
 
@@ -102,7 +99,9 @@ Signal                                 | Direction        | Type                
 `dio_oe_i[NDioPads-1:0]`               | `input`          | packed `logic`      | Output data enable of dedicated IOs.
 
 
-## Generic Pad Wrapper
+## Design Details
+
+### Generic Pad Wrapper
 
 <center>
 <img src="generic_pad_wrapper.svg" width="50%">
@@ -124,22 +123,22 @@ AttrDw         | 8 (6, -)              | Width of the pad attribute vector.
 
 Note that the pad wrapper may implement a "virtual" open drain termination, where standard bidirectional pads are employed, but instead of driving the output high for a logic 1 the pad is put into tristate mode.
 
-Signal             | Direction  | Type  | Description                         | Mandatory
--------------------|------------|-------|-------------------------------------|------------
-inout_io           | `inout`    | wire  | Bidirectional inout of the pad      | yes
-in_o               | `output`   | logic | Input data signal                   | yes
-out_i              | `input`    | logic | Output data signal                  | yes
-oe_i               | `input`    | logic | Output data enable                  | yes
-attr_i[0]          | `input`    | logic | Input/output inversion              | yes
-attr_i[1]          | `input`    | logic | Open drain enable                   | yes
-attr_i[2]          | `input`    | logic | Pull-down enable                    | no
-attr_i[3]          | `input`    | logic | Pull-up enable                      | no
-attr_i[4]          | `input`    | logic | Keeper enable                       | no
-attr_i[5]          | `input`    | logic | Drive strengh (0: strong, 1: weak)  | no
-attr_i[AttrDw-1:6] | `input`    | logic | Additional (optional) attributes    | no
+Signal               | Direction  | Type    | Description                         | Mandatory
+---------------------|------------|---------|-------------------------------------|------------
+`inout_io`           | `inout`    | `wire`  | Bidirectional inout of the pad      | yes
+`in_o`               | `output`   | `logic` | Input data signal                   | yes
+`out_i`              | `input`    | `logic` | Output data signal                  | yes
+`oe_i`               | `input`    | `logic` | Output data enable                  | yes
+`attr_i[0]`          | `input`    | `logic` | Input/output inversion              | yes
+`attr_i[1]`          | `input`    | `logic` | Open drain enable                   | yes
+`attr_i[2]`          | `input`    | `logic` | Pull-down enable                    | no
+`attr_i[3]`          | `input`    | `logic` | Pull-up enable                      | no
+`attr_i[4]`          | `input`    | `logic` | Keeper enable                       | no
+`attr_i[5]`          | `input`    | `logic` | Drive strengh (0: strong, 1: weak)  | no
+`attr_i[AttrDw-1:6]` | `input`    | `logic` | Additional (optional) attributes    | no
 
 
-## Programmers Guide
+# Programmers Guide
 
 Software should determine and program the `padctrl` pin attributes at startup, or reprogram it when the functionality requirements change at runtime.
 
@@ -148,6 +147,7 @@ Note that the IO attributes should be configured before enabling any driving mod
 
 The padctrl configuration can be locked down by writing a 0 to register {{< regref "REGEN" >}}.
 The configuration can then not be altered anymore unless the system is reset.
+One possible future enhancement is to individually lock each register instead of locking them all at once.
 
 Note that the register description given in the next section is an example that has been generated with the default parameterization, and the layout may change once reparameterized.
 The following pad attributes are supported by this register layout by default:
@@ -166,7 +166,6 @@ Since some of the pad attributes may not be implemented, software can probe this
 This behavior is also referred to as "writes-any-reads-legal" or "WARL" in the RISC-V world.
 
 
-# Register Table
+## Register Table
 
 {{< registers "hw/ip/padctrl/data/padctrl.hjson" >}}
-

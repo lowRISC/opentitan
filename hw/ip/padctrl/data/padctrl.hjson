@@ -10,7 +10,7 @@
 #  - attr_dw:        Attribute datawidth
 {
   name: "PADCTRL",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
   param_list: [
@@ -104,6 +104,3 @@
     },
   ],
 }
-
-
-
