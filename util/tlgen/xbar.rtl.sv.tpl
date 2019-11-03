@@ -34,6 +34,11 @@ module xbar_${xbar.name} (
   import tlul_pkg::*;
   import tl_${xbar.name}_pkg::*;
 
+  // scanmode_i is currently not used, but provisioned for future use
+  // this assignment prevents lint warnings
+  logic unused_scanmode;
+  assign unused_scanmode = scanmode_i;
+
 % for block in xbar.nodes:
   ## Create enum type for Upstream and Downstream ports connection
   % if block.node_type.name   == "ASYNC_FIFO":

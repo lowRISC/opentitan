@@ -117,6 +117,11 @@ module xbar_main (
   import tlul_pkg::*;
   import tl_main_pkg::*;
 
+  // scanmode_i is currently not used, but provisioned for future use
+  // this assignment prevents lint warnings
+  logic unused_scanmode;
+  assign unused_scanmode = scanmode_i;
+
   tl_h2d_t tl_s1n_16_us_h2d ;
   tl_d2h_t tl_s1n_16_us_d2h ;
 

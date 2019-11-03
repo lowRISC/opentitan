@@ -97,6 +97,7 @@ module flash_phy #(
     ) bank_sequence_fifo (
       .clk_i,
       .rst_ni,
+      .clr_i  (1'b0),
       .wvalid (host_req_i & host_req_rdy_o),
       .wready (seq_fifo_rdy),
       .wdata  (host_bank_sel),
@@ -118,6 +119,7 @@ module flash_phy #(
     ) host_rsp_fifo (
       .clk_i,
       .rst_ni,
+      .clr_i  (1'b0),
       .wvalid (host_req_done[bank]),
       .wready (host_rsp_avail[bank]),
       .wdata  (rd_data[bank]),

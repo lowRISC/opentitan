@@ -152,7 +152,8 @@ module flash_ctrl (
     .Depth(FifoDepth)
   ) u_prog_fifo (
     .clk_i,
-    .rst_ni (rst_ni & ~reg2hw.control.fifo_rst.q),
+    .rst_ni (rst_ni),
+    .clr_i  (reg2hw.control.fifo_rst.q),
     .wvalid (prog_fifo_req & prog_fifo_wen),
     .wready (prog_fifo_wready),
     .wdata  (prog_fifo_wdata),
@@ -227,7 +228,8 @@ module flash_ctrl (
     .Depth(FifoDepth)
   ) u_rd_fifo (
     .clk_i,
-    .rst_ni (rst_ni & ~reg2hw.control.fifo_rst.q),
+    .rst_ni (rst_ni),
+    .clr_i  (reg2hw.control.fifo_rst.q),
     .wvalid (rd_fifo_wen),
     .wready (rd_fifo_wready),
     .wdata  (rd_fifo_wdata),

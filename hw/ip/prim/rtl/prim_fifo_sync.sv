@@ -40,6 +40,10 @@ module prim_fifo_sync #(
     // host facing
     assign wready = rready;
 
+    // this avoids lint warnings
+    logic unused_clr;
+    assign unused_clr = clr_i;
+
   // Normal FIFO construction
   end else begin : gen_normal_fifo
     `ASSERT_INIT(paramCheckDepthW, DepthW == $clog2(Depth+1))
