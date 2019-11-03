@@ -51,7 +51,7 @@ module prim_packer #(
     end
   end
 
-  assign pos_next = (valid_i) ? pos + inmask_ones : pos;  // pos always stays (% OutW)
+  assign pos_next = (valid_i) ? pos + PtrW'(inmask_ones) : pos;  // pos always stays (% OutW)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

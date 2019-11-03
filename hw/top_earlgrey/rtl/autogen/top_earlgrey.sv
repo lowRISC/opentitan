@@ -151,11 +151,14 @@ module top_earlgrey #(
   logic intr_hmac_fifo_full;
   logic intr_hmac_hmac_err;
 
-
-  logic [0:0]   irq_plic;
+  
+  logic [0:0] irq_plic;
+  logic [0:0] msip;
   logic [5:0] irq_id[1];
-  logic [0:0]   msip;
+  logic [5:0] unused_irq_id[1];
 
+  // this avoids lint errors
+  assign unused_irq_id = irq_id;
 
   // clock assignments
   assign main_clk = clk_i;

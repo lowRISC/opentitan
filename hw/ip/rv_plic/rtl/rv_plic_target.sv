@@ -48,12 +48,12 @@ module rv_plic_target #(
       max_prio = 1'b0;
       irq_id_next = '0; // default: No Interrupt
       for (int i = N_SOURCE-1 ; i >= 0 ; i--) begin
-        if ((ip[i] & ie[i]) == 1'b1 && prio[i] >= max_prio) begin
+        if ((ip[i] & ie[i]) == 1'b1 && MAX_PRIOW'(prio[i]) >= max_prio) begin
           max_prio = MAX_PRIOW'(prio[i]);
           irq_id_next = SRCW'(i+1);
         end
       end // for i
-      irq_next = (max_prio > threshold) ? 1'b1 : 1'b0;
+      irq_next = (max_prio > MAX_PRIOW'(threshold)) ? 1'b1 : 1'b0;
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

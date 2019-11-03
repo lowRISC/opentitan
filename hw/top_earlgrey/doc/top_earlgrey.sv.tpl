@@ -154,11 +154,14 @@ module top_${top["name"]} #(
     % endfor
 % endfor
 
-
-  logic [0:0]   irq_plic;
+  <% add_spaces = " " * len(str((interrupt_num).bit_length()-1)) %>
+  logic [0:0]${add_spaces}irq_plic;
+  logic [0:0]${add_spaces}msip;
   logic [${(interrupt_num).bit_length()-1}:0] irq_id[1];
-  logic [0:0]   msip;
+  logic [${(interrupt_num).bit_length()-1}:0] unused_irq_id[1];
 
+  // this avoids lint errors
+  assign unused_irq_id = irq_id;
 
   // clock assignments
 % for clock in top['clocks']:
