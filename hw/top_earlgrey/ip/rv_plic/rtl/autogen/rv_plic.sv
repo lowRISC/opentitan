@@ -215,7 +215,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ///////////////////////////////////
   // Target interrupt notification //
   ///////////////////////////////////
-  for (genvar i = 0 ; i < NumTarget ; i++) begin : geNumTarget
+  for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
     rv_plic_target #(
       .N_SOURCE (NumSrc),
       .MAX_PRIO (MAX_PRIO),
@@ -258,7 +258,9 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(IrqKnownO_A, irq_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(MsipKnownO_A, msip_o, clk_i, !rst_ni)
+  for (genvar k = 0; k < NumTarget; k++) begin : gen_irq_id_known
+    `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k], clk_i, !rst_ni)
+  end
 
 endmodule
