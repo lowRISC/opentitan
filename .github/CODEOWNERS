@@ -32,14 +32,17 @@ util/build_docs.py  @gdk
 /hw/ip/*/rtl/           @eunchan
 /hw/ip/*/doc/           @eunchan
 /hw/ip/aes/             @vogelpi
+/hw/ip/alert_handler/   @msfschaffner
 /hw/ip/flash_ctrl/      @tjaychen
+/hw/ip/padctrl/         @msfschaffner @tjaychen
+/hw/ip/pinmux/          @msfschaffner @tjaychen
 /hw/ip/prim*            @sjgitty @eunchan @tjaychen
 /hw/ip/rv_core_ibex/    @imphil @tjaychen
 /hw/ip/rv_dm/           @imphil @vogelpi
 /hw/ip/tlul/            @sjgitty @eunchan @tjaychen
 # /hw/ip/usb*           # TBD
-/hw/top_*/rtl           @eunchan
-/hw/top_*/doc/top_*     @eunchan @msfschaffner
+/hw/top_*/rtl           @eunchan @tjaychen
+/hw/top_*/doc/top_*     @eunchan @msfschaffner @tjaychen
 
 
 # DV related common files
@@ -62,4 +65,3 @@ COPYING*            @asb
 /ci/                @mcy @imphil
 /test/              @mcy @imphil
 azure_pipelines.yml @mcy @imphil
-
