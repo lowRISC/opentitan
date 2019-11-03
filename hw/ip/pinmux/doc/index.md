@@ -8,10 +8,9 @@ title: "Pinmux Technical Specification"
 This document specifies the functionality of the pin multiplexer (`pinmux`) peripheral.
 This module conforms to the [OpenTitan guideline for peripheral device functionality.]({{< relref "doc/rm/comportability_specification" >}}).
 See that document for integration overview within the broader OpenTitan top level system.
-The module provides a mechanism to reconfigure the pin-to-pad mapping of GPIOs at runtime, which can greatly enhance the system flexibility.
-This IP is closely related to the `padctrl` instance which provides additional control of pin attributes (pull-up, pull-down, open drain, drive strength, keeper and inversion).
+The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
+This IP is closely related to the `padctrl` instance which provides additional control of pad attributes (pull-up, pull-down, open drain, drive strength, keeper and inversion).
 See [that spec]({{< relref "hw/ip/padctrl/doc" >}}) for more information.
-
 
 
 
@@ -24,7 +23,6 @@ See [that spec]({{< relref "hw/ip/padctrl/doc" >}}) for more information.
 - Programmable mapping from peripheral outputs (and output enables) to top-level outputs (and output enables)
 
 - Programmable mapping from top-level inputs to peripheral inputs
-
 
 ## Description
 
@@ -55,7 +53,6 @@ The pin multiplexor module intends to give maximum flexibility of peripheral and
 The assumption is that the wiring is done once at the initialization of the application based upon usage of the device within the broader system.
 How this wiring is most effectively done is outside the scope of this document, but a section below briefly discusses use cases.
 
-
 ## Block Diagram
 
 The diagram below shows connectivity between four arbitrary chip pins, named `MIO_00` .. `MIO_03`, and several peripheral inputs and outputs.
@@ -69,8 +66,11 @@ Note that apart from selecting a specific input pad, the `periph_insel[*]` signa
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
 The output enable and the associated data signal (i.e. `periph_to_mio` and `periph_to_mio_oe`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to software.
 
-Additional details about the signal names and parameters is given in the tables below.
+Additional details about the signal names and parameters are given in the sections below.
 
+## Hardware Interfaces
+
+{{< hwcfg "hw/ip/pinmux/data/pinmux.hjson" >}}
 
 ## Parameters
 
@@ -79,18 +79,16 @@ Note that the pinmux is generated based on the system configuration, and hence t
 
 Localparam     | Default (Max)         | Description
 ---------------|-----------------------|---------------
-NPeriphOut     | 16 (-)                | Number of peripheral outputs.
-NPeriphIn      | 16 (-)                | Number of peripheral input.
-NMioPads       | 8 (-)                 | Number of muxed bidirectional pads (depending on padctrl setup).
+`NPeriphOut`   | 16 (-)                | Number of peripheral outputs.
+`NPeriphIn`    | 16 (-)                | Number of peripheral input.
+`NMioPads`     | 8 (-)                 | Number of muxed bidirectional pads (depending on padctrl setup).
 
-## Signals
+## Additional IOs
 
 The table below lists the `pinmux` signals. The number of IOs is parametric, and hence the signals are stacked in packed arrays.
 
 Signal                               | Direction        | Type           | Description
 -------------------------------------|------------------|----------------|---------------
-`tl_i`                               | `input`          | `tl_h2d_t`     | TileLink-UL input for control register access.
-`tl_o`                               | `output`         | `tl_d2h_t`     | TileLink-UL output for control register access.
 `periph_to_mio_i[NPeriphOut-1:0]`    | `input`          | packed `logic` | Signals from `NPeriphOut` peripheral outputs coming into the pinmux.
 `periph_to_mio_oe_i[NPeriphOut-1:0]` | `input`          | packed `logic` | Signals from `NPeriphOut` peripheral output enables coming into the pinmux.
 `mio_to_periph_o[NPeriphIn-1:0]`     | `output`         | packed `logic` | Signals to `NPeriphIn` peripherals coming from the pinmux.
@@ -98,7 +96,7 @@ Signal                               | Direction        | Type           | Descr
 `mio_oe_o[NMioPads-1:0]`             | `output`         | packed `logic` | Signals to `NMioPads` bidirectional pads as output enables.
 `mio_in_i[NMioPads-1:0]`             | `input`          | packed `logic` | Signals from `NMioPads` bidirectional pads as input data.
 
-## Programmers Guide
+# Programmers Guide
 
 Software should determine and program the pinmux mapping at startup, or reprogram it when the functionality requirements change at runtime.
 This can be achieved by writing the following values to the {{< regref "PERIPH_INSEL" >}} and {{< regref "MIO_OUTSEL" >}} registers.
@@ -125,7 +123,7 @@ The pinmux configuration can be locked down by writing 0 to register {{< regref 
 The configuration can then not be altered anymore unless the system is reset.
 
 
-# Register Table
+## Register Table
 
 The layout of the register table can change, based on the parameterization.
 The register table below is an example and has been generated using the default parameters.
