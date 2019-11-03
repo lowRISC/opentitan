@@ -42,9 +42,9 @@ def generate_top(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    xbar_path = out_path / 'ip/xbar/doc/autogen'
+    xbar_path = out_path / 'ip/xbar/data/autogen'
     xbar_path.mkdir(parents=True, exist_ok=True)
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
+    gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
               "-o hw/top_earlgrey/\n\n")
 
     for obj in top["xbar"]:
@@ -101,6 +101,8 @@ def generate_plic(top, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/rv_plic/doc/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
+    hjson_path = out_path / 'ip/rv_plic/data/autogen'
+    hjson_path.mkdir(parents=True, exist_ok=True)
 
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from rv_plic directory directly.
@@ -123,9 +125,9 @@ def generate_plic(top, out_path):
         log.error("Cannot generate interrupt controller config file")
         return
 
-    hjson_gen_path = doc_path / "rv_plic.hjson"
+    hjson_gen_path = hjson_path / "rv_plic.hjson"
     gencmd = (
-        "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --plic-only "
+        "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --plic-only "
         "-o hw/top_earlgrey/\n\n")
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
@@ -188,7 +190,7 @@ def generate_pinmux(top, out_path):
     tpl_path = out_path / '../ip/pinmux/data/pinmux.hjson.tpl'
 
     # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson "
+    gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
               "-o hw/top_earlgrey/\n\n")
 
     hjson_gen_path = data_path / "pinmux.hjson"
@@ -379,7 +381,7 @@ def main():
         # It needs to run up to amend_interrupt in merge_top function
         # then creates rv_plic.hjson then run xbar generation.
         hjson_dir = Path(args.topcfg).parent
-        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/doc/autogen/rv_plic.hjson'
+        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/data/autogen/rv_plic.hjson'
         ips.append(rv_plic_hjson)
 
         pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
@@ -422,7 +424,7 @@ def main():
         genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
                                      completecfg["name"])
         gencmd = (
-            "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --hjson-only "
+            "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --hjson-only "
             "-o hw/top_earlgrey/\n")
 
         if args.top_ral:

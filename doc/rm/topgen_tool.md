@@ -15,7 +15,7 @@ This document explains the overall generation process, the required inputs, the 
 
 ### Overview
 The details of a particular OpenTitan variant is described in a top specific Hjson file.
-For example see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/doc/top_earlgrey.hjson).
+For example see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/data/top_earlgrey.hjson).
 
 The top specific Hjson describes how the design looks and how it should connect, for example:
 * Overall fabric data width
@@ -41,10 +41,10 @@ The top level Hjson however, does not contain details such as:
 The topgen tool thus hierarchically gathers and generates the missing information from additional Hjson files that describe the detail of each component.
 These are primarily located in two places:
 * `hw/ip/data/*.hjson`
-* `hw/top_*/doc/xbar_*.hjson`
+* `hw/top_*/data/xbar_*.hjson`
 
 In the process of gathering, each individual Hjson file is validated for input correctness and then merged into a final generated Hjson output that represents the complete information that makes up each OpenTitan design.
-For example, see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/doc/autogen/top_earlgrey.gen.hjson).
+For example, see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
 Note specifically the generated interrupt list, the pinmux connections, and the port-to-net mapping of clocks and resets, all of which were not present in the original input.
 
 The purpose for this two step process, instead of describing the design completely inside one Hjson file, is to decouple the top and components development while allowing re-use of components by multiple tops.

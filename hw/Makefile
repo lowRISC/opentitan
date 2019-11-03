@@ -56,10 +56,10 @@ clean-regs-header:
 top: $(tops_gen)
 $(tops_gen):
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
-	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
-		--tpl ${PRJ_DIR}/hw/$($@_TOP)/doc/ \
+	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
+		--tpl ${PRJ_DIR}/hw/$($@_TOP)/data/ \
 		-o ${PRJ_DIR}/hw/$($@_TOP)/ ${toolflags}
-	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/doc/$($@_TOP).hjson \
+	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
 		-r -o ${PRJ_DIR}/hw/$($@_TOP)/dv/env/ ${toolflags}
 
 .PHONY: all $(ips_reg) $(tops_gen) $(ips_reg_header)
