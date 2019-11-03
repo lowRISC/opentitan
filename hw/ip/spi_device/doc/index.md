@@ -8,7 +8,7 @@ title: "SPI Device HWIP Technical Specification"
 ## Features
 
 - Single-bit wide SPI device interface implementing a raw data transfer protocol
-  termed "Generic Mode"
+  termed "Firmware Operation Mode"
   - No address bits, data is sent and received from peripheral pins to/from an
     internal buffer
   - Intended to be used to bulk-load data into and out of the chip
@@ -22,7 +22,7 @@ title: "SPI Device HWIP Technical Specification"
 ## Description
 
 The SPI device module is a serial-to-parallel receive (RX) and
-parallel-to-serial transmit (TX) full duplex design (single line mode) to communicate
+parallel-to-serial transmit (TX) full duplex design (single line mode) used to communicate
 with an outside host. This first version of the module supports operations
 controlled by firmware to dump incoming single-line RX data (MOSI) to an
 internal RX buffer, and send data from a transmit buffer to single-line TX
@@ -34,9 +34,42 @@ design complications described later.
 ## Compatibility
 
 The SPI device doesn't support emulating an EEPROM as of this initial version.
-This version is mostly compatible with the Haven SPI Slave Generic Mode design.
 
 # Theory of Operations
+
+## Block Diagram
+
+![Block Diagram](block_diagram.svg)
+
+The block diagram above shows how the SPI Device IP converts incoming
+bit-serialized MOSI data into a valid byte, where the data bit is valid when the
+chip select signal (CSB) is 0 (active low) and SCK is at positive or negative
+edge (configurable, henceforth called the "active edge"). The bit order within
+the byte is determined by {{< regref "CFG.rx_order" >}} configuration register field. After a
+byte is gathered, the interface module writes the byte data into a small FIFO
+("RXFIFO") using SCK. It is read out of the FIFO and written into to the
+buffer SRAM ("DP_SRAM") using the system bus clock. If RXFIFO is full, this is
+an error condition and the interface module discards the byte.
+
+The interface module also serializes data from the small transmit FIFO
+("TXFIFO") and shifts it out on the MISO pin when CSB is 0 and SCK is at the
+active edge. The bit order within the byte can be configured with configuration
+register field {{< regref "CFG.tx_order" >}}. It is expected that software has prepared TX data
+based on the description in the "Defining
+Firmware Operation Mode" section below. Since SCK is not under the control of
+software or the device (it is driven by the external SPI host), it is possible
+that there is no data ready in the TXFIFO when chip select becomes active and
+the interface needs to send data on the MISO pin. Either software has not
+prepared TX data or software does not care about the contents of the TX data -
+then the hardware will send whatever lingering data is in the empty TXFIFO. If
+this is a functional issue, then software should at least soft-reset the contents
+of the TXFIFO using the {{< regref "CONTROL.rst_txfifo" >}} register. The soft-reset signal
+is not synchronized to the SCK clock, so software should drive the reset
+signal when the SPI interface is idle.
+
+## Hardware Interfaces
+
+{{< hwcfg "hw/ip/spi_device/data/spi_device.hjson" >}}
 
 ## General Data Transfer on Pins
 
@@ -70,13 +103,13 @@ edges, polarities, and bit orders are described later.
 {{< /wavejson >}}
 
 
-## Defining "Generic Mode"
+## Defining "Firmware Operation Mode"
 
-Generic mode, as implemented by this SPI device, is used to bulk copy data in
+Firmware operation mode, as implemented by this SPI device, is used to bulk copy data in
 and out of the chip using the pins as shown above. In general, it is used to
 load firmware into the chip, but can be used for any data transfer into or out
 of the chip. The transfers are "generic" in the sense that there is no
-addressing involved. Data transferred into the chip goes into a SPI Device
+addressing or overarching protocol involved. Data transferred into the chip goes into a SPI Device
 circular buffer implemented in an SRAM, and firmware decides what to do with the
 data. Data transferred out of the chip comes out of a circular buffer in an
 SRAM. Software can build any number of higher level protocols on top of this
@@ -87,13 +120,13 @@ unidirectional movement of data, the other direction can be ignored but will
 still be active. For instance, if only receive data is needed in the transfer,
 the device will still be transmitting data out on the TX ("MISO") pin.
 
-### SPI Generic Mode
+## SPI Generic Protocol
 
 The primary protocol considered is one used by an external SPI host to send
 chunks of firmware data into the device in the receive direction, confirming the
 contents with an echo back of a hash of the received data in the transmit
-direction. This is generally termed 'SPI Generic' mode, since SPI is used to
-send firmware into the device flash, brokered by software confirming integrity
+direction. This is generally termed the 'SPI Generic' protocol, since SPI is used to
+send firmware into device memory, brokered by software confirming integrity
 of the received firmware data. This special case will be described first, and
 then a generic understanding of how firmware mode operates will follow.
 
@@ -127,16 +160,16 @@ received before software has prepared the transmit response to page zero
 (including the time to read data out of the SRAM), but that is a condition that
 the higher level protocol must prepare for. That protocol is not in scope for
 this document, but some hints to its implementation are given in the
-programmer's guide that follows.
+programmers guide section below.
 
 The transfer continues until all received data is taken in, and responded back.
 In this protocol the last "received" page of data is a "don't care" as long
 as the response is transmitted successfully.
 
-### Generic Mode
+### Firmware Operation Mode
 
 Taking this example as a guide, we can see the general method of the SPI
-Generic Mode. On every active SCK clock edge, data is received from the MOSI
+Firmware Operation Mode. On every active SCK clock edge, data is received from the MOSI
 pin into the SPI device, and data is transmitted on the MISO pin. Received data
 is gathered into bytes and written into the RX circular buffer in the SPI Device
 SRAM as it is accumulated. Whatever data exists in the TX circular buffer is
@@ -144,36 +177,6 @@ serialized and transmitted. Transfers are framed using the active low chip
 select pin SCB. What happens when data arrives and the RX circular buffer is
 full, or when the transmitter encounters an empty TX circular buffer are
 error conditions discussed in the Design Details section that follows.
-
-## Block Diagram
-
-![Block Diagram](block_diagram.svg)
-
-The block diagram above shows how the SPI Device IP converts incoming
-bit-serialized MOSI data into a valid byte, where the data bit is valid when the
-chip select signal (CSB) is 0 (active low) and SCK is at positive or negative
-edge (configurable, henceforth called the "active edge"). The bit order within
-the byte is determined by {{< regref "CFG.rx_order" >}} configuration register field. After a
-byte is gathered, the interface module writes the byte data into a small FIFO
-("RXFIFO") using SCK. It is read out of the FIFO and written into to the
-buffer SRAM ("DP_SRAM") using the system bus clock. If RXFIFO is full, this is
-an error condition and the interface module discards the byte.
-
-The interface module also serializes data from the small transmit FIFO
-("TXFIFO") and shifts it out on the MISO pin when CSB is 0 and SCK is at the
-active edge. The bit order within the byte can be configured with configuration
-register field {{< regref "CFG.tx_order" >}}. It is expected that software has prepared TX data
-as per the SPI Flash or general Firmware Mode described in the "Defining
-Generic Mode" section above. But because SCK is not under the control of
-software or the device (it is driven by the external SPI host), it is possible
-that there is no data ready in the TXFIFO when chip select becomes active and
-the interface needs to send data on the MISO pin. Either software has not
-prepared TX data or software does not care about the contents of the TX data -
-then the hardware will send whatever lingering data is in the empty TXFIFO. If
-this is a security risk, then software should at least soft-reset the contents
-of the TXFIFO using the {{< regref "CONTROL.rst_txfifo" >}} register. The soft-reset signal
-is not synchronized to the SCK clock, so software should drive the reset
-signal when the SPI interface is idle.
 
 ### RXFIFO, TXFIFO, and DP_SRAM
 
@@ -243,9 +246,6 @@ All reads and writes to/from the SRAM for RXF and TXF activity are managed by
 direct reads and writes through the TLUL bus interface, managed by the
 auto-generated register file control logic.
 
-## Hardware Interfaces
-
-{{< hwcfg "hw/ip/spi_device/data/spi_device.hjson" >}}
 
 # Design Details
 
@@ -256,9 +256,9 @@ clock, {{< regref "CFG.CPOL" >}} and {{< regref "CFG.CPHA" >}}. CPOL controls cl
 phase. For further details, please refer to this diagram from Wikipedia:
 [File:SPI_timing_diagram2.svg](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg)
 
-## SPI Device Generic Mode
+## SPI Device Firmware Operation Mode
 
-As described in the Theory of Operations above, in generic mode, the SPI device
+As described in the Theory of Operations above, in this mode, the SPI device
 writes incoming data directly into the SRAM (through RXFIFO) and updates the SPI
 device SRAM write pointer ({{< regref "RXF_PTR.wptr" >}}). It does not parse a command byte nor
 address bytes, analyzing incoming data relies on firmware implementation of a
