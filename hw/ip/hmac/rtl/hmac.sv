@@ -132,14 +132,14 @@ module hmac (
   ////////////////
   // Interrupts //
   ////////////////
-  logic fifo_full_d;
+  logic fifo_full_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) fifo_full_d <= 1'b0;
-    else fifo_full_d <= fifo_full;
+    if (!rst_ni) fifo_full_q <= 1'b0;
+    else fifo_full_q <= fifo_full;
   end
 
   logic fifo_full_event;
-  assign fifo_full_event = fifo_full & !fifo_full_d;
+  assign fifo_full_event = fifo_full & !fifo_full_q;
 
   logic [2:0] event_intr;
   assign event_intr = {err_valid, fifo_full_event, reg_hash_done};
@@ -462,4 +462,3 @@ module hmac (
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
 
 endmodule
-
