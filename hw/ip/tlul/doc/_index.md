@@ -324,7 +324,9 @@ assert `d_error` if they don't.
 | `3'b001` | `PutPartialData` | Write of partial bus width. `a_size[SZW-1:0]` indicates how many bytes are transmitted. The encoding is `2^a_size` so `'h0` indicates 1 byte, `'h1` indicates 2 bytes, `'h2` indicates 4 bytes, etc. The lower bits of `a_address` are valid to indicate sub-word addressing, and the bits of `a_mask[DBW-1:0]` should indicate valid byte lanes. |
 | `3'b100` | `Get` | Read of full bus width. The bus specification allows these to be defined otherwise (see PutPartialData above) for reads of sub-bus-width. |
 | `3'b01x, 3'b101, 3'b11x` | `undefined` | All other opcodes are undefined. Bus devices should return an error. |
-| **d_opcode[2:0] value** | **Name** | **Definition** |
+
+| `d_opcode[2:0]` value | Name | Definition |
+| :---: | :---: | --- |
 | `3'b000` | `AccessAck` | Write command acknowledgement, no data |
 | `3'b001` | `AccessAckData` | Read command acknowledgement, data valid on `d_data` |
 | `3'b01x, 3'b1xx` | `undefined` | All other opcodes are undefined; responses with undefined opcodes should be ignored by hosts (with assertions). |
