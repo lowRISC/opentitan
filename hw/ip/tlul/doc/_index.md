@@ -51,10 +51,8 @@ AXI-4, modulo the following assumptions.
 Bus primitives are provided in the lowRISC IP library. These are
 described later in this document. These primitives can be combined to form
 a flexible crossbar of any M hosts to any N devices. As of this writing,
-this crossbar is generated manually using the bus primitives. There is an
-end goal to generate the crossbar (or crossbars) programmatically through
-usage of configuration files, but that will not change the operation of
-the fabric and is beyond the scope of this current specification.
+theses crossbars are generated programmatically through usage of configuration files.
+See the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}} for more details.
 
 ## Compatibility
 
@@ -329,7 +327,7 @@ assert `d_error` if they don't.
 | :---: | :---: | --- |
 | `3'b000` | `AccessAck` | Write command acknowledgement, no data |
 | `3'b001` | `AccessAckData` | Read command acknowledgement, data valid on `d_data` |
-| `3'b01x, 3'b1xx` | `undefined` | All other opcodes are undefined; responses with undefined opcodes should be ignored by hosts (with assertions). |
+| `3'b01x, 3'b1xx` | `undefined` | All other opcodes are undefined and should return an error. |
 
 #### Explicit Error Cases
 
@@ -430,10 +428,11 @@ detail below.
 
 | Element | Description |
 | :---: | --- |
-| `tlul_fifo` | FIFO connecting one TL-UL host to one TL-UL device. Used to create elasticity in the bus, or to cross clock domains, or as a sub-element within other elements. TL-UL protocol is maintained on both sides of the device. Parameters control many features of the FIFO (see detailed description that follows). |
-| `tlul_socket1n` | Demultiplexing element that connects 1 TL-UL host to N TL-UL devices. TL-UL protocol is maintained on the host side and with all devices. Parameter settings control many of the features of the socket (see detailed description that follows). |
-| `tlul_socketm1` | Multiplexing element that connects M TL-UL hosts to 1 TL-UL device. TL-UL protocol is maintained with all hosts and on the device side. Parameter settings control many of the features of the socket (see detailed description that follows). |
-| `tlul_switch` | Crossbar that connects M TL-UL hosts with N TL-UL devices. TL-UL protocol is maintained with all hosts and with all devices. Parameters and configuration settings control many of the features of the switch. This is not specified at this time, and will be done at a later date based upon project goals. |
+| `tlul_fifo_sync` | FIFO connecting one TL-UL host to one TL-UL device in a synchronous manner. Used to create elasticity in the bus, or as a sub-element within other elements. TL-UL protocol is maintained on both sides of the device. Parameters control many features of the FIFO (see detailed description that follows). |
+| `tlul_fifo_async` | FIFO connecting one TL-UL host to one TL-UL device in an asynchronous manner. Used to create elasticity in the bus, or to cross clock domains, or as a sub-element within other elements. TL-UL protocol is maintained on both sides of the device. Parameters control many features of the FIFO (see detailed description that follows). |
+| `tlul_socket_1n` | Demultiplexing element that connects 1 TL-UL host to N TL-UL devices. TL-UL protocol is maintained on the host side and with all devices. Parameter settings control many of the features of the socket (see detailed description that follows). |
+| `tlul_socket_m1` | Multiplexing element that connects M TL-UL hosts to 1 TL-UL device. TL-UL protocol is maintained with all hosts and on the device side. Parameter settings control many of the features of the socket (see detailed description that follows). |
+| `tlul_xbar` | Crossbar that connects M TL-UL hosts with N TL-UL devices. The connectivity matrix may be sparse, and not all nodes are required to be the same clock or reset domain.  TL-UL protocol is maintained with all hosts and with all devices. Parameters and configuration settings control many of the features of the switch. This is not specified at this time, and will be done at a later date based upon project goals. |
 
 #### A Note on Directions
 
@@ -461,6 +460,9 @@ sockets. Parameterization of the module is described in the table below.
 | `RspDepth[4]` | Depth of response FIFO. Depth of zero is allowed only if `RspPass` is 1. The maximum value for `RspDepth` is 15. Default is 2. |
 | `SpareReqW` | The FIFO has spare bits in the request direction for auxiliary use by other bus elements. This parameter defines the size, default 1, must be >= 1 to avoid compilation errors. If the bit is not needed, the spare input should be tied to zero, and the spare output ignored. |
 | `SpareRspW` | The FIFO has spare bits in the response direction for auxiliary use by other bus elements. This parameter defines the size, default 1, must be >= 1 to avoid compilation error. If the bit is not needed, the spare input should be tied to zero, and the spare output ignored. |
+
+When `Pass` is 1 and its corresponding `Depth` is 0, the FIFO feeds through the signals completely.
+This allows more flexible control at compile-time on the FIFO overhead / latency trade-off without needing to re-code the design.
 
 The IO of the module are given in this table. See the struct above for
 TL-UL typedef definitions.
@@ -607,3 +609,9 @@ TL `typedef` definitions.
 | `output` | `tl_d2h_t` | `tl_h_o[M]` | unpacked array of outgong host response structs |
 | `output` | `tl_h2d_t` | `tl_d_o`    | outgoing device request struct |
 | `input`  | `tl_d2h_t` | `tl_d_i`    | incoming device response struct |
+
+### `tlul_xbar`
+
+For details of the `tlul_xbar`, please refer to the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}.
+In general, tlgen stitches together various components described in the previous sections to create a full blown fabric switch.
+Specifically, it implements the address to `dev_sel` steering logic and ensures the right connections are made from host to device.
