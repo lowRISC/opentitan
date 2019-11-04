@@ -42,7 +42,7 @@ module top_earlgrey #(
   localparam JTAG_IDCODE = {
     4'h0,     // Version
     16'h4F54, // Part Number: "OT"
-    11'h4A6,  // Manufacturer Identity: Google
+    11'h426,  // Manufacturer Identity: Google
     1'b1      // (fixed)
   };
 
