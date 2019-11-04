@@ -106,6 +106,7 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       tl_seq_item rsp;
       `downcast(rsp, tr.clone());
       rsp.d_source    = tr.a_source;
+      rsp.d_size      = tr.a_size;
       rsp.d_error     = 1;
       rsp.d_data      = '1;
       rsp.d_opcode    = rsp.a_opcode == tlul_pkg::Get ?

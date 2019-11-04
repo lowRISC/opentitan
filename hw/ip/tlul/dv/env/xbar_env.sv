@@ -21,6 +21,10 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    if (!uvm_config_db#(tlul_assert_ctrl_vif)::get(this, "", "tlul_assert_ctrl_vif",
+                                                   cfg.tlul_assert_ctrl_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get tlul_assert_ctrl_vif from uvm_config_db")
+    end
     // Connect TileLink host and device agents
     host_agent = new[cfg.num_hosts];
     foreach (host_agent[i]) begin
