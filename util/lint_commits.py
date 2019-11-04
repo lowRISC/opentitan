@@ -79,6 +79,20 @@ def lint_commit_message(commit):
             "The second line of a commit message must be empty, as it "
             "separates the summary from the long description.", commit)
         success = False
+
+    # Check that the commit message contains a Signed-off-by line which
+    # matches the author name and email metadata.
+    expected_signoff_line = "Signed-off-by: %s <%s>" % (commit.author.name,
+                                                        commit.author.email)
+    if expected_signoff_line not in lines:
+        error(
+            'The commit message must contain a Signed-off-by line that '
+            'matches the commit author name and email, indicating agreement '
+            'to the Contributor License Agreement. See CONTRIBUTING.md for '
+            'more details. "git commit -s" can be used to have git add this '
+            'line for you.')
+        success = False
+
     return success
 
 
