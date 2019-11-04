@@ -131,9 +131,9 @@ module tlul_assert #(
   endsequence
 
   // a_mask must be contiguous for Get and PutFullData requests
-  // TODO: the spec talks about "naturally aligned". Does this mean that bit [0] of
-  // mask is always 1? If that's true, then below code could be much simpler.
-  // However, the spec shows a timing diagram where bit 0 of mask is 0.
+  //    the spec talks about "naturally aligned". Does this mean that bit [0] of
+  //    mask is always 1? If that's true, then below code could be much simpler.
+  //    However, the spec shows a timing diagram where bit 0 of mask is 0.
   sequence contigMask_pre_S;
     h2d.a_opcode != PutPartialData;
   endsequence
@@ -141,8 +141,6 @@ module tlul_assert #(
   sequence contigMask_S;
     $countones(h2d.a_mask ^ {h2d.a_mask[$bits(h2d.a_mask)-2:0], 1'b0}) <= 2;
   endsequence
-
-  // TODO: a_mask in innactive lanes should be LOW
 
   // a_data must be known for opcode == Put*(depending on mask bits)
   sequence aDataKnown_pre_S;

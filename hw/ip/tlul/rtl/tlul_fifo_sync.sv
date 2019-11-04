@@ -9,8 +9,8 @@
 module tlul_fifo_sync #(
   parameter ReqPass  = 1'b1,
   parameter RspPass  = 1'b1,
-  parameter ReqDepth = 2,     // maximum allowed depth == 8 (TODO: assertions)
-  parameter RspDepth = 2,     // maximum allowed depth == 8 (TODO: assertions)
+  parameter ReqDepth = 2,
+  parameter RspDepth = 2,
   parameter SpareReqW = 1,
   parameter SpareRspW = 1
 ) (

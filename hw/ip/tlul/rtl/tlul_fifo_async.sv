@@ -7,8 +7,8 @@
 // and one for the response side.
 
 module tlul_fifo_async #(
-  parameter ReqDepth = 3,     // maximum allowed depth == 8 (TODO: assertions)
-  parameter RspDepth = 3      // maximum allowed depth == 8 (TODO: assertions)
+  parameter ReqDepth = 3,
+  parameter RspDepth = 3
 ) (
   input                      clk_h_i,
   input                      rst_h_ni,
@@ -56,7 +56,7 @@ module tlul_fifo_async #(
 
   localparam RSPFIFO_WIDTH = $bits(tlul_pkg::tl_d2h_t) -2;
 
-  prim_fifo_async #(.Width(RSPFIFO_WIDTH), .Depth(ReqDepth)) rspfifo (
+  prim_fifo_async #(.Width(RSPFIFO_WIDTH), .Depth(RspDepth)) rspfifo (
     .clk_wr_i      (clk_d_i),
     .rst_wr_ni     (rst_d_ni),
     .clk_rd_i      (clk_h_i),
@@ -84,5 +84,10 @@ module tlul_fifo_async #(
     .wdepth        (),
     .rdepth        ()
   );
+
+  ////////////////
+  // Assertions //
+  ////////////////
+  `ASSERT_INIT(DepthGTE3_A, ReqDepth >= 3 && RspDepth >= 3)
 
 endmodule

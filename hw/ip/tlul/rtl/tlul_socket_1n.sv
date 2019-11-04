@@ -69,7 +69,6 @@ module tlul_socket_1n #(
   tlul_pkg::tl_h2d_t   tl_t_o;
   tlul_pkg::tl_d2h_t   tl_t_i;
 
-  // TODO: Create direct connection if Depth are 0 and Pass are 1
   tlul_fifo_sync #(
     .ReqPass(HReqPass),
     .RspPass(HRspPass),
@@ -101,13 +100,13 @@ module tlul_socket_1n #(
   assign  accept_t_req = tl_t_o.a_valid & tl_t_i.a_ready;
   assign  accept_t_rsp = tl_t_i.d_valid & tl_t_o.d_ready;
 
-  // TODO: Assert overflow
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       num_req_outstanding <= 8'h0;
       dev_select_outstanding <= '0;
     end else if (accept_t_req) begin
       if (!accept_t_rsp) begin
+        `ASSERT_I(NotOverflowed_A, num_req_outstanding != '1)
         num_req_outstanding <= num_req_outstanding + 8'h1;
       end
       dev_select_outstanding <= dev_select_t;
@@ -178,7 +177,6 @@ module tlul_socket_1n #(
 
   // finally instantiate all device FIFOs and the error responder
   for (genvar i = 0 ; i < N ; i++) begin : gen_dfifo
-    // TODO: Create direct connection if Depth are 0 and Pass are 1
     tlul_fifo_sync #(
       .ReqPass(DReqPass[i]),
       .RspPass(DRspPass[i]),
