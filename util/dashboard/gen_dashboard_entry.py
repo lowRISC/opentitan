@@ -39,7 +39,7 @@ def convert_stage(stagestr):
 # Create dashboard of hardware IP development status
 def gen_dashboard_html(hjson_path, outfile):
     with hjson_path:
-        prjfile = open(hjson_path)
+        prjfile = open(str(hjson_path))
         try:
             obj = hjson.load(prjfile)
         except ValueError:
@@ -93,7 +93,7 @@ def gen_dashboard_html(hjson_path, outfile):
 # Create table of hardware specifications
 def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
     with hjson_path:
-        prjfile = open(hjson_path)
+        prjfile = open(str(hjson_path))
         try:
             obj = hjson.load(prjfile)
         except ValueError:

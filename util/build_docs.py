@@ -98,7 +98,7 @@ def generate_dashboards():
 
         dashboard_path = config["outdir-generated"].joinpath(
             dashboard, 'dashboard')
-        dashboard_html = open(dashboard_path, mode='w')
+        dashboard_html = open(str(dashboard_path), mode='w')
         for hjson_path in hjson_paths:
             gen_dashboard_entry.gen_dashboard_html(hjson_path, dashboard_html)
         dashboard_html.close()
@@ -106,7 +106,7 @@ def generate_dashboards():
 
 def generate_hardware_blocks():
     for hardware in config["hardware_definitions"]:
-        hardware_file = open(SRCTREE_TOP.joinpath(hardware))
+        hardware_file = open(str(SRCTREE_TOP.joinpath(hardware)))
         regs = hjson.load(hardware_file,
                           use_decimal=True,
                           object_pairs_hook=validate.checking_dict)
@@ -118,13 +118,13 @@ def generate_hardware_blocks():
         base_path = config["outdir-generated"].joinpath(hardware)
         base_path.parent.mkdir(parents=True, exist_ok=True)
 
-        regs_html = open(base_path.parent.joinpath(base_path.name +
-                                                   '.registers'),
+        regs_html = open(str(base_path.parent.joinpath(base_path.name +
+                                                   '.registers')),
                          mode='w')
         gen_html.gen_html(regs, regs_html)
         regs_html.close()
 
-        hwcfg_html = open(base_path.parent.joinpath(base_path.name + '.hwcfg'),
+        hwcfg_html = open(str(base_path.parent.joinpath(base_path.name + '.hwcfg')),
                           mode='w')
         gen_cfg_html.gen_cfg_html(regs, hwcfg_html)
         hwcfg_html.close()
@@ -137,7 +137,7 @@ def generate_testplans():
         plan_path = config["outdir-generated"].joinpath(testplan + '.testplan')
         plan_path.parent.mkdir(parents=True, exist_ok=True)
 
-        testplan_html = open(plan_path, mode='w')
+        testplan_html = open(str(plan_path), mode='w')
         testplan_utils.gen_html_testplan_table(plan, testplan_html)
         testplan_html.close()
 
@@ -150,7 +150,7 @@ def generate_selfdocs():
     for tool in config["selfdoc_tools"]:
         selfdoc_path = config["outdir-generated"].joinpath(tool + '.selfdoc')
         selfdoc_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(selfdoc_path, mode='w') as fout:
+        with open(str(selfdoc_path), mode='w') as fout:
             if tool == "reggen":
                 reggen_selfdoc.document(fout)
             elif tool == "tlgen":
@@ -183,7 +183,7 @@ def install_hugo(install_dir):
     cmd = 'curl -sL {download_url} | tar -xzO --overwrite hugo > {hugo_bin_file}'.format(
         hugo_bin_file=str(hugo_bin_path), download_url=download_url)
     logging.info("Calling %s to download hugo.", cmd)
-    subprocess.run(cmd, shell=True, check=True, cwd=SRCTREE_TOP)
+    subprocess.run(cmd, shell=True, check=True, cwd=str(SRCTREE_TOP))
     hugo_bin_path.chmod(0o755)
     return True
 
@@ -205,7 +205,7 @@ def invoke_hugo(preview):
     ]
     if preview:
         args += ["server"]
-    subprocess.run(args, check=True, cwd=SRCTREE_TOP)
+    subprocess.run(args, check=True, cwd=str(SRCTREE_TOP))
 
 
 def main():

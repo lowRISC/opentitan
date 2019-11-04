@@ -191,7 +191,7 @@ def parse_regr_results(filename):
 
 def parse_hjson(filename):
     try:
-        f = open(filename, 'rU')
+        f = open(str(filename), 'rU')
         text = f.read()
         odict = hjson.loads(text)
         return odict
