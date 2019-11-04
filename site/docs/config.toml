@@ -55,6 +55,7 @@ ignoreFiles = [
 pygmentsCodeFences = true
 pygmentsStyle = "tango"
 disableKinds = ["taxonomy", "taxonomyTerm", "RSS", "sitemap"]
+googleAnalytics = "UA-151030466-2"
 
 [params]
 generatedRoot = "build/docs-generated"
