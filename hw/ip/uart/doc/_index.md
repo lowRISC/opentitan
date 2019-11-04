@@ -33,11 +33,8 @@ to 1Mbps.
 
 ## Compatibility
 
-The UART is compatible with the feature set of H1 Secure Microcontroller UART as
-used in the [Chrome OS cr50][chrome-os-cr50] codebase. Additional features such
-as parity have been added.
-
-[chrome-os-cr50]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/chip/g/
+The OpenTitan UART is feature compatible to a specific implementation in [Chromium EC](https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/chip/g/uart.c).
+Additional features such as parity have been added.
 
 # Theory of Operations
 
