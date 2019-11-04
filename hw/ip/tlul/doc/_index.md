@@ -312,7 +312,7 @@ It should be noted that, even though non-contiguous `a_mask` values like
 **do not leverage non-contiguous masks**. I.e., the TL-UL hosts will only assert
 `a_mask` values from the following restricted set for 32bit transfers:
 ```
-{0b0000, 0b0001, 0b0010, 0b0100, 0b1000, 0b0011, 0b0110, 0b1100, 0b1111}.
+{'b0000, 'b0001, 'b0010, 'b0100, 'b1000, 'b0011, 'b0110, 'b1100, 'b0111, 'b1110, 'b1111}.
 ```
 The TL-UL devices within the project may or may not support certain subword
 masks (both non-contiguous or contiguous ones), and they have the right to
@@ -330,6 +330,34 @@ assert `d_error` if they don't.
 | `3'b000` | `AccessAck` | Write command acknowledgement, no data |
 | `3'b001` | `AccessAckData` | Read command acknowledgement, data valid on `d_data` |
 | `3'b01x, 3'b1xx` | `undefined` | All other opcodes are undefined; responses with undefined opcodes should be ignored by hosts (with assertions). |
+
+#### Explicit Error Cases
+
+The TL-UL devices in this project contain a set of HW protocol checkers that raise a runtime error (`d_error`) if the request is in violation.
+In particular, the following properties are checked:
+
+1. Wrong opcode,
+2. Wrong combination of `a_addr[1:0]`, `a_size`, `a_mask`, for example:
+  - `a_size` must not be greater than `2`,
+  - Inactive lanes must be marked with `'b0` in `a_mask`,
+  - `PutFullData` must mark all active lanes with a `'b1` in `a_mask`,
+3. Non-contiguous mask may lead to an error, depending on the device support (see previous section),
+4. Register files always assume aligned 32bit accesses, see also [register tool manual]({{< relref "doc/rm/register_tool/index.md#error-responses" >}}),
+5. Accesses to non-existent addresses.
+
+On the host side, orphaned responses (i.e. responses that do not have a valid request counterpart) and responses with the wrong opcode will be discarded.
+It is planned to raise a critical hardware error that can be detected and reacted upon via other subsystems in those cases, but that feature has not been implemented yet.
+
+Note that the above checks also cover cases which are in principle allowed by the TL-UL spec, but are not supported by the hosts and devices within this project.
+Further, devices and hosts may implement additional more restrictive checks, if needed.
+
+The remaining, basic properties as specified in the TL-UL spec are enforced at design time using assertions, and hence no additional hardware checkers are implemented to check for those properties (see also [TL-UL Protocol Checker Specification]({{< relref "./TlulProtocolChecker" >}})).
+
+The interconnect does not possess additional hardware mechanisms to detect and handle interconnect deadlocks due to malicious tampering attempts.
+The reasons for this are that
+1. the space of potential errors and resolutions would be very large, thus unnecessarily complicating the design,
+2. any tampering attempt leading to an unresponsive system will eventually be detected by other subsystems within the top level system.
+
 
 ## Timing Diagrams
 
