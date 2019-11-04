@@ -1,0 +1,21 @@
+This file contains the list of individuals with write access to the OpenTitan
+repository, who are responsible for the final approval and merge of
+contributions. See doc/project/committers.md for more information.
+
+Committers are listed alphabetically by surname in the format:
+* Full Name (GitHubID)
+
+Committer list:
+* Alex Bradbury (asb)
+* Cindy Chen (cindychip)
+* Timothy Chen (tjaychen)
+* Srikrishna Iyer (sriyerg)
+* Scott Johnson (sjgtty)
+* Garret Kelly (gkelly)
+* Eunchan Kim (eunchan)
+* Miguel Osorio (moidx)
+* Dominic Rizzo (domrizz0)
+* Michael Schaffner (msfschaffner)
+* Pirmin Vogel (vogelpi)
+* Philipp Wagner (imphil)
+* Weicai Yang (weicaiyang)
