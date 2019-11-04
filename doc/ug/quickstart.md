@@ -4,6 +4,22 @@ title: "Quickstart"
 
 # Quickstart
 
+## Install required packages
+
+To follow the guide below the following things must be installed:
+
+* xz-utils
+* screen
+* fdisk
+* libusb 1.x
+* libftdi1 1.x
+* usbutils
+
+Under Ubuntu these can be installed with:
+```console
+$ sudo apt-get install xz-utils screen fdisk libftdi1-2 libusb-1.0-0 usbutils
+```
+
 ## Extract the release
 
 Download a release bitstream from the [OpenTitan Github Releases page](https://github.com/lowRISC/opentitan/releases) and extract it.
@@ -84,9 +100,6 @@ You need the following things:
   (Unfortunately we do not provide presynthesized bitstreams for other FPGA boards right now.)
 * An empty USB pen drive or microSD card (at least 16 MB)
 * `fdisk` utility installed on your machine.
-  ```
-  sudo apt-get install fdisk
-  ```
 
 Once you have obtained these things, follow these steps to get started.
 
@@ -99,37 +112,37 @@ If you are, and some of the commands run into permission errors, run them in `su
 2.  Run `fdisk -l` to find where the device was mapped.
     See an example mapping below, where an SD device was mapped as */dev/mmcblk0p1*.
 
-        ```
-        $ fdisk -l
-        ...
-        Disk /dev/mmcblk0: 14.9 GiB, 15931539456 bytes, 31116288 sectors
-        Units: sectors of 1 * 512 = 512 bytes
-        Sector size (logical/physical): 512 bytes / 512 bytes
-        I/O size (minimum/optimal): 512 bytes / 512 bytes
-        Disklabel type: dos
-        Disk identifier: 0x00000000
+    ```console
+    $ fdisk -l
+    ...
+    Disk /dev/mmcblk0: 14.9 GiB, 15931539456 bytes, 31116288 sectors
+    Units: sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical): 512 bytes / 512 bytes
+    I/O size (minimum/optimal): 512 bytes / 512 bytes
+    Disklabel type: dos
+    Disk identifier: 0x00000000
 
-        Device         Boot Start      End  Sectors  Size Id Type
-        /dev/mmcblk0p1       8192 31116287 31108096 14.9G  c W95 FAT32 (LBA)
-        ```
+    Device         Boot Start      End  Sectors  Size Id Type
+    /dev/mmcblk0p1       8192 31116287 31108096 14.9G  c W95 FAT32 (LBA)
+    ```
 
 3.  Format the device to  *FAT32* format.
-    ```bash
-    mkfs.fat -F 32 /dev/mmcblk0p1
+    ```console
+    $ mkfs.fat -F 32 /dev/mmcblk0p1
     ```
 
 4.  Mount the device by running the following commands:
 
-    ```bash
-    mkdir -p ~/ot-img-mount  # Can be a different name
-    mount -t vfat /dev/mmcblk0p1 ~/ot-img-mount  # Change according to mount/dev
+    ```console
+    $ mkdir -p ~/ot-img-mount  # Can be a different name
+    $ mount -t vfat /dev/mmcblk0p1 ~/ot-img-mount  # Change according to mount/dev
     ```
 
 5.  Make sure the device is empty. `ls ~/ot-img-mount` should not print anything.
 6.  Copy the bit file image to the storage device.
-    ```bash
-    cd $OT_TOP
-    cp hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit ~/ot-img-mount/
+    ```console
+    $ cd $OT_TOP
+    $ cp hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit ~/ot-img-mount/
     ```
 
 For more information on programming the Nexsys Video FPGA board refer to Section 2.3 of [Nexys Video reference manual](https://reference.digilentinc.com/_media/reference/programmable-logic/nexys-video/nexysvideo_rm.pdf).
@@ -140,20 +153,16 @@ For more information on programming the Nexsys Video FPGA board refer to Section
     The microSD slot sits on the bottom of the board and marked "SD MICRO", USB header is in the top and marked "USB HOST".
 2.  Place JP4 on the pins marked USB/SD.
 3.  Place JP3 according to the selected device (marked either USB or SD).
-4.  Push the PROG button. Done LED (LD014) should be steadily on.
-5.  Wait for the Done LED to be turned off.
+4.  Push the PROG button. The BUSY LED (LD14) should be steadily on.
+5.  Wait for the BUSY LED to turn off, DONE (LD15) should turn on.
 
 ### Run software on the FPGA
 
 **Note**: Your user account needs to have access to connected USB devices.
 See [the section udev rules of the installation guide]({{< relref "install_instructions#device-permissions-udev-rules" >}}) for more details.
 
-1.  The `spiflash` tool which loads software onto the FPGA requires `libusb 1.x` and `libftdi1 1.x`, under Ubuntu they can be installed with:
-    ```console
-    $ sudo apt-get install libftdi1-2 libusb-1.0-0
-    ```
-2.  Connect a micro USB cable from your machine to the UART connector (J13) on Nexys Video board.
-3.  Use `dmesg` to determine which serial port was assigned:
+1.  Connect a micro USB cable from your machine to the UART connector (J13) on Nexys Video board.
+2.  Use `dmesg` to determine which serial port was assigned:
 
     ```console
     $ dmesg
@@ -169,15 +178,16 @@ See [the section udev rules of the installation guide]({{< relref "install_instr
     ```
 
     It should be named `/dev/ttyUSB*` in this example it is `/dev/ttyUSB0`.
-4.  Open a serial console (use the device file determined before) and connect.
+3.  Open a serial console (use the device file determined before) and connect.
     Settings: 230400 baud, 8N1, no hardware or software flow control.
+    `screen` needs to be installed first.
 
-    ```bash
-    screen /dev/ttyUSB0 230400
+    ```console
+    $ screen /dev/ttyUSB0 230400
     ```
 
-5.  On the Nexys Video board, press the red button labeled CPU_RESET.
-6.  Observe the terminal output, it should show a ROM boot message like this:
+4.  On the Nexys Video board, press the red button labeled CPU_RESET.
+5.  Observe the terminal output, it should show a ROM boot message like this:
 
     ```
     Commit ID:  1d0d927693c2ef60d7880ab306beb25115a53dcb
@@ -185,8 +195,8 @@ See [the section udev rules of the installation guide]({{< relref "install_instr
     Jump!
     ```
     (To exit `screen` press <kbd>CTRL</kbd>+<kbd>A</kbd> keys together, then press <kbd>K</kbd>, and then confirm exit by pressing <kbd>y</kbd>.)
-7. Connect a micro USB cable from your machine to the PROG connector (J12) on the Nexsys Video board (noting you need to also have a connection to the UART connector to see serial output).
-8. Use the `spiflash` tool to write the hello_world binary:
+6. Connect a micro USB cable from your machine to the PROG connector (J12) on the Nexsys Video board (noting you need to also have a connection to the UART connector to see serial output).
+7. Use the `spiflash` tool to write the hello_world binary:
     ```console
     $ cd $OT_TOP
     $ ./sw/host/spiflash/spiflash --input=sw/device/fpga/examples/hello_world/sw.bin
@@ -214,7 +224,7 @@ See [the section udev rules of the installation guide]({{< relref "install_instr
     bootstrap: DONE!
     Jump!
     ```
-9. The hello_world binary will output the following:
+8. The hello_world binary will output the following:
     ```console
     Hello World! Oct 31 2019 16:28:03
     Watch the LEDs!
@@ -226,5 +236,5 @@ See [the section udev rules of the installation guide]({{< relref "install_instr
 
     Press some keys in the serial console and you should see the ASCII values of the characters sent shown in binary on the LEDs of the Nexsys Video FPGA board.
 
-To build the software yourself follow the instructions in [Testing the demo design]({{< relref "getting_started_fpga.md#testing-the-demo-design" >}}).
+To build the software yourself follow the instructions in [Testing the demo design]({{< relref "getting_started_fpga.md#testing-the-demo-design" >}}) (note the software tools must be installed and a clone of the OpenTitan repository made, this is explained in the [Install Instructions]({{< relref "install_instructions" >}})).
 See the [Getting Started on FPGAs Guide]({{< relref "getting_started_fpga.md" >}}) for full instructions how to build your own bitstream.
