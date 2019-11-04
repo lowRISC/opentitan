@@ -16,7 +16,7 @@ class rv_timer_cfg_cov_obj extends uvm_object;
                                                       uint64 mtime,
                                                       uint64 mtime_cmp);
     cp_step: coverpoint step {
-      bins step_all_val[] = {[0:$]};
+      bins step_all_val[] = {[1:$]};
     }
     cp_prescale: coverpoint prescale {
       option.auto_bin_max = 256;
@@ -65,10 +65,13 @@ class rv_timer_env_cov extends cip_base_env_cov #(.CFG_T(rv_timer_env_cfg));
     //Create cfg coverage for each timer
     foreach (cfg_values_cov_obj[timer]) begin
       cfg_values_cov_obj[timer] = new($sformatf("rv_timer-%0d", timer));
+      sticky_intr_cov[{"rv_timer_sticky_intr_pin", $sformatf("%0d", timer)}] =
+            new(.name({"rv_timer_sticky_intr_pin", $sformatf("%0d", timer)}), .toggle_cov_en(0));
     end
     //Create toggle coverage for each prescale bit
     foreach (rv_timer_prescale_values_cov_obj[timer, bit_num]) begin
-      rv_timer_prescale_values_cov_obj[timer][bit_num] = new($sformatf("rv_timer-%0d-prescale-%0d", timer, bit_num));
+      rv_timer_prescale_values_cov_obj[timer][bit_num] = new($sformatf("rv_timer-%0d-prescale-%0d",
+                                                                       timer, bit_num));
     end
     //Create all timers active coverage for each hart
     foreach (ctrl_reg_cov_obj[hart]) begin
