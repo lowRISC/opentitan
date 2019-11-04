@@ -20,6 +20,8 @@ class xbar_env_cfg extends dv_base_env_cfg;
   uint               max_device_req_delay = 20;
   uint               min_device_rsp_delay = 0;
   uint               max_device_rsp_delay = 20;
+  // use to disable/enable assert for TL error cases
+  tlul_assert_ctrl_vif  tlul_assert_ctrl_vif;
 
   `uvm_object_utils_begin(xbar_env_cfg)
     `uvm_field_array_object(host_agent_cfg,    UVM_DEFAULT)
