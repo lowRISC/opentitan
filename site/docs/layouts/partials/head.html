@@ -5,4 +5,5 @@
   {{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true) }}
   {{ $style := resources.Get "scss/style.scss" | resources.ToCSS $options }}
   <link rel="stylesheet" href="{{ $style.Permalink }}">
+  {{ partial "gtag" . }}
 </head>
