@@ -15,7 +15,7 @@ The following are the key techniques used to perform design verification within 
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repo, a UVM testbench, a testplan, DV plan, a suite of tests, a regression tool, and a method to report the current status.
+Each DUT will include within the repo, a UVM testbench, a testplan, DV plan, a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
 As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
 See discussion below on tracking progress.
@@ -91,7 +91,7 @@ It can be used to completely auto-generate the complete initial DV enviroment fo
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
-### RAL Model
+### UVM Register Abstraction Layer (RAL) Model
 
 The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen]({{< relref "util/reggen/README.md" >}}) tool.
 The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool]({{< relref "doc/rm/register_tool" >}}) documentation.
@@ -245,12 +245,12 @@ Stress tests lean heavily on constrained random techniques, and exercise multipl
 This is done by forking off multiple individual test sequences in parallel (or sequentially if the pieces of hardware exercised by the tests sequences overlap).
 Stress tests are hard to debug due to lot of things happening in parallel and the scoreboard may not be written as robustly initially to handle those scenarios.
 To mitigate that, they are constructed with knobs to control the level of constraints applied to the randomization (of individual sequences), so that the scoreboard can be made more robust incrementally to handle the corner cases.
-The level of constraints are then slowly eased to allow deeper state space exploration, until the DUT is satisfactorily stressed and our coverage goals met.
+The level of constraints are then slowly eased to allow deeper state space exploration, until all areas of the DUT are satisfactorily stressed.
 Stress tests are ideal for bug hunting and closing coverage.
 
 ### Progressing towards [V3]({{< relref "hw_stages#hardware-verification-stages" >}})
 
-The main focus of testing at this stage is to get the coverage and the regression to reach 100%.
+The main focus of testing at this stage is to meet our [regression](#nightly) and [coverage](#coverage-collection) goals.
 Apart from that, there are cleanup activities to resolve all pending TODO items in the DV code base and fix all compile and run time warnings (if any) thrown by the simulator tools.
 
 ## Assertions
@@ -275,9 +275,11 @@ Ideally, the sanity regression is run as a part of the CI check whenever a PR is
 ### Nightly
 
 While development mostly happens during the work day, nighttime and weekends are better utilized to run all of our simulations (a.k.a "regression").
+Achieving 100% pass rate in our nightly regressions consistently is a key to asserting 'verification complete'.
 The main goals (for all DUTs) are:
 
 *  Run each constrained random test with a sufficiently large number of seeds (arbitrarily chosen to be 100)
+   * Pass completely random seed values to the simulator when running the tests
 *  Spawn jobs via LSF to leverage compute resources at one's disposal
 *  Run resource intensive simulations without impacting daytime development
 *  Collect and merge coverage
@@ -295,8 +297,9 @@ Once the regression tool is developed, it will provide a way to enable these cap
 
 ## Coverage Collection
 
-Collecting, analyzing and reporting coverage with waivers is key to asserting 'verification complete'.
+Collecting, analyzing and reporting coverage with waivers is another requirement to assert 'verification complete'.
 Any gaps in our measured coverage need to be understood and either waived (no need to cover) or closed by additional testing.
+The end goal is to achieve 100% coverage across all applicable coverage metrics.
 This process known as “coverage closure”, is done in close collaboration with the designer(s).
 Coverage collected from all tests run as a part of the regression is merged into a database for analysis.
 Our primary tool of choice for our coverage closure needs is Synopsys' VCS & Verdi.
