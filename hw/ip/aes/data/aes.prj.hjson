@@ -6,6 +6,6 @@
     name:               "aes",
     version:            "0.5",
     life_stage:         "L1",
-    design_stage:       "D0",
+    design_stage:       "D2",
     verification_stage: "V0",
 }
