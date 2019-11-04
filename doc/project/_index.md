@@ -16,3 +16,9 @@ To make it to that stage, a [Hardware Signoff Checklist]({{< relref "checklist.m
 ## Initiating new development
 
 The [OpenTitan RFC process]({{< relref "rfc_process" >}}) guides developers on how to initiate new development within the program.
+
+## Committers
+
+Committers are individuals with repository write access.
+Everyone is able and encouraged to contribute and to help with code review, but committers are responsible for the final approval and merge of contributions.
+See the [Committers]({{< relref "committers.md" >}}) definition and role description for more information.
