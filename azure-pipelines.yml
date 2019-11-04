@@ -22,7 +22,7 @@ jobs:
 - job: "lint"
   displayName: "Run code quality checks (lint)"
   pool:
-    vmImage: "ubuntu-latest"
+    vmImage: "ubuntu-16.04"
   steps:
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
