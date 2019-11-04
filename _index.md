@@ -14,8 +14,6 @@ For details on coding styles or how to use our project-specific tooling, see the
 [This page]({{< relref "hw" >}})
 contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
 
-While the repository is currently private and the work embargoed at these early stages, it will eventually be released publicly.
-
 ## Repository Structure
 
 The underlying

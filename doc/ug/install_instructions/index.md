@@ -59,7 +59,7 @@ Adjust as necessary for other Linux distributions.
 $ sudo apt-get install git python3 python3-pip python3-setuptools \
     build-essential autoconf flex bison ninja-build pkgconf \
     srecord zlib1g-dev libftdi1-dev libftdi1-2 libssl-dev \
-    libusb-1.0-0-dev
+    libusb-1.0-0-dev libtool
 ```
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
