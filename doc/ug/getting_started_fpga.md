@@ -43,12 +43,18 @@ In the following example we synthesize the Earl Grey design for the Nexys Video 
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
 $ make -C sw/device SW_DIR=boot_rom clean all
-$ fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
 The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
+## Connecting the board
+
+* Use a Micro USB cable to connect the PC with the *PROG*-labeled connector on the board.
+* Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
+* After connecting the UART, use `dmesg` to determine which serial port was assigned. It should be named `/dev/ttyUSB*`, e.g. `/dev/ttyUSB0`.
+* Ensure that you have sufficient access permissions to the device, check `ls -l /dev/ttyUSB*`. The udev rules given in the Vivado installation instructions ensure this.
 
 ## Flash the bitstream onto the FPGA
 
@@ -93,28 +99,6 @@ The `hello_world` demo software shows off some capabilities of the design.
 In order to load `hello_world` into the FPGA, both the binary and the [loading tool]({{< relref "/sw/host/spiflash/README.md" >}}) must be compiled.
 Please follow the steps below.
 
-```console
-$ cd ${REPO_TOP}
-$ make -C sw/device SW_DIR=examples/hello_world SW_BUILD_DIR=out clean all
-$ make -C sw/host/spiflash clean all
-$ ./sw/host/spiflash/spiflash --input=sw/device/out/sw.bin
-
-Running SPI flash update.
-Image divided into 6 frames.
-frame: 0x00000000 to offset: 0x00000000
-frame: 0x00000001 to offset: 0x000003d8
-frame: 0x00000002 to offset: 0x000007b0
-frame: 0x00000003 to offset: 0x00000b88
-frame: 0x00000004 to offset: 0x00000f60
-frame: 0x80000005 to offset: 0x00001338
-```
-
-
-
-* Use a Micro USB cable to connect the PC with the *PROG*-labeled connector on the board.
-* Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
-* After connecting the UART, use `dmesg` to determine which serial port was assigned. It should be named `/dev/ttyUSB*`, e.g. `/dev/ttyUSB0`.
-* Ensure that you have sufficient access permissions to the device, check `ls -l /dev/ttyUSB*`. The udev rules given in the Vivado installation instructions ensure this.
 * Generate the bitstream and flash it to the FPGA as described above.
 * Open a serial console (use the device file determined before) and connect.
   Settings: 230400 baud, 8N1, no hardware or software flow control.
@@ -125,6 +109,23 @@ frame: 0x80000005 to offset: 0x00001338
   expect to see garbage characters if that is running.
   This can happen if you connect the serial console before using Vivado to program your new bitstream or you press the *PROG* button that causes the FPGA to reprogram from the code in the on-board SPI flash.
 * On the Nexys Video board, press the red button labeled *CPU_RESET*.
+* You should see the ROM code report its commit ID and build date.
+* Run the loading tool.
+  ```console
+  $ cd ${REPO_TOP}
+  $ make -C sw/device SW_DIR=examples/hello_world SW_BUILD_DIR=out clean all
+  $ make -C sw/host/spiflash clean all
+  $ ./sw/host/spiflash/spiflash --input=sw/device/out/sw.bin
+
+  Running SPI flash update.
+  Image divided into 6 frames.
+  frame: 0x00000000 to offset: 0x00000000
+  frame: 0x00000001 to offset: 0x000003d8
+  frame: 0x00000002 to offset: 0x000007b0
+  frame: 0x00000003 to offset: 0x00000b88
+  frame: 0x00000004 to offset: 0x00000f60
+  frame: 0x80000005 to offset: 0x00001338
+  ```
 * Observe the output both on the board and the serial console. Type any text into the console window.
 * Exit `screen` by pressing CTRL-a k, and confirm with y.
 
@@ -167,7 +168,7 @@ An example connection with GDB, which prints the registers after the connection 
 
 ```console
 $ cd $REPO_TOP
-$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/boot_rom/rom.elf
+$ /tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/boot_rom/rom.elf
 ```
 
 Note that debug support is not yet mature (see https://github.com/lowRISC/opentitan/issues/574).
