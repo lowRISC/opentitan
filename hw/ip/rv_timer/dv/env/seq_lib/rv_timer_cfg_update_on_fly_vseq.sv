@@ -139,6 +139,9 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
           read_intr_status_reg(.hart(hart), .status_val(read_data));
           `DV_CHECK_EQ_FATAL(read_data, (1 << timer))
 
+          // clear intr status randomly while timer is still enable and check for sticky interrupt
+          if ($urandom_range(0, 1)) clear_intr_state(.hart(hart), .timer(timer));
+
           // disable timers and clear interrupt
           cfg_timer(.hart(hart), .timer(timer), .enable(1'b0));
           clear_intr_state(.hart(hart), .timer(timer));

@@ -132,7 +132,22 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
             string intr_state_str = $sformatf("intr_state%0d", i);
             if (csr_name == intr_state_str) begin
               // Intr_state reg is W1C, update expected status with RAL mirrored val
-              intr_status_exp[i] = get_reg_fld_mirror_value(ral, intr_state_str);
+              for (int j = 0; j < NUM_TIMERS; j++) begin
+                int timer_idx = i * NUM_TIMERS + j;
+                if (item.a_data[j] == 1) begin
+                  if (en_timers[i][j] == 0) begin
+                    intr_status_exp[i][j] = 0;
+                    if (cfg.en_cov) begin
+                      cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
+                                          $sformatf("%0d", timer_idx)}].sample(1'b0);
+                    end
+                  end
+                  else if (cfg.en_cov) begin // sticky interrupt
+                    cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
+                                        $sformatf("%0d", timer_idx)}].sample(1'b1);
+                  end
+                end
+              end
               break;
             end
           end
