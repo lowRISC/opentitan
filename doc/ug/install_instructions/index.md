@@ -267,5 +267,5 @@ ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idPro
 You then need to reload the udev rules:
 
 ```console
-# sudo udevadm control --reload
+$ sudo udevadm control --reload
 ```
