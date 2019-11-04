@@ -20,7 +20,7 @@ This document outlines the basic structure of the RFC process, with the expectat
   The TC will maintain examples of high quality RFCs to refer to in terms of structure and approach.
 * The RFC authors may solicit early feedback while preparing an RFC, possibly before sharing publicly.
    * If requested, the TC could help to nominate a small group to shepherd the RFC.
-* If the RFC may contain certification sensitive material (guidance to be shared), it should be first sent to cert-sensitive-priv@lowrisc.org for clearance before sharing more widely.
+* If the RFC potentially contains information that could be certification-sensitive (guidance to be shared), send a note to security@opentitan.org first for feedback.
 * The RFC is shared publicly by filing a GitHub issue and tagging with the `Type:RFC` label.
 * Once the author is happy that the RFC is complete, they submit it to the Technical Committee for review by adding the label `For TC Review`.
 * The Technical Committee will consider active RFCs in each meeting (those that have been marked ready for at least a week).

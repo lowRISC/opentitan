@@ -30,9 +30,7 @@ This proposal should be in **Google Doc** medium for agile review capability.
 Ideally this proposal document would be created in the Team Drive, but if the author does not have access to the team drive, they can share a privately-created document.
 
 Design proposals should follow the recommended [RFC (Request for Comment)]({{< relref "../project/rfc_process.md" >}}) process, which handles all such proposals.
-If the RFC may contain certification sensitive material (guidance to be shared), it should be first sent to
-[cert-sensitive-priv@lowrisc.org](mailto:cert-sensitive-priv@lowrisc.org)
-for clearance before sharing more widely.
+If the RFC potentially contains information that could be certification-sensitive (guidance to be shared), send a note to security@opentitan.org first for feedback.
 The OpenTitan Technical Committee may be able to suggest other collaborators to help with early stage review.
 
 An example of a canonical RFC can be found *here* (TODO).
