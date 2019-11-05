@@ -1,5 +1,7 @@
 # OpenTitan
 
+![OpenTitan logo](doc/opentitan-logo.png)
+
 This repository contains hardware, software and utilities written as part of the
 OpenTitan project. It is structured as monolithic repository, or "monorepo",
 where all components live in one repository.
