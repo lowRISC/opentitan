@@ -23,7 +23,9 @@ covergroup intr_test_cg (uint num_interrupts) with function sample(uint intr,
   cp_intr: coverpoint intr {
     bins all_values[] = {[0:num_interrupts-1]};
   }
-  cp_intr_test: coverpoint intr_test;
+  cp_intr_test: coverpoint intr_test {
+    bins intr_test_1 = {1};
+  }
   cp_intr_en: coverpoint intr_en;
   cp_intr_state: coverpoint intr_state;
   cross cp_intr, cp_intr_test, cp_intr_en, cp_intr_state {
