@@ -53,12 +53,14 @@ class TestFunctionalFpga:
 
         p_flash.terminate()
 
-    def test_execute_binary(self, spiflash_proc, fpga_uart, uart_timeout):
+    def test_execute_binary(self, spiflash_proc, fpga_uart, uart_timeout, logfile):
         """
         Executes the binary and inspects its UART for "PASS!\r\n" or "FAIL!\r\n".
         """
 
         logger = logging.getLogger(__name__)
+        test_utils.setup_logfile(logger, logfile)
+
 
         # Open the UART device and read line by line until we pass or fail.
         with fpga_uart.open('rb') as uart_device:
