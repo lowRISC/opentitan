@@ -32,8 +32,8 @@ server, which allows you to access the documentation at
 
 ## How to contribute
 
-Have a look at [CONTRIBUTING](./CONTRIBUTING.md) for guidelines how
-to contribute code to this repository.
+Have a look at [CONTRIBUTING](./CONTRIBUTING.md) for guidelines on how to
+contribute code to this repository.
 
 ## Licensing
 
