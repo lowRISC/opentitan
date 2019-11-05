@@ -8,11 +8,11 @@
 // ---------------------------------------------
 
 // TODO merge with Shail's PR and move to cov obj
-covergroup tl_max_outsanding_cg(string name, int max_req) with function sample(bit hit_max = 1);
+covergroup tl_max_outsanding_cg(string name, int max_req) with function sample(int hit_max = 1);
   option.per_instance = 1;
   option.name = name;
   cp_hit_max: coverpoint hit_max {
-    bins hit  = {[1:max_req]};
+    bins hit[]  = {[1:max_req]};
   }
 endgroup : tl_max_outsanding_cg
 
@@ -102,7 +102,7 @@ class tl_monitor extends uvm_monitor;
                                         pending_a_req.size()))
           end
           if (cfg.max_outstanding_req > 1 && pending_a_req.size() == cfg.max_outstanding_req) begin
-            tl_max_outsanding_cg.sample();
+            tl_max_outsanding_cg.sample(pending_a_req.size());
           end
         end
         if (!objection_raised) begin
