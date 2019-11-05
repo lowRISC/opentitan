@@ -12,6 +12,7 @@ class tl_agent extends uvm_agent;
   tl_monitor         mon;
   tl_sequencer       seqr;
   tl_agent_cfg       cfg;
+  tl_agent_cov       cov;
 
   `uvm_component_utils(tl_agent)
 
@@ -34,6 +35,8 @@ class tl_agent extends uvm_agent;
       seqr.cfg = cfg;
     end
     mon = tl_monitor::type_id::create("mon", this);
+    if (cfg.en_cov) cov = tl_agent_cov ::type_id::create("cov", this);
+    mon.cov = cov;
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);

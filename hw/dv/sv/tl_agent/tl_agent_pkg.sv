@@ -54,6 +54,7 @@ package tl_agent_pkg;
 
   `include "tl_seq_item.sv"
   `include "tl_agent_cfg.sv"
+  `include "tl_agent_cov.sv"
   `include "tl_host_driver.sv"
   `include "tl_device_driver.sv"
   `include "tl_sequencer.sv"
