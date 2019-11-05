@@ -13,7 +13,7 @@ title: "User Guides"
     * [Obtaining an FPGA board]({{< relref "fpga_boards.md" >}})
     * [Installing Xilinx Vivado]({{< relref "install_instructions#xilinx-vivado" >}})
   * [Getting started with a design]({{< relref "getting_started_design.md" >}})
-  * *Getting started with verification* (TODO)
+  * [Getting started with verification]({{< relref "getting_started_dv.md" >}})
 * [Work with hardware code in external repositories]({{< relref "vendor_hw.md" >}})
 * [Design Methodology]({{< relref "design.md" >}})
   * Language and Tool Selection
