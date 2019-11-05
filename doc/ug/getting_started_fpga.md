@@ -2,8 +2,6 @@
 title: "Getting started on FPGAs"
 ---
 
-# Getting started on FPGAs
-
 Do you want to try out the lowRISC chip designs, but don't have a couple thousand or million dollars ready for an ASIC tapeout?
 Running lowRISC designs on an FPGA board can be the answer!
 

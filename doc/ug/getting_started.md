@@ -2,8 +2,6 @@
 title: "Getting Started"
 ---
 
-# Getting started
-
 Welcome!
 
 This guide helps you to get started with OpenTitan.

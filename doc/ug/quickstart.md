@@ -2,8 +2,6 @@
 title: "Quickstart"
 ---
 
-# Quickstart
-
 ## Install required packages
 
 To follow the guide below the following things must be installed:
