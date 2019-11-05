@@ -115,7 +115,7 @@ Review        | Signoff date            | Done        | 2019-11-04
 
  Type         | Item                                  | Resolution      | Note/Collaterals
 --------------|---------------------------------------|-----------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done            | [gpio_dv_plan][]
+Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done            | [gpio_dv_plan][{{<relref "dv_plan/" >}}]
 Documentation | [TESTPLAN_COMPLETED][]                | Done            |
 Testbench     | [TB_TOP_CREATED][]                    | Done            |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done            |
@@ -170,7 +170,7 @@ Tests         | [ALL_TESTS_PASSING][]                   | Done        | Resolved
 Tests         | [FW_SIMULATED][]                        | N/A         |
 Regression    | [NIGHTLY_REGRESSION_V2][]               | Done        |
 Coverage      | [CODE_COVERAGE_V2][]                    | Done        |
-Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Done        | Resolved: [#680][]
+Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Done        | Resolved: [#807][]
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        | [#41][] Not quite related, [#45][] root caused
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
@@ -181,6 +181,7 @@ Review        | Signoff date                            | Done        | 2019-11-
 [#41]: https://github.com/lowRISC/opentitan/issues/41
 [#45]: https://github.com/lowRISC/opentitan/issues/45
 [#680]: https://github.com/lowRISC/opentitan/pull/680
+[#807]: https://github.com/lowRISC/opentitan/pull/807
 
 [DESIGN_DELTAS_CAPTURED]:             {{<relref "/doc/project/checklist.md#design-deltas-captured" >}}
 [DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed" >}}
@@ -205,7 +206,7 @@ Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | N/A         |
 Testbench     | [ALL_TODOS_RESOLVED][]            | Done        |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress.
 Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Done        | Resolved: [#680][]
-Coverage      | [CODE_COVERAGE_AT_100][]          | Done        | Exclusions to be reviewed
+Coverage      | [CODE_COVERAGE_AT_100][]          | Done        | [common_cov_excl.el][], [gpio_cov_excl.el][]
 Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Done        | [#807][]
 Issues        | [NO_ISSUES_PENDING][]             | Done        |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
@@ -225,3 +226,5 @@ Review        | Signoff date                      | Done        | 2019-11-04
 [NO_TOOL_WARNINGS_THROWN]:      {{<relref "/doc/project/checklist.md#no-tool-warnings-thrown" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:  {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v3" >}}
 
+[common_cov_excl.el]:https://github.com/lowRISC/opentitan/blob/9dff09b6c57f4962d67f5f64f8e69ac9bea6885c/hw/dv/tools/vcs/common_cov_excl.el
+[gpio_cov_excl.el]:  https://github.com/lowRISC/opentitan/blob/39aaeefdb43661b065c29ceab2efc1065aebf6dd/hw/ip/gpio/dv/cov/gpio_cov_excl.el
