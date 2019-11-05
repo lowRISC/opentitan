@@ -15,19 +15,19 @@ This includes: top level specification(s); processor core(s) specifications; and
 
 | Module | Design Spec | DV Plan |
 |--------|-------------|---------|
-| aes            | [design spec]({{< relref "hw/ip/aes/doc" >}})
-| alert\_handler | [design spec]({{< relref "hw/ip/alert_handler/doc" >}})
-| entropy\_src   |
-| flash\_ctrl    | [design spec]({{< relref "hw/ip/flash_ctrl/doc" >}})
-| gpio           | [design spec]({{< relref "hw/ip/gpio/doc" >}}) | [DV plan]({{< relref "hw/ip/gpio/doc/dv_plan" >}})
-| hmac           | [design spec]({{< relref "hw/ip/hmac/doc" >}}) | [DV plan]({{< relref "hw/ip/hmac/doc/dv_plan" >}})
-| i2c            | | [DV plan]({{< relref "hw/ip/i2c/doc/dv_plan" >}})
-| padctrl        |[design spec]({{< relref "hw/ip/padctrl/doc" >}})
-| pinmux         |[design spec]({{< relref "hw/ip/pinmux/doc" >}})
-| rv\_core\_ibex |[design spec]({{< relref "hw/ip/rv_core_ibex/doc" >}})
-| rv\_dm         |[design spec]({{< relref "hw/ip/rv_dm/doc" >}})
-| rv\_plic       |[design spec]({{< relref "hw/ip/rv_plic/doc" >}}) | [DV plan]({{< relref "hw/ip/rv_plic/doc/dv_plan" >}})
-| rv\_timer      |[design spec]({{< relref "hw/ip/rv_timer/doc" >}}) | [DV plan]({{< relref "hw/ip/rv_timer/doc/dv_plan" >}})
-| spi\_device    |[design spec]({{< relref "hw/ip/spi_device/doc" >}})
-| tlul           |[design spec]({{< relref "hw/ip/tlul/doc" >}})
-| uart           |[design spec]({{< relref "hw/ip/uart/doc" >}}) | [DV plan]({{< relref "hw/ip/uart/doc/dv_plan" >}})
+| `aes`           | [design spec]({{< relref "hw/ip/aes/doc" >}})           | |
+| `alert_handler` | [design spec]({{< relref "hw/ip/alert_handler/doc" >}}) | |
+| `entropy_src`   |                                                         | |
+| `flash_ctrl`    | [design spec]({{< relref "hw/ip/flash_ctrl/doc" >}})    | |
+| `gpio`          | [design spec]({{< relref "hw/ip/gpio/doc" >}})          | [DV plan]({{< relref "hw/ip/gpio/doc/dv_plan" >}}) |
+| `hmac`          | [design spec]({{< relref "hw/ip/hmac/doc" >}})          | [DV plan]({{< relref "hw/ip/hmac/doc/dv_plan" >}}) |
+| `i2c`           | [design spec]({{< relref "hw/ip/i2c/doc" >}})           | [DV plan]({{< relref "hw/ip/i2c/doc/dv_plan" >}})  |
+| `padctrl`       | [design spec]({{< relref "hw/ip/padctrl/doc" >}})       | |
+| `pinmux`        | [design spec]({{< relref "hw/ip/pinmux/doc" >}})        | |
+| `rv_core_ibex`  | [design spec]({{< relref "hw/ip/rv_core_ibex/doc" >}})  | |
+| `rv_dm`         | [design spec]({{< relref "hw/ip/rv_dm/doc" >}})         | |
+| `rv_plic`       | [design spec]({{< relref "hw/ip/rv_plic/doc" >}})       | [DV plan]({{< relref "hw/ip/rv_plic/doc/dv_plan" >}}) |
+| `rv_timer`      | [design spec]({{< relref "hw/ip/rv_timer/doc" >}})      | [DV plan]({{< relref "hw/ip/rv_timer/doc/dv_plan" >}}) |
+| `spi_device`    | [design spec]({{< relref "hw/ip/spi_device/doc" >}})    | |
+| `tlul`          | [design spec]({{< relref "hw/ip/tlul/doc" >}})          | |
+| `uart`          | [design spec]({{< relref "hw/ip/uart/doc" >}})          | [DV plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) |
