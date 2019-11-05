@@ -32,7 +32,7 @@ The discussions on how those are used within the program are carried out in a di
 Verification within the OpenTitan project comes in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of verification is important to gauge the confidence in the design's advertised feature set.
-To that end, we've designated a spectrum of design and verification stages in the  [OpenTitan Hardware Development Stages]({{< relref "hw_stages.md" >}}) document.
+To that end, we've designated a spectrum of design and verification stages in the  [OpenTitan Hardware Development Stages]({{< relref "doc/project/hw_stages.md" >}}) document.
 It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
 Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
 The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists]({{< relref "doc/project/checklist" >}}) document.
@@ -43,7 +43,7 @@ We will explain some of the key items in those checklists in the remainder of th
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned, but also how the overall effort is strategized and implemented.
 The first is provided by the **testplan** document and the second, by the **DV plan** document.
-The [**project status**]({{< relref "hw_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
+The [**project status**]({{< relref "doc/project/hw_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
 
@@ -184,7 +184,7 @@ The chip DV plan, which is currently under active development will explain these
 When progressing through the verification stages, there are key focus areas or testing activities that are perhaps common across all DUTs.
 These are as follows.
 
-### Progressing towards [V1]({{< relref "hw_stages#hardware-verification-stages" >}})
+### Progressing towards [V1]({{< relref "doc/project/hw_stages#hardware-verification-stages" >}})
 
 These set of tests (not exhaustive) provide the confidence that the design is ready for vertical integration.
 
@@ -201,7 +201,7 @@ This test (or set of tests) is also included as a part of the sanity regression 
 The very first set of real tests validate the SW interface laid out using the regtool.
 These prove that the SW interface is solid and all assumptions in CSRs in terms of field descriptions and their accessibility are correctly captured and there are no address decode bugs.
 
-### Progressing towards [V2]({{< relref "hw_stages#hardware-verification-stages" >}})
+### Progressing towards [V2]({{< relref "doc/project/hw_stages#hardware-verification-stages" >}})
 
 Bulk of testing in this stage focus on functionally testing the DUT.
 There however are certain categories of tests that may need additional attention.
@@ -248,7 +248,7 @@ To mitigate that, they are constructed with knobs to control the level of constr
 The level of constraints are then slowly eased to allow deeper state space exploration, until all areas of the DUT are satisfactorily stressed.
 Stress tests are ideal for bug hunting and closing coverage.
 
-### Progressing towards [V3]({{< relref "hw_stages#hardware-verification-stages" >}})
+### Progressing towards [V3]({{< relref "doc/project/hw_stages#hardware-verification-stages" >}})
 
 The main focus of testing at this stage is to meet our [regression](#nightly) and [coverage](#coverage-collection) goals.
 Apart from that, there are cleanup activities to resolve all pending TODO items in the DV code base and fix all compile and run time warnings (if any) thrown by the simulator tools.
@@ -290,7 +290,7 @@ One of the key requirements of nightly regressions is to complete overnight, so 
 If test runtimes are longer, we could define a weekly regression based on need.
 In general, it is a good practice to periodically profile the simulation to identify bottlenecks in terms of simulation performance (which often is a result of specific coding style choices).
 
-Currently, the [Makefile based simulation workflow]({{< relref "../../hw/dv/tools/README.md" >}}) serves our simulation build and run needs.
+Currently, the [Makefile based simulation workflow]({{< relref "hw/dv/tools/README.md" >}}) serves our simulation build and run needs.
 It does not provide the capability to run regressions yet (under development).
 For the time being, users are limited to running each test individually (or develop a lightweight bash script to run all tests with several seeds using the existing Make based flow).
 Once the regression tool is developed, it will provide a way to enable these capabilities.
@@ -373,22 +373,22 @@ The following are some of the best practices when adding exclusions:
 
    These categories are as follows:
 
-  *  **UNR**: Unreachable code due to constraints, or module inputs being tied off in a certain way will result in specific coverage items to be unreachable.
-     Additional explanation is optional.
-  *  **NON_RTL**: Simulation constructs in RTL that can be safely excluded in structural coverage collection.
-     These include tasks and functions, initial / final blocks that are specifically used for simulation such as backdoor write and read functions for memory elements.
-     Additional explanation is optional.
-  *  **UNSUPPORTED**: Item being excluded is a part of design feature that is not supported.
-     Additional explanation is optional.
-     *  IP designed by some other team / third party is incorporated, but only a subset of the features are in use. Remaining ones are not supported.
-     *  Features that are added into the design but are not made a part of the design specification for the current generation / chip being taped out
-     *  UVC / agent with detailed coverage items where certain crosses are not supported by the design (ex: TL agent with fcov on full spectrum of burst with all sizes and lengths, but only a subset of it actually being supported).
-     Additional explanation is mandatory.
-  *  **EXTERNAL**: Items that are already covered in another bench.
-     Additional explanation is mandatory.
-  *  **LOW_RISK**: Items that are prohibitively hard to hit, given the resource constraints and are deemed to be of low risk and low value.
-     Features that are added to the design AND are described adequately in the design spec AND a collective upfront decision has been made in agreement with SW/architecture/design/DV to not verify it due to resource constraints.
-     Additional explanation is mandatory.
+   *  **UNR**: Unreachable code due to constraints, or module inputs being tied off in a certain way will result in specific coverage items being unreachable.
+      Additional explanation is optional.
+   *  **NON_RTL**: Simulation constructs in RTL that can be safely excluded in structural coverage collection.
+      These include tasks and functions, initial / final blocks that are specifically used for simulation such as backdoor write and read functions for memory elements.
+      Additional explanation is optional.
+   *  **UNSUPPORTED**: Item being excluded is a part of design feature that is not supported.
+      Additional explanation is optional.
+      *  IP designed by some other team / third party is incorporated, but only a subset of the features are in use. Remaining ones are not supported.
+      *  Features that are added into the design but are not made a part of the design specification for the current generation / chip being taped out
+      *  UVC / agent with detailed coverage items where certain crosses are not supported by the design (ex: TL agent with fcov on full spectrum of burst with all sizes and lengths, but only a subset of it actually being supported).
+      Additional explanation is **mandatory**.
+   *  **EXTERNAL**: Items that are already covered in another bench.
+      Additional explanation is **mandatory**.
+   *  **LOW_RISK**: Items that are prohibitively hard to hit, given the resource constraints and are deemed to be of low risk and low value.
+      Features that are added to the design AND are described adequately in the design spec AND a collective upfront decision has been made in agreement with SW/architecture/design/DV to not verify it due to resource constraints.
+      Additional explanation is **mandatory**.
 
 ### Integration Testing
 
@@ -443,13 +443,18 @@ The goal of this review is to achieve utmost clarity in the planning of the DV e
 The feedback in this review flows both ways - the language in the design specification could be made more precise, or missing items in both, the design specification as well as in the testplan could be identified and added.
 This enables the development stage to progress smoothly.
 
-Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status]({{< relref "hw_stages.md#indicating-stages-and-making-transitions" >}}).
+Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status]({{< relref "doc/project/hw_stages.md#indicating-stages-and-making-transitions" >}}).
 
 Finally, after the verification effort is complete, there is a final sign-off review to ensure all checklist items are completed satisfactorily without any major exceptions or open issues.
 
 ## Filing Issues
 
 We use the [OpenTitan GitHub Issue tracker](https://github.com/lowRISC/opentitan/issues) for filing possible bugs not just in the design, but also in the DV code base or in any associated tools or processes that may hinder progress.
+
+## Getting Started with DV
+
+The process for getting started with DV involves many steps, including getting clarity on its purpose, setting up the testbench, documentation, etc.
+These are discussed in the [Getting Started with DV]({{< relref "getting_started_dv.md" >}}) document.
 
 ## Pending Work Items
 
