@@ -19,7 +19,7 @@ The underlying
 [repo](http://www.github.com/lowrisc/opentitan)
 is set up as a monolithic repository to contain RTL, helper scripts, technical documentation, and other software necessary to produce our hardware designs.
 
-See also [repository readme]({{< relref "README.md" >}}) for licensing information and the development methodology.
+See also the [repository readme](https://github.com/lowRISC/opentitan/blob/master/README.md) for licensing information and the development methodology.
 
 ## Documentation Sections
 
