@@ -26,9 +26,7 @@ The project contains comprehensive documentation of all IPs and tools. You can
 either access it [online](https://docs.opentitan.org/) or build it
 locally by following the steps below.
 
-1. Download and install [`hugo-extended`](https://gohugo.io/getting-started/installing/).
-
-2. Ensure that you have the required Python modules installed (to be executed
+1. Ensure that you have the required Python modules installed (to be executed
 in the repository root):
 
 ```command
@@ -36,7 +34,7 @@ $ sudo apt install python3 python3-pip
 $ pip3 install --user -r python-requirements.txt
 ```
 
-3. Execute the build script:
+2. Execute the build script:
 
 ```command
 $ ./util/build_docs.py --preview
