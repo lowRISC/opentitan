@@ -6,51 +6,30 @@ when using SystemVerilog, a weakly-typed language, unlike other hardware
 description languages. We consider linting to be critical for conformance
 to our goals of high quality designs.
 
-We have chosen [Ascent
-Lint](https://www.realintent.com/rtl-linting-ascent-lint/) by Real Intent
-as our linter of choice for hardware design collateral.
-In the current state of the project, the lint policy file and waiver
-files are **not** checked into the repo, but are being kept
-privately. The lint scripts in this repo don't need a policy file and
-waiver files, you can still run lint without them.
+Currently, due to the proprietary nature of tool collateral, all linting
+activity is done offline and reported back to designers.  The project will
+standardize on a particular linting tool, and results will be shared in
+some form through continuous integration build results, published tool
+outputs, pre-submit checks, and/or linting summaries of tool output
+(TODO: publication details).  At that time this README will be updated
+with setup and run instructions.
 
-See below instructions on how lint is executed on a design. The goal
-is zero Errors for each design either through code fixing
-(preferred) or lint waivers (where justified).
+# CDC Linting
 
-## Setup
+Logic designs that have signals that cross from one clock domain to
+another unrelated clock domain are notorious for introducing hard to
+debug problems.  The reason is that design verification, with its constant
+and idealized timing relationships on signals, does not represent the
+variability and uncertainty of real world systems.  For this reason,
+maintaining a robust Clock Domain Crossing verification strategy ("CDC
+methodology") is critical to the success of any multi-clock design.
 
-1.  Install the latest fusesoc version needed for lint:
+Currently, due to the proprietary nature of tool collateral, all CDC linting
+activity is done offline and reported back to designers.  The project will
+standardize on a particular CDC linting tool, and results will be shared in
+some form through continuous integration build results, published tool
+outputs, pre-submit checks, and/or linting summaries of tool output
+(TODO: publication details).  At that time this README will be updated
+with setup and run instructions.
 
-        cd <the-root-directory-which-contains-the-hw-directory>
-        pip3 install -U -r python-requirements.txt --user
-
-1.  Install and load ascentlint: version
-    `2018.A.p10G.2020_07_31` of ascentlint is being used.
-    In case you use `module load`, make sure to load the correct version.
-
-## Running Lint
-
-**Example 1**: To run lint on module `gpio.sv`, type:
-
-    cd hw/lint
-    lint gpio
-
-Above generates the lint report file `lint.rpt`, which details all lint errors
-and warning.
-
-**Example 2**: You can also run lint on any submodule of the design, not
-  just the ones that have a `.core` file. For example, to run lint on submodule
-  `gpio_reg_top.sv`, tye:
-
-    cd hw/lint
-    lint gpio_reg_top
-
-## Running Lint on the Entire Design
-
-To run lint on all blocks and the toplevel, type:
-
-    cd hw/lint
-    lint_all | tee lint_all.std
-
-The script `lint_all` can be used for continuous integration.
+This holds for *Reset Domain Crossing* ("RDC") methodology as well.
