@@ -1,18 +1,1 @@
-<html class="no-js">
-  {{ partial "head.html" . }}
-  <body onload="WaveDrom.ProcessAll()">
-    {{ partial "header.html" . }}
-    <section class="light-bg">
-      <div class="layout">
-        <aside class="toc">
-          {{ .TableOfContents }}
-        </aside>
-        <main id="main" role="main" class="markdown">
-          {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
-          {{ .Content }}
-        </main>
-      </div>
-    </section>
-    {{ partial "footer.html" . }}
-  </body>
-</html>
+single.html

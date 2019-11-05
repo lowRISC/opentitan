@@ -12,10 +12,6 @@
   }
 
   h1 {
-    font-size: 2.5em;
-  }
-
-  h2 {
     padding-top: 0.5em;
     border-top: 1px solid;
     font-family: 'Livvic', sans-serif;
@@ -29,11 +25,24 @@
       padding-top: 0;
     }
   }
+  
+  h1.title {
+    font-size: 2.5em;
+    border: none !important;
+    font-family: 'Ubuntu', sans-serif !important;
+    font-weight: bold !important;
+  }
 
-  h3 {
+  h2 {
     font-size: 1.375em;
     font-weight: 700;
     margin-bottom: 0.6363em;
+  }
+
+  h3 {
+    font-size: 1.1em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
   }
 
   p {
