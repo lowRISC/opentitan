@@ -12,6 +12,7 @@ class tl_monitor extends uvm_monitor;
 
   virtual tl_if  vif;
   tl_agent_cfg   cfg;
+  tl_agent_cov   cov;
   tl_seq_item    pending_a_req[$];
   string         agent_name;
   bit            objection_raised;
@@ -57,6 +58,9 @@ class tl_monitor extends uvm_monitor;
   // on reset flush pending request and drop objection
   virtual task reset_thread();
     forever begin
+      @(negedge vif.rst_n);
+      // on reset asserted sample pending request is present or not
+      if (cfg.en_cov) cov.pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
       @(posedge vif.rst_n);
       pending_a_req.delete();
       if (objection_raised) begin
