@@ -28,14 +28,14 @@ class aes_wake_up_vseq extends aes_base_vseq;
     write_key(init_key);
     wait(200ns);
    `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING PLAIN TEXT"), UVM_DEBUG);
-   // for() begin
+
     add_data(plain_text);
     // poll status regster
-    // end
+
     wait(200ns);
     // poll status register
      `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data register %s", ral.status.convert2string()), UVM_DEBUG);
-    poll_output_reg(cypher_text);
+    read_data(cypher_text);
     `uvm_info(`gfn, $sformatf("\n\t ---|cypher text : %02h", cypher_text), UVM_DEBUG);
     // read output
     wait(2000ns);
@@ -48,7 +48,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
     `uvm_info(`gfn, $sformatf("\n\t ---| WRITING CYPHER TEXT %02h", cypher_text), UVM_DEBUG);
     add_data(cypher_text);
     `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data %s", ral.status.convert2string()), UVM_DEBUG);
-    poll_output_reg(decrypted_text);
+    read_data(decrypted_text);
 
       if(decrypted_text == plain_text) begin
         `uvm_info(`gfn, $sformatf(" \n\t ---| YAY TEST PASSED |--- \n \t DECRYPTED: \t %02h \n\t Plaintext: \t %02h ", decrypted_text, plain_text), UVM_NONE);
@@ -64,9 +64,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
       
   endtask : body
 
- // virtual task start_encryption();
- //   csr_wr(.csr(ral.key), .value(32'hDEADBEEF));
- // endtask // start_encryption
+
   
 
 endclass : aes_wake_up_vseq

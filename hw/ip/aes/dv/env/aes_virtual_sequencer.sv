@@ -7,7 +7,6 @@ class aes_virtual_sequencer extends cip_base_virtual_sequencer #(.CFG_T(aes_env_
 
   `uvm_component_utils(aes_virtual_sequencer)
 
-  aes_sequencer    aes_sequencer_h;
 
   `uvm_component_new
 

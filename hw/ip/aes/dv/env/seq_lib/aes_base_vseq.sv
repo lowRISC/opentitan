@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 import aes_reg_pkg::*;
+import csr_utils_pkg::csr_spinwait;
 
 class aes_base_vseq extends cip_base_vseq #(
     .CFG_T               (aes_env_cfg),
@@ -36,15 +37,7 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task aes_init();
     bit [31:0] aes_ctrl = '0;
          
-       // add non 0 key value //
-    // csr_wr(.csr(ral.key0), .value(32'h12121212));
-    // csr_wr(.csr(ral.key1), .value(32'h12121212));
-    // csr_wr(.csr(ral.key2), .value(32'h12121212));
-    // csr_wr(.csr(ral.key3), .value(32'h12121212));
-    // csr_wr(.csr(ral.key4), .value(32'h12121212));
-    // csr_wr(.csr(ral.key5), .value(32'h12121212));
-    // csr_wr(.csr(ral.key6), .value(32'h12121212));
-    // csr_wr(.csr(ral.key7), .value(32'h12121212));
+
     // initialize control register
     aes_ctrl[0]   = 0;        // set to encryption
     aes_ctrl[3:1] = 3'b001;   // set to 128b key
@@ -70,14 +63,14 @@ class aes_base_vseq extends cip_base_vseq #(
   
 
   virtual task write_key(aes_reg2hw_key_mreg_t [7:0] key);
-     csr_wr(.csr(ral.key0), .value(key[0]));
-     csr_wr(.csr(ral.key1), .value(key[1]));
-     csr_wr(.csr(ral.key2), .value(key[2]));
-     csr_wr(.csr(ral.key3), .value(key[3]));
-     csr_wr(.csr(ral.key4), .value(key[4]));
-     csr_wr(.csr(ral.key5), .value(key[5]));
-     csr_wr(.csr(ral.key6), .value(key[6]));
-     csr_wr(.csr(ral.key7), .value(key[7]));     
+    csr_wr(.csr(ral.key0), .value(key[0]));
+    csr_wr(.csr(ral.key1), .value(key[1]));
+    csr_wr(.csr(ral.key2), .value(key[2]));
+    csr_wr(.csr(ral.key3), .value(key[3]));
+    csr_wr(.csr(ral.key4), .value(key[4]));
+    csr_wr(.csr(ral.key5), .value(key[5]));
+    csr_wr(.csr(ral.key6), .value(key[6]));
+    csr_wr(.csr(ral.key7), .value(key[7]));     
       
   endtask
   
@@ -93,16 +86,10 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.data_in3), .value(data[127:96]));    
   endtask
 
-    virtual task poll_output_reg(output logic [127:0] cypher_txt);
+    virtual task read_data(output logic [127:0] cypher_txt);
       bit data_rdy = 0;
       bit [31:0] rd_data;
-      do begin
-        csr_rd(.ptr(ral.status) , .value(rd_data));
-        `uvm_info(`gfn, $sformatf("\n\t ----| READ AES status reg %02h", rd_data), UVM_DEBUG);
-        data_rdy = rd_data[2];
-        if(!data_rdy)  wait(1000ns);
-      end
-      while(!data_rdy);
+      csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
       csr_rd(.ptr(ral.data_out3), .value(rd_data));
       cypher_txt[127:96] = rd_data;
       `uvm_info(`gfn, $sformatf("\n\t ---| Read encrypted text from dataout3 %02h", rd_data), UVM_DEBUG);
