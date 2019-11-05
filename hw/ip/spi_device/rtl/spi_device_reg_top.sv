@@ -65,10 +65,10 @@ module spi_device_reg_top (
     .HRspPass   (1'b1),
     .DReqPass   ({2{1'b1}}),
     .DRspPass   ({2{1'b1}}),
-    .HReqDepth  (4'h1),
-    .HRspDepth  (4'h1),
-    .DReqDepth  ({2{4'h1}}),
-    .DRspDepth  ({2{4'h1}})
+    .HReqDepth  (4'h0),
+    .HRspDepth  (4'h0),
+    .DReqDepth  ({2{4'h0}}),
+    .DRspDepth  ({2{4'h0}})
   ) u_socket (
     .clk_i,
     .rst_ni,

@@ -67,10 +67,10 @@ module flash_ctrl_reg_top (
     .HRspPass   (1'b1),
     .DReqPass   ({3{1'b1}}),
     .DRspPass   ({3{1'b1}}),
-    .HReqDepth  (4'h1),
-    .HRspDepth  (4'h1),
-    .DReqDepth  ({3{4'h1}}),
-    .DRspDepth  ({3{4'h1}})
+    .HReqDepth  (4'h0),
+    .HRspDepth  (4'h0),
+    .DReqDepth  ({3{4'h0}}),
+    .DRspDepth  ({3{4'h0}})
   ) u_socket (
     .clk_i,
     .rst_ni,

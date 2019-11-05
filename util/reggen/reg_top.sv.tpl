@@ -84,10 +84,10 @@ module ${block.name}_reg_top ${print_param(params)}(
     .HRspPass   (1'b1),
     .DReqPass   ({${num_dsp}{1'b1}}),
     .DRspPass   ({${num_dsp}{1'b1}}),
-    .HReqDepth  (4'h1),
-    .HRspDepth  (4'h1),
-    .DReqDepth  ({${num_dsp}{4'h1}}),
-    .DRspDepth  ({${num_dsp}{4'h1}})
+    .HReqDepth  (4'h0),
+    .HRspDepth  (4'h0),
+    .DReqDepth  ({${num_dsp}{4'h0}}),
+    .DRspDepth  ({${num_dsp}{4'h0}})
   ) u_socket (
     .clk_i,
     .rst_ni,
