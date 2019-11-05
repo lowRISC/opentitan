@@ -94,11 +94,11 @@ $ git status
 The status will initially indicate there are no changes, but as you
 add, delete or edit files it will let you know the state of things.
 
-Once you are happy with your changes, commit them to the local repo by adding the files to the changes (if things are clean you can add using `git commit -a` instead of a number of `add` commands):
+Once you are happy with your changes, commit them to the local repo by adding the files to the changes (if things are clean you can add using `git commit -a -s` instead of a number of `add` commands):
 
 ```console
 $ git add...
-$ git commit
+$ git commit -s
 ```
 
 The commit will make you add a message. The first line of this is a
@@ -117,6 +117,9 @@ the fix and close out the issue when it is added to the lowRISC repo.
 If the change is an attempted fix that has not yet had confirmation from
 verification engineers, it should not close the related issue. In this case,
 write `Related to #nn` in the commit message rather than `Fixes #nn`.
+
+The commit message will end with a "Signed-off-by" line inserted by `git` due to using the `-s` option to `git commit`.
+Adding this line certifies you agree to the statement in [CONTRIBUTING.md](https://github.com/lowRISC/opentitan/blob/master/CONTRIBUTING.md), indicating your contribution is made under our Contributor License Agreement.
 
 When you have finished everything locally (it is good practice to do a
 status check to ensure things are clean) you can push your branch (eg
@@ -170,6 +173,24 @@ the Github remote repository.
 
 ```console
 $ git push -f origin HEAD
+```
+
+## Automatically adding a Signed-off-by line for your commits
+
+One option to avoid having to remember to add `-s` to `git commit` is to configure `git` to append it to your commit messages for you.
+This can be done using an executable hook.
+An appropriate hook can be installed by executing this from the root of your repository checkout:
+
+```console
+$ cat <<"EOF" > .git/hooks/prepare-commit-msg
+#!/bin/sh
+
+# Add a Signed-off-by line to the commit message if not already present.
+git interpret-trailers --if-exists doNothing --trailer \
+  "Signed-off-by: $(git config user.name) <$(git config user.email)>" \
+  --in-place "$1"
+EOF
+$ chmod +x .git/hooks/prepare-commit-msg
 ```
 
 ## Update your repo with changes in the lowRISC repo
