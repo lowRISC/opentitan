@@ -98,7 +98,7 @@ Any CSR read transaction would check actual read data against predicted value.  
 #### Assertions
 * TLUL assertions: The `tb/gpio_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset
-* `intrGpioKnown`: Checks that GPIO interrupt pins do not have any unknowns
+* `IntrGpioKnown`: Checks that GPIO interrupt pins do not have any unknowns
 * `CioGpioEnOKnown`: Checks that GPIO output does not have any unknowns
 * `CioGpioOKnown`: Checks that GPIO output enable does not have any unknowns
 
