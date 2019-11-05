@@ -1,29 +1,45 @@
-# OpenTitan RISCV Compliance Testing
+---
+title: "OpenTitan RISCV Compliance Testing"
+---
 
-## Overview
-To run the RISCV compliance test on OpenTitan:
+# Overview
+The RISCV compliance test can be run on either FPGA or verilator.
+To run on verilator, set the variables below
 
 ```console
 $ export RISCV_TARGET=opentitan
 $ export RISCV_DEVICE=rv32imc
+$ export TARGET=verilator
 ```
 
-By default, the test assumes there exists a valid validator build at `${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
-If your verilator build is at a different location, please set that as well.
-For instructions on how to create a verilator build, please refer to the [verilator guide](../../../../../doc/ug/getting_started_verilator.md).
+To run on fpga, set the variables below
+
+```console
+$ export RISCV_TARGET=opentitan
+$ export RISCV_DEVICE=rv32imc
+$ export TARGET=fpga
+```
+
+By default, the test assumes there exists a valid verilator build at `${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
+If your verilator build is at a different location, please set that as well when running with verilator.
+For instructions on how to create a verilator build, please refer to the [verilator guide]({{< relref "doc/ug/getting_started_verilator" > }}).
 
 ```console
 $ export TARGET_SIM=${PATH_TO_VERILATOR_BUILD}
 ```
 
+When running against FPGA, the test assumes the FPGA is already programmed and ready to go.
+To find out how to properly build and flash FPGA, please refer to the [FPGA manual]({{< relref "doc/rm/ref_manual_fpga" >}})
+
+
 Now, run the tests.
 The following output will be seen (software build steps are truncated).
+The example below uses verilator as an example, but the FPGA output is nearly identical.
 
 ```console
 $ cd $REPO_TOP/sw/vendor/riscv_compliance
 $ make RISCV_ISA=rv32i && make RISCV_ISA=rv32im && make RISCV_ISA=rv32imc
 
-```
 
 
 Rom initialized with program at /usr/local/google/home/timothytim/ci2_dev/ot_core/otpriv2/public/sw/vendor/riscv_compliance/../../boot_rom/rom.vmem
