@@ -9,6 +9,7 @@ sw_lib_mem = declare_dependency(
     sources: [
       'memcpy.c',
       'memset.c',
+      'strlen.c',
     ],
   )
 )
