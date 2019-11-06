@@ -8,6 +8,7 @@ sw_lib_mem = declare_dependency(
     'mem_ot',
     sources: [
       'memcpy.c',
+      'memset.c',
     ],
   )
 )
