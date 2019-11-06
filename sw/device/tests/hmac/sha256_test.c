@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdlib.h>
-#include <string.h>
 
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
