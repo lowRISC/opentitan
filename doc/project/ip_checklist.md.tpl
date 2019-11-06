@@ -33,7 +33,6 @@ Review        | Signoff date          | Not Started |
 [FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func-implemented" >}}
 [ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}
 [LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint-setup" >}}
-[D1_REVIEWED]:        {{<relref "/doc/project/checklist.md#d1-reviewed" >}}
 
 ### D2
 
@@ -74,7 +73,6 @@ Review        | Signoff date            | Not Started |
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
-[D2_REVIEWED]:         {{<relref "/doc/project/checklist.md#d2-reviewed" >}}
 
 ### D3
 
@@ -104,7 +102,6 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
-[D3_REVIEWED]:          {{<relref "/doc/project/checklist.md#d3-reviewed" >}}
 
 ## Verification Checklist
 
