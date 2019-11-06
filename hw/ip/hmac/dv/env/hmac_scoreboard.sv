@@ -12,6 +12,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [7:0] msg_q[$];
   bit       hmac_start, hmac_process;
   bit       fifo_full;
+  bit       wr_cnt_updated = 1; // flag to indicate if the msg is written to msg_fifo
   int       hmac_wr_cnt;
   int       hmac_rd_cnt;
 
@@ -21,8 +22,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    hmac_process_fifo_rd();
-    hmac_process_fifo_full();
+    fork
+      hmac_process_fifo_full();
+      hmac_process_fifo_wr();
+      hmac_process_fifo_rd();
+    join_none
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
@@ -64,10 +68,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
           foreach (msg[i])  begin
             msg_q.push_back(msg[i]);
-            if (msg_q.size() % 4 == 0) begin
-              wait(cfg.d2h_a_ready_vif.pins == 1); // wait for outstanding transaction
-              incr_wr_and_check_fifo_full();
-            end
+            if (msg_q.size() % 4 == 0) incr_wr_and_check_fifo_full();
           end
         end
       end else begin
@@ -218,6 +219,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   endfunction
 
   virtual task incr_wr_and_check_fifo_full();
+    wait (wr_cnt_updated == 1);
     if (sha_en) begin
       // if fifo full, tlul will not write next data until fifo has space again
       if (fifo_full) begin
@@ -236,10 +238,20 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       // get both update
       #1ps;
       if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
-        void'(ral.intr_state.fifo_full.predict(1));
+        void'(ral.intr_state.fifo_full.predict(.value(1)));
         `uvm_info(`gfn, "predict interrupt fifo full is set", UVM_HIGH)
         fifo_full = 1;
       end
+    end
+  endtask
+
+  // internal msg_fifo model will take 2 clk cycles to update write info.
+  // will gate the write process with wr_cnt_updated signal if user uses non-blocking mode
+  virtual task hmac_process_fifo_wr();
+    forever @(hmac_wr_cnt) begin
+        wr_cnt_updated = 0;
+        cfg.clk_rst_vif.wait_clks(HMAC_WR_WORD_CYCLE);
+        wr_cnt_updated = 1;
     end
   endtask
 
@@ -286,7 +298,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
                 wait(key_processed);
               end
-              #1; // delay 1 ns to make sure did not sample right at negedge clk
+              #1ps; // delay 1 ps to make sure did not sample right at negedge clk
               cfg.clk_rst_vif.wait_n_clks(1);
               hmac_rd_cnt++;
               `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)

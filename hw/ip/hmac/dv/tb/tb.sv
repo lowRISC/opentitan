@@ -29,7 +29,6 @@ module tb;
   pins_if #(NUM_MAX_ALERTS) alerts_if(.pins(alerts));
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(1) d2h_a_ready_if(tl_if.d2h.a_ready);
 
   // dut
   hmac dut (
@@ -57,7 +56,6 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
         dut.tlul_assert_device.tlul_assert_ctrl_if);
-    uvm_config_db#(d2h_a_ready_vif)::set(null, "*.env", "d2h_a_ready_vif", d2h_a_ready_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
