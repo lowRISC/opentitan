@@ -12,12 +12,16 @@ The following assumptions are made to ensure the interface works:
   `gen_mem_generic.u_impl_generic.mem`
 
 ### Useful methods
-This interface supports basic backdoor methods to access memory. Examples of some useful
-methods are:
+This interface supports basic backdoor methods to access memory. Useful methods are:
 * `is_addr_valid`: Check if input address is valid
   The input address is assumed to be the byte addressable address into memory
   starting at 0. It is user's responsibility to mask the upper bits.
-* `read8`: Read a byte at specified input address
-* `write16`: Write two bytes with input data at specified input address
+* `read8`, `read16`, `read32`, `read64`: Functions to read one byte, two bytes, four bytes, and eight bytes respectively
+  at specified input address
+* `write8`, `write16`, `write32`, `write64`: Functions to write one byte, two bytes, four bytes, and eight bytes respectively
+  with input data at specified input address
 * `load_mem_from_file`: Load memory from a file specified by input string
+* `print_mem`: Print the content of the memory
+* `clear_mem`: Clear the memory to all 0s
+* `set_mem`: Set the memory to all 1s
 * `randomize_mem`: Randomize contents of the memory
