@@ -315,31 +315,17 @@ module flash_ctrl (
   end
 
   // extra region is the default region
-  flash_mp_region_t region_cfgs[MpRegions+1];
-  logic [NumBanks-1:0] bank_cfgs;
+  flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs;
 
-  // TODO: reuse generated type from reg_pkg?
-  for (genvar k = 0; k < NumBanks; k++) begin : gen_mp_bank_cfgs
-    assign bank_cfgs[k] = reg2hw.mp_bank_cfg[k].q;
-  end
+  assign region_cfgs[MpRegions-1:0] = reg2hw.mp_region_cfg[MpRegions-1:0];
 
-  for (genvar k = 0; k <= MpRegions; k++) begin : gen_mp_region_cfg
-    if (k == MpRegions) begin : gen_last_region
-      assign region_cfgs[k].base_page = '0;
-      assign region_cfgs[k].size      = {AllPagesW{1'b1}};
-      assign region_cfgs[k].en        = 1'b1;
-      assign region_cfgs[k].rd_en     = reg2hw.default_region.rd_en.q;
-      assign region_cfgs[k].prog_en   = reg2hw.default_region.prog_en.q;
-      assign region_cfgs[k].erase_en  = reg2hw.default_region.erase_en.q;
-    end else begin : gen_region
-      assign region_cfgs[k].base_page = reg2hw.mp_region_cfg[k].base.q;
-      assign region_cfgs[k].size      = reg2hw.mp_region_cfg[k].size.q;
-      assign region_cfgs[k].en        = reg2hw.mp_region_cfg[k].en.q;
-      assign region_cfgs[k].rd_en     = reg2hw.mp_region_cfg[k].rd_en.q;
-      assign region_cfgs[k].prog_en   = reg2hw.mp_region_cfg[k].prog_en.q;
-      assign region_cfgs[k].erase_en  = reg2hw.mp_region_cfg[k].erase_en.q;
-    end
-  end
+  //last region
+  assign region_cfgs[MpRegions].base.q = '0;
+  assign region_cfgs[MpRegions].size.q = {AllPagesW{1'b1}};
+  assign region_cfgs[MpRegions].en.q = 1'b1;
+  assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region.rd_en.q;
+  assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
+  assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
 
   // Flash memory protection
   flash_mp #(
@@ -352,7 +338,7 @@ module flash_ctrl (
 
     // sw configuration
     .region_cfgs_i(region_cfgs),
-    .bank_cfgs_i(bank_cfgs),
+    .bank_cfgs_i(reg2hw.mp_bank_cfg),
 
     // read / prog / erase controls
     .req_i(flash_req),
@@ -478,10 +464,14 @@ module flash_ctrl (
 
 
   // Assertions
+
   `ASSERT_KNOWN(TlDValidKnownO_A,       tl_o.d_valid,       clk_i, !rst_ni)
   `ASSERT_KNOWN(TlAReadyKnownO_A,       tl_o.a_ready,       clk_i, !rst_ni)
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,
                                          flash_o.bk_erase}, clk_i, !rst_ni)
+  `ASSERT_VALID_DATA(FlashAddrKnown_A,  flash_o.req, flash_o.addr, clk_i, !rst_ni)
+  `ASSERT_VALID_DATA(FlashProgKnown_A,  flash_o.prog & flash_o.req, flash_o.prog_data,
+                                        clk_i, !rst_ni)
   `ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o,  clk_i, !rst_ni)
   `ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o,    clk_i, !rst_ni)
   `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o,     clk_i, !rst_ni)

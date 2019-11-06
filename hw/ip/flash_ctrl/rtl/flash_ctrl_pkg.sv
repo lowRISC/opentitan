@@ -49,14 +49,4 @@ package flash_ctrl_pkg;
     logic                         init_busy;
   } flash_m2c_t;
 
-  // memory protection region configurations
-  typedef struct packed {
-    logic [AllPagesW-1:0] base_page;
-    logic [AllPagesW-1:0] size;
-    logic                 en;
-    logic                 rd_en;
-    logic                 prog_en;
-    logic                 erase_en;
-  } flash_mp_region_t;
-
 endpackage : flash_ctrl_pkg
