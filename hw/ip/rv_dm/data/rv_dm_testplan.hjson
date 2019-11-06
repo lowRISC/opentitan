@@ -1,0 +1,47 @@
+{
+  name: "rv_dm"
+  entries: [
+    {
+      name: sanity
+      desc: '''Basic debug sanity test that drives random CSR reads and writes through the
+            JTAG interface, checking them against the generated DMI transactions.
+            The CSR reads and writes are entirely random. The test stops after 10,000 successful
+            transactions.'''
+      milestone: V1
+      tests: ["debug_sanity"]
+    }
+    {
+      name: csr_stress
+      desc: '''CSR reads and writes that are more targeted, with many back to back repetitions
+               of the same target register.'''
+      milestone: V1
+      tests: ["debug_csr"]
+    }
+    {
+      name: many_tlul_device
+      desc: '''Drive heavy TLUL device traffic with many back to back transactions, and many
+               accesses to the same address.'''
+      milestone: V1
+      tests: ["debug_tlul_device"]
+    }
+    {
+      name: many_tlul_host
+      desc: '''Target many TLUL host accesses with many back to back transactions, and many
+               accesses to the same address.'''
+      milestone: V1
+      tests: ["debug_tlul_host"]
+    }
+    {
+      name: resets
+      desc: '''Exercise debug module reset and DUT resets during test.'''
+      milestone: V2
+      tests: ["debug_reset"]
+    }
+    {
+      name: full_random
+      desc: '''Cycle through all scenarios at random, used for soak testing.'''
+      milestone: V2
+      tests: ["debug_random"]
+    }
+  ]
+}
