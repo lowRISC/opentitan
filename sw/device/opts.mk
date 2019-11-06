@@ -65,12 +65,12 @@ INFOTOOL      ?= $(SW_ROOT_DIR)/../util/rom_chip_info.py
 RV_TOOLS      ?= /tools/riscv/bin
 # ARCH = rv32im # to disable compressed instructions
 ARCH           = rv32imc
-CC             = ${RV_TOOLS}/riscv32-unknown-elf-gcc
-AR             = $(subst gcc,ar,$(wordlist 1,1,$(CC)))
-AS             = $(subst gcc,as,$(wordlist 1,1,$(CC)))
-LD             = $(subst gcc,ld,$(wordlist 1,1,$(CC)))
-OBJCOPY        = $(subst gcc,objcopy,$(wordlist 1,1,$(CC)))
-OBJDUMP        = $(subst gcc,objdump,$(wordlist 1,1,$(CC)))
+CC             ?= ${RV_TOOLS}/riscv32-unknown-elf-gcc
+AR             ?= $(subst gcc,ar,$(wordlist 1,1,$(CC)))
+AS             ?= $(subst gcc,as,$(wordlist 1,1,$(CC)))
+LD             ?= $(subst gcc,ld,$(wordlist 1,1,$(CC)))
+OBJCOPY        ?= $(subst gcc,objcopy,$(wordlist 1,1,$(CC)))
+OBJDUMP        ?= $(subst gcc,objdump,$(wordlist 1,1,$(CC)))
 
 CFLAGS        += -march=$(ARCH) -mabi=ilp32 -static -mcmodel=medany -Wall -g -Os \
                  -fvisibility=hidden -nostdlib -nostartfiles $(SW_FLAGS)

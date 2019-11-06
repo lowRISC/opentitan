@@ -11,7 +11,7 @@ ARCH         = rv32imc
 
 RV_TOOLS    ?= /tools/riscv/bin/
 
-CC          := ${RV_TOOLS}/riscv32-unknown-elf-gcc
+CC          ?= ${RV_TOOLS}/riscv32-unknown-elf-gcc
 CFLAGS      ?= -Wall -g -Os -march=$(ARCH) -mabi=ilp32 -static -mcmodel=medany \
 	       -fvisibility=hidden -nostdlib -nostartfiles
 
