@@ -57,13 +57,13 @@ module top_earlgrey_artys7 (
     .jtag_td_i              (IO_JTDI),
     .jtag_td_o              (IO_JTDO),
 
-    .cio_uart_rx_p2d_i      (cio_uart_rx_p2d),
-    .cio_uart_tx_d2p_o      (cio_uart_tx_d2p),
-    .cio_uart_tx_en_d2p_o   (cio_uart_tx_en_d2p),
+    .dio_uart_rx_i          (cio_uart_rx_p2d),
+    .dio_uart_tx_o          (cio_uart_tx_d2p),
+    .dio_uart_tx_en_o       (cio_uart_tx_en_d2p),
 
-    .cio_gpio_gpio_p2d_i    (cio_gpio_p2d),
-    .cio_gpio_gpio_d2p_o    (cio_gpio_d2p),
-    .cio_gpio_gpio_en_d2p_o (cio_gpio_en_d2p)
+    .mio_in_i               (cio_gpio_p2d),
+    .mio_out_o              (cio_gpio_d2p),
+    .mio_oe_o               (cio_gpio_en_d2p)
   );
 
   // Clock and reset
