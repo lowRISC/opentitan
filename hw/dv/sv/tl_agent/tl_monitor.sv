@@ -7,15 +7,6 @@
 // TileLink interface monitor
 // ---------------------------------------------
 
-// TODO merge with Shail's PR and move to cov obj
-covergroup tl_max_outsanding_cg(string name, int max_req) with function sample(int hit_max = 1);
-  option.per_instance = 1;
-  option.name = name;
-  cp_hit_max: coverpoint hit_max {
-    bins hit[]  = {[1:max_req]};
-  }
-endgroup : tl_max_outsanding_cg
-
 // TODO: Implement protocl check in the monitor
 class tl_monitor extends uvm_monitor;
 
@@ -26,8 +17,6 @@ class tl_monitor extends uvm_monitor;
   string         agent_name;
   bit            objection_raised;
   uvm_phase      run_phase_h;
-
-  tl_max_outsanding_cg tl_max_outsanding_cg;
 
   uvm_analysis_port #(tl_seq_item) d_chan_port;
   uvm_analysis_port #(tl_seq_item) a_chan_port;
@@ -50,9 +39,6 @@ class tl_monitor extends uvm_monitor;
     if (!uvm_config_db#(tl_agent_cfg)::get(this, "", "cfg", cfg)) begin
       `uvm_fatal("NO_CFG", {"cfg must be set for:", get_full_name(),".cfg"});
     end
-
-    // if outstanding is only 1, don't need to sample this cg
-    if (cfg.max_outstanding_req > 1) tl_max_outsanding_cg = new(`gfn, cfg.max_outstanding_req);
   endfunction : build_phase
 
   virtual task run_phase(uvm_phase phase);
@@ -105,9 +91,7 @@ class tl_monitor extends uvm_monitor;
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
                                         pending_a_req.size()))
           end
-          if (cfg.max_outstanding_req > 1 && pending_a_req.size() == cfg.max_outstanding_req) begin
-            tl_max_outsanding_cg.sample(pending_a_req.size());
-          end
+          if (cfg.en_cov) cov.max_outstanding_cg.sample(pending_a_req.size());
         end
         if (!objection_raised) begin
           run_phase_h.raise_objection(this);

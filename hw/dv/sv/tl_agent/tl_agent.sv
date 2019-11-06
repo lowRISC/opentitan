@@ -35,7 +35,10 @@ class tl_agent extends uvm_agent;
       seqr.cfg = cfg;
     end
     mon = tl_monitor::type_id::create("mon", this);
-    if (cfg.en_cov) cov = tl_agent_cov ::type_id::create("cov", this);
+    if (cfg.en_cov) begin
+      cov = tl_agent_cov ::type_id::create("cov", this);
+      cov.cfg = cfg;
+    end
     mon.cov = cov;
   endfunction : build_phase
 
