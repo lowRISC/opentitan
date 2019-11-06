@@ -4,8 +4,7 @@
 
 OUTPUT_ARCH(riscv)
 
-/* required to correctly link newlib */
-GROUP( -lc -lgloss -lgcc -lsupc++ )
+GROUP( -lgcc )
 
 SEARCH_DIR(.)
 __DYNAMIC  =  0;
