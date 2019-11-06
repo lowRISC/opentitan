@@ -31,6 +31,8 @@ package hmac_env_pkg;
   parameter uint32 HMAC_MSG_PROCESS_CYCLES   = 65;
   // 80 cycles for hmac key padding
   parameter uint32 HMAC_KEY_PROCESS_CYCLES   = 80;
+  // 1 cycles to write a msg word to hmac_msg_fifo
+  parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
 
   typedef enum {
     HmacDone,
