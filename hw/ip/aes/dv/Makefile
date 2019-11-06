@@ -28,11 +28,11 @@ UVM_TEST_SEQ    ?= aes_base_vseq
 # common tests/seqs
 include ${DV_DIR}/../../../dv/tools/common_tests.mk
 
-TEST_NAME       ?= aes_sanity
+TEST_NAME       ?= aes_wakeup_test
 UVM_TEST        ?= aes_base_test
-UVM_TEST_SEQ    ?= aes_base_vseq
+UVM_TEST_SEQ    ?= aes_wake_up_vseq
 
-ifeq (${TEST_NAME},aes_wake_up_test)
+ifeq (${TEST_NAME},aes_wakeup_test)
   UVM_TEST_SEQ   = aes_wake_up_vseq
 endif
 
@@ -40,41 +40,7 @@ ifeq (${TEST_NAME},aes_sanity)
   UVM_TEST_SEQ   = aes_sanity_vseq
 endif
 
-ifeq (${TEST_NAME},aes_intr_test)
-  UVM_TEST_SEQ   = aes_common_vseq
-  RUN_OPTS      += +run_intr_test
-endif
 
-ifeq (${TEST_NAME},aes_csr_hw_reset)
-  UVM_TEST_SEQ   = aes_common_vseq
-  RUN_OPTS      += +csr_hw_reset
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},aes_csr_rw)
-  UVM_TEST_SEQ   = aes_common_vseq
-  RUN_OPTS      += +csr_rw
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},aes_csr_bit_bash)
-  UVM_TEST_SEQ   = aes_common_vseq
-  RUN_OPTS      += +csr_bit_bash
-  RUN_OPTS      += +en_scb=0
-endif
-
-ifeq (${TEST_NAME},aes_csr_aliasing)
-  UVM_TEST_SEQ   = aes_common_vseq
-  RUN_OPTS      += +csr_aliasing
-  RUN_OPTS      += +en_scb=0
-endif
-
-# TODO: remove this test if there are no memories in the DUT
-  ifeq (${TEST_NAME},aes_mem_walk)
-  UVM_TEST_SEQ   = aes_common_vseq
-  RUN_OPTS      += +csr_mem_walk
-  RUN_OPTS      += +en_scb=0
-endif
 
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##

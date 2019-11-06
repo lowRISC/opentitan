@@ -18,14 +18,14 @@ package aes_env_pkg;
 
   // parameters
 
-   parameter uint ADDR_MAP_SIZE      = 2048;
+   parameter uint AES_ADDR_MAP_SIZE      = 2048;
   // types
   // forward declare classes to allow typedefs below
   typedef class aes_env_cfg;
   typedef class aes_env_cov;
 //
 //  // reuse cip_base_virtual_seqeuencer as is with the right parameter set
- typedef cip_base_virtual_sequencer #(aes_env_cfg, aes_env_cov) aes_virtual_sequencer;
+// typedef cip_base_virtual_sequencer #(aes_env_cfg, aes_env_cov) aes_virtual_sequencer;
 
  // typedef class cip_base_virtual_sequencer;
 
@@ -36,6 +36,7 @@ package aes_env_pkg;
  `include "aes_reg_block.sv"
  `include "aes_env_cfg.sv"
  `include "aes_env_cov.sv"
+ `include "aes_virtual_sequencer.sv"  
  `include "aes_scoreboard.sv"
  `include "aes_env.sv"
  `include "aes_vseq_list.sv"

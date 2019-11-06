@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
+// basic wake up sequence in place to verify that environment is hooked up correctly.
+// static test that is running same data set every time
 class aes_wake_up_vseq extends aes_base_vseq;
   `uvm_object_utils(aes_wake_up_vseq)
 
@@ -18,27 +19,28 @@ class aes_wake_up_vseq extends aes_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(this)
     `uvm_info(`gfn, $sformatf("running aes sanity sequence"), UVM_DEBUG);
 
-    wait(200ns);
     `uvm_info(`gfn, $sformatf(" \n\t ---|setting mode to encrypt"), UVM_DEBUG);
     // set mode to encrypt
-    set_mode(ENCRYPT);
-    wait(200ns);
-   `uvm_info(`gfn, $sformatf(" \n\t ---| WRITING INIT KEY"), UVM_DEBUG);
+    set_mode(ENCRYPT);    
+    
+    `uvm_info(`gfn, $sformatf(" \n\t ---| WRITING INIT KEY"), UVM_DEBUG);
     // add init key
-    write_key(init_key);
-    wait(200ns);
-   `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING PLAIN TEXT"), UVM_DEBUG);
-   // for() begin
+    write_key(init_key);    
+    #200ns;
+    
+    `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING PLAIN TEXT"), UVM_DEBUG);
     add_data(plain_text);
-    // poll status regster
-    // end
-    wait(200ns);
+    
+    #200ns;
     // poll status register
-     `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data register %s", ral.status.convert2string()), UVM_DEBUG);
-    poll_output_reg(cypher_text);
+    `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data register %s", ral.status.convert2string()), UVM_DEBUG);
+    read_data(cypher_text);
     `uvm_info(`gfn, $sformatf("\n\t ---|cypher text : %02h", cypher_text), UVM_DEBUG);
-    // read output
-    wait(2000ns);
+
+    // read output    
+    `uvm_info(`gfn, $sformatf("\n\t ------|WAIT 0 |-------"), UVM_LOW);
+    #200ns;
+
     // set aes to decrypt
     set_mode(DECRYPT);
 
@@ -48,34 +50,17 @@ class aes_wake_up_vseq extends aes_base_vseq;
     `uvm_info(`gfn, $sformatf("\n\t ---| WRITING CYPHER TEXT %02h", cypher_text), UVM_DEBUG);
     add_data(cypher_text);
     `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data %s", ral.status.convert2string()), UVM_DEBUG);
-    poll_output_reg(decrypted_text);
+    read_data(decrypted_text);
 
-      if(decrypted_text == plain_text) begin
-        `uvm_info(`gfn, $sformatf(" \n\t ---| YAY TEST PASSED |--- \n \t DECRYPTED: \t %02h \n\t Plaintext: \t %02h ", decrypted_text, plain_text), UVM_NONE);
-      end else begin
-        `uvm_fatal(`gfn, $sformatf(" \n\t ---| NOO TEST FAILED |--- \n \t DECRYPTED: \t %02h \n\t Plaintext: \t %02h ", decrypted_text, plain_text));
-      end
+    if(decrypted_text == plain_text) begin
+      `uvm_info(`gfn, $sformatf(" \n\t ---| YAY TEST PASSED |--- \n \t DECRYPTED: \t %02h \n\t Plaintext: \t %02h ", decrypted_text, plain_text), UVM_NONE);
+    end else begin
+      `uvm_fatal(`gfn, $sformatf(" \n\t ---| NOO TEST FAILED |--- \n \t DECRYPTED: \t %02h \n\t Plaintext: \t %02h ", decrypted_text, plain_text));
+    end
    
     
-        `uvm_info(`gfn, $sformatf("DATA ADDED "), UVM_DEBUG);
-      wait(2000ns);
-      
-
-      
+    `uvm_info(`gfn, $sformatf("DATA ADDED "), UVM_DEBUG);
   endtask : body
-
- // virtual task start_encryption();
- //   csr_wr(.csr(ral.key), .value(32'hDEADBEEF));
- // endtask // start_encryption
-  
-
 endclass : aes_wake_up_vseq
 
 
-
-/* ### TASK LIST ####
- * Randomize init key values
- * add radom key to all 256 bits before doing a encoding/decoding
- *
-
-*/

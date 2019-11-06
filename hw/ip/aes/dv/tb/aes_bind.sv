@@ -4,7 +4,9 @@
 
 module aes_bind;
 
-  bind aes tlul_assert tlul_assert (
+  bind aes tlul_assert #(
+    .EndpointType("Device")
+  )  tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),

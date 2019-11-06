@@ -42,12 +42,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
     // if access was to a valid csr, get the csr handle
      if (csr_addr inside {cfg.csr_addrs}) begin
-       csr_addr = get_normalized_addr(item.a_addr);
+
        csr = ral.default_map.get_reg_by_offset(csr_addr);
-//     csr = ral.default_map.get_reg_by_offset(item.a_addr);      
- 
-     // `uvm_info(`gfn, $sformatf("\n\t ----| CSR normalized addr %02h", csr_addr), UVM_LOW);
-   //   `DV_CHECK_NE_FATAL(csr, null)
+
+      `DV_CHECK_NE_FATAL(csr, null)
     end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
