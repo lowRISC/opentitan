@@ -2,6 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Memory Operations library (sw_lib_mem)
+sw_lib_mem = declare_dependency(
+  link_with: static_library(
+    'mem_ot',
+    sources: [
+      'memcpy.c',
+    ],
+  )
+)
+
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(
   sources: [hw_ip_uart_reg_h],
@@ -60,6 +70,9 @@ sw_lib_hmac = declare_dependency(
       hw_ip_hmac_reg_h,
       'hw_sha256.c',
       'hmac.c',
+    ],
+    dependencies: [
+      sw_lib_mem,
     ]
   )
 )
@@ -75,6 +88,7 @@ sw_lib_irq = declare_dependency(
     ],
     dependencies: [
       sw_lib_uart,
+      sw_lib_mem,
     ]
   )
 )

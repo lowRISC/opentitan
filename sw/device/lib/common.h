@@ -6,6 +6,7 @@
 #define _COMMON_H_
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef SIMULATION
@@ -40,5 +41,7 @@ static const unsigned long UART_BAUD_RATE = 230400;
 #define BITLENGTH_5(X) ((X) + ((X) >> 16))
 #define BITLENGTH(X) \
   ((BITLENGTH_5(BITLENGTH_4(BITLENGTH_3(BITLENGTH_2(BITLENGTH_1(X)))))) & 0x7f)
+
+void *memcpy(void *restrict dest, const void *restrict src, size_t n);
 
 #endif
