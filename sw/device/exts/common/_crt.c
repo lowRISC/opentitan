@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <string.h>
-
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/irq.h"
 
