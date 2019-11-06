@@ -19,6 +19,8 @@ export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:ip:xbar_dv:0.1
 COMPILE_KEY     ?= default
 
+# default COV_COMMON_EXCL isn't applicable to xbar, use its own el file
+COV_COMMON_EXCL  = ${DV_DIR}/cov/xbar_cov_excl.el
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
