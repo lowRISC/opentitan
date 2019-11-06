@@ -35,12 +35,12 @@ ${'###'} Block diagram
 ${'###'} Top level testbench
 Top level testbench is located at `hw/ip/${name}/dv/tb/tb.sv`. It instantiates the ${name.upper()} DUT module `hw/ip/${name}/rtl/${name}.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ${name.upper()} IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 
 ${'###'} Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:

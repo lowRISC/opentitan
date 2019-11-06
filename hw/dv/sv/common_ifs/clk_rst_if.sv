@@ -6,7 +6,7 @@
 // Interface: clk_rst_if
 // Generic clock and reset interface for clock events in various utilities
 // It also generates o_clk and o_rst_n signals for driving clk and rst_n in the tb. The advantage is
-// clk nad rst_n can be completely controller in course of the simulation.
+// clk and rst_n can be completely controlled in course of the simulation.
 // This interface provides methods to set freq/period, wait for clk/rst_n, apply rst_n among other
 // things. See individual method descriptions below.
 // inout clk
@@ -91,7 +91,7 @@ interface clk_rst_if #(
     end
   endfunction
 
-  // set the clk frequency in ns
+  // set the clk period in ns
   function automatic void set_period_ns(int period_ps);
     clk_period_ps = period_ps;
     clk_freq_mhz  = 1000_000 / clk_period_ps;
