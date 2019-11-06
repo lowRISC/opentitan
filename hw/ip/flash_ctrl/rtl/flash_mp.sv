@@ -16,8 +16,8 @@ module flash_mp #(
   input rst_ni,
 
   // configuration from sw
-  input flash_ctrl_pkg::flash_mp_region_t region_cfgs_i[TotalRegions],
-  input [NumBanks-1:0] bank_cfgs_i,
+  input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t [TotalRegions-1:0] region_cfgs_i,
+  input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
 
   // interface signals to/from *_ctrl
   input req_i,
@@ -70,21 +70,21 @@ module flash_mp #(
   // check for region match
   always_comb begin
     for (int unsigned i = 0; i < TotalRegions; i++) begin: region_comps
-      region_end[i] = region_cfgs_i[i].base_page + region_cfgs_i[i].size;
-      region_match[i] = req_addr_i >= region_cfgs_i[i].base_page &
+      region_end[i] = region_cfgs_i[i].base.q + region_cfgs_i[i].size.q;
+      region_match[i] = req_addr_i >= region_cfgs_i[i].base.q &
                         req_addr_i <  region_end[i] &
                         req_i;
 
-      rd_en[i] = region_cfgs_i[i].en & region_cfgs_i[i].rd_en & region_sel[i];
-      prog_en[i] = region_cfgs_i[i].en & region_cfgs_i[i].prog_en & region_sel[i];
-      pg_erase_en[i] = region_cfgs_i[i].en & region_cfgs_i[i].erase_en & region_sel[i];
+      rd_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].rd_en.q & region_sel[i];
+      prog_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].prog_en.q & region_sel[i];
+      pg_erase_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].erase_en.q & region_sel[i];
     end
   end
 
   // check for bank erase
   always_comb begin
     for (int unsigned i = 0; i < NumBanks; i++) begin: bank_comps
-      bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i];
+      bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i].q;
     end
   end
 
