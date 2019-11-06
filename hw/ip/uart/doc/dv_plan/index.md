@@ -28,14 +28,14 @@ UART testbench has been constructed based on the
 ### Top level testbench
 Top level testbench is located at `hw/ip/uart/dv/tb/tb.sv`. It instantiates the UART DUT module `hw/ip/uart/rtl/uart.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * UART IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs/README.md" >}}))
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [common_ifs]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 

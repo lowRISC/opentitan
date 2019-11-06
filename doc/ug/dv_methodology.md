@@ -131,7 +131,7 @@ The actual UVM testbenches for the Comportable IPs extend from this library as t
 In addition to the above library of classes, there are several common plug-and-play verification compoments (a.k.a. universal verification components or UVCs) provided for use in testbenches at `hw/dv/sv` location.
 A few examples of these are as follows:
 
-*  [Common interfaces]({{< relref "hw/dv/sv/common_ifs/README" >}})
+*  [Common interfaces]({{< relref "hw/dv/sv/common_ifs" >}})
 *  [DV utilities]({{< relref "hw/dv/sv/dv_utils/README" >}})
 *  [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README" >}})
 *  [Device memory model]({{< relref "hw/dv/sv/mem_model/README" >}})
