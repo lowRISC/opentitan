@@ -131,6 +131,34 @@ jobs:
       ninja -C build-verilator all
       ninja -C build-fpga all
     displayName: 'Build embedded targets'
+  - bash: |
+      mkdir -p "$(Build.ArtifactStagingDirectory)"
+      mv build-verilator/sw/device "$(Build.ArtifactStagingDirectory)/build-verilator"
+      mv build-fpga/sw/device "$(Build.ArtifactStagingDirectory)/build-fpga"
+      # XXX: Currently, Meson builds all host artifacts twice, but they are otherwise identical.
+      mv build-fpga/sw/host "$(Build.ArtifactStagingDirectory)/build-host"
+      cd "$(Build.ArtifactStagingDirectory)"
+
+      # XXX: Meson generates a number of "intermediates" directories that
+      # should not be exported. This command deletes them before packing
+      # up the build dirs.
+      # Note that |find -exec rm -rf {}| is not the correct way to do this,
+      # because |find| crashes if directories get deleted during iteration.
+      rm -rf $(find -type d -name '*@@*')
+
+      tar -cf sw_build-verilator_artifacts.tar build-verilator
+      tar -cf sw_build-fpga_artifacts.tar build-fpga
+      tar -cf sw_build-host_artifacts.tar build-host
+    displayName: 'Create artifact archives'
+  - publish: $(Build.ArtifactStagingDirectory)/sw_build-verilator_artifacts.tar
+    artifact: sw_build-verilator_artifacts
+    displayName: 'Upload embedded Verilator distribution artifacts'
+  - publish: $(Build.ArtifactStagingDirectory)/sw_build-fpga_artifacts.tar
+    artifact: sw_build-fpga_artifacts
+    displayName: 'Upload embedded FPGA distribution artifacts'
+  - publish: $(Build.ArtifactStagingDirectory)/sw_build-host_artifacts.tar
+    artifact: sw_build-host_artifacts
+    displayName: 'Upload host distribution artifacts'
 
 - job: "deprecated_make_build"
   displayName: "Build Software with Make (deprecated)"
@@ -150,18 +178,7 @@ jobs:
     displayName: 'Build embedded targets'
   - bash: |
       make -C sw/host/spiflash clean all
-      # TODO: build system updates needed to copy build output to a dist
-      # staging directory.
-      mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
-      cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
     displayName: 'Build host targets'
-  - bash: |
-      cd $(Build.ArtifactStagingDirectory)
-      tar -cf dist-partial-sw_build.tar dist
-    displayName: 'Prepare partial distribution artifacts'
-  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-sw_build.tar
-    artifact: dist-partial-sw_build
-    displayName: "Upload partial distribution artifacts"
 
 - job: "top_earlgrey_verilator"
   displayName: "Build Verilator simulation of the Earl Grey toplevel design"
@@ -202,23 +219,23 @@ jobs:
       fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
     displayName: 'Build simulation with Verilator'
   - bash: |
-      DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
+      DIST_DIR="$(Build.ArtifactStagingDirectory)/build-hw/top_earlgrey"
       mkdir -p "${DIST_DIR}"
-      cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+      mv build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
         ${DIST_DIR}
       cd $(Build.ArtifactStagingDirectory)
-      tar -cf dist-partial-top_earlgrey_verilator.tar dist
-    displayName: 'Prepare partial distribution artifacts'
-  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_verilator.tar
-    artifact: dist-partial-top_earlgrey_verilator
-    displayName: "Upload partial distribution artifacts"
+      tar -cf top_earlgrey_verilator-verilated_system.tar build-hw
+    displayName: 'Create artifact archive'
+  - publish: $(Build.ArtifactStagingDirectory)/top_earlgrey_verilator-verilated_system.tar
+    artifact: top_earlgrey_verilator-verilated_system
+    displayName: 'Upload Verilated system artifacts'
 
 - job: "top_earlgrey_nexysvideo"
   displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
   dependsOn:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
-    - deprecated_make_build
+    - sw_build
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   pool: Default
   timeoutInMinutes: 120 # 2 hours
@@ -226,21 +243,19 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
-  - bash: |
-      sudo apt-get install -y tree
-      mkdir -p $(Build.ArtifactStagingDirectory)/dist-other
-      cd $(Build.ArtifactStagingDirectory)/dist-other
-      find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --strip-components=1 --overwrite -xf {} \;
-      tree $(Build.ArtifactStagingDirectory)
-    displayName: 'Restore partial dist directory'
+      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
+    displayName: 'Download pipeline artifacts'
   - bash: |
       sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
         && sudo pip3 install -U -r python-requirements.txt
     displayName: 'Install dependencies'
   - bash: |
+      cd "$(Build.ArtifactStagingDirectory)"
+      tar --overwrite -xvf "downloads/sw_build-fpga_artifacts/sw_build-fpga_artifacts.tar"
+    displayName: 'Unpack pipeline artifacts'
+  - bash: |
       set -e
-      BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/fpga/boot_rom/rom.vmem
+      BOOTROM_VMEM="$(Build.ArtifactStagingDirectory)/build-fpga/boot_rom/boot_rom.vmem"
       test -f ${BOOTROM_VMEM}
       source /opt/xilinx/Vivado/2018.3/settings64.sh
       fusesoc --cores-root . run --target=synth --setup --build \
@@ -248,15 +263,15 @@ jobs:
         --ROM_INIT_FILE=${BOOTROM_VMEM}
     displayName: 'Build bitstream with Vivado'
   - bash: |
-      DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
+      DIST_DIR="$(Build.ArtifactStagingDirectory)/build-hw/top_earlgrey"
       mkdir -p "${DIST_DIR}"
-      cp build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit \
+      mv build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit \
         ${DIST_DIR}
       cd $(Build.ArtifactStagingDirectory)
-      tar -cf dist-partial-top_earlgrey_nexysvideo.tar dist
-    displayName: 'Prepare partial distribution artifacts'
-  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
-    artifact: dist-partial-top_earlgrey_nexysvideo
+      tar -cf top_earlgrey_nexysvideo-bitfile.tar build-hw
+    displayName: 'Create artifact archive'
+  - publish: $(Build.ArtifactStagingDirectory)/top_earlgrey_nexysvideo-bitfile.tar
+    artifact: top_earlgrey_nexysvideo-bitfile
     displayName: 'Upload partial distribution artifacts'
 
 - job: "execute_verilated_tests"
@@ -264,29 +279,29 @@ jobs:
   pool: "Default"
   dependsOn:
     - top_earlgrey_verilator
-    - deprecated_make_build
+    - sw_build
   steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: current
+      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
+    displayName: 'Download pipeline artifacts'
   - bash: |
       sudo apt-get install -y python3 python3-pip build-essential python3-setuptools
       sudo pip3 install -r python-requirements.txt
     displayName: 'Install dependencies'
-  - download: current
-    artifact: 'dist-partial-top_earlgrey_verilator'
-    displayName: 'Download verilated simulator'
-  - download: current
-    artifact: 'dist-partial-sw_build'
-    displayName: 'Download embedded artifacts'
   - bash: |
       cd "$(Build.ArtifactStagingDirectory)"
-      tar --overwrite -xvf \
-        "$(Pipeline.Workspace)/dist-partial-top_earlgrey_verilator/dist-partial-top_earlgrey_verilator.tar"
-      tar --overwrite -xvf \
-        "$(Pipeline.Workspace)/dist-partial-sw_build/dist-partial-sw_build.tar"
+      function untar() {
+        tar --overwrite -xvf "$(Build.ArtifactStagingDirectory)/downloads/$1/$1.tar"
+      }
+      untar sw_build-verilator_artifacts
+      untar top_earlgrey_verilator-verilated_system
     displayName: 'Unpack pipeline artifacts'
   - bash: |
-      export VERILATED_SYSTEM_PATH="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey/Vtop_earlgrey_verilator"
-      export SW_BUILD_PATH="$(Build.ArtifactStagingDirectory)/dist"
-      export MAKE_BUILD=1
+      export VERILATED_SYSTEM_PATH="$(Build.ArtifactStagingDirectory)/build-hw/top_earlgrey/Vtop_earlgrey_verilator"
+      export SW_BUILD_PATH="$(Build.ArtifactStagingDirectory)/build-verilator"
+
       ci/run_verilator_pytest.sh
     displayName: 'Execute tests'
 
@@ -296,7 +311,7 @@ jobs:
     vmImage: "ubuntu-latest"
   dependsOn:
     - lint
-    - deprecated_make_build
+    - sw_build
     - top_earlgrey_verilator
     - top_earlgrey_nexysvideo
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
@@ -304,23 +319,41 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
+    displayName: 'Download pipeline artifacts'
   - bash: |
-      OT_VERSION=$(git describe --always)
-      cd "$(Build.ArtifactStagingDirectory)"
-      find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
+      sudo apt-get install -y tree
+    displayName: 'Install dependencies'
+  - bash: |
+      mkdir -p "$(Build.ArtifactStagingDirectory)/distribution"
+      cd "$(Build.ArtifactStagingDirectory)/distribution"
+      function untar() {
+        tar --overwrite -xvf "$(Build.ArtifactStagingDirectory)/downloads/$1/$1.tar"
+      }
+      untar sw_build-verilator_artifacts
+      untar sw_build-fpga_artifacts
+      untar sw_build-host_artifacts
+      untar top_earlgrey_verilator-verilated_system
+      untar top_earlgrey_nexysvideo-bitfile
+    displayName: 'Unpack pipeline artifacts'
+  - bash: |
+      OT_VERSION="$(git describe --always)"
+      echo "\$OT_VERSION = $OT_VERSION"
+      cd "$(Build.ArtifactStagingDirectory)/distribution"
+      tree
 
-      cp $(Build.SourcesDirectory)/ci/README.snapshot dist/README
-      echo -e "\nVersion $OT_VERSION, built at $(date -u)" >> dist/README
-      cp $(Build.SourcesDirectory)/LICENSE dist/LICENSE
+      cp $(Build.SourcesDirectory)/ci/README.snapshot README
+      echo -e "\nVersion $OT_VERSION, built at $(date -u)" >> README
+      cp $(Build.SourcesDirectory)/LICENSE LICENSE
 
-      mv dist opentitan-$OT_VERSION
+      cd ..
+      mv distribution opentitan-$OT_VERSION
       mkdir -p dist-final
-      tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
-    displayName: 'Create final dist directory out of partial ones'
+      tar -cJvf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
+    displayName: 'Create final distribution archive'
   - publish: $(Build.ArtifactStagingDirectory)/dist-final
-    artifact: opentitan-dist
-    displayName: "Upload release artifacts as Azure artifact"
+    artifact: deploy_releaseartifacts-opentitan_dist
+    displayName: 'Upload release artifacts'
   - task: GithubRelease@0
     displayName: 'Upload to GitHub releases (only tags)'
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
