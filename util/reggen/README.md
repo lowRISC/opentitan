@@ -75,8 +75,19 @@ a register description:
 $ cd $REPO_TOP/util
 $ mkdir /tmp/dv
 $ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson
-$ ls /tmp/rtl
+$ ls /tmp/dv
     uart_reg_block.sv
+```
+
+The following shows an example of how to generate a FPV csr read write assertion
+module from a register description:
+
+```console
+$ cd $REPO_TOP/util
+$ mkdir /tmp/fpv/vip
+$ ./regtool.py -f -t /tmp/fpv/vip ../hw/ip/uart/data/uart.hjson
+$ ls /tmp/fpv
+    uart_csr_assert_fpv.sv
 ```
 
 If the target directory is not specified, the tool creates the DV file

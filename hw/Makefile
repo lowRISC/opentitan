@@ -5,6 +5,7 @@ export PRJ_DIR
 REG_OUTPUT_DIR    ?= ${PRJ_DIR}/build/regs-generated
 REG_OUTPUT_DV_DIR ?= ${REG_OUTPUT_DIR}/dv
 REG_OUTPUT_SW_DIR ?= ${REG_OUTPUT_DIR}/sw
+REG_OUTPUT_FPV_CSR_DIR ?= ${REG_OUTPUT_DIR}/fpv/vip
 
 IPS ?= uart          \
        gpio          \
@@ -54,11 +55,14 @@ pre_reg:
 	mkdir -p ${REG_OUTPUT_DIR}
 	mkdir -p ${REG_OUTPUT_DV_DIR}
 	mkdir -p ${REG_OUTPUT_SW_DIR}
+	mkdir -p ${REG_OUTPUT_FPV_CSR_DIR}
 
 $(ips_reg): pre_reg
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
 		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
+		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
+		${PRJ_DIR}/util/regtool.py -f -t ${REG_OUTPUT_FPV_CSR_DIR} \
 		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 	fi
 

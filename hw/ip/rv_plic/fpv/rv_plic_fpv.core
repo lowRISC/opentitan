@@ -15,6 +15,7 @@ filesets:
       - lowrisc:ip:rv_plic_example
     files:
       - vip/rv_plic_assert_fpv.sv
+      - vip/rv_plic_csr_assert_fpv.sv
       - tb/rv_plic_bind_fpv.sv
       - tb/rv_plic_fpv.sv
     file_type: systemVerilogSource

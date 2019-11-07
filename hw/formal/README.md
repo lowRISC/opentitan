@@ -302,8 +302,9 @@ influence for "u_sha2.u_pad.shaf_ren".
 ```
 
 ## Naming Convenctions
-For assertions, it is preferred to use postfix `_A`, while for assumptions, use
-`_M`. For example:
+For assertions, it is preferred to use postfix `_A` for assertions,
+`_M` for assumptions, `_P` for properties, and `_S` for sequences.
+For example:
 ```systemverilog
   `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
   `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
