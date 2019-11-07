@@ -1,7 +1,6 @@
-{{% lowrisc-doc-hdr AES DV Plan }}
-{{% import_testplan ../data/aes_testplan.hjson }} 
-
-{{% toc 4 }}
+---
+title: "UART DV Plan"
+---
 
 ## Goals
 * **DV**
@@ -11,15 +10,15 @@
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage](../../../../doc/project/hw_dashboard.md)
-  * [HW development stages](../../../../doc/ug/hw_stages.md)
+* [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
+  * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
 * DV regression results dashboard (link TBD)
 
 ## Design features
-For detailed information on AES design features, please see the [AES HWIP Technical Specification](aes.md).
+For detailed information on AES design features, please see the [AES HWIP Technical Specification]({{< relref "hw/ip/aes/doc" >}}).
 
 ## Testbench architecture
-AES testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+AES testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
 ![Block diagram](aes_tb.svg)
@@ -27,15 +26,15 @@ AES testbench has been constructed based on the [CIP testbench architecture](../
 ### Top level testbench
 Top level testbench is located at `hw/ip/aes/dv/tb/tb.sv`. It instantiates the AES DUT module `hw/ip/aes/rtl/aes.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
-* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
+* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [common_ifs](../../../dv/sv/common_ifs/README.md)
-* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
-* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
+* [common_ifs]({{< relref "hw/dv/sv/common_ifs/README.md" >}})
+* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
+* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in `aes_env_pkg`.
@@ -45,13 +44,13 @@ parameter uint AES_ADDR_MAP_SIZE   = 2048;
 ```
 
 ### TL_agent
-AES instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
+AES instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into AES device.
 
 
 ### RAL
-The AES RAL model is constructed using the [regtool.py script](../../../../util/reggen/README.md) and is placed at `env/aes_reg_block.sv`.
+The AES RAL model is constructed using the [regtool.py script]({{< relref "util/reggen/README.md" >}})  and is placed at `env/aes_reg_block.sv`.
 
 ### Stimulus strategy
 #### Test sequences
@@ -79,11 +78,11 @@ It creates the following analysis fifos to retrieve the data monitored by corres
 
 
 #### Assertions
-* TLUL assertions: The `tb/aes_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/aes_bind.sv` binds the `tlul_assert` [assertions]{{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../dv/tools/README.md) for building and running our tests and regressions.
+We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
@@ -96,4 +95,4 @@ $ cd hw/ip/aes/dv
 $ make TEST_NAME=aes_wakeup_test
 ```
 ## Testplan
-{{% insert_testplan x }}
+{{< testplan "hw/ip/uart/data/uart_testplan.hjson" >}}
