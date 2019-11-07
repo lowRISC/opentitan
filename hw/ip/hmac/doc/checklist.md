@@ -66,12 +66,10 @@ Review        | Signoff date            | Done        | 2019-11-01
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
 [AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area-sanity-check" >}}
-[DEBUG_BUS]:           {{<relref "/doc/project/checklist.md#debug-bus" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
 [STYLE_X]:             {{<relref "/doc/project/checklist.md#style-x" >}}
-[STYLE_LINT_SETUP]:    {{<relref "/doc/project/checklist.md#style-lint-setup" >}}
 [LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint-pass" >}}
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
@@ -159,7 +157,7 @@ Review        | Signoff date                          | Done           | 2019-11
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED][]              | N/A         |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | N/A         |
 Documentation | [DV_PLAN_COMPLETED][]                   | Done        |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | No planned assertions for DV
@@ -178,7 +176,7 @@ Review        | Signoff date                            | Done        | 2019-11-
 
 [#820]: https://github.com/lowRISC/opentitan/pull/820
 
-[DESIGN_DELTAS_CAPTURED]:             {{<relref "/doc/project/checklist.md#design-deltas-captured" >}}
+[DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design-deltas-captured-v2" >}}
 [DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all-interfaces-exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all-assertion-checks-added" >}}
@@ -197,7 +195,7 @@ Review        | Signoff date                            | Done        | 2019-11-
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | N/A         |
+Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | N/A         |
 Testbench     | [ALL_TODOS_RESOLVED][]            | Done        | [issue #385][] item 3 not related / Resolved: [pr #749][]
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      |
 Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Done        |
@@ -214,7 +212,7 @@ Review        | Signoff date                      | Not Started |
 [#820]:       https://github.com/loWRISC/opentitan/pull/820
 [common_cov_excl.el]: https://github.com/lowRISC/opentitan/blob/9dff09b6c57f4962d67f5f64f8e69ac9bea6885c/hw/dv/tools/vcs/common_cov_excl.el
 
-[DESIGN_DELTAS_CAPTURED_IF_ANY]:{{<relref "/doc/project/checklist.md#design-deltas-captured-if-any" >}}
+[DESIGN_DELTAS_CAPTURED_V3]:    {{<relref "/doc/project/checklist.md#design-deltas-captured-v3" >}}
 [ALL_TODOS_RESOLVED]:           {{<relref "/doc/project/checklist.md#all-todos-resolved" >}}
 [X_PROP_ANALYSIS_COMPLETED]:    {{<relref "/doc/project/checklist.md#x-prop-analysis-completed" >}}
 [NIGHTLY_REGRESSION_AT_100]:    {{<relref "/doc/project/checklist.md#nightly-regression-at-100" >}}
