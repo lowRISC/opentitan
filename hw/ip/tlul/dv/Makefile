@@ -16,7 +16,7 @@
 DV_DIR          := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export DUT_TOP  := xbar_main
 export TB_TOP   := tb
-FUSESOC_CORE    := lowrisc:ip:xbar_dv:0.1
+FUSESOC_CORE    := lowrisc:dv:xbar_sim:0.1
 COMPILE_KEY     ?= default
 
 # default COV_COMMON_EXCL isn't applicable to xbar, use its own el file
