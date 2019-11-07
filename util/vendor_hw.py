@@ -261,7 +261,7 @@ def git_add_commit(repo_base, paths, commit_msg):
         cmd_add = ['git', '-C', str(repo_base), 'add', str(p)]
         subprocess.run(cmd_add, check=True, encoding='UTF-8')
 
-    cmd_commit = ['git', '-C', str(repo_base), 'commit', '-F', '-']
+    cmd_commit = ['git', '-C', str(repo_base), 'commit', '-s', '-F', '-']
     try:
         subprocess.run(cmd_commit,
                        check=True,
