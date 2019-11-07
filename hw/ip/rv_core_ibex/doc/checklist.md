@@ -66,12 +66,10 @@ Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
 [AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area-sanity-check" >}}
-[DEBUG_BUS]:           {{<relref "/doc/project/checklist.md#debug-bus" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
 [STYLE_X]:             {{<relref "/doc/project/checklist.md#style-x" >}}
-[STYLE_LINT_SETUP]:    {{<relref "/doc/project/checklist.md#style-lint-setup" >}}
 [LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint-pass" >}}
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
@@ -151,7 +149,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 ### Checklists for milestone V2
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED][]              | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
 Documentation | [DV_PLAN_COMPLETED][]                   | Not Started |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
@@ -167,7 +165,7 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 
-[DESIGN_DELTAS_CAPTURED]:             {{<relref "/doc/project/checklist.md#design-deltas-captured" >}}
+[DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design-deltas-captured-v2" >}}
 [DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all-interfaces-exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all-assertion-checks-added" >}}
@@ -185,7 +183,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 ### Checklists for milestone V3
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |
 Testbench     | [ALL_TODOS_RESOLVED][]            | Not Started |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
 Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Not Started |
@@ -195,7 +193,7 @@ Issues        | [NO_ISSUES_PENDING][]             | Not Started |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
 
-[DESIGN_DELTAS_CAPTURED_IF_ANY]:{{<relref "/doc/project/checklist.md#design-deltas-captured-if-any" >}}
+[DESIGN_DELTAS_CAPTURED_V3]:    {{<relref "/doc/project/checklist.md#design-deltas-captured-v3" >}}
 [ALL_TODOS_RESOLVED]:           {{<relref "/doc/project/checklist.md#all-todos-resolved" >}}
 [X_PROP_ANALYSIS_COMPLETED]:    {{<relref "/doc/project/checklist.md#x-prop-analysis-completed" >}}
 [NIGHTLY_REGRESSION_AT_100]:    {{<relref "/doc/project/checklist.md#nightly-regression-at-100" >}}

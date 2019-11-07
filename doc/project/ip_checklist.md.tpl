@@ -63,12 +63,10 @@ Review        | Signoff date            | Not Started |
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
 [AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area-sanity-check" >}}
-[DEBUG_BUS]:           {{<relref "/doc/project/checklist.md#debug-bus" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
 [STYLE_X]:             {{<relref "/doc/project/checklist.md#style-x" >}}
-[STYLE_LINT_SETUP]:    {{<relref "/doc/project/checklist.md#style-lint-setup" >}}
 [LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint-pass" >}}
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
@@ -137,8 +135,7 @@ Review        | Signoff date                          | Not Started |
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary-assertion-checks-added" >}}
 [TB_ENV_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-env-created" >}}
 [RAL_MODEL_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#ral-model-gen-automated" >}}
-[TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb-gen-automated"
->}}
+[TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb-gen-automated" >}}
 [SANITY_TEST_PASSING]:                {{<relref "/doc/project/checklist.md#sanity-test-passing" >}}
 [CSR_MEM_TEST_SUITE_PASSING]:         {{<relref "/doc/project/checklist.md#csr-mem-test-suite-passing" >}}
 [ALT_TOOL_SETUP]:                     {{<relref "/doc/project/checklist.md#alt-tool-setup" >}}
@@ -155,7 +152,7 @@ Review        | Signoff date                          | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED][]              | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
 Documentation | [DV_PLAN_COMPLETED][]                   | Not Started |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
@@ -173,19 +170,15 @@ Review        | Reviewer(s)                             | Not Started |
 Review        | Signoff date                            | Not Started |
 
 
-[DESIGN_DELTAS_CAPTURED]:             {{<relref "/doc/project/checklist.md#design-deltas-captured" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed"
->}}
+[DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design-deltas-captured-v2" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all-interfaces-exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all-assertion-checks-added" >}}
-[TB_ENV_COMPLETED]:                   {{<relref "/doc/project/checklist.md#tb-env-completed"
->}}
-[ALL_TESTS_PASSING]:                  {{<relref "/doc/project/checklist.md#all-tests-passing"
->}}
+[TB_ENV_COMPLETED]:                   {{<relref "/doc/project/checklist.md#tb-env-completed" >}}
+[ALL_TESTS_PASSING]:                  {{<relref "/doc/project/checklist.md#all-tests-passing" >}}
 [FW_SIMULATED]:                       {{<relref "/doc/project/checklist.md#fw-simulated" >}}
 [NIGHTLY_REGRESSION_V2]:              {{<relref "/doc/project/checklist.md#nightly-regression-v2" >}}
-[CODE_COVERAGE_V2]:                   {{<relref "/doc/project/checklist.md#code-coverage-v2"
->}}
+[CODE_COVERAGE_V2]:                   {{<relref "/doc/project/checklist.md#code-coverage-v2" >}}
 [FUNCTIONAL_COVERAGE_V2]:             {{<relref "/doc/project/checklist.md#functional-coverage-v2" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no-high-priority-issues-pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all-low-priority-issues-root-caused" >}}
@@ -196,7 +189,7 @@ Review        | Signoff date                            | Not Started |
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_IF_ANY][] | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |
 Testbench     | [ALL_TODOS_RESOLVED][]            | Not Started |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
 Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Not Started |
@@ -208,7 +201,7 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
 Review        | Reviewer(s)                       | Not Started |
 Review        | Signoff date                      | Not Started |
 
-[DESIGN_DELTAS_CAPTURED_IF_ANY]:{{<relref "/doc/project/checklist.md#design-deltas-captured-if-any" >}}
+[DESIGN_DELTAS_CAPTURED_V3]:    {{<relref "/doc/project/checklist.md#design-deltas-captured-v3" >}}
 [ALL_TODOS_RESOLVED]:           {{<relref "/doc/project/checklist.md#all-todos-resolved" >}}
 [X_PROP_ANALYSIS_COMPLETED]:    {{<relref "/doc/project/checklist.md#x-prop-analysis-completed" >}}
 [NIGHTLY_REGRESSION_AT_100]:    {{<relref "/doc/project/checklist.md#nightly-regression-at-100" >}}

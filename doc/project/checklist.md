@@ -68,15 +68,15 @@ Documented the missing functionalities.
 
 ### FEATURE_FROZEN
 
+Feature requests for this IP version are frozen at this time.
+
 ### FEATURE_COMPLETE
+
+All features specified have been completed.
 
 ### AREA_SANITY_CHECK
 
 Area sanity check completed either on FPGA or on Design Compiler.
-
-### DEBUG_BUS
-
-Debug bus instantiated. DebugMux and DebugTraceMux Hooked up.
 
 ### PORT_FROZEN
 
@@ -93,10 +93,6 @@ Review and sign off TODOs.
 ### STYLE_X
 
 Confirming to style guide regarding X usage. TODO: Related Github issue.
-
-### STYLE_LINT_SETUP
-
-Style lint run setup.
 
 ### LINT_PASS
 
@@ -255,7 +251,7 @@ Reviewed V2 checklist to understand scope and estimate effort.
 
 ## V2
 
-### DESIGN_DELTAS_CAPTURED
+### DESIGN_DELTAS_CAPTURED_V2
 
 It is possible for the design to have undergone some changes since the DV plan and Testplan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the DV Plan and the Testplan documents.
 
@@ -313,7 +309,7 @@ Reviewed V3 checklist to understand scope and estimate effort.
 
 ## V3
 
-### DESIGN_DELTAS_CAPTURED_IF_ANY
+### DESIGN_DELTAS_CAPTURED_V3
 
 It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the DV Plan and the Testplan documents.
 
