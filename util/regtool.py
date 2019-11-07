@@ -16,7 +16,7 @@ import hjson
 import pkg_resources
 
 from reggen import (gen_cheader, gen_ctheader, gen_dv, gen_html, gen_json,
-                    gen_rtl, gen_selfdoc, validate, version)
+                    gen_rtl, gen_fpv, gen_selfdoc, validate, version)
 
 DESC = """regtool, generate register info from Hjson source"""
 
@@ -67,6 +67,9 @@ def main():
     parser.add_argument('-s',
                         action='store_true',
                         help='Output as UVM Register class')
+    parser.add_argument('-f',
+                        action='store_true',
+                        help='Output as FPV CSR rw assertion module')
     parser.add_argument('--outdir', '-t',
                         help='Target directory for generated RTL, '\
                              'tool uses ../rtl if blank.')
@@ -110,6 +113,7 @@ def main():
     elif args.doc: format = 'doc'
     elif args.r: format = 'rtl'
     elif args.s: format = 'dv'
+    elif args.f: format = 'fpv'
     elif args.cdefines: format = 'cdh'
     elif args.ctdefines: format = 'cth'
 
@@ -137,6 +141,14 @@ def main():
             outdir = args.outdir
         elif infile != sys.stdin:
             outdir = str(PurePath(infile.name).parents[1].joinpath("dv"))
+        else:
+            # Using sys.stdin. not possible to generate RTL
+            log.error("-s option cannot be used with pipe or stdin")
+    elif format == 'fpv':
+        if args.outdir:
+            outdir = args.outdir
+        elif infile != sys.stdin:
+            outdir = str(PurePath(infile.name).parents[1].joinpath("fpv/vip"))
         else:
             # Using sys.stdin. not possible to generate RTL
             log.error("-s option cannot be used with pipe or stdin")
@@ -173,7 +185,9 @@ def main():
         if format == 'dv':
             gen_dv.gen_dv(obj, outdir)
             return 0
-
+        if format == 'fpv':
+            gen_fpv.gen_fpv(obj, outdir)
+            return 0
         src_lic = None
         src_copy = ''
         found_spdx = None
