@@ -11,7 +11,6 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:ip:rv_plic_component
-      - lowrisc:ip:xbar_dv
       # include top-earlgrey in order to test
       # with the top-level configuration
       - lowrisc:systems:top_earlgrey
