@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "aes_model_dpi.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <cstring>
 
 #include "aes.h"
 #include "crypto.h"
 #include "svdpi.h"
-
-#include "aes_model_dpi.h"
 
 void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
                    const svBitVecVal *key_len_i, const svOpenArrayHandle key_i,

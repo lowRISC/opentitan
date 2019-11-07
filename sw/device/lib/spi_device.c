@@ -5,7 +5,6 @@
 #include "sw/device/lib/spi_device.h"
 
 #include "spi_device_regs.h"  // Generated.
-
 #include "sw/device/lib/common.h"
 
 #define SPI_DEVICE0_BASE_ADDR 0x40020000

@@ -4,7 +4,6 @@
 #include "sw/device/lib/flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
-
 #include "sw/device/lib/common.h"
 
 #define FLASH_CTRL0_BASE_ADDR 0x40030000

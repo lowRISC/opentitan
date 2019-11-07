@@ -5,7 +5,6 @@
 #include "hmac.h"
 
 #include "hmac_regs.h"  // Generated.
-
 #include "sw/device/lib/common.h"
 
 #define HMAC0_BASE_ADDR 0x40120000

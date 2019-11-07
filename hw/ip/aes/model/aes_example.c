@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "aes_example.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "aes.h"
-#include "aes_example.h"
-
 #include "crypto.h"
 
 #define DEBUG_LEVEL_ENC 0  // 0, 1, 2

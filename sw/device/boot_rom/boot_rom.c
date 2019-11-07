@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/boot_rom/chip_info.h"  // Generated.
-
 #include "sw/device/boot_rom/bootstrap.h"
+#include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/gpio.h"

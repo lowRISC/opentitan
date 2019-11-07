@@ -5,7 +5,6 @@
 #include "sw/device/lib/rv_timer.h"
 
 #include "rv_timer_regs.h"  // Generated.
-
 #include "sw/device/lib/common.h"
 
 #define RV_TIMER0_BASE_ADDR 0x40080000
