@@ -1,0 +1,35 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="Description" content="{{ .Site.Params.description }}">
+    <meta property="og:title" content="{{ .Title }} | OpenTitan">
+    <meta property="twitter:title" content="{{ .Title }} | OpenTitan">
+    <meta property="og:image" content="https://opentitan.org/opentitan.png">
+    <meta property="twitter:image:src" content="https://opentitan.org/opentitan.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:description" content="{{ .Site.Params.description }}">
+    <meta property="twitter:description" content="{{ .Site.Params.description }}">
+    <meta name="twitter:card" content="summary_large_image">
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="msapplication-TileColor" content="#c27bcf">
+    <meta name="theme-color" content="#ffffff">
+
+
+    <link href="https://fonts.googleapis.com/css?family=Livvic:300|Ubuntu:400,700&display=swap" rel="stylesheet">
+
+    {{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true) }}
+    {{ $style := resources.Get "scss/style.scss" | resources.ToCSS $options }}
+    <link rel="stylesheet" href="{{ $style.Permalink }}">
+
+    <title>{{ .Title }} | OpenTitan</title>
+
+    {{ partial "gtag" . }} 
+</head>

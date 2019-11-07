@@ -1,0 +1,14 @@
+<html>
+  <head>
+    {{ $options := (dict "targetPath" "css/minimal.css" "outputStyle" "compressed" "enableSourceMap" true) }}
+    {{ $style := resources.Get "scss/minimal.scss" | resources.ToCSS $options }}
+    <link rel="stylesheet" href="{{ $style.Permalink }}">
+    <title>{{ .Title }} | OpenTitan</title>
+    <link href="https://fonts.googleapis.com/css?family=Livvic|Ubuntu&display=swap" rel="stylesheet">
+    {{ partial "gtag" . }}
+  </head>
+  <body>
+    <h1>{{ .Title }}</h1>
+    {{ .Content }}
+  </body>
+</html>

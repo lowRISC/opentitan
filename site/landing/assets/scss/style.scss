@@ -1,0 +1,16 @@
+@import "reset";
+@import "variables";
+@import "base";
+@import "sections";
+@import "main-header";
+@import "intro";
+@import "benefits";
+@import "features";
+@import "partners";
+@import "footer";
+@import "scheme-toggle";
+@import "tiny-slider";
+
+*:focus {
+  outline: none;
+}

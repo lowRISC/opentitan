@@ -1,0 +1,38 @@
+.light-bg {
+  background: $white;
+  color: $dark-purple;
+  background: var(--background);
+  color: var(--text-color);
+
+  .bodytext {
+    color: $medium-purple;
+    color: var(--text-second);
+    transition: color 0.5s ease;
+  }
+
+  transition: color 0.2s ease;
+}
+
+.learn-more,
+.partners {
+  text-align: center;
+  padding: $m-s;
+}
+
+.cta {
+  padding: 13.75em $m-s;
+  text-align: center;
+
+  &__body {
+    max-width: 40ch;
+    margin: 0 auto 1em;
+  }
+
+  background-image: 
+    url('../img/quote-top.svg'),
+    url('../img/quote-bottom.svg');
+  background-size: 100% 7.5em, 100% 8.75em;
+  background-repeat: repeat-x;
+  background-position: center top, center bottom -0.25em;
+}
+
