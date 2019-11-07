@@ -151,6 +151,9 @@ $ cd $REPO_TOP
 $ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-nexysvideo.cfg
 ```
 
+Note that you must use the [RISC-V fork of OpenOCD](https://github.com/riscv/riscv-openocd).
+See the [install instructions]({{< relref "install_instructions#openocd" >}}) for guidance on building OpenOCD.
+
 To actually debug through OpenOCD, it must either be connected through telnet or GDB.
 
 ### Debug with OpenOCD
