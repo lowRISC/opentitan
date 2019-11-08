@@ -71,5 +71,11 @@
       milestone: V2
       tests: ["hmac_stress_all_with_rand_reset"]
     }
+    {
+      name: write_config_and_secret_key_during_msg_wr
+      desc: "Change config registers and secret keys during msg write, make sure access is blocked."
+      milestone: V3
+      tests: ["hmac_sanity"]
+    }
   ]
 }
