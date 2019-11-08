@@ -124,3 +124,10 @@ table.regdef {
   border: 2px solid $dark-purple;
   border: 2px solid var(--text-color);
 }
+
+// Dashboard design
+table.hw-project-dashboard {
+    td.hw-stage {
+        text-align: center;
+    }
+}

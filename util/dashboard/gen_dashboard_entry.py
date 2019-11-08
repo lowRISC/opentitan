@@ -56,26 +56,26 @@ def gen_dashboard_html(hjson_path, outfile):
     genout(outfile, "      <tr>\n")
     genout(outfile, "        <td class=\"fixleft\">" +
                     html.escape(obj['name']) + "</td>\n")
-    genout(outfile, "        <td class=\"fixleft\">" +
+    genout(outfile, "        <td class=\"hw-stage\">" +
                     html.escape(obj['version']) + "</td>\n")
-    genout(outfile, "        <td class=\"fixleft\">" +
-                    html.escape(life_stage) + " - " +
-                    html.escape(life_stage_mapping) + "</td>\n")
+    genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
+                    html.escape(life_stage_mapping) + "'>" +
+                    html.escape(life_stage) + "</span></td>\n")
     if life_stage != 'L0' and 'design_stage' in obj:
         design_stage_mapping = convert_stage(obj['design_stage'])
         genout(outfile,
-                    "        <td class=\"fixleft\">" +
-                    html.escape(obj['design_stage']) + " - " +
-                    html.escape(design_stage_mapping) + "</td>\n")
+                    "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
+                    html.escape(design_stage_mapping) + "'>" +
+                    html.escape(obj['design_stage']) + "</span></td>\n")
     else:
         genout(outfile,
                     "        <td>&nbsp;</td>\n")
     if life_stage != 'L0' and 'verification_stage' in obj:
         verification_stage_mapping = convert_stage(obj['verification_stage'])
         genout(outfile,
-                    "        <td class=\"fixleft\">" +
-                    html.escape(obj['verification_stage']) + " - " +
-                    html.escape(verification_stage_mapping) + "</td>\n")
+                    "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
+                    html.escape(verification_stage_mapping) + "'>" +
+                    html.escape(obj['verification_stage']) + "</span></td>\n")
     else:
         genout(outfile,
                     "        <td>&nbsp;</td>\n")
@@ -109,7 +109,8 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
     dv_plan_md = re.sub(
         r'/data/', '/doc/',
         re.sub(r'\.prj\.hjson', '_dv_plan.md', str(hjson_path)))
-    design_spec_html = re.sub(r'/data/', '/doc/',
+    design_spec_html = re.sub(
+        r'/data/', '/doc/',
         re.sub(r'\.prj\.hjson', '.html', str(rel_hjson_path)))
     dv_plan_html = re.sub(
         r'/data/', '/doc/',
