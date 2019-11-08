@@ -5,10 +5,10 @@ import logging as log
 from collections import OrderedDict
 from functools import partial
 
+from reggen.validate import check_bool, check_int, check_ln, val_types
+
 from .item import Edge, Node, NodeType
 from .xbar import Xbar
-
-from reggen.validate import val_types, check_int, check_bool, check_ln
 
 # val_types = {
 #     'd': ["int", "integer (binary 0b, octal 0o, decimal, hex 0x)"],
@@ -185,7 +185,7 @@ def validate(obj):  # OrderedDict -> Xbar
     xbar = Xbar()
     xbar.name = obj["name"].lower()
     xbar.clock = obj["clock"].lower()
-
+    xbar.reset = obj["reset"].lower()
     addr_ranges = []
 
     obj, err = validate_hjson(obj)  # validate Hjson format first
@@ -193,18 +193,39 @@ def validate(obj):  # OrderedDict -> Xbar
         log.error("Hjson structure error")
         return
 
+    # collection of all clocks and resets of this xbar
+    xbar.clocks = [clock for clock in obj["clock_connections"].keys()]
+    xbar.resets = [reset for reset in obj["reset_connections"].keys()]
+
     # Nodes
     for nodeobj in obj["nodes"]:
-        clock = nodeobj["clock"].lower() if "clock" in nodeobj.keys(
-        ) else xbar.clock
 
         if checkNameExist(nodeobj["name"], xbar):
             log.error("Duplicated name: %s" % (nodeobj["name"]))
             raise SystemExit("Duplicated name in the configuration")
 
+        clock = nodeobj["clock"].lower() if "clock" in nodeobj.keys(
+        ) else xbar.clock
+
+        reset = nodeobj["reset"].lower() if "reset" in nodeobj.keys(
+        ) else xbar.reset
+
+        if clock not in xbar.clocks:
+            log.error(
+                "Clock %s for module %s does not exist in xbar_%s, check xbar hjson"
+                % (clock, nodeobj['name'], obj['name']))
+            raise SystemExit("Clock does not exist")
+
+        if reset not in xbar.resets:
+            log.error(
+                "Reset %s for module %s does not exist in xbar_%s, check xbar hjson"
+                % (reset, nodeobj['name'], obj['name']))
+            raise SystemExit("Reset does not exist")
+
         node = Node(name=nodeobj["name"].lower(),
                     node_type=get_nodetype(nodeobj["type"].lower()),
-                    clock=clock)
+                    clock=clock,
+                    reset=reset)
 
         if node.node_type == NodeType.DEVICE:
             # Add address obj["base_addr"], obj["size"])
