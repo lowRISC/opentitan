@@ -57,6 +57,12 @@ jobs:
     displayName: 'Render documentation'
 
   - bash: |
+      cd site/landing
+      ../../build/docs-hugo/hugo
+    condition: always()
+    displayName: 'Render landing site'
+
+  - bash: |
       # XXX: As of today, task.logissue comments with 'sourcepath' set don't
       # get reported to GitHub Checks annotations. Upstream bug report:
       # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
