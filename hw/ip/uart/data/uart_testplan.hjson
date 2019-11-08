@@ -8,14 +8,6 @@
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: basic_setting
-      desc: '''
-            - Core freq: 24mhz, 25mhz, 48mhz, 50mhz, 100mhz
-            - Baud rate: 9600, 115200, 230400, 1Mbps(1048576), 2Mbps(2097152)'''
-      milestone: V1
-      tests: []
-    }
-    {
       name: sanity
       desc: '''
             - Basic UART sanity test with few bytes transmitted and received asynchronously and
