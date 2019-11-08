@@ -66,7 +66,7 @@ jobs:
       test -z $changed_files || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
       if [ -s clang-format-output ]; then
         echo -n "##vso[task.logissue type=error]"
-        echo "C/C++ lint failed. Use 'util/run-clang-format.sh' or 'git clang-format' to format the code."
+        echo "C/C++ lint failed. Use 'git clang-format' with appropriate options to reformat the changed code."
         exit 1
       fi
     # This check is not idempotent, but checks changes to a base branch.
