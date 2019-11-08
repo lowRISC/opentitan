@@ -100,6 +100,7 @@ module flash_rd_ctrl #(
           cnt_nxt = cnt + 1'b1;
         end
       end
+      default:;
     endcase // unique case (st)
   end
 
@@ -110,33 +111,5 @@ module flash_rd_ctrl #(
   // if error, return "empty" data
   assign data_o = err_sel ? {DataW{1'b1}} : flash_data_i;
 
-
-//  // IO assignments
-//  assign op_done_o = flash_req_o & flash_done_i & (cnt_hit | flash_error_i) ;
-//  assign op_err_o = flash_req_o & flash_error_i;
-//
-//  // Internal tracking
-//  assign cnt_hit = (cnt == op_num_words_i);
-//
-//  // Increment count only when flash is done with current operation
-//  always_ff @(posedge clk_i or negedge rst_ni) begin
-//    if (!rst_ni) begin
-//      cnt <= 12'h0;
-//    end else if (op_done_o) begin
-//      cnt <= 12'h0;
-//    end else if (flash_req_o && flash_done_i) begin
-//      cnt <= cnt + 1'b1;
-//    end
-//  end
-
-//  // Flash Interface assignments
-//  assign flash_req_o = op_start_i & data_rdy_i;
-
-
-
-  // FIFO Interface assignments
-  // Do not need to hold data here, as the request will not be made if FIFO has no space to start
-
-//  assign data_wr_o = flash_req_o & flash_done_i;
 
 endmodule // flash_rd_ctrl
