@@ -15,7 +15,7 @@ To make it to that stage, a [Hardware Signoff Checklist]({{< relref "checklist.m
 
 ## Governance
 
-OpenTitan is stewarded by lowRISC CIC, a not-for-profit company that uses collaborative engineering to develop and maintain open source silicon designs and tools for the long term.
+OpenTitan is stewarded by lowRISC CIC, a not-for-profit company [see CompaniesHouse](https://beta.companieshouse.gov.uk/company/09272283) that uses collaborative engineering to develop and maintain open source silicon designs and tools for the long term.
 As a lowRISC CIC Chartered Project, OpenTitan governance is handled via lowRISC's default Technical Charter.
 
 As described in full detail in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf), our governance structure consists of:
