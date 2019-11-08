@@ -103,7 +103,7 @@ Review        | Signoff date            | Not Started |
 
 ## Verification Checklist
 
-### Checklists for milestone V1
+### V1
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
@@ -148,7 +148,7 @@ Review        | Signoff date                          | Not Started |
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std-test-categories-planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2-checklist-scoped" >}}
 
-### Checklists for milestone V2
+### V2
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
@@ -185,7 +185,7 @@ Review        | Signoff date                            | Not Started |
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v2" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3-checklist-scoped" >}}
 
-### Checklists for milestone V3
+### V3
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
