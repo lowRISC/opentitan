@@ -135,6 +135,7 @@ def xbar_addhost(xbar, host):
         obj = {
             "name": host,
             "clock": xbar['clock'],
+            "reset": xbar['reset'],
             "type": "host",
             "inst_type": "",
             # The default matches RTL default
@@ -144,7 +145,12 @@ def xbar_addhost(xbar, host):
         }
         topxbar["nodes"].append(obj)
     else:
-        obj[0]["clock"] = xbar['clock']
+        if 'clock' not in obj[0]:
+            obj[0]["clock"] = xbar['clock']
+
+        if 'reset' not in obj[0]:
+            obj[0]["reset"] = xbar["reset"]
+
         obj[0]["inst_type"] = predefined_modules[
             host] if host in predefined_modules else ""
         obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
@@ -166,7 +172,8 @@ def process_pipeline_var(node):
 def xbar_adddevice(top, xbar, device):
     """Add device nodes information
 
-    - clock: comes from module if exist. use main top clock for memory as of now
+    - clock: comes from module if exist, use xbar default otherwise
+    - reset: comes from module if exist, use xbar default otherwise
     - inst_type: comes from module or memory if exist.
     - base_addr: comes from module or memory, or assume rv_plic?
     - size_byte: comes from module or memory
@@ -197,6 +204,7 @@ def xbar_adddevice(top, xbar, device):
                         "name": "debug_mem",
                         "type": "device",
                         "clock": xbar['clock'],
+                        "reset": xbar['reset'],
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
                         "size_byte": "0x1000",
@@ -227,6 +235,7 @@ def xbar_adddevice(top, xbar, device):
             "name" : device,
             "type" : "device",
             "clock" : deviceobj[0]["clock"],
+            "reset" : deviceobj[0]["reset"],
             "inst_type" : deviceobj[0]["type"],
             "base_addr" : deviceobj[0]["base_addr"],
             "size_byte": deviceobj[0]["size"],
@@ -269,8 +278,9 @@ def amend_xbar(top, xbar):
     else:
         topxbar["nodes"] = []
 
-
-    topxbar["clock"] = xbar["clock"]
+    # xbar primary clock and reset
+    topxbar["clock"] = xbar["clock_primary"]
+    topxbar["reset"] = xbar["reset_primary"]
 
     # Build nodes from 'connections'
     device_nodes = set()
