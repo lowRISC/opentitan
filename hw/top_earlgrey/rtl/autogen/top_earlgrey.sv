@@ -96,10 +96,12 @@ module top_earlgrey #(
   //reset wires declaration
   logic lc_rst_n;
   logic sys_rst_n;
+  logic sys_fixed_rst_n;
   logic spi_device_rst_n;
 
   //clock wires declaration
   logic main_clk;
+  logic fixed_clk;
 
   // Signals
   logic [31:0] m2p;
@@ -185,6 +187,7 @@ module top_earlgrey #(
 
   // clock assignments
   assign main_clk = clk_i;
+  assign fixed_clk = clk_i;
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -196,6 +199,7 @@ module top_earlgrey #(
   assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
 
   //non-root reset assignments
+  assign sys_fixed_rst_n = sys_rst_n;
   assign spi_device_rst_n = sys_rst_n;
 
   // debug request from rv_dm to core
@@ -434,8 +438,8 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
 
-      .clk_i (main_clk),
-      .rst_ni (sys_rst_n)
+      .clk_i (fixed_clk),
+      .rst_ni (sys_fixed_rst_n)
   );
 
   gpio gpio (
@@ -452,8 +456,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
 
-      .clk_i (main_clk),
-      .rst_ni (sys_rst_n)
+      .clk_i (fixed_clk),
+      .rst_ni (sys_fixed_rst_n)
   );
 
   spi_device spi_device (
@@ -478,7 +482,7 @@ module top_earlgrey #(
       .intr_txunderflow_o (intr_spi_device_txunderflow),
       .scanmode_i   (scanmode_i),
 
-      .clk_i (main_clk),
+      .clk_i (fixed_clk),
       .rst_ni (spi_device_rst_n)
   );
 
@@ -508,8 +512,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
 
-      .clk_i (main_clk),
-      .rst_ni (sys_rst_n)
+      .clk_i (fixed_clk),
+      .rst_ni (sys_fixed_rst_n)
   );
 
   aes aes (
@@ -646,7 +650,9 @@ module top_earlgrey #(
   // TL-UL Crossbar
   xbar_main u_xbar_main (
     .clk_main_i (main_clk),
+    .clk_fixed_i (fixed_clk),
     .rst_main_ni (sys_rst_n),
+    .rst_fixed_ni (sys_fixed_rst_n),
     .tl_corei_i         (tl_corei_h_h2d),
     .tl_corei_o         (tl_corei_h_d2h),
     .tl_cored_i         (tl_cored_h_h2d),

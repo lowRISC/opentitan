@@ -15,6 +15,10 @@
       name: main
       freq: "100000000"
     }
+    {
+      name: fixed
+      freq: "100000000"
+    }
   ]
   resets:
   [
@@ -29,10 +33,16 @@
       clk: main
     }
     {
+      name: sys_fixed
+      type: leaf
+      root: sys
+      clk: fixed
+    }
+    {
       name: spi_device
       type: leaf
       root: sys
-      clk: main
+      clk: fixed
     }
   ]
   num_cores: "1"
@@ -43,11 +53,11 @@
       type: uart
       clock_connections:
       {
-        clk_i: main
+        clk_i: fixed
       }
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: sys_fixed
       }
       base_addr: 0x40000000
       size: 0x1000
@@ -121,11 +131,11 @@
       type: gpio
       clock_connections:
       {
-        clk_i: main
+        clk_i: fixed
       }
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: sys_fixed
       }
       base_addr: 0x40010000
       size: 0x1000
@@ -157,7 +167,7 @@
       type: spi_device
       clock_connections:
       {
-        clk_i: main
+        clk_i: fixed
       }
       reset_connections:
       {
@@ -289,11 +299,11 @@
       type: rv_timer
       clock_connections:
       {
-        clk_i: main
+        clk_i: fixed
       }
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: sys_fixed
       }
       base_addr: 0x40080000
       size: 0x1000
@@ -577,11 +587,13 @@
       clock_connections:
       {
         clk_main_i: main
+        clk_fixed_i: fixed
       }
-      reset: sys
+      reset: rst_main_ni
       reset_connections:
       {
         rst_main_ni: sys
+        rst_fixed_ni: sys_fixed
       }
       connections:
       {
@@ -633,7 +645,8 @@
         {
           name: corei
           type: host
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline: "false"
           inst_type: rv_core_ibex
           pipeline_byp: "true"
@@ -641,7 +654,8 @@
         {
           name: cored
           type: host
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline: "false"
           inst_type: rv_core_ibex
           pipeline_byp: "true"
@@ -649,7 +663,8 @@
         {
           name: dm_sba
           type: host
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline_byp: "false"
           inst_type: rv_dm
           pipeline: "true"
@@ -657,7 +672,8 @@
         {
           name: rom
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline: "false"
           inst_type: rom
           base_addr: 0x00008000
@@ -667,7 +683,8 @@
         {
           name: debug_mem
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline_byp: "false"
           inst_type: rv_dm
           base_addr: 0x1A110000
@@ -677,7 +694,8 @@
         {
           name: ram_main
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline: "false"
           inst_type: ram_1p
           base_addr: 0x10000000
@@ -687,7 +705,8 @@
         {
           name: eflash
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline: "false"
           inst_type: eflash
           base_addr: 0x20000000
@@ -697,7 +716,8 @@
         {
           name: uart
           type: device
-          clock: main
+          clock: clk_fixed_i
+          reset: rst_fixed_ni
           pipeline_byp: "false"
           inst_type: uart
           base_addr: 0x40000000
@@ -707,7 +727,8 @@
         {
           name: gpio
           type: device
-          clock: main
+          clock: clk_fixed_i
+          reset: rst_fixed_ni
           pipeline_byp: "false"
           inst_type: gpio
           base_addr: 0x40010000
@@ -717,7 +738,8 @@
         {
           name: spi_device
           type: device
-          clock: main
+          clock: clk_fixed_i
+          reset: rst_fixed_ni
           pipeline_byp: "false"
           inst_type: spi_device
           base_addr: 0x40020000
@@ -727,7 +749,8 @@
         {
           name: flash_ctrl
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline_byp: "false"
           inst_type: flash_ctrl
           base_addr: 0x40030000
@@ -737,7 +760,8 @@
         {
           name: rv_timer
           type: device
-          clock: main
+          clock: clk_fixed_i
+          reset: rst_fixed_ni
           pipeline_byp: "false"
           inst_type: rv_timer
           base_addr: 0x40080000
@@ -747,7 +771,8 @@
         {
           name: hmac
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline_byp: "false"
           inst_type: hmac
           base_addr: 0x40120000
@@ -757,7 +782,8 @@
         {
           name: aes
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           pipeline_byp: "false"
           inst_type: aes
           base_addr: 0x40110000
@@ -767,7 +793,8 @@
         {
           name: rv_plic
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_main_ni
           inst_type: rv_plic
           base_addr: 0x40090000
           size_byte: 0x1000
@@ -777,7 +804,8 @@
         {
           name: pinmux
           type: device
-          clock: main
+          clock: clk_main_i
+          reset: rst_fixed_ni
           inst_type: pinmux
           base_addr: 0x40070000
           size_byte: 0x1000
@@ -787,7 +815,7 @@
         {
           name: alert_handler
           type: device
-          clock: main
+          clock: clk_main_i
           inst_type: alert_handler
           pipeline_byp: "false"
           base_addr: 0x40130000
@@ -797,7 +825,7 @@
         {
           name: nmi_gen
           type: device
-          clock: main
+          clock: clk_main_i
           inst_type: nmi_gen
           pipeline_byp: "false"
           base_addr: 0x40140000
@@ -805,7 +833,7 @@
           pipeline: "true"
         }
       ]
-      clock: main
+      clock: clk_main_i
     }
   ]
   interrupt_module:

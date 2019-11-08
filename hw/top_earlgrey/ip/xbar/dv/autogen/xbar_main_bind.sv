@@ -51,20 +51,20 @@ module xbar_main_bind;
     .d2h    (tl_eflash_i)
   );
   bind xbar_main tlul_assert tlul_assert_device_uart (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
+    .clk_i  (clk_fixed_i),
+    .rst_ni (rst_fixed_ni),
     .h2d    (tl_uart_o),
     .d2h    (tl_uart_i)
   );
   bind xbar_main tlul_assert tlul_assert_device_gpio (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
+    .clk_i  (clk_fixed_i),
+    .rst_ni (rst_fixed_ni),
     .h2d    (tl_gpio_o),
     .d2h    (tl_gpio_i)
   );
   bind xbar_main tlul_assert tlul_assert_device_spi_device (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
+    .clk_i  (clk_fixed_i),
+    .rst_ni (rst_fixed_ni),
     .h2d    (tl_spi_device_o),
     .d2h    (tl_spi_device_i)
   );
@@ -75,8 +75,8 @@ module xbar_main_bind;
     .d2h    (tl_flash_ctrl_i)
   );
   bind xbar_main tlul_assert tlul_assert_device_rv_timer (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
+    .clk_i  (clk_fixed_i),
+    .rst_ni (rst_fixed_ni),
     .h2d    (tl_rv_timer_o),
     .d2h    (tl_rv_timer_i)
   );
@@ -100,7 +100,7 @@ module xbar_main_bind;
   );
   bind xbar_main tlul_assert tlul_assert_device_pinmux (
     .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
+    .rst_ni (rst_fixed_ni),
     .h2d    (tl_pinmux_o),
     .d2h    (tl_pinmux_i)
   );
@@ -118,5 +118,3 @@ module xbar_main_bind;
   );
 
 endmodule
-
-
