@@ -1,0 +1,49 @@
+## Copyright lowRISC contributors.
+## Licensed under the Apache License, Version 2.0, see LICENSE for details.
+## SPDX-License-Identifier: Apache-2.0
+
+Device: rv32imc
+Vendor: opentitan
+
+ISA: RV32IMC
+misa:
+  implemented: True
+  MXL:
+    range:
+      rangelist: [[1]]
+      mode: Unchanged
+  Extensions:
+    bitmask:
+      mask: 0x0
+      default: 0x1104
+hw_data_misaligned_support: True
+mtvec:
+  MODE:
+    range:
+      rangelist: [[1]]
+  BASE:
+    range:
+      rangelist: [[0x20000020]]
+
+mstatus:
+  MPP:
+    range:
+      rangelist: [[3]]
+
+User_Spec_Version: "2.3"
+Privilege_Spec_Version: "1.11"
+
+mvendorid:
+  implemented: false
+marchid:
+  implemented: false
+mimpid:
+  implemented: false
+mhartid: 0
+
+mcycle:
+  is_hardwired: true
+  implemented: true
+minstret:
+  is_hardwired: true
+  implemented: true

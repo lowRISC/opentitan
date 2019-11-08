@@ -1,0 +1,530 @@
+From 3a53f89ce864553700a1cb33ed3ee1429e953bae Mon Sep 17 00:00:00 2001
+From: Timothy Chen <timothytim@google.com>
+Date: Thu, 7 Nov 2019 14:27:59 -0800
+Subject: [PATCH 1/2] [test] Add OpenTitan target to riscv-compliance testing
+
+Signed-off-by: Timothy Chen <timothytim@google.com>
+---
+ riscv-target/opentitan/README.md              | 135 ++++++++++++++++++
+ riscv-target/opentitan/compliance_io.h        |  22 +++
+ riscv-target/opentitan/compliance_test.h      |  39 +++++
+ .../opentitan/device/rv32imc/Makefile.include |  76 ++++++++++
+ .../opentitan/device/rv32imc/handler.S        |  22 +++
+ .../opentitan/device/rv32imc/isa.yaml         |  49 +++++++
+ riscv-target/opentitan/device/rv32imc/link.ld |  55 +++++++
+ .../opentitan/device/rv32imc/platform.yaml    |  10 ++
+ riscv-target/opentitan/device/rv32imc/wrap.c  |  38 +++++
+ 9 files changed, 446 insertions(+)
+ create mode 100644 riscv-target/opentitan/README.md
+ create mode 100644 riscv-target/opentitan/compliance_io.h
+ create mode 100644 riscv-target/opentitan/compliance_test.h
+ create mode 100644 riscv-target/opentitan/device/rv32imc/Makefile.include
+ create mode 100644 riscv-target/opentitan/device/rv32imc/handler.S
+ create mode 100644 riscv-target/opentitan/device/rv32imc/isa.yaml
+ create mode 100644 riscv-target/opentitan/device/rv32imc/link.ld
+ create mode 100644 riscv-target/opentitan/device/rv32imc/platform.yaml
+ create mode 100644 riscv-target/opentitan/device/rv32imc/wrap.c
+
+diff --git a/riscv-target/opentitan/README.md b/riscv-target/opentitan/README.md
+new file mode 100644
+index 0000000..7fceaae
+--- /dev/null
++++ b/riscv-target/opentitan/README.md
+@@ -0,0 +1,135 @@
++---
++title: "OpenTitan RISC-V Compliance Testing"
++---
++
++# Overview
++The RISC-V compliance test can be run on either FPGA or Verilator.
++To run on Verilator, set the variables below
++
++```console
++$ export RISCV_TARGET=opentitan
++$ export RISCV_DEVICE=rv32imc
++$ export TARGET=verilator
++```
++
++To run on FPGA, set the variables below.
++The `FPGA_UART` variable must be set to wherever a valid device is connected.
++
++```console
++$ export RISCV_TARGET=opentitan
++$ export RISCV_DEVICE=rv32imc
++$ export TARGET=fpga
++$ export FPGA_UART=/dev/tty*
++```
++
++By default, the test assumes there exists a valid Verilator build at `${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
++If your Verilator build is at a different location, please set that as well when running with Verilator.
++For instructions on how to create a Verilator build, please refer to the [Verilator guide]({{< relref "doc/ug/getting_started_verilator" >}}).
++
++```console
++$ export TARGET_SIM=${PATH_TO_VERILATOR_BUILD}
++```
++
++When running against FPGA, the test assumes the FPGA is already programmed and ready to go.
++To find out how to properly build and flash FPGA, please refer to the [FPGA manual]({{< relref "doc/rm/ref_manual_fpga" >}})
++
++
++Now, run the tests.
++The following output will be seen (software build steps are truncated).
++The example below uses Verilator as an example, but the FPGA output is nearly identical.
++
++```console
++$ cd $REPO_TOP
++$ make -C sw/vendor/riscv_compliance RISCV_ISA=rv32i \
++  && make -C sw/vendor/riscv_compliance RISCV_ISA=rv32im \
++  && make -C sw/vendor/riscv_compliance RISCV_ISA=rv32imc
++
++
++Rom initialized with program at $REPO_TOP/sw/vendor/riscv_compliance/../../boot_rom/rom.vmem
++
++Flash initialized with program at $REPO_TOP/sw/vendor/riscv_compliance/work/rv32i/I-ENDIANESS-01.elf.vmem
++
++JTAG: Virtual JTAG interface jtag0 is listening on port 44853. Use
++OpenOCD and the following configuration to connect:
++  interface remote_bitbang
++  remote_bitbang_host localhost
++  remote_bitbang_port 44853
++
++SPI: Created /dev/pts/21 for spi0. Connect to it with any terminal program, e.g.
++$ screen /dev/pts/21
++NOTE: a SPI transaction is run for every 4 characters entered.
++SPI: Monitor output file created at $REPO_TOP/sw/vendor/riscv_compliance/riscv-test-suite/rv32i/spi0.log. Works well with tail:
++$ tail -f $REPO_TOP/sw/vendor/riscv_compliance/riscv-test-suite/rv32i/spi0.log
++
++UART: Created /dev/pts/22 for uart0. Connect to it with any terminal program, e.g.
++$ screen /dev/pts/22
++
++Simulation running, end by pressing CTRL-c.
++TOP.top_earlgrey_verilator.top_earlgrey.core.ibex_tracer_i: Writing execution trace to trace_core_00000000.log
++Verilator sim termination requested
++Your simulation wrote to 0x10008000
++
++...
++
++Compare to reference files ...
++
++Check         I-ADD-01 ... OK
++Check        I-ADDI-01 ... OK
++Check         I-AND-01 ... OK
++Check        I-ANDI-01 ... OK
++Check       I-AUIPC-01 ... OK
++Check         I-BEQ-01 ... OK
++Check         I-BGE-01 ... OK
++Check        I-BGEU-01 ... OK
++Check         I-BLT-01 ... OK
++Check        I-BLTU-01 ... OK
++Check         I-BNE-01 ... OK
++Check       I-CSRRC-01 ... OK
++Check      I-CSRRCI-01 ... OK
++Check       I-CSRRS-01 ... OK
++Check      I-CSRRSI-01 ... OK
++Check       I-CSRRW-01 ... OK
++Check      I-CSRRWI-01 ... OK
++Check I-DELAY_SLOTS-01 ... OK
++Check      I-EBREAK-01 ... OK
++Check       I-ECALL-01 ... OK
++Check   I-ENDIANESS-01 ... OK
++Check     I-FENCE.I-01 ... OK
++Check             I-IO ... OK
++Check         I-JAL-01 ... OK
++Check        I-JALR-01 ... OK
++Check          I-LB-01 ... OK
++Check         I-LBU-01 ... OK
++Check          I-LH-01 ... OK
++Check         I-LHU-01 ... OK
++Check         I-LUI-01 ... OK
++Check          I-LW-01 ... OK
++Check I-MISALIGN_JMP-01 ... OK
++Check I-MISALIGN_LDST-01 ... OK
++Check         I-NOP-01 ... OK
++Check          I-OR-01 ... OK
++Check         I-ORI-01 ... OK
++Check     I-RF_size-01 ... OK
++Check    I-RF_width-01 ... OK
++Check       I-RF_x0-01 ... OK
++Check          I-SB-01 ... OK
++Check          I-SH-01 ... OK
++Check         I-SLL-01 ... OK
++Check        I-SLLI-01 ... OK
++Check         I-SLT-01 ... OK
++Check        I-SLTI-01 ... OK
++Check       I-SLTIU-01 ... OK
++Check        I-SLTU-01 ... OK
++Check         I-SRA-01 ... OK
++Check        I-SRAI-01 ... OK
++Check         I-SRL-01 ... OK
++Check        I-SRLI-01 ... OK
++Check         I-SUB-01 ... OK
++Check          I-SW-01 ... OK
++Check         I-XOR-01 ... OK
++Check        I-XORI-01 ... OK
++--------------------------------
++OK: 55/55
++
++
++```
+diff --git a/riscv-target/opentitan/compliance_io.h b/riscv-target/opentitan/compliance_io.h
+new file mode 100644
+index 0000000..2774158
+--- /dev/null
++++ b/riscv-target/opentitan/compliance_io.h
+@@ -0,0 +1,22 @@
++// Copyright lowRISC contributors.
++// Licensed under the Apache License, Version 2.0, see LICENSE for details.
++// SPDX-License-Identifier: Apache-2.0
++
++// RISC-V Compliance IO Test Header File
++
++
++#ifndef _COMPLIANCE_IO_H
++#define _COMPLIANCE_IO_H
++
++//-----------------------------------------------------------------------
++// RV IO Macros (Non functional)
++//-----------------------------------------------------------------------
++
++#define RVTEST_IO_INIT
++#define RVTEST_IO_WRITE_STR(_SP, _STR)
++#define RVTEST_IO_CHECK()
++#define RVTEST_IO_ASSERT_GPR_EQ(_SP, _R, _I)
++#define RVTEST_IO_ASSERT_SFPR_EQ(_F, _R, _I)
++#define RVTEST_IO_ASSERT_DFPR_EQ(_D, _R, _I)
++
++#endif // _COMPLIANCE_IO_H
+diff --git a/riscv-target/opentitan/compliance_test.h b/riscv-target/opentitan/compliance_test.h
+new file mode 100644
+index 0000000..7f1bdd3
+--- /dev/null
++++ b/riscv-target/opentitan/compliance_test.h
+@@ -0,0 +1,39 @@
++// Copyright lowRISC contributors.
++// Licensed under the Apache License, Version 2.0, see LICENSE for details.
++// SPDX-License-Identifier: Apache-2.0
++
++// RISC-V Compliance Test Header File
++
++#ifndef _COMPLIANCE_TEST_H
++#define _COMPLIANCE_TEST_H
++
++#include "sw/vendor/riscv_compliance/riscv-test-env/p/riscv_test.h"
++
++//-----------------------------------------------------------------------
++// RV Compliance Macros
++//-----------------------------------------------------------------------
++#define RV_COMPLIANCE_HALT                                                    \
++        la sp, _stack_start;                                                  \
++        j dump_signature;                                                     \
++      loop_forever:                                                           \
++        wfi;                                                                  \
++        j loop_forever;                                                       \
++
++#define RV_COMPLIANCE_RV32M                                                   \
++        RVTEST_RV32M                                                          \
++
++
++#define RV_COMPLIANCE_CODE_BEGIN                                              \
++        RVTEST_CODE_BEGIN                                                     \
++
++#define RV_COMPLIANCE_CODE_END                                                \
++        RVTEST_CODE_END                                                       \
++
++#define RV_COMPLIANCE_DATA_BEGIN                                              \
++        .section .test.output;                                                \
++        RVTEST_DATA_BEGIN                                                     \
++
++#define RV_COMPLIANCE_DATA_END                                                \
++        RVTEST_DATA_END                                                       \
++
++#endif
+diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
+new file mode 100644
+index 0000000..c18820f
+--- /dev/null
++++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
+@@ -0,0 +1,76 @@
++## Copyright lowRISC contributors.
++## Licensed under the Apache License, Version 2.0, see LICENSE for details.
++## SPDX-License-Identifier: Apache-2.0
++
++
++OT           = $(ROOTDIR)/riscv-target/$(RISCV_TARGET)/device/rv32imc
++OTSW         = $(ROOTDIR)/../../device
++OTROOT       = $(OTSW)/../../
++LDSCRIPT     = $(OT)/link.ld
++TRAPHANDLER  = $(OT)/handler.S
++DEFINES      = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DTRAPHANDLER="\"$(TRAPHANDLER)\""
++RV_TOOLS    ?= /tools/riscv/bin
++FPGA_UART   ?=
++TARGET_SIM  ?= $(OTROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
++TARGET      ?= fpga
++
++ifeq ($(TARGET),fpga)
++	CARG =
++	MAKEARG =
++	PYTEST_OPT = --fpga_uart $(FPGA_UART) --spiflash $(OTROOT)/sw/host/spiflash/spiflash \
++		--test_bin $(work_dir_isa)/$<.bin
++else
++	CARG = -DSIMULATION=1
++	MAKEARG = SIM=1
++	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(work_dir_isa)/$<.vmem \
++		--rom_bin $(OTSW)/boot_rom/rom.vmem
++endif
++
++
++# The run target recipe does the following things:
++# Invoke pytest to run the test
++# Parse the resulting log for the output signatures
++# Convert all signatures to lower case since the reference is in all lower case
++RUN_TARGET=\
++        pytest -s -v $(OTROOT)/test/systemtest/functional_$(TARGET)_test.py \
++        $(PYTEST_OPT) \
++        --log $(work_dir_isa)/$<.uart.log; \
++        grep -o 'SIG: [a-zA-Z0-9_]*' $(work_dir_isa)/$<.uart.log | sed 's/SIG: //' \
++        > $(work_dir_isa)/$(*).signature.temp.output; \
++        tr '[:upper:]' '[:lower:]' < $(work_dir_isa)/$(*).signature.temp.output > $(work_dir_isa)/$(*).signature.output;
++
++
++RISCV_PREFIX   ?= ${RV_TOOLS}/riscv32-unknown-elf-
++RISCV_GCC      ?= ${RV_TOOLS}/riscv32-unknown-elf-gcc
++RISCV_OBJDUMP  ?= ${RV_TOOLS}/riscv32-unknown-elf-objdump
++RISCV_OBJCOPY  ?= ${RV_TOOLS}/riscv32-unknown-elf-objcopy
++RISCV_NM       ?= ${RV_TOOLS}/riscv32-unknown-elf-nm
++RISCV_READELF  ?= ${RV_TOOLS}/riscv32-unknown-elf-readelf
++RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g
++
++
++# The compile target recipe re-uses the boot rom library.
++# This will be changed in the future when the compliance tests directly build
++# their own libraries
++# After the libraries are built, the necessary collateral (vmem for verilator, bin
++# for fpga) are created
++COMPILE_TARGET=\
++        make -C $$(OTSW) SW_DIR=boot_rom $(MAKEARG) clean all; \
++	$$(RISCV_GCC) $(2) $$(RISCV_GCC_OPTS) \
++		-I$(ROOTDIR)/riscv-test-env/ \
++		-I$(ROOTDIR)/riscv-test-env/p/ \
++                -I$(OTSW)/boot_rom/lib \
++                -I$(OTSW)/lib \
++                -I$(OTROOT) \
++		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
++		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
++		$(DEFINES) -T$(LDSCRIPT) $$< \
++                $(OT)/wrap.c \
++                -L$(OTSW)/boot_rom/lib \
++                -lot \
++		-o $(work_dir_isa)/$$@; \
++    $$(RISCV_OBJDUMP) -SD $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.objdump; \
++    $$(RISCV_READELF) -a $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.readelf; \
++    $$(RISCV_NM) $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.nm; \
++    $$(RISCV_OBJCOPY) -O binary $(work_dir_isa)/$$@ $(work_dir_isa)/$$@.bin; \
++    srec_cat $(work_dir_isa)/$$@.bin -binary -offset 0x0000 -byte-swap 4 -o $(work_dir_isa)/$$@.vmem -vmem
+diff --git a/riscv-target/opentitan/device/rv32imc/handler.S b/riscv-target/opentitan/device/rv32imc/handler.S
+new file mode 100644
+index 0000000..75dbb95
+--- /dev/null
++++ b/riscv-target/opentitan/device/rv32imc/handler.S
+@@ -0,0 +1,22 @@
++// Copyright lowRISC contributors.
++// Licensed under the Apache License, Version 2.0, see LICENSE for details.
++// SPDX-License-Identifier: Apache-2.0
++
++.section .text.trap;
++.align  4;
++
++_trap_start:
++    j _trap_exception
++
++// This could be exception or user interrupt
++// 0xb is the environment call to indicate the end
++_trap_exception:
++    csrr a0, mcause
++    addi a1, zero, 0xb
++    beq a0, a1, _int_exc
++    la a1, begin_signature
++    // write to value pointed by begin_signature and uses a1 as address scratch
++    sw a0, begin_signature, a1
++_int_exc:
++    la a0, write_tohost
++    jr a0
+diff --git a/riscv-target/opentitan/device/rv32imc/isa.yaml b/riscv-target/opentitan/device/rv32imc/isa.yaml
+new file mode 100644
+index 0000000..c526fec
+--- /dev/null
++++ b/riscv-target/opentitan/device/rv32imc/isa.yaml
+@@ -0,0 +1,49 @@
++## Copyright lowRISC contributors.
++## Licensed under the Apache License, Version 2.0, see LICENSE for details.
++## SPDX-License-Identifier: Apache-2.0
++
++Device: rv32imc
++Vendor: opentitan
++
++ISA: RV32IMC
++misa:
++  implemented: True
++  MXL:
++    range:
++      rangelist: [[1]]
++      mode: Unchanged
++  Extensions:
++    bitmask:
++      mask: 0x0
++      default: 0x1104
++hw_data_misaligned_support: True
++mtvec:
++  MODE:
++    range:
++      rangelist: [[1]]
++  BASE:
++    range:
++      rangelist: [[0x20000020]]
++
++mstatus:
++  MPP:
++    range:
++      rangelist: [[3]]
++
++User_Spec_Version: "2.3"
++Privilege_Spec_Version: "1.11"
++
++mvendorid:
++  implemented: false
++marchid:
++  implemented: false
++mimpid:
++  implemented: false
++mhartid: 0
++
++mcycle:
++  is_hardwired: true
++  implemented: true
++minstret:
++  is_hardwired: true
++  implemented: true
+diff --git a/riscv-target/opentitan/device/rv32imc/link.ld b/riscv-target/opentitan/device/rv32imc/link.ld
+new file mode 100644
+index 0000000..9259121
+--- /dev/null
++++ b/riscv-target/opentitan/device/rv32imc/link.ld
+@@ -0,0 +1,55 @@
++/* Copyright lowRISC contributors.
++   Licensed under the Apache License, Version 2.0, see LICENSE for details.
++   SPDX-License-Identifier: Apache-2.0
++*/
++
++OUTPUT_ARCH( "riscv" )
++ENTRY(_start)
++
++/* required to correctly link newlib */
++GROUP( -lc -lgloss -lgcc -lsupc++ )
++
++SEARCH_DIR(.)
++__DYNAMIC  =  0;
++
++MEMORY
++{
++    flash (rx)     : ORIGIN = 0x20000000, LENGTH = 0x100000
++    ram (wx)      : ORIGIN = 0x10000000, LENGTH = 0x10000
++}
++
++_stack_start = ORIGIN(ram) + LENGTH(ram);
++
++/* need to move signature data to modifiable memory */
++SECTIONS
++{
++  .text.init ORIGIN(flash) : {
++             *(.text.init)
++  } > flash
++
++  .text.trap : {
++        . = ALIGN(0x100);
++        *(.text.trap)
++  } > flash
++
++  .text : {
++        . = ALIGN(0x100);
++        *(.text)
++  } > flash
++
++  .data : {
++        . = ALIGN(0x100);
++        *(.data.*)
++  } > flash
++
++  .tohost ORIGIN(ram) (NOLOAD) : {
++        *(.tohost)
++        *(.test.output)
++   } > ram
++
++  .bss : {
++        . = ALIGN(0x100);
++        *(.bss)
++  } > ram
++  _end = .;
++}
+diff --git a/riscv-target/opentitan/device/rv32imc/platform.yaml b/riscv-target/opentitan/device/rv32imc/platform.yaml
+new file mode 100644
+index 0000000..e834efb
+--- /dev/null
++++ b/riscv-target/opentitan/device/rv32imc/platform.yaml
+@@ -0,0 +1,10 @@
++## Copyright lowRISC contributors.
++## Licensed under the Apache License, Version 2.0, see LICENSE for details.
++## SPDX-License-Identifier: Apache-2.0
++
++mtime:
++  implemented: False
++nmi:
++  address: 0x800000FC # trap vec (mtvec base) + 0x7C
++reset:
++  address: 0x80000080 # boot address + 0x80
+diff --git a/riscv-target/opentitan/device/rv32imc/wrap.c b/riscv-target/opentitan/device/rv32imc/wrap.c
+new file mode 100644
+index 0000000..5834199
+--- /dev/null
++++ b/riscv-target/opentitan/device/rv32imc/wrap.c
+@@ -0,0 +1,38 @@
++// Copyright lowRISC contributors.
++// Licensed under the Apache License, Version 2.0, see LICENSE for details.
++// SPDX-License-Identifier: Apache-2.0
++
++#include <string.h>
++
++#include "common.h"
++#include "uart.h"
++
++#define SIM_TERM_ADDR 0x10008000
++
++void dump_signature(void) {
++  extern uint32_t begin_signature[];
++  extern uint32_t end_signature[];
++
++  uint32_t size = end_signature - begin_signature;
++  uart_init(UART_BAUD_RATE);
++  for (uint32_t i = 0; i < size; ++i) {
++    uart_send_str("SIG: ");
++    uart_send_uint(REG32(begin_signature + i), 32);
++    uart_send_str("\r\n");
++  }
++
++  uart_send_str("PASS!\r\n");
++
++  // The "End" string here is a workaround to pytest console parsing.
++  // Without additional characters, the "\n" from above is not always
++  // detected, and this causes pytest to register the test as a false failure.
++  // This needs to be debugged further to see if it's a setup or hw issue.
++  uart_send_str("End");
++
++  // wait for all uart outputs to complete
++  while (!uart_tx_empty() || !uart_tx_idle()) {
++  }
++
++  // terminate simulation
++  REG32(SIM_TERM_ADDR) = 0;
++}
+-- 
+2.24.0.rc1.363.gb1bccd3e3d-goog
+
