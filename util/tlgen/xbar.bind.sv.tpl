@@ -8,8 +8,8 @@ module xbar_${xbar.name}_bind;
   // Host interfaces
 % for node in xbar.hosts:
   bind xbar_${xbar.name} tlul_assert tlul_assert_host_${node.name} (
-    .clk_i  (clk_${node.clocks[0]}_i),
-    .rst_ni (rst_${node.clocks[0]}_ni),
+    .clk_i  (${node.clocks[0]}),
+    .rst_ni (${node.resets[0]}),
     .h2d    (tl_${node.name}_i),
     .d2h    (tl_${node.name}_o)
   );
@@ -18,13 +18,11 @@ module xbar_${xbar.name}_bind;
   // Device interfaces
 % for node in xbar.devices:
   bind xbar_${xbar.name} tlul_assert tlul_assert_device_${node.name} (
-    .clk_i  (clk_${node.clocks[0]}_i),
-    .rst_ni (rst_${node.clocks[0]}_ni),
+    .clk_i  (${node.clocks[0]}),
+    .rst_ni (${node.resets[0]}),
     .h2d    (tl_${node.name}_o),
     .d2h    (tl_${node.name}_i)
   );
 % endfor
 
 endmodule
-
-

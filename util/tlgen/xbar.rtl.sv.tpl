@@ -11,9 +11,11 @@ ${xbar.repr_tree(host, 0)}
 % endfor
 
 module xbar_${xbar.name} (
-% for clock in xbar.clocks:
-  input clk_${clock}_i,
-  input rst_${clock}_ni,
+% for c in xbar.clocks:
+  input ${c},
+% endfor
+% for r in xbar.resets:
+  input ${r},
 % endfor
 
   // Host interfaces
@@ -177,10 +179,10 @@ module xbar_${xbar.name} (
     .ReqDepth        (3),// At least 3 to make async work
     .RspDepth        (3) // At least 3 to make async work
   ) u_${block.name} (
-    .clk_h_i      (clk_${block.clocks[0]}_i),
-    .rst_h_ni     (rst_${block.clocks[0]}_ni),
-    .clk_d_i      (clk_${block.clocks[1]}_i),
-    .rst_d_ni     (rst_${block.clocks[1]}_ni),
+    .clk_h_i      (${block.clocks[0]}),
+    .rst_h_ni     (${block.resets[0]}),
+    .clk_d_i      (${block.clocks[1]}),
+    .rst_d_ni     (${block.resets[1]}),
     .tl_h_i       (tl_${block.name}_us_h2d),
     .tl_h_o       (tl_${block.name}_us_d2h),
     .tl_d_o       (tl_${block.name}_ds_h2d),
@@ -206,8 +208,8 @@ module xbar_${xbar.name} (
     % endif
     .N         (${len(block.ds)})
   ) u_${block.name} (
-    .clk_i        (clk_${xbar.clock}_i),
-    .rst_ni       (rst_${xbar.clock}_ni),
+    .clk_i        (${block.clocks[0]}),
+    .rst_ni       (${block.resets[0]}),
     .tl_h_i       (tl_${block.name}_us_h2d),
     .tl_h_o       (tl_${block.name}_us_d2h),
     .tl_d_o       (tl_${block.name}_ds_h2d),
@@ -234,8 +236,8 @@ module xbar_${xbar.name} (
     % endif
     .M         (${len(block.us)})
   ) u_${block.name} (
-    .clk_i        (clk_${xbar.clock}_i),
-    .rst_ni       (rst_${xbar.clock}_ni),
+    .clk_i        (${block.clocks[0]}),
+    .rst_ni       (${block.resets[0]}),
     .tl_h_i       (tl_${block.name}_us_h2d),
     .tl_h_o       (tl_${block.name}_us_d2h),
     .tl_d_o       (tl_${block.name}_ds_h2d),

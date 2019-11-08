@@ -41,7 +41,8 @@ class Node:
 
     name = ""  # name: str
     # node_type: NodeType
-    clocks = []  # Clocks  # Clock domain of the node
+    clocks = []  # Clocks  # clock domains of the node
+    resets = []  # Resets  # resets of the node
     # e.g. async_fifo in : clk_core , out : clk_main
 
 
@@ -64,9 +65,10 @@ class Node:
     # FIFO passtru option. default True
     pipeline_byp = True
 
-    def __init__(self, name, node_type, clock):
+    def __init__(self, name, node_type, clock, reset):
         self.name = name
         self.node_type = node_type
         self.clocks = [clock]
+        self.resets = [reset]
         self.us = []
         self.ds = []

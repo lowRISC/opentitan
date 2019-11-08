@@ -17,9 +17,11 @@ class Xbar:
     """
     nodes = []  # Nodes
     edges = []  # Edges
-    clock = ""  # str  # Main clock remove 'clk_' prefix
+    clock = ""  # str  # primary clock of xbar
+    reset = ""  # str  # primary reset of xbar
     name = ""  # str  # e.g. "main" --> main_xbar
-    clocks = []  # Clocks
+    clocks = []  # All clocks of xbar
+    resets = []  # All resets of xbar
 
     # prefix is useful if SoC has more than one Xbar
 
@@ -31,6 +33,7 @@ class Xbar:
         self.nodes = []
         self.edges = []
         self.clocks = []
+        self.resets = []
 
     def __repr__(self):
         out = "<Xbar(%s) #nodes:%d clock:%s" % (self.name, len(self.nodes),
