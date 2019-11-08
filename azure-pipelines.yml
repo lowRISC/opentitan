@@ -63,7 +63,7 @@ jobs:
       #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
       fork_origin=$(git merge-base --fork-point origin/master)
       changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/ | grep -E '\.(cpp|cc|c|h)$')
-      test -z $changed_files || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
+      test -z "$changed_files" || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
       if [ -s clang-format-output ]; then
         echo -n "##vso[task.logissue type=error]"
         echo "C/C++ lint failed. Use 'git clang-format' with appropriate options to reformat the changed code."
