@@ -48,6 +48,11 @@ module top_earlgrey_asic (
     .jtag_td_i        (IO_JTDI),
     .jtag_td_o        (IO_JTDO),
 
+    .dio_spi_device_sck_i     (1'b1),
+    .dio_spi_device_csb_i     (1'b1),
+    .dio_spi_device_mosi_i    (1'b1),
+    .dio_spi_device_miso_o    (),
+    .dio_spi_device_miso_en_o (),
     .dio_uart_rx_i    (cio_uart_rx_p2d),
     .dio_uart_tx_o    (cio_uart_tx_d2p),
     .dio_uart_tx_en_o (cio_uart_tx_en_d2p),
