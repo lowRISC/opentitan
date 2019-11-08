@@ -15,7 +15,7 @@ Documentation | [SPEC_COMPLETE][]     | Not Started |
 Documentation | [CSR_DEFINED][]       | Not Started |
 RTL           | [CLKRST_CONNECTED][]  | Not Started |
 RTL           | [IP_TOP][]            | Not Started |
-RTL           | [IP_INSTANCED][]      | Not Started |
+RTL           | [IP_INSTANTIABLE][]   | Not Started |
 RTL           | [MEM_INSTANCED_80][]  | Not Started |
 RTL           | [FUNC_IMPLEMENTED][]  | Not Started |
 RTL           | [ASSERT_KNOWN_ADDED][]| Not Started |
@@ -28,7 +28,7 @@ Review        | Signoff date          | Not Started |
 [CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr-defined" >}}
 [CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst-connected" >}}
 [IP_TOP]:             {{<relref "/doc/project/checklist.md#ip-top" >}}
-[IP_INSTANCED]:       {{<relref "/doc/project/checklist.md#ip-instanced" >}}
+[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip-instantiable" >}}
 [MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem-instanced-80" >}}
 [FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func-implemented" >}}
 [ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}

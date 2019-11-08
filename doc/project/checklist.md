@@ -25,10 +25,10 @@ Clock(s)/Reset(s) connected to all sub-modules.
 
 Unit `.sv` exists, meet comportability requirements.
 
-### IP_INSTANCED
+### IP_INSTANTIABLE
 
-Unit is instanced and binding in top level RTL. The unit must not break top
-level functionality such as propagating X through TL-UL interface.
+Unit is able to be instantiated and bound in top level RTL.
+The unit must not break top level functionality such as propagating X through TL-UL interface, continuously asserting the interrupts, or creating undesired TL-UL transactions.
 
 ### MEM_INSTANCED_80
 

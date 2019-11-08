@@ -15,7 +15,7 @@ Documentation | [SPEC_COMPLETE][]     | Done        | [HMAC Spec][]
 Documentation | [CSR_DEFINED][]       | Done        |
 RTL           | [CLKRST_CONNECTED][]  | Done        |
 RTL           | [IP_TOP][]            | Done        |
-RTL           | [IP_INSTANCED][]      | Done        |
+RTL           | [IP_INSTANTIABLE][]      | Done        |
 RTL           | [MEM_INSTANCED_80][]  | Done        |
 RTL           | [FUNC_IMPLEMENTED][]  | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
@@ -29,7 +29,7 @@ Review        | Signoff date          | Done        | 2019-11-01
 [CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr-defined" >}}
 [CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst-connected" >}}
 [IP_TOP]:             {{<relref "/doc/project/checklist.md#ip-top" >}}
-[IP_INSTANCED]:       {{<relref "/doc/project/checklist.md#ip-instanced" >}}
+[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip-instantiable" >}}
 [MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem-instanced-80" >}}
 [FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func-implemented" >}}
 [ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}
