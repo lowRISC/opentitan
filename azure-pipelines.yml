@@ -276,6 +276,35 @@ jobs:
       ci/run_verilator_pytest.sh
     displayName: 'Execute tests'
 
+- job: "riscv_compliance_tests"
+  displayName: "Execute RISC-V compliance tests"
+  pool: "Default"
+  dependsOn:
+    - top_earlgrey_verilator
+    - execute_verilated_tests
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
+        && sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install dependencies'
+  - download: current
+    artifact: 'dist-partial-top_earlgrey_verilator'
+    displayName: 'Download verilated simulator'
+  - bash: |
+      cd "$(Build.ArtifactStagingDirectory)"
+      tar --overwrite -xvf \
+        "$(Pipeline.Workspace)/dist-partial-top_earlgrey_verilator/dist-partial-top_earlgrey_verilator.tar"
+    displayName: 'Unpack pipeline artifacts'
+  - bash: |
+      export TARGET_SIM="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey/Vtop_earlgrey_verilator"
+      export RISCV_DEVICE=rv32imc
+      export RISCV_TARGET=opentitan
+      export OT_TARGET=verilator
+      export OT_TOOLS="${TOOLCHAIN_PATH}/bin"
+      cd sw/vendor/riscv_compliance
+      make RISCV_ISA=rv32i
+    displayName: 'Execute tests'
+
 - job: "deploy_releaseartifacts"
   displayName: "Package and deploy release distribution"
   pool:
@@ -285,6 +314,7 @@ jobs:
     - sw_build
     - top_earlgrey_verilator
     - top_earlgrey_nexysvideo
+    - riscv_compliance_tests
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   steps:
   - bash: |
