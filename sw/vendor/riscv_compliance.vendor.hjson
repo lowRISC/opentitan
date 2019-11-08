@@ -4,6 +4,7 @@
 {
   name: "riscv_compliance",
   target_dir: "riscv_compliance",
+  patch_dir: "patches/riscv_compliance",
 
   upstream: {
     url: "https://github.com/riscv/riscv-compliance.git",
@@ -13,8 +14,17 @@
   exclude_from_upstream: [
     "doc",
     "spec",
-    "riscv-target",
     "riscv-ovpsim",
+    "riscv-target/Codasip-simulator",
+    "riscv-target/grift",
+    "riscv-target/ibex",
+    "riscv-target/ri5cy",
+    "riscv-target/riscvOVPsim",
+    "riscv-target/rocket",
+    "riscv-target/sail-riscv-c",
+    "riscv-target/sail-riscv-ocaml",
+    "riscv-target/sifive-formal",
+    "riscv-target/spike",
     "riscv-test-suite/rv32mi",
     "riscv-test-suite/rv32si",
     "riscv-test-suite/rv32ua",
