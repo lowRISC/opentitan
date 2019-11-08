@@ -1,0 +1,10 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+mtime:
+  implemented: False
+nmi:
+  address: 0x800000FC # trap vec (mtvec base) + 0x7C
+reset:
+  address: 0x80000080 # boot address + 0x80

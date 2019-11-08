@@ -1,0 +1,74 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+OPENTITAN     = $(ROOTDIR)/riscv-target/$(RISCV_TARGET)/device/rv32imc
+OT_SW         = $(ROOTDIR)/../../device
+OT_ROOT       = $(OT_SW)/../../
+OT_TOOLS     ?= /tools/riscv/bin
+OT_FPGA_UART ?=
+OT_TARGET    ?= fpga
+LDSCRIPT      = $(OPENTITAN)/link.ld
+TRAPHANDLER   = $(OPENTITAN)/handler.S
+DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DTRAPHANDLER="\"$(TRAPHANDLER)\""
+TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
+
+ifeq ($(OT_TARGET),fpga)
+	CARG =
+	MAKEARG =
+	PYTEST_OPT = --fpga_uart $(OT_FPGA_UART) --spiflash $(OT_ROOT)/sw/host/spiflash/spiflash \
+		--test_bin $(work_dir_isa)/$<.bin
+else
+	CARG = -DSIMULATION=1
+	MAKEARG = SIM=1
+	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(work_dir_isa)/$<.vmem \
+		--rom_bin $(OT_ROOT)/build/sw/device/boot_rom/rom.vmem
+endif
+
+
+# The run target recipe does the following things:
+# Invoke pytest to run the test
+# Parse the resulting log for the output signatures
+# Convert all signatures to lower case since the reference is in all lower case
+RUN_TARGET=\
+        pytest -s -v $(OT_ROOT)/test/systemtest/functional_$(OT_TARGET)_test.py \
+        $(PYTEST_OPT) \
+        --log $(work_dir_isa)/$<.uart.log; \
+        grep -o 'SIG: [a-zA-Z0-9_]*' $(work_dir_isa)/$<.uart.log | sed 's/SIG: //' \
+        > $(work_dir_isa)/$(*).signature.temp.output; \
+        tr '[:upper:]' '[:lower:]' < $(work_dir_isa)/$(*).signature.temp.output > $(work_dir_isa)/$(*).signature.output;
+
+
+RISCV_PREFIX   ?= ${OT_TOOLS}/riscv32-unknown-elf-
+RISCV_GCC      ?= ${OT_TOOLS}/riscv32-unknown-elf-gcc
+RISCV_OBJDUMP  ?= ${OT_TOOLS}/riscv32-unknown-elf-objdump
+RISCV_OBJCOPY  ?= ${OT_TOOLS}/riscv32-unknown-elf-objcopy
+RISCV_NM       ?= ${OT_TOOLS}/riscv32-unknown-elf-nm
+RISCV_READELF  ?= ${OT_TOOLS}/riscv32-unknown-elf-readelf
+RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g
+
+
+# The compile target recipe re-uses the boot rom library.
+# This will be changed in the future when the compliance tests directly build
+# their own libraries
+# After the libraries are built, the necessary collateral (vmem for verilator, bin
+# for fpga) are created
+COMPILE_TARGET=\
+        make -C $$(OT_SW) SW_DIR=boot_rom $(MAKEARG) RV_TOOLS=$(OT_TOOLS) clean all; \
+	$$(RISCV_GCC) $(2) $$(RISCV_GCC_OPTS) \
+		-I$(ROOTDIR)/riscv-test-env/ \
+		-I$(ROOTDIR)/riscv-test-env/p/ \
+                -I$(OT_SW)/lib \
+                -I$(OT_ROOT)/build/sw/device/boot_rom/lib \
+		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
+		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
+		$(DEFINES) -T$(LDSCRIPT) $$< \
+                $(OPENTITAN)/wrap.c \
+                -L$(OT_ROOT)/build/sw/device/boot_rom/lib \
+                -lot \
+		-o $(work_dir_isa)/$$@; \
+        $$(RISCV_OBJDUMP) -SD $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.objdump; \
+        $$(RISCV_READELF) -a $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.readelf; \
+        $$(RISCV_NM) $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.nm; \
+        $$(RISCV_OBJCOPY) -O binary $(work_dir_isa)/$$@ $(work_dir_isa)/$$@.bin; \
+        srec_cat $(work_dir_isa)/$$@.bin -binary -offset 0x0000 -byte-swap 4 -o $(work_dir_isa)/$$@.vmem -vmem
