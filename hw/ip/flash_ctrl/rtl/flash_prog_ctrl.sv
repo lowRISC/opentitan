@@ -96,6 +96,7 @@ module flash_prog_ctrl #(
           cnt_nxt = cnt + 1'b1;
         end
       end
+      default:;
     endcase // unique case (st)
   end
 
