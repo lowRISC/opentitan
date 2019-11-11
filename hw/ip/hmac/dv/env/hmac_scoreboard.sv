@@ -209,6 +209,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     sha_en      = 0;
     hmac_wr_cnt = 0;
     hmac_rd_cnt = 0;
+    wr_cnt_updated = 1'b1;
   endfunction
 
   // clear variables after expected digest is calculated
@@ -219,7 +220,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   endfunction
 
   virtual task incr_wr_and_check_fifo_full();
-    wait (wr_cnt_updated == 1);
+    wait (wr_cnt_updated == 1 && !under_reset);
     if (sha_en) begin
       // if fifo full, tlul will not write next data until fifo has space again
       if (fifo_full) begin
@@ -265,7 +266,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : process_hmac_key_pad
         forever begin
-          wait(cfg.clk_rst_vif.rst_n === 1 && sha_en === 1);
+          wait(!under_reset && sha_en === 1);
           fork
             begin : key_padding
               wait(hmac_start);
@@ -281,7 +282,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
             end
             begin : reset_key_padding
-              wait(!cfg.clk_rst_vif.rst_n);
+              wait(under_reset);
             end
           join_any
           disable fork;
@@ -291,7 +292,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
       begin : process_internal_fifo_rd
         forever begin
-          wait(cfg.clk_rst_vif.rst_n === 1 && sha_en === 1);
+          wait(!under_reset && sha_en === 1);
           fork
             begin : hmac_fifo_rd
               wait(hmac_wr_cnt > hmac_rd_cnt);
@@ -307,7 +308,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
             end
             begin : reset_hmac_fifo_rd
-              wait(!cfg.clk_rst_vif.rst_n);
+              wait(under_reset);
             end
           join_any
           disable fork;
