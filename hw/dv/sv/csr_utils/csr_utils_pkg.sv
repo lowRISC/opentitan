@@ -363,7 +363,14 @@ package csr_utils_pkg;
     join
   endtask
 
+  // task to read all csrs and check against ral expected value. Mainly used after reset
+  task automatic read_and_check_all_csrs(input uvm_reg_block ral);
+    uvm_reg ral_csrs[$];
+    ral.get_registers(ral_csrs);
+    ral_csrs.shuffle();
 
+    foreach (ral_csrs[i]) csr_rd_check(.ptr(ral_csrs[i]), .compare_vs_ral(1));
+  endtask
 
   // poll a csr or csr field continuously until it reads the expected value.
   task automatic csr_spinwait(input uvm_object      ptr,

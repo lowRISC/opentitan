@@ -351,21 +351,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           // delay to avoid race condition when sending item and checking no item after reset occur at
           // the same time
           #1ps;
-          if (do_read_and_check_all_csrs) read_and_check_all_csrs();
+          if (do_read_and_check_all_csrs) read_and_check_all_csrs(ral);
         end : isolation_fork
       join
-    end
-  endtask
-
-  // task to read all csrs and check against ral expected value
-  // used after reset
-  virtual task read_and_check_all_csrs();
-    uvm_reg       csrs[$];
-    ral.get_registers(csrs);
-    csrs.shuffle();
-
-    foreach (csrs[i]) begin
-      csr_rd_check(.ptr(csrs[i]), .compare_vs_ral(1));
     end
   endtask
 
