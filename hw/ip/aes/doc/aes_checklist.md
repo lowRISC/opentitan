@@ -2,7 +2,7 @@
 title: "AES Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/hw_stages.md" >}}) transitions for the [AES peripheral.]({{< relref "index.md" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/hw_stages.md" >}}) transitions for the [AES peripheral.](../)
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
