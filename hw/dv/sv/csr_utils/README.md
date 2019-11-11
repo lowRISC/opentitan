@@ -50,6 +50,12 @@ Example below uses the `csr_spinwait` to wait until the CSR `fifo_status` field
 csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
 ```
 
+##### Read and check all CSRs
+The purpose of the `read_and_check_all_csrs` task is to read all valid CSRs from
+the given `uvm_reg_block` and check against their expected values from RAL. This
+task is primarily implemented to use after reset, to make sure all the CSRs are
+being reset to the default value.
+
 ##### Under_reset
 Due to `csr_utils_pkg` is not connected to any interface, methods inside
 this package are not able to get reset information. Current the `under_reset`
