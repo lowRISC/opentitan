@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# See dv_test.h for config meanings
+
+# sanity test - drive basic JTAG stimulus
+
+# 0 - kDVResetOnce, 1 - kDVResetOccasional, 2 - kDVResetStress
+reset_mode=0
+# 0 - kDVCSRRandom, 1 - kDVCSRStress, 2 - kDVCSRBusAccess, 3 - kDVCSRAbsCmd
+csr_mode=0
+# 0 - kDVHostIdle, 1 - kDVHostRandom, 2 - kDVHostDelays
+host_mode=0
+# 0 - kDVDeviceRandom, 1 - kDVDeviceDelays
+device_mode=0

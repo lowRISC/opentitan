@@ -1,0 +1,75 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:rv_dm_cpp"
+description: "C++ debug module testbench"
+filesets:
+  files_sim_verilator:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - tb/tb.cc: { file_type: cppSource }
+
+  files_sim:
+    depend:
+      - lowrisc:ip:rv_dm
+
+    files:
+      - env/env_dpi.sv
+      - tb/tb.sv
+    file_type: systemVerilogSource
+
+parameters:
+  NrHarts:
+    datatype: int
+    paramtype: vlogparam
+    default: 1
+    description: Num Harts (1-2^20)
+  IdcodeValue:
+    datatype: int
+    paramtype: vlogparam
+    default: 1
+    description: ID code regval
+
+targets:
+  sim:
+    default_tool: verilator
+    filesets:
+      - files_sim_verilator
+      - files_sim
+    toplevel: tb
+    parameters:
+      - NrHarts
+      - IdcodeValue
+    tools:
+      vcs:
+        vcs_options:
+          - '${PWD}/build/bin/debug_dpi.so'
+          - '-debug_access+all'
+          - '-assert svaext'
+          - '-cm line+cond+fsm+tgl+branch'
+
+      verilator:
+        mode: cc
+        libs:
+          - '${PWD}/../../bin/debug_dpi.so'
+        verilator_options:
+          - '--trace'
+          # - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++14 -Wall -DTOPLEVEL_NAME=tb -g"'
+          - '-LDFLAGS "-pthread -lutil"'
+          - "-Wall"
+          - "-Wno-PINCONNECTEMPTY"
+          # XXX: Cleanup all warnings and remove this option
+          # (or make it more fine-grained at least)
+          - "-Wno-fatal"
+        make_options:
+          # Optimization levels have a large impact on the runtime performance
+          # of the simulation model. -O2 and -O3 are pretty similar, -Os is
+          # slower than -O2/-O3
+          - OPT_FAST="-O2"
