@@ -4,7 +4,6 @@
 
 #ifndef __USB_CONTROLEP_H__
 #define __USB_CONTROLEP_H__
-#include <stddef.h>
 
 #include "sw/device/lib/common.h"
 #include "usbdev.h"

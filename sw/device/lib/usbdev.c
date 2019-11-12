@@ -5,8 +5,6 @@
 // Get NULL from here
 #include "usbdev.h"
 
-#include <stddef.h>
-
 #include "sw/device/lib/common.h"
 
 #define USBDEV_BASE_ADDR 0x40020000

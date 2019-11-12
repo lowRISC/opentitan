@@ -5,8 +5,6 @@
 // Get NULL from here
 #include "usb_controlep.h"
 
-#include <stddef.h>
-
 #include "sw/device/lib/common.h"
 #include "usb_consts.h"
 #include "usbdev.h"
