@@ -98,7 +98,7 @@ $ ./util/get-toolchain.py
 
 1. Install all build prerequisites listed [in the documentation](https://github.com/riscv/riscv-gnu-toolchain/#prerequisites).
 
-2. Build the toolchain
+2. Build the toolchain (this should be done outside the `$REPO_TOP` directory):
     ```console
     $ git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
     $ cd riscv-gnu-toolchain
@@ -115,6 +115,8 @@ It also provides a GDB server which is an "intermediate" when debugging software
 
 Unfortunately the upstream sources of OpenOCD do not contain all necessary patches to support RISC-V, and hence typical distribution packages don't work.
 We therefore need to build OpenOCD from source from a forked repository.
+
+To build OpenOCD (this should be done outside the `$REPO_TOP` directory):
 
 ```console
 $ git clone https://github.com/riscv/riscv-openocd.git
@@ -134,7 +136,7 @@ We recommend compiling Verilator from source, as outlined here.
 
 ### Install Verilator
 
-Then you can fetch, build and install Verilator itself.
+Then you can fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
 
 ```console
 $ export VERILATOR_VERSION=4.010
