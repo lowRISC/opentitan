@@ -35,7 +35,6 @@ Review        | Signoff date          | Done        | 2019-11-04
 [FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func-implemented" >}}
 [ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}
 [LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint-setup" >}}
-[D1_REVIEWED]:        {{<relref "/doc/project/checklist.md#d1-reviewed" >}}
 
 ### D2
 
@@ -76,7 +75,6 @@ Review        | Signoff date            | Done        | 2019-11-04
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
-[D2_REVIEWED]:         {{<relref "/doc/project/checklist.md#d2-reviewed" >}}
 
 ### D3
 
@@ -86,14 +84,14 @@ Documentation | [NEW_FEATURES_D3][]     | N/A         |
 RTL           | [TODO_COMPLETE][]       | Done        | Resolved: [#837][]
 Code Quality  | [LINT_COMPLETE][]       | Done        |
 Code Quality  | [CDC_COMPLETE][]        | N/A         |
-Review        | [REVIEW_RTL][]          | Not Started | 1st @tjaychen / 2nd @martin-lueker
+Review        | [REVIEW_RTL][]          | Done        | 1st @tjaychen / 2nd @martin-lueker
 Review        | [REVIEW_DELETED_FF][]   | N/A         |
 Review        | [REVIEW_SW_CSR][]       | N/A         |
 Review        | [REVIEW_SW_FATAL_ERR][] | Done        |
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Review        | Reviewer(s)             |             |
-Review        | Signoff date            |             |
+Review        | Reviewer(s)             | Done        | @weicaiyang @tjaychen
+Review        | Signoff date            | Done        | 2019-11-07
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new-features-d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo-complete" >}}
@@ -106,7 +104,6 @@ Review        | Signoff date            |             |
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
-[D3_REVIEWED]:          {{<relref "/doc/project/checklist.md#d3-reviewed" >}}
 
 ## Verification Checklist
 
@@ -202,14 +199,14 @@ Review        | Signoff date                            | Done        | 2019-11-
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | N/A         |
 Testbench     | [ALL_TODOS_RESOLVED][]            | Done        |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | tool setup in progress
-Regression    | [NIGHTLY_REGRESSION_AT_100][]     | In Progress |
-Coverage      | [CODE_COVERAGE_AT_100][]          | Done        |
-Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | In Progress | Waivers in PR
+Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Done        |
+Coverage      | [CODE_COVERAGE_AT_100][]          | Done        | [xbar_cov_excl.el][]
+Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Done        |
 Issues        | [NO_ISSUES_PENDING][]             | Done        |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        | Waived warning due to using 'force' to connect the signal
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Waived      | prim_arbiter to be verified later
-Review        | Reviewer(s)                       |             |
-Review        | Signoff date                      |             |
+Review        | Reviewer(s)                       | Done        | @eunchan @sriyerg
+Review        | Signoff date                      | Done        | 2019-11-07
 
 [DESIGN_DELTAS_CAPTURED_V3]:    {{<relref "/doc/project/checklist.md#design-deltas-captured-v3" >}}
 [ALL_TODOS_RESOLVED]:           {{<relref "/doc/project/checklist.md#all-todos-resolved" >}}
@@ -220,3 +217,4 @@ Review        | Signoff date                      |             |
 [NO_ISSUES_PENDING]:            {{<relref "/doc/project/checklist.md#no-issues-pending" >}}
 [NO_TOOL_WARNINGS_THROWN]:      {{<relref "/doc/project/checklist.md#no-tool-warnings-thrown" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:  {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v3" >}}
+[xbar_cov_excl.el]: https://github.com/weicaiyang/opentitan/blob/6cd55ad23aac96374bfa0bec315b904c6ffbdb8f/hw/ip/tlul/dv/cov/xbar_cov_excl.el
