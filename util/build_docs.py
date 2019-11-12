@@ -15,6 +15,7 @@ import io
 import logging
 import os
 import platform
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -161,6 +162,19 @@ def generate_selfdocs():
                 fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
 
+def is_hugo_extended():
+    args = ["hugo", "version"]
+    process = subprocess.run(args,
+                             universal_newlines=True,
+                             stdout=subprocess.PIPE,
+                             check=True,
+                             cwd=str(SRCTREE_TOP))
+
+    # Hugo version string example:
+    # Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z
+    return bool(re.search("v\d+\.\d+\.\d+-.*/extended", process.stdout))
+
+
 def install_hugo(install_dir):
     """Download and "install" hugo into |install_dir|
 
@@ -240,6 +254,12 @@ def main():
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
 
     try:
+        if not is_hugo_extended():
+            logging.info(
+                "Hugo extended (with SASS support) is required, but only non-extended version found."
+                "Installing local copy and re-trying.")
+            install_hugo(hugo_localinstall_dir)
+
         invoke_hugo(args.preview)
     except FileNotFoundError:
         logging.info("Hugo not found. Installing local copy and re-trying.")
