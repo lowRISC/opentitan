@@ -89,6 +89,7 @@ def parse_reg(obj):
         reg.resval = obj["genresval"]
         reg.dvrights = obj["gendvrights"]
         reg.regwen = obj["regwen"].lower()
+        reg.ishomog = len(obj['fields']) == 1
 
         # Parsing Fields
         for f in obj["fields"]:

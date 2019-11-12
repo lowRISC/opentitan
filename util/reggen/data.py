@@ -4,14 +4,16 @@
 
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
+
 # helper funtion that strips trailing number from name
 # TODO: this is a workaround, should solve this in validate.py
 def _get_basename(name):
     outname = ""
     for (k, c) in enumerate(name[::-1]):
         if not str.isdigit(c):
-            return name[0:len(name)-k]
+            return name[0:len(name) - k]
     return ""
+
 
 class Field():
     """Field in a register.
@@ -64,6 +66,7 @@ class Field():
 
     def get_basename(self):
         return _get_basename(self.name)
+
 
 class Reg():
     name = ""
@@ -124,7 +127,7 @@ class Reg():
         return len(self.get_fields_flat())
 
     def get_regs_flat(self):
-        """Returns the a flatt list containing all
+        """Returns a flat list containing all
         registers and subregisters"""
         if isinstance(self.fields[0], Field):
             return [self]
@@ -158,7 +161,7 @@ class Reg():
             else:
                 dims = [len(self.fields)]
         else:
-        # nested multiregister case
+            # nested multiregister case
             dims = [len(self.fields)] + self.fields[0].get_nested_dims()
         return dims
 
