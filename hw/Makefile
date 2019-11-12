@@ -38,7 +38,7 @@ tops_gen = $(addsuffix _gen,$(TOPS))
 
 tops_reg = $(addsuffix _reg,$(TOPS))
 
-all: $(ips_reg) $(tops_gen) $(tops_reg)
+all: $(ips_reg) $(tops_gen) $(tops_reg) banner
 
 banner:
 	@echo "############################################"
@@ -46,23 +46,23 @@ banner:
 	@echo "${REG_OUTPUT_DIR}"
 	@echo "############################################"
 
-regs: pre_reg $(ips_reg) $(tops_reg) banner
+regs: $(ips_reg) $(tops_reg) banner
 
 pre_reg:
 	mkdir -p ${REG_OUTPUT_DIR}
 	mkdir -p ${REG_OUTPUT_DV_DIR}
 	mkdir -p ${REG_OUTPUT_SW_DIR}
 
-$(ips_reg):
+$(ips_reg): pre_reg
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
 		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
 		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 	fi
 
-regs-header: pre_reg $(ips_reg_header) banner
+regs-header: $(ips_reg_header) banner
 
-$(ips_reg_header):
+$(ips_reg_header): pre_reg
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson ]; then \
 		${PRJ_DIR}/util/regtool.py -D -o ${REG_OUTPUT_SW_DIR}/$(subst _reg_header,_reg_headers,$@).h\
 		${PRJ_DIR}/hw/ip/$(subst _reg_header,,$@)/$(dir_hjson)/$(subst _reg_header,,$@).hjson; \
@@ -78,7 +78,7 @@ $(tops_gen):
 		--tpl ${PRJ_DIR}/hw/$($@_TOP)/data/ \
 		-o ${PRJ_DIR}/hw/$($@_TOP)/ ${toolflags}
 
-$(tops_reg):
+$(tops_reg): pre_reg
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$($@_TOP)
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
