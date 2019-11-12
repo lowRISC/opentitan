@@ -6,7 +6,6 @@
 #define _F_LIB_SHA256_H__
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include "sw/vendor/cryptoc/include/cryptoc/hash-internal.h"
 

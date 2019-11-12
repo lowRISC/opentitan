@@ -6,7 +6,6 @@
 #define _F_LIB_RV_TIMER_H__
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 
 /**

@@ -5,8 +5,6 @@
 // Get NULL from here
 #include "usb_simpleserial.h"
 
-#include <stddef.h>
-
 #include "sw/device/lib/common.h"
 #include "usbdev.h"
 
