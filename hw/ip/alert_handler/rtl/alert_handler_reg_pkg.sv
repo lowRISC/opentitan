@@ -20,397 +20,510 @@ package alert_handler_reg_pkg;
   localparam int PHASE_DW = 2;
   localparam int CLASS_DW = 2;
 
-////////////////////////////
-// Typedefs for multiregs //
-////////////////////////////
-
-typedef struct packed {
-  logic [0:0] q;
-} alert_handler_reg2hw_alert_en_mreg_t;
-typedef struct packed {
-  logic [1:0] q;
-} alert_handler_reg2hw_alert_class_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} alert_handler_reg2hw_alert_cause_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} alert_handler_reg2hw_loc_alert_en_mreg_t;
-typedef struct packed {
-  logic [1:0] q;
-} alert_handler_reg2hw_loc_alert_class_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} alert_handler_reg2hw_loc_alert_cause_mreg_t;
-
-typedef struct packed {
-  logic [0:0] d;
-  logic de;
-} alert_handler_hw2reg_alert_cause_mreg_t;
-typedef struct packed {
-  logic [0:0] d;
-  logic de;
-} alert_handler_hw2reg_loc_alert_cause_mreg_t;
-
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
-
-typedef struct packed {
-  struct packed {
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
     struct packed {
-      logic q; // [840]
+      logic        q;
     } classa;
     struct packed {
-      logic q; // [839]
+      logic        q;
     } classb;
     struct packed {
-      logic q; // [838]
+      logic        q;
     } classc;
     struct packed {
-      logic q; // [837]
+      logic        q;
     } classd;
-  } intr_state;
-  struct packed {
-    struct packed {
-      logic q; // [836]
-    } classa;
-    struct packed {
-      logic q; // [835]
-    } classb;
-    struct packed {
-      logic q; // [834]
-    } classc;
-    struct packed {
-      logic q; // [833]
-    } classd;
-  } intr_enable;
-  struct packed {
-    struct packed {
-      logic q; // [832]
-      logic qe; // [831]
-    } classa;
-    struct packed {
-      logic q; // [830]
-      logic qe; // [829]
-    } classb;
-    struct packed {
-      logic q; // [828]
-      logic qe; // [827]
-    } classc;
-    struct packed {
-      logic q; // [826]
-      logic qe; // [825]
-    } classd;
-  } intr_test;
-  struct packed {
-    logic [0:0] q; // [824:824]
-  } regen;
-  struct packed {
-    logic [23:0] q; // [823:800]
-  } ping_timeout_cyc;
-  alert_handler_reg2hw_alert_en_mreg_t [3:0] alert_en; // [799:796]
-  alert_handler_reg2hw_alert_class_mreg_t [3:0] alert_class; // [795:788]
-  alert_handler_reg2hw_alert_cause_mreg_t [3:0] alert_cause; // [787:784]
-  alert_handler_reg2hw_loc_alert_en_mreg_t [3:0] loc_alert_en; // [783:780]
-  alert_handler_reg2hw_loc_alert_class_mreg_t [3:0] loc_alert_class; // [779:772]
-  alert_handler_reg2hw_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [771:768]
-  struct packed {
-    struct packed {
-      logic q; // [767]
-    } en;
-    struct packed {
-      logic q; // [766]
-    } lock;
-    struct packed {
-      logic q; // [765]
-    } en_e0;
-    struct packed {
-      logic q; // [764]
-    } en_e1;
-    struct packed {
-      logic q; // [763]
-    } en_e2;
-    struct packed {
-      logic q; // [762]
-    } en_e3;
-    struct packed {
-      logic [1:0] q; // [761:760]
-    } map_e0;
-    struct packed {
-      logic [1:0] q; // [759:758]
-    } map_e1;
-    struct packed {
-      logic [1:0] q; // [757:756]
-    } map_e2;
-    struct packed {
-      logic [1:0] q; // [755:754]
-    } map_e3;
-  } classa_ctrl;
-  struct packed {
-    logic [0:0] q; // [753:753]
-    logic qe; // [752]
-  } classa_clr;
-  struct packed {
-    logic [15:0] q; // [751:736]
-  } classa_accum_thresh;
-  struct packed {
-    logic [31:0] q; // [735:704]
-  } classa_timeout_cyc;
-  struct packed {
-    logic [31:0] q; // [703:672]
-  } classa_phase0_cyc;
-  struct packed {
-    logic [31:0] q; // [671:640]
-  } classa_phase1_cyc;
-  struct packed {
-    logic [31:0] q; // [639:608]
-  } classa_phase2_cyc;
-  struct packed {
-    logic [31:0] q; // [607:576]
-  } classa_phase3_cyc;
-  struct packed {
-    struct packed {
-      logic q; // [575]
-    } en;
-    struct packed {
-      logic q; // [574]
-    } lock;
-    struct packed {
-      logic q; // [573]
-    } en_e0;
-    struct packed {
-      logic q; // [572]
-    } en_e1;
-    struct packed {
-      logic q; // [571]
-    } en_e2;
-    struct packed {
-      logic q; // [570]
-    } en_e3;
-    struct packed {
-      logic [1:0] q; // [569:568]
-    } map_e0;
-    struct packed {
-      logic [1:0] q; // [567:566]
-    } map_e1;
-    struct packed {
-      logic [1:0] q; // [565:564]
-    } map_e2;
-    struct packed {
-      logic [1:0] q; // [563:562]
-    } map_e3;
-  } classb_ctrl;
-  struct packed {
-    logic [0:0] q; // [561:561]
-    logic qe; // [560]
-  } classb_clr;
-  struct packed {
-    logic [15:0] q; // [559:544]
-  } classb_accum_thresh;
-  struct packed {
-    logic [31:0] q; // [543:512]
-  } classb_timeout_cyc;
-  struct packed {
-    logic [31:0] q; // [511:480]
-  } classb_phase0_cyc;
-  struct packed {
-    logic [31:0] q; // [479:448]
-  } classb_phase1_cyc;
-  struct packed {
-    logic [31:0] q; // [447:416]
-  } classb_phase2_cyc;
-  struct packed {
-    logic [31:0] q; // [415:384]
-  } classb_phase3_cyc;
-  struct packed {
-    struct packed {
-      logic q; // [383]
-    } en;
-    struct packed {
-      logic q; // [382]
-    } lock;
-    struct packed {
-      logic q; // [381]
-    } en_e0;
-    struct packed {
-      logic q; // [380]
-    } en_e1;
-    struct packed {
-      logic q; // [379]
-    } en_e2;
-    struct packed {
-      logic q; // [378]
-    } en_e3;
-    struct packed {
-      logic [1:0] q; // [377:376]
-    } map_e0;
-    struct packed {
-      logic [1:0] q; // [375:374]
-    } map_e1;
-    struct packed {
-      logic [1:0] q; // [373:372]
-    } map_e2;
-    struct packed {
-      logic [1:0] q; // [371:370]
-    } map_e3;
-  } classc_ctrl;
-  struct packed {
-    logic [0:0] q; // [369:369]
-    logic qe; // [368]
-  } classc_clr;
-  struct packed {
-    logic [15:0] q; // [367:352]
-  } classc_accum_thresh;
-  struct packed {
-    logic [31:0] q; // [351:320]
-  } classc_timeout_cyc;
-  struct packed {
-    logic [31:0] q; // [319:288]
-  } classc_phase0_cyc;
-  struct packed {
-    logic [31:0] q; // [287:256]
-  } classc_phase1_cyc;
-  struct packed {
-    logic [31:0] q; // [255:224]
-  } classc_phase2_cyc;
-  struct packed {
-    logic [31:0] q; // [223:192]
-  } classc_phase3_cyc;
-  struct packed {
-    struct packed {
-      logic q; // [191]
-    } en;
-    struct packed {
-      logic q; // [190]
-    } lock;
-    struct packed {
-      logic q; // [189]
-    } en_e0;
-    struct packed {
-      logic q; // [188]
-    } en_e1;
-    struct packed {
-      logic q; // [187]
-    } en_e2;
-    struct packed {
-      logic q; // [186]
-    } en_e3;
-    struct packed {
-      logic [1:0] q; // [185:184]
-    } map_e0;
-    struct packed {
-      logic [1:0] q; // [183:182]
-    } map_e1;
-    struct packed {
-      logic [1:0] q; // [181:180]
-    } map_e2;
-    struct packed {
-      logic [1:0] q; // [179:178]
-    } map_e3;
-  } classd_ctrl;
-  struct packed {
-    logic [0:0] q; // [177:177]
-    logic qe; // [176]
-  } classd_clr;
-  struct packed {
-    logic [15:0] q; // [175:160]
-  } classd_accum_thresh;
-  struct packed {
-    logic [31:0] q; // [159:128]
-  } classd_timeout_cyc;
-  struct packed {
-    logic [31:0] q; // [127:96]
-  } classd_phase0_cyc;
-  struct packed {
-    logic [31:0] q; // [95:64]
-  } classd_phase1_cyc;
-  struct packed {
-    logic [31:0] q; // [63:32]
-  } classd_phase2_cyc;
-  struct packed {
-    logic [31:0] q; // [31:0]
-  } classd_phase3_cyc;
-} alert_handler_reg2hw_t;
+  } alert_handler_reg2hw_intr_state_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
-
-typedef struct packed {
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic d; // [235]
-      logic de; // [234]
+      logic        q;
     } classa;
     struct packed {
-      logic d; // [233]
-      logic de; // [232]
+      logic        q;
     } classb;
     struct packed {
-      logic d; // [231]
-      logic de; // [230]
+      logic        q;
     } classc;
     struct packed {
-      logic d; // [229]
-      logic de; // [228]
+      logic        q;
     } classd;
-  } intr_state;
-  alert_handler_hw2reg_alert_cause_mreg_t [3:0] alert_cause; // [227:220]
-  alert_handler_hw2reg_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [219:212]
-  struct packed {
-    logic [0:0] d; // [211:211]
-    logic de; // [210]
-  } classa_clren;
-  struct packed {
-    logic [15:0] d; // [209:194]
-  } classa_accum_cnt;
-  struct packed {
-    logic [31:0] d; // [193:162]
-  } classa_esc_cnt;
-  struct packed {
-    logic [2:0] d; // [161:159]
-  } classa_state;
-  struct packed {
-    logic [0:0] d; // [158:158]
-    logic de; // [157]
-  } classb_clren;
-  struct packed {
-    logic [15:0] d; // [156:141]
-  } classb_accum_cnt;
-  struct packed {
-    logic [31:0] d; // [140:109]
-  } classb_esc_cnt;
-  struct packed {
-    logic [2:0] d; // [108:106]
-  } classb_state;
-  struct packed {
-    logic [0:0] d; // [105:105]
-    logic de; // [104]
-  } classc_clren;
-  struct packed {
-    logic [15:0] d; // [103:88]
-  } classc_accum_cnt;
-  struct packed {
-    logic [31:0] d; // [87:56]
-  } classc_esc_cnt;
-  struct packed {
-    logic [2:0] d; // [55:53]
-  } classc_state;
-  struct packed {
-    logic [0:0] d; // [52:52]
-    logic de; // [51]
-  } classd_clren;
-  struct packed {
-    logic [15:0] d; // [50:35]
-  } classd_accum_cnt;
-  struct packed {
-    logic [31:0] d; // [34:3]
-  } classd_esc_cnt;
-  struct packed {
-    logic [2:0] d; // [2:0]
-  } classd_state;
-} alert_handler_hw2reg_t;
+  } alert_handler_reg2hw_intr_enable_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } classa;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } classb;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } classc;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } classd;
+  } alert_handler_reg2hw_intr_test_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } alert_handler_reg2hw_regen_reg_t;
+
+  typedef struct packed {
+    logic [23:0] q;
+  } alert_handler_reg2hw_ping_timeout_cyc_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } alert_handler_reg2hw_alert_en_mreg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } alert_handler_reg2hw_alert_class_mreg_t;
+
+  typedef struct packed {
+    logic        q;
+  } alert_handler_reg2hw_alert_cause_mreg_t;
+
+  typedef struct packed {
+    logic        q;
+  } alert_handler_reg2hw_loc_alert_en_mreg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } alert_handler_reg2hw_loc_alert_class_mreg_t;
+
+  typedef struct packed {
+    logic        q;
+  } alert_handler_reg2hw_loc_alert_cause_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic [1:0]  q;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e2;
+    struct packed {
+      logic [1:0]  q;
+    } map_e3;
+  } alert_handler_reg2hw_classa_ctrl_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } alert_handler_reg2hw_classa_clr_reg_t;
+
+  typedef struct packed {
+    logic [15:0] q;
+  } alert_handler_reg2hw_classa_accum_thresh_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classa_timeout_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classa_phase0_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classa_phase1_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classa_phase2_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classa_phase3_cyc_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic [1:0]  q;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e2;
+    struct packed {
+      logic [1:0]  q;
+    } map_e3;
+  } alert_handler_reg2hw_classb_ctrl_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } alert_handler_reg2hw_classb_clr_reg_t;
+
+  typedef struct packed {
+    logic [15:0] q;
+  } alert_handler_reg2hw_classb_accum_thresh_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classb_timeout_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classb_phase0_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classb_phase1_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classb_phase2_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classb_phase3_cyc_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic [1:0]  q;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e2;
+    struct packed {
+      logic [1:0]  q;
+    } map_e3;
+  } alert_handler_reg2hw_classc_ctrl_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } alert_handler_reg2hw_classc_clr_reg_t;
+
+  typedef struct packed {
+    logic [15:0] q;
+  } alert_handler_reg2hw_classc_accum_thresh_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classc_timeout_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classc_phase0_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classc_phase1_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classc_phase2_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classc_phase3_cyc_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic [1:0]  q;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e2;
+    struct packed {
+      logic [1:0]  q;
+    } map_e3;
+  } alert_handler_reg2hw_classd_ctrl_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } alert_handler_reg2hw_classd_clr_reg_t;
+
+  typedef struct packed {
+    logic [15:0] q;
+  } alert_handler_reg2hw_classd_accum_thresh_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classd_timeout_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classd_phase0_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classd_phase1_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classd_phase2_cyc_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } alert_handler_reg2hw_classd_phase3_cyc_reg_t;
+
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } classa;
+    struct packed {
+      logic        d;
+      logic        de;
+    } classb;
+    struct packed {
+      logic        d;
+      logic        de;
+    } classc;
+    struct packed {
+      logic        d;
+      logic        de;
+    } classd;
+  } alert_handler_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } alert_handler_hw2reg_alert_cause_mreg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } alert_handler_hw2reg_loc_alert_cause_mreg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } alert_handler_hw2reg_classa_clren_reg_t;
+
+  typedef struct packed {
+    logic [15:0] d;
+  } alert_handler_hw2reg_classa_accum_cnt_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } alert_handler_hw2reg_classa_esc_cnt_reg_t;
+
+  typedef struct packed {
+    logic [2:0]  d;
+  } alert_handler_hw2reg_classa_state_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } alert_handler_hw2reg_classb_clren_reg_t;
+
+  typedef struct packed {
+    logic [15:0] d;
+  } alert_handler_hw2reg_classb_accum_cnt_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } alert_handler_hw2reg_classb_esc_cnt_reg_t;
+
+  typedef struct packed {
+    logic [2:0]  d;
+  } alert_handler_hw2reg_classb_state_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } alert_handler_hw2reg_classc_clren_reg_t;
+
+  typedef struct packed {
+    logic [15:0] d;
+  } alert_handler_hw2reg_classc_accum_cnt_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } alert_handler_hw2reg_classc_esc_cnt_reg_t;
+
+  typedef struct packed {
+    logic [2:0]  d;
+  } alert_handler_hw2reg_classc_state_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } alert_handler_hw2reg_classd_clren_reg_t;
+
+  typedef struct packed {
+    logic [15:0] d;
+  } alert_handler_hw2reg_classd_accum_cnt_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } alert_handler_hw2reg_classd_esc_cnt_reg_t;
+
+  typedef struct packed {
+    logic [2:0]  d;
+  } alert_handler_hw2reg_classd_state_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [840:837]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [836:833]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [832:825]
+    alert_handler_reg2hw_regen_reg_t regen; // [824:824]
+    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [823:800]
+    alert_handler_reg2hw_alert_en_mreg_t [3:0] alert_en; // [799:796]
+    alert_handler_reg2hw_alert_class_mreg_t [3:0] alert_class; // [795:788]
+    alert_handler_reg2hw_alert_cause_mreg_t [3:0] alert_cause; // [787:784]
+    alert_handler_reg2hw_loc_alert_en_mreg_t [3:0] loc_alert_en; // [783:780]
+    alert_handler_reg2hw_loc_alert_class_mreg_t [3:0] loc_alert_class; // [779:772]
+    alert_handler_reg2hw_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [771:768]
+    alert_handler_reg2hw_classa_ctrl_reg_t classa_ctrl; // [767:754]
+    alert_handler_reg2hw_classa_clr_reg_t classa_clr; // [753:752]
+    alert_handler_reg2hw_classa_accum_thresh_reg_t classa_accum_thresh; // [751:736]
+    alert_handler_reg2hw_classa_timeout_cyc_reg_t classa_timeout_cyc; // [735:704]
+    alert_handler_reg2hw_classa_phase0_cyc_reg_t classa_phase0_cyc; // [703:672]
+    alert_handler_reg2hw_classa_phase1_cyc_reg_t classa_phase1_cyc; // [671:640]
+    alert_handler_reg2hw_classa_phase2_cyc_reg_t classa_phase2_cyc; // [639:608]
+    alert_handler_reg2hw_classa_phase3_cyc_reg_t classa_phase3_cyc; // [607:576]
+    alert_handler_reg2hw_classb_ctrl_reg_t classb_ctrl; // [575:562]
+    alert_handler_reg2hw_classb_clr_reg_t classb_clr; // [561:560]
+    alert_handler_reg2hw_classb_accum_thresh_reg_t classb_accum_thresh; // [559:544]
+    alert_handler_reg2hw_classb_timeout_cyc_reg_t classb_timeout_cyc; // [543:512]
+    alert_handler_reg2hw_classb_phase0_cyc_reg_t classb_phase0_cyc; // [511:480]
+    alert_handler_reg2hw_classb_phase1_cyc_reg_t classb_phase1_cyc; // [479:448]
+    alert_handler_reg2hw_classb_phase2_cyc_reg_t classb_phase2_cyc; // [447:416]
+    alert_handler_reg2hw_classb_phase3_cyc_reg_t classb_phase3_cyc; // [415:384]
+    alert_handler_reg2hw_classc_ctrl_reg_t classc_ctrl; // [383:370]
+    alert_handler_reg2hw_classc_clr_reg_t classc_clr; // [369:368]
+    alert_handler_reg2hw_classc_accum_thresh_reg_t classc_accum_thresh; // [367:352]
+    alert_handler_reg2hw_classc_timeout_cyc_reg_t classc_timeout_cyc; // [351:320]
+    alert_handler_reg2hw_classc_phase0_cyc_reg_t classc_phase0_cyc; // [319:288]
+    alert_handler_reg2hw_classc_phase1_cyc_reg_t classc_phase1_cyc; // [287:256]
+    alert_handler_reg2hw_classc_phase2_cyc_reg_t classc_phase2_cyc; // [255:224]
+    alert_handler_reg2hw_classc_phase3_cyc_reg_t classc_phase3_cyc; // [223:192]
+    alert_handler_reg2hw_classd_ctrl_reg_t classd_ctrl; // [191:178]
+    alert_handler_reg2hw_classd_clr_reg_t classd_clr; // [177:176]
+    alert_handler_reg2hw_classd_accum_thresh_reg_t classd_accum_thresh; // [175:160]
+    alert_handler_reg2hw_classd_timeout_cyc_reg_t classd_timeout_cyc; // [159:128]
+    alert_handler_reg2hw_classd_phase0_cyc_reg_t classd_phase0_cyc; // [127:96]
+    alert_handler_reg2hw_classd_phase1_cyc_reg_t classd_phase1_cyc; // [95:64]
+    alert_handler_reg2hw_classd_phase2_cyc_reg_t classd_phase2_cyc; // [63:32]
+    alert_handler_reg2hw_classd_phase3_cyc_reg_t classd_phase3_cyc; // [31:0]
+  } alert_handler_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    alert_handler_hw2reg_intr_state_reg_t intr_state; // [235:232]
+    alert_handler_hw2reg_alert_cause_mreg_t [3:0] alert_cause; // [231:224]
+    alert_handler_hw2reg_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [223:216]
+    alert_handler_hw2reg_classa_clren_reg_t classa_clren; // [215:216]
+    alert_handler_hw2reg_classa_accum_cnt_reg_t classa_accum_cnt; // [215:216]
+    alert_handler_hw2reg_classa_esc_cnt_reg_t classa_esc_cnt; // [215:216]
+    alert_handler_hw2reg_classa_state_reg_t classa_state; // [215:216]
+    alert_handler_hw2reg_classb_clren_reg_t classb_clren; // [215:216]
+    alert_handler_hw2reg_classb_accum_cnt_reg_t classb_accum_cnt; // [215:216]
+    alert_handler_hw2reg_classb_esc_cnt_reg_t classb_esc_cnt; // [215:216]
+    alert_handler_hw2reg_classb_state_reg_t classb_state; // [215:216]
+    alert_handler_hw2reg_classc_clren_reg_t classc_clren; // [215:216]
+    alert_handler_hw2reg_classc_accum_cnt_reg_t classc_accum_cnt; // [215:216]
+    alert_handler_hw2reg_classc_esc_cnt_reg_t classc_esc_cnt; // [215:216]
+    alert_handler_hw2reg_classc_state_reg_t classc_state; // [215:216]
+    alert_handler_hw2reg_classd_clren_reg_t classd_clren; // [215:216]
+    alert_handler_hw2reg_classd_accum_cnt_reg_t classd_accum_cnt; // [215:216]
+    alert_handler_hw2reg_classd_esc_cnt_reg_t classd_esc_cnt; // [215:216]
+    alert_handler_hw2reg_classd_state_reg_t classd_state; // [215:216]
+  } alert_handler_hw2reg_t;
 
   // Register Address
   parameter ALERT_HANDLER_INTR_STATE_OFFSET = 8'h 0;

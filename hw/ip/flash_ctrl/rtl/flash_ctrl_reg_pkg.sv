@@ -10,223 +10,246 @@ package flash_ctrl_reg_pkg;
   localparam int NumBanks = 2;
   localparam int NumRegions = 8;
 
-////////////////////////////
-// Typedefs for multiregs //
-////////////////////////////
-
-typedef struct packed {
-  struct packed {
-    logic [0:0] q;
-  } en;
-  struct packed {
-    logic [0:0] q;
-  } rd_en;
-  struct packed {
-    logic [0:0] q;
-  } prog_en;
-  struct packed {
-    logic [0:0] q;
-  } erase_en;
-  struct packed {
-    logic [8:0] q;
-  } base;
-  struct packed {
-    logic [8:0] q;
-  } size;
-} flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} flash_ctrl_reg2hw_mp_bank_cfg_mreg_t;
-
-
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
-
-typedef struct packed {
-  struct packed {
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
     struct packed {
-      logic q; // [295]
+      logic        q;
     } prog_empty;
     struct packed {
-      logic q; // [294]
+      logic        q;
     } prog_lvl;
     struct packed {
-      logic q; // [293]
+      logic        q;
     } rd_full;
     struct packed {
-      logic q; // [292]
+      logic        q;
     } rd_lvl;
     struct packed {
-      logic q; // [291]
+      logic        q;
     } op_done;
     struct packed {
-      logic q; // [290]
+      logic        q;
     } op_error;
-  } intr_state;
-  struct packed {
+  } flash_ctrl_reg2hw_intr_state_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [289]
+      logic        q;
     } prog_empty;
     struct packed {
-      logic q; // [288]
+      logic        q;
     } prog_lvl;
     struct packed {
-      logic q; // [287]
+      logic        q;
     } rd_full;
     struct packed {
-      logic q; // [286]
+      logic        q;
     } rd_lvl;
     struct packed {
-      logic q; // [285]
+      logic        q;
     } op_done;
     struct packed {
-      logic q; // [284]
+      logic        q;
     } op_error;
-  } intr_enable;
-  struct packed {
+  } flash_ctrl_reg2hw_intr_enable_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [283]
-      logic qe; // [282]
+      logic        q;
+      logic        qe;
     } prog_empty;
     struct packed {
-      logic q; // [281]
-      logic qe; // [280]
+      logic        q;
+      logic        qe;
     } prog_lvl;
     struct packed {
-      logic q; // [279]
-      logic qe; // [278]
+      logic        q;
+      logic        qe;
     } rd_full;
     struct packed {
-      logic q; // [277]
-      logic qe; // [276]
+      logic        q;
+      logic        qe;
     } rd_lvl;
     struct packed {
-      logic q; // [275]
-      logic qe; // [274]
+      logic        q;
+      logic        qe;
     } op_done;
     struct packed {
-      logic q; // [273]
-      logic qe; // [272]
+      logic        q;
+      logic        qe;
     } op_error;
-  } intr_test;
-  struct packed {
+  } flash_ctrl_reg2hw_intr_test_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [271]
+      logic        q;
     } start;
     struct packed {
-      logic [1:0] q; // [270:269]
+      logic [1:0]  q;
     } op;
     struct packed {
-      logic q; // [268]
+      logic        q;
     } erase_sel;
     struct packed {
-      logic q; // [267]
+      logic        q;
     } fifo_rst;
     struct packed {
-      logic [11:0] q; // [266:255]
+      logic [11:0] q;
     } num;
-  } control;
-  struct packed {
-    logic [31:0] q; // [254:223]
-  } addr;
-  flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [222:47]
-  struct packed {
+  } flash_ctrl_reg2hw_control_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } flash_ctrl_reg2hw_addr_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [46]
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
     } rd_en;
     struct packed {
-      logic q; // [45]
+      logic        q;
     } prog_en;
     struct packed {
-      logic q; // [44]
+      logic        q;
     } erase_en;
-  } default_region;
-  flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [1:0] mp_bank_cfg; // [43:42]
-  struct packed {
-    logic [31:0] q; // [41:10]
-  } scratch;
-  struct packed {
     struct packed {
-      logic [4:0] q; // [9:5]
+      logic [8:0]  q;
+    } base;
+    struct packed {
+      logic [8:0]  q;
+    } size;
+  } flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } rd_en;
+    struct packed {
+      logic        q;
+    } prog_en;
+    struct packed {
+      logic        q;
+    } erase_en;
+  } flash_ctrl_reg2hw_default_region_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } flash_ctrl_reg2hw_mp_bank_cfg_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } flash_ctrl_reg2hw_scratch_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [4:0]  q;
     } prog;
     struct packed {
-      logic [4:0] q; // [4:0]
+      logic [4:0]  q;
     } rd;
-  } fifo_lvl;
-} flash_ctrl_reg2hw_t;
+  } flash_ctrl_reg2hw_fifo_lvl_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
 
-typedef struct packed {
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic d; // [32]
-      logic de; // [31]
+      logic        d;
+      logic        de;
     } prog_empty;
     struct packed {
-      logic d; // [30]
-      logic de; // [29]
+      logic        d;
+      logic        de;
     } prog_lvl;
     struct packed {
-      logic d; // [28]
-      logic de; // [27]
+      logic        d;
+      logic        de;
     } rd_full;
     struct packed {
-      logic d; // [26]
-      logic de; // [25]
+      logic        d;
+      logic        de;
     } rd_lvl;
     struct packed {
-      logic d; // [24]
-      logic de; // [23]
+      logic        d;
+      logic        de;
     } op_done;
     struct packed {
-      logic d; // [22]
-      logic de; // [21]
+      logic        d;
+      logic        de;
     } op_error;
-  } intr_state;
-  struct packed {
+  } flash_ctrl_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d; // [20]
-      logic de; // [19]
+      logic        d;
+      logic        de;
     } start;
-  } control;
-  struct packed {
+  } flash_ctrl_hw2reg_control_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d; // [18]
-      logic de; // [17]
+      logic        d;
+      logic        de;
     } done;
     struct packed {
-      logic d; // [16]
-      logic de; // [15]
+      logic        d;
+      logic        de;
     } err;
-  } op_status;
-  struct packed {
+  } flash_ctrl_hw2reg_op_status_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d; // [14]
+      logic        d;
     } rd_full;
     struct packed {
-      logic d; // [13]
+      logic        d;
     } rd_empty;
     struct packed {
-      logic d; // [12]
+      logic        d;
     } prog_full;
     struct packed {
-      logic d; // [11]
+      logic        d;
     } prog_empty;
     struct packed {
-      logic d; // [10]
+      logic        d;
     } init_wip;
     struct packed {
-      logic [8:0] d; // [9:1]
+      logic [8:0]  d;
     } error_page;
     struct packed {
-      logic d; // [0]
+      logic        d;
     } error_bank;
-  } status;
-} flash_ctrl_hw2reg_t;
+  } flash_ctrl_hw2reg_status_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [295:290]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [289:284]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [283:272]
+    flash_ctrl_reg2hw_control_reg_t control; // [271:255]
+    flash_ctrl_reg2hw_addr_reg_t addr; // [254:223]
+    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [222:47]
+    flash_ctrl_reg2hw_default_region_reg_t default_region; // [46:44]
+    flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [1:0] mp_bank_cfg; // [43:42]
+    flash_ctrl_reg2hw_scratch_reg_t scratch; // [41:10]
+    flash_ctrl_reg2hw_fifo_lvl_reg_t fifo_lvl; // [9:0]
+  } flash_ctrl_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [32:27]
+    flash_ctrl_hw2reg_control_reg_t control; // [26:10]
+    flash_ctrl_hw2reg_op_status_reg_t op_status; // [9:10]
+    flash_ctrl_hw2reg_status_reg_t status; // [9:10]
+  } flash_ctrl_hw2reg_t;
 
   // Register Address
   parameter FLASH_CTRL_INTR_STATE_OFFSET = 7'h 0;

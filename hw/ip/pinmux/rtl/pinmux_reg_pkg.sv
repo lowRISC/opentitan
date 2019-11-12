@@ -11,31 +11,30 @@ package pinmux_reg_pkg;
   localparam int NPeriphOut = 16;
   localparam int NMioPads = 8;
 
-////////////////////////////
-// Typedefs for multiregs //
-////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    logic [3:0]  q;
+  } pinmux_reg2hw_periph_insel_mreg_t;
 
-typedef struct packed {
-  logic [3:0] q;
-} pinmux_reg2hw_periph_insel_mreg_t;
-typedef struct packed {
-  logic [4:0] q;
-} pinmux_reg2hw_mio_outsel_mreg_t;
+  typedef struct packed {
+    logic [4:0]  q;
+  } pinmux_reg2hw_mio_outsel_mreg_t;
 
 
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
 
-typedef struct packed {
-  pinmux_reg2hw_periph_insel_mreg_t [15:0] periph_insel; // [103:40]
-  pinmux_reg2hw_mio_outsel_mreg_t [7:0] mio_outsel; // [39:0]
-} pinmux_reg2hw_t;
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    pinmux_reg2hw_periph_insel_mreg_t [15:0] periph_insel; // [103:40]
+    pinmux_reg2hw_mio_outsel_mreg_t [7:0] mio_outsel; // [39:0]
+  } pinmux_reg2hw_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
-
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
 
   // Register Address
   parameter PINMUX_REGEN_OFFSET = 5'h 0;

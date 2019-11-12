@@ -6,216 +6,249 @@
 
 package spi_device_reg_pkg;
 
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } rxf;
+    struct packed {
+      logic        q;
+    } rxlvl;
+    struct packed {
+      logic        q;
+    } txlvl;
+    struct packed {
+      logic        q;
+    } rxerr;
+    struct packed {
+      logic        q;
+    } rxoverflow;
+    struct packed {
+      logic        q;
+    } txunderflow;
+  } spi_device_reg2hw_intr_state_reg_t;
 
-typedef struct packed {
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic q; // [168]
+      logic        q;
     } rxf;
     struct packed {
-      logic q; // [167]
+      logic        q;
     } rxlvl;
     struct packed {
-      logic q; // [166]
+      logic        q;
     } txlvl;
     struct packed {
-      logic q; // [165]
+      logic        q;
     } rxerr;
     struct packed {
-      logic q; // [164]
+      logic        q;
     } rxoverflow;
     struct packed {
-      logic q; // [163]
+      logic        q;
     } txunderflow;
-  } intr_state;
-  struct packed {
+  } spi_device_reg2hw_intr_enable_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [162]
+      logic        q;
+      logic        qe;
     } rxf;
     struct packed {
-      logic q; // [161]
+      logic        q;
+      logic        qe;
     } rxlvl;
     struct packed {
-      logic q; // [160]
+      logic        q;
+      logic        qe;
     } txlvl;
     struct packed {
-      logic q; // [159]
+      logic        q;
+      logic        qe;
     } rxerr;
     struct packed {
-      logic q; // [158]
+      logic        q;
+      logic        qe;
     } rxoverflow;
     struct packed {
-      logic q; // [157]
+      logic        q;
+      logic        qe;
     } txunderflow;
-  } intr_enable;
-  struct packed {
+  } spi_device_reg2hw_intr_test_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [156]
-      logic qe; // [155]
-    } rxf;
-    struct packed {
-      logic q; // [154]
-      logic qe; // [153]
-    } rxlvl;
-    struct packed {
-      logic q; // [152]
-      logic qe; // [151]
-    } txlvl;
-    struct packed {
-      logic q; // [150]
-      logic qe; // [149]
-    } rxerr;
-    struct packed {
-      logic q; // [148]
-      logic qe; // [147]
-    } rxoverflow;
-    struct packed {
-      logic q; // [146]
-      logic qe; // [145]
-    } txunderflow;
-  } intr_test;
-  struct packed {
-    struct packed {
-      logic q; // [144]
+      logic        q;
     } abort;
     struct packed {
-      logic [1:0] q; // [143:142]
+      logic [1:0]  q;
     } mode;
     struct packed {
-      logic q; // [141]
+      logic        q;
     } rst_txfifo;
     struct packed {
-      logic q; // [140]
+      logic        q;
     } rst_rxfifo;
-  } control;
-  struct packed {
+  } spi_device_reg2hw_control_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [139]
+      logic        q;
     } cpol;
     struct packed {
-      logic q; // [138]
+      logic        q;
     } cpha;
     struct packed {
-      logic q; // [137]
+      logic        q;
     } tx_order;
     struct packed {
-      logic q; // [136]
+      logic        q;
     } rx_order;
     struct packed {
-      logic [7:0] q; // [135:128]
+      logic [7:0]  q;
     } timer_v;
-  } cfg;
-  struct packed {
+  } spi_device_reg2hw_cfg_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] q; // [127:112]
+      logic [15:0] q;
     } rxlvl;
     struct packed {
-      logic [15:0] q; // [111:96]
+      logic [15:0] q;
     } txlvl;
-  } fifo_level;
-  struct packed {
+  } spi_device_reg2hw_fifo_level_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] q; // [95:80]
+      logic [15:0] q;
     } rptr;
-  } rxf_ptr;
-  struct packed {
+  } spi_device_reg2hw_rxf_ptr_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] q; // [79:64]
+      logic [15:0] q;
     } wptr;
-  } txf_ptr;
-  struct packed {
+  } spi_device_reg2hw_txf_ptr_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] q; // [63:48]
+      logic [15:0] q;
     } base;
     struct packed {
-      logic [15:0] q; // [47:32]
+      logic [15:0] q;
     } limit;
-  } rxf_addr;
-  struct packed {
+  } spi_device_reg2hw_rxf_addr_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] q; // [31:16]
+      logic [15:0] q;
     } base;
     struct packed {
-      logic [15:0] q; // [15:0]
+      logic [15:0] q;
     } limit;
-  } txf_addr;
-} spi_device_reg2hw_t;
+  } spi_device_reg2hw_txf_addr_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
 
-typedef struct packed {
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic d; // [67]
-      logic de; // [66]
+      logic        d;
+      logic        de;
     } rxf;
     struct packed {
-      logic d; // [65]
-      logic de; // [64]
+      logic        d;
+      logic        de;
     } rxlvl;
     struct packed {
-      logic d; // [63]
-      logic de; // [62]
+      logic        d;
+      logic        de;
     } txlvl;
     struct packed {
-      logic d; // [61]
-      logic de; // [60]
+      logic        d;
+      logic        de;
     } rxerr;
     struct packed {
-      logic d; // [59]
-      logic de; // [58]
+      logic        d;
+      logic        de;
     } rxoverflow;
     struct packed {
-      logic d; // [57]
-      logic de; // [56]
+      logic        d;
+      logic        de;
     } txunderflow;
-  } intr_state;
-  struct packed {
+  } spi_device_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [7:0] d; // [55:48]
+      logic [7:0]  d;
     } rxlvl;
     struct packed {
-      logic [7:0] d; // [47:40]
+      logic [7:0]  d;
     } txlvl;
-  } async_fifo_level;
-  struct packed {
+  } spi_device_hw2reg_async_fifo_level_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d; // [39]
+      logic        d;
     } rxf_full;
     struct packed {
-      logic d; // [38]
+      logic        d;
     } rxf_empty;
     struct packed {
-      logic d; // [37]
+      logic        d;
     } txf_full;
     struct packed {
-      logic d; // [36]
+      logic        d;
     } txf_empty;
     struct packed {
-      logic d; // [35]
+      logic        d;
     } abort_done;
     struct packed {
-      logic d; // [34]
+      logic        d;
     } csb;
-  } status;
-  struct packed {
+  } spi_device_hw2reg_status_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] d; // [33:18]
-      logic de; // [17]
+      logic [15:0] d;
+      logic        de;
     } wptr;
-  } rxf_ptr;
-  struct packed {
+  } spi_device_hw2reg_rxf_ptr_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] d; // [16:1]
-      logic de; // [0]
+      logic [15:0] d;
+      logic        de;
     } rptr;
-  } txf_ptr;
-} spi_device_hw2reg_t;
+  } spi_device_hw2reg_txf_ptr_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [168:163]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [162:157]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [156:145]
+    spi_device_reg2hw_control_reg_t control; // [144:140]
+    spi_device_reg2hw_cfg_reg_t cfg; // [139:128]
+    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [127:96]
+    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [95:80]
+    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [79:64]
+    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [63:32]
+    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [31:0]
+  } spi_device_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [67:62]
+    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [61:62]
+    spi_device_hw2reg_status_reg_t status; // [61:62]
+    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [61:46]
+    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [45:30]
+  } spi_device_hw2reg_t;
 
   // Register Address
   parameter SPI_DEVICE_INTR_STATE_OFFSET = 12'h 0;

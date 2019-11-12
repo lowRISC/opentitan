@@ -10,217 +10,335 @@ package rv_plic_reg_pkg;
   localparam int NumSrc = 55;
   localparam int NumTarget = 1;
 
-////////////////////////////
-// Typedefs for multiregs //
-////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    logic        q;
+  } rv_plic_reg2hw_le_mreg_t;
 
-typedef struct packed {
-  logic [0:0] q;
-} rv_plic_reg2hw_le_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} rv_plic_reg2hw_ie0_mreg_t;
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio0_reg_t;
 
-typedef struct packed {
-  logic [0:0] d;
-  logic de;
-} rv_plic_hw2reg_ip_mreg_t;
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio1_reg_t;
 
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio2_reg_t;
 
-typedef struct packed {
-  rv_plic_reg2hw_le_mreg_t [54:0] le; // [230:176]
-  struct packed {
-    logic [1:0] q; // [175:174]
-  } prio0;
-  struct packed {
-    logic [1:0] q; // [173:172]
-  } prio1;
-  struct packed {
-    logic [1:0] q; // [171:170]
-  } prio2;
-  struct packed {
-    logic [1:0] q; // [169:168]
-  } prio3;
-  struct packed {
-    logic [1:0] q; // [167:166]
-  } prio4;
-  struct packed {
-    logic [1:0] q; // [165:164]
-  } prio5;
-  struct packed {
-    logic [1:0] q; // [163:162]
-  } prio6;
-  struct packed {
-    logic [1:0] q; // [161:160]
-  } prio7;
-  struct packed {
-    logic [1:0] q; // [159:158]
-  } prio8;
-  struct packed {
-    logic [1:0] q; // [157:156]
-  } prio9;
-  struct packed {
-    logic [1:0] q; // [155:154]
-  } prio10;
-  struct packed {
-    logic [1:0] q; // [153:152]
-  } prio11;
-  struct packed {
-    logic [1:0] q; // [151:150]
-  } prio12;
-  struct packed {
-    logic [1:0] q; // [149:148]
-  } prio13;
-  struct packed {
-    logic [1:0] q; // [147:146]
-  } prio14;
-  struct packed {
-    logic [1:0] q; // [145:144]
-  } prio15;
-  struct packed {
-    logic [1:0] q; // [143:142]
-  } prio16;
-  struct packed {
-    logic [1:0] q; // [141:140]
-  } prio17;
-  struct packed {
-    logic [1:0] q; // [139:138]
-  } prio18;
-  struct packed {
-    logic [1:0] q; // [137:136]
-  } prio19;
-  struct packed {
-    logic [1:0] q; // [135:134]
-  } prio20;
-  struct packed {
-    logic [1:0] q; // [133:132]
-  } prio21;
-  struct packed {
-    logic [1:0] q; // [131:130]
-  } prio22;
-  struct packed {
-    logic [1:0] q; // [129:128]
-  } prio23;
-  struct packed {
-    logic [1:0] q; // [127:126]
-  } prio24;
-  struct packed {
-    logic [1:0] q; // [125:124]
-  } prio25;
-  struct packed {
-    logic [1:0] q; // [123:122]
-  } prio26;
-  struct packed {
-    logic [1:0] q; // [121:120]
-  } prio27;
-  struct packed {
-    logic [1:0] q; // [119:118]
-  } prio28;
-  struct packed {
-    logic [1:0] q; // [117:116]
-  } prio29;
-  struct packed {
-    logic [1:0] q; // [115:114]
-  } prio30;
-  struct packed {
-    logic [1:0] q; // [113:112]
-  } prio31;
-  struct packed {
-    logic [1:0] q; // [111:110]
-  } prio32;
-  struct packed {
-    logic [1:0] q; // [109:108]
-  } prio33;
-  struct packed {
-    logic [1:0] q; // [107:106]
-  } prio34;
-  struct packed {
-    logic [1:0] q; // [105:104]
-  } prio35;
-  struct packed {
-    logic [1:0] q; // [103:102]
-  } prio36;
-  struct packed {
-    logic [1:0] q; // [101:100]
-  } prio37;
-  struct packed {
-    logic [1:0] q; // [99:98]
-  } prio38;
-  struct packed {
-    logic [1:0] q; // [97:96]
-  } prio39;
-  struct packed {
-    logic [1:0] q; // [95:94]
-  } prio40;
-  struct packed {
-    logic [1:0] q; // [93:92]
-  } prio41;
-  struct packed {
-    logic [1:0] q; // [91:90]
-  } prio42;
-  struct packed {
-    logic [1:0] q; // [89:88]
-  } prio43;
-  struct packed {
-    logic [1:0] q; // [87:86]
-  } prio44;
-  struct packed {
-    logic [1:0] q; // [85:84]
-  } prio45;
-  struct packed {
-    logic [1:0] q; // [83:82]
-  } prio46;
-  struct packed {
-    logic [1:0] q; // [81:80]
-  } prio47;
-  struct packed {
-    logic [1:0] q; // [79:78]
-  } prio48;
-  struct packed {
-    logic [1:0] q; // [77:76]
-  } prio49;
-  struct packed {
-    logic [1:0] q; // [75:74]
-  } prio50;
-  struct packed {
-    logic [1:0] q; // [73:72]
-  } prio51;
-  struct packed {
-    logic [1:0] q; // [71:70]
-  } prio52;
-  struct packed {
-    logic [1:0] q; // [69:68]
-  } prio53;
-  struct packed {
-    logic [1:0] q; // [67:66]
-  } prio54;
-  rv_plic_reg2hw_ie0_mreg_t [54:0] ie0; // [65:11]
-  struct packed {
-    logic [1:0] q; // [10:9]
-  } threshold0;
-  struct packed {
-    logic [5:0] q; // [8:3]
-    logic qe; // [2]
-    logic re; // [1]
-  } cc0;
-  struct packed {
-    logic [0:0] q; // [0:0]
-  } msip0;
-} rv_plic_reg2hw_t;
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio3_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio4_reg_t;
 
-typedef struct packed {
-  rv_plic_hw2reg_ip_mreg_t [54:0] ip; // [115:6]
-  struct packed {
-    logic [5:0] d; // [5:0]
-  } cc0;
-} rv_plic_hw2reg_t;
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio5_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio6_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio7_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio8_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio9_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio10_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio11_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio12_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio13_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio14_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio15_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio16_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio17_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio18_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio19_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio20_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio21_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio22_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio23_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio24_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio25_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio26_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio27_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio28_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio29_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio30_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio31_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio32_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio33_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio34_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio35_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio36_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio37_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio38_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio39_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio40_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio41_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio42_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio43_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio44_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio45_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio46_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio47_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio48_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio49_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio50_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio51_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio52_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio53_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_prio54_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } rv_plic_reg2hw_ie0_mreg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } rv_plic_reg2hw_threshold0_reg_t;
+
+  typedef struct packed {
+    logic [5:0]  q;
+    logic        qe;
+    logic        re;
+  } rv_plic_reg2hw_cc0_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } rv_plic_reg2hw_msip0_reg_t;
+
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } rv_plic_hw2reg_ip_mreg_t;
+
+  typedef struct packed {
+    logic [5:0]  d;
+  } rv_plic_hw2reg_cc0_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    rv_plic_reg2hw_le_mreg_t [54:0] le; // [230:176]
+    rv_plic_reg2hw_prio0_reg_t prio0; // [175:174]
+    rv_plic_reg2hw_prio1_reg_t prio1; // [173:172]
+    rv_plic_reg2hw_prio2_reg_t prio2; // [171:170]
+    rv_plic_reg2hw_prio3_reg_t prio3; // [169:168]
+    rv_plic_reg2hw_prio4_reg_t prio4; // [167:166]
+    rv_plic_reg2hw_prio5_reg_t prio5; // [165:164]
+    rv_plic_reg2hw_prio6_reg_t prio6; // [163:162]
+    rv_plic_reg2hw_prio7_reg_t prio7; // [161:160]
+    rv_plic_reg2hw_prio8_reg_t prio8; // [159:158]
+    rv_plic_reg2hw_prio9_reg_t prio9; // [157:156]
+    rv_plic_reg2hw_prio10_reg_t prio10; // [155:154]
+    rv_plic_reg2hw_prio11_reg_t prio11; // [153:152]
+    rv_plic_reg2hw_prio12_reg_t prio12; // [151:150]
+    rv_plic_reg2hw_prio13_reg_t prio13; // [149:148]
+    rv_plic_reg2hw_prio14_reg_t prio14; // [147:146]
+    rv_plic_reg2hw_prio15_reg_t prio15; // [145:144]
+    rv_plic_reg2hw_prio16_reg_t prio16; // [143:142]
+    rv_plic_reg2hw_prio17_reg_t prio17; // [141:140]
+    rv_plic_reg2hw_prio18_reg_t prio18; // [139:138]
+    rv_plic_reg2hw_prio19_reg_t prio19; // [137:136]
+    rv_plic_reg2hw_prio20_reg_t prio20; // [135:134]
+    rv_plic_reg2hw_prio21_reg_t prio21; // [133:132]
+    rv_plic_reg2hw_prio22_reg_t prio22; // [131:130]
+    rv_plic_reg2hw_prio23_reg_t prio23; // [129:128]
+    rv_plic_reg2hw_prio24_reg_t prio24; // [127:126]
+    rv_plic_reg2hw_prio25_reg_t prio25; // [125:124]
+    rv_plic_reg2hw_prio26_reg_t prio26; // [123:122]
+    rv_plic_reg2hw_prio27_reg_t prio27; // [121:120]
+    rv_plic_reg2hw_prio28_reg_t prio28; // [119:118]
+    rv_plic_reg2hw_prio29_reg_t prio29; // [117:116]
+    rv_plic_reg2hw_prio30_reg_t prio30; // [115:114]
+    rv_plic_reg2hw_prio31_reg_t prio31; // [113:112]
+    rv_plic_reg2hw_prio32_reg_t prio32; // [111:110]
+    rv_plic_reg2hw_prio33_reg_t prio33; // [109:108]
+    rv_plic_reg2hw_prio34_reg_t prio34; // [107:106]
+    rv_plic_reg2hw_prio35_reg_t prio35; // [105:104]
+    rv_plic_reg2hw_prio36_reg_t prio36; // [103:102]
+    rv_plic_reg2hw_prio37_reg_t prio37; // [101:100]
+    rv_plic_reg2hw_prio38_reg_t prio38; // [99:98]
+    rv_plic_reg2hw_prio39_reg_t prio39; // [97:96]
+    rv_plic_reg2hw_prio40_reg_t prio40; // [95:94]
+    rv_plic_reg2hw_prio41_reg_t prio41; // [93:92]
+    rv_plic_reg2hw_prio42_reg_t prio42; // [91:90]
+    rv_plic_reg2hw_prio43_reg_t prio43; // [89:88]
+    rv_plic_reg2hw_prio44_reg_t prio44; // [87:86]
+    rv_plic_reg2hw_prio45_reg_t prio45; // [85:84]
+    rv_plic_reg2hw_prio46_reg_t prio46; // [83:82]
+    rv_plic_reg2hw_prio47_reg_t prio47; // [81:80]
+    rv_plic_reg2hw_prio48_reg_t prio48; // [79:78]
+    rv_plic_reg2hw_prio49_reg_t prio49; // [77:76]
+    rv_plic_reg2hw_prio50_reg_t prio50; // [75:74]
+    rv_plic_reg2hw_prio51_reg_t prio51; // [73:72]
+    rv_plic_reg2hw_prio52_reg_t prio52; // [71:70]
+    rv_plic_reg2hw_prio53_reg_t prio53; // [69:68]
+    rv_plic_reg2hw_prio54_reg_t prio54; // [67:66]
+    rv_plic_reg2hw_ie0_mreg_t [54:0] ie0; // [65:11]
+    rv_plic_reg2hw_threshold0_reg_t threshold0; // [10:9]
+    rv_plic_reg2hw_cc0_reg_t cc0; // [8:1]
+    rv_plic_reg2hw_msip0_reg_t msip0; // [0:0]
+  } rv_plic_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    rv_plic_hw2reg_ip_mreg_t [54:0] ip; // [115:6]
+    rv_plic_hw2reg_cc0_reg_t cc0; // [5:-2]
+  } rv_plic_hw2reg_t;
 
   // Register Address
   parameter RV_PLIC_IP0_OFFSET = 9'h 0;

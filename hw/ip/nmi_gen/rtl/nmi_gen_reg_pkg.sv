@@ -6,83 +6,94 @@
 
 package nmi_gen_reg_pkg;
 
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } esc0;
+    struct packed {
+      logic        q;
+    } esc1;
+    struct packed {
+      logic        q;
+    } esc2;
+    struct packed {
+      logic        q;
+    } esc3;
+  } nmi_gen_reg2hw_intr_state_reg_t;
 
-typedef struct packed {
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic q; // [15]
+      logic        q;
     } esc0;
     struct packed {
-      logic q; // [14]
+      logic        q;
     } esc1;
     struct packed {
-      logic q; // [13]
+      logic        q;
     } esc2;
     struct packed {
-      logic q; // [12]
+      logic        q;
     } esc3;
-  } intr_state;
-  struct packed {
-    struct packed {
-      logic q; // [11]
-    } esc0;
-    struct packed {
-      logic q; // [10]
-    } esc1;
-    struct packed {
-      logic q; // [9]
-    } esc2;
-    struct packed {
-      logic q; // [8]
-    } esc3;
-  } intr_enable;
-  struct packed {
-    struct packed {
-      logic q; // [7]
-      logic qe; // [6]
-    } esc0;
-    struct packed {
-      logic q; // [5]
-      logic qe; // [4]
-    } esc1;
-    struct packed {
-      logic q; // [3]
-      logic qe; // [2]
-    } esc2;
-    struct packed {
-      logic q; // [1]
-      logic qe; // [0]
-    } esc3;
-  } intr_test;
-} nmi_gen_reg2hw_t;
+  } nmi_gen_reg2hw_intr_enable_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
-
-typedef struct packed {
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic d; // [7]
-      logic de; // [6]
+      logic        q;
+      logic        qe;
     } esc0;
     struct packed {
-      logic d; // [5]
-      logic de; // [4]
+      logic        q;
+      logic        qe;
     } esc1;
     struct packed {
-      logic d; // [3]
-      logic de; // [2]
+      logic        q;
+      logic        qe;
     } esc2;
     struct packed {
-      logic d; // [1]
-      logic de; // [0]
+      logic        q;
+      logic        qe;
     } esc3;
-  } intr_state;
-} nmi_gen_hw2reg_t;
+  } nmi_gen_reg2hw_intr_test_reg_t;
+
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } esc0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } esc1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } esc2;
+    struct packed {
+      logic        d;
+      logic        de;
+    } esc3;
+  } nmi_gen_hw2reg_intr_state_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    nmi_gen_reg2hw_intr_state_reg_t intr_state; // [15:12]
+    nmi_gen_reg2hw_intr_enable_reg_t intr_enable; // [11:8]
+    nmi_gen_reg2hw_intr_test_reg_t intr_test; // [7:0]
+  } nmi_gen_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    nmi_gen_hw2reg_intr_state_reg_t intr_state; // [7:4]
+  } nmi_gen_hw2reg_t;
 
   // Register Address
   parameter NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
