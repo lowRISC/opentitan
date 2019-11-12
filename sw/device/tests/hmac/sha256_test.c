@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <stdlib.h>
-
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/hw_sha256.h"
