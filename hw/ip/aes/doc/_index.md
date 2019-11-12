@@ -8,7 +8,7 @@ title: "AES HWIP Technical Specification"
 This document specifies the AES hardware IP functionality.
 [Advanced Encryption Standard (AES)](https://www.nist.gov/publications/advanced-encryption-standard-aes) is the primary symmetric encryption and decryption mechanism used in OpenTitan protocols.
 The AES unit is a cryptographic accelerator that accepts requests from the processor to encrypt or decrypt 16 byte blocks of data.
-It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}}).
+It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
 
 
 ## Features
@@ -16,13 +16,12 @@ It is attached to the chip interconnect bus as a peripheral module and conforms 
 The AES unit supports the following features:
 
 - Encryption/Decryption using AES-128/192/256 in Electronic Codebook (ECB) mode
-- Support for AES-192 is optional and can be enabled/disabled using a compile-time parameter
+- Support for AES-192 can be removed to save area, and is enabled/disabled using a compile-time Verilog parameter
 - Latency per 16 byte data block of 12/14/16 clock cycles in AES-128/192/256 mode
 - Register-based data and control interface
 - On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see Theory of Operations below)
 
 This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per round).
-For reasons of security, all data in OpenTitan is considered to be on chip.
 High-speed, single-cycle operation for high-bandwidth data streaming is not required, rather such high-performance targets might bring this unit into conflict with International Traffic in Arms Regulations (ITAR).
 
 Cipher modes other than ECB are beyond this version of the AES unit but might be supported in future versions.
@@ -34,10 +33,10 @@ The AES unit is a cryptographic accelerator that accepts requests from the proce
 It supports AES-128/192/256 in Electronic Codebook (ECB) mode.
 Other cipher modes might be added in future versions.
 
-The AES unit is attached to the chip interconnect bus as peripheral module.
+The AES unit is attached to the chip interconnect bus as a peripheral module.
 Communication with the processor happens through a set of control and status registers (CSRs).
 This includes input/output data and key, as well as status and control information.
-Future versions of the AES unit might include a separate interface through which a possible system key manager can update the initial key without exposing the key to the processor or other hosts attached to the system bus interconnect.
+Future versions of the AES unit might include a separate interface through which a possible system key manager can provide the key without exposing it to the processor or other hosts attached to the system bus interconnect.
 
 
 # Theory of Operations
@@ -56,27 +55,30 @@ The benefits of this design compared to passing all round keys via register inte
   - one set of registers to hold the full key of the last encryption round, i.e., the start key for decryption.
 - Faster re-configuration and key switching: The core just needs to perform 8 write operations instead of 60 write operations for AES-256.
 
-On-the-fly round-key generation comes however at the price of an initial delay whenever the key is changed by the processor before the AES unit can perform decryption using this new key.
+On-the-fly round-key generation comes however at the price of an initial delay whenever the key is changed by the processor before the AES unit can perform ECB **decryption** using this new key.
 During this phase, the key expanding mechanism iteratively computes the start key for the decryption.
 The duration of this delay phase corresponds to the latency required for encrypting one 16B block (i.e., 12/14/16 cycles for AES-128/192/256).
 Once the start key for decryption has been computed, it is stored in a dedicated internal register for later use.
 The AES unit can then switch between decryption and encryption without additional overhead.
 
 For encryption, there is no such initial delay upon changing the key.
-If the next operation after a key switch is decryption, the AES unit automatically initiates an encryption procedure in the key expanding mechanism first (to generate the start key for decryption, the actual data path remains idle during that phase).
+If the next operation after a key switch is ECB **decryption**, the AES unit automatically initiates an encryption procedure in the key expanding mechanism first (to generate the start key for decryption, the actual data path remains idle during that phase).
 
 The AES unit uses a status register to indicate to the processor when ready to receive the next input data block via the register interface.
 While the AES unit is performing encryption/decryption of a data block, it is safe for the processor to provide the next input data block.
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
 Also, there is a back-pressure mechanism for the output data.
 If the AES unit wants to finish the encryption/decryption of a data block but the previous output data has not yet been read by the processor, the AES unit is stalled.
+It hangs and does not drop data.
 It only continues once the previous output data has been read and the corresponding registers can be safely overwritten.
+This is the default behavior.
+It can be disabled by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `1`.
+In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
 
 
 ## Block Diagram
 
 This AES unit targets medium performance (\~1 cycle per round).
-For reasons of security, all data in OpenTitan is considered to be on chip.
 High-speed, single-cycle operation for high-bandwidth data streaming is not required.
 
 Therefore, the AES unit uses an iterative architecture with a 128-bit wide data path as shown in the figure below.
@@ -89,7 +91,11 @@ Both the data paths for the actual cipher (left) and the round key generation (r
 Consequently, the blocks shown in the diagram always implement the forward and backward (inverse) version of the corresponding operation.
 For example, SubBytes implements both SubBytes and InvSubBytes.
 
+
 ## Hardware Interfaces
+
+In the current implementation, the AES unit has no security alerts.
+These will eventually be added in future versions.
 
 {{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
 
@@ -136,6 +142,7 @@ Having separate registers for input, output and internal state prevents the extr
 While the AES unit is performing encryption/decryption, the processor can safely write the next input data block into the CSRs or read the previous output data block from the CSRs.
 The State register is internal to the AES unit and not exposed via the TL-UL bus interface.
 If the AES unit wants to finish the encryption/decryption of an output data block but the previous one has not yet been read by the processor, the AES unit is stalled.
+It hangs and does not drop data.
 It only continues once the previous output data has been read and the corresponding registers can be safely overwritten.
 In contrast, the initial key can only be updated if the AES unit is idle, which eases design verification (DV).
 
@@ -149,7 +156,7 @@ For a description of the various sub modules, see the following sections.
 
 The SubBytes operation is a non-linear byte substitution that operates independently on each byte of the state using a substitution table (S-Box).
 
-The design of this S-Box and its inverse can have a big impact on circuit area, timing critical path, robustness and power leakage, and itself is an own research topic.
+The design of this S-Box and its inverse can have a big impact on circuit area, timing critical path, robustness and power leakage, and is itself its own research topic.
 The initial version of the AES unit uses a LUT-based S-Box implementation.
 It is both used for the cipher data path and the key expand data path.
 In total, 20 S-Boxes are used (16 for SubBytes, 4 for KeyExpand), each having 8-bit input and output.
@@ -176,7 +183,7 @@ The key expand module (KEM) integrated in the AES unit is responsible for genera
 The KEM generates the next 128/192/256-bit full key in parallel to the actual encryption/decryption based on the current full key or the initial key (for the first encryption round).
 The actual 128-bit round key is then extracted from this full key.
 
-Generating the keys on-the-fly allows for lower storage requirements and smaller circuit area but comes at the price of an initial delay before doing decryption whenever the key is changed.
+Generating the keys on-the-fly allows for lower storage requirements and smaller circuit area but comes at the price of an initial delay before doing ECB **decryption** whenever the key is changed.
 During this phase, the KEM cycles through all full keys to obtain the start key for decryption (equals the key for final round of encryption).
 The duration of this delay phase corresponds to the latency required for encrypting one 16B block.
 During this initial phase, the cipher data path is kept idle.
@@ -229,7 +236,7 @@ Typically, systems requiring security above AES-128 go directly for AES-256.
 This version of the AES unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
-Future versions of the AES unit might include a separate interface through which a possible system key manager can update the initial key without exposing the key to the processor or other hosts attached to the system bus interconnect.
+Future versions of the AES unit might include a separate interface through which a possible system key manager can provide the key without exposing it to the processor or other hosts attached to the system bus interconnect.
 
 
 ### Security Hardening
@@ -248,6 +255,7 @@ This section discusses how software can interface with the AES unit.
 ## Initialization
 
 To initialize the AES unit, software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
+Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
 Independent of the selected key length, software must always write all 8 32-bit registers. Anything can be written to the unused key registers.
 For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
@@ -264,18 +272,65 @@ For block operation, software must initialize the AES unit as described in the p
 3. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
 4. Write Input Data Block `1` to the Input Data registers.
 
-Then for every Data Block `I=0,..,N-2`, software must:
+Then for every Data Block `I=0,..,N-3`, software must:
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
    The AES unit then directly starts processing the previously input block `I+1`
 2. Read Output Data Block `I` from the Output Data register.
 3. Write Input Data Block `I+2` into the Input Data register.
    There is no need to check INPUT_READY as the cycle following OUTPUT_VALID being set the current input is loaded in.
 
-Once all blocks have been input the final data blocks `I=N-1,N` must be read out
+Once all blocks have been input the final data blocks `I=N-2,N-1` must be read out
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
 2. Read Output Data Block `I` from the Output Data register.
 
 Note that interrupts are not provided, the latency of the AES unit is such that they are of little utility.
+
+The code snippet below shows how to perform block operation.
+
+```c
+  // Enable autostart, disable overwriting of previous output data
+  REG32(AES_CTRL(0)) =
+      mode << AES_CTRL_MODE |
+      (key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET |
+      0x0 << AES_CTRL_MANUAL_START_TRIGGER |
+      0x0 << AES_CTRL_FORCE_DATA_OVERWRITE;
+
+  // Write Input Data Block 0 - Note: All registers are little-endian.
+  for (int j = 0; j < 4; j++) {
+    REG32(AES_DATA_IN0(0) + j * 4) = input_data[j];
+  }
+
+  // Wait for INPUT_READY bit
+  while (!((REG32(AES_STATUS(0)) >> AES_STATUS_INPUT_READY) & 0x1)) {
+  }
+
+  // Write Input Data Block 1
+  for (int j = 0; j < 4; j++) {
+    REG32(AES_DATA_IN0(0) + j * 4) = input_data[j + 4];
+  }
+
+  // For Data Block I=0,...,N-1
+  for (int i = 0; i < N; i++) {
+
+    // Wait for OUTPUT_VALID bit
+    while (!((REG32(AES_STATUS(0)) >> AES_STATUS_OUTPUT_VALID) & 0x1)) {
+    }
+
+    // Read Output Data Block I
+    for (int j = 0; j < 4; j++) {
+      output_data[j + i * 4] = REG32(AES_DATA_OUT0(0) + j * 4);
+    }
+
+    // Write Input Data Block I+2 - For I=0,...,N-3 only.
+    if (i < N - 2) {
+      for (int j = 0; j < 4; j++) {
+        REG32(AES_DATA_IN0(0) + j * 4) = input_data[j + 4 * (i + 2)];
+      }
+    }
+  }
+
+```
+
 
 ## De-Initialization
 
@@ -285,9 +340,34 @@ After finishing operation, software must:
 3. Clear the previous input data by overwriting the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
 4. Clear the internal key registers and the Output Data register by setting the KEY_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
+The code snippet below shows how to perform this task.
+
+```c
+  // Disable autostart
+  REG32(AES_CTRL(0)) = 0x1 << AES_CTRL_MANUAL_START_TRIGGER;
+
+  // Clear Initial Key registers
+  for (int i = 0; i < 8; i++) {
+    REG32(AES_KEY0(0) + i * 4) = 0x0;
+  }
+
+  // Clear Input Data registers
+  for (int i = 0; i < 4; i++) {
+    REG32(AES_DATA_IN0(0) + i * 4) = 0x0;
+  }
+
+  // Clear internal key and Output Data registers
+  REG32(AES_TRIGGER(0)) =
+      (0x1 << AES_TRIGGER_KEY_CLEAR) | (0x1 << AES_TRIGGER_DATA_OUT_CLEAR);
+```
+
+Note that in future versions of the AES unit, also the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}} and the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}} can be cleared using {{< regref "TRIGGER" >}}.
+
+
 ## Register Table
 
 The AES unit uses 8 and 4 separate write-only registers for the initial key and input data, as well as 4 separate read-only registers for the output data.
+All registers are little-endian.
 Compared to first-in, first-out (FIFO) interfaces, having separate registers has a couple of advantages:
 
 - Supported out-of-the-box by the register tool (the FIFO would have to be implemented separately).
