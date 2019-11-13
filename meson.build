@@ -48,7 +48,8 @@ prog_git = find_program('git')
 
 # RISCV linker parameters.
 riscv_linkfile = files(['sw/device/exts/common/link.ld'])
-riscv_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), riscv_linkfile[0])]
+# Ensure we don't include a build-id in the elf
+riscv_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), riscv_linkfile[0]), '-Wl,--build-id=none']
 riscv_link_deps = [riscv_linkfile]
 
 # RISCV CRT parameters
