@@ -34,6 +34,7 @@ INCS          += -I$(REPO_TOP) -I$(SW_BUILD_DIR) -I$(LIB_BUILD_DIR)
 LINK_OPTS     += -T $(LINKER_SCRIPT)
 LINK_OPTS     += $(SW_OBJS) -L$(LIB_BUILD_DIR) -l$(LIB_NAME)
 LINK_OPTS     += -Xlinker -Map=${SW_BUILD_DIR}/${IMG_NAME}.map
+LINK_OPTS     += -Wl,--build-id=none
 
 # target (either 'boot_rom' or 'sw')
 ifeq ($(SW_NAME),boot_rom)
