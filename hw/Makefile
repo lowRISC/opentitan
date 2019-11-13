@@ -19,6 +19,12 @@ IPS ?= uart          \
        padctrl       \
        nmi_gen
 
+# SIGNOFF IP to be removed from auto-reggen
+# These IPs will be skipped in `regs` and `all` targets.
+# But it can be generated explictly, e.g. make uart_regs
+# This is temporary fix before IP versioning strategy is established.
+SIGNOFF = uart gpio rv_timer
+
 TOPS ?= top_earlgrey
 
 # conditional flags
@@ -30,6 +36,8 @@ endif
 
 dir_hjson = data
 
+dynips_reg = $(addsuffix _reg, $(filter-out $(SIGNOFF),$(IPS)))
+
 ips_reg = $(addsuffix _reg, $(IPS))
 
 ips_reg_header = $(addsuffix _reg_header, $(IPS))
@@ -38,7 +46,7 @@ tops_gen = $(addsuffix _gen,$(TOPS))
 
 tops_reg = $(addsuffix _reg,$(TOPS))
 
-all: $(ips_reg) $(tops_gen) $(tops_reg) banner
+all: $(dynips_reg) $(tops_gen) $(tops_reg) banner
 
 banner:
 	@echo "############################################"
@@ -46,7 +54,7 @@ banner:
 	@echo "${REG_OUTPUT_DIR}"
 	@echo "############################################"
 
-regs: $(ips_reg) $(tops_reg) banner
+regs: $(dynips_reg) $(tops_reg) banner
 
 pre_reg:
 	mkdir -p ${REG_OUTPUT_DIR}
