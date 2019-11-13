@@ -1,0 +1,146 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "spi_device"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''
+            Use default SRAM fifo setting. Seq:
+            - Write a word data to TX memory and update wptr
+            - Send a word SPI transfer
+            - Read a word data from RX memory and update rptr
+            - Compare the data and check no pending data in SRAM FIFO
+            - Repeat above steps'''
+      milestone: V1
+      tests: ["spi_device_sanity"]
+    }
+    {
+      name: base_random_seq
+      desc: '''
+            Create 3 parallel threads
+            - Write random data to TX memory unless fifo is full
+            - Send SPI transfer unless TX is empty or RX is full
+            - Read RX memory unless RX is empty'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: fifo_full
+      desc: '''
+            Increase the chance to have fifo full by following
+            - Reduce delay to write TX memory
+            - Increase delay to read RX memory'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: fifo_underflow_overflow
+      desc: '''
+            Override spi_device_txrx_vseq to send SPI transfer without checking TX/RX fifo, note:
+            - When TX is underflow, SW shouldn't update wptr if spi isn't idle, otherwise, spi may
+              send mis-aligned data
+            - When RX is overflow, data will be lost and if SW update rptr, received data may be
+              mis-aligned
+            - Ensure underflow/overflow is triggered correctly'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: async_fifo_reset
+      desc: '''Reset async fifo when SPI interface is idle
+            TODO: fifo may be fetching data from SRAM? What is the actual usage?'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: interrupts
+      desc: '''
+            Test all supported interrupts:
+            - tx/rx lvl
+            - rx full
+            - rx error
+            - overflow/underflow'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: abort
+      desc: '''
+            TODO: Need to clarify the behavior in spec'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: byte_transfer_on_spi
+      desc: '''send spi transfer on byte granularity, and make sure the timer never expires'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: rx_timeout
+      desc: '''
+            - Send spi transfer on byte granularity, and timer may expires
+            - Only check data in sequence level when timer expires. Monitor and scoreboard don't
+              model the timer feature
+            - Note: Timeout only for RX'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: bit_transfer_on_spi
+      desc: '''
+            Send spi transfer on bit granularity
+            - If TX drives < 7 bits, this byte will be sent in next CSB.
+            - If TX drives 7 bits and set CSB to high, this byte won't be sent in next CSB'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: extreme_fifo_setting
+      desc: '''Set fifo size to 4 bytes(minimum), 2k-4bytes(maximum) and others'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: mode
+      desc: '''TODO :only support fw mode now'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: mem_ecc
+      desc: '''
+            Backdoor hack memory data to test basic memory ECC behavior limitation:
+            - Just cover basic functionality and connectivity
+            - Complete verification will be done by PFV'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: perf
+      desc: '''Run spi_device_fifi_full_vseq with very small delays'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence
+            - Randomly add reset between each sequence'''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: stress_all_with_reset
+      desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
+      milestone: V2
+      tests: [""]
+    }
+  ]
+}
