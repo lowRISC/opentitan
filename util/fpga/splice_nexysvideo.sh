@@ -14,9 +14,10 @@
 #  lowrisc_systems_top_earlgrey_nexysvideo_0.1.splice.bit
 set -e
 
-BUILD_DIR=build-fpga
-TARGET_PREFIX="$BUILD_DIR/sw/device/boot_rom/boot_rom"
-#TARGET_PREFIX="sw/${BUILD_DIR}/rom"
+. util/build_consts.sh
+
+BUILD_DIR="$(sw_obj_dir fpga)"
+TARGET_PREFIX="/sw/device/boot_rom/boot_rom"
 FPGA_BUILD_DIR=build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/
 FPGA_BIT_NAME=lowrisc_systems_top_earlgrey_nexysvideo_0.1
 

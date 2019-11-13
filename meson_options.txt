@@ -1,1 +1,1 @@
-option('target', type : 'combo', choices: ['verilator', 'fpga', 'undef'], value : 'undef')
+option('target', type : 'combo', choices: ['sim-verilator', 'fpga', 'undef'], value : 'undef')

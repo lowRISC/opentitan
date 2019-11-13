@@ -4,8 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 set -e
 
+. util/build_consts.sh
+
 readonly VERILATED_SYSTEM_DEFAULT="build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator"
-readonly SW_BUILD_DEFAULT="build-verilator"
+readonly SW_BUILD_DEFAULT="$(sw_obj_dir sim)"
 
 VERILATED_SYSTEM_PATH="${VERILATED_SYSTEM_PATH:-$VERILATED_SYSTEM_DEFAULT}"
 SW_BUILD_PATH="${SW_BUILD_PATH:-$SW_BUILD_DEFAULT}"
@@ -18,10 +20,10 @@ TEST_TARGETS=("tests/flash_ctrl/flash_test.vmem"
 )
 
 if [[ ! -z ${MAKE_BUILD+x} ]]; then
-  BOOT_ROM_TARGET="sim/boot_rom/rom.vmem"
-  TEST_TARGETS=("sim/tests/flash_ctrl/sw.vmem"
-    "sim/tests/hmac/sw.vmem"
-    "sim/tests/rv_timer/sw.vmem"
+  BOOT_ROM_TARGET="sw/device/sim/boot_rom/rom.vmem"
+  TEST_TARGETS=("sw/device/sim/tests/flash_ctrl/sw.vmem"
+    "sw/device/sim/tests/hmac/sw.vmem"
+    "sw/device/sim/tests/rv_timer/sw.vmem"
   )
 fi
 
@@ -32,8 +34,8 @@ for target in "${TEST_TARGETS[@]}"; do
   set +e
   set -x
   pytest -s test/systemtest/functional_verilator_test.py \
-    --test_bin "$SW_BUILD_PATH/sw/device/${target}" \
-    --rom_bin  "$SW_BUILD_PATH/sw/device/${BOOT_ROM_TARGET}" \
+    --test_bin "$SW_BUILD_PATH/${target}" \
+    --rom_bin  "$SW_BUILD_PATH/${BOOT_ROM_TARGET}" \
     --verilator_model "$VERILATED_SYSTEM_PATH"
   if [[ $? == 0 ]]; then
     PASS_TARGETS=("${PASS_TARGETS[@]}" "${target}")
