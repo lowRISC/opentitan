@@ -30,7 +30,7 @@ locally by following the steps below.
 in the repository root):
 
 ```command
-$ sudo apt install python3 python3-pip
+$ sudo apt install curl python3 python3-pip
 $ pip3 install --user -r python-requirements.txt
 ```
 
