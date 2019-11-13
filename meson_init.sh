@@ -6,11 +6,13 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-set -x
 
-readonly BUILD_DIR_PREFIX="build"
-readonly TARGET_VERILATOR="verilator"
-readonly TARGET_FPGA="fpga"
+. util/build_consts.sh
+
+echo "Detected \$REPO_TOP at $REPO_TOP."
+echo "Object directory set at $OBJ_DIR."
+echo "Binary directory set at $BIN_DIR."
+echo
 
 function usage() {
   cat << USAGE
@@ -57,17 +59,16 @@ if [[ ! -n "$(command -v ninja)" ]]; then
 fi
 
 if [[ "${FLAGS_force}" == true ]]; then
-  for target_suffix in "${TARGET_VERILATOR}" "${TARGET_FPGA}"; do
-    rm -rf "${BUILD_DIR_PREFIX}-${target_suffix}"
-  done
+  rm -rf $BUILD_ROOT/build-*
 fi
 
 if [[ ! -n "${FLAGS_reconfigure}" ]] ; then
-  for target_suffix in "${TARGET_VERILATOR}" "${TARGET_FPGA}"; do
-    if [[ -d "${BUILD_DIR_PREFIX}-${target_suffix}" ]]; then
+  for platform in "${PLATFORMS[@]}"; do
+    obj_dir="$(sw_obj_dir "$platform")"
+    if [[ -d "$obj_dir" ]]; then
       usage >&2
-      echo "Error: ${BUILD_DIR_PREFIX}-${target_suffix} already exists. " \
-           "Remove directory, or rerun $0 with the -r option" >&2
+      echo "Error: $obj_dir  already exists. Remove directory, or rerun $0 " \
+        "with the -r option" >&2
       exit 1
     fi
   done
@@ -99,19 +100,13 @@ function purge_includes() {
   perl -pi -e 's#-I[^/][^@ ]+ # #g' -- "$ninja_file"
 }
 
-# configure_meson $target generates a build directory at build-$target.
-function configure_meson() {
-  local target="$1"
-  local build_dir="${BUILD_DIR_PREFIX}-$target"
-
-  mkdir -p "$build_dir"
+for platform in ${PLATFORMS[@]}; do
+  obj_dir="$(sw_obj_dir "$platform")"
+  mkdir -p "$obj_dir"
   meson ${FLAGS_reconfigure} \
-    -Dtarget="$target" \
+    -Dtarget="$platform" \
     --cross-file="$CROSS_FILE" \
     --buildtype=plain \
-    "$build_dir"
-  purge_includes "$build_dir"
-}
-
-configure_meson "${TARGET_VERILATOR}"
-configure_meson "${TARGET_FPGA}"
+    "$obj_dir"
+  purge_includes "$obj_dir"
+done

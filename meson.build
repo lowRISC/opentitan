@@ -9,7 +9,7 @@ if target == 'undef'
   error('target option not set. Please run meson with a valid build target option.')
 endif
 
-if target == 'verilator'
+if target == 'sim-verilator'
   # TODO: Consider using extra args array if using this flag globally is no
   # longer OK.
   add_project_arguments('-DSIMULATION', language: 'c')
@@ -48,7 +48,7 @@ prog_git = find_program('git')
 
 # RISCV linker parameters.
 riscv_linkfile = files(['sw/device/exts/common/link.ld'])
-riscv_link_args = ['-Wl,-T,@0@/@1@'.format('..', riscv_linkfile[0])]
+riscv_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), riscv_linkfile[0])]
 riscv_link_deps = [riscv_linkfile]
 
 # RISCV CRT parameters
@@ -57,7 +57,7 @@ startup_files = files(['sw/device/exts/common/_crt.c'])
 # Additional arguments for utility in charge of generating bin and vmem outputs
 # These variables are expected to be used in custom_target rules.
 embedded_target_output = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.vmem']
-embedded_target_args = [prog_python, '../util/embedded_target.py',
+embedded_target_args = [prog_python, meson.source_root() + '/util/embedded_target.py',
   '--objcopy', prog_objcopy, '--srec_cat', prog_srec_cat, '--objdump', prog_objdump,
   '--input', '@INPUT@', '--basename', '@BASENAME@', '--outdir', '@OUTDIR@']
 

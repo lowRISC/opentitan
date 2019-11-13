@@ -133,9 +133,12 @@ jobs:
         --force
     displayName: 'Install toolchain'
   - bash: |
+      export BUILD_ROOT="$(Build.ArtifactStagingDirectory)"
+      . util/build_consts.sh
       ./meson_init.sh -f
-      ninja -C build-verilator all
-      ninja -C build-fpga all
+      ninja -C "$(sw_obj_dir sim-verilator)" all
+      ninja -C "$(sw_obj_dir fpga)" all
+      util/make_build_bin.sh
     displayName: 'Build embedded targets'
 
 - job: "deprecated_make_build"

@@ -53,8 +53,10 @@ def main():
     outdir.mkdir(parents=True, exist_ok=True)
     out_path = outdir / "chip_info.h"
 
-
-    repo = Repo(search_parent_directories=True)
+    # This file may invoked from some random place outside the repository, so
+    # we need to make sure to do a git lookup relative to *this* file.
+    this_dir = Path(__file__).resolve().parent
+    repo = Repo(path=str(this_dir), search_parent_directories=True)
     repo_info = repo.head.object.hexsha
 
     now = datetime.now()

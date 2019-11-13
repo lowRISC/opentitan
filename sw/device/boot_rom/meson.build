@@ -12,7 +12,7 @@ chip_info_h = custom_target(
 
 # ROM linker parameters.
 rom_linkfile = files(['rom_link.ld'])
-rom_link_args = ['-Wl,-T,@0@/@1@'.format('..', rom_linkfile[0])]
+rom_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0])]
 rom_link_deps = [rom_linkfile]
 
 custom_target(
