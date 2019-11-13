@@ -256,7 +256,7 @@ def main():
     try:
         if not is_hugo_extended():
             logging.info(
-                "Hugo extended (with SASS support) is required, but only non-extended version found."
+                "Hugo extended (with SASS support) is required, but only non-extended version found. "
                 "Installing local copy and re-trying.")
             install_hugo(hugo_localinstall_dir)
 
