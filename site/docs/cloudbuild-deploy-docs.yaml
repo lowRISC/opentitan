@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+steps:
+- name: 'gcr.io/active-premise-257318/builder'
+  args: ['./util/build_docs.py']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['-m', 'rsync', '-r', 'build/docs/', 'gs://active-premise-257318']
