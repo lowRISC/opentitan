@@ -157,7 +157,7 @@ def produce_shortlog(clone_dir, old_rev, new_rev):
                               check=True,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
-                              encoding="UTF-8")
+                              universal_newlines=True)
         return proc.stdout.splitlines()
     except subprocess.CalledProcessError as e:
         log.error("Unable to capture shortlog: %s", e.stderr)
@@ -237,7 +237,7 @@ def clone_git_repo(repo_url, clone_dir, rev='master'):
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          check=True,
-                         encoding='UTF-8').stdout.strip()
+                         universal_newlines=True).stdout.strip()
     log.info('Cloned at revision %s', rev)
     return rev
 
@@ -249,7 +249,7 @@ def git_get_short_rev(clone_dir, rev):
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
                                check=True,
-                               encoding='UTF-8').stdout.strip()
+                               universal_newlines=True).stdout.strip()
     return short_rev
 
 
@@ -259,13 +259,13 @@ def git_add_commit(repo_base, paths, commit_msg):
     # Stage all changes
     for p in paths:
         cmd_add = ['git', '-C', str(repo_base), 'add', str(p)]
-        subprocess.run(cmd_add, check=True, encoding='UTF-8')
+        subprocess.run(cmd_add, check=True)
 
     cmd_commit = ['git', '-C', str(repo_base), 'commit', '-s', '-F', '-']
     try:
         subprocess.run(cmd_commit,
                        check=True,
-                       encoding='UTF-8',
+                       universal_newlines=True,
                        input=commit_msg)
     except subprocess.CalledProcessError as e:
         log.warning("Unable to create commit. Are there no changes?")
