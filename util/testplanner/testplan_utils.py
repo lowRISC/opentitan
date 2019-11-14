@@ -198,6 +198,9 @@ def parse_hjson(filename):
     except IOError:
         print('IO Error:', filename)
         raise SystemExit(sys.exc_info()[1])
+    except hjson.scanner.HjsonDecodeError as e:
+        print("Error: Unable to decode HJSON file %s: %s" % (str(filename), str(e)))
+        sys.exit(1)
 
 
 def merge_dicts(list1, list2):
