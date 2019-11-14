@@ -453,7 +453,7 @@ step-by-step with caution:
 
     ```console
     $ git add...
-    $ git commit -m “Add CFG examples to UART specification”
+    $ git commit -m "Add CFG examples to UART specification"
     ```
 
 * Step 3: Create your github branch for the pull request
