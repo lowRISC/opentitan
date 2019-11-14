@@ -130,6 +130,12 @@ Example:
 int create_rainbow(int pots_of_gold, int unicorns);
 ```
 
+## C++ Style Guide
+
+### C++ Version
+
+C++ code should target C++14.
+
 
 ## C Style Guide
 
