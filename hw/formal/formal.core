@@ -10,21 +10,30 @@ description: "Core file for formal verification. It includes top_earlgrey and al
 filesets:
   files_rtl_generic:
     depend:
-      - lowrisc:fpv:prim_lfsr_fpv
-      - lowrisc:fpv:prim_alert_rxtx_fpv
-      - lowrisc:fpv:prim_esc_rxtx_fpv
       - lowrisc:ip:rv_timer
       - lowrisc:ip:hmac
       - lowrisc:systems:top_earlgrey
-      - lowrisc:fpv:rv_plic_fpv
       - lowrisc:ip:usbuart
       - lowrisc:ip:usbdev
       - lowrisc:ip:usbfs_nb_pe
-      - lowrisc:tlul:adapter_sram
-      - lowrisc:tlul:socket_1n
-      - lowrisc:tlul:socket_m1
+      # files with dedicated fpv tb
+      - lowrisc:fpv:prim_lfsr_fpv
+      - lowrisc:fpv:prim_alert_rxtx_fpv
+      - lowrisc:fpv:prim_esc_rxtx_fpv
       - lowrisc:fpv:pinmux_fpv
       - lowrisc:fpv:padctrl_fpv
+      - lowrisc:fpv:rv_plic_fpv
+    files:
+      - ../ip/gpio/dv/tb/gpio_bind.sv
+      - ../ip/hmac/dv/tb/hmac_bind.sv
+      - ../ip/rv_timer/dv/tb/rv_timer_bind.sv
+      - ../ip/rv_core_ibex/dv/tb/core_ibex_bind.sv
+      - ../ip/rv_dm/dv/tb/rv_dm_bind.sv
+      - ../ip/uart/dv/tb/uart_bind.sv
+      - ../ip/flash_ctrl/dv/tb/flash_ctrl_bind.sv
+      - ../ip/usbuart/dv/tb/usbuart_bind.sv
+      - ../ip/usbdev/dv/tb/usbdev_bind.sv
+    file_type: systemVerilogSource
 
 targets:
   sim:

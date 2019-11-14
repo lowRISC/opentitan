@@ -10,7 +10,6 @@ declare -a blocks=(
   "gpio"
   "rv_core_ibex"
   "rv_dm"
-  "rv_plic"
   "spi_device"
   "rv_timer"
   "uart"
@@ -19,19 +18,21 @@ declare -a blocks=(
   "usbuart"
   "usbdev"
   # "usb_fs_nb_pe" This module doesn't have any assertions yet
-  "tlul_adapter_sram"
-  "tlul_socket_1n"
-  "tlul_socket_m1"
-  "sram2tlul"
-  "xbar_main"
+  # TODO: bind files are deleted
+  # "tlul_adapter_sram"
+  # "tlul_socket_1n"
+  # "tlul_socket_m1"
+  # "sram2tlul"
+  # "xbar_main"
   "top_earlgrey"
   # run formal on dedicated FPV testbenches
-  "prim_lfsr_tb"
-  "prim_alert_rxtx_tb"
-  "prim_alert_rxtx_async_tb"
-  "prim_esc_rxtx_tb"
-  "pinmux_tb"
-  "padctrl_tb"
+  "prim_lfsr_fpv"
+  "prim_alert_rxtx_fpv"
+  "prim_alert_rxtx_async_fpv"
+  "prim_esc_rxtx_fpv"
+  "pinmux_fpv"
+  "padctrl_fpv"
+  "rv_plic_fpv"
 )
 
 #-------------------------------------------------------------------------
