@@ -50,9 +50,13 @@ struct gpiodpi_ctx {
 static int open_fifo(char *path_buf, int flags) {
   int fifo_status = mkfifo(path_buf, 0644);
   if (fifo_status != 0) {
-    fprintf(stderr, "GPIO: Unable to create FIFO at %s: %s\n", path_buf,
-            strerror(errno));
-    return -1;
+    if (errno == EEXIST) {
+      fprintf(stderr, "GPIO: Reusing existing FIFO at %s\n", path_buf);
+    } else {
+      fprintf(stderr, "GPIO: Unable to create FIFO at %s: %s\n", path_buf,
+              strerror(errno));
+      return -1;
+    }
   }
 
   int fd = open(path_buf, flags);
