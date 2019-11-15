@@ -1,0 +1,98 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// MultiReg example
+{
+  name: "MULTIREG",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+
+  param_list: [
+    { name: "ParamA",
+      desc: "Parameter A",
+      type: "int",
+      default: "8",
+      local: "false"
+    }
+    { name: "ParamB",
+      desc: "Parameter B",
+      type: "int",
+      default: "32",
+      local: "true"
+    }
+    { name: "ParamC",
+      desc: "Parameter C",
+      type: "int",
+      default: "2",
+      local: "false"
+    }
+  ],
+
+  regwidth: "32",
+  api: "2", # API Version 2 only
+
+  registers: [
+    { name: "REG_A",
+      type: "reg",
+      desc: "Register A",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0", name: "FIELD_0", desc: "Field 0" }
+        { bits: "5:4", name: "FIELD_1", desc: "Field 1" }
+      ]
+    }
+    {
+      name: "MULTI_A",
+      type: "multireg",
+      desc: "MultiReg block A",
+      count: "ParamB",
+      fields: [
+        { bits: "0", name: "FIELD_2", desc: "Field 2" }
+      ]
+    }
+    { name: "MULTI_B",
+      type: "multireg",
+      desc: "MultiReg block B",
+      count: "ParamA",
+      fields: [
+        { bits: "0", name: "FIELD_3", desc: "Field 3" }
+      ]
+    }
+    { name: "REG_B",
+      type: "reg",
+      desc: "Register B",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0", name: "FIELD_4", desc: "Field 4" }
+        { bits: "5:4", name: "FIELD_5", desc: "Field 5" }
+      ]
+    }
+    { name: "MULTI_C",
+      type: "multireg",
+      desc: "MultiReg block C. Multiple registers under the block",
+      count: "ParamC",
+      registers: [
+        { name: "REG_C",
+          type: "reg",
+          desc: "Register C under MultiReg C",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "3:0", name: "FIELD_6", desc: "Field 6" }
+          ]
+        }
+        { name: "MULTI_D",
+          type: "multireg",
+          desc: "MultiReg block D. Fields",
+          count: "ParamB",
+          fields: [
+            { bits: "4:0", name: "FIELD_10" }
+          ]
+        }
+      ]
+    }
+  ]
+}

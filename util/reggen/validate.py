@@ -344,8 +344,6 @@ lp_optional = {
 # Registers list may have embedded keys
 list_optone = {'reserved': ['d', "number of registers to reserve space for"],
               'skipto':    ['d', "set next register offset to value"],
-              'sameaddr':  ['l', "list of register definition groups "\
-                            "that share the same offset"],
               'window':    ['g', "group defining an address range "\
                             "for something other than standard registers"],
               'multireg':  ['g', "group defining registers generated "\
@@ -1269,6 +1267,10 @@ def validate(regs, **kwargs):
         log.error("Component has no name. Aborting.")
         return 1
     component = regs['name']
+
+    if 'api' in regs and regs['api'] != '1':
+        log.error("This tool supports only Version 1 API")
+        raise SystemExit()
 
     error = check_keys(regs, top_required, top_optional, top_added, component)
     if (error > 0):
