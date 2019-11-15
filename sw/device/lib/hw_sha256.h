@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/vendor/cryptoc/hash-internal.h"
+#include "sw/vendor/cryptoc/include/cryptoc/hash-internal.h"
 
 typedef HASH_CTX HW_SHA256_CTX;
 
