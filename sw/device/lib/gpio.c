@@ -4,8 +4,6 @@
 
 #include "sw/device/lib/gpio.h"
 
-#include <assert.h>
-
 #include "sw/device/lib/common.h"
 
 void gpio_init(uint32_t oe) { REG32(GPIO_DIRECT_OE(0)) = oe; }
@@ -20,7 +18,8 @@ void gpio_write_bit(unsigned int bit, unsigned int val) {
   } else if (bit < 32) {
     gpio_masked_out_reg = (uint32_t *)GPIO_MASKED_OUT_UPPER(0);
   } else {
-    assert(1 && "bit must be < 32");
+    /* bit must be less then 32 */
+    abort();
   }
   bit %= 16;
 

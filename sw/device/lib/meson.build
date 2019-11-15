@@ -10,6 +10,7 @@ sw_lib_mem = declare_dependency(
       'memcpy.c',
       'memset.c',
       'strlen.c',
+      'abort.c',
     ],
   )
 )
