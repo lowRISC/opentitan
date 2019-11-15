@@ -79,10 +79,11 @@ zero_loop:
   ble   t0, t1, zero_loop
 zero_loop_end:
 
-  // Jump into the main program entry point.
-  li    a0, 0x0  // argc = 0
-  li    a1, 0x0  // argv = 0
-  call  main
+  // Jump into the C program entry point.
+  call  _boot_start
+1:
+  wfi
+  j 1b
 
 /**
  * Exception and interrupt handlers.
