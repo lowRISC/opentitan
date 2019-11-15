@@ -9,6 +9,6 @@ For example, to build the OpenTitan executable located at `device/examples/hello
 ```sh
 cd "${REPO_TOP}"
 ./meson_init.sh -f
-ninja -C build-${TARGET} sw/device/examples/hello_world/hello_world.bin
+ninja -C build-out/sw/device/${TARGET} sw/device/examples/hello_world/hello_world.bin
 ```
-`$TARGET` should be one of `verilator` or `fpga`, depending on whether the executable should be built to run under simulation or on a phyisical FPGA, respectively.
+`$TARGET` should be one of `sim-verilator` or `fpga`, depending on whether the executable should be built to run under simulation or on a phyisical FPGA, respectively.
