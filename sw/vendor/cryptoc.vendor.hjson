@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "cryptoc",
+  target_dir: "cryptoc",
+
+  upstream: {
+    url: "https://chromium.googlesource.com/chromiumos/third_party/cryptoc/",
+    rev: "master",
+  },
+}
