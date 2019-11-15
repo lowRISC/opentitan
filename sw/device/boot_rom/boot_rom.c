@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     return rv;
   }
 
-  LOG_INFO("Jump!\n");
+  LOG_INFO("Boot ROM initialisation has completed, jump into flash!\n");
   while (!uart_tx_empty()) {
   }
   try_launch();
