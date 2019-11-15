@@ -1,19 +1,19 @@
 ---
-title: "vendor_hw: vendor-in hardware components"
+title: "util/vendor.py: Vendor-in Components"
 ---
 
-Not all hardware code contained in this repository is actually developed within this repository.
-Code which we include from external sources is placed in the `hw/vendor` directory and copied into this directory from its upstream source.
-The process of copying the upstream sources is called vendoring, and it is automated by the `vendor_hw` tool.
+Not all code contained in this repository is actually developed within this repository.
+Code which we include from external sources is placed in `vendor` sub-directories (e.g. `hw/vendor`) and copied over from upstream sources.
+The process of copying the upstream sources is called vendoring, and it is automated by the `util/vendor` tool.
 
-The `vendor_hw` tool can go beyond simply copying in source files: it can patch them, it can export patches from commits in a Git repository, and it can commit the resulting changes with a meaningful commit message.
+The `util/vendor` tool can go beyond simply copying in source files: it can patch them, it can export patches from commits in a Git repository, and it can commit the resulting changes with a meaningful commit message.
 
 ## Tool usage overview
 
 ```text
-usage: vendor_hw [-h] [--refresh-patches] [--commit] [--verbose] file
+usage: vendor [-h] [--refresh-patches] [--commit] [--verbose] file
 
-vendor_hw, copy hardware source code from upstream into this repository
+vendor, copy source code from upstream into this repository
 
 positional arguments:
   file               vendoring description file (*.vendor.hjson)
@@ -27,8 +27,8 @@ optional arguments:
 
 ## The vendor description file
 
-For each vendored-in component a description file must be created, which serves as input to the `vendor_hw` tool.
-The vendor description file is stored in `hw/vendor/<vendor>_<name>.vendor.hjson`.
+For each vendored-in component a description file must be created, which serves as input to the `util/vendor` tool.
+The vendor description file is stored in `vendor/<vendor>_<name>.vendor.hjson`.
 By convention all imported code is named `<vendor>_<name>`, with `<vendor>` typically being the GitHub user or organization name, and `<name>` the project name.
 It is recommended to use only lower-case characters.
 
@@ -61,7 +61,7 @@ Optional parts can be removed if they are not used.
   patch_dir: "patches/pulp_riscv_dbg",
 
   // Optional: Update patches in |patch_dir| from a Git repository
-  // If vendor_hw is run with --refresh-patches, all commits in the repository
+  // If util/vendor is run with --refresh-patches, all commits in the repository
   // at |url| between |rev_base| and |rev_patched| are exported into the
   // |patch_dir|, replacing all existing patches.
   patch_repo: {
@@ -105,5 +105,5 @@ In the example vendor description file below, the mpsse directory is populated f
 ### Update code and commit the new code
 ```command
 $ cd $REPO_TOP
-$ ./util/vendor_hw.py hw/vendor/google_riscv-dv.vendor.hjson -v --commit
+$ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v --commit
 ```
