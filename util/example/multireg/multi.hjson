@@ -86,5 +86,15 @@
         }
       ]
     }
+    { name: "REG_D",
+      type: "reg",
+      desc: "Register D",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0", name: "FIELD_7", desc: "Field 7" }
+        { bits: "31:8", name: "FIELD_8", desc: "Field 8" }
+      ]
+    }
   ]
 }
