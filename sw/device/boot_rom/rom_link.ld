@@ -39,6 +39,7 @@ SECTIONS
     .text : {
         . = ALIGN(4);
         _stext = .;
+        *(.text.startup)
         *(.text)
         _etext  =  .;
         __CTOR_LIST__ = .;
@@ -104,4 +105,7 @@ SECTIONS
     {
         [ .stabstr ]
     }
+
+    /* Discard the remaining sections */
+    /DISCARD/ : { *(*) }
 }
