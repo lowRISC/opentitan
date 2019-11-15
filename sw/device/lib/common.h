@@ -47,4 +47,6 @@ void *memset(void *dest, int val, size_t n);
 
 size_t strlen(const char *s);
 
+void abort(void);
+
 #endif
