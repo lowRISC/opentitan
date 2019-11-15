@@ -1,0 +1,118 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# RV_PLIC register template
+#
+# Parameter (given by python tool)
+#  - src:    Number of Interrupt Sources
+#  - target: Number of Targets that handle interrupt requests
+#  - prio:   Max value of interrupt priorities
+{
+  name: "RV_PLIC",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+
+  param_list: [
+    { name: "NumSrc",
+      desc: "Number of interrupt sources",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
+    { name: "NumTarget",
+      desc: "Number of Targets (Harts)",
+      type: "int",
+      default: "1",
+      local: "true",
+    },
+  ],
+  regwidth: "32",
+  api: "2", # API Version 2 only
+  registers: [
+    { name: "IP", # optional
+      type: "multireg",
+      desc: "Interrupt Pending",
+      count: "NumSrc",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0", name: "P", desc: "Interrupt Pending of Source" }
+      ],
+    },
+    { name: "LE",
+      type: "multireg",
+      desc: "Interrupt Source mode. 0: Level, 1: Edge-triggered",
+      count: "NumSrc",
+      cname: "RV_PLIC",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0", name: "LE", desc: "L0E1" }
+      ],
+    },
+    { name: "PRIO", # optional
+      type: "multireg",
+      count: "NumSrc",
+      desc: "Interrupt Source Priority",
+      registers: [
+        {
+          name: "PRIO",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "2:0" }
+          ],
+        },
+      ],
+    }
+    { name: "TARGETS", # opetional
+      type: "multireg",
+      count: "NumTarget",
+      desc:  "Register sets of Target",
+      registers: [
+        { skipto: "256" }
+        { name: "IE",
+          type: "multireg",
+          desc: "Interrupt Enable for Target 0",
+          count: "NumSrc",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "0", name: "E", desc: "Interrupt Enable of Source" }
+          ],
+        }
+        { name: "THRESHOLD",
+          desc: "Threshold of priority for Target",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "2:0" }
+          ],
+        }
+        { name: "CC",
+          desc: "Claim interrupt by read, complete interrupt by write for Target 0. Value read/written is interrupt ID. Reading a value of 0 means no pending interrupts.",
+          swaccess: "rw",
+          hwaccess: "hrw",
+          hwext: "true",
+          hwqe: "true",
+          hwre: "true",
+          fields: [
+            { bits: "5:0" }
+          ],
+        }
+        { name: "MSIP",
+          desc: "msip for Hart 0. Write 1 to here asserts software interrupt for Hart msip_o[0], write 0 to clear",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "0",
+              desc: "Software Interrupt Pending register",
+            }
+          ],
+        }
+      ]
+    }
+  ],
+}
+
