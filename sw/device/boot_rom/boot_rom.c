@@ -12,30 +12,35 @@
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
-static inline void try_launch(void) {
+static noreturn void try_launch(void) {
   asm volatile(
-      "la a0, _flash_start;"
-      "la sp, _stack_start;"
-      "jr a0;"
+      "  la   sp, _stack_start;"
+      "  tail _flash_start;"
+      // Unfortunately, we can't tell the compiler that we're about to clobber
+      // the stack pointer (which is meaningless, since there's nowhere to spill
+      // sp to). However, this doesn't matter, since this asm block will never
+      // return.
       :
       :
-      :);
+      : /* sp, */ "memory");
+  __builtin_unreachable();
 }
 
-int main(int argc, char **argv) {
+void _boot_start() {
   pinmux_init();
   uart_init(UART_BAUD_RATE);
   uart_send_str((char *)chip_info);
 
-  int rv = bootstrap();
-  if (rv) {
-    LOG_ERROR("Bootstrap failed with status code: %d\n", rv);
+  int bootstrap_err = bootstrap();
+  if (bootstrap_err != 0) {
+    LOG_ERROR("Bootstrap failed with status code: %d\n", bootstrap_err);
     // Currently the only way to recover is by a hard reset.
-    return rv;
+    return;
   }
 
   LOG_INFO("Boot ROM initialisation has completed, jump into flash!\n");
   while (!uart_tx_empty()) {
   }
+
   try_launch();
 }
