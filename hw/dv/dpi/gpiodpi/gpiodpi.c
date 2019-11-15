@@ -45,7 +45,7 @@ struct gpiodpi_ctx {
 /**
  * Creates a new UNIX FIFO file at |path_buf|, and opens it with |flags|.
  *
- * @return a file descriptor for the fifo, or -1 if any syscall failed.
+ * @return a file descriptor for the FIFO, or -1 if any syscall failed.
  */
 static int open_fifo(char *path_buf, int flags) {
   int fifo_status = mkfifo(path_buf, 0644);
@@ -72,7 +72,7 @@ static int open_fifo(char *path_buf, int flags) {
 }
 
 /**
- * Print out a useage message for the GPIO interface.
+ * Print out a usage message for the GPIO interface.
  *
  * @arg rfifo the path to the "read" side (w.r.t the host).
  * @arg wfifo the path to the "write" side (w.r.t the host).
