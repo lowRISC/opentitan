@@ -1,0 +1,4 @@
+This directory contains a couple of stand-alone crypto implementations.
+
+These implemenations have no stl or OpenSSL dependencies and are
+endian-neutral.
