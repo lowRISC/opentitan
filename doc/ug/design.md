@@ -166,3 +166,25 @@ The process for getting started with a design involves many steps, including get
 These are discussed in the [Getting Started with a Design]({{< relref "getting_started_design.md" >}}) document.
 
 ## FPGA vs Silicon
+
+The OpenTitan product will be (among other things) a final silicon incarnation of the hardware functionality set out in this open source repository.
+This repository only intends to define the details to a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides]({{< relref "doc/ug" >}}) for details on how to emulate on FPGA).
+After completion of that milestone, the team will work with a vendor or vendors to ensure that a trustworthy fully functional silicon version is manufactured suitable for industry use.
+
+Functionally, the FPGA version and the silicon version will be as identical as possible.
+To that end, the project will be defining compliance collateral that ensures correctness - working the same for FPGA as for silicon.
+There may and will be differences between these two incarnations, such as described below.
+
+* Silicon versions by definition use different technologies for fundamental vendor collateral, including memories, analog designs, pads, and standard cells.
+* Some of the silicon collateral is heavily protected by foundry providers, and not available for open sourcing.
+* For security reasons, some IP designs will undergo hardening of designs to protect them against physical attack.
+  These changes will not change the functionality of the design, but are described in processes unique to an ASIC flow (as opposed to the emulated flow of an FPGA).
+
+Even given these differences, the aim is still to ensure compliance equivalence between the FPGA and silicon versions.
+This might require particular differences in the software implementation of the compliance suite.
+Taking one example: the embedded flash macro.
+This design is highly dependent upon the technology node that implements the silicon version.
+In the FPGA (open source repo), the embedded flash macro is emulated, creating a model that approximates the timing one would find in a typical silicon design.
+It however will not have all the myriad timing knobs and configuration points required to control the final flash block.
+Thus the compliance suite will have initialization sections for flash - for instance - that differ between FPGA and silicon.
+These will be clearly delimited in the compliance protocol, but are not detailed at this time.
