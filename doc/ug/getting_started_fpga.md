@@ -41,7 +41,7 @@ In the following example we synthesize the Earl Grey design for the Nexys Video 
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
 $ make -C sw/device SW_DIR=boot_rom clean all
-$ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --build-root=build/hw --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
 The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
@@ -65,10 +65,11 @@ Use the following command to program the FPGA with fusesoc.
 ```console
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
-$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
+$ fusesoc --cores-root . run --run --build-root=build/hw lowrisc:systems:top_earlgrey_nexysvideo:0.1
 ```
 
-Note: `fusesoc pgm` is broken for edalize versions up to (and including) v0.1.3.
+Note: Device programming with `fusesoc run --run` is broken for edalize
+versions up to (and including) v0.1.3.
 You can check the version you're using with `pip3 show edalize`.
 If you have having trouble with programming using the command line, try the GUI.
 
@@ -137,7 +138,7 @@ The `--no-export` option of fusesoc disables copying the source files into the s
 
 ```console
 $ # only create Vivado project file
-$ fusesoc --cores-root . build --no-export --setup lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --build-root=build/hw --target=synth --no-export --setup lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
 ## Connect with OpenOCD and debug

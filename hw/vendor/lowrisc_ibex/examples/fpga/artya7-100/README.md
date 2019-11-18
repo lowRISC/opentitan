@@ -31,7 +31,7 @@ This should produce a `led.vmem` file which is used in the synthesises to update
 Run the following command at the top level to build the hardware.
 
 ```
-fusesoc --cores-root=. build lowrisc:ibex:top_artya7_100
+fusesoc --cores-root=. run --setup --build --build-root=build/hw --target=synth lowrisc:ibex:top_artya7_100
 ```
 
 This will create a directory `build` which contains the output files, including
@@ -42,7 +42,7 @@ the bitstream.
 After the board is connected to the computer it can be programmed with:
 
 ```
-fusesoc --cores-root=. pgm lowrisc:ibex:top_artya7_100
+fusesoc --cores-root=. run --run --target=synth lowrisc:ibex:top_artya7_100
 ```
 
 LED1/LED3 and LED0/LED2 should alternately be on after the FPGA programming is finished.

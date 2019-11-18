@@ -208,7 +208,7 @@ jobs:
     displayName: 'Display environment'
   - bash: |
       export PATH=$VERILATOR_PATH/bin:$PATH
-      fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
+      fusesoc --cores-root=. run --build-root=build/hw --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
     displayName: 'Build simulation with Verilator'
   - bash: |
       DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
@@ -252,7 +252,7 @@ jobs:
       BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/fpga/boot_rom/rom.vmem
       test -f ${BOOTROM_VMEM}
       source /opt/xilinx/Vivado/2018.3/settings64.sh
-      fusesoc --cores-root . run --target=synth --setup --build \
+      fusesoc --cores-root . run --build-root=build/hw --target=synth --setup --build \
         lowrisc:systems:top_earlgrey_nexysvideo \
         --ROM_INIT_FILE=${BOOTROM_VMEM}
     displayName: 'Build bitstream with Vivado'

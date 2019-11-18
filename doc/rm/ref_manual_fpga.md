@@ -39,7 +39,7 @@ See example below:
 ```console
 $ cd $REPO_TOP
 $ ./util/fpga/splice_nexysvideo.sh
-$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --run --build-root=build/hw lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
 The script assumes that there is an existing bitfile `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga]({{< relref "doc/ug/getting_started_fpga" >}})).

@@ -60,14 +60,14 @@ if [ ${BUILD_FPGA} -eq 1 ] ; then
   ninja -C ${BUILD_TARGET} sw/device/boot_rom/boot_rom.vmem
 
   echo "Building FPGA."
-  fusesoc --cores-root . build lowrisc:systems:top_earlgrey_nexysvideo \
+  fusesoc --cores-root . run --target=synth --build-root=build/hw lowrisc:systems:top_earlgrey_nexysvideo \
   --ROM_INIT_FILE=${BUILD_TARGET}/sw/device/boot_rom/boot_rom.vmem
 fi
 
 if [ ${PROGRAM_FPGA} -eq 1 ] ; then
   echo "Splice latest boot ROM and program FPGA."
   util/fpga/splice_nexysvideo.sh
-  fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
+  fusesoc --cores-root . run --run --target=synth --build-root=hw lowrisc:systems:top_earlgrey_nexysvideo
 fi
 
 echo "Build spiflash tool."
