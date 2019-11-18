@@ -315,17 +315,24 @@ jobs:
       buildType: current
       targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
   - bash: |
-      OT_VERSION=$(git describe --always)
-      cd "$(Build.ArtifactStagingDirectory)"
-      find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --overwrite -xf {} \;
+      export BUILD_ROOT="$(Build.ArtifactStagingDirectory)"
+      . util/build_consts.sh
+      cd "$BUILD_ROOT"
+      find "dist-partial-download" \
+        -iname '*.tar' \
+        -exec tar --overwrite -xvf {} \;
+      # TODO: Remove this one upstream targets are outputing stuff into $BIN_DIR.
+      mv dist "$BIN_DIR"
+    displayName: "Unpack pipeline artifacts"
+  - bash: |
+      export BUILD_ROOT="$(Build.ArtifactStagingDirectory)"
+      . util/build_consts.sh
+      util/make_distribution.sh
 
-      cp $(Build.SourcesDirectory)/ci/README.snapshot dist/README
-      echo -e "\nVersion $OT_VERSION, built at $(date -u)" >> dist/README
-      cp $(Build.SourcesDirectory)/LICENSE dist/LICENSE
-
-      mv dist opentitan-$OT_VERSION
-      mkdir -p dist-final
-      tar -cJf dist-final/opentitan-$OT_VERSION.tar.xz opentitan-$OT_VERSION
+      tar --list -f $BIN_DIR/opentitan-*.tar.xz
+      # Put the resulting tar file into a directory the |publish| step below can reference.
+      mkdir "$BUILD_ROOT/dist-final"
+      mv $BIN_DIR/opentitan-*.tar.xz "$BUILD_ROOT/dist-final"
     displayName: 'Create final dist directory out of partial ones'
   - publish: $(Build.ArtifactStagingDirectory)/dist-final
     artifact: opentitan-dist
