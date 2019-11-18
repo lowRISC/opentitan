@@ -10,75 +10,91 @@ package rv_timer_reg_pkg;
   localparam int N_HARTS = 1;
   localparam int N_TIMERS = 1;
 
-////////////////////////////
-// Typedefs for multiregs //
-////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    logic        q;
+  } rv_timer_reg2hw_ctrl_mreg_t;
 
-typedef struct packed {
-  logic [0:0] q;
-} rv_timer_reg2hw_ctrl_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} rv_timer_reg2hw_intr_enable0_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-} rv_timer_reg2hw_intr_state0_mreg_t;
-typedef struct packed {
-  logic [0:0] q;
-  logic qe;
-} rv_timer_reg2hw_intr_test0_mreg_t;
-
-typedef struct packed {
-  logic [0:0] d;
-  logic de;
-} rv_timer_hw2reg_intr_state0_mreg_t;
-
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
-
-typedef struct packed {
-  rv_timer_reg2hw_ctrl_mreg_t [0:0] ctrl; // [152:152]
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic [11:0] q; // [151:140]
+      logic [11:0] q;
     } prescale;
     struct packed {
-      logic [7:0] q; // [139:132]
+      logic [7:0]  q;
     } step;
-  } cfg0;
-  struct packed {
-    logic [31:0] q; // [131:100]
-  } timer_v_lower0;
-  struct packed {
-    logic [31:0] q; // [99:68]
-  } timer_v_upper0;
-  struct packed {
-    logic [31:0] q; // [67:36]
-  } compare_lower0_0;
-  struct packed {
-    logic [31:0] q; // [35:4]
-  } compare_upper0_0;
-  rv_timer_reg2hw_intr_enable0_mreg_t [0:0] intr_enable0; // [3:3]
-  rv_timer_reg2hw_intr_state0_mreg_t [0:0] intr_state0; // [2:2]
-  rv_timer_reg2hw_intr_test0_mreg_t [0:0] intr_test0; // [1:0]
-} rv_timer_reg2hw_t;
+  } rv_timer_reg2hw_cfg0_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
+  typedef struct packed {
+    logic [31:0] q;
+  } rv_timer_reg2hw_timer_v_lower0_reg_t;
 
-typedef struct packed {
-  struct packed {
-    logic [31:0] d; // [67:36]
-    logic de; // [35]
-  } timer_v_lower0;
-  struct packed {
-    logic [31:0] d; // [34:3]
-    logic de; // [2]
-  } timer_v_upper0;
-  rv_timer_hw2reg_intr_state0_mreg_t [0:0] intr_state0; // [1:0]
-} rv_timer_hw2reg_t;
+  typedef struct packed {
+    logic [31:0] q;
+  } rv_timer_reg2hw_timer_v_upper0_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } rv_timer_reg2hw_compare_lower0_0_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } rv_timer_reg2hw_compare_upper0_0_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } rv_timer_reg2hw_intr_enable0_mreg_t;
+
+  typedef struct packed {
+    logic        q;
+  } rv_timer_reg2hw_intr_state0_mreg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } rv_timer_reg2hw_intr_test0_mreg_t;
+
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } rv_timer_hw2reg_timer_v_lower0_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } rv_timer_hw2reg_timer_v_upper0_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } rv_timer_hw2reg_intr_state0_mreg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    rv_timer_reg2hw_ctrl_mreg_t [0:0] ctrl; // [152:152]
+    rv_timer_reg2hw_cfg0_reg_t cfg0; // [151:132]
+    rv_timer_reg2hw_timer_v_lower0_reg_t timer_v_lower0; // [131:100]
+    rv_timer_reg2hw_timer_v_upper0_reg_t timer_v_upper0; // [99:68]
+    rv_timer_reg2hw_compare_lower0_0_reg_t compare_lower0_0; // [67:36]
+    rv_timer_reg2hw_compare_upper0_0_reg_t compare_upper0_0; // [35:4]
+    rv_timer_reg2hw_intr_enable0_mreg_t [0:0] intr_enable0; // [3:3]
+    rv_timer_reg2hw_intr_state0_mreg_t [0:0] intr_state0; // [2:2]
+    rv_timer_reg2hw_intr_test0_mreg_t [0:0] intr_test0; // [1:0]
+  } rv_timer_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    rv_timer_hw2reg_timer_v_lower0_reg_t timer_v_lower0; // [67:36]
+    rv_timer_hw2reg_timer_v_upper0_reg_t timer_v_upper0; // [35:4]
+    rv_timer_hw2reg_intr_state0_mreg_t [0:0] intr_state0; // [3:2]
+  } rv_timer_hw2reg_t;
 
   // Register Address
   parameter RV_TIMER_CTRL_OFFSET = 9'h 0;

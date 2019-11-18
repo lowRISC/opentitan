@@ -13,5 +13,13 @@
         commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
         notes:              ""
       }
+      {
+        version:            "1.1",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V2",
+        commit_id:          "f3039d7006ca8ebd45ae0b52b22864983876175d",
+        notes:              "Rolled back to D2 as the register module is updated",
+      }
     ]
 }

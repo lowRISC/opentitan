@@ -5,6 +5,7 @@
 Generate html documentation from validated dashboard json tree
 """
 
+import sys
 import hjson
 import html
 import re
@@ -97,10 +98,10 @@ def print_version1_format(obj, outfile):
 
     if 'notes' in obj:
         genout(outfile,
-                    "        <td>" + mk.markdown(obj['notes']) + "</td>\n")
+                    "        <td>" + mk.markdown(obj['notes']).rstrip() + "</td>\n")
     else:
         genout(outfile,
-                    "        <td>&nbsp;</td>\n")
+                    "        <td><p>&nbsp;</p></td>\n")
     genout(outfile, "      </tr>\n")
     # yapf: enable
 
@@ -160,10 +161,11 @@ def print_multiversion_format(obj, outfile):
         else:
             outstr += "        <td>&nbsp;</td>\n"
 
-        if 'notes' in rev:
-            outstr += "        <td>" + mk.markdown(rev['notes']) + "</td>\n"
+        if 'notes' in rev and rev['notes'] != '':
+            outstr += "        <td>" + mk.markdown(
+                rev['notes']).rstrip() + "</td>\n"
         else:
-            outstr += "        <td>&nbsp;</td>\n"
+            outstr += "        <td><p>&nbsp;</p></td>\n"
         outstr += "      </tr>\n"
 
     genout(outfile, outstr)

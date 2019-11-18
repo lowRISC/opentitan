@@ -6,138 +6,185 @@
 
 package gpio_reg_pkg;
 
-///////////////////////////////////////
-// Register to internal design logic //
-///////////////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_intr_state_reg_t;
 
-typedef struct packed {
-  struct packed {
-    logic [31:0] q; // [458:427]
-  } intr_state;
-  struct packed {
-    logic [31:0] q; // [426:395]
-  } intr_enable;
-  struct packed {
-    logic [31:0] q; // [394:363]
-    logic qe; // [362]
-  } intr_test;
-  struct packed {
-    logic [31:0] q; // [361:330]
-    logic qe; // [329]
-  } direct_out;
-  struct packed {
-    struct packed {
-      logic [15:0] q; // [328:313]
-      logic qe; // [312]
-    } data;
-    struct packed {
-      logic [15:0] q; // [311:296]
-      logic qe; // [295]
-    } mask;
-  } masked_out_lower;
-  struct packed {
-    struct packed {
-      logic [15:0] q; // [294:279]
-      logic qe; // [278]
-    } data;
-    struct packed {
-      logic [15:0] q; // [277:262]
-      logic qe; // [261]
-    } mask;
-  } masked_out_upper;
-  struct packed {
-    logic [31:0] q; // [260:229]
-    logic qe; // [228]
-  } direct_oe;
-  struct packed {
-    struct packed {
-      logic [15:0] q; // [227:212]
-      logic qe; // [211]
-    } data;
-    struct packed {
-      logic [15:0] q; // [210:195]
-      logic qe; // [194]
-    } mask;
-  } masked_oe_lower;
-  struct packed {
-    struct packed {
-      logic [15:0] q; // [193:178]
-      logic qe; // [177]
-    } data;
-    struct packed {
-      logic [15:0] q; // [176:161]
-      logic qe; // [160]
-    } mask;
-  } masked_oe_upper;
-  struct packed {
-    logic [31:0] q; // [159:128]
-  } intr_ctrl_en_rising;
-  struct packed {
-    logic [31:0] q; // [127:96]
-  } intr_ctrl_en_falling;
-  struct packed {
-    logic [31:0] q; // [95:64]
-  } intr_ctrl_en_lvlhigh;
-  struct packed {
-    logic [31:0] q; // [63:32]
-  } intr_ctrl_en_lvllow;
-  struct packed {
-    logic [31:0] q; // [31:0]
-  } ctrl_en_input_filter;
-} gpio_reg2hw_t;
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_intr_enable_reg_t;
 
-///////////////////////////////////////
-// Internal design logic to register //
-///////////////////////////////////////
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } gpio_reg2hw_intr_test_reg_t;
 
-typedef struct packed {
-  struct packed {
-    logic [31:0] d; // [257:226]
-    logic de; // [225]
-  } intr_state;
-  struct packed {
-    logic [31:0] d; // [224:193]
-    logic de; // [192]
-  } data_in;
-  struct packed {
-    logic [31:0] d; // [191:160]
-  } direct_out;
-  struct packed {
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } gpio_reg2hw_direct_out_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] d; // [159:144]
+      logic [15:0] q;
+      logic        qe;
     } data;
     struct packed {
-      logic [15:0] d; // [143:128]
+      logic [15:0] q;
+      logic        qe;
     } mask;
-  } masked_out_lower;
-  struct packed {
+  } gpio_reg2hw_masked_out_lower_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] d; // [127:112]
+      logic [15:0] q;
+      logic        qe;
     } data;
     struct packed {
-      logic [15:0] d; // [111:96]
+      logic [15:0] q;
+      logic        qe;
     } mask;
-  } masked_out_upper;
-  struct packed {
-    logic [31:0] d; // [95:64]
-  } direct_oe;
-  struct packed {
+  } gpio_reg2hw_masked_out_upper_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } gpio_reg2hw_direct_oe_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] d; // [63:48]
+      logic [15:0] q;
+      logic        qe;
     } data;
     struct packed {
-      logic [15:0] d; // [47:32]
+      logic [15:0] q;
+      logic        qe;
     } mask;
-  } masked_oe_lower;
-  struct packed {
+  } gpio_reg2hw_masked_oe_lower_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [15:0] d; // [31:16]
+      logic [15:0] q;
+      logic        qe;
     } data;
     struct packed {
-      logic [15:0] d; // [15:0]
+      logic [15:0] q;
+      logic        qe;
     } mask;
-  } masked_oe_upper;
-} gpio_hw2reg_t;
+  } gpio_reg2hw_masked_oe_upper_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_intr_ctrl_en_rising_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_intr_ctrl_en_falling_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_intr_ctrl_en_lvlhigh_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_intr_ctrl_en_lvllow_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } gpio_reg2hw_ctrl_en_input_filter_reg_t;
+
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } gpio_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } gpio_hw2reg_data_in_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } gpio_hw2reg_direct_out_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] d;
+    } data;
+    struct packed {
+      logic [15:0] d;
+    } mask;
+  } gpio_hw2reg_masked_out_lower_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] d;
+    } data;
+    struct packed {
+      logic [15:0] d;
+    } mask;
+  } gpio_hw2reg_masked_out_upper_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } gpio_hw2reg_direct_oe_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] d;
+    } data;
+    struct packed {
+      logic [15:0] d;
+    } mask;
+  } gpio_hw2reg_masked_oe_lower_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] d;
+    } data;
+    struct packed {
+      logic [15:0] d;
+    } mask;
+  } gpio_hw2reg_masked_oe_upper_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    gpio_reg2hw_intr_state_reg_t intr_state; // [458:427]
+    gpio_reg2hw_intr_enable_reg_t intr_enable; // [426:395]
+    gpio_reg2hw_intr_test_reg_t intr_test; // [394:362]
+    gpio_reg2hw_direct_out_reg_t direct_out; // [361:329]
+    gpio_reg2hw_masked_out_lower_reg_t masked_out_lower; // [328:295]
+    gpio_reg2hw_masked_out_upper_reg_t masked_out_upper; // [294:261]
+    gpio_reg2hw_direct_oe_reg_t direct_oe; // [260:228]
+    gpio_reg2hw_masked_oe_lower_reg_t masked_oe_lower; // [227:194]
+    gpio_reg2hw_masked_oe_upper_reg_t masked_oe_upper; // [193:160]
+    gpio_reg2hw_intr_ctrl_en_rising_reg_t intr_ctrl_en_rising; // [159:128]
+    gpio_reg2hw_intr_ctrl_en_falling_reg_t intr_ctrl_en_falling; // [127:96]
+    gpio_reg2hw_intr_ctrl_en_lvlhigh_reg_t intr_ctrl_en_lvlhigh; // [95:64]
+    gpio_reg2hw_intr_ctrl_en_lvllow_reg_t intr_ctrl_en_lvllow; // [63:32]
+    gpio_reg2hw_ctrl_en_input_filter_reg_t ctrl_en_input_filter; // [31:0]
+  } gpio_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    gpio_hw2reg_intr_state_reg_t intr_state; // [257:226]
+    gpio_hw2reg_data_in_reg_t data_in; // [225:226]
+    gpio_hw2reg_direct_out_reg_t direct_out; // [225:193]
+    gpio_hw2reg_masked_out_lower_reg_t masked_out_lower; // [192:159]
+    gpio_hw2reg_masked_out_upper_reg_t masked_out_upper; // [158:125]
+    gpio_hw2reg_direct_oe_reg_t direct_oe; // [124:92]
+    gpio_hw2reg_masked_oe_lower_reg_t masked_oe_lower; // [91:58]
+    gpio_hw2reg_masked_oe_upper_reg_t masked_oe_upper; // [57:24]
+  } gpio_hw2reg_t;
 
   // Register Address
   parameter GPIO_INTR_STATE_OFFSET = 6'h 0;
