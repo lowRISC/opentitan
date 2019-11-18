@@ -54,15 +54,19 @@ package hmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        qe;
     } hmac_en;
     struct packed {
       logic        q;
+      logic        qe;
     } sha_en;
     struct packed {
       logic        q;
+      logic        qe;
     } endian_swap;
     struct packed {
       logic        q;
+      logic        qe;
     } digest_swap;
   } hmac_reg2hw_cfg_reg_t;
 
@@ -84,6 +88,7 @@ package hmac_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } hmac_reg2hw_key_mreg_t;
 
 
@@ -105,6 +110,21 @@ package hmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+    } hmac_en;
+    struct packed {
+      logic        d;
+    } sha_en;
+    struct packed {
+      logic        d;
+    } endian_swap;
+    struct packed {
+      logic        d;
+    } digest_swap;
+  } hmac_hw2reg_cfg_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
     } fifo_empty;
     struct packed {
       logic        d;
@@ -121,7 +141,6 @@ package hmac_reg_pkg;
 
   typedef struct packed {
     logic [31:0] d;
-    logic        de;
   } hmac_hw2reg_key_mreg_t;
 
   typedef struct packed {
@@ -143,26 +162,27 @@ package hmac_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    hmac_reg2hw_intr_state_reg_t intr_state; // [308:306]
-    hmac_reg2hw_intr_enable_reg_t intr_enable; // [305:303]
-    hmac_reg2hw_intr_test_reg_t intr_test; // [302:297]
-    hmac_reg2hw_cfg_reg_t cfg; // [296:293]
-    hmac_reg2hw_cmd_reg_t cmd; // [292:289]
-    hmac_reg2hw_wipe_secret_reg_t wipe_secret; // [288:256]
-    hmac_reg2hw_key_mreg_t [7:0] key; // [255:0]
+    hmac_reg2hw_intr_state_reg_t intr_state; // [320:318]
+    hmac_reg2hw_intr_enable_reg_t intr_enable; // [317:315]
+    hmac_reg2hw_intr_test_reg_t intr_test; // [314:309]
+    hmac_reg2hw_cfg_reg_t cfg; // [308:301]
+    hmac_reg2hw_cmd_reg_t cmd; // [300:297]
+    hmac_reg2hw_wipe_secret_reg_t wipe_secret; // [296:264]
+    hmac_reg2hw_key_mreg_t [7:0] key; // [263:0]
   } hmac_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    hmac_hw2reg_intr_state_reg_t intr_state; // [631:629]
-    hmac_hw2reg_status_reg_t status; // [628:629]
-    hmac_hw2reg_err_code_reg_t err_code; // [628:629]
-    hmac_hw2reg_key_mreg_t [7:0] key; // [628:365]
-    hmac_hw2reg_digest_mreg_t [7:0] digest; // [364:109]
-    hmac_hw2reg_msg_length_lower_reg_t msg_length_lower; // [108:109]
-    hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [108:109]
+    hmac_hw2reg_intr_state_reg_t intr_state; // [627:625]
+    hmac_hw2reg_cfg_reg_t cfg; // [624:617]
+    hmac_hw2reg_status_reg_t status; // [616:617]
+    hmac_hw2reg_err_code_reg_t err_code; // [616:617]
+    hmac_hw2reg_key_mreg_t [7:0] key; // [616:361]
+    hmac_hw2reg_digest_mreg_t [7:0] digest; // [360:105]
+    hmac_hw2reg_msg_length_lower_reg_t msg_length_lower; // [104:105]
+    hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [104:105]
   } hmac_hw2reg_t;
 
   // Register Address

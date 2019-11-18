@@ -91,6 +91,9 @@ module hmac (
 
   sha_word_t [7:0] digest;
 
+  hmac_reg2hw_cfg_reg_t cfg_reg;
+  logic                 cfg_block;  // Prevent changing config
+
   ///////////////////////
   // Connect registers //
   ///////////////////////
@@ -102,20 +105,40 @@ module hmac (
   assign wipe_secret = reg2hw.wipe_secret.qe;
   assign wipe_v      = reg2hw.wipe_secret.q;
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      secret_key <= '0;
+    end else if (wipe_secret) begin
+      secret_key <= secret_key ^ {8{wipe_v}};
+    end else if (!cfg_block) begin
+      // Allow updating secret key only when the engine is in Idle.
+      for (int i = 0; i < 8; i++) begin
+        if (reg2hw.key[7-i].qe) begin
+          secret_key[32*i+:32] <= reg2hw.key[7-i].q;
+        end
+      end
+    end
+  end
+
   for (genvar i = 0; i < 8; i++) begin : gen_key_digest
-    // secret key
-    assign secret_key[32*i +: 32] = reg2hw.key[7-i].q;
-    assign hw2reg.key[i].de       = wipe_secret;
-    assign hw2reg.key[7-i].d      = secret_key[32*i +: 32] ^ wipe_v;
+    assign hw2reg.key[7-i].d      = '0;
     // digest
     assign hw2reg.digest[i].d = conv_endian(digest[i], digest_swap);
   end
 
+  logic [3:0] unused_cfg_qe;
 
-  assign sha_en = reg2hw.cfg.sha_en.q;
-  assign hmac_en = reg2hw.cfg.hmac_en.q;
-  assign endian_swap = reg2hw.cfg.endian_swap.q;
-  assign digest_swap = reg2hw.cfg.digest_swap.q;
+  assign unused_cfg_qe = {cfg_reg.sha_en.qe,      cfg_reg.hmac_en.qe,
+                          cfg_reg.endian_swap.qe, cfg_reg.digest_swap.qe};
+
+  assign sha_en      = cfg_reg.sha_en.q;
+  assign hmac_en     = cfg_reg.hmac_en.q;
+  assign endian_swap = cfg_reg.endian_swap.q;
+  assign digest_swap = cfg_reg.digest_swap.q;
+  assign hw2reg.cfg.hmac_en.d     = cfg_reg.hmac_en.q;
+  assign hw2reg.cfg.sha_en.d      = cfg_reg.sha_en.q;
+  assign hw2reg.cfg.endian_swap.d = cfg_reg.endian_swap.q;
+  assign hw2reg.cfg.digest_swap.d = cfg_reg.digest_swap.q;
 
   assign reg_hash_start   = reg2hw.cmd.hash_start.qe   & reg2hw.cmd.hash_start.q;
   assign reg_hash_process = reg2hw.cmd.hash_process.qe & reg2hw.cmd.hash_process.q;
@@ -129,6 +152,23 @@ module hmac (
   /////////////////////
   assign hash_start = reg_hash_start & sha_en;
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cfg_block <= '0;
+    end else if (hash_start) begin
+      cfg_block <= 1'b 1;
+    end else if (reg_hash_done) begin
+      cfg_block <= 1'b 0;
+    end
+  end
+  // Hold the configuration during the process
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cfg_reg <= '{endian_swap: '{q: 1'b1, qe: 1'b0}, default:'0};
+    end else if (!cfg_block && reg2hw.cfg.hmac_en.qe) begin
+      cfg_reg <= reg2hw.cfg ;
+    end
+  end
   ////////////////
   // Interrupts //
   ////////////////
@@ -376,16 +416,30 @@ module hmac (
   /////////////////////////
   // HMAC Error Handling //
   /////////////////////////
-  logic msg_push_sha_disabled, hash_start_sha_disabled;
+  logic msg_push_sha_disabled, hash_start_sha_disabled, update_seckey_inprocess;
   assign msg_push_sha_disabled = msg_write & ~sha_en;
   assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
+
+  always_comb begin
+    update_seckey_inprocess = 1'b0;
+    if (cfg_block) begin
+      for (int i = 0 ; i < 8 ; i++) begin
+        if (reg2hw.key[i].qe) begin
+          update_seckey_inprocess = update_seckey_inprocess | 1'b1;
+        end
+      end
+    end else begin
+      update_seckey_inprocess = 1'b0;
+    end
+  end
 
   // Update ERR_CODE register and interrupt only when no pending interrupt.
   // This ensures only the first event of the series of events can be seen to sw.
   // It is recommended that the software reads ERR_CODE register when interrupt
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
-                   ( msg_push_sha_disabled | hash_start_sha_disabled );
+                   ( msg_push_sha_disabled | hash_start_sha_disabled
+                   | update_seckey_inprocess);
 
   always_comb begin
     err_code = NoError;
@@ -395,6 +449,10 @@ module hmac (
       end
       hash_start_sha_disabled: begin
         err_code = SwHashStartWhenShaDisabled;
+      end
+
+      update_seckey_inprocess: begin
+        err_code = SwUpdateSecretKeyInProcess;
       end
 
       default: begin

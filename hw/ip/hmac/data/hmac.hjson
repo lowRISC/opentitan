@@ -31,9 +31,16 @@
   regwidth: "32",
   registers: [
     { name: "CFG",
-      desc: "HMAC Configuration register",
+      desc: '''HMAC Configuration register.
+
+            The register is updated when the engine is in Idle.
+            If the software updates the register while the engine computes the hash,
+            the updated value is discarded.
+            ''',
+      hwext:    "true",
+      hwqe:     "true",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
       fields: [
         { bits: "0",
           name: "hmac_en",
@@ -137,9 +144,15 @@
               SHA256 assumes secret key is hashed 256bit key.
               Order of the secret key is:
               key[255:0] = {KEY0, KEY1, KEY2, ... , KEY7};
+
+              The registers are allowed to be updated when the engine is in Idle state.
+              If the engine computes the hash, it discards any attempts to update the secret keys
+              and report an error.
               ''',
         count: "NumWords",
         cname: "HMAC",
+        hwext: "true",
+        hwqe : "true",
         swaccess: "wo",
         hwaccess: "hrw",
         fields: [

@@ -86,7 +86,8 @@ package hmac_pkg;
   typedef enum logic [31:0] {
     NoError                    = 32'h 0000_0000,
     SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
-    SwHashStartWhenShaDisabled = 32'h 0000_0002
+    SwHashStartWhenShaDisabled = 32'h 0000_0002,
+    SwUpdateSecretKeyInProcess = 32'h 0000_0003
   } err_code_e;
 
 endpackage : hmac_pkg

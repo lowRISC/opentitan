@@ -269,6 +269,13 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 }
 ```
 
+## Updating the configurations
+
+The HMAC IP prevents {{< regref "CFG" >}} and {{< regref "KEY" >}} registers from updating during the engine is processing the messages.
+The attempts are discarded.
+The {{< regref "KEY" >}} discards the attempt of the secret key access in the middle of the process.
+In case of when the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
+
 ## Interrupt Handling
 
 ### FIFO_FULL
