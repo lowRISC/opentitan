@@ -38,6 +38,17 @@ field_optional = {
     'notes': ['s', "random notes"],
 }
 
+entry_required = {
+    'version': ['s', "module version"],
+    'life_stage': ['s', "life stage of module"]
+}
+entry_optional = {
+    'design_stage': ['s', "design stage of module"],
+    'verification_stage': ['s', "verification stage of module"],
+    'commit_id': ['s', "Staged commit ID"],
+    'notes': ['s', "notes"],
+}
+
 
 def validate(regs):
     if not 'name' in regs:
@@ -45,8 +56,26 @@ def validate(regs):
         return 1
     component = regs['name']
 
-    error = check_keys(regs, field_required, field_optional, component)
+    # If `revisions` is not in the object keys, the tool runs previous
+    # version checker, which has only one version entry.
+    if not "revisions" in regs:
+        error = check_keys(regs, field_required, field_optional, component)
+        if (error > 0):
+            log.error("Component has top level errors. Aborting.")
+        return error
+
+    # Assumes `revisions` field exists in the Hjson object.
+    # It iterates the entries in the `revisions` group.
+    error = 0
+    if not isinstance(regs['revisions'], list):
+        error += 1
+        log.error("`revisions` field should be a list of version entries")
+        return error
+
+    for rev in regs['revisions']:
+        error += check_keys(rev, entry_required, entry_optional, component)
+
     if (error > 0):
-        log.error("Component has top level errors. Aborting.")
+        log.error("Component has errors in revision field. Aborting.")
 
     return error

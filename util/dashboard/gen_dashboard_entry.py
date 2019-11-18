@@ -50,6 +50,17 @@ def gen_dashboard_html(hjson_path, outfile):
     else:
         log.fail("hjson file import failed\n")
 
+    # If `revisions` field doesn't exist, the tool assumes the Hjson
+    # as the previous project format, which has only one version entry.
+    if not "revisions" in obj:
+        print_version1_format(obj, outfile)
+    else:
+        print_multiversion_format(obj, outfile)
+        return
+
+
+# Version 1 (single version) format
+def print_version1_format(obj, outfile):
     life_stage = obj['life_stage']
     life_stage_mapping = convert_stage(obj['life_stage'])
 
@@ -80,6 +91,10 @@ def gen_dashboard_html(hjson_path, outfile):
     else:
         genout(outfile,
                     "        <td>&nbsp;</td>\n")
+
+    # Empty commit ID
+    genout(outfile, "        <td>&nbsp;</td>\n")
+
     if 'notes' in obj:
         genout(outfile,
                     "        <td>" + mk.markdown(obj['notes']) + "</td>\n")
@@ -88,7 +103,70 @@ def gen_dashboard_html(hjson_path, outfile):
                     "        <td>&nbsp;</td>\n")
     genout(outfile, "      </tr>\n")
     # yapf: enable
-    return
+
+
+def print_multiversion_format(obj, outfile):
+    # Sort the revision list based on the version field.
+    # TODO: If minor version goes up gte than 10?
+    revisions = sorted(obj["revisions"], key=lambda x: x["version"])
+    outstr = ""
+    for i, rev in enumerate(revisions):
+        outstr += "      <tr>\n"
+
+        # If only one entry in `revisions`, no need of `rowspan`.
+        if len(revisions) == 1:
+            outstr += "        <td class='fixleft'>"
+            outstr += html.escape(obj['name']) + "</td>\n"
+        # Print out the module name in the first entry only
+        elif i == 0:
+            outstr += "        <td class='fixleft' rowspan='{}'>".format(
+                len(revisions))
+            outstr += html.escape(obj['name']) + "</td>\n"
+
+        # Version
+        outstr += "        <td class=\"hw-stage\">"
+        outstr += html.escape(rev['version']) + "</td>\n"
+
+        # Life Stage
+        life_stage = rev['life_stage']
+        life_stage_mapping = convert_stage(rev['life_stage'])
+
+        outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
+        outstr += html.escape(life_stage_mapping) + "'>"
+        outstr += html.escape(life_stage) + "</span></td>\n"
+
+        if life_stage != 'L0' and 'design_stage' in rev:
+            design_stage_mapping = convert_stage(rev['design_stage'])
+            outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
+            outstr += html.escape(design_stage_mapping) + "'>"
+            outstr += html.escape(rev['design_stage']) + "</span></td>\n"
+        else:
+            outstr += "        <td>&nbsp;</td>\n"
+
+        if life_stage != 'L0' and 'verification_stage' in rev:
+            verification_stage_mapping = convert_stage(
+                rev['verification_stage'])
+            outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
+            outstr += html.escape(verification_stage_mapping) + "'>"
+            outstr += html.escape(rev['verification_stage']) + "</span></td>\n"
+        else:
+            outstr += "        <td>&nbsp;</td>\n"
+
+        if 'commit_id' in rev:
+            outstr += "        <td class=\"hw-stage\">"
+            outstr += "<a href='https://github.com/lowrisc/opentitan/tree/{}'>{}</a>".format(
+                rev['commit_id'], rev['commit_id'][0:7])
+            outstr += "</td>\n"
+        else:
+            outstr += "        <td>&nbsp;</td>\n"
+
+        if 'notes' in rev:
+            outstr += "        <td>" + mk.markdown(rev['notes']) + "</td>\n"
+        else:
+            outstr += "        <td>&nbsp;</td>\n"
+        outstr += "      </tr>\n"
+
+    genout(outfile, outstr)
 
 
 # Create table of hardware specifications
@@ -102,7 +180,7 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
     if dashboard_validate.validate(obj) == 0:
         log.info("Generated dashboard object for " + str(hjson_path))
     else:
-        log.fail("hjson file import failed")
+        log.error("hjson file import failed")
 
     # create design spec and DV plan references, check for existence below
     design_spec_md = re.sub(r'/data/', '/doc/',

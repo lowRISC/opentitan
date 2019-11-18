@@ -136,7 +136,10 @@ table.regdef {
 
 // Dashboard design
 table.hw-project-dashboard {
-    td.hw-stage {
-        text-align: center;
+    td {
+        vertical-align: middle;
+        &.hw-stage {
+            text-align: center;
+        }
     }
 }

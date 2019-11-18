@@ -4,9 +4,14 @@
 
 {
     name:               "uart",
-    version:            "1.0",
-    life_stage:         "L2",
-    design_stage:       "D3",
-    verification_stage: "V3",
-    notes:              "signoff commit id: 92e4298f8c2de268b2420a2c16939cd0784f1bf8"
+    revisions: [
+      {
+        version:            "1.0",
+        life_stage:         "L2",
+        design_stage:       "D3",
+        verification_stage: "V3",
+        commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
+        notes:              ""
+      }
+    ]
 }
