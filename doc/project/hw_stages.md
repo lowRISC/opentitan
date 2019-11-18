@@ -149,30 +149,48 @@ For example, `file: gpio.prj.hjson`:
 
 ```hjson
 {
-  name: "gpio",
-  version: 1.0,
-  life_stage: "L1",
-  design_stage: "D2",
-  verification_stage: "V1",
-  notes: "information shown on the dashboard"
+    name: "gpio",
+    version: 1.0,
+    life_stage: "L1",
+    design_stage: "D2",
+    verification_stage: "V1",
+    notes: "information shown on the dashboard"
+}
+```
+
+### Commit ID
+
+When a design transitions from one stage to another, the project file can optionally provide a commit ID for the transition to be able to recreate the repository at the point of that transition.
+This is optional for all transitions except for signoff, where it is required.
+The commit ID has its own entry in the project Hjson file, as shown below.
+
+```hjson
+{
+    name: "gpio",
+    version: 1.0,
+    life_stage: "L1",
+    design_stage: "D2",
+    verification_stage: "V1",
+    commit_id: "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
+    notes: "information shown on the dashboard"
 }
 ```
 
 ## Versioning
 
-**Note:** this is only an initial definition of versioning; our versioning scheme will be refined in future RFCs.
-
 The _Version_ of a design element indicates its progress towards its _final feature set for expected product_.
 Typically all designs are expected to simply be in 1.0 version, but there are reasons for exceptions.
-Designs which have a specification that defines an _intermediate goal_ are indicated as a 0.5 version.
+Designs which have a specification that defines an _intermediate goal_ are indicated as < 1.0 version.
 There are many times where this is useful: when the intermediate goal is a beneficial subset of functionality to enable other development; when the final feature set is not known but a sufficient set is ready for development; when the final feature set is postponed until a future date, but owners are keen to get the design started; etc.
-In essence, the 0.5 designation indicates that it is understood that the stage metrics are temporary pending a final feature set.
-Rarely will a 0.5 design be taken past Feature Complete and Testing Complete stages.
+In essence, the sub-1.0 designation indicates that it is understood that the stage metrics are temporary pending a final feature set.
+Rarely will a sub-1.0 design be taken past Feature Complete and Testing Complete stages.
 An exception is as proof of concept to show what a signoff process looks like for a design that has modifications expected in the future.
+This was the case with public launch, where we took five designs to completion to test out the signoff process, the verification methodology, and the checklist system.
+In several of these cases, the feature set was not final product complete.
 
-Once a design has completed all stages for a 1.0 feature set, the Signoff process intends to end all development for that design.
+Once a design has completed all stages for a product feature set, the Signoff process intends to end all development for that design.
 Its Life Stage should transition to Signoff after the review process, and no more modifications should be made.
-A Git tag could be used to christen this completion.
+The commit ID of the version that was signed off is recorded in the `commit_id` field of the `.prj.hjson` file.
 
 After signoff, three events could cause a change.
 Possibility 1: If a bug is found in top-level testing, software development, etc., the design should stay in its current revision (assumedly 1.0) but revert in design and/or verification staging until the bug is fixed and a new signoff process occurs, followed by a new tag to replace the previous one.
@@ -181,8 +199,44 @@ The expectation is that this would create its life as a newly tracked revision n
 Possibility 3: if enough new features are requested to greatly change the spirit of the design, a new version increment of 1.0 would be created in a fashion similar to above.
 This would require a new RFC process, and thus the Life Stage would start again as L0 - Specification.
 
+### Multiple versions of a design
+
+Over the course of the project, designs may *regress* from signed off to "opened" when new features are added.
+When regressing a signed off design, the old signed off version should remain in the project file as a retrievable version.
+This is indicated as two versions as shown in this example.
+
+```hjson
+{
+    name:                   "uart",
+    revisions: [
+      {
+        version:            "1.0",
+        life_stage:         "L2",
+        design_stage:       "D3",
+        verification_stage: "V3",
+        commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
+        notes:              ""
+      }
+      {
+        version:            "1.1",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V2",
+        commit_id:          "f3039d7006ca8ebd45ae0b52b22864983876175d",
+        notes:              "Rolled back to D2 as the register module is updated",
+      }
+    ]
+}
+```
+
+One may choose to commemorate a non-signed off version of a design if it reached enough maturity to be a useful version to checkpoint before regressing.
+In this case the version number should also be incremented.
+
+No hard rules for version numbering are mandated at this stage.
+The subject will be revisited as we get closer to locking down the design to take it to a silicon implementation milestone.
+
 ## Reporting of Stages
 
 The stages are reported externally via a script-generated table exposed on the external website.
-This status will be a summary of all `prj.hjson` files of all designs in the system.
+This status is a summary of all `prj.hjson` files of all designs in the system, with multiple lines where there are multiple versions.
 The link to that table is [here]({{< relref "doc/project/hw_dashboard" >}}).
