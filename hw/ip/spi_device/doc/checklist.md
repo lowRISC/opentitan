@@ -108,26 +108,26 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started |
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [TB_ENV_CREATED][]                    | Not Started |
-Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SANITY_TEST_PASSING][]               | Not Started |
-Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Not Started |
-Tool Setup    | [ALT_TOOL_SETUP][]                    | Not Started |
-Regression    | [SANITY_REGRESSION_SETUP][]           | Not Started |
-Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Not Started |
-Coverage      | [COVERAGE_MODEL_ADDED][]              | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started |
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
-Review        | Reviewer(s)                           | Not Started |
-Review        | Signoff date                          | Not Started |
+Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done        |[spi_device_dv_plan]({{<relref "dv_plan/" >}})
+Documentation | [TESTPLAN_COMPLETED][]                | Done        |
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [TB_ENV_CREATED][]                    | Done        |
+Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
+Tests         | [SANITY_TEST_PASSING][]               | Done        |
+Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Done        |
+Tool Setup    | [ALT_TOOL_SETUP][]                    | Done        |
+Regression    | [SANITY_REGRESSION_SETUP][]           | Done        | Exception (implemented in local)
+Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done        | Exception (implemented in local)
+Coverage      | [COVERAGE_MODEL_ADDED][]              | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
+Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Done        |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        |
+Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
+Review        | Reviewer(s)                           | Done        | @eunchan
+Review        | Signoff date                          | Done        | 2019-11-18
 
 
 [DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}

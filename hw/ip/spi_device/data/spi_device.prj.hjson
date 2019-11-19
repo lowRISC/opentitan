@@ -4,9 +4,14 @@
 
 {
     name:               "spi_device",
-    version:            "0.5",
-    life_stage:         "L1",
-    design_stage:       "D1",
-    verification_stage: "V0",
-    notes:              "D1 commit id: efe8a6ced7954c6803d5199b9383cce9dc0135fd",
+    revisions: [
+      {
+        version:            "0.5",
+        life_stage:         "L1",
+        design_stage:       "D1",
+        verification_stage: "V1",
+        commit_id:          "553ca956e0204e5b67b3bbea47f2e067f60b5510",
+        notes:              ""
+      }
+    ]
 }
