@@ -40,11 +40,10 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
       virtual_sequencer.cov = cov;
     end
 
-    if (cfg.en_scb) begin
-      scoreboard = SCOREBOARD_T::type_id::create("scoreboard", this);
-      scoreboard.cfg = cfg;
-      scoreboard.cov = cov;
-    end
+    // scb also monitors the reset and call cfg.reset_asserted/reset_deasserted for reset
+    scoreboard = SCOREBOARD_T::type_id::create("scoreboard", this);
+    scoreboard.cfg = cfg;
+    scoreboard.cov = cov;
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

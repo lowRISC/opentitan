@@ -234,9 +234,9 @@ class uart_intr_vseq extends uart_base_vseq;
     bit exp_pin;
 
     csr_rd(.ptr(ral.intr_state), .value(act_intr_state));
-    `DV_CHECK_EQ(act_intr_state[uart_intr], exp)
+    if (!cfg.under_reset) `DV_CHECK_EQ(act_intr_state[uart_intr], exp)
     exp_pin = exp & en_intr[uart_intr];
-    `DV_CHECK_EQ(cfg.intr_vif.pins[uart_intr], exp_pin, $sformatf(
+    if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.pins[uart_intr], exp_pin, $sformatf(
         "uart_intr name/val: %0s/%0d, en_intr: %0h", uart_intr.name, uart_intr, en_intr))
   endtask : check_one_intr
 
@@ -246,9 +246,9 @@ class uart_intr_vseq extends uart_base_vseq;
     bit [NumUartIntr-1:0] exp_pin;
 
     csr_rd(.ptr(ral.intr_state), .value(act_intr_state));
-    `DV_CHECK_EQ(act_intr_state, exp)
+    if (!cfg.under_reset) `DV_CHECK_EQ(act_intr_state, exp)
     exp_pin = exp & en_intr;
-    `DV_CHECK_EQ(cfg.intr_vif.pins[NumUartIntr-1:0], exp_pin, $sformatf(
+    if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.pins[NumUartIntr-1:0], exp_pin, $sformatf(
         "uart_intr val: %0h, en_intr: %0h", exp, en_intr))
 
     if (do_clear) begin

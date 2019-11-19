@@ -172,11 +172,10 @@ interface clk_rst_if #(
                              int post_reset_dly_clks = 0,
                              int rst_n_scheme        = 1);
     int dly_ps;
-    dly_ps = $urandom_range(0, clk_period_ps / 2);
+    dly_ps = $urandom_range(0, clk_period_ps);
     wait_clks(pre_reset_dly_clks);
     case (rst_n_scheme)
       0: begin : sync_assert_deassert
-        if (pre_reset_dly_clks == 0) wait_clks(1);
         o_rst_n <= 1'b0;
         wait_clks(reset_width_clks);
         o_rst_n <= 1'b1;

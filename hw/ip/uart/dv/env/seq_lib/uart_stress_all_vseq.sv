@@ -32,8 +32,10 @@ class uart_stress_all_vseq extends uart_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(uart_vseq, seq)
 
-      // dut_init (reset) can be skipped as reset is done in this seq
-      uart_vseq.do_dut_init = $urandom_range(0, 1);
+      // if upper seq disables do_dut_init for this seq, then can't issue reset
+      // as upper seq may drive reset
+      if (do_dut_init) uart_vseq.do_dut_init = $urandom_range(0, 1);
+      else             uart_vseq.do_dut_init = 0;
 
       uart_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(uart_vseq)

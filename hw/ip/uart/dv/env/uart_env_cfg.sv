@@ -29,4 +29,15 @@ class uart_env_cfg extends cip_base_env_cfg #(.RAL_T(uart_reg_block));
     num_interrupts = ral.intr_state.get_n_used_bits();
   endfunction
 
+  // uart doesn't have reset pin. When reset occurs/clears,
+  // need to call reset function in uart_agent_cfg
+  virtual function void reset_asserted();
+    super.reset_asserted();
+    m_uart_agent_cfg.reset_asserted();
+  endfunction
+
+  virtual function void reset_deasserted();
+    super.reset_deasserted();
+    m_uart_agent_cfg.reset_deasserted();
+  endfunction
 endclass

@@ -153,7 +153,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     csr_rd(.ptr(ral.rdata), .value(rdata));
     // do check but only if rx is enabled
     if (ral.ctrl.rx.get_mirrored_value()) begin
-      `DV_CHECK_EQ(rdata, exp_data)
+      if (!cfg.under_reset) `DV_CHECK_EQ(rdata, exp_data)
     end
   endtask
 

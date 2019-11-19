@@ -61,11 +61,11 @@ Due to `csr_utils_pkg` is not connected to any interface, methods inside
 this package are not able to get reset information. Current the `under_reset`
 bit is declared with two functions:
 ```systemverilog
-function automatic void reset_occurred();
+function automatic void reset_asserted();
   under_reset = 1;
 endfunction
 
-function automatic void reset_cleared();
+function automatic void reset_deasserted();
   under_reset = 0;
 endfunction
 ```

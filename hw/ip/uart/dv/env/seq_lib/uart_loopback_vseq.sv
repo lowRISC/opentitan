@@ -79,8 +79,10 @@ class uart_loopback_vseq extends uart_tx_rx_vseq;
           // RX has same value as TX without any synchronizer in the data path
           forever begin
             @(cfg.m_uart_agent_cfg.vif.uart_tx || cfg.m_uart_agent_cfg.vif.uart_rx);
-            #0; // avoid race condition
-            `DV_CHECK_EQ(cfg.m_uart_agent_cfg.vif.uart_tx, cfg.m_uart_agent_cfg.vif.uart_rx)
+            #1ps; // avoid race condition
+            if (!cfg.under_reset) begin
+              `DV_CHECK_EQ(cfg.m_uart_agent_cfg.vif.uart_tx, cfg.m_uart_agent_cfg.vif.uart_rx)
+            end
           end
         join_any
         disable fork;

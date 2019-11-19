@@ -30,6 +30,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
   // local queues to hold incoming packets pending comparison
   uart_item tx_q[$];
+  // when item is removed from fifo and being sent on UART tx interface, store it in this queue
   uart_item tx_processing_item_q[$];
   uart_item rx_q[$];
 
@@ -492,6 +493,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     rxlvl_exp            = ral.fifo_status.rxlvl.get_reset();
     intr_exp             = ral.intr_state.get_reset();
     rdata_exp            = ral.rdata.get_reset();
+    process_objections(1'b0);
   endfunction
 
   function void check_phase(uvm_phase phase);

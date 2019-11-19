@@ -4,10 +4,11 @@
 
 class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
-  bit                   is_active = 1'b1;
-  bit                   en_scb = 1'b1;
-  bit                   en_cov = 1'b1;
-  bit                   has_ral = 1'b1;
+  bit                   is_active    = 1;
+  bit                   en_scb       = 1; // can be changed at run-time
+  bit                   en_cov       = 1;
+  bit                   has_ral      = 1;
+  bit                   under_reset  = 0;
 
   // bit to configure all uvcs with zero delays to create high bw test
   rand bit              zero_delays;
@@ -81,4 +82,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     // fix access policies & reset values
   endfunction
 
+  virtual function void reset_asserted();
+    this.under_reset = 1;
+    csr_utils_pkg::reset_asserted();
+  endfunction
+
+  virtual function void reset_deasserted();
+    this.under_reset = 0;
+    csr_utils_pkg::reset_deasserted();
+  endfunction
 endclass
