@@ -40,6 +40,7 @@ SECTIONS
         _stext = .;
         *(.text.startup)
         *(.text)
+        *(.text.unlikely)
         _etext  =  .;
         __CTOR_LIST__ = .;
         LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
