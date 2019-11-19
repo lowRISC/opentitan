@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name : lowrisc:utils:generators:0
+
+generators:
+  lowrisc_rom:
+    command: lowrisc_rom_gen.py
+    interpreter: python
+    description : LowRISC ROM generator
+    usage: |
+      The LowRISC ROM generator can compile the included boot ROM and example
+      applications into vmem files used for simulated Flash contents
+
+      The selected applications are set as default values to the --rominit and
+      --flashinit parameters. If the --rominit or --flashinit parameters are
+      specified on the command line, these will override the default values
+
+      Parameters:
+        rominit (str): Subdirectory of sw/device where the boot ROM sources are
+                       found (e.g. boot_rom)
+        flashinit (str): Subdirectory of sw/device where the application to be
+                         loaded into Flash during simulation is found
+                         (e.g. examples/hello_world)
+        sim (bool): Compile programs with SIM=1 defined

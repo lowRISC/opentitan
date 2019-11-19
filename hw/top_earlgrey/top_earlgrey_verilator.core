@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv_dpi:spidpi
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:ibex:ibex_tracer
+      - lowrisc:utils:generators
 
     files:
       - rtl/top_earlgrey_verilator.sv: { file_type: systemVerilogSource }
@@ -47,8 +48,17 @@ parameters:
     description : Application to load into Boot ROM (in Verilog hex format)
     paramtype : cmdlinearg
 
+generate:
+  default_sw:
+    generator: lowrisc_rom
+    parameters:
+      rominit   : boot_rom
+      flashinit : examples/hello_world
+      sim       : true
+
 targets:
   sim:
+    generate: [default_sw]
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
       - RVFI=true
