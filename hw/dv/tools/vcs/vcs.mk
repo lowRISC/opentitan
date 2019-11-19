@@ -90,6 +90,13 @@ ifeq (${VCS_COV},1)
   RUN_OPTS    += -assert nopostproc
 endif
 
+# Enable XPROP
+XPROP ?= 1
+ifeq (${XPROP},1)
+  VCS_XPROP_CFG_FILE ?= ${MAKE_ROOT}/vcs/xprop.cfg
+  BUILD_OPTS         += -xprop=${VCS_XPROP_CFG_FILE}
+endif
+
 # Coverage analyze/report options
 COV_COMMON_EXCL  ?= ${MAKE_ROOT}/vcs/common_cov_excl.el
 COV_EXCL         += ${COV_COMMON_EXCL} ${COV_DUT_EXCL}

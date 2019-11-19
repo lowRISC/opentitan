@@ -415,6 +415,53 @@ It is recommended to follow these guidelines when collecting coverage:
 *  Collect all coverage metrics (except toggle based on above bullet) on the DUT and all of its non-pre-verified sub-modules
 *  Treat pre-verified sub-modules as ['black-box'](#integration-testing) in terms of coverage collection
 
+### X-Propagation (Xprop)
+
+Standard RTL simulations (RTL-sim) ignore the uncertainty of X-valued control signals and assign predictable output values.
+As a result, classic RTL-sim often fail to detect design problems related to the lack of Xprop, which actually can be detected in gate-level simulations (gate-sim).
+With Xprop in RTL-sim, we can detect these problems without having to run gate-sim.
+
+Synopsys VCS and Cadence Xcelium both provide the following 2 modes for Xprop.
+  * **Optimistic Mode**: Closer to actual hardware behavior and is the more commonly used mode
+  * **Pessimistic Mode**: More pessimistic than a standard gate-sim
+
+Example:
+```systemverilog
+always @(posedge clk) begin
+  if (cond) out <= a;
+  else      out <= b;
+end
+```
+
+In the above example, results of 'out' are shown as following.
+
+a | b | cond | Classic RTL-sim | Gate-sim | Actual Hardware | Xprop Optimistic | Xprop Pessimistic |
+--|---|------|-----------------|----------|-----------------|------------------|-------------------|
+0 | 0 |  X   |        0        |     0    |       0         |         0        |         X         |
+0 | 1 |  X   |        1        |     X    |       0/1       |         X        |         X         |
+1 | 0 |  X   |        0        |     X    |       0/1       |         X        |         X         |
+1 | 1 |  X   |        1        |     X    |       1         |         1        |         X         |
+
+We choose **Pessimistic Mode** as we want to avoid using X value in the condition.
+Xprop is enabled by default when running simulations for all of our DUTs due to the acceptable level of overhead it adds in terms of wall-clock time (less than 10%).
+
+It's mandatory to enable Xprop when running regression for coverage closure.
+To test Xprop more effectively, the address / data / control signals are required to be driven to Xs when invalid (valid bit is not set).
+For example, when a_valid is 0 in the TLUL interface, we drive data, address and control signals to unknown values.
+```systemverilog
+  function void invalidate_a_channel();
+    vif.host_cb.h2d.a_opcode  <= tlul_pkg::tl_a_op_e'('x);
+    vif.host_cb.h2d.a_param   <= '{default:'x};
+    vif.host_cb.h2d.a_size    <= '{default:'x};
+    vif.host_cb.h2d.a_source  <= '{default:'x};
+    vif.host_cb.h2d.a_address <= '{default:'x};
+    vif.host_cb.h2d.a_mask    <= '{default:'x};
+    vif.host_cb.h2d.a_data    <= '{default:'x};
+    vif.host_cb.h2d.a_user    <= '{default:'x};
+    vif.host_cb.h2d.a_valid   <= 1'b0;
+  endfunction : invalidate_a_channel
+```
+
 ## FPV
 
 This section is TBD.
