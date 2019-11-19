@@ -10,6 +10,8 @@ class uart_monitor extends dv_base_monitor#(
   );
   `uvm_component_utils(uart_monitor)
 
+  bit obj_raised[uart_dir_e];
+
   // Analysis port for the collected transfer.
   uvm_analysis_port #(uart_item) tx_analysis_port;
   uvm_analysis_port #(uart_item) rx_analysis_port;
@@ -23,20 +25,27 @@ class uart_monitor extends dv_base_monitor#(
   endfunction
 
   task run_phase(uvm_phase phase);
-    fork
-      collect_tx_data(phase);
-      collect_rx_data(phase);
-    join
+    forever begin
+      fork
+        collect_tx_data();
+        collect_rx_data();
+        drive_tx_clk();
+        drive_rx_clk();
+        wait(cfg.under_reset);
+      join_any
+      disable fork;
+
+      if (cfg.under_reset) process_reset();
+    end
   endtask
 
-  virtual task collect_tx_data(uvm_phase phase);
+  virtual task collect_tx_data();
     uart_item item;
     forever begin
       if (cfg.vif.uart_tx === 1'b0 && cfg.en_tx_monitor == 1) begin
         // 1 start + 8 data + 1 parity (if enabled) + 1 stop
-        cfg.vif.uart_tx_clk_pulses = 1 + 8 + cfg.en_parity + 1;
-        phase.raise_objection(this);
-        `uvm_info(`gtn, "raise_objection, TX starts", UVM_DEBUG)
+        cfg.vif.uart_tx_clk_pulses = NUM_UART_XFER_BITS_WO_PARITY + cfg.en_parity;
+        process_objections(UartTx, 1);
         item = uart_item::type_id::create("item");
         // get the start bit
         @(cfg.vif.mon_tx_mp.mon_tx_cb);
@@ -74,21 +83,20 @@ class uart_monitor extends dv_base_monitor#(
         cfg.vif.wait_for_tx_idle();
 
         if (cfg.en_cov) cov.uart_cg.sample(UartTx, item);
-        phase.drop_objection(this);
+        process_objections(UartTx, 0);
       end else begin
         @(cfg.vif.uart_tx);
       end
     end
   endtask
 
-  virtual task collect_rx_data(uvm_phase phase);
+  virtual task collect_rx_data();
     uart_item item;
     forever begin
       if (cfg.vif.uart_rx === 1'b0 && cfg.en_rx_monitor == 1) begin
-        phase.raise_objection(this);
-        `uvm_info(`gtn, "raise_objection, RX starts", UVM_DEBUG)
+        process_objections(UartRx, 1);
         item = uart_item::type_id::create("item");
-        cfg.vif.uart_rx_clk_pulses = 1 + 8 + cfg.en_parity + 1;;
+        cfg.vif.uart_rx_clk_pulses = NUM_UART_XFER_BITS_WO_PARITY + cfg.en_parity;
         // get the start bit
         @(cfg.vif.mon_rx_mp.mon_rx_cb);
         `uvm_info(`gtn, $sformatf("rx start bit %0b", cfg.vif.uart_rx), UVM_DEBUG)
@@ -125,11 +133,65 @@ class uart_monitor extends dv_base_monitor#(
         cfg.vif.wait_for_rx_idle();
 
         if (cfg.en_cov) cov.uart_cg.sample(UartRx, item);
-        phase.drop_objection(this);
+        process_objections(UartRx, 0);
       end else begin
         @(cfg.vif.uart_rx);
       end
     end
   endtask
 
+  task drive_tx_clk();
+    forever begin
+      if (cfg.vif.uart_tx_clk_pulses > 0) begin
+        #(cfg.vif.uart_clk_period_ns / 2);
+        cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
+        #(cfg.vif.uart_clk_period_ns / 2);
+        cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
+        cfg.vif.uart_tx_clk_pulses--;
+      end else begin
+        @(cfg.vif.uart_tx, cfg.vif.uart_tx_clk_pulses);
+      end
+    end
+  endtask
+
+  task drive_rx_clk();
+    forever begin
+      if (cfg.vif.uart_rx_clk_pulses > 0) begin
+        #(cfg.vif.uart_clk_period_ns / 2);
+        cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
+        #(cfg.vif.uart_clk_period_ns / 2);
+        cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
+        cfg.vif.uart_rx_clk_pulses--;
+      end else begin
+        @(cfg.vif.uart_rx, cfg.vif.uart_rx_clk_pulses);
+      end
+    end
+  endtask
+
+  virtual task process_reset();
+    if (cfg.en_cov) begin
+      cov.uart_reset_cg.sample(UartTx, cfg.vif.uart_tx_clk_pulses);
+      cov.uart_reset_cg.sample(UartRx, cfg.vif.uart_rx_clk_pulses);
+    end
+    cfg.vif.uart_tx_clk_pulses = 0;
+    cfg.vif.uart_tx_clk        = 1;
+    cfg.vif.uart_rx_clk_pulses = 0;
+    cfg.vif.uart_rx_clk        = 1;
+    process_objections(UartTx, 0);
+    process_objections(UartRx, 0);
+    wait(!cfg.under_reset);
+  endtask
+
+  virtual function void process_objections(uart_dir_e dir, bit raise);
+    if (raise && !obj_raised[dir]) begin
+      `uvm_info(`gfn, $sformatf("raising objection for %0s", dir.name), UVM_HIGH)
+      m_current_phase.raise_objection(this);
+      obj_raised[dir] = 1'b1;
+    end
+    else if (!raise && obj_raised[dir]) begin
+      `uvm_info(`gfn, $sformatf("dropping objection for %0s", dir.name), UVM_HIGH)
+      m_current_phase.drop_objection(this);
+      obj_raised[dir] = 1'b0;
+    end
+  endfunction
 endclass

@@ -16,6 +16,9 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   bit en_parity;
   bit odd_parity;
 
+  // reset is controlled at upper seq-level as no reset pin on uart interface
+  bit under_reset;
+
   // interface handle used by driver, monitor & the sequencer
   virtual uart_if vif;
 
@@ -38,4 +41,18 @@ class uart_agent_cfg extends dv_base_agent_cfg;
     this.odd_parity = odd_parity;
   endfunction
 
+  virtual function void reset_asserted();
+    under_reset = 1;
+  endfunction
+
+  virtual function void reset_deasserted(bit re_enable_chk_mon = 1);
+    under_reset = 0;
+    vif.reset_uart_rx();
+    if (re_enable_chk_mon) begin
+      en_rx_checks  = 1;
+      en_tx_checks  = 1;
+      en_rx_monitor = 1;
+      en_tx_monitor = 1;
+    end
+  endfunction
 endclass

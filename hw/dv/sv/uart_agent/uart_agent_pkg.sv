@@ -12,6 +12,9 @@ package uart_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // 1 start + 8 data + 1 stop
+  parameter uint NUM_UART_XFER_BITS_WO_PARITY = 10;
+
   // local types
   typedef enum bit {
     UartTx,

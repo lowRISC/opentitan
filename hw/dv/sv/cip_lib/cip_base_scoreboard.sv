@@ -25,6 +25,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    // if en_scb is off at the beginning, below processes aren't enabled
+    // but monitor_reset in super.run_phase is always running
+    wait(cfg.en_scb);
     fork
       process_tl_a_chan_fifo();
       process_tl_d_chan_fifo();
@@ -35,6 +38,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     tl_seq_item item;
     forever begin
       tl_a_chan_fifo.get(item);
+      if (!cfg.en_scb) continue;
       // do nothing; we are using d_chan_fifo items for completed transactions
       process_tl_access(item, AddrChannel);
     end
@@ -44,6 +48,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     tl_seq_item item;
     forever begin
       tl_d_chan_fifo.get(item);
+      if (!cfg.en_scb) continue;
       `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
       // check tl packet integrity
       void'(item.is_ok());

@@ -53,11 +53,11 @@ package csr_utils_pkg;
     outstanding_accesses = 0;
   endfunction
 
-  function automatic void reset_occurred();
+  function automatic void reset_asserted();
     under_reset = 1;
   endfunction
 
-  function automatic void reset_cleared();
+  function automatic void reset_deasserted();
     under_reset = 0;
   endfunction
 
@@ -390,7 +390,7 @@ package csr_utils_pkg;
 
         csr_or_fld = decode_csr_or_field(ptr);
         fork
-          while (1) begin
+          while (!under_reset) begin
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map));

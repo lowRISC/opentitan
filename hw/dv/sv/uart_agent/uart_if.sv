@@ -29,37 +29,9 @@ interface uart_if #(time UartDefaultClkPeriodNs = 104166.667ns) ();
   endclocking
   modport mon_rx_mp(clocking mon_rx_cb);
 
-  // Generate the uart_*x_clk, with UartDefaultClkPeriodNs period as default
-  // Clock pulses are generated when is greater than zero, so for the driver or the monitor
-  // to generate their trigger events, they set i to generate the number of pulses they need.
-  initial begin
-    uart_tx_clk = 1'b1;
-    uart_rx_clk = 1'b1;
-    fork
-      forever begin
-        if (uart_tx_clk_pulses > 0) begin
-          #(uart_clk_period_ns/2);
-          uart_tx_clk = ~uart_tx_clk;
-          #(uart_clk_period_ns/2);
-          uart_tx_clk = ~uart_tx_clk;
-          uart_tx_clk_pulses--;
-        end else begin
-          @(uart_tx, uart_tx_clk_pulses);
-        end
-      end
-      forever begin
-        if (uart_rx_clk_pulses > 0) begin
-          #(uart_clk_period_ns/2);
-          uart_rx_clk = ~uart_rx_clk;
-          #(uart_clk_period_ns/2);
-          uart_rx_clk = ~uart_rx_clk;
-          uart_rx_clk_pulses--;
-        end else begin
-          @(uart_rx, uart_rx_clk_pulses);
-        end
-      end
-    join
-  end
+  task automatic reset_uart_rx();
+    uart_rx = 1;
+  endtask
 
   task automatic wait_for_tx_idle();
     wait(uart_tx_clk_pulses == 0);

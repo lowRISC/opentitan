@@ -20,6 +20,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // user can set the name of common seq to run directly without using $value$plusargs
   string common_seq_type;
 
+  rand uint delay_to_reset;
+  constraint delay_to_reset_c {
+    delay_to_reset dist {
+        [1         :1000]       :/ 1,
+        [1001      :100_000]    :/ 2,
+        [100_001   :1_000_000]  :/ 6,
+        [1_000_001 :5_000_000]  :/ 1
+    };
+  }
+
   `include "cip_base_vseq__tl_errors.svh"
 
   task pre_start();
@@ -90,7 +100,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 })
         `uvm_send(tl_seq)
         if (!write) data = tl_seq.rsp.d_data;
-        if (check_rsp) begin
+        if (check_rsp && !cfg.under_reset) begin
           `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
         end
         csr_utils_pkg::decrement_outstanding_access();,
@@ -208,7 +218,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       exp_intr_state = '0;
       `uvm_info(`gfn, "interrupt pin expect value set to 0 due to reset", UVM_LOW)
     end
-    `DV_CHECK_EQ(act_pins, exp_pins)
+    if (!cfg.under_reset) `DV_CHECK_EQ(act_pins, exp_pins)
     csr = get_interrupt_csr("intr_state", "", indices, scope);
     csr_rd_check(.ptr(csr), .compare_value(exp_intr_state), .compare_mask(interrupts));
     if (check_set && |(interrupts & clear)) begin
@@ -269,19 +279,21 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         `uvm_info(`gtn, $sformatf("Verifying %0s", intr_test_csrs[test_index[i]].get_full_name()),
             UVM_LOW)
         csr_rd(.ptr(intr_state_csrs[test_index[i]]), .value(dut_intr_state));
-        `DV_CHECK_EQ(dut_intr_state, exp_intr_state[test_index[i]])
+        if (!cfg.under_reset) `DV_CHECK_EQ(dut_intr_state, exp_intr_state[test_index[i]])
       end
 
       // check interrupt pins
-      foreach (intr_test_csrs[i]) begin
-        bit [TL_DW-1:0] exp_intr_pin;
-        exp_intr_pin = exp_intr_state[i] & intr_enable_val[i];
-        for (int j = 0; j < intr_test_csrs[i].get_n_used_bits(); j++) begin
-          bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
-          `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j], $sformatf(
-              "exp_intr_state: %0h, en_intr: %0h", exp_intr_state[i], intr_enable_val[i]))
+      if (!cfg.under_reset) begin
+        foreach (intr_test_csrs[i]) begin
+          bit [TL_DW-1:0] exp_intr_pin;
+          exp_intr_pin = exp_intr_state[i] & intr_enable_val[i];
+          for (int j = 0; j < intr_test_csrs[i].get_n_used_bits(); j++) begin
+            bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
+            `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j], $sformatf(
+                "exp_intr_state: %0h, en_intr: %0h", exp_intr_state[i], intr_enable_val[i]))
+          end
+          num_used_bits += intr_test_csrs[i].get_n_used_bits();
         end
-        num_used_bits += intr_test_csrs[i].get_n_used_bits();
       end
 
       // clear random bits of intr state
@@ -306,14 +318,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
         csr_wr(.csr(intr_state_csrs[i]), .value(data));
         csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-        `DV_CHECK_EQ(data, 0)
+        if (!cfg.under_reset) `DV_CHECK_EQ(data, 0)
+        else                  break;
       end
     end
-    `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
+    if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
   endtask
 
   // task to insert random reset within the input vseqs list, then check all CSR values
-  virtual task run_stress_all_with_rand_reset_vseq(int num_times=1);
+  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1);
     string stress_seq_name;
     void'($value$plusargs("stress_seq=%0s", stress_seq_name));
 
@@ -337,7 +350,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                `uvm_info(`gfn, $sformatf("Finished run %0d/%0d w/o reset", i, num_trans), UVM_LOW)
             end
             begin : issue_rand_reset
-              cfg.clk_rst_vif.wait_clks(delay);
+              cfg.clk_rst_vif.wait_clks(delay_to_reset);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("Reset is issued for run %0d/%0d", i, num_trans), UVM_LOW)
               apply_reset("HARD");
@@ -348,13 +361,21 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           join_any
           p_sequencer.tl_sequencer_h.stop_sequences();
           disable fork;
-          // delay to avoid race condition when sending item and checking no item after reset occur at
-          // the same time
+          `uvm_info(`gfn, $sformatf("Stress w/ reset is done for run %0d/%0d", i, num_trans),
+                    UVM_LOW)
+          // delay to avoid race condition when sending item and checking no item after reset occur
+          // at the same time
           #1ps;
-          if (do_read_and_check_all_csrs) read_and_check_all_csrs(ral);
+          if (do_read_and_check_all_csrs) read_and_check_all_csrs_after_reset();
         end : isolation_fork
       join
     end
+  endtask
+
+  virtual task read_and_check_all_csrs_after_reset();
+    csr_excl_item csr_excl = create_and_add_csr_excl("hw_reset");
+    `uvm_info(`gfn, "running csr hw_reset vseq", UVM_HIGH)
+    run_csr_vseq(.csr_test_type("hw_reset"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
   endtask
 
 endclass

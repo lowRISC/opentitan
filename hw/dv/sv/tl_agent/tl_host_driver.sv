@@ -97,7 +97,8 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     while(!vif.host_cb.d2h.a_ready && !reset_asserted) @(vif.host_cb);
     invalidate_a_channel();
     seq_item_port.item_done();
-    pending_a_req.push_back(req);
+    if (reset_asserted) seq_item_port.put_response(req); // if reset, skip data phase
+    else                pending_a_req.push_back(req);
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
 

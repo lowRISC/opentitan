@@ -12,7 +12,6 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
   COV_T    cov;
 
   bit obj_raised = 1'b0;
-  bit under_reset;
 
   `uvm_component_new
 
@@ -32,10 +31,10 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
     forever begin
       if (!cfg.clk_rst_vif.rst_n) begin
         `uvm_info(`gfn, "reset occurred", UVM_HIGH)
-        under_reset = 1'b1;
+        cfg.reset_asserted();
         @(posedge cfg.clk_rst_vif.rst_n);
+        cfg.reset_deasserted();
         reset();
-        under_reset = 1'b0;
         `uvm_info(`gfn, "out of reset", UVM_HIGH)
       end
       else begin

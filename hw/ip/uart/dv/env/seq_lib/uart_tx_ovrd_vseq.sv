@@ -28,7 +28,7 @@ class uart_tx_ovrd_vseq extends uart_sanity_vseq;
       else         exp = 1;
       csr_wr(.csr(ral.ovrd), .value({txval, en_ovrd}));
       cfg.clk_rst_vif.wait_clks(1);
-      `DV_CHECK_EQ(cfg.m_uart_agent_cfg.vif.uart_tx, exp)
+      if (!cfg.under_reset) `DV_CHECK_EQ(cfg.m_uart_agent_cfg.vif.uart_tx, exp)
       cfg.clk_rst_vif.wait_clks(dly_to_next_trans);
     end
     // disable ovrd

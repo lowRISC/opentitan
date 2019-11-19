@@ -57,7 +57,7 @@ class uart_sanity_vseq extends uart_tx_rx_vseq;
       send_rx_byte(rx_byte);
       spinwait_rxidle();
       csr_rd(.ptr(ral.rdata), .value(dut_rdata));
-      `DV_CHECK_EQ(rx_byte, dut_rdata)
+      if (!cfg.under_reset) `DV_CHECK_EQ(rx_byte, dut_rdata)
     end
   endtask : process_rx
 
