@@ -390,7 +390,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     instr.push_back($sformatf("csrr x%0d, 0x%0x", tmp_reg, MSTATUS));
     instr.push_back($sformatf("and x%0d, x%0d, x%0d", tmp_reg, tmp_reg, mask_reg));
     instr.push_back($sformatf("beqz x%0d, j_smode", tmp_reg));
-    instr.push_back("jal ra, smode_ls_umem_program");
+    instr.push_back("jal ra, smode_lsu_program");
     instr.push_back("j fix_pte_ret");
     instr.push_back("j_smode: jal ra, smode_program");
     instr.push_back("fix_pte_ret:");

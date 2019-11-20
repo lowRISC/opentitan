@@ -22,7 +22,7 @@ static void SignalHandler(int sig) {
 
   switch (sig) {
     case SIGINT:
-      simctrl->RequestStop();
+      simctrl->RequestStop(true);
       break;
     case SIGUSR1:
       if (simctrl->TracingEnabled()) {
@@ -44,13 +44,6 @@ static void SetupSignalHandler() {
   sigaction(SIGINT, &sigIntHandler, NULL);
   sigaction(SIGUSR1, &sigIntHandler, NULL);
 }
-
-/**
- * Get the current simulation time
- *
- * Called by $time in Verilog, converts to double, to match what SystemC does
- */
-double sc_time_stamp() { return simctrl->GetTime(); }
 
 int main(int argc, char **argv) {
   int retcode;

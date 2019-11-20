@@ -25,10 +25,12 @@ class riscv_illegal_instr extends uvm_object;
 
   typedef enum bit [2:0] {
     kIllegalOpcode,
+    kIllegalCompressedOpcode,
     kIllegalFunc3,
     kIllegalFunc7,
     kReservedCompressedInstr,
-    kHintInstr
+    kHintInstr,
+    kIllegalSystemInstr
   } illegal_instr_type_e;
 
   // Default legal opcode for RV32I instructions
@@ -44,6 +46,15 @@ class riscv_illegal_instr extends uvm_object;
                                  7'b1110011,
                                  7'b1101111};
 
+   // Default legal opcode for RV32C instructions
+  bit [2:0]  legal_c00_opcode[$] = '{3'b000,
+                                     3'b010,
+                                     3'b110};
+  bit [2:0]  legal_c10_opcode[$] = '{3'b000,
+                                     3'b010,
+                                     3'b100,
+                                     3'b110};
+
   rand illegal_instr_type_e  exception;
   rand bit [31:0]            instr_bin;
   rand bit [6:0]             opcode;
@@ -55,6 +66,19 @@ class riscv_illegal_instr extends uvm_object;
   rand bit [1:0]             c_op;
   rand bit [2:0]             c_msb;
   riscv_instr_gen_config     cfg;
+  privileged_reg_t           csrs[$];
+
+  constraint exception_dist_c {
+    exception dist {
+      kIllegalOpcode           := 3,
+      kIllegalCompressedOpcode := 1,
+      kIllegalFunc3            := 1,
+      kIllegalFunc7            := 1,
+      kReservedCompressedInstr := 1,
+      kHintInstr               := 3,
+      kIllegalSystemInstr      := 3
+    };
+  }
 
   constraint instr_bit_assignment_c {
     solve opcode before instr_bin;
@@ -76,11 +100,40 @@ class riscv_illegal_instr extends uvm_object;
     }
   }
 
+  // Invalid SYSTEM instructions
+  constraint system_instr_c {
+    if (exception == kIllegalSystemInstr) {
+      opcode == 7'b1110011;
+      // ECALL/EBREAK/xRET/WFI
+      if (func3 == 3'b000) {
+        // Constrain RS1 and RD to be non-zero
+        instr_bin[19:15] != 0;
+        instr_bin[11:7] != 0;
+        // Valid SYSTEM instructions considered by this
+        // Constrain the upper 12 bits to be invalid
+        !(instr_bin[31:20] inside {12'h0, 12'h1, 12'h2, 12'h102, 12'h302, 12'h7b2, 12'h105});
+      } else {
+        // Invalid CSR instructions
+        !(instr_bin[31:20] inside {csrs});
+      }
+    }
+  }
+
+  constraint legal_rv32_c_slli {
+    if ((c_msb == 3'b000) && (c_op == 2'b10) && (XLEN == 32)) {
+      if (exception == kReservedCompressedInstr) {
+        instr_bin[12] == 1;
+      } else {
+        instr_bin[12] == 0;
+      }
+    }
+  }
+
   constraint exception_type_c {
     if (compressed) {
-      exception inside {kReservedCompressedInstr, kHintInstr};
+      exception inside {kReservedCompressedInstr, kIllegalCompressedOpcode, kHintInstr};
     } else {
-      exception inside {kIllegalOpcode, kIllegalFunc3, kIllegalFunc7};
+      exception inside {kIllegalOpcode, kIllegalFunc3, kIllegalFunc7, kIllegalSystemInstr};
     }
     if (!has_func7) {
       exception != kIllegalFunc7;
@@ -94,14 +147,31 @@ class riscv_illegal_instr extends uvm_object;
     c_op != 2'b11;
   }
 
+
+  constraint illegal_compressed_op_c {
+    if (exception == kIllegalCompressedOpcode) {
+      c_op != 2'b01;
+      if (legal_c00_opcode.size() == 8) {
+        c_op != 2'b00;
+      } else {
+        !(c_msb inside {legal_c00_opcode});
+      }
+      if (legal_c10_opcode.size() == 8) {
+        c_op != 2'b10;
+      } else {
+        !(c_msb inside {legal_c10_opcode});
+      }
+    }
+  }
+
   constraint reserved_compressed_instr_c {
     if (exception == kReservedCompressedInstr) {
       ((instr_bin[15:5] == '0) && (c_op == 2'b00)) ||
       ((c_msb == 3'b100) && (c_op == 2'b00)) ||
       ((instr_bin[15:10] == 6'b100111) && (instr_bin[6:5] == 2'b10) && (c_op == 2'b01)) ||
       ((instr_bin[15:10] == 6'b100111) && (instr_bin[6:5] == 2'b11) && (c_op == 2'b01)) ||
-      ((c_msb == 3'b001) && (c_op == 2'b01) && (instr_bin[11:7] == 5'b0) && (XLEN == 64)) ||
-      ((c_msb == 3'b011) && (c_op == 2'b01) && (instr_bin[12:2] == 11'h40)) ||
+      // C_LUI, imm = 0
+      ((c_msb == 3'b011) && (c_op == 2'b01) && !instr_bin[12] && (instr_bin[6:2] == 0)) ||
       ((c_msb == 3'b001) && (c_op == 2'b10) && (instr_bin[11:7] == 5'b0)) ||
       ((c_msb == 3'b010) && (c_op == 2'b10) && (instr_bin[11:7] == 5'b0)) ||
       ((c_msb == 3'b011) && (c_op == 2'b10) && (instr_bin[11:7] == 5'b0)) ||
@@ -118,6 +188,9 @@ class riscv_illegal_instr extends uvm_object;
       // C.SRAI64, C.SRLI64
       ((c_msb == 3'b100) && (c_op == 2'b01) && (instr_bin[12:11] == 2'b00) &&
                                                (instr_bin[6:2] == 5'b0)) ||
+      // C.MV
+      ((c_msb == 3'b100) && (c_op == 2'b10) && (instr_bin[11:7] == 0) &&
+                                               (instr_bin[6:2]  != 0)) ||
       // C.LUI
       ((c_msb == 3'b011) && (c_op == 2'b01) && (instr_bin[11:7] == 5'b0) &&
                                                ({instr_bin[12], instr_bin[6:2]} != 6'b0)) ||
@@ -133,6 +206,7 @@ class riscv_illegal_instr extends uvm_object;
   }
 
   constraint illegal_opcode_c {
+    solve opcode before instr_bin;
     if (exception == kIllegalOpcode) {
       !(opcode inside {legal_opcode});
       opcode[1:0] == 2'b11;
@@ -217,6 +291,7 @@ class riscv_illegal_instr extends uvm_object;
   `uvm_object_new
 
   function void init(riscv_instr_gen_config cfg);
+    privileged_reg_t csr;
     this.cfg = cfg;
     if ((riscv_instr_pkg::RV32F inside {riscv_instr_pkg::supported_isa}) ||
          riscv_instr_pkg::RV32D inside {riscv_instr_pkg::supported_isa}) begin
@@ -233,6 +308,15 @@ class riscv_illegal_instr extends uvm_object;
          riscv_instr_pkg::RV64M inside {riscv_instr_pkg::supported_isa}) begin
       legal_opcode = {legal_opcode, 7'b0111011};
     end
+    if (riscv_instr_pkg::RV64I inside {riscv_instr_pkg::supported_isa}) begin
+      legal_c00_opcode = {legal_c00_opcode, 3'b011, 3'b111};
+      legal_c10_opcode = {legal_c10_opcode, 3'b011, 3'b111};
+    end
+    csr = csr.first();
+    for (int i = 0; i < csr.num(); i = i + 1) begin
+      csrs.push_back(csr);
+      csr = csr.next();
+    end
   endfunction
 
   function string get_bin_str();
@@ -241,6 +325,8 @@ class riscv_illegal_instr extends uvm_object;
     end else begin
       get_bin_str = $sformatf("%8h", instr_bin[31:0]);
     end
+    `uvm_info(`gfn, $sformatf("Illegal instruction type: %0s, illegal instruction: 0x%0x",
+                               exception.name(), instr_bin), UVM_HIGH)
   endfunction
 
 endclass

@@ -11,10 +11,10 @@ Interface
 +-----------------+-----------+-----------------------------+
 | Signal          | Direction | Description                 |
 +=================+===========+=============================+
-| ``debug_req_i`` | input     | Request to enter debug mode |
+| ``debug_req_i`` | input     | Request to enter Debug Mode |
 +-----------------+-----------+-----------------------------+
 
-``debug_req_i`` is the "debug interrupt", issued by the debug module when the core should enter debug mode.
+``debug_req_i`` is the "debug interrupt", issued by the debug module when the core should enter Debug Mode.
 
 Parameters
 ----------
@@ -22,7 +22,14 @@ Parameters
 +---------------------+-----------------------------------------------------------------+
 | Parameter           | Description                                                     |
 +=====================+=================================================================+
-| ``DmHaltAddr``      | Address to jump to when entering debug mode                     |
+| ``DmHaltAddr``      | Address to jump to when entering Debug Mode                     |
 +---------------------+-----------------------------------------------------------------+
-| ``DmExceptionAddr`` | Address to jump to when an exception occurs while in debug mode |
+| ``DmExceptionAddr`` | Address to jump to when an exception occurs while in Debug Mode |
 +---------------------+-----------------------------------------------------------------+
+
+Core Debug Registers
+--------------------
+
+Ibex implements four core debug registers, namely :ref:`csr-dcsr`, :ref:`csr-dpc`, and two debug scratch registers.
+All those registers are accessible from Debug Mode only.
+If software tries to access them without the core being in Debug Mode, an illegal instruction exception is triggered.

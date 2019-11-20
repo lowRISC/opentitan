@@ -50,12 +50,9 @@ module ibex_alu (
 
       // Comparator OPs
       ALU_EQ,   ALU_NE,
-      ALU_GTU,  ALU_GEU,
-      ALU_LTU,  ALU_LEU,
-      ALU_GT,   ALU_GE,
-      ALU_LT,   ALU_LE,
-      ALU_SLT,  ALU_SLTU,
-      ALU_SLET, ALU_SLETU: adder_op_b_negate = 1'b1;
+      ALU_GE,   ALU_GEU,
+      ALU_LT,   ALU_LTU,
+      ALU_SLT,  ALU_SLTU: adder_op_b_negate = 1'b1;
 
       default:;
     endcase
@@ -128,12 +125,9 @@ module ibex_alu (
     cmp_signed = 1'b0;
 
     unique case (operator_i)
-      ALU_GT,
       ALU_GE,
       ALU_LT,
-      ALU_LE,
-      ALU_SLT,
-      ALU_SLET: begin
+      ALU_SLT: begin
         cmp_signed = 1'b1;
       end
 
@@ -143,7 +137,6 @@ module ibex_alu (
 
   assign is_equal = (adder_result == 32'b0);
   assign is_equal_result_o = is_equal;
-
 
   // Is greater equal
   always_comb begin
@@ -166,8 +159,6 @@ module ibex_alu (
   // (a[31] == 1 && b[31] == 0) => 0
   // (a[31] == 0 && b[31] == 1) => 1
 
-
-
   // generate comparison result
   logic cmp_result;
 
@@ -177,21 +168,15 @@ module ibex_alu (
     unique case (operator_i)
       ALU_EQ:            cmp_result =  is_equal;
       ALU_NE:            cmp_result = ~is_equal;
-      ALU_GT,  ALU_GTU:  cmp_result = is_greater_equal & ~is_equal;
       ALU_GE,  ALU_GEU:  cmp_result = is_greater_equal;
-      ALU_LT,  ALU_SLT,
-      ALU_LTU, ALU_SLTU: cmp_result = ~is_greater_equal;
-      ALU_SLET,
-      ALU_SLETU,
-      ALU_LE,  ALU_LEU:  cmp_result = ~is_greater_equal | is_equal;
+      ALU_LT,  ALU_LTU,
+      ALU_SLT, ALU_SLTU: cmp_result = ~is_greater_equal;
 
       default:;
     endcase
   end
 
   assign comparison_result_o = cmp_result;
-
-
 
   ////////////////
   // Result mux //
@@ -215,12 +200,9 @@ module ibex_alu (
 
       // Comparison Operations
       ALU_EQ,   ALU_NE,
-      ALU_GTU,  ALU_GEU,
-      ALU_LTU,  ALU_LEU,
-      ALU_GT,   ALU_GE,
-      ALU_LT,   ALU_LE,
-      ALU_SLT,  ALU_SLTU,
-      ALU_SLET, ALU_SLETU: result_o = {31'h0,cmp_result};
+      ALU_GE,   ALU_GEU,
+      ALU_LT,   ALU_LTU,
+      ALU_SLT,  ALU_SLTU: result_o = {31'h0,cmp_result};
 
       default:;
     endcase

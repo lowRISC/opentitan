@@ -21,13 +21,19 @@
   path_var: OVPSIM_PATH
   cmd: >
     <path_var>/riscvOVPsim.exe
-    --variant <variant>
+    --controlfile <cfg_path>/riscvOVPsim.ic
+    --objfilenoentry <elf>
     --override riscvOVPsim/cpu/PMP_registers=0
     --override riscvOVPsim/cpu/simulateexceptions=T
-    --trace --tracechange --traceshowicount --program <elf>
+    --trace --tracechange --traceshowicount --tracemode --traceregs
     --finishafter 1000000
 
 - iss: sail
   path_var: SAIL_RISCV
   cmd: >
     <path_var> <elf>
+
+- iss: whisper
+  path_var: WHISPER_ISS
+  cmd: >
+    <path_var> <elf> --log --xlen <xlen> --isa <variant>

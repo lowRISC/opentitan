@@ -8,9 +8,10 @@ class core_ibex_base_test extends uvm_test;
   core_ibex_env_cfg                               cfg;
   virtual clk_if                                  clk_vif;
   virtual core_ibex_dut_probe_if                  dut_vif;
+  virtual core_ibex_csr_if                        csr_vif;
   mem_model_pkg::mem_model                        mem;
   core_ibex_vseq                                  vseq;
-  int unsigned                                    timeout_in_cycles = 5000000;
+  int unsigned                                    timeout_in_cycles = 10000000;
   // If no signature_addr handshake functionality is desired between the testbench and the generated
   // code, the test will wait for the specifield number of cycles before starting stimulus
   // sequences (irq and debug)
@@ -40,6 +41,9 @@ class core_ibex_base_test extends uvm_test;
     end
     if (!uvm_config_db#(virtual core_ibex_dut_probe_if)::get(null, "", "dut_if", dut_vif)) begin
       `uvm_fatal(get_full_name(), "Cannot get dut_if")
+    end
+    if (!uvm_config_db#(virtual core_ibex_csr_if)::get(null, "", "csr_if", csr_vif)) begin
+      `uvm_fatal(get_full_name(), "Cannot get csr_if")
     end
     env = core_ibex_env::type_id::create("env", this);
     cfg = core_ibex_env_cfg::type_id::create("cfg", this);
@@ -103,11 +107,6 @@ class core_ibex_base_test extends uvm_test;
   endfunction
 
   virtual task wait_for_test_done();
-    // TODO(taliu): We need a consistent approach to determine the test is completed for both
-    // random instruction test and firmware based test. For example, it could be done by writing to
-    // a specific memory location of the test signature. Right now the random instruction generator
-    // use ecall instruction to indicate the end of the program. It could be changed to align with
-    // firmware test completion mechanism.
     fork
       begin
         wait (dut_vif.ecall === 1'b1);

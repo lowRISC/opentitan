@@ -11,15 +11,16 @@
  * Top level module of the ibex RISC-V core
  */
 module ibex_core #(
-    parameter bit          PMPEnable        = 1'b0,
-    parameter int unsigned PMPGranularity   = 0,
-    parameter int unsigned PMPNumRegions    = 4,
-    parameter int unsigned MHPMCounterNum   = 0,
-    parameter int unsigned MHPMCounterWidth = 40,
-    parameter bit          RV32E            = 1'b0,
-    parameter bit          RV32M            = 1'b1,
-    parameter int unsigned DmHaltAddr       = 32'h1A110800,
-    parameter int unsigned DmExceptionAddr  = 32'h1A110808
+    parameter bit          PMPEnable                = 1'b0,
+    parameter int unsigned PMPGranularity           = 0,
+    parameter int unsigned PMPNumRegions            = 4,
+    parameter int unsigned MHPMCounterNum           = 0,
+    parameter int unsigned MHPMCounterWidth         = 40,
+    parameter bit          RV32E                    = 1'b0,
+    parameter bit          RV32M                    = 1'b1,
+    parameter              MultiplierImplementation = "fast",
+    parameter int unsigned DmHaltAddr               = 32'h1A110800,
+    parameter int unsigned DmExceptionAddr          = 32'h1A110808
 ) (
     // Clock and Reset
     input  logic        clk_i,
@@ -122,12 +123,11 @@ module ibex_core #(
   logic [31:0] jump_target_ex;
   logic        branch_decision;
 
+  // Core busy signals
   logic        ctrl_busy;
   logic        if_busy;
   logic        lsu_busy;
-  //core busy signals
-  logic        core_busy;
-  logic        core_ctrl_firstfetch, core_busy_int, core_busy_q;
+  logic        core_busy_d, core_busy_q;
 
   // ALU Control
   alu_op_e     alu_operator_ex;
@@ -192,6 +192,7 @@ module ibex_core #(
   logic        csr_save_if;
   logic        csr_save_id;
   logic        csr_restore_mret_id;
+  logic        csr_restore_dret_id;
   logic        csr_save_cause;
   logic        csr_mtvec_init;
   logic [31:0] csr_mtvec;
@@ -262,23 +263,20 @@ module ibex_core #(
 
   logic        clock_en;
 
-  // if we are sleeping on a barrier let's just wait on the instruction
-  // interface to finish loading instructions
-  assign core_busy_int = if_busy | ctrl_busy | lsu_busy;
+  // Before going to sleep, wait for I- and D-side
+  // interfaces to finish ongoing operations.
+  assign core_busy_d = ctrl_busy | if_busy | lsu_busy;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       core_busy_q <= 1'b0;
     end else begin
-      core_busy_q <= core_busy_int;
+      core_busy_q <= core_busy_d;
     end
   end
 
-  assign core_busy   = core_ctrl_firstfetch ? 1'b1 : core_busy_q;
-
+  assign clock_en     = core_busy_q | debug_req_i | irq_pending | irq_nm_i;
   assign core_sleep_o = ~clock_en;
-
-  assign clock_en    = core_busy | debug_req_i | irq_pending | irq_nm_i;
 
   // main clock gate of the core
   // generates all clocks except the one for the debug unit which is
@@ -366,7 +364,6 @@ module ibex_core #(
       // Processor Enable
       .fetch_enable_i               ( fetch_enable_i         ),
       .ctrl_busy_o                  ( ctrl_busy              ),
-      .core_ctrl_firstfetch_o       ( core_ctrl_firstfetch   ),
       .illegal_insn_o               ( illegal_insn_id        ),
 
       // from/to IF-ID pipeline register
@@ -413,7 +410,8 @@ module ibex_core #(
       .csr_op_o                     ( csr_op                 ),
       .csr_save_if_o                ( csr_save_if            ), // control signal to save PC
       .csr_save_id_o                ( csr_save_id            ), // control signal to save PC
-      .csr_restore_mret_id_o        ( csr_restore_mret_id    ), // restore mstatus upon MRET
+      .csr_restore_mret_id_o        ( csr_restore_mret_id    ), // restore mstatus upon DRET
+      .csr_restore_dret_id_o        ( csr_restore_dret_id    ), // restore mstatus upon MRET
       .csr_save_cause_o             ( csr_save_cause         ),
       .csr_mtval_o                  ( csr_mtval              ),
       .priv_mode_i                  ( priv_mode_id           ),
@@ -478,32 +476,33 @@ module ibex_core #(
   assign unused_illegal_insn_id = illegal_insn_id;
 
   ibex_ex_block #(
-      .RV32M ( RV32M )
+      .RV32M                      ( RV32M                    ),
+      .MultiplierImplementation   ( MultiplierImplementation )
   ) ex_block_i (
-      .clk_i                      ( clk                    ),
-      .rst_ni                     ( rst_ni                 ),
+      .clk_i                      ( clk                      ),
+      .rst_ni                     ( rst_ni                   ),
 
       // ALU signal from ID stage
-      .alu_operator_i             ( alu_operator_ex        ),
-      .alu_operand_a_i            ( alu_operand_a_ex       ),
-      .alu_operand_b_i            ( alu_operand_b_ex       ),
+      .alu_operator_i             ( alu_operator_ex          ),
+      .alu_operand_a_i            ( alu_operand_a_ex         ),
+      .alu_operand_b_i            ( alu_operand_b_ex         ),
 
       // Multipler/Divider signal from ID stage
-      .multdiv_operator_i         ( multdiv_operator_ex    ),
-      .mult_en_i                  ( mult_en_ex             ),
-      .div_en_i                   ( div_en_ex              ),
-      .multdiv_signed_mode_i      ( multdiv_signed_mode_ex ),
-      .multdiv_operand_a_i        ( multdiv_operand_a_ex   ),
-      .multdiv_operand_b_i        ( multdiv_operand_b_ex   ),
+      .multdiv_operator_i         ( multdiv_operator_ex      ),
+      .mult_en_i                  ( mult_en_ex               ),
+      .div_en_i                   ( div_en_ex                ),
+      .multdiv_signed_mode_i      ( multdiv_signed_mode_ex   ),
+      .multdiv_operand_a_i        ( multdiv_operand_a_ex     ),
+      .multdiv_operand_b_i        ( multdiv_operand_b_ex     ),
 
       // Outputs
-      .alu_adder_result_ex_o      ( alu_adder_result_ex    ), // to LSU
-      .regfile_wdata_ex_o         ( regfile_wdata_ex       ), // to ID
+      .alu_adder_result_ex_o      ( alu_adder_result_ex      ), // to LSU
+      .regfile_wdata_ex_o         ( regfile_wdata_ex         ), // to ID
 
-      .jump_target_o              ( jump_target_ex         ), // to IF
-      .branch_decision_o          ( branch_decision        ), // to ID
+      .jump_target_o              ( jump_target_ex           ), // to IF
+      .branch_decision_o          ( branch_decision          ), // to ID
 
-      .ex_valid_o                 ( ex_valid               )
+      .ex_valid_o                 ( ex_valid                 )
   );
 
   /////////////////////
@@ -628,6 +627,7 @@ module ibex_core #(
       .csr_save_if_i           ( csr_save_if            ),
       .csr_save_id_i           ( csr_save_id            ),
       .csr_restore_mret_i      ( csr_restore_mret_id    ),
+      .csr_restore_dret_i      ( csr_restore_dret_id    ),
       .csr_save_cause_i        ( csr_save_cause         ),
       .csr_mcause_i            ( exc_cause              ),
       .csr_mtval_i             ( csr_mtval              ),

@@ -35,12 +35,12 @@ class riscv_asm_program_gen extends uvm_object;
    // These programs are called in the interrupt/exception handling routine based on the privileged
    // mode settings. For example, when the interrupt/exception is delegated to S-mode, if both SUM
    // and MPRV equal 1, kernel program can fetch/load/store from U-mode pages,
-   // smode_accessible_umode_program is designed for this purpose. There can be other cases that
+   // umode_program is designed for this purpose. There can be other cases that
    // instruction can only be fetched from S-mode pages but load/store can access U-mode pages, or
    // everything needs to be in S-mode pages.
-   riscv_instr_sequence                smode_accessible_umode_program;
+   riscv_instr_sequence                umode_program;
    riscv_instr_sequence                smode_program;
-   riscv_instr_sequence                smode_ls_umem_program;
+   riscv_instr_sequence                smode_lsu_program;
    riscv_instr_stream                  directed_instr[];
    string                              instr_stream[$];
    riscv_callstack_gen                 callstack_gen;
@@ -141,13 +141,12 @@ class riscv_asm_program_gen extends uvm_object;
     instr_stream.push_back(".text");
     // Kernel programs
     if (cfg.virtual_addr_translation_on) begin
-      smode_accessible_umode_program = riscv_instr_sequence::type_id::
-                                       create("smode_accessible_umode_program");
-      gen_kernel_program(smode_accessible_umode_program);
+      umode_program = riscv_instr_sequence::type_id::create("umode_program");
+      gen_kernel_program(umode_program);
       smode_program = riscv_instr_sequence::type_id::create("smode_program");
       gen_kernel_program(smode_program);
-      smode_ls_umem_program = riscv_instr_sequence::type_id::create("smode_ls_umem_program");
-      gen_kernel_program(smode_ls_umem_program);
+      smode_lsu_program = riscv_instr_sequence::type_id::create("smode_lsu_program");
+      gen_kernel_program(smode_lsu_program);
     end
     // All trap/interrupt handling is in the kernel region
     // Trap/interrupt delegation to user mode is not supported now
@@ -341,13 +340,14 @@ class riscv_asm_program_gen extends uvm_object;
       init_floating_point_gpr();
     end
     core_is_initialized();
+    gen_dummy_csr_write(); // comment out if not want to read incorrect values from csr
   endfunction
 
   // Setup MISA based on supported extensions
   virtual function void setup_misa();
     bit [XLEN-1:0] misa;
-    misa[XLEN-1:XLEN-3] = (XLEN == 32) ? 1 :
-                          (XLEN == 64) ? 2 : 3;
+    misa[XLEN-1:XLEN-2] = (XLEN == 32) ? 2'b01 :
+                          (XLEN == 64) ? 2'b10 : 2'b11;
     if (cfg.check_misa_init_val) begin
       instr_stream.push_back({indent, "csrr x15, misa"});
     end
@@ -383,6 +383,37 @@ class riscv_asm_program_gen extends uvm_object;
         `uvm_fatal(`gfn, "The signature_addr is not properly configured!")
       end
     end
+  endfunction
+
+  // Generate some dummy writes to xSTATUS/xIE at the beginning of the test to check
+  // repeated writes to these CSRs.
+  virtual function void gen_dummy_csr_write();
+    string instr[$];
+    case (cfg.init_privileged_mode)
+      MACHINE_MODE: begin
+        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], MSTATUS));
+        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], MIE));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", MSTATUS, cfg.gpr[0]));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", MIE, cfg.gpr[1]));
+      end
+      SUPERVISOR_MODE: begin
+        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], SSTATUS));
+        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], SIE));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", SSTATUS, cfg.gpr[0]));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", SIE, cfg.gpr[1]));
+      end
+      USER_MODE: begin
+        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], USTATUS));
+        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], UIE));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", USTATUS, cfg.gpr[0]));
+        instr.push_back($sformatf("csrw 0x%0x, x%0d", UIE, cfg.gpr[1]));
+      end
+      default: begin
+        `uvm_fatal(`gfn, "Unsupported boot mode")
+      end
+    endcase
+    format_section(instr);
+    instr_stream = {instr_stream, instr};
   endfunction
 
   // Initialize general purpose registers with random value
@@ -1104,9 +1135,14 @@ class riscv_asm_program_gen extends uvm_object;
 
   virtual function void get_directed_instr_stream();
     string args, val;
+    string stream_name_opts, stream_freq_opts;
+    string stream_name;
+    int stream_freq;
     string opts[$];
     for (int i=0; i<cfg.max_directed_instr_stream_seq; i++) begin
       args = $sformatf("directed_instr_%0d=", i);
+      stream_name_opts = $sformatf("stream_name_%0d=", i);
+      stream_freq_opts = $sformatf("stream_freq_%0d=", i);
       if ($value$plusargs({args,"%0s"}, val)) begin
         uvm_split_string(val, ",", opts);
         if (opts.size() != 2) begin
@@ -1115,6 +1151,9 @@ class riscv_asm_program_gen extends uvm_object;
         end else begin
           add_directed_instr_stream(opts[0], opts[1].atoi());
         end
+      end else if ($value$plusargs({stream_name_opts,"%0s"}, stream_name) &&
+                   $value$plusargs({stream_freq_opts,"%0d"}, stream_freq)) begin
+        add_directed_instr_stream(stream_name, stream_freq);
       end
     end
   endfunction
@@ -1155,7 +1194,7 @@ class riscv_asm_program_gen extends uvm_object;
         end
         if($cast(new_instr_stream, object_h)) begin
           new_instr_stream.cfg = cfg;
-          new_instr_stream.label = $sformatf("%0s_instr_%0d", label, idx);
+          new_instr_stream.label = $sformatf("%0s_%0d", label, idx);
           new_instr_stream.kernel_mode = kernel_mode;
           `DV_CHECK_RANDOMIZE_FATAL(new_instr_stream)
           instr_stream = {instr_stream, new_instr_stream};

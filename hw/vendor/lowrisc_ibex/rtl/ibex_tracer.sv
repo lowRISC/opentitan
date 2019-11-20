@@ -463,7 +463,13 @@ module ibex_tracer (
 
   function void decode_cr_insn(input string mnemonic);
     if (rvfi_rs2_addr == 5'b0) begin
-      data_accessed = RS1;
+      if (rvfi_insn[12] == 1'b1) begin
+        // C.JALR
+        data_accessed = RS1 | RD;
+      end else begin
+        // C.JR
+        data_accessed = RS1;
+      end
       decoded_str = $sformatf("%s\tx%0d", mnemonic, rvfi_rs1_addr);
     end else begin
       data_accessed = RS1 | RS2 | RD; // RS1 == RD
@@ -549,6 +555,10 @@ module ibex_tracer (
   endfunction
 
   function void decode_cj_insn(input string mnemonic);
+    if (rvfi_insn[15:13] == 3'b001) begin
+      // C.JAL
+      data_accessed = RD;
+    end
     decoded_str = $sformatf("%s\t%0x", mnemonic, rvfi_pc_wdata);
   endfunction
 
@@ -721,7 +731,14 @@ module ibex_tracer (
       end else begin
         unique casez (rvfi_insn[15:0])
           // C0 Opcodes
-          INSN_CADDI4SPN:  decode_ciw_insn("c.addi4spn");
+          INSN_CADDI4SPN: begin
+            if (rvfi_insn[12:2] == 11'h0) begin
+              // Align with pseudo-mnemonic used by GNU binutils and LLVM's MC layer
+              decode_mnemonic("c.unimp");
+            end else begin
+              decode_ciw_insn("c.addi4spn");
+            end
+          end
           INSN_CLW:        decode_compressed_load_insn("c.lw");
           INSN_CSW:        decode_compressed_store_insn("c.sw");
           // C1 Opcodes

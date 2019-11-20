@@ -31,7 +31,7 @@ This should produce a `led.vmem` file which is used in the synthesises to update
 Run the following command at the top level to build the hardware.
 
 ```
-fusesoc --cores-root=. build lowrisc:ibex:top_artya7_100
+fusesoc --cores-root=. run --target=synth --setup --build lowrisc:ibex:top_artya7_100
 ```
 
 This will create a directory `build` which contains the output files, including

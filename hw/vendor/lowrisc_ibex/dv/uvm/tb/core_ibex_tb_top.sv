@@ -23,7 +23,9 @@ module core_ibex_tb_top;
   // RVFI interface
   core_ibex_rvfi_if rvfi_if(.clk(clk));
 
-  // TODO(taliu) Resolve the tied-off ports
+  // CSR access interface
+  core_ibex_csr_if csr_if(.clk(clk));
+
   ibex_core_tracing #(.DmHaltAddr(`BOOT_ADDR + 'h0),
                       .DmExceptionAddr(`BOOT_ADDR + 'h4)) dut (
     .clk_i(clk),
@@ -95,11 +97,18 @@ module core_ibex_tb_top;
   assign dut_if.mret            = dut.u_ibex_core.id_stage_i.mret_insn_dec;
   assign dut_if.core_sleep      = dut.u_ibex_core.core_sleep_o;
   assign dut_if.reset           = ~rst_n;
-
+  assign dut_if.priv_mode       = dut.u_ibex_core.priv_mode_id;
+  // CSR interface connections
+  assign csr_if.csr_access      = dut.u_ibex_core.csr_access;
+  assign csr_if.csr_addr        = dut.u_ibex_core.csr_addr;
+  assign csr_if.csr_wdata       = dut.u_ibex_core.csr_wdata;
+  assign csr_if.csr_rdata       = dut.u_ibex_core.csr_rdata;
+  assign csr_if.csr_op          = dut.u_ibex_core.csr_op;
 
   initial begin
     uvm_config_db#(virtual clk_if)::set(null, "*", "clk_if", ibex_clk_if);
     uvm_config_db#(virtual core_ibex_dut_probe_if)::set(null, "*", "dut_if", dut_if);
+    uvm_config_db#(virtual core_ibex_csr_if)::set(null, "*", "csr_if", csr_if);
     uvm_config_db#(virtual core_ibex_rvfi_if)::set(null, "*", "rvfi_if", rvfi_if);
     uvm_config_db#(virtual ibex_mem_intf)::set(null, "*data_if_slave*", "vif", data_mem_vif);
     uvm_config_db#(virtual ibex_mem_intf)::set(null, "*instr_if_slave*", "vif", instr_mem_vif);

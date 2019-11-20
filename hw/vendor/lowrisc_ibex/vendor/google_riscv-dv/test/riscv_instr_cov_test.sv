@@ -36,6 +36,8 @@ class riscv_instr_cov_test extends uvm_test;
       i++;
     end
     cfg = riscv_instr_gen_config::type_id::create("cfg");
+    // disable_compressed_instr is not relevant to coverage test
+    cfg.disable_compressed_instr = 0;
     cfg.build_instruction_template(.skip_instr_exclusion(1));
     instr = riscv_instr_cov_item::type_id::create("instr");
     instr.rand_mode(0);
@@ -76,7 +78,7 @@ class riscv_instr_cov_test extends uvm_test;
               continue;
             end
             if (!sample()) begin
-             `uvm_info(`gfn, $sformatf("Skipping illegal instr name: %0s [%0s]",
+             `uvm_info(`gfn, $sformatf("Found illegal instr: %0s [%0s]",
                              trace["instr"], line), UVM_LOW)
             end
           end
@@ -105,6 +107,7 @@ class riscv_instr_cov_test extends uvm_test;
 
   function bit sample();
     riscv_instr_name_t instr_name;
+    bit [XLEN-1:0] val;
     if (instr_enum::from_name(process_instr_name(trace["instr"]), instr_name)) begin
       if (cfg.instr_template.exists(instr_name)) begin
         instr.copy_base_instr(cfg.instr_template[instr_name]);
@@ -113,11 +116,16 @@ class riscv_instr_cov_test extends uvm_test;
         instr_cg.sample(instr);
         return 1'b1;
       end
-    end else if (trace["instr"] == "") begin
-      bit [XLEN-1:0] val;
-      get_val(trace["binary"], val);
-      instr_cg.illegal_cg.sample(val);
-      return 1'b1;
+    end
+    get_val(trace["binary"], val);
+    if ((val[1:0] != 2'b11) && (RV32C inside {supported_isa})) begin
+      instr_cg.compressed_opcode_cg.sample(val[15:0]);
+      instr_cg.illegal_compressed_instr_cg.sample(val);
+    end
+    if (val[1:0] == 2'b11) begin
+      `uvm_info("DBG", $sformatf("Sample illegal opcode: %0x [%0s]",
+                                 val[6:2], trace["instr_str"]), UVM_LOW)
+      instr_cg.opcode_cg.sample(val[6:2]);
     end
     illegal_instr_cnt++;
     return 1'b0;
@@ -128,7 +136,7 @@ class riscv_instr_cov_test extends uvm_test;
     privileged_reg_t preg;
     get_val(trace["addr"], instr.pc);
     get_val(trace["binary"], instr.binary);
-    instr.trace = trace["instr_str"];
+    instr.trace = trace["str"];
     if (instr.instr_name inside {ECALL, EBREAK, FENCE, FENCE_I, NOP,
                                  C_NOP, WFI, MRET, C_EBREAK}) begin
       return;
@@ -152,7 +160,8 @@ class riscv_instr_cov_test extends uvm_test;
       end
     end
     if (instr.has_rs1) begin
-      if (instr.format inside {CI_FORMAT, CR_FORMAT, CB_FORMAT}) begin
+      if (instr.format inside {CI_FORMAT, CR_FORMAT} &&
+          !(instr.instr_name inside {C_JR, C_JALR})) begin
         instr.rs1 = instr.rd;
       end else begin
         if (get_gpr(trace["rs1"], gpr)) begin

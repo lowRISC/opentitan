@@ -26,7 +26,7 @@
     cp_rs1_sign    : coverpoint instr.rs1_sign; \
     cp_rs2_sign    : coverpoint instr.rs2_sign; \
     cp_rd_sign     : coverpoint instr.rd_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard; \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard; \
 
 `define CMP_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
@@ -34,7 +34,7 @@
     cp_rd          : coverpoint instr.rd;  \
     cp_rs1_sign    : coverpoint instr.rs1_sign; \
     cp_result      : coverpoint instr.rd_value[0]; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard; \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard; \
 
 `define SB_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
@@ -44,30 +44,34 @@
     cp_rs2_sign    : coverpoint instr.rs2_sign; \
     cp_imm_sign    : coverpoint instr.imm_sign; \
     cp_branch_hit  : coverpoint instr.branch_hit; \
-    cp_sign_cross  : cross cp_rs1_sign, cp_rs2_sign, cp_imm_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_sign_cross  : cross cp_rs1_sign, cp_rs2_sign; \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
     }
 
 `define STORE_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_rs1         : coverpoint instr.rs1; \
+    cp_rs1         : coverpoint instr.rs1 { \
+      ignore_bins zero = {ZERO}; \
+    } \
     cp_rs2         : coverpoint instr.rs2; \
     cp_imm_sign    : coverpoint instr.imm_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
     } \
-    cp_lsu_harzard : coverpoint instr.lsu_hazard { \
+    cp_lsu_hazard  : coverpoint instr.lsu_hazard { \
       bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
     }
 
 `define LOAD_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_rs1         : coverpoint instr.rs1; \
+    cp_rs1         : coverpoint instr.rs1 { \
+      ignore_bins zero = {ZERO}; \
+    } \
     cp_rd          : coverpoint instr.rd; \
     cp_imm_sign    : coverpoint instr.imm_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard; \
-    cp_lsu_harzard : coverpoint instr.lsu_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard; \
+    cp_lsu_hazard  : coverpoint instr.lsu_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
     }
 
@@ -78,41 +82,39 @@
     cp_rs1_sign    : coverpoint instr.rs1_sign; \
     cp_rd_sign     : coverpoint instr.rd_sign; \
     cp_imm_sign    : coverpoint instr.imm_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
 
 `define U_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_rd          : coverpoint instr.rd; \
     cp_rd_sign     : coverpoint instr.rd_sign; \
-    cp_imm_sign    : coverpoint instr.imm_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
 
 
 `define J_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_imm_sign    : coverpoint instr.imm_sign; \
-    cp_imm_lsb     : coverpoint instr.imm[1:0]; \
     cp_rd          : coverpoint instr.rd; \
+    cp_rd_align    : coverpoint instr.rd_value[1];
 
 
 `define CSR_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_rs1         : coverpoint instr.rs1; \
     cp_rd          : coverpoint instr.rd; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
 
 `define CR_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_rs2         : coverpoint instr.rs2; \
     cp_rd          : coverpoint instr.rd; \
     cp_rs2_sign    : coverpoint instr.rs2_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
 
 `define CI_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_rd       : coverpoint instr.rd; \
     cp_imm_sign : coverpoint instr.imm_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
     }
 
@@ -121,7 +123,7 @@
     cp_rs2      : coverpoint instr.rs2; \
     cp_imm_sign : coverpoint instr.imm_sign; \
     cp_rs2_sign : coverpoint instr.rs2_sign; \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
     }
 
@@ -129,50 +131,69 @@
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_imm_sign : coverpoint instr.imm_sign; \
     cp_rd       : coverpoint instr.rd { \
-      bins gpr[] = cp_rd with (is_compressed_gpr(riscv_reg_t'(item))); \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
     }
 
 `define CL_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_imm_sign : coverpoint instr.imm_sign; \
     cp_rs1      : coverpoint instr.rs1 { \
-      bins gpr[] = cp_rs1 with (is_compressed_gpr(riscv_reg_t'(item))); \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
     cp_rd       : coverpoint instr.rd { \
-      bins gpr[] = cp_rd with (is_compressed_gpr(riscv_reg_t'(item))); \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard; \
-    cp_lsu_harzard : coverpoint instr.lsu_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard; \
+    cp_lsu_hazard  : coverpoint instr.lsu_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
+    }
+
+`define CL_SP_INSTR_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_rd       : coverpoint instr.rd { \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     }
 
 `define CS_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_imm_sign : coverpoint instr.imm_sign; \
     cp_rs1      : coverpoint instr.rs1 { \
-      bins gpr[] = cp_rs1 with (is_compressed_gpr(riscv_reg_t'(item))); \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
     cp_rs2      : coverpoint instr.rs2 { \
-      bins gpr[] = cp_rs2 with (is_compressed_gpr(riscv_reg_t'(item))); \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
     } \
-    cp_lsu_harzard : coverpoint instr.lsu_hazard { \
+    cp_lsu_hazard  : coverpoint instr.lsu_hazard { \
       bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
     }
+
+`define CS_SP_INSTR_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_rs2      : coverpoint instr.rs2 { \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
+    }
+
+`define CA_INSTR_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_rd      : coverpoint instr.rd { \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
+    } \
+    cp_rs2      : coverpoint instr.rs2 { \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
+    } \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
 
 
 `define CB_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_imm_sign : coverpoint instr.imm_sign; \
     cp_rs1      : coverpoint instr.rs1 { \
-      bins gpr[] = cp_rs1 with (is_compressed_gpr(riscv_reg_t'(item))); \
+      bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
-    cp_gpr_harzard : coverpoint instr.gpr_hazard { \
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
     }
 
@@ -208,11 +229,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   `U_INSTR_CG_BEGIN(lui)
-    cp_sign_cross: cross cp_imm_sign, cp_rd_sign;
   `CG_END
 
   `U_INSTR_CG_BEGIN(auipc)
-    cp_sign_cross: cross cp_imm_sign, cp_rd_sign;
   `CG_END
 
   // Shift instructions
@@ -233,7 +252,7 @@ class riscv_instr_cover_group;
     cp_rd          : coverpoint instr.rd;
     cp_rs1_sign    : coverpoint instr.rs1_sign;
     cp_rd_sign     : coverpoint instr.rd_sign;
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
   `CG_END
 
   `INSTR_CG_BEGIN(slli)
@@ -241,7 +260,7 @@ class riscv_instr_cover_group;
     cp_rd          : coverpoint instr.rd;
     cp_rs1_sign    : coverpoint instr.rs1_sign;
     cp_rd_sign     : coverpoint instr.rd_sign;
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
   `CG_END
 
   `INSTR_CG_BEGIN(srli)
@@ -249,7 +268,7 @@ class riscv_instr_cover_group;
     cp_rd          : coverpoint instr.rd;
     cp_rs1_sign    : coverpoint instr.rs1_sign;
     cp_rd_sign     : coverpoint instr.rd_sign;
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
   `CG_END
 
   // Logical instructions
@@ -361,33 +380,39 @@ class riscv_instr_cover_group;
   `CG_END
 
   `J_INSTR_CG_BEGIN(jalr)
-    cp_rs1_eq_rd : coverpoint instr.rs1 iff (instr.rs1 == instr.rd);
-    cp_rs1_ne_rd : coverpoint instr.rs1 iff (instr.rs1 != instr.rd);
+    cp_rs1_link : coverpoint instr.rs1 {
+      bins ra = {RA};
+      bins t1 = {T1};
+      bins non_link = default;
+    }
+    cp_rd_link : coverpoint instr.rd {
+      bins ra = {RA};
+      bins t1 = {T1};
+      bins non_link = default;
+    }
+    cp_ras : cross cp_rs1_link, cp_rd_link;
   `CG_END
 
   // CSR instructions
   `CSR_INSTR_CG_BEGIN(csrrw)
-    cp_rs2 : coverpoint instr.rs1;
+    cp_rs1 : coverpoint instr.rs1;
   `CG_END
 
   `CSR_INSTR_CG_BEGIN(csrrs)
-    cp_rs2 : coverpoint instr.rs1;
+    cp_rs1 : coverpoint instr.rs1;
   `CG_END
 
   `CSR_INSTR_CG_BEGIN(csrrc)
-    cp_rs2 : coverpoint instr.rs1;
+    cp_rs1 : coverpoint instr.rs1;
   `CG_END
 
   `CSR_INSTR_CG_BEGIN(csrrwi)
-    cp_imm_sign : coverpoint instr.imm_sign;
   `CG_END
 
   `CSR_INSTR_CG_BEGIN(csrrsi)
-    cp_imm_sign : coverpoint instr.imm_sign;
   `CG_END
 
   `CSR_INSTR_CG_BEGIN(csrrci)
-    cp_imm_sign : coverpoint instr.imm_sign;
   `CG_END
 
   covergroup rv32i_misc_cg with function sample(riscv_instr_cov_item instr);
@@ -521,7 +546,7 @@ class riscv_instr_cover_group;
     cp_rd          : coverpoint instr.rd;
     cp_rs1_sign    : coverpoint instr.rs1_sign;
     cp_rd_sign     : coverpoint instr.rd_sign;
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
   `CG_END
 
   `INSTR_CG_BEGIN(slliw)
@@ -529,7 +554,7 @@ class riscv_instr_cover_group;
     cp_rd          : coverpoint instr.rd;
     cp_rs1_sign    : coverpoint instr.rs1_sign;
     cp_rd_sign     : coverpoint instr.rd_sign;
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
   `CG_END
 
   `INSTR_CG_BEGIN(srliw)
@@ -537,7 +562,7 @@ class riscv_instr_cover_group;
     cp_rd          : coverpoint instr.rd;
     cp_rs1_sign    : coverpoint instr.rs1_sign;
     cp_rd_sign     : coverpoint instr.rd_sign;
-    cp_gpr_harzard : coverpoint instr.gpr_hazard;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard;
   `CG_END
 
   `R_INSTR_CG_BEGIN(addw)
@@ -557,13 +582,13 @@ class riscv_instr_cover_group;
   `CL_INSTR_CG_BEGIN(c_lw)
   `CG_END
 
-  `CL_INSTR_CG_BEGIN(c_lwsp)
+  `CL_SP_INSTR_CG_BEGIN(c_lwsp)
   `CG_END
 
   `CS_INSTR_CG_BEGIN(c_sw)
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_swsp)
+  `CS_SP_INSTR_CG_BEGIN(c_swsp)
   `CG_END
 
   `CIW_INSTR_CG_BEGIN(c_addi4spn)
@@ -572,16 +597,23 @@ class riscv_instr_cover_group;
   `CI_INSTR_CG_BEGIN(c_addi)
   `CG_END
 
-  `CI_INSTR_CG_BEGIN(c_addi16sp)
+  `INSTR_CG_BEGIN(c_addi16sp)
+    cp_imm_sign : coverpoint instr.imm_sign;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard {
+      bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD};
+    }
   `CG_END
 
   `CI_INSTR_CG_BEGIN(c_li)
   `CG_END
 
-  `CI_INSTR_CG_BEGIN(c_lui)
+  `INSTR_CG_BEGIN(c_lui)
+    cp_rd : coverpoint instr.rd {
+      ignore_bins bin = {ZERO, SP};
+    }
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_sub)
+  `CA_INSTR_CG_BEGIN(c_sub)
   `CG_END
 
   `CR_INSTR_CG_BEGIN(c_add)
@@ -591,46 +623,35 @@ class riscv_instr_cover_group;
   `CG_END
 
   `CB_INSTR_CG_BEGIN(c_andi)
+    cp_imm_sign : coverpoint instr.imm_sign;
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_xor)
+  `CA_INSTR_CG_BEGIN(c_xor)
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_or)
+  `CA_INSTR_CG_BEGIN(c_or)
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_and)
+  `CA_INSTR_CG_BEGIN(c_and)
   `CG_END
 
   `CB_INSTR_CG_BEGIN(c_beqz)
+    cp_imm_sign : coverpoint instr.imm_sign;
   `CG_END
 
   `CB_INSTR_CG_BEGIN(c_bnez)
+    cp_imm_sign : coverpoint instr.imm_sign;
   `CG_END
 
-  `INSTR_CG_BEGIN(c_srli)
-    cp_rs1      : coverpoint instr.rs1 {
-      bins gpr[] = cp_rs1 with (is_compressed_gpr(riscv_reg_t'(item)));
-    }
-    cp_gpr_harzard : coverpoint instr.gpr_hazard {
-      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
-    }
+  `CB_INSTR_CG_BEGIN(c_srli)
   `CG_END
 
-  `INSTR_CG_BEGIN(c_srai)
-    cp_rs1      : coverpoint instr.rs1 {
-      bins gpr[] = cp_rs1 with (is_compressed_gpr(riscv_reg_t'(item)));
-    }
-    cp_gpr_harzard : coverpoint instr.gpr_hazard {
-      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
-    }
+  `CB_INSTR_CG_BEGIN(c_srai)
   `CG_END
 
   `INSTR_CG_BEGIN(c_slli)
-    cp_rs1      : coverpoint instr.rs1 {
-      bins gpr[] = cp_rs1 with (is_compressed_gpr(riscv_reg_t'(item)));
-    }
-    cp_gpr_harzard : coverpoint instr.gpr_hazard {
+    cp_rd          : coverpoint instr.rd;
+    cp_gpr_hazard  : coverpoint instr.gpr_hazard {
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
     }
   `CG_END
@@ -641,10 +662,17 @@ class riscv_instr_cover_group;
   `CJ_INSTR_CG_BEGIN(c_jal)
   `CG_END
 
-  `CR_INSTR_CG_BEGIN(c_jr)
+  `INSTR_CG_BEGIN(c_jr)
+    cp_rs1      : coverpoint instr.rs1 {
+      ignore_bins zero = {ZERO};
+    }
   `CG_END
 
-  `CR_INSTR_CG_BEGIN(c_jalr)
+  `INSTR_CG_BEGIN(c_jalr)
+    cp_rs1      : coverpoint instr.rs1 {
+      ignore_bins zero = {ZERO};
+    }
+    cp_rd_align : coverpoint instr.rd_value[1];
   `CG_END
 
   // RV64C
@@ -652,22 +680,22 @@ class riscv_instr_cover_group;
   `CL_INSTR_CG_BEGIN(c_ld)
   `CG_END
 
-  `CL_INSTR_CG_BEGIN(c_ldsp)
+  `CL_SP_INSTR_CG_BEGIN(c_ldsp)
   `CG_END
 
   `CS_INSTR_CG_BEGIN(c_sd)
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_sdsp)
+  `CS_SP_INSTR_CG_BEGIN(c_sdsp)
   `CG_END
 
   `CI_INSTR_CG_BEGIN(c_addiw)
   `CG_END
 
-  `CS_INSTR_CG_BEGIN(c_subw)
+  `CA_INSTR_CG_BEGIN(c_subw)
   `CG_END
 
-  `CR_INSTR_CG_BEGIN(c_addw)
+  `CA_INSTR_CG_BEGIN(c_addw)
   `CG_END
 
   `INSTR_CG_BEGIN(hint)
@@ -697,10 +725,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   // Cover all illegal instruction
-  covergroup illegal_cg with function sample(bit [31:0] binary);
+  covergroup illegal_compressed_instr_cg with function sample(bit [31:0] binary);
     cp_point : coverpoint binary {
       wildcard bins c_addi4spn = {32'bxxxx_xxxxx_0000_0000_000x_xx00};
-      wildcard bins c_addiw    = {32'bxxxx_xxxxx_001x_0000_0xxx_xx01};
       wildcard bins c_addi16sp = {32'bxxxx_xxxxx_0110_0001_0000_0001};
       wildcard bins c_lui      = {32'bxxxx_xxxxx_0110_xxxx_1000_0001,
                                   32'bxxxx_xxxxx_0110_xx1x_x000_0001,
@@ -766,7 +793,7 @@ class riscv_instr_cover_group;
     }
   endgroup
 
-  covergroup mepc_cg with function sample(bit [XLEN-1:0] val);
+  covergroup mepc_alignment_cg with function sample(bit [XLEN-1:0] val);
     cp_align: coverpoint val[1:0] {
       bins alignment[] = {2'b00, 2'b10};
     }
@@ -783,7 +810,6 @@ class riscv_instr_cover_group;
     cur_instr = riscv_instr_cov_item::type_id::create("cur_instr");
     pre_instr = riscv_instr_cov_item::type_id::create("pre_instr");
     build_instr_list();
-    hint_cg = new();
     // RV32I instruction functional coverage instantiation
     add_cg = new();
     sub_cg = new();
@@ -831,9 +857,12 @@ class riscv_instr_cover_group;
     // instr_trans_cg = new();
     branch_hit_history_cg = new();
     rv32i_misc_cg = new();
-    illegal_cg = new();
+    if (RV32C inside {supported_isa}) begin
+      illegal_compressed_instr_cg = new();
+      compressed_opcode_cg = new();
+      hint_cg = new();
+    end
     opcode_cg = new();
-    compressed_opcode_cg = new();
     if (RV32M inside {supported_isa}) begin
       mul_cg = new();
       mulh_cg = new();
@@ -842,6 +871,7 @@ class riscv_instr_cover_group;
       div_cg = new();
       divu_cg = new();
       rem_cg = new();
+      remu_cg = new();
     end
     if (RV64M inside {supported_isa}) begin
       mulw_cg = new();
@@ -890,7 +920,9 @@ class riscv_instr_cover_group;
       c_srai_cg = new();
       c_slli_cg = new();
       c_j_cg = new();
-      c_jal_cg = new();
+      if (XLEN == 32) begin
+        c_jal_cg = new();
+      end
       c_jr_cg = new();
       c_jalr_cg = new();
     end
@@ -906,7 +938,9 @@ class riscv_instr_cover_group;
     privileged_csr_cg = new();
     mcause_exception_cg = new();
     mcause_interrupt_cg = new();
-    mepc_cg = new();
+    if (RV32C inside {supported_isa}) begin
+      mepc_alignment_cg = new();
+    end
     mstatus_m_cg = new();
   endfunction
 
@@ -915,10 +949,11 @@ class riscv_instr_cover_group;
     if (instr_cnt > 1) begin
       instr.check_hazard_condition(pre_instr);
     end
-    if (instr.binary[1:0] != 2'b11) begin
+    if ((instr.binary[1:0] != 2'b11) && (RV32C inside {supported_isa})) begin
       hint_cg.sample(instr);
       compressed_opcode_cg.sample(instr.binary[15:0]);
-    end else begin
+    end
+    if (instr.binary[1:0] == 2'b11) begin
       opcode_cg.sample(instr.binary[6:2]);
     end
     case (instr.instr_name)
@@ -943,13 +978,11 @@ class riscv_instr_cover_group;
                      end
                    end
       SRAI       : begin
-                     slli_cg.sample(instr);
+                     srai_cg.sample(instr);
                      if (RV64I inside {supported_isa}) begin
-                       slli64_cg.sample(instr);
+                       srai64_cg.sample(instr);
                      end
                    end
-      SRLI       : srli_cg.sample(instr);
-      SRAI       : srai_cg.sample(instr);
       AND        : and_cg.sample(instr);
       OR         : or_cg.sample(instr);
       XOR        : xor_cg.sample(instr);
@@ -989,6 +1022,7 @@ class riscv_instr_cover_group;
       DIV        : div_cg.sample(instr);
       DIVU       : divu_cg.sample(instr);
       REM        : rem_cg.sample(instr);
+      REMU       : remu_cg.sample(instr);
       MULW       : mulw_cg.sample(instr);
       DIVW       : divw_cg.sample(instr);
       DIVUW      : divuw_cg.sample(instr);
@@ -1039,7 +1073,9 @@ class riscv_instr_cover_group;
       C_ADDW     : c_addw_cg.sample(instr);
       C_ADDIW    : c_addiw_cg.sample(instr);
       default: begin
-        illegal_cg.sample(instr.binary);
+        if (RV32C inside {supported_isa}) begin
+          illegal_compressed_instr_cg.sample(instr.binary);
+        end
         if (instr.group == RV32I) begin
           rv32i_misc_cg.sample(instr);
         end
@@ -1068,7 +1104,11 @@ class riscv_instr_cover_group;
             end
           end
         end
-        MEPC: mepc_cg.sample(instr.rd_value);
+        MEPC: begin
+          if (RV32C inside {supported_isa}) begin
+            mepc_alignment_cg.sample(instr.rd_value);
+          end
+        end
         MSTATUS: begin
           mstatus_m_cg.sample(instr.rd_value);
         end

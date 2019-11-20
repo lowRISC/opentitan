@@ -14,8 +14,8 @@ filesets:
     file_type: systemVerilogSource
 
   files_lint:
-    files:
-      - dv/uvm/tb/prim_clock_gating.sv: {file_type: systemVerilogSource}
+    depend:
+      - lowrisc:ibex:sim_shared
 
   files_lint_verilator:
     files:
@@ -39,6 +39,12 @@ parameters:
   RV32M:
     datatype: bool
     paramtype: vlogparam
+
+  MultiplierImplementation:
+    datatype: str
+    paramtype: vlogparam
+    description: "Multiplier implementation. Valid values: fast, slow"
+    default: fast
 
 
 

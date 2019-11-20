@@ -1,0 +1,64 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+- test: riscv_rand_test
+  description: >
+    Random test with all useful knobs
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +illegal_instr_ratio=5
+    +hint_instr_ratio=5
+    +stream_name_0=riscv_load_store_rand_instr_stream
+    +stream_freq_0=4
+    +stream_name_1=riscv_loop_instr
+    +stream_freq_1=4
+    +stream_name_2=riscv_hazard_instr_stream
+    +stream_freq_2=4
+    +stream_name_3=riscv_load_store_hazard_instr_stream
+    +stream_freq_3=4
+    +stream_name_4=riscv_mem_region_stress_test
+    +stream_freq_4=4
+    +stream_name_5=riscv_jal_instr
+    +stream_freq_5=4
+    +dist_control_mode=1
+    +dist_shift=10
+    +dist_arithmetic=10
+    +dist_logical=10
+    +dist_compare=10
+    +dist_branch=10
+    +dist_synch=10
+    +dist_csr=10
+  iterations: 1
+  gcc_opts: >
+    -mno-strict-align
+  gen_test: riscv_ml_test
+  rtl_test: core_base_test

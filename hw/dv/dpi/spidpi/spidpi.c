@@ -32,7 +32,7 @@ static void finish(void) {
   if (!simctrl) {
     return;
   }
-  simctrl->RequestStop();
+  simctrl->RequestStop(true);
 }
 
 #ifdef CONTROL_TRACE

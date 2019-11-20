@@ -6,7 +6,7 @@
 +define+TRACE_EXECUTION
 +define+RVFI
 
-${PRJ_DIR}/ibex/dv/uvm/tb/prim_clock_gating.sv
+${PRJ_DIR}/ibex/shared/rtl/prim_clock_gating.sv
 
 // ibex CORE RTL files
 +incdir+${PRJ_DIR}/ibex/rtl

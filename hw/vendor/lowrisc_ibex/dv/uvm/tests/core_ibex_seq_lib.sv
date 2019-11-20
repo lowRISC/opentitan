@@ -71,9 +71,7 @@ class irq_raise_single_seq extends core_base_seq#(irq_seq_item);
     irq_seq_item irq;
     irq = irq_seq_item::type_id::create($sformatf("irq_raise_single[%0d]", iteration_cnt));
     start_item(irq);
-    // TODO(udinator) -  constrain irq_timer to 0 for now due to timer interrupt causing spike
-    // simulator to trap to irq handler
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, irq_timer==0;)
+    `DV_CHECK_RANDOMIZE_FATAL(irq)
     finish_item(irq);
     get_response(irq);
   endtask

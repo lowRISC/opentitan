@@ -75,15 +75,6 @@ def get_env_var(var):
   return val
 
 
-def check_riscv_dv_setting():
-  """Check the RISCV-DV directory setting, default "."
-  """
-  try:
-    val = os.environ["RISCV_DV_ROOT"]
-  except KeyError:
-    os.environ["RISCV_DV_ROOT"] = "."
-
-
 def get_seed(seed):
   """Get the seed to run the generator
 
@@ -112,6 +103,7 @@ def run_cmd(cmd, timeout_s = 999):
   try:
     ps = subprocess.Popen("exec " + cmd,
                           shell=True,
+                          executable='/bin/bash',
                           universal_newlines=True,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
@@ -141,6 +133,7 @@ def run_parallel_cmd(cmd_list, timeout_s = 999):
   for cmd in cmd_list:
     ps = subprocess.Popen("exec " + cmd,
                           shell=True,
+                          executable='/bin/bash',
                           universal_newlines=True,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
@@ -179,3 +172,21 @@ def process_regression_list(testlist, test, iterations, matched_list):
         logging.info("Found matched tests: %s, iterations:%0d" %
                     (entry['test'], entry['iterations']))
         matched_list.append(entry)
+
+def check_simulator_return(output, simulator, stop_on_first_error):
+    """
+    tests simulator output for errors and terminates run if found
+    ONLY works when verbose is on (as output not returned otherwise)
+    TODO add other simulators
+    """
+
+    if not stop_on_first_error: return
+
+    if "questa" in simulator:
+      for line in output.splitlines():
+        if "Errors: " in line:
+          if not "Errors: 0" in line:
+            logging.fatal (
+              "check_simulator_return (%s): TERMINATING as got errors: [%s]" %
+                (simulator, line))
+            sys.exit(-1)

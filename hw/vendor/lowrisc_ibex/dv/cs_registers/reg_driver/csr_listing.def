@@ -1,0 +1,32 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// List all supported registers
+
+#ifndef CSR
+#error Define CSR
+#endif
+
+CSR(PMPCfg0, 0x3A0)
+CSR(PMPCfg1, 0x3A1)
+CSR(PMPCfg2, 0x3A2)
+CSR(PMPCfg3, 0x3A3)
+CSR(PMPAddr0, 0x3B0)
+CSR(PMPAddr1, 0x3B1)
+CSR(PMPAddr2, 0x3B2)
+CSR(PMPAddr3, 0x3B3)
+CSR(PMPAddr4, 0x3B4)
+CSR(PMPAddr5, 0x3B5)
+CSR(PMPAddr6, 0x3B6)
+CSR(PMPAddr7, 0x3B7)
+CSR(PMPAddr8, 0x3B8)
+CSR(PMPAddr9, 0x3B9)
+CSR(PMPAddr10, 0x3BA)
+CSR(PMPAddr11, 0x3BB)
+CSR(PMPAddr12, 0x3BC)
+CSR(PMPAddr13, 0x3BD)
+CSR(PMPAddr14, 0x3BE)
+CSR(PMPAddr15, 0x3BF)
+
+#undef CSR

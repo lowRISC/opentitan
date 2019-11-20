@@ -157,6 +157,7 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
   riscv_instr_gen_config  cfg;
   bit                     kernel_mode;
   riscv_instr_name_t      allowed_instr[$];
+  int unsigned            category_dist[riscv_instr_category_t];
 
   `uvm_object_utils(riscv_rand_instr_stream)
   `uvm_object_new
@@ -176,6 +177,21 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     end
     if (no_load_store == 0) begin
       allowed_instr = {allowed_instr, cfg.instr_category[LOAD], cfg.instr_category[STORE]};
+    end
+    setup_instruction_dist(no_branch, no_load_store);
+  endfunction
+
+  function setup_instruction_dist(bit no_branch = 1'b0, bit no_load_store = 1'b1);
+    if (cfg.dist_control_mode) begin
+      category_dist = cfg.category_dist;
+      if (no_branch) begin
+        category_dist[BRANCH] = 0;
+      end
+      if (no_load_store) begin
+        category_dist[LOAD] = 0;
+        category_dist[STORE] = 0;
+      end
+      `uvm_info(`gfn, $sformatf("setup_instruction_dist: %0d", category_dist.size()), UVM_LOW)
     end
   endfunction
 
@@ -199,11 +215,28 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
                                 bit skip_rs2 = 1'b0,
                                 bit skip_rd  = 1'b0,
                                 bit skip_imm = 1'b0,
-                                bit skip_csr = 1'b0);
+                                bit skip_csr = 1'b0,
+                                bit disable_dist = 1'b0);
     riscv_instr_name_t instr_name;
+    if ((cfg.dist_control_mode == 1) && !disable_dist) begin
+      riscv_instr_category_t category;
+      int unsigned idx;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(category,
+        category dist {LOAD       := category_dist[LOAD],
+                       STORE      := category_dist[STORE],
+                       SHIFT      := category_dist[SHIFT],
+                       ARITHMETIC := category_dist[ARITHMETIC],
+                       LOGICAL    := category_dist[LOGICAL],
+                       COMPARE    := category_dist[COMPARE],
+                       BRANCH     := category_dist[BRANCH],
+                       SYNCH      := category_dist[SYNCH],
+                       CSR        := category_dist[CSR]};)
+      idx = $urandom_range(0, cfg.instr_category[category].size() - 1);
+      instr_name = cfg.instr_category[category][idx];
     // if set_dcsr_ebreak is set, we do not want to generate any ebreak
     // instructions inside the debug_rom
-    if ((cfg.no_ebreak && !is_in_debug) || (!cfg.enable_ebreak_in_debug_rom && is_in_debug)) begin
+    end else if ((cfg.no_ebreak && !is_in_debug) ||
+                 (!cfg.enable_ebreak_in_debug_rom && is_in_debug)) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_name,
                                         instr_name inside {allowed_instr};
                                         !(instr_name inside {EBREAK, C_EBREAK});)

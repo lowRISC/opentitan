@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <string>
+#include <functional>
 
 #include "verilated_toplevel.h"
 
@@ -17,10 +18,42 @@ enum VerilatorSimCtrlFlags {
   ResetPolarityNegative = 1,
 };
 
+// Callback function to be called every clock cycle
+// The parameter is simulation time
+typedef std::function<void(int /* sim time */)> SimCtrlCallBack;
+
 class VerilatorSimCtrl {
  public:
   VerilatorSimCtrl(VerilatedToplevel *top, CData &clk, CData &rst_n,
                    VerilatorSimCtrlFlags flags = Defaults);
+
+  /**
+   * A helper function to execute some standard setup commands.
+   *
+   * This function performs the followind tasks:
+   * 1. Sets up a signal handler to enable tracing to be turned on/off during
+   *    a run by sending SIGUSR1 to the process
+   * 2. Parses a C-style set of command line arguments (see ParseCommandArgs)
+   *
+   * @return return code (0 = success)
+   */
+  int SetupSimulation(int argc, char **argv);
+
+  /**
+   * A helper function to execute a standard set of run commands.
+   *
+   * This function performs the followind tasks:
+   * 1. Prints some tracer-related helper messages
+   * 2. Runs the simulation
+   * 3. Prints some further helper messages and statistics once the simulation
+   *    has run to completion
+   */
+  void RunSimulation();
+
+  /**
+   * Register the signal handler
+   */
+  void RegisterSignalHandler();
 
   /**
    * Print help how to use this tool
@@ -66,6 +99,11 @@ class VerilatorSimCtrl {
   unsigned long GetTime() { return time_; }
 
   /**
+   * Get the simulation result
+   */
+  bool WasSimulationSuccessful() { return simulation_success_; }
+
+  /**
    * Set the number of clock cycles (periods) before the reset signal is
    * activated
    */
@@ -79,7 +117,7 @@ class VerilatorSimCtrl {
   /**
    * Request the simulation to stop
    */
-  void RequestStop();
+  void RequestStop(bool simulation_success);
 
   /**
    * Enable tracing (if possible)
@@ -122,6 +160,11 @@ class VerilatorSimCtrl {
 
   const char *GetSimulationFileName() const;
 
+  /**
+   * Set a callback function to run every cycle
+   */
+  void SetOnClockCallback(SimCtrlCallBack callback);
+
  private:
   VerilatedToplevel *top_;
   CData &sig_clk_;
@@ -141,10 +184,12 @@ class VerilatorSimCtrl {
   unsigned int initial_reset_delay_cycles_;
   unsigned int reset_duration_cycles_;
   volatile unsigned int request_stop_;
+  volatile bool simulation_success_;
   std::chrono::steady_clock::time_point time_begin_;
   std::chrono::steady_clock::time_point time_end_;
   VerilatedTracer tracer_;
   int term_after_cycles_;
+  SimCtrlCallBack callback_;
 
   unsigned int GetExecutionTimeMs();
   void SetReset();

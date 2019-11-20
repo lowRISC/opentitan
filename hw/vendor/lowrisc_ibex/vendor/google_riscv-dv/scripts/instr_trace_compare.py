@@ -47,8 +47,8 @@ def compare_trace_csv(csv1, csv2, name1, name2, log,
   with open(csv1, "r") as fd1, open(csv2, "r") as fd2:
     instr_trace_1 = []
     instr_trace_2 = []
-    trace_csv_1 = RiscvInstructiontTraceCsv(fd1)
-    trace_csv_2 = RiscvInstructiontTraceCsv(fd2)
+    trace_csv_1 = RiscvInstructionTraceCsv(fd1)
+    trace_csv_2 = RiscvInstructionTraceCsv(fd2)
     trace_csv_1.read_trace(instr_trace_1)
     trace_csv_2.read_trace(instr_trace_2)
     trace_1_index = 0
@@ -173,7 +173,7 @@ def compare_trace_csv(csv1, csv2, name1, name2, log,
                      name1, len(gpr_trace_1[gpr]), name2, len(gpr_trace_2[gpr])))
         else:
           if not gpr_trace_2.get(gpr):
-            trace = RiscvInstructiontTraceEntry()
+            trace = RiscvInstructionTraceEntry()
             trace.rd_val = "0"
             trace.rd = gpr
             trace.instr_str = ""

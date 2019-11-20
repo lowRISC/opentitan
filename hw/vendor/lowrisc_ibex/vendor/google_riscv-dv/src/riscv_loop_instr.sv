@@ -44,7 +44,6 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
       }
     }
     foreach (loop_limit_reg[i]) {
-      loop_limit_reg[i] != ZERO;
       foreach (cfg.reserved_regs[j]) {
         loop_limit_reg[i] != cfg.reserved_regs[j];
       }
@@ -58,34 +57,54 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
     solve num_of_nested_loop before loop_init_val;
     solve num_of_nested_loop before loop_step_val;
     solve num_of_nested_loop before loop_limit_val;
-    num_of_instr_in_loop inside {[1:200]};
+    solve loop_limit_val before loop_limit_reg;
+    solve branch_type before loop_init_val;
+    solve branch_type before loop_step_val;
+    solve branch_type before loop_limit_val;
+    num_of_instr_in_loop inside {[1:25]};
     num_of_nested_loop inside {[1:2]};
     loop_init_val.size() == num_of_nested_loop;
     loop_step_val.size() == num_of_nested_loop;
     loop_limit_val.size() == num_of_nested_loop;
     branch_type.size() == num_of_nested_loop;
+    foreach (branch_type[i]) {
+      if (!cfg.disable_compressed_instr) {
+        branch_type[i] inside {C_BNEZ, C_BEQZ, BEQ, BNE, BLTU, BLT, BGEU, BGE};
+      } else {
+        branch_type[i] inside {BEQ, BNE, BLTU, BLT, BGEU, BGE};
+      }
+    }
     foreach(loop_init_val[i]) {
+      if (branch_type[i] inside {C_BNEZ, C_BEQZ}) {
+        loop_limit_val[i] == 0;
+        loop_limit_reg[i] == ZERO;
+        loop_cnt_reg[i] inside {riscv_instr_pkg::compressed_gpr};
+      } else {
+        loop_limit_val[i] inside {[-20:20]};
+        loop_limit_reg[i] != ZERO;
+      }
+      if (branch_type[i] inside {C_BNEZ, C_BEQZ, BEQ, BNE}) {
+        ((loop_limit_val[i] - loop_init_val[i]) % loop_step_val[i] == 0) &&
+        (loop_limit_val[i] != loop_init_val[i]);
+      } else if (branch_type[i] == BGE) {
+        loop_step_val[i] < 0;
+      } else if (branch_type[i] == BGEU) {
+        loop_step_val[i] < 0;
+        loop_init_val[i] > 0;
+        // Avoid count to negative
+        loop_step_val[i] + loop_limit_val[i] > 0;
+      } else if (branch_type[i] == BLT) {
+        loop_step_val[i] > 0;
+      } else if (branch_type[i] == BLTU) {
+        loop_step_val[i] > 0;
+        loop_limit_val[i] > 0;
+      }
       loop_init_val[i]  inside {[-10:10]};
-      loop_limit_val[i] inside {[-20:20]};
       loop_step_val[i]  inside {[-10:10]};
-      loop_step_val[i] != 0;
       if(loop_init_val[i] < loop_limit_val[i]) {
-         loop_step_val[i] > 0;
+        loop_step_val[i] > 0;
       } else {
-         loop_step_val[i] < 0;
-      }
-      // Select a reasonable branch instruction to avoid inifint loop
-      if(loop_init_val[i] < 0 || (loop_limit_val[i] + loop_step_val[i]) < 0) {
-        !(branch_type[i] inside {BLTU, BGEU});
-      }
-      if(((loop_limit_val[i] - loop_init_val[i]) % loop_step_val[i] != 0) ||
-          (loop_limit_val[i] == loop_init_val[i])) {
-        !(branch_type[i] inside {BEQ, BNE});
-      }
-      if(loop_step_val[i] > 0) {
-        branch_type[i] inside {BLTU, BNE, BLT, BEQ};
-      } else {
-        branch_type[i] inside {BGEU, BNE, BGE, BEQ};
+        loop_step_val[i] < 0;
       }
     }
   }
@@ -148,7 +167,9 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_branch_instr[i],
                                      instr_name == branch_type[i];
                                      rs1 == loop_cnt_reg[i];
-                                     rs2 == loop_limit_reg[i];,
+                                     if (!(branch_type[i] inside {C_BEQZ, C_BNEZ})) {
+                                       rs2 == loop_limit_reg[i];
+                                     },
                                      "Cannot randomize backward branch instruction")
       loop_branch_instr[i].comment = $sformatf("branch for loop %0d", i);
       loop_branch_instr[i].imm_str = loop_branch_target_instr[i].label;

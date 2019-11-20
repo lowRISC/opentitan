@@ -55,7 +55,7 @@ It has interrupt ID 31, i.e., it has the highest priority of all interrupts and 
 All interrupt lines are level-sensitive.
 It is assumed that the interrupt handler signals completion of the handling routine to the interrupt source, e.g., through a memory-mapped register, which then deasserts the corresponding interrupt line.
 
-In debug mode, all interrupts including the NMI are ignored independent of ``mstatus``.MIE and the content of the ``mie`` CSR.
+In Debug Mode, all interrupts including the NMI are ignored independent of ``mstatus``.MIE and the content of the ``mie`` CSR.
 
 
 Recoverable Non-Maskable Interrupt

@@ -181,10 +181,10 @@ def compare(test_list, iss, output_dir, verbose):
       rtl_log = ("%s/rtl_sim/%s.%d/trace_core_00000000.log" % (output_dir, test['test'], i))
       rtl_csv = ("%s/rtl_sim/%s.%d/trace_core_00000000.csv" % (output_dir, test['test'], i))
       test_name = "%s.%d" % (test['test'], i)
+      process_ibex_sim_log(rtl_log, rtl_csv, 1)
       if 'no_post_compare' in test and test['no_post_compare'] == 1:
         check_ibex_uvm_log(uvm_log, "ibex", test_name, report)
       else:
-        process_ibex_sim_log(rtl_log, rtl_csv)
         iss_log = ("%s/instr_gen/%s_sim/%s.%d.log" % (output_dir, iss, test['test'], i))
         iss_csv = ("%s/instr_gen/%s_sim/%s.%d.csv" % (output_dir, iss, test['test'], i))
         if iss == "spike":

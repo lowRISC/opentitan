@@ -1,5 +1,9 @@
 *.ini
 *.bin
-out_*/
+*out_*/
 work/
 *.pyc
+/.cproject
+/.project
+/outdir/
+ucli.key
