@@ -6,9 +6,12 @@ libmpsse = declare_dependency(
   link_with: static_library(
     'mpsse',
     sources: [
-      '../vendor/mpsse/mpsse.c',
-      '../vendor/mpsse/support.c'
+      'mpsse/mpsse.c',
+      'mpsse/support.c'
     ],
+    # libmpsse is vendored in, and as such does not conform to our include
+    # requirements. This -I argument allows libmpsse to use its existing
+    # includes.
     c_args: [
       '-I' + meson.source_root() + '/sw/host/vendor/mpsse'
     ],
