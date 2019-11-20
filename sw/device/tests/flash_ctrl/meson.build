@@ -4,20 +4,18 @@
 
 custom_target(
   'flash_test',
-  output: embedded_target_output,
+  command: make_embedded_target,
+  output: make_embedded_target_outputs,
   input: executable(
     'flash_test',
-    ['flash_test.c', startup_files],
+    sources: ['flash_test.c'],
     name_suffix: 'elf',
-    link_args: riscv_link_args,
-    link_depends: riscv_link_deps,
     dependencies: [
       sw_lib_flash_ctrl,
       sw_lib_gpio,
       sw_lib_irq,
       sw_lib_uart,
+      riscv_crt,
     ],
   ),
-  command: embedded_target_args,
-  build_by_default: true,
 )

@@ -3,6 +3,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('lib')
+subdir('exts')
+
+# Arguments for custom_target, for converting a linked .elf file into .bin and .vmem
+# files (plus a disassembled .dis file).
+#
+# These definitions should only be available to directories which define executables.
+make_embedded_target_outputs = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.vmem']
+make_embedded_target = [
+  prog_python, meson.source_root() + '/util/embedded_target.py',
+  '--objcopy', prog_objcopy,
+  '--srec_cat', prog_srec_cat,
+  '--objdump', prog_objdump,
+  '--input', '@INPUT@',
+  '--basename', '@BASENAME@',
+  '--outdir', '@OUTDIR@',
+]
 
 subdir('boot_rom')
 subdir('examples')

@@ -4,20 +4,18 @@
 
 custom_target(
   'hello_usbdev',
-  output: embedded_target_output,
+  command: make_embedded_target,
+  output: make_embedded_target_outputs,
   input: executable(
     'hello_usbdev',
-    ['hello_usbdev.c', startup_files],
+    sources: ['hello_usbdev.c'],
     name_suffix: 'elf',
-    link_args: riscv_link_args,
-    link_depends: riscv_link_deps,
     dependencies: [
       sw_lib_gpio,
       sw_lib_irq,
       sw_lib_uart,
       sw_lib_usb,
+      riscv_crt,
     ],
   ),
-  command: embedded_target_args,
-  build_by_default: true,
 )

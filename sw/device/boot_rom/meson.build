@@ -17,10 +17,11 @@ rom_link_deps = [rom_linkfile]
 
 custom_target(
   'boot_rom',
-  output: embedded_target_output,
+  command: make_embedded_target,
+  output: make_embedded_target_outputs,
   input: executable(
     'boot_rom',
-    [
+    sources: [
       chip_info_h,
       'boot_rom.c',
       'bootstrap.c',
@@ -39,6 +40,4 @@ custom_target(
       sw_lib_log,
     ],
   ),
-  command: embedded_target_args,
-  build_by_default: true,
 )

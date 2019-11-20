@@ -4,7 +4,7 @@
 
 executable(
   'spiflash',
-  [
+  sources: [
     'ftdi_spi_interface.cc',
     'spiflash.cc',
     'updater.cc',

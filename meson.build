@@ -46,22 +46,6 @@ prog_objcopy = find_program('objcopy')
 prog_srec_cat = find_program('srec_cat')
 prog_git = find_program('git')
 
-# RISCV linker parameters.
-riscv_linkfile = files(['sw/device/exts/common/link.ld'])
-# Ensure we don't include a build-id in the elf
-riscv_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), riscv_linkfile[0]), '-Wl,--build-id=none']
-riscv_link_deps = [riscv_linkfile]
-
-# RISCV CRT parameters
-startup_files = files(['sw/device/exts/common/_crt.c'])
-
-# Additional arguments for utility in charge of generating bin and vmem outputs
-# These variables are expected to be used in custom_target rules.
-embedded_target_output = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.vmem']
-embedded_target_args = [prog_python, meson.source_root() + '/util/embedded_target.py',
-  '--objcopy', prog_objcopy, '--srec_cat', prog_srec_cat, '--objdump', prog_objdump,
-  '--input', '@INPUT@', '--basename', '@BASENAME@', '--outdir', '@OUTDIR@']
-
 # Hardware register headers. These are generated from HJSON files, and accesible
 # in C via |#include "{IP_NAME}_regs.h"|.
 gen_hw_hdr = generator(
