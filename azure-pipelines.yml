@@ -7,6 +7,8 @@ variables:
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20191010-1
+  # This controls where builds happen, and gets picked up by build_consts.sh.
+  BUILD_ROOT: $(Build.ArtifactStagingDirectory)
 
 trigger:
   tags:
@@ -133,13 +135,21 @@ jobs:
         --force
     displayName: 'Install toolchain'
   - bash: |
-      export BUILD_ROOT="$(Build.ArtifactStagingDirectory)"
       . util/build_consts.sh
       ./meson_init.sh -f
       ninja -C "$(sw_obj_dir sim-verilator)" all
       ninja -C "$(sw_obj_dir fpga)" all
       util/make_build_bin.sh
     displayName: 'Build embedded targets'
+  - bash: |
+      . util/build_consts.sh
+      tar -C "$BUILD_ROOT" \
+        -cvf "$BUILD_ROOT/build-bin.tar" \
+        "${BIN_DIR#"$BUILD_ROOT/"}"
+    displayName: 'Archive step outputs'
+  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+    artifact: sw_build-build-bin
+    displayName: 'Upload step outputs'
 
 - job: "deprecated_make_build"
   displayName: "Build Software with Make (deprecated)"
@@ -164,13 +174,6 @@ jobs:
       mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
       cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
     displayName: 'Build host targets'
-  - bash: |
-      cd $(Build.ArtifactStagingDirectory)
-      tar -cf dist-partial-sw_build.tar dist
-    displayName: 'Prepare partial distribution artifacts'
-  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-sw_build.tar
-    artifact: dist-partial-sw_build
-    displayName: "Upload partial distribution artifacts"
 
 - job: "top_earlgrey_verilator"
   displayName: "Build Verilator simulation of the Earl Grey toplevel design"
@@ -207,66 +210,88 @@ jobs:
       verilator --version
     displayName: 'Display environment'
   - bash: |
+      . util/build_consts.sh
+      mkdir -p "$OBJ_DIR/hw"
+      mkdir -p "$BIN_DIR/hw/top_earlgrey"
+
       export PATH=$VERILATOR_PATH/bin:$PATH
-      fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
+      fusesoc --cores-root=. \
+        run --target=sim --setup --build \
+        --build-root="$OBJ_DIR/hw" \
+        lowrisc:systems:top_earlgrey_verilator
+
+      cp "$OBJ_DIR/hw/sim-verilator/Vtop_earlgrey_verilator" \
+        "$BIN_DIR/hw/top_earlgrey"
     displayName: 'Build simulation with Verilator'
   - bash: |
-      DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
-      mkdir -p "${DIST_DIR}"
-      cp build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-        ${DIST_DIR}
-      cd $(Build.ArtifactStagingDirectory)
-      tar -cf dist-partial-top_earlgrey_verilator.tar dist
-    displayName: 'Prepare partial distribution artifacts'
-  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_verilator.tar
-    artifact: dist-partial-top_earlgrey_verilator
-    displayName: "Upload partial distribution artifacts"
+      . util/build_consts.sh
+      tar -C "$BUILD_ROOT" \
+        -cvf "$BUILD_ROOT/build-bin.tar" \
+        "${BIN_DIR#"$BUILD_ROOT/"}"
+    displayName: 'Archive step outputs'
+  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+    artifact: top_earlgrey_verilator-build-bin
+    displayName: 'Upload step outputs'
 
 - job: "top_earlgrey_nexysvideo"
   displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
   dependsOn:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
-    - deprecated_make_build
+    - sw_build
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   pool: Default
   timeoutInMinutes: 120 # 2 hours
   steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 tree \
+        && sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install dependencies'
   - task: DownloadPipelineArtifact@2
     inputs:
       buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
   - bash: |
-      sudo apt-get install -y tree
-      mkdir -p $(Build.ArtifactStagingDirectory)/dist-other
-      cd $(Build.ArtifactStagingDirectory)/dist-other
-      find "$(Build.ArtifactStagingDirectory)/dist-partial-download" -iname '*.tar' -exec tar --strip-components=1 --overwrite -xf {} \;
-      tree $(Build.ArtifactStagingDirectory)
-    displayName: 'Restore partial dist directory'
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 \
-        && sudo pip3 install -U -r python-requirements.txt
-    displayName: 'Install dependencies'
+      . util/build_consts.sh
+      mkdir -p "$BIN_DIR"
+      tree "$BUILD_ROOT"
+      find "$BUILD_ROOT/downloads" \
+        -name 'build-bin.tar' \
+        -exec \
+          tar -C "$BIN_DIR" \
+          --strip-components=1 \
+          --overwrite \
+          -xvf {} \;
+      tree "$BUILD_ROOT"
+    displayName: 'Unarchive dependencies'
   - bash: |
       set -e
-      BOOTROM_VMEM=$(Build.ArtifactStagingDirectory)/dist-other/sw/device/fpga/boot_rom/rom.vmem
-      test -f ${BOOTROM_VMEM}
-      source /opt/xilinx/Vivado/2018.3/settings64.sh
-      fusesoc --cores-root . run --target=synth --setup --build \
+      . util/build_consts.sh
+      mkdir -p "$OBJ_DIR/hw"
+      mkdir -p "$BIN_DIR/hw/top_earlgrey"
+
+      BOOTROM_VMEM="$BIN_DIR/sw/device/fpga/boot_rom/boot_rom.vmem"
+      test -f "$BOOTROM_VMEM"
+
+      . /opt/xilinx/Vivado/2018.3/settings64.sh
+      fusesoc --cores-root=. \
+        run --target=synth --setup --build \
+        --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:top_earlgrey_nexysvideo \
-        --ROM_INIT_FILE=${BOOTROM_VMEM}
+        --ROM_INIT_FILE="$BOOTROM_VMEM"
+
+      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
+        "$BIN_DIR/hw/top_earlgrey"
     displayName: 'Build bitstream with Vivado'
   - bash: |
-      DIST_DIR="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey"
-      mkdir -p "${DIST_DIR}"
-      cp build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit \
-        ${DIST_DIR}
-      cd $(Build.ArtifactStagingDirectory)
-      tar -cf dist-partial-top_earlgrey_nexysvideo.tar dist
-    displayName: 'Prepare partial distribution artifacts'
-  - publish: $(Build.ArtifactStagingDirectory)/dist-partial-top_earlgrey_nexysvideo.tar
-    artifact: dist-partial-top_earlgrey_nexysvideo
-    displayName: 'Upload partial distribution artifacts'
+      . util/build_consts.sh
+      tar -C "$BUILD_ROOT" \
+        -cvf "$BUILD_ROOT/build-bin.tar" \
+        "${BIN_DIR#"$BUILD_ROOT/"}"
+    displayName: 'Archive step outputs'
+  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+    artifact: top_earlgrey_nexysvideo-build-bin
+    displayName: 'Upload step outputs'
 
 - job: "execute_verilated_tests"
   displayName: "Execute tests on the Verilated system"
@@ -276,26 +301,29 @@ jobs:
     - deprecated_make_build
   steps:
   - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential python3-setuptools
+      sudo apt-get install -y python3 python3-pip build-essential python3-setuptools tree
       sudo pip3 install -r python-requirements.txt
     displayName: 'Install dependencies'
-  - download: current
-    artifact: 'dist-partial-top_earlgrey_verilator'
-    displayName: 'Download verilated simulator'
-  - download: current
-    artifact: 'dist-partial-sw_build'
-    displayName: 'Download embedded artifacts'
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: current
+      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
   - bash: |
-      cd "$(Build.ArtifactStagingDirectory)"
-      tar --overwrite -xvf \
-        "$(Pipeline.Workspace)/dist-partial-top_earlgrey_verilator/dist-partial-top_earlgrey_verilator.tar"
-      tar --overwrite -xvf \
-        "$(Pipeline.Workspace)/dist-partial-sw_build/dist-partial-sw_build.tar"
-    displayName: 'Unpack pipeline artifacts'
+      . util/build_consts.sh
+      mkdir -p "$BIN_DIR"
+      tree "$BUILD_ROOT"
+      find "$BUILD_ROOT/downloads" \
+        -name 'build-bin.tar' \
+        -exec \
+          tar -C "$BIN_DIR" \
+          --strip-components=1 \
+          --overwrite \
+          -xvf {} \;
+      tree "$BUILD_ROOT"
+    displayName: 'Unarchive dependencies'
   - bash: |
-      export VERILATED_SYSTEM_PATH="$(Build.ArtifactStagingDirectory)/dist/hw/top_earlgrey/Vtop_earlgrey_verilator"
-      export SW_BUILD_PATH="$(Build.ArtifactStagingDirectory)/dist"
-      export MAKE_BUILD=1
+      . util/build_consts.sh
+      export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
       ci/run_verilator_pytest.sh
     displayName: 'Execute tests'
 
@@ -305,28 +333,34 @@ jobs:
     vmImage: "ubuntu-latest"
   dependsOn:
     - lint
-    - deprecated_make_build
+    - sw_build
     - top_earlgrey_verilator
     - top_earlgrey_nexysvideo
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   steps:
+  - bash: |
+      sudo apt-get install -y tree
+    displayName: 'Install dependencies'
   - task: DownloadPipelineArtifact@2
     inputs:
       buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/dist-partial-download'
+      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
   - bash: |
-      export BUILD_ROOT="$(Build.ArtifactStagingDirectory)"
       . util/build_consts.sh
-      cd "$BUILD_ROOT"
-      find "dist-partial-download" \
-        -iname '*.tar' \
-        -exec tar --overwrite -xvf {} \;
-      # TODO: Remove this one upstream targets are outputing stuff into $BIN_DIR.
-      mv dist "$BIN_DIR"
-    displayName: "Unpack pipeline artifacts"
+      mkdir -p "$BIN_DIR"
+      tree "$BUILD_ROOT"
+      find "$BUILD_ROOT/downloads" \
+        -name 'build-bin.tar' \
+        -exec \
+          tar -C "$BIN_DIR" \
+          --strip-components=1 \
+          --overwrite \
+          -xvf {} \;
+      tree "$BUILD_ROOT"
+    displayName: 'Unarchive dependencies'
   - bash: |
-      export BUILD_ROOT="$(Build.ArtifactStagingDirectory)"
       . util/build_consts.sh
+
       util/make_distribution.sh
 
       tar --list -f $BIN_DIR/opentitan-*.tar.xz
