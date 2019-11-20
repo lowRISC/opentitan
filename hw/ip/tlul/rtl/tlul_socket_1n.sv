@@ -12,15 +12,15 @@
 //                  default 1
 //   HRspPass:      if 1 then host responses can pass through on empty fifo,
 //                  default 1
-//   DiReqPass:     (one per device_count) if 1 then device i requests can
+//   DReqPass:      (one per device_count) if 1 then device i requests can
 //                  pass through on empty fifo, default 1
-//   DiRspPass:     (one per device_count) if 1 then device i responses can
+//   DRspPass:      (one per device_count) if 1 then device i responses can
 //                  pass through on empty fifo, default 1
 //   HReqDepth:     Depth of host request FIFO, default 2
 //   HRspDepth:     Depth of host response FIFO, default 2
-//   DiReqDepth:    (one per device_count) Depth of device i request FIFO,
+//   DReqDepth:     (one per device_count) Depth of device i request FIFO,
 //                  default 2
-//   DiRspDepth:    (one per device_count) Depth of device i response FIFO,
+//   DRspDepth:     (one per device_count) Depth of device i response FIFO,
 //                  default 2
 //
 // Requests must stall to one slave until all responses from other slaves
@@ -120,7 +120,7 @@ module tlul_socket_1n #(
       (dev_select_t != dev_select_outstanding);
 
   // Make N copies of 't' request side with modified reqvalid, call
-  // them 'u0' .. 'un-1'.
+  // them 'u[0]' .. 'u[n-1]'.
 
   tlul_pkg::tl_h2d_t   tl_u_o [N+1];
   tlul_pkg::tl_d2h_t   tl_u_i [N+1];
@@ -151,7 +151,9 @@ module tlul_socket_1n #(
     end
     if (hold_all_requests) hfifo_reqready = 1'b0;
   end
-  assign tl_t_i.a_ready = hfifo_reqready;
+  // Adding a_valid as a qualifier. This prevents the a_ready from having unknown value
+  // when the address is unknown and the Host TL-UL FIFO is bypass mode.
+  assign tl_t_i.a_ready = tl_t_o.a_valid & hfifo_reqready;
 
   always_comb begin
     tl_t_p = tl_u_i[N];
