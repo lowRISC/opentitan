@@ -12,7 +12,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [7:0] msg_q[$];
   bit       hmac_start, hmac_process;
   bit       fifo_full;
-  bit       wr_cnt_updated = 1; // flag to indicate if the msg is written to msg_fifo
   int       hmac_wr_cnt;
   int       hmac_rd_cnt;
 
@@ -66,14 +65,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               msg = (ral.cfg.endian_swap.get_mirrored_value()) ? {bytes[i], msg} : {msg, bytes[i]};
             end
           end
-          foreach (msg[i])  begin
-            msg_q.push_back(msg[i]);
-            if (msg_q.size() % 4 == 0) incr_wr_and_check_fifo_full();
-          end
+          foreach (msg[i]) msg_q.push_back(msg[i]);
         end
       end else begin
-        // csr write: predict and update according to the csr names
-        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
         case (csr.get_name())
           "cmd": begin
             if (sha_en) begin
@@ -82,8 +76,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 // check if msg all streamed in, could happen during wr msg or trigger process
                 predict_digest(msg_q);
                 update_wr_msg_length(msg_q.size());
-                // any bytes left after hmac_process will be added to the wr_cnt
-                if (msg_q.size() % 4 != 0) incr_wr_and_check_fifo_full();
                 msg_q.delete();
               end else if (hmac_start) begin
                 msg_q.delete(); // make sure did not include previous msg
@@ -99,12 +91,24 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
           end
           "cfg": begin
+            if (hmac_start) return; // won't update configs if hash start
             if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
             sha_en = item.a_data[ShaEn];
-            if (!sha_en) predict_digest(msg_q);
+            if (!sha_en) begin
+              void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+              predict_digest(msg_q);
+              return;
+            end
           end
-          "wipe_secret", "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
-          "intr_enable", "intr_state": begin
+          "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7": begin
+            if (hmac_start) begin
+              void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+              void'(ral.err_code.predict(.value(SwUpdateSecretKeyInProcess),
+                                         .kind(UVM_PREDICT_DIRECT)));
+              return;
+            end
+          end
+          "wipe_secret", "intr_enable", "intr_state": begin
             // Do nothing
           end
           "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
@@ -116,6 +120,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
           end
         endcase
+        // csr write: predict and update according to the csr names
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
     end
 
@@ -209,7 +215,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     sha_en      = 0;
     hmac_wr_cnt = 0;
     hmac_rd_cnt = 0;
-    wr_cnt_updated = 1'b1;
   endfunction
 
   // clear variables after expected digest is calculated
@@ -219,18 +224,36 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     msg_q.delete();
   endfunction
 
-  virtual task incr_wr_and_check_fifo_full();
-    wait (wr_cnt_updated == 1 && !under_reset);
-    if (sha_en) begin
-      // if fifo full, tlul will not write next data until fifo has space again
-      if (fifo_full) begin
-        wait (hmac_wr_cnt - hmac_rd_cnt < HMAC_MSG_FIFO_DEPTH)
-        fifo_full = 0;
+  // hmac_wr_cnt was incremented every time when msg_q has 4 bytes streamed in
+  // or when hash_process is triggered, and there are some remaining bytes
+  virtual task hmac_process_fifo_wr();
+    fork
+      begin : insolation_fork_process_fifo_wr
+        forever begin
+          wait(!under_reset);
+          fork
+            begin : increase_wr_cnt
+              wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() % 4 != 0));
+              if (sha_en) begin
+                // if fifo full, tlul will not write next data until fifo has space again
+                if (fifo_full) begin
+                  wait(hmac_wr_cnt - hmac_rd_cnt < HMAC_MSG_FIFO_DEPTH)
+                  fifo_full = 0;
+                end
+                @(negedge cfg.clk_rst_vif.clk);
+                hmac_wr_cnt++;
+                `uvm_info(`gfn, $sformatf("increase wr cnt %0d", hmac_wr_cnt), UVM_HIGH)
+                cfg.clk_rst_vif.wait_clks(HMAC_WR_WORD_CYCLE);
+              end
+            end
+            begin : reset_increase_wr_cnt
+              wait(under_reset);
+            end
+          join_any
+          disable fork;
+        end // end forever
       end
-      @(negedge cfg.clk_rst_vif.clk);
-      hmac_wr_cnt++;
-      `uvm_info(`gfn, $sformatf("increase wr cnt %0d", hmac_wr_cnt), UVM_HIGH)
-    end
+    join
   endtask
 
   virtual task hmac_process_fifo_full();
@@ -243,16 +266,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         `uvm_info(`gfn, "predict interrupt fifo full is set", UVM_HIGH)
         fifo_full = 1;
       end
-    end
-  endtask
-
-  // internal msg_fifo model will take 2 clk cycles to update write info.
-  // will gate the write process with wr_cnt_updated signal if user uses non-blocking mode
-  virtual task hmac_process_fifo_wr();
-    forever @(hmac_wr_cnt) begin
-        wr_cnt_updated = 0;
-        cfg.clk_rst_vif.wait_clks(HMAC_WR_WORD_CYCLE);
-        wr_cnt_updated = 1;
     end
   endtask
 
