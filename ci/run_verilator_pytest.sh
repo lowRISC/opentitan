@@ -7,7 +7,7 @@ set -e
 . util/build_consts.sh
 
 readonly VERILATED_SYSTEM_DEFAULT="build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator"
-readonly SW_BUILD_DEFAULT="$(sw_obj_dir sim)"
+readonly SW_BUILD_DEFAULT="$(sw_bin_dir sim-verilator)"
 
 VERILATED_SYSTEM_PATH="${VERILATED_SYSTEM_PATH:-$VERILATED_SYSTEM_DEFAULT}"
 SW_BUILD_PATH="${SW_BUILD_PATH:-$SW_BUILD_DEFAULT}"
