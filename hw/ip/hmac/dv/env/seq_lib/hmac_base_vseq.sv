@@ -88,10 +88,38 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
   endtask
 
+  virtual task write_discard_config_and_key(bit do_wr_config, bit do_wr_key);
+    if (do_wr_config) write_discard_config();
+    if (do_wr_key) begin
+      write_discard_key();
+      check_error_code();
+    end
+  endtask
+
   // keep all the config values, but enable sha_en
   virtual task sha_enable();
     ral.cfg.sha_en.set(1'b1);
     csr_update(.csr(ral.cfg));
+  endtask
+
+  // attempt to change config reg during msg write, design will ignore the change
+  virtual task write_discard_config();
+    bit [TL_DW-1:0] rand_config_value = $urandom();
+    csr_wr(ral.cfg, rand_config_value);
+  endtask
+
+  virtual task write_discard_key();
+    bit [TL_DW-1:0] rand_key_value = $urandom();
+    randcase
+      1:  csr_wr(ral.key0, rand_key_value);
+      1:  csr_wr(ral.key1, rand_key_value);
+      1:  csr_wr(ral.key2, rand_key_value);
+      1:  csr_wr(ral.key3, rand_key_value);
+      1:  csr_wr(ral.key4, rand_key_value);
+      1:  csr_wr(ral.key5, rand_key_value);
+      1:  csr_wr(ral.key6, rand_key_value);
+      1:  csr_wr(ral.key7, rand_key_value);
+    endcase
   endtask
 
   // trigger hash computation to start
@@ -184,6 +212,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       if (ral.cfg.sha_en.get_mirrored_value()) begin
         if (!do_back_pressure) check_status_intr_fifo_full();
         else clear_intr_fifo_full();
+        // randomly change key, config regs during msg wr, should trigger error or be discarded
+        write_discard_config_and_key($urandom_range(0, 20) == 0, $urandom_range(0, 20) == 0);
       end else begin
         check_error_code();
       end

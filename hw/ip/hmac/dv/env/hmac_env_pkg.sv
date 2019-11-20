@@ -62,7 +62,8 @@ package hmac_env_pkg;
   typedef enum {
     NoError,
     SwPushMsgWhenShaDisabled,
-    SwHashStartWhenShaDisabled
+    SwHashStartWhenShaDisabled,
+    SwUpdateSecretKeyInProcess
   } err_code_e;
 
   typedef class hmac_env_cfg;
