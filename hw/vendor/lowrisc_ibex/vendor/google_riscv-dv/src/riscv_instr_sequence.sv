@@ -278,7 +278,11 @@ class riscv_instr_sequence extends uvm_sequence;
     insert_illegal_hint_instr();
     prefix = format_string($sformatf("%0d:", i), LABEL_STR_LEN);
     if(!is_main_program) begin
-      str = {prefix, "ret"};
+      if (!cfg.disable_compressed_instr) begin
+        str = {prefix, $sformatf("c.jr x%0d", cfg.ra)};
+      end else begin
+        str = {prefix, $sformatf("jalr x0, x%0d, 0", cfg.ra)};
+      end
       instr_string_list.push_back(str);
     end
   endfunction

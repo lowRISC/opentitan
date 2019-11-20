@@ -85,55 +85,12 @@ class riscv_mem_access_stream extends riscv_directed_instr_stream;
 
 endclass
 
-// Create a infinte zero instruction loop, test if we can interrupt or
-// enter debug mode while core is executing this loop
-class riscv_infinte_loop_instr extends riscv_directed_instr_stream;
-
-  string label_prefix = "";
-  string label_name;
-
-  `uvm_object_utils(riscv_infinte_loop_instr)
-
-  constraint instr_c {
-    foreach(instr_list[i]) {
-      instr_list[i].imm == 0;
-      instr_list[i].category inside {JUMP, BRANCH};
-      instr_list[i].instr_name != JALR;
-    }
-  }
-
-  function new(string name = "");
-    super.new(name);
-  endfunction
-
-  function void pre_randomize();
-    riscv_rand_instr instr;
-    initialize_instr_list(5);
-    foreach(instr_list[i]) begin
-      $cast(instr, instr_list[i]);
-      instr.constraint_cfg_knob_c.constraint_mode(0);
-    end
-  endfunction
-
-  function void post_randomize();
-    foreach(instr_list[i]) begin
-      label_name = $sformatf("%0s_inf_loop_%0d", label_prefix, i);
-      instr_list[i].atomic = 1'b1;
-      instr_list[i].label = label_name;
-      instr_list[i].imm_str = label_name;
-      instr_list[i].has_label = 1'b1;
-      instr_list[i].branch_assigned = 1'b1;
-    end
-  endfunction
-
-endclass
-
 // Jump instruction (JAL, JALR)
 // la rd0, jump_tagert_label
 // addi rd1, offset, rd0
 // jalr rd, offset, rd1
 // For JAL, restore the stack before doing the jump
-class riscv_jump_instr extends riscv_rand_instr_stream;
+class riscv_jump_instr extends riscv_directed_instr_stream;
 
   riscv_instr_base     jump;
   riscv_instr_base     addi;
@@ -168,8 +125,11 @@ class riscv_jump_instr extends riscv_rand_instr_stream;
     riscv_instr_base instr[];
     `DV_CHECK_RANDOMIZE_WITH_FATAL(jump,
       (use_jalr) -> (instr_name == JALR);
-      instr_name dist {JAL := 1, JALR := 9};
-      rd == RA;
+      instr_name dist {JAL := 2, JALR := 6, C_JALR := 2};
+      if (cfg.disable_compressed_instr || (cfg.ra != RA)) {
+        instr_name != C_JALR;
+      }
+      rd == cfg.ra;
       rs1 == gpr;
     )
     `DV_CHECK_RANDOMIZE_WITH_FATAL(addi,
@@ -198,6 +158,8 @@ class riscv_jump_instr extends riscv_rand_instr_stream;
     end
     if(jump.instr_name == JAL) begin
       jump.imm_str = target_program_label;
+    end else if (jump.instr_name == C_JALR) begin
+      instr = {la, instr};
     end else begin
       instr = {la, addi, instr};
     end
@@ -212,6 +174,81 @@ class riscv_jump_instr extends riscv_rand_instr_stream;
     branch.imm_str = jump.label;
     branch.comment = "branch to jump instr";
     branch.branch_assigned = 1'b1;
+  endfunction
+endclass
+
+// Stress back to back jump instruction
+class riscv_jal_instr extends riscv_rand_instr_stream;
+
+  riscv_instr_base     jump[];
+  riscv_instr_base     jump_start;
+  riscv_instr_base     jump_end;
+  rand int unsigned    num_of_jump_instr;
+  riscv_instr_name_t   jal[$];
+
+  constraint instr_c {
+    num_of_jump_instr inside {[10:30]};
+  }
+
+  `uvm_object_utils(riscv_jal_instr)
+
+  function new(string name = "");
+    super.new(name);
+  endfunction
+
+  function void post_randomize();
+    int order[];
+    order = new[num_of_jump_instr];
+    jump = new[num_of_jump_instr];
+    foreach (order[i]) begin
+      order[i] = i;
+    end
+    order.shuffle();
+    setup_allowed_instr(1, 1);
+    jal = {JAL};
+    if (!cfg.disable_compressed_instr) begin
+      jal.push_back(C_J);
+      if (XLEN == 32) begin
+        jal.push_back(C_JAL);
+      end
+    end
+    // First instruction
+    jump_start = riscv_instr_base::type_id::create("jump_start");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(jump_start,
+      instr_name == JAL;
+      rd == cfg.ra;
+    )
+    jump_start.imm_str = $sformatf("%0df", order[0]);
+    jump_start.label = label;
+    // Last instruction
+    jump_end = riscv_instr_base::type_id::create("jump_end");
+    randomize_instr(jump_end);
+    jump_end.label = $sformatf("%0d", num_of_jump_instr);
+    foreach (jump[i]) begin
+      jump[i] = riscv_instr_base::type_id::create($sformatf("jump_%0d", i));
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(jump[i],
+        instr_name inside {jal};
+        rd dist {RA := 5, T1 := 2, [SP:T0] :/ 1, [T2:T6] :/ 2};
+        !(rd inside {cfg.reserved_regs});
+      )
+      jump[i].label = $sformatf("%0d", i);
+    end
+    foreach (order[i]) begin
+      if (i == num_of_jump_instr - 1) begin
+        jump[order[i]].imm_str = $sformatf("%0df", num_of_jump_instr);
+      end else begin
+        if (order[i+1] > order[i]) begin
+          jump[order[i]].imm_str = $sformatf("%0df", order[i+1]);
+        end else begin
+          jump[order[i]].imm_str = $sformatf("%0db", order[i+1]);
+        end
+      end
+    end
+    instr_list = {jump_start, jump, jump_end};
+    foreach (instr_list[i]) begin
+      instr_list[i].has_label = 1'b1;
+      instr_list[i].atomic = 1'b1;
+    end
   endfunction
 endclass
 
@@ -235,8 +272,8 @@ class riscv_push_stack_instr extends riscv_rand_instr_stream;
 
   function void init();
     // Save RA, T0
-    reserved_rd = {RA, T0};
-    saved_regs = {RA, T0};
+    reserved_rd = {cfg.ra};
+    saved_regs = {cfg.ra};
     num_of_reg_to_save = saved_regs.size();
     if(num_of_reg_to_save * (XLEN/8) > stack_len) begin
       `uvm_fatal(get_full_name(), $sformatf("stack len [%0d] is not enough to store %d regs",
@@ -317,7 +354,7 @@ class riscv_pop_stack_instr extends riscv_rand_instr_stream;
   endfunction
 
   function void init();
-    reserved_rd = {RA, T0};
+    reserved_rd = {cfg.ra};
     num_of_reg_to_save = saved_regs.size();
     if(num_of_reg_to_save * 4 > stack_len) begin
       `uvm_fatal(get_full_name(), $sformatf("stack len [%0d] is not enough to store %d regs",

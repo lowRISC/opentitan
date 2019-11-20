@@ -24,7 +24,7 @@ parameter int XLEN = 32;
 parameter satp_mode_t SATP_MODE = BARE;
 
 // Supported Privileged mode
-privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
+privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE, USER_MODE};
 
 // Unsupported instructions
 // Avoid generating these instructions in regular regression
@@ -83,6 +83,7 @@ parameter privileged_reg_t implemented_csr[] = {
     MCAUSE,           // Machine trap cause
     MTVAL,            // Machine bad address or instruction
     MIE,              // Machine interrupt enable
+    MIP,              // Machine interrupt pending
     MCYCLE,           // Machine cycle counter (lower 32 bits)
     MCYCLEH,          // Machine cycle counter (upper 32 bits)
     MINSTRET,         // Machine instructions retired counter (lower 32 bits)

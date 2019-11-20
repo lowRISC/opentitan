@@ -17,7 +17,7 @@ COV                 := 0
 # RTL simulator
 SIMULATOR           := "vcs"
 # ISS (spike, ovpsim)
-ISS                 := "spike"
+ISS                 := "ovpsim"
 # ISA
 ISA                 := "rv32imc"
 # Test name (default: full regression)
@@ -46,6 +46,10 @@ export PRJ_DIR:= $(realpath ${DV_DIR}/../../..)
 
 all: clean gen gcc_compile iss_sim compile rtl_sim post_compare
 
+instr: gen gcc_compile iss_sim
+
+sim: compile rtl_sim post_compare
+
 clean:
 	rm -rf ${OUT}
 
@@ -64,6 +68,10 @@ CSR_OPTS=--csr_yaml=${CSR_FILE} \
          --isa=${ISA} \
          --end_signature_addr=0x${SIGNATURE_ADDR}
 
+RISCV_DV_OPTS=--custom_target=${DV_DIR}/riscv_dv_extension \
+              --isa=${ISA} \
+              --mabi=ilp32 \
+
 # Generate random instructions
 .SILENT gen:
 	mkdir -p ${OUT}
@@ -73,9 +81,8 @@ CSR_OPTS=--csr_yaml=${CSR_FILE} \
      --steps=gen \
      --gen_timeout=${TIMEOUT} \
      --lsf_cmd="${LSF_CMD}" \
-     --core_setting_dir=${DV_DIR}/riscv_dv_extension \
-     --user_extension_dir=${DV_DIR}/riscv_dv_extension \
      --simulator=${SIMULATOR} \
+     ${RISCV_DV_OPTS} \
      ${COMMON_OPTS} \
      ${CSR_OPTS} \
      --sim_opts="+uvm_set_type_override=riscv_asm_program_gen,ibex_asm_program_gen \
@@ -89,8 +96,7 @@ gcc_compile:
      --steps=gcc_compile \
      ${COMMON_OPTS} \
      --gcc_opts=-mno-strict-align \
-     --isa=${ISA} \
-     --mabi=ilp32
+     ${RISCV_DV_OPTS} \
 
 # ISS simulation
 iss_sim:
@@ -100,7 +106,7 @@ iss_sim:
      --steps=iss_sim \
      ${COMMON_OPTS} \
      --iss=${ISS} \
-     --isa=${ISA} \
+     ${RISCV_DV_OPTS} \
 
 # Compile ibex core TB
 compile:
@@ -140,8 +146,12 @@ post_compare:
 
 # Generate functional coverage
 fcov:
-	cd ${GEN_DIR}; \
-	python3 ./cov.py --dir ${OUT}/instr_gen/spike_sim -o ${OUT}/fcov
+	python3 ${GEN_DIR}/cov.py \
+          --core ibex \
+          --dir ${OUT}/rtl_sim \
+          -o ${OUT}/fcov \
+          --isa rv32imc \
+          --custom_target ${DV_DIR}/riscv_dv_extension \
 
 # Load verdi to review coverage
 cov:

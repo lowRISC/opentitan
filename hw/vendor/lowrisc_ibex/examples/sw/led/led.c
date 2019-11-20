@@ -35,10 +35,10 @@ static int usleep(unsigned long usec) {
 }
 
 int main(int argc, char **argv) {
-  // Any data written to the stack segment will connect the lowest four bits to
-  // the board leds
-  volatile uint32_t *var = (volatile uint32_t *) 0x0000c010;
-  *var = 0xa;
+  // The lowest four bits of the highest byte written to the memory region named
+  // "stack" are connected to the LEDs of the board.
+  volatile uint8_t *var = (volatile uint8_t *) 0x0000c010;
+  *var = 0x0a;
 
   while (1) {
     usleep(1000 * 1000); // 1000 ms

@@ -1,0 +1,63 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_simple_system"
+description: "Generic simple system for running binaries on ibex using verilator"
+filesets:
+  files_sim_verilator:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:ibex:ibex_core_tracing
+      - lowrisc:ibex:sim_shared
+      - lowrisc:dv_verilator:ibex_pcounts
+    files:
+      - rtl/ibex_simple_system.sv
+      - ibex_simple_system.cc: { file_type: cppSource }
+    file_type: systemVerilogSource
+
+parameters:
+  RV32M:
+    datatype: int
+    paramtype: vlogparam
+    default: 1
+    description: Enable the M ISA extension (hardware multiply/divide) [0/1]
+  RV32E:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: Enable the E ISA extension (reduced register set) [0/1]
+
+targets:
+  sim:
+    default_tool: verilator
+    filesets:
+      - files_sim_verilator
+    parameters:
+      - RV32M
+      - RV32E
+    toplevel: ibex_simple_system
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+# Disabling tracing reduces compile times by multiple times, but doesn't have a
+# huge influence on runtime performance. (Based on early observations.)
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+# compiler flags
+#
+# -O
+#   Optimization levels have a large impact on the runtime performance of the
+#   simulation model. -O2 and -O3 are pretty similar, -Os is slower than -O2/-O3
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_simple_system -g -O0"'
+          - '-LDFLAGS "-pthread -lutil"'
+          - "-Wall"
+          - "-Wno-PINCONNECTEMPTY"
+          # XXX: Cleanup all warnings and remove this option
+          # (or make it more fine-grained at least)
+          - "-Wno-fatal"
+

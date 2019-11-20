@@ -24,7 +24,6 @@ module ibex_id_stage #(
 
     input  logic                  fetch_enable_i,
     output logic                  ctrl_busy_o,
-    output logic                  core_ctrl_firstfetch_o,
     output logic                  illegal_insn_o,
 
     // Interface to IF stage
@@ -73,6 +72,7 @@ module ibex_id_stage #(
     output logic                  csr_save_if_o,
     output logic                  csr_save_id_o,
     output logic                  csr_restore_mret_id_o,
+    output logic                  csr_restore_dret_id_o,
     output logic                  csr_save_cause_o,
     output logic [31:0]           csr_mtval_o,
     input  ibex_pkg::priv_lvl_e   priv_mode_i,
@@ -387,7 +387,6 @@ module ibex_id_stage #(
 
       .fetch_enable_i                 ( fetch_enable_i         ),
       .ctrl_busy_o                    ( ctrl_busy_o            ),
-      .first_fetch_o                  ( core_ctrl_firstfetch_o ),
 
       // decoder related signals
       .illegal_insn_i                 ( illegal_insn_o         ),
@@ -439,6 +438,7 @@ module ibex_id_stage #(
       .csr_save_if_o                  ( csr_save_if_o          ),
       .csr_save_id_o                  ( csr_save_id_o          ),
       .csr_restore_mret_id_o          ( csr_restore_mret_id_o  ),
+      .csr_restore_dret_id_o          ( csr_restore_dret_id_o  ),
       .csr_save_cause_o               ( csr_save_cause_o       ),
       .csr_mtval_o                    ( csr_mtval_o            ),
       .priv_mode_i                    ( priv_mode_i            ),
@@ -608,28 +608,27 @@ module ibex_id_stage #(
   ////////////////
 
 `ifndef VERILATOR
-  // make sure that branch decision is valid when jumping
-  assert property (
-    @(posedge clk_i) (branch_decision_i !== 1'bx || branch_in_dec == 1'b0) ) else
-      $display("Branch decision is X");
+  // branch decision must be valid when jumping
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (branch_decision_i !== 1'bx || !branch_in_dec)) else
+    $display("Branch decision is X");
 
 `ifdef CHECK_MISALIGNED
-  assert property (
-    @(posedge clk_i) (~lsu_addr_incr_req_i) ) else
-      $display("Misaligned memory access at %x",pc_id_i);
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (!lsu_addr_incr_req_i)) else
+    $display("Misaligned memory access at %x",pc_id_i);
 `endif
 
-  // the instruction delivered to the ID stage should always be valid
-  assert property (
-    @(posedge clk_i) (instr_valid_i & ~(illegal_c_insn_i | instr_fetch_err_i)) |->
-        (!$isunknown(instr_rdata_i)) ) else
-      $display("Instruction is valid, but has at least one X");
+  // instruction delivered to ID stage must always be valid
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |->
+      (!$isunknown(instr_rdata_i))) else
+    $display("Instruction is valid, but has at least one X");
 
-  // make sure multicycles enable signals are unique
-  assert property (
-    @(posedge clk_i) ~(data_req_dec & multdiv_en_dec)) else
-      $display("Multicycles enable signals are not unique");
-
+  // multicycle enable signals must be unique
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      ($onehot0({data_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))) else
+    $display("Multicycle enable signals are not unique");
 `endif
 
 endmodule

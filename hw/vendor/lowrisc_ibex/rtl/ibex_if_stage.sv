@@ -256,15 +256,25 @@ module ibex_if_stage #(
   // Assertions //
   ////////////////
 `ifndef VERILATOR
-  // the boot address needs to be aligned to 256 bytes
-  assert property (
-    @(posedge clk_i) (boot_addr_i[7:0] == 8'h00) ) else
-      $error("The provided boot address is not aligned to 256 bytes");
+  // boot address must be aligned to 256 bytes
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (boot_addr_i[7:0] == 8'h00)) else
+    $error("Provided boot address not aligned to 256 bytes");
 
-  // assert that the address is word aligned when request is sent
-  assert property (
-    @(posedge clk_i) (instr_req_o) |-> (instr_addr_o[1:0] == 2'b00) ) else
-      $display("Instruction address not word aligned");
+  // errors must only be sent together with rvalid
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (instr_err_i) |-> (instr_rvalid_i)) else
+    $display("Instruction error not sent with rvalid");
+
+  // address must not contain X when request is sent
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (instr_req_o) |-> (!$isunknown(instr_addr_o))) else
+    $display("Instruction address not valid");
+
+  // address must be word aligned when request is sent
+  assert property (@(posedge clk_i) disable iff (!rst_ni)
+      (instr_req_o) |-> (instr_addr_o[1:0] == 2'b00)) else
+    $display("Instruction address not word aligned");
 `endif
 
 endmodule

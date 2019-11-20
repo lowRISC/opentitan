@@ -95,12 +95,9 @@ class riscv_privileged_common_seq extends uvm_sequence;
       mie.set_field("USIE", cfg.enable_interrupt);
       mie.set_field("SSIE", cfg.enable_interrupt);
       mie.set_field("MSIE", cfg.enable_interrupt);
-      // TODO(udinator) - since full CSRs are being randomized, it's necessary to hardwire the xTIE
-      // fields to 1'b0, as it causes some timer interrupts to be triggered in Spike after a certain
-      // amount of simulation time.
-      mie.set_field("MTIE", 1'b0);
-      mie.set_field("STIE", 1'b0);
-      mie.set_field("UTIE", 1'b0);
+      mie.set_field("MTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
+      mie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq);
+      mie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       regs.push_back(mie);
     end
   endfunction
@@ -136,8 +133,8 @@ class riscv_privileged_common_seq extends uvm_sequence;
       sie.set_field("SEIE", cfg.enable_interrupt);
       sie.set_field("USIE", cfg.enable_interrupt);
       sie.set_field("SSIE", cfg.enable_interrupt);
-      sie.set_field("STIE", 1'b0);
-      sie.set_field("UTIE", 1'b0);
+      sie.set_field("STIE", cfg.enable_interrupt & cfg.enable_timer_irq);
+      sie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       regs.push_back(sie);
     end
   endfunction
@@ -160,7 +157,7 @@ class riscv_privileged_common_seq extends uvm_sequence;
       end
       uie.set_field("UEIE", cfg.enable_interrupt);
       uie.set_field("USIE", cfg.enable_interrupt);
-      uie.set_field("UTIE", 1'b0);
+      uie.set_field("UTIE", cfg.enable_interrupt & cfg.enable_timer_irq);
       regs.push_back(uie);
     end
   endfunction

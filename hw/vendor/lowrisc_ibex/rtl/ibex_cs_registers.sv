@@ -75,6 +75,7 @@ module ibex_cs_registers #(
     input  logic                 csr_save_if_i,
     input  logic                 csr_save_id_i,
     input  logic                 csr_restore_mret_i,
+    input  logic                 csr_restore_dret_i,
     input  logic                 csr_save_cause_i,
     input  ibex_pkg::exc_cause_e csr_mcause_i,
     input  logic [31:0]          csr_mtval_i,
@@ -207,6 +208,7 @@ module ibex_cs_registers #(
   logic        illegal_csr_write;
 
   logic [7:0]  unused_boot_addr;
+  logic [2:0]  unused_csr_addr;
 
   assign unused_boot_addr = boot_addr_i[7:0];
 
@@ -216,6 +218,7 @@ module ibex_cs_registers #(
 
   logic [$bits(csr_num_e)-1:0] csr_addr;
   assign csr_addr           = {csr_addr_i};
+  assign unused_csr_addr    = csr_addr[7:5];
   assign mhpmcounter_idx    = csr_addr[4:0];
 
   // See RISC-V Privileged Specification, version 1.11, Section 2.1
@@ -328,41 +331,45 @@ module ibex_cs_registers #(
 
       // machine counter/timers
       CSR_MCOUNTINHIBIT: csr_rdata_int = mcountinhibit;
-      CSR_MCYCLE:        csr_rdata_int = mhpmcounter_q[0][31: 0];
-      CSR_MCYCLEH:       csr_rdata_int = mhpmcounter_q[0][63:32];
-      CSR_MINSTRET:      csr_rdata_int = mhpmcounter_q[2][31: 0];
-      CSR_MINSTRETH:     csr_rdata_int = mhpmcounter_q[2][63:32];
+      CSR_MHPMEVENT3,
+      CSR_MHPMEVENT4,  CSR_MHPMEVENT5,  CSR_MHPMEVENT6,  CSR_MHPMEVENT7,
+      CSR_MHPMEVENT8,  CSR_MHPMEVENT9,  CSR_MHPMEVENT10, CSR_MHPMEVENT11,
+      CSR_MHPMEVENT12, CSR_MHPMEVENT13, CSR_MHPMEVENT14, CSR_MHPMEVENT15,
+      CSR_MHPMEVENT16, CSR_MHPMEVENT17, CSR_MHPMEVENT18, CSR_MHPMEVENT19,
+      CSR_MHPMEVENT20, CSR_MHPMEVENT21, CSR_MHPMEVENT22, CSR_MHPMEVENT23,
+      CSR_MHPMEVENT24, CSR_MHPMEVENT25, CSR_MHPMEVENT26, CSR_MHPMEVENT27,
+      CSR_MHPMEVENT28, CSR_MHPMEVENT29, CSR_MHPMEVENT30, CSR_MHPMEVENT31: begin
+        csr_rdata_int = mhpmevent[mhpmcounter_idx];
+      end
+
+      CSR_MCYCLE,
+      CSR_MINSTRET,
+      CSR_MHPMCOUNTER3,
+      CSR_MHPMCOUNTER4,  CSR_MHPMCOUNTER5,  CSR_MHPMCOUNTER6,  CSR_MHPMCOUNTER7,
+      CSR_MHPMCOUNTER8,  CSR_MHPMCOUNTER9,  CSR_MHPMCOUNTER10, CSR_MHPMCOUNTER11,
+      CSR_MHPMCOUNTER12, CSR_MHPMCOUNTER13, CSR_MHPMCOUNTER14, CSR_MHPMCOUNTER15,
+      CSR_MHPMCOUNTER16, CSR_MHPMCOUNTER17, CSR_MHPMCOUNTER18, CSR_MHPMCOUNTER19,
+      CSR_MHPMCOUNTER20, CSR_MHPMCOUNTER21, CSR_MHPMCOUNTER22, CSR_MHPMCOUNTER23,
+      CSR_MHPMCOUNTER24, CSR_MHPMCOUNTER25, CSR_MHPMCOUNTER26, CSR_MHPMCOUNTER27,
+      CSR_MHPMCOUNTER28, CSR_MHPMCOUNTER29, CSR_MHPMCOUNTER30, CSR_MHPMCOUNTER31: begin
+        csr_rdata_int = mhpmcounter_q[mhpmcounter_idx][31:0];
+      end
+
+      CSR_MCYCLEH,
+      CSR_MINSTRETH,
+      CSR_MHPMCOUNTER3H,
+      CSR_MHPMCOUNTER4H,  CSR_MHPMCOUNTER5H,  CSR_MHPMCOUNTER6H,  CSR_MHPMCOUNTER7H,
+      CSR_MHPMCOUNTER8H,  CSR_MHPMCOUNTER9H,  CSR_MHPMCOUNTER10H, CSR_MHPMCOUNTER11H,
+      CSR_MHPMCOUNTER12H, CSR_MHPMCOUNTER13H, CSR_MHPMCOUNTER14H, CSR_MHPMCOUNTER15H,
+      CSR_MHPMCOUNTER16H, CSR_MHPMCOUNTER17H, CSR_MHPMCOUNTER18H, CSR_MHPMCOUNTER19H,
+      CSR_MHPMCOUNTER20H, CSR_MHPMCOUNTER21H, CSR_MHPMCOUNTER22H, CSR_MHPMCOUNTER23H,
+      CSR_MHPMCOUNTER24H, CSR_MHPMCOUNTER25H, CSR_MHPMCOUNTER26H, CSR_MHPMCOUNTER27H,
+      CSR_MHPMCOUNTER28H, CSR_MHPMCOUNTER29H, CSR_MHPMCOUNTER30H, CSR_MHPMCOUNTER31H: begin
+        csr_rdata_int = mhpmcounter_q[mhpmcounter_idx][63:32];
+      end
 
       default: begin
-        if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTER_SETUP) begin
-          csr_rdata_int = mhpmevent[mhpmcounter_idx];
-          // check access to non-existent or already covered CSRs
-          if ((csr_addr[4:0] == 5'b00000) ||     // CSR_MCOUNTINHIBIT
-              (csr_addr[4:0] == 5'b00001) ||
-              (csr_addr[4:0] == 5'b00010)) begin
-            illegal_csr = 1'b1;
-          end
-
-        end else if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTER) begin
-          csr_rdata_int = mhpmcounter_q[mhpmcounter_idx][31: 0];
-          // check access to non-existent or already covered CSRs
-          if ((csr_addr[4:0] == 5'b00000) ||     // CSR_MCYCLE
-              (csr_addr[4:0] == 5'b00001) ||
-              (csr_addr[4:0] == 5'b00010)) begin // CSR_MINSTRET
-            illegal_csr = 1'b1;
-          end
-
-        end else if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTERH) begin
-          csr_rdata_int = mhpmcounter_q[mhpmcounter_idx][63:32];
-          // check access to non-existent or already covered CSRs
-          if ((csr_addr[4:0] == 5'b00000) ||     // CSR_MCYCLEH
-              (csr_addr[4:0] == 5'b00001) ||
-              (csr_addr[4:0] == 5'b00010)) begin // CSR_MINSTRETH
-            illegal_csr = 1'b1;
-          end
-        end else begin
-          illegal_csr = 1'b1;
-        end
+        illegal_csr = 1'b1;
       end
     endcase
   end
@@ -436,7 +443,7 @@ module ibex_cs_registers #(
         CSR_DCSR: begin
           dcsr_d = csr_wdata_int;
           dcsr_d.xdebugver = XDEBUGVER_STD;
-          // Change to PRIV_LVL_M if sofware writes an unsupported value
+          // Change to PRIV_LVL_M if software writes an unsupported value
           if ((dcsr_d.prv != PRIV_LVL_M) && (dcsr_d.prv != PRIV_LVL_U)) begin
             dcsr_d.prv = PRIV_LVL_M;
           end
@@ -453,30 +460,42 @@ module ibex_cs_registers #(
           dcsr_d.zero2 = 12'h0;
         end
 
-        CSR_DPC: begin
-          // Only valid PC addresses are allowed (half-word aligned with C ext.)
-          if (csr_wdata_int[0] == 1'b0) begin
-            depc_d = csr_wdata_int;
-          end
-        end
+        // dpc: debug program counter
+        CSR_DPC: depc_d = {csr_wdata_int[31:1], 1'b0};
 
         CSR_DSCRATCH0: dscratch0_d = csr_wdata_int;
         CSR_DSCRATCH1: dscratch1_d = csr_wdata_int;
 
-        CSR_MCOUNTINHIBIT: mcountinhibit_we   = 1'b1;
-        CSR_MCYCLE:        mhpmcounter_we[0]  = 1'b1;
-        CSR_MCYCLEH:       mhpmcounterh_we[0] = 1'b1;
-        CSR_MINSTRET:      mhpmcounter_we[2]  = 1'b1;
-        CSR_MINSTRETH:     mhpmcounterh_we[2] = 1'b1;
+        // machine counter/timers
+        CSR_MCOUNTINHIBIT: mcountinhibit_we = 1'b1;
 
-        default: begin
-          // performance counters and event selector
-          if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTER) begin
-            mhpmcounter_we[mhpmcounter_idx] = 1'b1;
-          end else if ((csr_addr & CSR_MASK_MCOUNTER) == CSR_OFF_MCOUNTERH) begin
-            mhpmcounterh_we[mhpmcounter_idx] = 1'b1;
-          end
+        CSR_MCYCLE,
+        CSR_MINSTRET,
+        CSR_MHPMCOUNTER3,
+        CSR_MHPMCOUNTER4,  CSR_MHPMCOUNTER5,  CSR_MHPMCOUNTER6,  CSR_MHPMCOUNTER7,
+        CSR_MHPMCOUNTER8,  CSR_MHPMCOUNTER9,  CSR_MHPMCOUNTER10, CSR_MHPMCOUNTER11,
+        CSR_MHPMCOUNTER12, CSR_MHPMCOUNTER13, CSR_MHPMCOUNTER14, CSR_MHPMCOUNTER15,
+        CSR_MHPMCOUNTER16, CSR_MHPMCOUNTER17, CSR_MHPMCOUNTER18, CSR_MHPMCOUNTER19,
+        CSR_MHPMCOUNTER20, CSR_MHPMCOUNTER21, CSR_MHPMCOUNTER22, CSR_MHPMCOUNTER23,
+        CSR_MHPMCOUNTER24, CSR_MHPMCOUNTER25, CSR_MHPMCOUNTER26, CSR_MHPMCOUNTER27,
+        CSR_MHPMCOUNTER28, CSR_MHPMCOUNTER29, CSR_MHPMCOUNTER30, CSR_MHPMCOUNTER31: begin
+          mhpmcounter_we[mhpmcounter_idx] = 1'b1;
         end
+
+        CSR_MCYCLEH,
+        CSR_MINSTRETH,
+        CSR_MHPMCOUNTER3H,
+        CSR_MHPMCOUNTER4H,  CSR_MHPMCOUNTER5H,  CSR_MHPMCOUNTER6H,  CSR_MHPMCOUNTER7H,
+        CSR_MHPMCOUNTER8H,  CSR_MHPMCOUNTER9H,  CSR_MHPMCOUNTER10H, CSR_MHPMCOUNTER11H,
+        CSR_MHPMCOUNTER12H, CSR_MHPMCOUNTER13H, CSR_MHPMCOUNTER14H, CSR_MHPMCOUNTER15H,
+        CSR_MHPMCOUNTER16H, CSR_MHPMCOUNTER17H, CSR_MHPMCOUNTER18H, CSR_MHPMCOUNTER19H,
+        CSR_MHPMCOUNTER20H, CSR_MHPMCOUNTER21H, CSR_MHPMCOUNTER22H, CSR_MHPMCOUNTER23H,
+        CSR_MHPMCOUNTER24H, CSR_MHPMCOUNTER25H, CSR_MHPMCOUNTER26H, CSR_MHPMCOUNTER27H,
+        CSR_MHPMCOUNTER28H, CSR_MHPMCOUNTER29H, CSR_MHPMCOUNTER30H, CSR_MHPMCOUNTER31H: begin
+          mhpmcounterh_we[mhpmcounter_idx] = 1'b1;
+        end
+
+        default:;
       endcase
     end
 
@@ -494,14 +513,18 @@ module ibex_cs_registers #(
           default:;
         endcase
 
+        // Any exception, including debug mode, causes a switch to M-mode
+        priv_lvl_d = PRIV_LVL_M;
+
         if (debug_csr_save_i) begin
           // all interrupts are masked
           // do not update cause, epc, tval, epc and status
           dcsr_d.prv   = priv_lvl_q;
           dcsr_d.cause = debug_cause_i;
           depc_d       = exception_pc;
-        end else begin
-          priv_lvl_d     = PRIV_LVL_M;
+        end else if (!debug_mode_i) begin
+          // In debug mode, "exceptions do not update any registers. That
+          // includes cause, epc, tval, dpc and mstatus." [Debug Spec v0.13.2, p.39]
           mtval_d        = csr_mtval_i;
           mstatus_d.mie  = 1'b0; // disable interrupts
           // save current status
@@ -516,6 +539,10 @@ module ibex_cs_registers #(
           mstack_cause_d = mcause_q;
         end
       end // csr_save_cause_i
+
+      csr_restore_dret_i: begin // DRET
+        priv_lvl_d = dcsr_q.prv;
+      end // csr_restore_dret_i
 
       csr_restore_mret_i: begin // MRET
         priv_lvl_d     = mstatus_q.mpp;
@@ -780,6 +807,10 @@ module ibex_cs_registers #(
   // event selection (hardwired) & control
   always_comb begin : gen_mhpmcounter_incr
 
+    // When adding or altering performance counter meanings and default
+    // mappings please update dv/verilator/pcount/cpp/ibex_pcounts.cc
+    // appropriately.
+    //
     // active counters
     mhpmcounter_incr[0]  = 1'b1;                   // mcycle
     mhpmcounter_incr[1]  = 1'b0;                   // reserved

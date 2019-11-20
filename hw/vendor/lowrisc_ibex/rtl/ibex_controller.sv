@@ -12,7 +12,6 @@ module ibex_controller (
 
     input  logic                  fetch_enable_i,        // start decoding
     output logic                  ctrl_busy_o,           // core is busy processing instrs
-    output logic                  first_fetch_o,         // core is at the FIRST FETCH stage
 
     // decoder related signals
     input  logic                  illegal_insn_i,        // decoder has an invalid instr
@@ -73,6 +72,7 @@ module ibex_controller (
     output logic                  csr_save_if_o,
     output logic                  csr_save_id_o,
     output logic                  csr_restore_mret_id_o,
+    output logic                  csr_restore_dret_id_o,
     output logic                  csr_save_cause_o,
     output logic [31:0]           csr_mtval_o,
     input  ibex_pkg::priv_lvl_e   priv_mode_i,
@@ -242,6 +242,7 @@ module ibex_controller (
     csr_save_if_o         = 1'b0;
     csr_save_id_o         = 1'b0;
     csr_restore_mret_id_o = 1'b0;
+    csr_restore_dret_id_o = 1'b0;
     csr_save_cause_o      = 1'b0;
     csr_mtval_o           = '0;
 
@@ -254,7 +255,6 @@ module ibex_controller (
     ctrl_fsm_ns           = ctrl_fsm_cs;
 
     ctrl_busy_o           = 1'b1;
-    first_fetch_o         = 1'b0;
 
     halt_if               = 1'b0;
     flush_id              = 1'b0;
@@ -298,7 +298,6 @@ module ibex_controller (
       SLEEP: begin
         // instruction in IF stage is already valid
         // we begin execution when an interrupt has arrived
-        ctrl_busy_o   = 1'b0;
         instr_req_o   = 1'b0;
         halt_if       = 1'b1;
         flush_id      = 1'b1;
@@ -306,12 +305,14 @@ module ibex_controller (
         // normal execution flow
         // in debug mode or single step mode we leave immediately (wfi=nop)
         if (irq_nm_i || irq_pending_i || debug_req_i || debug_mode_q || debug_single_step_i) begin
-          ctrl_fsm_ns  = FIRST_FETCH;
+          ctrl_fsm_ns = FIRST_FETCH;
+        end else begin
+          // Make sure clock remains disabled.
+          ctrl_busy_o = 1'b0;
         end
       end
 
       FIRST_FETCH: begin
-        first_fetch_o = 1'b1;
         // Stall because of IF miss
         if (id_in_ready_o) begin
           ctrl_fsm_ns = DECODE;
@@ -450,27 +451,25 @@ module ibex_controller (
         //
         // for 1. do not update dcsr and dpc, for 2. do so [Debug Spec v0.13.2, p.39]
         // jump to debug exception handler in debug memory
-        if (ebrk_insn) begin
-          flush_id     = 1'b1;
-          pc_mux_o     = PC_EXC;
-          pc_set_o     = 1'b1;
-          exc_pc_mux_o = EXC_PC_DBD;
+        flush_id     = 1'b1;
+        pc_mux_o     = PC_EXC;
+        pc_set_o     = 1'b1;
+        exc_pc_mux_o = EXC_PC_DBD;
 
-          // update dcsr and dpc
-          if (ebreak_into_debug && !debug_mode_q) begin // ebreak with forced entry
+        // update dcsr and dpc
+        if (ebreak_into_debug && !debug_mode_q) begin // ebreak with forced entry
 
-            // dpc (set to the address of the EBREAK, i.e. set to PC in ID stage)
-            csr_save_cause_o = 1'b1;
-            csr_save_id_o    = 1'b1;
+          // dpc (set to the address of the EBREAK, i.e. set to PC in ID stage)
+          csr_save_cause_o = 1'b1;
+          csr_save_id_o    = 1'b1;
 
-            // dcsr
-            debug_csr_save_o = 1'b1;
-            debug_cause_o    = DBG_CAUSE_EBREAK;
-          end
-
-          // enter debug mode
-          debug_mode_d = 1'b1;
+          // dcsr
+          debug_csr_save_o = 1'b1;
+          debug_cause_o    = DBG_CAUSE_EBREAK;
         end
+
+        // enter debug mode
+        debug_mode_d = 1'b1;
 
         ctrl_fsm_ns  = DECODE;
       end
@@ -540,7 +539,7 @@ module ibex_controller (
             exc_cause_o = EXC_CAUSE_STORE_ACCESS_FAULT;
             csr_mtval_o = lsu_addr_last_i;
 
-          end else if (load_err_q) begin
+          end else begin // load_err_q
             exc_cause_o = EXC_CAUSE_LOAD_ACCESS_FAULT;
             csr_mtval_o = lsu_addr_last_i;
           end
@@ -558,6 +557,7 @@ module ibex_controller (
             pc_mux_o              = PC_DRET;
             pc_set_o              = 1'b1;
             debug_mode_d          = 1'b0;
+            csr_restore_dret_id_o = 1'b1;
           end else if (wfi_insn) begin
             ctrl_fsm_ns           = WAIT_SLEEP;
           end else if (csr_pipe_flush && handle_irq) begin

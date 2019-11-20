@@ -67,7 +67,7 @@ class riscv_instr_cov_item extends riscv_instr_base;
     if (category inside {LOAD, STORE}) begin
       unaligned_mem_access = is_unaligned_mem_access();
       if (unaligned_mem_access) begin
-        `uvm_info(`gfn, $sformatf("Unaligned: %0s, mem_addr:%0x", instr_name.name(), mem_addr), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("Unaligned: %0s, mem_addr:%0x", instr_name.name(), mem_addr), UVM_HIGH)
       end
     end
     if (category == LOGICAL) begin
@@ -180,7 +180,6 @@ class riscv_instr_cov_item extends riscv_instr_base;
       BLT    : is_branch_hit = ($signed(rs1_value) <  $signed(rs2_value));
       BGE    : is_branch_hit = ($signed(rs1_value) >  $signed(rs2_value));
       BLTU   : is_branch_hit = (rs1_value < rs2_value);
-      BGEU   : is_branch_hit = (rs1_value > rs2_value);
       BGEU   : is_branch_hit = (rs1_value > rs2_value);
       default: `uvm_error(get_name(), $sformatf("Unexpected instr %0s", instr_name.name()))
     endcase

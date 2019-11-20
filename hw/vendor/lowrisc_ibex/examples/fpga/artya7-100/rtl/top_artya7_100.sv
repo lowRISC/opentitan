@@ -26,14 +26,16 @@ module top_artya7_100 (
   logic        data_gnt;
   logic        data_rvalid;
   logic        data_we;
+  logic  [3:0] data_be;
   logic [31:0] data_addr;
   logic [31:0] data_wdata;
   logic [31:0] data_rdata;
 
   // SRAM arbiter
-  logic [13:0] mem_addr_index;
+  logic [31:0] mem_addr;
   logic        mem_req;
   logic        mem_write;
+  logic  [3:0] mem_be;
   logic [31:0] mem_wdata;
   logic        mem_rvalid;
   logic [31:0] mem_rdata;
@@ -63,8 +65,7 @@ module top_artya7_100 (
      .data_gnt_i            (data_gnt),
      .data_rvalid_i         (data_rvalid),
      .data_we_o             (data_we),
-     // TODO: Byte access needs to be implemented
-     .data_be_o             (),
+     .data_be_o             (data_be),
      .data_addr_o           (data_addr),
      .data_wdata_o          (data_wdata),
      .data_rdata_i          (data_rdata),
@@ -85,30 +86,32 @@ module top_artya7_100 (
   // Connect Ibex to SRAM
   always_comb begin
     mem_req        = 1'b0;
-    mem_addr_index = 14'b0;
+    mem_addr       = 32'b0;
     mem_write      = 1'b0;
+    mem_be         = 4'b0;
     mem_wdata      = 32'b0;
     if (instr_req) begin
       mem_req        = (instr_addr & ~MEM_MASK) == MEM_START;
-      mem_addr_index = instr_addr[15:2];
+      mem_addr       = instr_addr;
     end else if (data_req) begin
       mem_req        = (data_addr & ~MEM_MASK) == MEM_START;
       mem_write      = data_we;
-      mem_addr_index = data_addr[15:2];
+      mem_be         = data_be;
+      mem_addr       = data_addr;
       mem_wdata      = data_wdata;
     end
   end
 
   // SRAM block for instruction and data storage
   ram_1p #(
-    .Width(32),
     .Depth(MEM_SIZE / 4)
   ) u_ram (
     .clk_i     ( clk_sys        ),
     .rst_ni    ( rst_sys_n      ),
     .req_i     ( mem_req        ),
-    .write_i   ( mem_write      ),
-    .addr_i    ( mem_addr_index ),
+    .we_i      ( mem_write      ),
+    .be_i      ( mem_be         ),
+    .addr_i    ( mem_addr       ),
     .wdata_i   ( mem_wdata      ),
     .rvalid_o  ( mem_rvalid     ),
     .rdata_o   ( mem_rdata      )
@@ -130,14 +133,19 @@ module top_artya7_100 (
     end
   end
 
-  // Connect the led output to the lower four bits of a written data word
+  // Connect the LED output to the lower four bits of the most significant
+  // byte
   logic [3:0] leds;
   always_ff @(posedge clk_sys or negedge rst_sys_n) begin
     if (!rst_sys_n) begin
       leds <= 4'b0;
     end else begin
       if (mem_req && data_req && data_we) begin
-        leds <= data_wdata[3:0];
+        for (int i = 0; i < 4; i = i + 1) begin
+          if (data_be[i] == 1'b1) begin
+            leds <= data_wdata[i*8 +: 4];
+          end
+        end
       end
     end
   end

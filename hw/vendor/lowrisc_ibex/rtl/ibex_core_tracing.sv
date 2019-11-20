@@ -7,15 +7,16 @@
  * Top level module of the ibex RISC-V core with tracing enabled
  */
 module ibex_core_tracing #(
-    parameter bit          PMPEnable        = 1'b0,
-    parameter int unsigned PMPGranularity   = 0,
-    parameter int unsigned PMPNumRegions    = 4,
-    parameter int unsigned MHPMCounterNum   = 8,
-    parameter int unsigned MHPMCounterWidth = 40,
-    parameter bit          RV32E            = 1'b0,
-    parameter bit          RV32M            = 1'b1,
-    parameter int unsigned DmHaltAddr       = 32'h1A110800,
-    parameter int unsigned DmExceptionAddr  = 32'h1A110808
+    parameter bit          PMPEnable                = 1'b0,
+    parameter int unsigned PMPGranularity           = 0,
+    parameter int unsigned PMPNumRegions            = 4,
+    parameter int unsigned MHPMCounterNum           = 8,
+    parameter int unsigned MHPMCounterWidth         = 40,
+    parameter bit          RV32E                    = 1'b0,
+    parameter bit          RV32M                    = 1'b1,
+    parameter              MultiplierImplementation = "fast",
+    parameter int unsigned DmHaltAddr               = 32'h1A110800,
+    parameter int unsigned DmExceptionAddr          = 32'h1A110808
 ) (
     // Clock and Reset
     input  logic        clk_i,
@@ -90,15 +91,16 @@ module ibex_core_tracing #(
   logic [31:0] rvfi_mem_wdata;
 
   ibex_core #(
-    .PMPEnable(PMPEnable),
-    .PMPGranularity(PMPGranularity),
-    .PMPNumRegions(PMPNumRegions),
-    .MHPMCounterNum(MHPMCounterNum),
-    .MHPMCounterWidth(MHPMCounterWidth),
-    .RV32E(RV32E),
-    .RV32M(RV32M),
-    .DmHaltAddr(DmHaltAddr),
-    .DmExceptionAddr(DmExceptionAddr)
+    .PMPEnable                ( PMPEnable                ),
+    .PMPGranularity           ( PMPGranularity           ),
+    .PMPNumRegions            ( PMPNumRegions            ),
+    .MHPMCounterNum           ( MHPMCounterNum           ),
+    .MHPMCounterWidth         ( MHPMCounterWidth         ),
+    .RV32E                    ( RV32E                    ),
+    .RV32M                    ( RV32M                    ),
+    .MultiplierImplementation ( MultiplierImplementation ),
+    .DmHaltAddr               ( DmHaltAddr               ),
+    .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_ibex_core (
     .clk_i,
     .rst_ni,

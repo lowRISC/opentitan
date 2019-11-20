@@ -1,0 +1,102 @@
+# Ibex Simple System
+
+Simple System gives you an Ibex based system simulated by Verilator that can
+run stand-alone binaries. It contains:
+
+* An Ibex Core
+* A single memory for instructions and data
+* A basic peripheral to write ASCII output to a file and halt simulation from
+  software
+* A software framework to build programs for it
+
+## Prerequisites
+
+* [Verilator](https://www.veripool.org/wiki/verilator)
+  Note Linux package managers may have Verilator but often a very old version
+  that is not suitable. It is recommended Verilator is built from source.
+* [FuseSoC](https://github.com/olofk/fusesoc)
+* RISC-V Compiler Toolchain - lowRISC provides a pre-built GCC based toolchain 
+  <https://github.com/lowRISC/lowrisc-toolchains/releases>
+
+## Building Simulation
+
+The Simple System simulator binary can be built via FuseSoC. From the Ibex
+repository root run:
+
+```
+fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system --RV32M=1 --RV32E=0
+```
+
+## Building Software
+
+Simple System related software can be found in examples/sw/simple_system
+
+To build the hello world example, from the Ibex reposistory root run:
+
+```
+make -C examples/sw/simple_system/hello_test
+```
+
+This should create the file
+examples/sw/simple_system/hello_test/hello_test.vmem which is the memory
+initialisation file used to run the hello_test program
+
+To build new software make a copy of the hello_test directory named as desired.
+Look inside the Makefile for further instructions.
+
+If using a toolchain other than the lowRISC pre-built one
+examples/sw/simple_system/common/common.mk may need altering to point to the
+correct compiler binaries.
+
+## Running the Simulator
+
+Having built the simulator and software, from the Ibex repository root run:
+
+```
+./build/lowrisc_ibex_ibex_simple_system_0/sim-verilator/Vibex_simple_system [-t] --raminit=<sw_vmem_file>
+```
+
+`<sw_vmem_file>` should be a path to a vmem file built as described above, use
+./examples/sw/simple_system/hello_test/hello_test.vmem to run the hello_test
+binary.
+
+Pass `-t` to get an FST trace of execution that be viewed with [GTKWave](http://gtkwave.sourceforge.net/)
+If using the hello_test binary the simulator will halt itself, outputting some
+simulation statistics:
+
+```
+Simulation statistics
+=====================
+Executed cycles:  633
+Wallclock time:   0.013 s
+Simulation speed: 48692.3 cycles/s (48.6923 kHz)
+
+Performance Counters
+====================
+Cycles:                     483
+NONE:                       0
+Instructions Retired:       266
+LSU Busy:                   59
+Fetch Wait:                 16
+Loads:                      21
+Stores:                     38
+Jumps:                      46
+Conditional Branches:       53
+Taken Conditional Branches: 48
+Compressed Instructions:    182
+```
+
+The simulator produces several output files
+
+* ibex_simple_system.log - The ASCII output written via the output peripheral
+* ibex_simple_system_pcount.csv - A csv of the performance counters
+* trace_core_00000000.log - An instruction trace of execution
+
+## System Memory Map
+
+| Address             | Description                                                                                            |
+|---------------------|--------------------------------------------------------------------------------------------------------|
+| 0x20000             | ASCII Out, write ASCII characters here that will get output to the log file                            |
+| 0x20004             | Simulator Halt, write 1 here to halt the simulation                                                    |
+| 0x100000 – 0x1FFFFF | 1 MB memory for instruction and data. Execution starts at 0x100080, exception handler base is 0x100000 |
+

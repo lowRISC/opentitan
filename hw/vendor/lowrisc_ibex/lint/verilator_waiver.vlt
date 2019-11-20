@@ -28,7 +28,7 @@ lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 80
 
 // Bits of signal are not used: shift_right_result_ext[32]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_alu.sv" -lines 107
+lint_off -msg UNUSED -file "*/rtl/ibex_alu.sv" -lines 104
 
 // Bits of signal are not used: alu_adder_ext_i[0]
 // Bottom bit is round, not needed
@@ -55,11 +55,6 @@ lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 15
 lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 16
 
 // Signal unoptimizable: Feedback to clock or circular logic:
-// ibex_core.id_stage_i.controller_i.ctrl_fsm_cs
-// Issue lowrisc/ibex#211
-lint_off -msg UNOPTFLAT -file "*/rtl/ibex_controller.sv" -lines 101
-
-// Signal unoptimizable: Feedback to clock or circular logic:
 // ibex_core.cs_registers_i.mie_q
 // Issue lowrisc/ibex#212
-lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 163
+lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 164

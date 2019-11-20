@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv_verilator:ibex_pcounts"
+description: "Ibex performance counter utils"
+filesets:
+  files_cpp:
+    files:
+      - cpp/ibex_pcounts.cc
+      - cpp/ibex_pcounts.h: { is_include_file: true }
+    file_type: cppSource
+
+targets:
+  default:
+    filesets:
+      - files_cpp
+

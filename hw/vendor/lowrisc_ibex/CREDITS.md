@@ -19,6 +19,7 @@ please feel free to open a pull request to get your name added to this file.
 - Florian Zaruba
 - Francesco Conti
 - Germain Haugou
+- Greg Chadwick
 - Igor Loi
 - Ioannis Karageorgos
 - Markus Wegmann

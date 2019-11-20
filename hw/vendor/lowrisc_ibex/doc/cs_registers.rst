@@ -46,7 +46,7 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x3BF  | ``pmpaddr15``      | WARL   | PMP Address Register                          |
 +---------+--------------------+--------+-----------------------------------------------+
-|  0x7B0  | ``dcsr``           | RW     | Debug Control and Status Register             |
+|  0x7B0  | ``dcsr``           | WARL   | Debug Control and Status Register             |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7B1  | ``dpc``            | RW     | Debug PC                                      |
 +---------+--------------------+--------+-----------------------------------------------+
@@ -282,6 +282,79 @@ Reset Value: ``0x0000_0000``
 | address[33:2]  |
 +----------------+
 
+.. _csr-dcsr:
+
+Debug Control and Status Register (dcsr)
+----------------------------------------
+
+CSR Address: ``0x7B0``
+
+Reset Value: ``0x4000_0003``
+
+Accessible in Debug Mode only.
+Ibex implements the following bit fields.
+Other bit fields read as zero.
+
++-------+------+------------------------------------------------------------------+
+| Bit#  | R/W  | Description                                                      |
++-------+------+------------------------------------------------------------------+
+| 31:28 | R    | **xdebugver:** 4 = External spec-compliant debug support exists. |
++-------+------+------------------------------------------------------------------+
+| 15    | RW   | **ebreakm:** EBREAK in M-Mode behaves as described in Privileged |
+|       |      | Spec (0), or enters Debug Mode (1).                              |
++-------+------+------------------------------------------------------------------+
+| 12    | WARL | **ebreaku:** EBREAK in U-Mode behaves as described in Privileged |
+|       |      | Spec (0), or enters Debug Mode (1).                              |
++-------+------+------------------------------------------------------------------+
+| 8:6   | R    | **cause:** 1 = EBREAK, 3 = halt request, 4 = step                |
++-------+------+------------------------------------------------------------------+
+| 2     | RW   | **step:** When set and not in Debug Mode, execute a single       |
+|       |      | instruction and enter Debug Mode.                                |
++-------+------+------------------------------------------------------------------+
+| 1:0   | WARL | **prv:** Privilege level the core was operating in when Debug    |
+|       |      | Mode was entered. May be modified by debugger to change          |
+|       |      | privilege level. Ibex allows transitions to all supported modes. |
+|       |      | (M- and U-Mode).                                                 |
++-------+------+------------------------------------------------------------------+
+
+Details of these configuration bits can be found in the RISC-V Debug Specification, version 0.13.2 (see Core Debug Registers, Section 4.8).
+Note that **ebreaku** and **prv** are accidentally specified as RW in version 0.13.2 of the RISC-V Debug Specification.
+More recent versions of the specification define these fields correctly as WARL.
+
+.. _csr-dpc:
+
+Debug PC Register (dpc)
+-----------------------
+
+CSR Address: ``0x7B1``
+
+Reset Value: ``0x0000_0000``
+
+When entering Debug Mode, ``dpc`` is updated with the address of the next instruction that would be executed (if Debug Mode would not have been entered).
+When resuming, the PC is set to the address stored in ``dpc``.
+The debug module may modify ``dpc``.
+Accessible in Debug Mode only.
+
+Debug Scratch Register 0 (dscratch0)
+------------------------------------
+
+CSR Address: ``0x7B2``
+
+Reset Value: ``0x0000_0000``
+
+Scratch register to be used by the debug module.
+Accessible in Debug Mode only.
+
+Debug Scratch Register 1 (dscratch1)
+------------------------------------
+
+CSR Address: ``0x7B3``
+
+Reset Value: ``0x0000_0000``
+
+Scratch register to be used by the debug module.
+Accessible in Debug Mode only.
+
 Time Registers (time(h))
 ------------------------
 
@@ -298,12 +371,5 @@ Hardware Thread ID (mhartid)
 
 CSR Address: ``0xF14``
 
-Reset Value: Defined
-
-+-------+-----+------------------------------------------------------------------+
-| Bit#  | R/W | Description                                                      |
-+-------+-----+------------------------------------------------------------------+
-| 10:5  | R   | **Cluster ID:** ID of the cluster                                |
-+-------+-----+------------------------------------------------------------------+
-| 3:0   | R   | **Core ID:** ID of the core within the cluster                   |
-+-------+-----+------------------------------------------------------------------+
+Reads directly return the value of the ``hart_id_i`` input signal.
+See also :ref:`core-integration`.

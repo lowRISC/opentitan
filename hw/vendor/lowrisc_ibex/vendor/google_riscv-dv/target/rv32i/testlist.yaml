@@ -1,0 +1,197 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+- test: riscv_arithmetic_basic_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_rand_instr_test
+  description: >
+    Random instruction stress test
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_hazard_instr_stream,4
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4
+    +directed_instr_4=riscv_multi_page_load_store_instr_stream,4
+    +directed_instr_5=riscv_mem_region_stress_test,4
+    +directed_instr_6=riscv_jal_instr,4
+  rtl_test: core_base_test
+
+- test: riscv_jump_stress_test
+  description: >
+    Stress back-to-back jump instruction test
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +directed_instr_1=riscv_jal_instr,20
+  rtl_test: core_base_test
+
+- test: riscv_loop_test
+  description: >
+    Random instruction stress test
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_1=riscv_loop_instr,20
+  rtl_test: core_base_test
+
+- test: riscv_rand_jump_test
+  description: >
+    Jump among large number of sub-programs, stress testing iTLB operations.
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=20
+    +directed_instr_0=riscv_load_store_rand_instr_stream,8
+  rtl_test: core_base_test
+
+- test: riscv_mmu_stress_test
+  description: >
+    Test with different patterns of load/store instructions, stress test MMU
+    operations.
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,10
+    +directed_instr_3=riscv_mem_region_stress_test,10
+  rtl_test: core_base_test
+
+- test: riscv_no_fence_test
+  description: >
+    Random instruction with FENCE disabled, used to test processor pipeline with
+    less stall/flush operations caused by FENCE instruction.
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +no_fence=1
+  rtl_test: core_base_test
+
+- test: riscv_illegal_instr_test
+  description: >
+    Illegal instruction test, verify the processor can detect illegal
+    instruction and handle corresponding exception properly. An exception
+    handling routine is designed to resume execution after illegal
+    instruction exception.
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +illegal_instr_ratio=5
+  rtl_test: core_base_test
+
+- test: riscv_ebreak_test
+  description: >
+    Random instruction test with ebreak instruction enabled. Debug mode is not
+    enabled for this test, processor should raise ebreak exception.
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +no_ebreak=0
+  rtl_test: core_base_test
+
+- test: riscv_ebreak_debug_mode_test
+  description: >
+    Ebreak instruction test with debug mode enabled.
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +no_ebreak=0
+  rtl_test: core_base_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+  compare_opts: >
+    +compare_final_value_only=1
+
+- test: riscv_full_interrupt_test
+  description: >
+    Random instruction test with complete interrupt handling
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_interrupt=1
+  rtl_test: core_base_test
+  sim_opts: >
+    +enable_irq_seq=1
+  compare_opts: >
+    +compare_final_value_only=1
+
+  # Please enable this test for your RTL simulation
+- test: riscv_csr_test
+  description: >
+    Test all CSR instructions on all implemented CSR registers
+  iterations: 0
+  no_iss: 1
+  rtl_test: core_csr_test
+  no_post_compare: 1
+
+- test: riscv_unaligned_load_store_test
+  description: >
+    Unaligned load/store test
+  iterations: 1
+  gen_test: riscv_instr_base_test
+  gcc_opts: >
+    -mno-strict-align
+  gen_opts: >
+    +instr_cnt=6000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,20
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,20
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,5
+    +directed_instr_3=riscv_mem_region_stress_test,5
+    +enable_unaligned_load_store=1
+  rtl_test: core_base_test

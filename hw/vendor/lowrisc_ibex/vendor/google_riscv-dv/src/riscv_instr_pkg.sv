@@ -348,6 +348,7 @@ package riscv_instr_pkg;
     CB_FORMAT,
     CJ_FORMAT,
     CR_FORMAT,
+    CA_FORMAT,
     CL_FORMAT,
     CS_FORMAT,
     CSS_FORMAT,
@@ -371,7 +372,7 @@ package riscv_instr_pkg;
     TRAP,
     INTERRUPT,
     AMO
-  } riscv_instr_cateogry_t;
+  } riscv_instr_category_t;
 
   typedef bit [11:0] riscv_csr_t;
 

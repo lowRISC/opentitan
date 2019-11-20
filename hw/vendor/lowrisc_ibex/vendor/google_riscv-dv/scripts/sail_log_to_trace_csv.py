@@ -45,7 +45,7 @@ def process_sail_sim_log(sail_log, csv):
   with open(sail_log, "r") as f, open(csv, "w") as csv_fd:
     search_start = 0
     instr_start = 0
-    trace_csv = RiscvInstructiontTraceCsv(csv_fd)
+    trace_csv = RiscvInstructionTraceCsv(csv_fd)
     trace_csv.start_new_trace()
     instr = None
     for line in f:
@@ -71,7 +71,7 @@ def process_sail_sim_log(sail_log, csv):
           if m:
             # Write the extracted instruction to a csvcol buffer file
             instr_cnt += 1
-            rv_instr_trace = RiscvInstructiontTraceEntry()
+            rv_instr_trace = RiscvInstructionTraceEntry()
             rv_instr_trace.rd = gpr_to_abi("x%0s" % m.group("reg"))
             rv_instr_trace.rd_val = m.group("val").lower()
             rv_instr_trace.privileged_mode = pri

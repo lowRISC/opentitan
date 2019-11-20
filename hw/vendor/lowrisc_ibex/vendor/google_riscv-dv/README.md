@@ -10,14 +10,14 @@ processor verification. It currently supports the following features:
 - Privileged CSR test suite
 - Trap/interrupt handling
 - Test suite to stress test MMU
-- Support sub-programs and random program calls
-- Support illegal instruction and HINT instruction
+- Sub-program generation and random program calls
+- Illegal instruction and HINT instruction generation
 - Random forward/backward branch instructions
 - Supports mixing directed instructions with random instruction stream
 - Debug mode support, with fully randomized debug ROM
 - Instruction generation coverage model
 - Communication of information to any integrated SV testbench
-- Supports co-simulation with multiple ISS : spike, riscv-ovpsim
+- Co-simulation with multiple ISS : spike, riscv-ovpsim
 
 A CSR test generation script written in Python is also provided, to generate a
 directed test suite that stresses all CSR instructions on all of the CSRs that
@@ -32,34 +32,71 @@ which supports SystemVerilog and UVM 1.2. This generator has been verified with
 Synopsys VCS, Cadence Incisive/Xcelium, and Mentor Questa simulators. Please
 make sure the EDA tool environment is properly setup before running the generator.
 
-To be able to run the CSR generation script, the open-source `bitstring`
-Python library is required ([bitstring](https://github.com/scott-griffiths/bitstring)).
-To install this library, either clone the repository and run the `setup.py`
-setup script, or run only one of the below commands:
-```
-1) sudo apt-get install python3-bitstring (or your OS-specific package manager)
-2) pip install bitstring
+Install YAML python package:
+
+```bash
+pip3 install PyYAML
 ```
 
-### Running the generator
+### Setup RISCV-GCC compiler toolchain
 
+- Install [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain
+- Set environment variable RISCV_GCC to the RISC-V gcc executable
+  executable. (example: <install_dir>/bin/riscv32-unknown-elf-gcc)
+- Set environment variable RISCV_OBJCOPY to RISC-v objcopy executable
+  executable. (example: <install_dir>/bin/riscv32-unknown-elf-objcopy)
+
+```bash
+# Sample .bashrc setup
+export RISCV_TOOLCHAIN=<riscv_gcc_install_path>
+export RISCV_GCC="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-gcc"
+export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-objcopy"
+```
+
+### Setup ISS (instruction set simulator)
+
+Currently three ISS are supported, the default ISS is spike. You can install any
+one of below to run ISS simulation.
+
+- [spike](https://github.com/riscv/riscv-isa-sim#) setup
+  - Follow the [steps](https://github.com/riscv/riscv-isa-sim#build-steps) to build spike
+  - Build spike with "--enable-commitlog"
+  - Set environment variable SPIKE_PATH to the directory of the spike binary
+- [riscv-ovpsim](https://github.com/riscv/riscv-ovpsim) setup
+  - Download the riscv-ovpsim binary
+  - Set environment variable OVPSIM_PATH to the directory of the ovpsim binary
+- [whisper(swerv-ISS)](https://github.com/westerndigitalcorporation/swerv-ISS) setup
+  - Follow the instruction to install the ISS, and set WHISPER_ISS to the
+    whisper binary
+- [sail-riscv](https://github.com/rems-project/sail-riscv) setup
+  - Follow the [steps](https://github.com/rems-project/sail-riscv/blob/master/README.md) to install sail-riscv
+  - Set environment variable SAIL_RISCV to the sail-riscv binary
+
+```bash
+export SPIKE_PATH=$RISCV_TOOLCHAIN/bin
+export SAIL_RISCV="xx/xxx/riscv_ocaml_sim_RV64"
+export OVPSIM_PATH=/xx/xxx/riscv-ovpsim/bin/Linux64
+export WHISPER_ISS="xx/xxx/swerv-ISS/build-Linux/whisper"
+```
+
+## Running the generator
 
 A simple script "run.py" is provided for you to run a single test or a regression.
 
 You can use --help to get the complete command reference:
 
-```
+```bash
 python3 run.py --help
 ```
 
 Here is the command to run a single test:
 
-```
+```bash
 python3 run.py --test=riscv_arithmetic_basic_test
 ```
 You can specify the simulator by "-simulator" option
 
-```
+```bash
 python3 run.py --test riscv_arithmetic_basic_test --simulator ius
 python3 run.py --test riscv_arithmetic_basic_test --simulator vcs
 python3 run.py --test riscv_arithmetic_basic_test --simulator questa
@@ -68,64 +105,161 @@ python3 run.py --test riscv_arithmetic_basic_test --simulator dsim
 The complete test list can be found in [yaml/testlist.yaml](https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml). To run a full
 regression, simply use below command
 
-```
+```bash
 python3 run.py
 ```
 
 You can also run multiple generator jobs in parallel through LSF
 
-```
+```bash
 python3 run.py --lsf_cmd="bsub -Is"
 ```
 
 Here's a few more examples of the run command:
 
-```
-// Run a single test 10 times
+```bash
+# Run a single test 10 times
 python3 run.py --test riscv_arithmetic_basic_test --iterations 10
 
-// Run a test with verbose logging
+# Run a test with verbose logging
 python3 run.py --test riscv_arithmetic_basic_test --verbose
 
-// Run a test with a specified seed
+# Run a test with a specified seed
 python3 run.py --test riscv_arithmetic_basic_test --seed 123
 
-// Skip the generation, run ISS simulation with previously generated program
+# Skip the generation, run ISS simulation with previously generated program
 python3 run.py --test riscv_arithmetic_basic_test --steps iss_sim
 
-// Run the generator only, do not compile and simluation with ISS
+# Run the generator only, do not compile and simluation with ISS
 python3 run.py --test riscv_arithmetic_basic_test --steps gen
 
-// Compile the generator only, do not simulate
+# Compile the generator only, do not simulate
 python3 run.py --test riscv_arithmetic_basic_test --co
 
 ....
 ```
 
-### Privileged CSR Test Generation
+### Run ISS simulation
 
-The CSR generation script is located at
-[scripts/gen_csr_test.py](https://github.com/google/riscv-dv/blob/master/scripts/gen_csr_test.py).
-The CSR test code that this script generates will execute every CSR instruction
-on every processor implemented CSR, writing values to the CSR and then using a
-prediction function to calculate a reference value that will be written into
-another GPR. The reference value will then be compared to the value actually
-stored in the CSR to determine whether to jump to the failure condition or
-continue executing, allowing it to be completely self checking. This script has
-been integrated with run.py. If you want to run it separately, you can get the
-command reference with --help:
+You can use -iss to run with different ISS.
 
+```bash
+# Run ISS with spike
+python3 run.py --test riscv_arithmetic_basic_test --iss spike
+
+# Run ISS with riscv-ovpsim
+python3 run.py --test riscv_rand_instr_test --iss ovpsim
+
+# Run ISS with whisper (swerv-ISS)
+python3 run.py --test riscv_rand_instr_test --iss whisper
+
+# Run ISS with sail-riscv
+python3 run.py --test riscv_rand_instr_test --iss sail
 ```
-python3 scripts/gen_csr_test.py --help
+
+To run with ISS simulation for RV32IMC, you can specify ISA and ABI from command
+line like this:
+
+```bash
+# Run a full regression with RV32IMC
+python3 run.py --isa rv32imc --mabi ilp32
+```
+
+We have added a flow to run ISS simulation with both spike and riscv-ovpsim,
+the instruction trace from these runs will be cross compared. This could greatly
+speed up your development of new test without the need to simulate against a
+real RISC-V processor.
+
+```bash
+python3 run.py --test=riscv_rand_instr_test --iss=spike,ovpsim
+python3 run.py --test=riscv_rand_instr_test --iss=ovpsim,whisper
+python3 run.py --test=riscv_rand_instr_test --iss=spike,sail
 ```
 
 ## Configuration
+
+### Configure the generator to match your processor features
+
+The default configuration of the instruction generator is **RV32IMC** (machine
+mode only). A few pre-defined configurations can be found under "target" directory,
+you can run with these targets if it matches your processor specification.
+
+```bash
+python3 run.py                   # Default target rv32imc
+python3 run.py --target rv32i    # rv32i, machine mode only
+python3 run.py --target rv32imc  # rv32imc, machine mode only
+python3 run.py --target rv64imc  # rv64imc, machine mode only
+python3 run.py --target rv64gc   # rv64gc, SV39, M/S/U mode
+```
+
+If you want to have a custom setting for your processor, you can make a copy of
+existing target directory as the template, and modify riscv_core_setting.sv to
+match your processor capability.
+
+```verilog
+// Bit width of RISC-V GPR
+parameter int XLEN = 64;
+
+// Parameter for SATP mode, set to BARE if address translation is not supported
+parameter satp_mode_t SATP_MODE = SV39;
+
+// Supported Privileged mode
+privileged_mode_t supported_privileged_mode[] = {USER_MODE,
+                                                 SUPERVISOR_MODE,
+                                                 MACHINE_MODE};
+
+// Unsupported instructions
+riscv_instr_name_t unsupported_instr[] = {};
+
+// ISA supported by the processor
+riscv_instr_group_t supported_isa[] = {RV32I, RV32M, RV64I, RV64M};
+
+...
+```
+
+You can then run the generator with "--custom_target <target_dir>"
+
+```bash
+# You need to manually specify isa and mabi for your custom target
+python3 run.py --custom_target <target_dir> --isa <isa> --mabi <mabi>
+...
+```
+
+### Setup the memory map
+
+Here's a few cases that you might want to allocate the instruction and data
+sections to match the actual memory map
+- The processor has internal memories, and you want to test load/store from
+  various internal/externel memory regions
+- The processor implments the PMP feature, and you want to configure the memory
+  map to match PMP setting.
+- Virtual address translation is implmented and you want to test load/store from
+  sparse memory locations to verify data TLB replacement logic.
+
+You can configure the memory map in [riscv_instr_gen_config.sv](https://github.com/google/riscv-dv/blob/master/src/riscv_instr_gen_config.sv)
+
+```verilog
+  mem_region_t mem_region[$] = '{
+    '{name:"region_0", size_in_bytes: 4096,      xwr: 3'b111},
+    '{name:"region_1", size_in_bytes: 4096 * 4,  xwr: 3'b111},
+    '{name:"region_2", size_in_bytes: 4096 * 2,  xwr: 3'b111},
+    '{name:"region_3", size_in_bytes: 512,       xwr: 3'b111},
+    '{name:"region_4", size_in_bytes: 4096,      xwr: 3'b111}
+  };
+```
+
+Each memory region belongs to a separate section in the generated assembly
+program. You can modify the link script to link each section to the target
+memory location. Please avoid setting a large memory range as it could takes a
+long time to randomly initializing the memory. You can break down a large memory
+region to a few representative small regions which covers all the boundary
+conditions for the load/store testing.
 
 ### Setup regression test list
 
 [Test list in YAML format](https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml)
 
-```
+```yaml
 # test            : Assembly test name
 # description     : Description of this test
 # gen_opts        : Instruction generator options
@@ -159,65 +293,6 @@ script, include `riscv_csr_test` in the testlist as shown in the example YAML
 file above.
 
 
-### Configure the generator to match your processor features
-
-The default configuration of the instruction generator is for RV64IMC RISC-V
-processors with address translation capability. You might want to configure the
-generator according the feature of your processor.
-
-The static setting of the processor src/riscv_core_setting.sv
-
-```
-// Bit width of RISC-V GPR
-parameter int XLEN = 64;
-
-// Parameter for SATP mode, set to BARE if address translation is not supported
-parameter satp_mode_t SATP_MODE = SV39;
-
-// Supported Privileged mode
-privileged_mode_t supported_privileged_mode[] = {USER_MODE,
-                                                 SUPERVISOR_MODE,
-                                                 MACHINE_MODE};
-
-// Unsupported instructions
-riscv_instr_name_t unsupported_instr[] = {};
-
-// ISA supported by the processor
-riscv_instr_group_t supported_isa[] = {RV32I, RV32M, RV64I, RV64M};
-
-...
-```
-
-### Setup the memory map
-
-Here's a few cases that you might want to allocate the instruction and data
-sections to match the actual memory map
-- The processor has internal memories, and you want to test load/store from
-  various internal/externel memory regions
-- The processor implments the PMP feature, and you want to configure the memory
-  map to match PMP setting.
-- Virtual address translation is implmented and you want to test load/store from
-  sparse memory locations to verify data TLB replacement logic.
-
-You can configure the memory map in [riscv_instr_gen_config.sv](https://github.com/google/riscv-dv/blob/master/src/riscv_instr_gen_config.sv)
-
-```
-  mem_region_t mem_region[$] = '{
-    '{name:"region_0", size_in_bytes: 4096,      xwr: 3'b111},
-    '{name:"region_1", size_in_bytes: 4096 * 4,  xwr: 3'b111},
-    '{name:"region_2", size_in_bytes: 4096 * 2,  xwr: 3'b111},
-    '{name:"region_3", size_in_bytes: 512,       xwr: 3'b111},
-    '{name:"region_4", size_in_bytes: 4096,      xwr: 3'b111}
-  };
-```
-
-Each memory region belongs to a separate section in the generated assembly
-program. You can modify the link script to link each section to the target
-memory location. Please avoid setting a large memory range as it could takes a
-long time to randomly initializing the memory. You can break down a large memory
-region to a few representative small regions which covers all the boundary
-conditions for the load/store testing.
-
 
 ### Runtime options of the generator
 
@@ -249,7 +324,7 @@ conditions for the load/store testing.
 | randomize_csr               | Fully randomize main CSRs (xSTATUS, xIE)          | 0       |
 
 
-### Setup Privileged CSR description
+### Setup Privileged CSR description (optional)
 
 This YAML description file of all CSRs is only required for the privileged CSR
 test. All other standard tests do not use this description.
@@ -257,7 +332,7 @@ test. All other standard tests do not use this description.
 [CSR descriptions in YAML
 format](https://github.com/google/riscv-dv/blob/master/yaml/csr_template.yaml)
 
-```
+```yaml
 - csr: CSR_NAME
   description: >
     BRIEF_DESCRIPTION
@@ -296,6 +371,32 @@ format](https://github.com/google/riscv-dv/blob/master/yaml/csr_template.yaml)
 To specify what ISA width should be generated in the test, simply include the
 matching rv32/rv64/rv128 entry and fill in the appropriate CSR field entries.
 
+### Privileged CSR Test Generation (optional)
+
+To be able to run the CSR generation script, the open-source `bitstring`
+Python library is required ([bitstring](https://github.com/scott-griffiths/bitstring)).
+To install this library, either clone the repository and run the `setup.py`
+setup script, or run only one of the below commands:
+
+```bash
+sudo apt-get install python3-bitstring (or your OS-specific package manager)
+pip install bitstring
+```
+
+The CSR generation script is located at
+[scripts/gen_csr_test.py](https://github.com/google/riscv-dv/blob/master/scripts/gen_csr_test.py).
+The CSR test code that this script generates will execute every CSR instruction
+on every processor implemented CSR, writing values to the CSR and then using a
+prediction function to calculate a reference value that will be written into
+another GPR. The reference value will then be compared to the value actually
+stored in the CSR to determine whether to jump to the failure condition or
+continue executing, allowing it to be completely self checking. This script has
+been integrated with run.py. If you want to run it separately, you can get the
+command reference with --help:
+
+```bash
+python3 scripts/gen_csr_test.py --help
+```
 
 ### Adding new instruction stream and test
 
@@ -304,71 +405,20 @@ add a new instruction stream.
 After the new instruction stream is created, you can use a runtime option to mix
 it with random instructions
 
-```
+```bash
 //+directed_instr_n=instr_sequence_name,frequency(number of insertions per 1000 instructions)
 +directed_instr_5=riscv_multi_page_load_store_instr_stream,4
+
+// An alternative command line options for directed instruction stream
++stream_name_0=riscv_multi_page_load_store_instr_stream
++stream_freq_0=4
 ```
 
-## Compile generated programs with GCC
-
-- Install [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain
-- Set environment variable RISCV_GCC to the RISC-V gcc executable
-  executable. (example: <install_dir>/bin/riscv32-unknown-elf-gcc)
-- Set environment variable RISCV_OBJCOPY to RISC-v objcopy executable
-  executable. (example: <install_dir>/bin/riscv32-unknown-elf-objcopy)
-
-## Run ISS (Instruction Set Simulator) simulation
-
-Currently three ISS are supported, the default ISS is spike. You can install any
-one of below to run ISS simulation.
-
-- [spike](https://github.com/riscv/riscv-isa-sim#) setup
-  - Follow the [steps](https://github.com/riscv/riscv-isa-sim#build-steps) to build spike
-  - Install spike with "--enable-commitlog"
-  - Set environment variable SPIKE_PATH to the directory of the spike binary
-- [riscv-ovpsim](https://github.com/riscv/riscv-ovpsim) setup
-  - Download the riscv-ovpsim binary
-  - Set environment variable OVPSIM_PATH to the directory of the ovpsim binary
-- [sail-riscv](https://github.com/rems-project/sail-riscv) setup
-  - Follow the [steps](https://github.com/rems-project/sail-riscv/blob/master/README.md) to install sail-riscv
-  - Set environment variable SAIL_RISCV to the sail-riscv binary
-
-You can use -iss to run with different ISS.
-
-```
-// Run ISS with spike
-python3 run.py --test riscv_arithmetic_basic_test --iss spike
-
-// Run ISS with riscv-ovpsim
-python3 run.py --test riscv_rand_instr_test --iss ovpsim
-
-// Run ISS with sail-riscv
-python3 run.py --test riscv_rand_instr_test --iss sail
-```
-
-To run with ISS simulation for RV32IMC, you can specify ISA and ABI from command
-line like this:
-
-```
-// Run a full regression with RV32IMC
-python3 run.py --isa rv32imc --mabi ilp32
-```
-
-We have added a flow to run ISS simulation with both spike and riscv-ovpsim,
-the instruction trace from these runs will be cross compared. This could greatly
-speed up your development of new test without the need to simulate against a
-real RISC-V processor.
-
-```
-python3 run.py --test=riscv_rand_instr_test --iss=spike,ovpsim
-python3 run.py --test=riscv_rand_instr_test --iss=spike,sail
-```
-
-### Integrate a new ISS
+## Integrate a new ISS
 
 You can add a new entry in [iss.yaml](https://github.com/google/riscv-dv/blob/master/yaml/iss.yaml)
 
-```
+```yaml
 - iss: new_iss_name
   path_var: ISS_PATH
   cmd: >
@@ -377,7 +427,7 @@ You can add a new entry in [iss.yaml](https://github.com/google/riscv-dv/blob/ma
 
 Simulate with the new ISS
 
-```
+```bash
 python3 run.py --test riscv_arithmetic_basic_test --iss new_iss_name
 ```
 
@@ -386,33 +436,44 @@ python3 run.py --test riscv_arithmetic_basic_test --iss new_iss_name
 We have collaborated with LowRISC to apply this flow for [IBEX RISC-V core
 verification](https://github.com/lowRISC/ibex/blob/master/doc/verification.rst). You can use
 it as a reference to setup end-to-end co-simulation flow.
-This repository is still under active development, here's recommended approach to
-customize the instruction generator while keeping the minimum effort of merging
-upstream changes.
+This repo is still under active development, this is the recommended approach to
+customize the instruction generator while keeping the effort of merging
+upstream changes to a minimum.
 - Do not modify the upstream classes directly. When possible, extend from
   the upstream classses and implement your own functionalities.
 - Add your extensions under user_extension directory, and add the files to
   user_extension/user_extension.svh. If you prefer to put your extensions in a
   different directory, you can use "-ext <user_extension_path>" to override the
   user extension path.
-- Create a new file for riscv_core_setting.sv, add the path with below option:
-  "-cs <new_core_setting_path>"
+- Create a new target directory and customize the setting and testlist
+- Run the generator with "--custom_target <target_dir> --isa <isa> --mabi <mabi>"
 - Use command line type override to use your extended classes.
   --sim_opts="+uvm_set_type_override=<upstream_class>,<extended_class>"
 
 You can refer to [riscv-dv extension for ibex](https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile#L68) for a working example.
 
-We have plan to open-source the end-to-end environment of other advanced RISC-V
+We have plan to open-source the end-to-end environments of other advanced RISC-V
 processors. Stay tuned!
+
+## Handshaking Mechanism
+
+This mechanism allows the generator to generate small, directed sequences of
+instructions that write critical information to a specified address in memory,
+that the testbench monitors for write accesses to.
+This allows for more in-depth verification of scenarios that involve external
+stimulus to the core, such as interrupts and debug requests.
+
+For more information, detailed documentation of this mechanism can be found in
+[HANDSHAKE.md](./HANDSHAKE.md).
 
 ## Functional coverage (work in progress)
 
-This flow extracts funcitonal coverage information from the
-instruction trace generated by ISS. It's indepdent of the instruction generation
-flow and does not require a tracer implmentation in the RTL. You can use this
-flow as long as your program can be run with the ISS supported in this flow. The
+This flow extracts functional coverage information from the
+instruction trace generated by ISS. It's independent of the instruction generation
+flow and does not require a tracer implementation in the RTL. You can use this
+flow as long as your program can be run with an ISS supported in this flow. The
 flow parses the instruction trace log and converts it to a CSV trace format. After
-that, a SV test will be run to process the CSV trace files and sample functional
+that, a SV test is run to process the CSV trace files and sample functional
 coverage from there.
 
 The functional covergroup is defined in [riscv_instr_cover_group.sv](https://github.com/google/riscv-dv/blob/master/src/riscv_instr_cover_group.sv). It includes below major categories:
@@ -425,21 +486,24 @@ The functional covergroup is defined in [riscv_instr_cover_group.sv](https://git
 - Hint instruction
 - Illegal instruction
 - All compressed and non-compressed opcode
-- Access to all implemened privieleged CSR
+- Access to all implemened privileged CSR
 - Exception and interrupt
 
 The functional covergroup is still under active development. Please feel free to
-add anything you are interested or file a bug for any feature request. 
+add anything you are interested or file a bug for any feature request.
 
-Before start, please check the you have modified [riscv_core_setting.sv](https://github.com/google/riscv-dv/blob/master/setting/riscv_core_setting.sv) to reflect your processor capabilities. The covergroup is selectively instantiated based on this setting so that you don't need to deal with excluding unrelated coverpoint later. You also need to get spike ISS setup before running this flow.
+Before start, please check the you have modified [riscv_core_setting.sv](https://github.com/google/riscv-dv/blob/master/setting/riscv_core_setting.sv) to reflect your processor capabilities. The covergroup is selectively instantiated based on this setting so that you don't need to deal with excluding unrelated coverpoints later. You also need to get the Spike ISS or riscvOVPsim ISS (riscv-ovpsim) setup before running this flow.
 
 
-```
-// Process spike simulation log and collect functional coverage
+```bash
+# Process spike simulation log and collect functional coverage
 python3 cov.py --dir out/spike_sim
 
-// Get the command reference
+# Get the command reference
 python3 cov.py --help
+
+# Run the coverage flow with predefined targets
+python3 cov.py --dir out/spike_sim --target rv32imc
 ```
 
 The coverage sampling from the CSV could be time consuming if you have a large
@@ -447,7 +511,7 @@ number of log to process. You can split them to small batches and run with LSF
 in parallel.
 
 ```
-// Split the run to process 5 CSV at a time, and run with LSF
+# Split the run to process 5 CSV at a time, and run with LSF
 python3 cov.py --dir out/spike_sim --lsf_cmd "bsub ....." -bz 5
 ```
 
@@ -455,8 +519,8 @@ There is also a debug mode which allow you randomize the instruction and sample
 coverage directly. This is only used to test the new functional coverage
 implmentation.
 
-```
-// Randomly generate 100000 instructions, split to 20000 instructions per batch
+```bash
+# Randomly generate 100000 instructions, split to 20000 instructions per batch
 python3 cov.py -d -i 100000 -bz 20000
 ```
 
