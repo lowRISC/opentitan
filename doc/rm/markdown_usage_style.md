@@ -43,16 +43,21 @@ It is always okay to deviate from the style guide by necessity, as long as that 
 
 ### Line length
 
-There are two acceptable styles for line wrapping in Markdown files:
+In OpenTitan, most--but not all--Markdown documents will be rendered to HTML before they are presented to the reader.
+However, README files are an important exception, and so the recommended line-wrapping style differs for these two types of files.
 
-1.  Wrap lines at under 80 characters.
-    This ensures that the source is readable without any Markdown processing, but re-wrapping a paragraph after an insertion or deletion tends to cause more diffs when the change is reviewed.
-    When making changes to a document using this style consider allowing short lines rather than a full re-wrap after minor edits.
-    Then occasionally a separate commit can be used that only does re-wrapping of the paragraphs.
-    This style is recommended for all README files.
+1. ***Rendered Files***:
+Files which are intended to be rendered before viewing should have exactly one sentence per line, with no line breaks in the middle of a sentence.
+This way change reviews will highlight only those sentences which are modified.
+Though the long line lengths make the files slightly less convenient to read from the command-line, this greatly simplifies the review process.
+When reviewing Markdown changes, every altered sentence will be included in its entirety in the file diff.
 
-2.  Have a single sentence per line and allow the line to be as long as is required.
-    This ensures change reviews highlight only the actual change at the expense of making the source harder to read.
+2. ***README Files***:
+README files should wrap lines at under 80 characters.
+This ensures that the source is readable without any Markdown processing.
+Please note, however, that re-wrapping a paragraph after an insertion or deletion tends to cause longer diffs when the change is reviewed.
+When making changes to a document using this style, please consider allowing short lines rather than a full re-wrap after minor edits.
+Then occasionally separate commits can be used that only do re-wrapping of the paragraphs.
 
 ### Headings and sections
 
