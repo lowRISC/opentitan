@@ -10,6 +10,8 @@ clear -all
 # Disabling the warning
 # "parameter declared inside package XXX shall be treated as localparam".
 set_message -disable VERI-2418
+check_cov -init -model {branch statement functional} \
+-enable_prove_based_proof_core
 
 #-------------------------------------------------------------------------
 # read design
@@ -22,9 +24,6 @@ analyze -sv09 \
 
 elaborate -top $env(FPV_TOP)
 
-check_assumptions -conflict
-check_assumptions -live
-check_assumptions -dead_end
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)
 #-------------------------------------------------------------------------
@@ -144,6 +143,10 @@ if {$env(FPV_TOP) == "top_earlgrey"} {
   assume {scanmode_i == 1}
 }
 
+check_assumptions -conflict
+check_assumptions -live
+check_assumptions -dead_end
+
 #-------------------------------------------------------------------------
 # configure proofgrid
 #-------------------------------------------------------------------------
@@ -159,4 +162,5 @@ set_proofgrid_per_engine_max_local_jobs 16
 # time limit set to 2 hours
 get_reset_info -x_value -with_reset_pin
 prove -all -time_limit 120m
+check_cov -measure
 report
