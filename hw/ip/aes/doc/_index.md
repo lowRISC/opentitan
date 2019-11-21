@@ -336,9 +336,7 @@ The code snippet below shows how to perform block operation.
 
 After finishing operation, software must:
 1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `1`.
-2. Clear the configured initial key by overwriting the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
-3. Clear the previous input data by overwriting the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
-4. Clear the internal key registers and the Output Data register by setting the KEY_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
+1. Clear all key registers as well as the Input Data and the Output Data registers by setting the KEY_CLEAR, DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
 The code snippet below shows how to perform this task.
 
@@ -346,22 +344,12 @@ The code snippet below shows how to perform this task.
   // Disable autostart
   REG32(AES_CTRL(0)) = 0x1 << AES_CTRL_MANUAL_START_TRIGGER;
 
-  // Clear Initial Key registers
-  for (int i = 0; i < 8; i++) {
-    REG32(AES_KEY0(0) + i * 4) = 0x0;
-  }
-
-  // Clear Input Data registers
-  for (int i = 0; i < 4; i++) {
-    REG32(AES_DATA_IN0(0) + i * 4) = 0x0;
-  }
-
-  // Clear internal key and Output Data registers
+  // Clear all key register, Input Data and Output Data registers
   REG32(AES_TRIGGER(0)) =
-      (0x1 << AES_TRIGGER_KEY_CLEAR) | (0x1 << AES_TRIGGER_DATA_OUT_CLEAR);
+      (0x1 << AES_TRIGGER_KEY_CLEAR) |
+      (0x1 << AES_TRIGGER_DATA_IN_CLEAR) |
+      (0x1 << AES_TRIGGER_DATA_OUT_CLEAR);
 ```
-
-Note that in future versions of the AES unit, also the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}} and the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}} can be cleared using {{< regref "TRIGGER" >}}.
 
 
 ## Register Table

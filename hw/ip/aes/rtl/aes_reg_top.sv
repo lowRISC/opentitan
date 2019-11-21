@@ -119,6 +119,9 @@ module aes_reg_top (
   logic trigger_key_clear_qs;
   logic trigger_key_clear_wd;
   logic trigger_key_clear_we;
+  logic trigger_data_in_clear_qs;
+  logic trigger_data_in_clear_wd;
+  logic trigger_data_in_clear_we;
   logic trigger_data_out_clear_qs;
   logic trigger_data_out_clear_wd;
   logic trigger_data_out_clear_we;
@@ -145,8 +148,8 @@ module aes_reg_top (
     .wd     (key0_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[0].de),
+    .d      (hw2reg.key[0].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[0].qe),
@@ -171,8 +174,8 @@ module aes_reg_top (
     .wd     (key1_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[1].de),
+    .d      (hw2reg.key[1].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[1].qe),
@@ -197,8 +200,8 @@ module aes_reg_top (
     .wd     (key2_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[2].de),
+    .d      (hw2reg.key[2].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[2].qe),
@@ -223,8 +226,8 @@ module aes_reg_top (
     .wd     (key3_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[3].de),
+    .d      (hw2reg.key[3].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[3].qe),
@@ -249,8 +252,8 @@ module aes_reg_top (
     .wd     (key4_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[4].de),
+    .d      (hw2reg.key[4].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[4].qe),
@@ -275,8 +278,8 @@ module aes_reg_top (
     .wd     (key5_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[5].de),
+    .d      (hw2reg.key[5].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[5].qe),
@@ -301,8 +304,8 @@ module aes_reg_top (
     .wd     (key6_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[6].de),
+    .d      (hw2reg.key[6].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[6].qe),
@@ -327,8 +330,8 @@ module aes_reg_top (
     .wd     (key7_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.key[7].de),
+    .d      (hw2reg.key[7].d ),
 
     // to internal hardware
     .qe     (reg2hw.key[7].qe),
@@ -355,8 +358,8 @@ module aes_reg_top (
     .wd     (data_in0_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.data_in[0].de),
+    .d      (hw2reg.data_in[0].d ),
 
     // to internal hardware
     .qe     (reg2hw.data_in[0].qe),
@@ -381,8 +384,8 @@ module aes_reg_top (
     .wd     (data_in1_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.data_in[1].de),
+    .d      (hw2reg.data_in[1].d ),
 
     // to internal hardware
     .qe     (reg2hw.data_in[1].qe),
@@ -407,8 +410,8 @@ module aes_reg_top (
     .wd     (data_in2_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.data_in[2].de),
+    .d      (hw2reg.data_in[2].d ),
 
     // to internal hardware
     .qe     (reg2hw.data_in[2].qe),
@@ -433,8 +436,8 @@ module aes_reg_top (
     .wd     (data_in3_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.data_in[3].de),
+    .d      (hw2reg.data_in[3].d ),
 
     // to internal hardware
     .qe     (reg2hw.data_in[3].qe),
@@ -670,7 +673,33 @@ module aes_reg_top (
   );
 
 
-  //   F[data_out_clear]: 2:2
+  //   F[data_in_clear]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_trigger_data_in_clear (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (trigger_data_in_clear_we),
+    .wd     (trigger_data_in_clear_wd),
+
+    // from internal hardware
+    .de     (hw2reg.trigger.data_in_clear.de),
+    .d      (hw2reg.trigger.data_in_clear.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.trigger.data_in_clear.q ),
+
+    // to register interface (read)
+    .qs     (trigger_data_in_clear_qs)
+  );
+
+
+  //   F[data_out_clear]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -912,8 +941,11 @@ module aes_reg_top (
   assign trigger_key_clear_we = addr_hit[17] & reg_we & ~wr_err;
   assign trigger_key_clear_wd = reg_wdata[1];
 
+  assign trigger_data_in_clear_we = addr_hit[17] & reg_we & ~wr_err;
+  assign trigger_data_in_clear_wd = reg_wdata[2];
+
   assign trigger_data_out_clear_we = addr_hit[17] & reg_we & ~wr_err;
-  assign trigger_data_out_clear_wd = reg_wdata[2];
+  assign trigger_data_out_clear_wd = reg_wdata[3];
 
 
 
@@ -997,7 +1029,8 @@ module aes_reg_top (
       addr_hit[17]: begin
         reg_rdata_next[0] = trigger_start_qs;
         reg_rdata_next[1] = trigger_key_clear_qs;
-        reg_rdata_next[2] = trigger_data_out_clear_qs;
+        reg_rdata_next[2] = trigger_data_in_clear_qs;
+        reg_rdata_next[3] = trigger_data_out_clear_qs;
       end
 
       addr_hit[18]: begin

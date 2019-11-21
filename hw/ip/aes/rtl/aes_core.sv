@@ -21,6 +21,8 @@ module aes_core #(
   // Signals
   logic     [3:0][31:0] data_in;
   logic     [3:0]       data_in_qe;
+  logic                 data_in_we;
+  logic                 key_we;
   logic     [7:0][31:0] key_init;
   logic     [7:0]       key_init_qe;
 
@@ -278,6 +280,7 @@ module aes_core #(
     .manual_start_trigger_i ( reg2hw.ctrl.manual_start_trigger.q ),
     .start_i                ( reg2hw.trigger.start.q             ),
     .key_clear_i            ( reg2hw.trigger.key_clear.q         ),
+    .data_in_clear_i        ( reg2hw.trigger.data_in_clear.q     ),
     .data_out_clear_i       ( reg2hw.trigger.data_out_clear.q    ),
 
     .data_in_qe_i           ( data_in_qe                         ),
@@ -298,14 +301,19 @@ module aes_core #(
     .key_words_sel_o        ( key_words_sel                      ),
     .round_key_sel_o        ( round_key_sel                      ),
 
+    .key_we_o               ( key_we                             ),
+    .data_in_we_o           ( data_in_we                         ),
     .data_out_we_o          ( data_out_we                        ),
 
     .start_o                ( hw2reg.trigger.start.d             ),
     .start_we_o             ( hw2reg.trigger.start.de            ),
     .key_clear_o            ( hw2reg.trigger.key_clear.d         ),
     .key_clear_we_o         ( hw2reg.trigger.key_clear.de        ),
+    .data_in_clear_o        ( hw2reg.trigger.data_in_clear.d     ),
+    .data_in_clear_we_o     ( hw2reg.trigger.data_in_clear.de    ),
     .data_out_clear_o       ( hw2reg.trigger.data_out_clear.d    ),
     .data_out_clear_we_o    ( hw2reg.trigger.data_out_clear.de   ),
+
     .output_valid_o         ( hw2reg.status.output_valid.d       ),
     .output_valid_we_o      ( hw2reg.status.output_valid.de      ),
     .input_ready_o          ( hw2reg.status.input_ready.d        ),
@@ -315,6 +323,21 @@ module aes_core #(
     .stall_o                ( hw2reg.status.stall.d              ),
     .stall_we_o             ( hw2reg.status.stall.de             )
   );
+
+  // Key and input data register clear
+  always_comb begin : key_reg_clear
+    for (int i=0; i<8; i++) begin
+      hw2reg.key[i].d  = '0;
+      hw2reg.key[i].de = key_we;
+    end
+  end
+
+  always_comb begin : data_in_reg_clear
+    for (int i=0; i<4; i++) begin
+      hw2reg.data_in[i].d  = '0;
+      hw2reg.data_in[i].de = data_in_we;
+    end
+  end
 
   /////////////
   // Outputs //
