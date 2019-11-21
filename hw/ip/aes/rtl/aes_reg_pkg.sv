@@ -10,111 +10,122 @@ package aes_reg_pkg;
   localparam int NumRegsKey = 8;
   localparam int NumRegsData = 4;
 
-/////////////////////////////////////////////////////////////////////
-// Typedefs for multiregs
-/////////////////////////////////////////////////////////////////////
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } aes_reg2hw_key_mreg_t;
 
-typedef struct packed {
-  logic [31:0] q;
-  logic qe;
-} aes_reg2hw_key_mreg_t;
-typedef struct packed {
-  logic [31:0] q;
-  logic qe;
-} aes_reg2hw_data_in_mreg_t;
-typedef struct packed {
-  logic [31:0] q;
-  logic re;
-} aes_reg2hw_data_out_mreg_t;
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } aes_reg2hw_data_in_mreg_t;
 
-typedef struct packed {
-  logic [31:0] d;
-} aes_hw2reg_data_out_mreg_t;
+  typedef struct packed {
+    logic [31:0] q;
+    logic        re;
+  } aes_reg2hw_data_out_mreg_t;
 
-/////////////////////////////////////////////////////////////////////
-// Register to internal design logic
-/////////////////////////////////////////////////////////////////////
-
-typedef struct packed {
-  aes_reg2hw_key_mreg_t [7:0] key; // [540:277]
-  aes_reg2hw_data_in_mreg_t [3:0] data_in; // [276:145]
-  aes_reg2hw_data_out_mreg_t [3:0] data_out; // [144:13]
-  struct packed {
+  typedef struct packed {
     struct packed {
-      logic q; // [12]
-      logic qe; // [11]
+      logic        q;
+      logic        qe;
     } mode;
     struct packed {
-      logic [2:0] q; // [10:8]
-      logic qe; // [7]
+      logic [2:0]  q;
+      logic        qe;
     } key_len;
     struct packed {
-      logic q; // [6]
-      logic qe; // [5]
+      logic        q;
+      logic        qe;
     } manual_start_trigger;
     struct packed {
-      logic q; // [4]
-      logic qe; // [3]
+      logic        q;
+      logic        qe;
     } force_data_overwrite;
-  } ctrl;
-  struct packed {
+  } aes_reg2hw_ctrl_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [2]
+      logic        q;
     } start;
     struct packed {
-      logic q; // [1]
+      logic        q;
     } key_clear;
     struct packed {
-      logic q; // [0]
+      logic        q;
     } data_out_clear;
-  } trigger;
-} aes_reg2hw_t;
+  } aes_reg2hw_trigger_reg_t;
 
-/////////////////////////////////////////////////////////////////////
-// Internal design logic to register
-/////////////////////////////////////////////////////////////////////
 
-typedef struct packed {
-  aes_hw2reg_data_out_mreg_t [3:0] data_out; // [145:18]
-  struct packed {
+  typedef struct packed {
+    logic [31:0] d;
+  } aes_hw2reg_data_out_mreg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [2:0] d; // [17:15]
-      logic de; // [14]
+      logic [2:0]  d;
+      logic        de;
     } key_len;
-  } ctrl;
-  struct packed {
+  } aes_hw2reg_ctrl_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d; // [13]
-      logic de; // [12]
+      logic        d;
+      logic        de;
     } start;
     struct packed {
-      logic d; // [11]
-      logic de; // [10]
+      logic        d;
+      logic        de;
     } key_clear;
     struct packed {
-      logic d; // [9]
-      logic de; // [8]
+      logic        d;
+      logic        de;
     } data_out_clear;
-  } trigger;
-  struct packed {
+  } aes_hw2reg_trigger_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d; // [7]
-      logic de; // [6]
+      logic        d;
+      logic        de;
     } idle;
     struct packed {
-      logic d; // [5]
-      logic de; // [4]
+      logic        d;
+      logic        de;
     } stall;
     struct packed {
-      logic d; // [3]
-      logic de; // [2]
+      logic        d;
+      logic        de;
     } output_valid;
     struct packed {
-      logic d; // [1]
-      logic de; // [0]
+      logic        d;
+      logic        de;
     } input_ready;
-  } status;
-} aes_hw2reg_t;
+  } aes_hw2reg_status_reg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    aes_reg2hw_key_mreg_t [7:0] key; // [540:277]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [276:145]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [144:13]
+    aes_reg2hw_ctrl_reg_t ctrl; // [12:3]
+    aes_reg2hw_trigger_reg_t trigger; // [2:0]
+  } aes_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [145:18]
+    aes_hw2reg_ctrl_reg_t ctrl; // [17:8]
+    aes_hw2reg_trigger_reg_t trigger; // [7:5]
+    aes_hw2reg_status_reg_t status; // [4:5]
+  } aes_hw2reg_t;
 
   // Register Address
   parameter AES_KEY0_OFFSET = 7'h 0;
