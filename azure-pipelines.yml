@@ -135,7 +135,7 @@ jobs:
     displayName: 'Install toolchain'
   - bash: |
       . util/build_consts.sh
-      ./meson_init.sh -f
+      ./meson_init.sh -A
       ninja -C "$(sw_obj_dir sim-verilator)" all
       ninja -C "$(sw_obj_dir fpga)" all
     displayName: 'Build embedded targets'
