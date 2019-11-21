@@ -70,6 +70,10 @@ module aes_core #(
   logic                 unused_manual_start_trigger_qe;
   logic                 unused_force_data_overwrite_qe;
 
+  ////////////
+  // Inputs //
+  ////////////
+
   // Inputs
   assign key_init[0] = reg2hw.key[0].q;
   assign key_init[1] = reg2hw.key[1].q;
@@ -90,9 +94,6 @@ module aes_core #(
 
   assign data_in_qe = {reg2hw.data_in[3].qe, reg2hw.data_in[2].qe,
                        reg2hw.data_in[1].qe, reg2hw.data_in[0].qe};
-
-  // Convert input data to state (every input data word contains one state column)
-  assign state_init = aes_transpose(data_in);
 
   assign mode = mode_e'(reg2hw.ctrl.mode.q);
 
@@ -122,6 +123,13 @@ module aes_core #(
   assign unused_mode_qe                 = reg2hw.ctrl.mode.qe;
   assign unused_manual_start_trigger_qe = reg2hw.ctrl.manual_start_trigger.qe;
   assign unused_force_data_overwrite_qe = reg2hw.ctrl.force_data_overwrite.qe;
+
+  //////////
+  // Data //
+  //////////
+
+  // Convert input data to state (every input data word contains one state column)
+  assign state_init = aes_transpose(data_in);
 
   // State registers
   always_comb begin : state_mux
@@ -170,6 +178,10 @@ module aes_core #(
   end
 
   assign add_round_key_out = add_round_key_in ^ round_key;
+
+  /////////
+  // Key //
+  /////////
 
   // Full Key registers
   always_comb begin : key_full_mux
@@ -249,20 +261,9 @@ module aes_core #(
     endcase
   end
 
-  // Output registers
-  always_comb begin : conv_add_rk_out_to_data_out
-    for (int i=0; i<4; i++) begin
-      data_out_d[i] = aes_col_get(add_round_key_out, i);
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
-    if (!rst_ni) begin
-      data_out_q <= '0;
-    end else if (data_out_we) begin
-      data_out_q <= data_out_d;
-    end
-  end
+  /////////////
+  // Control //
+  /////////////
 
   // Control
   aes_control #(
@@ -314,6 +315,25 @@ module aes_core #(
     .stall_o                ( hw2reg.status.stall.d              ),
     .stall_we_o             ( hw2reg.status.stall.de             )
   );
+
+  /////////////
+  // Outputs //
+  /////////////
+
+  // Output registers
+  always_comb begin : conv_add_rk_out_to_data_out
+    for (int i=0; i<4; i++) begin
+      data_out_d[i] = aes_col_get(add_round_key_out, i);
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
+    if (!rst_ni) begin
+      data_out_q <= '0;
+    end else if (data_out_we) begin
+      data_out_q <= data_out_d;
+    end
+  end
 
   // Outputs
   assign hw2reg.data_out[0].d = data_out_q[0];
