@@ -53,7 +53,7 @@ readonly TEST_TARGETS=("flash_ctrl/flash_test.bin"
 )
 
 BUILD_TARGET=${PWD}/build-fpga
-./meson_init.sh -f
+./meson_init.sh
 
 if [ ${BUILD_FPGA} -eq 1 ] ; then
   echo "Compiling ROM - this is needed in order for the build step below to correctly infer ROM"
