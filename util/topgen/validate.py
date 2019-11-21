@@ -25,10 +25,10 @@ from reggen.validate import check_keys, val_types
 #     't': ["text", "string, may be multi-line enclosed in `'''` "\
 #           "may use `**bold**`, `*italic*` or `!!Reg` markup"],
 #     'T': ["tuple", "tuple enclosed in ()"],
-#     'pi': ["python int", "Native python type int (generated)"],
-#     'pb': ["python Bool", "Native python type Bool (generated)"],
-#     'pl': ["python list", "Native python type list (generated)"],
-#     'pe': ["python enum", "Native python type enum (generated)"]
+#     'pi': ["python int", "Native Python type int (generated)"],
+#     'pb': ["python Bool", "Native Python type Bool (generated)"],
+#     'pl': ["python list", "Native Python type list (generated)"],
+#     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
 
 # Required/optional field in top hjson

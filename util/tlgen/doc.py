@@ -78,7 +78,7 @@ Field | Kind | Type | Description
 
 
 def selfdoc(heading, cmd=""):
-    # heading : markdown header depth
+    # heading : Markdown header depth
     # value type
     outstr = doc_intro.format(cmd)
 

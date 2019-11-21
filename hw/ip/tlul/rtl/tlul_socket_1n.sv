@@ -7,7 +7,7 @@
 // configuration settings
 //   device_count: 4
 //
-// verilog parameters
+// Verilog parameters
 //   HReqPass:      if 1 then host requests can pass through on empty fifo,
 //                  default 1
 //   HRspPass:      if 1 then host responses can pass through on empty fifo,

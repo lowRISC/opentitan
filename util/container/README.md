@@ -3,7 +3,7 @@
 Docker container based on Ubuntu 16.04 LTS containing various hardware and
 software development tools for OpenTitan. Current list of tools:
 
-* Python3
+* Python 3
 * fusesoc
 * OpenOCD
 * RISCV toolchain

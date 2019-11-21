@@ -10,7 +10,7 @@ These platforms include - UVM DV, Verilator DV, FPGA, and eventually silicon.
 To enable this cross-platform testing, each test is self-contained and do not require additional host or backend resources to verify correct behavior.
 This suggests that any testing that would involve emulation of host capability, such as an external SPI host or an external host to encrypt/decrypt data, is not appropriate for these types of self-contained tests.
 It is assumed those tests will live in a different directory as the host emulation will be different for each verification target.
-For FPGA / silicon this may be a host machine, while for UVM / Verilator this may be some kind of system verilog back-end.
+For FPGA / silicon this may be a host machine, while for UVM / Verilator this may be some kind of SystemVerilog back-end.
 
 ## Self Checking Mechanism
 

@@ -3,13 +3,13 @@ title: "Register Tool"
 ---
 
 The register tool is used to construct register documentation, register RTL and header files.
-It is either used stand-alone or by being invoked as part of markdown processing.
+It is either used stand-alone or by being invoked as part of Markdown processing.
 
 
 ## Running standalone regtool.py
 
-The standalone `regtool.py` is a python3 tool to read configuration and register descriptions in Hjson and generate various output formats.
-Currently it can output html documentation, standard json, compact standard json (whitespace removed), Hjson, verilog RTL and various forms of C header files.
+The standalone `regtool.py` is a Python 3 tool to read configuration and register descriptions in Hjson and generate various output formats.
+Currently it can output HTML documentation, standard JSON, compact standard JSON (whitespace removed), Hjson, Verilog RTL and various forms of C header files.
 
 The standard `--help` and `--version` command line flags are supported to print the usage and version information.
 Because the version includes information on libraries (which may be different between systems) reporting the version output is sometimes useful when issues are reported.
@@ -22,12 +22,12 @@ Setup and examples of the tool are given in the README.md file in the `util/regg
 
 The tool input is an Hjson file containing the Comportable description of the IP block and its registers.
 
-A description of Hjson (a varient of json) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "hjson_usage_style.md" >}}).
+A description of Hjson (a variant of JSON) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "hjson_usage_style.md" >}}).
 
 The tables below describe valid keys for each context.
-It is an error if *required* keys are missing from the input json.
+It is an error if *required* keys are missing from the input JSON.
 *Optional* keys may be provided in the input file as needed, as noted in the tables the tool may insert them (with default or computed values) during validation so the output generators do not have to special case them.
-Keys marked as "inserted by tool" should not be in the input json (they will be silently overwritten if they are there), they are derived by the tool during validation of the input and available to the output generators.
+Keys marked as "inserted by tool" should not be in the input JSON (they will be silently overwritten if they are there), they are derived by the tool during validation of the input and available to the output generators.
 
 {{% selfdoc "reggen" %}}
 
@@ -220,7 +220,7 @@ Instance 16 does not fit, so will start a new register.
 
 This section details the register generation for hardware instantiation.
 The input to the tool for this generation is the same `.hjson` file described above.
-The output is two verilog files that can be instantiated by a peripheral that follows the [Comportability Guidelines]({{< relref "comportability_specification" >}}).
+The output is two Verilog files that can be instantiated by a peripheral that follows the [Comportability Guidelines]({{< relref "comportability_specification" >}}).
 
 The register generation tool will generate the RTL if it is invoked with the `-r` flag.
 The `-t <directory>` flag is used to specify the output directory where the two files will be written.
@@ -626,5 +626,5 @@ For example:
 
 ## Generating documentation
 
-The register tool can be used standalone to generate html documentation of the registers.
-However, this is normally done as part of the markdown documentation using the special tags to include the register definition file and insert the configuration and register information.
+The register tool can be used standalone to generate HTML documentation of the registers.
+However, this is normally done as part of the Markdown documentation using the special tags to include the register definition file and insert the configuration and register information.

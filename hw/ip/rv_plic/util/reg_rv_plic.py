@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Mako template to hjson register description
+r"""Mako template to Hjson register description
 """
 import sys
 import argparse

@@ -12,7 +12,7 @@
 //
 # PINMUX register template
 #
-# Parameter (given by python tool)
+# Parameter (given by Python tool)
 #  - n_periph_in:     Number of peripheral inputs
 #  - n_periph_out:    Number of peripheral outputs
 #  - n_mio_pads:      Number of muxed IO pads

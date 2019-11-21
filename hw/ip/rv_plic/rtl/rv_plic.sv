@@ -11,7 +11,7 @@
 //   Consider to set MAX_PRIO as small number as possible. It is main factor
 //   of area increase if edge-triggered counter isn't implemented.
 //
-// verilog parameter
+// Verilog parameter
 //   MAX_PRIO: Maximum value of interrupt priority
 
 module rv_plic import rv_plic_reg_pkg::*; #(

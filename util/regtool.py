@@ -18,7 +18,7 @@ import pkg_resources
 from reggen import (gen_cheader, gen_ctheader, gen_dv, gen_html, gen_json,
                     gen_rtl, gen_selfdoc, validate, version)
 
-DESC = """regtool, generate register info from hjson source"""
+DESC = """regtool, generate register info from Hjson source"""
 
 USAGE = '''
   regtool [options]
@@ -42,7 +42,7 @@ def main():
                         metavar='file',
                         type=argparse.FileType('r'),
                         default=sys.stdin,
-                        help='input file in hjson type')
+                        help='input file in Hjson type')
     parser.add_argument('-d',
                         action='store_true',
                         help='Output register documentation (html)')

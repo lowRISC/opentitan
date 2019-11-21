@@ -23,7 +23,7 @@ def is_ipcfg(ip: Path) -> bool:  # return bool
 
 
 def search_ips(ip_path):  # return list of config files
-    # list the every hjson file
+    # list the every Hjson file
     p = ip_path.glob('*/data/*.hjson')
 
     # filter only ip_name/data/ip_name{_reg|''}.hjson
@@ -41,9 +41,9 @@ def is_xbarcfg(xbar_obj):
 
 
 def get_hjsonobj_xbars(xbar_path):
-    """ Search crossbars hjson files from given path.
+    """ Search crossbars Hjson files from given path.
 
-    Search every hjson in the directory and check hjson type.
+    Search every Hjson in the directory and check Hjson type.
     It could be type: "top" or type: "xbar"
     returns [(name, obj), ... ]
     """

@@ -3,7 +3,7 @@
 Wavegen is a Python tool to read waveform descriptions in Hjson and
 generate `svg` pictures of the waveform.
 
-The source is a json representation of the waveform using the wavejson
+The source is a JSON representation of the waveform using the wavejson
 format defined for Wavedrom. This is sort of described at
 [here](https://github.com/drom/wavedrom/wiki/WaveJSON)
 

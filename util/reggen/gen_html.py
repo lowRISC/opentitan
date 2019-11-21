@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Generate html documentation from validated register json tree
+Generate HTML documentation from validated register Hjson tree
 """
 
 import logging as log
@@ -14,7 +14,7 @@ def genout(outfile, msg):
     outfile.write(msg)
 
 
-# expand !!register references into html links, gen **bold** and *italic*
+# expand !!register references into HTML links, gen **bold** and *italic*
 def desc_expand(s, rnames):
     def fieldsub(match):
         base = match.group(1).partition('.')[0].lower()

@@ -7,9 +7,9 @@ title: "Markdown Usage and Style Guide"
 ### Summary
 
 Markdown files are used to write most documentation.
-The main markdown tool is [Hugo](https://gohugo.io).
+The main Markdown tool is [Hugo](https://gohugo.io).
 
-The markdown processing is done using the `build_docs.py` tool in the `util` directory.
+The Markdown processing is done using the `build_docs.py` tool in the `util` directory.
 
 As with all style guides the intention is to:
 
@@ -43,10 +43,10 @@ It is always okay to deviate from the style guide by necessity, as long as that 
 
 ### Line length
 
-There are two acceptable styles for line wrapping in markdown files:
+There are two acceptable styles for line wrapping in Markdown files:
 
 1.  Wrap lines at under 80 characters.
-    This ensures that the source is readable without any markdown processing, but re-wrapping a paragraph after an insertion or deletion tends to cause more diffs when the change is reviewed.
+    This ensures that the source is readable without any Markdown processing, but re-wrapping a paragraph after an insertion or deletion tends to cause more diffs when the change is reviewed.
     When making changes to a document using this style consider allowing short lines rather than a full re-wrap after minor edits.
     Then occasionally a separate commit can be used that only does re-wrapping of the paragraphs.
     This style is recommended for all README files.
@@ -60,7 +60,7 @@ The title of the document should be provided using the `title` field in the fron
 
 Headings and sections are given ID tags to allow cross references.
 The ID is the text of the heading, converted to lower case and with spaces converted to `-`.
-Thus `### Headings and sections` gets the ID `headings-and-sections` and can be referenced using the markdown hyperlink syntax `[link text](#headings-and-sections)`.
+Thus `### Headings and sections` gets the ID `headings-and-sections` and can be referenced using the Markdown hyperlink syntax `[link text](#headings-and-sections)`.
 
 Headings and sections are added to the table of contents.
 
@@ -84,21 +84,21 @@ The processor built in to `docgen` should produce the identical output, but has 
 
 ### Text Format
 
-Where possible, please restrict markdown text to the ASCII character set to avoid downstream tool issues.
+Where possible, please restrict Markdown text to the ASCII character set to avoid downstream tool issues.
 Unicode may be used when referring to proper names.
 
 ### Comments
 
 Comments are rare, but should be used where needed.
-Use the html `<!--` and `-->` as the comment delimiters.
+Use the HTML `<!--` and `-->` as the comment delimiters.
 
 ### Markdown file extensions
 
-The markdown files should use the `.md` file extension.
+The Markdown files should use the `.md` file extension.
 
 ## Markdown file format for IP module descriptions
 
-Typically the markdown file for an IP block follows the same outline.
+Typically the Markdown file for an IP block follows the same outline.
 
 The header instantiates the standard document header and reads the Hjson description of the module.
 

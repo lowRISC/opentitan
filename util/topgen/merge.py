@@ -99,7 +99,7 @@ def amend_ip(top, ip):
         ip_module["scan"] = "false"
 
 
-# TODO: Replace this part to be configurable from hjson or template
+# TODO: Replace this part to be configurable from Hjson or template
 predefined_modules = {
     "corei": "rv_core_ibex",
     "cored": "rv_core_ibex",

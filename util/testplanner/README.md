@@ -37,7 +37,7 @@ intent of a planned test:
     that the reader gets the full picture of what and how the said feature is being
     tested.
 
-    Full [markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported
+    Full [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) syntax is supported
     when writing the description.
 
 * **tests: list of actual written tests that maps to this planned test**

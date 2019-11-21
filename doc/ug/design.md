@@ -43,13 +43,13 @@ This document defines the design stages and references where one can find the cu
 Documentation is a critical part of any design methodology.
 Within the OpenTitan project there are two important tooling components to efficient and effective documentation.
 
-The first is the [Hugo](https://gohugo.io) tool, which converts an annotated markdown file into a rendered HTML file (including this document).
+The first is the [Hugo](https://gohugo.io) tool, which converts an annotated Markdown file into a rendered HTML file (including this document).
 See the linked manual for information about the annotations and how to use it to create enhanced auto-generated additions to standard Markdown files.
 
 The second is the [reggen]({{< relref "doc/rm/register_tool" >}}) register tool that helps define the methodology and description language for specifying hardware registers.
 These descriptions are fed into docgen through annotations and ensure that the technical specifications for the IP are accurate and up to date with the hardware being built.
 
-Underlying and critical to this tooling is the human-written content that goes into the source markdown and register descriptions.
+Underlying and critical to this tooling is the human-written content that goes into the source Markdown and register descriptions.
 Clarity and consistency is key.
 See the [Markdown Style Guide]({{< relref "doc/rm/markdown_usage_style.md" >}}) for details and guidelines on the description language.
 

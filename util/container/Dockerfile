@@ -83,7 +83,7 @@ RUN apt-get update && apt-get install -y \
     srecord \
     zlib1g-dev
 
-# Install Python3 and support libraries. Cleanup install in place to reduce
+# Install Python 3 and support libraries. Cleanup install in place to reduce
 # binary size.
 RUN apt-get install -y \
     python3 \
@@ -91,7 +91,7 @@ RUN apt-get install -y \
     python3-setuptools && \
     apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
-# Copy repo into tmp directory to execute additional install steps.
+# Copy repository into tmp directory to execute additional install steps.
 COPY python-requirements.txt /tmp/python-requirements.txt
 RUN pip3 install -r /tmp/python-requirements.txt
 

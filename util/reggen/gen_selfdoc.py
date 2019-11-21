@@ -89,7 +89,7 @@ field_example = """
 Field names should be relatively short because they will be used
 frequently (and need to fit in the register layout picture!) The field
 description is expected to be longer and will most likely make use of
-the hjson ability to include multi-line strings. An example with three
+the Hjson ability to include multi-line strings. An example with three
 fields:
 
 ```hjson
@@ -234,7 +234,7 @@ def document(outfile):
         doc_tbl_line(outfile, x, None, validate.hwaccess_permitted[x][0])
 
     genout(outfile,
-           "\n\nThe top level of the json is a group containing "\
+           "\n\nThe top level of the JSON is a group containing "\
            "the following keys:\n")
     doc_tbl_head(outfile, 1)
     for x in validate.top_required:

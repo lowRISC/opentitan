@@ -189,7 +189,7 @@ def gen(test_list, csr_file, end_signature_addr, isa, simulator,
       logging.info("Generating %d %s" % (iterations, test['test']))
       if iterations > 0:
         """
-        If we are running a CSR test, need to call a separate python script
+        If we are running a CSR test, need to call a separate Python script
         to generate directed CSR test code, located at scripts/gen_csr_test.py.
         """
         if test['test'] == 'riscv_csr_test':

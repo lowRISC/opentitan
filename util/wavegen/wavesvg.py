@@ -637,7 +637,7 @@ def parse_wave(x, hscale, lanes, groups, gdepth, bricksused):
     return len(bricks)
 
 
-# obj is hjson parsed object with wavejson
+# obj is Hjson parsed object with wavejson
 # svg_num is a number that makes this svg unique. First one must be 0
 
 

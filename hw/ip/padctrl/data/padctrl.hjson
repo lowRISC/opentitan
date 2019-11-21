@@ -4,7 +4,7 @@
 //
 # PADCTRL register template
 #
-# Parameter (given by python tool)
+# Parameter (given by Python tool)
 #  - n_dio_pads:      Number of dedicated IO pads
 #  - n_mio_pads:      Number of muxed IO pads
 #  - attr_dw:        Attribute datawidth

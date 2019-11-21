@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Command-line tool to parse and process testplan hjson into a data structure
+r"""Command-line tool to parse and process testplan Hjson into a data structure
     The data structure is used for expansion inline within DV plan documentation
     as well as for annotating the regression results.
 """
@@ -18,7 +18,7 @@ from .class_defs import *
 
 
 def parse_testplan(filename):
-    '''Parse testplan hjson file into a datastructure'''
+    '''Parse testplan Hjson file into a datastructure'''
     self_path = os.path.dirname(os.path.realpath(__file__))
     repo_root = os.path.abspath(os.path.join(self_path, os.pardir, os.pardir))
 
@@ -72,7 +72,7 @@ def gen_html_write_style(outbuf):
 
 
 def gen_html_testplan_table(testplan, outbuf):
-    '''generate html table from testplan with the following fields
+    '''generate HTML table from testplan with the following fields
     milestone, planned test name, description
     '''
     def print_row(ms, name, desc, tests, cell, outbuf):

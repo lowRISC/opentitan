@@ -310,11 +310,11 @@ def main():
     parser.add_argument(
         '--plic-only',
         action='store_true',
-        help="If defined, the tool generates RV_PLIC RTL and hjson only")
+        help="If defined, the tool generates RV_PLIC RTL and Hjson only")
     parser.add_argument(
         '--hjson-only',
         action='store_true',
-        help="If defined, the tool generates complete hjson only")
+        help="If defined, the tool generates complete Hjson only")
     # Generator options: generate dv ral model
     parser.add_argument(
         '--top_ral',
@@ -387,7 +387,7 @@ def main():
         pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
         ips.append(pinmux_hjson)
 
-        # load hjson and pass validate from reggen
+        # load Hjson and pass validate from reggen
         try:
             ip_objs = []
             for x in ips:

@@ -20,7 +20,7 @@ $ sudo apt-get install xz-utils screen fdisk libftdi1-2 libusb-1.0-0 usbutils
 
 ## Extract the release
 
-Download a release bitstream from the [OpenTitan Github Releases page](https://github.com/lowRISC/opentitan/releases) and extract it.
+Download a release bitstream from the [OpenTitan GitHub Releases page](https://github.com/lowRISC/opentitan/releases) and extract it.
 `$OT_TOP` refers to the location where it is extracted.
 
 ```console
