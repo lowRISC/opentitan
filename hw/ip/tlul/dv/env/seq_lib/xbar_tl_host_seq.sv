@@ -9,6 +9,7 @@
 // Basic xbar TL host sequence
 class xbar_tl_host_seq extends tl_host_seq;
 
+  uint valid_host_id_width;
   // if enabled, will allow to access both mapped and unmapped addr
   bit en_unmapped_addr = 0;
 
@@ -31,7 +32,7 @@ class xbar_tl_host_seq extends tl_host_seq;
     end
     if (!(req.randomize() with {a_valid_delay inside {[min_req_delay:max_req_delay]};
                                 // Keep msb to zero as it's reserved to add host ID
-                                a_source[(SourceWidth - 1):VALID_HOST_ID_WIDTH] == 0;
+                                (a_source >> valid_host_id_width) == 0;
                                 if (is_to_control_a_source) {
                                   a_source == controlled_a_source_val;
                                 } else {
