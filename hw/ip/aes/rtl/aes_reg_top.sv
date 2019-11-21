@@ -133,210 +133,130 @@ module aes_reg_top (
   // Register instances
 
   // Subregister 0 of Multireg key
-  // R[key0]: V(False)
+  // R[key0]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key0_we),
     .wd     (key0_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[0].de),
-    .d      (hw2reg.key[0].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[0].d),
+    .qre    (),
     .qe     (reg2hw.key[0].qe),
     .q      (reg2hw.key[0].q ),
-
     .qs     ()
   );
 
   // Subregister 1 of Multireg key
-  // R[key1]: V(False)
+  // R[key1]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key1_we),
     .wd     (key1_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[1].de),
-    .d      (hw2reg.key[1].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[1].d),
+    .qre    (),
     .qe     (reg2hw.key[1].qe),
     .q      (reg2hw.key[1].q ),
-
     .qs     ()
   );
 
   // Subregister 2 of Multireg key
-  // R[key2]: V(False)
+  // R[key2]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key2_we),
     .wd     (key2_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[2].de),
-    .d      (hw2reg.key[2].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[2].d),
+    .qre    (),
     .qe     (reg2hw.key[2].qe),
     .q      (reg2hw.key[2].q ),
-
     .qs     ()
   );
 
   // Subregister 3 of Multireg key
-  // R[key3]: V(False)
+  // R[key3]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key3_we),
     .wd     (key3_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[3].de),
-    .d      (hw2reg.key[3].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[3].d),
+    .qre    (),
     .qe     (reg2hw.key[3].qe),
     .q      (reg2hw.key[3].q ),
-
     .qs     ()
   );
 
   // Subregister 4 of Multireg key
-  // R[key4]: V(False)
+  // R[key4]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key4_we),
     .wd     (key4_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[4].de),
-    .d      (hw2reg.key[4].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[4].d),
+    .qre    (),
     .qe     (reg2hw.key[4].qe),
     .q      (reg2hw.key[4].q ),
-
     .qs     ()
   );
 
   // Subregister 5 of Multireg key
-  // R[key5]: V(False)
+  // R[key5]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key5_we),
     .wd     (key5_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[5].de),
-    .d      (hw2reg.key[5].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[5].d),
+    .qre    (),
     .qe     (reg2hw.key[5].qe),
     .q      (reg2hw.key[5].q ),
-
     .qs     ()
   );
 
   // Subregister 6 of Multireg key
-  // R[key6]: V(False)
+  // R[key6]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key6_we),
     .wd     (key6_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[6].de),
-    .d      (hw2reg.key[6].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[6].d),
+    .qre    (),
     .qe     (reg2hw.key[6].qe),
     .q      (reg2hw.key[6].q ),
-
     .qs     ()
   );
 
   // Subregister 7 of Multireg key
-  // R[key7]: V(False)
+  // R[key7]: V(True)
 
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_key7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (1'b0),
     .we     (key7_we),
     .wd     (key7_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key[7].de),
-    .d      (hw2reg.key[7].d ),
-
-    // to internal hardware
+    .d      (hw2reg.key[7].d),
+    .qre    (),
     .qe     (reg2hw.key[7].qe),
     .q      (reg2hw.key[7].q ),
-
     .qs     ()
   );
 
