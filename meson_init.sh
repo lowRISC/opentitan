@@ -103,10 +103,14 @@ function purge_includes() {
 
 for platform in ${PLATFORMS[@]}; do
   obj_dir="$(sw_obj_dir "$platform")"
+  bin_dir="$(sw_bin_dir "$platform")"
   mkdir -p "$obj_dir"
+  mkdir -p "$bin_dir"
   meson ${FLAGS_reconfigure} \
     -Dtarget="$platform" \
     -Dot_version="$OT_VERSION" \
+    -Ddev_bin_dir="$bin_dir" \
+    -Dhost_bin_dir="$HOST_BIN_DIR" \
     --cross-file="$CROSS_FILE" \
     --buildtype=plain \
     "$obj_dir"
