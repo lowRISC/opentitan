@@ -77,25 +77,27 @@ module aes_core #(
   ////////////
 
   // Inputs
-  assign key_init[0] = reg2hw.key[0].q;
-  assign key_init[1] = reg2hw.key[1].q;
-  assign key_init[2] = reg2hw.key[2].q;
-  assign key_init[3] = reg2hw.key[3].q;
-  assign key_init[4] = reg2hw.key[4].q;
-  assign key_init[5] = reg2hw.key[5].q;
-  assign key_init[6] = reg2hw.key[6].q;
-  assign key_init[7] = reg2hw.key[7].q;
+  always_comb begin : key_init_get
+    for (int i=0; i<8; i++) begin
+      key_init[i]    = reg2hw.key[i].q;
+      key_init_qe[i] = reg2hw.key[i].qe;
+    end
+  end
 
-  assign key_init_qe = {reg2hw.key[7].qe, reg2hw.key[6].qe, reg2hw.key[5].qe, reg2hw.key[4].qe,
-                        reg2hw.key[3].qe, reg2hw.key[2].qe, reg2hw.key[1].qe, reg2hw.key[0].qe};
+  always_comb begin : data_in_get
+    for (int i=0; i<4; i++) begin
+      data_in[i]    = reg2hw.data_in[i].q;
+      data_in_qe[i] = reg2hw.data_in[i].qe;
+    end
+  end
 
-  assign data_in[0] = reg2hw.data_in[0].q;
-  assign data_in[1] = reg2hw.data_in[1].q;
-  assign data_in[2] = reg2hw.data_in[2].q;
-  assign data_in[3] = reg2hw.data_in[3].q;
-
-  assign data_in_qe = {reg2hw.data_in[3].qe, reg2hw.data_in[2].qe,
-                       reg2hw.data_in[1].qe, reg2hw.data_in[0].qe};
+  always_comb begin : data_out_get
+    for (int i=0; i<4; i++) begin
+      // data_out is actually hwo, but we need hrw for hwre
+      unused_data_out_q[i] = reg2hw.data_out[i].q;
+      data_out_re[i]       = reg2hw.data_out[i].re;
+    end
+  end
 
   assign mode = mode_e'(reg2hw.ctrl.mode.q);
 
@@ -104,23 +106,12 @@ module aes_core #(
     unique case (key_len_q)
       AES_128: key_len = AES_128;
       AES_256: key_len = AES_256;
-      AES_192: begin
-        key_len = AES192Enable ? AES_192 : AES_128;
-      end
+      AES_192: key_len = AES192Enable ? AES_192 : AES_128;
       default: key_len = AES_128; // unsupported values are mapped to AES_128
     endcase
   end
 
-  assign data_out_re = {reg2hw.data_out[3].re, reg2hw.data_out[2].re,
-                        reg2hw.data_out[1].re, reg2hw.data_out[0].re};
-
   // Unused inputs
-  // data_out is actually hwo, but we need hrw for hwre
-  assign unused_data_out_q[0] = reg2hw.data_out[0].q;
-  assign unused_data_out_q[1] = reg2hw.data_out[1].q;
-  assign unused_data_out_q[2] = reg2hw.data_out[2].q;
-  assign unused_data_out_q[3] = reg2hw.data_out[3].q;
-
   // key_len is hrw and hwqe, other fields of ctrl reg are hro and don't need hwqe
   assign unused_mode_qe                 = reg2hw.ctrl.mode.qe;
   assign unused_manual_start_trigger_qe = reg2hw.ctrl.manual_start_trigger.qe;
@@ -343,12 +334,8 @@ module aes_core #(
   // Outputs //
   /////////////
 
-  // Output registers
-  always_comb begin : conv_add_rk_out_to_data_out
-    for (int i=0; i<4; i++) begin
-      data_out_d[i] = aes_col_get(add_round_key_out, i);
-    end
-  end
+  // Convert output state to output data (every state column corresponds to one output word)
+  assign data_out_d = aes_transpose(add_round_key_out);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
     if (!rst_ni) begin
@@ -359,10 +346,11 @@ module aes_core #(
   end
 
   // Outputs
-  assign hw2reg.data_out[0].d = data_out_q[0];
-  assign hw2reg.data_out[1].d = data_out_q[1];
-  assign hw2reg.data_out[2].d = data_out_q[2];
-  assign hw2reg.data_out[3].d = data_out_q[3];
+  always_comb begin : data_out_put
+    for (int i=0; i<4; i++) begin
+      hw2reg.data_out[i].d = data_out_q[i];
+    end
+  end
 
   assign hw2reg.ctrl.key_len.d  = {key_len};
   assign hw2reg.ctrl.key_len.de = reg2hw.ctrl.key_len.qe;
