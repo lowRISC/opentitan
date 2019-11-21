@@ -36,7 +36,7 @@
       count: "NumRegsKey",
       cname: "KEY",
       swaccess: "wo",
-      hwaccess: "hro",
+      hwaccess: "hrw",
       hwqe:     "true",
       fields: [
         { bits: "31:0", name: "key", desc: "Initial Key" }
@@ -55,7 +55,7 @@
       count: "NumRegsData",
       cname: "DATA_IN",
       swaccess: "wo",
-      hwaccess: "hro",
+      hwaccess: "hrw",
       hwqe:     "true",
       fields: [
         { bits: "31:0", name: "data_in", desc: "Input Data" }
@@ -140,11 +140,17 @@
       { bits: "1",
         name: "KEY_CLEAR",
         desc:  '''
-          Keep current values in internal Full Key and Decryption Key registers (0) or clear
-          those registers (1).
+          Keep current values in Initial Key, internal Full Key and Decryption Key registers (0)
+          or clear those registers (1).
         '''
       }
       { bits: "2",
+        name: "DATA_IN_CLEAR",
+        desc:  '''
+          Keep current values in input registers (0) or clear those registers (1).
+        '''
+      }
+      { bits: "3",
         name: "DATA_OUT_CLEAR",
         desc:  '''
           Keep current values in output registers (0) or clear those registers (1).

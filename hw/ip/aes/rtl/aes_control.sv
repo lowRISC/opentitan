@@ -17,6 +17,7 @@ module aes_control #(
   input  logic                    manual_start_trigger_i,
   input  logic                    start_i,
   input  logic                    key_clear_i,
+  input  logic                    data_in_clear_i,
   input  logic                    data_out_clear_i,
 
   // I/O register read/write enables
@@ -24,7 +25,7 @@ module aes_control #(
   input  logic [7:0]              key_init_qe_i,
   input  logic [3:0]              data_out_re_i,
 
-  // Control ouptuts cipher data path
+  // Control outputs cipher data path
   output aes_pkg::state_sel_e     state_sel_o,
   output logic                    state_we_o,
   output aes_pkg::add_rk_sel_e    add_rk_sel_o,
@@ -41,16 +42,22 @@ module aes_control #(
   output aes_pkg::key_words_sel_e key_words_sel_o,
   output aes_pkg::round_key_sel_e round_key_sel_o,
 
-  // Output registers control
+  // Key/data registers
+  output logic                    key_we_o,
+  output logic                    data_in_we_o,
   output logic                    data_out_we_o,
 
-  // To I/O registers
+  // Trigger register
   output logic                    start_o,
   output logic                    start_we_o,
   output logic                    key_clear_o,
   output logic                    key_clear_we_o,
+  output logic                    data_in_clear_o,
+  output logic                    data_in_clear_we_o,
   output logic                    data_out_clear_o,
   output logic                    data_out_clear_we_o,
+
+  // Status register
   output logic                    output_valid_o,
   output logic                    output_valid_we_o,
   output logic                    input_ready_o,
@@ -64,8 +71,8 @@ module aes_control #(
   import aes_pkg::*;
 
   // Types
-  typedef enum logic [1:0] {
-    IDLE, INIT, ROUND, FINISH
+  typedef enum logic [2:0] {
+    IDLE, INIT, ROUND, FINISH, CLEAR
   } aes_ctrl_e;
 
   aes_ctrl_e aes_ctrl_ns, aes_ctrl_cs;
@@ -117,6 +124,7 @@ module aes_control #(
     // Trigger register control
     start_we_o          = 1'b0;
     key_clear_we_o      = 1'b0;
+    data_in_clear_we_o  = 1'b0;
     data_out_clear_we_o = 1'b0;
 
     // Status register
@@ -128,6 +136,8 @@ module aes_control #(
     // Key, data I/O register control
     dec_key_gen   = 1'b0;
     data_in_load  = 1'b0;
+    key_we_o      = 1'b0;
+    data_in_we_o  = 1'b0;
     data_out_we_o = 1'b0;
 
     // FSM
@@ -175,21 +185,11 @@ module aes_control #(
           start_we_o  = 1'b1;
 
           aes_ctrl_ns = INIT;
-        end else begin
-          if (key_clear_i) begin
-            key_full_sel_o = KEY_FULL_CLEAR;
-            key_full_we_o  = 1'b1;
-            key_dec_sel_o  = KEY_DEC_CLEAR;
-            key_dec_we_o   = 1'b1;
-            key_clear_we_o = 1'b1;
-          end
-          if (data_out_clear_i) begin
-            add_rk_sel_o        = ADD_RK_INIT;
-            key_words_sel_o     = KEY_WORDS_ZERO;
-            round_key_sel_o     = ROUND_KEY_DIRECT;
-            data_out_we_o       = 1'b1;
-            data_out_clear_we_o = 1'b1;
-          end
+        end else if (key_clear_i || data_in_clear_i || data_out_clear_i) begin
+          idle_o      = 1'b0;
+          idle_we_o   = 1'b1;
+
+          aes_ctrl_ns = CLEAR;
         end
       end
 
@@ -351,6 +351,30 @@ module aes_control #(
         end
       end
 
+      CLEAR: begin
+        if (key_clear_i) begin
+          key_we_o       = 1'b1;
+          key_full_sel_o = KEY_FULL_CLEAR;
+          key_full_we_o  = 1'b1;
+          key_dec_sel_o  = KEY_DEC_CLEAR;
+          key_dec_we_o   = 1'b1;
+          key_clear_we_o = 1'b1;
+        end
+        if (data_in_clear_i) begin
+          data_in_we_o       = 1'b1;
+          data_in_clear_we_o = 1'b1;
+        end
+        if (data_out_clear_i) begin
+          add_rk_sel_o        = ADD_RK_INIT;
+          key_words_sel_o     = KEY_WORDS_ZERO;
+          round_key_sel_o     = ROUND_KEY_DIRECT;
+          data_out_we_o       = 1'b1;
+          data_out_clear_we_o = 1'b1;
+        end
+
+        aes_ctrl_ns = IDLE;
+      end
+
       default: aes_ctrl_ns = aes_ctrl_e'(1'bX);
     endcase
   end
@@ -374,10 +398,10 @@ module aes_control #(
 
   // Detect new key, new input, output read
   // Edge detectors are cleared by the FSM
-  assign key_init_new_d = dec_key_gen ? '0 : key_init_new_q | key_init_qe_i;
+  assign key_init_new_d = (dec_key_gen | key_we_o) ? '0 : (key_init_new_q | key_init_qe_i);
   assign key_init_new   = &key_init_new_d;
 
-  assign data_in_new_d = data_in_load ? '0 : data_in_new_q | data_in_qe_i;
+  assign data_in_new_d = (data_in_load | data_in_we_o) ? '0 : (data_in_new_q | data_in_qe_i);
   assign data_in_new   = &data_in_new_d;
 
   assign data_out_read_d = data_out_we_o ? '0 : data_out_read_q | data_out_re_i;
@@ -407,9 +431,9 @@ module aes_control #(
     end
   end
 
-  // Clear once all input regs have been written
+  // Clear once all input regs have been written, or when input clear is requested
   assign input_ready_o     = ~data_in_new;
-  assign input_ready_we_o  =  data_in_new | data_in_load;
+  assign input_ready_we_o  =  data_in_new | data_in_load | data_in_we_o;
 
   assign key_expand_mode_o  = (dec_key_gen_d || dec_key_gen_q) ? AES_ENC : mode_i;
   assign key_expand_round_o = round_d;
@@ -417,6 +441,7 @@ module aes_control #(
   // Trigger register, the control only ever clears these
   assign start_o             = 1'b0;
   assign key_clear_o         = 1'b0;
+  assign data_in_clear_o     = 1'b0;
   assign data_out_clear_o    = 1'b0;
 
 endmodule
