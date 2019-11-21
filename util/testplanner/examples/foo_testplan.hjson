@@ -46,7 +46,7 @@
               - A sub-bullet item<br>
                 Continue describing above bullet on a new line with a HTML line break.
 
-            Start a new para with with 2 newlines.
+            Start a new paragraph with with two newlines.
             '''
       milestone: V2
       // testplan entry with multiple tests added

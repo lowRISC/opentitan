@@ -86,7 +86,7 @@ To do so, follow the steps below.
 
 * Get an agreement on if and how the IP block should be integrated.
 * Ensure that the IP block is of acceptable quality.
-* Ensure that the top level simultion is not adversely affected.
+* Ensure that the top level simulation is not adversely affected.
 * Open a Pull Request with the necessary code changes.
 
 If it is not clear on how to proceed, feel free to file an issue requesting assistance.

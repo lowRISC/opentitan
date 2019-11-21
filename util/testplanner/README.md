@@ -50,7 +50,7 @@ intent of a planned test:
     possible that the planned test needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of actual written
     tests that maps to each planned test. This information will then be used to map
-    the regression results and annotate them to the tesplan to generate the final
+    the regression results and annotate them to the testplan to generate the final
     table. This list does not have to be populated right away. It can be updated
     as and when tests are written.
 
@@ -107,7 +107,7 @@ actual written tests that maps to the shared testplan entry generically
 enough that they apply to more than one DUTs? We currently solve this by
 providing wildcards, which are single `lower_snake_case` strings within
 braces `'{..}'`. A substitution value (or list of values) for the wildcard
-string can be optionally provided in the DUT tesplan.  Here's an example:
+string can be optionally provided in the DUT testplan.  Here's an example:
 
 ```hjson
 -------
@@ -165,13 +165,13 @@ This will resolve to the following 6 tests:
 The following examples provided within `util/testplanner/examples` can be used as
 a starting point.
 * **`foo_testplan.hjson`**: DUT testplan
-* **`common_testplan.hjson`**: shared testplan imported within the DUT tesplan
-* **`foo_dv_plan.md`**: DUT testplan imported within the DV plan doc in markdown
+* **`common_testplan.hjson`**: shared testplan imported within the DUT testplan
+* **`foo_dv_plan.md`**: DUT testplan imported within the DV plan doc in Markdown
 
 In addition, see the [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
 real 'production' example of inline expansion of an imported testplan as a table
 within the DV Plan document.
-The [UART tesplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
+The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
 imports the shared testplans located at `hw/dv/tools/testplans` area.
 
 ### Limitations
@@ -223,7 +223,7 @@ See following snippet of code for the APIs in use:
 ```python
 from testplanner import class_defs, testplan_utils
 
-  # hjson_testplan_path: a string pointing to the path to Hjson tesplan
+  # hjson_testplan_path: a string pointing to the path to Hjson testplan
   # outbuf: file buffer opened for writing
   testplan = testplan_utils.parse_testplan(hjson_testplan_path)
   testplan_utils.gen_html_testplan_table(testplan, outbuf)

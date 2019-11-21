@@ -225,7 +225,7 @@ Without symbolic variables, the above assertions can be implemented as below:
   end
 ```
 
-In constrast, symbolic variable can abstract the design by declaring the index with
+In contrast, symbolic variable can abstract the design by declaring the index with
 constraints. To ensure the symbolic variable performs the expected behaviors,
 two assumptions need to be written:
 * Constraint the symoblic variable with the correct bound
