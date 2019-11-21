@@ -141,15 +141,9 @@ jobs:
       ninja -C "$(sw_obj_dir fpga)" all
       util/make_build_bin.sh
     displayName: 'Build embedded targets'
-  - bash: |
-      . util/build_consts.sh
-      tar -C "$BUILD_ROOT" \
-        -cvf "$BUILD_ROOT/build-bin.tar" \
-        "${BIN_DIR#"$BUILD_ROOT/"}"
-    displayName: 'Archive step outputs'
-  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: sw_build-build-bin
-    displayName: 'Upload step outputs'
+  - template: 'ci/upload-artifacts-template.yml'
+    parameters:
+      artifact: sw_build
 
 - job: "deprecated_make_build"
   displayName: "Build Software with Make (deprecated)"
@@ -223,15 +217,9 @@ jobs:
       cp "$OBJ_DIR/hw/sim-verilator/Vtop_earlgrey_verilator" \
         "$BIN_DIR/hw/top_earlgrey"
     displayName: 'Build simulation with Verilator'
-  - bash: |
-      . util/build_consts.sh
-      tar -C "$BUILD_ROOT" \
-        -cvf "$BUILD_ROOT/build-bin.tar" \
-        "${BIN_DIR#"$BUILD_ROOT/"}"
-    displayName: 'Archive step outputs'
-  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: top_earlgrey_verilator-build-bin
-    displayName: 'Upload step outputs'
+  - template: 'ci/upload-artifacts-template.yml'
+    parameters:
+      artifact: top_earlgrey_verilator
 
 - job: "top_earlgrey_nexysvideo"
   displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
@@ -247,23 +235,7 @@ jobs:
       sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 tree \
         && sudo pip3 install -U -r python-requirements.txt
     displayName: 'Install dependencies'
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR"
-      tree "$BUILD_ROOT"
-      find "$BUILD_ROOT/downloads" \
-        -name 'build-bin.tar' \
-        -exec \
-          tar -C "$BIN_DIR" \
-          --strip-components=1 \
-          --overwrite \
-          -xvf {} \;
-      tree "$BUILD_ROOT"
-    displayName: 'Unarchive dependencies'
+  - template: 'ci/download-artifacts-template.yml'
   - bash: |
       set -e
       . util/build_consts.sh
@@ -283,15 +255,9 @@ jobs:
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
     displayName: 'Build bitstream with Vivado'
-  - bash: |
-      . util/build_consts.sh
-      tar -C "$BUILD_ROOT" \
-        -cvf "$BUILD_ROOT/build-bin.tar" \
-        "${BIN_DIR#"$BUILD_ROOT/"}"
-    displayName: 'Archive step outputs'
-  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: top_earlgrey_nexysvideo-build-bin
-    displayName: 'Upload step outputs'
+  - template: 'ci/upload-artifacts-template.yml'
+    parameters:
+      artifact: top_earlgrey_nexysvideo
 
 - job: "execute_verilated_tests"
   displayName: "Execute tests on the Verilated system"
@@ -304,23 +270,7 @@ jobs:
       sudo apt-get install -y python3 python3-pip build-essential python3-setuptools tree
       sudo pip3 install -r python-requirements.txt
     displayName: 'Install dependencies'
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR"
-      tree "$BUILD_ROOT"
-      find "$BUILD_ROOT/downloads" \
-        -name 'build-bin.tar' \
-        -exec \
-          tar -C "$BIN_DIR" \
-          --strip-components=1 \
-          --overwrite \
-          -xvf {} \;
-      tree "$BUILD_ROOT"
-    displayName: 'Unarchive dependencies'
+  - template: 'ci/download-artifacts-template.yml'
   - bash: |
       . util/build_consts.sh
       export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
@@ -341,23 +291,7 @@ jobs:
   - bash: |
       sudo apt-get install -y tree
     displayName: 'Install dependencies'
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      buildType: current
-      targetPath: '$(Build.ArtifactStagingDirectory)/downloads'
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR"
-      tree "$BUILD_ROOT"
-      find "$BUILD_ROOT/downloads" \
-        -name 'build-bin.tar' \
-        -exec \
-          tar -C "$BIN_DIR" \
-          --strip-components=1 \
-          --overwrite \
-          -xvf {} \;
-      tree "$BUILD_ROOT"
-    displayName: 'Unarchive dependencies'
+  - template: 'ci/download-artifacts-template.yml'
   - bash: |
       . util/build_consts.sh
 

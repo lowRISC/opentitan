@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for downloading pipeline step outputs and unpacking them.
+#
+# This template will download all artifacts from upstream jobs (which are
+# expected to use upload_artifacts_template.yml) and unpack them.
+#
+# This template expects that a variable $BUILD_ROOT is set to a writeable
+# directory; the results will be available in $BIN_DIR. See
+# util/build_consts.sh for more information.
+
+steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      buildType: current
+      targetPath: '$(BUILD_ROOT)/downloads'
+    displayName: 'Download upstream outputs'
+  - bash: |
+      set -e
+      test -n "$BUILD_ROOT"
+      . util/build_consts.sh
+      mkdir -p "$BIN_DIR"
+
+      sudo apt-get install -y tree
+
+      tree "$BUILD_ROOT"
+      find "$BUILD_ROOT/downloads" \
+        -name 'build-bin.tar' \
+        -exec \
+          tar -C "$BIN_DIR" \
+          --strip-components=1 \
+          --overwrite \
+          -xvf {} \;
+      tree "$BUILD_ROOT"
+    displayName: 'Unpack upstream outputs'
+
