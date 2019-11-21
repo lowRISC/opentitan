@@ -68,6 +68,7 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   endtask
 
   virtual task run_host_seq(uint host_id);
+    host_seq[host_id].valid_host_id_width = cfg.valid_host_id_width;
     host_seq[host_id].start(p_sequencer.host_seqr[host_id]);
     `uvm_info(get_full_name(), $sformatf("%0s finished sending %0d requests",
                                host_seq[host_id].get_full_name(),
