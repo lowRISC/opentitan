@@ -20,6 +20,12 @@ if target == 'sim-verilator'
   add_project_arguments('-DSIMULATION', language: 'c')
 endif
 
+dev_bin_dir = get_option('dev_bin_dir')
+host_bin_dir = get_option('host_bin_dir')
+if dev_bin_dir == 'undef' or host_bin_dir == 'undef'
+  error('dev_bin_dir option not set. Please run meson with a valid binary directory option.')
+endif
+
 # The following flags are applied to *all* builds, both cross builds
 # and native builds.
 add_project_arguments(

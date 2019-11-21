@@ -21,30 +21,42 @@ rom_linkfile = files(['rom_link.ld'])
 rom_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0])]
 rom_link_deps = [rom_linkfile]
 
-custom_target(
+boot_rom_elf = executable(
+  'boot_rom',
+  sources: [
+    'boot_rom.c',
+    'bootstrap.c',
+    'crt0.S'
+  ],
+  name_suffix: 'elf',
+  link_args: rom_link_args,
+  link_depends: rom_link_deps,
+  dependencies: [
+    chip_info_h,
+    sw_lib_flash_ctrl,
+    sw_lib_pinmux,
+    sw_lib_gpio,
+    sw_lib_hmac,
+    sw_lib_spi_device,
+    sw_lib_uart,
+    sw_lib_log,
+  ],
+)
+
+boot_rom_embedded = custom_target(
   'boot_rom',
   command: make_embedded_target,
+  input: boot_rom_elf,
   output: make_embedded_target_outputs,
   build_by_default: true,
-  input: executable(
-    'boot_rom',
-    sources: [
-      'boot_rom.c',
-      'bootstrap.c',
-      'crt0.S'
-    ],
-    name_suffix: 'elf',
-    link_args: rom_link_args,
-    link_depends: rom_link_deps,
-    dependencies: [
-      chip_info_h,
-      sw_lib_flash_ctrl,
-      sw_lib_pinmux,
-      sw_lib_gpio,
-      sw_lib_hmac,
-      sw_lib_spi_device,
-      sw_lib_uart,
-      sw_lib_log,
-    ],
-  ),
 )
+
+custom_target(
+  'boot_rom_export',
+  command: export_embedded_target,
+  input: [boot_rom_elf, boot_rom_embedded],
+  output: 'boot_rom_export',
+  build_always_stale: true,
+  build_by_default: true,
+)
+

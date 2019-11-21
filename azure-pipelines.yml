@@ -139,7 +139,6 @@ jobs:
       ./meson_init.sh -f
       ninja -C "$(sw_obj_dir sim-verilator)" all
       ninja -C "$(sw_obj_dir fpga)" all
-      util/make_build_bin.sh
     displayName: 'Build embedded targets'
   - bash: |
       . util/build_consts.sh

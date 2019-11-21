@@ -2,22 +2,33 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-custom_target(
-  'hello_world',  
+hello_world_elf = executable(
+  'hello_world',
+  sources: ['hello_world.c'],
+  name_suffix: 'elf',
+  dependencies: [
+    sw_lib_pinmux,
+    sw_lib_gpio,
+    sw_lib_irq,
+    sw_lib_spi_device,
+    sw_lib_uart,
+    riscv_crt,
+  ],
+)
+
+hello_world_embedded = custom_target(
+  'hello_world',
   command: make_embedded_target,
+  input: hello_world_elf,
   output: make_embedded_target_outputs,
   build_by_default: true,
-  input: executable(
-    'hello_world',
-    sources: ['hello_world.c',],
-    name_suffix: 'elf',
-    dependencies: [
-      sw_lib_pinmux,
-      sw_lib_gpio,
-      sw_lib_irq,
-      sw_lib_spi_device,
-      sw_lib_uart,
-      riscv_crt,
-    ],
-  ),
+)
+
+custom_target(
+  'hello_world_export',
+  command: export_embedded_target,
+  input: [hello_world_elf, hello_world_embedded],
+  output: 'hello_world_export',
+  build_always_stale: true,
+  build_by_default: true,
 )
