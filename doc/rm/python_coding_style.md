@@ -67,8 +67,8 @@ If this changes a `.isort.cfg` file will be placed in the top level directory of
 
 ### Lint tool
 
-The `lintpy.py` utility in `util` can be used to check python code.
-It checks all python (`.py`) files that are modified in the local repo and will report problems.
+The `lintpy.py` utility in `util` can be used to check Python code.
+It checks all Python (`.py`) files that are modified in the local repository and will report problems.
 Both `yapf` and `isort` checks are run.
 
 Basic lintpy usage is just to run from the util directory.
@@ -90,7 +90,7 @@ $ ./lintpy.py -f a.py subdir/*.py
 ```
 
 Errors may be fixed using the same tool to edit the problem file(s) in-place (you may need to refresh the file(s) in your editor after doing this).
-This uses the same set of files as are being checked, so unless the`--file` or `-f` flag is used this will only affect files that have already been modifed (or staged for commit if `-c`is used) and will not fix errors in python files that have not been touched.
+This uses the same set of files as are being checked, so unless the`--file` or `-f` flag is used this will only affect files that have already been modifed (or staged for commit if `-c`is used) and will not fix errors in Python files that have not been touched.
 
 ```console
 $ cd $REPO_TOP/util
@@ -117,7 +117,7 @@ Fixing import ordering errors for a single file can be done with `isort`:
 $ isort file.py
 ```
 
-Yapf and isort are python packages and should be installed with pip:
+Yapf and isort are Python packages and should be installed with pip:
 
 ```console
 $ pip3 install --user yapt
@@ -171,9 +171,9 @@ Use spaces for indentation.
 Do not use tabs.
 You should set your editor to emit spaces when you hit the tab key.
 
-### Executable python tools
+### Executable Python tools
 
-Tools that can be executed should use `env` to avoid making assumptions about the location of the python interpreter.
+Tools that can be executed should use `env` to avoid making assumptions about the location of the Python interpreter.
 Thus they should begin with the line:
 
 ```console
@@ -190,5 +190,5 @@ In command line tools use the [argparse library](https://docs.python.org/3/libra
 This will provide support for `--help` and `-h` to get usage information.
 
 Every command line program should provide `--version` to provide standard version information.
-This lists the git repositary information for the tool and the version numbers of any python packages that are used.
+This lists the git repositary information for the tool and the version numbers of any Python packages that are used.
 The `show_and_exit` routine in `reggen/version.py` can be used to do this.

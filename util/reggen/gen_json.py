@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Generate json/compact json/hjson from register json tree
+"""Generate JSON/compact JSON/Hjson from register JSON tree
 """
 
 import hjson
@@ -29,4 +29,4 @@ def gen_json(obj, outfile, format):
         hjson.dump(
             obj, outfile, ensure_ascii=False, for_json=True, use_decimal=True)
     else:
-        raise ValueError('Invalid json format ' + format)
+        raise ValueError('Invalid JSON format ' + format)

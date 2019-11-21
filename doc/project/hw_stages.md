@@ -29,7 +29,7 @@ However, wherever there is potentially sensitive material from a future certific
 Once the specification has been shared with the OpenTitan audience and sufficient review has been completed, this phase is exited.
 
 The next life stage is **Development**.
-The hardware IP is being developed in GitHub, the specification is converted to markdown, and design and verification planning is underway.
+The hardware IP is being developed in GitHub, the specification is converted to Markdown, and design and verification planning is underway.
 This is a long phase expected to last until a more formal review is requested for full completion signoff.
 When in Development phase, the stage tracking of the design and verification milestones are valid.
 See those sections that follow for details there.

@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""HMAC-SHA256 python implementation
+"""HMAC-SHA256 Python implementation
 """
 
 import argparse

@@ -45,7 +45,7 @@ done
 \rm -Rf *_pkg.v
 
 #-------------------------------------------------------------------------
-# run LEC (generarted verilog vs. original SystemVerilog)
+# run LEC (generarted Verilog vs. original SystemVerilog)
 #-------------------------------------------------------------------------
 printf "\n\nLEC RESULTS:\n"
 cd ../../hw/formal
@@ -69,7 +69,7 @@ cd -
 #-------------------------------------------------------------------------
 printf "\n\nYosys:\n"
 
-# for now, read in each verilog file into Yosys and only output errors
+# for now, read in each Verilog file into Yosys and only output errors
 # and warnings
 for file in *.v; do
   yosys -QTqp "read_verilog ${file}"

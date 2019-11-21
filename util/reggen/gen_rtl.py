@@ -1,7 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Generate SystemVerilog designs from validated register json tree
+"""Generate SystemVerilog designs from validated register JSON tree
 """
 
 import logging as log
@@ -122,7 +122,7 @@ def parse_win(obj, width):
 
 
 def json_to_reg(obj):
-    """Converts json OrderedDict into structure having useful information for
+    """Converts JSON OrderedDict into structure having useful information for
     Template to use.
 
     Main purpose of this function is:

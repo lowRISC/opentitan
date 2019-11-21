@@ -386,7 +386,7 @@ python3 run.py --test riscv_arithmetic_basic_test --iss new_iss_name
 We have collaborated with LowRISC to apply this flow for [IBEX RISC-V core
 verification](https://github.com/lowRISC/ibex/blob/master/doc/verification.rst). You can use
 it as a reference to setup end-to-end co-simulation flow.
-This repo is still under active development, here's recommended approach to
+This repository is still under active development, here's recommended approach to
 customize the instruction generator while keeping the minimum effort of merging
 upstream changes.
 - Do not modify the upstream classes directly. When possible, extend from

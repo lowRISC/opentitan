@@ -92,7 +92,7 @@ Review and sign off TODOs.
 
 ### STYLE_X
 
-Confirming to style guide regarding X usage. TODO: Related Github issue.
+Confirming to style guide regarding X usage. TODO: Related GitHub issue.
 
 ### LINT_PASS
 

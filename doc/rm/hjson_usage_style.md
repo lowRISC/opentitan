@@ -7,7 +7,7 @@ title: "Hjson Usage and Style Guide"
 ### Summary
 
 Json files are used to provide input data to many of the tools.
-The preference is to use [Hjson](https://hjson.org/), which is a variation of regular json that is easier to write.
+The preference is to use [Hjson](https://hjson.org/), which is a variation of regular JSON that is easier to write.
 In particular it allows the quote marks to be left off the key names, it allows a single string to be quoted with triple quote marks and flow over multiple lines (which is often needed in text descriptions) and it allows comments using the # or // style.
 
 This guide covers the enhancements provided by Hjson that are used in the project along with a recommended style.
@@ -42,8 +42,8 @@ It is always okay to deviate from the style guide by necessity, as long as that 
 
 ## Hjson file format
 
-Hjson is a variation of regular json that is easier to write.
-There are parsers in a number of languages and the tools make extensive used of the `hjson` package provided for Python3.
+Hjson is a variation of regular JSON that is easier to write.
+There are parsers in a number of languages and the tools make extensive used of the `hjson` package provided for Python 3.
 A full description can be found on the [Hjson website](https://hjson.org/), but the main features that make it convenient are that it keeps files cleaner by allowing the quote marks to be left off the key names, it enables long descriptive text by allowing a single string to flow over multiple lines and it allows comments using the # or // style.
 
 For example:
@@ -84,7 +84,7 @@ In most cases, before the opening `{` the file should start with a comment conta
 }
 ```
 
-In cases where the file may need to be parsed by a standard json parser the comments must be omitted, but the SPDX license information should be provided as a top-level key/value using pure json syntax and ignored by any tool.
+In cases where the file may need to be parsed by a standard JSON parser the comments must be omitted, but the SPDX license information should be provided as a top-level key/value using pure JSON syntax and ignored by any tool.
 
 ```json {.good}
 
@@ -102,7 +102,7 @@ In cases where the file may need to be parsed by a standard json parser the comm
 
 Single entries are of the form `key: "value"` Keys must be alphanumeric strings and should not be in quotes.
 (Hjson allows this.
-The quotes may be included as an exception to the style guide if there is an expectation that the file needs to be parsed with a more traditional json parser.)
+The quotes may be included as an exception to the style guide if there is an expectation that the file needs to be parsed with a more traditional JSON parser.)
 The valid keys for each tool are described in the tool documentation.
 The style is for a simple value to be in quotes (even if it is a number) and the tool should manage any type conversions.
 

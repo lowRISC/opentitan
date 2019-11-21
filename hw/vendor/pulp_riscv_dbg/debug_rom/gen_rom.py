@@ -7,7 +7,7 @@ import sys
 import binascii
 
 
-parser = argparse.ArgumentParser(description='Convert binary file to verilog rom')
+parser = argparse.ArgumentParser(description='Convert binary file to Verilog rom')
 parser.add_argument('filename', metavar='filename', nargs=1,
                    help='filename of input binary')
 

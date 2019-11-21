@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Register json validation
+Register JSON validation
 """
 
 import logging as log
@@ -11,7 +11,7 @@ import sys
 from reggen.field_enums import *
 
 
-# Routine that can be used for hjson object_pairs_hook
+# Routine that can be used for Hjson object_pairs_hook
 # The baseline is dict(pairs) i.e. construct a dictonary from pairs
 # The usual is OrderedDict(pairs) which is redundant in latest python
 # Both of these silently allow repeated keys, which this version detects
@@ -277,10 +277,10 @@ val_types = {
     't': ["text", "string, may be multi-line enclosed in `'''` "\
           "may use `**bold**`, `*italic*` or `!!Reg` markup"],
     'T': ["tuple", "tuple enclosed in ()"],
-    'pi': ["python int", "Native python type int (generated)"],
-    'pb': ["python Bool", "Native python type Bool (generated)"],
-    'pl': ["python list", "Native python type list (generated)"],
-    'pe': ["python enum", "Native python type enum (generated)"]
+    'pi': ["python int", "Native Python type int (generated)"],
+    'pb': ["python Bool", "Native Python type Bool (generated)"],
+    'pl': ["python list", "Native Python type list (generated)"],
+    'pe': ["python enum", "Native Python type enum (generated)"]
 }
 
 # Toplevel keys
@@ -603,7 +603,7 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
             fname = field['name']
             if fname in keywords_verilog:
                 error += 1
-                log.error(rname + " field " + fname + " uses verilog keywords")
+                log.error(rname + " field " + fname + " uses Verilog keywords")
             if (fname == ""):
                 fname = rname + ".field" + str(fcount)
             else:
@@ -855,7 +855,7 @@ def validate_register(reg, offset, width, top):
         if rname in keywords_verilog:
             error += 1
             log.error("Register at +" + hex(offset) + rname +
-                      " uses verilog keywords")
+                      " uses Verilog keywords")
         if rname.lower() in top['genrnames']:
             error += 1
             log.error("Register at +" + hex(offset) + " duplicate name " +

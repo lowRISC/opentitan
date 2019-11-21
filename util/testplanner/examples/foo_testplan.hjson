@@ -7,7 +7,7 @@
   intf: ["", "_jtag"]
 
   // 'import_testplans' is a list of imported common testplans
-  // paths are relative to repo top
+  // paths are relative to repository top
   // all key_value pairs in this file other than 'import_testplans' and 'entries'
   // can be used for wildcard substitutions in imported testplans
   import_testplans: ["util/testplanner/examples/common_testplan.hjson"]
@@ -40,11 +40,11 @@
             this.
 
             **Check**: This style is not mandatory, but highly recommended. Also note that
-            the description supports markdown formatting. Add things:
+            the description supports Markdown formatting. Add things:
             - like bullets
             - something in **bold** and in *italic*
               - A sub-bullet item<br>
-                Continue describing above bullet on a new line with a html line break.
+                Continue describing above bullet on a new line with a HTML line break.
 
             Start a new para with with 2 newlines.
             '''

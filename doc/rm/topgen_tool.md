@@ -106,8 +106,8 @@ optional arguments:
                         configurations
   --top-only            If defined, the tool generates top RTL only
   --xbar-only           If defined, the tool generates crossbar RTLs only
-  --plic-only           If defined, the tool generates RV_PLIC RTL and hjson only
-  --hjson-only          If defined, the tool generates complete hjson only
+  --plic-only           If defined, the tool generates RV_PLIC RTL and Hjson only
+  --hjson-only          If defined, the tool generates complete Hjson only
   --top_ral, -r         If set, the tool generates top level RAL model for DV
 
 ```

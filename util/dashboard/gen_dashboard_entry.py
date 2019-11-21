@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Generate html documentation from validated dashboard json tree
+Generate HTML documentation from validated dashboard Hjson tree
 """
 
 import sys

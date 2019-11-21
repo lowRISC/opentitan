@@ -15,7 +15,7 @@ The following are the key techniques used to perform design verification within 
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repo, a UVM testbench, a testplan, DV plan, a suite of tests, and a method to build, run tests and report the current status.
+Each DUT will include within the repository, a UVM testbench, a testplan, DV plan, a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
 As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
 See discussion below on tracking progress.
@@ -66,7 +66,8 @@ The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunc
 
 ### DV Plan
 
-The DV plan document captures the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable. This is written in [markdown]({{< relref "doc/rm/markdown_usage_style" >}}) and is made available in the corresponding `doc` directory of each DUT.
+The DV plan document captures the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
+This is written in [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) and is made available in the corresponding `doc` directory of each DUT.
 
 A [template]({{< relref "hw/dv/doc/dv_plan_template" >}}) for the DV plan documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
 
@@ -96,7 +97,7 @@ It can also be used to auto-generate the initial skeleton source code for buildi
 The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen]({{< relref "util/reggen/README.md" >}}) tool.
 The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool]({{< relref "doc/rm/register_tool" >}}) documentation.
 We currently check-in the auto-generated UVM RAL model along with our UVM testbench code and rely on CI checks for consistency.
-In future, we may move to a flow where it is not checked into the repo, but auto-generated on-the-fly as a part of the simulation.
+In future, we may move to a flow where it is not checked into the repository, but auto-generated on-the-fly as a part of the simulation.
 
 ### Testbench Automation
 

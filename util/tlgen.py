@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--doc',
                         '-d',
                         action='store_true',
-                        help='Generate self html document in stdout')
+                        help='Generate self HTML document in stdout')
     parser.add_argument(
         '--outdir',
         '-o',

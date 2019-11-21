@@ -11,10 +11,10 @@ learn Git](https://try.github.io/).
 
 ## Getting a working repository
 
-To develop in the repo you will need to get a copy on your local
+To develop in the repository you will need to get a copy on your local
 machine. To allow contributions to be made back to the main repo
 (through a process called a Pull Request) you need to first make your
-own copy of the repo on GitHub then transfer that to your local
+own copy of the repository on GitHub then transfer that to your local
 machine.
 
 You will need to log in to GitHub, go to the [opentitan repository](https://github.com/lowRISC/opentitan) and click on
@@ -48,11 +48,11 @@ seconds) so you don't have to enter every time:
 $ git config --global credential.helper 'cache --timeout=3600'
 ```
 
-Now make a local copy of your GitHub copy of the repo and let git know
+Now make a local copy of your GitHub copy of the repository and let git know
 that it is derived from the **upstream** lowRISC repo:
 
 ```console
-$ cd <where the repo should go>
+$ cd <where the repository should go>
 $ git clone https://github.com/$GITHUB_USER/opentitan.git
 $ cd opentitan
 $ git remote add upstream https://github.com/lowRISC/opentitan.git
@@ -64,8 +64,8 @@ The `git remote -v` should give your GitHub copy as **origin** and the
 lowRISC one as **upstream**. Making this link will allow you to keep your
 local and GitHub repos up to date with the lowRISC one.
 
-If you want a different email address (or name) for the lowRISC repo then
-you can set it locally in the repo (similar to above but without the
+If you want a different email address (or name) for the lowRISC repository then
+you can set it locally in the repository (similar to above but without the
 --global flag). This command must be executed from a directory inside
 the local copy of the repo. (There is no need for the first `cd` if
 you are following the previous step.)
@@ -78,9 +78,9 @@ $ git config user.email "my_name@lowrisc.org"
 
 ## Working in your local repo
 
-The repo that you have created locally will initially be on the
+The repository that you have created locally will initially be on the
 **master** branch. In general you should not make changes on this
-branch, just use it to track your GitHub repo and synchronize with the
+branch, just use it to track your GitHub repository and synchronize with the
 lowRISC master repo.
 
 The typical workflow is to make your own branch which it is
@@ -94,7 +94,7 @@ $ git status
 The status will initially indicate there are no changes, but as you
 add, delete or edit files it will let you know the state of things.
 
-Once you are happy with your changes, commit them to the local repo by adding the files to the changes (if things are clean you can add using `git commit -a -s` instead of a number of `add` commands):
+Once you are happy with your changes, commit them to the local repository by adding the files to the changes (if things are clean you can add using `git commit -a -s` instead of a number of `add` commands):
 
 ```console
 $ git add...
@@ -123,20 +123,20 @@ Adding this line certifies you agree to the statement in [CONTRIBUTING.md](https
 
 When you have finished everything locally (it is good practice to do a
 status check to ensure things are clean) you can push your branch (eg
-forchange) to **your** GitHub repo (the **origin**):
+forchange) to **your** GitHub repository (the **origin**):
 
 ```console
 $ git status
 $ git push origin forchange
 ```
 
-Then you need to go to your repo in Github and either select branch
+Then you need to go to your repository in GitHub and either select branch
 from the pulldown or often there is a status message that you can
 click on, review the changes and make a Pull Request. You can add
 reviewers and get your change reviewed.
 
 If you need to make changes to satisfy the reviews then you do that in
-your local repo on the same branch. You will need to `add` files and
+your local repository on the same branch. You will need to `add` files and
 commit again. It is normally best to squash your changes into a single
 commit by doing it with `--amend` which will give you a chance to edit
 the message. If you do this you need to force `-f` the push back to
@@ -151,7 +151,7 @@ $ git push -f origin forchange
 
 Once the reviewers are happy you can "Rebase and Merge" the Pull
 Request on GitHub, delete the branch there (it offers to do this when
-you do the merge). You can delete the branch in your local repo with:
+you do the merge). You can delete the branch in your local repository with:
 
 ```console
 $ git checkout master
@@ -169,7 +169,7 @@ $ git rebase -i `git merge-base {current_branch} master`
 
 Then, an editor will open. Follow the instructions given there, to reorder and
 combine commits, or to change the commit message. Then update the PR branch in
-the Github remote repository.
+the GitHub remote repository.
 
 ```console
 $ git push -f origin HEAD
@@ -193,11 +193,11 @@ EOF
 $ chmod +x .git/hooks/prepare-commit-msg
 ```
 
-## Update your repo with changes in the lowRISC repo
+## Update your repository with changes in the lowRISC repo
 
 There is a little work to do to keep everything in sync. Normally you
-want to first get your local repo master branch up to date with the
-lowRISC repo (**upstream**) and then you use that to update your GitHub
+want to first get your local repository master branch up to date with the
+lowRISC repository (**upstream**) and then you use that to update your GitHub
 copy (**origin**).
 
 ```console
@@ -250,7 +250,7 @@ to read it). For example:
 ```console
 $ git rebase master
 First, rewinding head to replay your work on top of it...
-Applying: [util][pystyle] Clean python style in single file tools
+Applying: [util][pystyle] Clean Python style in single file tools
 Using index info to reconstruct a base tree...
 M       util/diff_generated_util_output.py
 M       util/build_docs.py
@@ -259,7 +259,7 @@ Auto-merging util/build_docs.py
 CONFLICT (content): Merge conflict in util/build_docs.py
 Auto-merging util/diff_generated_util_output.py
 error: Failed to merge in the changes.
-Patch failed at 0001 [util][pystyle] Clean python style in single file tools
+Patch failed at 0001 [util][pystyle] Clean Python style in single file tools
 Use 'git am --show-current-patch' to see the failed patch
 
 Resolve all conflicts manually, mark them as resolved with
@@ -277,7 +277,7 @@ $ git rebase --abort
 
 After executing this command you are back to a clean tree with your
 changes intact, but they are still based on whatever the earlier state
-of the repo was. Normally you will have to resolve the conflict
+of the repository was. Normally you will have to resolve the conflict
 sometime, but the escape hatch can be useful if you don't have time
 immediately!
 
@@ -297,7 +297,7 @@ import docgen.generate
 =======
 import docgen
 import livereload
->>>>>>> [util][pystyle] Clean python style in single file tools
+>>>>>>> [util][pystyle] Clean Python style in single file tools
 
 ```
 
@@ -340,7 +340,7 @@ need to follow the instructions.
 ```console
 $ git add build_docs.py
 $ git rebase --continue
-Applying: [util][pystyle] Clean python style in single file tools
+Applying: [util][pystyle] Clean Python style in single file tools
 ```
 
 If there were more than one patch outstanding (which isn't usual if
@@ -359,7 +359,7 @@ commit dd8721d2b1529c575c4aef988219fbf2ecd3fd1b (HEAD -> sastyle)
 Author: Mark Hayter <mark.hayter@gmail.com>
 Date:   Thu Jan 10 09:41:20 2019 +0000
 
-    [util][pystyle] Clean python style in single file tools
+    [util][pystyle] Clean Python style in single file tools
 
     Result of lintpy.py --fix on the diff and build_docs tools
 
@@ -374,14 +374,14 @@ preceding commit is at the `master` branch (and at the same point as
 `master` on both `origin` and `upstream` so everything is in sync at
 master).
 
-At this point the conflicts have been cleared and the local repo can
+At this point the conflicts have been cleared and the local repository can
 be used as expected.
 
 You may find it useful to change the default for the way git reports conflicts in a file. See [Take the pain out of git conflict resolution: use diff3](https://blog.nilbus.com/take-the-pain-out-of-git-conflict-resolution-use-diff3/)
 
 ## Downloading a pull request to our local repo
 
-With the commands below, you can checkout a pull request from the upstream repo to
+With the commands below, you can checkout a pull request from the upstream repository to
 your local repo.
 
 ```console
@@ -456,7 +456,7 @@ step-by-step with caution:
     $ git commit -m "Add CFG examples to UART specification"
     ```
 
-* Step 3: Create your github branch for the pull request
+* Step 3: Create your GitHub branch for the pull request
 
     ```console
     $ git push -u origin {BRANCH_NAME}:<remote_branch_name>

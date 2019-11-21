@@ -4,7 +4,7 @@
 //
 // TL-UL socket M:1 module
 //
-// verilog parameters
+// Verilog parameters
 //   M:             Number of host ports.
 //   HReqPass:      M bit array to allow requests to pass through the host i
 //                  FIFO with no clock delay if the request FIFO is empty. If

@@ -4,7 +4,7 @@
 //
 # ALERT_HANDLER register template
 #
-# Parameter (given by python tool)
+# Parameter (given by Python tool)
 #  - n_alerts:    Number of alert sources
 #  - esc_cnt_dw:  Width of escalation counter
 #  - accu_cnt_dw: Width of accumulator

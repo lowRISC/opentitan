@@ -7,7 +7,7 @@ Privileges specification Section
 
 ## `reg_rv_plic.py`
 
-The tool is to create register hjson and top module `rv_plic.sv` files given
+The tool is to create register Hjson and top module `rv_plic.sv` files given
 values of number of sources, number of targets, and max value of priority. By
 default `sources` is **32**, `target` is **1** and `priority` is **7** (8 level of priorities
 supported)

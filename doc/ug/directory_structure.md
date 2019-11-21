@@ -2,7 +2,7 @@
 title: "Directory Structure"
 ---
 
-This document provides an overview of the opentitan repo directory structure.
+This document provides an overview of the opentitan repository directory structure.
 The hierarchy underneath the root is fairly self explanatory, containing the following:
 * `doc`: High level documentatation, user guides and reference manuals
 * `util`: Helper scripts and generator tools

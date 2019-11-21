@@ -88,14 +88,14 @@ a value that is not X.
 
 ### More Macros and Examples
 *   For more macros see file [prim_assert.sv](prim_assert.sv).
-*   For more examples, search the repo for ASSERT by typing `grep -r ASSERT .`
+*   For more examples, search the repository for ASSERT by typing `grep -r ASSERT .`
 *   Also see
 [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv)
 and its
 [documentation]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}).
 
 ## Useful SVA System Functions
-Below table lists useful SVA (system verilog assertion) functions that can be
+Below table lists useful SVA (SystemVerilog assertion) functions that can be
 used for assertion properties.
 
 <table>

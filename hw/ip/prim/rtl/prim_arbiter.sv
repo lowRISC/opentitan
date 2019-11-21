@@ -4,7 +4,7 @@
 //
 // N:1 arbiter module
 //
-// verilog parameter
+// Verilog parameter
 //   N:  Number of request ports
 //   DW: Data width
 //

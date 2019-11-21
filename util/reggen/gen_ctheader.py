@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Generate C header (Titan style) from validated register json tree
+Generate C header (Titan style) from validated register JSON tree
 """
 
 import io

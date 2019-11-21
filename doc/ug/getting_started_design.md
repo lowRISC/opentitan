@@ -42,7 +42,7 @@ The outcome of this process should be a specification that is ready for further 
 The content and the status of the proposal can be shared with the team.
 
 An example of a canonical detailed specification is the pinmux specification which can be found in the TeamDrive under TechnicalSpecifications --> deprecated, for those that have access to that resource.
-(Google Docs that have been converted into markdown on GitHub are archived here).
+(Google Docs that have been converted into Markdown on GitHub are archived here).
 
 
 ## Specification Publication
@@ -57,28 +57,26 @@ It is acceptable to keep an unanswered-questions section of the document and mov
 In parallel with publication and review of the specification, the initial skeleton design can commence.
 There are many ways to get past this "big bang" of necessary implementation and get it through eventual code review.
 One recommended method is as follows:
-* Start with a skeleton that includes a complete or near-complete definition of the register content in .hjson format
-* Combine with a basic markdown including that file
-* Combine with an IP-top-level verilog module that instantiates the auto-generated register model (see the [register tool documentation]({{< relref "../rm/register_tool" >}})), includes all of the known IP-level IO, clocking and reset.
+* Start with a skeleton that includes a complete or near-complete definition of the register content in Hjson format
+* Combine with a basic Markdown including that file
+* Combine with an IP-top-level Verilog module that instantiates the auto-generated register model (see the [register tool documentation]({{< relref "../rm/register_tool" >}})), includes all of the known IP-level IO, clocking and reset.
 
 This is not mandatory but allows the basics to come in first with one review, and the full custom details over time.
 Regardless the first check-ins of course should be compilable, syntax error free,
 [coding style guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
 friendly, [Comportability]({{< relref "../rm/comportability_specification" >}}) equivalent, etc., as indicated by the [design methodology user guide]({{< relref "design.md" >}}).
 
-A good example of an initial skeleton design can be seen in
-[Pull Request #166](https://github.com/lowRISC/opentitan/pull/166)
-for the AES module.
+A good example of an initial skeleton design can be seen in [Pull Request #166](https://github.com/lowRISC/opentitan/pull/166) for the AES module.
 
-As part of the GitHub filing process, the Google Doc specification must be converted into a markdown specification.
-(Tip: there are Google Doc add-ons that can convert the specification into markdown format).
+As part of the GitHub filing process, the Google Doc specification must be converted into a Markdown specification.
+(Tip: there are Google Doc add-ons that can convert the specification into Markdown format).
 Once this is completed, any specifications on the Team Drive should be moved to the deprecated section of the drive, with a link at the top indicating that the document is for historical purposes only.
 This applies only for those specifications that originated on the Drive.
 
 
 ## Full Design
 
-As the design develops within the OpenTitan repo, it transitions into "D0", "D1", etc., [design stages]({{< relref "doc/project/hw_stages.md" >}}) and will be eventually plugged into the top level.
+As the design develops within the OpenTitan repository, it transitions into "D0", "D1", etc., [design stages]({{< relref "doc/project/hw_stages.md" >}}) and will be eventually plugged into the top level.
 Following the recommended best practices for digestible pull requests suggests that continuing to stage the design from the initial skeleton into the full featured design is a good way to make steady progress without over-burdening the reviewers.
 
 ## Top Level Inclusion

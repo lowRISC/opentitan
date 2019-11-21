@@ -5,7 +5,7 @@
 <% import math %>\
 # RV_PLIC register template
 #
-# Parameter (given by python tool)
+# Parameter (given by Python tool)
 #  - src:    Number of Interrupt Sources
 #  - target: Number of Targets that handle interrupt requests
 #  - prio:   Max value of interrupt priorities

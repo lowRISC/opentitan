@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Dashboard project json file validation
+Dashboard project JSON file validation
 """
 
 import logging as log
