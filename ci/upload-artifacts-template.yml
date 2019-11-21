@@ -1,0 +1,26 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for archiving pipeline step outputs and uploading them.
+#
+# This template will archive all of $BIN_DIR, and upload it for use by
+# downstream jobs using download_artifacts_template.yml.
+#
+# This template expects that a variable $BUILD_ROOT is set. See
+# util/build_consts.sh for more information.
+
+steps:
+  - bash: |
+      set -e
+      test -n "$BUILD_ROOT"
+      . util/build_consts.sh
+
+      tar -C "$BUILD_ROOT" \
+        -cvf "$BUILD_ROOT/build-bin.tar" \
+        "${BIN_DIR#"$BUILD_ROOT/"}"
+    displayName: 'Archive step outputs'
+  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+    artifact: ${{ parameters.artifact }}-build-bin
+    displayName: 'Upload step outputs'
+
