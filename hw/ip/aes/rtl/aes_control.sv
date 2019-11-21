@@ -32,6 +32,8 @@ module aes_control #(
 
   // Control outputs key expand data path
   output aes_pkg::mode_e          key_expand_mode_o,
+  output aes_pkg::key_init_sel_e  key_init_sel_o,
+  output logic [7:0]              key_init_we_o,
   output aes_pkg::key_full_sel_e  key_full_sel_o,
   output logic                    key_full_we_o,
   output aes_pkg::key_dec_sel_e   key_dec_sel_o,
@@ -43,7 +45,6 @@ module aes_control #(
   output aes_pkg::round_key_sel_e round_key_sel_o,
 
   // Key/data registers
-  output logic                    key_we_o,
   output logic                    data_in_we_o,
   output logic                    data_out_we_o,
 
@@ -82,6 +83,7 @@ module aes_control #(
   logic       data_in_new;
   logic       data_in_load;
 
+  logic       key_init_clear;
   logic [7:0] key_init_new_d, key_init_new_q;
   logic       key_init_new;
   logic       dec_key_gen;
@@ -112,6 +114,8 @@ module aes_control #(
     add_rk_sel_o = ADD_RK_ROUND;
 
     // Key expand data path
+    key_init_sel_o     = KEY_INIT_INPUT;
+    key_init_we_o      = 8'h00;
     key_full_sel_o     = KEY_FULL_ROUND;
     key_full_we_o      = 1'b0;
     key_dec_sel_o      = KEY_DEC_EXPAND;
@@ -136,7 +140,6 @@ module aes_control #(
     // Key, data I/O register control
     dec_key_gen   = 1'b0;
     data_in_load  = 1'b0;
-    key_we_o      = 1'b0;
     data_in_we_o  = 1'b0;
     data_out_we_o = 1'b0;
 
@@ -191,6 +194,8 @@ module aes_control #(
 
           aes_ctrl_ns = CLEAR;
         end
+
+        key_init_we_o = idle_o ? key_init_qe_i : 8'h00;
       end
 
       INIT: begin
@@ -353,7 +358,8 @@ module aes_control #(
 
       CLEAR: begin
         if (key_clear_i) begin
-          key_we_o       = 1'b1;
+          key_init_sel_o = KEY_INIT_CLEAR;
+          key_init_we_o  = 8'hFF;
           key_full_sel_o = KEY_FULL_CLEAR;
           key_full_we_o  = 1'b1;
           key_dec_sel_o  = KEY_DEC_CLEAR;
@@ -398,7 +404,8 @@ module aes_control #(
 
   // Detect new key, new input, output read
   // Edge detectors are cleared by the FSM
-  assign key_init_new_d = (dec_key_gen | key_we_o) ? '0 : (key_init_new_q | key_init_qe_i);
+  assign key_init_clear = (key_init_sel_o == KEY_INIT_CLEAR) & (&key_init_we_o);
+  assign key_init_new_d = (dec_key_gen | key_init_clear) ? '0 : (key_init_new_q | key_init_qe_i);
   assign key_init_new   = &key_init_new_d;
 
   assign data_in_new_d = (data_in_load | data_in_we_o) ? '0 : (data_in_new_q | data_in_qe_i);

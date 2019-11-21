@@ -22,7 +22,6 @@ module aes_core #(
   logic     [3:0][31:0] data_in;
   logic     [3:0]       data_in_qe;
   logic                 data_in_we;
-  logic                 key_we;
   logic     [7:0][31:0] key_init;
   logic     [7:0]       key_init_qe;
 
@@ -42,6 +41,10 @@ module aes_core #(
   logic [3:0][3:0][7:0] add_round_key_out;
   add_rk_sel_e          add_round_key_in_sel;
 
+  logic     [7:0][31:0] key_init_d;
+  logic     [7:0][31:0] key_init_q;
+  logic     [7:0]       key_init_we;
+  key_init_sel_e        key_init_sel;
   logic     [7:0][31:0] key_full_d;
   logic     [7:0][31:0] key_full_q;
   logic                 key_full_we;
@@ -176,10 +179,31 @@ module aes_core #(
   // Key //
   /////////
 
+  // Initial Key registers
+  always_comb begin : key_init_mux
+    unique case (key_init_sel)
+      KEY_INIT_INPUT: key_init_d = key_init;
+      KEY_INIT_CLEAR: key_init_d = '0;
+      default:        key_init_d = 'X;
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : key_init_reg
+    if (!rst_ni) begin
+      key_init_q <= '0;
+    end else begin
+      for (int i=0; i<8; i++) begin
+        if (key_init_we[i]) begin
+          key_init_q[i] <= key_init_d[i];
+        end
+      end
+    end
+  end
+
   // Full Key registers
   always_comb begin : key_full_mux
     unique case (key_full_sel)
-      KEY_FULL_ENC_INIT: key_full_d = key_init;
+      KEY_FULL_ENC_INIT: key_full_d = key_init_q;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
       KEY_FULL_CLEAR:    key_full_d = '0;
@@ -281,7 +305,10 @@ module aes_core #(
     .state_sel_o            ( state_sel                          ),
     .state_we_o             ( state_we                           ),
     .add_rk_sel_o           ( add_round_key_in_sel               ),
+
     .key_expand_mode_o      ( key_expand_mode                    ),
+    .key_init_sel_o         ( key_init_sel                       ),
+    .key_init_we_o          ( key_init_we                        ),
     .key_full_sel_o         ( key_full_sel                       ),
     .key_full_we_o          ( key_full_we                        ),
     .key_dec_sel_o          ( key_dec_sel                        ),
@@ -292,7 +319,6 @@ module aes_core #(
     .key_words_sel_o        ( key_words_sel                      ),
     .round_key_sel_o        ( round_key_sel                      ),
 
-    .key_we_o               ( key_we                             ),
     .data_in_we_o           ( data_in_we                         ),
     .data_out_we_o          ( data_out_we                        ),
 
@@ -315,14 +341,7 @@ module aes_core #(
     .stall_we_o             ( hw2reg.status.stall.de             )
   );
 
-  // Key and input data register clear
-  always_comb begin : key_reg_clear
-    for (int i=0; i<8; i++) begin
-      hw2reg.key[i].d  = '0;
-      hw2reg.key[i].de = key_we;
-    end
-  end
-
+  // Input data register clear
   always_comb begin : data_in_reg_clear
     for (int i=0; i<4; i++) begin
       hw2reg.data_in[i].d  = '0;
@@ -346,6 +365,12 @@ module aes_core #(
   end
 
   // Outputs
+  always_comb begin : key_reg_put
+    for (int i=0; i<8; i++) begin
+      hw2reg.key[i].d  = key_init_q[i];
+    end
+  end
+
   always_comb begin : data_out_put
     for (int i=0; i<4; i++) begin
       hw2reg.data_out[i].d = data_out_q[i];

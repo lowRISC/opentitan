@@ -29,6 +29,11 @@ typedef enum logic [1:0] {
   ADD_RK_FINAL
 } add_rk_sel_e;
 
+typedef enum logic {
+  KEY_INIT_INPUT,
+  KEY_INIT_CLEAR
+} key_init_sel_e;
+
 typedef enum logic [1:0] {
   KEY_FULL_ENC_INIT,
   KEY_FULL_DEC_INIT,
