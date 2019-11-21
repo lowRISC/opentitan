@@ -31,8 +31,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     super.build_phase(phase);
     host_spi_data_fifo = new("host_spi_data_fifo", this);
     device_spi_data_fifo = new("device_spi_data_fifo", this);
-    tx_mem = mem_model::type_id::create("tx_mem", this);
-    rx_mem = mem_model::type_id::create("rx_mem", this);
+    tx_mem = mem_model#()::type_id::create("tx_mem", this);
+    rx_mem = mem_model#()::type_id::create("rx_mem", this);
   endfunction
 
   task run_phase(uvm_phase phase);

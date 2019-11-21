@@ -17,7 +17,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     this.csr_addr_map_size = SPI_DEVICE_ADDR_MAP_SIZE;
   endfunction : initialize_csr_addr_map_size
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = 0);
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     mem_addr_s mem_addr;
     super.initialize(csr_base_addr);
     // create spi agent config obj
