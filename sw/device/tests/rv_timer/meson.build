@@ -6,6 +6,7 @@ custom_target(
   'rv_timer_test',
   command: make_embedded_target,
   output: make_embedded_target_outputs,
+  build_by_default: true,
   input: executable(
     'rv_timer_test',
     sources: ['rv_timer_test.c'],

@@ -19,6 +19,7 @@ custom_target(
   'boot_rom',
   command: make_embedded_target,
   output: make_embedded_target_outputs,
+  build_by_default: true,
   input: executable(
     'boot_rom',
     sources: [
