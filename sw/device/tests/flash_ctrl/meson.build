@@ -6,6 +6,7 @@ custom_target(
   'flash_test',
   command: make_embedded_target,
   output: make_embedded_target_outputs,
+  build_by_default: true,
   input: executable(
     'flash_test',
     sources: ['flash_test.c'],

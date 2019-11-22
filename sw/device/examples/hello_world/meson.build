@@ -6,6 +6,7 @@ custom_target(
   'hello_world',  
   command: make_embedded_target,
   output: make_embedded_target_outputs,
+  build_by_default: true,
   input: executable(
     'hello_world',
     sources: ['hello_world.c',],

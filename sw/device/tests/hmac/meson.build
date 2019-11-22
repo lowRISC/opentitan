@@ -6,6 +6,7 @@ custom_target(
   'sha256_test',
   command: make_embedded_target,
   output: make_embedded_target_outputs,
+  build_by_default: true,
   input: executable(
     'sha256_test',
     sources: ['sha256_test.c'],
