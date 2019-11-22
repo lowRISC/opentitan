@@ -14,7 +14,6 @@ set -e
 
 . util/build_consts.sh
 
-readonly OT_VERSION="$(git describe --always)"
 echo "\$OT_VERSION = $OT_VERSION" >&2
 
 # $DIST_ARTIFACTS is a list of |find| globs to be copied out of
@@ -30,7 +29,7 @@ readonly DIST_ARTIFACTS=(
   'hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit'
 )
 
-DIST_DIR="$OBJ_DIR/opentitan-$OT_VERSION"
+DIST_DIR="$OBJ_DIR/$OT_VERSION"
 mkdir -p "$DIST_DIR"
 
 cp ci/README.snapshot "$DIST_DIR"
@@ -55,5 +54,6 @@ for pat in "${DIST_ARTIFACTS[@]}"; do
   fi
 done
 
-cd "$OBJ_DIR"
-tar -cJf "$BIN_DIR/opentitan-$OT_VERSION.tar.xz" "opentitan-$OT_VERSION"
+cd "$(dirname "$DIST_DIR")"
+tar -cJf "$BIN_DIR/$(basename "$DIST_DIR").tar.xz" \
+  "$(basename "$DIST_DIR")"

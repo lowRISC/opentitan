@@ -10,13 +10,11 @@ import logging as log
 import os
 import sys
 from datetime import datetime
-from git import Repo
 from io import StringIO
 from pathlib import Path
 
 
-# Common header for generated files
-gentpl = r"""
+header_template = r"""
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -27,10 +25,10 @@ gentpl = r"""
 #define _F_CHIPINFO_H__
 
 static const char chip_info[128] __attribute__((section(".chip_info"))) =
-  "Commit ID:  {%commit_hash%}\r\n"
+  "Version:    {%version%}\r\n"
   "Build Date: {%build_date%}\r\n";
 
-#endif
+#endif  // _F_CHIPINFO_H__
 
 """
 def main():
@@ -40,32 +38,35 @@ def main():
                         required=True,
                         help='Output Directory'
                         )
+    parser.add_argument('--ot_version',
+                        required=True,
+                        help='OpenTitan Version'
+                        )
 
     log.basicConfig(format="%(levelname)s: %(message)s")
     args = parser.parse_args()
 
     if not args.outdir:
-        log.error("'--outdir' not specified")
+        log.error("Missing --outdir.")
         raise SystemExit(sys.exc_info()[1])
-    else:
-        outdir = Path(args.outdir)
+    if not args.ot_version:
+        log.error("Missing --ot_version.")
+        raise SystemExit(sys.exc_info()[1])
+
+    outdir = Path(args.outdir)
+    version = args.ot_version
 
     outdir.mkdir(parents=True, exist_ok=True)
     out_path = outdir / "chip_info.h"
 
-    # This file may invoked from some random place outside the repository, so
-    # we need to make sure to do a git lookup relative to *this* file.
-    this_dir = Path(__file__).resolve().parent
-    repo = Repo(path=str(this_dir), search_parent_directories=True)
-    repo_info = repo.head.object.hexsha
-
     now = datetime.now()
     wall_time = now.strftime("%Y-%m-%d, %H:%M:%S")
 
-    log.info("Info %s" % repo_info)
-    log.info("Time %s" % wall_time)
+    log.info("Version: %s" % (version,))
+    log.info("Build Date: %s" % (wall_time,))
 
-    output = gentpl.replace('{%commit_hash%}', repo_info, 1)
+    output = header_template
+    output = output.replace('{%version%}', version, 1)
     output = output.replace('{%build_date%}', wall_time, 1)
 
     with out_path.open(mode='w', encoding='UTF-8') as fout:

@@ -16,6 +16,10 @@
 # $OBJ_DIR and $BIN_DIR are the subdirectories build-out and build-bin of
 # $BUILD_ROOT, which can be configured to any desired directory. Build artifacts
 # can be cleaned out by running |rm -rf $BUILD_ROOT/build-*|.
+#
+# This file also provides $OT_VERSION, which can be embedded in artifacts as a
+# timestamp. If a git repo is present, it will be computed from that, or else
+# will be an arbitrary string.
 
 # Since this file is intended to be sourced, we can't use |$0| to get our
 # bearings. However, the bash-specific $BASH_SOURCE works perfectly fine.
@@ -25,8 +29,15 @@ else
   echo "Non-bash shells are currently not supported." >&2
   exit 1
 fi
-BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
 
+OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
+if [[ -n "$OT_GIT_VERSION" ]]; then
+  readonly OT_VERSION="opentitan-$OT_GIT_VERSION"
+else
+  readonly OT_VERSION="opentitan-<unknown>"
+fi
+
+BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
 readonly OBJ_DIR="$BUILD_ROOT/build-out"
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 

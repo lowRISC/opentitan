@@ -1,1 +1,7 @@
 option('target', type : 'combo', choices: ['sim-verilator', 'fpga', 'undef'], value : 'undef')
+
+option(
+  'ot_version',
+  type: 'string',
+  value: 'undef',
+)

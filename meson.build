@@ -9,6 +9,11 @@ if target == 'undef'
   error('target option not set. Please run meson with a valid build target option.')
 endif
 
+ot_version = get_option('ot_version')
+if ot_version == 'undef'
+  error('ot_version option not set. Please run meson with a valid OpenTitan version option.')
+endif
+
 if target == 'sim-verilator'
   # TODO: Consider using extra args array if using this flag globally is no
   # longer OK.

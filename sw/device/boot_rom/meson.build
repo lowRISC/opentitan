@@ -3,11 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Generate header file with chip_info information.
-chip_info_h = custom_target(
-  'chip_info_h',
-  output: 'chip_info.h',
-  command: [
-    prog_python, '@SOURCE_DIR@/util/rom_chip_info.py', '--outdir', '@OUTDIR@']
+chip_info_h = declare_dependency(
+  sources: [custom_target(
+    'chip_info_h',
+    output: 'chip_info.h',
+    command: [
+      prog_python,
+      '@SOURCE_DIR@/util/rom_chip_info.py',
+      '--outdir', '@OUTDIR@',
+      '--ot_version', ot_version,
+    ]
+  )],
 )
 
 # ROM linker parameters.
@@ -23,7 +29,6 @@ custom_target(
   input: executable(
     'boot_rom',
     sources: [
-      chip_info_h,
       'boot_rom.c',
       'bootstrap.c',
       'crt0.S'
@@ -32,6 +37,7 @@ custom_target(
     link_args: rom_link_args,
     link_depends: rom_link_deps,
     dependencies: [
+      chip_info_h,
       sw_lib_flash_ctrl,
       sw_lib_pinmux,
       sw_lib_gpio,
