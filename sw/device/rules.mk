@@ -101,7 +101,7 @@ $(LIB_BUILD_DIR)/pinmux_regs.h: $(REPO_TOP)/hw/top_earlgrey/ip/pinmux/data/autog
 
 # chip_info
 $(SW_BUILD_DIR)/sw/device/boot_rom/chip_info.h: $(INFOTOOL)
-	$(INFOTOOL) -o $(dir $@)
+	$(INFOTOOL) -o $(dir $@) --ot_version "opentitan-<deprecated/make>"
 
 -include $(DEPS)
 

@@ -12,6 +12,7 @@ set -o nounset
 echo "Detected \$REPO_TOP at $REPO_TOP."
 echo "Object directory set at $OBJ_DIR."
 echo "Binary directory set at $BIN_DIR."
+echo "OpenTitan version: $OT_VERSION"
 echo
 
 function usage() {
@@ -105,6 +106,7 @@ for platform in ${PLATFORMS[@]}; do
   mkdir -p "$obj_dir"
   meson ${FLAGS_reconfigure} \
     -Dtarget="$platform" \
+    -Dot_version="$OT_VERSION" \
     --cross-file="$CROSS_FILE" \
     --buildtype=plain \
     "$obj_dir"
