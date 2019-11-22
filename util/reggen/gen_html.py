@@ -164,10 +164,11 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         regwen_string = '<br>Register enable = ' + reg['regwen']
     genout(
         outfile, "<table class=\"regdef\" id=\"Reg_" + rname.lower() + "\">\n"
-        "<tr><th class=\"regdef\" colspan=5>" + comp + "." + rname + " @ + " +
-        hex(offset) + "<br>" + desc_expand(reg['desc'], rnames) + "<br>" +
-        "Reset default = " + hex(reg['genresval']) + ", mask " + hex(
-            reg['genresmask']) + regwen_string + "</th></tr>\n")
+        "<tr><th class=\"regdef\" colspan=5><div>" + comp + "." + rname +
+        " @ + " + hex(offset) + "</div><div>" +
+        desc_expand(reg['desc'], rnames) + "</div>" + "<div>Reset default = " +
+        hex(reg['genresval']) + ", mask " + hex(reg['genresmask']) +
+        regwen_string + "</div></th></tr>\n")
     if toc != None:
         toc.append((toclvl, comp + "." + rname, "Reg_" + rname.lower()))
     genout(outfile, "<tr><td colspan=5>")
@@ -214,14 +215,14 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         genout(outfile, "<tr><td class=\"regbits\">" + field['bits'] + "</td>")
         genout(outfile, "<td class=\"regperm\">" + field['swaccess'] + "</td>")
         genout(
-            outfile,
-            "<td class=\"regrv\">" + ('x' if field['genresvalx'] else hex(
-                field['genresval'])) + "</td>")
+            outfile, "<td class=\"regrv\">" +
+            ('x' if field['genresvalx'] else hex(field['genresval'])) +
+            "</td>")
         genout(outfile, "<td class=\"regfn\">" + fname + "</td>")
         if 'desc' in field:
             genout(
-                outfile, "<td class=\"regde\">" + desc_expand(
-                    field['desc'], rnames) + "\n")
+                outfile, "<td class=\"regde\">" +
+                desc_expand(field['desc'], rnames) + "\n")
         else:
             genout(outfile, "<td>\n")
 
@@ -258,11 +259,11 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
     offset = win['genoffset']
     genout(
         outfile, '<table class="regdef" id="Reg_' + wname.lower() + '">\n'
-        '<tr><th class="regdef">' + comp + '.' + wname + ' @ + ' + hex(offset)
-        + '<br>' + win['items'] + ' item ' + win['swaccess'] +
-        ' window<br>Byte writes are ' +
+        '<tr><th class="regdef"><div>' + comp + '.' + wname + ' @ + ' +
+        hex(offset) + '</div><div>' + win['items'] + ' item ' +
+        win['swaccess'] + ' window</div><div>Byte writes are ' +
         ('' if win['genbyte-write'] else '<i>not</i> ') +
-        'supported</th></tr>\n')
+        'supported</div></th></tr>\n')
     genout(outfile, '<tr><td><table class="regpic">')
     genout(outfile, '<tr><td width="10%"></td>')
     wid = win['genvalidbits']
