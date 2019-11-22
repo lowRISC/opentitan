@@ -189,6 +189,19 @@ Some examples:
 * **task cfg_interrupts, check_interrupts**: All interrupt CSRs are standardized
   according to the comportability spec, which allows us to create common tasks
   to turn on / off interrupts as well as check them.
+* **task run_stress_all_with_rand_reset_vseq**: This is a common virtual
+  sequence based on the stress_all virtual sequence. This virtual sequence
+  will randomly reset the stress_all sequence, then it will check if all
+  the readable registers are reset to the correct value.
+  To ensure the reset functionality works correctly, user will have to disable
+  any internal reset from the stress_all sequence. Below is an example of
+  disabling internal reset in `hmac_stress_all_vseq.sv`:
+  ```
+  // randomly trigger internal dut_init reset sequence
+  // disable any internal reset if used in stress_all_with_rand_reset vseq
+  if (do_dut_init) hmac_vseq.do_dut_init = $urandom_range(0, 1);
+  else hmac_vseq.do_dut_init = 0;
+  ```
 
 This class is type parameterized with the env cfg class type `CFG_T`, ral class type
 `RAL_T` and the virtual sequencer class type `VIRTUAL_SEQUENCER_T` so that the
