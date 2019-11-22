@@ -88,10 +88,14 @@
 ##############################################################################
 # control and status registers
   { name: "CTRL",
-    desc: "Control Register",
+    desc: '''
+      Control Register. Can only be updated when the AES unit is idle. If the
+      AES unit is non-idle, writes to this register are ignored.
+    '''
     swaccess: "rw",
     hwaccess: "hro",
-    hwqe: "true",
+    hwext:    "true",
+    hwqe:     "true",
     fields: [
       { bits: "0",
         name: "MODE",
