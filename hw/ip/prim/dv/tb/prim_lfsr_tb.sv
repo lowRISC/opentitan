@@ -49,30 +49,31 @@ module prim_lfsr_tb;
 // DUTs
 //////////////////////////////////////////////////////
 
-  logic [MaxLfsrDw:0] en, err;
-  logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] data_out;
+  logic [MaxLfsrDw:0] lfsr_en, err;
+  logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] state_out;
   logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] lfsr_periods;
 
   for (genvar k = MinLfsrDw; k <= MaxLfsrDw; k++) begin : gen_duts
     prim_lfsr #(
-      .LfsrType(LfsrType),
-      .LfsrDw(k),
-      .InDw(1),
-      .OutDw(k),
-      .Seed(k'(SEED)),
-      .Custom('0),
+      .LfsrType    ( LfsrType ),
+      .LfsrDw      ( k        ),
+      .EntropyDw   ( 1        ),
+      .StateOutDw  ( k        ),
+      .DefaultSeed ( k'(SEED) ),
       // enable internal max length check
-      .MaxLenSVA(1'b1)
+      .MaxLenSVA   ( 1'b1     )
     ) i_prim_lfsr (
-      .clk_i(clk),
-      .rst_ni(rst_n),
-      .en_i(en[k]),
-      .data_i(1'b0),
-      .data_o(data_out[k][k-1:0])
+      .clk_i         ( clk                 ),
+      .rst_ni        ( rst_n               ),
+      .seed_en_i     ( 1'b0                ),
+      .seed_i        ( '0                  ),
+      .lfsr_en_i     ( lfsr_en[k]          ),
+      .entropy_i     ( 1'b0                ),
+      .state_o       ( state_out[k][k-1:0] )
     );
 
     if (k < MaxLfsrDw) begin : gen_tie_off
-      assign data_out[k][MaxLfsrDw-1:k] = '0;
+      assign state_out[k][MaxLfsrDw-1:k] = '0;
     end
 
     // calculate period of LFSR:
@@ -84,8 +85,8 @@ module prim_lfsr_tb;
 //////////////////////////////////////////////////////
 
   initial begin : p_stimuli
-    en    = '0;
-    err   = '0;
+    lfsr_en = '0;
+    err     = '0;
 
     main_clk.set_period_ns(CLK_PERIOD);
     main_clk.set_active();
@@ -97,7 +98,7 @@ module prim_lfsr_tb;
     main_clk.wait_clks(10);
 
     // enable all LFSRs
-    en = '1;
+    lfsr_en = '1;
 
     $display("Running for 2**%0d-1 cycles...", MaxLfsrDw);
     for (longint unsigned k = 0; k <= lfsr_periods[MaxLfsrDw]; k++ ) begin
@@ -106,10 +107,10 @@ module prim_lfsr_tb;
 
       for (int unsigned j = MinLfsrDw; j <= MaxLfsrDw; j++) begin
         // check if we reached the initial state again
-        if (data_out[j] == MaxLfsrDw'(SEED) && en[j]) begin
+        if (state_out[j] == MaxLfsrDw'(SEED) && lfsr_en[j]) begin
           // $display("cycle: %d -- lfsr: %d -- %x ?= %x, %x",
-          // k, j, data_out[j], SEED, en);
-          en[j] = 1'b0;
+          // k, j, state_out[j], SEED, lfsr_en);
+          lfsr_en[j] = 1'b0;
           // we expect this to occur only after the maximum length period
           if (lfsr_periods[j] == k) begin
             $display("Maxlen check for LFSR %0d succeeded!", j);
@@ -124,7 +125,7 @@ module prim_lfsr_tb;
     main_clk.wait_clks(10);
 
     for (int unsigned j = MinLfsrDw; j <= MaxLfsrDw; j++) begin
-      if (en[j]) begin
+      if (lfsr_en[j]) begin
         $error("Error LFSR %0d never got back to initial state!", j);
         err[j] = 1'b1;
       end

@@ -55,16 +55,18 @@ module alert_handler_ping_timer (
   logic [31:0] lfsr_state, perm_state;
 
   prim_lfsr #(
-    .LfsrDw ( 32                  ),
-    .InDw   ( 1                   ),
-    .OutDw  ( 32                  ),
-    .Seed   ( alert_pkg::LfsrSeed )
+    .LfsrDw      ( 32                  ),
+    .EntropyDw   ( 1                   ),
+    .StateOutDw  ( 32                  ),
+    .DefaultSeed ( alert_pkg::LfsrSeed )
   ) i_prim_lfsr (
     .clk_i,
     .rst_ni,
-    .en_i   ( lfsr_en    ),
-    .data_i ( entropy_i  ),
-    .data_o ( lfsr_state )
+    .seed_en_i  ( 1'b0       ),
+    .seed_i     ( '0         ),
+    .lfsr_en_i  ( lfsr_en    ),
+    .entropy_i,
+    .state_o    ( lfsr_state )
   );
 
   for (genvar k = 0; k < 32; k++) begin : gen_perm
