@@ -18,49 +18,57 @@ width availability in the lookup table (see below).
 
 ## Parameters
 
-Name      | type   | Description
-----------|--------|----------------------------------------------------------
-LfsrType  | string | LFSR form, can be `"GAL_XOR"` or `"FIB_XNOR"`
-LfsrDw    | int    | Width of the LFSR
-InDw      | int    | Width of the entropy input
-OutDw     | int    | Width of the LFSR state to be output (`lfsr_q[OutDw-1:0]`)
-Seed      | logic  | Initial state of the LFSR, must be nonzero for XOR and non-all-ones for XNOR forms.
-Custom    | logic  | Custom polynomial coefficients of length LfsrDw.
-MaxLenSVA | bit    | Enables maximum length assertions, use only in sim and FPV.
+Name         | type   | Description
+-------------|--------|----------------------------------------------------------
+LfsrType     | string | LFSR form, can be `"GAL_XOR"` or `"FIB_XNOR"`
+LfsrDw       | int    | Width of the LFSR
+EntropyDw    | int    | Width of the entropy input
+StateOutDw   | int    | Width of the LFSR state to be output (`lfsr_q[StateOutDw-1:0]`)
+DefaultSeed  | logic  | Initial state of the LFSR, must be nonzero for XOR and non-all-ones for XNOR forms.
+CustomCoeffs | logic  | Custom polynomial coefficients of length LfsrDw.
+MaxLenSVA    | bit    | Enables maximum length assertions, use only in sim and FPV.
 
 ## Signal Interfaces
 
-Name          | In/Out | Description
---------------|--------|---------------------------------
-en_i          | input  | Lfsr enable
-data_i[InDw]  | input  | Entropy input
-data_o[OutDw] | output | LFSR state output.
+Name                 | In/Out | Description
+---------------------|--------|---------------------------------
+seed_en_i            | input  | External seed input enable
+seed_i[LfsrDw]       | input  | External seed input
+lfsr_en_i            | input  | Lfsr enable
+entropy_i[EntropyDw] | input  | Entropy input
+state_o[StateOutDw]  | output | LFSR state output.
 
 # Theory of Opeations
 
 ```
-           /-----------\
-en_i       |           |
----------->|   lfsr    |
-           |           |
-data_i     |  LfsrDw   |       data_o
-=====/====>| LfsrType  |=======/=======>
- [InDw]    |   InDw    |    [OutDw]
-           |   OutDw   |
-           |   Seed    |
-           |  Custom   |
-           | MaxLenSVA |
-           |           |
-           \-----------/
+             /----------------\
+seed_en_i    |                |
+------------>|      lfsr      |
+seed_i       |                |
+=====/======>|     LfsrDw     |
+ [LfsrDw]    |    LfsrType    |
+lfsr_en_i    |   EntropyDw    |
+------------>|   StateOutDw   |
+entropy_i    |   DefaultSeed  |  state_o
+=====/======>|  CustomCoeffs  |=====/=======>
+ [EntropyDw] |   MaxLenSVA    |  [StateOutDw]
+             |                |
+             \----------------/
 ```
 
 The LFSR module has an enable input and an additional entropy input that is
-XOR'ed into the LFSR state (connect to zero if this feature is unused). The data
-output contains the lower bits of the LFSR state from `OutDw-1` downto `0`. As
-the entropy input may cause the LFSR to jump into its parasitic state
-(all-zero for XOR, all-ones for XNOR), the LFSR state transition function
-contains a lockup protection which re-seeds the state once this condition is
-detected.
+XOR'ed into the LFSR state (connect to zero if this feature is unused). The
+state output contains the lower bits of the LFSR state from `StateOutDw-1`
+downto `0`. As the entropy input may cause the LFSR to jump into its parasitic
+state (all-zero for XOR, all-ones for XNOR), the LFSR state transition function
+contains a lockup protection which re-seeds the state with `DefaultSeed` once
+this condition is detected.
+
+The LFSR contains an external seed input `seed_i` which can be used to load a
+custom seed into the LFSR by asserting `seed_en_i`. This operation takes
+precedence over internal state updates. If the external seed happens to be a
+parasitic state, the lockup protection feature explained above will reseed the
+LFSR with the `DefaultSeed` in the next cycle.
 
 The LFSR coefficients are taken from an internal set of lookup tables with
 precomputed coefficients. Alternatively, a custom polynomial can be provided
