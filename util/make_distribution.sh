@@ -38,7 +38,9 @@ cp LICENSE "$DIST_DIR"
 
 for pat in "${DIST_ARTIFACTS[@]}"; do
   echo "Searching for $pat." >&2
+  found_file=false
   for file in $(find "$BIN_DIR" -type f -path "$BIN_DIR/$pat"); do
+    found_file=true
     relative_file="${file#"$BIN_DIR/"}"
     echo "Copying \$BIN_DIR/$relative_file." >&2
 
@@ -46,6 +48,11 @@ for pat in "${DIST_ARTIFACTS[@]}"; do
     mkdir -p "$destination"
     mv "$file" "$destination"
   done
+  if [[ "$found_file" == "false" ]]; then
+    echo "Did not find any files matching $pat." >&2
+    echo "If this is intentional, delete that pattern." >&2
+    exit 1
+  fi
 done
 
 cd "$OBJ_DIR"
