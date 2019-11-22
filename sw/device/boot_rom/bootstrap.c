@@ -108,9 +108,11 @@ int bootstrap(void) {
     return 0;
   }
   // SPI device is only initialized in bootstrap mode.
+  uart_send_str("Bootstrap requested, initialising HW...\n");
   spid_init();
   flash_init_block();
 
+  uart_send_str("HW initialisation completed, waiting for SPI input...\n");
   int rv = bootstrap_flash();
   if (rv) {
     rv |= erase_flash();
