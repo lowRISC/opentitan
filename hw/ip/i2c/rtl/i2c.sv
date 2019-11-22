@@ -37,11 +37,6 @@ module i2c (
   i2c_reg2hw_t reg2hw;
   i2c_hw2reg_t hw2reg;
 
-  logic devmode;
-  logic scanmode_i;
-
-  assign scanmode_i = 1'b0;
-
   i2c_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -58,7 +53,6 @@ module i2c (
   i2c_core i2c_core (
     .clk_i,
     .rst_ni,
-    .scanmode_i,
     .reg2hw,
     .hw2reg,
 
@@ -88,7 +82,6 @@ module i2c (
   assign cio_scl_en_o = ~scl_int;
   assign cio_sda_en_o = ~sda_int;
 
-  `ASSERT_KNOWN(scanmodeKnown_A, scanmode_i, clk_i, 0)
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(CioSclKnownO_A, cio_scl_o, clk_i, !rst_ni)

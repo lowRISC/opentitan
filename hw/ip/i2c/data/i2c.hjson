@@ -68,13 +68,12 @@
     { name:     "STATUS"
       desc:     "I2C live status register"
       swaccess: "ro"
-      hwaccess: "hrw"
+      hwaccess: "hwo"
       hwext:    "true"
-      hwre:     "true"
       fields: [
         { bits: "0"
           name: "FMTFULL"
-          desc: "TX buffer is full"
+          desc: "FMT buffer is full"
         }
         { bits: "1"
           name: "RXFULL"
@@ -97,7 +96,7 @@
         }
         { bits: "4"
           name: "TARGETIDLE"
-          desc: "Target functionality is idle No Target transaction is in progress"
+          desc: "Target functionality is idle. No Target transaction is in progress"
           resval: "1"
         }
       ]
