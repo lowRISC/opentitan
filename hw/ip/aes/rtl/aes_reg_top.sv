@@ -104,15 +104,19 @@ module aes_reg_top (
   logic ctrl_mode_qs;
   logic ctrl_mode_wd;
   logic ctrl_mode_we;
+  logic ctrl_mode_re;
   logic [2:0] ctrl_key_len_qs;
   logic [2:0] ctrl_key_len_wd;
   logic ctrl_key_len_we;
+  logic ctrl_key_len_re;
   logic ctrl_manual_start_trigger_qs;
   logic ctrl_manual_start_trigger_wd;
   logic ctrl_manual_start_trigger_we;
+  logic ctrl_manual_start_trigger_re;
   logic ctrl_force_data_overwrite_qs;
   logic ctrl_force_data_overwrite_wd;
   logic ctrl_force_data_overwrite_we;
+  logic ctrl_force_data_overwrite_re;
   logic trigger_start_qs;
   logic trigger_start_wd;
   logic trigger_start_we;
@@ -433,108 +437,64 @@ module aes_reg_top (
   );
 
 
-  // R[ctrl]: V(False)
+  // R[ctrl]: V(True)
 
   //   F[mode]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_ctrl_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (ctrl_mode_re),
     .we     (ctrl_mode_we),
     .wd     (ctrl_mode_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.ctrl.mode.qe),
     .q      (reg2hw.ctrl.mode.q ),
-
-    // to register interface (read)
     .qs     (ctrl_mode_qs)
   );
 
 
   //   F[key_len]: 3:1
-  prim_subreg #(
-    .DW      (3),
-    .SWACCESS("RW"),
-    .RESVAL  (3'h1)
+  prim_subreg_ext #(
+    .DW    (3)
   ) u_ctrl_key_len (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (ctrl_key_len_re),
     .we     (ctrl_key_len_we),
     .wd     (ctrl_key_len_wd),
-
-    // from internal hardware
-    .de     (hw2reg.ctrl.key_len.de),
-    .d      (hw2reg.ctrl.key_len.d ),
-
-    // to internal hardware
+    .d      (hw2reg.ctrl.key_len.d),
+    .qre    (),
     .qe     (reg2hw.ctrl.key_len.qe),
     .q      (reg2hw.ctrl.key_len.q ),
-
-    // to register interface (read)
     .qs     (ctrl_key_len_qs)
   );
 
 
   //   F[manual_start_trigger]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_ctrl_manual_start_trigger (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (ctrl_manual_start_trigger_re),
     .we     (ctrl_manual_start_trigger_we),
     .wd     (ctrl_manual_start_trigger_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.ctrl.manual_start_trigger.qe),
     .q      (reg2hw.ctrl.manual_start_trigger.q ),
-
-    // to register interface (read)
     .qs     (ctrl_manual_start_trigger_qs)
   );
 
 
   //   F[force_data_overwrite]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_ctrl_force_data_overwrite (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (ctrl_force_data_overwrite_re),
     .we     (ctrl_force_data_overwrite_we),
     .wd     (ctrl_force_data_overwrite_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.ctrl.force_data_overwrite.qe),
     .q      (reg2hw.ctrl.force_data_overwrite.q ),
-
-    // to register interface (read)
     .qs     (ctrl_force_data_overwrite_qs)
   );
 
@@ -845,15 +805,19 @@ module aes_reg_top (
 
   assign ctrl_mode_we = addr_hit[16] & reg_we & ~wr_err;
   assign ctrl_mode_wd = reg_wdata[0];
+  assign ctrl_mode_re = addr_hit[16] && reg_re;
 
   assign ctrl_key_len_we = addr_hit[16] & reg_we & ~wr_err;
   assign ctrl_key_len_wd = reg_wdata[3:1];
+  assign ctrl_key_len_re = addr_hit[16] && reg_re;
 
   assign ctrl_manual_start_trigger_we = addr_hit[16] & reg_we & ~wr_err;
   assign ctrl_manual_start_trigger_wd = reg_wdata[4];
+  assign ctrl_manual_start_trigger_re = addr_hit[16] && reg_re;
 
   assign ctrl_force_data_overwrite_we = addr_hit[16] & reg_we & ~wr_err;
   assign ctrl_force_data_overwrite_wd = reg_wdata[5];
+  assign ctrl_force_data_overwrite_re = addr_hit[16] && reg_re;
 
   assign trigger_start_we = addr_hit[17] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];

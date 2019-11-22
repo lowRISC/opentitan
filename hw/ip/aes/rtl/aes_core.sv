@@ -25,8 +25,13 @@ module aes_core #(
   logic     [7:0][31:0] key_init;
   logic     [7:0]       key_init_qe;
 
-  mode_e                mode, key_expand_mode;
-  key_len_e             key_len_q, key_len;
+  logic                 ctrl_qe;
+  logic                 ctrl_we;
+  mode_e                mode_d, mode_q;
+  key_len_e             key_len;
+  key_len_e             key_len_d, key_len_q;
+  logic                 manual_start_trigger_q;
+  logic                 force_data_overwrite_q;
 
   logic [3:0][3:0][7:0] state_init;
   logic [3:0][3:0][7:0] state_d;
@@ -54,6 +59,7 @@ module aes_core #(
   logic                 key_dec_we;
   key_dec_sel_e         key_dec_sel;
   logic     [7:0][31:0] key_expand_out;
+  mode_e                key_expand_mode;
   logic                 key_expand_step;
   logic                 key_expand_clear;
   logic           [3:0] key_expand_round;
@@ -71,9 +77,6 @@ module aes_core #(
 
   // Unused signals
   logic     [3:0][31:0] unused_data_out_q;
-  logic                 unused_mode_qe;
-  logic                 unused_manual_start_trigger_qe;
-  logic                 unused_force_data_overwrite_qe;
 
   ////////////
   // Inputs //
@@ -102,23 +105,20 @@ module aes_core #(
     end
   end
 
-  assign mode = mode_e'(reg2hw.ctrl.mode.q);
+  assign mode_d = mode_e'(reg2hw.ctrl.mode.q);
 
-  assign key_len_q = key_len_e'(reg2hw.ctrl.key_len.q);
+  assign key_len = key_len_e'(reg2hw.ctrl.key_len.q);
   always_comb begin : get_key_len
-    unique case (key_len_q)
-      AES_128: key_len = AES_128;
-      AES_256: key_len = AES_256;
-      AES_192: key_len = AES192Enable ? AES_192 : AES_128;
-      default: key_len = AES_128; // unsupported values are mapped to AES_128
+    unique case (key_len)
+      AES_128: key_len_d = AES_128;
+      AES_256: key_len_d = AES_256;
+      AES_192: key_len_d = AES192Enable ? AES_192 : AES_128;
+      default: key_len_d = AES_128; // unsupported values are mapped to AES_128
     endcase
   end
 
-  // Unused inputs
-  // key_len is hrw and hwqe, other fields of ctrl reg are hro and don't need hwqe
-  assign unused_mode_qe                 = reg2hw.ctrl.mode.qe;
-  assign unused_manual_start_trigger_qe = reg2hw.ctrl.manual_start_trigger.qe;
-  assign unused_force_data_overwrite_qe = reg2hw.ctrl.force_data_overwrite.qe;
+  assign ctrl_qe = reg2hw.ctrl.mode.qe & reg2hw.ctrl.key_len.qe &
+      reg2hw.ctrl.manual_start_trigger.qe & reg2hw.ctrl.force_data_overwrite.qe;
 
   //////////
   // Data //
@@ -147,19 +147,19 @@ module aes_core #(
 
   // Cipher data path
   aes_sub_bytes aes_sub_bytes (
-    .mode_i ( mode          ),
+    .mode_i ( mode_q        ),
     .data_i ( state_q       ),
     .data_o ( sub_bytes_out )
   );
 
   aes_shift_rows aes_shift_rows (
-    .mode_i ( mode           ),
+    .mode_i ( mode_q         ),
     .data_i ( sub_bytes_out  ),
     .data_o ( shift_rows_out )
   );
 
   aes_mix_columns aes_mix_columns (
-    .mode_i ( mode            ),
+    .mode_i ( mode_q          ),
     .data_i ( shift_rows_out  ),
     .data_o ( mix_columns_out )
   );
@@ -246,7 +246,7 @@ module aes_core #(
     .step_i    ( key_expand_step  ),
     .clear_i   ( key_expand_clear ),
     .round_i   ( key_expand_round ),
-    .key_len_i ( key_len          ),
+    .key_len_i ( key_len_q        ),
     .key_i     ( key_full_q       ),
     .key_o     ( key_expand_out   )
   );
@@ -289,10 +289,10 @@ module aes_core #(
     .clk_i                  ( clk_i                              ),
     .rst_ni                 ( rst_ni                             ),
 
-    .mode_i                 ( mode                               ),
-    .key_len_i              ( key_len                            ),
-    .force_data_overwrite_i ( reg2hw.ctrl.force_data_overwrite.q ),
-    .manual_start_trigger_i ( reg2hw.ctrl.manual_start_trigger.q ),
+    .mode_i                 ( mode_q                             ),
+    .key_len_i              ( key_len_q                          ),
+    .manual_start_trigger_i ( manual_start_trigger_q             ),
+    .force_data_overwrite_i ( force_data_overwrite_q             ),
     .start_i                ( reg2hw.trigger.start.q             ),
     .key_clear_i            ( reg2hw.trigger.key_clear.q         ),
     .data_in_clear_i        ( reg2hw.trigger.data_in_clear.q     ),
@@ -349,6 +349,23 @@ module aes_core #(
     end
   end
 
+  // Control register
+  assign ctrl_we = ctrl_qe & hw2reg.status.idle.d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_reg
+    if (!rst_ni) begin
+      mode_q                 <= AES_ENC;
+      key_len_q              <= AES_128;
+      manual_start_trigger_q <= '0;
+      force_data_overwrite_q <= '0;
+    end else if (ctrl_we) begin
+      mode_q                 <= mode_d;
+      key_len_q              <= key_len_d;
+      manual_start_trigger_q <= reg2hw.ctrl.manual_start_trigger.q;
+      force_data_overwrite_q <= reg2hw.ctrl.force_data_overwrite.q;
+    end
+  end
+
   /////////////
   // Outputs //
   /////////////
@@ -377,7 +394,6 @@ module aes_core #(
     end
   end
 
-  assign hw2reg.ctrl.key_len.d  = {key_len};
-  assign hw2reg.ctrl.key_len.de = reg2hw.ctrl.key_len.qe;
+  assign hw2reg.ctrl.key_len.d  = {key_len_q};
 
 endmodule

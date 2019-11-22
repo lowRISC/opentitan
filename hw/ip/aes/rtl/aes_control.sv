@@ -13,8 +13,8 @@ module aes_control #(
   // Main control inputs
   input  aes_pkg::mode_e          mode_i,
   input  aes_pkg::key_len_e       key_len_i,
-  input  logic                    force_data_overwrite_i,
   input  logic                    manual_start_trigger_i,
+  input  logic                    force_data_overwrite_i,
   input  logic                    start_i,
   input  logic                    key_clear_i,
   input  logic                    data_in_clear_i,
