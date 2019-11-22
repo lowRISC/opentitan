@@ -298,7 +298,7 @@ jobs:
   pool: "Default"
   dependsOn:
     - top_earlgrey_verilator
-    - deprecated_make_build
+    - sw_build
   steps:
   - bash: |
       sudo apt-get install -y python3 python3-pip build-essential python3-setuptools tree
