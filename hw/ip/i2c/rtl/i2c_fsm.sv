@@ -13,6 +13,8 @@ module i2c_fsm (
   input        sda_i,  // serial data input from i2c bus
   output       sda_o,  // serial data output to i2c bus
 
+  input        host_enable_i, // enable host functionality
+
   input        fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   output logic fmt_fifo_rready_o, // populates fmt_fifo
   input [7:0]  fmt_byte_i,        // byte in fmt_fifo to be sent to target
@@ -400,7 +402,8 @@ module i2c_fsm (
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
-        if (!fmt_fifo_rvalid_i) state_d = Idle;
+        if (!host_enable_i) state_d = Idle; // Idle unless host is enabled
+        else if (!fmt_fifo_rvalid_i) state_d = Idle;
         else if (fmt_flag_read_bytes_i) begin
           byte_clr = 1'b1;
           state_d = ReadClockLow;

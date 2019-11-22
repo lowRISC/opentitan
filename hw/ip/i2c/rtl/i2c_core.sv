@@ -7,7 +7,6 @@
 module  i2c_core (
   input                            clk_i,
   input                            rst_ni,
-  input                            scanmode_i,
 
   input i2c_reg_pkg::i2c_reg2hw_t  reg2hw,
   output i2c_reg_pkg::i2c_hw2reg_t hw2reg,
@@ -73,8 +72,10 @@ module  i2c_core (
   logic        fmt_flag_read_continue;
   logic        fmt_flag_nak_ok;
 
-  logic [1:0]  i2c_fifo_fmtilvl;
+  logic        i2c_fifo_rxrst;
+  logic        i2c_fifo_fmtrst;
   logic [2:0]  i2c_fifo_rxilvl;
+  logic [1:0]  i2c_fifo_fmtilvl;
 
   logic        rx_fifo_wvalid;
   logic        rx_fifo_wready;
@@ -86,6 +87,13 @@ module  i2c_core (
 
   logic        host_idle;
   logic        target_idle;
+
+  logic        host_enable;
+
+  // Unused parts of exposed bits 
+  logic        unused_fifo_ctrl_rxilvl_qe;
+  logic        unused_fifo_ctrl_fmtilvl_qe;
+  logic [7:0]  unused_rx_fifo_rdata_q;
 
    // placeholder: no target functionality yet;
   assign target_idle = 1'b1;
@@ -106,6 +114,8 @@ module  i2c_core (
 
   assign scl_o = override ? reg2hw.ovrd.sclval : scl_out_fsm;
   assign sda_o = override ? reg2hw.ovrd.sdaval : sda_out_fsm;
+
+  assign host_enable = reg2hw.ctrl.q;
 
   // TODO: Establish a sample clock period for scl and sda
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -131,8 +141,10 @@ module  i2c_core (
   assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
   assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
 
-  assign i2c_fifo_fmtilvl = reg2hw.fifo_ctrl.fmtilvl.q;
+  assign i2c_fifo_rxrst   = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
+  assign i2c_fifo_fmtrst  = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
   assign i2c_fifo_rxilvl  = reg2hw.fifo_ctrl.rxilvl.q;
+  assign i2c_fifo_fmtilvl = reg2hw.fifo_ctrl.fmtilvl.q;
 
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
@@ -157,13 +169,15 @@ module  i2c_core (
   assign event_fmt_overflow = fmt_fifo_wvalid & ~fmt_fifo_wready;
   assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
 
-
-
-  // The fifo write enable is controlled entirely
-  // by the fbyte field qe bit.
-  // When all fbyte.qe is asserted the fbyte, and all forma flags
-  // are injected into the fifo. (i.e. the qe bits for the flags have no effect).
-  assign fmt_fifo_wvalid     = reg2hw.fdata.fbyte.qe;
+  // The fifo write enable is controlled by fbyte, start, stop, read, rcont,
+  // and nakok field qe bits.
+  // When all qe bits are asserted, fdata is injected into the fifo.
+  assign fmt_fifo_wvalid     = reg2hw.fdata.fbyte.qe &
+                               reg2hw.fdata.start.qe &
+                               reg2hw.fdata.stop.qe  &
+                               reg2hw.fdata.read.qe  &
+                               reg2hw.fdata.rcont.qe &
+                               reg2hw.fdata.nakok.qe;
   assign fmt_fifo_wdata[7:0] = reg2hw.fdata.fbyte.q;
   assign fmt_fifo_wdata[8]   = reg2hw.fdata.start.q;
   assign fmt_fifo_wdata[9]   = reg2hw.fdata.stop.q;
@@ -178,6 +192,11 @@ module  i2c_core (
   assign fmt_flag_read_bytes    = fmt_fifo_rdata[11];
   assign fmt_flag_nak_ok        = fmt_fifo_rdata[12];
 
+  // Unused parts of exposed bits 
+  assign unused_fifo_ctrl_rxilvl_qe  = reg2hw.fifo_ctrl.rxilvl.qe;
+  assign unused_fifo_ctrl_fmtilvl_qe = reg2hw.fifo_ctrl.fmtilvl.qe;
+  assign unused_rx_fifo_rdata_q = reg2hw.rdata.q;
+
   prim_fifo_sync #(
     .Width(13),
     .Pass(1'b1),
@@ -185,8 +204,7 @@ module  i2c_core (
   ) u_i2c_fmtfifo (
     .clk_i,
     .rst_ni,
-    // TODO: check whether qe could be used as clear strobe
-    .clr_i  (reg2hw.fifo_ctrl.fmtrst.q),
+    .clr_i (i2c_fifo_fmtrst),
     .wvalid(fmt_fifo_wvalid),
     .wready(fmt_fifo_wready),
     .wdata(fmt_fifo_wdata),
@@ -205,8 +223,7 @@ module  i2c_core (
   ) u_i2c_rxfifo (
     .clk_i,
     .rst_ni,
-    // TODO: check whether qe could be used as clear strobe
-    .clr_i(reg2hw.fifo_ctrl.rxrst.q),
+    .clr_i (i2c_fifo_rxrst),
     .wvalid(rx_fifo_wvalid),
     .wready(rx_fifo_wready),
     .wdata(rx_fifo_wdata),
@@ -224,6 +241,8 @@ module  i2c_core (
     .scl_o                   (scl_out_fsm),
     .sda_i,
     .sda_o                   (sda_out_fsm),
+
+    .host_enable_i           (host_enable),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
     .fmt_fifo_rready_o       (fmt_fifo_rready),
