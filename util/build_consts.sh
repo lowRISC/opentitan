@@ -17,9 +17,14 @@
 # $BUILD_ROOT, which can be configured to any desired directory. Build artifacts
 # can be cleaned out by running |rm -rf $BUILD_ROOT/build-*|.
 
-# We cannot rely on the location of this file for anything, since it is meant to
-# be sourced, not executed. As such, we use git to compute $REPO_TOP.
-readonly REPO_TOP="$(git rev-parse --show-toplevel)"
+# Since this file is intended to be sourced, we can't use |$0| to get our
+# bearings. However, the bash-specific $BASH_SOURCE works perfectly fine.
+if [[ -n "$BASH_SOURCE" ]]; then
+  readonly REPO_TOP="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+else
+  echo "Non-bash shells are currently not supported." >&2
+  exit 1
+fi
 BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
 
 readonly OBJ_DIR="$BUILD_ROOT/build-out"
