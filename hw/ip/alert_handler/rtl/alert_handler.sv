@@ -73,15 +73,18 @@ module alert_handler import alert_pkg::*; import prim_pkg::*; (
     .entropy_i,
     // we enable ping testing as soon as the config
     // regs have been locked
-    .en_i               ( reg2hw_wrap.config_locked     ),
-    .alert_en_i         ( reg2hw_wrap.alert_en          ),
-    .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc  ),
-    .alert_ping_en_o    ( alert_ping_en                 ),
-    .esc_ping_en_o      ( esc_ping_en                   ),
-    .alert_ping_ok_i    ( alert_ping_ok                 ),
-    .esc_ping_ok_i      ( esc_ping_ok                   ),
-    .alert_ping_fail_o  ( loc_alert_trig[0]             ),
-    .esc_ping_fail_o    ( loc_alert_trig[1]             )
+    .en_i               ( reg2hw_wrap.config_locked    ),
+    .alert_en_i         ( reg2hw_wrap.alert_en         ),
+    .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc ),
+    // this determines the range of the randomly generated
+    // wait period between ping. maximum mask width is PING_CNT_DW.
+    .wait_cyc_mask_i    ( PING_CNT_DW'(24'hFFFFFF)     ),
+    .alert_ping_en_o    ( alert_ping_en                ),
+    .esc_ping_en_o      ( esc_ping_en                  ),
+    .alert_ping_ok_i    ( alert_ping_ok                ),
+    .esc_ping_ok_i      ( esc_ping_ok                  ),
+    .alert_ping_fail_o  ( loc_alert_trig[0]            ),
+    .esc_ping_fail_o    ( loc_alert_trig[1]            )
   );
 
   /////////////////////

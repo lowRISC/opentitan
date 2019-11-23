@@ -1,0 +1,83 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Assertions for ping timer in alert handler. Intended to use with
+// a formal tool.
+
+module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
+  input                   clk_i,
+  input                   rst_ni,
+  input                   entropy_i,
+  input                   en_i,
+  input [NAlerts-1:0]     alert_en_i,
+  input [PING_CNT_DW-1:0] ping_timeout_cyc_i,
+  input [PING_CNT_DW-1:0] wait_cyc_mask_i,
+  input [NAlerts-1:0]     alert_ping_en_o,
+  input [N_ESC_SEV-1:0]   esc_ping_en_o,
+  input [NAlerts-1:0]     alert_ping_ok_i,
+  input [N_ESC_SEV-1:0]   esc_ping_ok_i,
+  input                   alert_ping_fail_o,
+  input                   esc_ping_fail_o
+);
+
+  logic [N_ESC_SEV+NAlerts-1:0] ping_en_vector, ping_en_mask, ping_ok_vector;
+
+  assign ping_en_vector = {esc_ping_en_o, alert_ping_en_o};
+  assign ping_en_mask   = {N_ESC_SEV'('1), alert_en_i};
+  assign ping_ok_vector = {esc_ping_ok_i, alert_ping_ok_i};
+
+  /////////////////
+  // Assumptions //
+  /////////////////
+
+  // symbolic variable. we want to assess all valid indices
+  int unsigned ping_en_sel;
+  `ASSUME_FPV(PingEnSelRange_M, ping_en_sel >= 0 && ping_en_sel < (N_ESC_SEV+NAlerts),
+       clk_i, !rst_ni)
+  `ASSUME_FPV(PingEnSelStable_M, ##1 $stable(ping_en_sel), clk_i, !rst_ni)
+  // assume that the alert enable configuration is locked once en_i is high
+  // this is ensured by the CSR regfile on the outside
+  `ASSUME_FPV(ConfigLocked0_M, en_i |-> ($stable(alert_en_i) [*]), clk_i, !rst_ni)
+  `ASSUME_FPV(ConfigLocked1_M, en_i |-> ($stable(ping_timeout_cyc_i) [*]), clk_i, !rst_ni)
+  // enable stays high forever, once it has been asserted
+  `ASSUME_FPV(ConfigLocked2_M, en_i |-> (##1 en_i) [*], clk_i, !rst_ni)
+  // reduce state space by reducing length of wait period
+  `ASSUME_FPV(WaitPeriod_M, wait_cyc_mask_i == 7, clk_i, !rst_ni)
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // no pings on disabled alerts
+  `ASSERT(DisabledNoAlertPings_A, ((~alert_en_i) & alert_ping_en_o) == 0, clk_i, !rst_ni)
+  // no pings when not enabled
+  `ASSERT(NoPingsWhenDisabled0_A, !en_i |-> !alert_ping_en_o, clk_i, !rst_ni)
+  `ASSERT(NoPingsWhenDisabled1_A, !en_i |-> !esc_ping_en_o, clk_i, !rst_ni)
+  `ASSERT(NoPingsWhenDisabled2_A, en_i && !ping_en_mask[ping_en_sel] |->
+      !ping_en_vector[ping_en_sel], clk_i, !rst_ni)
+
+  // spurious pings (i.e. pings that where not requested)
+  // on alert channels
+  `ASSERT(SpuriousPingsDetected0_A, en_i && !ping_en_vector[ping_en_sel] &&
+      ping_ok_vector[ping_en_sel] && ping_en_sel < NAlerts |->
+      alert_ping_fail_o, clk_i, !rst_ni)
+  // on escalation channels
+  `ASSERT(SpuriousPingsDetected1_A, en_i && !ping_en_vector[ping_en_sel] &&
+      ping_ok_vector[ping_en_sel] && ping_en_sel >= NAlerts |->
+      esc_ping_fail_o, clk_i, !rst_ni)
+  // response must be one hot
+ `ASSERT(SpuriousPingsDetected2_A, en_i && !$onehot0(ping_ok_vector) |->
+      esc_ping_fail_o || alert_ping_fail_o, clk_i, !rst_ni)
+
+  //////////////////////////////////////////////////////////
+  // Currently not Tested in FPV due to large state space //
+  //////////////////////////////////////////////////////////
+
+  // 1) if an alert is enabled, it should be pinged eventually
+  // when entropy input is disabled
+  // 2) ping ok within timeout -> ok
+  // 3) ping ok after timeout -> alert
+  // 4) no ping response -> alert
+
+endmodule : alert_handler_ping_timer_assert_fpv

@@ -19,13 +19,21 @@
 // requested), the ping timer will also raise an internal alert.
 //
 
-module alert_handler_ping_timer import alert_pkg::*; (
+module alert_handler_ping_timer import alert_pkg::*; #(
+  // Enable this for DV, disable this for long LFSRs in FPV
+  parameter bit                MaxLenSVA  = 1'b1,
+  // Can be disabled in cases where entropy
+  // inputs are unused in order to not distort coverage
+  // (the SVA will be unreachable in such cases)
+  parameter bit                LockupSVA  = 1'b1
+) (
   input                          clk_i,
   input                          rst_ni,
   input                          entropy_i,          // from TRNG
   input                          en_i,               // enable ping testing
   input        [NAlerts-1:0]     alert_en_i,         // determines which alerts to ping
   input        [PING_CNT_DW-1:0] ping_timeout_cyc_i, // timeout in cycles
+  input        [PING_CNT_DW-1:0] wait_cyc_mask_i,    // wait cycles mask
   output logic [NAlerts-1:0]     alert_ping_en_o,    // enable to alert receivers
   output logic [N_ESC_SEV-1:0]   esc_ping_en_o,      // enable to esc senders
   input        [NAlerts-1:0]     alert_ping_ok_i,    // response from alert receivers
@@ -38,14 +46,16 @@ module alert_handler_ping_timer import alert_pkg::*; (
   localparam int unsigned IdDw        = $clog2(NModsToPing);
 
   // this defines a random permutation
-  localparam int unsigned perm [32] = '{ 4, 11, 25,  3,
-                                        15, 16,  1, 10,
-                                         2, 22,  7,  0,
-                                        23, 28, 30, 19,
-                                        27, 12, 24, 26,
-                                        14, 21, 18,  5,
-                                        13,  8, 29, 31,
-                                        20,  6,  9, 17};
+  localparam int unsigned perm [32] = '{
+    4, 11, 25,  3,   //
+    15, 16,  1, 10,  //
+    2, 22,  7,  0,   //
+    23, 28, 30, 19,  //
+    27, 12, 24, 26,  //
+    14, 21, 18,  5,  //
+    13,  8, 29, 31,  //
+    20,  6,  9, 17   //
+  };
 
   //////////
   // PRNG //
@@ -56,10 +66,13 @@ module alert_handler_ping_timer import alert_pkg::*; (
   logic [16-IdDw-1:0] unused_perm_state;
 
   prim_lfsr #(
-    .LfsrDw      ( 32                  ),
-    .EntropyDw   ( 1                   ),
-    .StateOutDw  ( 32                  ),
-    .DefaultSeed ( alert_pkg::LfsrSeed )
+    .LfsrDw      ( 32         ),
+    .EntropyDw   ( 1          ),
+    .StateOutDw  ( 32         ),
+    .DefaultSeed ( LfsrSeed   ),
+    .MaxLenSVA   ( MaxLenSVA  ),
+    .LockupSVA   ( LockupSVA  ),
+    .ExtSeedSVA  ( 1'b0       ) // ext seed is unused
   ) i_prim_lfsr (
     .clk_i,
     .rst_ni,
@@ -78,10 +91,13 @@ module alert_handler_ping_timer import alert_pkg::*; (
   logic [PING_CNT_DW-1:0] wait_cyc;
   // we only use bits up to 23, as IdDw is 8bit maximum
   assign id_to_ping = perm_state[16 +: IdDw];
+
+  // to avoid lint warnings
   assign unused_perm_state = perm_state[31:16+IdDw];
+
   // concatenate with constant offset, introduce some stagger
   // by concatenating the lower bits below
-  assign wait_cyc   = {perm_state[15:2], 8'h01, perm_state[1:0]};
+  assign wait_cyc   = PING_CNT_DW'({perm_state[15:2], 8'h01, perm_state[1:0]}) & wait_cyc_mask_i;
 
   logic [2**IdDw-1:0] enable_mask;
   always_comb begin : p_enable_mask
@@ -147,7 +163,7 @@ module alert_handler_ping_timer import alert_pkg::*; (
       // we never return to this state
       // once activated!
       Init: begin
-        cnt_clr = 1'b0;
+        cnt_clr = 1'b1;
         if (en_i) begin
           state_d = RespWait;
         end
@@ -161,7 +177,6 @@ module alert_handler_ping_timer import alert_pkg::*; (
           cnt_clr = 1'b1;
         end else if (wait_ge) begin
           state_d = DoPing;
-          lfsr_en = 1'b1;
           cnt_clr = 1'b1;
         end else begin
           cnt_en = 1'b1;
@@ -174,6 +189,7 @@ module alert_handler_ping_timer import alert_pkg::*; (
         ping_en = 1'b1;
         if (timeout_ge || ping_ok) begin
           state_d = RespWait;
+          lfsr_en = 1'b1;
           cnt_clr = 1'b1;
           if (timeout_ge) begin
             if (id_to_ping < NAlerts) begin
@@ -184,9 +200,14 @@ module alert_handler_ping_timer import alert_pkg::*; (
           end
         end
       end
-      default : state_d = Init;
+      // this should never happen
+      // if we for some reason end up in this state (e.g. malicious glitching)
+      // we are going to assert both ping fails continuously
+      default: begin
+        alert_ping_fail_o = 1'b1;
+        esc_ping_fail_o   = 1'b1;
+      end
     endcase
-
   end
 
   ///////////////
@@ -213,12 +234,9 @@ module alert_handler_ping_timer import alert_pkg::*; (
   ////////////////
 
   // internals
-  `ASSERT(PingOH0, $onehot0(ping_sel), clk_i, !rst_ni)
+  `ASSERT(PingOH0_A, $onehot0(ping_sel), clk_i, !rst_ni)
   // we should never get into the ping state without knowing
   // which module to ping
-  `ASSERT(PingOH, ping_en |-> $onehot(ping_sel), clk_i, !rst_ni)
-
-  // TODO: add some cover metrics to check whether all devices
-  // are pinged eventually.
+  `ASSERT(PingOH_A, ping_en |-> $onehot(ping_sel), clk_i, !rst_ni)
 
 endmodule : alert_handler_ping_timer
