@@ -23,6 +23,7 @@ filesets:
       - lowrisc:fpv:pinmux_fpv
       - lowrisc:fpv:padctrl_fpv
       - lowrisc:fpv:rv_plic_fpv
+      - lowrisc:fpv:alert_handler_ping_timer_fpv
     files:
       - ../ip/gpio/dv/tb/gpio_bind.sv
       - ../ip/hmac/dv/tb/hmac_bind.sv
