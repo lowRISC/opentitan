@@ -4,11 +4,14 @@ This subtree contains all software intended to run on the OpenTitan chip, as wel
 
 ## Building
 
-OpenTitan software is built using [Meson](https://mesonbuild.com).
-For example, to build the OpenTitan executable located at `device/examples/hello_world/hello_world.bin`, run the following commands:
-```sh
-cd "${REPO_TOP}"
-./meson_init.sh -f
-ninja -C build-out/sw/${TARGET} sw/device/examples/hello_world/hello_world.bin
+OpenTitan software is built using [Meson](https://mesonbuild.com), although OpenTitan's project structure is sufficiently ideosyncratic that we use a custom workflow.
+
+For example, to build the OpenTitan executable located at `sw/device/examples/hello_world` for FPGA, run the following commands:
+```console
+$ cd "$REPO_TOP"
+$ ./meson_init.sh
+$ ninja -C build-out/sw/fpga sw/device/examples/hello_world/hello_world_export
 ```
-`$TARGET` should be one of `sim-verilator` or `fpga`, depending on whether the executable should be built to run under simulation or on a phyisical FPGA, respectively.
+
+The resulting binaries will be located at `build-bin/sw/device/fpga/examples/hello_world`. For more information, check out [the relevant User Guide](../doc/ug/getting_started_sw.md).
+

@@ -62,9 +62,10 @@ The loading output is also shown.
 
 ```console
 $ cd ${REPO_TOP}
-$ make -C sw/device SW_DIR=examples/hello_world SW_BUILD_DIR=out clean all
-$ make -C sw/host/spiflash clean all
-$ ./sw/host/spiflash/spiflash --input=sw/device/out/sw.bin
+$ ./meson_init.sh
+$ ninja -C build-out/sw/fpga all
+$ build-bin/sw/host/spiflash/spiflash \ 
+    --input build-bin/sw/device/fpga/examples/hello_world/hello_world.bin
 
 Running SPI flash update.
 Image divided into 6 frames.
