@@ -75,7 +75,7 @@
 
   &__item {
     & + & {
-      margin-left: 2em;
+      margin-left: calc(0.25em + 1.56vw);
     }
 
     a {
