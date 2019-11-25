@@ -5,6 +5,8 @@ title: "Getting started on FPGAs"
 Do you want to try out the lowRISC chip designs, but don't have a couple thousand or million dollars ready for an ASIC tapeout?
 Running lowRISC designs on an FPGA board can be the answer!
 
+<!-- TODO: Switch all calls to fusesoc and the Verilated system to refer to Meson, once it supports fusesoc. -->
+
 ## Prerequisites
 
 To use the lowRISC Comportable designs on an FPGA you need two things:
@@ -30,17 +32,19 @@ This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:`
 To build it:
 ```console
 $ cd $REPO_TOP
-$ make -C sw/device SW_DIR=boot_rom clean all
+$ ./meson_init.sh
+$ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
 ```
 
-At the moment there is no check that the `rom.vmem` file is up to date, so it is best to follow the instructions to [Build software]({{< relref "getting_started_sw.md" >}}) and understand the FPGA's overall software flow.
+At the moment, there is no check that the `boot_rom.vmem` file is up to date, so it is best to follow the instructions to [build software]({{< relref "getting_started_sw.md" >}}).
 
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
 
 ```console
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
-$ make -C sw/device SW_DIR=boot_rom clean all
+$ ./meson_init.sh
+$ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
 $ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
 

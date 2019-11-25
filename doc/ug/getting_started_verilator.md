@@ -5,6 +5,8 @@
 Verilator is a cycle-accurate simulation tool.
 It translates synthesizable Verilog code into a simulation program in C++, which is then compiled and executed.
 
+<!-- TODO: Switch all calls to fusesoc and the Verilated system to refer to Meson, once it supports fusesoc. -->
+
 ## Prerequisites
 
 _Make sure you followed the install instructions to [prepare the system]({{< relref "install_instructions#system-preparation" >}}) and to install the [software development tools]({{< relref "doc/ug/install_instructions#software-development" >}}) and [Verilator]({{< relref "install_instructions#verilator" >}})._
@@ -23,16 +25,13 @@ There are 3 memory types: ROM, RAM and Flash.
 By default, the system will first execute out of ROM and then jump to flash.
 A program needs to be built for each until ROM functionality for code download is ready.
 
-For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
-In the instructions below, `SW_DIR` is a requirement argument, while `SW_BUILD_DIR` is not a required argument.
-If `SW_BUILD_DIR` argument is not supplied, the default location of the of output files are in `SW_DIR`
-Please see [SW build flow]({{< relref "sw/device/doc/sw_build_flow" >}}) for more details.
+For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed. 
+For more information on building software targets refer to the [Software Getting Started Guide]({{< relref "getting_started_sw.md" >}}).
 
 ```console
 $ cd $REPO_TOP
-$ make -C sw/device SIM=1 SW_DIR=boot_rom SW_BUILD_DIR=sim_boot_rom clean all
-$ make -C sw/device SIM=1 SW_DIR=examples/hello_world \
-  SW_BUILD_DIR=sim_hello_world clean all
+$ ./meson_init.sh
+$ ninja -C build-out/sw/device/sim-verilator all
 ```
 
 Now the simulation can be run.
@@ -41,8 +40,8 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --meminit=rom,sw/device/sim_boot_rom/rom.elf \
-  --meminit=flash,sw/device/sim_hello_world/sw.elf
+  --meminit=rom,build-bin/sw/device/sim-verilator/boot_rom/boot_rom.elf \
+  --meminit=flash,build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf
 ```
 
 To stop the simulation press CTRL-c.
