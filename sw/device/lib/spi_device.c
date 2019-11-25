@@ -24,7 +24,7 @@
 #define ACCESS32_TXFPTR(P) \
   REG32(SPID_SRAM_ADDR + SPID_TXF_BASE + ((P) & ((SPID_TXF_SIZE - 1) & ~0x3)))
 
-uint32_t calc_depth(uint32_t wptr, uint32_t rptr, uint32_t size);
+uint32 calc_depth(uint32 wptr, uint32 rptr, uint32 size);
 
 void spid_init(void) {
   /* Abort 0 */
@@ -58,10 +58,10 @@ void spid_init(void) {
  *
  * Fifo pointers are in bytes
  */
-inline uint32_t calc_depth(uint32_t wptr, uint32_t rptr, uint32_t size) {
-  const uint32_t sram_szw = BITLENGTH(SPI_DEVICE_BUFFER_SIZE_BYTES - 1);
-  uint32_t depth;
-  uint32_t wptr_phase, rptr_phase, wptr_v, rptr_v;
+inline uint32 calc_depth(uint32 wptr, uint32 rptr, uint32 size) {
+  const uint32 sram_szw = BITLENGTH(SPI_DEVICE_BUFFER_SIZE_BYTES - 1);
+  uint32 depth;
+  uint32 wptr_phase, rptr_phase, wptr_v, rptr_v;
   wptr_phase = wptr >> sram_szw;
   rptr_phase = rptr >> sram_szw;
   wptr_v = wptr & (SPI_DEVICE_BUFFER_SIZE_BYTES - 1);
@@ -79,8 +79,8 @@ inline uint32_t calc_depth(uint32_t wptr, uint32_t rptr, uint32_t size) {
 /*
  * Increment pointer, zero and flip phase if it gets to size
  */
-uint32_t ptr_inc(uint32_t ptr, uint32_t inc, uint32_t size) {
-  uint32_t phase = ptr & SPI_DEVICE_BUFFER_SIZE_BYTES;
+uint32 ptr_inc(uint32 ptr, uint32 inc, uint32 size) {
+  uint32 phase = ptr & SPI_DEVICE_BUFFER_SIZE_BYTES;
   ptr = (ptr & (SPI_DEVICE_BUFFER_SIZE_BYTES - 1)) + inc;
   if (ptr >= size) {
     ptr -= size;
@@ -91,10 +91,10 @@ uint32_t ptr_inc(uint32_t ptr, uint32_t inc, uint32_t size) {
 
 static int word_aligned(void *p) { return (((int)p & 0x3) == 0); }
 
-uint32_t spid_send(void *data, uint32_t len_bytes) {
-  uint32_t txf_ptr, txf_wptr, txf_rptr;
-  uint32_t fifo_inuse_bytes;
-  uint32_t msg_length_bytes;
+uint32 spid_send(void *data, uint32 len_bytes) {
+  uint32 txf_ptr, txf_wptr, txf_rptr;
+  uint32 fifo_inuse_bytes;
+  uint32 msg_length_bytes;
 
   /* Check if TXF has enough space */
   txf_ptr = REG32(SPI_DEVICE_TXF_PTR(0));
@@ -117,7 +117,7 @@ uint32_t spid_send(void *data, uint32_t len_bytes) {
 
   // Aligned case can just copy words
   if (word_aligned(data) && word_aligned((void *)txf_wptr)) {
-    uint32_t *data_w = (uint32_t *)data;
+    uint32 *data_w = (uint32 *)data;
     while (tocopy > 0) {
       ACCESS32_TXFPTR(txf_wptr) = *data_w++;
       if (tocopy >= 4) {
@@ -130,11 +130,11 @@ uint32_t spid_send(void *data, uint32_t len_bytes) {
     }
   } else {
     // preserve data if unaligned start
-    uint8_t *data_b = (uint8_t *)data;
-    uint32_t d = ACCESS32_TXFPTR(txf_wptr);
+    uint8 *data_b = (uint8 *)data;
+    uint32 d = ACCESS32_TXFPTR(txf_wptr);
     while (tocopy > 0) {
       int shift = (txf_wptr & 0x3) * 8;
-      uint32_t mask = 0xff << shift;
+      uint32 mask = 0xff << shift;
       d = (d & ~mask) | (*data_b++ << shift);
       if ((txf_wptr & 0x3) == 0x3) {
         ACCESS32_TXFPTR(txf_wptr) = d;
@@ -150,9 +150,9 @@ uint32_t spid_send(void *data, uint32_t len_bytes) {
   return msg_length_bytes;
 }
 
-uint32_t spid_read_nb(void *data, uint32_t len_bytes) {
-  uint32_t rxf_ptr, rxf_wptr, rxf_rptr;
-  uint32_t msg_len_bytes;
+uint32 spid_read_nb(void *data, uint32 len_bytes) {
+  uint32 rxf_ptr, rxf_wptr, rxf_rptr;
+  uint32 msg_len_bytes;
 
   rxf_ptr = REG32(SPI_DEVICE_RXF_PTR(0));
   rxf_wptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_WPTR_OFFSET) &
@@ -175,7 +175,7 @@ uint32_t spid_read_nb(void *data, uint32_t len_bytes) {
   // so check buffer length
   if (word_aligned(data) && ((len_bytes & 0x3) == 0) &&
       word_aligned((void *)rxf_ptr)) {
-    uint32_t *data_w = (uint32_t *)data;
+    uint32 *data_w = (uint32 *)data;
     while (tocopy > 0) {
       *data_w++ = READ32_RXFPTR(rxf_rptr);
       if (tocopy >= 4) {
@@ -187,10 +187,10 @@ uint32_t spid_read_nb(void *data, uint32_t len_bytes) {
       }
     }
   } else {
-    uint8_t *data_b = (uint8_t *)data;
+    uint8 *data_b = (uint8 *)data;
     // Have to deal with only being able to do 32-bit accesses
     int dst = 0;
-    uint32_t d = READ32_RXFPTR(rxf_rptr & ~0x3);
+    uint32 d = READ32_RXFPTR(rxf_rptr & ~0x3);
     while (tocopy--) {
       int boff = rxf_rptr & 0x3;
       data_b[dst++] = (d >> (boff * 8)) & 0xff;
@@ -206,11 +206,11 @@ uint32_t spid_read_nb(void *data, uint32_t len_bytes) {
   return msg_len_bytes;
 }
 
-uint32_t spid_bytes_available(void) {
-  uint32_t rxf_ptr = REG32(SPI_DEVICE_RXF_PTR(0));
-  uint32_t rxf_wptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_WPTR_OFFSET) &
+uint32 spid_bytes_available(void) {
+  uint32 rxf_ptr = REG32(SPI_DEVICE_RXF_PTR(0));
+  uint32 rxf_wptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_WPTR_OFFSET) &
                       SPI_DEVICE_RXF_PTR_WPTR_MASK;
-  uint32_t rxf_rptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_RPTR_OFFSET) &
+  uint32 rxf_rptr = (rxf_ptr >> SPI_DEVICE_RXF_PTR_RPTR_OFFSET) &
                       SPI_DEVICE_RXF_PTR_RPTR_MASK;
 
   return calc_depth(rxf_wptr, rxf_rptr, SPID_RXF_SIZE);

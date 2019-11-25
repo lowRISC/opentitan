@@ -14,7 +14,7 @@
 #include "usbdev_regs.h"  // Generated.
 
 // Build Configuration descriptor array
-static uint8_t cfg_dscr[] = {
+static uint8 cfg_dscr[] = {
     USB_CFG_DSCR_HEAD(
         USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
         2) VEND_INTERFACE_DSCR(0, 2, 0x50, 1) USB_BULK_EP_DSCR(0, 1, 32, 0)
@@ -24,7 +24,7 @@ static uint8_t cfg_dscr[] = {
 // and is probably at the end of the initialized data section
 // Conversion to srec needs this to be aligned so force it by
 // initializing an int32 (volatile else it is not used and can go away)
-static volatile int32_t sdata_align = 42;
+static volatile int32 sdata_align = 42;
 
 /* context areas */
 static usbdev_ctx_t usbdev_ctx;
@@ -83,9 +83,9 @@ void handler_lsu_fault(void) {
 
 /* Inbound USB characters get printed to the UART via these callbacks */
 /* Not ideal because the UART is slower */
-static void serial_rx0(uint8_t c) { uart_send_char(MK_PRINT(c)); }
+static void serial_rx0(uint8 c) { uart_send_char(MK_PRINT(c)); }
 /* Add one to rx character so you can tell it is the second instance */
-static void serial_rx1(uint8_t c) { uart_send_char(MK_PRINT(c + 1)); }
+static void serial_rx1(uint8 c) { uart_send_char(MK_PRINT(c + 1)); }
 
 int main(int argc, char **argv) {
   uart_init(UART_BAUD_RATE);
@@ -112,9 +112,9 @@ int main(int argc, char **argv) {
   usb_simpleserial_init(&ss_ctx[0], &usbdev_ctx, 1, serial_rx0);
   usb_simpleserial_init(&ss_ctx[1], &usbdev_ctx, 2, serial_rx1);
 
-  uint32_t gpio_in;
-  uint32_t gpio_in_prev = 0;
-  uint32_t gpio_in_changes;
+  uint32 gpio_in;
+  uint32 gpio_in_prev = 0;
+  uint32 gpio_in_changes;
 
   while (1) {
     usbdev_poll(&usbdev_ctx);

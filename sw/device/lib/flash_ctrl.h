@@ -5,8 +5,7 @@
 #ifndef _F_FLASH_CTRL_H__
 #define _F_FLASH_CTRL_H__
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 /**
  * Flash bank IDs
@@ -18,17 +17,17 @@ typedef enum bank_index { FLASH_BANK_0 = 0, FLASH_BANK_1 = 1 } bank_index_t;
  */
 typedef struct mp_region {
   /** Which region to program. */
-  uint32_t num;
+  uint32 num;
   /** Region offset. */
-  uint32_t base;
+  uint32 base;
   /** Region config size. */
-  uint32_t size;
+  uint32 size;
   /** Read enable flag. */
-  uint32_t rd_en;
+  uint32 rd_en;
   /** Program enable flag. */
-  uint32_t prog_en;
+  uint32 prog_en;
   /** Erase enable flag. */
-  uint32_t erase_en;
+  uint32 erase_en;
 } mp_region_t;
 
 /**
@@ -48,7 +47,7 @@ int flash_check_empty(void);
  * @return Non zero on failure.
  */
 int flash_bank_erase(bank_index_t idx);
-int flash_page_erase(uint32_t addr);
+int flash_page_erase(uint32 addr);
 
 /**
  * Write |data| at |addr| offset with |size| in 4B words
@@ -58,7 +57,7 @@ int flash_page_erase(uint32_t addr);
  * @param size Number of 4B words to write from |data| buffer.
  * @return Non zero on failure.
  */
-int flash_write(uint32_t addr, const uint32_t *data, uint32_t size);
+int flash_write(uint32 addr, const uint32 *data, uint32 size);
 
 /**
  * Read |size| 4B words and write result to |data|.
@@ -68,7 +67,7 @@ int flash_write(uint32_t addr, const uint32_t *data, uint32_t size);
  * @param data Output buffer.
  * @return Non zero on failure.
  */
-int flash_read(uint32_t addr, uint32_t size, uint32_t *data);
+int flash_read(uint32 addr, uint32 size, uint32 *data);
 
 /**
  * Configure bank erase enable
@@ -92,9 +91,9 @@ void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en);
 void flash_cfg_region(const mp_region_t *region_cfg);
 
 /** Write value to flash scratch register */
-void flash_write_scratch_reg(uint32_t value);
+void flash_write_scratch_reg(uint32 value);
 
 /** Read scratch register */
-uint32_t flash_read_scratch_reg(void);
+uint32 flash_read_scratch_reg(void);
 
 #endif  // _F_FLASH_CTRL_H__

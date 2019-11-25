@@ -5,8 +5,7 @@
 #ifndef _F_LIB_RV_TIMER_H__
 #define _F_LIB_RV_TIMER_H__
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 /**
  * Set hart timer prescaler
@@ -15,7 +14,7 @@
  *
  * @param hart hart selection
  */
-void rv_timer_set_us_tick(uint32_t hart);
+void rv_timer_set_us_tick(uint32 hart);
 
 /**
  * Set hart timer compare value
@@ -25,7 +24,7 @@ void rv_timer_set_us_tick(uint32_t hart);
  *
  * @param hart hart selection
  */
-void rv_timer_set_cmp(uint32_t hart, uint64_t cmp);
+void rv_timer_set_cmp(uint32 hart, uint64 cmp);
 
 /**
  * Enable hart timer to begin counting
@@ -33,7 +32,7 @@ void rv_timer_set_cmp(uint32_t hart, uint64_t cmp);
  * @param hart hart selection
  * @param en 1 enables timer, 0 disables timer
  */
-void rv_timer_ctrl(uint32_t hart, bool en);
+void rv_timer_ctrl(uint32 hart, bool en);
 
 /**
  * Set hart timer interrupt enable
@@ -41,7 +40,7 @@ void rv_timer_ctrl(uint32_t hart, bool en);
  * @param hart hart selection
  * @param en 1 enables interrupt, 0 disables interrupt
  */
-void rv_timer_intr_enable(uint32_t hart, bool en);
+void rv_timer_intr_enable(uint32 hart, bool en);
 
 /**
  * Clear all active interrupts

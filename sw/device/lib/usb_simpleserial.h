@@ -15,10 +15,10 @@ typedef struct usb_ss_ctx {
   int cur_buf;
   int cur_cpos;
   union usb_ss_b2w {
-    uint32_t data_w;
-    uint8_t data_b[4];
+    uint32 data_w;
+    uint8 data_b[4];
   } chold;
-  void (*got_byte)(uint8_t);
+  void (*got_byte)(uint8);
 } usb_ss_ctx_t;
 
 /**
@@ -27,7 +27,7 @@ typedef struct usb_ss_ctx {
  * @param ssctx instance context
  * @param c byte to send
  */
-void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8_t c);
+void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8 c);
 
 /**
  * Initialize a simpleserial endpoint
@@ -38,6 +38,6 @@ void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8_t c);
  * @param got_byte callback function for when a byte is received
  */
 void usb_simpleserial_init(usb_ss_ctx_t *ssctx, usbdev_ctx_t *ctx, int ep,
-                           void (*got_byte)(uint8_t));
+                           void (*got_byte)(uint8));
 
 #endif

@@ -2,18 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Memory Operations library (sw_lib_mem)
-sw_lib_mem = declare_dependency(
-  link_with: static_library(
-    'mem_ot',
-    sources: [
-      'memcpy.c',
-      'memset.c',
-      'strlen.c',
-      'abort.c',
-    ],
-  )
-)
+subdir('base')
+
+# Temporary dependency alias so that we can update everything to libbase later.
+sw_lib_mem = sw_libbase
 
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(

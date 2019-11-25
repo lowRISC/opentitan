@@ -8,7 +8,7 @@
 
 inline void uart_init(unsigned int baud) {
   // nco = 2^20 * baud / fclk
-  uint64_t uart_ctrl_nco = ((uint64_t)baud << 20) / CLK_FIXED_FREQ_HZ;
+  uint64 uart_ctrl_nco = ((uint64)baud << 20) / CLK_FIXED_FREQ_HZ;
   REG32(UART_CTRL(0)) =
       ((uart_ctrl_nco & UART_CTRL_NCO_MASK) << UART_CTRL_NCO_OFFSET) |
       (1 << UART_CTRL_TX) | (1 << UART_CTRL_RX);
@@ -47,7 +47,7 @@ void uart_send_str(char *str) {
 
 #define hexchar(i) (((i & 0xf) > 9) ? (i & 0xf) - 10 + 'A' : (i & 0xf) + '0')
 
-void uart_send_uint(uint32_t n, int bits) {
+void uart_send_uint(uint32 n, int bits) {
   for (int i = bits - 4; i >= 0; i -= 4) {
     uart_send_char(hexchar(n >> i));
   }

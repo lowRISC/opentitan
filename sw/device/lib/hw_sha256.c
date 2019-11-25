@@ -26,18 +26,18 @@ void hw_SHA256_init(HW_SHA256_CTX *ctx) {
   sha256_init();
 }
 
-void hw_SHA256_update(HW_SHA256_CTX *ctx, const void *data, size_t len) {
+void hw_SHA256_update(HW_SHA256_CTX *ctx, const void *data, usize len) {
   hmac_update(data, len);
 }
 
-const uint8_t *hw_SHA256_final(HW_SHA256_CTX *ctx) {
-  hmac_done((uint32_t *)ctx->buf);
+const uint8 *hw_SHA256_final(HW_SHA256_CTX *ctx) {
+  hmac_done((uint32 *)ctx->buf);
   return ctx->buf;
 }
 
-const uint8_t *hw_SHA256_hash(const void *data, size_t len, uint8_t *digest) {
+const uint8 *hw_SHA256_hash(const void *data, usize len, uint8 *digest) {
   sha256_init();
   hmac_update(data, len);
-  hmac_done((uint32_t *)digest);
+  hmac_done((uint32 *)digest);
   return digest;
 }

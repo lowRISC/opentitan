@@ -5,7 +5,7 @@
 #ifndef _UART_H_
 #define _UART_H_
 
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 #define UART0_BASE_ADDR 0x40000000
 
@@ -16,7 +16,7 @@ void uart_send_char(char c);
 /**
  * Send unsigned int over UART
  */
-void uart_send_uint(uint32_t n, int size);
+void uart_send_uint(uint32 n, int size);
 void uart_init(unsigned int baud);
 
 /**

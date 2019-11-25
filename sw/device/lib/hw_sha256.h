@@ -5,8 +5,7 @@
 #ifndef _F_LIB_SHA256_H__
 #define _F_LIB_SHA256_H__
 
-#include <stddef.h>
-
+#include "sw/device/lib/base/types.h"
 #include "sw/vendor/cryptoc/include/cryptoc/hash-internal.h"
 
 typedef HASH_CTX HW_SHA256_CTX;
@@ -27,7 +26,7 @@ void hw_SHA256_init(HW_SHA256_CTX *ctx);
  * @param data Input buffer.
  * @param len Number of bytes to add.
  */
-void hw_SHA256_update(HW_SHA256_CTX *ctx, const void *data, size_t len);
+void hw_SHA256_update(HW_SHA256_CTX *ctx, const void *data, usize len);
 
 /**
  * hw_SHA256_final adds the final padding to |ctx| and calculates digest.
@@ -36,7 +35,7 @@ void hw_SHA256_update(HW_SHA256_CTX *ctx, const void *data, size_t len);
  *
  * @return pointer to digest buffer held in |ctx|.
  */
-const uint8_t *hw_SHA256_final(HW_SHA256_CTX *ctx);
+const uint8 *hw_SHA256_final(HW_SHA256_CTX *ctx);
 
 /**
  * hw_SHA256_hash writes |digest| from |len| bytes of |data|.
@@ -45,6 +44,6 @@ const uint8_t *hw_SHA256_final(HW_SHA256_CTX *ctx);
  * @param len Number of bytes to add.
  * @param digest Output buffer.
  */
-const uint8_t *hw_SHA256_hash(const void *data, size_t len, uint8_t *digest);
+const uint8 *hw_SHA256_hash(const void *data, usize len, uint8 *digest);
 
 #endif  // _F_LIB_SHA256_H__

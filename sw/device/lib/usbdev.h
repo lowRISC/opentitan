@@ -5,8 +5,7 @@
 #ifndef _USBDEV_H_
 #define _USBDEV_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 // Hardware parameters
 #define NUM_BUFS 32
@@ -23,8 +22,8 @@ typedef struct usbdev_ctx usbdev_ctx_t;
 struct usbdev_ctx {
   // TODO: base_addr goes here once header files support using it
   int can_wake;
-  uint8_t freebuf[NUM_BUFS];
-  uint32_t halted;  // bit vector per endpoint
+  uint8 freebuf[NUM_BUFS];
+  uint32 halted;  // bit vector per endpoint
   int nfree;
   int flushed;
   usbdev_ctx_t *ep_ctx[NUM_ENDPOINTS];
@@ -54,13 +53,13 @@ int usbdev_buf_free_byid(usbdev_ctx_t *ctx, usbbufid_t buf);
  * Get memory address for accessing data in a buffer
  *
  * Hardware restriction: buffer can only be written with 32-bit words
- * Ok to cast the return value to int8_t * for reading
+ * Ok to cast the return value to int8 * for reading
  *
  * @param ctx usbdev context pointer
  * @param buf buffer ID to access
  * @return pointer to access the data of @p buf
  */
-uint32_t *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf);
+uint32 *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf);
 
 /**
  * Copy from memory into a buffer, referencing by buffer ID
@@ -74,7 +73,7 @@ uint32_t *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf);
  * @param len_bytes length in bytes of data to copy
  */
 void usbdev_buf_copyto_byid(usbdev_ctx_t *ctx, usbbufid_t buf, const void *from,
-                            size_t len_bytes);
+                            usize len_bytes);
 
 /**
  * Schedule a buffer for transmission on an endpoint
@@ -87,7 +86,7 @@ void usbdev_buf_copyto_byid(usbdev_ctx_t *ctx, usbbufid_t buf, const void *from,
  * @param size length in bytes of data to send, zero is valid (used as ack)
  * @param endpoint endpoint to send from
  */
-void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
+void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, usize size,
                          int endpoint);
 
 /**

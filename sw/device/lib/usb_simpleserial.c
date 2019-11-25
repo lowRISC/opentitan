@@ -13,7 +13,7 @@
 static void ss_rx(void *ssctx_v, usbbufid_t buf, int size, int setup) {
   usb_ss_ctx_t *ssctx = (usb_ss_ctx_t *)ssctx_v;
   void *ctx = ssctx->ctx;
-  volatile uint8_t *bp = (volatile uint8_t *)usbdev_buf_idtoaddr(ctx, buf);
+  volatile uint8 *bp = (volatile uint8 *)usbdev_buf_idtoaddr(ctx, buf);
 
   if (size > BUF_LENGTH) {
     size = BUF_LENGTH;
@@ -29,7 +29,7 @@ static void ss_rx(void *ssctx_v, usbbufid_t buf, int size, int setup) {
 static void ss_flush(void *ssctx_v) {
   usb_ss_ctx_t *ssctx = (usb_ss_ctx_t *)ssctx_v;
   void *ctx = ssctx->ctx;
-  volatile uint32_t *bp_w;
+  volatile uint32 *bp_w;
   if ((ssctx->cur_buf == -1) || (ssctx->cur_cpos <= 0)) {
     return;
   }
@@ -44,8 +44,8 @@ static void ss_flush(void *ssctx_v) {
 }
 
 // Simple send byte will gather data for a while and send
-void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8_t c) {
-  volatile uint32_t *bp_w;
+void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8 c) {
+  volatile uint32 *bp_w;
   if (ssctx->cur_buf == -1) {
     ssctx->cur_buf = usbdev_buf_allocate_byid(ssctx->ctx);
     ssctx->cur_cpos = 0;
@@ -69,7 +69,7 @@ void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8_t c) {
 }
 
 void usb_simpleserial_init(usb_ss_ctx_t *ssctx, usbdev_ctx_t *ctx, int ep,
-                           void (*got_byte)(uint8_t)) {
+                           void (*got_byte)(uint8)) {
   usbdev_endpoint_setup(ctx, ep, 1, ssctx, NULL, ss_rx, ss_flush);
   ssctx->ctx = ctx;
   ssctx->ep = ep;

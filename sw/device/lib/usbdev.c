@@ -38,22 +38,22 @@ int usbdev_buf_free_byid(usbdev_ctx_t *ctx, usbbufid_t buf) {
   return 0;
 }
 
-uint32_t *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf) {
-  return (uint32_t *)(USBDEV_BUFFER() + (buf * BUF_LENGTH));
+uint32 *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf) {
+  return (uint32 *)(USBDEV_BUFFER() + (buf * BUF_LENGTH));
 }
 
 void usbdev_buf_copyto_byid(usbdev_ctx_t *ctx, usbbufid_t buf, const void *from,
-                            size_t len_bytes) {
-  int32_t *from_word = (int32_t *)from;
+                            usize len_bytes) {
+  int32 *from_word = (int32 *)from;
   int len_words;
-  volatile uint32_t *bp = usbdev_buf_idtoaddr(ctx, buf);
+  volatile uint32 *bp = usbdev_buf_idtoaddr(ctx, buf);
 
   if (len_bytes > BUF_LENGTH) {
     len_bytes = BUF_LENGTH;
   }
-  // This will round up if len_bytes is not on a multiple of int32_t
+  // This will round up if len_bytes is not on a multiple of int32
   // Always ok to fill the extra bytes since the buffers are aligned
-  len_words = (len_bytes + sizeof(int32_t) - 1) / sizeof(int32_t);
+  len_words = (len_bytes + sizeof(int32) - 1) / sizeof(int32);
   for (int i = 0; i < len_words; i++) {
     bp[i] = from_word[i];
   }
@@ -71,9 +71,9 @@ inline static void fill_av_fifo(usbdev_ctx_t *ctx) {
   }
 }
 
-void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
+void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, usize size,
                          int endpoint) {
-  uint32_t configin = USBDEV_CONFIGIN0() + (4 * endpoint);
+  uint32 configin = USBDEV_CONFIGIN0() + (4 * endpoint);
 
   if ((endpoint >= NUM_ENDPOINTS) || (buf >= NUM_BUFS)) {
     return;
@@ -89,7 +89,7 @@ void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
 }
 
 void usbdev_poll(usbdev_ctx_t *ctx) {
-  uint32_t istate = REG32(USBDEV_INTR_STATE());
+  uint32 istate = REG32(USBDEV_INTR_STATE());
 
   // Do this first to keep things going
   fill_av_fifo(ctx);
@@ -97,13 +97,13 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
   // Process IN completions first so we get the fact that send completed
   // before processing a response
   if (istate & (1 << USBDEV_INTR_STATE_PKT_SENT)) {
-    uint32_t sentep = REG32(USBDEV_IN_SENT());
-    uint32_t configin = USBDEV_CONFIGIN0();
+    uint32 sentep = REG32(USBDEV_IN_SENT());
+    uint32 configin = USBDEV_CONFIGIN0();
     TRC_C('a' + sentep);
     for (int ep = 0; ep < NUM_ENDPOINTS; ep++) {
       if (sentep & (1 << ep)) {
         // Free up the buffer and optionally callback
-        int32_t cfgin = REG32(configin + (4 * ep));
+        int32 cfgin = REG32(configin + (4 * ep));
         usbdev_buf_free_byid(ctx, EXTRACT(cfgin, CONFIGIN0_BUFFER0));
         if (ctx->tx_done_callback[ep]) {
           ctx->tx_done_callback[ep](ctx->ep_ctx[ep]);
@@ -118,7 +118,7 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
 
   if (istate & (1 << USBDEV_INTR_STATE_PKT_RECEIVED)) {
     while (!(REG32(USBDEV_USBSTAT()) & (1 << USBDEV_USBSTAT_RX_EMPTY))) {
-      uint32_t rxinfo = REG32(USBDEV_RXFIFO());
+      uint32 rxinfo = REG32(USBDEV_RXFIFO());
       usbbufid_t buf = EXTRACT(rxinfo, RXFIFO_BUFFER);
       int size = EXTRACT(rxinfo, RXFIFO_SIZE);
       int endpoint = EXTRACT(rxinfo, RXFIFO_EP);
@@ -148,7 +148,7 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
   // Frame ticks every 1ms, use to flush data every 16ms
   // (faster in DPI but this seems to work ok)
   // At reset frame count is 0, compare to 1 so no calls before SOF received
-  uint32_t usbframe = EXTRACT(REG32(USBDEV_USBSTAT()), USBSTAT_FRAME);
+  uint32 usbframe = EXTRACT(REG32(USBDEV_USBSTAT()), USBSTAT_FRAME);
   if ((usbframe & 0xf) == 1) {
     if (ctx->flushed == 0) {
       for (int i = 0; i < NUM_ENDPOINTS; i++) {
@@ -170,8 +170,8 @@ void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid) {
 }
 
 void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable) {
-  uint32_t epbit = 1 << endpoint;
-  uint32_t stall = REG32(USBDEV_STALL());
+  uint32 epbit = 1 << endpoint;
+  uint32 stall = REG32(USBDEV_STALL());
   if (enable) {
     stall |= epbit;
   } else {
@@ -195,7 +195,7 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   ctx->rx_callback[ep] = rx;
   ctx->flush[ep] = flush;
   if (enableout) {
-    uint32_t rxen = REG32(USBDEV_RXENABLE());
+    uint32 rxen = REG32(USBDEV_RXENABLE());
     rxen |= (1 << (ep + USBDEV_RXENABLE_OUT0));
     REG32(USBDEV_RXENABLE()) = rxen;
   }

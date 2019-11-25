@@ -5,8 +5,6 @@
 #ifndef _PINMUX_H_
 #define _PINMUX_H_
 
-#include <stdint.h>
-
 #include "pinmux_regs.h"  // Generated.
 
 /**

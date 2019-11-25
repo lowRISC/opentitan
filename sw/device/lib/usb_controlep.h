@@ -21,10 +21,10 @@ typedef struct usb_controlep_ctx {
   usbdev_ctx_t *ctx;
   int ep;
   ctstate_t ctrlstate;
-  uint32_t new_dev;
-  uint8_t usb_config;
-  const uint8_t *cfg_dscr;
-  size_t cfg_dscr_len;
+  uint32 new_dev;
+  uint8 usb_config;
+  const uint8 *cfg_dscr;
+  usize cfg_dscr_len;
 } usb_controlep_ctx_t;
 
 /**
@@ -37,11 +37,11 @@ typedef struct usb_controlep_ctx {
  * @param cfg_dscr_len length of cfg_dscr
  */
 void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
-                        const uint8_t *cfg_dscr, size_t cfg_dscr_len);
+                        const uint8 *cfg_dscr, usize cfg_dscr_len);
 
 /********************************************************************/
 /* Below this point are macros used to construct the USB descriptor */
-/* Use them to initialize a uint8_t array for cfg_dscr              */
+/* Use them to initialize a uint8 array for cfg_dscr              */
 
 #define USB_CFG_DSCR_LEN 9
 #define USB_CFG_DSCR_HEAD(total_len, nint)                                    \

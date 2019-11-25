@@ -33,7 +33,7 @@ static int usleep_ibex(unsigned long usec) {
 
 static int usleep(unsigned long usec) { return usleep_ibex(usec); }
 
-static void break_on_error(uint32_t error) {
+static void break_on_error(uint32 error) {
   if (error) {
     // inifinitely fetch instructions, will flag an assertion error
     uart_send_str("FAIL!\r\n");
@@ -44,7 +44,7 @@ static void break_on_error(uint32_t error) {
 }
 
 /* Returns 1 if |a| and |b| are equal. */
-int check_arr_eq(const uint32_t *a, const uint32_t *b, uint32_t len) {
+int check_arr_eq(const uint32 *a, const uint32 *b, uint32 len) {
   for (int i = 0; i < len; ++i) {
     if (a[i] != b[i]) {
       return 0;
@@ -54,12 +54,12 @@ int check_arr_eq(const uint32_t *a, const uint32_t *b, uint32_t len) {
 }
 
 int main(int argc, char **argv) {
-  uint32_t i, iteration;
-  uint32_t prog_array[FLASH_WORDS_PER_PAGE];
-  uint32_t rd_array[FLASH_WORDS_PER_PAGE];
-  uint32_t test_addr;
-  uint32_t bank1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
-  uint32_t bank0_last_page =
+  uint32 i, iteration;
+  uint32 prog_array[FLASH_WORDS_PER_PAGE];
+  uint32 rd_array[FLASH_WORDS_PER_PAGE];
+  uint32 test_addr;
+  uint32 bank1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
+  uint32 bank0_last_page =
       FLASH_MEM_BASE_ADDR + (FLASH_PAGES_PER_BANK - 1) * FLASH_PAGE_SZ;
 
   uart_init(UART_BAUD_RATE);
@@ -98,16 +98,16 @@ int main(int argc, char **argv) {
   /////////////////////////////////////////////////////////////
   // Begin flash memory protection testing
   /////////////////////////////////////////////////////////////
-  uint32_t region_base_page = FLASH_PAGES_PER_BANK;
-  uint32_t region_size = 1;
-  uint32_t good_addr_start =
+  uint32 region_base_page = FLASH_PAGES_PER_BANK;
+  uint32 region_size = 1;
+  uint32 good_addr_start =
       FLASH_MEM_BASE_ADDR + region_base_page * FLASH_PAGE_SZ;
-  uint32_t good_addr_end = good_addr_start + region_size * FLASH_PAGE_SZ - 1;
-  uint32_t bad_addr_start =
+  uint32 good_addr_end = good_addr_start + region_size * FLASH_PAGE_SZ - 1;
+  uint32 bad_addr_start =
       good_addr_end + 1;  // this is always aligned to a page
-  uint32_t good_words = 3;
-  uint32_t bad_words = 3;
-  uint32_t chk_addr = bad_addr_start - (FLASH_WORD_SZ * good_words);
+  uint32 good_words = 3;
+  uint32 bad_words = 3;
+  uint32 chk_addr = bad_addr_start - (FLASH_WORD_SZ * good_words);
 
   mp_region_t region0 = {.num = 0,
                          .base = region_base_page,
@@ -125,20 +125,20 @@ int main(int argc, char **argv) {
   flash_cfg_region(&region0);
 
   // expect write to fail.
-  for (uint32_t i = 0; i < good_words + bad_words; i++) {
+  for (uint32 i = 0; i < good_words + bad_words; i++) {
     prog_array[i] = 0xA5A5A5A5 + i;
   }
   break_on_error(!flash_write(chk_addr, prog_array, good_words + bad_words));
 
   // the good words should match
-  for (uint32_t i = 0; i < good_words; i++) {
+  for (uint32 i = 0; i < good_words; i++) {
     if (REG32(chk_addr + i * 4) != prog_array[i]) {
       break_on_error(1);
     }
   }
 
   // the bad word contents should not have gone through
-  for (uint32_t i = good_words; i < good_words + bad_words; i++) {
+  for (uint32 i = good_words; i < good_words + bad_words; i++) {
     if (REG32(chk_addr + i * 4) != 0xFFFFFFFF) {
       break_on_error(1);
     }
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
   break_on_error(flash_page_erase(good_addr_start));
 
   // double check erase results
-  for (uint32_t i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+  for (uint32 i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
     if (REG32(good_addr_start + i * 4) != 0xFFFFFFFF) {
       break_on_error(1);
     }

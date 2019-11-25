@@ -38,7 +38,7 @@ static int usleep(unsigned long usec) { return usleep_ibex(usec); }
 
 // called from ctr0 when something bad happens
 // char I=illegal instruction, A=lsu error (address), E=ecall
-void trap_handler(uint32_t mepc, char c) {
+void trap_handler(uint32 mepc, char c) {
   uart_send_char(c);
   uart_send_uint(mepc, 32);
   while (1) {
@@ -81,11 +81,11 @@ int main(int argc, char **argv) {
   uart_send_str("or type anything into the console window.\r\n");
   uart_send_str("The LEDs show the ASCII code of the last character.\r\n");
 
-  uint32_t gpio_in;
-  uint32_t gpio_in_prev = 0;
-  uint32_t gpio_in_changes;
-  uint8_t spi_buf[SPI_MAX];
-  uint32_t spi_in;
+  uint32 gpio_in;
+  uint32 gpio_in_prev = 0;
+  uint32 gpio_in_changes;
+  uint8 spi_buf[SPI_MAX];
+  uint32 spi_in;
 
   spid_send("SPI!", 4);
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
     // SPI character echo
     spi_in = spid_read_nb(spi_buf, SPI_MAX);
     if (spi_in) {
-      uint32_t d = (*(uint32_t *)spi_buf) ^ 0x01010101;
+      uint32 d = (*(uint32 *)spi_buf) ^ 0x01010101;
       spid_send(&d, 4);
       uart_send_str("SPI: ");
       for (int i = 0; i < spi_in; i++) {

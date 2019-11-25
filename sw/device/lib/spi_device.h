@@ -5,7 +5,7 @@
 #ifndef _SPI_DEVICE_H_
 #define _SPI_DEVICE_H_
 
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 /**
  * Init SPI Device
@@ -21,18 +21,18 @@ void spid_init(void);
  * @param len_bytes number of bytes to send
  * @return number of bytes actually sent (<len if no space in the fifo)
  */
-uint32_t spid_send(void *data, uint32_t len_bytes);
+uint32 spid_send(void *data, uint32 len_bytes);
 
 /**
  * Read the amount of the data from SRAM RX FIFO
  *
  * If remained data is smaller than length, it returns only up to data.
  */
-uint32_t spid_read_nb(void *data, uint32_t len);
+uint32 spid_read_nb(void *data, uint32 len);
 
 /**
  * Returns the number of bytes available to read on the RX buffer
  */
-uint32_t spid_bytes_available(void);
+uint32 spid_bytes_available(void);
 
 #endif /* _SPI_DEVICE_H_ */

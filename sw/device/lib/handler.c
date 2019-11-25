@@ -56,8 +56,8 @@ void handler_ecall(void) __attribute__((aligned(4), interrupt, weak));
 /**
  * Return value of mtval
  */
-static uint32_t get_mtval(void) {
-  uint32_t mtval;
+static uint32 get_mtval(void) {
+  uint32 mtval;
   asm volatile("csrr %0, mtval" : "=r"(mtval) : :);
   return mtval;
 }
@@ -68,7 +68,7 @@ static uint32_t get_mtval(void) {
  * TODO - this will be soon by a real print formatting
  */
 static void print_exc_msg(const char *msg) {
-  const uint32_t mtval = get_mtval();
+  const uint32 mtval = get_mtval();
   uart_send_str((char *)msg);
   uart_send_str("MTVAL value is ");
   uart_send_uint(mtval, 32);
@@ -79,7 +79,7 @@ static void print_exc_msg(const char *msg) {
 
 // Below functions are default weak exception handlers meant to be overriden
 void handler_exception(void) {
-  uint32_t mcause;
+  uint32 mcause;
   exc_id_t exc_cause;
 
   asm volatile("csrr %0 , mcause" : "=r"(mcause) : :);

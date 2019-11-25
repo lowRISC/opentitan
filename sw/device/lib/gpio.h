@@ -5,7 +5,7 @@
 #ifndef _GPIO_H_
 #define _GPIO_H_
 
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 #include "gpio_regs.h"  // Generated.
 
@@ -16,10 +16,10 @@
 /**
  * @param oe bits to use as output
  */
-void gpio_init(uint32_t oe);
+void gpio_init(uint32 oe);
 
 void gpio_write_bit(unsigned int bit, unsigned int val);
-void gpio_write_all(uint32_t val);
-uint32_t gpio_read(void);
+void gpio_write_all(uint32 val);
+uint32 gpio_read(void);
 
 #endif

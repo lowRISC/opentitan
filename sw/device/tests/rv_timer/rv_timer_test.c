@@ -7,11 +7,11 @@
 #include "sw/device/lib/rv_timer.h"
 #include "sw/device/lib/uart.h"
 
-static uint32_t intr_handling_success = 0;
-static const uint32_t hart = 0;
+static uint32 intr_handling_success = 0;
+static const uint32 hart = 0;
 
 int main(int argc, char **argv) {
-  const uint64_t cmp = 0x000000000000000F;
+  const uint64 cmp = 0x000000000000000F;
 
   uart_init(UART_BAUD_RATE);
 

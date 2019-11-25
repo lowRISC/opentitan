@@ -8,7 +8,7 @@
 #include "sw/device/lib/uart.h"
 
 typedef struct test_data {
-  uint32_t digest[8];
+  uint32 digest[8];
   char data[512];
 } test_data_t;
 
@@ -21,15 +21,15 @@ test_data_t test = {.digest = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2,
                         "known"};
 
 int main(int argc, char **argv) {
-  uint32_t error = 0;
-  uint32_t digest[8];
+  uint32 error = 0;
+  uint32 digest[8];
 
   uart_init(UART_BAUD_RATE);
   uart_send_str("Running SHA256 test\r\n");
 
-  hw_SHA256_hash(test.data, strlen(test.data), (uint8_t *)digest);
+  hw_SHA256_hash(test.data, base_strlen(test.data), (uint8 *)digest);
 
-  for (uint32_t i = 0; i < 8; i++) {
+  for (uint32 i = 0; i < 8; i++) {
     if (digest[i] != test.digest[i]) {
       flash_write_scratch_reg(digest[i]);
       error++;

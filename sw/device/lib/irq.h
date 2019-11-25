@@ -5,8 +5,7 @@
 #ifndef _IRQ_H_
 #define _IRQ_H_
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 /**
  * Update to the location of vectors as specificed in the linker file

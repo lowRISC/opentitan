@@ -10,7 +10,7 @@
 #include "usbdev.h"
 
 // Device descriptor
-static uint8_t dev_dscr[] = {
+static uint8 dev_dscr[] = {
     18,    // bLength
     1,     // bDescriptorType
     0x00,  // bcdUSB[0]
@@ -36,8 +36,8 @@ static uint8_t dev_dscr[] = {
 static ctstate_t setup_req(usb_controlep_ctx_t *ctctx, void *ctx,
                            usbbufid_t buf, int bmRequestType, int bRequest,
                            int wValue, int wIndex, int wLength) {
-  size_t len;
-  uint32_t stat;
+  usize len;
+  uint32 stat;
   int zero, type;
   switch (bRequest) {
     case kUsbSetupReqGetDescriptor:
@@ -182,7 +182,7 @@ static void ctrl_tx_done(void *ctctx_v) {
 static void ctrl_rx(void *ctctx_v, usbbufid_t buf, int size, int setup) {
   usb_controlep_ctx_t *ctctx = (usb_controlep_ctx_t *)ctctx_v;
   void *ctx = ctctx->ctx;
-  volatile uint8_t *bp = (volatile uint8_t *)usbdev_buf_idtoaddr(ctx, buf);
+  volatile uint8 *bp = (volatile uint8 *)usbdev_buf_idtoaddr(ctx, buf);
   if (size > BUF_LENGTH) {
     size = BUF_LENGTH;
   }
@@ -232,7 +232,7 @@ static void ctrl_rx(void *ctctx_v, usbbufid_t buf, int size, int setup) {
 }
 
 void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
-                        const uint8_t *cfg_dscr, size_t cfg_dscr_len) {
+                        const uint8 *cfg_dscr, usize cfg_dscr_len) {
   ctctx->ctx = ctx;
   usbdev_endpoint_setup(ctx, ep, 1, ctctx, ctrl_tx_done, ctrl_rx, NULL);
   ctctx->ctrlstate = kCtIdle;

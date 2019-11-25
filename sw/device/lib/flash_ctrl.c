@@ -36,18 +36,18 @@ void flash_init_block(void) {
 
 /* Return status error and clear internal status register */
 static int get_clr_err(void) {
-  uint32_t err_status =
+  uint32 err_status =
       REG32(FLASH_CTRL_INTR_STATE(0)) & (0x1 << FLASH_CTRL_INTR_STATE_OP_ERROR);
   REG32(FLASH_CTRL_INTR_STATE(0)) = err_status;
   return err_status;
 }
 
 int flash_check_empty(void) {
-  uint32_t mask = -1u;
-  uint32_t *p = (uint32_t *)FLASH_MEM_BASE_ADDR;
+  uint32 mask = -1u;
+  uint32 *p = (uint32 *)FLASH_MEM_BASE_ADDR;
   // TODO: Update range to cover entire flash. Limited now to one bank while
   // we debu initialization.
-  for (; p < (uint32_t *)(FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ);) {
+  for (; p < (uint32 *)(FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ);) {
     mask &= *p++;
     mask &= *p++;
     mask &= *p++;
@@ -81,7 +81,7 @@ int flash_bank_erase(bank_index_t idx) {
   return get_clr_err();
 }
 
-int flash_page_erase(uint32_t addr) {
+int flash_page_erase(uint32 addr) {
   REG32(FLASH_CTRL_ADDR(0)) = addr;
   REG32(FLASH_CTRL_CONTROL(0)) = FLASH_ERASE << FLASH_CTRL_CONTROL_OP_OFFSET |
                                  FLASH_PAGE_ERASE
@@ -91,8 +91,8 @@ int flash_page_erase(uint32_t addr) {
   return get_clr_err();
 }
 
-static int flash_write_internal(uint32_t addr, const uint32_t *data,
-                                uint32_t size) {
+static int flash_write_internal(uint32 addr, const uint32 *data,
+                                uint32 size) {
   // TODO: Do we need to select bank as part of the write?
   // TODO: Update with address alignment requirements.
   REG32(FLASH_CTRL_ADDR(0)) = addr;
@@ -106,17 +106,17 @@ static int flash_write_internal(uint32_t addr, const uint32_t *data,
   return get_clr_err();
 }
 
-int flash_write(uint32_t addr, const uint32_t *data, uint32_t size) {
+int flash_write(uint32 addr, const uint32 *data, uint32 size) {
   // TODO: Breakdown into FIFO chunks if needed.
   return flash_write_internal(addr, data, size);
 }
 
-int flash_read(uint32_t addr, uint32_t size, uint32_t *data) {
+int flash_read(uint32 addr, uint32 size, uint32 *data) {
   REG32(FLASH_CTRL_ADDR(0)) = addr;
   REG32(FLASH_CTRL_CONTROL(0)) = FLASH_READ << FLASH_CTRL_CONTROL_OP_OFFSET |
                                  (size - 1) << FLASH_CTRL_CONTROL_NUM_OFFSET |
                                  0x1 << FLASH_CTRL_CONTROL_START;
-  for (uint32_t i = 0; i < size;) {
+  for (uint32 i = 0; i < size;) {
     if (((REG32(FLASH_CTRL_STATUS(0)) >> FLASH_CTRL_STATUS_RD_EMPTY) & 0x1) ==
         0) {
       *data++ = REG32(FLASH_CTRL_RD_FIFO(0));
@@ -150,8 +150,8 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
       0x1 << FLASH_CTRL_MP_REGION_CFG0_EN0;
 }
 
-void flash_write_scratch_reg(uint32_t value) {
+void flash_write_scratch_reg(uint32 value) {
   REG32(FLASH_CTRL_SCRATCH(0)) = value;
 }
 
-uint32_t flash_read_scratch_reg(void) { return REG32(FLASH_CTRL_SCRATCH(0)); }
+uint32 flash_read_scratch_reg(void) { return REG32(FLASH_CTRL_SCRATCH(0)); }

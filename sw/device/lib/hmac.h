@@ -5,8 +5,7 @@
 #ifndef _F_LIB_HMAC_H__
 #define _F_LIB_HMAC_H__
 
-#include <stddef.h>
-#include <stdint.h>
+#include "sw/device/lib/base/types.h"
 
 /**
  * Supported HMAC operations
@@ -20,11 +19,11 @@ typedef struct hmac_cfg {
   /** Operational mode @see hmac_ops. */
   hmac_ops_t mode;
   /** Set to 1 to swap input bytes. */
-  uint32_t input_endian_swap;
+  uint32 input_endian_swap;
   /** Set to 1 to swap output bytes. */
-  uint32_t digest_endian_swap;
+  uint32 digest_endian_swap;
   /** Input key used in HMAC mode. */
-  uint32_t keys[8];
+  uint32 keys[8];
 } hmac_cfg_t;
 
 /**
@@ -40,13 +39,13 @@ void hmac_init(hmac_cfg_t hmac_cfg);
  * @param data pointer to input buffer.
  * @param size_in_bytes number of bytes to write.
  */
-void hmac_update(const void *data, size_t size_in_bytes);
+void hmac_update(const void *data, usize size_in_bytes);
 
 /**
  * Poll for hmac done and read out digest.
  *
  * @param digest pointer to output digest buffer.
  */
-void hmac_done(uint32_t *digest);
+void hmac_done(uint32 *digest);
 
 #endif  // _F_LIB_HMAC_H__
