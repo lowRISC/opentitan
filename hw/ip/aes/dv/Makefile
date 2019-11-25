@@ -22,6 +22,16 @@ COMPILE_KEY     ?= default
 UVM_TEST        ?= aes_base_test
 UVM_TEST_SEQ    ?= aes_base_vseq
 
+# Make GCC find aes.h
+ifeq (${SIMULATOR},vcs)
+  BUILD_OPTS += -CFLAGS "-I${DV_DIR}/../model"
+else ifeq (${SIMULATOR},xcelium)
+  BUILD_OPTS += -I${DV_DIR}/../model
+endif
+
+# Make GCC link OpenSSL/BoringSSL
+BUILD_OPTS += -lcrypto
+
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
@@ -36,7 +46,7 @@ ifeq (${TEST_NAME},aes_wakeup_test)
   UVM_TEST_SEQ   = aes_wake_up_vseq
 endif
 
-ifeq (${TEST_NAME},aes_sanity)
+ifeq (${TEST_NAME},aes_sanity_test)
   UVM_TEST_SEQ   = aes_sanity_vseq
 endif
 

@@ -19,6 +19,7 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
+
   pins_if #(1) devmode_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
@@ -29,8 +30,6 @@ module tb;
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  )
-
-    // TODO: add remaining IOs and hook them
   );
 
   initial begin
@@ -39,7 +38,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-//    uvm_config_db#(tlul_assert_vif)::set(null, "*.env", "tlul_assert_vif", tb.dut.tlul_assert);
     uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
         dut.tlul_assert_device.tlul_assert_ctrl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);

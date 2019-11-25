@@ -29,8 +29,8 @@ package aes_env_pkg;
   // functions
 
   // package sources
-// `include "aes_reg_block.sv"
  `include "aes_env_cfg.sv"
+ `include "aes_seq_item.sv"
  `include "aes_env_cov.sv"
  `include "aes_virtual_sequencer.sv"
  `include "aes_scoreboard.sv"
