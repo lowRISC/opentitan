@@ -82,11 +82,14 @@ sw_lib_hmac = declare_dependency(
 
 # IRQ library (sw_lib_irq)
 sw_lib_irq = declare_dependency(
+  # The IRQ handler definitions need to be included as a "source" rather than
+  # as part of a static library; this ensures that it is linked in as a .o
+  # file, so the .vectors section is picked up.
+  sources: ['irq_vectors.S'],
   link_with: static_library(
     'irq_ot',
     sources: [
       'handler.c',
-      'irq_vectors.S',
       'irq.c'
     ],
     dependencies: [

@@ -18,7 +18,7 @@ def run_objdump(objdump, input, basename, outdir):
     filename = basename + '.dis'
     output = os.path.join(outdir, filename)
     f = open(output, "w")
-    cmd = [objdump, '-SD', input, ]
+    cmd = [objdump, '-SDhl', input, ]
     subprocess.run(cmd, stdout=f, check=True)
     return output
 
