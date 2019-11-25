@@ -8,5 +8,6 @@
     life_stage:         "L2",
     design_stage:       "D3",
     verification_stage: "V3",
-    notes:              "D3 commit id: 3471a47c96ba87c77de7b14c39f4faf71a839283",
+    commit_id:          "635afdb8dedbb50c235bd772b36002925c499884",
+    notes:              ""
 }
