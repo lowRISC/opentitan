@@ -118,31 +118,37 @@ module usbdev_usbif  #(
     end
   end // always_comb
 
-  always_ff @(posedge clk_48mhz_i) begin
-    out_max_used <= out_max_used_next;
-    if (out_ep_data_put) begin
-      case (out_ep_put_addr[1:0])
-        0: begin
-          wdata[7:0] <= out_ep_data;
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      out_max_used <= '0;
+      wdata        <= '0;
+      std_write    <= 1'b0;
+    end else begin
+      out_max_used <= out_max_used_next;
+      if (out_ep_data_put) begin
+        case (out_ep_put_addr[1:0])
+          0: begin
+            wdata[7:0] <= out_ep_data;
+          end
+          1: begin
+            wdata[15:8] <= out_ep_data;
+          end
+          2: begin
+            wdata[23:16] <= out_ep_data;
+          end
+          3: begin
+            wdata[31:24] <= out_ep_data;
+          end
+        endcase
+        // don't write if the address has wrapped (happens for two CRC bytes after max data)
+        if (!out_max_used[PktW] && (out_ep_put_addr[1:0] == 2'b11)) begin
+          std_write <= 1'b1;
+        end else begin
+          std_write <= 1'b0;
         end
-        1: begin
-          wdata[15:8] <= out_ep_data;
-        end
-        2: begin
-          wdata[23:16] <= out_ep_data;
-        end
-        3: begin
-          wdata[31:24] <= out_ep_data;
-        end
-      endcase
-      // don't write if the address has wrapped (happens for two CRC bytes after max data)
-      if (!out_max_used[PktW] && (out_ep_put_addr[1:0] == 2'b11)) begin
-        std_write <= 1'b1;
       end else begin
         std_write <= 1'b0;
       end
-    end else begin
-      std_write <= 1'b0;
     end
   end // always_ff @ (posedge clk_48mhz_i)
 
