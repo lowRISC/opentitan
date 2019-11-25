@@ -16,18 +16,16 @@ BOOT_ROM_TARGET="boot_rom/boot_rom.vmem"
 
 TEST_TARGETS=(
   "tests/flash_ctrl/flash_test.vmem"
-  # TODO: Temporarially disabled, since these tests are failing at HEAD.
-  # See #1058.
-  #"tests/hmac/sha256_test.vmem"
-  #"tests/rv_timer/rv_timer_test.vmem"
+  "tests/hmac/sha256_test.vmem"
+  "tests/rv_timer/rv_timer_test.vmem"
 )
 
 if [[ ! -z ${MAKE_BUILD+x} ]]; then
   BOOT_ROM_TARGET="sw/device/sim/boot_rom/rom.vmem"
   TEST_TARGETS=(
     "sw/device/sim/tests/flash_ctrl/sw.vmem"
-    #"sw/device/sim/tests/hmac/sw.vmem"
-    #"sw/device/sim/tests/rv_timer/sw.vmem"
+    "sw/device/sim/tests/hmac/sw.vmem"
+    "sw/device/sim/tests/rv_timer/sw.vmem"
   )
 fi
 

@@ -13,11 +13,25 @@ riscv_linker_args = [
 # RISC-V startup library. Every RISC-V executable should depend on this target.
 riscv_crt = declare_dependency(
   link_args: riscv_linker_args,
+  # This is included as a source, not as a static library, so that the .crt
+  # section is picked up correctly.
+  sources: ['_crt.c'],
+  dependencies: [sw_lib_irq],
+  # This argument exists solely so that Meson realizes that riscv_linker_script
+  # is part of the dependency graph. This seems to be the only way to convince
+  # Meson to behave in this way, for the following reasons:
+  # - The dependencies arg can only include artifacts from declare_dependency().
+  # - We can't put linker scripts into the sources list, since Meson has no
+  #   clue how to deal with them.
+  # - custom_target() doesn't help, because we can't convince Meson to depend on
+  #   a custom_target() unless it produces source files.
+  # - If we go with static_library, sources needs to be non-empty in order for
+  #   Meson to correctly treat it as a cross-compile target (otherwise, we get
+  #   linker errors). This is because Meson guesses the type of a target based
+  #   off of the file extensions of the source files.
   link_with: static_library(
-    'riscv_crt',
-    sources: ['_crt.c'],
-    # NOTE: This line is mostly to make sure that a change in link.ld causes a
-    # recompilation.
+    'riscv_linker_script_dep_shim',
+    sources: ['empty.c'],
     link_depends: [riscv_linker_script],
-  ),
+  )
 )
