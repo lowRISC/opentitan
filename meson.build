@@ -6,9 +6,9 @@ project(
   'opentitan', 'c', 'cpp',
   version: '0.1',
   meson_version: '>=0.51.0', # Matches version in python-requirements.txt
-  default_options : [
-    'c_std=c99',
-    'build.c_std=c99',
+  default_options: [
+    'c_std=c11',
+    'build.c_std=c11',
     'cpp_std=c++14',
     'build.cpp_std=c++14',
     'warning_level=1',
@@ -62,6 +62,7 @@ add_project_arguments(
 add_project_arguments(
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
+  '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
   language: 'c', native: false)
 add_project_arguments(
   '-I' + meson.source_root(),
@@ -71,13 +72,13 @@ add_project_arguments(
 # The following flags are applied only to cross builds
 add_project_arguments(
   # Do not use standard system startup files or libraries
-  '-nostartfiles', '-nostdlib',
+  '-nostartfiles', '-nostdlib', '-nostdinc',
   '-static', # Only link static files
   optimize_size_args,
   language: 'cpp', native: false)
 add_project_arguments(
   # Do not use standard system startup files or libraries
-  '-nostartfiles', '-nostdlib',
+  '-nostartfiles', '-nostdlib', '-nostdinc',
   '-static', # Only link static files
   optimize_size_args,
   language: 'c', native: false)
