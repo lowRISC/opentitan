@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_driver extends uvm_driver #(spi_item);
+class spi_driver extends dv_base_driver #(spi_item, spi_agent_cfg);
   `uvm_component_utils(spi_driver)
 
   bit under_reset;
-  spi_agent_cfg cfg;
 
   `uvm_component_new
 

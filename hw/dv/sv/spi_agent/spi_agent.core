@@ -8,10 +8,12 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
     files:
       - spi_if.sv
       - spi_agent_pkg.sv
       - spi_agent_cfg.sv: {is_include_file: true}
+      - spi_agent_cov.sv: {is_include_file: true}
       - spi_item.sv: {is_include_file: true}
       - spi_driver.sv: {is_include_file: true}
       - spi_monitor.sv: {is_include_file: true}

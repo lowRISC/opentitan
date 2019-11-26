@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_monitor extends uvm_monitor;
+class spi_monitor extends dv_base_monitor#(
+    .ITEM_T (spi_item),
+    .CFG_T  (spi_agent_cfg),
+    .COV_T  (spi_agent_cov)
+  );
   `uvm_component_utils(spi_monitor)
 
-  spi_agent_cfg cfg;
   spi_item host_item;
   spi_item device_item;
 

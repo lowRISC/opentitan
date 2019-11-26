@@ -6,6 +6,7 @@ package spi_agent_pkg;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  import dv_lib_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -23,6 +24,7 @@ package spi_agent_pkg;
 
   // package sources
   `include "spi_agent_cfg.sv"
+  `include "spi_agent_cov.sv"
   `include "spi_item.sv"
   `include "spi_monitor.sv"
   `include "spi_driver.sv"
