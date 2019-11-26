@@ -18,7 +18,7 @@
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V1",
-        commit_id:          "",
+        commit_id:          "48fd7fd2d27c844acf909cfd7dc2b86f0f4e8e43",
         notes:              "Rolled back to D2 in order to add the first alert",
       }
     ]
