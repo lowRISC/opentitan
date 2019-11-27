@@ -85,6 +85,11 @@ ifeq ($(TEST_NAME),gpio_full_random)
   RUN_OPTS      += +do_clear_all_interrupts=0
 endif
 
+ifeq ($(TEST_NAME),gpio_stress_all)
+  UVM_TEST_SEQ   = gpio_stress_all_vseq
+  RUN_OPTS      += +do_clear_all_interrupts=0
+endif
+
 # gpio interrupt is sticky. Don't do clear interrupt and check at the end of 2 csr seq
 ifeq (${TEST_NAME},gpio_csr_rw)
   RUN_OPTS      += +do_clear_all_interrupts=0

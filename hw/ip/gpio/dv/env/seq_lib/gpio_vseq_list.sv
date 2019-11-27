@@ -13,3 +13,4 @@
 `include "gpio_filter_stress_vseq.sv"
 `include "gpio_random_long_reg_writes_reg_reads_vseq.sv"
 `include "gpio_full_random_vseq.sv"
+`include "gpio_stress_all_vseq.sv"
