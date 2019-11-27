@@ -25,6 +25,8 @@ static const unsigned long UART_BAUD_RATE = 230400;
 #define FLASH_PAGES_PER_BANK 256
 #define FLASH_BANK_SZ FLASH_PAGES_PER_BANK *FLASH_PAGE_SZ
 
+#define REG_DEF(comp, id, rname) (comp##id##_BASE_ADDR + comp##_##rname##_REG)
+
 #define REG8(add) *((volatile uint8_t *)(add))
 #define REG16(add) *((volatile uint16_t *)(add))
 #define REG32(add) *((volatile uint32_t *)(add))

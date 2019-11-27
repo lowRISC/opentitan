@@ -11,6 +11,14 @@
 #define RV_TIMER0_BASE_ADDR 0x40080000
 #define HART_CFG_ADDR_GAP 0x100
 
+#define RV_TIMER_REG_DEF(id, rname) (REG_DEF(RV_TIMER, id, rname))
+#define RV_TIMER_CFG0(id) (RV_TIMER_REG_DEF(id, CFG0))
+#define RV_TIMER_COMPARE_UPPER0_0(id) (RV_TIMER_REG_DEF(id, COMPARE_UPPER0_0))
+#define RV_TIMER_COMPARE_LOWER0_0(id) (RV_TIMER_REG_DEF(id, COMPARE_LOWER0_0))
+#define RV_TIMER_CTRL(id) (RV_TIMER_REG_DEF(id, CTRL))
+#define RV_TIMER_INTR_ENABLE0(id) (RV_TIMER_REG_DEF(id, INTR_ENABLE0))
+#define RV_TIMER_INTR_STATE0(id) (RV_TIMER_REG_DEF(id, INTR_STATE0))
+
 static const uint32_t NS_IN_S = 1000 * 1000 * 1000;
 
 void rv_timer_set_us_tick(uint32_t hart) {

@@ -6,9 +6,21 @@
 #include "usbdev.h"
 
 #include "sw/device/lib/common.h"
+#include "usbdev_regs.h"  // Generated.
 
 #define USBDEV_BASE_ADDR 0x40020000
-#include "usbdev_regs.h"  // Generated.
+
+#define USBDEV_REG_DEF(id, rname) (REG_DEF(USBDEV, id, rname))
+#define USBDEV_USBSTAT(id) (USBDEV_REG_DEF(id, USBSTAT))
+#define USBDEV_AVBUFFER(id) (USBDEV_REG_DEF(id, AVBUFFER))
+#define USBDEV_CONFIGIN0(id) (USBDEV_REG_DEF(id, CONFIGIN0))
+#define USBDEV_INTR_STATE(id) (USBDEV_REG_DEF(id, INTR_STATE))
+#define USBDEV_IN_SENT(id) (USBDEV_REG_DEF(id, IN_SENT))
+#define USBDEV_RXFIFO(id) (USBDEV_REG_DEF(id, RXFIFO))
+#define USBDEV_USBCTRL(id) (USBDEV_REG_DEF(id, USBCTRL))
+#define USBDEV_STALL(id) (USBDEV_REG_DEF(id, STALL))
+#define USBDEV_RXENABLE(id) (USBDEV_REG_DEF(id, RXENABLE))
+#define USBDEV_INTR_ENABLE(id) (USBDEV_REG_DEF(id, INTR_ENABLE))
 
 #define EXTRACT(n, f) ((n >> USBDEV_##f##_OFFSET) & USBDEV_##f##_MASK)
 

@@ -84,11 +84,13 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames):
 
     genout(outstr, format_comment(first_line(reg['desc'])))
     defname = as_define(comp + '_' + rname)
+    reg_defname = as_define(comp + '_' + rname + '_REG')
+    
     genout(
         outstr,
         gen_define(
-            defname, ['id'],
-            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')'))
+            reg_defname, [],
+            '(' + hex(offset) + ')'))
 
     for field in reg['fields']:
         fieldlsb = field['bitinfo'][2]

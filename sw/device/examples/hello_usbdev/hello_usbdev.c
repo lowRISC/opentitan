@@ -8,10 +8,14 @@
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 #include "sw/device/lib/usbdev.h"
+#include "usbdev_regs.h"  // Generated.
 
 // These just for the '/' printout
 #define USBDEV_BASE_ADDR 0x40020000
-#include "usbdev_regs.h"  // Generated.
+
+#define USBDEV_REG_DEF(id, rname) (REG_DEF(USBDEV, id, rname))
+#define USBDEV_USBSTAT(id) (USBDEV_REG_DEF(id, USBSTAT))
+#define USBDEV_INTR_STATE(id) (USBDEV_REG_DEF(id, INTR_STATE))
 
 // Build Configuration descriptor array
 static uint8_t cfg_dscr[] = {

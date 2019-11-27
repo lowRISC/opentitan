@@ -9,6 +9,16 @@
 #include "sw/device/lib/common.h"
 
 #define HMAC0_BASE_ADDR 0x40120000
+
+#define HMAC_REG_DEF(id, rname) (REG_DEF(HMAC, id, rname))
+#define HMAC_STATUS(id) (HMAC_REG_DEF(id, STATUS))
+#define HMAC_CFG(id) (HMAC_REG_DEF(id, CFG))
+#define HMAC_KEY0(id) (HMAC_REG_DEF(id, KEY0))
+#define HMAC_CMD(id) (HMAC_REG_DEF(id, CMD))
+#define HMAC_STATUS(id) (HMAC_REG_DEF(id, STATUS))
+#define HMAC_INTR_STATE(id) (HMAC_REG_DEF(id, INTR_STATE))
+#define HMAC_DIGEST0(id) (HMAC_REG_DEF(id, DIGEST0))
+
 #define HMAC_FIFO_MAX 16
 #define HMAC_FIFO_GROUP_SIZE HMAC_FIFO_MAX / 2
 

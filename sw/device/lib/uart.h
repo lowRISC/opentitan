@@ -7,9 +7,18 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/common.h"
+#include "uart_regs.h"  // Generated.
+
 #define UART0_BASE_ADDR 0x40000000
 
-#include "uart_regs.h"  // Generated.
+#define UART_REG_DEF(id, rname) (REG_DEF(UART, id, rname))
+#define UART_CTRL(id) (UART_REG_DEF(id, CTRL))
+#define UART_FIFO_CTRL(id) (UART_REG_DEF(id, FIFO_CTRL))
+#define UART_INTR_ENABLE(id) (UART_REG_DEF(id, INTR_ENABLE))
+#define UART_STATUS(id) (UART_REG_DEF(id, STATUS))
+#define UART_WDATA(id) (UART_REG_DEF(id, WDATA))
+#define UART_RDATA(id) (UART_REG_DEF(id, RDATA))
 
 void uart_send_char(char c);
 

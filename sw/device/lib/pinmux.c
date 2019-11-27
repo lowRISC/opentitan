@@ -9,6 +9,10 @@
 
 #define PINMUX0_BASE_ADDR 0x40070000
 
+#define PINMUX_REG_DEF(id, rname) (REG_DEF(PINMUX, id, rname))
+#define PINMUX_PERIPH_INSEL0(id) (PINMUX_REG_DEF(id, PERIPH_INSEL0))
+#define PINMUX_MIO_OUTSEL0(id) (PINMUX_REG_DEF(id, MIO_OUTSEL0))
+
 static void init_pinmux_reg(uint32_t reg, uint32_t size, uint32_t num_fields,
                             uint32_t mask, uint32_t start_v) {
   uint32_t reg_value = 0;
