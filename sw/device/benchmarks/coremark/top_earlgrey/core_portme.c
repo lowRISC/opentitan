@@ -5,9 +5,8 @@
         Author : Shay Gal-On, EEMBC
         Legal : TODO!
 */
-#include "core_portme.h"
-
-#include "coremark.h"
+#include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
+#include "sw/vendor/eembc_coremark/coremark.h"
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;

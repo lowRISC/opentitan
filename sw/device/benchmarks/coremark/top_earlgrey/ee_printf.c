@@ -32,8 +32,8 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 
 */
 
-#include <coremark.h>
 #include <stdarg.h>
+#include "sw/vendor/eembc_coremark/coremark.h"
 
 #define ZEROPAD (1 << 0)   /* Pad with zero */
 #define SIGN (1 << 1)      /* Unsigned/signed long */
@@ -232,7 +232,7 @@ static char *iaddr(char *str, unsigned char *addr, int size, int precision,
   return str;
 }
 
-#ifdef HAS_FLOAT
+#if HAS_FLOAT
 
 char *ecvtbuf(double arg, int ndigits, int *decpt, int *sign, char *buf);
 char *fcvtbuf(double arg, int ndigits, int *decpt, int *sign, char *buf);
@@ -617,7 +617,7 @@ static int ee_vsprintf(char *buf, const char *fmt, va_list args) {
       case 'u':
         break;
 
-#ifdef HAS_FLOAT
+#if HAS_FLOAT
 
       case 'f':
         str = flt(str, va_arg(args, double), field_width, precision, *fmt,
@@ -663,6 +663,10 @@ int ee_printf(const char *fmt, ...) {
   va_end(args);
   p = buf;
   while (*p) {
+    if (*p == '\n') {
+      uart_send_char('\r');
+    }
+
     uart_send_char(*p);
     n++;
     p++;

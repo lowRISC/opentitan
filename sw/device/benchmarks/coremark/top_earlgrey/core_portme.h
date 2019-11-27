@@ -61,7 +61,7 @@ extern unsigned int _stack_start;
 */
 #ifndef COMPILER_VERSION
 #ifdef __GNUC__
-#define COMPILER_VERSION "GCC"
+#define COMPILER_VERSION "GCC "__VERSION__
 #else
 #define COMPILER_VERSION "unknown"
 #endif
@@ -70,7 +70,7 @@ extern unsigned int _stack_start;
 #define COMPILER_FLAGS "" /* "Please put compiler flags here (e.g. -o3)" */
 #endif
 #ifndef MEM_LOCATION
-#define MEM_LOCATION _stack_start
+#define MEM_LOCATION "STACK"
 #endif
 
 /* Data Types :

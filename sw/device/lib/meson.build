@@ -27,7 +27,6 @@ sw_lib_uart = declare_dependency(
   )
 )
 
-
 # Flash controller library (sw_lib_flash_ctrl)
 sw_lib_flash_ctrl = declare_dependency(
   sources: [hw_ip_flash_ctrl_regs_h],
