@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class uart_agent_cov extends uvm_component;
+class uart_agent_cov extends dv_base_agent_cov #(uart_agent_cfg);
   `uvm_component_utils(uart_agent_cov)
-  uart_agent_cfg cfg;
 
   covergroup uart_cg with function sample(uart_dir_e dir, uart_item item);
     cp_dir:        coverpoint dir;

@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 
-class uart_monitor extends uvm_monitor;
+class uart_monitor extends dv_base_monitor#(
+    .ITEM_T (uart_item),
+    .CFG_T  (uart_agent_cfg),
+    .COV_T  (uart_agent_cov)
+  );
   `uvm_component_utils(uart_monitor)
-
-  uart_agent_cfg cfg;
-  uart_agent_cov cov;
 
   // Analysis port for the collected transfer.
   uvm_analysis_port #(uart_item) tx_analysis_port;

@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class uart_driver extends uvm_driver #(uart_item);
+class uart_driver extends dv_base_driver #(uart_item, uart_agent_cfg);
   `uvm_component_utils(uart_driver)
-
-  uart_agent_cfg cfg;
 
   `uvm_component_new
 
