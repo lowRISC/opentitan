@@ -125,8 +125,7 @@ jobs:
       sudo util/get-toolchain.py \
         --target-dir="${TOOLCHAIN_PATH}" \
         --release-version="${TOOLCHAIN_VERSION}" \
-        --update \
-        --force
+        --update
     displayName: 'Install toolchain'
   - bash: |
       . util/build_consts.sh
