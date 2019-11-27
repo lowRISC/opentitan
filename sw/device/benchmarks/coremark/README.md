@@ -1,13 +1,28 @@
-# Options
-There are two main options available for coremark SIM, ITERATIONS
+# Building CoreMark
 
-## ITERATIONS
-Controls how many iteartions are run.  By default this value is 0 and will cause coremark to run >10s.
-For simulation and verilator, set to 1 for a reduced run
+To build CoreMark under meson:
 
-## For verilator
-make distclean; make SIM=1 ITERATIONS=1
-SIM=1 matces the verilator UART baudrates
+```sh
+cd "${REPO_TOP}"
+./meson_init.sh
+ninja -C build-out/sw/${TARGET} sw/device/benchmarks/coremark/coremark_export
+```
 
-## For DV / FPGA
-make distclean; make ITERATIONS=1/N
+Where ${TARGET} is one of 'sim-verilator' or 'fpga'
+
+This will give you a .bin and .vmem file (suitable for either spiflash or
+giving directly to --flashinit for verilator) which can be found in
+`build-bin/sw/device/fpga/benchmarks/coremark`
+
+# CoreMark Options
+
+The meson build script alters ITERATIONS (specifying how many iterations
+CoreMark does) depending on whether it is a sim-verilator or an fpga build. 1
+iteration is used for sim-verilator, 100 for fpga.
+
+The meson script is hardcoded to give PERFORMANCE_RUN with
+TOTAL_DATA_SIZE=2000. These are settings required for reportable CoreMark
+figures. If you wish to use other options please alter
+`sw/device/benchmarks/coremark/meson.build` appropriately. See the CoreMark
+README in `sw/vendor/eembc_coremark/README.md` for further information on the
+possibilities.
