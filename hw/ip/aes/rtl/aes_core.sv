@@ -91,11 +91,8 @@ module aes_core #(
   assign data_in_qe = {reg2hw.data_in[3].qe, reg2hw.data_in[2].qe,
                        reg2hw.data_in[1].qe, reg2hw.data_in[0].qe};
 
-  always_comb begin : conv_data_in_to_state
-    for (int i=0; i<4; i++) begin
-      state_init = aes_col_set(data_in[i], i);
-    end
-  end
+  // Convert input data to state (every input data word contains one state column)
+  assign state_init = aes_transpose(data_in);
 
   assign mode = mode_e'(reg2hw.ctrl.mode.q);
 
@@ -235,11 +232,8 @@ module aes_core #(
     endcase
   end
 
-  always_comb begin : conv_key_words_to_bytes
-    for (int i=0; i<4; i++) begin
-      key_bytes = aes_col_set(key_words[i], i);
-    end
-  end
+  // Convert words to bytes (every key word contains one column)
+  assign key_bytes = aes_transpose(key_words);
 
   aes_mix_columns aes_key_mix_columns (
     .mode_i ( AES_DEC             ),

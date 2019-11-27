@@ -110,11 +110,4 @@ function automatic logic [3:0][7:0] aes_col_get(input logic [3:0][3:0][7:0] in, 
   end
 endfunction
 
-// Set single column in state matrix
-function automatic logic [3:0][3:0][7:0] aes_col_set(input logic [3:0][7:0] in, int idx);
-  for (int i=0; i<4; i++) begin
-    aes_col_set[i][idx] = in[i];
-  end
-endfunction
-
 endpackage
