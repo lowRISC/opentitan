@@ -143,6 +143,19 @@ The [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) 
 Consequently, C++-specific rules don't apply.
 In addition to the shared C and C++ style guide rules outlined before, the following C-specific rules apply.
 
+### C Version
+
+***C code should target C11.***
+
+The following nonstandard extensions may be used:
+*   Inline assembly
+*   Nonstandard attributes
+*   Compiler builtins
+
+It is recommended that no other nonstandard extensions are used.
+
+Any nonstandard features that are used must be compatible with both GCC and Clang.
+
 ### Function, enum, struct and typedef naming
 
 ***Names of functions, `enum`s, `struct`s, and `typedef`s must be `lower_snake_case`.***
@@ -172,6 +185,57 @@ This may change if we find cases where this initialization improves readability.
 
 When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed). Mixing designated and undesignated initializers, or using nested initializers, is still
 forbidden.
+
+### Nonstandard Attributes
+
+The following nonstandard attributes may be used:
+*   `section(<name>)` to put a definition into a given object section.
+*   `weak` to make a symbol definition have weak linkage.
+*   `interrupt` to ensure a function has the right prolog and epilog for interrupts (this involves saving and restoring more registers than normal).
+*   `packed` to ensure a struct contains no padding.
+
+It is recommended that other nonstandard attributes are not used, especially where C11 provides a standard means to accomplish the same thing.
+
+All nonstandard attributes must be supported by both GCC and Clang.
+
+Nonstandard attributes must be written before the declaration, like the following example, so they work with both declarations and definitions.
+
+```c
+__attribute__((section(".crt"))) void _crt(void);
+```
+
+### Nonstandard Compiler Builtins
+
+All nonstandard builtins must be supported by both GCC and Clang.
+Compiler builtin usage is complex, and it is recommended that a compiler engineer reviews any code that adds new builtins.
+
+In the following, `__builtin_foo` is the "prefixed" name and `foo` is the corresponding "unprefixed" name.
+
+***The use of nonstandard compiler builtins must have an unprefixed compatible definition.***
+
+There are two ways of doing this, depending on what the builtin does.
+
+For builtins that correspond to a C library function, the unprefixed function must be available to the linker, as the compiler may still insert a call to this function.
+Unfortunately, older versions of GCC do not support the `__has_builtin()` preprocessor function, so compiler detection of support for these builtins is next to impossible.
+In this case, a standards-compliant implementation of the unprefixed name must be provided, and the compilation unit should be compiled with `-fno-builtins`.
+
+For builtins that correspond to low-level byte and integer manipulations, an unprefixed inline function must be provided, which contains only a call to the prefixed name.
+Only the unprefixed name may be called by users.
+
+The inline function must be defined in a header, and exactly one compilation unit must have a compatible `extern` declaration for that function.
+For instance, `uint32_t __builtin_bswap32(uint32_t)` should not be called, instead the following should be implemented:
+```c
+// in bswap.h (can be included anywhere)
+inline uint32_t bswap32(uint32_t x) {
+  return __builtin_bswap32(x);
+}
+
+// only in bswap.c
+#include "bswap.h"
+extern uint32_t bswap32(uint32_t x);
+```
+
+This ensures changes to add compatibilty for other compilers are less invasive, as we already have a function to include a full implementation within.
 
 ## Code Lint
 
