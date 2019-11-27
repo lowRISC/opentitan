@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class uart_agent_cfg extends uvm_object;
+class uart_agent_cfg extends dv_base_agent_cfg;
 
   bit is_active     = 1'b1; // active driver or passive monitor
   bit en_cov        = 1'b1; // enable coverage

@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
     files:
       - uart_if.sv
       - uart_agent_pkg.sv
