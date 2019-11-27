@@ -1,8 +1,8 @@
 From dcad45beb85df7b1154d68a7e10dc9e7f88249fa Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Fri, 18 Oct 2019 11:03:19 -0700
-Subject: [PATCH 8/9] [ling/cleanup] Fix several verilator lint warnings due to
- sizing
+Subject: [PATCH 08/11] [ling/cleanup] Fix several verilator lint warnings due
+ to sizing
 
 ---
  debug_rom/debug_rom.sv |  4 ++--
@@ -329,5 +329,5 @@ index fa08d3f..43a6dad 100644
        end
  
 -- 
-2.24.0.rc0.303.g954a862665-goog
+2.17.1
 

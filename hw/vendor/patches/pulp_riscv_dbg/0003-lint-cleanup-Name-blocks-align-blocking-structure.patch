@@ -1,7 +1,7 @@
 From 393329b704d63a6fa150e9d4eb54c81dec7edae3 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Thu, 17 Oct 2019 15:52:49 -0700
-Subject: [PATCH 3/9] [lint/cleanup] Name blocks, align blocking structure
+Subject: [PATCH 03/11] [lint/cleanup] Name blocks, align blocking structure
 
 ---
  src/dm_csrs.sv      |  9 +++++----
@@ -311,5 +311,5 @@ index 19d876f..bd447f6 100644
 -endmodule
 +endmodule : dmi_jtag_tap
 -- 
-2.24.0.rc0.303.g954a862665-goog
+2.17.1
 

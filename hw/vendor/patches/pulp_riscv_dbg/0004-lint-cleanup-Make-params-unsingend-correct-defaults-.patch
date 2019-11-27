@@ -1,7 +1,7 @@
 From 0b5428a2047c27f5abdae04d0da99893c695693b Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Fri, 18 Oct 2019 10:31:56 -0700
-Subject: [PATCH 4/9] [lint/cleanup] Make params unsingend, correct defaults
+Subject: [PATCH 04/11] [lint/cleanup] Make params unsingend, correct defaults
  and uniquify
 
 ---
@@ -267,5 +267,5 @@ index bd447f6..c39fc43 100644
    parameter logic [31:0] IdcodeValue = 32'h00000001
    // xxxx             version
 -- 
-2.24.0.rc0.303.g954a862665-goog
+2.17.1
 

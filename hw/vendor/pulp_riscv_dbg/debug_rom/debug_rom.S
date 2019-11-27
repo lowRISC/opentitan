@@ -60,11 +60,18 @@ entry_loop:
         jal  zero, entry_loop
 
 _exception:
-        csrw CSR_DSCRATCH1, a0       // Save a0 to allow loading arbitrary DM offsets
+        // We can only get here due to an exception while in debug mode. Hence,
+        // we do not need to save a0 to a scratch register as it has already
+        // been saved on debug entry.
         auipc a0, 0                  // Get POC
         srli a0, a0, 12              // And throw away lower 12 bits to get the DM base
         slli a0, a0, 12
         sw   zero, EXCEPTION(a0)     // Let debug module know you got an exception.
+        // It is safe to always restore the scratch registers here as they must
+        // have been saved on debug entry. Restoring them here avoids issues
+        // with registers being overwritten by exceptions occuring during
+        // program buffer execution.
+        csrr s0, CSR_DSCRATCH0       // Restore s0 here
         csrr a0, CSR_DSCRATCH1       // Restore a0 here
         ebreak
 

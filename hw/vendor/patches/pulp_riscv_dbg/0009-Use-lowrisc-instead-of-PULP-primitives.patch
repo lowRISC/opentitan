@@ -1,7 +1,7 @@
 From 6a037bd7e07ba9e1aa0445ab53b845ee74ceecc2 Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
-Subject: [PATCH 9/9] Use lowrisc instead of PULP primitives
+Subject: [PATCH 09/11] Use lowrisc instead of PULP primitives
 
 ---
  src/dm_csrs.sv      | 42 +++++++++++++++-------------------
@@ -190,5 +190,5 @@ index f8b282a..9771cd9 100644
  
    // TDO changes state at negative edge of TCK
 -- 
-2.24.0.rc0.303.g954a862665-goog
+2.17.1
 

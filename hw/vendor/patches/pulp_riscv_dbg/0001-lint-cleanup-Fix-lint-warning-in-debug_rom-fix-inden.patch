@@ -1,7 +1,7 @@
 From dc97d912f2ef11e88dec383be65ea07f36a6514c Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Thu, 17 Oct 2019 19:01:49 -0700
-Subject: [PATCH 1/9] [lint/cleanup] Fix lint warning in debug_rom, fix
+Subject: [PATCH 01/11] [lint/cleanup] Fix lint warning in debug_rom, fix
  indentation
 
 ---
@@ -164,5 +164,5 @@ index bb2abc3..e701c52 100755
      # remove the trailing comma
      rom_str = rom_str[:-2]
 -- 
-2.24.0.rc0.303.g954a862665-goog
+2.17.1
 
