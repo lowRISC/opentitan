@@ -15,4 +15,5 @@ More description and information can be found within the [Reference Manual]({{< 
 * `testplanner.py` utility for generating verification testplans from Hjson descriptors [README]({{< relref "util/testplanner/README.md" >}})
 * `tlgen.py` utility for TileLink bus matrix [README]({{< relref "util/tlgen/README.md" >}})
 * `uvmdvgen.py` utility for generating testbenches for comportable IP [README]({{< relref "util/uvmdvgen/README.md" >}})
+* `fpvgen.py` utility for generating FPV testbenches for comportable IP [README]({{< relref "util/fpvgen/README.md" >}})
 * `wavegen.py` utility for creating technical waveforms in documentation [README]({{< relref "util/wavegen/README.md" >}})
