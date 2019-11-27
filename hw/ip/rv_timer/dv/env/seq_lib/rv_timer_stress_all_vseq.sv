@@ -13,8 +13,7 @@ class rv_timer_stress_all_vseq extends rv_timer_base_vseq;
   task body();
     string seq_names[] = {"rv_timer_sanity_vseq",
                           "rv_timer_disabled_vseq",
-                          "rv_timer_common_vseq", // for intr_test
-                          "rv_timer_random_reset_vseq"};
+                          "rv_timer_common_vseq"}; // for intr_test
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence       seq;
       rv_timer_base_vseq rv_timer_vseq;
@@ -22,6 +21,10 @@ class rv_timer_stress_all_vseq extends rv_timer_base_vseq;
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(rv_timer_vseq, seq)
+
+      // dut_init (reset) can be skipped
+      if (do_dut_init) rv_timer_vseq.do_dut_init = $urandom_range(0, 1);
+      else rv_timer_vseq.do_dut_init = 0;
 
       rv_timer_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(rv_timer_vseq)
