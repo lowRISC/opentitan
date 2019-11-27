@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "coremark",
+  target_dir: "eembc_coremark",
+  patch_dir: "patches/eembc_coremark",
+
+  upstream: {
+    url: "https://github.com/eembc/coremark.git",
+    rev: "master",
+  },
+}

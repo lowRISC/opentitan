@@ -1,0 +1,78 @@
+diff --git a/core_list_join.c b/core_list_join.c
+index a515428..428e480 100644
+--- a/core_list_join.c
++++ b/core_list_join.c
+@@ -16,7 +16,7 @@ limitations under the License.
+ Original Author: Shay Gal-on
+ */
+ 
+-#include "coremark.h"
++#include "sw/vendor/eembc_coremark/coremark.h"
+ /*
+ Topic: Description
+ 	Benchmark using a linked list.
+diff --git a/core_main.c b/core_main.c
+index 6161974..64b027f 100644
+--- a/core_main.c
++++ b/core_main.c
+@@ -19,7 +19,7 @@ Original Author: Shay Gal-on
+ /* File: core_main.c
+ 	This file contains the framework to acquire a block of memory, seed initial parameters, tun t he benchmark and report the results.
+ */
+-#include "coremark.h"
++#include "sw/vendor/eembc_coremark/coremark.h"
+ 
+ /* Function: iterate
+ 	Run the benchmark for a specified number of iterations.
+diff --git a/core_matrix.c b/core_matrix.c
+index ebfa1d7..066fbfd 100644
+--- a/core_matrix.c
++++ b/core_matrix.c
+@@ -16,7 +16,7 @@ limitations under the License.
+ Original Author: Shay Gal-on
+ */
+ 
+-#include "coremark.h"
++#include "sw/vendor/eembc_coremark/coremark.h"
+ /*
+ Topic: Description
+ 	Matrix manipulation benchmark
+diff --git a/core_state.c b/core_state.c
+index bb31933..7626f3f 100644
+--- a/core_state.c
++++ b/core_state.c
+@@ -16,7 +16,7 @@ limitations under the License.
+ Original Author: Shay Gal-on
+ */
+ 
+-#include "coremark.h"
++#include "sw/vendor/eembc_coremark/coremark.h"
+ /* local functions */
+ enum CORE_STATE core_state_transition( ee_u8 **instr , ee_u32 *transition_count);
+ 
+diff --git a/core_util.c b/core_util.c
+index 581adcc..e50b814 100644
+--- a/core_util.c
++++ b/core_util.c
+@@ -16,7 +16,7 @@ limitations under the License.
+ Original Author: Shay Gal-on
+ */
+ 
+-#include "coremark.h"
++#include "sw/vendor/eembc_coremark/coremark.h"
+ /* Function: get_seed
+ 	Get a values that cannot be determined at compile time.
+ 
+diff --git a/coremark.h b/coremark.h
+index dc9f8c7..cd2f3f9 100644
+--- a/coremark.h
++++ b/coremark.h
+@@ -35,7 +35,7 @@ Original Author: Shay Gal-on
+ #define MEM_MALLOC 1
+ #define MEM_STACK 2
+ 
+-#include "core_portme.h"
++#include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
+ 
+ #if HAS_STDIO
+ #include <stdio.h>
