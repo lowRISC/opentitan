@@ -1,7 +1,7 @@
 From c1d4cdedb11f185e967fda782b1b18093bf1f5ab Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Thu, 17 Oct 2019 18:12:59 -0700
-Subject: [PATCH 6/9] [lint/cleanup] Fix several lint errors / warnings
+Subject: [PATCH 06/11] [lint/cleanup] Fix several lint errors / warnings
 
 This fixes several lint errors and warnings, most of which are related to
 array indexing operations that are out of range.
@@ -732,5 +732,5 @@ index c39fc43..a6fd191 100644
    end
  
 -- 
-2.24.0.rc0.303.g954a862665-goog
+2.17.1
 

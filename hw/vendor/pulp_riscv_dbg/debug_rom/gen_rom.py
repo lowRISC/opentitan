@@ -7,7 +7,7 @@ import sys
 import binascii
 
 
-parser = argparse.ArgumentParser(description='Convert binary file to Verilog rom')
+parser = argparse.ArgumentParser(description='Convert binary file to verilog rom')
 parser.add_argument('filename', metavar='filename', nargs=1,
                    help='filename of input binary')
 
@@ -66,7 +66,7 @@ $content
   // the speculative fetch stage of the core
   always_comb begin : p_outmux
     rdata_o = '0;
-    if (addr_q < $clog2(RomSize)'(RomSize)) begin
+    if (addr_q < $$clog2(RomSize)'(RomSize)) begin
         rdata_o = mem[addr_q];
     end
   end

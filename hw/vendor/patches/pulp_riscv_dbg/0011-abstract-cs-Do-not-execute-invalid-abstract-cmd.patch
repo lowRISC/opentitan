@@ -1,0 +1,27 @@
+From 75f16162f8739c32d73ec2c38728532d6c494f80 Mon Sep 17 00:00:00 2001
+From: Tom Roberts <tomroberts@lowrisc.org>
+Date: Wed, 27 Nov 2019 14:07:28 +0000
+Subject: [PATCH 11/11] [abstract cs] Do not execute invalid abstract cmd
+
+If the command written is invalid, just set cmderr and do not attempt to
+execute it. This works around some timing issues in OpenOCD.
+---
+ src/dm_mem.sv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/dm_mem.sv b/src/dm_mem.sv
+index 5c361fc..49daa38 100644
+--- a/src/dm_mem.sv
++++ b/src/dm_mem.sv
+@@ -140,7 +140,7 @@ module dm_mem #(
+     case (state_q)
+       Idle: begin
+         cmdbusy_o = 1'b0;
+-        if (cmd_valid_i && halted_q_aligned[hartsel]) begin
++        if (cmd_valid_i && halted_q_aligned[hartsel] && !unsupported_command) begin
+           // give the go signal
+           state_d = Go;
+         end else if (cmd_valid_i) begin
+-- 
+2.17.1
+
