@@ -10,25 +10,30 @@
 #   fpv foo
 #
 # Here are some examples:
-#   fpv gpio
-#   fpv uart
-#   fpv top_earlgrey
+#   fpv rv_plic_fpv
+#   fpv pinmux_fpv
+#
+# Note that the module to be tested needs to have an _fpv testbench
+# and a corresponding core file for this to work.
 
-#-------------------------------------------------------------------------
-# set FPV_TOP env variable
-#-------------------------------------------------------------------------
 export FPV_TOP=$1
 
-#-------------------------------------------------------------------------
-# use fusesoc to generate file list
-#-------------------------------------------------------------------------
-\rm -Rf build jgproject
-fusesoc --cores-root .. run --target=sim --setup --build formal > /dev/null 2>&1
+echo "-------------------------------------------------------------------------"
+echo "-- Generate file list using FuseSoC"
+echo "-------------------------------------------------------------------------"
+echo ""
+echo "Top: $FPV_TOP"
+echo ""
 
-#-------------------------------------------------------------------------
-# run Jasper Gold
-#-------------------------------------------------------------------------
-cd build/formal_0/sim-icarus
+\rm -Rf build jgproject
+# we just run the setup for the default target in order to generate the filelist
+fusesoc --cores-root ../.. run --setup "lowrisc:fpv:${FPV_TOP}"
+
+echo "-------------------------------------------------------------------------"
+echo "-- Run JasperGold"
+echo "-------------------------------------------------------------------------"
+
+cd build/*${FPV_TOP}*/default-icarus
 
 jg -batch \
   ../../../fpv.tcl \
@@ -38,3 +43,7 @@ jg -batch \
   | tee ../../../fpv.log
 
 cd -
+
+echo "-------------------------------------------------------------------------"
+echo "-- Done"
+echo "-------------------------------------------------------------------------"

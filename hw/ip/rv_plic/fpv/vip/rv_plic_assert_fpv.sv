@@ -16,8 +16,8 @@ module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
   input [NumSrc-1:0] ie [NumTarget],
   input [NumSrc-1:0] claim,
   input [NumSrc-1:0] complete,
-  input [1:0]        prio [NumSrc], // TODO: need a way to automatically know the size
-  input [1:0]        threshold [NumTarget]
+  input [2:0]        prio [NumSrc], // TODO: need a way to automatically know the size
+  input [2:0]        threshold [NumTarget]
 );
 
   logic claim_reg, claimed;

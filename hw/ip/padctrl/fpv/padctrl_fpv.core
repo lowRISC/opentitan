@@ -8,6 +8,8 @@ filesets:
   files_fpv:
     depend:
       - lowrisc:ip:tlul
+      # note: this is an example config which may differ
+      # from a particular top-level config
       - lowrisc:ip:padctrl
       - lowrisc:prim:prim_pkg
     files:
@@ -18,9 +20,10 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default: &default_target
-    toplevel:
-      - tb/padctrl_fpv.sv
+  default:
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
     filesets:
       - files_fpv
-    default_tool: jg
+    toplevel: padctrl_fpv
