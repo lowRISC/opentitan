@@ -123,8 +123,7 @@ jobs:
   steps:
   - bash: |
       sudo apt-get install -y python3 python3-pip build-essential pkgconf srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev ninja-build \
-        && sudo pip3 install -U -r python-requirements.txt \
-        && sudo pip3 install -U meson
+        && sudo pip3 install -U -r python-requirements.txt
     displayName: 'Install dependencies'
   - bash: |
       set -x

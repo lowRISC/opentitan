@@ -10,6 +10,7 @@ pyyaml
 pytest
 fusesoc
 gitpython
+meson
 
 # Develpment version to get around YAML parser warning triggered by fusesoc
 # Upstream tracking: https://github.com/olofk/ipyxact/issues/19
