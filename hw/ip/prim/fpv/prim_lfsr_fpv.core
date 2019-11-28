@@ -13,9 +13,11 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default: &default_target
-    toplevel:
-      - prim_lfsr_fpv
+  default:
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
     filesets:
       - files_fpv
-    default_tool: jg
+    toplevel:
+      - prim_lfsr_fpv

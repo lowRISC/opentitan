@@ -8,9 +8,9 @@ filesets:
   files_fpv:
     depend:
       - lowrisc:ip:tlul
-      # include top-earlgrey in order to test
-      # with the top-level configuration
-      - lowrisc:systems:top_earlgrey
+      # note: this is an example config which may differ
+      # from a particular top-level config
+      - lowrisc:ip:pinmux
     files:
       - tb/pinmux_fpv.sv
       - tb/pinmux_bind_fpv.sv
@@ -18,9 +18,10 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default: &default_target
-    toplevel:
-      - pinmux_fpv
+  default:
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
     filesets:
       - files_fpv
-    default_tool: jg
+    toplevel: pinmux_fpv

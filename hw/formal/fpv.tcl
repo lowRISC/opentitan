@@ -16,11 +16,13 @@ check_cov -init -model {branch statement functional} \
 #-------------------------------------------------------------------------
 # read design
 #-------------------------------------------------------------------------
-analyze -sv09 \
-  -f formal_0.scr \
-  +define+ASIC_SYNTHESIS \
-  +define+SYNTHESIS      \
-  +define+FPV_ON
+
+# only one scr file exists in this folder
+analyze -sv09                 \
+  +define+ASIC_SYNTHESIS      \
+  +define+SYNTHESIS           \
+  +define+FPV_ON              \
+  -f [glob *.scr]
 
 elaborate -top $env(FPV_TOP)
 
@@ -162,5 +164,11 @@ set_proofgrid_per_engine_max_local_jobs 16
 # time limit set to 2 hours
 get_reset_info -x_value -with_reset_pin
 prove -all -time_limit 120m
-check_cov -measure
 report
+#-------------------------------------------------------------------------
+# check coverage and report
+#-------------------------------------------------------------------------
+check_cov -measure
+check_cov -report -type all -no_return -report_file cover.html \
+    -html -force -exclude { reset waived }
+
