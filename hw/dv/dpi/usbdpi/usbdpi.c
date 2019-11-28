@@ -562,10 +562,10 @@ char usbdpi_host_to_device(void *ctx_void, svBitVecVal *d2p_data) {
         case 2:
           readDescriptor(ctx);
           break;
-          // These should be at 3 and 4 but the read needs the host
-          // not to be sending (until skip fifo is implemented in in_pe engine)
-          // so for now push later when things are quiet (could also adjust
-          // hello_world to not use the uart until frame 4)
+        // These should be at 3 and 4 but the read needs the host
+        // not to be sending (until skip fifo is implemented in in_pe engine)
+        // so for now push later when things are quiet (could also adjust
+        // hello_world to not use the uart until frame 4)
         case 10:
           readBaud(ctx);
           break;
