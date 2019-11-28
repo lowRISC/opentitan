@@ -26,28 +26,6 @@
 // and resume at the first SPI packet
 // #define CONTROL_TRACE
 
-extern VerilatorSimCtrl *simctrl;
-
-static void finish(void) {
-  if (!simctrl) {
-    return;
-  }
-  simctrl->RequestStop(true);
-}
-
-#ifdef CONTROL_TRACE
-static void trace(int enable) {
-  if (!simctrl) {
-    return;
-  }
-  if (enable) {
-    simctrl->TraceOn();
-  } else {
-    simctrl->TraceOff();
-  }
-}
-#endif
-
 void *spidpi_create(const char *name, int mode, int loglevel) {
   int i;
   struct spidpi_ctx *ctx =
@@ -126,7 +104,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
 
 #ifdef CONTROL_TRACE
   if (ctx->tick == 4) {
-    trace(0);
+    VerilatorSimCtrl::GetInstance().TraceOff();
   }
 #endif
 
@@ -149,7 +127,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->din = 0;
         ctx->state = SP_CSFALL;
 #ifdef CONTROL_TRACE
-        trace(1);
+        VerilatorSimCtrl::GetInstance().TraceOn();
 #endif
       }
     }
@@ -218,7 +196,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->state = SP_IDLE;
         break;
       case SP_FINISH:
-        finish();
+        VerilatorSimCtrl::GetInstance().RequestStop(true);
         break;
       default:
         ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);

@@ -32,15 +32,6 @@ static const char *hs_states[] = {
     "HS_SENDACK 8",    "HS_WAIT_PKT 9",  "HS_ACKIFDATA 10",    "HS_SENDHI 11",
     "HS_EMPTYDATA 12", "HS_WAITACK2 13", "HS_NEXTFRAME 14"};
 
-extern VerilatorSimCtrl *simctrl;
-
-static void usbdpi_finish(int simulation_success) {
-  if (!simctrl) {
-    return;
-  }
-  simctrl->RequestStop(simulation_success);
-}
-
 void *usbdpi_create(const char *name, int loglevel) {
   int i;
   struct usbdpi_ctx *ctx =
@@ -553,7 +544,8 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   }
   switch (ctx->state) {
     case ST_IDLE:
-      if ((simctrl && simctrl->TracingEnabled() && (ctx->frame == 20)) ||
+      if ((VerilatorSimCtrl::GetInstance().TracingEnabled() &&
+           (ctx->frame == 20)) ||
           (ctx->frame > 50)) {
         printf("USB: usbdpi done, frame: %d, success: %d, state: %d\n",
                ctx->frame, ctx->baudrate_set_successfully, ctx->state);
@@ -561,7 +553,8 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         // If we were able to set the BAUD rate sucessfully, the DUT
         // provided reasonable responses to our requests. Ideally, we
         // would have a more advanced test here.
-        usbdpi_finish(ctx->baudrate_set_successfully);
+        VerilatorSimCtrl::GetInstance().RequestStop(
+            ctx->baudrate_set_successfully);
       }
 
       switch (ctx->frame) {
