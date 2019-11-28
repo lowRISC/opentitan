@@ -135,7 +135,7 @@ ee_u16 core_bench_list(core_results *res, ee_s16 finder_idx) {
 	ee_s16 find_num=res->seed3;
 	list_head *this_find;
 	list_head *finder, *remover;
-	list_data info;
+	list_data info={0};
 	ee_s16 i;
 
 	info.idx=finder_idx;

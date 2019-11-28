@@ -15,6 +15,44 @@ strip = '/tools/riscv/bin/riscv32-unknown-elf-strip'
 
 [properties]
 has_function_printf = false
+
+#c_args = [
+#  '-g',
+#  '-mabi=ilp32',
+#  '-march=rv32imc',
+#  '-mcmodel=medlow',
+#  '-nostartfiles',
+#  '-nostdlib',
+#  '-O2',
+#  '-fvisibility=hidden',
+#  '-falign-functions=16',
+#  '-funroll-all-loops',
+#	'-finline-functions',
+#  '-falign-jumps=4',
+#  '-fno-common',
+#  '-funroll-loops',
+#  '-finline-functions',
+#  '-falign-functions=16',
+#  '-falign-jumps=4',
+#  '-finline-limit=2000',
+#  '-fno-if-conversion2',
+#  '-fselective-scheduling',
+#  '-fno-tree-dominator-opts',
+#  '-fno-reg-struct-return',
+#  '-fno-rename-registers',
+#  '--param',
+#  'case-values-threshold=8',
+#  '-fno-crossjumping',
+#  '-freorder-blocks-and-partition',
+#  '-fno-tree-sink',
+#  '-fgcse-sm',
+#  '-fno-strict-overflow',
+#  '-mstrict-align',
+#  '-mtune=sifive-3-series',
+#  '-static',
+#  '-Wall',
+#  '-Werror']
+
 c_args = [
   '-fvisibility=hidden',
   '-g',
@@ -23,7 +61,12 @@ c_args = [
   '-mcmodel=medany',
   '-nostartfiles',
   '-nostdlib',
-  '-Os',
+  '-mtune=sifive-3-series',
+  '-falign-functions=16',
+  '-funroll-all-loops',
+  '-finline-functions',
+  '-falign-jumps=4',
+  '-O3',
   '-static',
   '-Wall',
   '-Werror']

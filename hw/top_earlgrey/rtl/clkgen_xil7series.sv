@@ -31,7 +31,7 @@ module clkgen_xil7series (
     .DIVCLK_DIVIDE        (1),
     .CLKFBOUT_MULT        (12),
     .CLKFBOUT_PHASE       (0.000),
-    .CLKOUT0_DIVIDE       (24),
+    .CLKOUT0_DIVIDE       (48),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT1_DIVIDE       (25),

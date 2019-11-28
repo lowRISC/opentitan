@@ -7,11 +7,46 @@ sw_lib_mem = declare_dependency(
   link_with: static_library(
     'mem_ot',
     sources: [
-      'memcpy.c',
-      'memset.c',
-      'strlen.c',
+      # abort.c needs the abort builtin, so is just provided as a source file
       'abort.c',
     ],
+    link_whole: [
+      # The following need to be built with `-fno-builtin-<function>` for each
+      # of the functions they implement.
+      static_library(
+        'mem_ot_memcpy',
+        sources: [
+          'memcpy.c',
+        ],
+        c_args: [
+          '-fno-builtin-memcpy',
+          '-ffreestanding',
+        ],
+        install: false
+      ),
+      static_library(
+        'mem_ot_memset',
+        sources: [
+          'memset.c',
+        ],
+        c_args: [
+          '-fno-builtin-memset',
+          '-ffreestanding',
+        ],
+        install: false
+      ),
+      static_library(
+        'mem_ot_strlen.c',
+        sources: [
+          'strlen.c',
+        ],
+        c_args: [
+          '-fno-builtin-strlen',
+          '-ffreestanding',
+        ],
+        install: false
+      ),
+    ]
   )
 )
 

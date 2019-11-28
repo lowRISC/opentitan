@@ -47,7 +47,7 @@ module top_earlgrey_nexysvideo (
 
   // Top-level design
   top_earlgrey #(
-    .IbexPipeLine(1)
+    .IbexPipeLine(0)
   ) top_earlgrey (
     .clk_i                    (clk_sys),
     .rst_ni                   (rst_sys_n),

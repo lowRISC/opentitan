@@ -5,7 +5,7 @@
 if target == 'sim-verilator'
   iterations = '-DITERATIONS=1'
 else
-  iterations = '-DITERATIONS=100'
+  iterations = '-DITERATIONS=650'
 endif
 
 coremark_elf = executable(

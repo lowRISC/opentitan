@@ -48,8 +48,155 @@ CORETIMETYPE barebones_clock() {
 #define MYTIMEDIFF(fin, ini) ((fin) - (ini))
 #define TIMER_RES_DIVIDER 1
 #define SAMPLE_TIME_IMPLEMENTATION 1
-#define CLOCKS_PER_SEC 500000
+#define CLOCKS_PER_SEC 25000000
 #define EE_TICKS_PER_SEC (CLOCKS_PER_SEC / TIMER_RES_DIVIDER)
+
+void pcount_reset() {
+  asm volatile(
+      "csrw minstret,       x0\n"
+      "csrw mcycle,         x0\n"
+      "csrw mhpmcounter3,   x0\n"
+      "csrw mhpmcounter4,   x0\n"
+      "csrw mhpmcounter5,   x0\n"
+      "csrw mhpmcounter6,   x0\n"
+      "csrw mhpmcounter7,   x0\n"
+      "csrw mhpmcounter8,   x0\n"
+      "csrw mhpmcounter9,   x0\n"
+      "csrw mhpmcounter10,  x0\n"
+      "csrw mhpmcounter11,  x0\n"
+      "csrw mhpmcounter12,  x0\n"
+      "csrw mhpmcounter13,  x0\n"
+      "csrw mhpmcounter14,  x0\n"
+      "csrw mhpmcounter15,  x0\n"
+      "csrw mhpmcounter16,  x0\n"
+      "csrw mhpmcounter17,  x0\n"
+      "csrw mhpmcounter18,  x0\n"
+      "csrw mhpmcounter19,  x0\n"
+      "csrw mhpmcounter20,  x0\n"
+      "csrw mhpmcounter21,  x0\n"
+      "csrw mhpmcounter22,  x0\n"
+      "csrw mhpmcounter23,  x0\n"
+      "csrw mhpmcounter24,  x0\n"
+      "csrw mhpmcounter25,  x0\n"
+      "csrw mhpmcounter26,  x0\n"
+      "csrw mhpmcounter27,  x0\n"
+      "csrw mhpmcounter28,  x0\n"
+      "csrw mhpmcounter29,  x0\n"
+      "csrw mhpmcounter30,  x0\n"
+      "csrw mhpmcounter31,  x0\n"
+      "csrw minstreth,      x0\n"
+      "csrw mcycleh,        x0\n"
+      "csrw mhpmcounter3h,  x0\n"
+      "csrw mhpmcounter4h,  x0\n"
+      "csrw mhpmcounter5h,  x0\n"
+      "csrw mhpmcounter6h,  x0\n"
+      "csrw mhpmcounter7h,  x0\n"
+      "csrw mhpmcounter8h,  x0\n"
+      "csrw mhpmcounter9h,  x0\n"
+      "csrw mhpmcounter10h, x0\n"
+      "csrw mhpmcounter11h, x0\n"
+      "csrw mhpmcounter12h, x0\n"
+      "csrw mhpmcounter13h, x0\n"
+      "csrw mhpmcounter14h, x0\n"
+      "csrw mhpmcounter15h, x0\n"
+      "csrw mhpmcounter16h, x0\n"
+      "csrw mhpmcounter17h, x0\n"
+      "csrw mhpmcounter18h, x0\n"
+      "csrw mhpmcounter19h, x0\n"
+      "csrw mhpmcounter20h, x0\n"
+      "csrw mhpmcounter21h, x0\n"
+      "csrw mhpmcounter22h, x0\n"
+      "csrw mhpmcounter23h, x0\n"
+      "csrw mhpmcounter24h, x0\n"
+      "csrw mhpmcounter25h, x0\n"
+      "csrw mhpmcounter26h, x0\n"
+      "csrw mhpmcounter27h, x0\n"
+      "csrw mhpmcounter28h, x0\n"
+      "csrw mhpmcounter29h, x0\n"
+      "csrw mhpmcounter30h, x0\n"
+      "csrw mhpmcounter31h, x0\n");
+}
+
+void pcount_enable(int enable) {
+  // Note cycle is disabled with everything else
+  unsigned int inhibit_val = enable ? 0x0 : 0xFFFFFFFF;
+  // mucounteren == mcountinhibit but binutils doesn't seem to known the
+  // mcountinhibit name
+  asm volatile("csrw  mucounteren, %0\n" : : "r"(inhibit_val));
+}
+
+void pcount_read(uint32_t pcount_out[]) {
+  asm volatile(
+      "csrr %0, minstret\n"
+      : "=r"(pcount_out[0])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter3\n"
+      : "=r"(pcount_out[1])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter4\n"
+      : "=r"(pcount_out[2])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter5\n"
+      : "=r"(pcount_out[3])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter6\n"
+      : "=r"(pcount_out[4])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter7\n"
+      : "=r"(pcount_out[5])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter8\n"
+      : "=r"(pcount_out[6])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter9\n"
+      : "=r"(pcount_out[7])
+  );
+
+  asm volatile(
+      "csrr %0, mhpmcounter10\n"
+      : "=r"(pcount_out[8])
+  );
+}
+
+const char* pcount_names[] = {
+  "Instructions Retired",
+  "LSU Busy",
+  "IFetch wait",
+  "Loads",
+  "Stores",
+  "Jumps",
+  "Branches",
+  "Taken Branches",
+  "Compressed Instructions"
+};
+
+const uint32_t pcount_num = 9;
+
+void dump_pcounts() {
+  uint32_t pcounts[9];
+
+  pcount_read(pcounts);
+  ee_printf("Performance Counters\n"
+            "--------------------\n");
+  for (uint32_t i = 0;i  < pcount_num; ++i) {
+    ee_printf("%s: %u\n", pcount_names[i], pcounts[i]);
+  }
+  ee_printf("\n");
+}
 
 /** Define Host specific (POSIX), or target specific global time variables. */
 static CORETIMETYPE start_time_val, stop_time_val;
@@ -62,7 +209,23 @@ static CORETIMETYPE start_time_val, stop_time_val;
    example code) or zeroing some system parameters - e.g. setting the cpu clocks
    cycles to 0.
 */
-void start_time(void) { GETMYTIME(&start_time_val); }
+void start_time(void) {
+  ee_printf("\n");
+  ee_printf("-----------------------------------------------------\n");
+  ee_printf(" _____                    ___  ___              _    \n");
+  ee_printf("/  __ \\                   |  \\/  |             | |   \n");
+  ee_printf("| /  \\/  ___   _ __   ___ | .  . |  __ _  _ __ | | __\n");
+  ee_printf("| |     / _ \\ | '__| / _ \\| |\\/| | / _` || '__|| |/ /\n");
+  ee_printf("| \\__/\\| (_) || |   |  __/| |  | || (_| || |   |   < \n");
+  ee_printf(" \\____/ \\___/ |_|    \\___|\\_|  |_/ \\__,_||_|   |_|\\_\\\n");
+  ee_printf("-----------------------------------------------------\n");
+  ee_printf("\n");
+
+  pcount_enable(0);
+  pcount_reset();
+  pcount_enable(1);
+  GETMYTIME(&start_time_val);
+}
 /* Function : stop_time
         This function will be called right after ending the timed portion of the
    benchmark.
@@ -71,7 +234,11 @@ void start_time(void) { GETMYTIME(&start_time_val); }
    example code) or other system parameters - e.g. reading the current value of
    cpu cycles counter.
 */
-void stop_time(void) { GETMYTIME(&stop_time_val); }
+void stop_time(void) {
+  GETMYTIME(&stop_time_val);
+  pcount_enable(0);
+  dump_pcounts();
+}
 /* Function : get_time
         Return an abstract "ticks" number that signifies time on the system.
 
@@ -93,8 +260,14 @@ CORE_TICKS get_time(void) {
    macro above.
 */
 secs_ret time_in_secs(CORE_TICKS ticks) {
+  secs_ret remainder = ((secs_ret)ticks) % (secs_ret)EE_TICKS_PER_SEC;
   secs_ret retval = ((secs_ret)ticks) / (secs_ret)EE_TICKS_PER_SEC;
-  return retval;
+
+  // Round to nearest integer seconds
+  if(remainder >= (EE_TICKS_PER_SEC / 2))
+    return retval + 1;
+  else
+    return retval;
 }
 
 ee_u32 default_num_contexts = 1;
