@@ -153,7 +153,10 @@ The SPI monitor output is written to a file.
 It may be monitored with `tail -f` which conveniently notices when the file is truncated on a new run, so does not need restarting between simulations.
 The output consists of a textual "waveform" representing the SPI signals.
 
+## Software execution traces
 
+All executed instructions in the loaded software are logged to the file `trace_core_00000000.log`.
+The columns in this file are tab separated; change the tab width in your editor if the columns don't appear clearly, or open the file in a spreadsheet application.
 
 ## Generating waveforms
 
