@@ -72,16 +72,23 @@ Note that `screen` will only show output that has been generated after `screen` 
 
 You can exit `screen` (in the default configuration) by pressing `CTRL-a k` and confirm with `y`.
 
-## See GPIO output
+## Interact with GPIO
 
-The simulation includes a DPI module to send all GPIO outputs to a POSIX FIFO file.
-The changing output can be observed with
+The simulation includes a DPI module to map general-purpose I/O (GPIO) pins to two POSIX FIFO files: one for input, and one for output.
+Observe the `gpio0-read` file for outputs:
 
 ```console
-$ cat gpio0
+$ cat gpio0-read
 ```
 
-Passing input is currently not supported.
+To drive input pins write to the `gpio0-write` file.
+A command consists of the desired state: `h` for high, and `l` for low, and the decimal pin number.
+Multiple commands can be issued by separating them with a single space.
+
+```console
+$ echo 'h09 l31' > gpio0-write  # Pull the pin 9 high, and pin 31 low.
+```
+
 
 ## Connect with OpenOCD to the JTAG port and use GDB
 
