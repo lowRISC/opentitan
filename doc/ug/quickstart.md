@@ -12,10 +12,11 @@ To follow the guide below the following things must be installed:
 * libusb 1.x
 * libftdi1 1.x
 * usbutils
+* libelf1
 
 Under Ubuntu these can be installed with:
 ```console
-$ sudo apt-get install xz-utils screen fdisk libftdi1-2 libusb-1.0-0 usbutils
+$ sudo apt-get install xz-utils screen fdisk libftdi1-2 libusb-1.0-0 usbutils libelf1
 ```
 
 ## Extract the release
