@@ -117,16 +117,12 @@ module aes_reg_top (
   logic ctrl_force_data_overwrite_wd;
   logic ctrl_force_data_overwrite_we;
   logic ctrl_force_data_overwrite_re;
-  logic trigger_start_qs;
   logic trigger_start_wd;
   logic trigger_start_we;
-  logic trigger_key_clear_qs;
   logic trigger_key_clear_wd;
   logic trigger_key_clear_we;
-  logic trigger_data_in_clear_qs;
   logic trigger_data_in_clear_wd;
   logic trigger_data_in_clear_we;
-  logic trigger_data_out_clear_qs;
   logic trigger_data_out_clear_wd;
   logic trigger_data_out_clear_we;
   logic status_idle_qs;
@@ -504,7 +500,7 @@ module aes_reg_top (
   //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_trigger_start (
     .clk_i   (clk_i    ),
@@ -522,15 +518,14 @@ module aes_reg_top (
     .qe     (),
     .q      (reg2hw.trigger.start.q ),
 
-    // to register interface (read)
-    .qs     (trigger_start_qs)
+    .qs     ()
   );
 
 
   //   F[key_clear]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_trigger_key_clear (
     .clk_i   (clk_i    ),
@@ -548,15 +543,14 @@ module aes_reg_top (
     .qe     (),
     .q      (reg2hw.trigger.key_clear.q ),
 
-    // to register interface (read)
-    .qs     (trigger_key_clear_qs)
+    .qs     ()
   );
 
 
   //   F[data_in_clear]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_trigger_data_in_clear (
     .clk_i   (clk_i    ),
@@ -574,15 +568,14 @@ module aes_reg_top (
     .qe     (),
     .q      (reg2hw.trigger.data_in_clear.q ),
 
-    // to register interface (read)
-    .qs     (trigger_data_in_clear_qs)
+    .qs     ()
   );
 
 
   //   F[data_out_clear]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_trigger_data_out_clear (
     .clk_i   (clk_i    ),
@@ -600,8 +593,7 @@ module aes_reg_top (
     .qe     (),
     .q      (reg2hw.trigger.data_out_clear.q ),
 
-    // to register interface (read)
-    .qs     (trigger_data_out_clear_qs)
+    .qs     ()
   );
 
 
@@ -911,10 +903,10 @@ module aes_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[0] = trigger_start_qs;
-        reg_rdata_next[1] = trigger_key_clear_qs;
-        reg_rdata_next[2] = trigger_data_in_clear_qs;
-        reg_rdata_next[3] = trigger_data_out_clear_qs;
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
+        reg_rdata_next[3] = '0;
       end
 
       addr_hit[18]: begin

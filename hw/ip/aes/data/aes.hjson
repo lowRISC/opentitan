@@ -134,7 +134,7 @@
   },
   { name: "TRIGGER",
     desc: "Trigger Register",
-    swaccess: "rw",
+    swaccess: "wo",
     hwaccess: "hrw",
     fields: [
       { bits: "0",
