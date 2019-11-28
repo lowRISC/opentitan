@@ -47,7 +47,7 @@ $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_v
 
 To stop the simulation press CTRL-c.
 
-## Interacting with the simulated UART
+## Interact with the simulated UART
 
 The simulation contains code to create a virtual UART port.
 When starting the simulation you should see a message like
@@ -111,6 +111,7 @@ You can also run the debug compliance test suite built into OpenOCD.
 $ cd $REPO_TOP
 $ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg -c 'init; riscv test_compliance; shutdown'
 ```
+
 ## SPI device test interface
 
 The simulation contains code to monitor the SPI bus and provide a master interface to allow interaction with the `spi_device`.
