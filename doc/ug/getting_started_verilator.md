@@ -153,11 +153,7 @@ The SPI monitor output is written to a file.
 It may be monitored with `tail -f` which conveniently notices when the file is truncated on a new run, so does not need restarting between simulations.
 The output consists of a textual "waveform" representing the SPI signals.
 
-## DPI Source
 
-The I/O interfaces described above are implemented using the DPI interface to Verilator.
-The code for these is stored in the repository at `hw/dv/dpi` with a sub-directory for each module.
-There should be a fusesoc `.core` file in each sub-directory.
 
 ## Generating waveforms
 
