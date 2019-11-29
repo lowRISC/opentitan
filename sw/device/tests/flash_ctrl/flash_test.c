@@ -162,5 +162,5 @@ int main(int argc, char **argv) {
 
   // cleanly terminate execution
   uart_send_str("PASS!\r\n");
-  __asm__ volatile("wfi;");
+  asm volatile("wfi;");
 }

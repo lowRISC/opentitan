@@ -13,7 +13,7 @@
 #include "sw/device/lib/uart.h"
 
 static inline void try_launch(void) {
-  __asm__ volatile(
+  asm volatile(
       "la a0, _flash_start;"
       "la sp, _stack_start;"
       "jr a0;"
