@@ -22,6 +22,7 @@
  * 27 December 2011
  */
 
+#define _XOPEN_SOURCE 500
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>

@@ -1,0 +1,11 @@
+diff -u a/mpsse.c b/mpsse.c
+--- a/mpsse.c	2019-11-29 16:38:40.000000000 +0000
++++ b/mpsse.c	2019-11-29 16:38:31.000000000 +0000
+@@ -22,6 +22,7 @@
+  * 27 December 2011
+  */
+ 
++#define _XOPEN_SOURCE 500
+ #include <stdlib.h>
+ #include <string.h>
+ #include <stdint.h>
