@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv_dpi:dmidpi:0.1"
+description: "DMI DPI for OpenOCD remote_bitbang driver"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:dv_dpi:tcp_server
+    files:
+      - dmidpi.sv: { file_type: systemVerilogSource }
+      - dmidpi.c: { file_type: cSource }
+      - dmidpi.h: { file_type: cSource, is_include_file: true }
+
+targets:
+  default:
+    filesets:
+      - files_rtl
