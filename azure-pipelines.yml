@@ -117,7 +117,7 @@ jobs:
 - job: "sw_build"
   displayName: "Build Software"
   dependsOn: lint
-  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
     vmImage: "ubuntu-16.04"
   steps:
@@ -147,7 +147,7 @@ jobs:
 - job: "deprecated_make_build"
   displayName: "Build Software with Make (deprecated)"
   dependsOn: lint
-  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: Default
   steps:
   - bash: |
@@ -171,7 +171,7 @@ jobs:
 - job: "top_earlgrey_verilator"
   displayName: "Build Verilator simulation of the Earl Grey toplevel design"
   dependsOn: lint
-  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: Default
   steps:
   - bash: |
@@ -226,7 +226,7 @@ jobs:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
     - sw_build
-  condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: Default
   timeoutInMinutes: 120 # 2 hours
   steps:
