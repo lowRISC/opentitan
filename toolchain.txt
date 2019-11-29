@@ -16,18 +16,9 @@ strip = '/tools/riscv/bin/riscv32-unknown-elf-strip'
 [properties]
 has_function_printf = false
 c_args = [
-  '-fvisibility=hidden',
-  '-g',
   '-mabi=ilp32',
   '-march=rv32imc',
-  '-mcmodel=medany',
-  '-nostartfiles',
-  '-nostdlib',
-  '-Os',
-  '-static',
-  '-Wall',
-  '-Werror']
-c_link_args = ['-nostdlib']
+  '-mcmodel=medany']
 
 [build_machine]
 system = 'linux'

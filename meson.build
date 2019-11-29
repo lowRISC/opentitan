@@ -53,6 +53,26 @@ add_project_arguments(
   '-I' + meson.build_root(),
   language: 'c', native: true)
 
+# The following flags are applied only to cross builds
+add_project_arguments(
+  '-nostartfiles', '-nostdlib',
+  '-Os', '-g',
+  '-static',
+  '-fvisibility=hidden',
+  language: 'cpp', native: false)
+add_project_arguments(
+  '-nostartfiles', '-nostdlib',
+  '-Os', '-g',
+  '-static',
+  '-fvisibility=hidden',
+  language: 'c', native: false)
+add_project_link_arguments(
+  '-nostdlib',
+  language: 'cpp', native: false)
+add_project_link_arguments(
+  '-nostdlib',
+  language: 'c', native: false)
+
 # Common program references.
 prog_python = import('python').find_installation('python3')
 prog_objdump = find_program('objdump')
