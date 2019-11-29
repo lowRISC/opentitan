@@ -12,10 +12,6 @@
 #define _LOG_IMPL_STRINGIFY(a) _LOG_IMPL_STRINGIFY_INNER(a)
 #define _LOG_IMPL_STRINGIFY_INNER(a) #a
 
-// The macro below allows forwarding arguments from a variadic macro to a
-// variadic function and support the case where number of arguments is 0.
-#define LOG_IMPL_VA_ARGS(...) , ##__VA_ARGS__
-
 /**
  * Log type and verbosity string constants
  */
@@ -55,7 +51,7 @@
  * use the logging APIs in log.h (which serve as the generic APIs and invoke
  * this macro underneath) instead.
  */
-#define PRINT_LOG(log_header, fmt, ...) \
-  print_log(&uart_send_char, log_header fmt LOG_IMPL_VA_ARGS(__VA_ARGS__));
+#define PRINT_LOG(log_header, ...) \
+  print_log(&uart_send_char, log_header __VA_ARGS__);
 
 #endif  // _LOG_IMPL_H

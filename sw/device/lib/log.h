@@ -141,7 +141,7 @@
  */
 #ifndef PRINT_LOG
 #warning PRINT_LOG undefined: it will result in vacuous invocation
-#define PRINT_LOG(log_header, fmt, ...)
+#define PRINT_LOG(log_header, ...)
 #endif
 
 /**
@@ -164,56 +164,54 @@
  */
 // Print an info message with no verbosity.
 #ifndef LOG_INFO
-#define LOG_INFO(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_NONE), fmt, __VA_ARGS__)
+#define LOG_INFO(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_NONE), __VA_ARGS__)
 #endif
 
 // Print an info message with low verbosity.
 #ifndef LOG_INFO_LOW
-#define LOG_INFO_LOW(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_LOW), fmt, __VA_ARGS__)
+#define LOG_INFO_LOW(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_LOW), __VA_ARGS__)
 #endif
 
 // Print an info message with medium verbosity.
 #ifndef LOG_INFO_MEDIUM
-#define LOG_INFO_MEDIUM(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_MEDIUM), fmt, __VA_ARGS__)
+#define LOG_INFO_MEDIUM(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_MEDIUM), __VA_ARGS__)
 #endif
 
 // Print an info message with high verbosity.
 #ifndef LOG_INFO_HIGH
-#define LOG_INFO_HIGH(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_HIGH), fmt, __VA_ARGS__)
+#define LOG_INFO_HIGH(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_HIGH), __VA_ARGS__)
 #endif
 
 // Print an info message with full verbosity.
 #ifndef LOG_INFO_FULL
-#define LOG_INFO_FULL(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_FULL), fmt, __VA_ARGS__)
+#define LOG_INFO_FULL(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_FULL), __VA_ARGS__)
 #endif
 
 // Print an info message with debug verbosity.
 #ifndef LOG_INFO_DEBUG
-#define LOG_INFO_DEBUG(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_DEBUG), fmt, __VA_ARGS__)
+#define LOG_INFO_DEBUG(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_INFO, LOG_VERB_DEBUG), __VA_ARGS__)
 #endif
 
 // Print a warning message.
 #ifndef LOG_WARNING
-#define LOG_WARNING(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_WARNING, ""), fmt, __VA_ARGS__)
+#define LOG_WARNING(...) \
+  PRINT_LOG(LOG_HEADER(LOG_TYPE_WARNING, ""), __VA_ARGS__)
 #endif
 
 // Print an error message.
 #ifndef LOG_ERROR
-#define LOG_ERROR(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_ERROR, ""), fmt, __VA_ARGS__)
+#define LOG_ERROR(...) PRINT_LOG(LOG_HEADER(LOG_TYPE_ERROR, ""), __VA_ARGS__)
 #endif
 
 // Print a fatal error message.
 #ifndef LOG_FATAL
-#define LOG_FATAL(fmt, ...) \
-  PRINT_LOG(LOG_HEADER(LOG_TYPE_FATAL, ""), fmt, __VA_ARGS__)
+#define LOG_FATAL(...) PRINT_LOG(LOG_HEADER(LOG_TYPE_FATAL, ""), __VA_ARGS__)
 #endif
 
 #endif  // _LOG_H_
