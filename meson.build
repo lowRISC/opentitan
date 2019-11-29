@@ -40,12 +40,12 @@ add_project_arguments(
   language: 'cpp', native: true)
 
 add_project_arguments(
-  '-std=gnu99', '-Wall', '-Werror',
+  '-std=c99', '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'c', native: false)
 add_project_arguments(
-  '-std=gnu99', '-Wall', '-Werror',
+  '-std=c99', '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'c', native: true)
