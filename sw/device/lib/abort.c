@@ -4,4 +4,8 @@
 
 #include "sw/device/lib/common.h"
 
-_Noreturn void abort(void) { __builtin_abort(); }
+_Noreturn void abort(void) {
+  while (true) {
+    asm volatile("wfi;");
+  }
+}
