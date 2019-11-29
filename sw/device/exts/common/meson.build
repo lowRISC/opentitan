@@ -6,7 +6,14 @@
 riscv_linker_script = '@0@/@1@'.format(meson.source_root(), files(['link.ld'])[0])
 riscv_linker_args = [
   '-Wl,-T,@0@'.format(riscv_linker_script),
-  # Ensure we don't include a build-id attribute in the ELF.
+  # Depending on the compiler and its configuration (*), |--build-id| is passed
+  # to the linker, causing the insertion of a ".note.gnu.build-id" section into
+  # the ELF file. We do not use the build ID. Achieve consistent behavior and
+  # potentially a small improvement in linking time by not computing the build
+  # ID in the first place.
+  #
+  # * GCC built with |--enable-linker-build-id|, clang before 3.9 or built with
+  #   |-DENABLE_LINKER_BUILD_ID|.
   '-Wl,--build-id=none',
 ]
 
