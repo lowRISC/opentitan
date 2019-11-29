@@ -9,8 +9,7 @@ GROUP( -lgcc )
 SEARCH_DIR(.)
 __DYNAMIC  =  0;
 
-MEMORY
-{
+MEMORY {
     flash (rx)  : ORIGIN = 0x20000000, LENGTH = 0x100000
     ram   (!rx) : ORIGIN = 0x10000000, LENGTH = 0x10000
 }
@@ -21,9 +20,10 @@ _stack_start = ORIGIN(ram) + LENGTH(ram);
  * conversion scripts are not able to handle non-word aligned sections. */
 
 
-SECTIONS
-{
-    .crt : { *(.crt) } > flash
+SECTIONS {
+    .crt : {
+        *(.crt)
+    } > flash
 
     /* the 256 byte alignment is required by the machine trap vector table */
     .vectors : {
@@ -61,22 +61,20 @@ SECTIONS
         *(.rodata.*)
     } > flash
 
-    .shbss :
-    {
+    .shbss : {
         . = ALIGN(4);
         *(.shbss)
     } > flash
 
     /* idata stores the static variable data that will be loaded in ram below */
-    .idata :
-    {
+    .idata : {
         . = ALIGN(4);
         _idata = .;
     } > flash
 
     /* Static variable LMA at end of program
        VMA at start of RAM.  Stack is at end of RAM */
-    .data 0x10000000 : AT ( _idata ){
+    .data 0x10000000 : AT ( _idata ) {
         . = ALIGN(4);
         _sdata  =  .; /* start of data */
         *(.data);
@@ -85,8 +83,7 @@ SECTIONS
         _edata  =  .; /* end of data */
     } > ram
 
-    .bss :
-    {
+    .bss : {
         . = ALIGN(4);
         _bss_start = .;
         *(.bss)
@@ -97,13 +94,11 @@ SECTIONS
         _bss_end = .;
     } > ram
 
-    .stab  0 (NOLOAD) :
-    {
+    .stab  0 (NOLOAD) : {
         [ .stab ]
     }
 
-    .stabstr  0 (NOLOAD) :
-    {
+    .stabstr  0 (NOLOAD) : {
         [ .stabstr ]
     }
 
