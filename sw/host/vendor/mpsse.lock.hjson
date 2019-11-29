@@ -9,7 +9,7 @@
   upstream:
   {
     url: https://chromium.googlesource.com/chromiumos/platform2/
-    rev: e729a61489259d1bf34e6df7f8e284febf02da2e
+    rev: 8ff08453c2223c1269b2d6127bfdfd32e3038ada
     only_subdir: trunks/ftdi
   }
 }
