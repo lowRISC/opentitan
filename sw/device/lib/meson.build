@@ -12,6 +12,9 @@ sw_lib_mem = declare_dependency(
       'strlen.c',
       'abort.c',
     ],
+    c_args: [
+      '-fno-builtin',
+    ],
   )
 )
 
