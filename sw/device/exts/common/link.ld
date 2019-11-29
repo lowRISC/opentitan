@@ -36,7 +36,6 @@ SECTIONS
     .text : {
         . = ALIGN(0x100);
         _stext = .;
-        *(.text.startup)
         *(.text)
         *(.text.unlikely)
         _etext  =  .;
@@ -106,9 +105,6 @@ SECTIONS
     {
         [ .stabstr ]
     }
-
-    /* Discard the remaining sections */
-    /DISCARD/ : { *(*) }
 }
 
 ENTRY(main)
