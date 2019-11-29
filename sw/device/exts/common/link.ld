@@ -16,10 +16,6 @@ MEMORY {
 
 _stack_start = ORIGIN(ram) + LENGTH(ram);
 
-/* We have to align each sector to word boundaries as our current s19->slm
- * conversion scripts are not able to handle non-word aligned sections. */
-
-
 SECTIONS {
     .crt : {
         *(.crt)
