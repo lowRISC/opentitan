@@ -33,7 +33,7 @@ volatile ee_s32 seed5_volatile = 0;
 */
 CORETIMETYPE barebones_clock() {
   ee_u32 result;
-  __asm__ volatile("csrr %0, mcycle;" : "=r"(result));
+  asm volatile("csrr %0, mcycle;" : "=r"(result));
   return result;
 }
 /* Define : TIMER_RES_DIVIDER
