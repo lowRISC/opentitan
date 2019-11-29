@@ -32,7 +32,7 @@ def run_objcopy(objcopy, input, basename, outdir):
 
 def run_srec_cat(srec_cat, input, basename, outdir):
     # TODO: Replace command for objcopy once this bug is fixed and released.
-    # https://sourceware.org/bugzilla/show_bug.cgi?id=19921
+    # https://github.com/lowRISC/opentitan/issues/1107
     filename = basename + '.vmem'
     output = os.path.join(outdir, filename)
     cmd = [
