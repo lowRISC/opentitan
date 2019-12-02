@@ -11,6 +11,10 @@ project(
     'build.c_std=c99',
     'cpp_std=c++14',
     'build.cpp_std=c++14',
+    'warning_level=1',
+    'build.warning_level=1',
+    'werror=true',
+    'build.werror=true',
   ],
 )
 
@@ -39,23 +43,19 @@ endif
 # The following flags are applied to *all* builds, both cross builds
 # and native builds.
 add_project_arguments(
-  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'cpp', native: false)
 add_project_arguments(
-  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'cpp', native: true)
 
 add_project_arguments(
-  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'c', native: false)
 add_project_arguments(
-  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'c', native: true)
