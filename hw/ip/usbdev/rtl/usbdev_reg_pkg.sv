@@ -6,691 +6,320 @@
 
 package usbdev_reg_pkg;
 
-// Register to internal design logic
-typedef struct packed {
+  // Param list
+  localparam int NEndpoints = 12;
 
-  struct packed {
+  ////////////////////////////
+  // Typedefs for registers //
+  ////////////////////////////
+  typedef struct packed {
     struct packed {
-      logic q; // [278]
+      logic        q;
     } pkt_received;
     struct packed {
-      logic q; // [277]
+      logic        q;
     } pkt_sent;
     struct packed {
-      logic q; // [276]
+      logic        q;
     } disconnected;
     struct packed {
-      logic q; // [275]
+      logic        q;
     } host_lost;
     struct packed {
-      logic q; // [274]
+      logic        q;
     } link_reset;
     struct packed {
-      logic q; // [273]
+      logic        q;
     } link_suspend;
     struct packed {
-      logic q; // [272]
+      logic        q;
     } link_resume;
     struct packed {
-      logic q; // [271]
+      logic        q;
     } av_empty;
     struct packed {
-      logic q; // [270]
+      logic        q;
     } rx_full;
     struct packed {
-      logic q; // [269]
+      logic        q;
     } av_overflow;
-  } intr_state;
-  struct packed {
+  } usbdev_reg2hw_intr_state_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [268]
+      logic        q;
     } pkt_received;
     struct packed {
-      logic q; // [267]
+      logic        q;
     } pkt_sent;
     struct packed {
-      logic q; // [266]
+      logic        q;
     } disconnected;
     struct packed {
-      logic q; // [265]
+      logic        q;
     } host_lost;
     struct packed {
-      logic q; // [264]
+      logic        q;
     } link_reset;
     struct packed {
-      logic q; // [263]
+      logic        q;
     } link_suspend;
     struct packed {
-      logic q; // [262]
+      logic        q;
     } link_resume;
     struct packed {
-      logic q; // [261]
+      logic        q;
     } av_empty;
     struct packed {
-      logic q; // [260]
+      logic        q;
     } rx_full;
     struct packed {
-      logic q; // [259]
+      logic        q;
     } av_overflow;
-  } intr_enable;
-  struct packed {
+  } usbdev_reg2hw_intr_enable_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [258]
-      logic qe; // [257]
+      logic        q;
+      logic        qe;
     } pkt_received;
     struct packed {
-      logic q; // [256]
-      logic qe; // [255]
+      logic        q;
+      logic        qe;
     } pkt_sent;
     struct packed {
-      logic q; // [254]
-      logic qe; // [253]
+      logic        q;
+      logic        qe;
     } disconnected;
     struct packed {
-      logic q; // [252]
-      logic qe; // [251]
+      logic        q;
+      logic        qe;
     } host_lost;
     struct packed {
-      logic q; // [250]
-      logic qe; // [249]
+      logic        q;
+      logic        qe;
     } link_reset;
     struct packed {
-      logic q; // [248]
-      logic qe; // [247]
+      logic        q;
+      logic        qe;
     } link_suspend;
     struct packed {
-      logic q; // [246]
-      logic qe; // [245]
+      logic        q;
+      logic        qe;
     } link_resume;
     struct packed {
-      logic q; // [244]
-      logic qe; // [243]
+      logic        q;
+      logic        qe;
     } av_empty;
     struct packed {
-      logic q; // [242]
-      logic qe; // [241]
+      logic        q;
+      logic        qe;
     } rx_full;
     struct packed {
-      logic q; // [240]
-      logic qe; // [239]
+      logic        q;
+      logic        qe;
     } av_overflow;
-  } intr_test;
-  struct packed {
+  } usbdev_reg2hw_intr_test_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic q; // [238]
+      logic        q;
     } enable;
     struct packed {
-      logic [6:0] q; // [237:231]
+      logic [6:0]  q;
     } device_address;
-  } usbctrl;
-  struct packed {
-    logic [4:0] q; // [230:226]
-    logic qe; // [225]
-  } avbuffer;
-  struct packed {
+  } usbdev_reg2hw_usbctrl_reg_t;
+
+  typedef struct packed {
+    logic [4:0]  q;
+    logic        qe;
+  } usbdev_reg2hw_avbuffer_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [4:0] q; // [224:220]
-      logic re; // [219]
+      logic [4:0]  q;
+      logic        re;
     } buffer;
     struct packed {
-      logic [6:0] q; // [218:212]
-      logic re; // [211]
+      logic [6:0]  q;
+      logic        re;
     } size;
     struct packed {
-      logic q; // [210]
-      logic re; // [209]
+      logic        q;
+      logic        re;
     } setup;
     struct packed {
-      logic [3:0] q; // [208:205]
-      logic re; // [204]
+      logic [3:0]  q;
+      logic        re;
     } ep;
-  } rxfifo;
-  struct packed {
-    struct packed {
-      logic q; // [203]
-    } setup0;
-    struct packed {
-      logic q; // [202]
-    } setup1;
-    struct packed {
-      logic q; // [201]
-    } setup2;
-    struct packed {
-      logic q; // [200]
-    } setup3;
-    struct packed {
-      logic q; // [199]
-    } setup4;
-    struct packed {
-      logic q; // [198]
-    } setup5;
-    struct packed {
-      logic q; // [197]
-    } setup6;
-    struct packed {
-      logic q; // [196]
-    } setup7;
-    struct packed {
-      logic q; // [195]
-    } setup8;
-    struct packed {
-      logic q; // [194]
-    } setup9;
-    struct packed {
-      logic q; // [193]
-    } setup10;
-    struct packed {
-      logic q; // [192]
-    } setup11;
-    struct packed {
-      logic q; // [191]
-    } out0;
-    struct packed {
-      logic q; // [190]
-    } out1;
-    struct packed {
-      logic q; // [189]
-    } out2;
-    struct packed {
-      logic q; // [188]
-    } out3;
-    struct packed {
-      logic q; // [187]
-    } out4;
-    struct packed {
-      logic q; // [186]
-    } out5;
-    struct packed {
-      logic q; // [185]
-    } out6;
-    struct packed {
-      logic q; // [184]
-    } out7;
-    struct packed {
-      logic q; // [183]
-    } out8;
-    struct packed {
-      logic q; // [182]
-    } out9;
-    struct packed {
-      logic q; // [181]
-    } out10;
-    struct packed {
-      logic q; // [180]
-    } out11;
-  } rxenable;
-  struct packed {
-    struct packed {
-      logic q; // [179]
-    } stall0;
-    struct packed {
-      logic q; // [178]
-    } stall1;
-    struct packed {
-      logic q; // [177]
-    } stall2;
-    struct packed {
-      logic q; // [176]
-    } stall3;
-    struct packed {
-      logic q; // [175]
-    } stall4;
-    struct packed {
-      logic q; // [174]
-    } stall5;
-    struct packed {
-      logic q; // [173]
-    } stall6;
-    struct packed {
-      logic q; // [172]
-    } stall7;
-    struct packed {
-      logic q; // [171]
-    } stall8;
-    struct packed {
-      logic q; // [170]
-    } stall9;
-    struct packed {
-      logic q; // [169]
-    } stall10;
-    struct packed {
-      logic q; // [168]
-    } stall11;
-  } stall;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [167:163]
-    } buffer0;
-    struct packed {
-      logic [6:0] q; // [162:156]
-    } size0;
-    struct packed {
-      logic q; // [155]
-    } pend0;
-    struct packed {
-      logic q; // [154]
-    } rdy0;
-  } configin0;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [153:149]
-    } buffer1;
-    struct packed {
-      logic [6:0] q; // [148:142]
-    } size1;
-    struct packed {
-      logic q; // [141]
-    } pend1;
-    struct packed {
-      logic q; // [140]
-    } rdy1;
-  } configin1;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [139:135]
-    } buffer2;
-    struct packed {
-      logic [6:0] q; // [134:128]
-    } size2;
-    struct packed {
-      logic q; // [127]
-    } pend2;
-    struct packed {
-      logic q; // [126]
-    } rdy2;
-  } configin2;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [125:121]
-    } buffer3;
-    struct packed {
-      logic [6:0] q; // [120:114]
-    } size3;
-    struct packed {
-      logic q; // [113]
-    } pend3;
-    struct packed {
-      logic q; // [112]
-    } rdy3;
-  } configin3;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [111:107]
-    } buffer4;
-    struct packed {
-      logic [6:0] q; // [106:100]
-    } size4;
-    struct packed {
-      logic q; // [99]
-    } pend4;
-    struct packed {
-      logic q; // [98]
-    } rdy4;
-  } configin4;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [97:93]
-    } buffer5;
-    struct packed {
-      logic [6:0] q; // [92:86]
-    } size5;
-    struct packed {
-      logic q; // [85]
-    } pend5;
-    struct packed {
-      logic q; // [84]
-    } rdy5;
-  } configin5;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [83:79]
-    } buffer6;
-    struct packed {
-      logic [6:0] q; // [78:72]
-    } size6;
-    struct packed {
-      logic q; // [71]
-    } pend6;
-    struct packed {
-      logic q; // [70]
-    } rdy6;
-  } configin6;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [69:65]
-    } buffer7;
-    struct packed {
-      logic [6:0] q; // [64:58]
-    } size7;
-    struct packed {
-      logic q; // [57]
-    } pend7;
-    struct packed {
-      logic q; // [56]
-    } rdy7;
-  } configin7;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [55:51]
-    } buffer8;
-    struct packed {
-      logic [6:0] q; // [50:44]
-    } size8;
-    struct packed {
-      logic q; // [43]
-    } pend8;
-    struct packed {
-      logic q; // [42]
-    } rdy8;
-  } configin8;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [41:37]
-    } buffer9;
-    struct packed {
-      logic [6:0] q; // [36:30]
-    } size9;
-    struct packed {
-      logic q; // [29]
-    } pend9;
-    struct packed {
-      logic q; // [28]
-    } rdy9;
-  } configin9;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [27:23]
-    } buffer10;
-    struct packed {
-      logic [6:0] q; // [22:16]
-    } size10;
-    struct packed {
-      logic q; // [15]
-    } pend10;
-    struct packed {
-      logic q; // [14]
-    } rdy10;
-  } configin10;
-  struct packed {
-    struct packed {
-      logic [4:0] q; // [13:9]
-    } buffer11;
-    struct packed {
-      logic [6:0] q; // [8:2]
-    } size11;
-    struct packed {
-      logic q; // [1]
-    } pend11;
-    struct packed {
-      logic q; // [0]
-    } rdy11;
-  } configin11;
-} usbdev_reg2hw_t;
+  } usbdev_reg2hw_rxfifo_reg_t;
 
-// Internal design logic to register
-typedef struct packed {
+  typedef struct packed {
+    logic        q;
+  } usbdev_reg2hw_rxenable_setup_mreg_t;
 
-  struct packed {
+  typedef struct packed {
+    logic        q;
+  } usbdev_reg2hw_rxenable_out_mreg_t;
+
+  typedef struct packed {
+    logic        q;
+  } usbdev_reg2hw_stall_mreg_t;
+
+  typedef struct packed {
     struct packed {
-      logic d;  // [139]
-      logic de; // [138]
+      logic [4:0]  q;
+    } buffer;
+    struct packed {
+      logic [6:0]  q;
+    } size;
+    struct packed {
+      logic        q;
+    } pend;
+    struct packed {
+      logic        q;
+    } rdy;
+  } usbdev_reg2hw_configin_mreg_t;
+
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
     } pkt_received;
     struct packed {
-      logic d;  // [137]
-      logic de; // [136]
+      logic        d;
+      logic        de;
     } pkt_sent;
     struct packed {
-      logic d;  // [135]
-      logic de; // [134]
+      logic        d;
+      logic        de;
     } disconnected;
     struct packed {
-      logic d;  // [133]
-      logic de; // [132]
+      logic        d;
+      logic        de;
     } host_lost;
     struct packed {
-      logic d;  // [131]
-      logic de; // [130]
+      logic        d;
+      logic        de;
     } link_reset;
     struct packed {
-      logic d;  // [129]
-      logic de; // [128]
+      logic        d;
+      logic        de;
     } link_suspend;
     struct packed {
-      logic d;  // [127]
-      logic de; // [126]
+      logic        d;
+      logic        de;
     } link_resume;
     struct packed {
-      logic d;  // [125]
-      logic de; // [124]
+      logic        d;
+      logic        de;
     } av_empty;
     struct packed {
-      logic d;  // [123]
-      logic de; // [122]
+      logic        d;
+      logic        de;
     } rx_full;
     struct packed {
-      logic d;  // [121]
-      logic de; // [120]
+      logic        d;
+      logic        de;
     } av_overflow;
-  } intr_state;
-  struct packed {
+  } usbdev_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [6:0] d; // [119:113]
-      logic de; // [112]
+      logic [6:0]  d;
+      logic        de;
     } device_address;
-  } usbctrl;
-  struct packed {
+  } usbdev_hw2reg_usbctrl_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [10:0] d; // [111:101]
+      logic [10:0] d;
     } frame;
     struct packed {
-      logic d;  // [100]
+      logic        d;
     } host_lost;
     struct packed {
-      logic [1:0] d; // [99:98]
+      logic [1:0]  d;
     } link_state;
     struct packed {
-      logic d;  // [97]
+      logic        d;
     } usb_sense;
     struct packed {
-      logic [2:0] d; // [96:94]
+      logic [2:0]  d;
     } av_depth;
     struct packed {
-      logic d;  // [93]
+      logic        d;
     } av_full;
     struct packed {
-      logic [2:0] d; // [92:90]
+      logic [2:0]  d;
     } rx_depth;
     struct packed {
-      logic d;  // [89]
+      logic        d;
     } rx_empty;
-  } usbstat;
-  struct packed {
+  } usbdev_hw2reg_usbstat_reg_t;
+
+  typedef struct packed {
     struct packed {
-      logic [4:0] d; // [88:84]
+      logic [4:0]  d;
     } buffer;
     struct packed {
-      logic [6:0] d; // [83:77]
+      logic [6:0]  d;
     } size;
     struct packed {
-      logic d;  // [76]
+      logic        d;
     } setup;
     struct packed {
-      logic [3:0] d; // [75:72]
+      logic [3:0]  d;
     } ep;
-  } rxfifo;
-  struct packed {
-    struct packed {
-      logic d;  // [71]
-      logic de; // [70]
-    } sent0;
-    struct packed {
-      logic d;  // [69]
-      logic de; // [68]
-    } sent1;
-    struct packed {
-      logic d;  // [67]
-      logic de; // [66]
-    } sent2;
-    struct packed {
-      logic d;  // [65]
-      logic de; // [64]
-    } sent3;
-    struct packed {
-      logic d;  // [63]
-      logic de; // [62]
-    } sent4;
-    struct packed {
-      logic d;  // [61]
-      logic de; // [60]
-    } sent5;
-    struct packed {
-      logic d;  // [59]
-      logic de; // [58]
-    } sent6;
-    struct packed {
-      logic d;  // [57]
-      logic de; // [56]
-    } sent7;
-    struct packed {
-      logic d;  // [55]
-      logic de; // [54]
-    } sent8;
-    struct packed {
-      logic d;  // [53]
-      logic de; // [52]
-    } sent9;
-    struct packed {
-      logic d;  // [51]
-      logic de; // [50]
-    } sent10;
-    struct packed {
-      logic d;  // [49]
-      logic de; // [48]
-    } sent11;
-  } in_sent;
-  struct packed {
-    struct packed {
-      logic d;  // [47]
-      logic de; // [46]
-    } pend0;
-    struct packed {
-      logic d;  // [45]
-      logic de; // [44]
-    } rdy0;
-  } configin0;
-  struct packed {
-    struct packed {
-      logic d;  // [43]
-      logic de; // [42]
-    } pend1;
-    struct packed {
-      logic d;  // [41]
-      logic de; // [40]
-    } rdy1;
-  } configin1;
-  struct packed {
-    struct packed {
-      logic d;  // [39]
-      logic de; // [38]
-    } pend2;
-    struct packed {
-      logic d;  // [37]
-      logic de; // [36]
-    } rdy2;
-  } configin2;
-  struct packed {
-    struct packed {
-      logic d;  // [35]
-      logic de; // [34]
-    } pend3;
-    struct packed {
-      logic d;  // [33]
-      logic de; // [32]
-    } rdy3;
-  } configin3;
-  struct packed {
-    struct packed {
-      logic d;  // [31]
-      logic de; // [30]
-    } pend4;
-    struct packed {
-      logic d;  // [29]
-      logic de; // [28]
-    } rdy4;
-  } configin4;
-  struct packed {
-    struct packed {
-      logic d;  // [27]
-      logic de; // [26]
-    } pend5;
-    struct packed {
-      logic d;  // [25]
-      logic de; // [24]
-    } rdy5;
-  } configin5;
-  struct packed {
-    struct packed {
-      logic d;  // [23]
-      logic de; // [22]
-    } pend6;
-    struct packed {
-      logic d;  // [21]
-      logic de; // [20]
-    } rdy6;
-  } configin6;
-  struct packed {
-    struct packed {
-      logic d;  // [19]
-      logic de; // [18]
-    } pend7;
-    struct packed {
-      logic d;  // [17]
-      logic de; // [16]
-    } rdy7;
-  } configin7;
-  struct packed {
-    struct packed {
-      logic d;  // [15]
-      logic de; // [14]
-    } pend8;
-    struct packed {
-      logic d;  // [13]
-      logic de; // [12]
-    } rdy8;
-  } configin8;
-  struct packed {
-    struct packed {
-      logic d;  // [11]
-      logic de; // [10]
-    } pend9;
-    struct packed {
-      logic d;  // [9]
-      logic de; // [8]
-    } rdy9;
-  } configin9;
-  struct packed {
-    struct packed {
-      logic d;  // [7]
-      logic de; // [6]
-    } pend10;
-    struct packed {
-      logic d;  // [5]
-      logic de; // [4]
-    } rdy10;
-  } configin10;
-  struct packed {
-    struct packed {
-      logic d;  // [3]
-      logic de; // [2]
-    } pend11;
-    struct packed {
-      logic d;  // [1]
-      logic de; // [0]
-    } rdy11;
-  } configin11;
-} usbdev_hw2reg_t;
+  } usbdev_hw2reg_rxfifo_reg_t;
 
-// Register Address
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } usbdev_hw2reg_in_sent_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } pend;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rdy;
+  } usbdev_hw2reg_configin_mreg_t;
+
+
+  ///////////////////////////////////////
+  // Register to internal design logic //
+  ///////////////////////////////////////
+  typedef struct packed {
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [278:269]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [268:259]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [258:239]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [238:231]
+    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [230:225]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [224:204]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [203:192]
+    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [191:180]
+    usbdev_reg2hw_stall_mreg_t [11:0] stall; // [179:168]
+    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [167:0]
+  } usbdev_reg2hw_t;
+
+  ///////////////////////////////////////
+  // Internal design logic to register //
+  ///////////////////////////////////////
+  typedef struct packed {
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [139:130]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [129:122]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [121:122]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [121:101]
+    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [100:77]
+    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [76:29]
+  } usbdev_hw2reg_t;
+
+  // Register Address
   parameter USBDEV_INTR_STATE_OFFSET = 12'h 0;
   parameter USBDEV_INTR_ENABLE_OFFSET = 12'h 4;
   parameter USBDEV_INTR_TEST_OFFSET = 12'h 8;
@@ -698,20 +327,79 @@ typedef struct packed {
   parameter USBDEV_USBSTAT_OFFSET = 12'h 10;
   parameter USBDEV_AVBUFFER_OFFSET = 12'h 14;
   parameter USBDEV_RXFIFO_OFFSET = 12'h 18;
-  parameter USBDEV_RXENABLE_OFFSET = 12'h 1c;
-  parameter USBDEV_IN_SENT_OFFSET = 12'h 20;
-  parameter USBDEV_STALL_OFFSET = 12'h 24;
-  parameter USBDEV_CONFIGIN0_OFFSET = 12'h 28;
-  parameter USBDEV_CONFIGIN1_OFFSET = 12'h 2c;
-  parameter USBDEV_CONFIGIN2_OFFSET = 12'h 30;
-  parameter USBDEV_CONFIGIN3_OFFSET = 12'h 34;
-  parameter USBDEV_CONFIGIN4_OFFSET = 12'h 38;
-  parameter USBDEV_CONFIGIN5_OFFSET = 12'h 3c;
-  parameter USBDEV_CONFIGIN6_OFFSET = 12'h 40;
-  parameter USBDEV_CONFIGIN7_OFFSET = 12'h 44;
-  parameter USBDEV_CONFIGIN8_OFFSET = 12'h 48;
-  parameter USBDEV_CONFIGIN9_OFFSET = 12'h 4c;
-  parameter USBDEV_CONFIGIN10_OFFSET = 12'h 50;
-  parameter USBDEV_CONFIGIN11_OFFSET = 12'h 54;
+  parameter USBDEV_RXENABLE_SETUP_OFFSET = 12'h 1c;
+  parameter USBDEV_RXENABLE_OUT_OFFSET = 12'h 20;
+  parameter USBDEV_IN_SENT_OFFSET = 12'h 24;
+  parameter USBDEV_STALL_OFFSET = 12'h 28;
+  parameter USBDEV_CONFIGIN0_OFFSET = 12'h 2c;
+  parameter USBDEV_CONFIGIN1_OFFSET = 12'h 30;
+  parameter USBDEV_CONFIGIN2_OFFSET = 12'h 34;
+  parameter USBDEV_CONFIGIN3_OFFSET = 12'h 38;
+  parameter USBDEV_CONFIGIN4_OFFSET = 12'h 3c;
+  parameter USBDEV_CONFIGIN5_OFFSET = 12'h 40;
+  parameter USBDEV_CONFIGIN6_OFFSET = 12'h 44;
+  parameter USBDEV_CONFIGIN7_OFFSET = 12'h 48;
+  parameter USBDEV_CONFIGIN8_OFFSET = 12'h 4c;
+  parameter USBDEV_CONFIGIN9_OFFSET = 12'h 50;
+  parameter USBDEV_CONFIGIN10_OFFSET = 12'h 54;
+  parameter USBDEV_CONFIGIN11_OFFSET = 12'h 58;
 
+  // Window parameter
+  parameter USBDEV_BUFFER_OFFSET = 12'h 800;
+  parameter USBDEV_BUFFER_SIZE   = 12'h 800;
+
+  // Register Index
+  typedef enum int {
+    USBDEV_INTR_STATE,
+    USBDEV_INTR_ENABLE,
+    USBDEV_INTR_TEST,
+    USBDEV_USBCTRL,
+    USBDEV_USBSTAT,
+    USBDEV_AVBUFFER,
+    USBDEV_RXFIFO,
+    USBDEV_RXENABLE_SETUP,
+    USBDEV_RXENABLE_OUT,
+    USBDEV_IN_SENT,
+    USBDEV_STALL,
+    USBDEV_CONFIGIN0,
+    USBDEV_CONFIGIN1,
+    USBDEV_CONFIGIN2,
+    USBDEV_CONFIGIN3,
+    USBDEV_CONFIGIN4,
+    USBDEV_CONFIGIN5,
+    USBDEV_CONFIGIN6,
+    USBDEV_CONFIGIN7,
+    USBDEV_CONFIGIN8,
+    USBDEV_CONFIGIN9,
+    USBDEV_CONFIGIN10,
+    USBDEV_CONFIGIN11
+  } usbdev_id_e;
+
+  // Register width information to check illegal writes
+  localparam logic [3:0] USBDEV_PERMIT [23] = '{
+    4'b 0011, // index[ 0] USBDEV_INTR_STATE
+    4'b 0011, // index[ 1] USBDEV_INTR_ENABLE
+    4'b 0011, // index[ 2] USBDEV_INTR_TEST
+    4'b 0111, // index[ 3] USBDEV_USBCTRL
+    4'b 1111, // index[ 4] USBDEV_USBSTAT
+    4'b 0001, // index[ 5] USBDEV_AVBUFFER
+    4'b 0111, // index[ 6] USBDEV_RXFIFO
+    4'b 0011, // index[ 7] USBDEV_RXENABLE_SETUP
+    4'b 0011, // index[ 8] USBDEV_RXENABLE_OUT
+    4'b 0011, // index[ 9] USBDEV_IN_SENT
+    4'b 0011, // index[10] USBDEV_STALL
+    4'b 1111, // index[11] USBDEV_CONFIGIN0
+    4'b 1111, // index[12] USBDEV_CONFIGIN1
+    4'b 1111, // index[13] USBDEV_CONFIGIN2
+    4'b 1111, // index[14] USBDEV_CONFIGIN3
+    4'b 1111, // index[15] USBDEV_CONFIGIN4
+    4'b 1111, // index[16] USBDEV_CONFIGIN5
+    4'b 1111, // index[17] USBDEV_CONFIGIN6
+    4'b 1111, // index[18] USBDEV_CONFIGIN7
+    4'b 1111, // index[19] USBDEV_CONFIGIN8
+    4'b 1111, // index[20] USBDEV_CONFIGIN9
+    4'b 1111, // index[21] USBDEV_CONFIGIN10
+    4'b 1111  // index[22] USBDEV_CONFIGIN11
+  };
 endpackage
+

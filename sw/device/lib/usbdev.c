@@ -195,9 +195,9 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   ctx->rx_callback[ep] = rx;
   ctx->flush[ep] = flush;
   if (enableout) {
-    uint32_t rxen = REG32(USBDEV_RXENABLE());
-    rxen |= (1 << (ep + USBDEV_RXENABLE_OUT0));
-    REG32(USBDEV_RXENABLE()) = rxen;
+    uint32_t rxen = REG32(USBDEV_RXENABLE_OUT());
+    rxen |= (1 << (ep + USBDEV_RXENABLE_OUT_OUT0));
+    REG32(USBDEV_RXENABLE_OUT()) = rxen;
   }
 }
 
@@ -216,8 +216,8 @@ void usbdev_init(usbdev_ctx_t *ctx) {
   // Provide buffers for any reception
   fill_av_fifo(ctx);
 
-  REG32(USBDEV_RXENABLE()) =
-      ((1 << USBDEV_RXENABLE_SETUP0) | (1 << USBDEV_RXENABLE_OUT0));
+  REG32(USBDEV_RXENABLE_SETUP()) = (1 << USBDEV_RXENABLE_SETUP_SETUP0);
+  REG32(USBDEV_RXENABLE_OUT()) = (1 << USBDEV_RXENABLE_OUT_OUT0);
 
   REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE);
 }

@@ -16,6 +16,14 @@
   available_output_list: [
     { name: "usb_pullup", desc: "USB Full Speed pullup control" }
   ],
+  param_list: [
+    { name:    "NEndpoints",
+      type:    "int",
+      default: "12",
+      desc:    "Number of endpoints",
+      local:   "true"
+    }
+  ],
   interrupt_list: [
     { name: "pkt_received"
       desc: "raised if a packet was received using an OUT or SETUP transaction."}
@@ -239,10 +247,10 @@
       ]
     }
     { multireg: {
-        name: "rxenable",
-        count: "12"
+        name: "rxenable_setup",
+        count: "NEndpoints"
         cname: "Endpoint"
-        desc: "Receive transaction enable",
+        desc: "Receive SETUP transaction enable",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
@@ -255,8 +263,19 @@
                   SETUP request will be responded to with a NACK.
                   '''
           }
+        ]
+      }
+    }
+    { multireg: {
+        name: "rxenable_out",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: "Receive OUT transaction enable",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
           {
-            bits: "16",
+            bits: "0",
             name: "out",
             desc: '''
                   This bit must be set to enable OUT transactions to be
@@ -269,7 +288,7 @@
     }
     { multireg: {
         name: "in_sent",
-        count: "12"
+        count: "NEndpoints"
         cname: "Endpoint"
         desc: "IN Transaction Sent",
         swaccess: "rw1c",
@@ -289,7 +308,7 @@
     }
     { multireg: {
         name: "stall",
-        count: "12"
+        count: "NEndpoints"
         cname: "Endpoint"
         desc: "Endpoint STALL control",
         swaccess: "rw",
@@ -310,7 +329,7 @@
     }
     { multireg: {
         name: "configin",
-        count: "12"
+        count: "NEndpoints"
         cname: "Endpoint"
         desc: "Configure IN Transaction",
         swaccess: "rw",
