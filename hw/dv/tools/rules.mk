@@ -44,24 +44,22 @@ pre_run:
 	/bin/bash ${MAKE_ROOT}/run_dir_limiter ${RUN_PATH} ${RUN_DIR_LIMIT}
 	env > ${RUN_DIR}/env_vars
 
-# TODO: The rm -rf SW_BUILD_DIR below is necessary because currently
-#       sw build dependency does not appear to be fully working with the DV flow
-#       This should be investigated later or replaced with the new build system
 sw_build: pre_run
 ifneq (${SW_NAME},)
-	rm -rf ${SW_BUILD_DIR}
-	mkdir -p ${SW_BUILD_DIR}
-	$(MAKE) -C $(SW_ROOT_DIR)/device \
-	  TARGET=dv \
-	  SW_DIR=boot_rom \
-	  SW_BUILD_DIR=$(SW_BUILD_DIR)/rom \
-	  MAKEFLAGS="$(SW_OPTS)"
-	$(MAKE) -C $(SW_ROOT_DIR)/device \
-	  TARGET=dv \
-	  SW_DIR=$(SW_DIR) \
-	  SW_NAME=$(SW_NAME) \
-	  SW_BUILD_DIR=$(SW_BUILD_DIR)/sw \
-	  MAKEFLAGS="$(SW_OPTS)"
+	# NOTE: Pass -f, since we're going to be re-building everything every time,
+	# anyways.
+	cd $(PROJ_ROOT) && \
+	BUILD_ROOT=$(SW_BUILD_DIR)/meson $(PROJ_ROOT)/meson_init.sh -f
+	# NOTE: We're using the fpga platform for now, because there is no
+	# such thing as a DV platform yet (nor does any code do anything
+	# special for DV yet).
+	ninja -C $(SW_BUILD_DIR)/meson/build-out/sw/fpga all
+
+	mkdir -p $(SW_BUILD_DIR)/sw $(SW_BUILD_DIR)/rom
+	cp $(SW_BUILD_DIR)/meson/build-bin/sw/device/fpga/boot_rom/boot_rom.vmem \
+		$(SW_BUILD_DIR)/rom/rom.vmem
+	cp $(SW_BUILD_DIR)/meson/build-bin/sw/device/fpga/$(SW_DIR)/$(SW_NAME).vmem \
+		$(SW_BUILD_DIR)/sw/sw.vmem
 endif
 
 simulate: sw_build
