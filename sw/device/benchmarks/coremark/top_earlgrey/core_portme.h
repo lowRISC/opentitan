@@ -12,8 +12,6 @@
 #ifndef CORE_PORTME_H
 #define CORE_PORTME_H
 
-#include <sys/types.h>
-
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/uart.h"
 
