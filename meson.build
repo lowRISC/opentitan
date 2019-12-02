@@ -5,6 +5,13 @@
 project(
   'opentitan', 'c', 'cpp',
   version: '0.1',
+  meson_version: '>=0.51.0', # Matches version in python-requirements.txt
+  default_options : [
+    'c_std=c99',
+    'build.c_std=c99',
+    'cpp_std=c++14',
+    'build.cpp_std=c++14',
+  ],
 )
 
 target = get_option('target')
@@ -32,23 +39,23 @@ endif
 # The following flags are applied to *all* builds, both cross builds
 # and native builds.
 add_project_arguments(
-  '-std=c++14', '-Wall', '-Werror',
+  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'cpp', native: false)
 add_project_arguments(
-  '-std=c++14', '-Wall', '-Werror',
+  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'cpp', native: true)
 
 add_project_arguments(
-  '-std=c99', '-Wall', '-Werror',
+  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'c', native: false)
 add_project_arguments(
-  '-std=c99', '-Wall', '-Werror',
+  '-Wall', '-Werror',
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   language: 'c', native: true)
