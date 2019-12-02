@@ -117,6 +117,12 @@
       clock_connections: {clk_i: "main"},
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40140000",
+    },
+    { name: "oled_driver",
+      type: "oled_driver",
+      clock_connections: {clk_i: "main"},
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x40150000",
     }
   ]
 
@@ -198,6 +204,7 @@
       //{ name: "uart.tx", pad: ["ChA[0]"]},
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
+      { name: "oled_driver", pad: ["ChC[0..5]"] }
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are
@@ -233,6 +240,7 @@
     pads: [
       { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
       { name: "ChB" type: "IO_33V", count: 4, attr: ["KEEP", "WEAK"]},
+      { name: "ChC" type: "IO_33V", count: 6 }, // Accessing as ChA[0] .. ChA[31]
     ]
   }
 

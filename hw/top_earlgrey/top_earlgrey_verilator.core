@@ -67,12 +67,13 @@ targets:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
           - '--trace'
-          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          #- '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
           # Remove FST options for VCD trace (~100 x faster but larger files)
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_earlgrey_verilator -g"'
+         # - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_earlgrey_verilator -g"'
+          - '-CFLAGS "-std=c++11 -Wall -DTOPLEVEL_NAME=top_earlgrey_verilator -g"'
           - '-LDFLAGS "-pthread -lutil"'
           - "-Wall"
           - "-Wno-PINCONNECTEMPTY"

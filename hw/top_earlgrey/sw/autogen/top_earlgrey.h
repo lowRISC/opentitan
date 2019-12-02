@@ -11,7 +11,7 @@
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define NUM_MIO 32
-#define NUM_DIO 6
+#define NUM_DIO 12
 
 #define PINMUX_GPIO_GPIO_0_IN 0
 #define PINMUX_GPIO_GPIO_1_IN 1

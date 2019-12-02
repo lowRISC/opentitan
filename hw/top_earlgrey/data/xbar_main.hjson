@@ -76,6 +76,11 @@
       clock:     "main"
       pipeline_byp: "false"
     },
+    { name:      "oled_driver",
+      type:      "device",
+      clock:     "main"
+      pipeline_byp: "false"
+    },
     { name:      "aes",
       type:      "device",
       clock:     "main"
@@ -115,8 +120,8 @@
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
-    "rv_timer", "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
+    "rv_timer", "aes", "hmac", "oled_driver", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
     dm_sba: ["rom",              "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
-    "rv_timer", "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
+    "rv_timer", "aes", "hmac", "oled_driver", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
   },
 }

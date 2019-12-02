@@ -7,6 +7,7 @@
 */
 #include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
 #include "sw/vendor/eembc_coremark/coremark.h"
+#include "sw/device/lib/oled_driver.h"
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
@@ -210,6 +211,12 @@ static CORETIMETYPE start_time_val, stop_time_val;
    cycles to 0.
 */
 void start_time(void) {
+  oled_clear(1);
+
+  oled_write_str("CoreMark", 0, 0);
+
+  oled_write_disp();
+
   ee_printf("\n");
   ee_printf("-----------------------------------------------------\n");
   ee_printf(" _____                    ___  ___              _    \n");

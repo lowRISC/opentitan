@@ -34,7 +34,14 @@ module top_earlgrey_nexysvideo (
   inout               IO_GP12,
   inout               IO_GP13,
   inout               IO_GP14,
-  inout               IO_GP15
+  inout               IO_GP15,
+
+  output oled_sdin,
+  output oled_sclk,
+  output oled_dc,
+  output oled_res,
+  output oled_vbat,
+  output oled_vdd
 );
 
   logic clk_sys, rst_sys_n;
@@ -71,6 +78,13 @@ module top_earlgrey_nexysvideo (
     .dio_spi_device_mosi_i    (cio_spi_device_mosi_p2d),
     .dio_spi_device_miso_o    (cio_spi_device_miso_d2p),
     .dio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
+
+    .dio_oled_driver_oled_sdin_o ( oled_sdin ),
+    .dio_oled_driver_oled_sclk_o ( oled_sclk ),
+    .dio_oled_driver_oled_dc_o   ( oled_dc   ),
+    .dio_oled_driver_oled_res_o  ( oled_res  ),
+    .dio_oled_driver_oled_vbat_o ( oled_vbat ),
+    .dio_oled_driver_oled_vdd_o  ( oled_vdd  ),
 
     .scanmode_i                   (1'b0) // 1 for Scan
   );

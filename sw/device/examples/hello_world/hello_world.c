@@ -7,8 +7,10 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
+#include "sw/device/lib/oled_driver.h"
 
 #define SPI_MAX 32
+#define HMAC0_BASE_ADDR 0x40120000
 
 /**
  * Delay loop executing within 8 cycles on ibex
@@ -65,6 +67,13 @@ int main(int argc, char **argv) {
       " "__TIME__
       "\r\n");
   uart_send_str("Watch the LEDs!\r\n");
+
+  oled_clear(1);
+
+  oled_write_str("RISCV Compliance", 0, 0);
+  oled_write_str("I-MISALIGN_LDST", 2, 0);
+
+  oled_write_disp();
 
   // Give a LED pattern as startup indicator for 5 seconds
   gpio_write_all(0xFF00);  // all LEDs on

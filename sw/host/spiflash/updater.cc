@@ -28,9 +28,15 @@ uint32_t Populate(uint32_t frame_number, uint32_t code_offset,
   memset(f->data, 0xff, f->PayloadSize());
   memcpy(f->data, code.data() + code_offset, copy_size);
 
+  uint32_t frame_total = code.size() / f->PayloadSize();
+  if(code.size () % f->PayloadSize()) {
+    ++frame_total;
+  }
+
   // Populate header number, offset and hash.
   f->hdr.frame_num = frame_number;
   f->hdr.offset = code_offset;
+  f->hdr.frame_total = frame_total;
   return copy_size;
 }
 
@@ -39,6 +45,7 @@ void HashFrame(Frame *f) {
   SHA256_CTX sha256;
   SHA256_Init(&sha256);
   SHA256_Update(&sha256, &f->hdr.frame_num, sizeof(f->hdr.frame_num));
+  SHA256_Update(&sha256, &f->hdr.frame_total, sizeof(f->hdr.frame_total));
   SHA256_Update(&sha256, &f->hdr.offset, sizeof(f->hdr.offset));
   SHA256_Update(&sha256, f->data, f->PayloadSize());
   SHA256_Final(f->hdr.hash, &sha256);

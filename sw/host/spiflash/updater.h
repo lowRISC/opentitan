@@ -31,6 +31,8 @@ struct Frame {
     // Frame number. Starting at 0.
     uint32_t frame_num;
 
+    uint32_t frame_total;
+
     // Flash target offset.
     uint32_t offset;
   } hdr;

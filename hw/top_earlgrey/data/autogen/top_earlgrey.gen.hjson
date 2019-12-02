@@ -524,6 +524,60 @@
       alert_list: []
       scan: "false"
     }
+    {
+      name: oled_driver
+      type: oled_driver
+      clock_connections:
+      {
+        clk_i: main
+      }
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40150000
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list:
+      [
+        {
+          name: oled_sdin
+          width: 1
+          type: output
+        }
+        {
+          name: oled_sclk
+          width: 1
+          type: output
+        }
+        {
+          name: oled_dc
+          width: 1
+          type: output
+        }
+        {
+          name: oled_res
+          width: 1
+          type: output
+        }
+        {
+          name: oled_vbat
+          width: 1
+          type: output
+        }
+        {
+          name: oled_vdd
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      scan: "false"
+    }
   ]
   memory:
   [
@@ -605,6 +659,7 @@
           rv_timer
           aes
           hmac
+          oled_driver
           rv_plic
           pinmux
           alert_handler
@@ -622,6 +677,7 @@
           rv_timer
           aes
           hmac
+          oled_driver
           rv_plic
           pinmux
           alert_handler
@@ -751,6 +807,16 @@
           pipeline_byp: "false"
           inst_type: hmac
           base_addr: 0x40120000
+          size_byte: 0x1000
+          pipeline: "true"
+        }
+        {
+          name: oled_driver
+          type: device
+          clock: main
+          pipeline_byp: "false"
+          inst_type: oled_driver
+          base_addr: 0x40150000
           size_byte: 0x1000
           pipeline: "true"
         }
@@ -1013,6 +1079,13 @@
           ChA[0..1]
         ]
       }
+      {
+        name: oled_driver
+        pad:
+        [
+          ChC[0..5]
+        ]
+      }
     ]
     mio_modules:
     [
@@ -1098,6 +1171,78 @@
           }
         ]
       }
+      {
+        name: oled_driver_oled_sdin
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 0
+          }
+        ]
+      }
+      {
+        name: oled_driver_oled_sclk
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 1
+          }
+        ]
+      }
+      {
+        name: oled_driver_oled_dc
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 2
+          }
+        ]
+      }
+      {
+        name: oled_driver_oled_res
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 3
+          }
+        ]
+      }
+      {
+        name: oled_driver_oled_vbat
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 4
+          }
+        ]
+      }
+      {
+        name: oled_driver_oled_vdd
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 5
+          }
+        ]
+      }
     ]
     inputs: []
     outputs: []
@@ -1132,6 +1277,11 @@
           KEEP
           WEAK
         ]
+      }
+      {
+        name: ChC
+        type: IO_33V
+        count: 6
       }
     ]
   }

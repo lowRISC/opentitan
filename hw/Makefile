@@ -17,7 +17,8 @@ IPS ?= uart          \
        alert_handler \
        pinmux        \
        padctrl       \
-       nmi_gen
+       nmi_gen       \
+			 oled_driver
 
 TOPS ?= top_earlgrey
 

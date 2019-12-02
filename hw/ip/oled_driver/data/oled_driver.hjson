@@ -1,0 +1,69 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "oled_driver",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  available_output_list: [
+    { name: "oled_sdin", desc: "OLED SPI Output" },
+    { name: "oled_sclk", desc: "oled_sclk" },
+    { name: "oled_dc", desc: "oled_dc" },
+    { name: "oled_res", desc: "oled_res" },
+    { name: "oled_vbat", desc: "oled_vbat" },
+    { name: "oled_vdd", desc: "oled_vdd" },
+  ],
+  bus_host: "none",
+  regwidth: "32",
+  registers: [
+    { name: "CMD",
+      desc: "OLED command register",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe:  "true",
+      fields: [
+        { bits: "0",
+          name: "disp_write",
+          desc: "Write 1 to write contents of pixel buffer to the display",
+        }
+        { bits: "1",
+          name: "disp_on",
+          desc: "Write 1 to turn display on",
+        }
+        { bits: "2",
+          name: "disp_off",
+          desc: "Write 1 to turn display off",
+        }
+      ],
+    }
+    { name: "STATUS",
+      desc: "OLED Status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "disp_ready",
+          desc: "Display ready to have pixel buffer written",
+        }
+        { bits: "1",
+          name: "on_ready",
+          desc: "Display ready to turn on",
+        }
+        { bits: "2",
+          name: "off_ready",
+          desc: "Display ready to turn off",
+        }
+      ]
+    }
+    { skipto: "0x800" }
+    { window: {
+        name: "PIX_BUF"
+        items: "128"
+        swaccess: "wo",
+        byte-write: "true",
+        desc: "Pixel buffer memory"
+      }
+    }
+  ],
+}

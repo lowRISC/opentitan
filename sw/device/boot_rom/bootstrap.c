@@ -10,6 +10,39 @@
 #include "sw/device/lib/hw_sha256.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"  // TODO: Wrap uart in DEBUG macros.
+#include "sw/device/lib/oled_driver.h"
+
+extern uint32_t ot_logo[];
+
+
+static void update_oled_progress(uint32_t frame_num, uint32_t frame_total) {
+  uint32_t cols_per_frame = OLED_BYTE_COLS * 4 / frame_total;
+  uint32_t end_cols;
+
+  if (frame_num == frame_total - 1) {
+    end_cols = OLED_BYTE_COLS;
+  } else {
+    end_cols = ((frame_num + 1) * cols_per_frame) / 4;
+  }
+
+  uint32_t start_cols = ((frame_num * cols_per_frame) >> 4) << 2;
+
+  for (uint32_t col = start_cols; col < end_cols; col += 4) {
+    uint32_t xor_mask;
+
+    if (col <= (end_cols - 4)) {
+      xor_mask = 0xFFFFFFFF;
+    } else {
+      xor_mask = (1 << ((end_cols - col) * 8)) - 1;
+    }
+
+    for (uint32_t row = 0; row < OLED_ROWS; ++row) {
+      oled_write_pixbuf_word(row, col >> 2, ot_logo[(col >> 2) + row * OLED_WORD_COLS] ^ xor_mask);
+    }
+  }
+
+  oled_write_disp();
+}
 
 /* Checks if flash is blank to determine if bootstrap is needed. */
 /* TODO: Update this to check bootstrap pin instead in Verilator. */
@@ -59,10 +92,13 @@ static int bootstrap_flash(void) {
   for (;;) {
     if (spid_bytes_available() >= sizeof(f)) {
       spid_read_nb(&f, sizeof(f));
+      update_oled_progress(f.hdr.frame_num & 0xFFFF, f.hdr.frame_total);
       uart_send_str("Processing frame no: ");
       uart_send_uint(f.hdr.frame_num, 32);
       uart_send_str(" exp no: ");
       uart_send_uint(expected_frame_no, 32);
+      uart_send_str(" total no: ");
+      uart_send_uint(f.hdr.frame_total, 32);
       uart_send_str("\r\n");
 
       if (FRAME_NO(f.hdr.frame_num) == expected_frame_no) {
@@ -108,11 +144,11 @@ int bootstrap(void) {
     return 0;
   }
   // SPI device is only initialized in bootstrap mode.
-  uart_send_str("Bootstrap requested, initialising HW...\n");
+  uart_send_str("Bootstrap requested, initialising HW...\r\n");
   spid_init();
   flash_init_block();
 
-  uart_send_str("HW initialisation completed, waiting for SPI input...\n");
+  uart_send_str("HW initialisation completed, waiting for SPI input...\r\n");
   int rv = bootstrap_flash();
   if (rv) {
     rv |= erase_flash();

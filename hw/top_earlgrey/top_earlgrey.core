@@ -17,6 +17,7 @@ filesets:
       - lowrisc:ip:spi_device
       - lowrisc:ip:aes
       - lowrisc:ip:hmac
+      - lowrisc:ip:oled_driver
       - lowrisc:prim:ram_1p
       - lowrisc:prim:rom
       - lowrisc:prim:flash

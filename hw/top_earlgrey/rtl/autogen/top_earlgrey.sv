@@ -30,6 +30,18 @@ module top_earlgrey #(
   input               dio_uart_rx_i,
   output logic        dio_uart_tx_o,
   output logic        dio_uart_tx_en_o,
+  output logic        dio_oled_driver_oled_sdin_o,
+  output logic        dio_oled_driver_oled_sdin_en_o,
+  output logic        dio_oled_driver_oled_sclk_o,
+  output logic        dio_oled_driver_oled_sclk_en_o,
+  output logic        dio_oled_driver_oled_dc_o,
+  output logic        dio_oled_driver_oled_dc_en_o,
+  output logic        dio_oled_driver_oled_res_o,
+  output logic        dio_oled_driver_oled_res_en_o,
+  output logic        dio_oled_driver_oled_vbat_o,
+  output logic        dio_oled_driver_oled_vbat_en_o,
+  output logic        dio_oled_driver_oled_vdd_o,
+  output logic        dio_oled_driver_oled_vdd_en_o,
 
   input               scanmode_i  // 1 for Scan
 );
@@ -85,6 +97,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_alert_handler_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
   tl_d2h_t  tl_nmi_gen_d_d2h;
+  tl_h2d_t  tl_oled_driver_d_h2d;
+  tl_d2h_t  tl_oled_driver_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -127,6 +141,19 @@ module top_earlgrey #(
   // pinmux
   // alert_handler
   // nmi_gen
+  // oled_driver
+  logic        cio_oled_driver_oled_sdin_d2p;
+  logic        cio_oled_driver_oled_sdin_en_d2p;
+  logic        cio_oled_driver_oled_sclk_d2p;
+  logic        cio_oled_driver_oled_sclk_en_d2p;
+  logic        cio_oled_driver_oled_dc_d2p;
+  logic        cio_oled_driver_oled_dc_en_d2p;
+  logic        cio_oled_driver_oled_res_d2p;
+  logic        cio_oled_driver_oled_res_en_d2p;
+  logic        cio_oled_driver_oled_vbat_d2p;
+  logic        cio_oled_driver_oled_vbat_en_d2p;
+  logic        cio_oled_driver_oled_vdd_d2p;
+  logic        cio_oled_driver_oled_vdd_en_d2p;
 
 
   logic [62:0]  intr_vector;
@@ -607,6 +634,28 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
+  oled_driver oled_driver (
+      .tl_i (tl_oled_driver_d_h2d),
+      .tl_o (tl_oled_driver_d_d2h),
+
+      // Output
+      .cio_oled_sdin_o    (cio_oled_driver_oled_sdin_d2p),
+      .cio_oled_sdin_en_o (cio_oled_driver_oled_sdin_en_d2p),
+      .cio_oled_sclk_o    (cio_oled_driver_oled_sclk_d2p),
+      .cio_oled_sclk_en_o (cio_oled_driver_oled_sclk_en_d2p),
+      .cio_oled_dc_o      (cio_oled_driver_oled_dc_d2p),
+      .cio_oled_dc_en_o   (cio_oled_driver_oled_dc_en_d2p),
+      .cio_oled_res_o     (cio_oled_driver_oled_res_d2p),
+      .cio_oled_res_en_o  (cio_oled_driver_oled_res_en_d2p),
+      .cio_oled_vbat_o    (cio_oled_driver_oled_vbat_d2p),
+      .cio_oled_vbat_en_o (cio_oled_driver_oled_vbat_en_d2p),
+      .cio_oled_vdd_o     (cio_oled_driver_oled_vdd_d2p),
+      .cio_oled_vdd_en_o  (cio_oled_driver_oled_vdd_en_d2p),
+
+      .clk_i (main_clk),
+      .rst_ni (sys_rst_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_nmi_gen_esc3,
@@ -673,6 +722,8 @@ module top_earlgrey #(
     .tl_rv_timer_i      (tl_rv_timer_d_d2h),
     .tl_hmac_o          (tl_hmac_d_h2d),
     .tl_hmac_i          (tl_hmac_d_d2h),
+    .tl_oled_driver_o   (tl_oled_driver_d_h2d),
+    .tl_oled_driver_i   (tl_oled_driver_d_d2h),
     .tl_aes_o           (tl_aes_d_h2d),
     .tl_aes_i           (tl_aes_d_d2h),
     .tl_rv_plic_o       (tl_rv_plic_d_h2d),
@@ -698,14 +749,26 @@ module top_earlgrey #(
     cio_gpio_gpio_p2d
   } = m2p;
 
-  assign cio_spi_device_sck_p2d   = dio_spi_device_sck_i;
-  assign cio_spi_device_csb_p2d   = dio_spi_device_csb_i;
-  assign cio_spi_device_mosi_p2d  = dio_spi_device_mosi_i;
-  assign dio_spi_device_miso_o    = cio_spi_device_miso_d2p;
-  assign dio_spi_device_miso_en_o = cio_spi_device_miso_en_d2p;
-  assign cio_uart_rx_p2d          = dio_uart_rx_i;
-  assign dio_uart_tx_o            = cio_uart_tx_d2p;
-  assign dio_uart_tx_en_o         = cio_uart_tx_en_d2p;
+  assign cio_spi_device_sck_p2d         = dio_spi_device_sck_i;
+  assign cio_spi_device_csb_p2d         = dio_spi_device_csb_i;
+  assign cio_spi_device_mosi_p2d        = dio_spi_device_mosi_i;
+  assign dio_spi_device_miso_o          = cio_spi_device_miso_d2p;
+  assign dio_spi_device_miso_en_o       = cio_spi_device_miso_en_d2p;
+  assign cio_uart_rx_p2d                = dio_uart_rx_i;
+  assign dio_uart_tx_o                  = cio_uart_tx_d2p;
+  assign dio_uart_tx_en_o               = cio_uart_tx_en_d2p;
+  assign dio_oled_driver_oled_sdin_o    = cio_oled_driver_oled_sdin_d2p;
+  assign dio_oled_driver_oled_sdin_en_o = cio_oled_driver_oled_sdin_en_d2p;
+  assign dio_oled_driver_oled_sclk_o    = cio_oled_driver_oled_sclk_d2p;
+  assign dio_oled_driver_oled_sclk_en_o = cio_oled_driver_oled_sclk_en_d2p;
+  assign dio_oled_driver_oled_dc_o      = cio_oled_driver_oled_dc_d2p;
+  assign dio_oled_driver_oled_dc_en_o   = cio_oled_driver_oled_dc_en_d2p;
+  assign dio_oled_driver_oled_res_o     = cio_oled_driver_oled_res_d2p;
+  assign dio_oled_driver_oled_res_en_o  = cio_oled_driver_oled_res_en_d2p;
+  assign dio_oled_driver_oled_vbat_o    = cio_oled_driver_oled_vbat_d2p;
+  assign dio_oled_driver_oled_vbat_en_o = cio_oled_driver_oled_vbat_en_d2p;
+  assign dio_oled_driver_oled_vdd_o     = cio_oled_driver_oled_vdd_d2p;
+  assign dio_oled_driver_oled_vdd_en_o  = cio_oled_driver_oled_vdd_en_d2p;
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)

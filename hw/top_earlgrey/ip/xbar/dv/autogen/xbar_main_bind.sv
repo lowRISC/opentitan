@@ -86,6 +86,12 @@ module xbar_main_bind;
     .h2d    (tl_hmac_o),
     .d2h    (tl_hmac_i)
   );
+  bind xbar_main tlul_assert tlul_assert_device_oled_driver (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_oled_driver_o),
+    .d2h    (tl_oled_driver_i)
+  );
   bind xbar_main tlul_assert tlul_assert_device_aes (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

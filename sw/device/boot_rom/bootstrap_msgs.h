@@ -18,6 +18,8 @@ typedef struct {
    * FRAME_EOF_MARKER. */
   uint32_t frame_num;
 
+  uint32_t frame_total;
+
   /* 0-based flash offset where the frame should be written to. */
   uint32_t flash_offset;
 } frame_hdr_t;

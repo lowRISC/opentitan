@@ -11,6 +11,8 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
+#include "sw/device/lib/oled_driver.h"
+#include "sw/device/boot_rom/ot_logo.h"
 
 static inline void try_launch(void) {
   __asm__ volatile(
@@ -26,6 +28,13 @@ int main(int argc, char **argv) {
   pinmux_init();
   uart_init(UART_BAUD_RATE);
   uart_send_str((char *)chip_info);
+
+  if(oled_on_ready()) {
+    oled_on();
+  }
+
+  oled_write_image(ot_logo);
+  oled_write_disp();
 
   int rv = bootstrap();
   if (rv) {

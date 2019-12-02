@@ -185,3 +185,26 @@ sw_lib_log = declare_dependency(
     ]
   )
 )
+
+sw_lib_oled_display = declare_dependency(
+  sources: [hw_ip_oled_driver_reg_h],
+  link_with: static_library(
+    'oled_ot',
+    sources: [
+      hw_ip_oled_driver_reg_h,
+      'oled_driver.c',
+    ],
+    c_args : ['-DOLED_DRIVER_INC_FONT']
+  )
+)
+
+sw_lib_oled_display_nofont = declare_dependency(
+  sources: [hw_ip_oled_driver_reg_h],
+  link_with: static_library(
+    'oled_nf_ot',
+    sources: [
+      hw_ip_oled_driver_reg_h,
+      'oled_driver.c',
+    ]
+  )
+)

@@ -40,6 +40,7 @@ boot_rom_elf = executable(
     sw_lib_spi_device,
     sw_lib_uart,
     sw_lib_log,
+    sw_lib_oled_display,
   ],
 )
 

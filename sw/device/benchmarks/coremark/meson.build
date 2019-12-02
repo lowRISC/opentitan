@@ -17,9 +17,10 @@ coremark_elf = executable(
   dependencies: [
     sw_lib_uart,
     sw_lib_mem,
+    sw_lib_oled_display,
     riscv_crt,
   ],
-  c_args : ['-DPERFORMANCE_RUN=1', iterations, '-DTOTAL_DATA_SIZE=2000', '-DMAIN_HAS_NOARGC=1']
+  c_args : ['-DPERFORMANCE_RUN=1', iterations, '-DTOTAL_DATA_SIZE=2000', '-DMAIN_HAS_NOARGC=1', '-DOLED_DRIVER_INC_FONT']
 )
 
 coremark_embedded = custom_target(
