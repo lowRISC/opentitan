@@ -15,6 +15,8 @@ project(
     'build.warning_level=1',
     'werror=true',
     'build.werror=true',
+    'debug=true',
+    'build.debug=true',
   ],
 )
 
@@ -63,13 +65,13 @@ add_project_arguments(
 # The following flags are applied only to cross builds
 add_project_arguments(
   '-nostartfiles', '-nostdlib',
-  '-Os', '-g',
+  '-Os',
   '-static',
   '-fvisibility=hidden',
   language: 'cpp', native: false)
 add_project_arguments(
   '-nostartfiles', '-nostdlib',
-  '-Os', '-g',
+  '-Os',
   '-static',
   '-fvisibility=hidden',
   language: 'c', native: false)

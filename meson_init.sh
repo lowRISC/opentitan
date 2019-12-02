@@ -143,7 +143,6 @@ for platform in ${PLATFORMS[@]}; do
     -Ddev_bin_dir="$bin_dir" \
     -Dhost_bin_dir="$HOST_BIN_DIR" \
     --cross-file="$CROSS_FILE" \
-    --buildtype=plain \
     "$obj_dir"
   { set +x; } 2>/dev/null
   purge_includes "$obj_dir"
