@@ -62,7 +62,7 @@ class TestFunctionalVerilator:
         uart_match = sim_top_earlgrey.find_in_output(
             re.compile('UART: Created (/dev/pts/\\d+)'), 5)
 
-        assert uart_match != None
+        assert uart_match is not None
         uart_path = uart_match.group(1)
         logger.info("Found UART port at %s." % uart_path)
 
@@ -73,10 +73,6 @@ class TestFunctionalVerilator:
             pattern = re.compile('.*?(PASS!\r\n|FAIL!\r\n)')
             match = test_utils.stream_fd_to_log(uart_fd, logger, pattern,
                                                 uart_timeout)
-            if match == None:
-                pytest.fail('Deadline exceeded: did not see PASS! or FAIL! within %ds.', uart_timeout)
+            assert match is not None, ('Deadline exceeded: did not see PASS! or FAIL! within %ds.' % uart_timeout)
 
-            if match.group(1) == 'PASS!\r\n':
-                logger.debug('Got PASS! from binary.')
-            else:
-                pytest.fail('Got FAIL! from binary.')
+            assert match.group(1).strip() == 'PASS!'
