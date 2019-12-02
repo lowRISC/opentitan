@@ -89,6 +89,7 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames):
         gen_define(
             defname, ['id'],
             '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')'))
+    genout(outstr, gen_define(defname + '_REG_OFFSET', [], hex(offset)))
 
     for field in reg['fields']:
         fieldlsb = field['bitinfo'][2]
@@ -131,6 +132,7 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames):
         gen_define(
             defname, ['id'],
             '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')'))
+    genout(outstr, gen_define(defname + '_REG_OFFSET', [], hex(offset)))
     items = int(win['items'])
     genout(outstr, gen_define(defname + '_SIZE_WORDS', [], str(items)))
     items = items * (regwidth // 8)
