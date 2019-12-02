@@ -14,13 +14,13 @@ module spidpi
   parameter MODE = 0,
   parameter LOG_LEVEL = 9
   )(
-  input  clk_i,
-  input  rst_ni,
-  output spi_device_sck_o,
-  output spi_device_csb_o,
-  output spi_device_mosi_o,
-  input  spi_device_miso_i,
-  input  spi_device_miso_en_i
+  input  logic clk_i,
+  input  logic rst_ni,
+  output logic spi_device_sck_o,
+  output logic spi_device_csb_o,
+  output logic spi_device_mosi_o,
+  input  logic spi_device_miso_i,
+  input  logic spi_device_miso_en_i
 
 );
   import "DPI-C" function
