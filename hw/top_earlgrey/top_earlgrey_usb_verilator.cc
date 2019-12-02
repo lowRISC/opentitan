@@ -10,7 +10,6 @@
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
 
-
 top_earlgrey_usb_verilator *top;
 VerilatorSimCtrl *simctrl;
 
@@ -21,7 +20,7 @@ static void SignalHandler(int sig) {
 
   switch (sig) {
     case SIGINT:
-      simctrl->RequestStop();
+      simctrl->RequestStop(true);
       break;
     case SIGUSR1:
       if (simctrl->TracingEnabled()) {
@@ -43,13 +42,6 @@ static void SetupSignalHandler() {
   sigaction(SIGINT, &sigIntHandler, NULL);
   sigaction(SIGUSR1, &sigIntHandler, NULL);
 }
-
-/**
- * Get the current simulation time
- *
- * Called by $time in Verilog, converts to double, to match what SystemC does
- */
-double sc_time_stamp() { return simctrl->GetTime(); }
 
 int main(int argc, char **argv) {
   int retcode;
@@ -73,9 +65,27 @@ int main(int argc, char **argv) {
               << "$ kill -USR1 " << getpid() << std::endl;
   }
 
-  simctrl->InitMemory(
-      "TOP.top_earlgrey_usb_verilator.top_earlgrey_usb.u_ram1p_rom.gen_mem_"
-      "generic.u_impl_generic");
+  // Initialize ROM
+  simctrl->InitRom(
+      "TOP.top_earlgrey_usb_verilator.top_earlgrey_usb.u_rom_rom"
+      ".gen_mem_generic.u_impl_generic");
+
+  // Initialize Ram
+  simctrl->InitRam(
+      "TOP.top_earlgrey_usb_verilator.top_earlgrey_usb.u_ram1p_ram_main"
+      ".gen_mem_generic.u_impl_generic");
+
+  // Initialize Flash
+  //  simctrl->InitFlash(
+  //      "TOP.top_earlgrey_usb_verilator.top_earlgrey_usb.u_flash_eflash.gen_flash."
+  //      "u_impl_generic.gen_flash_banks[0].u_impl_generic.gen_mem_generic.u_impl_"
+  //      "generic");
+  simctrl->InitFlash(
+      "TOP.top_earlgrey_usb_verilator.top_earlgrey_usb.u_flash_eflash."
+      "gen_flash_banks[0].u_flash.gen_flash.u_impl_generic.u_mem.gen_mem_"
+      "generic.u_impl_"
+      "generic");
+
   simctrl->Run();
   simctrl->PrintStatistics();
 

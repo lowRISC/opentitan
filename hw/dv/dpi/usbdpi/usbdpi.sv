@@ -30,13 +30,13 @@ module usbdpi
     chandle usbdpi_create(input string name, input int loglevel);
 
   import "DPI-C" function
-    void usbdpi_device_to_host(input chandle ctx, input [4:0] d2p);
+    void usbdpi_device_to_host(input chandle ctx, input bit [4:0] d2p);
 
   import "DPI-C" function
     void usbdpi_close(input chandle ctx);
 
   import "DPI-C" function
-    byte usbdpi_host_to_device(input chandle ctx, input [4:0] d2p);
+    byte usbdpi_host_to_device(input chandle ctx, input bit [4:0] d2p);
 
   chandle ctx;
 

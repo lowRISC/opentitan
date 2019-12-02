@@ -15,9 +15,9 @@ module top_earlgrey_usb_verilator (
 
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
-  logic cio_usb_dp_p2d[MAX_USB], cio_usb_dp_d2p[MAX_USB], cio_usb_dp_en_d2p[MAX_USB];
-  logic cio_usb_dn_p2d[MAX_USB], cio_usb_dn_d2p[MAX_USB], cio_usb_dn_en_d2p[MAX_USB];
-  logic cio_usb_sense_p2d[MAX_USB], cio_usb_pullup_d2p[MAX_USB], cio_usb_pullup_en_d2p[MAX_USB];
+  logic dio_usb_dp_p2d[MAX_USB], dio_usb_dp_d2p[MAX_USB], dio_usb_dp_en_d2p[MAX_USB];
+  logic dio_usb_dn_p2d[MAX_USB], dio_usb_dn_d2p[MAX_USB], dio_usb_dn_en_d2p[MAX_USB];
+  logic dio_usb_sense_p2d[MAX_USB], dio_usb_pullup_d2p[MAX_USB], dio_usb_pullup_en_d2p[MAX_USB];
 
   logic cio_spi_device_sck_p2d, cio_spi_device_csb_p2d;
   logic cio_spi_device_mosi_p2d;
@@ -41,30 +41,30 @@ module top_earlgrey_usb_verilator (
     .jtag_td_i                (IO_JTDI),
     .jtag_td_o                (IO_JTDO),
 
-    .cio_uart_rx_p2d_i        (cio_uart_rx_p2d),
-    .cio_uart_tx_d2p_o        (cio_uart_tx_d2p),
-    .cio_uart_tx_en_d2p_o     (cio_uart_tx_en_d2p),
+    .dio_uart_rx_i            (cio_uart_rx_p2d),
+    .dio_uart_tx_o            (cio_uart_tx_d2p),
+    .dio_uart_tx_en_o         (cio_uart_tx_en_d2p),
 
     .clk_48mhz_i              (clk_i),
-    .cio_usb_dp_i             (cio_usb_dp_p2d),
-    .cio_usb_dp_o             (cio_usb_dp_d2p),
-    .cio_usb_dp_en_o          (cio_usb_dp_en_d2p),
-    .cio_usb_dn_i             (cio_usb_dn_p2d),
-    .cio_usb_dn_o             (cio_usb_dn_d2p),
-    .cio_usb_dn_en_o          (cio_usb_dn_en_d2p),
-    .cio_usb_sense_i          (cio_usb_sense_p2d),
-    .cio_usb_pullup_o         (cio_usb_pullup_d2p),
-    .cio_usb_pullup_en_o      (cio_usb_pullup_en_d2p),
+    .dio_usb_dp_i             (dio_usb_dp_p2d),
+    .dio_usb_dp_o             (dio_usb_dp_d2p),
+    .dio_usb_dp_en_o          (dio_usb_dp_en_d2p),
+    .dio_usb_dn_i             (dio_usb_dn_p2d),
+    .dio_usb_dn_o             (dio_usb_dn_d2p),
+    .dio_usb_dn_en_o          (dio_usb_dn_en_d2p),
+    .dio_usb_sense_i          (dio_usb_sense_p2d),
+    .dio_usb_pullup_o         (dio_usb_pullup_d2p),
+    .dio_usb_pullup_en_o      (dio_usb_pullup_en_d2p),
 
-    .cio_gpio_p2d_i           (cio_gpio_p2d),
-    .cio_gpio_d2p_o           (cio_gpio_d2p),
-    .cio_gpio_en_d2p_o        (cio_gpio_en_d2p),
+    .mio_in_i                 (cio_gpio_p2d),
+    .mio_out_o                (cio_gpio_d2p),
+    .mio_oe_o                 (cio_gpio_en_d2p),
 
-    .cio_spi_device_sck_i     (cio_spi_device_sck_p2d),
-    .cio_spi_device_csb_i     (cio_spi_device_csb_p2d),
-    .cio_spi_device_mosi_i    (cio_spi_device_mosi_p2d),
-    .cio_spi_device_miso_o    (cio_spi_device_miso_d2p),
-    .cio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
+    .dio_spi_device_sck_i     (cio_spi_device_sck_p2d),
+    .dio_spi_device_csb_i     (cio_spi_device_csb_p2d),
+    .dio_spi_device_mosi_i    (cio_spi_device_mosi_p2d),
+    .dio_spi_device_miso_o    (cio_spi_device_miso_d2p),
+    .dio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
 
     .scanmode_i               (1'b0)
   );
@@ -100,15 +100,15 @@ module top_earlgrey_usb_verilator (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clk_48MHz_i    (clk_i),
-    .dp_p2d         (cio_usb_dp_p2d[0]),
-    .dp_d2p         (cio_usb_dp_d2p[0]),
-    .dp_en_d2p      (cio_usb_dp_en_d2p[0]),
-    .dn_p2d         (cio_usb_dn_p2d[0]),
-    .dn_d2p         (cio_usb_dn_d2p[0]),
-    .dn_en_d2p      (cio_usb_dn_en_d2p[0]),
-    .sense_p2d      (cio_usb_sense_p2d[0]),
-    .pullup_d2p     (cio_usb_pullup_d2p[0]),
-    .pullup_en_d2p  (cio_usb_pullup_en_d2p[0])
+    .dp_p2d         (dio_usb_dp_p2d[0]),
+    .dp_d2p         (dio_usb_dp_d2p[0]),
+    .dp_en_d2p      (dio_usb_dp_en_d2p[0]),
+    .dn_p2d         (dio_usb_dn_p2d[0]),
+    .dn_d2p         (dio_usb_dn_d2p[0]),
+    .dn_en_d2p      (dio_usb_dn_en_d2p[0]),
+    .sense_p2d      (dio_usb_sense_p2d[0]),
+    .pullup_d2p     (dio_usb_pullup_d2p[0]),
+    .pullup_en_d2p  (dio_usb_pullup_en_d2p[0])
   );
 
   // JTAG DPI for OpenOCD

@@ -34,11 +34,11 @@ static const char *hs_states[] = {
 
 extern VerilatorSimCtrl *simctrl;
 
-static void finish(void) {
+static void usbdpi_finish(int simulation_success) {
   if (!simctrl) {
     return;
   }
-  simctrl->RequestStop();
+  simctrl->RequestStop(simulation_success);
 }
 
 void *usbdpi_create(const char *name, int loglevel) {
@@ -57,6 +57,7 @@ void *usbdpi_create(const char *name, int loglevel) {
   ctx->hostSt = HS_NEXTFRAME;
   ctx->loglevel = loglevel;
   ctx->mon = monitor_usb_init();
+  ctx->baudrate_set_successfully = 0;
 
   char cwd[PATH_MAX];
   char *cwd_rv;
@@ -92,10 +93,10 @@ void *usbdpi_create(const char *name, int loglevel) {
 
 const char *decode_usb[] = {"SE0", "0-K", "1-J", "SE1"};
 
-void usbdpi_device_to_host(void *ctx_void, svBitVecVal *d2p_data) {
+void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
   struct usbdpi_ctx *ctx = (struct usbdpi_ctx *)ctx_void;
   assert(ctx);
-  int d2p = d2p_data[0];
+  int d2p = usb_d2p[0];
   int dp, dn;
   int n;
   char obuf[MAX_OBUF];
@@ -406,6 +407,7 @@ void setBaud(struct usbdpi_ctx *ctx) {
         ctx->bit = 1;
         ctx->data[0] = USB_PID_ACK;
         ctx->hostSt = HS_NEXTFRAME;
+        ctx->baudrate_set_successfully = true;
       }
       break;
     default:
@@ -480,17 +482,17 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
   }
 }
 
-char usbdpi_host_to_device(void *ctx_void, svBitVecVal *d2p_data) {
+char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   struct usbdpi_ctx *ctx = (struct usbdpi_ctx *)ctx_void;
   assert(ctx);
-  int d2p = d2p_data[0];
+  int d2p = usb_d2p[0];
   uint32_t last_driving = ctx->driving;
   int force_stat = 0;
   int dat;
 
   if (ctx->tick == 0) {
     for (int i = 7; i > 0; i--) {
-      printf("Sleep %d...\n", i);
+      printf("USB: Sleep %d...\n", i);
       sleep(1);
     }
   }
@@ -552,8 +554,15 @@ char usbdpi_host_to_device(void *ctx_void, svBitVecVal *d2p_data) {
   switch (ctx->state) {
     case ST_IDLE:
       if ((simctrl && simctrl->TracingEnabled() && (ctx->frame == 20)) ||
-          (ctx->frame > 2000))
-        finish();
+          (ctx->frame > 50)) {
+        printf("USB: usbdpi done, frame: %d, success: %d, state: %d\n",
+               ctx->frame, ctx->baudrate_set_successfully, ctx->state);
+
+        // If we were able to set the BAUD rate sucessfully, the DUT
+        // provided reasonable responses to our requests. Ideally, we
+        // would have a more advanced test here.
+        usbdpi_finish(ctx->baudrate_set_successfully);
+      }
 
       switch (ctx->frame) {
         case 1:
