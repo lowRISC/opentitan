@@ -30,17 +30,17 @@ def pytest_exception_interact(node, call, report):
     try:
         if not report.failed:
             return
-        if not 'tmpdir' in node.funcargs:
+        if not 'tmp_path' in node.funcargs:
             return
     except:
         return
 
-    tmpdir = str(node.funcargs['tmpdir'])
+    tmp_path = str(node.funcargs['tmp_path'])
     print("\n\n")
     print("================= DUMP OF ALL TEMPORARY FILES =================")
 
-    for f in os.listdir(tmpdir):
-        f_abs = os.path.join(tmpdir, f)
+    for f in os.listdir(tmp_path):
+        f_abs = os.path.join(tmp_path, f)
         if not os.path.isfile(f_abs):
             continue
         print("vvvvvvvvvvvvvvvvvvvv {} vvvvvvvvvvvvvvvvvvvv".format(f))
