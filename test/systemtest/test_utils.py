@@ -232,7 +232,8 @@ def stream_fd_to_log(fd, logger, pattern, timeout=None):
     os.set_blocking(fd, False)
     line_of_output = b''
     while True:
-        if deadline != None and time.monotonic() > deadline:
+        curtime = time.monotonic()
+        if deadline != None and curtime > deadline:
             return None
 
         if line_of_output.endswith(b'\n'):
@@ -242,7 +243,7 @@ def stream_fd_to_log(fd, logger, pattern, timeout=None):
         # we wouldn't get anything out of it.
         if deadline != None:
             rlist, _, _ = select.select([fd], [], [],
-                                        deadline - time.monotonic())
+                                        deadline - curtime)
         else:
             rlist, _, _ = select.select([fd], [], [])
 
