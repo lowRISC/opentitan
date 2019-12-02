@@ -54,7 +54,11 @@ class riscv_instr_stream extends uvm_object;
     if(idx == -1) begin
       idx = $urandom_range(0, current_instr_cnt-1);
       while(instr_list[idx].atomic) begin
-       idx = $urandom_range(0, current_instr_cnt-1);
+       idx += 1;
+       if (idx == current_instr_cnt - 1) begin
+         instr_list = {instr_list, instr};
+         return;
+       end
       end
     end else if((idx > current_instr_cnt) || (idx < 0)) begin
       `uvm_error(`gfn, $sformatf("Cannot insert instr:%0s at idx %0d",
@@ -281,7 +285,9 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     if ((instr.category == CSR) && !skip_csr) begin
       instr.gen_rand_csr(.privileged_mode(cfg.init_privileged_mode),
                          .enable_floating_point(cfg.enable_floating_point),
-                         .illegal_csr_instr(cfg.enable_illegal_csr_instruction));
+                         .illegal_csr_instr(cfg.enable_illegal_csr_instruction),
+                         .legal_invalid_csr_instr(cfg.enable_access_invalid_csr_level),
+                         .invalid_csrs(cfg.invalid_priv_mode_csrs));
     end
     if (instr.has_fs1) begin
       instr.fs1 = instr.gen_rand_fpr();

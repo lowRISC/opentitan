@@ -7,6 +7,7 @@
 
 #include "register_driver.h"
 #include "register_model.h"
+#include "register_types.h"
 #include "reset_driver.h"
 #include "simctrl.h"
 
@@ -15,7 +16,7 @@
  */
 class RegisterEnvironment {
  public:
-  RegisterEnvironment();
+  RegisterEnvironment(CSRParams params);
 
   void OnInitial(unsigned int seed);
   void OnFinal();
@@ -23,6 +24,7 @@ class RegisterEnvironment {
   void GetStopReq(unsigned char *stop_req);
 
  private:
+  CSRParams params_;
   SimCtrl *simctrl_;
   RegisterModel *reg_model_;
   RegisterDriver *reg_driver_;

@@ -124,6 +124,10 @@ class riscv_instr_gen_config extends uvm_object;
   riscv_instr_name_t     instr_group[riscv_instr_group_t][$];
   riscv_instr_name_t     instr_category[riscv_instr_category_t][$];
 
+  // Queue of all the main implemented CSRs that the boot privilege mode cannot access
+  // e.g. these CSRs are in higher privilege modes - access should raise an exception
+  privileged_reg_t       invalid_priv_mode_csrs[$];
+
   //-----------------------------------------------------------------------------
   // Command line options or control knobs
   //-----------------------------------------------------------------------------
@@ -164,6 +168,11 @@ class riscv_instr_gen_config extends uvm_object;
   // - Accessing non-existence CSR
   // - Accessing CSR with wrong privileged mode
   bit                    enable_illegal_csr_instruction;
+  // Enable accessing CSRs at an invalid privilege level
+  bit                    enable_access_invalid_csr_level;
+  // Enable some dummy writes to main system CSRs (xSTATUS/xIE) at beginning of test
+  // to check repeated writes
+  bit                    enable_dummy_csr_write;
   bit                    randomize_csr = 0;
   // sfence support
   bit                    allow_sfence_exception = 0;
@@ -194,6 +203,8 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_debug_single_step = 0;
   // Number of single stepping iterations
   rand int               single_step_iterations;
+  // Enable mstatus.tw bit - causes u-mode WFI to raise illegal instruction exceptions
+  bit                    set_mstatus_tw;
   // Stack space allocated to each program, need to be enough to store necessary context
   // Example: RA, SP, T0
   int                    min_stack_len_per_program = 10 * (XLEN/8);
@@ -268,12 +279,12 @@ class riscv_instr_gen_config extends uvm_object;
   constraint boot_privileged_mode_dist_c {
     // Boot to higher privileged mode more often
     if(riscv_instr_pkg::supported_privileged_mode.size() == 2) {
-      init_privileged_mode dist {riscv_instr_pkg::supported_privileged_mode[0] := 9,
-                                 riscv_instr_pkg::supported_privileged_mode[1] := 1};
-    } else if (riscv_instr_pkg::supported_privileged_mode.size() == 3) {
       init_privileged_mode dist {riscv_instr_pkg::supported_privileged_mode[0] := 6,
+                                 riscv_instr_pkg::supported_privileged_mode[1] := 4};
+    } else if (riscv_instr_pkg::supported_privileged_mode.size() == 3) {
+      init_privileged_mode dist {riscv_instr_pkg::supported_privileged_mode[0] := 4,
                                  riscv_instr_pkg::supported_privileged_mode[1] := 3,
-                                 riscv_instr_pkg::supported_privileged_mode[2] := 1};
+                                 riscv_instr_pkg::supported_privileged_mode[2] := 3};
     } else {
       init_privileged_mode == riscv_instr_pkg::supported_privileged_mode[0];
     }
@@ -401,6 +412,8 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+no_load_store=", no_load_store);
     get_bool_arg_value("+no_csr_instr=", no_csr_instr);
     get_bool_arg_value("+enable_illegal_csr_instruction=", enable_illegal_csr_instruction);
+    get_bool_arg_value("+enable_access_invalid_csr_level=", enable_access_invalid_csr_level);
+    get_bool_arg_value("+enable_dummy_csr_write=", enable_dummy_csr_write);
     get_bool_arg_value("+allow_sfence_exception=", allow_sfence_exception);
     get_bool_arg_value("+no_data_page=", no_data_page);
     get_bool_arg_value("+no_directed_instr=", no_directed_instr);
@@ -423,6 +436,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_ebreak_in_debug_rom=", enable_ebreak_in_debug_rom);
     get_bool_arg_value("+set_dcsr_ebreak=", set_dcsr_ebreak);
     get_bool_arg_value("+enable_debug_single_step=", enable_debug_single_step);
+    get_bool_arg_value("+set_mstatus_tw=", set_mstatus_tw);
     get_bool_arg_value("+enable_floating_point=", enable_floating_point);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
       `uvm_info(get_full_name(), $sformatf(
@@ -460,6 +474,7 @@ class riscv_instr_gen_config extends uvm_object;
       disable_compressed_instr = 1;
     end
     setup_instr_distribution();
+    get_invalid_priv_lvl_csr();
   endfunction
 
   function void setup_instr_distribution();
@@ -547,6 +562,35 @@ class riscv_instr_gen_config extends uvm_object;
     end
     if (!(support_128b || support_64b) && !(SATP_MODE inside {SV32, BARE})) begin
       `uvm_fatal(`gfn, $sformatf("SATP mode %0s is not supported for RV32G ISA", SATP_MODE.name()))
+    end
+  endfunction
+
+  // Populate invalid_priv_mode_csrs with the main implemented CSRs for each supported privilege mode
+  // TODO(udi) - include performance/pmp/trigger CSRs?
+  virtual function void get_invalid_priv_lvl_csr();
+    string invalid_lvl[$];
+    string csr;
+    // Debug CSRs are inaccessible from all but Debug Mode, and we cannot boot into Debug Mode
+    invalid_lvl.push_back("D");
+    case (init_privileged_mode)
+      MACHINE_MODE: begin
+      end
+      SUPERVISOR_MODE: begin
+        invalid_lvl.push_back("M");
+      end
+      USER_MODE: begin
+        invalid_lvl.push_back("S");
+        invalid_lvl.push_back("M");
+      end
+      default: begin
+        `uvm_fatal(`gfn, "Unsupported initialization privilege mode")
+      end
+    endcase
+    foreach (implemented_csr[i]) begin
+      csr = implemented_csr[i].name();
+      if (csr[0] inside {invalid_lvl}) begin
+        invalid_priv_mode_csrs.push_back(implemented_csr[i]);
+      end
     end
   endfunction
 

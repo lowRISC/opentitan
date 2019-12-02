@@ -54,7 +54,7 @@ targets:
 #   Optimization levels have a large impact on the runtime performance of the
 #   simulation model. -O2 and -O3 are pretty similar, -Os is slower than -O2/-O3
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_simple_system -g -O0"'
-          - '-LDFLAGS "-pthread -lutil"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
           - "-Wno-PINCONNECTEMPTY"
           # XXX: Cleanup all warnings and remove this option

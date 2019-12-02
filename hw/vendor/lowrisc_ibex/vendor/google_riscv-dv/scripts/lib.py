@@ -19,6 +19,7 @@ Parse the regression testlist in YAML format
 import os
 import random
 import sys
+import re
 import subprocess
 import time
 import yaml
@@ -90,7 +91,7 @@ def get_seed(seed):
     return random.getrandbits(32)
 
 
-def run_cmd(cmd, timeout_s = 999):
+def run_cmd(cmd, timeout_s = 999, exit_on_error = 1):
   """Run a command and return output
 
   Args:
@@ -116,11 +117,18 @@ def run_cmd(cmd, timeout_s = 999):
     logging.error("Timeout[%ds]: %s" % (timeout_s, cmd))
     output = ""
     ps.kill()
+  rc = ps.returncode
+  if rc:
+    if rc > 0:
+      logging.info(output)
+      logging.error("ERROR return code: %d, cmd:%s" % (rc, cmd))
+      if exit_on_error:
+        sys.exit(1)
   logging.debug(output)
   return output
 
 
-def run_parallel_cmd(cmd_list, timeout_s = 999):
+def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0):
   """Run a list of commands in parallel
 
   Args:
@@ -146,18 +154,26 @@ def run_parallel_cmd(cmd_list, timeout_s = 999):
     except subprocess.TimeoutExpired:
       logging.error("Timeout[%ds]: %s" % (timeout_s, cmd))
       children[i].kill()
+    rc = children[i].returncode
+    if rc:
+      if rc > 0:
+        logging.info(output)
+        logging.error("ERROR return code: %d, cmd:%s" % (rc, cmd))
+        if exit_on_error:
+          sys.exit(1)
     # Restore stty setting otherwise the terminal may go crazy
     os.system("stty sane")
     logging.debug(output)
 
 
-def process_regression_list(testlist, test, iterations, matched_list):
+def process_regression_list(testlist, test, iterations, matched_list, riscv_dv_root):
   """ Get the matched tests from the regression test list
 
   Args:
-    testlist     : Regression test list
-    test         : Test to run, "all" means all tests in the list
-    iterations   : Number of iterations for each test
+    testlist      : Regression test list
+    test          : Test to run, "all" means all tests in the list
+    iterations    : Number of iterations for each test
+    riscv_dv_root : Root directory of RISCV-DV
 
   Returns:
     matched_list : A list of matched tests
@@ -165,28 +181,14 @@ def process_regression_list(testlist, test, iterations, matched_list):
   logging.info("Processing regression test list : %s, test: %s" % (testlist, test))
   yaml_data = read_yaml(testlist)
   for entry in yaml_data:
-    if (entry['test'] == test) or (test == "all"):
-      if (iterations > 0 and  entry['iterations'] > 0):
-        entry['iterations'] = iterations
-      if entry['iterations'] > 0:
-        logging.info("Found matched tests: %s, iterations:%0d" %
-                    (entry['test'], entry['iterations']))
-        matched_list.append(entry)
-
-def check_simulator_return(output, simulator, stop_on_first_error):
-    """
-    tests simulator output for errors and terminates run if found
-    ONLY works when verbose is on (as output not returned otherwise)
-    TODO add other simulators
-    """
-
-    if not stop_on_first_error: return
-
-    if "questa" in simulator:
-      for line in output.splitlines():
-        if "Errors: " in line:
-          if not "Errors: 0" in line:
-            logging.fatal (
-              "check_simulator_return (%s): TERMINATING as got errors: [%s]" %
-                (simulator, line))
-            sys.exit(-1)
+    if 'import' in entry:
+      sub_list = re.sub('<riscv_dv_root>', riscv_dv_root, entry['import'])
+      process_regression_list(sub_list, test, iterations, matched_list, riscv_dv_root)
+    else:
+      if (entry['test'] == test) or (test == "all"):
+        if (iterations > 0 and  entry['iterations'] > 0):
+          entry['iterations'] = iterations
+        if entry['iterations'] > 0:
+          logging.info("Found matched tests: %s, iterations:%0d" %
+                      (entry['test'], entry['iterations']))
+          matched_list.append(entry)

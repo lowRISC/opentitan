@@ -5,7 +5,10 @@
 package env_dpi;
 
   import "DPI-C"
-  function void env_initial(input bit [31:0] seed);
+  function void env_initial(input bit [31:0] seed,
+                            input bit        PMPEnable,
+                            input bit [31:0] PMPGranularity,
+                            input bit [31:0] PMPNumRegions);
 
   import "DPI-C"
   function void env_final();

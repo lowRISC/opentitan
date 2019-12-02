@@ -132,7 +132,7 @@ module tb_cs_registers #(
     if (!$value$plusargs ("ntb_random_seed=%d", seed)) begin
       seed = 32'd0;
     end
-    env_dpi::env_initial(seed);
+    env_dpi::env_initial(seed,PMPEnable,PMPGranularity,PMPNumRegions);
   end
 
   final begin

@@ -11,6 +11,7 @@
 
 #include "base_register.h"
 #include "register_transaction.h"
+#include "register_types.h"
 #include "simctrl.h"
 
 /**
@@ -18,7 +19,7 @@
  */
 class RegisterModel {
  public:
-  RegisterModel(SimCtrl *sc);
+  RegisterModel(SimCtrl *sc, CSRParams *params);
 
   void NewTransaction(std::unique_ptr<RegisterTransaction> trans);
   void RegisterReset();

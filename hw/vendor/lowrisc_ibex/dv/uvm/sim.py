@@ -217,6 +217,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--o", type=str, default="./out",
                     help="Output directory name")
+parser.add_argument("--riscv_dv_root", type=str, default="",
+                    help="Root directory of RISCV-DV")
 parser.add_argument("--testlist", type=str, default="riscv_dv_extension/testlist.yaml",
                     help="Regression testlist")
 parser.add_argument("--test", type=str, default="all",
@@ -259,8 +261,8 @@ subprocess.run(["mkdir", "-p", output_dir])
 
 # Process regression test list
 matched_list = []
-process_regression_list(args.testlist, args.test,
-                        args.iterations, matched_list)
+process_regression_list(args.testlist, args.test, args.iterations,
+                        matched_list, args.riscv_dv_root)
 if len(matched_list) == 0:
   sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
 

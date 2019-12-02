@@ -74,7 +74,9 @@ module ibex_prefetch_buffer (
   // PMP errors are generated in the address phase, and registered into a fake data phase
   assign instr_or_pmp_err = instr_err_i | rdata_pmp_err_q[0];
 
-  // A branch will invalidate any previously fetched instructions
+  // A branch will invalidate any previously fetched instructions.
+  // Note that the FENCE.I instruction relies on this flushing behaviour on branch. If it is
+  // altered the FENCE.I implementation may require changes.
   assign fifo_clear = branch_i;
 
   ibex_fetch_fifo #(

@@ -63,7 +63,7 @@ def process_jal(trace, operands, gpr):
     if len(operands) == 2:
         trace.rd = operands[0]
         trace.rd_val = gpr[trace.rd]
-        trace.imm = get_imm_hex_val(operands[1])
+        trace.imm = get_imm_hex_val("0x" + operands[1])
     else:
         fatal("process_jal(%s) wrong num operands (%d)" %
             (trace.instr, len(operands)))
@@ -173,7 +173,7 @@ def check_num_operands(instr_str, num_operands, n):
 
 def is_csr(r):
     """ see if r is a csr """
-    
+
     # add more as needed
     if r in ["mtvec","pmpaddr0","pmpcfg0","mstatus","mepc","mscratch","mcause",
             "mtval","vl","vtype"]:
@@ -189,7 +189,7 @@ def process_branch_offset (opn, operands, prev_trace):
     offset = hex(offset_dec)
     operands[opn] = offset
 
-def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0, 
+def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
     dont_truncate_after_first_ecall = 0,
     verbose2 = False):
   """Process OVPsim simulation log.
@@ -217,14 +217,13 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
   os.system(cmd)
 
   # storage and initial values of gpr and csr
-  
   gpr = {}
   csr = {}
-  
+
   for g in REGS: # base base isa gprs
     gpr[g] = 0
+
   for i in range(32): # add in v0-v31 gprs
-  
     gpr["v"+str(i)] = 0
 
   csr["vl"]    = 0
@@ -283,6 +282,8 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
                 "flw" in line:
                     logging.debug ("Ignoring ins...(%s) " % (line))
                     continue
+            logging.debug("Processing [%s]: %s" %
+                          (prev_trace.instr, prev_trace.instr_str))
             process_if_compressed(prev_trace)
             o = re.search (r"(?P<instr>[a-z]*?)\s(?P<operand>.*)",
                 prev_trace.instr_str)
@@ -295,8 +296,7 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
                   process_jal(prev_trace, operands, gpr)
                 else:
                   if 'v' in prev_trace.instr[0]:
-                    assign_operand_vector(prev_trace, operands, gpr,
-                        stop_on_first_error)
+                    assign_operand_vector(prev_trace, operands, gpr, stop_on_first_error)
                   elif 'f' in prev_trace.instr[0] or "c.f" in prev_trace.instr[0:3]:
                     pass # ignore floating point. TODO include them
                   else:
@@ -307,8 +307,9 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
                         'c.beqz', 'c.bnez', 'beqz', 'bnez', 'bgez',
                              'bltz', 'blez', 'bgtz']:
                         process_branch_offset (1, operands, prev_trace)
-                    assign_operand(prev_trace, operands, gpr,
-                        stop_on_first_error)
+                    if prev_trace.instr in ['j', 'c.j']:
+                      operands[0] = "0x" + operands[0]
+                    assign_operand(prev_trace, operands, gpr, stop_on_first_error)
             else:
                 # logging.debug("no operand for [%s] in [%s]" % (trace_instr,
                 #   trace_instr_str))
@@ -339,8 +340,9 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
                 gpr[n.group("r")] = n.group("val")
             else:
                 # backwards compatible
-                prev_trace.rd_val       = n.group("val")
-                gpr[prev_trace.rd]      = prev_trace.rd_val
+                prev_trace.rd       = n.group("r")
+                prev_trace.rd_val   = n.group("val")
+                gpr[prev_trace.rd]  = prev_trace.rd_val
             if 0:
               print (
                 "write entry [[%d]]: rd[%s] val[%s] instr(%s) bin(%s) addr(%s)"
@@ -363,7 +365,7 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
                 logging.debug("Ignoring: [%d]  [[%s]]" % (instr_cnt, line))
                 pass
             elif "Warning (RISCV_" in line:
-                logging.debug("Skipping: [%d] (%s) [[%s]]" % 
+                logging.debug("Skipping: [%d] (%s) [[%s]]" %
                     (instr_cnt, prev_trace.instr_str, line))
                 prev_trace.instr = "nop"
                 prev_trace.instr_str = "nop"
@@ -377,6 +379,7 @@ def process_ovpsim_sim_log(ovpsim_log, csv, full_trace = 1, stop = 0,
     logging.error ("No Instructions in logfile: %s" % ovpsim_log)
     sys.exit(-1)
   logging.info("CSV saved to : %s" % csv)
+
 
 def main():
   """ if used standalone set up for testing """

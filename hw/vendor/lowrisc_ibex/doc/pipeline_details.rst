@@ -75,3 +75,8 @@ Read the description for more information.
 |                       |                       | instruction-side memory interface takes to receive data the |
 |                       |                       | longer the branch will stall.                               |
 +-----------------------+-----------------------+-------------------------------------------------------------+
+| Instruction Fence     | 1 - N                 | The FENCE.I instruction as defined in 'Zifencei' of the     |
+|                       |                       | RISC-V specification. Internally it is implemented as a     |
+|                       |                       | jump (which does the required flushing) so it has the same  |
+|                       |                       | stall characteristics (see above).                          |
++-----------------------+-----------------------+-------------------------------------------------------------+

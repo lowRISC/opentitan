@@ -95,19 +95,29 @@ class riscv_rand_instr extends riscv_instr_base;
 
   constraint csr_instr_c {
     // TODO: support CSR instruction in other modes
-    if(cfg.no_csr_instr || (cfg.init_privileged_mode != MACHINE_MODE)) {
+    if(cfg.no_csr_instr) {
       category != CSR;
     } else {
-      if (cfg.enable_illegal_csr_instruction) {
-        !(csr inside {implemented_csr});
-      } else {
-        // Use scratch register to avoid the side effect of modifying other privileged mode CSR.
-        if (cfg.init_privileged_mode == MACHINE_MODE) {
-          csr == MSCRATCH;
-        } else if (cfg.init_privileged_mode == SUPERVISOR_MODE) {
-          csr == SSCRATCH;
+      if (category == CSR) {
+        if (cfg.enable_illegal_csr_instruction) {
+          !(csr inside {implemented_csr});
+        } else if (cfg.enable_access_invalid_csr_level) {
+          csr inside {cfg.invalid_priv_mode_csrs};
         } else {
-          csr == USCRATCH;
+          // Use scratch register to avoid the side effect of modifying other privileged mode CSR.
+          if (cfg.init_privileged_mode == MACHINE_MODE) {
+            if (MSCRATCH inside {implemented_csr}) {
+              csr == MSCRATCH;
+            }
+          } else if (cfg.init_privileged_mode == SUPERVISOR_MODE) {
+            if (SSCRATCH inside {implemented_csr}) {
+              csr == SSCRATCH;
+            }
+          } else {
+            if (USCRATCH inside {implemented_csr}) {
+              csr == USCRATCH;
+            }
+          }
         }
       }
     }

@@ -7,6 +7,6 @@
 TOPLEVEL_NAME &VerilatedToplevel::dut() {
   // The static_cast below is generally unsafe, but we know the types involved.
   // It's safe for these.
-  TOPLEVEL_NAME &dut = static_cast<TOPLEVEL_NAME&>(*this);
+  TOPLEVEL_NAME &dut = static_cast<TOPLEVEL_NAME &>(*this);
   return dut;
 }

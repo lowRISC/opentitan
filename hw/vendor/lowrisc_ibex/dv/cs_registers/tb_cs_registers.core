@@ -6,6 +6,30 @@ CAPI=2:
 name: "lowrisc:ibex:tb_cs_registers"
 description: "CS registers testbench"
 filesets:
+  files_so:
+    files:
+      - Makefile
+      - rst_driver/rst_dpi.cc
+      - rst_driver/reset_driver.cc
+      - rst_driver/reset_driver.h
+      - reg_driver/csr_listing.def
+      - reg_driver/reg_dpi.cc
+      - reg_driver/register_driver.cc
+      - reg_driver/register_driver.h
+      - reg_driver/register_transaction.cc
+      - reg_driver/register_transaction.h
+      - env/env_dpi.cc
+      - env/register_environment.cc
+      - env/register_environment.h
+      - env/simctrl.cc
+      - env/simctrl.h
+      - env/register_types.h
+      - model/base_register.cc
+      - model/base_register.h
+      - model/register_model.cc
+      - model/register_model.h
+    file_type: user
+
   files_sim_verilator:
     depend:
       - lowrisc:dv_verilator:simutil_verilator
@@ -21,6 +45,17 @@ filesets:
       - reg_driver/reg_dpi.sv
       - tb/tb_cs_registers.sv
     file_type: systemVerilogSource
+
+# Call make to build C++ shared object (workaround until natively supported by
+# fusesoc) see olofk/fusesoc#311
+scripts:
+  build_so:
+    filesets:
+      - files_so
+    cmd:
+      - make
+      - -C
+      - ../src/lowrisc_ibex_tb_cs_registers_0
 
 parameters:
   PMPEnable:
@@ -46,6 +81,9 @@ targets:
     filesets:
       - files_sim
       - files_sim_verilator
+    hooks:
+      pre_build:
+        - build_so
     parameters:
       - PMPEnable
       - PMPNumRegions
@@ -54,13 +92,13 @@ targets:
     tools:
       vcs:
         vcs_options:
-          - '${PWD}/build/bin/reg_dpi.so'
+          - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
           - '-debug_access+all'
 
       verilator:
         mode: cc
         libs:
-          - '${PWD}/../../../build/bin/reg_dpi.so'
+          - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
         verilator_options:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
@@ -71,7 +109,7 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '-CFLAGS "-std=c++14 -Wall -DTOPLEVEL_NAME=tb_cs_registers -DVM_TRACE_FMT_FST -g"'
-          - '-LDFLAGS "-pthread -lutil"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
           - "-Wno-PINCONNECTEMPTY"
           # XXX: Cleanup all warnings and remove this option

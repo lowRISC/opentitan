@@ -8,19 +8,15 @@ It is a work in progress and only tests a handful of registers, and is missing m
 How to build and run the testbench
 ----------------------------------
 
-(from this directory)
-
 Verilator version:
 
    ```sh
-   make TOOL=verilator
-   ./build/lowrisc_ibex_tb_cs_registers_0/sim-verilator/Vtb_cs_registers
+   fusesoc --cores-root=. run --target=sim --tool=verilator lowrisc:ibex:tb_cs_registers
    ```
 VCS version:
 
    ```sh
-   make TOOL=vcs
-   ./build/lowrisc_ibex_tb_cs_registers_0/sim-vcs/lowrisc_ibex_tb_cs_registers_0
+   fusesoc --cores-root=. run --target=sim --tool=vcs lowrisc:ibex:tb_cs_registers
    ```
 
 Testbench file structure

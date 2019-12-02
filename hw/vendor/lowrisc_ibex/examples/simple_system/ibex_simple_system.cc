@@ -2,49 +2,40 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <signal.h>
-
-#include <iostream>
-#include <memory>
 #include <fstream>
+#include <iostream>
 
 #include "ibex_pcounts.h"
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
 
-std::shared_ptr<VerilatorSimCtrl> simctrl(nullptr);
-
 int main(int argc, char **argv) {
-  int retcode;
+  ibex_simple_system top;
+  VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
+  simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
+                 VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  auto top = std::make_shared<ibex_simple_system>();
-
-  simctrl = std::make_shared<VerilatorSimCtrl>(
-      top.get(), top->IO_CLK, top->IO_RST_N,
-      VerilatorSimCtrlFlags::ResetPolarityNegative);
-
-  retcode = simctrl->SetupSimulation(argc, argv);
-
-  if (retcode != 0)
-    return retcode;
-
-  // Initialize RAM
-  simctrl->InitRam("TOP.ibex_simple_system.u_ram");
+  simctrl.RegisterMemoryArea("ram", "TOP.ibex_simple_system.u_ram");
 
   std::cout << "Simulation of Ibex" << std::endl
             << "==================" << std::endl
             << std::endl;
 
-  simctrl->RunSimulation();
+  if (simctrl.Exec(argc, argv)) {
+    return 1;
+  }
 
+  // TODO: Exec can return with "true" (e.g. with `-h`), but that does not mean
+  // `RunSimulation()` was executed. The folllowing values will not be useful
+  // in this case.
   std::cout << "\nPerformance Counters" << std::endl
             << "====================" << std::endl;
-  std::cout << ibex_pcount_string(
-      top->ibex_simple_system__DOT__mhpmcounter_vals, false);
+  std::cout << ibex_pcount_string(top.ibex_simple_system__DOT__mhpmcounter_vals,
+                                  false);
 
   std::ofstream pcount_csv("ibex_simple_system_pcount.csv");
   pcount_csv << ibex_pcount_string(
-      top->ibex_simple_system__DOT__mhpmcounter_vals, true);
+      top.ibex_simple_system__DOT__mhpmcounter_vals, true);
 
   return 0;
 }
