@@ -37,7 +37,7 @@ for target in "${TEST_TARGETS[@]}"; do
   echo "Executing target ${target}"
   set +e
   set -x
-  pytest -s test/systemtest/functional_verilator_test.py \
+  pytest -v -s test/systemtest/functional_verilator_test.py \
     --test_bin "$SW_BUILD_PATH/${target}" \
     --rom_bin  "$SW_BUILD_PATH/${BOOT_ROM_TARGET}" \
     --verilator_model "$VERILATED_SYSTEM_PATH"
