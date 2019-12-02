@@ -14,6 +14,7 @@ mistletoe>=0.7.2
 pyftdi
 pygments
 pytest
+pytest-timeout
 pyyaml
 yapf
 

@@ -219,6 +219,7 @@ jobs:
   - bash: |
       . util/build_consts.sh
       export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
+      pytest --version
       ci/run_verilator_pytest.sh
     displayName: 'Execute tests'
 
