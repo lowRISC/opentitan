@@ -7,19 +7,32 @@ description: "Technology-independent Earl Grey with USB toplevel"
 filesets:
   files_rtl_generic:
     depend:
-      - lowrisc:ip:uart
-      - lowrisc:ip:usbuart
-      - lowrisc:ip:usbdev
+      - lowrisc:ip:uart:0.1
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
+      - lowrisc:ip:aes
+      - lowrisc:ip:hmac
       - lowrisc:prim:ram_1p
+      - lowrisc:prim:rom
+      - lowrisc:prim:flash
+      - lowrisc:ip:flash_ctrl:0.1
+      - lowrisc:constants:top_pkg
+      - lowrisc:ip:usbuart
+      - lowrisc:ip:usbdev
     files:
-      - rtl/tl_main_pkg.sv
-      - rtl/tlul_xbar_usb.sv
+      - ip/xbar/rtl/autogen/tl_main_pkg.sv
+      - ip/xbar/rtl/autogen/xbar_main.sv
+      - ip/rv_plic/rtl/autogen/rv_plic_reg_pkg.sv
+      - ip/rv_plic/rtl/autogen/rv_plic_reg_top.sv
+      - ip/rv_plic/rtl/autogen/rv_plic.sv
+      - ip/pinmux/rtl/autogen/pinmux_reg_pkg.sv
+      - ip/pinmux/rtl/autogen/pinmux_reg_top.sv
+      - ../ip/pinmux/rtl/pinmux.sv
       - rtl/padctl_usb.sv
       - rtl/top_earlgrey_usb.sv
     file_type: systemVerilogSource

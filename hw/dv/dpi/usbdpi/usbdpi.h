@@ -99,11 +99,12 @@ struct usbdpi_ctx {
   int datastart;
   int hostSt;
   uint8_t data[SEND_MAX];
+  int baudrate_set_successfully;
 };
 
 void *usbdpi_create(const char *name, int loglevel);
-void usbdpi_device_to_host(void *ctx_void, svBitVecVal *usb_d2p);
-char usbdpi_host_to_device(void *ctx_void, svBitVecVal *usb_d2p);
+void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p);
+char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p);
 void usbdpi_close(void *ctx_void);
 uint32_t CRC5(uint32_t dwInput, int iBitcnt);
 uint32_t CRC16(uint8_t *data, int bytes);
