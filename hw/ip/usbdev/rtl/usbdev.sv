@@ -65,6 +65,9 @@ module usbdev (
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
   localparam int RXFifoDepth = 4;
 
+  // Number of endpoints
+  localparam int NEndpoints = usbdev_reg_pkg::NEndpoints;
+
   usbdev_reg2hw_t reg2hw;
   usbdev_hw2reg_t hw2reg;
 
@@ -162,76 +165,50 @@ module usbdev (
   ////////////////////////////////////
   // IN (Transmit) interface config //
   ////////////////////////////////////
-  logic [NBufWidth - 1:0] usb_in_buf [12];
-  logic [SizeWidth:0] usb_in_size [12];
-  logic [3:0]         usb_in_endpoint;
-  logic [11:0] ep_stall, usb_in_rdy;
-  logic [11:0] clear_rdybit, set_sentbit, update_pend;
-  logic        usb_out_clear_rdy, out_clear_rdy, usb_set_sent, set_sent;
-  logic [11:0] enable_setup, enable_out;
+  logic [NBufWidth-1:0]  usb_in_buf [NEndpoints];
+  logic [SizeWidth:0]    usb_in_size [NEndpoints];
+  logic [3:0]            usb_in_endpoint;
+  logic [NEndpoints-1:0] ep_stall, usb_in_rdy;
+  logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
+  logic                  usb_out_clear_rdy, out_clear_rdy, usb_set_sent, set_sent;
+  logic [NEndpoints-1:0] enable_setup, enable_out;
+  logic [NEndpoints-1:0] usb_in_rdy_async;
 
-  assign enable_setup =  {
-      reg2hw.rxenable.setup11.q, reg2hw.rxenable.setup10.q,
-      reg2hw.rxenable.setup9.q, reg2hw.rxenable.setup8.q,
-      reg2hw.rxenable.setup7.q, reg2hw.rxenable.setup6.q,
-      reg2hw.rxenable.setup5.q, reg2hw.rxenable.setup4.q,
-      reg2hw.rxenable.setup3.q, reg2hw.rxenable.setup2.q,
-      reg2hw.rxenable.setup1.q, reg2hw.rxenable.setup0.q};
-  assign enable_out =  {
-      reg2hw.rxenable.out11.q, reg2hw.rxenable.out10.q,
-      reg2hw.rxenable.out9.q, reg2hw.rxenable.out8.q,
-      reg2hw.rxenable.out7.q, reg2hw.rxenable.out6.q,
-      reg2hw.rxenable.out5.q, reg2hw.rxenable.out4.q,
-      reg2hw.rxenable.out3.q, reg2hw.rxenable.out2.q,
-      reg2hw.rxenable.out1.q, reg2hw.rxenable.out0.q};
+  always_comb begin : proc_map_rxenable
+    for (int i = 0; i < NEndpoints; i++) begin
+      enable_setup[i] = reg2hw.rxenable_setup[i].q;
+      enable_out[i] = reg2hw.rxenable_out[i].q;
+    end
+  end
 
   // STALL for both directions
-  assign ep_stall =  {
-      reg2hw.stall.stall11.q, reg2hw.stall.stall10.q,
-      reg2hw.stall.stall9.q, reg2hw.stall.stall8.q,
-      reg2hw.stall.stall7.q, reg2hw.stall.stall6.q,
-      reg2hw.stall.stall5.q, reg2hw.stall.stall4.q,
-      reg2hw.stall.stall3.q, reg2hw.stall.stall2.q,
-      reg2hw.stall.stall1.q, reg2hw.stall.stall0.q};
+  always_comb begin : proc_map_stall
+    for (int i = 0; i < NEndpoints; i++) begin
+      ep_stall[i] = reg2hw.stall[i];
+    end
+  end
 
   // Clock domain crossing fifo for ready bit covers others so assigns are ok
-  assign usb_in_buf[0] = reg2hw.configin0.buffer0.q;
-  assign usb_in_size[0] = reg2hw.configin0.size0.q;
-  assign usb_in_buf[1] = reg2hw.configin1.buffer1.q;
-  assign usb_in_size[1] = reg2hw.configin1.size1.q;
-  assign usb_in_buf[2] = reg2hw.configin2.buffer2.q;
-  assign usb_in_size[2] = reg2hw.configin2.size2.q;
-  assign usb_in_buf[3] = reg2hw.configin3.buffer3.q;
-  assign usb_in_size[3] = reg2hw.configin3.size3.q;
-  assign usb_in_buf[4] = reg2hw.configin4.buffer4.q;
-  assign usb_in_size[4] = reg2hw.configin4.size4.q;
-  assign usb_in_buf[5] = reg2hw.configin5.buffer5.q;
-  assign usb_in_size[5] = reg2hw.configin5.size5.q;
-  assign usb_in_buf[6] = reg2hw.configin6.buffer6.q;
-  assign usb_in_size[6] = reg2hw.configin6.size6.q;
-  assign usb_in_buf[7] = reg2hw.configin7.buffer7.q;
-  assign usb_in_size[7] = reg2hw.configin7.size7.q;
-  assign usb_in_buf[8] = reg2hw.configin8.buffer8.q;
-  assign usb_in_size[8] = reg2hw.configin8.size8.q;
-  assign usb_in_buf[9] = reg2hw.configin9.buffer9.q;
-  assign usb_in_size[9] = reg2hw.configin9.size9.q;
-  assign usb_in_buf[10] = reg2hw.configin10.buffer10.q;
-  assign usb_in_size[10] = reg2hw.configin10.size10.q;
-  assign usb_in_buf[11] = reg2hw.configin11.buffer11.q;
-  assign usb_in_size[11] = reg2hw.configin11.size11.q;
+  always_comb begin : proc_map_buf_size
+    for (int i = 0; i < NEndpoints; i++) begin
+      usb_in_buf[i] = reg2hw.configin[i].buffer.q;
+      usb_in_size[i] = reg2hw.configin[i].size.q;
+    end
+  end
+
+  always_comb begin : proc_map_rdy_reg2hw
+    for (int i = 0; i < NEndpoints; i++) begin
+      usb_in_rdy_async[i] = reg2hw.configin[i].rdy.q;
+    end
+  end
 
   prim_flop_2sync #(
-    .Width(12)
+    .Width(NEndpoints)
   ) usbdev_rdysync (
-    .clk_i (clk_usb_48mhz_i),
+    .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_ni),
-    .d( {reg2hw.configin11.rdy11.q, reg2hw.configin10.rdy10.q,
-         reg2hw.configin9.rdy9.q,   reg2hw.configin8.rdy8.q,
-         reg2hw.configin7.rdy7.q,   reg2hw.configin6.rdy6.q,
-         reg2hw.configin5.rdy5.q,   reg2hw.configin4.rdy4.q,
-         reg2hw.configin3.rdy3.q,   reg2hw.configin2.rdy2.q,
-         reg2hw.configin1.rdy1.q,   reg2hw.configin0.rdy0.q }),
-    .q(usb_in_rdy)
+    .d      (usb_in_rdy_async),
+    .q      (usb_in_rdy)
   );
 
   // Clear of ready and set of sent is a pulse in USB clock domain
@@ -247,24 +224,19 @@ module usbdev (
   );
 
   always_comb begin
-    set_sentbit = 12'b0;
+    set_sentbit = '0;
     if (set_sent) begin
-      // syncronization of set_sent ensures usb_endpoint is stable
+      // synchronization of set_sent ensures usb_endpoint is stable
       set_sentbit[usb_in_endpoint] = 1; // lint: usb_in_endpoint range was checked
     end
   end
-  assign {hw2reg.in_sent.sent11.de,  hw2reg.in_sent.sent10.de,
-         hw2reg.in_sent.sent9.de,   hw2reg.in_sent.sent8.de,
-         hw2reg.in_sent.sent7.de,   hw2reg.in_sent.sent6.de,
-         hw2reg.in_sent.sent5.de,   hw2reg.in_sent.sent4.de,
-         hw2reg.in_sent.sent3.de,   hw2reg.in_sent.sent2.de,
-         hw2reg.in_sent.sent1.de,   hw2reg.in_sent.sent0.de } = set_sentbit;
-  assign {hw2reg.in_sent.sent11.d,  hw2reg.in_sent.sent10.d,
-          hw2reg.in_sent.sent9.d,   hw2reg.in_sent.sent8.d,
-          hw2reg.in_sent.sent7.d,   hw2reg.in_sent.sent6.d,
-          hw2reg.in_sent.sent5.d,   hw2reg.in_sent.sent4.d,
-          hw2reg.in_sent.sent3.d,   hw2reg.in_sent.sent2.d,
-          hw2reg.in_sent.sent1.d,   hw2reg.in_sent.sent0.d } = 12'hfff;
+
+  always_comb begin : proc_map_sent
+    for (int i = 0; i < NEndpoints; i++) begin
+      hw2reg.in_sent[i].de = set_sentbit[i];
+      hw2reg.in_sent[i].d  = 1'b1;
+    end
+  end
 
   prim_pulse_sync usbdev_outrdyclr (
     .clk_src_i   (clk_usb_48mhz_i),
@@ -286,50 +258,32 @@ module usbdev (
   end
 
   always_comb begin
-    clear_rdybit = 12'b0;
-    update_pend  = 12'b0;
+    clear_rdybit = '0;
+    update_pend  = '0;
     if (event_link_reset && !event_link_reset_q) begin
-      clear_rdybit = 12'hfff;
-      update_pend  = 12'hfff;
+      clear_rdybit = {NEndpoints{1'b1}};
+      update_pend  = {NEndpoints{1'b1}};
     end else begin
       clear_rdybit[usb_in_endpoint] = set_sent | out_clear_rdy;  // lint: usb_in_endpoint range was checked
       update_pend[usb_in_endpoint]  = out_clear_rdy;  // lint: usb_in_endpoint range was checked
     end
   end
-  assign {hw2reg.configin11.rdy11.de, hw2reg.configin10.rdy10.de,
-          hw2reg.configin9.rdy9.de,   hw2reg.configin8.rdy8.de,
-          hw2reg.configin7.rdy7.de,   hw2reg.configin6.rdy6.de,
-          hw2reg.configin5.rdy5.de,   hw2reg.configin4.rdy4.de,
-          hw2reg.configin3.rdy3.de,   hw2reg.configin2.rdy2.de,
-          hw2reg.configin1.rdy1.de,   hw2reg.configin0.rdy0.de } = clear_rdybit;
 
-  assign {hw2reg.configin11.rdy11.d, hw2reg.configin10.rdy10.d,
-          hw2reg.configin9.rdy9.d,   hw2reg.configin8.rdy8.d,
-          hw2reg.configin7.rdy7.d,   hw2reg.configin6.rdy6.d,
-          hw2reg.configin5.rdy5.d,   hw2reg.configin4.rdy4.d,
-          hw2reg.configin3.rdy3.d,   hw2reg.configin2.rdy2.d,
-          hw2reg.configin1.rdy1.d,   hw2reg.configin0.rdy0.d } = 12'b0;
+  always_comb begin : proc_map_rdy_hw2reg
+    for (int i = 0; i < NEndpoints; i++) begin
+      hw2reg.configin[i].rdy.de = clear_rdybit[i];
+      hw2reg.configin[i].rdy.d  = 1'b0;
+    end
+  end
+
 
   // Update the pending bit by copying the ready bit that is about to clear
-  assign {hw2reg.configin11.pend11.de, hw2reg.configin10.pend10.de,
-          hw2reg.configin9.pend9.de,   hw2reg.configin8.pend8.de,
-          hw2reg.configin7.pend7.de,   hw2reg.configin6.pend6.de,
-          hw2reg.configin5.pend5.de,   hw2reg.configin4.pend4.de,
-          hw2reg.configin3.pend3.de,   hw2reg.configin2.pend2.de,
-          hw2reg.configin1.pend1.de,   hw2reg.configin0.pend0.de } = update_pend;
-
-  assign hw2reg.configin11.pend11.d = reg2hw.configin11.rdy11.q | reg2hw.configin11.pend11.q;
-  assign hw2reg.configin10.pend10.d = reg2hw.configin10.rdy10.q | reg2hw.configin10.pend10.q;
-  assign hw2reg.configin9.pend9.d   = reg2hw.configin9.rdy9.q   | reg2hw.configin9.pend9.q;
-  assign hw2reg.configin8.pend8.d   = reg2hw.configin8.rdy8.q   | reg2hw.configin8.pend8.q;
-  assign hw2reg.configin7.pend7.d   = reg2hw.configin7.rdy7.q   | reg2hw.configin7.pend7.q;
-  assign hw2reg.configin6.pend6.d   = reg2hw.configin6.rdy6.q   | reg2hw.configin6.pend6.q;
-  assign hw2reg.configin5.pend5.d   = reg2hw.configin5.rdy5.q   | reg2hw.configin5.pend5.q;
-  assign hw2reg.configin4.pend4.d   = reg2hw.configin4.rdy4.q   | reg2hw.configin4.pend4.q;
-  assign hw2reg.configin3.pend3.d   = reg2hw.configin3.rdy3.q   | reg2hw.configin3.pend3.q;
-  assign hw2reg.configin2.pend2.d   = reg2hw.configin2.rdy2.q   | reg2hw.configin2.pend2.q;
-  assign hw2reg.configin1.pend1.d   = reg2hw.configin1.rdy1.q   | reg2hw.configin1.pend1.q;
-  assign hw2reg.configin0.pend0.d   = reg2hw.configin0.rdy0.q   | reg2hw.configin0.pend0.q;
+  always_comb begin : proc_map_pend
+    for (int i = 0; i < NEndpoints; i++) begin
+      hw2reg.configin[i].pend.de = update_pend[i];
+      hw2reg.configin[i].pend.d  = reg2hw.configin[i].rdy.q | reg2hw.configin[i].pend.q;
+    end
+  end
 
   ////////////////////////////////////////////////////////
   // USB interface -- everything is in USB clock domain //
@@ -441,7 +395,8 @@ module usbdev (
   logic        unused_mem_a_rerror_d;
 
   tlul_adapter_sram #(
-    .SramAw(SramAw)
+    .SramAw(SramAw),
+    .ByteAccess(0)
   ) u_tlul2sram (
     .clk_i,
     .rst_ni,
@@ -509,7 +464,8 @@ module usbdev (
     .tl_win_i (tl_sram_d2h),
 
     .reg2hw,
-    .hw2reg
+    .hw2reg,
+    .devmode_i (1'b1)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_pkt_received (
