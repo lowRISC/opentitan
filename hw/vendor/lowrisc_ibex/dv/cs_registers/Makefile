@@ -22,14 +22,6 @@ LDFLAGS  = -shared
 
 CC       = $(CXX)
 
-# Reg TB specific parameters / defines
-PMP_ENABLE = 1
-PMP_NUM_REGIONS = 4
-PMP_GRANULARITY = 0
-
-CFLAGS += -DPMP_ENABLE=$(PMP_ENABLE) -DPMP_NUM_REGIONS=$(PMP_NUM_REGIONS)
-CFLAGS += -DPMP_GRANULARITY=$(PMP_GRANULARITY)
-
 # Add svdpi include
 TOOLDIR = $(subst bin/$(TOOL),,$(shell which $(TOOL)))
 ifeq ($(TOOL),vcs)
@@ -43,9 +35,7 @@ endif
 all: build
 
 build: $(BINDIR)/$(SO_NAME)
-	fusesoc --cores-root=../../ run --setup --build --target=sim --tool=$(TOOL) \
-      lowrisc:ibex:tb_cs_registers --PMPEnable \
-      --PMPNumRegions=$(PMP_NUM_REGIONS) --PMPGranularity=$(PMP_GRANULARITY)
+	@echo "Build done"
 
 $(BINDIR)/$(SO_NAME): buildrepo $(OBJS)
 	@mkdir -p `dirname $@`

@@ -45,6 +45,7 @@ jobs:
           flex \
           bison \
           curl \
+          libelf-dev \
         && sudo pip3 install -U six fusesoc
     displayName: Install dependencies
 
@@ -114,7 +115,7 @@ jobs:
       export RISCV_TARGET=ibex
       export RISCV_DEVICE=rv32imc
       fail=0
-      for isa in rv32i rv32im rv32imc rv32Zicsr; do
+      for isa in rv32i rv32im rv32imc rv32Zicsr rv32Zifencei; do
         make -C build/riscv-compliance RISCV_ISA=$isa 2>&1 | tee run.log
         if [ ${PIPESTATUS[0]} != 0 ]; then
           echo -n "##vso[task.logissue type=error]"

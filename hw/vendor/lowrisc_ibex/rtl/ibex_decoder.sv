@@ -490,20 +490,36 @@ module ibex_decoder #(
       /////////////
 
       OPCODE_MISC_MEM: begin
-        // For now, treat the fence (funct3 == 000) instruction as a nop.
-        // This may not be correct in a system with caches and should be
-        // revisited.
-        // fence.i (funct3 == 001) was moved to a separate Zifencei extension
-        // in the RISC-V ISA spec proposed for ratification, so we treat it as
-        // an illegal instruction.
-        if (instr[14:12] == 3'b000) begin
-          alu_operator_o     = ALU_ADD; // nop
-          alu_op_a_mux_sel_o = OP_A_REG_A;
-          alu_op_b_mux_sel_o = OP_B_IMM;
-          regfile_we         = 1'b0;
-        end else begin
-          illegal_insn       = 1'b1;
-        end
+        // For now, treat the FENCE (funct3 == 000) instruction as a NOP.  This may not be correct
+        // in a system with caches and should be revisited.
+        // FENCE.I will flush the IF stage and prefetch buffer but nothing else.
+        unique case (instr[14:12])
+          3'b000: begin
+            alu_operator_o     = ALU_ADD; // nop
+            alu_op_a_mux_sel_o = OP_A_REG_A;
+            alu_op_b_mux_sel_o = OP_B_IMM;
+            regfile_we         = 1'b0;
+          end
+          3'b001: begin
+            // FENCE.I is implemented as a jump to the next PC, this gives the required flushing
+            // behaviour (iside prefetch buffer flushed and response to any outstanding iside
+            // requests will be ignored).
+            jump_in_dec_o      = 1'b1;
+
+            alu_op_a_mux_sel_o = OP_A_CURRPC;
+            alu_op_b_mux_sel_o = OP_B_IMM;
+            imm_b_mux_sel_o    = IMM_B_INCR_PC;
+            alu_operator_o     = ALU_ADD;
+            regfile_we         = 1'b0;
+
+            if (instr_new_i) begin
+              jump_set_o       = 1'b1;
+            end
+          end
+          default: begin
+            illegal_insn       = 1'b1;
+          end
+        endcase
       end
 
       OPCODE_SYSTEM: begin

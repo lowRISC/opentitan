@@ -6,11 +6,11 @@
 
 #include <iostream>
 
-RegisterModel::RegisterModel(SimCtrl *sc) : simctrl_(sc) {
+RegisterModel::RegisterModel(SimCtrl *sc, CSRParams *params) : simctrl_(sc) {
   // Instantiate all the registers
-  for (int i = 0; i < 4; i++) {
+  for (unsigned int i = 0; i < 4; i++) {
     uint32_t reg_addr = 0x3A0 + i;
-    if (PMP_ENABLE && (i < (PMP_NUM_REGIONS / 4))) {
+    if (params->PMPEnable && (i < (params->PMPNumRegions / 4))) {
       register_map_.push_back(
           std::make_unique<PmpCfgRegister>(reg_addr, &register_map_));
     } else {
@@ -18,9 +18,9 @@ RegisterModel::RegisterModel(SimCtrl *sc) : simctrl_(sc) {
           std::make_unique<NonImpRegister>(reg_addr, &register_map_));
     }
   }
-  for (int i = 0; i < 16; i++) {
+  for (unsigned int i = 0; i < 16; i++) {
     uint32_t reg_addr = 0x3B0 + i;
-    if (PMP_ENABLE && (i < PMP_NUM_REGIONS)) {
+    if (params->PMPEnable && (i < params->PMPNumRegions)) {
       register_map_.push_back(
           std::make_unique<PmpAddrRegister>(reg_addr, &register_map_));
     } else {

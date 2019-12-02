@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "register_environment.h"
+#include "register_types.h"
 
 #include "svdpi.h"
 
@@ -15,9 +16,15 @@ extern "C" {
 
 RegisterEnvironment *reg_env;
 
-void env_initial(svBitVecVal *seed) {
+void env_initial(svBitVecVal *seed, svBit PMPEnable,
+                 svBitVecVal *PMPGranularity, svBitVecVal *PMPNumRegions) {
+  // Package up parameters
+  CSRParams params;
+  params.PMPEnable = PMPEnable;
+  params.PMPGranularity = *PMPGranularity;
+  params.PMPNumRegions = *PMPNumRegions;
   // Create TB environment
-  reg_env = new RegisterEnvironment();
+  reg_env = new RegisterEnvironment(params);
 
   // Initial setup
   reg_env->OnInitial(*seed);

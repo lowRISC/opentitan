@@ -75,8 +75,7 @@ RISCV_DV_OPTS=--custom_target=${DV_DIR}/riscv_dv_extension \
 # Generate random instructions
 .SILENT gen:
 	mkdir -p ${OUT}
-	cd ${GEN_DIR}; \
-	python3 ./run.py \
+	python3 ${GEN_DIR}/run.py \
      --output=${OUT}/instr_gen ${GEN_OPTS} \
      --steps=gen \
      --gen_timeout=${TIMEOUT} \
@@ -90,8 +89,7 @@ RISCV_DV_OPTS=--custom_target=${DV_DIR}/riscv_dv_extension \
 
 # Compile the generated assmebly programs to ELF/BIN
 gcc_compile:
-	cd ${GEN_DIR}; \
-	python3 ./run.py \
+	python3 ${GEN_DIR}/run.py \
      --o=${OUT}/instr_gen ${GEN_OPTS} \
      --steps=gcc_compile \
      ${COMMON_OPTS} \
@@ -100,8 +98,7 @@ gcc_compile:
 
 # ISS simulation
 iss_sim:
-	cd ${GEN_DIR}; \
-	python3 ./run.py \
+	python3 ${GEN_DIR}/run.py \
      --o=${OUT}/instr_gen ${GEN_OPTS} \
      --steps=iss_sim \
      ${COMMON_OPTS} \
@@ -113,6 +110,7 @@ compile:
 	mkdir -p ${OUT}/rtl_sim
 	python3 ./sim.py \
      --o=${OUT} \
+     --riscv_dv_root=${GEN_DIR} \
      --steps=compile \
      ${COMMON_OPTS} \
      --simulator=${SIMULATOR} \
@@ -124,6 +122,7 @@ rtl_sim:
 	mkdir -p ${OUT}/rtl_sim
 	python3 ./sim.py \
      --o=${OUT} \
+     --riscv_dv_root=${GEN_DIR} \
      --steps=sim \
      ${COMMON_OPTS} \
      --simulator=${SIMULATOR} \

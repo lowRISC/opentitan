@@ -83,6 +83,12 @@ def process_ibex_sim_log(ibex_log, csv, full_trace = 1):
                         rv_instr_trace.rs1 = n.group("rs1")
                         rv_instr_trace.rs1_val = gpr[rv_instr_trace.rs1]
                         rv_instr_trace.imm = get_imm_hex_val(n.group("imm"))
+                    elif rv_instr_trace.instr in ['c.jal']:
+                      rv_instr_trace.imm = get_imm_hex_val("0x" + operands[0])
+                    elif rv_instr_trace.instr in ['jal']:
+                      rv_instr_trace.rd = operands[0]
+                      rv_instr_trace.rd_val = gpr[rv_instr_trace.rd]
+                      rv_instr_trace.imm = get_imm_hex_val("0x" + operands[1])
                     else:
                       assign_operand(rv_instr_trace, operands, gpr)
 

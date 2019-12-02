@@ -109,7 +109,6 @@ def collect_cov(log_dir, out, core, iss, testlist, batch_size, lsf_cmd, steps, \
       base_sim_cmd += (" --custom_target %s" % custom_target)
     logging.info("Building the coverage collection framework")
     output = run_cmd(build_cmd)
-    check_simulator_return(output, simulator, stop_on_first_error)
     file_idx = 0
     trace_idx = 0
     trace_csv_opts = ""
@@ -133,7 +132,6 @@ def collect_cov(log_dir, out, core, iss, testlist, batch_size, lsf_cmd, steps, \
         if lsf_cmd == "":
           logging.info("Processing batch %0d/%0d" % (file_idx+1, batch_cnt))
           run_cmd(sim_cmd)
-          check_simulator_return(output, simulator, stop_on_first_error)
         else:
           sim_cmd += (" --lsf_cmd \"%s\"" % lsf_cmd)
           sim_cmd_list.append(sim_cmd)

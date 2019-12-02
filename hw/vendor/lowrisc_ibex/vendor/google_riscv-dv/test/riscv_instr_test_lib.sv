@@ -31,7 +31,7 @@ class riscv_rand_instr_test extends riscv_instr_base_test;
   virtual function void apply_directed_instr();
     // Mix below directed instructino streams with the random instructions
     asm_gen.add_directed_instr_stream("riscv_load_store_rand_instr_stream", 4);
-    asm_gen.add_directed_instr_stream("riscv_loop_instr", 4);
+    asm_gen.add_directed_instr_stream("riscv_loop_instr", 3);
     asm_gen.add_directed_instr_stream("riscv_jal_instr", 4);
     asm_gen.add_directed_instr_stream("riscv_hazard_instr_stream", 4);
     asm_gen.add_directed_instr_stream("riscv_load_store_hazard_instr_stream", 4);

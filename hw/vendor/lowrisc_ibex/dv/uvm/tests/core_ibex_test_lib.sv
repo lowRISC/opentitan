@@ -389,6 +389,17 @@ class core_ibex_directed_test extends core_ibex_debug_intr_basic_test;
   // Checker functions/tasks that might be commonly used
   //------------------------------------------------------
 
+  // Illegal instruction checker
+  virtual task check_illegal_insn(string exception_msg);
+    check_next_core_status(HANDLING_EXCEPTION, "Core did not jump to vectored exception handler", 1000);
+    check_priv_mode(PRIV_LVL_M);
+    check_next_core_status(ILLEGAL_INSTR_EXCEPTION, exception_msg, 500);
+    check_mcause(1'b0, EXC_CAUSE_ILLEGAL_INSN);
+    wait (dut_vif.mret === 1'b1);
+    clk_vif.wait_clks(5);
+    check_priv_mode(operating_mode);
+  endtask
+
   // compares dcsr.ebreak against the privilege mode encoded in dcsr.prv
   virtual function check_dcsr_ebreak();
     // dcsr.prv is the bottom two bits.
@@ -530,15 +541,7 @@ class core_ibex_dret_test extends core_ibex_directed_test;
   virtual task check_stimulus();
     forever begin
       wait (dut_vif.dret === 1'b1);
-      // After hitting a dret, the core will jump to the vectored trap handler, which sends a
-      // handshake write to the bench
-      check_next_core_status(HANDLING_EXCEPTION, "Core did not jump to vectored exception handler",
-                             1000);
-      // The core will receive an illegal instruction handshake after jumping from the vectored trap
-      // handler to the illegal instruction exception handler
-      check_next_core_status(ILLEGAL_INSTR_EXCEPTION,
-                             "Core did not treat dret like illegal instruction", 500);
-      check_mcause(1'b0, EXC_CAUSE_ILLEGAL_INSN);
+      check_illegal_insn("Core did not treat dret like illegal instruction");
     end
   endtask
 
@@ -781,12 +784,24 @@ class core_ibex_umode_tw_test extends core_ibex_directed_test;
     bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mcause;
     forever begin
       wait (dut_vif.wfi === 1'b1);
-      check_next_core_status(HANDLING_EXCEPTION, "Core not jump to exception handler on WFI", 500);
-      check_priv_mode(PRIV_LVL_M);
-      check_next_core_status(ILLEGAL_INSTR_EXCEPTION, "Core did not treat U-mode WFI as illegal",
-                             500);
-      check_mcause(1'b0, EXC_CAUSE_ILLEGAL_INSN);
-      wait (dut_vif.mret === 1'b1);
+      check_illegal_insn("Core did not treat U-mode WFI as illegal");
+    end
+  endtask
+
+endclass
+
+// Priv-mode CSR access test
+class core_ibex_invalid_csr_test extends core_ibex_directed_test;
+
+  `uvm_component_utils(core_ibex_invalid_csr_test)
+  `uvm_component_new
+
+  virtual task check_stimulus();
+    forever begin
+      // Wait for a CSR access
+      wait (csr_vif.csr_access == 1'b1);
+      check_illegal_insn($sformatf("Core did not treat access to CSR 0x%0x from %0s as illegal",
+                                   csr_vif.csr_addr, operating_mode));
     end
   endtask
 

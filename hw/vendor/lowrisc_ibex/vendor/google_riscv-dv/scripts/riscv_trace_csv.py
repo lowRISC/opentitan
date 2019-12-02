@@ -209,8 +209,6 @@ def get_imm_hex_val(imm):
     imm = imm[1:]
   else:
     is_negative = 0
-  if len(imm) > 1 and imm[1] != 'x':
-    imm = "0x"+imm
   imm_val = int(imm, 0)
   if is_negative:
     imm_val = -imm_val

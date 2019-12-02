@@ -50,6 +50,10 @@ In addition, the following instruction set extensions are available.
      - 2.0
      - always enabled
 
+   * - **Zifencei**: Instruction-Fetch Fence
+     - 2.0
+     - always enabled
+
 Most content of the RISC-V privileged specification is optional.
 Ibex currently supports the following features according to the RISC-V Privileged Specification, version 1.11.
 

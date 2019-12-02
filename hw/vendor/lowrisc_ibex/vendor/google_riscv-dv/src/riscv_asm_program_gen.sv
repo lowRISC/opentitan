@@ -340,7 +340,7 @@ class riscv_asm_program_gen extends uvm_object;
       init_floating_point_gpr();
     end
     core_is_initialized();
-    gen_dummy_csr_write(); // comment out if not want to read incorrect values from csr
+    gen_dummy_csr_write();
   endfunction
 
   // Setup MISA based on supported extensions
@@ -389,31 +389,36 @@ class riscv_asm_program_gen extends uvm_object;
   // repeated writes to these CSRs.
   virtual function void gen_dummy_csr_write();
     string instr[$];
-    case (cfg.init_privileged_mode)
-      MACHINE_MODE: begin
-        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], MSTATUS));
-        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], MIE));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", MSTATUS, cfg.gpr[0]));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", MIE, cfg.gpr[1]));
-      end
-      SUPERVISOR_MODE: begin
-        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], SSTATUS));
-        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], SIE));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", SSTATUS, cfg.gpr[0]));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", SIE, cfg.gpr[1]));
-      end
-      USER_MODE: begin
-        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], USTATUS));
-        instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], UIE));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", USTATUS, cfg.gpr[0]));
-        instr.push_back($sformatf("csrw 0x%0x, x%0d", UIE, cfg.gpr[1]));
-      end
-      default: begin
-        `uvm_fatal(`gfn, "Unsupported boot mode")
-      end
-    endcase
-    format_section(instr);
-    instr_stream = {instr_stream, instr};
+    if (cfg.enable_dummy_csr_write) begin
+      case (cfg.init_privileged_mode)
+        MACHINE_MODE: begin
+          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], MSTATUS));
+          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], MIE));
+          instr.push_back($sformatf("csrw 0x%0x, x%0d", MSTATUS, cfg.gpr[0]));
+          instr.push_back($sformatf("csrw 0x%0x, x%0d", MIE, cfg.gpr[1]));
+        end
+        SUPERVISOR_MODE: begin
+          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], SSTATUS));
+          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], SIE));
+          instr.push_back($sformatf("csrw 0x%0x, x%0d", SSTATUS, cfg.gpr[0]));
+          instr.push_back($sformatf("csrw 0x%0x, x%0d", SIE, cfg.gpr[1]));
+        end
+        USER_MODE: begin
+          if (!riscv_instr_pkg::support_umode_trap) begin
+            return;
+          end
+          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], USTATUS));
+          instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[1], UIE));
+          instr.push_back($sformatf("csrw 0x%0x, x%0d", USTATUS, cfg.gpr[0]));
+          instr.push_back($sformatf("csrw 0x%0x, x%0d", UIE, cfg.gpr[1]));
+        end
+        default: begin
+          `uvm_fatal(`gfn, "Unsupported boot mode")
+        end
+      endcase
+      format_section(instr);
+      instr_stream = {instr_stream, instr};
+    end
   endfunction
 
   // Initialize general purpose registers with random value
@@ -529,10 +534,6 @@ class riscv_asm_program_gen extends uvm_object;
         // Want to write the main system CSRs to the testbench before indicating that initialization
         // is complete, for any initial state analysis
         case(riscv_instr_pkg::supported_privileged_mode[i])
-          MACHINE_MODE: begin
-            gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(MSTATUS));
-            gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(MIE));
-          end
           SUPERVISOR_MODE: begin
             gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(SSTATUS));
             gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(SIE));
@@ -542,6 +543,9 @@ class riscv_asm_program_gen extends uvm_object;
             gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(UIE));
           end
         endcase
+        // Write M-mode CSRs to testbench by default, as these should be implemented
+        gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(MSTATUS));
+        gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(MIE));
         format_section(csr_handshake);
         instr = {instr, csr_handshake, ret_instr};
       end
@@ -1108,6 +1112,9 @@ class riscv_asm_program_gen extends uvm_object;
         // It is followed by a second write to the signature address,
         // containing the data stored in the specified CSR.
         WRITE_CSR: begin
+          if (!(csr inside {implemented_csr})) begin
+            return;
+          end
           str = {$sformatf("li x%0d, 0x%0h", cfg.gpr[0], csr),
                  $sformatf("slli x%0d, x%0d, 8", cfg.gpr[0], cfg.gpr[0]),
                  $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0],

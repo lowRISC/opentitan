@@ -4,9 +4,10 @@
 
 #include "register_environment.h"
 
-RegisterEnvironment::RegisterEnvironment()
-    : simctrl_(new SimCtrl()),
-      reg_model_(new RegisterModel(simctrl_)),
+RegisterEnvironment::RegisterEnvironment(CSRParams params)
+    : params_(params),
+      simctrl_(new SimCtrl()),
+      reg_model_(new RegisterModel(simctrl_, &params_)),
       reg_driver_(new RegisterDriver("reg_driver", reg_model_, simctrl_)),
       rst_driver_(new ResetDriver("rstn_driver")) {}
 

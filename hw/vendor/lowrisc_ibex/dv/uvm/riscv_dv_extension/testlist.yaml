@@ -82,6 +82,7 @@
     +directed_instr_0=riscv_load_store_rand_instr_stream,40
     +directed_instr_1=riscv_load_store_hazard_instr_stream,40
     +directed_instr_2=riscv_multi_page_load_store_instr_stream,40
+    +directed_instr_3=riscv_load_store_rand_addr_instr_stream,40
   rtl_test: core_ibex_base_test
 
 - test: riscv_illegal_instr_test
@@ -279,6 +280,7 @@
     +require_signature_addr=1
     +gen_debug_section=1
     +randomize_csr=1
+    +enable_dummy_csr_write=1
     +boot_mode=m
   rtl_test: core_ibex_debug_csr_test
   sim_opts: >
@@ -331,6 +333,7 @@
     +require_signature_addr=1
     +enable_interrupt=1
     +randomize_csr=1
+    +enable_dummy_csr_write=1
     +boot_mode=m
   rtl_test: core_ibex_irq_csr_test
   sim_opts: >
@@ -471,6 +474,25 @@
     +num_of_sub_program=0
     +boot_mode=u
   rtl_test: core_ibex_umode_tw_test
+  sim_ops: >
+    +require_signature_addr=1
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
+
+# TODO: Only enable U-mode booting for right now, as OVPsim doesn't support some debug CSRs
+- test: riscv_invalid_csr_test
+  desc: >
+    Boot core into random priv mode and generate csr accesses to invalid CSRs (at a higher priv mode)
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=6000
+    +num_of_sub_program=0
+    +no_csr_instr=0
+    +enable_access_invalid_csr_level=1
+    +boot_mode=u
+  rtl_test: core_ibex_invalid_csr_test
+  sim_opts: >
+    +require_signature_addr=1

@@ -13,7 +13,7 @@ class riscv_instr_cov_test extends uvm_test;
   int unsigned              entry_cnt;
   int unsigned              total_entry_cnt;
   int unsigned              skipped_cnt;
-  int unsigned              illegal_instr_cnt;
+  int unsigned              unexpected_illegal_instr_cnt;
 
   `uvm_component_utils(riscv_instr_cov_test)
   `uvm_component_new
@@ -46,8 +46,12 @@ class riscv_instr_cov_test extends uvm_test;
     instr_cg = new(cfg);
     `uvm_info(`gfn, $sformatf("%0d CSV trace files to be processed", trace_csv.size()), UVM_LOW)
     foreach (trace_csv[i]) begin
+      bit expect_illegal_instr;
       entry_cnt = 0;
       instr_cg.reset();
+      if (uvm_is_match("*illegal*", trace_csv[i])) begin
+        expect_illegal_instr = 1;
+      end
       `uvm_info(`gfn, $sformatf("Processing CSV trace[%0d]: %s", i, trace_csv[i]), UVM_LOW)
       fd = $fopen(trace_csv[i], "r");
       if (fd) begin
@@ -77,9 +81,17 @@ class riscv_instr_cov_test extends uvm_test;
               // TODO: Enable functional coverage for AMO test
               continue;
             end
+            `uvm_info(`gfn, $sformatf("Processing line[%0d] : %0s",
+                            entry_cnt, trace["str"]), UVM_FULL)
             if (!sample()) begin
-             `uvm_info(`gfn, $sformatf("Found illegal instr: %0s [%0s]",
-                             trace["instr"], line), UVM_LOW)
+              if (expect_illegal_instr) begin
+                `uvm_info(`gfn, $sformatf("Found illegal instr: %0s [%0s]",
+                                trace["instr"], line), UVM_HIGH)
+              end else begin
+                unexpected_illegal_instr_cnt += 1;
+                `uvm_error(`gfn, $sformatf("Found illegal instr: %0s [%0s]",
+                                 trace["instr"], line))
+              end
             end
           end
           entry_cnt += 1;
@@ -93,12 +105,9 @@ class riscv_instr_cov_test extends uvm_test;
     end
     `uvm_info(`gfn, $sformatf("Finished processing %0d trace CSV, %0d instructions",
                      trace_csv.size(), total_entry_cnt), UVM_LOW)
-    if ((skipped_cnt > 0) || (illegal_instr_cnt > 0)) begin
+    if ((skipped_cnt > 0) || (unexpected_illegal_instr_cnt > 0)) begin
       `uvm_error(`gfn, $sformatf("%0d instructions skipped, %0d illegal instruction",
-                       skipped_cnt, illegal_instr_cnt))
-
-    end else begin
-      `uvm_info(`gfn, "TEST PASSED", UVM_NONE);
+                       skipped_cnt, unexpected_illegal_instr_cnt))
     end
   endtask
 
@@ -127,7 +136,6 @@ class riscv_instr_cov_test extends uvm_test;
                                  val[6:2], trace["instr_str"]), UVM_LOW)
       instr_cg.opcode_cg.sample(val[6:2]);
     end
-    illegal_instr_cnt++;
     return 1'b0;
   endfunction
 
@@ -240,6 +248,25 @@ class riscv_instr_cov_test extends uvm_test;
       end
       i++;
     end
+  endfunction
+
+  function void report_phase(uvm_phase phase);
+    uvm_report_server rs;
+    int error_count;
+
+    rs = uvm_report_server::get_server();
+
+    error_count = rs.get_severity_count(UVM_WARNING) +
+                  rs.get_severity_count(UVM_ERROR) +
+                  rs.get_severity_count(UVM_FATAL);
+
+    if (error_count == 0) begin
+      `uvm_info("", "TEST PASSED", UVM_NONE);
+    end else begin
+      `uvm_info("", "TEST FAILED", UVM_NONE);
+    end
+    `uvm_info("", "TEST GENERATION DONE", UVM_NONE);
+    super.report_phase(phase);
   endfunction
 
 endclass

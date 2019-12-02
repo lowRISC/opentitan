@@ -471,6 +471,7 @@ class riscv_instr_base extends uvm_object;
       has_rs1 = 1'b1;
     end else if (instr_name inside {C_JR, C_JALR}) begin
       has_rs1 = 1'b1;
+      has_rs2 = 1'b0;
     end
     if (!(format inside {CJ_FORMAT, CB_FORMAT, CS_FORMAT, CSS_FORMAT, B_FORMAT, S_FORMAT})) begin
       has_rd = 1'b1;
@@ -609,11 +610,15 @@ class riscv_instr_base extends uvm_object;
   endfunction
 
   function void gen_rand_csr(bit illegal_csr_instr = 0,
+                             bit legal_invalid_csr_instr = 0,
+                             privileged_reg_t invalid_csrs[$] = {},
                              bit enable_floating_point = 0,
                              privileged_mode_t privileged_mode = MACHINE_MODE);
     privileged_reg_t preg[$];
     if (illegal_csr_instr) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(csr, !(csr inside {implemented_csr});)
+    end else if (legal_invalid_csr_instr) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(csr, csr inside {invalid_csrs};)
     end else begin
       // Use scratch register to avoid the side effect of modifying other privileged mode CSR.
       if (privileged_mode == MACHINE_MODE)
