@@ -7,12 +7,12 @@ module gpiodpi
   parameter string NAME = "gpio0",
   parameter        N_GPIO = 32
 )(
-  input               clk_i,
-  input               rst_ni,
+  input  logic              clk_i,
+  input  logic              rst_ni,
 
-  output [N_GPIO-1:0] gpio_p2d,
-  input [N_GPIO-1:0]  gpio_d2p,
-  input [N_GPIO-1:0]  gpio_en_d2p
+  output logic [N_GPIO-1:0] gpio_p2d,
+  input  logic [N_GPIO-1:0] gpio_d2p,
+  input  logic [N_GPIO-1:0] gpio_en_d2p
 );
    import "DPI-C" function
      chandle gpiodpi_create(input string name, input int n_bits);
