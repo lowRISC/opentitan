@@ -42,6 +42,12 @@ if dev_bin_dir == 'undef' or host_bin_dir == 'undef'
   error('dev_bin_dir option not set. Please run meson with a valid binary directory option.')
 endif
 
+# C Arguments to optimize for size
+optimize_size_args = [
+  '-Os', # General "Optimize for Size" Option
+  '-fvisibility=hidden', # Hide symbols by default
+]
+
 # The following flags are applied to *all* builds, both cross builds
 # and native builds.
 add_project_arguments(
@@ -64,22 +70,22 @@ add_project_arguments(
 
 # The following flags are applied only to cross builds
 add_project_arguments(
+  # Do not use standard system startup files or libraries
   '-nostartfiles', '-nostdlib',
-  '-Os',
-  '-static',
-  '-fvisibility=hidden',
+  '-static', # Only link static files
+  optimize_size_args,
   language: 'cpp', native: false)
 add_project_arguments(
+  # Do not use standard system startup files or libraries
   '-nostartfiles', '-nostdlib',
-  '-Os',
-  '-static',
-  '-fvisibility=hidden',
+  '-static', # Only link static files
+  optimize_size_args,
   language: 'c', native: false)
 add_project_link_arguments(
-  '-nostdlib',
+  '-nostdlib', # Do not use standard system startup files or libraries
   language: 'cpp', native: false)
 add_project_link_arguments(
-  '-nostdlib',
+  '-nostdlib', # Do not use standard system startup files or libraries
   language: 'c', native: false)
 
 # Common program references.
