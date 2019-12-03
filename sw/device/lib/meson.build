@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('base')
+subdir('dif')
 
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(
@@ -134,7 +135,10 @@ sw_lib_spi_device = declare_dependency(
     sources: [
       hw_ip_spi_device_reg_h,
       'spi_device.c',
-    ]
+    ],
+    dependencies: [
+      sw_dif_spi_device,
+    ],
   )
 )
 
