@@ -45,9 +45,9 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   // reduce state space by reducing length of wait period
   `ASSUME_FPV(WaitPeriod_M, wait_cyc_mask_i == 7, clk_i, !rst_ni)
 
-  ////////////////
-  // Assertions //
-  ////////////////
+  ////////////////////////
+  // Forward Assertions //
+  ////////////////////////
 
   // no pings on disabled alerts
   `ASSERT(DisabledNoAlertPings_A, ((~alert_en_i) & alert_ping_en_o) == 0, clk_i, !rst_ni)
@@ -67,8 +67,29 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
       ping_ok_vector[ping_en_sel] && ping_en_sel >= NAlerts |->
       esc_ping_fail_o, clk_i, !rst_ni)
   // response must be one hot
- `ASSERT(SpuriousPingsDetected2_A, en_i && !$onehot0(ping_ok_vector) |->
+  `ASSERT(SpuriousPingsDetected2_A, en_i && !$onehot0(ping_ok_vector) |->
       esc_ping_fail_o || alert_ping_fail_o, clk_i, !rst_ni)
+
+  /////////////////////////
+  // Backward Assertions //
+  /////////////////////////
+
+  // no pings when not enabled
+  `ASSERT(NoPingsWhenDisabledBkwd0_A, alert_ping_en_o |-> en_i, clk_i, !rst_ni)
+  `ASSERT(NoPingsWhenDisabledBkwd1_A, esc_ping_en_o   |-> en_i, clk_i, !rst_ni)
+
+  // spurious pings (i.e. pings that where not requested)
+  // on alert channels
+  `ASSERT(SpuriousPingsDetectedBkwd0_A, !alert_ping_fail_o |->
+      !en_i || ping_en_vector[ping_en_sel] ||
+      !ping_ok_vector[ping_en_sel] || ping_en_sel >= NAlerts, clk_i, !rst_ni)
+  // on escalation channels
+  `ASSERT(SpuriousPingsDetectedBkwd1_A, !esc_ping_fail_o |->
+      !en_i || ping_en_vector[ping_en_sel] ||
+      !ping_ok_vector[ping_en_sel] || ping_en_sel < NAlerts, clk_i, !rst_ni)
+  // response must be one hot
+  `ASSERT(SpuriousPingsDetectedBkwd2_A, !esc_ping_fail_o && !alert_ping_fail_o |->
+      !en_i || $onehot0(ping_ok_vector), clk_i, !rst_ni)
 
   //////////////////////////////////////////////////////////
   // Currently not Tested in FPV due to large state space //
