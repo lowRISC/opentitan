@@ -39,6 +39,12 @@
   }
 }
 
+@media print {
+  .skip-link, .main-header {
+    display: none;
+  }
+}
+
 .logo {
   font-size: 1em;
   width: 12.5em;
