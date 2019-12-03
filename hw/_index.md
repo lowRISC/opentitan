@@ -16,7 +16,7 @@ This includes: top level specification(s); processor core(s) specifications; and
 | Module | Design Spec | DV Plan |
 |--------|-------------|---------|
 | `aes`           | [design spec]({{< relref "hw/ip/aes/doc" >}})           | [DV plan]({{< relref "hw/ip/aes/doc/dv_plan" >}}) |
-| `alert_handler` | [design spec]({{< relref "hw/ip/alert_handler/doc" >}}) | |
+| `alert_handler` | [design spec]({{< relref "hw/ip/alert_handler/doc" >}}) | [DV plan]({{< relref "hw/ip/alert_handler/doc/dv_plan" >}}) |
 | `entropy_src`   |                                                         | |
 | `flash_ctrl`    | [design spec]({{< relref "hw/ip/flash_ctrl/doc" >}})    | |
 | `gpio`          | [design spec]({{< relref "hw/ip/gpio/doc" >}})          | [DV plan]({{< relref "hw/ip/gpio/doc/dv_plan" >}}) |

@@ -1,0 +1,94 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "alert_handler"
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''
+            - Basic alert_handler sanity test with one class configured that escalates through all
+              phases after one alert has been triggered
+            - Check interrupt pins, alert cause CSR values, escalation pings, and crashdump_o
+              output values
+            - Support both synchronous and asynchronous settings'''
+      milestone: V1
+      tests: ["alert_handler_sanity"]
+    }
+    {
+      name: esc_accum
+      desc: "Based on the sanity test, this test will randomize the escalation accumulation feature"
+      milestone: V2
+      tests: ["alert_handler_esc"]
+    }
+    {
+      name: esc_timeout
+      desc: "Based on the sanity test, this test will randomize the escalation timeout feature"
+      milestone: V2
+      tests: ["alert_handler_esc"]
+    }
+    {
+      name: entropy
+      desc: '''
+            Based on the sanity test, this test enables ping testing, and check if the ping feature
+            correctly pings all devices within certain period of time'''
+      milestone: V2
+      tests: ["alert_handler_entropy"]
+    }
+    {
+      name: sig_int_fail
+      desc: '''
+            This test will randomly inject differential pair failures on alert tx/rx pairs and the
+            escalator tx/rx pairs. Then check if integrity failure alert is triggered and escalated'''
+      milestone: V2
+      tests: ["alert_handler_sig_int_fail"]
+    }
+    {
+      name: ping_rsp_fail
+      desc: '''
+            This test will randomly inject ping response failures on alert tx/rx pairs and the
+            escalator tx/rx pairs. Then check if ping response failure alert is triggered and
+            escalated'''
+      milestone: V2
+      tests: ["alert_handler_ping_rsp_fail"]
+    }
+    {
+      name: clk_skew
+      desc: '''
+            This test will randomly inject clock skew within the differential pairs. Then check no
+            alert is raised'''
+      milestone: V2
+      tests: ["alert_handler_sanity"]
+    }
+    {
+      name: reg_lock
+      desc: '''
+            This test will randomly write registers when they are locked. Then read the registers
+            to make sure they are not updated'''
+      milestone: V2
+      tests: ["alert_handler_reg_lock"]
+    }
+    {
+      name: random_alerts
+      desc: "Randomly configure classes and randomly input alerts"
+      milestone: V2
+      tests: ["alert_handler_random_alerts"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence'''
+      milestone: V2
+      tests: ["alert_handler_stress_all"]
+    }
+    {
+      name: stress_all_with_reset
+      desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
+      milestone: V2
+      tests: ["alert_handler_stress_all_with_reset"]
+    }
+  ]
+}
