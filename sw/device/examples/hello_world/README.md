@@ -10,18 +10,3 @@ The test monitors changing values on the GPIO line and reports them over UART.
 
 ## SPI Echo Over UART
 All data input over SPI is echo'd on UART in a word aligned fashion.
-The sample output below is hello_world run on a verilator model.
-```shell
-$ ./Vtop_earlgrey_verilator --rominit=sw/device/boot_rom/rom.vmem --flashinit=sw/device/examples/hello_world/sw.vmem
-```
-
-Output:
-```
-dddd 1234 tgbf
-```
-
-```
-SPI: dddd
-SPI: 1234
-SPI: tgbf
-```

@@ -12,20 +12,20 @@ readonly SW_BUILD_DEFAULT="$(sw_bin_dir sim-verilator)"
 VERILATED_SYSTEM_PATH="${VERILATED_SYSTEM_PATH:-$VERILATED_SYSTEM_DEFAULT}"
 SW_BUILD_PATH="${SW_BUILD_PATH:-$SW_BUILD_DEFAULT}"
 
-BOOT_ROM_TARGET="boot_rom/boot_rom.vmem"
+BOOT_ROM_TARGET="boot_rom/boot_rom.elf"
 
 TEST_TARGETS=(
-  "tests/flash_ctrl/flash_test.vmem"
-  "tests/hmac/sha256_test.vmem"
-  "tests/rv_timer/rv_timer_test.vmem"
+  "tests/flash_ctrl/flash_test.elf"
+  "tests/hmac/sha256_test.elf"
+  "tests/rv_timer/rv_timer_test.elf"
 )
 
 if [[ ! -z ${MAKE_BUILD+x} ]]; then
-  BOOT_ROM_TARGET="sw/device/sim/boot_rom/rom.vmem"
+  BOOT_ROM_TARGET="sw/device/sim/boot_rom/rom.elf"
   TEST_TARGETS=(
-    "sw/device/sim/tests/flash_ctrl/sw.vmem"
-    "sw/device/sim/tests/hmac/sw.vmem"
-    "sw/device/sim/tests/rv_timer/sw.vmem"
+    "sw/device/sim/tests/flash_ctrl/sw.elf"
+    "sw/device/sim/tests/hmac/sw.elf"
+    "sw/device/sim/tests/rv_timer/sw.elf"
   )
 fi
 

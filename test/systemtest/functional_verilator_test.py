@@ -6,14 +6,14 @@ r"""Runs a binary on the verilated system, which is expected to write
 one of "PASS!\r\n" or "FAIL!\r\n" to UART to determine success or failure.
 Failing to write either will result in a timeout.
 
-This test requires some configuration options. Use the following steps to
-run the test manually after building Verilator and the sw/device/boot_rom and
-sw/device/examples/hello_world targets.
+This test requires some configuration options. Use the following steps to run
+the test manually after building a Verilator simulation and the device boot ROM
+and a device software target.
 
 $ cd ${REPO_TOP}
 $ pytest -s -v test/systemtest/functional_verilator_test.py \
-  --test_bin sw/device/tests/hmac/sw.vmem \
-  --rom_bin sw/device/boot_rom/rom.vmem \
+  --test_bin sw.elf \
+  --rom_bin boot_rom.elf \
   --verilator_model build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 """
 
@@ -34,8 +34,8 @@ class TestFunctionalVerilator:
     def sim_top_earlgrey(self, tmp_path, sim_top_build, sw_test_bin, rom_bin):
         cmd_sim = [
             str(sim_top_build),
-            '--flashinit', str(sw_test_bin),
-            '--rominit', str(rom_bin)
+            '--meminit', 'flash,' + str(sw_test_bin),
+            '--meminit', 'rom,' + str(rom_bin)
         ]
         p_sim = test_utils.Process(cmd_sim,
                                    logdir=str(tmp_path),

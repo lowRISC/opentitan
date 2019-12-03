@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 r"""Runs OpenOCD compliance test against Verilator target.
 
-This test requires some configuration options. Use the following steps to
-run the test manually after building Verilator and the sw/device/boot_rom and
-sw/device/examples/hello_world targets.
+This test requires some configuration options. Use the following steps to run
+the test manually after building Verilator and the boot_rom and hello_world
+targets.
 
 $ cd ${REPO_TOP}
 $ pytest -s -v test/systemtest/openocd_verilator_test.py \
-  --test_bin sw/device/examples/hello_world/sw.vmem \
-  --rom_bin sw/device/boot_rom/rom.vmem \
+  --test_bin hello_world.elf \
+  --rom_bin boot_rom.elf \
   --verilator_model build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 
 In some cases the pytest environment may not be able to find the openocd binary.
@@ -37,8 +37,8 @@ class TestCoreVerilator:
     def sim_top_earlgrey(self, tmp_path, sim_top_build, sw_test_bin, rom_bin):
         cmd_sim = [
             str(sim_top_build),
-            '--meminit', str(sw_test_bin),
-            '--rominit', str(rom_bin)
+            '--meminit', 'flash,' + str(sw_test_bin),
+            '--meminit', 'rom,' + str(rom_bin)
         ]
         p_sim = test_utils.Process(
             cmd_sim,

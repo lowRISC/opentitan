@@ -36,13 +36,13 @@ $ make -C sw/device SIM=1 SW_DIR=examples/hello_world \
 ```
 
 Now the simulation can be run.
-The program listed after `--rominit` and `--flashinit` are loaded into the system's respective memories and start executing immediately.
+The programs listed after `--meminit` are loaded into the system's specified memory and execution is started immediately.
 
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=sw/device/sim_boot_rom/rom.vmem \
-  --flashinit=sw/device/sim_hello_world/sw.vmem
+  --meminit=rom,sw/device/sim_boot_rom/rom.elf \
+  --meminit=flash,sw/device/sim_hello_world/sw.elf
 ```
 
 To stop the simulation press CTRL-c.
@@ -166,8 +166,8 @@ Tracing slows down the simulation by roughly factor of 1000.
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit=sw/device/sim_boot_rom/rom.vmem \
-  --flashinit=sw/device/sim_hello_world/sw.vmem \
+  --meminit=rom,sw/device/sim_boot_rom/rom.elf \
+  --meminit=flash,sw/device/sim_hello_world/sw.elf \
   --trace
 $ gtkwave sim.fst
 ```
