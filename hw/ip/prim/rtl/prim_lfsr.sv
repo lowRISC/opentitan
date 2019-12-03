@@ -297,10 +297,10 @@ module prim_lfsr #(
   ////////////////
   // Galois XOR //
   ////////////////
-  if (LfsrType == "GAL_XOR") begin : gen_gal_xor
+  if (64'(LfsrType) == 64'("GAL_XOR")) begin : gen_gal_xor
 
     // if custom polynomial is provided
-    if (CustomCoeffs) begin : gen_custom
+    if (CustomCoeffs > 0) begin : gen_custom
       assign coeffs = CustomCoeffs[LfsrDw-1:0];
     end else begin : gen_lut
       assign coeffs = GAL_XOR_COEFFS[LfsrDw-GAL_XOR_LUT_OFF][LfsrDw-1:0];
@@ -322,10 +322,10 @@ module prim_lfsr #(
   ////////////////////
   // Fibonacci XNOR //
   ////////////////////
-  end else if (LfsrType == "FIB_XNOR") begin : gen_fib_xnor
+  end else if (64'(LfsrType) == "FIB_XNOR") begin : gen_fib_xnor
 
     // if custom polynomial is provided
-    if (CustomCoeffs) begin : gen_custom
+    if (CustomCoeffs > 0) begin : gen_custom
       assign coeffs = CustomCoeffs[LfsrDw-1:0];
     end else begin : gen_lut
       assign coeffs = FIB_XNOR_COEFFS[LfsrDw-FIB_XNOR_LUT_OFF][LfsrDw-1:0];
@@ -378,27 +378,27 @@ module prim_lfsr #(
 
   `ASSERT_KNOWN(DataKnownO_A, state_o, clk_i, !rst_ni)
 
-  function automatic logic[LfsrDw-1:0] compute_next_state(logic[LfsrDw-1:0]    coeffs,
+  function automatic logic[LfsrDw-1:0] compute_next_state(logic[LfsrDw-1:0]    lfsrcoeffs,
                                                           logic[EntropyDw-1:0] entropy,
                                                           logic[LfsrDw-1:0]    state);
     logic state0;
 
     // Galois XOR
-    if (LfsrType == "GAL_XOR") begin
-      if (!state) begin
+    if (64'(LfsrType) == 64'("GAL_XOR")) begin
+      if (state == 0) begin
         state = DefaultSeed;
       end else begin
         state0 = state[0];
         state = state >> 1;
-        if (state0) state ^= coeffs;
+        if (state0) state ^= lfsrcoeffs;
         state ^= LfsrDw'(entropy);
       end
     // Fibonacci XNOR
-    end else if (LfsrType == "FIB_XNOR") begin
+    end else if (64'(LfsrType) == "FIB_XNOR") begin
       if (&state) begin
         state = DefaultSeed;
       end else begin
-        state0 = ~(^(state & coeffs));
+        state0 = ~(^(state & lfsrcoeffs));
         state = state << 1;
         state[0] = state0;
         state ^= LfsrDw'(entropy);
