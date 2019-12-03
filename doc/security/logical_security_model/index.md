@@ -103,7 +103,7 @@ There may be more than one Application Provider.
 
 Applications can request a unique cryptographic identity derived from the Silicon Owner Identity.
 Identity isolation guarantees are implemented and enforced in the Silicon Owner software stack.
-The Silicon Owner is discouraged from exposing its root identity at the application layer since this could potentially compromise isolation between applications, and isolation between the Silion Owner and Application Provider.
+The Silicon Owner is discouraged from exposing its root identity at the application layer since this could potentially compromise isolation between applications, and isolation between the Silicon Owner and Application Provider.
 
 It is important to note that the application identity or versioning does not impact either the Creator Identity or the Owner Identity.
 An update to an application does not cause the Owner Identity to change, but it can cause the application identity to change.
@@ -179,7 +179,7 @@ The kernel is also responsible for the verification and sandboxing of applicatio
 It is assumed that owner software operates in **Machine Mode** and has full visibility into the memory map except regions locked out by previous boot stages or kernel configuration code.
 Machine mode is the highest privilege state of a RISC-V processor.
 
-### Application Provider Softawre
+### Application Provider Software
 
 Application Provider software is the highest layer and least privileged software.
 It is generally not expected for software at this stage to have direct access to silicon peripherals.
@@ -217,8 +217,8 @@ These must remain true no matter how the above model is simplified and how stage
 
 * Once in kernel (or other functional equivalent), the behavior can **OPTIONALLY** become dynamic and no longer one way.
   Execution can switch between the kernel (controlled by the Silicon Owner) and the Application Provider Software.
-  Since the Silicon Owner software runs in machine mode and the Appliation Provider in user, this also implies changing privilege levels when the execution switches.
-  As a result, verification and sandboxing of application software will be particularly important if the Silicon Owner and Application Provider are distinct logical entities
+  Since the Silicon Owner software runs in machine mode and the Application Provider in user, this also implies changing privilege levels when the execution switches.
+  As a result, verification and sandboxing of application software will be particularly important if the Silicon Owner and Application Provider are distinct logical entities.
 
 ## Firmware Update Considerations
 
