@@ -10,8 +10,8 @@ ninja -C build-out/sw/${TARGET} sw/device/benchmarks/coremark/coremark_export
 
 Where ${TARGET} is one of 'sim-verilator' or 'fpga'
 
-This will give you a .bin and .vmem file (suitable for either spiflash or
-giving directly to --flashinit for verilator) which can be found in
+This will give you a .bin and .elf file (suitable for either spiflash or
+giving directly to `--meminit` for Verilator) which can be found in
 `build-bin/sw/device/fpga/benchmarks/coremark`
 
 # CoreMark Options
