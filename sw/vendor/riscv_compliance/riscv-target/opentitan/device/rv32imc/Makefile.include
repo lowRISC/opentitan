@@ -60,7 +60,7 @@ COMPILE_TARGET=\
 	$$(RISCV_GCC) $(2) $$(RISCV_GCC_OPTS) \
 		-I$(ROOTDIR)/riscv-test-env/ \
 		-I$(ROOTDIR)/riscv-test-env/p/ \
-                -I$(OT_SW)/boot_rom/lib \
+                -I$(OT_BUILD)/examples/hello_world/lib \
                 -I$(OT_SW)/lib \
 		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
 		-I$(TARGETDIR)/$(RISCV_TARGET)/ \

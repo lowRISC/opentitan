@@ -704,20 +704,20 @@ module ibex_core #(
   // * Mem IF
   // - Addr + req/gnt
   // - Data + valid
-  ibex_ila ila_i (
-	  .clk(clk),
+  //ibex_ila ila_i (
+	//  .clk(clk),
 
-	  .probe0(id_stage_i.regfile_raddr_a), // input wire [4:0]  probe0
-	  .probe1(id_stage_i.regfile_raddr_b), // input wire [4:0]  probe1
-	  .probe2({id_stage_i.regfile_we, id_stage_i.regfile_waddr}), // input wire [5:0]  probe2
-	  .probe3(id_stage_i.regfile_rdata_a), // input wire [31:0]  probe3
-	  .probe4(id_stage_i.regfile_rdata_b), // input wire [31:0]  probe4
-	  .probe5(id_stage_i.regfile_wdata), // input wire [31:0]  probe5
-	  .probe6({instr_new_id, instr_valid_id, pc_id}), // input wire [33:0]  probe6
-	  .probe7(instr_rdata_id), // input wire [31:0]  probe7
-	  .probe8({data_we_o, data_req_o, data_gnt_o, data_addr_o}), // input wire [33:0]  probe8
-	  .probe9({data_rvalid_i, data_rdata_i}) // input wire [32:0]  probe9
-  );
+	//  .probe0(id_stage_i.regfile_raddr_a), // input wire [4:0]  probe0
+	//  .probe1(id_stage_i.regfile_raddr_b), // input wire [4:0]  probe1
+	//  .probe2({id_stage_i.regfile_we, id_stage_i.regfile_waddr}), // input wire [5:0]  probe2
+	//  .probe3(id_stage_i.regfile_rdata_a), // input wire [31:0]  probe3
+	//  .probe4(id_stage_i.regfile_rdata_b), // input wire [31:0]  probe4
+	//  .probe5(id_stage_i.regfile_wdata), // input wire [31:0]  probe5
+	//  .probe6({instr_new_id, instr_valid_id, pc_id}), // input wire [33:0]  probe6
+	//  .probe7(instr_rdata_id), // input wire [31:0]  probe7
+	//  .probe8({data_we_o, data_req_o, data_gnt_o, data_addr_o}), // input wire [33:0]  probe8
+	//  .probe9({data_rvalid_i, data_rdata_i}) // input wire [32:0]  probe9
+  //);
 
 `ifdef RVFI
   always_ff @(posedge clk or negedge rst_ni) begin
