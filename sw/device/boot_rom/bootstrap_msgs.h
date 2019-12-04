@@ -8,7 +8,7 @@
 
 #define RAW_BUFFER_SIZE 1024
 #define FRAME_EOF_MARKER 0x80000000
-#define FRAME_NO(k) ((k)&0xffffff)
+#define FRAME_NO(k) ((k)&0xffff)
 
 typedef struct {
   /* SHA2 of the entire frame_t message starting at the |frame_num| offset. */
@@ -17,8 +17,6 @@ typedef struct {
   /* Frame number starting at 0. The last frame should be ord with
    * FRAME_EOF_MARKER. */
   uint32_t frame_num;
-
-  uint32_t frame_total;
 
   /* 0-based flash offset where the frame should be written to. */
   uint32_t flash_offset;

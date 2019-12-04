@@ -15,17 +15,27 @@
 extern uint32_t ot_logo[];
 
 
+// Fills in bit of the progress bar that needs filling for completed frame
+// frame_num given total frames frame_total.
+//
+// Overfills to the left (as it should already have been filled by previous
+// frame update) to simplify code.
 static void update_oled_progress(uint32_t frame_num, uint32_t frame_total) {
-  uint32_t cols_per_frame = OLED_BYTE_COLS * 4 / frame_total;
+  // Multiply by 256 to handle non-integer cols_per_frame
+  uint32_t cols_per_frame = (OLED_BYTE_COLS * 256) / frame_total;
   uint32_t end_cols;
 
   if (frame_num == frame_total - 1) {
     end_cols = OLED_BYTE_COLS;
   } else {
-    end_cols = ((frame_num + 1) * cols_per_frame) / 4;
+    end_cols = ((frame_num + 1) * cols_per_frame) / 256;
   }
 
-  uint32_t start_cols = ((frame_num * cols_per_frame) >> 4) << 2;
+  // Want to compute word_col aligned byte_col.
+  // * >> 8 gives us the byte_col
+  // * >> 2 gives us the word_col (combine to get >> 10)
+  // * << 2 gives us the byte_col again round down to word_col boundary
+  uint32_t start_cols = ((frame_num * cols_per_frame) >> 10) << 2;
 
   for (uint32_t col = start_cols; col < end_cols; col += 4) {
     uint32_t xor_mask;
@@ -92,13 +102,14 @@ static int bootstrap_flash(void) {
   for (;;) {
     if (spid_bytes_available() >= sizeof(f)) {
       spid_read_nb(&f, sizeof(f));
-      update_oled_progress(f.hdr.frame_num & 0xFFFF, f.hdr.frame_total);
+      uint32_t frame_total = (f.hdr.frame_num & 0x7FFF0000) >> 16;
+      update_oled_progress(f.hdr.frame_num & 0xFFFF, frame_total);
       uart_send_str("Processing frame no: ");
       uart_send_uint(f.hdr.frame_num, 32);
       uart_send_str(" exp no: ");
       uart_send_uint(expected_frame_no, 32);
       uart_send_str(" total no: ");
-      uart_send_uint(f.hdr.frame_total, 32);
+      uart_send_uint(frame_total, 32);
       uart_send_str("\r\n");
 
       if (FRAME_NO(f.hdr.frame_num) == expected_frame_no) {

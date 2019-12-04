@@ -70,8 +70,7 @@ int main(int argc, char **argv) {
 
   oled_clear(1);
 
-  oled_write_str("RISCV Compliance", 0, 0);
-  oled_write_str("I-MISALIGN_LDST", 2, 0);
+  oled_write_str("Hello, World!", 1, 0);
 
   oled_write_disp();
 

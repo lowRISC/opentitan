@@ -53,23 +53,6 @@ has_function_printf = false
 #  '-Wall',
 #  '-Werror']
 
-c_args = [
-  '-fvisibility=hidden',
-  '-g',
-  '-mabi=ilp32',
-  '-march=rv32imc',
-  '-mcmodel=medany',
-  '-nostartfiles',
-  '-nostdlib',
-  '-mtune=sifive-3-series',
-  '-falign-functions=16',
-  '-funroll-all-loops',
-  '-finline-functions',
-  '-falign-jumps=4',
-  '-O3',
-  '-static',
-  '-Wall',
-  '-Werror']
 #c_args = [
 #  '-fvisibility=hidden',
 #  '-g',
@@ -78,10 +61,27 @@ c_args = [
 #  '-mcmodel=medany',
 #  '-nostartfiles',
 #  '-nostdlib',
-#  '-Os',
+#  '-mtune=sifive-3-series',
+#  '-falign-functions=16',
+#  '-funroll-all-loops',
+#  '-finline-functions',
+#  '-falign-jumps=4',
+#  '-O3',
 #  '-static',
 #  '-Wall',
 #  '-Werror']
+c_args = [
+  '-fvisibility=hidden',
+  '-g',
+  '-mabi=ilp32',
+  '-march=rv32imc',
+  '-mcmodel=medany',
+  '-nostartfiles',
+  '-nostdlib',
+  '-Os',
+  '-static',
+  '-Wall',
+  '-Werror']
 c_link_args = ['-nostdlib']
 
 [build_machine]
