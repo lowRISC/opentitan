@@ -106,9 +106,6 @@ SECTIONS
     {
         [ .stabstr ]
     }
-
-    /* Discard the remaining sections */
-    /DISCARD/ : { *(*) }
 }
 
 ENTRY(main)

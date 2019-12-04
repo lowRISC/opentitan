@@ -15,6 +15,7 @@ hello_world_elf = executable(
     sw_lib_oled_display,
     riscv_crt,
   ],
+  c_args : ['-DOLED_DRIVER_INC_FONT']
 )
 
 hello_world_embedded = custom_target(

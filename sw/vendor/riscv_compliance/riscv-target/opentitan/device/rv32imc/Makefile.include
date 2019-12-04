@@ -4,6 +4,7 @@
 
 OPENTITAN     = $(ROOTDIR)/riscv-target/$(RISCV_TARGET)/device/rv32imc
 OT_SW         = $(ROOTDIR)/../../device
+OT_BUILD			= $(ROOTDIR)/../../../build/sw/device
 OT_ROOT       = $(OT_SW)/../../
 OT_TOOLS     ?= /tools/riscv/bin
 OT_FPGA_UART ?=
@@ -36,7 +37,8 @@ RUN_TARGET=\
         --log $(work_dir_isa)/$<.uart.log; \
         grep -o 'SIG: [a-zA-Z0-9_]*' $(work_dir_isa)/$<.uart.log | sed 's/SIG: //' \
         > $(work_dir_isa)/$(*).signature.temp.output; \
-        tr '[:upper:]' '[:lower:]' < $(work_dir_isa)/$(*).signature.temp.output > $(work_dir_isa)/$(*).signature.output;
+        tr '[:upper:]' '[:lower:]' < $(work_dir_isa)/$(*).signature.temp.output > $(work_dir_isa)/$(*).signature.output; \
+				sleep 1s;
 
 
 RISCV_PREFIX   ?= ${OT_TOOLS}/riscv32-unknown-elf-
@@ -54,7 +56,7 @@ RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostart
 # After the libraries are built, the necessary collateral (vmem for verilator, bin
 # for fpga) are created
 COMPILE_TARGET=\
-        make -C $$(OT_SW) SW_DIR=boot_rom $(MAKEARG) RV_TOOLS=$(OT_TOOLS) clean all; \
+        make -C $$(OT_SW) SW_DIR=examples/hello_world $(MAKEARG) RV_TOOLS=$(OT_TOOLS) all; \
 	$$(RISCV_GCC) $(2) $$(RISCV_GCC_OPTS) \
 		-I$(ROOTDIR)/riscv-test-env/ \
 		-I$(ROOTDIR)/riscv-test-env/p/ \
@@ -62,9 +64,10 @@ COMPILE_TARGET=\
                 -I$(OT_SW)/lib \
 		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
 		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
+		-DRISCV_TEST_NAME=$$(subst -01,,$$(*F)) \
 		$(DEFINES) -T$(LDSCRIPT) $$< \
                 $(OPENTITAN)/wrap.c \
-                -L$(OT_SW)/boot_rom/lib \
+                -L$(OT_BUILD)/examples/hello_world/lib \
                 -lot \
 		-o $(work_dir_isa)/$$@; \
         $$(RISCV_OBJDUMP) -SD $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.objdump; \

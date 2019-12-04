@@ -21,4 +21,8 @@ void _crt(void) {
   memset(_bss_start, 0, _bss_end - _bss_start);
 
   main();
+
+  while(1) {
+    asm volatile("wfi");
+  }
 }
