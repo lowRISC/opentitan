@@ -18,7 +18,7 @@ export DUT_TOP  := top_earlgrey
 export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:dv:chip_sim:0.1
 COMPILE_KEY     ?= default
-TOPS            := ${TB_TOP}
+TOPS            := ${TB_TOP} xbar_main_bind
 
 # Override RAL generation here
 RAL_PKG_NAME    ?= chip
@@ -30,6 +30,10 @@ RAL_TOOL_OPTS   += --top
 TEST_NAME       ?= chip_sanity
 UVM_TEST        ?= chip_base_test
 UVM_TEST_SEQ    ?= chip_base_vseq
+
+# TODO don't check TLUL completion at the end of sim, current sim may complete before TL
+# transaction is completed
+RUN_OPTS        += +disable_assert_final_checks
 
 ifeq (${TEST_NAME},chip_sanity)
   SW_DIR         = examples/hello_world

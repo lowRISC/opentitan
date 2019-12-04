@@ -88,7 +88,7 @@ def main():
     with pkg_filepath.open(mode='w', encoding='UTF-8') as fout:
         fout.write(out_pkg)
 
-    dv_filename = "xbar_%s_tb.sv" % (xbar.name)
+    dv_filename = "xbar_%s_bind.sv" % (xbar.name)
     dv_filepath = dv_path / dv_filename
     with dv_filepath.open(mode='w', encoding='UTF-8') as fout:
         fout.write(out_dv)
