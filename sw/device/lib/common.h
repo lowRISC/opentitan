@@ -11,6 +11,7 @@
 #include <stdnoreturn.h>
 
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/base/memory.h"
 
 #ifdef SIMULATION
 #define CLK_FIXED_FREQ_HZ (500 * 1000)
@@ -44,10 +45,5 @@ static const unsigned long UART_BAUD_RATE = 230400;
 #define BITLENGTH_5(X) ((X) + ((X) >> 16))
 #define BITLENGTH(X) \
   ((BITLENGTH_5(BITLENGTH_4(BITLENGTH_3(BITLENGTH_2(BITLENGTH_1(X)))))) & 0x7f)
-
-void *memcpy(void *restrict dest, const void *restrict src, size_t n);
-void *memset(void *dest, int val, size_t n);
-
-void abort(void);
 
 #endif
