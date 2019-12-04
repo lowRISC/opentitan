@@ -55,5 +55,5 @@ for pat in "${DIST_ARTIFACTS[@]}"; do
 done
 
 cd "$(dirname "$DIST_DIR")"
-tar -cJf "$BIN_DIR/$(basename "$DIST_DIR").tar.xz" \
+tar -cJf "$BIN_DIR/$OT_TAG.tar.xz" \
   "$(basename "$DIST_DIR")"

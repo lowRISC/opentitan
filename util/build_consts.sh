@@ -20,6 +20,7 @@
 # This file also provides $OT_VERSION, which can be embedded in artifacts as a
 # timestamp. If a git repo is present, it will be computed from that, or else
 # will be an arbitrary string.
+# $OT_TAG is used to get the snapshot name for a release.
 
 # Since this file is intended to be sourced, we can't use |$0| to get our
 # bearings. However, the bash-specific $BASH_SOURCE works perfectly fine.
@@ -30,11 +31,17 @@ else
   exit 1
 fi
 
-OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
+OT_GIT_VERSION="$(git rev-parse --short HEAD 2>/dev/null)"
 if [[ -n "$OT_GIT_VERSION" ]]; then
   readonly OT_VERSION="opentitan-$OT_GIT_VERSION"
 else
   readonly OT_VERSION="opentitan-<unknown>"
+fi
+
+# Creation of a snapshot release is only possible from a git based environment.
+OT_GIT_TAG="$(git describe --always 2>/dev/null)"
+if [[ -n "$OT_GIT_TAG" ]]; then
+  readonly OT_TAG="opentitan-$OT_GIT_TAG"
 fi
 
 BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
