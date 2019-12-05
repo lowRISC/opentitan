@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:alert_handler_esc_timer_fpv:0.1"
+description: "alert_handler_esc_timer FPV target"
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:prim:all
+      # note: this is an example config which may differ
+      # from a particular top-level config
+      - lowrisc:ip:alert_handler
+    files:
+      - vip/alert_handler_esc_timer_assert_fpv.sv
+      - tb/alert_handler_esc_timer_bind_fpv.sv
+      - tb/alert_handler_esc_timer_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_fpv
+    toplevel: alert_handler_esc_timer_fpv
