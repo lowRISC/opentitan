@@ -10,6 +10,7 @@ filesets:
 % for dep in dut.deps:
       - ${dep}
 % endfor
+      # TODO: add more dependencies here if needed
     files:
       - vip/${dut.name}_assert_fpv.sv
       - tb/${dut.name}_bind_fpv.sv
