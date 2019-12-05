@@ -22,7 +22,8 @@ module tb;
     .rst_fixed_ni(rst_n)
   );
 
-  `include "xbar_tl_if_connection.sv"
+  // this file is auto-generated and the path to this file should be provided in xbar_*_sim.core
+  `include "tb__xbar_connect.sv"
 
   initial begin
     // drive clk and rst_n from clk_if

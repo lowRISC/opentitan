@@ -71,7 +71,7 @@ def main():
         log.error("Elaboration failed." + repr(xbar))
 
     # Generate
-    out_rtl, out_pkg, out_dv = tlgen.generate(xbar)
+    out_rtl, out_pkg, out_core = tlgen.generate(xbar)
 
     rtl_path = Path(args.outdir) / 'rtl'
     rtl_path.mkdir(parents=True, exist_ok=True)
@@ -88,10 +88,13 @@ def main():
     with pkg_filepath.open(mode='w', encoding='UTF-8') as fout:
         fout.write(out_pkg)
 
-    dv_filename = "xbar_%s_bind.sv" % (xbar.name)
-    dv_filepath = dv_path / dv_filename
-    with dv_filepath.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(out_dv)
+    core_filename = "xbar_%s.core" % (xbar.name)
+    core_filepath = rtl_path / core_filename
+    with core_filepath.open(mode='w', encoding='UTF-8') as fout:
+        fout.write(out_core)
+
+    # generate TB
+    tlgen.generate_tb(xbar, dv_path)
 
 
 if __name__ == "__main__":

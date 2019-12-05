@@ -11,7 +11,6 @@ package xbar_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
-  import tl_main_pkg::*;
   import dv_lib_pkg::*;
 
   typedef struct {
@@ -26,7 +25,8 @@ package xbar_env_pkg;
     string                      valid_devices[$];
   } tl_host_t;
 
-  `include "xbar_params.svh"
+  // this file is auto-generated and the path to this file should be provided in xbar_*_sim.core
+  `include "xbar_env_pkg__params.sv"
 
   function automatic int get_host_id(string name);
     foreach (xbar_hosts[i]) begin

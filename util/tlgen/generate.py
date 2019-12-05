@@ -23,14 +23,14 @@ def generate(xbar):  #xbar: Xbar -> str
         filename=resource_filename('tlgen', 'xbar.pkg.sv.tpl'))
     #xbar_dv_tpl = Template(
     #    filename=resource_filename('tlgen', 'xbar.dv.sv.tpl'))
-    xbar_bind_tpl = Template(
-        filename=resource_filename('tlgen', 'xbar.bind.sv.tpl'))
+    xbar_core_tpl = Template(
+        filename=resource_filename('tlgen', 'xbar.core.tpl'))
 
     try:
         out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)
         out_pkg = xbar_pkg_tpl.render(xbar=xbar)
-        out_bind = xbar_bind_tpl.render(xbar=xbar, ntype=NodeType)
+        out_core = xbar_core_tpl.render(xbar=xbar, ntype=NodeType)
     except:
         log.error(exceptions.text_error_template().render())
 
-    return (out_rtl, out_pkg, out_bind)
+    return (out_rtl, out_pkg, out_core)
