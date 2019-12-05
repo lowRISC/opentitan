@@ -16,7 +16,10 @@ module tb;
 
   xbar_main dut(
     .clk_main_i(clk),
-    .rst_main_ni(rst_n)
+    .rst_main_ni(rst_n),
+    // TODO temp use same clk to avoid failure due to new feature (multi-clk #903)
+    .clk_fixed_i(clk),
+    .rst_fixed_ni(rst_n)
   );
 
   `include "xbar_tl_if_connection.sv"
