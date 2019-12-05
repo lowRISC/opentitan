@@ -6,7 +6,7 @@
 // Intended to be used with a formal tool.
 
 % if len(dut.pkgs) > 0:
-module ${dut.name}_fpv
+module ${dut.name}_assert_fpv
 % for pkg in dut.pkgs:
   import ${pkg};
 % endfor
