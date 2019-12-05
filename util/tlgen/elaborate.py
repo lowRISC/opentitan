@@ -61,7 +61,8 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # (New Node) Create ASYNC_FIFO node
         new_node = Node(name="asf_" + str(len(xbar.nodes)),
                         node_type=NodeType.ASYNC_FIFO,
-                        clock=xbar.clock,reset=xbar.reset)
+                        clock=xbar.clock,
+                        reset=xbar.reset)
 
         # if node is HOST, host clock synchronizes into xbar domain
         # if node is DEVICE, xbar synchronizes into device clock domain
@@ -81,7 +82,8 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # (New node) Create SOCKET_M1 node
         new_node = Node(name="sm1_" + str(len(xbar.nodes)),
                         node_type=NodeType.SOCKET_M1,
-                        clock=xbar.clock,reset=xbar.reset)
+                        clock=xbar.clock,
+                        reset=xbar.reset)
         new_node.hdepth = 2
         new_node.hpass = 2**len(node.us) - 1
         new_node.ddepth = 2
@@ -94,7 +96,8 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
         # (New node) Create SOCKET_1N node
         new_node = Node(name="s1n_" + str(len(xbar.nodes)),
                         node_type=NodeType.SOCKET_1N,
-                        clock=xbar.clock,reset=xbar.reset)
+                        clock=xbar.clock,
+                        reset=xbar.reset)
         new_node.hdepth = 2
         new_node.hpass = 1
         new_node.ddepth = 2

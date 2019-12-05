@@ -13,14 +13,9 @@
 ## COMPILE_KEY  - compile option set                                                              ##
 ## TEST_NAME    - name of the test to run - this is supplied on the command line                  ##
 ####################################################################################################
-DV_DIR          := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-export DUT_TOP  := xbar_main
 export TB_TOP   := tb
-FUSESOC_CORE    := lowrisc:dv:xbar_sim:0.1
 COMPILE_KEY     ?= default
 
-# default COV_COMMON_EXCL isn't applicable to xbar, use its own el file
-COV_COMMON_EXCL  = ${DV_DIR}/cov/xbar_cov_excl.el
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################

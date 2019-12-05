@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+name: "lowrisc:dv:xbar_tb:0.1"
+description: "XBAR DV tb"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:ip:tlul:0.1
+      - lowrisc:dv:xbar_test
+    files:
+      - xbar_macros.svh
+      - tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
