@@ -214,10 +214,7 @@ jobs:
     - top_earlgrey_verilator
     - sw_build
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential python3-setuptools libelf1 tree
-      sudo pip3 install -r python-requirements.txt
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - template: 'ci/download-artifacts-template.yml'
   - bash: |
       . util/build_consts.sh
@@ -232,10 +229,7 @@ jobs:
     - top_earlgrey_verilator
     - execute_verilated_tests
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev libelf1 \
-        && sudo pip3 install -U -r python-requirements.txt
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - template: 'ci/download-artifacts-template.yml'
   - bash: |
       . util/build_consts.sh
