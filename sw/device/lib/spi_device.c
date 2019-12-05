@@ -59,11 +59,10 @@ void spid_init(void) {
  * Fifo pointers are in bytes
  */
 inline uint32_t calc_depth(uint32_t wptr, uint32_t rptr, uint32_t size) {
-  const uint32_t sram_szw = BITLENGTH(SPI_DEVICE_BUFFER_SIZE_BYTES - 1);
   uint32_t depth;
   uint32_t wptr_phase, rptr_phase, wptr_v, rptr_v;
-  wptr_phase = wptr >> sram_szw;
-  rptr_phase = rptr >> sram_szw;
+  wptr_phase = wptr & SPI_DEVICE_BUFFER_SIZE_BYTES;
+  rptr_phase = rptr & SPI_DEVICE_BUFFER_SIZE_BYTES;
   wptr_v = wptr & (SPI_DEVICE_BUFFER_SIZE_BYTES - 1);
   rptr_v = rptr & (SPI_DEVICE_BUFFER_SIZE_BYTES - 1);
 

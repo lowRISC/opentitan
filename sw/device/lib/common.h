@@ -29,13 +29,4 @@ static const unsigned long UART_BAUD_RATE = 230400;
 
 #define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
 
-/* Hamming weight */
-#define BITLENGTH_1(X) ((X) - (((X) >> 1) & 0x55555555))
-#define BITLENGTH_2(X) (((X)&0x33333333) + (((X) >> 2) & 0x33333333))
-#define BITLENGTH_3(X) (((X) + ((X) >> 4)) & 0x0f0f0f0f)
-#define BITLENGTH_4(X) ((X) + ((X) >> 8))
-#define BITLENGTH_5(X) ((X) + ((X) >> 16))
-#define BITLENGTH(X) \
-  ((BITLENGTH_5(BITLENGTH_4(BITLENGTH_3(BITLENGTH_2(BITLENGTH_1(X)))))) & 0x7f)
-
 #endif
