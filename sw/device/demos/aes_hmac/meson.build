@@ -8,6 +8,7 @@ aes_hmac_demo_elf = executable(
   name_suffix: 'elf',
   dependencies: [
     sw_lib_aes,
+    sw_lib_hmac,
     sw_lib_uart,
     riscv_crt,
   ],

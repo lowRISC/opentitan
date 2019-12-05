@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/aes.h"
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/hw_sha256.h"
 #include "sw/device/lib/uart.h"
 
 #define LENGTH_KEY 32
@@ -92,6 +93,8 @@ int main(int argc, char **argv) {
   char cipher_text[MAX_LENGTH_TEXT];
   char aes_key[LENGTH_KEY] = "This key is not really secret.";
   int num_blocks = MAX_LENGTH_TEXT / 16;
+  uint32_t digest_initial[8];
+  uint32_t digest_final[8];
 
   aes_cfg_t aes_cfg;
   aes_cfg.key_len = kAes256;
@@ -127,6 +130,9 @@ int main(int argc, char **argv) {
     }
   }
 
+  // Calculate hash over plain text before encryption.
+  hw_SHA256_hash(plain_text, ARRAYSIZE(plain_text), (uint8_t *)digest_initial);
+
   // Configure AES key
   aes_key_put((const void *)aes_key, aes_cfg.key_len);
 
@@ -135,16 +141,11 @@ int main(int argc, char **argv) {
   aes_init(aes_cfg);
   aes_process_blocks((void *)cipher_text, (const void *)plain_text, num_blocks);
 
-  // Hash
-
   // Output
-  // uart_send_str("Encrypted cipher text: \r\n\"");
-  // uart_send_str(cipher_text);
-  // uart_send_str("\"\r\n\n");
   uart_send_str("Encrypted cipher text: \r\n");
   for (int i = 0; i < num_blocks * 16; ++i) {
     uart_send_str("0x");
-    uart_send_uint((uint32_t)plain_text[i], 8);
+    uart_send_uint((uint32_t)cipher_text[i], 8);
     uart_send_str(" ");
     if (!((i + 1) % 16)) {
       uart_send_str("\r\n");
@@ -161,6 +162,9 @@ int main(int argc, char **argv) {
   uart_send_str("Decrypted cipher text: \r\n\"");
   uart_send_str(plain_text);
   uart_send_str("\"\r\n\n");
+
+  // Calculate hash over recovered plain text after decryption.
+  hw_SHA256_hash(plain_text, ARRAYSIZE(plain_text), (uint8_t *)digest_final);
 
   uart_send_str("DONE!\r\n");
   __asm__ volatile("wfi;");
