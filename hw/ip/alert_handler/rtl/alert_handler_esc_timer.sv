@@ -76,7 +76,11 @@ module alert_handler_esc_timer import alert_pkg::*; (
     unique case (state_q)
       // wait for an escalation trigger or an alert trigger
       // the latter will trigger an interrupt timeout
+      // note, clr_i is intentionally not used in Idle such that any trigger
+      // will have to go through escalation, if enabled
       Idle: begin
+        cnt_clr = 1'b1;
+
         if (accum_trig_i && en_i) begin
           state_d    = Phase0;
           cnt_en     = 1'b1;
@@ -86,8 +90,6 @@ module alert_handler_esc_timer import alert_pkg::*; (
         end else if (timeout_en_i && !cnt_ge && en_i) begin
           cnt_en  = 1'b1;
           state_d = Timeout;
-        end else begin
-          cnt_clr = 1'b1;
         end
       end
       // we are in interrupt timeout state
@@ -113,73 +115,73 @@ module alert_handler_esc_timer import alert_pkg::*; (
       end
       // note: autolocking the clear signal is done in the regfile
       Phase0: begin
+        cnt_en      = 1'b1;
         phase_oh[0] = 1'b1;
         thresh      = phase_cyc_i[0];
 
         if (clr_i) begin
           state_d = Idle;
           cnt_clr = 1'b1;
+          cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase1;
           cnt_clr = 1'b1;
           cnt_en  = 1'b1;
-        end else begin
-          cnt_en = 1'b1;
         end
       end
       Phase1: begin
+        cnt_en      = 1'b1;
         phase_oh[1] = 1'b1;
         thresh      = phase_cyc_i[1];
 
         if (clr_i) begin
           state_d = Idle;
           cnt_clr = 1'b1;
+          cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase2;
           cnt_clr = 1'b1;
           cnt_en  = 1'b1;
-        end else begin
-          cnt_en = 1'b1;
         end
       end
       Phase2: begin
+        cnt_en      = 1'b1;
         phase_oh[2] = 1'b1;
         thresh      = phase_cyc_i[2];
 
         if (clr_i) begin
           state_d = Idle;
           cnt_clr = 1'b1;
+          cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Phase3;
           cnt_clr = 1'b1;
-          cnt_en  = 1'b1;
-        end else begin
-          cnt_en = 1'b1;
         end
       end
       Phase3: begin
+        cnt_en      = 1'b1;
         phase_oh[3] = 1'b1;
         thresh      = phase_cyc_i[3];
 
         if (clr_i) begin
           state_d = Idle;
           cnt_clr = 1'b1;
+          cnt_en  = 1'b0;
         end else if (cnt_ge) begin
           state_d = Terminal;
           cnt_clr = 1'b1;
-        end else begin
-          cnt_en = 1'b1;
         end
       end
       // final, terminal state after escalation.
       // if clr is locked down, only a system reset
       // will get us out of this state
       Terminal: begin
+        cnt_clr = 1'b1;
         if (clr_i) begin
           state_d = Idle;
         end
       end
-      default : state_d = Idle;
+      default: state_d = Idle;
     endcase
   end
 
@@ -219,7 +221,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
   ////////////////
 
   // a clear should always bring us back to idle
-  `ASSERT(CheckClr, clr_i && state_q != Timeout |=>
+  `ASSERT(CheckClr, clr_i && !(state_q inside {Idle, Timeout}) |=>
       state_q == Idle, clk_i, !rst_ni)
   // if currently in idle and not enabled, must remain here
   `ASSERT(CheckEn,  state_q == Idle && !en_i |=>
@@ -230,9 +232,9 @@ module alert_handler_esc_timer import alert_pkg::*; (
   `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == Timeout && en_i |=>
       state_q == Phase0, clk_i, !rst_ni)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0, state_q == Idle && timeout_en_i && en_i && !cnt_ge |=>
+  `ASSERT(CheckTimeout0, state_q == Idle && timeout_en_i && en_i && timeout_cyc_i != 0 |=>
       state_q == Timeout, clk_i, !rst_ni || accum_trig_i)
-  `ASSERT(CheckTimeout1, state_q == Timeout && timeout_en_i  |=>
+  `ASSERT(CheckTimeout1, state_q == Timeout && timeout_en_i && cnt_q < timeout_cyc_i |=>
       state_q == Timeout, clk_i, !rst_ni || accum_trig_i)
   `ASSERT(CheckTimeout2, state_q == Timeout && !timeout_en_i |=>
       state_q == Idle, clk_i, !rst_ni || accum_trig_i)
@@ -240,13 +242,13 @@ module alert_handler_esc_timer import alert_pkg::*; (
   `ASSERT(CheckTimeoutTrig, state_q == Timeout && timeout_en_i &&
       cnt_q == timeout_cyc_i |=> state_q == Phase0, clk_i, !rst_ni)
   // Check whether escalation phases are correctly switched
-  `ASSERT(CheckPhase0, state_q == Phase0 && !clr_i && cnt_q == phase_cyc_i[0] |=>
+  `ASSERT(CheckPhase0, state_q == Phase0 && !clr_i && cnt_q >= phase_cyc_i[0] |=>
       state_q == Phase1, clk_i, !rst_ni)
-  `ASSERT(CheckPhase1, state_q == Phase1 && !clr_i && cnt_q == phase_cyc_i[1] |=>
+  `ASSERT(CheckPhase1, state_q == Phase1 && !clr_i && cnt_q >= phase_cyc_i[1] |=>
       state_q == Phase2, clk_i, !rst_ni)
-  `ASSERT(CheckPhase2, state_q == Phase2 && !clr_i && cnt_q == phase_cyc_i[2] |=>
+  `ASSERT(CheckPhase2, state_q == Phase2 && !clr_i && cnt_q >= phase_cyc_i[2] |=>
       state_q == Phase3, clk_i, !rst_ni)
-  `ASSERT(CheckPhase3, state_q == Phase3 && !clr_i && cnt_q == phase_cyc_i[3] |=>
+  `ASSERT(CheckPhase3, state_q == Phase3 && !clr_i && cnt_q >= phase_cyc_i[3] |=>
       state_q == Terminal, clk_i, !rst_ni)
 
 endmodule : alert_handler_esc_timer
