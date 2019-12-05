@@ -28,10 +28,8 @@ jobs:
   steps:
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
-      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 clang-format
-      sudo pip3 install -U -r python-requirements.txt
-    displayName: 'Install dependencies'
-
+    displayName: 'Remove existing Clang installation'
+  - template: 'ci/install-package-dependencies.yml'
   - bash: |
       python3 --version
       yapf --version
@@ -121,10 +119,7 @@ jobs:
   pool:
     vmImage: "ubuntu-16.04"
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential pkgconf srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev ninja-build \
-        && sudo pip3 install -U -r python-requirements.txt
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - bash: |
       set -x
       sudo util/get-toolchain.py \
@@ -149,10 +144,7 @@ jobs:
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: Default
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev \
-        && sudo pip3 install -U -r python-requirements.txt
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - bash: |
       export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
       export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
@@ -173,11 +165,7 @@ jobs:
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: Default
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libelf-dev \
-        && sudo pip3 install -U -r python-requirements.txt \
-        && sudo apt-get install git make autoconf g++ flex bison curl
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - bash: |
       set -e
       if [ ! -d $(VERILATOR_PATH) ]; then
@@ -229,10 +217,7 @@ jobs:
   pool: Default
   timeoutInMinutes: 120 # 2 hours
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 tree \
-        && sudo pip3 install -U -r python-requirements.txt
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - template: 'ci/download-artifacts-template.yml'
   - bash: |
       set -e
@@ -264,10 +249,7 @@ jobs:
     - top_earlgrey_verilator
     - sw_build
   steps:
-  - bash: |
-      sudo apt-get install -y python3 python3-pip build-essential python3-setuptools libelf1 tree
-      sudo pip3 install -r python-requirements.txt
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - template: 'ci/download-artifacts-template.yml'
   - bash: |
       . util/build_consts.sh
@@ -286,9 +268,7 @@ jobs:
     - top_earlgrey_nexysvideo
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   steps:
-  - bash: |
-      sudo apt-get install -y tree
-    displayName: 'Install dependencies'
+  - template: 'ci/install-package-dependencies.yml'
   - template: 'ci/download-artifacts-template.yml'
   - bash: |
       . util/build_consts.sh
