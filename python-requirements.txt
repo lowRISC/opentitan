@@ -1,16 +1,21 @@
-livereload
-mistletoe>=0.7.2
-hjson
-pygments
-mako
-yapf
-isort
-pyftdi
-pyyaml
-pytest
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Keep sorted.
 fusesoc
 gitpython
+hjson
+isort
+livereload
+mako
 meson
+mistletoe>=0.7.2
+pyftdi
+pygments
+pytest
+pyyaml
+yapf
 
 # Develpment version to get around YAML parser warning triggered by fusesoc
 # Upstream tracking: https://github.com/olofk/ipyxact/issues/19

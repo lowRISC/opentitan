@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for installing dependencies from various package managers,
+# necessary for building, testing, and packaging OpenTitan.
+#
+# This template executes:
+# - apt-get install for all packages listed in apt-requirements.txt
+# - pip install for all packages listed in python-requirements.txt
+
+steps:
+  - bash: |
+      set -e
+      # NOTE: We use sed to remove all comments from apt-requirements.txt,
+      # since apt-get doesn't actually provide such a feature.
+      sed 's/#.*//' apt-requirements.txt \
+        | xargs sudo apt-get install -y
+      sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install package dependencies'
+
