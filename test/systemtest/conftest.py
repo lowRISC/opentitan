@@ -133,6 +133,14 @@ def logfile(pytestconfig):
     log = pytestconfig.getoption('log')
     if not log:
         return
-    path = Path(log).resolve()
-    assert not path.is_dir()
+    # The strict option is only availabe on python 3.6
+    # CI currently uses >=3.5.2
+    # Turns out however even not using resolve doesn't work.
+    # The logging function in 3.5 uses os.path.isabs to check whether
+    # path is absolute and does not accept POSIXPATH objects
+    # path = Path(log).resolve(strict=False)
+    # assert not path.is_dir()
+
+    path = os.path.abspath(log)
+    assert not os.path.isdir(path)
     return path
