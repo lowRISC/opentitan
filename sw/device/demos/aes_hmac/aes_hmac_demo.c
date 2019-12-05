@@ -84,6 +84,31 @@ void aes_process_blocks(void *data_out, const void *data_in, int num_blocks) {
   }
 }
 
+/**
+ * Prints |data_in| in hex byte format. 16 bytes per row.
+ */
+void print_hex_buffer(char *data_in, size_t length) {
+  for (int i = 0; i < length; ++i) {
+    uart_send_str("0x");
+    uart_send_uint((uint32_t)data_in[i], 8);
+    uart_send_str(" ");
+    if (!((i + 1) % 16)) {
+      uart_send_str("\r\n");
+    }
+  }
+}
+
+/**
+ * Returns non-zero if |initial| != |final|
+ */
+int check_hash(char initial[32], char final[32]) {
+  uint8_t result = 0;
+  for (int i = 0; i < 32; ++i) {
+    result |= initial[i] ^ final[i];
+  }
+  return result;
+}
+
 int main(int argc, char **argv) {
   uart_init(UART_BAUD_RATE);
   uart_send_str("Running AES HMAC demo\r\n");
@@ -93,8 +118,8 @@ int main(int argc, char **argv) {
   char cipher_text[MAX_LENGTH_TEXT];
   char aes_key[LENGTH_KEY] = "This key is not really secret.";
   int num_blocks = MAX_LENGTH_TEXT / 16;
-  uint32_t digest_initial[8];
-  uint32_t digest_final[8];
+  char digest_initial[32];
+  char digest_final[32];
 
   aes_cfg_t aes_cfg;
   aes_cfg.key_len = kAes256;
@@ -133,6 +158,9 @@ int main(int argc, char **argv) {
   // Calculate hash over plain text before encryption.
   hw_SHA256_hash(plain_text, ARRAYSIZE(plain_text), (uint8_t *)digest_initial);
 
+  uart_send_str("Plain text hash: \r\n");
+  print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
+
   // Configure AES key
   aes_key_put((const void *)aes_key, aes_cfg.key_len);
 
@@ -143,14 +171,7 @@ int main(int argc, char **argv) {
 
   // Output
   uart_send_str("Encrypted cipher text: \r\n");
-  for (int i = 0; i < num_blocks * 16; ++i) {
-    uart_send_str("0x");
-    uart_send_uint((uint32_t)cipher_text[i], 8);
-    uart_send_str(" ");
-    if (!((i + 1) % 16)) {
-      uart_send_str("\r\n");
-    }
-  }
+  print_hex_buffer(cipher_text, num_blocks * 16);
   uart_send_str("\n");
 
   // Decode
@@ -165,6 +186,12 @@ int main(int argc, char **argv) {
 
   // Calculate hash over recovered plain text after decryption.
   hw_SHA256_hash(plain_text, ARRAYSIZE(plain_text), (uint8_t *)digest_final);
+  if (check_hash(digest_initial, digest_final)) {
+    uart_send_str("Detected hash mismatch on decrypted data!. Got: \r\n");
+    print_hex_buffer(digest_final, ARRAYSIZE(digest_final));
+    uart_send_str("Expected: \r\n");
+    print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
+  }
 
   uart_send_str("DONE!\r\n");
   __asm__ volatile("wfi;");
