@@ -24,7 +24,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
     // set num_interrupts & num_alerts which will be used to create coverage and more
     num_interrupts = ral.intr_state.get_n_used_bits();
-    num_alerts = 0;
   endfunction
 
 endclass

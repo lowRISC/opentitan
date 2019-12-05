@@ -11,11 +11,6 @@ class hmac_env extends cip_base_env #(.CFG_T               (hmac_env_cfg),
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // get vifs
-    if (!uvm_config_db#(msg_push_sha_disabled_alert_vif)::get(this, "",
-        "msg_push_sha_disabled_alert_vif", cfg.msg_push_sha_disabled_alert_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get msg_push_sha_disabled_alert from uvm_config_db")
-    end
   endfunction
 
 endclass

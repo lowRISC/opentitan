@@ -233,7 +233,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           wait(!under_reset);
           fork
             begin : increase_wr_cnt
-              wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() % 4 != 0));
+              wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 ||
+                  (hmac_process && msg_q.size() % 4 != 0));
               if (sha_en) begin
                 // if fifo full, tlul will not write next data until fifo has space again
                 if (fifo_full) begin

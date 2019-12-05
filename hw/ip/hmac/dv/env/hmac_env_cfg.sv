@@ -4,8 +4,6 @@
 
 class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
 
-  msg_push_sha_disabled_alert_vif msg_push_sha_disabled_alert_vif;
-
   `uvm_object_utils(hmac_env_cfg)
   `uvm_object_new
 
@@ -21,6 +19,7 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
     mem_addr.start_addr = HMAC_MSG_FIFO_BASE;
     mem_addr.end_addr   = HMAC_MSG_FIFO_LAST_ADDR;
     mem_addrs.push_back(mem_addr);
+    list_of_alerts      = {"msg_push_sha_disabled"};
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values

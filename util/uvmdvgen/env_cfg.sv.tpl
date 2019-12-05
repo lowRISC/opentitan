@@ -39,7 +39,6 @@ class ${name}_env_cfg extends dv_base_env_cfg #(.RAL_T(${name}_reg_block));
       if (rg != null) begin
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
-      num_alerts = 0;
     end
 % endif
   endfunction
