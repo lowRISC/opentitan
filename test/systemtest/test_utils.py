@@ -267,8 +267,11 @@ def stream_fd_to_log(fd, logger, pattern, timeout=None):
 # If logfile option was given, log all outputs to file.
 def setup_logfile(logger, logfile):
     if logfile:
-        logger.debug("Logfile at %s" % (logfile))
         logger.setLevel(logging.DEBUG)
+
+        for h in logger.handlers:
+            logger.removeHandler(h)
+
         fh = logging.FileHandler(filename=logfile, mode='w')
         fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)

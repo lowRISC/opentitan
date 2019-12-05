@@ -211,6 +211,8 @@ static CORETIMETYPE start_time_val, stop_time_val;
    cycles to 0.
 */
 void start_time(void) {
+  ee_printf("#*#*#*\n");
+
   oled_clear(1);
 
   oled_write_str("CoreMark", 0, 0);
@@ -244,7 +246,6 @@ void start_time(void) {
 void stop_time(void) {
   GETMYTIME(&stop_time_val);
   pcount_enable(0);
-  dump_pcounts();
 }
 /* Function : get_time
         Return an abstract "ticks" number that signifies time on the system.
@@ -298,4 +299,9 @@ void portable_init(core_portable *p, int *argc, char *argv[]) {
 /* Function : portable_fini
         Target specific final code
 */
-void portable_fini(core_portable *p) { p->portable_id = 0; }
+void portable_fini(core_portable *p) {
+  dump_pcounts();
+  ee_printf("#*#*#*\n");
+  p->portable_id = 0;
+}
+

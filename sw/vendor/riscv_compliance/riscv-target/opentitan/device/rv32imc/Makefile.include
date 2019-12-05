@@ -32,7 +32,8 @@ endif
 # Parse the resulting log for the output signatures
 # Convert all signatures to lower case since the reference is in all lower case
 RUN_TARGET=\
-        pytest -s -v $(OT_ROOT)/test/systemtest/functional_$(OT_TARGET)_test.py \
+				echo "Runnning $(subst .elf,,$(subst -01,,$<))"; \
+        pytest -qq --disable-warnings --disable-pytest-warnings --log-level=CRITICAL -s $(OT_ROOT)/test/systemtest/functional_$(OT_TARGET)_test.py \
         $(PYTEST_OPT) \
         --log $(work_dir_isa)/$<.uart.log; \
         grep -o 'SIG: [a-zA-Z0-9_]*' $(work_dir_isa)/$<.uart.log | sed 's/SIG: //' \

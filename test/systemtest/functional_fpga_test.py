@@ -31,8 +31,7 @@ import pytest
 
 import test_utils
 
-logging.basicConfig(level=logging.DEBUG)
-
+logging.basicConfig(level=logging.CRITICAL)
 
 class TestFunctionalFpga:
     """
@@ -59,8 +58,8 @@ class TestFunctionalFpga:
         """
 
         logger = logging.getLogger(__name__)
+        logger.propagate = False
         test_utils.setup_logfile(logger, logfile)
-
 
         # Open the UART device and read line by line until we pass or fail.
         with fpga_uart.open('rb') as uart_device:
