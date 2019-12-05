@@ -138,27 +138,6 @@ jobs:
     parameters:
       artifact: sw_build
 
-- job: "deprecated_make_build"
-  displayName: "Build Software with Make (deprecated)"
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool: Default
-  steps:
-  - template: 'ci/install-package-dependencies.yml'
-  - bash: |
-      export TOOLCHAIN_PATH="${TOOLCHAIN_PATH}"
-      export TOOLCHAIN_VERSION="${TOOLCHAIN_VERSION}"
-      export DIST_DIR="$(Build.ArtifactStagingDirectory)/dist"
-      REQUEST_UPDATE=true ci/run_sw_make.sh
-    displayName: 'Build embedded targets'
-  - bash: |
-      make -C sw/host/spiflash clean all
-      # TODO: build system updates needed to copy build output to a dist
-      # staging directory.
-      mkdir -p $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
-      cp sw/host/spiflash/spiflash $(Build.ArtifactStagingDirectory)/dist/sw/host/spiflash
-    displayName: 'Build host targets'
-
 - job: "top_earlgrey_verilator"
   displayName: "Build Verilator simulation of the Earl Grey toplevel design"
   dependsOn: lint
@@ -228,6 +207,9 @@ jobs:
   dependsOn:
     - top_earlgrey_verilator
     - execute_verilated_tests
+  # TODO: re-enable this CI step once RISC-V compliance correctly calls into
+  # Meson. See #1181.
+  condition: False
   steps:
   - template: 'ci/install-package-dependencies.yml'
   - template: 'ci/download-artifacts-template.yml'
