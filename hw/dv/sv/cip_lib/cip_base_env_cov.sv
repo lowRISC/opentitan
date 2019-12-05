@@ -72,7 +72,7 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
       intr_test_cg = new(cfg.num_interrupts);
       intr_pins_cg = new(cfg.num_interrupts);
     end
-    if (cfg.num_alerts != 0) alert_cg = new(cfg.num_alerts);
+    if (cfg.list_of_alerts.size() != 0) alert_cg = new(cfg.list_of_alerts.size());
   endfunction
 
 endclass

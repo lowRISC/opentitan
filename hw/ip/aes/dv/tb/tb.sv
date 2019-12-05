@@ -15,12 +15,10 @@ module tb;
 
   wire clk, rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire [NUM_MAX_ALERTS-1:0] alerts;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(NUM_MAX_ALERTS) alerts_if(alerts);
   pins_if #(1) devmode_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
@@ -40,7 +38,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(alerts_vif)::set(null, "*.env", "alerts_vif", alerts_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
 //    uvm_config_db#(tlul_assert_vif)::set(null, "*.env", "tlul_assert_vif", tb.dut.tlul_assert);
     uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",

@@ -14,7 +14,6 @@ package dv_utils_pkg;
   // common parameters used across all benches
   parameter int NUM_MAX_INTERRUPTS  = 32;
   parameter int NUM_MAX_ALERTS      = 32;
-  parameter int NUM_ALERT_PINS      = 10;
 
   // types & variables
   typedef bit [31:0] uint;
@@ -25,19 +24,8 @@ package dv_utils_pkg;
 
   // typedef parameterized pins_if for ease of implementation for interrupts and alerts
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
-  typedef virtual pins_if #(NUM_MAX_ALERTS)     alerts_vif;
   typedef virtual pins_if #(1)                  devmode_vif;
   typedef virtual pins_if #(1)                  tlul_assert_ctrl_vif;
-
-  // alert io signals
-  typedef enum {
-    PingEn    = 0,
-    PingOk    = 1,
-    IntegFail = 2,
-    Alert     = 3,
-    AlertRx   = 4, // rx has 4 bits
-    AlertTx   = 8  // tx has 2 bits
-  } alert_pin_e;
 
   // interface direction / mode - Host or Device
   typedef enum bit {

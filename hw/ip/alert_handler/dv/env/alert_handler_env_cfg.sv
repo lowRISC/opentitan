@@ -26,7 +26,6 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
       if (rg != null) begin
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
-      num_alerts = 0;
     end
   endfunction
 

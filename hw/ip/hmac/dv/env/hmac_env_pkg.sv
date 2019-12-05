@@ -9,6 +9,7 @@ package hmac_env_pkg;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import tl_agent_pkg::*;
+  import alert_agent_pkg::*;
   import cryptoc_dpi_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
@@ -70,9 +71,6 @@ package hmac_env_pkg;
   typedef class hmac_env_cov;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
   typedef virtual pins_if #(1) d2h_a_ready_vif;
-
-  // TODO: need to standardize this and move into uvm generator
-  typedef virtual pins_if #(NUM_ALERT_PINS) msg_push_sha_disabled_alert_vif;
 
   // functions
 

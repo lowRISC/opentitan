@@ -49,6 +49,7 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   endtask
 
   task body();
+    run_alert_rsp_seq_nonblocking();
     for (int i = 1; i <= num_trans; i++) begin
       bit [7:0] msg_q[$];
       `DV_CHECK_RANDOMIZE_FATAL(this)

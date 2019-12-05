@@ -12,6 +12,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   tl_agent                    m_tl_agent;
   tl_reg_adapter              m_tl_reg_adapter;
+  alert_agent                 m_alert_agent[string];
 
   `uvm_component_new
 
@@ -33,10 +34,6 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         cfg.num_interrupts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(alerts_vif)::get(this, "", "alerts_vif", cfg.alerts_vif) &&
-        cfg.num_alerts > 0) begin
-      `uvm_fatal(get_full_name(), "failed to get alerts_vif from uvm_config_db")
-    end
     if (!uvm_config_db#(devmode_vif)::get(this, "", "devmode_vif", cfg.devmode_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
@@ -48,6 +45,16 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     // create components
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
     m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
+    // create alert agents and cfgs
+    foreach(cfg.list_of_alerts[i]) begin
+      string alert_name = cfg.list_of_alerts[i];
+      string agent_name = {"m_alert_agent_", alert_name};
+      m_alert_agent[alert_name] = alert_agent::type_id::create(agent_name, this);
+      cfg.m_alert_agent_cfg[alert_name] = alert_agent_cfg::type_id::create("m_alert_agent_cfg");
+      cfg.m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
+      uvm_config_db#(alert_agent_cfg)::set(this, agent_name, "cfg",
+          cfg.m_alert_agent_cfg[alert_name]);
+    end
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
   endfunction
 
@@ -59,6 +66,12 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     end
     if (cfg.is_active) begin
       virtual_sequencer.tl_sequencer_h = m_tl_agent.sequencer;
+    end
+    foreach(cfg.list_of_alerts[i]) begin
+      if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
+        virtual_sequencer.alert_sequencer_h[cfg.list_of_alerts[i]] =
+            m_alert_agent[cfg.list_of_alerts[i]].sequencer;
+      end
     end
   endfunction
 
