@@ -150,13 +150,13 @@ module i2c_fsm (
   always_comb begin : byte_number
     if (!fmt_flag_read_bytes_i) byte_num = 9'd0;
     else if (fmt_byte_i == 0) byte_num = 9'd256;
-    else byte_num = fmt_byte_i;
+    else byte_num = 9'(fmt_byte_i);
   end
 
   // Byte index implementation
   always_ff @ (posedge clk_i or negedge rst_ni) begin : byte_counter
     if (!rst_ni) begin
-      byte_index <= byte_num;
+      byte_index <= '0;
     end else if (byte_clr) begin
       byte_index <= byte_num;
     end else if (byte_decr) begin
