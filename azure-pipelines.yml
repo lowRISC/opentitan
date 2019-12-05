@@ -207,6 +207,48 @@ jobs:
     parameters:
       artifact: top_earlgrey_verilator
 
+- job: "execute_verilated_tests"
+  displayName: "Execute tests on the Verilated system"
+  pool: "Default"
+  dependsOn:
+    - top_earlgrey_verilator
+    - sw_build
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential python3-setuptools libelf1 tree
+      sudo pip3 install -r python-requirements.txt
+    displayName: 'Install dependencies'
+  - template: 'ci/download-artifacts-template.yml'
+  - bash: |
+      . util/build_consts.sh
+      export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
+      ci/run_verilator_pytest.sh
+    displayName: 'Execute tests'
+
+- job: "riscv_compliance_tests"
+  displayName: "Execute RISC-V compliance tests"
+  pool: "Default"
+  dependsOn:
+    - top_earlgrey_verilator
+    - execute_verilated_tests
+  steps:
+  - bash: |
+      sudo apt-get install -y python3 python3-pip build-essential srecord python3-setuptools zlib1g-dev libusb-1.0 libftdi1-dev libftdi1-2 libssl-dev libelf1 \
+        && sudo pip3 install -U -r python-requirements.txt
+    displayName: 'Install dependencies'
+  - template: 'ci/download-artifacts-template.yml'
+  - bash: |
+      . util/build_consts.sh
+      export TARGET_SIM="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
+      export RISCV_DEVICE=rv32imc
+      export RISCV_TARGET=opentitan
+      export OT_TARGET=verilator
+      export OT_TOOLS="$TOOLCHAIN_PATH/bin"
+      cd sw/vendor/riscv_compliance
+      # Only running base interger variant for now, others will be added later.
+      make RISCV_ISA=rv32i
+    displayName: 'Execute tests'
+
 - job: "top_earlgrey_nexysvideo"
   displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
   dependsOn:
@@ -241,21 +283,6 @@ jobs:
   - template: 'ci/upload-artifacts-template.yml'
     parameters:
       artifact: top_earlgrey_nexysvideo
-
-- job: "execute_verilated_tests"
-  displayName: "Execute tests on the Verilated system"
-  pool: "Default"
-  dependsOn:
-    - top_earlgrey_verilator
-    - sw_build
-  steps:
-  - template: 'ci/install-package-dependencies.yml'
-  - template: 'ci/download-artifacts-template.yml'
-  - bash: |
-      . util/build_consts.sh
-      export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
-      ci/run_verilator_pytest.sh
-    displayName: 'Execute tests'
 
 - job: "deploy_releaseartifacts"
   displayName: "Package and deploy release distribution"
