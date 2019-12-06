@@ -19,6 +19,7 @@
 *.h                 @moidx
 
 # Utils: reggen, topgen, tlgen
+/util/              @sjgitty
 util/*.py           @imphil @asb
 util/*gen/          @eunchan @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
