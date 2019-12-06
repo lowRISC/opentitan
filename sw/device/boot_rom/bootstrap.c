@@ -59,12 +59,13 @@ static void update_oled_progress(uint32_t frame_num, uint32_t frame_total) {
 static int bootstrap_requested(void) {
 // The following flash empty-sniff-check is done this way due to the lack of
 // clear eflash reset in SIM environments.
-#if defined(SIMULATION)
-  return !!(REG32(FLASH_MEM_BASE_ADDR) == 0 ||
-            REG32(FLASH_MEM_BASE_ADDR) == 0xFFFFFFFF);
-#else
-  return !!(gpio_read() & GPIO_BOOTSTRAP_BIT_MASK);
-#endif
+//#if defined(SIMULATION)
+//  return !!(REG32(FLASH_MEM_BASE_ADDR) == 0 ||
+//            REG32(FLASH_MEM_BASE_ADDR) == 0xFFFFFFFF);
+//#else
+//  return !!(gpio_read() & GPIO_BOOTSTRAP_BIT_MASK);
+//#endif
+  return 1;
 }
 
 /* Erase all flash, and verify blank. */
@@ -103,7 +104,11 @@ static int bootstrap_flash(void) {
     if (spid_bytes_available() >= sizeof(f)) {
       spid_read_nb(&f, sizeof(f));
       uint32_t frame_total = (f.hdr.frame_num & 0x7FFF0000) >> 16;
-      update_oled_progress(f.hdr.frame_num & 0xFFFF, frame_total);
+
+      if (frame_total != 0) {
+        update_oled_progress(f.hdr.frame_num & 0xFFFF, frame_total);
+      }
+
       uart_send_str("Processing frame no: ");
       uart_send_uint(f.hdr.frame_num, 32);
       uart_send_str(" exp no: ");

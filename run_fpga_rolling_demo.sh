@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [[ ! -v OT_FPGA_UART ]]; then
-  echo "$OT_FPGA_UART must be set to FPGA UART"
+  echo "\$OT_FPGA_UART must be set to FPGA UART"
   exit 1
 fi
 
@@ -17,14 +17,14 @@ do
 
   echo "Running RISC-V Compliance Suite..."
   ./riscv-compliance-logo.sh
-  pushd ./sw/vendor/riscv_compliance
+  pushd ./sw/vendor/riscv_compliance > /dev/null
   make --quiet RISCV_ISA=rv32i
-  popd
+  popd > /dev/null
 
-  echo "Running EmBench Suite..."
+  echo "Running Embench Suite..."
   ./embench-logo.sh
-  pushd ./sw/vendor/embench-iot
+  pushd ./sw/vendor/embench-iot > /dev/null
   ./run_benchmark.sh
-  popd
+  popd > /dev/null
 done
 
