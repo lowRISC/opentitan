@@ -18,7 +18,7 @@ Depending on the use case, these entities are not required to be distinct.
 ### Silicon Creator
 
 The Silicon Creator is the **logical entity**, or **logical collection of entities** that manufactures, packages, tests and provisions the chip with its first identity.
-This **"Creator Identity"** is a cryptographically unique seed that proves the chip has been properly manufactured, tested, provisioned and is thus authentic.
+This **"Creator Identity"** is a cryptographically produced unique seed that proves the chip has been properly manufactured, tested, provisioned and is thus authentic.
 
 The creator may be a collection of different entities.
 For example:
@@ -49,7 +49,7 @@ Detailed descriptions are given in the following sections.
 A potential owner validates the chip through a **Transport Creator Certificate** tied to the **"Creator Identity"**.
 After the Creator Identity is validated, the Silicon Owner assigns a second unique identity known as the **"Owner Identity"**.
 This identity is unique to the chip and owner combination,  optionally including the major version of the owner software stack, and is separate from the previous **"Creator Identity"**.
-It is the cryptographically unique seed that is owned by a specific owner for a given hardware and owner software configuration.
+It is the cryptographically produced unique seed that is owned by a specific owner for a given hardware and owner software configuration.
 
 The two identities (Owner and Creator) form a trusted chain analogous to certificate chaining which can be traced back to the root.
 
