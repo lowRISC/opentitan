@@ -66,6 +66,7 @@ has_function_printf = false
 #  '-funroll-all-loops',
 #  '-finline-functions',
 #  '-falign-jumps=4',
+#  '-fno-builtin',
 #  '-O3',
 #  '-static',
 #  '-Wall',
