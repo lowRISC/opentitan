@@ -35,9 +35,16 @@ class UARTThread(threading.Thread):
         self.found_clip_start      = False
         self.clip_pattern_pos      = 0
         self.in_clip_output_region = False
+        self.terminate             = False
+
+    def requestTerminate(self):
+        self.terminate = True
 
     def run(self):
         while True:
+            if(self.terminate):
+                break
+
             next_char = self.uart.read(1)
 
             if self.uart_log:
@@ -89,18 +96,20 @@ def run_cmd(cmd, timeout=5):
         )
 
         if cmd_res.returncode != 0:
-            logging.warning(f"{cmd[0]} Failed with {cmd_res.returncode}")
-            logging.warning(f"stdout: {cmd_res.stdout.decode('utf-8')}")
-            logging.warning(f"stderr: {cmd_res.stderr.decode('utf-8')}")
+            logging.critical(f"{cmd[0]} Failed with {cmd_res.returncode}")
+            logging.critical(f"stdout: {cmd_res.stdout.decode('utf-8')}")
+            logging.critical(f"stderr: {cmd_res.stderr.decode('utf-8')}")
         else:
             success = True
             logging.debug(f"stdout: {cmd_res.stdout.decode('utf-8')}")
             logging.debug(f"stderr: {cmd_res.stderr.decode('utf-8')}")
 
     except subprocess.TimeoutExpired:
-        logging.warning(f"{cmd[0]} timed out")
+        logging.critical(f"{cmd[0]} timed out")
     except FileNotFoundError:
-        logging.warning(f"{cmd[0]} binary not found")
+        logging.critical(f"{cmd[0]} binary not found")
+
+    return success
 
 def setup_uart(args):
     logging.info(f"Setting UART {args.fpga_uart} to baud {args.baud_rate}")
@@ -111,7 +120,7 @@ def setup_uart(args):
             str(args.baud_rate),
             'raw']
 
-    run_cmd(stty_cmd)
+    return run_cmd(stty_cmd)
 
 def run_bin(args):
     logging.info(f"Loading image {args.bin_file} using spiflash {args.spiflash}")
@@ -122,7 +131,7 @@ def run_bin(args):
         args.bin_file
     ]
 
-    run_cmd(spiflash_cmd, args.timeout)
+    return run_cmd(spiflash_cmd, args.timeout)
 
 def main():
     args = arg_parser.parse_args()
@@ -131,8 +140,13 @@ def main():
         logging.basicConfig(level='CRITICAL')
     else:
         logging.basicConfig(filename=args.log_prefix + '.log', level=args.log_level)
+        stderr_handler = logging.StreamHandler()
+        stderr_handler.setLevel('CRITICAL')
+        logging.getLogger().addHandler(stderr_handler)
 
-    setup_uart(args)
+    if not setup_uart(args):
+        logging.critical("UART setup failed, quitting")
+        return
 
     try:
         uart_thread = UARTThread(args)
@@ -142,7 +156,12 @@ def main():
         return
 
     uart_thread.start()
-    run_bin(args)
+
+    if not run_bin(args):
+        logging.critical("Could not run binary, quitting")
+        uart_thread.requestTerminate()
+        return
+
     uart_thread.join(timeout=args.timeout)
 
     if uart_thread.is_alive():
