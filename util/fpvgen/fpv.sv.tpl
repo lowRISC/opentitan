@@ -33,10 +33,11 @@ module ${dut.name}_fpv (
 % endfor
 );
 
-% if dut.params:
+<% params = dut.get_param_style("parameter") %>
+% if params:
   ${dut.name} #(
-% for k, param in enumerate(dut.params):
-  <% comma = "" if (k == len(dut.params)-1) else "," %>  .${param.name}(${param.name})${comma}
+% for k, param in enumerate(params):
+  <% comma = "" if (k == len(params)-1) else "," %>  .${param.name}(${param.name})${comma}
 % endfor
   ) i_${dut.name} (
 % else:
