@@ -188,7 +188,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; (
   `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_qs_path}), clk_i, !rst_ni)
       % elif reg_flat.get_n_bits(["d"]):
   `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_d_path}), clk_i, !rst_ni)
-      % elif reg_flat.get_n_bits(["q"]) and (r.ishomog or (not r.ishomog) and r.get_field_flat[0].get_n_bits(["q"])>0):
+      % elif reg_flat.get_n_bits(["q"]) and (r.ishomog or ((not r.ishomog) and r.get_fields_flat()[0].get_n_bits(["q"]))):
   `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_q_path}), clk_i, !rst_ni)
       % endif
     % endif
