@@ -10,9 +10,8 @@ filesets:
       - lowrisc:model:aes:0.5
 
     files:
-      # Note: VCS needs the c/h-files to be treated as systemVerilogSource
-      - aes_model_dpi.c: { file_type: systemVerilogSource}
-      - aes_model_dpi.h: { file_type: systemVerilogSource, is_include_file: true}
+      - aes_model_dpi.c: { file_type: cSource }
+      - aes_model_dpi.h: { file_type: cSource, is_include_file: true }
       - aes_model_dpi_pkg.sv: { file_type: systemVerilogSource }
 
 targets:
