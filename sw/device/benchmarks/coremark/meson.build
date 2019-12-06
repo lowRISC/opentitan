@@ -12,14 +12,16 @@ coremark_elf = executable(
   'coremark',
   sources: ['./top_earlgrey/core_portme.c',
             './top_earlgrey/ee_printf.c',
+            './top_earlgrey/cvt.c',
             coremark_base_files],
   name_suffix: 'elf',
   dependencies: [
     sw_lib_uart,
     sw_lib_mem,
     sw_lib_oled_display,
-    riscv_crt,
+    riscv_crt
   ],
+  link_args : ['-lm'],
   c_args : ['-DPERFORMANCE_RUN=1', iterations, '-DTOTAL_DATA_SIZE=2000', '-DMAIN_HAS_NOARGC=1', '-DOLED_DRIVER_INC_FONT']
 )
 

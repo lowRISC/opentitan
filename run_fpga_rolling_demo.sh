@@ -14,6 +14,7 @@ while :
 do
   echo "Running Coremark..."
   ./run_earlgrey_bin.py --bin_file ./build-bin/sw/device/fpga/benchmarks/coremark/coremark.bin --fpga_uart $OT_FPGA_UART --baud_rate $OT_FPGA_UART_BAUD --log --log_level DEBUG
+  sleep 2 # Sleep so coremark result can be seen on OLED
 
   echo "Running RISC-V Compliance Suite..."
   ./riscv-compliance-logo.sh

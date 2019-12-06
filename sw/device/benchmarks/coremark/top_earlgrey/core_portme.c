@@ -199,6 +199,28 @@ void dump_pcounts() {
   ee_printf("\n");
 }
 
+void output_coremark_mhz() {
+  uint32_t cycles;
+  float coremark_mhz;
+  char oled_out_buf[128];
+
+  cycles = barebones_clock();
+
+  coremark_mhz = 1000000.0f / ((float)cycles / (float)ITERATIONS);
+
+
+  ee_printf("CoreMark / MHz: %f\n", coremark_mhz);
+
+  ee_vsprintf(oled_out_buf, "%.2f", coremark_mhz);
+
+  oled_clear(1);
+
+  oled_write_str("CoreMark / MHz", 0, 2);
+  oled_write_str(oled_out_buf, 2, 12);
+
+  oled_write_disp();
+}
+
 /** Define Host specific (POSIX), or target specific global time variables. */
 static CORETIMETYPE start_time_val, stop_time_val;
 
@@ -215,7 +237,7 @@ void start_time(void) {
 
   oled_clear(1);
 
-  oled_write_str("CoreMark", 0, 0);
+  oled_write_str("CoreMark", 1, 8);
 
   oled_write_disp();
 
@@ -268,14 +290,7 @@ CORE_TICKS get_time(void) {
    macro above.
 */
 secs_ret time_in_secs(CORE_TICKS ticks) {
-  secs_ret remainder = ((secs_ret)ticks) % (secs_ret)EE_TICKS_PER_SEC;
-  secs_ret retval = ((secs_ret)ticks) / (secs_ret)EE_TICKS_PER_SEC;
-
-  // Round to nearest integer seconds
-  if(remainder >= (EE_TICKS_PER_SEC / 2))
-    return retval + 1;
-  else
-    return retval;
+  return ((secs_ret)ticks) / ((secs_ret)EE_TICKS_PER_SEC);
 }
 
 ee_u32 default_num_contexts = 1;
@@ -300,6 +315,7 @@ void portable_init(core_portable *p, int *argc, char *argv[]) {
         Target specific final code
 */
 void portable_fini(core_portable *p) {
+  output_coremark_mhz();
   dump_pcounts();
   ee_printf("#*#*#*\n");
   p->portable_id = 0;

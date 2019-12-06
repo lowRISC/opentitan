@@ -464,7 +464,7 @@ static char *flt(char *str, double num, int size, int precision, char fmt,
 
 #endif
 
-static int ee_vsprintf(char *buf, const char *fmt, va_list args) {
+static int ee_vsprintf_int(char *buf, const char *fmt, va_list args) {
   int len;
   unsigned long num;
   int i, base;
@@ -653,24 +653,33 @@ static int ee_vsprintf(char *buf, const char *fmt, va_list args) {
   return str - buf;
 }
 
-int ee_printf(const char *fmt, ...) {
-  char buf[256], *p;
+int ee_printf(const char *fmt, ...)
+{
+  char buf[256],*p;
   va_list args;
-  int n = 0;
+  int n=0;
 
   va_start(args, fmt);
-  ee_vsprintf(buf, fmt, args);
+  ee_vsprintf_int(buf, fmt, args);
   va_end(args);
-  p = buf;
+  p=buf;
   while (*p) {
-    if (*p == '\n') {
-      uart_send_char('\r');
-    }
-
-    uart_send_char(*p);
-    n++;
-    p++;
+	uart_send_char(*p);
+	n++;
+	p++;
   }
 
   return n;
+}
+
+int ee_vsprintf(char *buf, const char *fmt, ...)
+{
+  int ret;
+  va_list args;
+
+  va_start(args, fmt);
+  ret = ee_vsprintf_int(buf, fmt, args);
+  va_end(args);
+
+  return ret;
 }

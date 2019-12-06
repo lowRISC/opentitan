@@ -26,7 +26,7 @@ extern unsigned int _stack_start;
         Define to 1 if the platform supports floating point.
 */
 #ifndef HAS_FLOAT
-#define HAS_FLOAT 0
+#define HAS_FLOAT 1
 #endif
 /* Configuration : HAS_TIME_H
         Define to 1 if platform has the time.h header file,
@@ -202,5 +202,6 @@ void portable_fini(core_portable *p);
 #endif
 
 int ee_printf(const char *fmt, ...);
+int ee_vsprintf(char *buf, const char *fmt, ...);
 
 #endif /* CORE_PORTME_H */
