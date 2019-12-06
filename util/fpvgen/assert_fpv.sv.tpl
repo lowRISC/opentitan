@@ -37,16 +37,22 @@ module ${dut.name}_assert_fpv (
   // Declarations & Parameters //
   ///////////////////////////////
 
-  /////////////////////////
-  // Forward Assumptions //
-  /////////////////////////
+  /////////////////
+  // Assumptions //
+  /////////////////
 
   // `ASSUME(MyAssumption_M, ..., clk_i, !rst_ni)
+
+  ////////////////////////
+  // Forward Assertions //
+  ////////////////////////
+
+  // `ASSERT(MyFwdAssertion_A, ..., clk_i, !rst_ni)
 
   /////////////////////////
   // Backward Assertions //
   /////////////////////////
 
-  // `ASSUME(MyAssertions_A, ..., clk_i, !rst_ni)
+  // `ASSERT(MyBkwdAssertion_A, ..., clk_i, !rst_ni)
 
 endmodule : ${dut.name}_assert_fpv
