@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:prim_fifo_sync_fpv:0.1"
+description: "prim_fifo_sync FPV target"
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - vip/prim_fifo_sync_assert_fpv.sv
+      - tb/prim_fifo_sync_bind_fpv.sv
+      - tb/prim_fifo_sync_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_fpv
+    toplevel: prim_fifo_sync_fpv
