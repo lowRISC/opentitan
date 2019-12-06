@@ -50,6 +50,12 @@ class Dut():
         self.deps = deps_
         self.is_cip = is_cip_
 
+    # filters out localparams
+    def get_param_style(self, style):
+      params = []
+      for p in self.params:
+        params += [p] if p.style == style else []
+      return params
 
 # strip // comments
 def strip_comments(buf):
