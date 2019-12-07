@@ -3,18 +3,18 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:fpv:pinmux_fpv:0.1"
-description: "PIINMUX FPV target"
+description: "pinmux FPV target"
 filesets:
   files_fpv:
     depend:
+      - lowrisc:prim:all
       - lowrisc:ip:tlul
-      # note: this is an example config which may differ
-      # from a particular top-level config
       - lowrisc:ip:pinmux
     files:
-      - tb/pinmux_fpv.sv
-      - tb/pinmux_bind_fpv.sv
       - vip/pinmux_assert_fpv.sv
+      - tb/pinmux_bind_fpv.sv
+      - tb/pinmux_fpv.sv
+      - vip/pinmux_csr_assert_fpv.sv
     file_type: systemVerilogSource
 
 targets:
