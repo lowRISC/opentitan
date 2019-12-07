@@ -28,7 +28,8 @@ module ${dut.name}_bind_fpv;
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),
-    .d2h  (tl_o)
+    .d2h  (tl_o),
+    .*
   );
 
   bind ${dut.name} ${dut.name}_csr_assert_fpv i_${dut.name}_csr_assert_fpv (
