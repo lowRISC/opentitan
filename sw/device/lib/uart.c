@@ -5,6 +5,7 @@
 #include "sw/device/lib/uart.h"
 
 #include "sw/device/lib/common.h"
+#include "uart_regs.h"  // Generated.
 
 inline void uart_init(unsigned int baud) {
   // nco = 2^20 * baud / fclk

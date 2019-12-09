@@ -2,20 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <string.h>
-
-#include "common.h"
-#include "uart.h"
+#include "sw/device/lib/common.h"
+#include "sw/device/lib/uart.h"
 
 #define SIM_TERM_ADDR 0x10008000
 extern uint32_t begin_signature[];
 extern uint32_t end_signature[];
 
 void dump_signature(void) {
-
+  uart_init(UART_BAUD_RATE);
 
   uint32_t size = end_signature - begin_signature;
-  uart_init(UART_BAUD_RATE);
   for (uint32_t i = 0; i < size; ++i) {
     uart_send_str("SIG: ");
     uart_send_uint(REG32(begin_signature + i), 32);

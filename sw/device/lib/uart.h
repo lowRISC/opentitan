@@ -9,8 +9,6 @@
 
 #define UART0_BASE_ADDR 0x40000000
 
-#include "uart_regs.h"  // Generated.
-
 void uart_send_char(char c);
 
 /**

@@ -13,16 +13,18 @@ TRAPHANDLER   = $(OPENTITAN)/handler.S
 DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DTRAPHANDLER="\"$(TRAPHANDLER)\""
 TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 
+MESON_BUILD_ROOT = $(work_dir_isa)/meson-build
+
 ifeq ($(OT_TARGET),fpga)
 	CARG =
-	MAKEARG =
+	NINJA_TARGET = fpga
 	PYTEST_OPT = --fpga_uart $(OT_FPGA_UART) --spiflash $(OT_ROOT)/sw/host/spiflash/spiflash \
 		--test_bin $(work_dir_isa)/$<.bin
 else
 	CARG = -DSIMULATION=1
-	MAKEARG = SIM=1
+	NINJA_TARGET = sim-verilator
 	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(work_dir_isa)/$<.vmem \
-		--rom_bin $(OT_ROOT)/build/sw/device/boot_rom/rom.vmem
+		--rom_bin $(MESON_BUILD_ROOT)/build-bin/sw/device/sim-verilator/boot_rom/boot_rom.vmem
 endif
 
 
@@ -47,28 +49,48 @@ RISCV_NM       ?= ${OT_TOOLS}/riscv32-unknown-elf-nm
 RISCV_READELF  ?= ${OT_TOOLS}/riscv32-unknown-elf-readelf
 RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g
 
-
 # The compile target recipe re-uses the boot rom library.
 # This will be changed in the future when the compliance tests directly build
 # their own libraries
 # After the libraries are built, the necessary collateral (vmem for verilator, bin
 # for fpga) are created
 COMPILE_TARGET=\
-        make -C $$(OT_SW) SW_DIR=boot_rom $(MAKEARG) RV_TOOLS=$(OT_TOOLS) clean all; \
+  export BUILD_ROOT=$(MESON_BUILD_ROOT); \
+	mkdir -p $(MESON_BUILD_ROOT); \
+	cd $(OT_ROOT); \
+	./meson_init.sh; \
+	cd -; \
+	ninja -C "$(MESON_BUILD_ROOT)/build-out/sw/$(NINJA_TARGET)" all; \
+	\
 	$$(RISCV_GCC) $(2) $$(RISCV_GCC_OPTS) \
+		-I$(OT_ROOT) \
 		-I$(ROOTDIR)/riscv-test-env/ \
 		-I$(ROOTDIR)/riscv-test-env/p/ \
-                -I$(OT_SW)/lib \
-                -I$(OT_ROOT)/build/sw/device/boot_rom/lib \
 		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
-		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
-		$(DEFINES) -T$(LDSCRIPT) $$< \
-                $(OPENTITAN)/wrap.c \
-                -L$(OT_ROOT)/build/sw/device/boot_rom/lib \
-                -lot \
+		$(DEFINES) \
+		-T$(LDSCRIPT) \
+		$$< \
+		$(OPENTITAN)/wrap.c \
+		-L$(MESON_BUILD_ROOT)/build-out/sw/$(NINJA_TARGET)/sw/device/lib \
+		-luart_ot \
 		-o $(work_dir_isa)/$$@; \
-        $$(RISCV_OBJDUMP) -SD $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.objdump; \
-        $$(RISCV_READELF) -a $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.readelf; \
-        $$(RISCV_NM) $(work_dir_isa)/$$@ > $(work_dir_isa)/$$@.nm; \
-        $$(RISCV_OBJCOPY) -O binary $(work_dir_isa)/$$@ $(work_dir_isa)/$$@.bin; \
-        srec_cat $(work_dir_isa)/$$@.bin -binary -offset 0x0000 -byte-swap 4 -o $(work_dir_isa)/$$@.vmem -vmem
+	\
+	$$(RISCV_OBJDUMP) \
+		-SD $(work_dir_isa)/$$@ \
+		> $(work_dir_isa)/$$@.objdump; \
+	$$(RISCV_READELF) \
+		-a $(work_dir_isa)/$$@ \
+		> $(work_dir_isa)/$$@.readelf; \
+	$$(RISCV_NM) \
+		$(work_dir_isa)/$$@ \
+		> $(work_dir_isa)/$$@.nm; \
+	$$(RISCV_OBJCOPY) \
+		-O binary \
+		$(work_dir_isa)/$$@ \
+		$(work_dir_isa)/$$@.bin; \
+	srec_cat $(work_dir_isa)/$$@.bin \
+		-binary \
+		-offset 0x0000 \
+		-byte-swap 4 \
+		-o $(work_dir_isa)/$$@.vmem \
+		-vmem
