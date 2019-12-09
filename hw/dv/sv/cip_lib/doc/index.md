@@ -189,10 +189,15 @@ Some examples:
 * **task cfg_interrupts, check_interrupts**: All interrupt CSRs are standardized
   according to the comportability spec, which allows us to create common tasks
   to turn on / off interrupts as well as check them.
-* **task run_stress_all_with_rand_reset_vseq**: This is a common virtual
-  sequence based on the stress_all virtual sequence. This virtual sequence
-  will randomly reset the stress_all sequence, then it will check if all
-  the readable registers are reset to the correct value.
+* **task run_tl_errors_vseq**: This task will test all kinds of TileLink error
+  cases, including unmapped address error, protocol error, memory access error
+  etc. All the items sent in this task will trigger d_error and won't change the
+  CSR/memory value.
+* **task run_stress_all_with_rand_reset_vseq**: This task runs 3 parallel threads,
+  which are ip_stress_all_vseq, run_tl_errors_vseq and reset sequence. After
+  reset occurs, the other threads will be killed and then all the CSRs will be read
+  for check. This task runs multiple iterations to ensure DUT won't be broken after
+  reset and TL errors.
   To ensure the reset functionality works correctly, user will have to disable
   any internal reset from the stress_all sequence. Below is an example of
   disabling internal reset in `hmac_stress_all_vseq.sv`:

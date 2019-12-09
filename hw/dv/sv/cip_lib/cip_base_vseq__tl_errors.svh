@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Shorthand to create and send a TL error seq
-// TODO use low priority to send error item to TL agent, so when crossing error item with normal
-// seq, normal seq has the priority to access TL driver
+// Set low priority (1) to send error item to TL agent, so when crossing error item with normal
+// seq, normal seq with default priority (100) has the priority to access TL driver
 `define create_tl_access_error_case(task_name_, with_c_, seq_t_ = tl_host_custom_seq) \
   begin \
     seq_t_ tl_seq; \
@@ -16,7 +16,7 @@
     end \
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_) \
     csr_utils_pkg::increment_outstanding_access(); \
-    `uvm_send(tl_seq) \
+    `uvm_send_pri(tl_seq, 1) \
     csr_utils_pkg::decrement_outstanding_access(); \
   end
 

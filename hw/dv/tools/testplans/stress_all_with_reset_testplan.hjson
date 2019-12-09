@@ -5,8 +5,9 @@
   entries: [
     {
       name: stress_all_with_rand_reset
-      desc: '''This test insert random reset during the stress_all test. After reset is asserted,
-            the test will read and check all valid CSR registers.'''
+      desc: '''This test runs 3 parallel threads - stress_all, tl_errors and random reset.
+            After reset is asserted, the test will read and check all valid CSR registers.
+            '''
       milestone: V2
       tests: ["{name}_stress_all_with_rand_reset"]
     }
