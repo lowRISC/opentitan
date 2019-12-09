@@ -118,6 +118,7 @@ int main(int argc, char **argv) {
   char cipher_text[MAX_LENGTH_TEXT];
   char aes_key[LENGTH_KEY] = "This key is not really secret.";
   int num_blocks = MAX_LENGTH_TEXT / 16;
+  int num_chars = MAX_LENGTH_TEXT;
   char digest_initial[32];
   char digest_final[32];
 
@@ -144,10 +145,11 @@ int main(int argc, char **argv) {
   overwrite_string(aes_key, LENGTH_KEY);
   uart_send_str("\r\n");
 
-  // Determine number of 16-byte blocks to encode
+  // Determine number of 16-byte blocks to encrypt, number of characters to hash
   for (int i = 0; i < MAX_LENGTH_TEXT; ++i) {
     if (plain_text[i] == '\0') {
       num_blocks = i / 16;
+      num_chars = i;
       if (num_blocks * 16 < i) {
         ++num_blocks;
       }
@@ -156,10 +158,11 @@ int main(int argc, char **argv) {
   }
 
   // Calculate hash over plain text before encryption.
-  hw_SHA256_hash(plain_text, ARRAYSIZE(plain_text), (uint8_t *)digest_initial);
+  hw_SHA256_hash(plain_text, num_chars, (uint8_t *)digest_initial);
 
   uart_send_str("Plain text hash: \r\n");
   print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
+  uart_send_str("\n");
 
   // Configure AES key
   aes_key_put((const void *)aes_key, aes_cfg.key_len);
@@ -185,7 +188,7 @@ int main(int argc, char **argv) {
   uart_send_str("\"\r\n\n");
 
   // Calculate hash over recovered plain text after decryption.
-  hw_SHA256_hash(plain_text, ARRAYSIZE(plain_text), (uint8_t *)digest_final);
+  hw_SHA256_hash(plain_text, num_chars, (uint8_t *)digest_final);
   if (check_hash(digest_initial, digest_final)) {
     uart_send_str("Detected hash mismatch on decrypted data!. Got: \r\n");
     print_hex_buffer(digest_final, ARRAYSIZE(digest_final));
