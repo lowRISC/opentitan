@@ -36,19 +36,19 @@ int main(int argc, char **argv) {
   uart_send_str("Running AES test\r\n");
 
   // Setup AES config
-  aes_cfg_t aes_cfg;
-  aes_cfg.mode = kAesEnc;
-  aes_cfg.key_len = kAes256;
-  aes_cfg.manual_start_trigger = false;
-  aes_cfg.force_data_overwrite = false;
+  aes_cfg_t aes_cfg = {
+      .key_len = kAes256,
+      .manual_start_trigger = false,
+      .force_data_overwrite = false,
+  };
 
-  aes_key_put((const void *)key_32_1, aes_cfg.key_len);
+  aes_key_put(key_32_1, aes_cfg.key_len);
 
   // Encode
   aes_cfg.mode = kAesEnc;
   aes_init(aes_cfg);
-  aes_data_put_wait((const void *)plain_text_1);
-  aes_data_get_wait((void *)buffer);
+  aes_data_put_wait(plain_text_1);
+  aes_data_get_wait(buffer);
 
   // Check against golden cipher text
   for (int i = 0; i < 16; i++) {
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
   // Decode
   aes_cfg.mode = kAesDec;
   aes_init(aes_cfg);
-  aes_data_put_wait((const void *)buffer);
-  aes_data_get_wait((void *)buffer);
+  aes_data_put_wait(buffer);
+  aes_data_get_wait(buffer);
 
   // Check against input plain text
   for (int i = 0; i < 16; i++) {
@@ -75,11 +75,8 @@ int main(int argc, char **argv) {
 
   if (has_error) {
     uart_send_str("FAIL!\r\n");
-    while (1) {
-    }
   } else {
     uart_send_str("PASS!\r\n");
-    __asm__ volatile("wfi;");
   }
 
   return 0;
