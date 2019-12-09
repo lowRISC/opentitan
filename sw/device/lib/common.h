@@ -48,8 +48,6 @@ static const unsigned long UART_BAUD_RATE = 230400;
 void *memcpy(void *restrict dest, const void *restrict src, size_t n);
 void *memset(void *dest, int val, size_t n);
 
-size_t strlen(const char *s);
-
 void abort(void);
 
 #endif
