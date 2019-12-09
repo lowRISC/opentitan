@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/aes.h"
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/gpio.h"
 #include "sw/device/lib/hw_sha256.h"
 #include "sw/device/lib/uart.h"
 
@@ -111,7 +112,17 @@ int check_hash(char initial[32], char final[32]) {
 
 int main(int argc, char **argv) {
   uart_init(UART_BAUD_RATE);
-  uart_send_str("Running AES HMAC demo\r\n");
+  uart_send_str("Running AES HMAC demo\r\n\n");
+
+  // Enable GPIO: 0-7 and 16 is input, 8-15 is output
+  gpio_init(0xFF00);
+
+  // Feedback switch status to LEDs
+  uint8_t switches = gpio_read() & 0xFF;
+  gpio_write_all(switches << 8);
+
+  // Enable/disable interactive mode based on Switch 0
+  bool interactive = switches & 0x1;
 
   // Global variables
   char plain_text[MAX_LENGTH_TEXT] = "Welcome to the RISC-V Summit 2019!";
@@ -131,18 +142,22 @@ int main(int argc, char **argv) {
   uart_send_str("I will encode and hash the following plain text: \r\n\"");
   uart_send_str(plain_text);
   uart_send_str("\"\r\n");
-  uart_send_str(
-      "Please enter your own plain text to change it. Otherwise hit "
-      "ENTER.\r\n");
-  overwrite_string(plain_text, MAX_LENGTH_TEXT);
+  if (interactive) {
+    uart_send_str(
+        "Please enter your own plain text to change it. Otherwise hit "
+        "ENTER.\r\n");
+    overwrite_string(plain_text, MAX_LENGTH_TEXT);
+  }
   uart_send_str("\r\n");
 
   uart_send_str("I will use the following AES-256 key: \r\n\"");
   uart_send_str(aes_key);
   uart_send_str("\"\r\n");
-  uart_send_str(
-      "Please enter your own key to change it. Otherwise hit ENTER.\r\n");
-  overwrite_string(aes_key, LENGTH_KEY);
+  if (interactive) {
+    uart_send_str(
+        "Please enter your own key to change it. Otherwise hit ENTER.\r\n");
+    overwrite_string(aes_key, LENGTH_KEY);
+  }
   uart_send_str("\r\n");
 
   // Determine number of 16-byte blocks to encrypt, number of characters to hash
