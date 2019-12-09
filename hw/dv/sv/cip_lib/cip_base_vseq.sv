@@ -98,7 +98,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 } else {
                   opcode  == tlul_pkg::Get;
                 })
-        `uvm_send(tl_seq)
+        `uvm_send_pri(tl_seq, 100)
         if (!write) data = tl_seq.rsp.d_data;
         if (check_rsp && !cfg.under_reset) begin
           `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
@@ -326,28 +326,37 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // task to insert random reset within the input vseqs list, then check all CSR values
-  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1);
+  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1, bit do_tl_err = 1);
     string stress_seq_name;
     void'($value$plusargs("stress_seq=%0s", stress_seq_name));
 
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
       bit do_read_and_check_all_csrs;
+      // use weight arbitration to lower the priority of tl_error seq
+      if (do_tl_err) p_sequencer.tl_sequencer_h.set_arbitration(UVM_SEQ_ARB_WEIGHTED);
       fork
         begin: isolation_fork
           fork : run_test_seqs
             begin : seq_wo_reset
-              uvm_sequence seq;
-              dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) dv_vseq;
+              fork
+                begin : tl_err_seq
+                  if (do_tl_err) run_tl_errors_vseq(.num_times($urandom_range(10, 1000)));
+                end
+                begin : stress_seq
+                  uvm_sequence seq;
+                  dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) dv_vseq;
 
-              seq = create_seq_by_name(stress_seq_name);
-              `downcast(dv_vseq, seq)
-              dv_vseq.do_dut_init = 0;
-              dv_vseq.set_sequencer(p_sequencer);
-              `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
-              dv_vseq.start(p_sequencer);
-              wait (ongoing_reset == 0)
-               `uvm_info(`gfn, $sformatf("Finished run %0d/%0d w/o reset", i, num_trans), UVM_LOW)
+                  seq = create_seq_by_name(stress_seq_name);
+                  `downcast(dv_vseq, seq)
+                  dv_vseq.do_dut_init = 0;
+                  dv_vseq.set_sequencer(p_sequencer);
+                  `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
+                  dv_vseq.start(p_sequencer);
+                end
+              join
+              wait (ongoing_reset == 0);
+              `uvm_info(`gfn, $sformatf("Finished run %0d/%0d w/o reset", i, num_trans), UVM_LOW)
             end
             begin : issue_rand_reset
               cfg.clk_rst_vif.wait_clks(delay_to_reset);

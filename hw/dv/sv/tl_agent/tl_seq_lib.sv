@@ -41,7 +41,7 @@ class tl_host_seq extends dv_base_seq #(.REQ        (tl_seq_item),
               break;
             end
           end // foreach
-          if (!found_req) begin
+          if (!found_req && !csr_utils_pkg::under_reset) begin
             `uvm_error(`gfn, $sformatf("fail to find matching req for rsp[%0d]: %0s",
                                        i, rsp.convert2string()))
           end

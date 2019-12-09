@@ -193,7 +193,7 @@ package csr_utils_pkg;
         fork
           begin
             increment_outstanding_access();
-            csr.update(.status(status), .path(path), .map(map));
+            csr.update(.status(status), .path(path), .map(map), .prior(100));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
@@ -243,7 +243,7 @@ package csr_utils_pkg;
         fork
           begin
             increment_outstanding_access();
-            csr.write(.status(status), .value(value), .path(path), .map(map));
+            csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
@@ -296,9 +296,11 @@ package csr_utils_pkg;
             increment_outstanding_access();
             csr_or_fld = decode_csr_or_field(ptr);
             if (csr_or_fld.field != null) begin
-              csr_or_fld.field.read(.status(status), .value(value), .path(path), .map(map));
+              csr_or_fld.field.read(.status(status), .value(value), .path(path), .map(map),
+                                    .prior(100));
             end else begin
-              csr_or_fld.csr.read(.status(status), .value(value), .path(path), .map(map));
+              csr_or_fld.csr.read(.status(status), .value(value), .path(path), .map(map),
+                                  .prior(100));
             end
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
@@ -452,7 +454,7 @@ package csr_utils_pkg;
         fork
           begin
             increment_outstanding_access();
-            ptr.read(.status(status), .offset(offset), .value(data), .map(map));
+            ptr.read(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
@@ -501,7 +503,7 @@ package csr_utils_pkg;
         fork
           begin
             increment_outstanding_access();
-            ptr.write(.status(status), .offset(offset), .value(data), .map(map));
+            ptr.write(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
