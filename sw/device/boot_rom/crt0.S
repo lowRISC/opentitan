@@ -4,105 +4,121 @@
 
   .section .text
 
+/**
+ * Default exception handler; loops forever.
+ */
 exception_handler:
-  jal x0, exception_handler
+  j exception_handler
 
+/**
+ * Default interrupt handler; loops forever.
+ */
 default_irq_handler:
-  jal x0, default_irq_handler
+  j default_irq_handler
 
+/**
+ * Entry point after reset.
+ *
+ * Sets up the stack, then jumps to |_start|.
+ */
 reset_handler:
-  /* set all registers to zero */
-  mv  x1, x0
-  mv  x2, x1
-  mv  x3, x1
-  mv  x4, x1
-  mv  x5, x1
-  mv  x6, x1
-  mv  x7, x1
-  mv  x8, x1
-  mv  x9, x1
-  mv x10, x1
-  mv x11, x1
-  mv x12, x1
-  mv x13, x1
-  mv x14, x1
-  mv x15, x1
-  mv x16, x1
-  mv x17, x1
-  mv x18, x1
-  mv x19, x1
-  mv x20, x1
-  mv x21, x1
-  mv x22, x1
-  mv x23, x1
-  mv x24, x1
-  mv x25, x1
-  mv x26, x1
-  mv x27, x1
-  mv x28, x1
-  mv x29, x1
-  mv x30, x1
-  mv x31, x1
+  // Clobber all writeable registers.
+  li  x1, 0x0
+  li  x2, 0x0
+  li  x3, 0x0
+  li  x4, 0x0
+  li  x5, 0x0
+  li  x6, 0x0
+  li  x7, 0x0
+  li  x8, 0x0
+  li  x9, 0x0
+  li  x10, 0x0
+  li  x11, 0x0
+  li  x12, 0x0
+  li  x13, 0x0
+  li  x14, 0x0
+  li  x15, 0x0
+  li  x16, 0x0
+  li  x17, 0x0
+  li  x18, 0x0
+  li  x19, 0x0
+  li  x20, 0x0
+  li  x21, 0x0
+  li  x22, 0x0
+  li  x23, 0x0
+  li  x24, 0x0
+  li  x25, 0x0
+  li  x26, 0x0
+  li  x27, 0x0
+  li  x28, 0x0
+  li  x29, 0x0
+  li  x30, 0x0
+  li  x31, 0x0
 
-  /* stack initilization */
-  la   x2, _stack_start
+  // Set up the stack.
+  la  sp, _stack_start
 
+  // Explicit fall-through to |_start|.
+
+/**
+ * Callable entry point for the boot rom.
+ *
+ * Currently, this only zeroes the |.bss| section, and, as such, any code
+ * that currently uses the |.data| segment will not work.
+ */
 _start:
-  .global _start
+  .globl _start
 
-  /* clear BSS */
-  la x26, _bss_start
-  la x27, _bss_end
-
-  bge x26, x27, zero_loop_end
-
+  // Zero out the BSS segment.
+  la  t0, _bss_start
+  la  t1, _bss_end
+  bge t0, t1, zero_loop_end
 zero_loop:
-  sw x0, 0(x26)
-  addi x26, x26, 4
-  ble x26, x27, zero_loop
+  sw    zero, 0(t0)
+  addi  t0, t0, 0x4
+  ble   t0, t1, zero_loop
 zero_loop_end:
 
+  // Jump into the main program entry point.
+  li    a0, 0x0  // argc = 0
+  li    a1, 0x0  // argv = 0
+  call  main
 
-main_entry:
-  /* jump to main program entry point (argc = argv = 0) */
-  addi x10, x0, 0
-  addi x11, x0, 0
-  jal x1, main
-
-/* ====================== [ exceptions & interrupts ] =================== */
-/* This section has to be down here, since we have to disable rvc for it  */
-
+/**
+ * Exception and interrupt handlers.
+ *
+ * This must be a separate section, since we disable RVC for it.
+ */
   .section .vectors, "ax"
   .option norvc;
 
-  // exception handler
+  // Exception handler.
   .org 0x00
-  jal x0, exception_handler
+  j exception_handler
 
-  /* use the same default handler for all interrupts */
-  // software interrupt handler
+  // Software interrupt handler.
   .org 0x0c
-  jal x0, default_irq_handler
+  j default_irq_handler
 
-  // timer interrupt handler
+  // Timer interrupt handler.
   .org 0x1c
-  jal x0, default_irq_handler
+  j default_irq_handler
 
-  // external interrupt handler
+  // External interrupt handler
   .org 0x2c
-  jal x0, default_irq_handler
+  j default_irq_handler
 
-  // fast interrupts 0 - 14
+  // Fast interrupts, 0 through 14.
   .org 0x40
   .rept 14
   nop
   .endr
-  jal x0, default_irq_handler
+  j default_irq_handler
 
-  // non-maskable interrupt handler
+  // Non-maskable interrupt (NMI) handler.
   .org 0x7c
-  jal x0, default_irq_handler
+  j default_irq_handler
 
-  // reset vector
+  // Reset vector, the initial entry point after reset.
   .org 0x80
-  jal x0, reset_handler
+  j reset_handler
