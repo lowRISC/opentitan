@@ -283,9 +283,7 @@ module aes_core #(
   /////////////
 
   // Control
-  aes_control #(
-  .AES192Enable (AES192Enable)
-  ) aes_control (
+  aes_control aes_control (
     .clk_i                  ( clk_i                              ),
     .rst_ni                 ( rst_ni                             ),
 
