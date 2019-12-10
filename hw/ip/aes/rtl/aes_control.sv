@@ -215,10 +215,10 @@ module aes_control #(
                 unique case (mode_i)
                   AES_ENC: key_words_sel_o = KEY_WORDS_0123;
                   AES_DEC: key_words_sel_o = KEY_WORDS_2345;
-                  default: key_words_sel_o = key_words_sel_e'(1'bX);
+                  default: key_words_sel_o = KEY_WORDS_ZERO;
                 endcase
               end else begin
-                key_words_sel_o = key_words_sel_e'(1'bX);
+                key_words_sel_o = KEY_WORDS_ZERO;
               end
             end
 
@@ -226,11 +226,11 @@ module aes_control #(
               unique case (mode_i)
                 AES_ENC:   key_words_sel_o = KEY_WORDS_0123;
                 AES_DEC:   key_words_sel_o = KEY_WORDS_4567;
-                default:   key_words_sel_o = key_words_sel_e'(1'bX);
+                default:   key_words_sel_o = KEY_WORDS_ZERO;
               endcase
             end
 
-            default: key_words_sel_o = key_words_sel_e'(1'bX);
+            default: key_words_sel_o = KEY_WORDS_ZERO;
           endcase
         end
 
@@ -263,10 +263,10 @@ module aes_control #(
                 unique case (mode_i)
                   AES_ENC: key_words_sel_o = KEY_WORDS_2345;
                   AES_DEC: key_words_sel_o = KEY_WORDS_0123;
-                  default: key_words_sel_o = key_words_sel_e'(1'bX);
+                  default: key_words_sel_o = KEY_WORDS_ZERO;
                 endcase
               end else begin
-                key_words_sel_o = key_words_sel_e'(1'bX);
+                key_words_sel_o = KEY_WORDS_ZERO;
               end
             end
 
@@ -274,11 +274,11 @@ module aes_control #(
               unique case (mode_i)
                 AES_ENC:   key_words_sel_o = KEY_WORDS_4567;
                 AES_DEC:   key_words_sel_o = KEY_WORDS_0123;
-                default:   key_words_sel_o = key_words_sel_e'(1'bX);
+                default:   key_words_sel_o = KEY_WORDS_ZERO;
               endcase
             end
 
-            default: key_words_sel_o = key_words_sel_e'(1'bX);
+            default: key_words_sel_o = KEY_WORDS_ZERO;
           endcase
         end
 
@@ -320,10 +320,10 @@ module aes_control #(
                 unique case (mode_i)
                   AES_ENC: key_words_sel_o = KEY_WORDS_2345;
                   AES_DEC: key_words_sel_o = KEY_WORDS_0123;
-                  default: key_words_sel_o = key_words_sel_e'(1'bX);
+                  default: key_words_sel_o = KEY_WORDS_ZERO;
                 endcase
               end else begin
-                key_words_sel_o = key_words_sel_e'(1'bX);
+                key_words_sel_o = KEY_WORDS_ZERO;
               end
             end
 
@@ -331,11 +331,11 @@ module aes_control #(
               unique case (mode_i)
                 AES_ENC:   key_words_sel_o = KEY_WORDS_4567;
                 AES_DEC:   key_words_sel_o = KEY_WORDS_0123;
-                default:   key_words_sel_o = key_words_sel_e'(1'bX);
+                default:   key_words_sel_o = KEY_WORDS_ZERO;
               endcase
             end
 
-            default: key_words_sel_o = key_words_sel_e'(1'bX);
+            default: key_words_sel_o = KEY_WORDS_ZERO;
           endcase
         end
 
@@ -381,7 +381,7 @@ module aes_control #(
         aes_ctrl_ns = IDLE;
       end
 
-      default: aes_ctrl_ns = aes_ctrl_e'(1'bX);
+      default: aes_ctrl_ns = IDLE;
     endcase
   end
 
@@ -450,5 +450,20 @@ module aes_control #(
   assign key_clear_o         = 1'b0;
   assign data_in_clear_o     = 1'b0;
   assign data_out_clear_o    = 1'b0;
+
+  // Selectors must be known/valid
+  `ASSERT_KNOWN(AesModeKnown, mode_i, clk_i, !rst_ni)
+  `ASSERT(AesKeyLenValid, key_len_i inside {
+      AES_128,
+      AES_192,
+      AES_256
+      }, clk_i, !rst_ni)
+  `ASSERT(AesControlStateValid, aes_ctrl_cs inside {
+      IDLE,
+      INIT,
+      ROUND,
+      FINISH,
+      CLEAR
+      }, clk_i, !rst_ni)
 
 endmodule
