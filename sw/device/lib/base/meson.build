@@ -12,3 +12,11 @@ sw_lib_mem = declare_dependency(
     c_args: ['-fno-builtin'],
   )
 )
+
+# MMIO register manipulation library
+sw_lib_mmio = declare_dependency(
+  link_with: static_library(
+    'mmio_ot',
+    sources: ['mmio.c'],
+  )
+)
