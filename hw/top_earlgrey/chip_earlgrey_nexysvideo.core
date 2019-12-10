@@ -16,6 +16,14 @@ filesets:
       - rtl/autogen/chip_earlgrey_nexysvideo.sv
     file_type: systemVerilogSource
 
+  files_sw:
+    files:
+      # Memory initialization files are copied into the work root to make them
+      # available to the design in a predictable location.
+      - ../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.scr.40.vmem: {copyto: boot_rom.vmem }
+      - ../../build-bin/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem: { copyto: otp_img.vmem }
+    file_type: mem
+
   files_constraints:
     files:
       - data/clocks.xdc
@@ -26,28 +34,25 @@ filesets:
   files_tcl:
     files:
       - util/vivado_setup_hooks.tcl: { file_type: tclSource }
-      # File copied by fusesoc into the workroot (the file containing the
+      # File copied by fusesoc into the work root (the file containing the
       # .eda.yml file), and referenced from vivado_setup_hooks.tcl
       - util/vivado_hook_synth_design_pre.tcl: { file_type: user, copyto: vivado_hook_synth_design_pre.tcl }
       - util/vivado_hook_write_bitstream_pre.tcl: { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
       - util/vivado_hook_opt_design_post.tcl: { file_type: user, copyto: vivado_hook_opt_design_post.tcl }
 
 parameters:
-  # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
-  # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
-  # --BootRomInitFile=$PWD/build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.scr.40.vmem
-  # XXX: The VMEM file should be added to the sources of the Vivado project to
-  # make the Vivado dependency tracking work. However this requires changes to
-  # fusesoc first.
+  # Paths to memory initialization files are relative to the work root FuseSoC
+  # operates in. The files are copied to this location by FuseSoC when it sets
+  # up the build. See also the section |files_sw| above.
   BootRomInitFile:
     datatype: str
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
-    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.scr.40.vmem"
+    default: boot_rom.vmem
     paramtype: vlogparam
   OtpCtrlMemInitFile:
     datatype: str
     description: OTP initialization file in vmem hex format
-    default: "../../../../../build-bin/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
+    default: otp_img.vmem
     paramtype: vlogparam
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
@@ -67,6 +72,7 @@ targets:
       - files_rtl_nexysvideo
       - files_constraints
       - files_tcl
+      - files_sw
     toplevel: chip_earlgrey_nexysvideo
     parameters:
       - BootRomInitFile
