@@ -36,8 +36,6 @@ $ ./meson_init.sh
 $ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
 ```
 
-At the moment, there is no check that the `boot_rom.vmem` file is up to date, so it is best to follow the instructions to [build software]({{< relref "getting_started_sw.md" >}}).
-
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
 
 ```console
