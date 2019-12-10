@@ -83,10 +83,10 @@ module aes_key_expand #(
       rcon_d =  (mode_i == AES_ENC)                            ? 8'h01 :
                ((mode_i == AES_DEC) && (key_len_i == AES_128)) ? 8'h36 :
                ((mode_i == AES_DEC) && (key_len_i == AES_192)) ? 8'h80 :
-               ((mode_i == AES_DEC) && (key_len_i == AES_256)) ? 8'h40 : 8'hXX;
+               ((mode_i == AES_DEC) && (key_len_i == AES_256)) ? 8'h40 : 8'h01;
     end else begin
       rcon_d =  (mode_i == AES_ENC) ? aes_mul2(rcon_q) :
-                (mode_i == AES_DEC) ? aes_div2(rcon_q) : 8'hXX;
+                (mode_i == AES_DEC) ? aes_div2(rcon_q) : 8'h01;
     end
   end
 
@@ -116,7 +116,7 @@ module aes_key_expand #(
         unique case (mode_i)
           AES_ENC: rot_word_in = key_i[3];
           AES_DEC: rot_word_in = spec_in_128;
-          default: rot_word_in = 'X;
+          default: rot_word_in = key_i[3];
         endcase
       end
 
@@ -129,16 +129,16 @@ module aes_key_expand #(
             AES_ENC: begin
               rot_word_in = rnd_type[0] ? key_i[5]    :
                             rnd_type[2] ? key_i[5]    :
-                            rnd_type[3] ? spec_in_192 : 'X;
+                            rnd_type[3] ? spec_in_192 : key_i[3];
             end
             AES_DEC: begin
               rot_word_in = rnd_type[1] ? key_i[3] :
-                            rnd_type[2] ? key_i[1] : 'X;
+                            rnd_type[2] ? key_i[1] : key_i[3];
             end
-            default: rot_word_in = 'X;
+            default: rot_word_in = key_i[3];
           endcase
         end else begin
-          rot_word_in = 'X;
+          rot_word_in = key_i[3];
         end
       end
 
@@ -149,11 +149,11 @@ module aes_key_expand #(
         unique case (mode_i)
           AES_ENC: rot_word_in = key_i[7];
           AES_DEC: rot_word_in = key_i[3];
-          default: rot_word_in = 'X;
+          default: rot_word_in = key_i[7];
         endcase
       end
 
-      default: rot_word_in = 'X;
+      default: rot_word_in = key_i[3];
     endcase
   end
 
@@ -183,6 +183,9 @@ module aes_key_expand #(
   ///////////////////////////
   // The more regular part //
   ///////////////////////////
+
+  // To reduce muxing resources, we re-use existing
+  // connections for unused words and default cases.
   always_comb begin : drive_regular
     unique case (key_len_i)
 
@@ -191,7 +194,7 @@ module aes_key_expand #(
       /////////////
       AES_128: begin
         // key_o[7:4] not used
-        regular[7:4] = 'X;
+        regular[7:4] = key_i[3:0];
 
         regular[0] = irregular ^ key_i[0];
         unique case (mode_i)
@@ -207,7 +210,7 @@ module aes_key_expand #(
             end
           end
 
-          default: regular = 'X;
+          default: regular = {key_i[3:0], key_i[7:4]};
         endcase
       end
 
@@ -216,7 +219,7 @@ module aes_key_expand #(
       /////////////
       AES_192: begin
         // key_o[7:6] not used
-        regular[7:6] = 'X;
+        regular[7:6] = key_i[3:2];
 
         if (AES192Enable) begin
           unique case (mode_i)
@@ -265,11 +268,11 @@ module aes_key_expand #(
               end // rnd_type[0]
             end
 
-            default: regular = 'X;
+            default: regular = {key_i[3:0], key_i[7:4]};
           endcase
 
         end else begin
-          regular = 'X;
+          regular = {key_i[3:0], key_i[7:4]};
         end // AES192Enable
       end
 
@@ -281,7 +284,8 @@ module aes_key_expand #(
           AES_ENC: begin
             if (rnd == 0) begin
               // Round 0: Nothing to be done
-              regular = key_i;
+              // The Full Key registers are not updated
+              regular = {key_i[3:0], key_i[7:4]};
             end else begin
               // Shift down old upper half
               regular[3:0] = key_i[7:4];
@@ -296,7 +300,8 @@ module aes_key_expand #(
           AES_DEC: begin
             if (rnd == 0) begin
               // Round 0: Nothing to be done
-              regular = key_i;
+              // The Full Key registers are not updated
+              regular = {key_i[3:0], key_i[7:4]};
             end else begin
               // Shift up old lower half
               regular[7:4] = key_i[3:0];
@@ -308,15 +313,23 @@ module aes_key_expand #(
             end // rnd == 0
           end
 
-          default: regular = 'X;
+          default: regular = {key_i[3:0], key_i[7:4]};
         endcase
       end
 
-      default: regular = 'X;
+      default: regular = {key_i[3:0], key_i[7:4]};
     endcase // key_len_i
   end
 
   // Drive output
   assign key_o = regular;
+
+  // Selectors must be known/valid
+  `ASSERT_KNOWN(AesModeKnown, mode_i, clk_i, !rst_ni)
+  `ASSERT(AesKeyLenValid, key_len_i inside {
+      AES_128,
+      AES_192,
+      AES_256
+      }, clk_i, !rst_ni)
 
 endmodule

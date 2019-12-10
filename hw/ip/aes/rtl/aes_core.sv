@@ -133,7 +133,7 @@ module aes_core #(
       STATE_INIT:  state_d = state_init;
       STATE_ROUND: state_d = add_round_key_out;
       STATE_CLEAR: state_d = '0;
-      default:     state_d = 'X;
+      default:     state_d = state_init;
     endcase
   end
 
@@ -169,7 +169,7 @@ module aes_core #(
       ADD_RK_INIT:  add_round_key_in = state_q;
       ADD_RK_ROUND: add_round_key_in = mix_columns_out;
       ADD_RK_FINAL: add_round_key_in = shift_rows_out;
-      default:      add_round_key_in = 'X;
+      default:      add_round_key_in = state_q;
     endcase
   end
 
@@ -184,7 +184,7 @@ module aes_core #(
     unique case (key_init_sel)
       KEY_INIT_INPUT: key_init_d = key_init;
       KEY_INIT_CLEAR: key_init_d = '0;
-      default:        key_init_d = 'X;
+      default:        key_init_d = key_init;
     endcase
   end
 
@@ -207,7 +207,7 @@ module aes_core #(
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
       KEY_FULL_CLEAR:    key_full_d = '0;
-      default:           key_full_d = 'X;
+      default:           key_full_d = key_init_q;
     endcase
   end
 
@@ -224,7 +224,7 @@ module aes_core #(
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
       KEY_DEC_CLEAR:  key_dec_d = '0;
-      default:        key_dec_d = 'X;
+      default:        key_dec_d = key_expand_out;
     endcase
   end
 
@@ -254,10 +254,10 @@ module aes_core #(
   always_comb begin : key_words_mux
     unique case (key_words_sel)
       KEY_WORDS_0123: key_words = key_full_q[3:0];
-      KEY_WORDS_2345: key_words = AES192Enable ? key_full_q[5:2] : 'X;
+      KEY_WORDS_2345: key_words = AES192Enable ? key_full_q[5:2] : key_full_q[3:0];
       KEY_WORDS_4567: key_words = key_full_q[7:4];
       KEY_WORDS_ZERO: key_words = '0;
-      default:        key_words = 'X;
+      default:        key_words = key_full_q[3:0];
     endcase
   end
 
@@ -274,7 +274,7 @@ module aes_core #(
     unique case (round_key_sel)
       ROUND_KEY_DIRECT: round_key = key_bytes;
       ROUND_KEY_MIXED:  round_key = key_mix_columns_out;
-      default:          round_key = 'X;
+      default:          round_key = key_bytes;
     endcase
   end
 
@@ -395,5 +395,32 @@ module aes_core #(
   end
 
   assign hw2reg.ctrl.key_len.d  = {key_len_q};
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // Selectors must be known/valid
+  `ASSERT_KNOWN(AesModeKnown, mode_q, clk_i, !rst_ni)
+  `ASSERT(AesKeyLenValid, key_len_q inside {
+      AES_128,
+      AES_192,
+      AES_256
+      }, clk_i, !rst_ni)
+  `ASSERT(AesStateSelValid, state_sel inside {
+      STATE_INIT,
+      STATE_ROUND,
+      STATE_CLEAR
+      }, clk_i, !rst_ni)
+  `ASSERT(AesAddRKSelValid, add_round_key_in_sel inside {
+      ADD_RK_INIT,
+      ADD_RK_ROUND,
+      ADD_RK_FINAL
+      }, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesKeyInitSelKnown, key_init_sel, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesKeyFullSelKnown, key_full_sel, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesKeyDecSelKnown, key_dec_sel, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesKeyWordsSelKnown, key_words_sel, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesRoundKeySelKnown, round_key_sel, clk_i, !rst_ni)
 
 endmodule
