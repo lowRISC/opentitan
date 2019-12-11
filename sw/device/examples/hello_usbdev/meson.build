@@ -12,6 +12,7 @@ hello_usbdev_elf = executable(
     sw_lib_uart,
     sw_lib_usb,
     riscv_crt,
+    sw_lib_irq_handlers,
   ],
 )
 

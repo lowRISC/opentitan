@@ -9,6 +9,7 @@ aes_test_elf = executable(
   dependencies: [
     sw_lib_aes,
     sw_lib_uart,
+    sw_lib_mem,
     riscv_crt,
   ],
 )

@@ -10,8 +10,10 @@
 
 /**
  * Update to the location of vectors as specificed in the linker file
+ *
+ * The address must be 256-byte aligned.
  */
-extern void update_mtvec(char *ptr);
+void irq_set_vector_offset(uintptr_t address);
 
 /**
  * Enable / disable ibex globlal interrupts

@@ -13,6 +13,7 @@ hello_world_elf = executable(
     sw_lib_spi_device,
     sw_lib_uart,
     riscv_crt,
+    sw_lib_irq_handlers,
   ],
 )
 

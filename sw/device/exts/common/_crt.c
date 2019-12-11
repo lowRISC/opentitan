@@ -19,7 +19,7 @@ noreturn void _crt(void) {
   extern char _bss_start[];
   extern char _bss_end[];
 
-  update_mtvec(_svectors);
+  irq_set_vector_offset((uintptr_t)_svectors);
   memcpy(_sdata, _idata, _edata - _sdata);
   memset(_bss_start, 0, _bss_end - _bss_start);
 
