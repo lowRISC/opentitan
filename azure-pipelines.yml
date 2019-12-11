@@ -188,7 +188,8 @@ jobs:
 
 - job: "execute_verilated_tests"
   displayName: "Execute tests on the Verilated system"
-  pool: "Default"
+  pool:
+    vmImage: "ubuntu-16.04"
   dependsOn:
     - top_earlgrey_verilator
     - sw_build
@@ -204,7 +205,8 @@ jobs:
 
 - job: "riscv_compliance_tests"
   displayName: "Execute RISC-V compliance tests"
-  pool: "Default"
+  pool:
+    vmImage: "ubuntu-16.04"
   dependsOn:
     - top_earlgrey_verilator
     - execute_verilated_tests
