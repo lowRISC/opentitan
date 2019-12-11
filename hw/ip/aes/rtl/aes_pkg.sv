@@ -93,19 +93,22 @@ function automatic logic [7:0] aes_div2(input logic [7:0] in);
 endfunction
 
 // Circular byte shift to the left
-function automatic logic [31:0] aes_circ_byte_shift(input logic [31:0] in, int shift);
-  int s = shift % 4;
+function automatic logic [31:0] aes_circ_byte_shift(input logic [31:0] in, integer shift);
+  integer s = shift % 4;
   aes_circ_byte_shift = {in[8*((7-s)%4) +: 8], in[8*((6-s)%4) +: 8],
                          in[8*((5-s)%4) +: 8], in[8*((4-s)%4) +: 8]};
 endfunction
 
 // Transpose state matrix
 function automatic logic [3:0][3:0][7:0] aes_transpose(input logic [3:0][3:0][7:0] in);
+  logic [3:0][3:0][7:0] transpose;
+  transpose = '0;
   for (int j=0; j<4; j++) begin
     for (int i=0; i<4; i++) begin
-      aes_transpose[i][j] = in[j][i];
+      transpose[i][j] = in[j][i];
     end
   end
+  return transpose;
 endfunction
 
 // Extract single column from state matrix
