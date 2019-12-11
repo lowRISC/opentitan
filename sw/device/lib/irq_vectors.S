@@ -7,12 +7,6 @@
 .extern handler_irq_timer
 .extern handler_irq_external
 
-update_mtvec:
-  .section .text
-  .global update_mtvec
-  csrw mtvec, a0
-  ret
-
 exception_handlers:
   .section .vectors
   .global vector_handlers

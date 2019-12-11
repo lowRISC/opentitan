@@ -12,6 +12,7 @@ flash_test_elf = executable(
     sw_lib_irq,
     sw_lib_uart,
     riscv_crt,
+    sw_lib_irq_handlers,
   ],
 )
 

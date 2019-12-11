@@ -23,7 +23,7 @@ riscv_crt = declare_dependency(
   # This is included as a source, not as a static library, so that the .crt
   # section is picked up correctly.
   sources: ['_crt.c'],
-  dependencies: [sw_lib_irq],
+  dependencies: [sw_lib_irq, sw_lib_mem],
   # This argument exists solely so that Meson realizes that riscv_linker_script
   # is part of the dependency graph. This seems to be the only way to convince
   # Meson to behave in this way, for the following reasons:
