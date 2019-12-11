@@ -2,6 +2,8 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+/* Linker script for linking together an OpenTitan flash binary. */
+
 OUTPUT_ARCH(riscv)
 
 GROUP( -lgcc )

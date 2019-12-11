@@ -9,9 +9,8 @@ flash_test_elf = executable(
   dependencies: [
     sw_lib_flash_ctrl,
     sw_lib_gpio,
-    sw_lib_irq,
     sw_lib_uart,
-    riscv_crt,
+    riscv_flash_crt,
   ],
 )
 

@@ -7,10 +7,9 @@ rv_timer_test_elf = executable(
   sources: ['rv_timer_test.c'],
   name_suffix: 'elf',
   dependencies: [
-    sw_lib_irq,
     sw_lib_rv_timer,
     sw_lib_uart,
-    riscv_crt,
+    riscv_flash_crt,
   ],
 )
 

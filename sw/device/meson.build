@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('lib')
-subdir('exts')
 
 # Arguments for custom_target, for converting a linked .elf file into .bin and .vmem
 # files (plus a disassembled .dis file).

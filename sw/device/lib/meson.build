@@ -94,25 +94,6 @@ sw_lib_hmac = declare_dependency(
   )
 )
 
-# IRQ library (sw_lib_irq)
-sw_lib_irq = declare_dependency(
-  # The IRQ handler definitions need to be included as a "source" rather than
-  # as part of a static library; this ensures that it is linked in as a .o
-  # file, so the .vectors section is picked up.
-  sources: ['irq_vectors.S'],
-  link_with: static_library(
-    'irq_ot',
-    sources: [
-      'handler.c',
-      'irq.c'
-    ],
-    dependencies: [
-      sw_lib_uart,
-      sw_lib_mem,
-    ]
-  )
-)
-
 # RV_TIMER library (sw_lib_rv_timer)
 sw_lib_rv_timer = declare_dependency(
   sources: [hw_ip_rv_timer_reg_h],
@@ -165,3 +146,5 @@ sw_lib_log = declare_dependency(
     ]
   )
 )
+
+subdir('runtime')

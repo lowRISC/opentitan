@@ -19,7 +19,7 @@ coremark_top_earlgrey_elf = executable(
   dependencies: [
     sw_lib_uart,
     sw_lib_mem,
-    riscv_crt,
+    riscv_flash_crt,
   ],
   # Set up coremark-specific defines.
   c_args: [
