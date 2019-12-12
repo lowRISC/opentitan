@@ -13,10 +13,32 @@
 #   fpv rv_plic_fpv
 #   fpv pinmux_fpv
 #
+# More options:
+# -p:  provide core file path
+# -gui: run JasperGold GUI
+#
+# Example:
+#   fpv pinmux_fpv -p vip:pinmux_fpv -gui
+#
 # Note that the module to be tested needs to have an _fpv testbench
 # and a corresponding core file for this to work.
-
 export FPV_TOP=$1
+shift
+gui=0
+
+while [ "$1" != "" ]; do
+  case "$1" in
+    "-p")
+      shift
+      export CORE_PATH=$1
+      ;;
+    "-gui")
+      gui=1
+      echo "using jasper gold GUI"
+      ;;
+  esac
+  shift
+done
 
 echo "-------------------------------------------------------------------------"
 echo "-- Generate file list using FuseSoC"
@@ -27,7 +49,12 @@ echo ""
 
 \rm -Rf build jgproject
 # we just run the setup for the default target in order to generate the filelist
-fusesoc --cores-root ../.. run --setup "lowrisc:fpv:${FPV_TOP}"
+if [ "${CORE_PATH}" == "" ]; then
+  CORE_PATH="fpv:${FPV_TOP}"
+fi
+echo "core_file path: lowrisc:${CORE_PATH}"
+
+fusesoc --cores-root ../.. run --tool=icarus --setup "lowrisc:${CORE_PATH}"
 
 echo "-------------------------------------------------------------------------"
 echo "-- Run JasperGold"
@@ -35,12 +62,19 @@ echo "-------------------------------------------------------------------------"
 
 cd build/*${FPV_TOP}*/default-icarus
 
-jg -batch \
-  ../../../fpv.tcl \
-  -proj ../../../jgproject \
-  -allow_unsupported_OS \
-  -command exit \
-  | tee ../../../fpv.log
+if [ "${gui}" == "1" ]; then
+  jg ../../../fpv.tcl \
+     -proj ../../../jgproject \
+     -allow_unsupported_OS \
+     | tee ../../../fpv.log
+else
+  jg -batch \
+    ../../../fpv.tcl \
+    -proj ../../../jgproject \
+    -allow_unsupported_OS \
+    -command exit \
+    | tee ../../../fpv.log
+fi
 
 cd -
 
