@@ -143,7 +143,7 @@ The [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) 
 Consequently, C++-specific rules don't apply.
 In addition to the shared C and C++ style guide rules outlined before, the following C-specific rules apply.
 
-### C Version
+### C Version
 
 ***C code should target C11.***
 
