@@ -449,7 +449,7 @@ module hmac
 
   always_comb begin
     err_code = NoError;
-    case (1'b1)
+    unique case (1'b1)
       msg_push_sha_disabled: begin
         err_code = SwPushMsgWhenShaDisabled;
       end

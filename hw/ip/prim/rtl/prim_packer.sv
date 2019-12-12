@@ -133,9 +133,9 @@ module prim_packer #(
   always_comb begin
     flush_st_next = FlushIdle;
 
-    flush_ready = 0;
+    flush_ready = 1'b0;
 
-    case (flush_st)
+    unique case (flush_st)
       FlushIdle: begin
         if (flush_i && !ready_i) begin
           // Wait until hold released
@@ -165,6 +165,12 @@ module prim_packer #(
 
           flush_ready = 1'b0;
         end
+      end
+
+      default: begin
+        flush_st_next = FlushIdle;
+
+        flush_ready = 1'b0;
       end
     endcase
   end
