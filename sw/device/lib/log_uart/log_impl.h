@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_LOG_UART_LOG_IMPL_H_
 #define OPENTITAN_SW_DEVICE_LIB_LOG_UART_LOG_IMPL_H_
 
-#include "sw/device/lib/print_log.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/uart.h"
 
 // Stringify stuff.
@@ -52,6 +52,6 @@
  * this macro underneath) instead.
  */
 #define PRINT_LOG(log_header, ...) \
-  print_log(&uart_send_char, log_header __VA_ARGS__);
+  base_fprintf(uart_stdout, log_header __VA_ARGS__);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_LOG_UART_LOG_IMPL_H_

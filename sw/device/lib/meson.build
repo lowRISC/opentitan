@@ -14,6 +14,7 @@ sw_lib_uart = declare_dependency(
     'uart_ot',
     sources: ['uart.c'],
     dependencies: [
+      sw_lib_base_print,
       sw_lib_runtime_ibex,
       dif_uart,
     ],
@@ -142,19 +143,6 @@ sw_lib_usb = declare_dependency(
       'usb_controlep.c',
       'usb_simpleserial.c',
       'usbdev.c',
-    ],
-    dependencies: [
-      sw_lib_uart,
-    ]
-  )
-)
-
-# Logging library that prints to UART directly (sw_lib_log)
-sw_lib_log = declare_dependency(
-  link_with: static_library(
-    'log_ot',
-    sources: [
-      'print_log.c',
     ],
     dependencies: [
       sw_lib_uart,

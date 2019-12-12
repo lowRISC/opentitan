@@ -5,6 +5,7 @@
 #include "sw/device/boot_rom/bootstrap.h"
 #include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -29,7 +30,9 @@ extern struct {
 void _boot_start(void) {
   pinmux_init();
   uart_init(kUartBaudrate);
-  uart_send_str((char *)chip_info);
+  base_set_stdout(uart_stdout);
+
+  base_printf(chip_info);
 
   int bootstrap_err = bootstrap();
   if (bootstrap_err != 0) {
