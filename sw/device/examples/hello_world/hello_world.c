@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -33,6 +34,8 @@ void trap_handler(uint32_t mepc, char c) {
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
+  base_set_stdout(uart_stdout);
+  
   pinmux_init();
   spid_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
@@ -41,11 +44,9 @@ int main(int argc, char **argv) {
   dif_gpio_init(&gpio_config, &gpio);
   dif_gpio_output_mode_all_set(&gpio, 0xFF00);
   // Add DATE and TIME because I keep fooling myself with old versions
-  uart_send_str(
-      "Hello World! "__DATE__
-      " "__TIME__
-      "\r\n");
-  uart_send_str("Watch the LEDs!\r\n");
+  base_printf("Hello World!\r\n");
+  base_printf("Built at: " __DATE__ ", " __TIME__ "\r\n");
+  base_printf("Watch the LEDs!\r\n");
 
   // Give a LED pattern as startup indicator for 5 seconds
   dif_gpio_all_write(&gpio, 0xFF00);  // all LEDs on
@@ -58,9 +59,9 @@ int main(int argc, char **argv) {
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
   dif_gpio_all_write(&gpio, 0x0000);
-  uart_send_str("Try out the switches on the board\r\n");
-  uart_send_str("or type anything into the console window.\r\n");
-  uart_send_str("The LEDs show the ASCII code of the last character.\r\n");
+  base_printf("Try out the switches on the board\r\n");
+  base_printf("or type anything into the console window.\r\n");
+  base_printf("The LEDs show the ASCII code of the last character.\r\n");
 
   uint32_t gpio_in;
   uint32_t gpio_in_prev = 0;
@@ -80,16 +81,12 @@ int main(int argc, char **argv) {
     for (int b = 0; b < 8; b++) {
       if (gpio_in_changes & (1 << b)) {
         int val_now = (gpio_in >> b) & 0x01;
-        uart_send_str("GPIO: Switch ");
-        uart_send_char(b + 48);
-        uart_send_str(" changed to ");
-        uart_send_char(val_now + 48);
-        uart_send_str("\r\n");
+        base_printf("GPIO: Switch %d changed to %d\r\n", b, val_now);
       }
     }
     if (gpio_in_changes & 0x10000) {
-      uart_send_str("FTDI control changed. Enable ");
-      uart_send_str((gpio_in & 0x10000) ? "JTAG\r\n" : "SPI\r\n");
+      const char *port_type = (gpio_in & 0x10000) ? "JTAG" : "SPI";
+      base_printf("FTDI control changed. Enable %s.\r\n", port_type);
     }
     gpio_in_prev = gpio_in;
 
@@ -98,11 +95,11 @@ int main(int argc, char **argv) {
     if (spi_in) {
       uint32_t d = (*(uint32_t *)spi_buf) ^ 0x01010101;
       spid_send(&d, 4);
-      uart_send_str("SPI: ");
+      base_printf("SPI: ");
       for (int i = 0; i < spi_in; i++) {
-        uart_send_char(MK_PRINT(spi_buf[i]));
+        base_printf("%c", MK_PRINT(spi_buf[i]));
       }
-      uart_send_str("\r\n");
+      base_printf("\r\n");
     }
     // UART echo
     char rcv_char;

@@ -5,7 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_UART_H_
 #define OPENTITAN_SW_DEVICE_LIB_UART_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
+#include "sw/device/lib/base/print.h"
 
 void uart_send_char(char c);
 
@@ -19,6 +22,8 @@ void uart_init(unsigned int baud);
  * Send a NULL-terminated string over UART
  */
 void uart_send_str(char *str);
+
+extern const buffer_sink_t uart_stdout;
 
 /**
  * Receive a single character from UART

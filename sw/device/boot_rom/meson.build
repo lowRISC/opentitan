@@ -36,13 +36,13 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       chip_info_h,
       sw_lib_runtime_hart,
+      sw_lib_base_print,
       sw_lib_flash_ctrl,
       sw_lib_pinmux,
       sw_lib_dif_gpio,
       sw_lib_hmac,
       sw_lib_spi_device,
       sw_lib_uart,
-      sw_lib_log,
       device_lib,
     ],
   )
