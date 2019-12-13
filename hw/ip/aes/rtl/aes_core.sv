@@ -134,7 +134,7 @@ module aes_core #(
       STATE_INIT:  state_d = state_init;
       STATE_ROUND: state_d = add_round_key_out;
       STATE_CLEAR: state_d = '0;
-      default:     state_d = state_init;
+      default:     state_d = '0;
     endcase
   end
 
@@ -187,7 +187,7 @@ module aes_core #(
     unique case (key_init_sel)
       KEY_INIT_INPUT: key_init_d = key_init;
       KEY_INIT_CLEAR: key_init_d = '0;
-      default:        key_init_d = key_init;
+      default:        key_init_d = '0;
     endcase
   end
 
@@ -210,7 +210,7 @@ module aes_core #(
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
       KEY_FULL_CLEAR:    key_full_d = '0;
-      default:           key_full_d = key_init_q;
+      default:           key_full_d = '0;
     endcase
   end
 
@@ -227,7 +227,7 @@ module aes_core #(
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
       KEY_DEC_CLEAR:  key_dec_d = '0;
-      default:        key_dec_d = key_expand_out;
+      default:        key_dec_d = '0;
     endcase
   end
 
@@ -258,10 +258,10 @@ module aes_core #(
   always_comb begin : key_words_mux
     unique case (key_words_sel)
       KEY_WORDS_0123: key_words = key_full_q[3:0];
-      KEY_WORDS_2345: key_words = AES192Enable ? key_full_q[5:2] : key_full_q[3:0];
+      KEY_WORDS_2345: key_words = AES192Enable ? key_full_q[5:2] : '0;
       KEY_WORDS_4567: key_words = key_full_q[7:4];
       KEY_WORDS_ZERO: key_words = '0;
-      default:        key_words = key_full_q[3:0];
+      default:        key_words = '0;
     endcase
   end
 
