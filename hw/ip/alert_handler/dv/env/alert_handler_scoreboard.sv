@@ -50,7 +50,9 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
-      if (write) csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask));
+      if (write) begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
     end
 
     // process the csr req
@@ -69,7 +71,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ));
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
 
