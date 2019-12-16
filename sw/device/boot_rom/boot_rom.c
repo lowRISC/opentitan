@@ -38,8 +38,6 @@ void _boot_start(void) {
   }
 
   LOG_INFO("Boot ROM initialisation has completed, jump into flash!\n");
-  while (!uart_tx_empty()) {
-  }
 
   // Jump into flash. At this point, the contents of the flash binary have been
   // verified, and we can transfer control directly to it. It is the

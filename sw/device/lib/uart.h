@@ -7,10 +7,6 @@
 
 #include <stdint.h>
 
-#define UART0_BASE_ADDR 0x40000000
-
-#include "uart_regs.h"  // Generated.
-
 void uart_send_char(char c);
 
 /**
@@ -23,9 +19,6 @@ void uart_init(unsigned int baud);
  * Send a NULL-terminated string over UART
  */
 void uart_send_str(char *str);
-int uart_rx_empty(void);
-int uart_tx_empty(void);
-int uart_tx_idle(void);
 
 /**
  * Receive a single character from UART
