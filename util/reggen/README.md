@@ -29,33 +29,16 @@ of documentation scripts.
 
 ```console
 $ cd $REPO_TOP/util
-$ ./regtool.py --doc | ./docgen.py -c > /tmp/outdoc.html
+$ ./build_docs.py
 ```
 
 ### Examples using standalone regtool
 
-Normally for documentation the `docgen` tool will automatically use
-`reggen`. See the examples in the `docgen` documentation tree.
-
-The script `regtool.py` provides a standalone way to run `reggen`.
-Note that the same example inputs are used here as for `docgen`.
-
-This generates HTML from the register description and is verbose. Since
-embeddable HTML is generated, the CSS is not included, so the output will
-not be perfectly formatted.
-
-```console
-$ cd $REPO_TOP/util
-$ ./regtool.py -v -d docgen/examples/uart.hjson > /tmp/outuart.html
-```
-
-The following shows an example of how to generate the full featured
-standard JSON from the register description Hjson file:
-
-```console
-$ cd $REPO_TOP/util
-$ ./regtool.py -v -j docgen/examples/uart.hjson > /tmp/outuart.json
-```
+Normally for documentation the `build_docs.py` tool will automatically
+use `reggen`. The script `regtool.py` provides a standalone way to run
+`reggen`. See the
+[register tool documentation](../../doc/rm/register_tool/index.md) for
+details about how to invoke the tool.
 
 The following shows an example of how to generate RTL from a register
 description:
