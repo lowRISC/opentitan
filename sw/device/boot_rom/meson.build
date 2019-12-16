@@ -26,7 +26,8 @@ boot_rom_elf = executable(
   sources: [
     'boot_rom.c',
     'bootstrap.c',
-    'crt0.S'
+    'irq_vector.S',
+    'rom_crt.S',
   ],
   name_suffix: 'elf',
   link_args: rom_link_args,
