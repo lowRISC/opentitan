@@ -77,7 +77,7 @@ module dm_sba #(
 
     state_d = state_q;
 
-    case (state_q)
+    unique case (state_q)
       Idle: begin
         // debugger requested a read
         if (sbaddress_write_valid_i && sbreadonaddr_i)  state_d = Read;
@@ -96,7 +96,7 @@ module dm_sba #(
         req = 1'b1;
         we  = 1'b1;
         // generate byte enable mask
-        case (sbaccess_i)
+        unique case (sbaccess_i)
           3'b000: begin
             be[be_idx] = '1;
           end
@@ -108,7 +108,7 @@ module dm_sba #(
             else                    be = '1;
           end
           3'b011: be = '1;
-          default:;
+          default: ;
         endcase
         if (gnt) state_d = WaitWrite;
       end
@@ -129,7 +129,7 @@ module dm_sba #(
         end
       end
 
-      default:;
+      default: state_d = Idle; // catch parasitic state
     endcase
 
     // handle error case

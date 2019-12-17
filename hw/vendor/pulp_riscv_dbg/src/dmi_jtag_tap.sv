@@ -183,7 +183,7 @@ module dmi_jtag_tap #(
     dtmcs_select_o = 1'b0;
     idcode_select  = 1'b0;
     bypass_select  = 1'b0;
-    case (jtag_ir_q)
+    unique case (jtag_ir_q)
       BYPASS0:   bypass_select  = 1'b1;
       IDCODE:    idcode_select  = 1'b1;
       DTMCSR:    dtmcs_select_o = 1'b1;
@@ -204,7 +204,7 @@ module dmi_jtag_tap #(
       tdo_mux = jtag_ir_shift_q[0];
     // here we are shifting the DR register
     end else begin
-      case (jtag_ir_q)    // synthesis parallel_case
+      unique case (jtag_ir_q)
         IDCODE:         tdo_mux = idcode_q[0];     // Reading ID code
         DTMCSR:         tdo_mux = dtmcs_q.version[0];
         DMIACCESS:      tdo_mux = dmi_tdo_i;       // Read from DMI TDO
@@ -253,9 +253,7 @@ module dmi_jtag_tap #(
     // pause_ir           = 1'b0; unused
     update_ir          = 1'b0;
 
-    // note that tap_state_d does not have a default assignment since the
-    // case statement is full
-    case (tap_state_q)
+    unique case (tap_state_q)
       TestLogicReset: begin
         tap_state_d = (tms_i) ? TestLogicReset : RunTestIdle;
         test_logic_reset_o = 1'b1;
@@ -326,7 +324,7 @@ module dmi_jtag_tap #(
         update_ir = 1'b1;
         tap_state_d = (tms_i) ? SelectDrScan : RunTestIdle;
       end
-      default: ; // can't actually happen
+      default: ; // can't actually happen since case is full
     endcase
   end
 

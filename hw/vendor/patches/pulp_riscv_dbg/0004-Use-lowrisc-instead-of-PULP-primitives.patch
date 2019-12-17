@@ -1,7 +1,7 @@
-From 6a037bd7e07ba9e1aa0445ab53b845ee74ceecc2 Mon Sep 17 00:00:00 2001
+From 2179b843c1a753642d803918170c21d6e74b9beb Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
-Subject: [PATCH 09/11] Use lowrisc instead of PULP primitives
+Subject: [PATCH 4/4] Use lowrisc instead of PULP primitives
 
 ---
  src/dm_csrs.sv      | 42 +++++++++++++++-------------------
@@ -159,7 +159,7 @@ index 4665c91..1e4a6f3 100644
  
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
-index f8b282a..9771cd9 100644
+index 3d11145..ca6b824 100644
 --- a/src/dmi_jtag_tap.sv
 +++ b/src/dmi_jtag_tap.sv
 @@ -216,18 +216,14 @@ module dmi_jtag_tap #(
@@ -190,5 +190,5 @@ index f8b282a..9771cd9 100644
  
    // TDO changes state at negative edge of TCK
 -- 
-2.17.1
+2.24.1.735.g03f4e72817-goog
 
