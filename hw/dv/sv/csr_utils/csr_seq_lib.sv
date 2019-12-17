@@ -260,11 +260,11 @@ class csr_rw_seq extends csr_base_seq;
         test_csrs[i].get_fields(test_fields);
         test_fields.shuffle();
         foreach (test_fields[j]) begin
+          bit compare = !m_csr_excl_item.is_excl(test_fields[j], CsrExclWriteCheck);
           csr_rd_check(.ptr           (test_fields[j]),
                        .blocking      (0),
-                       .compare       (!external_checker),
-                       .compare_vs_ral(1'b1),
-                       .compare_mask  (compare_mask));
+                       .compare       (!external_checker && compare),
+                       .compare_vs_ral(1'b1));
         end
       end
     end
