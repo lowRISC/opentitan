@@ -5,6 +5,9 @@
 #ifndef __USB_SIMPLESERIAL_H__
 #define __USB_SIMPLESERIAL_H__
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sw/device/lib/common.h"
 #include "usbdev.h"
 

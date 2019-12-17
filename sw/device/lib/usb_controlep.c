@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Get NULL from here
-#include "usb_controlep.h"
+#include "sw/device/lib/usb_controlep.h"
 
 #include "sw/device/lib/common.h"
-#include "usb_consts.h"
-#include "usbdev.h"
+#include "sw/device/lib/usb_consts.h"
+#include "sw/device/lib/usbdev.h"
 
 // Device descriptor
 static uint8_t dev_dscr[] = {

@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/irq.h"
 
-#include "sw/device/lib/common.h"
+#include "sw/device/lib/base/stdasm.h"
 
 static const uint32_t IRQ_EXT_ENABLE_OFFSET = 11;
 static const uint32_t IRQ_TIMER_ENABLE_OFFSET = 7;

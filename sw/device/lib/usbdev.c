@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Get NULL from here
-#include "usbdev.h"
+#include "sw/device/lib/usbdev.h"
 
 #include "sw/device/lib/common.h"
 
