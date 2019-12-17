@@ -29,10 +29,9 @@ TEST_NAME       ?= alert_handler_sanity
 UVM_TEST        ?= alert_handler_base_test
 UVM_TEST_SEQ    ?= alert_handler_base_vseq
 
-# TODO:
-# ifeq (${TEST_NAME},alert_handler_sanity)
-#   UVM_TEST_SEQ   = alert_handler_sanity_vseq
-# endif
+ ifeq (${TEST_NAME},alert_handler_sanity)
+   UVM_TEST_SEQ   = alert_handler_sanity_vseq
+ endif
 
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##

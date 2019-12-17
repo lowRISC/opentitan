@@ -9,6 +9,7 @@ package alert_handler_env_pkg;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import tl_agent_pkg::*;
+  import alert_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import alert_handler_ral_pkg::*;
@@ -20,6 +21,7 @@ package alert_handler_env_pkg;
   // parameters
   parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 2048;
   parameter uint NUM_MAX_ESC_SEV             = 8;
+  parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;
 
   // types
   // forward declare classes to allow typedefs below
