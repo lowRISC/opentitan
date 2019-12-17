@@ -29,6 +29,8 @@ module tb;
   wire intr_rxlvl;
   wire intr_txlvl;
   wire intr_rxerr;
+  wire intr_rxoverflow;
+  wire intr_txunderflow;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -56,6 +58,8 @@ module tb;
     .intr_rxlvl_o   (intr_rxlvl),
     .intr_txlvl_o   (intr_txlvl),
     .intr_rxerr_o   (intr_rxerr),
+    .intr_rxoverflow_o (intr_rxoverflow),
+    .intr_txunderflow_o(intr_txunderflow),
     .scanmode_i     (1'b0      )
   );
 
@@ -64,10 +68,12 @@ module tb;
   assign mosi_i       = spi_if.mosi;
   assign spi_if.miso  = miso_en ? miso_o : 1'bz;
 
-  assign interrupts[RxFifoFull]     = intr_rxf  ;
-  assign interrupts[RxFifoGtLevel]  = intr_rxlvl;
-  assign interrupts[TxFifoLtLevel]  = intr_txlvl;
-  assign interrupts[RxFwModeErr]    = intr_rxerr;
+  assign interrupts[RxFifoFull]      = intr_rxf;
+  assign interrupts[RxFifoGtLevel]   = intr_rxlvl;
+  assign interrupts[TxFifoLtLevel]   = intr_txlvl;
+  assign interrupts[RxFwModeErr]     = intr_rxerr;
+  assign interrupts[RxFifoOverflow]  = intr_rxoverflow;
+  assign interrupts[TxFifoUnderflow] = intr_txunderflow;
 
   initial begin
     // drive clk and rst_n from clk_if

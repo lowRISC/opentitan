@@ -24,7 +24,9 @@ package spi_device_env_pkg;
     RxFifoFull,
     RxFifoGtLevel,
     TxFifoLtLevel,
-    RxFwModeErr
+    RxFwModeErr,
+    RxFifoOverflow,
+    TxFifoUnderflow
   } spi_device_intr_e;
 
   typedef enum bit {
@@ -40,6 +42,7 @@ package spi_device_env_pkg;
   parameter uint SRAM_MSB                 = $clog2(SRAM_SIZE) - 1;
   parameter uint SRAM_PTR_PHASE_BIT       = SRAM_MSB + 1;
   parameter uint SRAM_WORD_SIZE           = 4;
+  parameter uint ASYNC_FIFO_SIZE          = 8;
 
   string msg_id = "spi_device_env_pkg";
 

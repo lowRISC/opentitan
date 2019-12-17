@@ -162,7 +162,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       update_tx_fifo_and_rptr();
     end else begin // underflow
       // TODO coverage sample
-      `uvm_info(`gfn, $sformatf("TX underflow data: 0x%0h", data_act), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("TX underflow data: 0x%0h", data_act), UVM_MEDIUM)
     end
   endfunction
 
@@ -174,7 +174,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       update_rx_mem_fifo_and_wptr();
     end
     else begin
-      `uvm_info(`gfn, $sformatf("RX overflow data: 0x%0h ptr: 0x%0h", data, rx_wptr_exp), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("RX overflow data: 0x%0h ptr: 0x%0h", data, rx_wptr_exp), UVM_MEDIUM)
     end
   endfunction
 
@@ -186,7 +186,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       bit [TL_DW:0] data = rx_word_fifo.pop_front();
       rx_mem.write(rx_wptr_exp[SRAM_MSB:0], data);
       `uvm_info(`gfn, $sformatf("write rx_mem, addr 0x%0h, data: 0x%0h",
-                               tx_rptr_exp, tx_mem.read(tx_rptr_exp[SRAM_MSB:0])), UVM_MEDIUM)
+                                rx_wptr_exp, data), UVM_MEDIUM)
       rx_wptr_exp = get_sram_new_ptr(.ptr(rx_wptr_exp),
                                      .increment(SRAM_WORD_SIZE),
                                      .sram_size_bytes(`get_rx_allocated_sram_size_bytes));

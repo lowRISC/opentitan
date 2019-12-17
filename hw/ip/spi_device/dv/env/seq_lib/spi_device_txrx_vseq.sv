@@ -24,6 +24,10 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   rand uint host_sram_word_size;
   rand uint device_sram_word_size;
 
+  // semaphores to avoid updating fifo ptr when over/underflow is happening. Issue #103
+  semaphore tx_ptr_sema, rx_ptr_sema;
+  bit       allow_underflow_overflow;
+
   constraint tx_total_bytes_c {
     tx_total_bytes inside {[SRAM_SIZE : 10 * SRAM_SIZE]};
     tx_total_bytes[1:0] == 0; // word aligned
@@ -93,6 +97,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   }
 
   virtual task body();
+    tx_ptr_sema = new(1);
+    rx_ptr_sema = new(1);
     for (int i = 1; i <= num_trans; i++) begin
       bit done_tx_write, done_rx_read;
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
@@ -138,14 +144,24 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       `uvm_info(`gfn, $sformatf("tx_write_bytes = %0d, sram_avail_bytes = %0d,\
                                 remaining_bytes = %0d",
                                 tx_write_bytes, sram_avail_bytes, remaining_bytes), UVM_MEDIUM)
+
+      // make sure ptr isn't being updated while fifo underflow is happening
+      if (allow_underflow_overflow) tx_ptr_sema.get();
       write_device_words_to_send(device_words_q);
+
+      // when fifo is empty, need to wait until fifo fetch data from sram before release semaphore
+      if (allow_underflow_overflow) begin
+        cfg.clk_rst_vif.wait_clks(3);
+        tx_ptr_sema.put();
+      end
+
       remaining_bytes -= tx_write_bytes;
     end
     `uvm_info(`gfn, "done process_tx_write", UVM_MEDIUM)
   endtask : process_tx_write
 
   virtual task process_rx_read();
-    uint remaining_bytes = rx_total_bytes;
+    int  remaining_bytes = rx_total_bytes;
     uint sram_avail_bytes;
     uint rx_read_bytes;
     while (remaining_bytes > 0) begin
@@ -165,7 +181,12 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
                                              SRAM_SIZE             :/ 1};)
       `uvm_info(`gfn, $sformatf("rx_read_bytes = %0d, sram_avail_bytes = %0d, remaining_bytes =%0d",
                                 rx_read_bytes, sram_avail_bytes, remaining_bytes), UVM_MEDIUM)
+
+      // make sure ptr isn't being updated while fifo overflow is happening
+      if (allow_underflow_overflow) rx_ptr_sema.get();
       read_host_words_rcvd(rx_read_bytes / SRAM_WORD_SIZE, device_words_q);
+      if (allow_underflow_overflow) rx_ptr_sema.put();
+
       remaining_bytes -= rx_read_bytes;
     end
     `uvm_info(`gfn, "done process_rx_read", UVM_MEDIUM)
@@ -174,12 +195,14 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   virtual task process_spi_xfer();
     uint sram_avail_bytes;
     uint spi_bytes;
+    bit  is_under_over_flow = 0;
     logic [7:0] device_bytes_q[$];
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(spi_delay)
     cfg.clk_rst_vif.wait_clks(spi_delay);
 
-    read_tx_filled_rx_space_bytes(sram_avail_bytes);
+    if (allow_underflow_overflow) is_under_over_flow = $urandom_range(0, 1);
+    get_num_xfer_bytes(is_under_over_flow, sram_avail_bytes);
     if (sram_avail_bytes < SRAM_WORD_SIZE) begin
       `uvm_info(`gfn, "no avail byte for process_spi_xfer", UVM_MEDIUM)
       return;
@@ -193,7 +216,19 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
                                            [SRAM_WORD_SIZE+1:20] :/ 3,
                                            [21:SRAM_SIZE-1]      :/ 1,
                                            SRAM_SIZE             :/ 1};)
+
+    // avoid ptr is updated while fifo under/overflow is happening
+    if (is_under_over_flow) begin
+      fork
+        tx_ptr_sema.get();
+        rx_ptr_sema.get();
+      join
+    end
     spi_host_xfer_bytes(spi_bytes, device_bytes_q);
+    if (is_under_over_flow) begin
+      tx_ptr_sema.put();
+      rx_ptr_sema.put();
+    end
     `uvm_info(`gfn, "done process_spi_xfer", UVM_MEDIUM)
   endtask : process_spi_xfer
 

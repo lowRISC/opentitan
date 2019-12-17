@@ -53,6 +53,10 @@ class spi_device_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(tx_avail_bytes, 0);
     read_rx_avail_bytes(SramDataAvail, rx_avail_bytes);
     `DV_CHECK_EQ(rx_avail_bytes, 0);
+    csr_rd_check(.ptr(ral.status.rxf_empty), .compare_value(1));
+    // level should be 0
+    csr_rd_check(.ptr(ral.async_fifo_level.txlvl), .compare_value(0));
+    csr_rd_check(.ptr(ral.async_fifo_level.rxlvl), .compare_value(0));
   endtask
 
   // NOTE on terminology
@@ -253,7 +257,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
       do begin
         read_tx_avail_bytes(avail_type, cur_bytes);
       end while (cur_bytes < req_bytes);,
-      {"wait_for_tx_avail_bytes::", avail_type.name}
+      {"wait_for_tx_avail_bytes::", avail_type.name},
+      default_timeout_ns * 2
     )
     avail_bytes = cur_bytes;
     `uvm_info(`gfn, $sformatf("TX req_bytes = %0d, avail_type = %0s, avail_bytes = %0d",
@@ -267,7 +272,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
       do begin
         read_rx_avail_bytes(avail_type, cur_bytes);
       end while (cur_bytes < req_bytes);,
-      {"wait_for_rx_avail_bytes::", avail_type.name}
+      {"wait_for_rx_avail_bytes::", avail_type.name},
+      default_timeout_ns * 2
     )
     avail_bytes = cur_bytes;
     `uvm_info(`gfn, $sformatf("RX req_bytes = %0d, avail_type = %0s, avail_bytes = %0d",
@@ -287,14 +293,21 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // before spi host starts transfer, check if tx has enough data and rx has enough space
-  // to avoid overflow and underflow, return the less number
-  virtual task read_tx_filled_rx_space_bytes(ref uint avail_bytes);
-    uint tx_avail_bytes, rx_avail_bytes;
+  // if return_out_of_range = 1, return more than actual available bytes
+  virtual task get_num_xfer_bytes(bit return_out_of_range, ref uint avail_bytes);
+    uint tx_avail_bytes, rx_avail_bytes, final_data_bytes;
 
     read_tx_avail_bytes(SramDataAvail, tx_avail_bytes);
     read_rx_avail_bytes(SramSpaceAvail, rx_avail_bytes);
-    // get the less number
+    // get the less number to avoid under/overflow
     avail_bytes = (tx_avail_bytes < rx_avail_bytes) ? tx_avail_bytes : rx_avail_bytes;
+
+    if (return_out_of_range) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(final_data_bytes,
+                                         final_data_bytes[1:0] == 0;
+                                         final_data_bytes inside {[avail_bytes+1:SRAM_SIZE]};)
+      avail_bytes = final_data_bytes;
+    end
   endtask
 
 endclass : spi_device_base_vseq
