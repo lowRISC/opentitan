@@ -15,14 +15,12 @@ module tb;
 
   wire clk, rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire [NUM_MAX_ALERTS-1:0] alerts;
   wire [NUM_MAX_ESC_SEV-1:0] esc_en;
   wire entropy;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(NUM_MAX_ALERTS) alerts_if(alerts);
   pins_if #(NUM_MAX_ESC_SEV) esc_en_if(esc_en);
   pins_if #(1) entropy_if(entropy);
   pins_if #(1) devmode_if();
@@ -35,17 +33,19 @@ module tb;
   prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
   prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
 
-  // escalation sender duts
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_tx
-    prim_alert_sender #(
-      .AsyncOn(alert_pkg::AsyncOn[k])
-    ) i_prim_alert_sender (
-      .clk_i      ( clk         ),
-      .rst_ni     ( rst_n       ),
-      .alert_i    ( alerts[k]   ),
-      .alert_rx_i ( alert_rx[k] ),
-      .alert_tx_o ( alert_tx[k] )
-    );
+  alert_if alert_hosts_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
+
+  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_if
+    assign alert_tx[k].alert_p = alert_hosts_if[k].alert_tx.alert_p;
+    assign alert_tx[k].alert_n = alert_hosts_if[k].alert_tx.alert_n;
+    assign alert_hosts_if[k].alert_rx.ack_p  = alert_rx[k].ack_p;
+    assign alert_hosts_if[k].alert_rx.ack_n  = alert_rx[k].ack_n;
+    assign alert_hosts_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
+    assign alert_hosts_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
+    initial begin
+      uvm_config_db#(virtual alert_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
+                                            "vif", alert_hosts_if[k]);
+    end
   end
 
   // main dut
@@ -82,7 +82,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(alerts_vif)::set(null, "*.env", "alerts_vif", alerts_if);
     uvm_config_db#(esc_en_vif)::set(null, "*.env", "esc_en_vif", esc_en_if);
     uvm_config_db#(entropy_vif)::set(null, "*.env", "entropy_vif", entropy_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);

@@ -33,7 +33,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
+    bit     do_read_check   = 1'b0;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
 
@@ -58,12 +58,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-    case (csr.get_name())
+    // case (csr.get_name())
       // add individual case item for each csr
-      default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-      end
-    endcase
+      // default: begin
+      //  `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+      // end
+    // endcase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
