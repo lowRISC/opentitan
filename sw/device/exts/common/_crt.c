@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/common.h"
+#include <stddef.h>
+#include <stdnoreturn.h>
+
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/irq.h"
 
 extern int main(int, char **);

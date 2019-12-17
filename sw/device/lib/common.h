@@ -5,14 +5,6 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdnoreturn.h>
-
-#include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/base/memory.h"
-
 #ifdef SIMULATION
 #define CLK_FIXED_FREQ_HZ (500 * 1000)
 static const unsigned long UART_BAUD_RATE = 9600;

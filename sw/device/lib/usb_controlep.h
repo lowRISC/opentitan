@@ -5,8 +5,10 @@
 #ifndef __USB_CONTROLEP_H__
 #define __USB_CONTROLEP_H__
 
-#include "sw/device/lib/common.h"
-#include "usbdev.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "sw/device/lib/usbdev.h"
 
 typedef enum ctstate {
   kCtIdle,

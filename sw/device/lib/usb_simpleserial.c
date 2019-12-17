@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Get NULL from here
-#include "usb_simpleserial.h"
+#include "sw/device/lib/usb_simpleserial.h"
 
 #include "sw/device/lib/common.h"
-#include "usbdev.h"
+#include "sw/device/lib/usbdev.h"
 
 #define MAX_GATHER 16
 
