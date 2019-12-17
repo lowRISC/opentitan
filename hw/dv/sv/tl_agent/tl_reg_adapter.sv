@@ -47,8 +47,14 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
       uvm_reg_item item    = get_item();
       uvm_reg_map  loc_map = item.local_map;
       uvm_reg      rg      = loc_map.get_reg_by_offset(rw.addr);
-      `DV_CHECK_FATAL($cast(csr, rg))
-      msb = csr.get_msb_pos();
+      if (rg != null) begin // csr address
+        `DV_CHECK_FATAL($cast(csr, rg))
+        msb = csr.get_msb_pos();
+      end else if (loc_map.get_mem_by_offset(rw.addr) != null) begin // memory address
+        msb = TL_DW - 1;
+      end else begin
+        `uvm_fatal(`gfn, $sformatf("unexpected address 0x%0h", rw.addr))
+      end
       `DV_CHECK_RANDOMIZE_WITH_FATAL(reg_item,
           a_opcode inside {PutFullData, PutPartialData};
           a_addr    == rw.addr;
