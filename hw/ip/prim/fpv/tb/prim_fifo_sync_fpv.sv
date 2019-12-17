@@ -18,7 +18,7 @@ module prim_fifo_sync_fpv #(
   // number of DUTs instantiated in this FPV testbench
   parameter int unsigned NumDuts = 11,
   // fifo params
-  parameter int unsigned Width = 16,
+  parameter int unsigned Width = 4,
   parameter int unsigned MaxDepth = 16, // max depth used in this destbench
   localparam int unsigned DepthW = ($clog2(MaxDepth+1) == 0) ? 1 : $clog2(MaxDepth+1)
 ) (
@@ -133,6 +133,7 @@ module prim_fifo_sync_fpv #(
   // depth-zero is per definition a pass-through FIFO
   prim_fifo_sync #(
     .Width(Width),
+    .Pass(1'b1),
     .Depth(0)
   ) i_pass0 (
     .clk_i,
@@ -149,6 +150,7 @@ module prim_fifo_sync_fpv #(
 
   prim_fifo_sync #(
     .Width(Width),
+    .Pass(1'b1),
     .Depth(1)
   ) i_pass1 (
     .clk_i,
@@ -165,6 +167,7 @@ module prim_fifo_sync_fpv #(
 
   prim_fifo_sync #(
     .Width(Width),
+    .Pass(1'b1),
     .Depth(7)
   ) i_pass7 (
     .clk_i,
@@ -181,6 +184,7 @@ module prim_fifo_sync_fpv #(
 
   prim_fifo_sync #(
     .Width(Width),
+    .Pass(1'b1),
     .Depth(8)
   ) i_pass8 (
     .clk_i,
@@ -197,6 +201,7 @@ module prim_fifo_sync_fpv #(
 
   prim_fifo_sync #(
     .Width(Width),
+    .Pass(1'b1),
     .Depth(15)
   ) i_pass15 (
     .clk_i,
@@ -213,6 +218,7 @@ module prim_fifo_sync_fpv #(
 
   prim_fifo_sync #(
     .Width(Width),
+    .Pass(1'b1),
     .Depth(16)
   ) i_pass16 (
     .clk_i,
