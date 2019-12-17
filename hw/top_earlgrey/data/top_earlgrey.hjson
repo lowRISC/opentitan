@@ -157,6 +157,11 @@
       reset: "sys",
       reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_fixed"}
     },
+    { name: "peri",
+      clock_connections: {clk_peri_i: "fixed"},
+      reset: "sys_fixed",
+      reset_connections: {rst_peri_ni: "sys_fixed"},
+    }
   ],
 
   // ===== INTERRUPT CTRL =====================================================

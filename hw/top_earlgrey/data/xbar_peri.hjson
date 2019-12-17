@@ -1,0 +1,43 @@
+{ name: "peri",
+  type: "xbar",
+  clock_primary: "clk_peri_i", // Main clock, used in sockets
+  reset_primary: "rst_peri_ni", // Main reset, used in sockets
+
+  nodes: [
+    { name:  "main",
+      type:  "host",
+      clock: "clk_peri_i",
+      reset: "rst_peri_ni",
+      xbar:  "true",
+      pipeline: "false"
+
+    },
+    { name:      "uart",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline: "false"
+    },
+    { name:      "gpio",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline: "false"
+    },
+    { name:      "spi_device",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline: "false"
+    },
+    { name:      "rv_timer",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline: "false"
+    }
+  ],
+  connections: {
+    main:  ["uart", "gpio", "spi_device", "rv_timer"],
+  },
+}

@@ -51,19 +51,7 @@
       reset:     "rst_main_ni",
       pipeline:  "false",
     },
-    { name:      "uart",
-      type:      "device",
-      clock:     "clk_fixed_i",
-      reset:     "rst_fixed_ni",
-      pipeline_byp: "false"
-    },
-    { name:      "gpio",
-      type:      "device",
-      clock:     "clk_fixed_i",
-      reset:     "rst_fixed_ni",
-      pipeline_byp: "false"
-    },
-    { name:      "spi_device",
+    { name:      "peri",
       type:      "device",
       clock:     "clk_fixed_i",
       reset:     "rst_fixed_ni",
@@ -73,12 +61,6 @@
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipeline_byp: "false"
-    },
-    { name:      "rv_timer",
-      type:      "device",
-      clock:     "clk_fixed_i",
-      reset:     "rst_fixed_ni",
       pipeline_byp: "false"
     },
     { name:      "hmac",
@@ -128,9 +110,9 @@
   ],
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
-    cored:  ["rom", "debug_mem", "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
-    "rv_timer", "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
-    dm_sba: ["rom",              "ram_main", "eflash", "uart", "gpio", "spi_device", "flash_ctrl",
-    "rv_timer", "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
+    cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "flash_ctrl",
+    "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
+    dm_sba: ["rom",              "ram_main", "eflash", "peri", "flash_ctrl",
+    "aes", "hmac", "rv_plic", "pinmux", "alert_handler", "nmi_gen"],
   },
 }
