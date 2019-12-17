@@ -41,7 +41,8 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   `ASSUME_FPV(ConfigLocked0_M, en_i |-> ($stable(alert_en_i) [*]), clk_i, !rst_ni)
   `ASSUME_FPV(ConfigLocked1_M, en_i |-> ($stable(ping_timeout_cyc_i) [*]), clk_i, !rst_ni)
   // enable stays high forever, once it has been asserted
-  `ASSUME_FPV(ConfigLocked2_M, en_i |-> (##1 en_i) [*], clk_i, !rst_ni)
+  // this can be enabled in DV as well
+  `ASSUME(ConfigLocked2_M, en_i |-> (##1 en_i) [*], clk_i, !rst_ni)
   // reduce state space by reducing length of wait period
   `ASSUME_FPV(WaitPeriod_M, wait_cyc_mask_i == 7, clk_i, !rst_ni)
 
