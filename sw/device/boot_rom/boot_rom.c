@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <stdnoreturn.h>
-
 #include "sw/device/boot_rom/bootstrap.h"
 #include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/base/stdasm.h"
@@ -15,21 +13,19 @@
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
-static noreturn void try_launch(void) {
-  asm volatile(
-      "  la   sp, _stack_start;"
-      "  tail _flash_start;"
-      // Unfortunately, we can't tell the compiler that we're about to clobber
-      // the stack pointer (which is meaningless, since there's nowhere to spill
-      // sp to). However, this doesn't matter, since this asm block will never
-      // return.
-      :
-      :
-      : /* sp, */ "memory");
-  __builtin_unreachable();
-}
+/**
+ * This symbol is defined in sw/device/boot_rom/rom_link.ld,
+ * and describes the location of the flash header.
+ *
+ * The actual contents are not defined by the ROM, but rather
+ * by the flash binary: see sw/device/exts/common/flash_link.ld
+ * for that.
+ */
+extern struct {
+  void (*entry)(void);
+} _flash_header;
 
-void _boot_start() {
+void _boot_start(void) {
   pinmux_init();
   uart_init(UART_BAUD_RATE);
   uart_send_str((char *)chip_info);
@@ -45,5 +41,9 @@ void _boot_start() {
   while (!uart_tx_empty()) {
   }
 
-  try_launch();
+  // Jump into flash. At this point, the contents of the flash binary have been
+  // verified, and we can transfer control directly to it. It is the
+  // flash binary's responsibily to set up its own stack, and to never
+  // return.
+  _flash_header.entry();
 }
