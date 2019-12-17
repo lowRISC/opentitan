@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan boot ROM.
+ * Linker script for an OpenTitan flash binaries.
  *
  * Portions of this file are Ibex-specific.
  */
@@ -17,57 +17,49 @@ GROUP(-lgcc)
 __DYNAMIC = 0;
 
 MEMORY {
-  rom(rx)   : ORIGIN = 0x00008000, LENGTH = 0x2000
   ram(w)    : ORIGIN = 0x10000000, LENGTH = 0x10000
   flash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
 }
 
 /**
- * The boot address, which indicates the location of the initial interrupt
- * vector.
+ * The stack starts at the end of RAM and grows down.
  */
-_boot_address = ORIGIN(rom);
+_stack_start = ORIGIN(ram) + LENGTH(ram);
 
-_heap_size = 0xe000;
-_stack_size = 0x2000;
-_stack_start = ORIGIN(ram) + _heap_size + _stack_size;
-_flash_start = ORIGIN(flash);
-
-/**
- * This symbol points at the header of the flash binary, which contains loading
- * and signing information.
- *
- * See sw/device/lib/ext/common/flash_link.ld, under the .flash_header section,
- * which populates it.
- */
-_flash_header = _flash_start;
-
-_chip_info_size = 128;
-_chip_info_start = ORIGIN(rom) + LENGTH(rom) - _chip_info_size;
-
-/**
- * NOTE: We have to align each section to word boundaries as our current
- * s19->slm conversion scripts are not able to handle non-word aligned sections.
- */
 SECTIONS {
   /**
-   * Ibex interrupt vector. See irq_vector.S for more information. 
-   *
-   * This has to be set up at the boot address, so that execution jumps to the
-   * reset handler correctly.
+   * The flash header. This will eventually contain other stuff, like a 
+   * signature, but for now it's just the entry point at offset zero.
    */
-  .vectors _boot_address : ALIGN(4) {
-    KEEP(*(.vectors))
-    *(.vectors)
-  } > rom
+  .flash_header ORIGIN(flash): ALIGN(4) {
+    /** 
+     * NOTE:ld scripts do not provide a mechanism to refer to ENTRY, 
+     * so we just harcode the _start symbol.
+     */
+    LONG(_start)
+  } > flash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
+   *
+   * We don't use ENTRY, so the start of |flash| acts as the entrypoint. Since
+   * the CRT is the first thing that needs to run, it goes at the top.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
     *(.crt)
-  } > rom
+  } > flash
+
+  /**
+   * Ibex interrupt vector. See sw/device/lib/irq_vectors.S for more information.
+   *
+   * The 256-byte alignment is required by Ibex's vectoring mechanism.
+   */
+  .vectors : ALIGN(0x100) {
+    _vectors_start = .;
+    KEEP(*(.vectors))
+    *(.vectors)
+  } > flash
 
   /**
    * Standard text section, containing program code.
@@ -75,7 +67,7 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
-  } > rom
+  } > flash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -84,7 +76,7 @@ SECTIONS {
   .rodata : ALIGN(4) {
     *(.rodata)
     *(.rodata.*)
-  } > rom
+  } > flash
 
   /**
    * "Intitial data" section, the initial values of the mutable data section 
@@ -92,7 +84,7 @@ SECTIONS {
    */ 
   .idata : ALIGN(4) {
     _data_init_start = .;
-  } > rom
+  } > flash
 
   /** 
    * Standard mutable data section, at the bottom of RAM. This will be
@@ -105,13 +97,6 @@ SECTIONS {
     *(.sdata)
     _data_end = .;
   } > ram
-
-  /**
-   * Immutable chip_info data, containing build-time-recorded information.
-   */
-  .chip_info _chip_info_start : ALIGN(4) {
-    *(.chip_info)
-  } > rom
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -130,13 +115,13 @@ SECTIONS {
    * STAB debug table.
    */
   .stab 0x0 (NOLOAD): {
-    [.stab]
+    *(.stab)
   }
 
   /**
    * STAB debug strings.
    */
   .stabstr 0x0 (NOLOAD): {
-    [.stabstr]
+    *(.stabstr)
   }
 }

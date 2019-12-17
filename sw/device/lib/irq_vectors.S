@@ -8,7 +8,7 @@
 .extern handler_irq_external
 
 exception_handlers:
-  .section .vectors
+  .section .vectors, "ax"
   .global vector_handlers
 
   // exception handler

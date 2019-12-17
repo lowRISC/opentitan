@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # RISC-V linker parameters.
-riscv_linker_script = '@0@/@1@'.format(meson.source_root(), files(['link.ld'])[0])
+riscv_linker_script = '@0@/@1@'.format(meson.source_root(), files(['flash_link.ld'])[0])
 riscv_linker_args = [
   '-Wl,-T,@0@'.format(riscv_linker_script),
   # Depending on the compiler and its configuration (*), |--build-id| is passed
@@ -22,7 +22,7 @@ riscv_crt = declare_dependency(
   link_args: riscv_linker_args,
   # This is included as a source, not as a static library, so that the .crt
   # section is picked up correctly.
-  sources: ['_crt.c'],
+  sources: ['flash_crt.S'],
   dependencies: [
     freestanding_headers,
     sw_lib_mem,
