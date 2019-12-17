@@ -1,7 +1,7 @@
-From 75f16162f8739c32d73ec2c38728532d6c494f80 Mon Sep 17 00:00:00 2001
+From d137a450dd02d3653e184e7ff1e3978ba2f56efe Mon Sep 17 00:00:00 2001
 From: Tom Roberts <tomroberts@lowrisc.org>
 Date: Wed, 27 Nov 2019 14:07:28 +0000
-Subject: [PATCH 11/11] [abstract cs] Do not execute invalid abstract cmd
+Subject: [PATCH 2/4] [abstract cs] Do not execute invalid abstract cmd
 
 If the command written is invalid, just set cmderr and do not attempt to
 execute it. This works around some timing issues in OpenOCD.
@@ -23,5 +23,5 @@ index 5c361fc..49daa38 100644
            state_d = Go;
          end else if (cmd_valid_i) begin
 -- 
-2.17.1
+2.24.1.735.g03f4e72817-goog
 

@@ -98,7 +98,7 @@ module dmi_jtag #(
 
     dmi_req_valid = 1'b0;
 
-    case (state_q)
+    unique case (state_q)
       Idle: begin
         // make sure that no error is sticky
         if (dmi_access && update_dr && (error_q == DMINoError)) begin
