@@ -6,6 +6,8 @@
         Legal : TODO!
 */
 #include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
+
+#include "sw/device/lib/base/stdasm.h"
 #include "sw/vendor/eembc_coremark/coremark.h"
 
 #if VALIDATION_RUN

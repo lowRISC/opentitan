@@ -4,6 +4,7 @@
 
 #include "handler.h"
 
+#include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/uart.h"
 
