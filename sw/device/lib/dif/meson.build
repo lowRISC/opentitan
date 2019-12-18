@@ -16,3 +16,12 @@ dif_uart = declare_dependency(
     ]
   )
 )
+
+# PLIC DIF library (dif_plic)
+dif_plic = declare_dependency(
+  link_with: static_library(
+    'dif_plic_ot',
+    sources: ['dif_plic.c'],
+    dependencies: [sw_lib_mmio]
+  )
+)
