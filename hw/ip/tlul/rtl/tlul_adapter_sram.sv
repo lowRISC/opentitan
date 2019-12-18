@@ -121,12 +121,12 @@ module tlul_adapter_sram #(
 
   assign tl_o = '{
       d_valid  : d_valid ,
-      d_opcode : (reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData ,
+      d_opcode : (d_valid && reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData,
       d_param  : '0,
-      d_size   : reqfifo_rdata.size,
-      d_source : reqfifo_rdata.source,
+      d_size   : (d_valid) ? reqfifo_rdata.size : '0,
+      d_source : (d_valid) ? reqfifo_rdata.source : '0,
       d_sink   : 1'b0,
-      d_data   : rspfifo_rdata.data,
+      d_data   : (d_valid && reqfifo_rdata.op == OpRead) ? rspfifo_rdata.data : '0,
       d_user   : '0,
       d_error  : d_error,
 
@@ -140,17 +140,18 @@ module tlul_adapter_sram #(
   //    Generate request only when no internal error occurs. If error occurs, the request should be
   //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
-  assign req_o    = reqfifo_wready & tl_i.a_valid & ~error_internal;
-  assign we_o     = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData) ? 1'b1 : 1'b0;
-  assign addr_o   = tl_i.a_address[DataBitWidth+:SramAw];
-  assign wdata_o  = tl_i.a_data;
+  assign req_o    = tl_i.a_valid & reqfifo_wready & ~error_internal;
+  assign we_o     = tl_i.a_valid & logic'(tl_i.a_opcode inside {PutFullData, PutPartialData});
+  assign addr_o   = (tl_i.a_valid) ? tl_i.a_address[DataBitWidth+:SramAw] : '0;
 
   `ASSERT_INIT(TlUlEqualsToSramDw, top_pkg::TL_DW == SramDw)
 
   // Convert byte mask to SRAM bit mask.
   always_comb begin
     for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-      wmask_o[8*i+:8] = {8{tl_i.a_mask[i]}};
+      wmask_o[8*i+:8] = (tl_i.a_valid) ? {8{tl_i.a_mask[i]}} : '0;
+      // only forward valid data here.
+      wdata_o[8*i+:8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
     end
   end
 
@@ -267,5 +268,13 @@ module tlul_adapter_sram #(
 
   // If both ErrOnWrite and ErrOnRead are set, this block is useless
   `ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
+
+  // make sure outputs are defined
+  `ASSERT_KNOWN(TlOutKnown_A,    tl_o,    clk_i, !rst_ni)
+  `ASSERT_KNOWN(ReqOutKnown_A,   req_o,   clk_i, !rst_ni)
+  `ASSERT_KNOWN(WeOutKnown_A,    we_o,    clk_i, !rst_ni)
+  `ASSERT_KNOWN(AddrOutKnown_A,  addr_o,  clk_i, !rst_ni)
+  `ASSERT_KNOWN(WdataOutKnown_A, wdata_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o, clk_i, !rst_ni)
 
 endmodule
