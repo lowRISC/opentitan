@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/uart.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
@@ -32,38 +33,12 @@ static usbdev_ctx_t usbdev_ctx;
 static usb_controlep_ctx_t control_ctx;
 static usb_ss_ctx_t ss_ctx[2];
 
-/**
- * Delay loop executing within 8 cycles on ibex
- */
-static void delay_loop_ibex(unsigned long loops) {
-  int out; /* only to notify compiler of modifications to |loops| */
-  asm volatile(
-      "1: nop             \n"  // 1 cycle
-      "   nop             \n"  // 1 cycle
-      "   nop             \n"  // 1 cycle
-      "   nop             \n"  // 1 cycle
-      "   addi %1, %1, -1 \n"  // 1 cycle
-      "   bnez %1, 1b     \n"  // 3 cycles
-      : "=&r"(out)
-      : "0"(loops));
-}
-
-static int usleep_ibex(unsigned long usec) {
-  unsigned long usec_cycles;
-  usec_cycles = CLK_FIXED_FREQ_HZ * usec / 1000 / 1000 / 8;
-
-  delay_loop_ibex(usec_cycles);
-  return 0;
-}
-
-static int usleep(unsigned long usec) { return usleep_ibex(usec); }
-
 static void test_error(void) {
   while (1) {
     gpio_write_all(0xAA00);  // pattern
-    usleep(200 * 1000);
+    busy_sleep_micros(200 * 1000);
     gpio_write_all(0x5500);  // pattern
-    usleep(100 * 1000);
+    busy_sleep_micros(100 * 1000);
   }
 }
 
@@ -104,7 +79,7 @@ int main(int argc, char **argv) {
 
   // Give a LED pattern as startup indicator for 5 seconds
   gpio_write_all(0xAA00);  // pattern
-  usleep(1000);
+  busy_sleep_micros(1000);
   gpio_write_all(0x5500);  // pattern
   // usbdev_init here so dpi code will not start until simulation
   // got through all the printing (which takes a while if --trace)

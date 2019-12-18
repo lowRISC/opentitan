@@ -6,10 +6,8 @@
 #define _COMMON_H_
 
 #ifdef SIMULATION
-#define CLK_FIXED_FREQ_HZ (500 * 1000)
 static const unsigned long UART_BAUD_RATE = 9600;
 #else
-#define CLK_FIXED_FREQ_HZ (50ULL * 1000 * 1000)
 static const unsigned long UART_BAUD_RATE = 230400;
 #endif
 
