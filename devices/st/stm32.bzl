@@ -1386,4 +1386,4 @@ def GetDeviceConfig(device_part_no):
         return _CORTEX_M7_DEVICE_CONFIG
     fail("Could not find part", "device_part_no")
 
-def Platforms
+def Platforms()
