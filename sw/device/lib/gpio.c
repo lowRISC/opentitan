@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/runtime/hart.h"
 
 void gpio_init(uint32_t oe) { REG32(GPIO_DIRECT_OE(0)) = oe; }
 

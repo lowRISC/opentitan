@@ -5,10 +5,11 @@
 #include "sw/device/lib/uart.h"
 
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/runtime/ibex.h"
 
 inline void uart_init(unsigned int baud) {
   // nco = 2^20 * baud / fclk
-  uint64_t uart_ctrl_nco = ((uint64_t)baud << 20) / CLK_FIXED_FREQ_HZ;
+  uint64_t uart_ctrl_nco = ((uint64_t)baud << 20) / kIbexClockFreqHz;
   REG32(UART_CTRL(0)) =
       ((uart_ctrl_nco & UART_CTRL_NCO_MASK) << UART_CTRL_NCO_OFFSET) |
       (1 << UART_CTRL_TX) | (1 << UART_CTRL_RX);

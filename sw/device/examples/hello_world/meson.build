@@ -7,6 +7,7 @@ hello_world_elf = executable(
   sources: ['hello_world.c'],
   name_suffix: 'elf',
   dependencies: [
+    sw_lib_runtime_hart,
     sw_lib_pinmux,
     sw_lib_gpio,
     sw_lib_irq,

@@ -7,6 +7,7 @@ flash_test_elf = executable(
   sources: ['flash_test.c'],
   name_suffix: 'elf',
   dependencies: [
+    sw_lib_runtime_hart,
     sw_lib_flash_ctrl,
     sw_lib_gpio,
     sw_lib_irq,

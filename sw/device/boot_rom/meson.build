@@ -34,6 +34,7 @@ boot_rom_elf = executable(
   link_depends: rom_link_deps,
   dependencies: [
     chip_info_h,
+    sw_lib_runtime_hart,
     sw_lib_flash_ctrl,
     sw_lib_pinmux,
     sw_lib_gpio,

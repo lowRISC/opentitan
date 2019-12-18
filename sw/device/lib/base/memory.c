@@ -25,8 +25,3 @@ void *memset(void *dest, int value, size_t len) {
   return dest;
 }
 
-noreturn void abort(void) {
-  while (true) {
-    asm volatile("wfi");
-  }
-}

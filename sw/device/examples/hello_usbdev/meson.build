@@ -7,6 +7,7 @@ hello_usbdev_elf = executable(
   sources: ['hello_usbdev.c'],
   name_suffix: 'elf',
   dependencies: [
+    sw_lib_runtime_hart,
     sw_lib_gpio,
     sw_lib_irq,
     sw_lib_uart,

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('base')
+subdir('runtime')
 
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(
@@ -12,7 +13,8 @@ sw_lib_uart = declare_dependency(
     sources: [
       hw_ip_uart_reg_h,
       'uart.c',
-    ]
+    ],
+    dependencies: [sw_lib_runtime_ibex],
   )
 )
 
@@ -36,7 +38,8 @@ sw_lib_gpio = declare_dependency(
     sources: [
       hw_ip_gpio_reg_h,
       'gpio.c',
-    ]
+    ],
+    dependencies: [sw_lib_runtime_hart],
   )
 )
 
@@ -110,6 +113,7 @@ sw_lib_irq_handlers = declare_dependency(
     ],
     dependencies: [
       sw_lib_irq,
+      sw_lib_runtime_ibex,
       sw_lib_uart,
     ],
   )
@@ -123,7 +127,8 @@ sw_lib_rv_timer = declare_dependency(
     sources: [
       hw_ip_rv_timer_reg_h,
       'rv_timer.c',
-    ]
+    ],
+    dependencies: [sw_lib_runtime_ibex],
   )
 )
 

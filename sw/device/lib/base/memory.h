@@ -94,14 +94,4 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t len);
  */
 void *memset(void *dest, int value, size_t len);
 
-// TODO: Find a better header for this function to live. See #1207.
-/**
- * Immediately halt program execution.
- *
- * This function conforms to the semantics defined in ISO C11 S7.22.4.1, except
- * that it cannot be pre-empted by signal handlers (which do not exist in this
- * environment).
- */
-noreturn void abort(void);
-
 #endif  // SW_DEVICE_LIB_BASE_MEMORY_H_

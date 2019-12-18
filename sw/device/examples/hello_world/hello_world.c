@@ -6,36 +6,11 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
 #include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
 #define SPI_MAX 32
-
-/**
- * Delay loop executing within 8 cycles on ibex
- */
-static void delay_loop_ibex(unsigned long loops) {
-  int out; /* only to notify compiler of modifications to |loops| */
-  asm volatile(
-      "1: nop             \n"  // 1 cycle
-      "   nop             \n"  // 1 cycle
-      "   nop             \n"  // 1 cycle
-      "   nop             \n"  // 1 cycle
-      "   addi %1, %1, -1 \n"  // 1 cycle
-      "   bnez %1, 1b     \n"  // 3 cycles
-      : "=&r"(out)
-      : "0"(loops));
-}
-
-static int usleep_ibex(unsigned long usec) {
-  unsigned long usec_cycles;
-  usec_cycles = CLK_FIXED_FREQ_HZ * usec / 1000 / 1000 / 8;
-
-  delay_loop_ibex(usec_cycles);
-  return 0;
-}
-
-static int usleep(unsigned long usec) { return usleep_ibex(usec); }
 
 // called from ctr0 when something bad happens
 // char I=illegal instruction, A=lsu error (address), E=ecall
@@ -44,9 +19,9 @@ void trap_handler(uint32_t mepc, char c) {
   uart_send_uint(mepc, 32);
   while (1) {
     gpio_write_all(0xAA00);  // pattern
-    usleep(200 * 1000);
+    busy_sleep_micros(200 * 1000);
     gpio_write_all(0x5500);  // pattern
-    usleep(100 * 1000);
+    busy_sleep_micros(100 * 1000);
   }
 }
 
@@ -70,7 +45,7 @@ int main(int argc, char **argv) {
   // Give a LED pattern as startup indicator for 5 seconds
   gpio_write_all(0xFF00);  // all LEDs on
   for (int i = 0; i < 32; i++) {
-    usleep(100 * 1000);  // 100 ms
+    busy_sleep_micros(100 * 1000);  // 100 ms
 
     gpio_write_bit(8 + (i % 8), (i / 8));
   }
@@ -91,7 +66,7 @@ int main(int argc, char **argv) {
   spid_send("SPI!", 4);
 
   while (1) {
-    usleep(10 * 1000);  // 10 ms
+    busy_sleep_micros(10 * 1000);  // 10 ms
 
     // report changed switches over UART
     gpio_in = gpio_read() & 0x100FF;  // 0-7 is switch input, 16 is FTDI
