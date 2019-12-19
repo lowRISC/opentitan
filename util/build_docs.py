@@ -49,6 +49,7 @@ config = {
     "hardware_definitions": [
         "hw/ip/aes/data/aes.hjson",
         "hw/ip/alert_handler/data/alert_handler.hjson",
+        "hw/ip/entropy_src/data/entropy_src.hjson",
         "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
         "hw/ip/gpio/data/gpio.hjson",
         "hw/ip/hmac/data/hmac.hjson",

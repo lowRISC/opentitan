@@ -1,0 +1,166 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "entropy_src",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  param_list: [
+    { name: "EsFifoDepth",
+      desc: "Depth of the entropy FIFO",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
+  ],
+  interrupt_list: [
+    { name: "es_entropy_valid"
+      desc: "Asserted when entropy source bits are available."}
+    { name: "es_entropy_fifo_err"
+      desc: "Asserted when a FIFO error occurs."}
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "ES_REGEN",
+      desc: "Register write enable for all control registers",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When true, the ES_CONF, ES_CTRL, and ES_SEED registers can be modified.
+            When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
+            cleared after initial configuration at boot in order to lock in the listed register settings.
+            '''
+            resval: 1 
+        },
+      ]
+    },
+    { name: "ES_CONF",
+      desc: "ENTROPY_SRC configuration register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "ES_REGEN",
+      fields: [
+        { bits: "0",
+          name: "ENABLE",
+          desc: "Master enable for the ENTROPY_SRC entropy generation function."
+        }
+      ]
+    },
+    { name: "ES_REV",
+      desc: "ENTROPY_SRC revision register",
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "23:16",
+          name: "CHIP_TYPE",
+          desc: "Read of this register shows the type of chip using this block.",
+          resval: "0x1"
+        }
+        { bits: "15:8",
+          name: "HW_REVISION",
+          desc: "Read of this register shows the revision of this block.",
+          resval: "0x2"
+       }
+        { bits: "7:0",
+          name: "ABI_REVISION",
+          desc: "Read of this register shows the ABI of this block.",
+          resval: "0x1"
+        }
+      ]
+    },
+    { name: "ES_ENTROPY",
+      desc: "ENTROPY_SRC entropy source",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "31:0",
+          desc: "A read of this register provides entropy needed for an entropy source."
+        }
+      ]
+    },
+    { name: "ES_CTRL",
+      desc: "ENTROPY_SRC control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "ES_REGEN",
+      fields: [
+        { bits: "0",
+          name: "INIT_ENT_SRC",
+          desc: "Setting this bit will initialize the entropy source function."
+        }
+      ]
+    },
+    { name:     "ES_STATUS",
+      desc:     "ENTROPY_SRC status register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "ENTROPY_RDY",
+          desc: '''This is set when the entropy source FIFO has met or exceeded the ES_THRESH value. This status bit will
+                automatically clear once the FIFO depth drops below the threshold value. This bit will not set unless the
+                block is enabled.
+                '''
+        }
+      ]
+    },
+    { name:     "ES_FDEPTHST",
+      desc:     "ENTROPY_SRC FIFO depth status register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      fields: [
+        { bits: "6:0",
+          name: "ENTROPY_FIFO_DEPTH",
+          desc: "This register will reflect the current depth of the entropy FIFO."
+        }
+      ]
+    },
+    { name: "ES_THRESH",
+      desc: "ENTROPY_SRC threshold register",
+      swaccess: "rw",
+      hwqe: "true",
+      fields: [
+        { bits: "6:0",
+          name: "FIFO_THRESHOLD",
+          desc: "The entropy FIFO depth will be compared against this register value when setting the ENTROPY_RDY bit and es_entropy_valid interrupt signal."
+       }
+      ]
+    }
+    { name: "ES_RATE",
+      desc: "ENTROPY_SRC entropy rate register",
+      swaccess: "rw",
+      hwqe: "true",
+      fields: [
+        { bits: "15:0",
+          name: "ENTROPY_RATE",
+          desc: '''This register determines the rate that entropy bits will be supplied. Its purpose to is simulate slow entropy sources.
+                A value of 1 will deliver full rate entropy. A value of 2 will cut a full entropy source in half. A value of 8 will cut
+                the rate by 1/8th. The precise equation for entropy delivery is one clock cycle of entropy is generated
+                every 1/(ENTROPY_RATE) equal to one. A value of 0 disables all entropy generation.
+                '''
+          resval: "0x00000001"
+      }
+      ]
+    }
+    { name: "ES_SEED",
+      desc: "ENTROPY_SRC seed register",
+      swaccess: "rw",
+      hwqe: "true",
+      regwen:   "ES_REGEN",
+      fields: [
+        { bits: "31:0",
+          name: "LFSR_SEED",
+          desc: "Seed used to load into the LFSR for the initial state. This field will not update if the ES_REGEN bit 0 is cleared.",
+          resval: "0x12345678"
+       }
+      ]
+    }
+  ]
+}
+
