@@ -18,7 +18,7 @@ chip_info_h = declare_dependency(
 
 # ROM linker parameters.
 rom_linkfile = files(['rom_link.ld'])
-rom_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0])]
+rom_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]), '-Wl,--build-id=none']
 rom_link_deps = [rom_linkfile]
 
 boot_rom_elf = executable(
