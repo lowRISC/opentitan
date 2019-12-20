@@ -30,7 +30,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     super.initialize(csr_base_addr);
     // create tl agent config obj
     m_tl_agent_cfg = tl_agent_cfg::type_id::create("m_tl_agent_cfg");
-    m_tl_agent_cfg.is_host = 1'b1;
+    m_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
   endfunction
 
 endclass

@@ -67,23 +67,23 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
       virtual_sequencer.host_seqr = new[cfg.num_hosts];
       virtual_sequencer.device_seqr = new[cfg.num_devices];
       foreach (host_agent[i]) begin
-        virtual_sequencer.host_seqr[i] = host_agent[i].seqr;
+        virtual_sequencer.host_seqr[i] = host_agent[i].sequencer;
       end
       foreach (device_agent[i]) begin
-        virtual_sequencer.device_seqr[i] = device_agent[i].seqr;
+        virtual_sequencer.device_seqr[i] = device_agent[i].sequencer;
       end
     end
     // Connect scoreboard
     foreach (host_agent[i]) begin
-      host_agent[i].mon.a_chan_port.connect(
+      host_agent[i].monitor.a_chan_port.connect(
           scoreboard.item_fifos[{"a_chan_", xbar_hosts[i].host_name}].analysis_export);
-      host_agent[i].mon.d_chan_port.connect(
+      host_agent[i].monitor.d_chan_port.connect(
           scoreboard.item_fifos[{"d_chan_", xbar_hosts[i].host_name}].analysis_export);
     end
     foreach (device_agent[i]) begin
-      device_agent[i].mon.a_chan_port.connect(
+      device_agent[i].monitor.a_chan_port.connect(
           scoreboard.item_fifos[{"a_chan_", xbar_devices[i].device_name}].analysis_export);
-      device_agent[i].mon.d_chan_port.connect(
+      device_agent[i].monitor.d_chan_port.connect(
           scoreboard.item_fifos[{"d_chan_", xbar_devices[i].device_name}].analysis_export);
     end
   endfunction : connect_phase

@@ -54,18 +54,18 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_tl_agent.mon.a_chan_port.connect(scoreboard.tl_a_chan_fifo.analysis_export);
-      m_tl_agent.mon.d_chan_port.connect(scoreboard.tl_d_chan_fifo.analysis_export);
+      m_tl_agent.monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifo.analysis_export);
+      m_tl_agent.monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifo.analysis_export);
     end
     if (cfg.is_active) begin
-      virtual_sequencer.tl_sequencer_h = m_tl_agent.seqr;
+      virtual_sequencer.tl_sequencer_h = m_tl_agent.sequencer;
     end
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
     // Set the TL adapter / sequencer to the default_map.
-    cfg.ral.default_map.set_sequencer(m_tl_agent.seqr, m_tl_reg_adapter);
+    cfg.ral.default_map.set_sequencer(m_tl_agent.sequencer, m_tl_reg_adapter);
   endfunction : end_of_elaboration_phase
 
 endclass

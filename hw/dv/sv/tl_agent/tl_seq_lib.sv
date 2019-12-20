@@ -8,8 +8,10 @@
 
 // Host sequence, support multiple outstanding request
 // generates 'req_cnt' number of completely random requests
-class tl_host_seq extends uvm_sequence#(.REQ(tl_seq_item), .RSP(tl_seq_item));
-  `uvm_declare_p_sequencer(tl_sequencer)
+class tl_host_seq extends dv_base_seq #(.REQ        (tl_seq_item),
+                                        .CFG_T      (tl_agent_cfg),
+                                        .SEQUENCER_T(tl_sequencer)
+  );
 
   rand int unsigned req_cnt;
   tl_seq_item       pending_req[$];
@@ -138,7 +140,10 @@ class tl_host_protocol_err_seq extends tl_host_single_seq;
 endclass
 
 // Device sequence, currently support in-order response
-class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
+class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
+                                          .CFG_T      (tl_agent_cfg),
+                                          .SEQUENCER_T(tl_sequencer)
+  );
 
   int                      min_rsp_delay = 0;
   int                      max_rsp_delay = 10;
@@ -147,7 +152,6 @@ class tl_device_seq extends uvm_sequence#(.REQ(tl_seq_item));
   bit                      out_of_order_rsp = 0;
 
   `uvm_object_utils(tl_device_seq)
-  `uvm_declare_p_sequencer(tl_sequencer)
   `uvm_object_new
 
   virtual task body();

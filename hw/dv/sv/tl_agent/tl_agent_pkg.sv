@@ -23,6 +23,11 @@ package tl_agent_pkg;
   parameter int DUserWidth  = top_pkg::TL_DUW;
   parameter int OpcodeWidth = 3;
 
+  typedef class tl_seq_item;
+  typedef class tl_agent_cfg;
+  // reuse dv_base_driver as is with the right parameter set
+  typedef dv_base_driver #(tl_seq_item, tl_agent_cfg) tl_base_driver;
+
   // TileLink conformance level
   typedef enum bit [1:0] {
     kTLUL,
