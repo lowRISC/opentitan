@@ -50,35 +50,17 @@ module xbar_main_bind;
     .h2d    (tl_eflash_o),
     .d2h    (tl_eflash_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_peri (
     .clk_i  (clk_fixed_i),
     .rst_ni (rst_fixed_ni),
-    .h2d    (tl_uart_o),
-    .d2h    (tl_uart_i)
-  );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_gpio (
-    .clk_i  (clk_fixed_i),
-    .rst_ni (rst_fixed_ni),
-    .h2d    (tl_gpio_o),
-    .d2h    (tl_gpio_i)
-  );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_device (
-    .clk_i  (clk_fixed_i),
-    .rst_ni (rst_fixed_ni),
-    .h2d    (tl_spi_device_o),
-    .d2h    (tl_spi_device_i)
+    .h2d    (tl_peri_o),
+    .d2h    (tl_peri_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
     .h2d    (tl_flash_ctrl_o),
     .d2h    (tl_flash_ctrl_i)
-  );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_timer (
-    .clk_i  (clk_fixed_i),
-    .rst_ni (rst_fixed_ni),
-    .h2d    (tl_rv_timer_o),
-    .d2h    (tl_rv_timer_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_hmac (
     .clk_i  (clk_main_i),

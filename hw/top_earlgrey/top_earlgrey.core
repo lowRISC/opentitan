@@ -24,8 +24,10 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:ip:nmi_gen
     files:
-      - ip/xbar/rtl/autogen/tl_main_pkg.sv
-      - ip/xbar/rtl/autogen/xbar_main.sv
+      - ip/xbar_main/rtl/autogen/tl_main_pkg.sv
+      - ip/xbar_main/rtl/autogen/xbar_main.sv
+      - ip/xbar_peri/rtl/autogen/tl_peri_pkg.sv
+      - ip/xbar_peri/rtl/autogen/xbar_peri.sv
       - ip/rv_plic/rtl/autogen/rv_plic_reg_pkg.sv
       - ip/rv_plic/rtl/autogen/rv_plic_reg_top.sv
       - ip/rv_plic/rtl/autogen/rv_plic.sv

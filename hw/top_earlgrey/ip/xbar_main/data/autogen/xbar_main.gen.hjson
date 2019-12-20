@@ -34,11 +34,8 @@
       debug_mem
       ram_main
       eflash
-      uart
-      gpio
-      spi_device
+      peri
       flash_ctrl
-      rv_timer
       aes
       hmac
       rv_plic
@@ -51,11 +48,8 @@
       rom
       ram_main
       eflash
-      uart
-      gpio
-      spi_device
+      peri
       flash_ctrl
-      rv_timer
       aes
       hmac
       rv_plic
@@ -72,6 +66,7 @@
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: "false"
+      xbar: false
       inst_type: rv_core_ibex
       pipeline_byp: "true"
     }
@@ -81,6 +76,7 @@
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: "false"
+      xbar: false
       inst_type: rv_core_ibex
       pipeline_byp: "true"
     }
@@ -90,6 +86,7 @@
       clock: clk_main_i
       reset: rst_main_ni
       pipeline_byp: "false"
+      xbar: false
       inst_type: rv_dm
       pipeline: "true"
     }
@@ -102,6 +99,7 @@
       inst_type: rom
       base_addr: 0x00008000
       size_byte: 0x2000
+      xbar: false
       pipeline_byp: "true"
     }
     {
@@ -113,6 +111,7 @@
       inst_type: rv_dm
       base_addr: 0x1A110000
       size_byte: 0x1000
+      xbar: false
       pipeline: "true"
     }
     {
@@ -124,6 +123,7 @@
       inst_type: ram_1p
       base_addr: 0x10000000
       size_byte: 0x10000
+      xbar: false
       pipeline_byp: "true"
     }
     {
@@ -135,40 +135,28 @@
       inst_type: eflash
       base_addr: 0x20000000
       size_byte: 0x80000
+      xbar: false
       pipeline_byp: "true"
     }
     {
-      name: uart
+      name: peri
       type: device
       clock: clk_fixed_i
       reset: rst_fixed_ni
       pipeline_byp: "false"
-      inst_type: uart
-      base_addr: 0x40000000
-      size_byte: 0x1000
+      xbar: true
       pipeline: "true"
-    }
-    {
-      name: gpio
-      type: device
-      clock: clk_fixed_i
-      reset: rst_fixed_ni
-      pipeline_byp: "false"
-      inst_type: gpio
-      base_addr: 0x40010000
-      size_byte: 0x1000
-      pipeline: "true"
-    }
-    {
-      name: spi_device
-      type: device
-      clock: clk_fixed_i
-      reset: rst_fixed_ni
-      pipeline_byp: "false"
-      inst_type: spi_device
-      base_addr: 0x40020000
-      size_byte: 0x1000
-      pipeline: "true"
+      xbar_addr:
+      [
+        {
+          base_addr: 0x40000000
+          size_byte: 0x21000
+        }
+        {
+          base_addr: 0x40080000
+          size_byte: 0x1000
+        }
+      ]
     }
     {
       name: flash_ctrl
@@ -179,17 +167,7 @@
       inst_type: flash_ctrl
       base_addr: 0x40030000
       size_byte: 0x1000
-      pipeline: "true"
-    }
-    {
-      name: rv_timer
-      type: device
-      clock: clk_fixed_i
-      reset: rst_fixed_ni
-      pipeline_byp: "false"
-      inst_type: rv_timer
-      base_addr: 0x40080000
-      size_byte: 0x1000
+      xbar: false
       pipeline: "true"
     }
     {
@@ -201,6 +179,7 @@
       inst_type: hmac
       base_addr: 0x40120000
       size_byte: 0x1000
+      xbar: false
       pipeline: "true"
     }
     {
@@ -212,6 +191,7 @@
       inst_type: aes
       base_addr: 0x40110000
       size_byte: 0x1000
+      xbar: false
       pipeline: "true"
     }
     {
@@ -223,6 +203,7 @@
       base_addr: 0x40090000
       size_byte: 0x1000
       pipeline_byp: "false"
+      xbar: false
       pipeline: "true"
     }
     {
@@ -234,6 +215,7 @@
       base_addr: 0x40070000
       size_byte: 0x1000
       pipeline_byp: "false"
+      xbar: false
       pipeline: "true"
     }
     {
@@ -244,6 +226,7 @@
       pipeline_byp: "false"
       base_addr: 0x40130000
       size_byte: 0x1000
+      xbar: false
       pipeline: "true"
     }
     {
@@ -254,6 +237,7 @@
       pipeline_byp: "false"
       base_addr: 0x40140000
       size_byte: 0x1000
+      xbar: false
       pipeline: "true"
     }
   ]

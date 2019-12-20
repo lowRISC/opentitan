@@ -93,6 +93,14 @@ module top_earlgrey #(
   tl_h2d_t tl_eflash_d_h2d;
   tl_d2h_t tl_eflash_d_d2h;
 
+  tl_h2d_t tl_main_h_h2d;
+  tl_d2h_t tl_main_h_d2h;
+  tl_h2d_t tl_peri_d_h2d;
+  tl_d2h_t tl_peri_d_d2h;
+
+  assign tl_main_h_h2d = tl_peri_d_h2d;
+  assign tl_peri_d_d2h = tl_main_h_d2h;
+
   //reset wires declaration
   logic lc_rst_n;
   logic sys_rst_n;
@@ -667,16 +675,10 @@ module top_earlgrey #(
     .tl_ram_main_i      (tl_ram_main_d_d2h),
     .tl_eflash_o        (tl_eflash_d_h2d),
     .tl_eflash_i        (tl_eflash_d_d2h),
-    .tl_uart_o          (tl_uart_d_h2d),
-    .tl_uart_i          (tl_uart_d_d2h),
-    .tl_gpio_o          (tl_gpio_d_h2d),
-    .tl_gpio_i          (tl_gpio_d_d2h),
-    .tl_spi_device_o    (tl_spi_device_d_h2d),
-    .tl_spi_device_i    (tl_spi_device_d_d2h),
+    .tl_peri_o          (tl_peri_d_h2d),
+    .tl_peri_i          (tl_peri_d_d2h),
     .tl_flash_ctrl_o    (tl_flash_ctrl_d_h2d),
     .tl_flash_ctrl_i    (tl_flash_ctrl_d_d2h),
-    .tl_rv_timer_o      (tl_rv_timer_d_h2d),
-    .tl_rv_timer_i      (tl_rv_timer_d_d2h),
     .tl_hmac_o          (tl_hmac_d_h2d),
     .tl_hmac_i          (tl_hmac_d_d2h),
     .tl_aes_o           (tl_aes_d_h2d),
@@ -689,6 +691,22 @@ module top_earlgrey #(
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
     .tl_nmi_gen_i       (tl_nmi_gen_d_d2h),
+
+    .scanmode_i
+  );
+  xbar_peri u_xbar_peri (
+    .clk_peri_i (fixed_clk),
+    .rst_peri_ni (sys_fixed_rst_n),
+    .tl_main_i       (tl_main_h_h2d),
+    .tl_main_o       (tl_main_h_d2h),
+    .tl_uart_o       (tl_uart_d_h2d),
+    .tl_uart_i       (tl_uart_d_d2h),
+    .tl_gpio_o       (tl_gpio_d_h2d),
+    .tl_gpio_i       (tl_gpio_d_d2h),
+    .tl_spi_device_o (tl_spi_device_d_h2d),
+    .tl_spi_device_i (tl_spi_device_d_d2h),
+    .tl_rv_timer_o   (tl_rv_timer_d_h2d),
+    .tl_rv_timer_i   (tl_rv_timer_d_d2h),
 
     .scanmode_i
   );
