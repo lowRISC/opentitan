@@ -5,7 +5,8 @@
 // AES top-level wrapper
 
 module aes #(
-  parameter bit AES192Enable = 1
+  parameter bit AES192Enable = 1,    // Can be 0 (disable), or 1 (enable).
+  parameter     SBoxImpl     = "lut" // Can be "lut" (LUT-based SBox), or "canright".
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -31,7 +32,8 @@ module aes #(
   );
 
   aes_core #(
-    .AES192Enable (AES192Enable)
+    .AES192Enable ( AES192Enable ),
+    .SBoxImpl     ( SBoxImpl     )
   ) aes_core (
     .clk_i,
     .rst_ni,

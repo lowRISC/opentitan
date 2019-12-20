@@ -118,4 +118,19 @@ function automatic logic [3:0][7:0] aes_col_get(input logic [3:0][3:0][7:0] in, 
   end
 endfunction
 
+// Matrix-vector multiplication in GF(2^8): c = A * b
+function automatic logic [7:0] aes_mvm(
+  input logic [7:0] vec_b,
+  input logic [7:0] mat_a [8]
+);
+  logic [7:0] vec_c;
+  vec_c = '0;
+  for (int i=0; i<8; i++) begin
+    for (int j=0; j<8; j++) begin
+      vec_c[i] = vec_c[i] ^ (mat_a[j][i] & vec_b[7-j]);
+    end
+  end
+  return vec_c;
+endfunction
+
 endpackage

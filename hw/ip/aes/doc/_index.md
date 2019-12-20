@@ -155,13 +155,14 @@ For a description of the various sub modules, see the following sections.
 ### SubBytes / S-Box
 
 The SubBytes operation is a non-linear byte substitution that operates independently on each byte of the state using a substitution table (S-Box).
-
-The design of this S-Box and its inverse can have a big impact on circuit area, timing critical path, robustness and power leakage, and is itself its own research topic.
-The initial version of the AES unit uses a LUT-based S-Box implementation.
 It is both used for the cipher data path and the key expand data path.
 In total, 20 S-Boxes are used (16 for SubBytes, 4 for KeyExpand), each having 8-bit input and output.
 
+The design of this S-Box and its inverse can have a big impact on circuit area, timing critical path, robustness and power leakage, and is itself its own research topic.
+
 Since the S-Boxes can be decoupled from the rest of the AES unit, they can easily be replaced by a different implementation if required.
+The AES unit currently uses a LUT-based S-Box implementation (default) but also supports the implementation proposed by [Canright: "A very compact Rijndael S-Box"](https://hdl.handle.net/10945/25608) (selectable by a compile-time parameter).
+
 A possible candidate implementation that employs masking (i.e. that randomizes the power consumption of the AES unit in every cipher round) to aggravate power analysis attacks has been proposed by [Canright and Batina: “A very compact “perfectly masked” S-Box for AES (corrected)”](https://eprint.iacr.org/2009/011.pdf).
 
 

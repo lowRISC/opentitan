@@ -5,7 +5,8 @@
 // AES core implementation
 
 module aes_core #(
-  parameter bit AES192Enable = 1
+  parameter bit AES192Enable = 1,
+  parameter     SBoxImpl     = "lut"
 ) (
   input                            clk_i,
   input                            rst_ni,
@@ -146,7 +147,9 @@ module aes_core #(
   end
 
   // Cipher data path
-  aes_sub_bytes aes_sub_bytes (
+  aes_sub_bytes #(
+  .SBoxImpl     ( SBoxImpl )
+  ) aes_sub_bytes (
     .mode_i ( mode_q        ),
     .data_i ( state_q       ),
     .data_o ( sub_bytes_out )
@@ -238,7 +241,8 @@ module aes_core #(
 
   // Key expand data path
   aes_key_expand #(
-  .AES192Enable (AES192Enable)
+  .AES192Enable ( AES192Enable ),
+  .SBoxImpl     ( SBoxImpl     )
   ) aes_key_expand (
     .clk_i     ( clk_i            ),
     .rst_ni    ( rst_ni           ),

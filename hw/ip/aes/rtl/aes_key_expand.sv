@@ -5,7 +5,8 @@
 // AES KeyExpand
 
 module aes_key_expand #(
-  parameter bit AES192Enable = 1
+  parameter bit AES192Enable = 1,
+  parameter     SBoxImpl     = "lut"
 ) (
   input  logic              clk_i,
   input  logic              rst_ni,
@@ -165,7 +166,9 @@ module aes_key_expand #(
 
   // SubWord - individually substitute bytes
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
-    aes_sbox_lut aes_sbox_i (
+    aes_sbox #(
+      .SBoxImpl ( SBoxImpl )
+    ) aes_sbox_i (
       .mode_i ( AES_ENC   ),
       .data_i ( sub_word_in[8*i +: 8]  ),
       .data_o ( sub_word_out[8*i +: 8] )
