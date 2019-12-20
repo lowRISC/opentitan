@@ -5,52 +5,32 @@
 // ---------------------------------------------
 // TileLink agent
 // ---------------------------------------------
-class tl_agent extends uvm_agent;
-
-  tl_host_driver     host_driver;
-  tl_device_driver   device_driver;
-  tl_monitor         mon;
-  tl_sequencer       seqr;
-  tl_agent_cfg       cfg;
-  tl_agent_cov       cov;
+class tl_agent extends dv_base_agent#(
+    .CFG_T           (tl_agent_cfg),
+    .DRIVER_T        (tl_base_driver),
+    .HOST_DRIVER_T   (tl_host_driver),
+    .DEVICE_DRIVER_T (tl_device_driver),
+    .SEQUENCER_T     (tl_sequencer),
+    .MONITOR_T       (tl_monitor),
+    .COV_T           (tl_agent_cov)
+  );
 
   `uvm_component_utils(tl_agent)
 
-  function new (string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction : new
+  `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(tl_agent_cfg)::get(this, "", "cfg", cfg)) begin
-      `uvm_fatal("NO_CFG", {"cfg must be set for:", get_full_name(), ".cfg"});
+    // get tl_if handle
+    if (!uvm_config_db#(virtual tl_if)::get(this, "", "vif", cfg.vif)) begin
+      `uvm_fatal(`gfn, "failed to get tl_if handle from uvm_config_db")
     end
-    if (cfg.is_active && get_is_active() == UVM_ACTIVE) begin
-      if (cfg.is_host) begin
-        host_driver = tl_host_driver::type_id::create("host_driver", this);
-      end else begin
-        device_driver = tl_device_driver::type_id::create("device_driver", this);
-      end
-      seqr = tl_sequencer::type_id::create("seqr", this);
-      seqr.cfg = cfg;
-    end
-    mon = tl_monitor::type_id::create("mon", this);
-    if (cfg.en_cov) begin
-      cov = tl_agent_cov ::type_id::create("cov", this);
-      cov.cfg = cfg;
-    end
-    mon.cov = cov;
-  endfunction : build_phase
+  endfunction
 
   function void connect_phase(uvm_phase phase);
-    if (cfg.is_active && get_is_active() == UVM_ACTIVE) begin
-      if (cfg.is_host) begin
-        host_driver.seq_item_port.connect(seqr.seq_item_export);
-      end else begin
-        device_driver.seq_item_port.connect(seqr.seq_item_export);
-        mon.a_chan_port.connect(seqr.a_chan_req_fifo.analysis_export);
-      end
+    super.connect_phase(phase);
+    if (cfg.if_mode == dv_utils_pkg::Device) begin
+      monitor.a_chan_port.connect(sequencer.a_chan_req_fifo.analysis_export);
     end
-  endfunction : connect_phase
-
+  endfunction
 endclass : tl_agent

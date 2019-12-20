@@ -22,8 +22,7 @@ covergroup max_outstanding_cg(string name, int max_outstanding) with function
   }
 endgroup : max_outstanding_cg
 
-class tl_agent_cov extends uvm_component;
-  tl_agent_cfg          cfg;
+class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
   pending_req_on_rst_cg pending_req_on_rst_cg;
   max_outstanding_cg    max_outstanding_cg;
 

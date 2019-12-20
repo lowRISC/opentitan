@@ -6,32 +6,15 @@
 // ---------------------------------------------
 // TileLink host driver
 // ---------------------------------------------
-class tl_host_driver extends uvm_driver#(tl_seq_item);
+class tl_host_driver extends tl_base_driver;
 
-  virtual tl_if  vif;
   tl_seq_item    pending_a_req[$];
-  tl_agent_cfg   cfg;
   bit reset_asserted;
 
   `uvm_component_utils(tl_host_driver)
+  `uvm_component_new
 
-  function new (string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction : new
-
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    if (!uvm_config_db#(virtual tl_if)::get(this, "", "vif", vif)) begin
-      `uvm_fatal("NO_VIF", {"virtual interface must be set for:",
-        get_full_name(),".vif"});
-    end
-    if (!uvm_config_db#(tl_agent_cfg)::get(this, "", "cfg", cfg)) begin
-      `uvm_fatal("NO_CFG", {"cfg must be set for:", get_full_name(),".cfg"});
-    end
-  endfunction : build_phase
-
-  virtual task run_phase(uvm_phase phase);
-    wait_for_reset_done();
+  virtual task get_and_drive();
     fork
       begin : process_seq_item
         forever begin
@@ -39,20 +22,20 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
           if (req != null) begin
             send_a_channel_request(req);
           end else begin
-            @(vif.host_cb);
+            @(cfg.vif.host_cb);
           end
         end
       end
       d_channel_thread();
       reset_thread();
     join_none
-  endtask : run_phase
+  endtask
 
   virtual task reset_thread();
     forever begin
-      @(negedge vif.rst_n);
+      @(negedge cfg.vif.rst_n);
       reset_asserted = 1'b1;
-      @(posedge vif.rst_n == 1);
+      @(posedge cfg.vif.rst_n == 1);
       reset_asserted = 1'b0;
       // Check for seq_item_port FIFO & pending req queue is empty when coming out of reset
       `DV_CHECK_EQ(pending_a_req.size(), 0)
@@ -60,12 +43,12 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     end
   endtask : reset_thread
 
-  virtual task wait_for_reset_done();
+  virtual task reset_signals();
     invalidate_a_channel();
-    vif.host_cb.h2d.d_ready <= 1'b0;
-    @(posedge vif.host_cb.rst_n);
+    cfg.vif.host_cb.h2d.d_ready <= 1'b0;
+    @(posedge cfg.vif.host_cb.rst_n);
     // wait a clk to make sure a_channel a_valid stay high for a clk cycle if a_valid_delay = 0
-    @(vif.host_cb);
+    @(cfg.vif.host_cb);
   endtask
 
   // Send request on A channel
@@ -79,22 +62,22 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
     // break delay loop if reset asserted to release blocking
     repeat (a_valid_delay) begin
       if (reset_asserted) break;
-      else @(vif.host_cb);
+      else @(cfg.vif.host_cb);
     end
     // wait until no outstanding transaction with same source id
-    while (is_source_in_pending_req(req.a_source) & !reset_asserted) @(vif.host_cb);
-    vif.host_cb.h2d.a_address <= req.a_addr;
-    vif.host_cb.h2d.a_opcode  <= tl_a_op_e'(req.a_opcode);
-    vif.host_cb.h2d.a_size    <= req.a_size;
-    vif.host_cb.h2d.a_param   <= req.a_param;
-    vif.host_cb.h2d.a_data    <= req.a_data;
-    vif.host_cb.h2d.a_mask    <= req.a_mask;
-    vif.host_cb.h2d.a_user    <= '0;
-    vif.host_cb.h2d.a_source  <= req.a_source;
-    vif.host_cb.h2d.a_valid   <= 1'b1;
+    while (is_source_in_pending_req(req.a_source) & !reset_asserted) @(cfg.vif.host_cb);
+    cfg.vif.host_cb.h2d.a_address <= req.a_addr;
+    cfg.vif.host_cb.h2d.a_opcode  <= tl_a_op_e'(req.a_opcode);
+    cfg.vif.host_cb.h2d.a_size    <= req.a_size;
+    cfg.vif.host_cb.h2d.a_param   <= req.a_param;
+    cfg.vif.host_cb.h2d.a_data    <= req.a_data;
+    cfg.vif.host_cb.h2d.a_mask    <= req.a_mask;
+    cfg.vif.host_cb.h2d.a_user    <= '0;
+    cfg.vif.host_cb.h2d.a_source  <= req.a_source;
+    cfg.vif.host_cb.h2d.a_valid   <= 1'b1;
     // bypass delay in case of reset
-    if (!reset_asserted) @(vif.host_cb);
-    while(!vif.host_cb.d2h.a_ready && !reset_asserted) @(vif.host_cb);
+    if (!reset_asserted) @(cfg.vif.host_cb);
+    while(!cfg.vif.host_cb.d2h.a_ready && !reset_asserted) @(cfg.vif.host_cb);
     invalidate_a_channel();
     seq_item_port.item_done();
     if (reset_asserted) seq_item_port.put_response(req); // if reset, skip data phase
@@ -112,25 +95,25 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
       // break delay loop if reset asserted to release blocking
       repeat (d_ready_delay) begin
         if (reset_asserted & (pending_a_req.size() != 0)) break;
-        else @(vif.host_cb);
+        else @(cfg.vif.host_cb);
       end
-      vif.host_cb.h2d.d_ready <= 1'b1;
-      if (!(reset_asserted & (pending_a_req.size() != 0))) @(vif.host_cb);
-      if (vif.host_cb.d2h.d_valid | ((pending_a_req.size() != 0) & reset_asserted)) begin
+      cfg.vif.host_cb.h2d.d_ready <= 1'b1;
+      if (!(reset_asserted & (pending_a_req.size() != 0))) @(cfg.vif.host_cb);
+      if (cfg.vif.host_cb.d2h.d_valid | ((pending_a_req.size() != 0) & reset_asserted)) begin
         // Use the source ID to find the matching request
         foreach (pending_a_req[i]) begin
-          if ((pending_a_req[i].a_source == vif.host_cb.d2h.d_source) | reset_asserted) begin
+          if ((pending_a_req[i].a_source == cfg.vif.host_cb.d2h.d_source) | reset_asserted) begin
             rsp = pending_a_req[i];
-            rsp.d_opcode = vif.host_cb.d2h.d_opcode;
-            rsp.d_data   = vif.host_cb.d2h.d_data;
-            rsp.d_param  = vif.host_cb.d2h.d_param;
-            rsp.d_error  = vif.host_cb.d2h.d_error;
-            rsp.d_sink   = vif.host_cb.d2h.d_sink;
-            rsp.d_size   = vif.host_cb.d2h.d_size;
-            rsp.d_user   = vif.host_cb.d2h.d_user;
+            rsp.d_opcode = cfg.vif.host_cb.d2h.d_opcode;
+            rsp.d_data   = cfg.vif.host_cb.d2h.d_data;
+            rsp.d_param  = cfg.vif.host_cb.d2h.d_param;
+            rsp.d_error  = cfg.vif.host_cb.d2h.d_error;
+            rsp.d_sink   = cfg.vif.host_cb.d2h.d_sink;
+            rsp.d_size   = cfg.vif.host_cb.d2h.d_size;
+            rsp.d_user   = cfg.vif.host_cb.d2h.d_user;
             // make sure every req has a rsp with same source even during reset
             if (reset_asserted) rsp.d_source = rsp.a_source;
-            else                rsp.d_source = vif.host_cb.d2h.d_source;
+            else                rsp.d_source = cfg.vif.host_cb.d2h.d_source;
             req_found = 1'b1;
             seq_item_port.put_response(rsp);
             pending_a_req.delete(i);
@@ -142,10 +125,10 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
 
         if (!req_found) begin
           `uvm_error(get_full_name(), $sformatf(
-                     "Cannot find request matching d_source 0x%0x", vif.host_cb.d2h.d_source))
+                     "Cannot find request matching d_source 0x%0x", cfg.vif.host_cb.d2h.d_source))
         end
       end
-      vif.host_cb.h2d.d_ready <= 1'b0;
+      cfg.vif.host_cb.h2d.d_ready <= 1'b0;
     end
   endtask : d_channel_thread
 
@@ -157,15 +140,15 @@ class tl_host_driver extends uvm_driver#(tl_seq_item);
   endfunction
 
   function void invalidate_a_channel();
-    vif.host_cb.h2d.a_opcode <= tlul_pkg::tl_a_op_e'('x);
-    vif.host_cb.h2d.a_param <= '{default:'x};
-    vif.host_cb.h2d.a_size <= '{default:'x};
-    vif.host_cb.h2d.a_source <= '{default:'x};
-    vif.host_cb.h2d.a_address <= '{default:'x};
-    vif.host_cb.h2d.a_mask <= '{default:'x};
-    vif.host_cb.h2d.a_data <= '{default:'x};
-    vif.host_cb.h2d.a_user <= '{default:'x};
-    vif.host_cb.h2d.a_valid <= 1'b0;
+    cfg.vif.host_cb.h2d.a_opcode <= tlul_pkg::tl_a_op_e'('x);
+    cfg.vif.host_cb.h2d.a_param <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_size <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_source <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_address <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_mask <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_data <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_user <= '{default:'x};
+    cfg.vif.host_cb.h2d.a_valid <= 1'b0;
   endfunction : invalidate_a_channel
 
 endclass : tl_host_driver
