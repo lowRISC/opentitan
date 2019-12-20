@@ -9,6 +9,8 @@
 ## Please add tool specific options with appropriate ifeq's                                       ##
 ####################################################################################################
 
+# Distinguish UVM TB and the other environments for Verilator, FPGA etc
+BUILD_OPTS  += +define+UVM
 # uvm specific - set default widths
 BUILD_OPTS  += +define+UVM_NO_DEPRECATED
 BUILD_OPTS  += +define+UVM_REGEX_NO_DPI

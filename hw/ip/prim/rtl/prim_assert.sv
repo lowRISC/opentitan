@@ -12,7 +12,7 @@
 //  - can we remove pragma translate_off and ifndef VERILATOR?
 //  - should we add "pragma coverage off" and "VCS coverage off"?
 
-`ifdef UVM_PKG_SV
+`ifdef UVM
   // report assertion error with UVM if compiled
   package assert_rpt_pkg;
     import uvm_pkg::*;
@@ -34,7 +34,7 @@
 
   // ASSERT_RPT is available to change the reporting mechanism when an assert fails
 `define ASSERT_RPT(__name, __msg)                                         \
-`ifdef UVM_PKG_SV                                                         \
+`ifdef UVM                                                                \
   assert_rpt_pkg::assert_rpt($sformatf("[%m] %s: %s (%s:%0d)",            \
                              __name, __msg, `__FILE__, `__LINE__));       \
 `else                                                                     \

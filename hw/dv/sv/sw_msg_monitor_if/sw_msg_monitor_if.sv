@@ -410,7 +410,7 @@ interface sw_msg_monitor_if #(
                                     string verbosity = "n",
                                     string msg_header = "",
                                     string msg);
-`ifdef UVM_PKG_SV
+`ifdef UVM
     import uvm_pkg::*;
     `include "uvm_macros.svh"
 
