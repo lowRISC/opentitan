@@ -10,8 +10,6 @@ from .lib import *
 import hjson
 
 
-
-
 def amend_ip(top, ip):
     """ Amend additional information into top module
 
@@ -124,8 +122,25 @@ predefined_modules = {
 }
 
 
-def xbar_addhost(xbar, host):
-    # TODO: check if host is another crossbar
+def is_xbar(top, name):
+    """Check if the given name is crossbar
+    """
+    xbars = list(filter(lambda node: node["name"] == name, top["xbar"]))
+    if len(xbars) == 0:
+        return False, None
+
+    if len(xbars) > 1:
+        log.error("Matching crossbar {} is more than one.".format(name))
+        raise SystemExit()
+
+    return True, xbars[0]
+
+
+def xbar_addhost(top, xbar, host):
+    """Add host nodes information
+
+    - xbar: bool, true if the host port is from another Xbar
+    """
     # Check and fetch host if exists in nodes
     obj = list(filter(lambda node: node["name"] == host, xbar["nodes"]))
     if len(obj) == 0:
@@ -144,19 +159,26 @@ def xbar_addhost(xbar, host):
             "pipeline_byp": "true"
         }
         topxbar["nodes"].append(obj)
-    else:
-        if 'clock' not in obj[0]:
-            obj[0]["clock"] = xbar['clock']
+        return
 
-        if 'reset' not in obj[0]:
-            obj[0]["reset"] = xbar["reset"]
+    xbar_bool, xbar_h = is_xbar(top, host)
+    if xbar_bool:
+        # TODO: Handle Host XBAR port (nothing)
+        log.warning("host {} is a crossbar.".format(host))
 
-        obj[0]["inst_type"] = predefined_modules[
-            host] if host in predefined_modules else ""
-        obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[
-            0] else "true"
-        obj[0]["pipeline_byp"] = obj[0]["pipeline_byp"] if obj[0][
-            "pipeline"] == "true" and "pipeline_byp" in obj[0] else "true"
+    obj[0]["xbar"] = xbar_bool
+
+    if 'clock' not in obj[0]:
+        obj[0]["clock"] = xbar['clock']
+
+    if 'reset' not in obj[0]:
+        obj[0]["reset"] = xbar["reset"]
+
+    obj[0]["inst_type"] = predefined_modules[
+        host] if host in predefined_modules else ""
+    obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[0] else "true"
+    obj[0]["pipeline_byp"] = obj[0]["pipeline_byp"] if obj[0][
+        "pipeline"] == "true" and "pipeline_byp" in obj[0] else "true"
 
 
 def process_pipeline_var(node):
@@ -177,6 +199,7 @@ def xbar_adddevice(top, xbar, device):
     - inst_type: comes from module or memory if exist.
     - base_addr: comes from module or memory, or assume rv_plic?
     - size_byte: comes from module or memory
+    - xbar: bool, true if the device port is another xbar
     """
     deviceobj = list(
         filter(lambda node: node["name"] == device,
@@ -185,18 +208,29 @@ def xbar_adddevice(top, xbar, device):
 
     xbar_list = [x["name"] for x in top["xbar"] if x["name"] != xbar["name"]]
 
+    # case 1: another xbar --> check in xbar list
+    if device in xbar_list and len(nodeobj) == 0:
+        log.error(
+            "Another crossbar %s needs to be specified in the 'nodes' list" %
+            device)
+        return
+
     if len(deviceobj) == 0:
         # doesn't exist,
-        # case 1: another xbar --> check in xbar list
-        if device in xbar_list and len(nodeobj) == 0:
-            log.error(
-                "Another crossbar %s needs to be specified in the 'nodes' list"
-                % device)
+
+        # case 1: Crossbar handling
+        if device in xbar_list:
+            log.warning(
+                "device {} in Xbar {} is connected to another Xbar".format(
+                    device, xbar["name"]))
+            assert len(nodeobj) == 1
+            nodeobj[0]["xbar"] = True
+            process_pipeline_var(nodeobj[0])
             return
 
         # case 2: predefined_modules (debug_mem, rv_plic)
         # TODO: Find configurable solution not from predefined but from object?
-        elif device in predefined_modules:
+        if device in predefined_modules:
             if device == "debug_mem":
                 if len(nodeobj) == 0:
                     # Add new debug_mem
@@ -208,6 +242,7 @@ def xbar_adddevice(top, xbar, device):
                         "inst_type": predefined_modules["debug_mem"],
                         "base_addr": top["debug_mem_base_addr"],
                         "size_byte": "0x1000",
+                        "xbar": False,
                         "pipeline" : "true",
                         "pipeline_byp" : "true"
                     }) # yapf: disable
@@ -217,12 +252,14 @@ def xbar_adddevice(top, xbar, device):
                     node["inst_type"] = predefined_modules["debug_mem"]
                     node["base_addr"] = top["debug_mem_base_addr"]
                     node["size_byte"] = "0x1000"
+                    node["xbar"] = False
                     process_pipeline_var(node)
             else:
                 log.error("device %s shouldn't be host type" % device)
                 return
         # case 3: not defined
         else:
+            # Crossbar check
             log.error(
                 "device %s doesn't exist in 'module', 'memory', or predefined"
                 % device)
@@ -240,7 +277,8 @@ def xbar_adddevice(top, xbar, device):
             "base_addr" : deviceobj[0]["base_addr"],
             "size_byte": deviceobj[0]["size"],
             "pipeline" : "true",
-            "pipeline_byp" : "true"
+            "pipeline_byp" : "true",
+            "xbar" : True if device in xbar_list else False
         }) # yapf: disable
 
     else:
@@ -249,6 +287,7 @@ def xbar_adddevice(top, xbar, device):
         node["inst_type"] = deviceobj[0]["type"]
         node["base_addr"] = deviceobj[0]["base_addr"]
         node["size_byte"] = deviceobj[0]["size"]
+        node["xbar"] = True if device in xbar_list else False
         process_pipeline_var(node)
 
 
@@ -286,7 +325,7 @@ def amend_xbar(top, xbar):
     device_nodes = set()
     for host, devices in xbar["connections"].items():
         # add host first
-        xbar_addhost(topxbar, host)
+        xbar_addhost(top, topxbar, host)
 
         # add device if doesn't exist
         device_nodes.update(devices)
@@ -294,6 +333,146 @@ def amend_xbar(top, xbar):
     log.info(device_nodes)
     for device in device_nodes:
         xbar_adddevice(top, topxbar, device)
+
+
+def xbar_cross(xbar, xbars):
+    """Check if cyclic dependency among xbars
+
+    And gather the address range for device port (to another Xbar)
+
+    @param node_name if not "", the function only search downstream
+                     devices starting from the node_name
+    @param visited   The nodes it visited to reach this port. If any
+                     downstream port from node_name in visited, it means
+                     circular path exists. It should be fatal error.
+    """
+    # Step 1: Visit devices (gather the address range)
+    log.info("Processing circular path check for {}".format(xbar["name"]))
+    addr = []
+    for node in [
+            x for x in xbar["nodes"]
+            if x["type"] == "device" and "xbar" in x and x["xbar"] == False
+    ]:
+        # TODO: Can this be simplified? (Merging contiguous into one)
+        addr.append((node["base_addr"], node["size_byte"]))
+
+    # Step 2: visit xbar device ports
+    xbar_nodes = [
+        x for x in xbar["nodes"]
+        if x["type"] == "device" and "xbar" in x and x["xbar"] == True
+    ]
+
+    # Now call function to get the device range
+    # the node["name"] is used to find the host_xbar and its connection. The
+    # assumption here is that there's only one connection from crossbar A to
+    # crossbar B.
+    #
+    # device_xbar is the crossbar has a device port with name as node["name"].
+    # host_xbar is the crossbar has a host port with name as node["name"].
+    for node in xbar_nodes:
+        xbar_addr = xbar_cross_node(node["name"], xbar, xbars, visited=[])
+        node["xbar_addr"] = xbar_addr
+
+
+def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
+    # 1. Get the connected xbar
+    host_xbars = [x for x in xbars if x["name"] == node_name]
+    assert len(host_xbars) == 1
+    host_xbar = host_xbars[0]
+
+    log.info("Processing node {} in Xbar {}.".format(node_name,
+                                                     device_xbar["name"]))
+    result = []  # [(base_addr, size), .. ]
+    # Sweep the devices using connections and gather the address.
+    # If the device is another xbar, call recursive
+    visited.append(host_xbar["name"])
+    devices = host_xbar["connections"][device_xbar["name"]]
+
+    for node in host_xbar["nodes"]:
+        if not node["name"] in devices:
+            continue
+        if "xbar" in node and node["xbar"] == True:
+            if not "xbar_addr" in node:
+                # Deeper dive into another crossbar
+                xbar_addr = xbar_cross_node(node["name"], host_xbar, xbars,
+                                            visited)
+                node["xbar_addr"] = xbar_addr
+
+            result.append(node["xbar_addr"])
+            continue
+
+        # Normal device
+        result.append({
+            'base_addr': node["base_addr"],
+            'size_byte': node["size_byte"]
+        })
+
+    visited.pop()
+
+    # TODO: simplify the result? if contiguous, combine into one?
+    return simplify_addr(result, device_xbar)
+
+
+def simplify_addr(addrs, xbar):
+    """If any contiguous regions exist, concatenate them
+
+    For instance, 0x1000 ~ 0x1FFF , 0x2000~ 0x2FFF ==> 0x1000 ~ 0x2FFF
+
+    @param addrs List of Dict[Addr] : {'base_addr':,'size_byte':}
+    """
+
+    # Sort based on the base addr
+    newlist = sorted(addrs, key=lambda k: int(k['base_addr'], 0))
+    # check if overlap or contiguous
+    result = []
+    for e in newlist:
+        if len(result) == 0:
+            result.append(e)
+            continue
+        # if contiguous
+        if int(e["base_addr"], 0) == int(result[-1]["base_addr"], 0) + int(
+                result[-1]["size_byte"], 0):
+            # update previous entry size
+            result[-1]["size_byte"] = "0x{:x}".format(
+                int(result[-1]["size_byte"], 0) + int(e["size_byte"], 0))
+            continue
+
+        # TODO: If no other device in current xbar between the gap?
+        if no_device_in_range(xbar, result[-1], e):
+            result[-1]["size_byte"] = "0x{:x}".format(
+                int(e["base_addr"], 0) + int(e["size_byte"], 0) -
+                int(result[-1]["base_addr"], 0))
+            continue
+
+        # If overlapping (Should it be consider? TlGen will catch it)
+
+        # Normal case
+        result.append(e)
+
+    # return result
+    return result
+
+
+def no_device_in_range(xbar, f, t):
+    """Check if other devices doesn't overlap with the from <= x < to
+    """
+    from_addr = int(f["base_addr"], 0) + int(f["size_byte"], 0)
+    to_addr = int(t["base_addr"], 0)
+
+    for node in [x for x in xbar["nodes"] if x["type"] == "device"]:
+        if not "base_addr" in node:
+            # Xbar?
+            log.info("Xbar type node cannot be compared in this version.",
+                     "Please use in caution")
+            continue
+        b_addr = int(node["base_addr"], 0)
+        e_addr = b_addr + int(node["size_byte"], 0)
+
+        if e_addr <= from_addr or b_addr >= to_addr:
+            # No overlap
+            continue
+        return False
+    return True
 
 
 def amend_interrupt(top):
@@ -317,6 +496,7 @@ def amend_interrupt(top):
             map(partial(add_prefix_to_signal, prefix=m.lower()),
                 ip[0]["interrupt_list"]))
 
+
 def amend_alert(top):
     """Check interrupt_module if exists, or just use all modules
     """
@@ -329,14 +509,15 @@ def amend_alert(top):
     for m in top["alert_module"]:
         ip = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ip) == 0:
-            log.warning(
-                "Cannot find IP %s which is used in the alert_module" % m)
+            log.warning("Cannot find IP %s which is used in the alert_module" %
+                        m)
             continue
 
         log.info("Adding alert from module %s" % ip[0]["name"])
         top["alert"] += list(
             map(partial(add_prefix_to_signal, prefix=m.lower()),
                 ip[0]["alert_list"]))
+
 
 def amend_pinmux_io(top):
     """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
@@ -460,7 +641,6 @@ def amend_pinmux_io(top):
 def merge_top(topcfg, ipobjs, xbarobjs):
     gencfg = deepcopy(topcfg)
 
-
     # Combine ip cfg into topcfg
     for ip in ipobjs:
         amend_ip(gencfg, ip)
@@ -478,6 +658,10 @@ def merge_top(topcfg, ipobjs, xbarobjs):
     # Combine xbar into topcfg
     for xbar in xbarobjs:
         amend_xbar(gencfg, xbar)
+
+    # 2nd phase of xbar (gathering the devices address range)
+    for xbar in gencfg["xbar"]:
+        xbar_cross(xbar, gencfg["xbar"])
 
     # remove unwanted fields 'debug_mem_base_addr'
     gencfg.pop('debug_mem_base_addr', None)

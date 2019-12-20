@@ -166,7 +166,7 @@ def process_pipeline(xbar):
             continue
 
         if unode.node_type == NodeType.SOCKET_1N:
-            idx = unode.ds.index(device.us)
+            idx = unode.ds.index(device.us[0])
             unode.dpass = unode.dpass ^ (
                 1 << idx) if no_bypass else unode.dpass
 

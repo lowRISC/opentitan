@@ -6,6 +6,9 @@
 // all reset signals should be generated from one reset signal to not make any deadlock
 //
 // Interconnect
+<%
+  import tlgen.lib as lib
+%>\
 % for host in xbar.hosts:
 ${xbar.repr_tree(host, 0)}
 % endfor
@@ -157,15 +160,34 @@ module xbar_${xbar.name} (
   leaf = xbar.get_leaf_from_s1n(block, loop.index);
   name_space = "ADDR_SPACE_" + leaf.name.upper();
   name_mask  = "ADDR_MASK_" + leaf.name.upper();
+  prefix = "if (" if loop.first else "end else if ("
 %>\
-  % if loop.first:
-    if ((${addr_sig} & ~(${name_mask})) == ${name_space}) begin
-  % else:
-    end else if ((${addr_sig} & ~(${name_mask})) == ${name_space}) begin
-  % endif
+  % if len(leaf.addr_range) == 1:
+      % if lib.is_pow2((leaf.addr_range[0][1]-leaf.addr_range[0][0])+1):
+    ${prefix}(${addr_sig} & ~(${name_mask})) == ${name_space}) begin
       dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
-  % if loop.last:
-    end
+      % else:
+      ((${addr_sig} <= (${name_mask} + ${name_space})) &&
+       (${addr_sig} >= ${name_space}))${" ||" if not loop.last else ""}
+      % endif
+    ${"end" if loop.last else ""}
+  % else:
+    ## Xbar device port
+<%
+  num_range = len(leaf.addr_range)
+%>\
+    ${prefix}
+    % for i in range(num_range):
+      % if lib.is_pow2(leaf.addr_range[i][1]-leaf.addr_range[0][0]+1):
+      ((${addr_sig} & ~(${name_mask}[${i}])) == ${name_space}[${i}])${" ||" if not loop.last else ""}
+      % else:
+      ((${addr_sig} <= (${name_mask}[${i}] + ${name_space}[${i}])) &&
+       (${addr_sig} >= ${name_space}[${i}]))${" ||" if not loop.last else ""}
+      % endif
+    % endfor
+    ) begin
+      dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
+    ${"end" if loop.last else ""}
   % endif
 % endfor
   end

@@ -11,7 +11,6 @@ class Edge:
     a Node can be a host port, output of async_fifo, port in a socket,
     or a device port.
     """
-
     def __init__(self, us, ds):
         self.us = us
         self.ds = ds
@@ -45,12 +44,12 @@ class Node:
     resets = []  # Resets  # resets of the node
     # e.g. async_fifo in : clk_core , out : clk_main
 
-
     # If NodeType is Socket out from 1:N then address steering is used
     # But this value is also propagated up to a Host from multiple Devices
     # Device Node should have address_from, address_to
-    address_from = 0  #: int
-    address_to = 0  #: int
+    #address_from = 0  #: int
+    #address_to = 0  #: int
+    addr_range = []
 
     us = []  # Edges  # Number of Ports depends on the NodeType
     # 1 for Host, Device, 2 for Async FIFO, N for Sockets
@@ -72,3 +71,4 @@ class Node:
         self.resets = [reset]
         self.us = []
         self.ds = []
+        self.addr_range = []

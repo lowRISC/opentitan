@@ -42,12 +42,12 @@ def generate_top(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    xbar_path = out_path / 'ip/xbar/data/autogen'
-    xbar_path.mkdir(parents=True, exist_ok=True)
     gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
               "-o hw/top_earlgrey/\n\n")
 
     for obj in top["xbar"]:
+        xbar_path = out_path / 'ip/xbar_{}/data/autogen'.format(obj["name"])
+        xbar_path.mkdir(parents=True, exist_ok=True)
         xbar = tlgen.validate(obj)
 
         # Generate output of crossbar with complete fields
@@ -59,13 +59,13 @@ def generate_xbars(top, out_path):
             log.error("Elaboration failed." + repr(xbar))
 
         try:
-            out_rtl, out_pkg, out_bind = tlgen.generate(xbar)
+            out_rtl, out_pkg, out_core = tlgen.generate(xbar)
         except:
             log.error(exceptions.text_error_template().render())
 
-        rtl_path = out_path / 'ip/xbar/rtl/autogen'
+        rtl_path = out_path / 'ip/xbar_{}/rtl/autogen'.format(obj["name"])
         rtl_path.mkdir(parents=True, exist_ok=True)
-        dv_path = out_path / 'ip/xbar/dv/autogen'
+        dv_path = out_path / 'ip/xbar_{}/dv/autogen'.format(obj["name"])
         dv_path.mkdir(parents=True, exist_ok=True)
 
         rtl_filename = "xbar_%s.sv" % (xbar.name)
@@ -78,19 +78,20 @@ def generate_xbars(top, out_path):
         with pkg_filepath.open(mode='w', encoding='UTF-8') as fout:
             fout.write(out_pkg)
 
-        bind_filename = "xbar_%s_bind.sv" % (xbar.name)
-        bind_filepath = dv_path / bind_filename
-        with bind_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_bind)
+        core_filename = "xbar_%s.core" % (xbar.name)
+        core_filepath = rtl_path / core_filename
+        with core_filepath.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out_core)
+
 
 def generate_alert_handler(top, out_path):
     # default values
-    esc_cnt_dw=32
-    accu_cnt_dw=16
-    lfsr_seed=2**31-1
-    async_on="'0"
+    esc_cnt_dw = 32
+    accu_cnt_dw = 16
+    lfsr_seed = 2**31 - 1
+    async_on = "'0"
     # leave this constant
-    n_classes=4
+    n_classes = 4
 
     # check if there are any params to be passed through reggen and placed into
     # the generated package
@@ -118,7 +119,7 @@ def generate_alert_handler(top, out_path):
         # set number of alerts to 1 such that the config is still valid
         # that input will be tied off
         n_alerts = 1
-        log.warning("no alerts are defined in the system");
+        log.warning("no alerts are defined in the system")
     else:
         async_on = ""
         for alert in top['alert']:
@@ -131,7 +132,6 @@ def generate_alert_handler(top, out_path):
     log.info("AccuCntDw = %d" % accu_cnt_dw)
     log.info("LfsrSeed  = %d" % lfsr_seed)
     log.info("AsyncOn   = %s" % async_on)
-
 
     # Define target path
     rtl_path = out_path / 'ip/alert_handler/rtl/autogen'
@@ -177,8 +177,6 @@ def generate_alert_handler(top, out_path):
                             object_pairs_hook=validate.checking_dict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
-
-
 
 
 def generate_plic(top, out_path):
@@ -439,7 +437,8 @@ def main():
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
 
-    if not (args.hjson_only or args.plic_only or args.alert_handler_only or args.tpl):
+    if not (args.hjson_only or args.plic_only or args.alert_handler_only or
+            args.tpl):
         log.error(
             "Template file can be omitted only if '--hjson-only' is true")
         raise SystemExit(sys.exc_info()[1])

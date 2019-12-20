@@ -102,6 +102,22 @@ module top_${top["name"]} #(
   tl_d2h_t tl_${m["name"]}_d_d2h;
 % endfor
 
+## Xbar connection
+% for xbar in top["xbar"]:
+<%
+  xbar_devices = [x for x in xbar["nodes"] if x["type"] == "device" and x["xbar"]]
+%>\
+  % for node in xbar_devices:
+  tl_h2d_t tl_${xbar["name"]}_h_h2d;
+  tl_d2h_t tl_${xbar["name"]}_h_d2h;
+  tl_h2d_t tl_${node["name"]}_d_h2d;
+  tl_d2h_t tl_${node["name"]}_d_d2h;
+
+  assign tl_${xbar["name"]}_h_h2d = tl_${node["name"]}_d_h2d;
+  assign tl_${node["name"]}_d_d2h = tl_${xbar["name"]}_h_d2h;
+  % endfor
+% endfor
+
   //reset wires declaration
 % for reset in top['resets']:
   logic ${reset['name']}_rst_n;
@@ -622,8 +638,8 @@ else:
   % endfor
 
     .scanmode_i
-% endfor
   );
+% endfor
 
 % if "pinmux" in top:
   // Pinmux connections

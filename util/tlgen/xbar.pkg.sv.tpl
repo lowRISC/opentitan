@@ -11,13 +11,30 @@ package tl_${xbar.name}_pkg;
 
 % for device in xbar.devices:
   ## Address
-  localparam logic [31:0] ADDR_SPACE_${device.name.upper().ljust(name_len)} = 32'h ${"%08x" % device.address_from};
+  % if device.xbar == False:
+  localparam logic [31:0] ADDR_SPACE_${device.name.upper().ljust(name_len)} = 32'h ${"%08x" % device.addr_range[0][0]};
+  % else:
+  ## Xbar device
+  localparam logic [${len(device.addr_range)-1}:0][31:0] ADDR_SPACE_${device.name.upper().ljust(name_len)} = {
+    % for addr in device.addr_range:
+    32'h ${"%08x" % addr[0]}${"," if not loop.last else ""}
+    % endfor
+  };
+  % endif
 % endfor
 
 % for device in xbar.devices:
   ## Mask
-  localparam logic [31:0] ADDR_MASK_${device.name.upper().ljust(name_len)} = 32'h ${"%08x" % (device.address_to -
-  device.address_from)};
+  % if device.xbar == False:
+  localparam logic [31:0] ADDR_MASK_${device.name.upper().ljust(name_len)} = 32'h ${"%08x" % (device.addr_range[0][1] - device.addr_range[0][0])};
+  % else:
+  ## Xbar
+  localparam logic [${len(device.addr_range)-1}:0][31:0] ADDR_MASK_${device.name.upper().ljust(name_len)} = {
+    % for addr in device.addr_range:
+    32'h ${"%08x" % (addr[1] - addr[0])}${"," if not loop.last else ""}
+    % endfor
+  };
+  % endif
 % endfor
 
   localparam int N_HOST   = ${len(xbar.hosts)};
