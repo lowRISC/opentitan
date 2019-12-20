@@ -161,24 +161,25 @@ shall configure them.
 // Pseudo-code below
 void plic_init() {
   // Set to level-triggered for interrupt sources
-  for (int i = 0 ; i < ceil(N_SOURCE/32) ; i++) {
-    *(LE+i) = 0;
+  for (size_t i = 0; i < ceil(N_SOURCE / 32); ++i) {
+    *(LE + i) = 0;
+  }
 
   // Configure priority
-  for (int i = 0 ; i < N_SOURCE ; i++) {
-    *(PRIO+i) = value(i);
-
+  for (size_t i = 0; i < N_SOURCE; ++i) {
+    *(PRIO + i) = value(i);
+  }
 }
 
 void plic_threshold(tid, threshold) {
-  *(THRESHOLD+tid) = threshold;
+  *(THRESHOLD + tid) = threshold;
 }
 
 void plic_enable(tid, iid) {
   // iid: 0-based ID
-  int offset = ceil(N_SOURCE/32) * tid + (iid>>5);
+  int offset = ceil(N_SOURCE / 32) * tid + (iid >> 5);
 
-  *(IE+offset) = *(IE+offset) | (1<<(iid%32));
+  *(IE + offset) = *(IE + offset) | (1 << (iid % 32));
 }
 ```
 
@@ -205,18 +206,18 @@ separated.
 
 ~~~~c
 void interrupt_service() {
-  // tid is predefined value.
-  uint32 iid;
-  iid = *(CC + tid);
+  uint32_t tid = /* ... */;
+  uint32_t iid = *(CC + tid);
   if (iid == 0) {
-    // Interrupt is claimed by one of other targets
-    return ;
+    // Interrupt is claimed by one of other targets.
+    return;
+  }
 
   do {
-    // Process interrupts
+    // Process interrupts...
     // ...
 
-    // Complete
+    // Finish.
     *(CC + tid) = iid;
     iid = *(CC + tid);
   } while (iid != 0);
