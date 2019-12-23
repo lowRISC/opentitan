@@ -33,6 +33,7 @@
         when the AES unit is idle. If the AES unit is non-idle, writes to these
         registers are ignored. All key registers must be updated when the
         key is changed, regardless of key length (write 0 for unusued bits).
+        The order in which the registers are updated does not matter.
       '''
       count: "NumRegsKey",
       cname: "KEY",
@@ -52,7 +53,8 @@
       desc: '''
         Input Data Registers. Loaded into the internal State register upon
         starting encryption/decryption of the next block. After that, the processor
-        can update the Input Data Register.
+        can update the Input Data Register. The order in which the registers are
+        written does not matter.
       '''
       count: "NumRegsData",
       cname: "DATA_IN",
@@ -72,7 +74,8 @@
         Output Data Register. Holds the output data produced by the AES unit
         during the last encryption/decryption operation. If FORCE_DATA_OVERWRITE=0
         (see Control Register), the AES unit is stalled when the previous output
-        data has not yet been read and is about to be overwritten.
+        data has not yet been read and is about to be overwritten. The order in
+        which the registers are read does not matter.
       '''
       count: "NumRegsData",
       cname: "DATA_OUT",
