@@ -131,7 +131,7 @@ The AES unit operates as follows:
    For more details, refer to the [AES specification](https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf).
     1. SubBytes Transformation: A non-linear byte substitution that operates independently on each byte of the state using a substitution table (S-Box).
     2. ShiftRows Transformation: The bytes of the last three rows of the state are cyclically shifted over different offsets.
-    3. MixColumns Transformation: Each of the four columns of the state are considered as polynomials over GF(28) and individually multiplied with another fixed polynomial.
+    3. MixColumns Transformation: Each of the four columns of the state are considered as polynomials over GF(2^8) and individually multiplied with another fixed polynomial.
     4. AddRoundKey Transformation: The round key is XORed with the output of the MixColumns operation and stored back into the State register.
        The 128-bit round key itself is extracted from the current value in the Full Key register.
        In parallel, the full key used for the next round is computed on the fly using the key expand module.
@@ -257,7 +257,9 @@ This section discusses how software can interface with the AES unit.
 To initialize the AES unit, software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
 Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
-Independent of the selected key length, software must always write all 8 32-bit registers. Anything can be written to the unused key registers.
+Independent of the selected key length, software must always write all 8 32-bit registers.
+The order in which these registers are written does not matter.
+Anything can be written to the unused key registers.
 For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
 
 
@@ -269,13 +271,15 @@ For block operation, software must initialize the AES unit as described in the p
    1. Automatically starts encryption/decryption when new input data is available by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `0`.
    2. Does not overwrite previous output data that has not been read by the processor by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `0`.
 2. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
+   The order in which these registers are written does not matter.
 3. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
 4. Write Input Data Block `1` to the Input Data registers.
 
 Then for every Data Block `I=0,..,N-3`, software must:
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
    The AES unit then directly starts processing the previously input block `I+1`
-2. Read Output Data Block `I` from the Output Data register.
+2. Read Output Data Block `I` from the Output Data registers {{< regref "DATA_OUT0" >}} - {{< regref "DATA_OUT3" >}}.
+   The order in which these registers are read does not matter.
 3. Write Input Data Block `I+2` into the Input Data register.
    There is no need to check INPUT_READY as the cycle following OUTPUT_VALID being set the current input is loaded in.
 
