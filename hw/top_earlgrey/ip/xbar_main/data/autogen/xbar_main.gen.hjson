@@ -97,8 +97,13 @@
       reset: rst_main_ni
       pipeline: "false"
       inst_type: rom
-      base_addr: 0x00008000
-      size_byte: 0x2000
+      addr_range:
+      [
+        {
+          base_addr: 0x00008000
+          size_byte: 0x2000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
@@ -109,8 +114,13 @@
       reset: rst_main_ni
       pipeline_byp: "false"
       inst_type: rv_dm
-      base_addr: 0x1A110000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x1A110000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline: "true"
     }
@@ -121,8 +131,13 @@
       reset: rst_main_ni
       pipeline: "false"
       inst_type: ram_1p
-      base_addr: 0x10000000
-      size_byte: 0x10000
+      addr_range:
+      [
+        {
+          base_addr: 0x10000000
+          size_byte: 0x10000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
@@ -133,8 +148,13 @@
       reset: rst_main_ni
       pipeline: "false"
       inst_type: eflash
-      base_addr: 0x20000000
-      size_byte: 0x80000
+      addr_range:
+      [
+        {
+          base_addr: 0x20000000
+          size_byte: 0x80000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
@@ -146,7 +166,7 @@
       pipeline_byp: "false"
       xbar: true
       pipeline: "true"
-      xbar_addr:
+      addr_range:
       [
         {
           base_addr: 0x40000000
@@ -165,8 +185,13 @@
       reset: rst_main_ni
       pipeline_byp: "false"
       inst_type: flash_ctrl
-      base_addr: 0x40030000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40030000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline: "true"
     }
@@ -177,8 +202,13 @@
       reset: rst_main_ni
       pipeline_byp: "false"
       inst_type: hmac
-      base_addr: 0x40120000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40120000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline: "true"
     }
@@ -189,8 +219,13 @@
       reset: rst_main_ni
       pipeline_byp: "false"
       inst_type: aes
-      base_addr: 0x40110000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40110000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline: "true"
     }
@@ -200,8 +235,13 @@
       clock: clk_main_i
       reset: rst_main_ni
       inst_type: rv_plic
-      base_addr: 0x40090000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40090000
+          size_byte: 0x1000
+        }
+      ]
       pipeline_byp: "false"
       xbar: false
       pipeline: "true"
@@ -212,8 +252,13 @@
       clock: clk_main_i
       reset: rst_fixed_ni
       inst_type: pinmux
-      base_addr: 0x40070000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40070000
+          size_byte: 0x1000
+        }
+      ]
       pipeline_byp: "false"
       xbar: false
       pipeline: "true"
@@ -224,8 +269,13 @@
       clock: clk_main_i
       inst_type: alert_handler
       pipeline_byp: "false"
-      base_addr: 0x40130000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40130000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline: "true"
     }
@@ -235,8 +285,13 @@
       clock: clk_main_i
       inst_type: nmi_gen
       pipeline_byp: "false"
-      base_addr: 0x40140000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40140000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline: "true"
     }
