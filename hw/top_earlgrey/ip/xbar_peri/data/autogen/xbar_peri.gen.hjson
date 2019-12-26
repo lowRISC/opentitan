@@ -46,8 +46,13 @@
       reset: rst_peri_ni
       pipeline: "false"
       inst_type: uart
-      base_addr: 0x40000000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40000000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
@@ -58,8 +63,13 @@
       reset: rst_peri_ni
       pipeline: "false"
       inst_type: gpio
-      base_addr: 0x40010000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40010000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
@@ -70,8 +80,13 @@
       reset: rst_peri_ni
       pipeline: "false"
       inst_type: spi_device
-      base_addr: 0x40020000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40020000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
@@ -82,8 +97,13 @@
       reset: rst_peri_ni
       pipeline: "false"
       inst_type: rv_timer
-      base_addr: 0x40080000
-      size_byte: 0x1000
+      addr_range:
+      [
+        {
+          base_addr: 0x40080000
+          size_byte: 0x1000
+        }
+      ]
       xbar: false
       pipeline_byp: "true"
     }
