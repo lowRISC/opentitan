@@ -163,8 +163,7 @@ def xbar_addhost(top, xbar, host):
 
     xbar_bool, xbar_h = is_xbar(top, host)
     if xbar_bool:
-        # TODO: Handle Host XBAR port (nothing)
-        log.warning("host {} is a crossbar.".format(host))
+        log.info("host {} is a crossbar. Nothing to deal with.".format(host))
 
     obj[0]["xbar"] = xbar_bool
 
@@ -240,8 +239,10 @@ def xbar_adddevice(top, xbar, device):
                         "clock": xbar['clock'],
                         "reset": xbar['reset'],
                         "inst_type": predefined_modules["debug_mem"],
-                        "base_addr": top["debug_mem_base_addr"],
-                        "size_byte": "0x1000",
+                        "addr_range": [{
+                            "base_addr": top["debug_mem_base_addr"],
+                            "size_byte": "0x1000",
+                        }],
                         "xbar": False,
                         "pipeline" : "true",
                         "pipeline_byp" : "true"
@@ -250,8 +251,12 @@ def xbar_adddevice(top, xbar, device):
                     # Update if exists
                     node = nodeobj[0]
                     node["inst_type"] = predefined_modules["debug_mem"]
-                    node["base_addr"] = top["debug_mem_base_addr"]
-                    node["size_byte"] = "0x1000"
+                    node["addr_range"] = [{
+                        "base_addr":
+                        top["debug_mem_base_addr"],
+                        "size_byte":
+                        "0x1000"
+                    }]
                     node["xbar"] = False
                     process_pipeline_var(node)
             else:
@@ -274,8 +279,8 @@ def xbar_adddevice(top, xbar, device):
             "clock" : deviceobj[0]["clock"],
             "reset" : deviceobj[0]["reset"],
             "inst_type" : deviceobj[0]["type"],
-            "base_addr" : deviceobj[0]["base_addr"],
-            "size_byte": deviceobj[0]["size"],
+            "addr_range": [{"base_addr" : deviceobj[0]["base_addr"],
+                            "size_byte": deviceobj[0]["size"]}],
             "pipeline" : "true",
             "pipeline_byp" : "true",
             "xbar" : True if device in xbar_list else False
@@ -285,8 +290,10 @@ def xbar_adddevice(top, xbar, device):
         # found and exist in the nodes too
         node = nodeobj[0]
         node["inst_type"] = deviceobj[0]["type"]
-        node["base_addr"] = deviceobj[0]["base_addr"]
-        node["size_byte"] = deviceobj[0]["size"]
+        node["addr_range"] = [{
+            "base_addr": deviceobj[0]["base_addr"],
+            "size_byte": deviceobj[0]["size"]
+        }]
         node["xbar"] = True if device in xbar_list else False
         process_pipeline_var(node)
 
@@ -353,8 +360,7 @@ def xbar_cross(xbar, xbars):
             x for x in xbar["nodes"]
             if x["type"] == "device" and "xbar" in x and x["xbar"] == False
     ]:
-        # TODO: Can this be simplified? (Merging contiguous into one)
-        addr.append((node["base_addr"], node["size_byte"]))
+        addr.extend(node["addr_range"])
 
     # Step 2: visit xbar device ports
     xbar_nodes = [
@@ -371,7 +377,7 @@ def xbar_cross(xbar, xbars):
     # host_xbar is the crossbar has a host port with name as node["name"].
     for node in xbar_nodes:
         xbar_addr = xbar_cross_node(node["name"], xbar, xbars, visited=[])
-        node["xbar_addr"] = xbar_addr
+        node["addr_range"] = xbar_addr
 
 
 def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
@@ -392,20 +398,13 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
         if not node["name"] in devices:
             continue
         if "xbar" in node and node["xbar"] == True:
-            if not "xbar_addr" in node:
+            if not "addr_range" in node:
                 # Deeper dive into another crossbar
                 xbar_addr = xbar_cross_node(node["name"], host_xbar, xbars,
                                             visited)
-                node["xbar_addr"] = xbar_addr
+                node["addr_range"] = xbar_addr
 
-            result.append(node["xbar_addr"])
-            continue
-
-        # Normal device
-        result.append({
-            'base_addr': node["base_addr"],
-            'size_byte': node["size_byte"]
-        })
+        result.extend(deepcopy(node["addr_range"]))
 
     visited.pop()
 
@@ -460,18 +459,21 @@ def no_device_in_range(xbar, f, t):
     to_addr = int(t["base_addr"], 0)
 
     for node in [x for x in xbar["nodes"] if x["type"] == "device"]:
-        if not "base_addr" in node:
+        if not "addr_range" in node:
             # Xbar?
             log.info("Xbar type node cannot be compared in this version.",
                      "Please use in caution")
             continue
-        b_addr = int(node["base_addr"], 0)
-        e_addr = b_addr + int(node["size_byte"], 0)
+        assert isinstance(node["addr_range"], list)
 
-        if e_addr <= from_addr or b_addr >= to_addr:
-            # No overlap
-            continue
-        return False
+        for addr in node["addr_range"]:
+            b_addr = int(addr["base_addr"], 0)
+            e_addr = b_addr + int(addr["size_byte"], 0)
+
+            if e_addr <= from_addr or b_addr >= to_addr:
+                # No overlap
+                continue
+            return False
     return True
 
 
