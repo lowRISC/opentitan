@@ -29,9 +29,9 @@ interface uart_if #(time UartDefaultClkPeriodNs = 104166.667ns) ();
   endclocking
   modport mon_rx_mp(clocking mon_rx_cb);
 
-  task automatic reset_uart_rx();
+  function automatic void reset_uart_rx();
     uart_rx = 1;
-  endtask
+  endfunction
 
   task automatic wait_for_tx_idle();
     wait(uart_tx_clk_pulses == 0);
