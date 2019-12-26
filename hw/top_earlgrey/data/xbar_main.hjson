@@ -80,8 +80,10 @@
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
       inst_type: "rv_plic",
-      base_addr: "0x40090000",
-      size_byte: "0x1000",
+      addr_range: [{
+        base_addr: "0x40090000",
+        size_byte: "0x1000",
+        }],
       pipeline_byp: "false"
     },
     { name:      "pinmux",
@@ -89,8 +91,10 @@
       clock:     "clk_main_i",
       reset:     "rst_fixed_ni",
       inst_type: "pinmux",
-      base_addr: "0x40070000",
-      size_byte: "0x1000",
+      addr_range: [{
+        base_addr: "0x40070000",
+        size_byte: "0x1000",
+        }],
       pipeline_byp: "false"
     },
     { name:      "alert_handler",

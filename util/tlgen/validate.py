@@ -35,6 +35,20 @@ from .xbar import Xbar
 #     'pl': ["python list", "Native Python type list (generated)"],
 #     'pe': ["python enum", "Native Python type enum (generated)"]
 # }
+addr = {
+    'name': 'Address configuration',
+    'description': '''Device Node address configuration. It contains the base address and the size in bytes.
+''',
+    'required': {
+        'base_addr': ['d', 'Base address of the device'\
+                      ' It is required for the device'],
+        'size_byte': ['d', 'Memory space of the device'\
+                      ' It is required for the device'],
+    },
+    'optional': {},
+    'added': {}
+}
+
 node = {
     'name': 'Node configuration',
     'description': '''
@@ -47,19 +61,16 @@ Crossbar node description. It can be host, device, or internal nodes.
     'optional': {
         'clock': ['s', 'main clock of the port'],
         'reset': ['s', 'main reset of the port'],
-        'base_addr': ['d', 'Base address of the device'\
-                      ' It is required for the device'],
-        'size_byte': ['d', 'Memory space of the device'\
-                      ' It is required for the device'],
         'pipeline': ['pb', 'If true, pipeline is added in front of the port'],
         'pipeline_byp': ['pb', 'Pipeline bypass. If true, '\
                          'request/response are not latched'],
         'inst_type': ['s', 'Instance type'],
         'xbar': ['pb', 'If true, the node is connected to another Xbar'],
-        'xbar_addr': ['l', 'Xbar address. List type']
+        'addr_range': ['lg', addr]
     },
     'added': {}
 }
+
 root = {
     'name': 'Top configuration',
     'description': '''
@@ -237,29 +248,11 @@ def validate(obj):  # OrderedDict -> Xbar
                     clock=clock,
                     reset=reset)
 
-        if node.node_type == NodeType.DEVICE and nodeobj["xbar"] == False:
-            # Add address obj["base_addr"], obj["size"])
-            node.xbar = False
-            address_from = int(nodeobj["base_addr"], 0)
-            size = int(nodeobj["size_byte"], 0)
-            address_to = address_from + size - 1
-
-            addr = (address_from, address_to)
-
-            if checkAddressOverlap(addr, addr_ranges):
-                log.error(
-                    "Address is overlapping. Check the config. Addr(0x%x - 0x%x)"
-                    % (addr[0], addr[1]))
-                raise SystemExit("Address overlapping error occurred")
-
-            addr_ranges.append(addr)
-            node.addr_range = [addr]
-
-        if node.node_type == NodeType.DEVICE and nodeobj["xbar"] == True:
-            node.xbar = True
+        if node.node_type == NodeType.DEVICE:
+            node.xbar = nodeobj["xbar"]
             node.addr_range = []
 
-            for addr in nodeobj["xbar_addr"]:
+            for addr in nodeobj["addr_range"]:
                 address_from = int(addr["base_addr"], 0)
                 size = int(addr["size_byte"], 0)
                 address_to = address_from + size - 1
