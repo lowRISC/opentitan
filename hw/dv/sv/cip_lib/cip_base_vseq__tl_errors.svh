@@ -24,13 +24,13 @@ virtual task tl_access_unmapped_addr();
   repeat ($urandom_range(10, 100)) begin
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
-        foreach (cfg.csr_addrs[i]) {
-          {addr[TL_AW-1:2], 2'b00} % cfg.csr_addr_map_size !=
-              cfg.csr_addrs[i] - cfg.csr_base_addr;
+        foreach (local::cfg.csr_addrs[i]) {
+          {addr[TL_AW-1:2], 2'b00} % local::cfg.csr_addr_map_size !=
+              local::cfg.csr_addrs[i] - local::cfg.csr_base_addr;
         }
-        foreach (cfg.mem_addrs[i]) {
-          !(addr % cfg.csr_addr_map_size
-              inside {[cfg.mem_addrs[i].start_addr : cfg.mem_addrs[i].end_addr]});
+        foreach (local::cfg.mem_addrs[i]) {
+          !(addr % local::cfg.csr_addr_map_size
+              inside {[local::cfg.mem_addrs[i].start_addr : local::cfg.mem_addrs[i].end_addr]});
         })
   end
 endtask
@@ -40,9 +40,9 @@ virtual task tl_write_csr_word_unaligned_addr();
     `create_tl_access_error_case(
         tl_write_csr_word_unaligned_addr,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
-        foreach (cfg.mem_addrs[i]) {
-          !(addr % cfg.csr_addr_map_size
-              inside {[cfg.mem_addrs[i].start_addr : cfg.mem_addrs[i].end_addr]});
+        foreach (local::cfg.mem_addrs[i]) {
+          !(addr % local::cfg.csr_addr_map_size
+              inside {[local::cfg.mem_addrs[i].start_addr : local::cfg.mem_addrs[i].end_addr]});
         }
         addr[1:0] != 2'b00;)
   end
@@ -92,7 +92,8 @@ virtual task tl_write_mem_less_than_word();
         tl_write_mem_less_than_word,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
         addr[1:0] == 0; // word aligned
-        addr inside {[cfg.mem_addrs[mem_idx].start_addr : cfg.mem_addrs[mem_idx].end_addr]};
+        addr inside
+            {[local::cfg.mem_addrs[mem_idx].start_addr : local::cfg.mem_addrs[mem_idx].end_addr]};
         mask != '1 || size < 2;
         )
   end
@@ -106,7 +107,8 @@ virtual task tl_read_mem_err();
     `create_tl_access_error_case(
         tl_read_mem_err,
         opcode == tlul_pkg::Get;
-        addr inside {[cfg.mem_addrs[mem_idx].start_addr : cfg.mem_addrs[mem_idx].end_addr]};
+        addr inside
+            {[local::cfg.mem_addrs[mem_idx].start_addr : local::cfg.mem_addrs[mem_idx].end_addr]};
         )
   end
 endtask
