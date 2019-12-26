@@ -75,7 +75,7 @@ class chip_env extends dv_base_env #(
       virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
     end
     if (cfg.is_active && cfg.m_cpu_d_tl_agent_cfg.is_active) begin
-      virtual_sequencer.cpu_d_tl_sequencer_h = m_cpu_d_tl_agent.seqr;
+      virtual_sequencer.cpu_d_tl_sequencer_h = m_cpu_d_tl_agent.sequencer;
     end
   endfunction
 
@@ -83,7 +83,7 @@ class chip_env extends dv_base_env #(
     super.end_of_elaboration_phase(phase);
     if (cfg.stub_cpu) begin
       // Set the TL adapter / sequencer to the default_map.
-      cfg.ral.default_map.set_sequencer(m_cpu_d_tl_agent.seqr, m_cpu_d_tl_reg_adapter);
+      cfg.ral.default_map.set_sequencer(m_cpu_d_tl_agent.sequencer, m_cpu_d_tl_reg_adapter);
     end
   endfunction : end_of_elaboration_phase
 

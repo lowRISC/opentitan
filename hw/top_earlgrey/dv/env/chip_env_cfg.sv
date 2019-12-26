@@ -54,7 +54,7 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     // create tl agent config obj
     m_cpu_d_tl_agent_cfg = tl_agent_cfg::type_id::create("m_cpu_d_tl_agent_cfg");
     m_cpu_d_tl_agent_cfg.is_active = stub_cpu;
-    m_cpu_d_tl_agent_cfg.is_host = 1'b1;
+    m_cpu_d_tl_agent_cfg.if_mode   = dv_utils_pkg::Host;
     // initialize the mem_bkdr_if vifs we want for this chip
     foreach(mems[mem]) begin
       mem_bkdr_vifs[mems[mem]] = null;
