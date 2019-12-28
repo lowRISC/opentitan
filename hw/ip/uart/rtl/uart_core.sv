@@ -17,7 +17,7 @@ module uart_core (
 
   output logic           intr_tx_watermark_o,
   output logic           intr_rx_watermark_o,
-  output logic           intr_tx_overflow_o,
+  output logic           intr_tx_empty_o,
   output logic           intr_rx_overflow_o,
   output logic           intr_rx_frame_err_o,
   output logic           intr_rx_break_err_o,
@@ -53,8 +53,10 @@ module uart_core (
   logic           break_err;
   logic   [4:0]   allzero_cnt_d, allzero_cnt_q;
   logic           allzero_err, not_allzero_char;
-  logic           event_tx_watermark, event_rx_watermark, event_tx_overflow, event_rx_overflow;
+  logic           event_tx_watermark, event_rx_watermark, event_tx_empty, event_rx_overflow;
   logic           event_rx_frame_err, event_rx_break_err, event_rx_timeout, event_rx_parity_err;
+  logic           tx_watermark_d, tx_watermark_prev_q;
+  logic           tx_empty_d, tx_empty_prev_q;
 
   assign tx_enable        = reg2hw.ctrl.tx.q;
   assign rx_enable        = reg2hw.ctrl.rx.q;
@@ -293,13 +295,21 @@ module uart_core (
 
   always_comb begin
     unique case(uart_fifo_txilvl)
-      2'h0:    event_tx_watermark = (tx_fifo_depth >= 6'd1);
-      2'h1:    event_tx_watermark = (tx_fifo_depth >= 6'd4);
-      2'h2:    event_tx_watermark = (tx_fifo_depth >= 6'd8);
-      default: event_tx_watermark = (tx_fifo_depth >= 6'd16);
+      2'h0:    tx_watermark_d = (tx_fifo_depth < 6'd1);
+      2'h1:    tx_watermark_d = (tx_fifo_depth < 6'd4);
+      2'h2:    tx_watermark_d = (tx_fifo_depth < 6'd8);
+      default: tx_watermark_d = (tx_fifo_depth < 6'd16);
     endcase
   end
 
+  assign event_tx_watermark = tx_watermark_d & ~tx_watermark_prev_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      tx_watermark_prev_q   <= 1'd1;
+    end else begin
+      tx_watermark_prev_q   <= tx_watermark_d;
+    end
+  end
 
   always_comb begin
     unique case(uart_fifo_rxilvl)
@@ -339,19 +349,25 @@ module uart_core (
 
   assign event_rx_timeout = (rx_timeout_count_q == uart_rxto_val) & uart_rxto_en;
 
+  assign tx_empty_d = tx_fifo_depth == 6'h0;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rx_timeout_count_q   <= 24'd0;
       rx_fifo_depth_prev_q <= 6'd0;
+      tx_empty_prev_q      <= 1'd0;
     end else begin
       rx_timeout_count_q    <= rx_timeout_count_d;
       rx_fifo_depth_prev_q  <= rx_fifo_depth;
+      tx_empty_prev_q       <= tx_empty_d;
     end
   end
 
   assign event_rx_overflow  = rx_fifo_wvalid & ~rx_fifo_wready;
-  assign event_tx_overflow  = reg2hw.wdata.qe & ~tx_fifo_wready;
   assign event_rx_break_err = break_err & (break_st_q == BRK_CHK);
+  // this event is really a duplicate of uart_fifo_txilvl=0
+  // however, it is helpful to have both a non-1 entry watermark and an empty indication
+  assign event_tx_empty     = tx_empty_d & ~tx_empty_prev_q;
+
 
   // instantiate interrupt hardware primitives
 
@@ -377,15 +393,15 @@ module uart_core (
     .intr_o                 (intr_rx_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (
-    .event_intr_i           (event_tx_overflow),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_overflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_overflow.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_overflow.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_overflow.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_overflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_overflow.d),
-    .intr_o                 (intr_tx_overflow_o)
+  prim_intr_hw #(.Width(1)) intr_hw_tx_empty (
+    .event_intr_i           (event_tx_empty),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_empty.d),
+    .intr_o                 (intr_tx_empty_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (

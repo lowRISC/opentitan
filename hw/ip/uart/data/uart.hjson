@@ -16,8 +16,8 @@
       desc: "raised if the transmit FIFO is past the high-water mark."}
     { name: "rx_watermark"
       desc: "raised if the receive FIFO is past the high-water mark."}
-    { name: "tx_overflow"
-      desc: "raised if the transmit FIFO has overflowed."}
+    { name: "tx_empty"
+      desc: "raised if the transmit FIFO has emptied."}
     { name: "rx_overflow"
       desc: "raised if the receive FIFO has overflowed."}
     { name: "rx_frame_err"

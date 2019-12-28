@@ -72,7 +72,9 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx));
       end
 
-      TxOverflow: begin
+      TxEmpty: begin
+        // TODO: The following test needs to be updated, since the interrupt definition
+        // has been updated.
         // when tx is enabled, one extra item is in the data path, total is UART_FIFO_DEPTH + 1
         if (en_tx) begin
           tx_fifo_max_size = UART_FIFO_DEPTH + 1;
