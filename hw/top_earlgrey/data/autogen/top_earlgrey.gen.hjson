@@ -93,7 +93,7 @@
           type: interrupt
         }
         {
-          name: tx_overflow
+          name: tx_empty
           width: 1
           type: interrupt
         }
@@ -1007,7 +1007,7 @@
       type: interrupt
     }
     {
-      name: uart_tx_overflow
+      name: uart_tx_empty
       width: 1
       type: interrupt
     }

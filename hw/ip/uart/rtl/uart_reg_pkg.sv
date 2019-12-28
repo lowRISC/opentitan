@@ -18,7 +18,7 @@ package uart_reg_pkg;
     } rx_watermark;
     struct packed {
       logic        q;
-    } tx_overflow;
+    } tx_empty;
     struct packed {
       logic        q;
     } rx_overflow;
@@ -45,7 +45,7 @@ package uart_reg_pkg;
     } rx_watermark;
     struct packed {
       logic        q;
-    } tx_overflow;
+    } tx_empty;
     struct packed {
       logic        q;
     } rx_overflow;
@@ -75,7 +75,7 @@ package uart_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } tx_overflow;
+    } tx_empty;
     struct packed {
       logic        q;
       logic        qe;
@@ -215,7 +215,7 @@ package uart_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } tx_overflow;
+    } tx_empty;
     struct packed {
       logic        d;
       logic        de;

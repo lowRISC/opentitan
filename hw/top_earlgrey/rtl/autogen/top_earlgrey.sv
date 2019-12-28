@@ -143,7 +143,7 @@ module top_earlgrey #(
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
-  logic intr_uart_tx_overflow;
+  logic intr_uart_tx_empty;
   logic intr_uart_rx_overflow;
   logic intr_uart_rx_frame_err;
   logic intr_uart_rx_break_err;
@@ -439,7 +439,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_tx_watermark_o  (intr_uart_tx_watermark),
       .intr_rx_watermark_o  (intr_uart_rx_watermark),
-      .intr_tx_overflow_o   (intr_uart_tx_overflow),
+      .intr_tx_empty_o      (intr_uart_tx_empty),
       .intr_rx_overflow_o   (intr_uart_rx_overflow),
       .intr_rx_frame_err_o  (intr_uart_rx_frame_err),
       .intr_rx_break_err_o  (intr_uart_rx_break_err),
@@ -649,7 +649,7 @@ module top_earlgrey #(
       intr_uart_rx_break_err,
       intr_uart_rx_frame_err,
       intr_uart_rx_overflow,
-      intr_uart_tx_overflow,
+      intr_uart_tx_empty,
       intr_uart_rx_watermark,
       intr_uart_tx_watermark,
       intr_gpio_gpio
