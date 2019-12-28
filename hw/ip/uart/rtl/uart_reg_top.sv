@@ -75,9 +75,9 @@ module uart_reg_top (
   logic intr_state_rx_watermark_qs;
   logic intr_state_rx_watermark_wd;
   logic intr_state_rx_watermark_we;
-  logic intr_state_tx_overflow_qs;
-  logic intr_state_tx_overflow_wd;
-  logic intr_state_tx_overflow_we;
+  logic intr_state_tx_empty_qs;
+  logic intr_state_tx_empty_wd;
+  logic intr_state_tx_empty_we;
   logic intr_state_rx_overflow_qs;
   logic intr_state_rx_overflow_wd;
   logic intr_state_rx_overflow_we;
@@ -99,9 +99,9 @@ module uart_reg_top (
   logic intr_enable_rx_watermark_qs;
   logic intr_enable_rx_watermark_wd;
   logic intr_enable_rx_watermark_we;
-  logic intr_enable_tx_overflow_qs;
-  logic intr_enable_tx_overflow_wd;
-  logic intr_enable_tx_overflow_we;
+  logic intr_enable_tx_empty_qs;
+  logic intr_enable_tx_empty_wd;
+  logic intr_enable_tx_empty_we;
   logic intr_enable_rx_overflow_qs;
   logic intr_enable_rx_overflow_wd;
   logic intr_enable_rx_overflow_we;
@@ -121,8 +121,8 @@ module uart_reg_top (
   logic intr_test_tx_watermark_we;
   logic intr_test_rx_watermark_wd;
   logic intr_test_rx_watermark_we;
-  logic intr_test_tx_overflow_wd;
-  logic intr_test_tx_overflow_we;
+  logic intr_test_tx_empty_wd;
+  logic intr_test_tx_empty_we;
   logic intr_test_rx_overflow_wd;
   logic intr_test_rx_overflow_we;
   logic intr_test_rx_frame_err_wd;
@@ -260,29 +260,29 @@ module uart_reg_top (
   );
 
 
-  //   F[tx_overflow]: 2:2
+  //   F[tx_empty]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_tx_overflow (
+  ) u_intr_state_tx_empty (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_tx_overflow_we),
-    .wd     (intr_state_tx_overflow_wd),
+    .we     (intr_state_tx_empty_we),
+    .wd     (intr_state_tx_empty_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.tx_overflow.de),
-    .d      (hw2reg.intr_state.tx_overflow.d ),
+    .de     (hw2reg.intr_state.tx_empty.de),
+    .d      (hw2reg.intr_state.tx_empty.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_overflow.q ),
+    .q      (reg2hw.intr_state.tx_empty.q ),
 
     // to register interface (read)
-    .qs     (intr_state_tx_overflow_qs)
+    .qs     (intr_state_tx_empty_qs)
   );
 
 
@@ -470,18 +470,18 @@ module uart_reg_top (
   );
 
 
-  //   F[tx_overflow]: 2:2
+  //   F[tx_empty]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_tx_overflow (
+  ) u_intr_enable_tx_empty (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_tx_overflow_we),
-    .wd     (intr_enable_tx_overflow_wd),
+    .we     (intr_enable_tx_empty_we),
+    .wd     (intr_enable_tx_empty_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -489,10 +489,10 @@ module uart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_overflow.q ),
+    .q      (reg2hw.intr_enable.tx_empty.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_tx_overflow_qs)
+    .qs     (intr_enable_tx_empty_qs)
   );
 
 
@@ -658,17 +658,17 @@ module uart_reg_top (
   );
 
 
-  //   F[tx_overflow]: 2:2
+  //   F[tx_empty]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_tx_overflow (
+  ) u_intr_test_tx_empty (
     .re     (1'b0),
-    .we     (intr_test_tx_overflow_we),
-    .wd     (intr_test_tx_overflow_wd),
+    .we     (intr_test_tx_empty_we),
+    .wd     (intr_test_tx_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_overflow.qe),
-    .q      (reg2hw.intr_test.tx_overflow.q ),
+    .qe     (reg2hw.intr_test.tx_empty.qe),
+    .q      (reg2hw.intr_test.tx_empty.q ),
     .qs     ()
   );
 
@@ -1422,8 +1422,8 @@ module uart_reg_top (
   assign intr_state_rx_watermark_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_state_tx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_tx_overflow_wd = reg_wdata[2];
+  assign intr_state_tx_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_tx_empty_wd = reg_wdata[2];
 
   assign intr_state_rx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_rx_overflow_wd = reg_wdata[3];
@@ -1446,8 +1446,8 @@ module uart_reg_top (
   assign intr_enable_rx_watermark_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_enable_tx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_tx_overflow_wd = reg_wdata[2];
+  assign intr_enable_tx_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_tx_empty_wd = reg_wdata[2];
 
   assign intr_enable_rx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_rx_overflow_wd = reg_wdata[3];
@@ -1470,8 +1470,8 @@ module uart_reg_top (
   assign intr_test_rx_watermark_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_test_tx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_tx_overflow_wd = reg_wdata[2];
+  assign intr_test_tx_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_tx_empty_wd = reg_wdata[2];
 
   assign intr_test_rx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_rx_overflow_wd = reg_wdata[3];
@@ -1569,7 +1569,7 @@ module uart_reg_top (
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_tx_watermark_qs;
         reg_rdata_next[1] = intr_state_rx_watermark_qs;
-        reg_rdata_next[2] = intr_state_tx_overflow_qs;
+        reg_rdata_next[2] = intr_state_tx_empty_qs;
         reg_rdata_next[3] = intr_state_rx_overflow_qs;
         reg_rdata_next[4] = intr_state_rx_frame_err_qs;
         reg_rdata_next[5] = intr_state_rx_break_err_qs;
@@ -1580,7 +1580,7 @@ module uart_reg_top (
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_tx_watermark_qs;
         reg_rdata_next[1] = intr_enable_rx_watermark_qs;
-        reg_rdata_next[2] = intr_enable_tx_overflow_qs;
+        reg_rdata_next[2] = intr_enable_tx_empty_qs;
         reg_rdata_next[3] = intr_enable_rx_overflow_qs;
         reg_rdata_next[4] = intr_enable_rx_frame_err_qs;
         reg_rdata_next[5] = intr_enable_rx_break_err_qs;

@@ -26,7 +26,7 @@ package uart_env_pkg;
   typedef enum int {
     TxWatermark = 0,
     RxWatermark = 1,
-    TxOverflow  = 2,
+    TxEmpty     = 2,
     RxOverflow  = 3,
     RxFrameErr  = 4,
     RxBreakErr  = 5,

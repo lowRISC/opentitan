@@ -69,8 +69,13 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       if (tx_q.size > 0) tx_processing_item_q.push_back(tx_q.pop_front());
       `uvm_info(`gfn, $sformatf("After drop one item, new tx_q size: %0d", tx_q.size), UVM_HIGH)
       compare(act_item, exp_item, "TX");
+      // after an item is sent, check to see if size dipped below watermark
+      predict_tx_watermark_intr();
 
-      if (tx_q.size() == 0 && tx_processing_item_q.size() == 0) process_objections(1'b0);
+      if (tx_q.size() == 0 && tx_processing_item_q.size() == 0) begin
+        intr_exp[TxEmpty] = 1;
+        process_objections(1'b0);
+      end
     end
   endtask
 
@@ -111,9 +116,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size, bit just_cleared = 0);
     uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
-    intr_exp[TxWatermark] |= (tx_q_size >= watermark);
-    // cover the interrupt sticky behavior
-    if (cfg.en_cov) cov.sticky_intr_cov["TxWatermark"].sample(just_cleared & intr_exp[TxWatermark]);
+    intr_exp[TxWatermark] |= (tx_q_size < watermark);
   endfunction
 
   virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size, bit just_cleared = 0);
@@ -188,7 +191,6 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             tx_q.push_back(tx_item);
             `uvm_info(`gfn, $sformatf("After push one item, tx_q size: %0d", tx_q.size), UVM_HIGH)
           end else begin
-            intr_exp[TxOverflow] = 1;
             `uvm_info(`gfn, $sformatf(
                 "Drop tx item: %0h, tx_q size: %0d, uart_tx_clk_pulses: %0d",
                 csr.get_mirrored_value(), tx_q.size(), uart_tx_clk_pulses), UVM_MEDIUM)
@@ -335,9 +337,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             // occur simultaneously
             cfg.clk_rst_vif.wait_clks(1);
             intr_exp &= ~intr_wdata;
-            // recalculate tx/rx watermark, will be set again if fifo size >= watermark
-            predict_tx_watermark_intr(.just_cleared(pre_intr[TxWatermark] &
-                                                    intr_wdata[TxWatermark]));
+            // recalculate rx watermark, will be set again if fifo size >= watermark
             predict_rx_watermark_intr(.just_cleared(pre_intr[RxWatermark] &
                                                     intr_wdata[RxWatermark]));
           end join_none
@@ -354,7 +354,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
             end
             // don't check it when it's in ignored period
-            if (intr inside {TxWatermark, TxOverflow}) begin // TX interrupts
+            if (intr inside {TxWatermark, TxEmpty}) begin // TX interrupts
               if (is_in_ignored_period(UartTx)) continue;
             end else begin // RX interrupts
               // RxTimeout, RxBreakErr is checked in seq

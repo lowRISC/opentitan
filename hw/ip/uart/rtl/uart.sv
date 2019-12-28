@@ -20,7 +20,7 @@ module uart (
   // Interrupts
   output logic    intr_tx_watermark_o ,
   output logic    intr_rx_watermark_o ,
-  output logic    intr_tx_overflow_o  ,
+  output logic    intr_tx_empty_o  ,
   output logic    intr_rx_overflow_o  ,
   output logic    intr_rx_frame_err_o ,
   output logic    intr_rx_break_err_o ,
@@ -55,7 +55,7 @@ module uart (
 
     .intr_tx_watermark_o,
     .intr_rx_watermark_o,
-    .intr_tx_overflow_o,
+    .intr_tx_empty_o,
     .intr_rx_overflow_o,
     .intr_rx_frame_err_o,
     .intr_rx_break_err_o,
@@ -73,7 +73,7 @@ module uart (
   // Assert Known for interrupts
   `ASSERT_KNOWN(txWatermarkKnown, intr_tx_watermark_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(rxWatermarkKnown, intr_rx_watermark_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(txOverflowKnown, intr_tx_overflow_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(txEmptyKnown, intr_tx_empty_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(rxOverflowKnown, intr_rx_overflow_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(rxFrameErrKnown, intr_rx_frame_err_o, clk_i, !rst_ni)
   `ASSERT_KNOWN(rxBreakErrKnown, intr_rx_break_err_o, clk_i, !rst_ni)
