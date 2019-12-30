@@ -1,0 +1,6 @@
+T 6.5.7 Block Read
+SA0
+'Cmd'
+SA1
+RC'N'
+PRM

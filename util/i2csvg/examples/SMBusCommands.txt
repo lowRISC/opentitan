@@ -1,0 +1,102 @@
+T 6.5.1 Quick Command
+SPA2
+
+T 6.5.2 Send Byte
+SA0
+P'Data'
+
+T 6.5.3 Receive Byte
+SA1
+RP1
+
+T 6.5.4 Write Byte
+SA0
+'Cmd'
+P'Data'
+
+T 6.5.4 Write Word
+SA0
+'Cmd'
+'Dlow'
+P'Dhigh'
+
+T 6.5.5 Read Byte
+SA0
+'Cmd'
+SA1
+RP1
+
+T 6.5.5 Read Word
+SA0
+'Cmd'
+SA1
+RP2
+
+T 6.5.6 Process Call
+SA0
+'Cmd'
+'Dlow'
+'Dhigh'
+SA1
+RP2
+
+T 6.5.7 Block Write
+SA0
+'Cmd'
+'N'
+PM
+
+T 6.5.7 Block Read
+SA0
+'Cmd'
+SA1
+RC'N'
+PRM
+
+T 6.5.8 Block Write Block Read Process Call
+SA0
+'Cmd'
+'N'
+M
+SA1
+RC'N'
+PRM
+
+T 6.5.9 Host Notify
+SA0
+A2
+'Dlow'
+P'Dhigh'
+
+T 6.5.10 Write32
+SA0
+'Cmd'
+'D1'
+'D2'
+'D3'
+P'D4'
+
+T 6.5.11 Read32
+SA0
+'Cmd'
+SA1
+PR 4
+
+T 6.5.12 Write64
+SA0
+'Cmd'
+'D1'
+'D2'
+'D3'
+'D4'
+'D5'
+'D6'
+'D7'
+P'D8'
+
+T 6.5.13 Read64
+SA0
+'Cmd'
+SA1
+PR 8
+
