@@ -15,7 +15,7 @@ module tb;
 
   wire clk, rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire [NUM_MAX_ESC_SEV-1:0] esc_en;
+  wire [NUM_MAX_ESC_SEV-1:0]    esc_en;
   wire entropy;
 
   // interfaces
@@ -33,21 +33,31 @@ module tb;
   prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
   prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
 
-  alert_if alert_hosts_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
-
+  alert_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_if
-    assign alert_tx[k].alert_p = alert_hosts_if[k].alert_tx.alert_p;
-    assign alert_tx[k].alert_n = alert_hosts_if[k].alert_tx.alert_n;
-    assign alert_hosts_if[k].alert_rx.ack_p  = alert_rx[k].ack_p;
-    assign alert_hosts_if[k].alert_rx.ack_n  = alert_rx[k].ack_n;
-    assign alert_hosts_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
-    assign alert_hosts_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
+    assign alert_tx[k].alert_p = alert_host_if[k].alert_tx.alert_p;
+    assign alert_tx[k].alert_n = alert_host_if[k].alert_tx.alert_n;
+    assign alert_host_if[k].alert_rx.ack_p  = alert_rx[k].ack_p;
+    assign alert_host_if[k].alert_rx.ack_n  = alert_rx[k].ack_n;
+    assign alert_host_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
+    assign alert_host_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
     initial begin
       uvm_config_db#(virtual alert_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
-                                            "vif", alert_hosts_if[k]);
+                                            "vif", alert_host_if[k]);
     end
   end
 
+  alert_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
+  for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_esc_if
+    assign esc_rx[k].resp_p = esc_device_if[k].esc_rx.resp_p;
+    assign esc_rx[k].resp_n = esc_device_if[k].esc_rx.resp_n;
+    assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;
+    assign esc_device_if[k].esc_tx.esc_n = esc_tx[k].esc_n;
+    initial begin
+      uvm_config_db#(virtual alert_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
+                                            "vif", esc_device_if[k]);
+    end
+  end
   // main dut
   alert_handler dut (
     .clk_i                ( clk           ),
@@ -65,17 +75,6 @@ module tb;
     .esc_rx_i             ( esc_rx        ),
     .esc_tx_o             ( esc_tx        )
   );
-
-  // escalation receiver duts
-  for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_esc_rx
-    prim_esc_receiver i_prim_esc_receiver (
-      .clk_i    ( clk       ),
-      .rst_ni   ( rst_n     ),
-      .esc_en_o ( esc_en[k] ),
-      .esc_rx_o ( esc_rx[k] ),
-      .esc_tx_i ( esc_tx[k] )
-    );
-  end
 
   initial begin
     // drive clk and rst_n from clk_if

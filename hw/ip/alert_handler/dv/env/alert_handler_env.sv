@@ -13,10 +13,11 @@ class alert_handler_env extends cip_base_env #(
   `uvm_component_new
 
   alert_agent alert_host_agent[];
+  alert_agent esc_device_agent[];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-
+    // build alert agents
     alert_host_agent                    = new[alert_pkg::NAlerts];
     virtual_sequencer.alert_host_seqr_h = new[alert_pkg::NAlerts];
     foreach (alert_host_agent[i]) begin
@@ -25,7 +26,15 @@ class alert_handler_env extends cip_base_env #(
       uvm_config_db#(alert_agent_cfg)::set(this,
           $sformatf("alert_host_agent[%0d]", i), "cfg", cfg.alert_host_cfg[i]);
     end
-
+    // build escalator agents
+    esc_device_agent                    = new[alert_pkg::N_ESC_SEV];
+    virtual_sequencer.esc_device_seqr_h = new[alert_pkg::N_ESC_SEV];
+    foreach (esc_device_agent[i]) begin
+      esc_device_agent[i] = alert_agent::type_id::create(
+          $sformatf("esc_device_agent[%0d]", i), this);
+      uvm_config_db#(alert_agent_cfg)::set(this,
+          $sformatf("esc_device_agent[%0d]", i), "cfg", cfg.esc_device_cfg[i]);
+    end
     // get vifs
     if (!uvm_config_db#(esc_en_vif)::get(this, "", "esc_en_vif", cfg.esc_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get esc_en_vif from uvm_config_db")
@@ -41,12 +50,20 @@ class alert_handler_env extends cip_base_env #(
       foreach (alert_host_agent[i]) begin
         alert_host_agent[i].monitor.alert_port.connect(scoreboard.alert_fifo[i].analysis_export);
       end
+      foreach (esc_device_agent[i]) begin
+        esc_device_agent[i].monitor.alert_port.connect(scoreboard.esc_fifo[i].analysis_export);
+      end
     end
     if (cfg.is_active) begin
       foreach (alert_host_agent[i]) begin
         if (cfg.alert_host_cfg[i].is_active) begin
           virtual_sequencer.alert_host_seqr_h[i] = alert_host_agent[i].sequencer;
         end
+      end
+    end
+    foreach (esc_device_agent[i]) begin
+      if (cfg.esc_device_cfg[i].is_active) begin
+        virtual_sequencer.esc_device_seqr_h[i] = esc_device_agent[i].sequencer;
       end
     end
   endfunction

@@ -11,21 +11,28 @@ package alert_agent_pkg;
 
   typedef class alert_seq_item;
   typedef class alert_agent_cfg;
-  // reuse dv_base_driver as is with the right parameter set
-  typedef dv_base_driver #(alert_seq_item, alert_agent_cfg) alert_base_driver;
 
   typedef enum {
-    PingTrans,
-    AlertTrans,
-    IntFail
-  } alert_type_e;
+    AlertEscPingTrans,
+    AlertEscSigTrans,
+    AlertEscIntFail
+  } alert_esc_trans_type_e;
 
   typedef enum {
     AlertReceived,
-    AckReceived,
+    AlertAckReceived,
     AlertComplete,
-    AckComplete
+    AlertAckComplete
   } alert_handshake_e;
+
+  typedef enum {
+    EscPingReceived,
+    EscReceived,
+    EscRespReceived,
+    EscComplete,
+    EscRespComplete,
+    EscIntFail
+  } esc_handshake_e;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -35,13 +42,19 @@ package alert_agent_pkg;
   `include "alert_seq_item.sv"
   `include "alert_agent_cfg.sv"
   `include "alert_agent_cov.sv"
+  `include "alert_esc_base_driver.sv"
   `include "alert_sender_driver.sv"
   `include "alert_receiver_driver.sv"
+  `include "esc_sender_driver.sv"
+  `include "esc_receiver_driver.sv"
   `include "alert_sequencer.sv"
+  `include "alert_esc_base_monitor.sv"
   `include "alert_monitor.sv"
+  `include "esc_monitor.sv"
   `include "alert_agent.sv"
   `include "seq_lib/alert_receiver_alert_rsp_seq.sv"
   `include "seq_lib/alert_receiver_seq.sv"
   `include "seq_lib/alert_sender_ping_rsp_seq.sv"
   `include "seq_lib/alert_sender_seq.sv"
+  `include "seq_lib/esc_receiver_esc_rsp_seq.sv"
 endpackage

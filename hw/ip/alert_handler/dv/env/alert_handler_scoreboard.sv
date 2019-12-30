@@ -50,7 +50,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         forever begin
           alert_fifo[index].get(act_item);
           // once the alert is received
-          if (act_item.alert_type == AlertTrans && !act_item.timeout &&
+          if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
               act_item.alert_handshake_sta == AlertReceived) begin
             uvm_reg_field alert_cause_field, intr_state_field;
             bit [TL_DW-1:0] intr_class;

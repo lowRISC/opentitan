@@ -6,39 +6,23 @@
 // ---------------------------------------------
 // Alert_handler receiver driver
 // ---------------------------------------------
-class alert_receiver_driver extends alert_base_driver;
-
-  alert_seq_item ping_q[$];
-  alert_seq_item alert_q[$];
+class alert_receiver_driver extends alert_esc_base_driver;
 
   `uvm_component_utils(alert_receiver_driver)
 
   `uvm_component_new
 
-  virtual task reset_signals();
-    cfg.vif.reset_ping();
-    cfg.vif.reset_ack();
-  endtask
-
-  virtual task get_and_drive();
+  virtual task drive_req();
     fork
-      get_req();
       send_ping();
       rsp_alert();
     join_none
-  endtask : get_and_drive
+  endtask : drive_req
 
-  virtual task get_req();
-    forever begin
-      alert_seq_item req_clone;
-      seq_item_port.get(req);
-      $cast(req_clone, req.clone());
-      req_clone.set_id_info(req);
-      // TODO: if ping or alert queue size is larger than 2, need additional support
-      if (req.ping_send) ping_q.push_back(req_clone);
-      if (req.alert_rsp) alert_q.push_back(req_clone);
-    end
-  endtask : get_req
+  virtual task reset_signals();
+    cfg.vif.reset_ack();
+    cfg.vif.reset_ping();
+  endtask
 
   virtual task send_ping();
     forever begin
@@ -46,15 +30,15 @@ class alert_receiver_driver extends alert_base_driver;
       alert_seq_item req, rsp;
       ping_delay = (cfg.use_seq_item_ping_delay) ? req.ping_delay :
           $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
-      wait(ping_q.size() > 0);
-      req = ping_q.pop_front();
+      wait(r_alert_ping_send_q.size() > 0);
+      req = r_alert_ping_send_q.pop_front();
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-          req.ping_send, req.alert_rsp, req.ping_int_err), UVM_HIGH)
+          req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
 
-      if (!req.ping_int_err) begin
+      if (!req.int_err) begin
         @(cfg.vif.receiver_cb);
         repeat (ping_delay) @(cfg.vif.receiver_cb);
         cfg.vif.set_ping();
@@ -75,7 +59,7 @@ class alert_receiver_driver extends alert_base_driver;
 
       `uvm_info(`gfn,
           $sformatf("finished sending receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-          req.ping_send, req.alert_rsp, req.ping_int_err), UVM_HIGH)
+          req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
       seq_item_port.put_response(rsp);
     end // end forever
   endtask : send_ping
@@ -83,20 +67,20 @@ class alert_receiver_driver extends alert_base_driver;
   virtual task rsp_alert();
     forever begin
       alert_seq_item req, rsp;
-      wait(alert_q.size() > 0);
-      req = alert_q.pop_front();
+      wait(r_alert_rsp_q.size() > 0);
+      req = r_alert_rsp_q.pop_front();
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-          req.ping_send, req.alert_rsp, req.ping_int_err), UVM_HIGH)
+          req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
 
       cfg.vif.wait_alert();
       set_ack_pins(req);
 
       `uvm_info(`gfn,
           $sformatf("finished sending receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-          req.ping_send, req.alert_rsp, req.ping_int_err), UVM_HIGH)
+          req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
       seq_item_port.put_response(rsp);
     end // end forever
   endtask : rsp_alert
@@ -107,7 +91,7 @@ class alert_receiver_driver extends alert_base_driver;
         $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
     ack_stable = (cfg.use_seq_item_ack_stable) ? req.ack_stable :
         $urandom_range(cfg.ack_stable_max, cfg.ack_stable_min);
-    if (!req.ack_int_err) begin
+    if (!req.int_err) begin
       @(cfg.vif.receiver_cb);
       repeat (ack_delay) @(cfg.vif.receiver_cb);
       cfg.vif.set_ack();

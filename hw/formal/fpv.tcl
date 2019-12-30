@@ -10,8 +10,7 @@ clear -all
 # Disabling the warning
 # "parameter declared inside package XXX shall be treated as localparam".
 set_message -disable VERI-2418
-check_cov -init -model {branch statement functional} \
--enable_prove_based_proof_core
+
 
 #-------------------------------------------------------------------------
 # read design
@@ -161,12 +160,10 @@ set_proofgrid_per_engine_max_local_jobs 16
 #-------------------------------------------------------------------------
 # time limit set to 2 hours
 get_reset_info -x_value -with_reset_pin
-prove -all -time_limit 120m
+prove -all -time_limit 24h
 report
 #-------------------------------------------------------------------------
 # check coverage and report
 #-------------------------------------------------------------------------
-check_cov -measure
-check_cov -report -type all -no_return -report_file cover.html \
-    -html -force -exclude { reset waived }
+
 
