@@ -25,6 +25,7 @@ filesets:
       - seq_lib/alert_receiver_seq.sv: {is_include_file: true}
       - seq_lib/alert_sender_ping_rsp_seq.sv: {is_include_file: true}
       - seq_lib/alert_sender_seq.sv: {is_include_file: true}
+      - seq_lib/esc_receiver_esc_rsp_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

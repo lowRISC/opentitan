@@ -13,17 +13,27 @@ class alert_handler_env extends cip_base_env #(
   `uvm_component_new
 
   alert_agent alert_host_agent[];
+  alert_agent esc_device_agent[];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
     alert_host_agent                    = new[alert_pkg::NAlerts];
     virtual_sequencer.alert_host_seqr_h = new[alert_pkg::NAlerts];
+    esc_device_agent                    = new[alert_pkg::N_ESC_SEV];
+    virtual_sequencer.esc_device_seqr_h = new[alert_pkg::N_ESC_SEV];
+
     foreach (alert_host_agent[i]) begin
       alert_host_agent[i] = alert_agent::type_id::create(
           $sformatf("alert_host_agent[%0d]", i), this);
       uvm_config_db#(alert_agent_cfg)::set(this,
           $sformatf("alert_host_agent[%0d]", i), "cfg", cfg.alert_host_cfg[i]);
+    end
+    foreach (esc_device_agent[i]) begin
+      esc_device_agent[i] = alert_agent::type_id::create(
+          $sformatf("esc_device_agent[%0d]", i), this);
+      uvm_config_db#(alert_agent_cfg)::set(this,
+          $sformatf("esc_device_agent[%0d]", i), "cfg", cfg.esc_device_cfg[i]);
     end
 
     // get vifs
@@ -40,6 +50,9 @@ class alert_handler_env extends cip_base_env #(
     if (cfg.is_active) begin
       foreach (alert_host_agent[i]) begin
         virtual_sequencer.alert_host_seqr_h[i] = alert_host_agent[i].sequencer;
+      end
+      foreach (esc_device_agent[i]) begin
+        virtual_sequencer.esc_device_seqr_h[i] = esc_device_agent[i].sequencer;
       end
     end
   endfunction

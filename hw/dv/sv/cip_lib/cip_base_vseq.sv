@@ -400,18 +400,4 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       join_none
     end
   endtask
-
-  virtual task run_ping_rsp_seq_nonblocking();
-    foreach(cfg.list_of_alerts[i]) begin
-      automatic string seqr_name = cfg.list_of_alerts[i];
-      fork
-        forever begin
-          alert_sender_ping_rsp_seq ping_seq =
-              alert_sender_ping_rsp_seq::type_id::create("ping_seq");
-          `DV_CHECK_RANDOMIZE_FATAL(ping_seq);
-          ping_seq.start(p_sequencer.alert_sequencer_h[seqr_name]);
-        end
-      join_none
-    end
-  endtask
 endclass

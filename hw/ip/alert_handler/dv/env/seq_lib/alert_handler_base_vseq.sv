@@ -50,4 +50,33 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   virtual task clear_esc();
     csr_wr(.csr(ral.classa_clr), .value(1));
   endtask
+
+  virtual task run_esc_rsp_seq_nonblocking();
+    for (int i = 0; i < alert_pkg::N_ESC_SEV-1; i++) begin
+      automatic int j = i;
+      fork
+        forever begin
+          esc_receiver_esc_rsp_seq esc_seq =
+              esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
+          `DV_CHECK_RANDOMIZE_FATAL(esc_seq);
+          esc_seq.start(p_sequencer.esc_device_seqr_h[j]);
+        end
+      join_none
+    end
+  endtask
+
+  virtual task run_ping_rsp_seq_nonblocking();
+    for (int i = 0; i < alert_pkg::NAlerts-1; i++) begin
+      automatic int j = i;
+      fork
+        forever begin
+          alert_sender_ping_rsp_seq ping_seq =
+              alert_sender_ping_rsp_seq::type_id::create("ping_seq");
+          `DV_CHECK_RANDOMIZE_FATAL(ping_seq);
+          ping_seq.start(p_sequencer.alert_host_seqr_h[j]);
+        end
+      join_none
+    end
+  endtask
+
 endclass : alert_handler_base_vseq

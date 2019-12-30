@@ -35,6 +35,7 @@ class alert_monitor extends dv_base_monitor#(
       alert_thread(phase);
       ping_thread(phase);
       reset_thread(phase);
+      esc_thread(phase);
     join_none
   endtask : run_phase
 
@@ -50,7 +51,7 @@ class alert_monitor extends dv_base_monitor#(
     alert_seq_item req;
     bit            ping_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (ping_p != cfg.vif.monitor_cb.alert_rx.ping_p) begin
+      if (ping_p != cfg.vif.get_ping_p() && cfg.is_alert) begin
         phase.raise_objection(this);
         under_ping_rsp = 1;
         req = alert_seq_item::type_id::create("req");
@@ -82,7 +83,7 @@ class alert_monitor extends dv_base_monitor#(
         phase.drop_objection(this);
         under_ping_rsp = 0;
       end
-      ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
+      ping_p = cfg.vif.get_ping_p();
     end
   endtask : ping_thread
 
@@ -90,7 +91,8 @@ class alert_monitor extends dv_base_monitor#(
     alert_seq_item req;
     bit            alert_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (!alert_p && cfg.vif.monitor_cb.alert_tx.alert_p === 1'b1 && !under_ping_rsp) begin
+      if (!alert_p && cfg.vif.get_alert_p() === 1'b1 &&
+          !under_ping_rsp && cfg.is_alert) begin
         phase.raise_objection(this);
         req = alert_seq_item::type_id::create("req");
         req.alert_type = alert_trans;
@@ -117,8 +119,52 @@ class alert_monitor extends dv_base_monitor#(
         receiver_port.write(req);
         phase.drop_objection(this);
       end
-      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
+      alert_p = cfg.vif.get_alert_p();
     end
   endtask : alert_thread
 
+  virtual task esc_thread(uvm_phase phase);
+    alert_seq_item req;
+    bit            esc_p;
+    forever @(cfg.vif.monitor_cb) begin
+      if (!esc_p && cfg.vif.get_alert_p() === 1'b1 && !cfg.is_alert) begin
+        phase.raise_objection(this);
+        req = alert_seq_item::type_id::create("req");
+        req.alert_type = esc_trans;
+
+        fork
+          begin : isolation_fork
+            fork
+              begin : esc_timeout
+                repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+              end
+              begin : wait_esc_handshake
+                @(cfg.vif.monitor_cb);
+                check_esc_resp_toggle(req);
+                while (cfg.vif.get_alert_p() === 1) begin
+                        check_esc_resp_toggle(req);
+                end
+                if (req.alert_handshake_sta != esc_int_fail) begin
+                  req.alert_handshake_sta = ack_complete;
+                end
+              end
+            join_any
+            disable fork;
+          end : isolation_fork
+        join
+        `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
+            req.alert_type.name(), req.alert_handshake_sta.name()), UVM_LOW)
+        receiver_port.write(req);
+        phase.drop_objection(this);
+      end
+      esc_p = cfg.vif.get_alert_p();
+    end
+  endtask : esc_thread
+
+  virtual task check_esc_resp_toggle(alert_seq_item req);
+                  if (cfg.vif.get_ack_p() != 1) req.alert_handshake_sta = esc_int_fail;
+                  @(cfg.vif.monitor_cb);
+                  if (cfg.vif.get_ack_p() != 0) req.alert_handshake_sta = esc_int_fail;
+                  @(cfg.vif.monitor_cb);
+  endtask : check_esc_resp_toggle
 endclass : alert_monitor

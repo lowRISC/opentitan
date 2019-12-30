@@ -16,6 +16,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   }
 
   task body();
+    run_esc_rsp_seq_nonblocking();
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.classa_ctrl,

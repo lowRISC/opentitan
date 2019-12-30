@@ -10,6 +10,7 @@ class alert_receiver_driver extends alert_base_driver;
 
   alert_seq_item ping_q[$];
   alert_seq_item alert_q[$];
+  alert_seq_item esc_q[$];
 
   `uvm_component_utils(alert_receiver_driver)
 
@@ -25,6 +26,7 @@ class alert_receiver_driver extends alert_base_driver;
       get_req();
       send_ping();
       rsp_alert();
+      rsp_escalator();
     join_none
   endtask : get_and_drive
 
@@ -37,6 +39,7 @@ class alert_receiver_driver extends alert_base_driver;
       // TODO: if ping or alert queue size is larger than 2, need additional support
       if (req.ping_send) ping_q.push_back(req_clone);
       if (req.alert_rsp) alert_q.push_back(req_clone);
+      if (req.esc_rsp)   esc_q.push_back(req_clone);
     end
   endtask : get_req
 
@@ -132,4 +135,30 @@ class alert_receiver_driver extends alert_base_driver;
     end
   endtask : set_ack_pins
 
+  virtual task rsp_escalator();
+    forever begin
+      alert_seq_item req, rsp;
+      wait(esc_q.size() > 0);
+      req = esc_q.pop_front();
+      $cast(rsp, req.clone());
+      rsp.set_id_info(req);
+      `uvm_info(`gfn,
+          $sformatf("starting to send receiver item, esc_rsp=%0b, int_fail=%0b",
+          req.esc_rsp, req.esc_int_err), UVM_HIGH)
+
+      cfg.vif.wait_alert();
+      @(cfg.vif.receiver_cb);
+      while (cfg.vif.receiver_cb.alert_tx.alert_p === 1'b1) begin
+        cfg.vif.set_ack();
+        @(cfg.vif.receiver_cb);
+        cfg.vif.reset_ack();
+        @(cfg.vif.receiver_cb);
+      end
+
+      `uvm_info(`gfn,
+          $sformatf("finished sending receiver item, esc_rsp=%0b, int_fail=%0b",
+          req.esc_rsp, req.esc_int_err), UVM_HIGH)
+      seq_item_port.put_response(rsp);
+    end
+  endtask : rsp_escalator
 endclass : alert_receiver_driver

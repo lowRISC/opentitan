@@ -81,4 +81,15 @@ interface alert_if(input clk, input rst_n);
     receiver_cb.alert_rx.ping_n <= 1'b1;
   endtask
 
+  function automatic bit get_ack_p();
+    return monitor_cb.alert_rx.ack_p;
+  endfunction
+
+  function automatic bit get_alert_p();
+    return monitor_cb.alert_tx.alert_p;
+  endfunction
+
+  function automatic bit get_ping_p();
+    return monitor_cb.alert_rx.ping_p;
+  endfunction
 endinterface: alert_if

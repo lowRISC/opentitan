@@ -17,6 +17,7 @@ package alert_agent_pkg;
   typedef enum {
     ping_trans,
     alert_trans,
+    esc_trans,
     int_fail
   } alert_type_e;
 
@@ -24,7 +25,8 @@ package alert_agent_pkg;
     alert_received,
     ack_received,
     alert_complete,
-    ack_complete
+    ack_complete,
+    esc_int_fail
   } alert_handshake_e;
 
   // macro includes
@@ -44,4 +46,5 @@ package alert_agent_pkg;
   `include "seq_lib/alert_receiver_seq.sv"
   `include "seq_lib/alert_sender_ping_rsp_seq.sv"
   `include "seq_lib/alert_sender_seq.sv"
+  `include "seq_lib/esc_receiver_esc_rsp_seq.sv"
 endpackage
