@@ -7,9 +7,7 @@
 //  - Provides boiler plate template for common assertions
 
 // TODO:
-//  - double check whether VERILATOR and SYNTHESIS checks are really needed
-//  - should we add ASSERT_INIT_DISABLE?
-//  - should we add "pragma coverage off" and "VCS coverage off"?
+//  - double check whether SYNTHESIS checks are really needed
 
 `ifdef UVM
   // report assertion error with UVM if compiled
@@ -28,6 +26,8 @@
 ///////////////////
 
 // local helper macro to reduce code clutter. undefined at the end of this file
+// ifndef VERILATOR is due to verilator do not support syntax: ##
+// Can remove ifndef if verilator supports
 `ifndef VERILATOR
 `ifndef SYNTHESIS
 `define INC_ASSERT
