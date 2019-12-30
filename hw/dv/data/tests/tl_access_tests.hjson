@@ -1,0 +1,10 @@
+{
+  tests: [
+    {
+      name: "{name}_tl_errors"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_tl_errors"]
+      reseed: 20
+    }
+  ]
+}

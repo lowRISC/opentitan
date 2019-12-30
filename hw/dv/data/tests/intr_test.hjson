@@ -1,0 +1,10 @@
+{
+  tests: [
+    {
+      name: "{name}_intr_test"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_intr_test"]
+      reseed: 20
+    }
+  ]
+}

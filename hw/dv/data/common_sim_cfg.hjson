@@ -1,0 +1,114 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  project:          opentitan
+  flow_makefile:    "{proj_root}/hw/dv/data/sim.mk"
+
+  import_cfgs:      ["{proj_root}/hw/dv/data/common_modes.hjson",
+                     "{proj_root}/hw/dv/data/fusesoc.hjson",
+                     "{proj_root}/hw/dv/data/gen_ral_pkg.hjson",
+                     "{proj_root}/hw/dv/data/{simulator}/{simulator}.hjson"]
+
+  // Default directory structure for the output
+  scratch_path:     "{scratch_root}/{branch}.{dut}.{flow}.{simulator}"
+  build_dir:        "{scratch_path}/{build_mode}"
+  run_dir_name:     "{index}.{test}"
+  run_dir:          "{scratch_path}/{run_dir_name}/out"
+  sw_build_dir:     "{run_dir}/sw_build"
+
+  // pass and fail patterns
+  pass_patterns:    ["^TEST PASSED (UVM_)?CHECKS$"]
+  fail_patterns:    ["^TEST FAILED (UVM_)?CHECKS$",
+                     "^UVM_ERROR\\s[^:].*$",
+                     "^Assert failed: ",
+                     "^\\s*Offending '.*'"]
+
+  // Default TileLink widths
+  tl_aw: 32
+  tl_dw: 32
+  tl_dbw: 4
+
+  // Default UVM verbosity settings
+  n: UVM_NONE
+  l: UVM_LOW
+  m: UVM_MEDIUM
+  h: UVM_HIGH
+  d: UVM_DEBUG
+
+  // Default waves dump settings
+  dump_file:  waves.{dump}
+
+  // Default build and run opts
+  build_opts: [// List multiple tops for the simulation
+               "-top {tb}",
+               "-top {dut}_bind",
+               // Standard UVM defines
+               "+define+UVM_NO_DEPRECATED",
+               "+define+UVM_REGEX_NO_DPI",
+               "+define+UVM_REG_ADDR_WIDTH={tl_aw}",
+               "+define+UVM_REG_DATA_WIDTH={tl_dw}",
+               "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
+
+  run_opts: ["+UVM_NO_RELNOTES",
+             "+UVM_VERBOSITY={verbosity}"]
+
+  // Default list of things to export to shell
+  exports: [
+    DUMP_FILE: {dump_file}
+    WAVES: {waves}
+    DUT_TOP: {dut}
+    TB_TOP: {tb}
+  ]
+
+  // Build modes are collection of build_opts and run_opts
+  // A test can enable a specific build mode by setting 'use_build_mode' key
+  build_modes: [
+    {
+      name: foo
+      build_opts: ["+define+bx",
+                   "+define+by",
+                   "+define+bz"]
+      run_opts: ["+rx=1",
+                 "+ry=2",
+                 "+rz=3"]
+    }
+    {
+      name: bar
+      build_opts: ["+define+bbaru1",
+                   "+define+bbaru2",
+                   "+define+bbaru3"]
+      run_opts: ["+rbar1u=1",
+                 "+rbar2u=2",
+                 "+rbar3u=3"]
+    }
+  ]
+
+  // Regressions are tests that can be grouped together and run in one shot
+  // By default, two regressions are made available - "all" and "nightly". Both
+  // run all available tests for the DUT. "nightly" enables coverage as well.
+  // The 'tests' key is set to an empty list, which indicates "run everything".
+  // Test sets can enable sim modes, which are a set of build_opts and run_opts
+  // that are grouped together. These are appended to the build modes used by the
+  // tests.
+  regressions: [
+    {
+      name: all
+      tests: []
+    }
+    {
+      name: all_once
+      reseed: 1
+      tests: []
+    }
+    {
+      name: nightly
+      tests: []
+      // excl_tests: []
+      en_sim_modes: ["cov"]
+    }
+  ]
+
+  // Project defaults for VCS
+  vcs_cov_hier: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg"
+}

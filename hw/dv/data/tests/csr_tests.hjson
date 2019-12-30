@@ -1,0 +1,46 @@
+{
+  run_modes: [
+    {
+      name: csr_tests_mode
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+en_scb=0"]
+      reseed: 20
+    }
+  ]
+
+  tests: [
+    {
+      name: "{name}_csr_hw_reset"
+      run_opts: ["+csr_hw_reset"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_rw"
+      run_opts: ["+csr_rw"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_bit_bash"
+      run_opts: ["+csr_bit_bash"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_aliasing"
+      run_opts: ["+csr_aliasing"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+  ]
+
+  regressions: [
+    {
+      name: sw_access
+      tests: ["{name}_csr_hw_reset",
+              "{name}_csr_rw",
+              "{name}_csr_bit_bash",
+              "{name}_csr_aliasing"]
+    }
+  ]
+}

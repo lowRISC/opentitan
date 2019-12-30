@@ -1,0 +1,455 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+r"""
+Classes
+"""
+
+import logging as log
+import pprint
+import re
+import shlex
+import sys
+import time
+
+import hjson
+
+from .utils import *
+
+
+class Deploy():
+    """
+    Abstraction for deploying builds and runs.
+    """
+
+    # Register the builds and runs  with the parent class
+    items = []
+
+    sim_cfg = None
+    links = {}
+
+    dispatch_counter = 0
+    print_interval = 5
+    max_parallel = 32
+    max_odirs = 5
+
+    def __self_str__(self):
+        if log.getLogger().isEnabledFor(VERBOSE):
+            return pprint.pformat(self.__dict__)
+        else:
+            ret = self.cmd
+            if self.sub != []: ret += "\nSub:\n" + str(self.sub)
+            return ret
+
+    def __str__(self):
+        return self.__self_str__()
+
+    def __repr__(self):
+        return self.__self_str__()
+
+    def __add_mandatory_attrs__(self):
+        # Common vars
+        self.cmd = ""
+        self.odir = ""
+        self.log = ""
+
+        # Flag to indicate whether to 'overwrite' if odir already exists,
+        # or to backup the existing one and create a new one.
+        # For builds, we want to overwrite existing to leverage the tools'
+        # incremental / partition compile features. For runs, we may want to
+        # create a new one.
+        self.renew_odir = False
+
+        # List of vars required to be exported to sub-shell
+        self.exports = {}
+
+        # Deploy sub commands
+        self.sub = []
+
+        # Process
+        self.process = None
+        self.log_fd = None
+        self.status = None
+
+        # These are command, outut directory and log file
+        self.mandatory_misc_attrs.update({
+            "name": False,
+            "build_mode": False,
+            "flow_makefile": False,
+            "exports": False,
+            "dry_run": False
+        })
+
+    def __init__(self, ddict):
+        if not hasattr(self, "target"):
+            log.error(
+                "Class %s does not have the mandatory attribute \"target\" defined",
+                self.__class__.__name__)
+            sys.exit(1)
+
+        ddict_keys = ddict.keys()
+        for key in self.mandatory_cmd_attrs.keys():
+            if self.mandatory_cmd_attrs[key] == False:
+                if key in ddict_keys:
+                    setattr(self, key, ddict[key])
+                    self.mandatory_cmd_attrs[key] = True
+
+        for key in self.mandatory_misc_attrs.keys():
+            if self.mandatory_misc_attrs[key] == False:
+                if key in ddict_keys:
+                    setattr(self, key, ddict[key])
+                    self.mandatory_misc_attrs[key] = True
+
+    def __post_init__(self):
+        # Ensure all mandatory attrs are set
+        for attr in self.mandatory_cmd_attrs.keys():
+            if self.mandatory_cmd_attrs[attr] is False:
+                log.error("Attribute \"%s\" not found for \"%s\".", attr,
+                          self.name)
+                sys.exit(1)
+
+        for attr in self.mandatory_misc_attrs.keys():
+            if self.mandatory_misc_attrs[attr] is False:
+                log.error("Attribute \"%s\" not found for \"%s\".", attr,
+                          self.name)
+                sys.exit(1)
+
+        # Recursively search and replace wildcards
+        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
+                                                      self.__dict__)
+
+        # Set the command, output dir and log
+        self.odir = getattr(self, self.target + "_dir")
+        # Set the output dir link name to the basename of odir (by default)
+        self.odir_ln = os.path.basename(os.path.normpath(self.odir))
+        self.log = self.odir + "/" + self.target + ".log"
+
+        # If using LSF, redirect stdout and err to the log file
+        self.cmd = self.construct_cmd()
+
+    def construct_cmd(self):
+        cmd = "make -f " + self.flow_makefile + " " + self.target
+        if self.dry_run is True:
+            cmd += " -n"
+        for attr in self.mandatory_cmd_attrs.keys():
+            value = getattr(self, attr)
+            if type(value) is list:
+                pretty_value = []
+                for item in value:
+                    pretty_value.append(item.strip())
+                value = " ".join(pretty_value)
+            if type(value) is bool:
+                value = int(value)
+            if type(value) is str:
+                value = value.strip()
+            cmd += " " + attr + "=\"" + str(value) + "\""
+
+        # TODO: If not running locally, redirect stdout and err to the log file
+        # self.cmd += " > " + self.log + " 2>&1 &"
+        return cmd
+
+    def dispatch_cmd(self):
+        self.exports.update(os.environ)
+        args = shlex.split(self.cmd)
+        try:
+            self.odir_limiter()
+            os.system("mkdir -p " + self.odir)
+            os.system("ln -s " + self.odir + " " + Deploy.links['D'] + '/' +
+                      self.odir_ln)
+            f = open(self.log, "w")
+            self.process = subprocess.Popen(args,
+                                            stdout=f,
+                                            stderr=f,
+                                            env=self.exports)
+            self.log_fd = f
+            self.status = "."
+            Deploy.dispatch_counter += 1
+        except IOError:
+            log.error('IO Error: See %s', self.log)
+            if self.log_fd: self.log_fd.close()
+            self.status = "K"
+
+    # Function to backup previously run output directory to maintain a history of
+    # limited number of output directories. It deletes the output directory with the
+    # oldest timestamp, if the limit is reached.
+    def odir_limiter(self):
+        # Return if renew_odir flag is False - we'd be reusing the existing odir.
+        if not self.renew_odir: return
+        try:
+            # If output directory exists, back it up.
+            if os.path.exists(self.odir):
+                raw_ts = run_cmd("stat -c '%y' " + self.odir)
+                ts = run_cmd("date '" + Deploy.sim_cfg.ts_format + "' -d \"" +
+                             raw_ts + "\"")
+                os.system('mv ' + self.odir + " " + self.odir + "_" + ts)
+        except IOError:
+            log.error('Failed to back up existing output directory %s',
+                      self.odir)
+
+        # Delete older directories.
+        try:
+            pdir = os.path.realpath(self.odir + "/..")
+            if os.path.exists(pdir):
+                find_cmd = "find " + pdir + " -mindepth 1 -maxdepth 1 -type d "
+                num_dirs = int(run_cmd(find_cmd + " | wc -l"))
+                num_rm_dirs = num_dirs - Deploy.max_odirs
+                if num_rm_dirs > -1:
+                    dirs = run_cmd(find_cmd +
+                                   "-printf '%T+ %p\n' | sort | head -n " +
+                                   str(num_rm_dirs + 1) +
+                                   " | awk '{print $2}'")
+                    dirs = dirs.replace('\n', ' ')
+                    os.system("/usr/bin/rm -rf " + dirs)
+        except IOError:
+            log.error("Failed to delete old run directories!")
+
+    def set_status(self):
+        self.status = 'P'
+        if self.dry_run is False:
+            for pass_pattern in self.pass_patterns:
+                grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
+                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+                if rslt == "0":
+                    log.log(VERBOSE, "No pass patterns found: %s", self.name)
+                    self.status = 'F'
+
+            for fail_pattern in self.fail_patterns:
+                grep_cmd = "grep -c -m 1 -E \'" + fail_pattern + "\' " + self.log
+                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+                if rslt != "0":
+                    log.log(VERBOSE, "Fail patterns found: %s", self.name)
+                    self.status = 'F'
+
+    # Recursively set sub-item's status if parent item fails
+    def set_sub_status(self, status):
+        if self.sub == []: return
+        for sub_item in self.sub:
+            sub_item.status = status
+            sub_item.set_sub_status(status)
+
+    def link_odir(self):
+        if self.status == '.':
+            log.error("Method unexpectedly called!")
+        else:
+            cmd = "mv " + Deploy.links['D'] + "/" + self.odir_ln + " " + \
+                  Deploy.links[self.status] + "/."
+            os.system(cmd)
+
+    def get_status(self):
+        if self.status != ".": return
+        if self.process.poll() is not None:
+            self.log_fd.close()
+            if self.process.returncode != 0:
+                # TODO: read the log to diagnose the failure
+                self.status = "F"
+            else:
+                self.set_status()
+
+            log.log(VERBOSE, "Item %s has completed execution: %s", self.name,
+                    self.status)
+            Deploy.dispatch_counter -= 1
+            self.link_odir()
+
+    @staticmethod
+    def initialize(sim_cfg):
+        Deploy.sim_cfg = sim_cfg
+        Deploy.links['D'] = sim_cfg.scratch_path + "/" + "dispatched"
+        Deploy.links['P'] = sim_cfg.scratch_path + "/" + "passed"
+        Deploy.links['F'] = sim_cfg.scratch_path + "/" + "failed"
+        Deploy.links['K'] = sim_cfg.scratch_path + "/" + "killed"
+        for link in Deploy.links.keys():
+            try:
+                os.system("/bin/rm -rf " + Deploy.links[link])
+                os.system("mkdir -p " + Deploy.links[link])
+            except:
+                log.error("Unable to create dir %s", Deploy.links[link])
+                sys.exit(1)
+
+        if hasattr(sim_cfg, 'print_interval'):
+            Deploy.print_interval = sim_cfg.print_interval
+
+        if hasattr(sim_cfg, 'max_parallel'):
+            Deploy.max_parallel = sim_cfg.max_parallel
+
+        if hasattr(sim_cfg, 'max_odirs'):
+            Deploy.max_odirs = sim_cfg.max_odirs
+
+    @staticmethod
+    def deploy(items):
+        def dispatch_items(items):
+            item_names = {}
+            for item in items:
+                if item.target not in item_names.keys():
+                    item_names[item.target] = "["
+                if item.status is None:
+                    item_names[item.target] += "  "
+                    if log.getLogger().isEnabledFor(VERBOSE):
+                        item_names[
+                            item.target] += item.name + ":" + item.log + ",\n"
+                    else:
+                        item_names[item.target] += item.odir_ln + ", "
+                    item.dispatch_cmd()
+                    Deploy.items.append(item)
+
+            for target in item_names.keys():
+                if item_names[target] != "[":
+                    item_names[target] = " [" + item_names[target][3:]
+                    item_names[target] = item_names[target][:-2] + "]"
+                    log.info("[dvsim]: %s:\n%s", target, item_names[target])
+
+        # Dispatch the given items
+        dispatch_items_queue = []
+        if len(items) > Deploy.max_parallel:
+            dispatch_items(items[0:Deploy.max_parallel - 1])
+            dispatch_items_queue = items[Deploy.max_parallel:]
+        else:
+            dispatch_items(items)
+
+        all_done = 0
+        num_secs = 0
+        status = {}
+        status_str = {}
+        targets_done = {}
+
+        while all_done == 0:
+            time.sleep(1)
+            num_secs += 1
+            trig_print = False
+            for item in Deploy.items:
+                if item.target not in status.keys():
+                    status[item.target] = {}
+                if item.target not in targets_done.keys():
+                    targets_done[item.target] = False
+                if item not in status[item.target].keys():
+                    status[item.target][item] = ""
+
+                item.get_status()
+                if item.status != status[
+                        item.target][item] and item.status != ".":
+                    trig_print = True
+                    if item.status != "P":
+                        # Kill sub items
+                        item.set_sub_status("K")
+                    dispatch_items_queue.extend(item.sub)
+                status[item.target][item] = item.status
+
+            # Dispatch more from the queue
+            if len(dispatch_items_queue) == 0:
+                all_done = 1
+            else:
+                num_slots = Deploy.max_parallel - Deploy.dispatch_counter
+                if len(dispatch_items_queue) > num_slots:
+                    dispatch_items(dispatch_items_queue[0:num_slots])
+                    dispatch_items_queue = dispatch_items_queue[num_slots:]
+                else:
+                    dispatch_items(dispatch_items_queue)
+                    dispatch_items_queue = []
+
+            status_str = {}
+            for target in status.keys():
+                if target not in status_str.keys(): status_str[target] = "["
+                for item in status[target].keys():
+                    if status[target][item] is not None:
+                        status_str[target] += status[target][item]
+                        if status[target][item] == ".":
+                            all_done = 0
+                status_str[target] += "]"
+
+            # Print the status string periodically
+            if trig_print or (num_secs % Deploy.print_interval) == 0:
+                for target in status_str.keys():
+                    if targets_done[target] is True: continue
+                    log.info("[dvsim]: [%06ds] [%s]: %s", num_secs, target,
+                             status_str[target])
+                    if status_str[target].find(".") == -1:
+                        targets_done[target] = True
+
+
+class CompileSim(Deploy):
+    """
+    Abstraction for building the simulation executable.
+    """
+
+    # Register all builds with the class
+    items = []
+
+    def __init__(self, build_mode, sim_cfg):
+        self.target = "build"
+        self.pass_patterns = []
+        self.fail_patterns = []
+
+        self.mandatory_cmd_attrs = {  # RAL gen
+            "skip_ral": False,
+            "gen_ral_pkg_cmd": False,
+            "gen_ral_pkg_dir": False,
+            "gen_ral_pkg_opts": False,
+
+            # Flist gen
+            "sv_flist_gen_cmd": False,
+            "sv_flist_gen_dir": False,
+            "sv_flist_gen_opts": False,
+
+            # Build
+            "build_dir": False,
+            "build_cmd": False,
+            "build_opts": False
+        }
+
+        self.mandatory_misc_attrs = {}
+
+        # Initialize
+        super().__add_mandatory_attrs__()
+        super().__init__(build_mode.__dict__)
+        super().__init__(sim_cfg.__dict__)
+        self.build_mode = self.name
+        self.__post_init__()
+        CompileSim.items.append(self)
+
+
+class RunTest(Deploy):
+    """
+    Abstraction for running tests. This is one per seed for each test.
+    """
+
+    # Register all runs with the class
+    items = []
+
+    def __init__(self, index, test, sim_cfg):
+        self.target = "run"
+        self.pass_patterns = []
+        self.fail_patterns = []
+
+        self.mandatory_cmd_attrs = {
+            "uvm_test": False,
+            "uvm_test_seq": False,
+            "run_opts": False,
+            "sw_dir": False,
+            "sw_name": False,
+            "run_dir": False,
+            "run_cmd": False,
+            "run_opts": False
+        }
+
+        self.mandatory_misc_attrs = {
+            "run_dir_name": False,
+            "pass_patterns": False,
+            "fail_patterns": False
+        }
+
+        self.index = index
+        self.seed = sim_cfg.get_seed()
+
+        # Initialize
+        super().__add_mandatory_attrs__()
+        super().__init__(test.__dict__)
+        super().__init__(sim_cfg.__dict__)
+        self.test = self.name
+        self.renew_odir = True
+        self.build_mode = test.build_mode.name
+        self.scratch_path = sim_cfg.scratch_path
+        self.__post_init__()
+        # Construct custom odir link name for RunTest items by combining name
+        # and index
+        self.odir_ln = self.run_dir_name
+        RunTest.items.append(self)
