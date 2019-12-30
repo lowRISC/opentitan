@@ -10,12 +10,6 @@ class alert_sender_seq extends dv_base_seq #(
   );
 
   `uvm_object_utils(alert_sender_seq)
-
-  rand bit  alert_int_err;
-
-  constraint no_int_err_c {
-    alert_int_err == 0;
-  }
   `uvm_object_new
 
   task body();
@@ -23,11 +17,10 @@ class alert_sender_seq extends dv_base_seq #(
     req = REQ::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-        alert_send    == 1;
-        alert_int_err == local::alert_int_err;
-        ping_rsp      == 0;
+        s_alert_send     == 1;
+        s_alert_ping_rsp == 0;
     )
-    `uvm_info(`gfn, $sformatf("seq_item, alert_send=%0b", req.alert_send), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("seq_item: alert_send, int_err=%0b", req.int_err), UVM_LOW)
     finish_item(req);
     get_response(rsp);
     `uvm_info(`gfn, "alert sender transfer done", UVM_HIGH)

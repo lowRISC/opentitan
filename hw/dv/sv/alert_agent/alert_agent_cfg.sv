@@ -8,6 +8,8 @@
 // ---------------------------------------------
 class alert_agent_cfg extends dv_base_agent_cfg;
   virtual alert_if vif;
+
+  bit     is_alert = 1;
   // sender mode
   bit use_seq_item_alert_delay;
   int unsigned alert_delay_min = 0;
@@ -30,13 +32,13 @@ class alert_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_utils_begin(alert_agent_cfg)
     `uvm_field_int(alert_delay_min, UVM_DEFAULT)
-    `uvm_field_int(alert_delay_min, UVM_DEFAULT)
+    `uvm_field_int(alert_delay_max, UVM_DEFAULT)
     `uvm_field_int(ack_delay_min,   UVM_DEFAULT)
-    `uvm_field_int(ack_delay_min,   UVM_DEFAULT)
+    `uvm_field_int(ack_delay_max,   UVM_DEFAULT)
     `uvm_field_int(ack_stable_min,  UVM_DEFAULT)
-    `uvm_field_int(ack_stable_min,  UVM_DEFAULT)
+    `uvm_field_int(ack_stable_max,  UVM_DEFAULT)
     `uvm_field_int(ping_delay_min,  UVM_DEFAULT)
-    `uvm_field_int(ping_delay_min,  UVM_DEFAULT)
+    `uvm_field_int(ping_delay_max,  UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
 
