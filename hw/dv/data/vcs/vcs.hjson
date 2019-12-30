@@ -1,0 +1,86 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd:  "{job_prefix} vcs"
+  build_ex:   "simv"
+  run_cmd:    "{job_prefix} {build_dir}/{build_ex}"
+
+  tcl:        "{proj_root}/hw/dv/tools/vcs/vcs_fsdb.tcl"
+
+  build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
+               "-timescale=1ns/1ps",
+               "-Mdir={build_dir}/simv.csrc",
+               "-o {run_cmd}",
+               "-f {sv_flist}",
+               "+incdir+{build_dir}",
+               "-debug_access+pp",
+               // Turn on warnings for non-void functions called with return values ignored
+               "+warn=SV-NFIVC",
+               "+warn=noUII-L",
+               // Below option required for $error/$fatal system calls
+               "-assert svaext"]
+
+  run_opts:   ["-licqueue",
+               "-ucli -do {tcl}",
+               "+ntb_random_seed={seed}",
+               "+UVM_TESTNAME={uvm_test}",
+               "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  exports: [
+    VCS_ARCH_OVERRIDE: linux
+    VCS_LIC_EXPIRE_WARNING: 1
+  ]
+
+  // Defaults for VCS
+  cov_metrics:          "line+cond+fsm+tgl+branch+assert"
+  vcs_cov_hier:         ""
+  vcs_cov_assert_hier:  ""
+
+  build_modes: [
+    {
+      name: vcs_waves
+      is_sim_mode: 1
+      build_opts: ["-debug_access+all"]
+    }
+    {
+      name: vcs_cov
+      is_sim_mode: 1
+      build_opts: [// Enable the required cov metrics
+                   "-cm {cov_metrics}",
+                   // Set the coverage hierarchy
+                   "{vcs_cov_hier}",
+                   // Cover all continuous assignments
+                   "-cm_line contassign",
+                   // Dump toggle coverage on mdas, array of structs and on ports only
+                   "-cm_tgl mda+structarr+portsonly",
+                   // Ignore initial blocks for coverage
+                   "-cm_report noinitial",
+                   // Filter unreachable/statically constant blocks
+                   "-cm_noconst",
+                   // Don't count coverage that's coming from zero-time glitches
+                   "-cm_glitch 0",
+                   // Ignore warnings about not applying cm_glitch to path and FSM
+                   "+warn=noVCM-OPTIGN",
+                   // Coverage database output location
+                   "-cm_dir {build_dir}/cov.vdb"]
+
+      run_opts:   [// Enable the required cov metrics
+                   "-cm {cov_metrics}",
+                   // Same directory as build
+                   "-cm_dir {build_dir}/cov.vdb",
+                   // Don't output cm.log which can be quite large
+                   "-cm_log /dev/null",
+                   // Provide a name to the coverage collected for this test
+                   "-cm_name {index}.{test}",
+                   // Don't dump all the coverage assertion attempts at the end of simulation
+                   "-assert nopostproc"]
+    }
+    {
+      name: vcs_profile
+      is_sim_mode: 1
+      build_opts: ["--simprofile"]
+      run_opts:   ["--simprofile {profile}"]
+    }
+  ]
+}

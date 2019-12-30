@@ -1,0 +1,117 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the IP under test.
+  name: uart
+
+  // Top level dut name (sv module).
+  dut: uart
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:uart_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/uart/data/uart_testplan.hjson"
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{proj_root}/hw/ip/uart/data/uart.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                // List of common CIP test lists that apply to UART
+                "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/data/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // Default UVM test class name.
+  uvm_test: uart_base_test
+
+  // List of test specifications.
+  tests: [
+    {
+      name: uart_sanity
+      uvm_test_seq: uart_sanity_vseq
+    }
+
+    {
+      name: uart_tx_rx
+      uvm_test_seq: uart_tx_rx_vseq
+    }
+
+    {
+      name: uart_fifo_full
+      reseed: 20
+      uvm_test_seq: uart_fifo_full_vseq
+    }
+
+    {
+      name: uart_fifo_overflow
+      reseed: 100
+      uvm_test_seq: uart_fifo_overflow_vseq
+    }
+
+    {
+      name: uart_fifo_reset
+      uvm_test_seq: uart_fifo_reset_vseq
+    }
+
+    {
+      name: uart_rx_oversample
+      uvm_test_seq: uart_rx_oversample_vseq
+    }
+
+    {
+      name: uart_intr
+      uvm_test_seq: uart_intr_vseq
+      run_opts: ["+test_timeout_ns=3_000_000_000"]
+    }
+
+    {
+      name: uart_noise_filter
+      uvm_test_seq: uart_noise_filter_vseq
+    }
+
+    {
+      name: uart_rx_start_bit_filter
+      uvm_test_seq: uart_rx_start_bit_filter_vseq
+    }
+
+    {
+      name: uart_rx_parity_err
+      uvm_test_seq: uart_rx_parity_err_vseq
+    }
+
+    {
+      name: uart_tx_ovrd
+      uvm_test_seq: uart_tx_ovrd_vseq
+    }
+
+    {
+      name: uart_loopback
+      uvm_test_seq: uart_loopback_vseq
+    }
+
+    {
+      name: uart_perf
+      uvm_test_seq: uart_perf_vseq
+      run_opts: ["+zero_delays=1"]
+    }
+  ]
+
+  // List of regression specifications.
+  regressions: [
+    {
+      name: sanity
+      tests: ["uart_sanity", "uart_csr_hw_reset"]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  tests: [
+    {
+      name: "{name}_stress_all"
+      uvm_test_seq: "{name}_stress_all_vseq"
+      run_opts: ["+test_timeout_ns=10_000_000_000"]
+    }
+
+    {
+      name: "{name}_stress_all_with_rand_reset"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_stress_all_with_rand_reset",
+                 "+test_timeout_ns=10_000_000_000",
+                 "+stress_seq={name}_stress_all_vseq"]
+    }
+  ]
+}
