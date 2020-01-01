@@ -20,42 +20,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("//devices:devices.bzl", "device_config", "gcc_device_config")
+def gcc_device_config(toolchain_target_prefix, cpu, fpu, float_abi, endian):
+    if type(cpu) is not "string":
+        fail("Should be of type string", "cpu")
+    if type(fpu) is not "string":
+        fail("Should be of type string", "fpu")
+    if type(float_abi) is not "string":
+        fail("Should be of type string", "float_abi")
+    if type(float_abi) is not "string":
+        fail("Should be of type string", "endian")
+    if type(toolchain_target_prefix) is not "Label":
+        fail("Should be of type label", "toolchain_target")
 
-CORTEX_M0_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        cpu = "armv6-m",
-        endian = "little",
-        float_abi = "soft",
-        fpu = "none",
-    ),
-)
+    return struct(
+        toolchain_target_prefix = toolchain_target_prefix,
+        cpu = cpu,
+        fpu = fpu,
+        float_abi = float_abi,
+        endian = endian,
+    )
 
-CORTEX_M1_DEVICE_CONFIG = _CORTEX_M0_DEVICE_CONFIG
-
-CORTEX_M3_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        cpu = "armv7-m",
-        endian = "little",
-        float_abi = "soft",
-        fpu = "none",
-    ),
-)
-
-CORTEX_M4_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        cpu = "armv7e-m",
-        endian = "little",
-        float_abi = "hard",
-        fpu = "fpv4-sp-d16",
-    ),
-)
-
-CORTEX_M7_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        cpu = "armv7e-m",
-        endian = "little",
-        float_abi = "hard",
-        fpu = "fpv5-d16",
-    ),
-)
+def device_config(gcc_device_config):
+    return struct(
+        gcc_device_config = gcc_device_config,
+    )

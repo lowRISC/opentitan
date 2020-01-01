@@ -22,6 +22,10 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//devices/arm:cortex_m.bzl", "DEVICE_CONFIGS_NOOS")
+
+_DEVICE_CONFIGS = DEVICE_CONFIGS_NOOS 
+
 cc_toolchain_suite(
     name = "gcc_multi_platform",
     toolchains = {
@@ -35,19 +39,20 @@ load(
     "gcc_arm_none_toolchain_config",
 )
 
-gcc_arm_none_toolchain(
-    name = "arm_none_eabi_toolchain",
-    toolchain_config = ":arm_none_eabi_stm32h7_config",
-    toolchain_identifier = "arm-none-eabi-toolchian",
-)
-
-gcc_arm_none_toolchain_config(
-    name = "arm_none_eabi_stm32h7_config",
-    arch = "armv7e-m",
-    dynamic_memory = False,
-    exceptions = False,
-    float_abi = "hard",
-    fpu = "fpv5-d16",
-    rtti = False,
-    toolchain_identifier = "arm-none-eabi-toolchain",
-)
+[
+    gcc_arm_none_toolchain(
+        name = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu + "_config",
+        toolchain_config = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu + "_config",
+        toolchain_identifier = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu,
+    ),
+    gcc_arm_none_toolchain_config(
+        name = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu + "_config",
+        cpu = device_config.cpu,
+        exceptions = False,
+        float_abi = device_config.float_abi,
+        fpu = device_config.fpu,
+        rtti = True,
+        toolchain_identifier = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu,
+    )
+    for device_config in _DEVICE_CONFIGS:
+]

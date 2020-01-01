@@ -308,7 +308,6 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
             toolchain_exceptions_feature,
             toolchain_optimisation_feature,
             toolchain_binary_format_output,
-            toolchain_dynamic_memory_feature,
             toolchain_generate_debug_symbols,
         ],
     )
@@ -317,7 +316,7 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
 gcc_arm_none_toolchain_config = rule(
     implementation = _gcc_arm_none_toolchain_config_info_impl,
     attrs = {
-        "arch": attr.string(
+        "cpu": attr.string(
             default = "armv4",
             doc = "System architecture",
             mandatory = False,
@@ -401,11 +400,6 @@ gcc_arm_none_toolchain_config = rule(
         "exceptions": attr.bool(
             default = False,
             doc = "C++ exceptions (disabled by default)",
-            mandatory = False,
-        ),
-        "dynamic_memory": attr.bool(
-            default = False,
-            doc = "Disable dynamic memory allocation",
             mandatory = False,
         ),
         "binary_format": attr.string(
