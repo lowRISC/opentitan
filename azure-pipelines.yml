@@ -13,7 +13,7 @@ variables:
 trigger:
   tags:
     include:
-    - '*'
+    - "*"
   # Combine builds on master as long as another build is running
   batch: true
   branches:
@@ -21,66 +21,67 @@ trigger:
     - master
 
 jobs:
-- job: "lint"
-  displayName: "Run code quality checks (lint)"
+- job: lint
+  displayName: Run code quality checks (lint)
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: ubuntu-16.04
   steps:
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
-    displayName: 'Remove existing Clang installation'
-  - template: 'ci/install-package-dependencies.yml'
+    displayName: Remove existing Clang installation
+  - template: ci/install-package-dependencies.yml
   - bash: |
       python3 --version
       yapf --version
       isort --version
       clang-format -version
       echo "PATH=$PATH"
-    displayName: 'Display tool versions'
-
-#   XXX: Python lint checks are disabled until Issue #313 is resolved
-#    - bash: find ./util -iname '*.py' -print0 | xargs -0 -n1 $PWD/util/lintpy.py -f
-#      displayName: 'Run Python lint'
-
+    displayName: Display tool versions
+  - bash: |
+      find util -iname '*.py' -print0 \
+        | xargs -0 -n1 $PWD/util/lintpy.py -f
+    # XXX: Python lint checks are disabled until Issue #313 is resolved
+    condition: False
+    displayName: Run Python lint
   - bash: |
       make -C hw regs && git diff --exit-code
-      if [ $? != 0 ]; then
+      if [[ $? != 0 ]]; then
         echo -n "##vso[task.logissue type=error]"
         echo "Register headers not up-to-date. Regenerate them with 'make -C hw regs'."
         exit 1
       fi
     condition: always()
-    displayName: 'Ensure all generated files are clean and up-to-date'
-
+    displayName: Ensure all generated files are clean and up-to-date
   - bash: |
-      ./util/build_docs.py
+      util/build_docs.py
     condition: always()
-    displayName: 'Render documentation'
-
+    displayName: Render documentation
   - bash: |
       cd site/landing
       ../../build/docs-hugo/hugo
     condition: always()
-    displayName: 'Render landing site'
-
+    displayName: Render landing site
   - bash: |
       # XXX: As of today, task.logissue comments with 'sourcepath' set don't
       # get reported to GitHub Checks annotations. Upstream bug report:
       # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
       #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
-      fork_origin=$(git merge-base --fork-point origin/master)
-      changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/ | grep -E '\.(cpp|cc|c|h)$')
-      test -z "$changed_files" || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
-      if [ -s clang-format-output ]; then
-        echo -n "##vso[task.logissue type=error]"
-        echo "C/C++ lint failed. Use 'git clang-format' with appropriate options to reformat the changed code."
-        exit 1
+      fork_origin="$(git merge-base --fork-point origin/master)"
+      changed_files="$(git diff --name-only "$fork_origin" | grep -v /vendor/ | grep -E '\.(cpp|cc|c|h)$')"
+      if [[ -z "$changed_files" ]]; then
+        xargs git diff -U0 "$fork_origin" <<< "$changed_files" \
+          | clang-format-diff -p1 \
+          | tee clang-format-output
+        if [[ -s clang-format-output ]]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "C/C++ lint failed. Use 'git clang-format' with appropriate options to reformat the changed code."
+          exit 1
+        fi
       fi
     # This check is not idempotent, but checks changes to a base branch.
     # Run it only on pull requests.
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: 'Use clang-format to check C/C++ coding style'
-
+    displayName: Use clang-format to check C/C++ coding style
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
       changed_files="$(git diff --name-only "$fork_origin")"
@@ -93,10 +94,9 @@ jobs:
         fi
       fi
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: 'Check formatting on header guards'
-
+    displayName: Check formatting on header guards
   - bash: |
-      commit_range=$(git merge-base --fork-point origin/master)..HEAD
+      commit_range="$(git merge-base --fork-point origin/master)..HEAD"
       # Notes:
       # * Merge commits are not checked. We always use rebases instead of
       #   merges to keep a linear history, which makes merge commits disappear
@@ -105,88 +105,90 @@ jobs:
       # * 'type=error' is used even for warnings. Only "errors" are shown in
       #   the GitHub checks API. However, warnings don't return a non-zero
       #   error code and don't fail the build step.
-      ./util/lint_commits.py \
-          --no-merges \
-          --error-msg-prefix='##vso[task.logissue type=error]' \
-          --warning-msg-prefix='##vso[task.logissue type=error]' \
-          $commit_range
+      util/lint_commits.py \
+        --no-merges \
+        --error-msg-prefix="##vso[task.logissue type=error]" \
+        --warning-msg-prefix="##vso[task.logissue type=error]" \
+        "$commit_range"
     # Only run on pull requests to check new commits only
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: "Check commit metadata"
-
+    displayName: Check commit metadata
   - bash: |
       only_doc_changes=0
-      if [ "$(Build.Reason)" = "PullRequest" ]; then
+      if [[ "$(Build.Reason)" = "PullRequest" ]]; then
         # Conservative way of checking for documentation-only changes.
         # Only relevant for pipelines triggered from pull requests
         echo "Checking for doc-only changes in this pull request"
-        fork_origin=$(git merge-base --fork-point origin/master)
-        only_doc_changes=$(git diff --name-only $fork_origin | grep -v '\.md$' -q; echo $?)
+        fork_origin="$(git merge-base --fork-point origin/master)"
+        only_doc_changes="$(git diff --name-only "$fork_origin" | grep -v '\.md$' -q; echo $?)"
       fi
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
-    displayName: "Check if the commit only contains documentation changes"
+    displayName: Check if the commit only contains documentation changes
     name: DetermineBuildType
 
-- job: "sw_build"
-  displayName: "Build Software"
+- job: sw_build
+  displayName: Build Software
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: ubuntu-16.04
   steps:
-  - template: 'ci/install-package-dependencies.yml'
+  - template: ci/install-package-dependencies.yml
   - bash: |
       set -x
       sudo util/get-toolchain.py \
         --target-dir="${TOOLCHAIN_PATH}" \
         --release-version="${TOOLCHAIN_VERSION}" \
         --update
-    displayName: 'Install toolchain'
+    displayName: Install toolchain
   - bash: |
       . util/build_consts.sh
       ./meson_init.sh -A
       ninja -C "$OBJ_DIR" all
-    displayName: 'Build embedded targets'
-  - template: 'ci/upload-artifacts-template.yml'
+    displayName: Build embedded targets
+  - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: sw_build
 
-- job: "top_earlgrey_verilator"
-  displayName: "Build Verilator simulation of the Earl Grey toplevel design"
+- job: top_earlgrey_verilator
+  displayName: Build Verilator simulation of the Earl Grey toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: Default
   steps:
-  - template: 'ci/install-package-dependencies.yml'
+  - template: ci/install-package-dependencies.yml
   - bash: |
       set -e
-      if [ ! -d $(VERILATOR_PATH) ]; then
+      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
         echo "Building verilator (no cached build found)"
+
         mkdir -p build/verilator
         cd build/verilator
-        curl -Ls -o verilator.tgz https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz
+        curl -Ls -o verilator.tgz \
+          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
         tar -xf verilator.tgz
-        cd verilator-$(VERILATOR_VERSION)
-        ./configure --prefix=$(VERILATOR_PATH)
+
+        cd "verilator-$(VERILATOR_VERSION)"
+        ./configure --prefix="$(VERILATOR_PATH)"
         make -j$(nproc)
-        mkdir -p $VERILATOR_PATH
+        mkdir -p "$VERILATOR_PATH"
         make install
       else
         echo "Re-using cached verilator build"
       fi
-    displayName: 'Build and install Verilator'
+    displayName: Build and install Verilator
   - bash: |
-      export PATH=$VERILATOR_PATH/bin:$PATH
+      export PATH="$VERILATOR_PATH/bin:$PATH"
       python3 --version
       fusesoc --version
       verilator --version
-    displayName: 'Display environment'
+    displayName: Display environment
   - bash: |
       . util/build_consts.sh
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
-      export PATH=$VERILATOR_PATH/bin:$PATH
+      export PATH="$VERILATOR_PATH/bin:$PATH"
       fusesoc --cores-root=. \
         run --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
@@ -194,32 +196,32 @@ jobs:
 
       cp "$OBJ_DIR/hw/sim-verilator/Vtop_earlgrey_verilator" \
         "$BIN_DIR/hw/top_earlgrey"
-    displayName: 'Build simulation with Verilator'
-  - template: 'ci/upload-artifacts-template.yml'
+    displayName: Build simulation with Verilator
+  - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: top_earlgrey_verilator
 
-- job: "execute_verilated_tests"
-  displayName: "Execute tests on the Verilated system"
+- job: execute_verilated_tests
+  displayName: Execute tests on the Verilated system
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: ubuntu-16.04
   dependsOn:
     - top_earlgrey_verilator
     - sw_build
   steps:
-  - template: 'ci/install-package-dependencies.yml'
-  - template: 'ci/download-artifacts-template.yml'
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
   - bash: |
       . util/build_consts.sh
       export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
       pytest --version
       ci/run_verilator_pytest.sh
-    displayName: 'Execute tests'
+    displayName: Execute tests
 
-- job: "riscv_compliance_tests"
-  displayName: "Execute RISC-V compliance tests"
+- job: riscv_compliance_tests
+  displayName: Execute RISC-V compliance tests
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: ubuntu-16.04
   dependsOn:
     - top_earlgrey_verilator
     - execute_verilated_tests
@@ -227,8 +229,8 @@ jobs:
   # Meson. See #1181.
   condition: False
   steps:
-  - template: 'ci/install-package-dependencies.yml'
-  - template: 'ci/download-artifacts-template.yml'
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
   - bash: |
       . util/build_consts.sh
       export TARGET_SIM="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
@@ -237,12 +239,13 @@ jobs:
       export OT_TARGET=verilator
       export OT_TOOLS="$TOOLCHAIN_PATH/bin"
       cd sw/vendor/riscv_compliance
+
       # Only running base interger variant for now, others will be added later.
       make RISCV_ISA=rv32i
-    displayName: 'Execute tests'
+    displayName: Execute tests
 
-- job: "top_earlgrey_nexysvideo"
-  displayName: "Build NexysVideo variant of the Earl Grey toplevel design using Vivado"
+- job: top_earlgrey_nexysvideo
+  displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
@@ -251,8 +254,8 @@ jobs:
   pool: Default
   timeoutInMinutes: 120 # 2 hours
   steps:
-  - template: 'ci/install-package-dependencies.yml'
-  - template: 'ci/download-artifacts-template.yml'
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
   - bash: |
       set -e
       . util/build_consts.sh
@@ -271,15 +274,15 @@ jobs:
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
-    displayName: 'Build bitstream with Vivado'
-  - template: 'ci/upload-artifacts-template.yml'
+    displayName: Build bitstream with Vivado
+  - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: top_earlgrey_nexysvideo
 
-- job: "deploy_releaseartifacts"
-  displayName: "Package and deploy release distribution"
+- job: deploy_release_artifacts
+  displayName: Package and deploy release distribution
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: ubuntu-16.04
   dependsOn:
     - lint
     - sw_build
@@ -287,8 +290,8 @@ jobs:
     - top_earlgrey_nexysvideo
   condition: eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   steps:
-  - template: 'ci/install-package-dependencies.yml'
-  - template: 'ci/download-artifacts-template.yml'
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
   - bash: |
       . util/build_consts.sh
 
@@ -298,12 +301,12 @@ jobs:
       # Put the resulting tar file into a directory the |publish| step below can reference.
       mkdir "$BUILD_ROOT/dist-final"
       mv $BIN_DIR/opentitan-*.tar.xz "$BUILD_ROOT/dist-final"
-    displayName: 'Create final dist directory out of partial ones'
+    displayName: Create final dist directory out of partial ones
   - publish: $(Build.ArtifactStagingDirectory)/dist-final
     artifact: opentitan-dist
-    displayName: "Upload release artifacts as Azure artifact"
+    displayName: Upload release artifacts as Azure artifact
   - task: GithubRelease@0
-    displayName: 'Upload to GitHub releases (only tags)'
+    displayName: Upload to GitHub releases (only tags)
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
     inputs:
       gitHubConnection: opentitan-release-upload
