@@ -14,7 +14,6 @@ module alert_handler_class import alert_pkg::*; (
   input [N_LOC_ALERT-1:0]               loc_alert_en_i,    // alert enable
   input [NAlerts-1:0]    [CLASS_DW-1:0] alert_class_i,     // class assignment
   input [N_LOC_ALERT-1:0][CLASS_DW-1:0] loc_alert_class_i, // class assignment
-  input [N_CLASSES-1:0]                 class_en_i,        // class enables
 
   output logic [NAlerts-1:0]            alert_cause_o,     // alert cause
   output logic [N_LOC_ALERT-1:0]        loc_alert_cause_o, // alert cause
@@ -43,8 +42,7 @@ module alert_handler_class import alert_pkg::*; (
 
   // mask and OR reduction, followed by class enable gating
   for (genvar k = 0; k < N_CLASSES; k++) begin : gen_classifier
-    assign class_trig_o[k] = class_en_i[k]         &
-                             (|{ alert_cause_o     & class_masks[k],
+    assign class_trig_o[k] = (|{ alert_cause_o     & class_masks[k],
                                  loc_alert_cause_o & loc_class_masks[k] });
   end
 
