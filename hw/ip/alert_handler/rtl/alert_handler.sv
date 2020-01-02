@@ -123,7 +123,6 @@ module alert_handler import alert_pkg::*; import prim_pkg::*; (
     .loc_alert_en_i    ( reg2hw_wrap.loc_alert_en    ),
     .alert_class_i     ( reg2hw_wrap.alert_class     ),
     .loc_alert_class_i ( reg2hw_wrap.loc_alert_class ),
-    .class_en_i        ( reg2hw_wrap.class_en        ),
     .alert_cause_o     ( hw2reg_wrap.alert_cause     ),
     .loc_alert_cause_o ( hw2reg_wrap.loc_alert_cause ),
     .class_trig_o      ( hw2reg_wrap.class_trig      )
@@ -140,6 +139,7 @@ module alert_handler import alert_pkg::*; import prim_pkg::*; (
     alert_handler_accu i_accu (
       .clk_i,
       .rst_ni,
+      .class_en_i   ( reg2hw_wrap.class_en[k]           ),
       .clr_i        ( reg2hw_wrap.class_clr[k]          ),
       .class_trig_i ( hw2reg_wrap.class_trig[k]         ),
       .thresh_i     ( reg2hw_wrap.class_accum_thresh[k] ),

@@ -13,6 +13,7 @@
 module alert_handler_accu import alert_pkg::*; (
   input                        clk_i,
   input                        rst_ni,
+  input                        class_en_i,   // class enable
   input                        clr_i,        // clear the accumulator
   input                        class_trig_i, // increments the accu
   input        [AccuCntDw-1:0] thresh_i,     // escalation trigger threshold
@@ -20,13 +21,16 @@ module alert_handler_accu import alert_pkg::*; (
   output logic                 accu_trig_o   // escalation trigger output
 );
 
+  logic trig_gated;
   logic [AccuCntDw-1:0] accu_d, accu_q;
 
-  assign accu_d = (clr_i)                      ? '0            : // clear
-                  (class_trig_i && !(&accu_q)) ? accu_q + 1'b1 : // saturate counter at maximum
-                                                 accu_q;
+  assign trig_gated = class_trig_i & class_en_i;
 
-  assign accu_trig_o = (accu_q >= thresh_i) & class_trig_i;
+  assign accu_d = (clr_i)                    ? '0            : // clear
+                  (trig_gated && !(&accu_q)) ? accu_q + 1'b1 : // saturate counter at maximum
+                                               accu_q;
+
+  assign accu_trig_o = (accu_q >= thresh_i) & trig_gated;
 
   assign accu_cnt_o = accu_q;
 
@@ -37,5 +41,13 @@ module alert_handler_accu import alert_pkg::*; (
       accu_q <= accu_d;
     end
   end
+
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  `ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o, clk_i, !rst_ni)
+  `ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i, clk_i, !rst_ni)
 
 endmodule : alert_handler_accu
