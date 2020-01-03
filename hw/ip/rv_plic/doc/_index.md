@@ -161,12 +161,12 @@ shall configure them.
 // Pseudo-code below
 void plic_init() {
   // Set to level-triggered for interrupt sources
-  for (size_t i = 0; i < ceil(N_SOURCE / 32); ++i) {
+  for (int i = 0; i < ceil(N_SOURCE / 32); ++i) {
     *(LE + i) = 0;
   }
 
   // Configure priority
-  for (size_t i = 0; i < N_SOURCE; ++i) {
+  for (int i = 0; i < N_SOURCE; ++i) {
     *(PRIO + i) = value(i);
   }
 }
