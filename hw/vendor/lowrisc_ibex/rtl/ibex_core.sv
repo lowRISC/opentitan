@@ -19,6 +19,7 @@ module ibex_core #(
     parameter bit          RV32E                    = 1'b0,
     parameter bit          RV32M                    = 1'b1,
     parameter              MultiplierImplementation = "fast",
+    parameter bit          DbgTriggerEn             = 1'b0,
     parameter int unsigned DmHaltAddr               = 32'h1A110800,
     parameter int unsigned DmExceptionAddr          = 32'h1A110808
 ) (
@@ -175,6 +176,7 @@ module ibex_core #(
 
   // Interrupts
   logic        irq_pending;
+  logic        nmi_mode;
   logic        csr_msip;
   logic        csr_mtip;
   logic        csr_meip;
@@ -209,6 +211,7 @@ module ibex_core #(
   logic        debug_single_step;
   logic        debug_ebreakm;
   logic        debug_ebreaku;
+  logic        trigger_match;
 
   // performance counter related signals
   logic        instr_ret;
@@ -439,6 +442,7 @@ module ibex_core #(
       .csr_mfip_i                   ( csr_mfip               ),
       .irq_pending_i                ( irq_pending            ),
       .irq_nm_i                     ( irq_nm_i               ),
+      .nmi_mode_o                   ( nmi_mode               ),
 
       // Debug Signal
       .debug_mode_o                 ( debug_mode             ),
@@ -448,6 +452,7 @@ module ibex_core #(
       .debug_single_step_i          ( debug_single_step      ),
       .debug_ebreakm_i              ( debug_ebreakm          ),
       .debug_ebreaku_i              ( debug_ebreaku          ),
+      .trigger_match_i              ( trigger_match          ),
 
       // write data to commit in the register file
       .regfile_wdata_lsu_i          ( regfile_wdata_lsu      ),
@@ -565,6 +570,7 @@ module ibex_core #(
   assign valid_csr_id = instr_new_id & ~instr_fetch_err;
 
   ibex_cs_registers #(
+      .DbgTriggerEn     ( DbgTriggerEn     ),
       .MHPMCounterNum   ( MHPMCounterNum   ),
       .MHPMCounterWidth ( MHPMCounterWidth ),
       .PMPEnable        ( PMPEnable        ),
@@ -600,6 +606,7 @@ module ibex_core #(
       .irq_external_i          ( irq_external_i         ),
       .irq_fast_i              ( irq_fast_i             ),
       .irq_pending_o           ( irq_pending            ),
+      .nmi_mode_i              ( nmi_mode               ),
       .csr_msip_o              ( csr_msip               ),
       .csr_mtip_o              ( csr_mtip               ),
       .csr_meip_o              ( csr_meip               ),
@@ -620,6 +627,7 @@ module ibex_core #(
       .debug_single_step_o     ( debug_single_step      ),
       .debug_ebreakm_o         ( debug_ebreakm          ),
       .debug_ebreaku_o         ( debug_ebreaku          ),
+      .trigger_match_o         ( trigger_match          ),
 
       .pc_if_i                 ( pc_if                  ),
       .pc_id_i                 ( pc_id                  ),

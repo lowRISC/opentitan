@@ -64,3 +64,21 @@
       <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim <wave_opts>
     wave_opts: >
       -waves waves.vcd
+
+- tool: ius
+  compile:
+    cmd:
+      - "mkdir -p <out>/ius"
+      - "irun -work worklib
+              -access +rwc
+              -nclibdirpath <out>/ius
+              -sv -uvm -uvmhome CDNS-1.2
+              -f ibex_dv.f
+              -elaborate -licqueue
+              -l <out>/ius/compile.log"
+  sim:
+    cmd: >
+      irun -R -nclibdirpath <out>/ius <sim_opts> -svseed <seed> -licqueue <wave_opts>
+    wave_opts: >
+      -input <cwd>/ius.tcl
+

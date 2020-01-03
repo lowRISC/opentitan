@@ -7,15 +7,18 @@
 
 #include "ibex_pcounts.h"
 #include "verilated_toplevel.h"
+#include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
 
 int main(int argc, char **argv) {
   ibex_simple_system top;
+  VerilatorMemUtil memutil;
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
   simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  simctrl.RegisterMemoryArea("ram", "TOP.ibex_simple_system.u_ram");
+  memutil.RegisterMemoryArea("ram", "TOP.ibex_simple_system.u_ram");
+  simctrl.RegisterExtension(&memutil);
 
   std::cout << "Simulation of Ibex" << std::endl
             << "==================" << std::endl

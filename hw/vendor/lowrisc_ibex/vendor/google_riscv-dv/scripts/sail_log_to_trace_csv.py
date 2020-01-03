@@ -40,7 +40,6 @@ def process_sail_sim_log(sail_log, csv):
   """
   logging.info("Processing sail log : %s" % sail_log)
   instr_cnt = 0
-  sail_instr = ""
 
   with open(sail_log, "r") as f, open(csv, "w") as csv_fd:
     search_start = 0
@@ -84,7 +83,6 @@ def process_sail_sim_log(sail_log, csv):
 
 
 def main():
-  instr_trace = []
   # Parse input arguments
   parser = argparse.ArgumentParser()
   parser.add_argument("--log", type=str, help="Input sail simulation log")

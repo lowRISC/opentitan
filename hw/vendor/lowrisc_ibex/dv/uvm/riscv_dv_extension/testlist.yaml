@@ -137,7 +137,7 @@
   sim_opts: >
     +require_signature_addr=1
     +max_interval=500
-    +enable_debug_stress_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
@@ -156,7 +156,7 @@
   iterations: 15
   sim_opts: >
     +max_interval=250
-    +enable_debug_stress_seq=1
+    +enable_debug_seq=1
     +require_signature_addr=1
   compare_opts:
     verbose: 1
@@ -181,7 +181,7 @@
   sim_opts: >
     +require_signature_addr=1
     +max_interval=3000
-    +enable_debug_stress_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
@@ -204,7 +204,7 @@
   rtl_test: core_ibex_debug_wfi_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_debug_single_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
@@ -243,7 +243,7 @@
   rtl_test: core_ibex_debug_ebreak_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_debug_single_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -267,7 +267,7 @@
   rtl_test: core_ibex_debug_ebreakmu_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_debug_single_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -285,11 +285,11 @@
   rtl_test: core_ibex_debug_csr_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_debug_single_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
 
-- test: riscv_interrupt_test
+- test: riscv_single_interrupt_test
   description: >
     Random instruction test with complete interrupt handling
   iterations: 15
@@ -302,7 +302,24 @@
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_irq_seq=1
+    +enable_irq_single_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_multiple_interrupt_test
+  description: >
+    Random instruction test with complete interrupt handling
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +randomize_csr=1
+  rtl_test: core_ibex_debug_intr_basic_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_multiple_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -320,7 +337,7 @@
   rtl_test: core_ibex_irq_wfi_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_irq_seq=1
+    +enable_irq_single_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -338,7 +355,7 @@
   rtl_test: core_ibex_irq_csr_test
   sim_opts: >
     +require_signature_addr=1
-    +enable_irq_seq=1
+    +enable_irq_single_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -413,7 +430,7 @@
   sim_opts: >
     +require_signature_addr=1
     +max_interval=1500
-    +enable_debug_single_seq=1
+    +enable_debug_seq=1
   compare_opts:
     compare_final_value_only: 1
     verbose: 1

@@ -57,7 +57,7 @@
       description: >
           Encodes all supported ISA extensions
       type: R
-      reset_val: 0x1104
+      reset_val: 0x101104
       msb: 25
       lsb: 0
 

@@ -32,12 +32,13 @@ import yaml
 import argparse
 import random
 import copy
+from lib import *
 
 try:
   from bitstring import BitArray as bitarray
 except ImportError as e:
   logging.error("Please install bitstring package: sudo apt-get install python3-bitstring")
-  sys.exit(1)
+  sys.exit(RET_FAIL)
 
 """
 Defines the test's success/failure values, one of which will be written to
@@ -176,25 +177,20 @@ def predict_csr_val(csr_op, rs1_val, csr_val, csr_write_mask, csr_read_mask):
   prediction = None
   # create a zero bitarray to zero extend immediates
   zero = bitarray(uint=0, length=csr_val.len - 5)
+  prediction = csr_read(csr_val, csr_read_mask)
   if csr_op == 'csrrw':
-    prediction = csr_read(csr_val, csr_read_mask)
     csr_write(rs1_val, csr_val, csr_write_mask)
   elif csr_op == 'csrrs':
-    prediction = csr_read(csr_val, csr_read_mask)
     csr_write(rs1_val | prediction, csr_val, csr_write_mask)
   elif csr_op == 'csrrc':
-    prediction = csr_read(csr_val, csr_read_mask)
     csr_write((~rs1_val) & prediction, csr_val, csr_write_mask)
   elif csr_op == 'csrrwi':
-    prediction = csr_read(csr_val, csr_read_mask)
     zero.append(rs1_val[-5:])
     csr_write(zero, csr_val, csr_write_mask)
   elif csr_op == 'csrrsi':
-    prediction = csr_read(csr_val, csr_read_mask)
     zero.append(rs1_val[-5:])
     csr_write(zero | prediction, csr_val, csr_write_mask)
   elif csr_op == 'csrrci':
-    prediction = csr_read(csr_val, csr_read_mask)
     zero.append(rs1_val[-5:])
     csr_write((~zero) & prediction, csr_val, csr_write_mask)
   return f"0x{prediction.hex}"

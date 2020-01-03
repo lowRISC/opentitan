@@ -6,6 +6,8 @@ name: "lowrisc:ibex:ibex_tracer:0.1"
 description: "Tracer for use with Ibex using the RVFI interface"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:assert
     files:
       - rtl/ibex_tracer_pkg.sv
       - rtl/ibex_tracer.sv

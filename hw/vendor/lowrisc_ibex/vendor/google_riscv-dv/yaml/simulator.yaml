@@ -68,6 +68,7 @@
     cov_opts: >
       -do "coverage save -onexit <out>/cov.ucdb;"
 
+# TODO: Remove +DEPRECATED for dsim
 - tool: dsim
   env_var: DSIM,DSIM_LIB_PATH
   compile:
@@ -76,6 +77,7 @@
       - "<DSIM> -sv -work <out>/dsim
                 -genimage image
                 +incdir+$UVM_HOME/src
+                +define+DEPRECATED
                 $UVM_HOME/src/uvm_pkg.sv
                 +define+DSIM
                 +incdir+<setting>
@@ -86,3 +88,17 @@
     cmd: >
       <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim
 
+- tool: qrun
+  compile:
+    cmd:
+      - "qrun -f <cwd>/qrun_option.f
+        +incdir+<setting>
+        +incdir+<user_extension>
+        -f <cwd>/files.f <cmp_opts>
+        -l <out>/qrun_compile_optimize.log
+        -outdir <out>/qrun.out"
+  sim:
+    cmd: >
+      qrun -64 -simulate -snapshot design_opt -c <cov_opts> <sim_opts> -sv_seed <seed> -outdir <out>/qrun.out
+    cov_opts: >
+      -coverage -ucdb <out>/cov.ucdb

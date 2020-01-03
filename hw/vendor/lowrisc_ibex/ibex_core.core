@@ -6,6 +6,8 @@ name: "lowrisc:ibex:ibex_core:0.1"
 description: "CPU core with 2 stage pipeline implementing the RV32IMC_Zicsr ISA"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:assert
     files:
       - rtl/ibex_pkg.sv
       - rtl/ibex_alu.sv

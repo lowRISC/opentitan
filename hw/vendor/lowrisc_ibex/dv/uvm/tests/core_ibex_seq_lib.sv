@@ -12,6 +12,7 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
   int unsigned       max_interval;
   int unsigned       max_delay = 500;
   virtual clk_if     clk_vif;
+  bit                is_started;
   bit                stop_seq;
   bit                seq_finished;
 
@@ -36,6 +37,7 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
     clk_vif.wait_clks(delay);
     `uvm_info(get_full_name(), "Starting sequence...", UVM_LOW)
+    if (!is_started) is_started = 1'b1;
     while (!stop_seq) begin
       send_req();
       iteration_cnt++;
@@ -57,11 +59,29 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
     stop_seq = 1'b1;
     `uvm_info(get_full_name(), "Stopping sequence", UVM_LOW)
     wait (seq_finished == 1'b1);
+    is_started = 1'b0;
   endtask
 
 endclass
 
 // Interrupt sequences
+
+class irq_raise_seq extends core_base_seq#(irq_seq_item);
+
+  `uvm_object_utils(irq_raise_seq)
+  `uvm_object_new
+
+  virtual task send_req();
+    irq_seq_item irq;
+    irq = irq_seq_item::type_id::create($sformatf("irq_raise_single[%0d]", iteration_cnt));
+    start_item(irq);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, num_of_interrupt > 1;)
+    finish_item(irq);
+    get_response(irq);
+  endtask
+
+endclass
+
 class irq_raise_single_seq extends core_base_seq#(irq_seq_item);
 
   `uvm_object_utils(irq_raise_single_seq)
@@ -71,7 +91,7 @@ class irq_raise_single_seq extends core_base_seq#(irq_seq_item);
     irq_seq_item irq;
     irq = irq_seq_item::type_id::create($sformatf("irq_raise_single[%0d]", iteration_cnt));
     start_item(irq);
-    `DV_CHECK_RANDOMIZE_FATAL(irq)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(irq, num_of_interrupt == 1;)
     finish_item(irq);
     get_response(irq);
   endtask

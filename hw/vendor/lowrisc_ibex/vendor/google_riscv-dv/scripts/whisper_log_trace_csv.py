@@ -72,7 +72,6 @@ def process_whisper_sim_log(whisper_log, csv, full_trace = 0):
 
 
 def main():
-  instr_trace = []
   # Parse input arguments
   parser = argparse.ArgumentParser()
   parser.add_argument("--log", type=str, help="Input whisper simulation log")

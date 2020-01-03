@@ -10,6 +10,7 @@ ${PRJ_DIR}/ibex/shared/rtl/prim_clock_gating.sv
 
 // ibex CORE RTL files
 +incdir+${PRJ_DIR}/ibex/rtl
+${PRJ_DIR}/ibex/shared/rtl/prim_assert.sv
 ${PRJ_DIR}/ibex/rtl/ibex_pkg.sv
 ${PRJ_DIR}/ibex/rtl/ibex_tracer_pkg.sv
 ${PRJ_DIR}/ibex/rtl/ibex_tracer.sv

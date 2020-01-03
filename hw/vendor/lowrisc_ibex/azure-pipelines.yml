@@ -46,6 +46,7 @@ jobs:
           bison \
           curl \
           libelf-dev \
+          clang-format \
         && sudo pip3 install -U six fusesoc
     displayName: Install dependencies
 
@@ -94,6 +95,25 @@ jobs:
         exit 1
       fi
     displayName: Lint Verilog source files with Verilator
+
+  - bash: |
+      fork_origin=$(git merge-base --fork-point origin/master)
+      changed_files=$(git diff --name-only $fork_origin | grep -v /vendor/ | grep -E '\.(cpp|cc|c|h)$')
+      test -z "$changed_files" || git diff -U0 $fork_origin $changed_files | clang-format-diff -p1 | tee clang-format-output
+      if [ -s clang-format-output ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "C/C++ lint failed. Use 'git clang-format' with appropriate options to reformat the changed code."
+        exit 1
+      fi
+    # This check is not idempotent, but checks changes to a base branch.
+    # Run it only on pull requests.
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: 'Use clang-format to check C/C++ coding style'
+
+  - bash: |
+      # Build and run CSR testbench
+      fusesoc --cores-root=. run --target=sim --tool=verilator lowrisc:ibex:tb_cs_registers
+    displayName: Build and run CSR testbench with Verilator
 
   - bash: |
       cd build

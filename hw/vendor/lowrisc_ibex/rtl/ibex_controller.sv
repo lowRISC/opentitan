@@ -59,6 +59,7 @@ module ibex_controller (
     input  logic [14:0]           csr_mfip_i,            // fast interrupt pending
     input  logic                  irq_pending_i,         // interrupt request pending
     input  logic                  irq_nm_i,              // non-maskeable interrupt
+    output logic                  nmi_mode_o,            // core executing NMI handler
 
     // debug signals
     input  logic                  debug_req_i,
@@ -68,6 +69,7 @@ module ibex_controller (
     input  logic                  debug_single_step_i,
     input  logic                  debug_ebreakm_i,
     input  logic                  debug_ebreaku_i,
+    input  logic                  trigger_match_i,
 
     output logic                  csr_save_if_o,
     output logic                  csr_save_id_o,
@@ -197,7 +199,9 @@ module ibex_controller (
   // instruction valid otherwise the core will immediately enter debug mode
   // due to a recently flushed IF (or a delay in an instruction returning from
   // memory) before it has had anything to single step.
-  assign enter_debug_mode = (debug_req_i | (debug_single_step_i & instr_valid_i)) & ~debug_mode_q;
+  // Also enter debug mode on a trigger match (hardware breakpoint)
+  assign enter_debug_mode = (debug_req_i | (debug_single_step_i & instr_valid_i) |
+                             trigger_match_i) & ~debug_mode_q;
 
   // Set when an ebreak should enter debug mode rather than jump to exception
   // handler
@@ -420,7 +424,7 @@ module ibex_controller (
       DBG_TAKEN_IF: begin
         // enter debug mode and save PC in IF to dpc
         // jump to debug exception handler in debug memory
-        if (debug_single_step_i || debug_req_i) begin
+        if (debug_single_step_i || debug_req_i || trigger_match_i) begin
           flush_id         = 1'b1;
           pc_mux_o         = PC_EXC;
           pc_set_o         = 1'b1;
@@ -430,7 +434,9 @@ module ibex_controller (
           debug_csr_save_o = 1'b1;
 
           csr_save_cause_o = 1'b1;
-          if (debug_single_step_i) begin
+          if (trigger_match_i) begin
+            debug_cause_o = DBG_CAUSE_TRIGGER;
+          end else if (debug_single_step_i) begin
             debug_cause_o = DBG_CAUSE_STEP;
           end else begin
             debug_cause_o = DBG_CAUSE_HALTREQ;
@@ -579,13 +585,16 @@ module ibex_controller (
 
       default: begin
         instr_req_o = 1'b0;
-        ctrl_fsm_ns = ctrl_fsm_e'(1'bX);
+        ctrl_fsm_ns = RESET;
       end
     endcase
   end
 
   // signal to CSR when in debug mode
   assign debug_mode_o = debug_mode_q;
+
+  // signal to CSR when in an NMI handler (for nested exception handling)
+  assign nmi_mode_o = nmi_mode_q;
 
   ///////////////////
   // Stall control //
@@ -626,5 +635,15 @@ module ibex_controller (
       illegal_insn_q <= illegal_insn_d;
     end
   end
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // Selectors must be known/valid.
+  `ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {
+      RESET, BOOT_SET, WAIT_SLEEP, SLEEP, FIRST_FETCH, DECODE, FLUSH,
+      IRQ_TAKEN, DBG_TAKEN_IF, DBG_TAKEN_ID
+      }, clk_i, !rst_ni)
 
 endmodule

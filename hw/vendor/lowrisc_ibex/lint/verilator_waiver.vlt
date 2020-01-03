@@ -49,12 +49,16 @@ lint_off -msg UNUSED -file "*/rtl/ibex_register_file_ff.sv" -lines 21
 // Signal is not used: clk_i
 // leaving clk and reset connected in-case we want to add assertions
 lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 15
+lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 14
+lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 21
 
 // Signal is not used: rst_ni
 // leaving clk and reset connected in-case we want to add assertions
 lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 16
+lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 15
+lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 22
 
 // Signal unoptimizable: Feedback to clock or circular logic:
 // ibex_core.cs_registers_i.mie_q
 // Issue lowrisc/ibex#212
-lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 164
+lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 167

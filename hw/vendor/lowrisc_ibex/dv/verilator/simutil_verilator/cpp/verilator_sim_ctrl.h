@@ -6,32 +6,15 @@
 #define VERILATOR_SIM_CTRL_H_
 
 #include <chrono>
-#include <functional>
-#include <map>
 #include <string>
+#include <vector>
 
-#include <verilated.h>
-
+#include "sim_ctrl_extension.h"
 #include "verilated_toplevel.h"
 
 enum VerilatorSimCtrlFlags {
   Defaults = 0,
   ResetPolarityNegative = 1,
-};
-
-// Callback function to be called every clock cycle
-// The parameter is simulation time
-typedef std::function<void(int /* sim time */)> SimCtrlCallBack;
-
-enum MemImageType {
-  kMemImageUnknown = 0,
-  kMemImageElf,
-  kMemImageVmem,
-};
-
-struct MemArea {
-  std::string name;      // Unique identifier
-  std::string location;  // Design scope location
 };
 
 /**
@@ -44,10 +27,10 @@ class VerilatorSimCtrl {
    *
    * @see SetTop()
    */
-  static VerilatorSimCtrl& GetInstance();
+  static VerilatorSimCtrl &GetInstance();
 
-  VerilatorSimCtrl(VerilatorSimCtrl const&) = delete;
-  void operator=(VerilatorSimCtrl const&) = delete;
+  VerilatorSimCtrl(VerilatorSimCtrl const &) = delete;
+  void operator=(VerilatorSimCtrl const &) = delete;
 
   /**
    * Set the top-level design
@@ -85,51 +68,6 @@ class VerilatorSimCtrl {
   void RunSimulation();
 
   /**
-   * Print help how to use this tool
-   */
-  void PrintHelp() const;
-
-  /**
-   * Run the main loop of the simulation
-   *
-   * This function blocks until the simulation finishes.
-   */
-  void Run();
-
-  /**
-   * Register a memory as instantiated by generic ram
-   *
-   * The |name| must be a unique identifier. The function will return false
-   * if |name| is already used. |location| is the path to the scope of the
-   * instantiated memory, which needs to support the DPI-C interfaces
-   * 'simutil_verilator_memload' and 'simutil_verilator_set_mem' used for
-   * 'vmem' and 'elf' files, respectively.
-   *
-   * Memories must be registered before command arguments are parsed by
-   * ParseCommandArgs() in order for them to be known.
-   */
-  bool RegisterMemoryArea(const std::string name, const std::string location);
-
-  /**
-   * Print a list of all registered memory regions
-   *
-   * @see RegisterMemoryArea()
-   */
-  void PrintMemRegions() const;
-
-  /**
-   * Get the current time in ticks
-   */
-  unsigned long GetTime() const { return time_; }
-
-  /**
-   * Get a name for this simulation
-   *
-   * This name is typically the name of the top-level.
-   */
-  std::string GetName() const;
-
-  /**
    * Get the simulation result
    */
   bool WasSimulationSuccessful() const { return simulation_success_; }
@@ -149,6 +87,71 @@ class VerilatorSimCtrl {
    * Request the simulation to stop
    */
   void RequestStop(bool simulation_success);
+
+  /**
+   * Register an extension to be called automatically
+   */
+  void RegisterExtension(SimCtrlExtension *ext);
+
+  /**
+   * Get the current time in ticks
+   */
+  unsigned long GetTime() const { return time_; }
+
+ private:
+  VerilatedToplevel *top_;
+  CData *sig_clk_;
+  CData *sig_rst_;
+  VerilatorSimCtrlFlags flags_;
+  unsigned long time_;
+  bool tracing_enabled_;
+  bool tracing_enabled_changed_;
+  bool tracing_ever_enabled_;
+  bool tracing_possible_;
+  unsigned int initial_reset_delay_cycles_;
+  unsigned int reset_duration_cycles_;
+  volatile unsigned int request_stop_;
+  volatile bool simulation_success_;
+  std::chrono::steady_clock::time_point time_begin_;
+  std::chrono::steady_clock::time_point time_end_;
+  VerilatedTracer tracer_;
+  int term_after_cycles_;
+  std::vector<SimCtrlExtension *> extension_array_;
+
+  /**
+   * Default constructor
+   *
+   * Use GetInstance() instead.
+   */
+  VerilatorSimCtrl();
+
+  /**
+   * Register the signal handler
+   */
+  void RegisterSignalHandler();
+
+  /**
+   * Signal handler callback
+   *
+   * Use RegisterSignalHandler() to setup.
+   */
+  static void SignalHandler(int sig);
+
+  /**
+   * Parse command line arguments
+   *
+   * Process all recognized command-line arguments from argc/argv.
+   *
+   * @param argc, argv Standard C command line arguments
+   * @param exit_app Indicate that program should terminate
+   * @return Return code, true == success
+   */
+  bool ParseCommandArgs(int argc, char **argv, bool &exit_app);
+
+  /**
+   * Print help how to use this tool
+   */
+  void PrintHelp() const;
 
   /**
    * Enable tracing (if possible)
@@ -195,91 +198,43 @@ class VerilatorSimCtrl {
   const char *GetTraceFileName() const;
 
   /**
-   * Set a callback function to run every cycle
+   * Run the main loop of the simulation
+   *
+   * This function blocks until the simulation finishes.
    */
-  void SetOnClockCallback(SimCtrlCallBack callback);
-
- private:
-  VerilatedToplevel *top_;
-  CData *sig_clk_;
-  CData *sig_rst_;
-  VerilatorSimCtrlFlags flags_;
-  unsigned long time_;
-  bool tracing_enabled_;
-  bool tracing_enabled_changed_;
-  bool tracing_ever_enabled_;
-  bool tracing_possible_;
-  unsigned int initial_reset_delay_cycles_;
-  unsigned int reset_duration_cycles_;
-  volatile unsigned int request_stop_;
-  volatile bool simulation_success_;
-  std::chrono::steady_clock::time_point time_begin_;
-  std::chrono::steady_clock::time_point time_end_;
-  VerilatedTracer tracer_;
-  std::map<std::string, MemArea> mem_register_;
-  int term_after_cycles_;
-  SimCtrlCallBack callback_;
+  void Run();
 
   /**
-   * Default constructor
+   * Get a name for this simulation
    *
-   * Use GetInstance() instead.
+   * This name is typically the name of the top-level.
    */
-  VerilatorSimCtrl();
+  std::string GetName() const;
 
   /**
-   * Register the signal handler
+   * Get the wallclock execution time in ms
    */
-  void RegisterSignalHandler();
-
-  /**
-   * Signal handler callback
-   *
-   * Use RegisterSignalHandler() to setup.
-   */
-  static void SignalHandler(int sig);
-
-  /**
-   * Parse command line arguments
-   *
-   * This removes all recognized command-line arguments from argc/argv.
-   *
-   * The return value of this method indicates if the program should exit with
-   * retcode: if this method returns true, do *not* exit; if it returns *false*,
-   * do exit.
-   */
-  bool ParseCommandArgs(int argc, char **argv, bool &exit_app);
-
-  /**
-   * Parse argument section specific to memory initialization.
-   *
-   * Must be in the form of: name,file[,type].
-   */
-  bool ParseMemArg(std::string mem_argument, std::string &name,
-                   std::string &filepath, MemImageType &type);
-  MemImageType DetectMemImageType(const std::string filepath);
-  MemImageType GetMemImageTypeByName(const std::string name);
-
   unsigned int GetExecutionTimeMs() const;
-  void SetReset();
-  void UnsetReset();
-  bool IsFileReadable(std::string filepath) const;
-  bool FileSize(std::string filepath, int &size_byte) const;
-  void Trace();
 
   /**
-   * Dump an ELF file into a raw binary
+   * Assert the reset signal
    */
-  bool ElfFileToBinary(const std::string &filepath, uint8_t **data,
-                       size_t &len_bytes) const;
+  void SetReset();
 
-  bool MemWrite(const std::string &name, const std::string &filepath);
-  bool MemWrite(const std::string &name, const std::string &filepath,
-                MemImageType type);
-  bool MemWrite(const MemArea &m, const std::string &filepath,
-                MemImageType type);
-  bool WriteElfToMem(const svScope &scope, const std::string &filepath);
-  bool WriteVmemToMem(const svScope &scope, const std::string &filepath);
+  /**
+   * Deassert the reset signal
+   */
+  void UnsetReset();
+
+  /**
+   * Return the size of a file
+   */
+  bool FileSize(std::string filepath, int &size_byte) const;
+
+  /**
+   * Perform tracing in Verilator if required
+   */
+  void Trace();
 };
 
 #endif  // VERILATOR_SIM_CTRL_H_

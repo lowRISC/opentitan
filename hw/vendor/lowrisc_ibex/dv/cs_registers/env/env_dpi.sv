@@ -15,7 +15,8 @@ package env_dpi;
 
   import "DPI-C"
   function void env_tick(
-    output bit stop_req);
+    output bit stop_req,
+    output bit test_passed);
 
 endpackage
 

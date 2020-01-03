@@ -7,6 +7,7 @@ description: "Ibex simulation for RISC-V compliance testing (using Verilator)"
 filesets:
   files_sim_verilator:
     depend:
+      - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:ibex:ibex_core_tracing
       - lowrisc:ibex:sim_shared

@@ -109,7 +109,7 @@ module ibex_if_stage #(
       EXC_PC_IRQ:     exc_pc = { csr_mtvec_i[31:8], 1'b0, irq_id[4:0], 2'b00 };
       EXC_PC_DBD:     exc_pc = DmHaltAddr;
       EXC_PC_DBG_EXC: exc_pc = DmExceptionAddr;
-      default:        exc_pc = 'X;
+      default:        exc_pc = { csr_mtvec_i[31:8], 8'h00                    };
     endcase
   end
 
@@ -121,7 +121,7 @@ module ibex_if_stage #(
       PC_EXC:  fetch_addr_n = exc_pc;                       // set PC to exception handler
       PC_ERET: fetch_addr_n = csr_mepc_i;                   // restore PC when returning from EXC
       PC_DRET: fetch_addr_n = csr_depc_i;
-      default: fetch_addr_n = 'X;
+      default: fetch_addr_n = { boot_addr_i[31:8], 8'h80 };
     endcase
   end
 
@@ -217,6 +217,9 @@ module ibex_if_stage #(
   logic        instr_is_compressed_int;
 
   ibex_compressed_decoder compressed_decoder_i (
+      .clk_i           ( clk_i                   ),
+      .rst_ni          ( rst_ni                  ),
+      .valid_i         ( fetch_valid             ),
       .instr_i         ( fetch_rdata             ),
       .instr_o         ( instr_decompressed      ),
       .is_compressed_o ( instr_is_compressed_int ),
@@ -255,26 +258,27 @@ module ibex_if_stage #(
   ////////////////
   // Assertions //
   ////////////////
-`ifndef VERILATOR
-  // boot address must be aligned to 256 bytes
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (boot_addr_i[7:0] == 8'h00)) else
-    $error("Provided boot address not aligned to 256 bytes");
 
-  // errors must only be sent together with rvalid
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (instr_err_i) |-> (instr_rvalid_i)) else
-    $display("Instruction error not sent with rvalid");
+  // Selectors must be known/valid.
+  `ASSERT_KNOWN(IbexExcPcMuxKnown, exc_pc_mux_i, clk_i, !rst_ni)
+  `ASSERT(IbexPcMuxValid, pc_mux_i inside {
+      PC_BOOT,
+      PC_JUMP,
+      PC_EXC,
+      PC_ERET,
+      PC_DRET
+      }, clk_i, !rst_ni)
 
-  // address must not contain X when request is sent
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (instr_req_o) |-> (!$isunknown(instr_addr_o))) else
-    $display("Instruction address not valid");
+  // Boot address must be aligned to 256 bytes.
+  `ASSERT(IbexBootAddrUnaligned, boot_addr_i[7:0] == 8'h00, clk_i, !rst_ni)
 
-  // address must be word aligned when request is sent
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (instr_req_o) |-> (instr_addr_o[1:0] == 2'b00)) else
-    $display("Instruction address not word aligned");
-`endif
+  // Errors must only be sent together with rvalid.
+  `ASSERT(IbexInstrErrWithoutRvalid, instr_err_i |-> instr_rvalid_i, clk_i, !rst_ni)
+
+  // Address must not contain X when request is sent.
+  `ASSERT(IbexInstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o), clk_i, !rst_ni)
+
+  // Address must be word aligned when request is sent.
+  `ASSERT(IbexInstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00), clk_i, !rst_ni)
 
 endmodule

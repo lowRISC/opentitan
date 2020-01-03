@@ -25,6 +25,12 @@ import time
 import yaml
 import logging
 
+from datetime import date
+
+RET_SUCCESS = 0
+RET_FAIL    = 1
+RET_FATAL   = -1
+
 def setup_logging(verbose):
   """Setup the root logger.
 
@@ -55,7 +61,7 @@ def read_yaml(yaml_file):
       yaml_data = yaml.safe_load(f)
     except yaml.YAMLError as exc:
       logging.error(exc)
-      sys.exit(1)
+      sys.exit(RET_FAIL)
   return yaml_data
 
 
@@ -72,7 +78,7 @@ def get_env_var(var):
     val = os.environ[var]
   except KeyError:
     logging.warning("Please set the environment variable %0s" % var)
-    sys.exit(1)
+    sys.exit(RET_FAIL)
   return val
 
 
@@ -87,11 +93,10 @@ def get_seed(seed):
   """
   if seed >= 0:
     return seed
-  else:
-    return random.getrandbits(32)
+  return random.getrandbits(32)
 
 
-def run_cmd(cmd, timeout_s = 999, exit_on_error = 1):
+def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True):
   """Run a command and return output
 
   Args:
@@ -108,9 +113,9 @@ def run_cmd(cmd, timeout_s = 999, exit_on_error = 1):
                           universal_newlines=True,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError as exc:
+  except subprocess.CalledProcessError:
     logging.error(ps.communicate()[0])
-    sys.exit(1)
+    sys.exit(RET_FAIL)
   try:
     output = ps.communicate(timeout = timeout_s)[0]
   except subprocess.TimeoutExpired:
@@ -118,17 +123,16 @@ def run_cmd(cmd, timeout_s = 999, exit_on_error = 1):
     output = ""
     ps.kill()
   rc = ps.returncode
-  if rc:
-    if rc > 0:
-      logging.info(output)
-      logging.error("ERROR return code: %d, cmd:%s" % (rc, cmd))
-      if exit_on_error:
-        sys.exit(1)
+  if rc and check_return_code and rc > 0:
+    logging.info(output)
+    logging.error("ERROR return code: %d/%d, cmd:%s" % (check_return_code, rc, cmd))
+    if exit_on_error:
+      sys.exit(RET_FAIL)
   logging.debug(output)
   return output
 
 
-def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0):
+def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0, check_return_code = True):
   """Run a list of commands in parallel
 
   Args:
@@ -155,12 +159,11 @@ def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0):
       logging.error("Timeout[%ds]: %s" % (timeout_s, cmd))
       children[i].kill()
     rc = children[i].returncode
-    if rc:
-      if rc > 0:
-        logging.info(output)
-        logging.error("ERROR return code: %d, cmd:%s" % (rc, cmd))
-        if exit_on_error:
-          sys.exit(1)
+    if rc and check_return_code and rc > 0:
+      logging.info(output)
+      logging.error("ERROR return code: %d, cmd:%s" % (rc, cmd))
+      if exit_on_error:
+        sys.exit(RET_FAIL)
     # Restore stty setting otherwise the terminal may go crazy
     os.system("stty sane")
     logging.debug(output)
@@ -180,15 +183,30 @@ def process_regression_list(testlist, test, iterations, matched_list, riscv_dv_r
   """
   logging.info("Processing regression test list : %s, test: %s" % (testlist, test))
   yaml_data = read_yaml(testlist)
+  mult_test = test.split(',')
   for entry in yaml_data:
     if 'import' in entry:
       sub_list = re.sub('<riscv_dv_root>', riscv_dv_root, entry['import'])
       process_regression_list(sub_list, test, iterations, matched_list, riscv_dv_root)
     else:
-      if (entry['test'] == test) or (test == "all"):
+      if (entry['test'] in mult_test) or (test == "all"):
         if (iterations > 0 and  entry['iterations'] > 0):
           entry['iterations'] = iterations
         if entry['iterations'] > 0:
           logging.info("Found matched tests: %s, iterations:%0d" %
                       (entry['test'], entry['iterations']))
           matched_list.append(entry)
+
+def create_output(output, prefix = "out_"):
+  """ Create output directory
+
+  Args:
+    output : Name of specified output directory
+
+  Returns:
+    Output directory
+  """
+  # Create output directory
+  if output is None:
+    return prefix + str(date.today())
+  return output

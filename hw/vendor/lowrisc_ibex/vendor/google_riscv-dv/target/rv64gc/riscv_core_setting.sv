@@ -32,7 +32,6 @@ riscv_instr_name_t unsupported_instr[];
 // ISA supported by the processor
 riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV64I, RV64M, RV32C, RV64C, RV32A, RV64A,
                                         RV32F, RV64F, RV32D, RV64D};
-
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 
@@ -48,6 +47,9 @@ bit support_umode_trap = 0;
 
 // Support sfence.vma instruction
 bit support_sfence = 1;
+
+// Support unaligned load/store
+bit support_unaligned_load_store = 1'b1;
 
 // ----------------------------------------------------------------------------
 // Previleged CSR implementation

@@ -40,6 +40,11 @@ please:
 When contributing SystemVerilog source code, please try to be consistent and adhere to [our Verilog
 coding style guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 
+When contributing C or C++ source code, please try to adhere to [the OpenTitan C++ coding style
+guide](https://docs.opentitan.org/doc/rm/c_cpp_coding_style/).
+All C and C++ code should be formatted with clang-format before committing.
+Either run `clang-format -i filename.cc` or `git clang-format` on added files.
+
 To get started, please check out the ["Good First Issue"
  list](https://github.com/lowrisc/ibex/issues?q=is%3Aissue+is%3Aopen+label%3A%22Good+First+Issue%22).
 

@@ -112,7 +112,6 @@ def process_spike_sim_log(spike_log, csv, full_trace = 0):
 
 
 def main():
-  instr_trace = []
   # Parse input arguments
   parser = argparse.ArgumentParser()
   parser.add_argument("--log", type=str, help="Input spike simulation log")

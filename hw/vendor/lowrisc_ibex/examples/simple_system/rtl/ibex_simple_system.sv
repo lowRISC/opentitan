@@ -21,10 +21,7 @@ module ibex_simple_system (
   parameter bit RV32E = 0;
   parameter bit RV32M = 1;
 
-  logic clk_sys, rst_sys_n;
-
-  assign clk_sys = IO_CLK;
-  assign rst_sys_n = IO_RST_N;
+  logic clk_sys = 1'b0, rst_sys_n;
 
   typedef enum {
     CoreD,
@@ -68,6 +65,22 @@ module ibex_simple_system (
   assign cfg_device_addr_base[SimCtrl] = 32'h20000;
   assign cfg_device_addr_mask[SimCtrl] = ~32'h3FF; // 1 kB
 
+
+  `ifdef VERILATOR
+    assign clk_sys = IO_CLK;
+    assign rst_sys_n = IO_RST_N;
+  `else
+    initial begin
+      rst_sys_n = 1'b0;
+      device_err = '{default:1'b0};
+      #8
+      rst_sys_n = 1'b1;
+    end
+    always begin
+      #1 clk_sys = 1'b0;
+      #1 clk_sys = 1'b1;
+    end
+  `endif
 
   bus #(
     .NrDevices   (NrDevices),
