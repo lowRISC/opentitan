@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv_verilator:memutil_verilator"
+description: "Verilator memory utilities"
+filesets:
+  files_cpp:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - cpp/verilator_memutil.cc
+      - cpp/verilator_memutil.h: { is_include_file: true }
+    file_type: cppSource
+
+targets:
+  default:
+    filesets:
+      - files_cpp

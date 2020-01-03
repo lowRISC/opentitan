@@ -59,7 +59,6 @@
     +directed_instr_4=riscv_multi_page_load_store_instr_stream,4
     +directed_instr_5=riscv_mem_region_stress_test,4
     +directed_instr_6=riscv_jal_instr,4
-    +directed_instr_7=riscv_load_store_rand_addr_instr_stream,4
   rtl_test: core_base_test
 
 - test: riscv_jump_stress_test
@@ -91,7 +90,7 @@
   gen_test: riscv_instr_base_test
   gen_opts: >
     +instr_cnt=10000
-    +num_of_sub_program=20
+    +num_of_sub_program=10
     +directed_instr_0=riscv_load_store_rand_instr_stream,8
   rtl_test: core_base_test
 
@@ -151,10 +150,8 @@
   gen_opts: >
     +instr_cnt=6000
     +no_ebreak=0
-    +require_signature_addr=1
   rtl_test: core_base_test
   sim_opts: >
-    +require_signature_addr=1
     +enable_debug_seq=1
   compare_opts: >
     +compare_final_value_only=1
@@ -166,11 +163,9 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +enable_interrupt=1
-    +require_signature_addr=1
   rtl_test: core_base_test
   sim_opts: >
     +enable_irq_seq=1
-    +require_signature_addr=1
   compare_opts: >
     +compare_final_value_only=1
 

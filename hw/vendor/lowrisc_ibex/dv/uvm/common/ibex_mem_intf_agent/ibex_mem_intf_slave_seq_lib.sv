@@ -16,6 +16,7 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
   // Used to ensure that whenever inject_error() is called, the very next transaction will inject an
   // error, and that enable_error will not be flipped back to 0 immediately
   bit                     error_synch = 1'b1;
+  bit                     is_dmem_seq = 1'b0;
 
   `uvm_object_utils(ibex_mem_intf_slave_seq)
   `uvm_declare_p_sequencer(ibex_mem_intf_slave_sequencer)
@@ -24,10 +25,12 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
   virtual task body();
     if(m_mem ==  null)
       `uvm_fatal(get_full_name(), "Cannot get memory model")
+    `uvm_info(`gfn, $sformatf("is_dmem_seq: 0x%0x", is_dmem_seq), UVM_LOW)
     forever
     begin
       bit [ADDR_WIDTH-1:0] aligned_addr;
       bit [DATA_WIDTH-1:0] rand_data;
+      bit [DATA_WIDTH-1:0] read_data;
       p_sequencer.addr_ph_port.get(item);
       req = ibex_mem_intf_seq_item::type_id::create("req");
       error_synch = 1'b0;
@@ -37,10 +40,10 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
         data       == item.data;
         be         == item.be;
         rvalid_delay dist {
-          min_rvalid_delay                            :/ 5,
-          [min_rvalid_delay+1 : max_rvalid_delay/2-1] :/ 3,
-          [max_rvalid_delay/2 : max_rvalid_delay-1]   :/ 1,
-          max_rvalid_delay                            :/ 1
+          min_rvalid_delay                                  :/ 5,
+          [min_rvalid_delay + 1 : max_rvalid_delay / 2 - 1] :/ 3,
+          [max_rvalid_delay / 2 : max_rvalid_delay - 1]     :/ 1,
+          max_rvalid_delay                                  :/ 1
         };
         error == enable_error;
       }) begin
@@ -54,7 +57,16 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
         req.data = rand_data;
       end else begin
         if(req.read_write == READ) begin : READ_block
-          req.data = m_mem.read(aligned_addr);
+          if (is_dmem_seq) begin
+            for (int i = DATA_WIDTH / 8 - 1; i >= 0; i--) begin
+              read_data = read_data << 8;
+              if (req.be[i])
+                read_data[7:0] = m_mem.read_byte(aligned_addr + i);
+            end
+            req.data = read_data;
+          end else begin
+            req.data = m_mem.read(aligned_addr);
+          end
         end
       end
       `uvm_info(get_full_name(), $sformatf("Response transfer:\n%0s", req.sprint()), UVM_HIGH)
@@ -63,8 +75,8 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       if(item.read_write == WRITE) begin : WRITE_block
         bit [DATA_WIDTH-1:0] data;
         data = req.data;
-        for(int i = 0; i < DATA_WIDTH/8; i++) begin
-          if(req.be[i])
+        for (int i = 0; i < DATA_WIDTH / 8; i++) begin
+          if (req.be[i])
             m_mem.write_byte(aligned_addr + i, data[7:0]);
           data = data >> 8;
         end

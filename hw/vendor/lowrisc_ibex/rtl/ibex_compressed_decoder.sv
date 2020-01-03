@@ -7,9 +7,13 @@
  * Compressed instruction decoder
  *
  * Decodes RISC-V compressed instructions into their RV32 equivalent.
- * This module is fully combinatorial.
+ * This module is fully combinatorial, clock and reset are used for
+ * assertions only.
  */
 module ibex_compressed_decoder (
+    input  logic        clk_i,
+    input  logic        rst_ni,
+    input  logic        valid_i,
     input  logic [31:0] instr_i,
     output logic [31:0] instr_o,
     output logic        is_compressed_o,
@@ -17,14 +21,21 @@ module ibex_compressed_decoder (
 );
   import ibex_pkg::*;
 
+  // valid_i indicates if instr_i is valid and is used for assertions only.
+  // The following signal is used to avoid possible lint errors.
+  logic unused_valid;
+  assign unused_valid = valid_i;
+
   ////////////////////////
   // Compressed decoder //
   ////////////////////////
 
   always_comb begin
+    // By default, forward incoming instruction, mark it as legal.
+    instr_o         = instr_i;
     illegal_instr_o = 1'b0;
-    instr_o         = 'X;
 
+    // Check if incoming instruction is compressed.
     unique case (instr_i[1:0])
       // C0
       2'b00: begin
@@ -47,6 +58,14 @@ module ibex_compressed_decoder (
             instr_o = {5'b0, instr_i[5], instr_i[12], 2'b01, instr_i[4:2],
                        2'b01, instr_i[9:7], 3'b010, instr_i[11:10], instr_i[6],
                        2'b00, {OPCODE_STORE}};
+          end
+
+          3'b001,
+          3'b011,
+          3'b100,
+          3'b101,
+          3'b111: begin
+            illegal_instr_o = 1'b1;
           end
 
           default: begin
@@ -152,13 +171,13 @@ module ibex_compressed_decoder (
                   end
 
                   default: begin
-                    illegal_instr_o = 1'bX;
+                    illegal_instr_o = 1'b1;
                   end
                 endcase
               end
 
               default: begin
-                illegal_instr_o = 1'bX;
+                illegal_instr_o = 1'b1;
               end
             endcase
           end
@@ -172,7 +191,7 @@ module ibex_compressed_decoder (
           end
 
           default: begin
-            illegal_instr_o = 1'bX;
+            illegal_instr_o = 1'b1;
           end
         endcase
       end
@@ -240,18 +259,39 @@ module ibex_compressed_decoder (
           end
 
           default: begin
-            illegal_instr_o = 1'bX;
+            illegal_instr_o = 1'b1;
           end
         endcase
       end
 
+      // Incoming instruction is not compressed.
+      2'b11:;
+
       default: begin
-        // 32 bit (or more) instruction
-        instr_o = instr_i;
+        illegal_instr_o = 1'b1;
       end
     endcase
   end
 
   assign is_compressed_o = (instr_i[1:0] != 2'b11);
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // Selectors must be known/valid.
+  `ASSERT(IbexInstrLSBsKnown, valid_i |->
+      !$isunknown(instr_i[1:0]), clk_i, !rst_ni)
+  `ASSERT(IbexC0Known1, (valid_i && (instr_i[1:0] == 2'b00)) |->
+      !$isunknown(instr_i[15:13]), clk_i, !rst_ni)
+  `ASSERT(IbexC1Known1, (valid_i && (instr_i[1:0] == 2'b01)) |->
+      !$isunknown(instr_i[15:13]), clk_i, !rst_ni)
+  `ASSERT(IbexC1Known2, (valid_i && (instr_i[1:0] == 2'b01) && (instr_i[15:13] == 3'b100)) |->
+      !$isunknown(instr_i[11:10]), clk_i, !rst_ni)
+  `ASSERT(IbexC1Known3, (valid_i &&
+      (instr_i[1:0] == 2'b01) && (instr_i[15:13] == 3'b100) && (instr_i[11:10] == 2'b11)) |->
+      !$isunknown({instr_i[12], instr_i[6:5]}), clk_i, !rst_ni)
+  `ASSERT(IbexC2Known1, (valid_i && (instr_i[1:0] == 2'b10)) |->
+      !$isunknown(instr_i[15:13]), clk_i, !rst_ni)
 
 endmodule

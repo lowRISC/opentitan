@@ -76,7 +76,7 @@ lint-core-tracing:
 # Use the following targets:
 # - "build-csr-test"
 # - "run-csr-test"
-.PHONY: build-cs-registers
+.PHONY: build-csr-test
 build-csr-test:
 	fusesoc --cores-root=. run --target=sim --setup --build \
 	      --tool=verilator lowrisc:ibex:tb_cs_registers
@@ -87,7 +87,7 @@ $(Vtb_cs_registers):
 	@echo "Run \"make build-csr-test\" to create the dependency"
 	@false
 
-.PHONY: run-cs-registers
+.PHONY: run-csr-test
 run-csr-test: | $(Vtb_cs_registers)
 	fusesoc --cores-root=. run --target=sim --run \
 	      --tool=verilator lowrisc:ibex:tb_cs_registers

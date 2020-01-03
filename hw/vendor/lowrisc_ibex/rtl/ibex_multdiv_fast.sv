@@ -238,7 +238,7 @@ module ibex_multdiv_fast (
       end
 
       default: begin
-        md_state_n = md_fsm_e'(1'bX);
+        md_state_n = MD_IDLE;
       end
     endcase // md_state_q
   end
@@ -318,9 +318,15 @@ module ibex_multdiv_fast (
         mult_valid   = 1'b1;
       end
       default: begin
-        mult_state_n = mult_fsm_e'(1'bX);
+        mult_state_n = ALBL;
       end
     endcase // mult_state_q
   end
+
+  // States must be knwon/valid.
+  `ASSERT(IbexMultDivStateValid, md_state_q inside {
+      MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
+      }, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q, clk_i, !rst_ni)
 
 endmodule // ibex_mult

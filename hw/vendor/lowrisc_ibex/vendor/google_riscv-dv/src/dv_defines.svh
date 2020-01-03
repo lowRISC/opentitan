@@ -67,3 +67,11 @@
   `define DV_CHECK_STD_RANDOMIZE_WITH_FATAL(VAR_, WITH_C_,MSG_="Randomization failed!",ID_=`gfn) \
     `DV_CHECK_FATAL(std::randomize(VAR_), MSG_, ID_, with { WITH_C_ })
 `endif
+
+// for vector processing
+`ifndef VECTOR_INCLUDE
+  `define VECTOR_INCLUDE(VCE_INC) \
+    `ifdef ENABLE_VECTORS \
+      `include VCE_INC \
+    `endif
+`endif

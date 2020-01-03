@@ -29,3 +29,7 @@ void RegisterEnvironment::OnFinal() {
 void RegisterEnvironment::GetStopReq(unsigned char *stop_req) {
   *stop_req = simctrl_->StopRequested();
 }
+
+void RegisterEnvironment::GetTestPass(unsigned char *test_passed) {
+  *test_passed = simctrl_->TestPassed();
+}

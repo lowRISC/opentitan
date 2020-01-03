@@ -116,14 +116,6 @@ class riscv_instr_gen_config extends uvm_object;
   // Number of instructions for each kernel program
   int kernel_program_instr_cnt = 400;
 
-  //-----------------------------------------------------------------------------
-  // Instruction list based on the config, generate by build_instruction_template
-  //-----------------------------------------------------------------------------
-  riscv_instr_base       instr_template[riscv_instr_name_t];
-  riscv_instr_name_t     basic_instr[$];
-  riscv_instr_name_t     instr_group[riscv_instr_group_t][$];
-  riscv_instr_name_t     instr_category[riscv_instr_category_t][$];
-
   // Queue of all the main implemented CSRs that the boot privilege mode cannot access
   // e.g. these CSRs are in higher privilege modes - access should raise an exception
   privileged_reg_t       invalid_priv_mode_csrs[$];
@@ -157,6 +149,7 @@ class riscv_instr_gen_config extends uvm_object;
   string                 asm_test_suffix;
   // Enable interrupt bit in MSTATUS (MIE, SIE, UIE)
   bit                    enable_interrupt;
+  bit                    enable_nested_interrupt;
   // We need a separate control knob for enabling timer interrupts, as Spike
   // throws an exception if xIE.xTIE is enabled
   bit                    enable_timer_irq;
@@ -390,8 +383,54 @@ class riscv_instr_gen_config extends uvm_object;
   }
 
   `uvm_object_utils_begin(riscv_instr_gen_config)
-    `uvm_field_int(main_program_instr_cnt,       UVM_DEFAULT)
+    `uvm_field_int(main_program_instr_cnt, UVM_DEFAULT)
     `uvm_field_sarray_int(sub_program_instr_cnt, UVM_DEFAULT)
+    `uvm_field_int(debug_program_instr_cnt, UVM_DEFAULT)
+    `uvm_field_enum(data_pattern_t, data_page_pattern, UVM_DEFAULT)
+    `uvm_field_enum(privileged_mode_t, init_privileged_mode, UVM_DEFAULT)
+    `uvm_field_array_enum(riscv_reg_t, reserved_regs, UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, ra, UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, sp, UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, tp, UVM_DEFAULT)
+    `uvm_field_int(no_data_page, UVM_DEFAULT)
+    `uvm_field_int(no_branch_jump, UVM_DEFAULT)
+    `uvm_field_int(no_load_store, UVM_DEFAULT)
+    `uvm_field_int(no_csr_instr, UVM_DEFAULT)
+    `uvm_field_int(no_ebreak, UVM_DEFAULT)
+    `uvm_field_int(no_dret, UVM_DEFAULT)
+    `uvm_field_int(no_fence, UVM_DEFAULT)
+    `uvm_field_int(no_wfi, UVM_DEFAULT)
+    `uvm_field_int(enable_unaligned_load_store, UVM_DEFAULT)
+    `uvm_field_int(illegal_instr_ratio, UVM_DEFAULT)
+    `uvm_field_int(hint_instr_ratio, UVM_DEFAULT)
+    `uvm_field_string(boot_mode_opts, UVM_DEFAULT)
+    `uvm_field_int(enable_page_table_exception, UVM_DEFAULT)
+    `uvm_field_int(no_directed_instr, UVM_DEFAULT)
+    `uvm_field_int(enable_interrupt, UVM_DEFAULT)
+    `uvm_field_int(enable_timer_irq, UVM_DEFAULT)
+    `uvm_field_int(bare_program_mode, UVM_DEFAULT)
+    `uvm_field_int(enable_illegal_csr_instruction, UVM_DEFAULT)
+    `uvm_field_int(enable_access_invalid_csr_level, UVM_DEFAULT)
+    `uvm_field_int(enable_dummy_csr_write, UVM_DEFAULT)
+    `uvm_field_int(randomize_csr, UVM_DEFAULT)
+    `uvm_field_int(allow_sfence_exception, UVM_DEFAULT)
+    `uvm_field_int(no_delegation, UVM_DEFAULT)
+    `uvm_field_int(force_m_delegation, UVM_DEFAULT)
+    `uvm_field_int(force_s_delegation, UVM_DEFAULT)
+    `uvm_field_int(support_supervisor_mode, UVM_DEFAULT)
+    `uvm_field_int(disable_compressed_instr, UVM_DEFAULT)
+    `uvm_field_int(signature_addr, UVM_DEFAULT)
+    `uvm_field_int(require_signature_addr, UVM_DEFAULT)
+    `uvm_field_int(gen_debug_section, UVM_DEFAULT)
+    `uvm_field_int(enable_ebreak_in_debug_rom, UVM_DEFAULT)
+    `uvm_field_int(set_dcsr_ebreak, UVM_DEFAULT)
+    `uvm_field_int(num_debug_sub_program, UVM_DEFAULT)
+    `uvm_field_int(enable_debug_single_step, UVM_DEFAULT)
+    `uvm_field_int(single_step_iterations, UVM_DEFAULT)
+    `uvm_field_int(set_mstatus_tw, UVM_DEFAULT)
+    `uvm_field_int(max_branch_step, UVM_DEFAULT)
+    `uvm_field_int(max_directed_instr_stream_seq, UVM_DEFAULT)
+    `uvm_field_int(enable_floating_point, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new (string name = "");
@@ -402,6 +441,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_int_arg_value("+num_of_tests=", num_of_tests);
     get_int_arg_value("+enable_page_table_exception=", enable_page_table_exception);
     get_bool_arg_value("+enable_interrupt=", enable_interrupt);
+    get_bool_arg_value("+enable_nested_interrupt=", enable_nested_interrupt);
     get_bool_arg_value("+enable_timer_irq=", enable_timer_irq);
     get_int_arg_value("+num_of_sub_program=", num_of_sub_program);
     get_int_arg_value("+instr_cnt=", instr_cnt);
@@ -539,6 +579,10 @@ class riscv_instr_gen_config extends uvm_object;
     min_stack_len_per_program = 2 * (XLEN/8);
     // Check if the setting is legal
     check_setting();
+    // WFI is not supported in umode
+    if (init_privileged_mode == USER_MODE) begin
+      no_wfi = 1'b1;
+    end
   endfunction
 
   function void check_setting();
@@ -569,7 +613,8 @@ class riscv_instr_gen_config extends uvm_object;
   // TODO(udi) - include performance/pmp/trigger CSRs?
   virtual function void get_invalid_priv_lvl_csr();
     string invalid_lvl[$];
-    string csr;
+    string csr_name;
+    privileged_reg_t csr;
     // Debug CSRs are inaccessible from all but Debug Mode, and we cannot boot into Debug Mode
     invalid_lvl.push_back("D");
     case (init_privileged_mode)
@@ -587,8 +632,9 @@ class riscv_instr_gen_config extends uvm_object;
       end
     endcase
     foreach (implemented_csr[i]) begin
-      csr = implemented_csr[i].name();
-      if (csr[0] inside {invalid_lvl}) begin
+      privileged_reg_t csr = implemented_csr[i];
+      csr_name = csr.name();
+      if (csr_name[0] inside {invalid_lvl}) begin
         invalid_priv_mode_csrs.push_back(implemented_csr[i]);
       end
     end
@@ -616,75 +662,6 @@ class riscv_instr_gen_config extends uvm_object;
     if(inst.get_arg_value(cmdline_str, s)) begin
       val = s.atohex();
     end
-  endfunction
-
-  // Build instruction template
-  virtual function void build_instruction_template(bit skip_instr_exclusion = 0);
-    riscv_instr_name_t instr_name;
-    riscv_instr_name_t excluded_instr[$];
-    excluded_instr = {INVALID_INSTR};
-    if (!skip_instr_exclusion) begin
-      get_excluded_instr(excluded_instr);
-    end
-    instr_name = instr_name.first;
-    do begin
-      riscv_instr_base instr;
-      if (!(instr_name inside {unsupported_instr, excluded_instr})) begin
-        instr = riscv_instr_base::type_id::create("instr");
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(instr, instr_name == local::instr_name;)
-        if ((instr.group inside {supported_isa}) &&
-            !(disable_compressed_instr && instr.is_compressed) &&
-            !(!enable_floating_point && (instr.group inside {RV32F, RV64F, RV32D, RV64D}))) begin
-          `uvm_info(`gfn, $sformatf("Adding [%s] %s to the list",
-                          instr.group.name(), instr.instr_name.name()), UVM_HIGH)
-          instr_group[instr.group].push_back(instr_name);
-          instr_category[instr.category].push_back(instr_name);
-          instr_template[instr_name] = instr;
-        end
-      end
-      instr_name = instr_name.next;
-    end
-    while (instr_name != instr_name.first);
-  endfunction
-
-  virtual function void build_instruction_list();
-    basic_instr = {instr_category[SHIFT], instr_category[ARITHMETIC],
-                   instr_category[LOGICAL], instr_category[COMPARE]};
-    basic_instr = {basic_instr, EBREAK};
-    foreach(riscv_instr_pkg::supported_isa[i]) begin
-      if (riscv_instr_pkg::supported_isa[i] inside {RV32C, RV64C, RV128C, RV32DC, RV32FC}) begin
-        basic_instr = {basic_instr, C_EBREAK};
-        break;
-      end
-    end
-    if (no_dret == 0) begin
-      basic_instr = {basic_instr, DRET};
-    end
-    if (no_fence == 0) begin
-      basic_instr = {basic_instr, instr_category[SYNCH]};
-    end
-    // TODO: Support CSR instruction in other mode
-    if ((no_csr_instr == 0) && (init_privileged_mode == MACHINE_MODE)) begin
-      `uvm_info(`gfn, $sformatf("Adding CSR instr, mode: %0s", init_privileged_mode.name()), UVM_LOW)
-      basic_instr = {basic_instr, instr_category[CSR]};
-    end
-    if (no_wfi == 0) begin
-      basic_instr = {basic_instr, WFI};
-    end
-  endfunction
-
-  virtual function void get_excluded_instr(ref riscv_instr_name_t excluded[$]);
-    // Below instrutions will modify stack pointer, not allowed in normal instruction stream.
-    // It can be used in stack operation instruction stream.
-    excluded = {excluded, C_SWSP, C_SDSP, C_ADDI16SP};
-    if (!enable_sfence) begin
-      excluded = {excluded, SFENCE_VMA};
-    end
-    if (no_fence) begin
-      excluded = {excluded, FENCE, FENCE_I, SFENCE_VMA};
-    end
-    // TODO: Support C_ADDI4SPN
-    excluded = {excluded, C_ADDI4SPN};
   endfunction
 
 endclass

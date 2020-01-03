@@ -15,6 +15,7 @@ module ibex_core_tracing #(
     parameter bit          RV32E                    = 1'b0,
     parameter bit          RV32M                    = 1'b1,
     parameter              MultiplierImplementation = "fast",
+    parameter bit          DbgTriggerEn             = 1'b0,
     parameter int unsigned DmHaltAddr               = 32'h1A110800,
     parameter int unsigned DmExceptionAddr          = 32'h1A110808
 ) (
@@ -98,6 +99,7 @@ module ibex_core_tracing #(
     .MHPMCounterWidth         ( MHPMCounterWidth         ),
     .RV32E                    ( RV32E                    ),
     .RV32M                    ( RV32M                    ),
+    .DbgTriggerEn             ( DbgTriggerEn             ),
     .MultiplierImplementation ( MultiplierImplementation ),
     .DmHaltAddr               ( DmHaltAddr               ),
     .DmExceptionAddr          ( DmExceptionAddr          )

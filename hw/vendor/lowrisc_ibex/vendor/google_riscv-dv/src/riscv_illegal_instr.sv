@@ -281,6 +281,9 @@ class riscv_illegal_instr extends uvm_object;
     if (!compressed) {
       if (exception == kIllegalFunc7) {
         !(func7 inside {7'b0, 7'b0100000, 7'b1});
+        if (opcode == 7'b001001) { // SLLI, SRLI, SRAI
+          !(func7[6:1] inside {6'b0, 6'b010000});
+        }
       } else {
         func7 inside {7'b0, 7'b0100000, 7'b1};
       }

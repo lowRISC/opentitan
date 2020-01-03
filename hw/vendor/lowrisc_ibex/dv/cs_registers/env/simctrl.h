@@ -10,6 +10,7 @@ class SimCtrl {
   SimCtrl();
   void RequestStop(bool success);
   bool StopRequested();
+  bool TestPassed();
   void OnFinal();
 
  private:

@@ -11,6 +11,7 @@ class core_ibex_base_test extends uvm_test;
   virtual core_ibex_csr_if                        csr_vif;
   mem_model_pkg::mem_model                        mem;
   core_ibex_vseq                                  vseq;
+  bit                                             enable_irq_seq;
   int unsigned                                    timeout_in_cycles = 10000000;
   // If no signature_addr handshake functionality is desired between the testbench and the generated
   // code, the test will wait for the specifield number of cycles before starting stimulus
@@ -59,12 +60,11 @@ class core_ibex_base_test extends uvm_test;
     super.connect_phase(phase);
     env.data_if_slave_agent.monitor.item_collected_port.connect(
       this.item_collected_port.analysis_export);
-    if (cfg.enable_irq_seq) begin
-      env.irq_agent.monitor.irq_port.connect(this.irq_collected_port.analysis_export);
-    end
+    env.irq_agent.monitor.irq_port.connect(this.irq_collected_port.analysis_export);
   endfunction
 
   virtual task run_phase(uvm_phase phase);
+    enable_irq_seq = cfg.enable_irq_single_seq || cfg.enable_irq_multiple_seq;
     phase.raise_objection(this);
     run = phase;
     dut_vif.fetch_enable = 1'b0;
@@ -192,8 +192,8 @@ class core_ibex_base_test extends uvm_test;
       begin : wait_timeout
         clk_vif.wait_clks(timeout);
         `uvm_fatal(`gfn,
-                   $sformatf("Did not receive core_status 0x%0x within %0d cycle timeout period",
-                   core_status, timeout))
+                   $sformatf("Did not receive core_status %0s within %0d cycle timeout period",
+                   core_status.name(), timeout))
       end
     join_any
     // Will only get here if we successfully beat the timeout period

@@ -9,6 +9,7 @@ The performance counters are placed inside the Control and Status Registers (CSR
 Ibex implements the clock cycle counter ``mcycle(h)``, the retired instruction counter ``minstret(h)``, as well as the 29 event counters ``mhpmcounter3(h)`` - ``mhpmcounter31(h)`` and the corresponding event selector CSRs ``mhpmevent3`` - ``mhpmevent31``, and the ``mcountinhibit`` CSR to individually enable/disable the counters.
 ``mcycle(h)`` and ``minstret(h)`` are always available and 64 bit wide.
 The ``mhpmcounter`` performance counters are optional (unavailable by default) and parametrizable in width.
+To ensure that the ``mhpmcounter`` registers are optimized away when not required, some synthesis tools might need extra settings (e.g. increasing the "effort" to high).
 
 Event Selector
 --------------

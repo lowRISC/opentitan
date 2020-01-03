@@ -37,8 +37,8 @@ class TestCoreVerilator:
     def sim_top_earlgrey(self, tmp_path, sim_top_build, sw_test_bin, rom_bin):
         cmd_sim = [
             str(sim_top_build),
-            '--meminit', 'flash,' + str(sw_test_bin),
-            '--meminit', 'rom,' + str(rom_bin)
+            '--meminit=flash,' + str(sw_test_bin),
+            '--meminit=rom,' + str(rom_bin)
         ]
         p_sim = test_utils.Process(
             cmd_sim,

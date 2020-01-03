@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv_dpi:gpiodpi
       - lowrisc:dv_dpi:jtagdpi
       - lowrisc:dv_dpi:spidpi
+      - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:ibex:ibex_tracer
 

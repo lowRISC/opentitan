@@ -23,6 +23,14 @@ A CSR test generation script written in Python is also provided, to generate a
 directed test suite that stresses all CSR instructions on all of the CSRs that
 the core implements.
 
+## External contributions and collaborations
+
+This repository is still under active development. We hope the RISC-V processor
+verification platform development to be a collaborative effort of the RISC-V
+community. Free feel to submit issues, feature requests, pull requests through
+Github. You can also send your private collaboration request to [riscv_dv_dev@google.com](riscv_dv_dev@google.com). 
+Please refer to CONTRIBUTING.md for license related questions.
+
 ## Getting Started
 
 ### Prerequisites
@@ -32,10 +40,10 @@ which supports SystemVerilog and UVM 1.2. This generator has been verified with
 Synopsys VCS, Cadence Incisive/Xcelium, and Mentor Questa simulators. Please
 make sure the EDA tool environment is properly setup before running the generator.
 
-Install YAML python package:
+Install dependencies needed for running:
 
 ```bash
-pip3 install PyYAML
+pip3 install -r requirements.txt
 ```
 
 ### Setup RISCV-GCC compiler toolchain
@@ -101,8 +109,9 @@ python3 run.py --test riscv_arithmetic_basic_test --simulator ius
 python3 run.py --test riscv_arithmetic_basic_test --simulator vcs
 python3 run.py --test riscv_arithmetic_basic_test --simulator questa
 python3 run.py --test riscv_arithmetic_basic_test --simulator dsim
+python3 run.py --test riscv_arithmetic_basic_test --simulator qrun
 ```
-The complete test list can be found in [yaml/testlist.yaml](https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml). To run a full
+The complete test list can be found in [yaml/base_testlist.yaml](https://github.com/google/riscv-dv/blob/master/yaml/base_testlist.yaml). To run a full
 regression, simply use below command
 
 ```bash
@@ -120,6 +129,9 @@ Here's a few more examples of the run command:
 ```bash
 # Run a single test 10 times
 python3 run.py --test riscv_arithmetic_basic_test --iterations 10
+
+# Run multiple tests
+python3 run.py --test riscv_arithmetic_basic_test,riscv_rand_instr_test
 
 # Run a test with verbose logging
 python3 run.py --test riscv_arithmetic_basic_test --verbose
@@ -373,16 +385,6 @@ matching rv32/rv64/rv128 entry and fill in the appropriate CSR field entries.
 
 ### Privileged CSR Test Generation (optional)
 
-To be able to run the CSR generation script, the open-source `bitstring`
-Python library is required ([bitstring](https://github.com/scott-griffiths/bitstring)).
-To install this library, either clone the repository and run the `setup.py`
-setup script, or run only one of the below commands:
-
-```bash
-sudo apt-get install python3-bitstring (or your OS-specific package manager)
-pip install bitstring
-```
-
 The CSR generation script is located at
 [scripts/gen_csr_test.py](https://github.com/google/riscv-dv/blob/master/scripts/gen_csr_test.py).
 The CSR test code that this script generates will execute every CSR instruction
@@ -446,9 +448,13 @@ upstream changes to a minimum.
   different directory, you can use "-ext <user_extension_path>" to override the
   user extension path.
 - Create a new target directory and customize the setting and testlist
-- Run the generator with "--custom_target <target_dir> --isa <isa> --mabi <mabi>"
+- Run the generator with `--custom_target <target_dir> --isa <isa> --mabi <mabi>`
 - Use command line type override to use your extended classes.
-  --sim_opts="+uvm_set_type_override=<upstream_class>,<extended_class>"
+  `--sim_opts="+uvm_set_type_override=<upstream_class>,<extended_class>"`
+- If extending `riscv_asm_program_gen` class is desired, must use this command
+  line override:
+  `--sim_opts="+uvm_set_inst_override=riscv_asm_program_gen,<extended
+  class>,'uvm_test_top.asm_gen'"`
 
 You can refer to [riscv-dv extension for ibex](https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile#L68) for a working example.
 
@@ -521,7 +527,7 @@ implmentation.
 
 ```bash
 # Randomly generate 100000 instructions, split to 20000 instructions per batch
-python3 cov.py -d -i 100000 -bz 20000
+python3 cov.py -d -i 100000 -bz 20000 --isa rv32imc
 ```
 
 
@@ -530,13 +536,6 @@ python3 cov.py -d -i 100000 -bz 20000
 Please file an issue under this repository for any bug report / integration
 issue / feature request. We are looking forward to knowing your experience of
 using this flow and how we can make it better together.
-
-## External contributions
-
-We definitely welcome external contributions. We hope it could be a
-collaborative effort to build a strong open source RISC-V processor
-verification platform. Free feel to submit your pull request for review.
-Please refer to CONTRIBUTING.md for license related questions.
 
 ## Disclaimer
 

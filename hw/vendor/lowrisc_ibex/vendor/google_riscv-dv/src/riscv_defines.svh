@@ -33,3 +33,47 @@
     } \
   }
 
+`define INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
+    static bit valid = riscv_instr::register(instr_n);  \
+    `uvm_object_utils(riscv_``instr_n``_instr)  \
+    function new(string name = "");  \
+      super.new(name);  \
+      this.instr_name = ``instr_n; \
+      this.format = ``instr_format;  \
+      this.group = ``instr_group;  \
+      this.category = ``instr_category;  \
+      this.imm_type = ``imm_tp;  \
+      set_imm_len(); \
+      set_rand_mode(); \
+    endfunction \
+  endclass
+
+// Regular integer instruction
+`define DEFINE_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// Floating point instruction
+`define DEFINE_FP_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_floating_point_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// A-extension instruction
+`define DEFINE_AMO_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_amo_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// Compressed instruction
+`define DEFINE_C_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_compressed_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// Floating point compressed instruction
+`define DEFINE_FC_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_compressed_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
+
+// Vector instruction
+`define DEFINE_V_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_vector_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)

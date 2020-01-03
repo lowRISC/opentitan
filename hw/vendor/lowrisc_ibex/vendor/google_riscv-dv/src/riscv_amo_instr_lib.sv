@@ -65,13 +65,13 @@ class riscv_amo_base_instr_stream extends riscv_mem_access_stream;
   virtual function void gen_amo_instr();
   endfunction
 
-endclass
+endclass : riscv_amo_base_instr_stream
 
 // A pair of LR/SC instruction
 class riscv_lr_sc_instr_stream extends riscv_amo_base_instr_stream;
 
-  riscv_rand_instr lr_instr;
-  riscv_rand_instr sc_instr;
+  riscv_instr lr_instr;
+  riscv_instr sc_instr;
 
   constraint legal_c {
     num_amo == 1;
@@ -82,32 +82,40 @@ class riscv_lr_sc_instr_stream extends riscv_amo_base_instr_stream;
 
   function new(string name = "");
     super.new(name);
-    lr_instr = riscv_rand_instr::type_id::create("lr_instr");
-    sc_instr = riscv_rand_instr::type_id::create("sc_instr");
   endfunction
 
   virtual function void gen_amo_instr();
-    lr_instr.cfg = cfg;
-    sc_instr.cfg = cfg;
-    lr_instr.disable_a_extension_c.constraint_mode(0);
-    sc_instr.disable_a_extension_c.constraint_mode(0);
+    lr_instr = riscv_instr::get_rand_instr(.include_instr({LR_W, LR_D}));
+    sc_instr = riscv_instr::get_rand_instr(.include_instr({SC_W, SC_D}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(lr_instr,
-                                   rs1 == rs1_reg;
-                                   rd != rs1_reg;
-                                   instr_name inside {LR_W, LR_D};)
+      rs1 == rs1_reg;
+      if (reserved_rd.size() > 0) {
+        !(rd inside {reserved_rd});
+      }
+      if (cfg.reserved_regs.size() > 0) {
+        !(rd inside {cfg.reserved_regs});
+      }
+      rd != rs1_reg;
+    )
     `DV_CHECK_RANDOMIZE_WITH_FATAL(sc_instr,
-                                   rs1 == rs1_reg;
-                                   rd != rs1_reg;
-                                   instr_name inside {SC_W, SC_D};)
-    instr_list.push_front(lr_instr);
-    instr_list.push_front(sc_instr);
+      rs1 == rs1_reg;
+      if (reserved_rd.size() > 0) {
+        !(rd inside {reserved_rd});
+      }
+      if (cfg.reserved_regs.size() > 0) {
+        !(rd inside {cfg.reserved_regs});
+      }
+      rd != rs1_reg;
+    )
+    instr_list.push_back(lr_instr);
+    instr_list.push_back(sc_instr);
   endfunction
 
-endclass
+endclass : riscv_lr_sc_instr_stream
 
 class riscv_amo_instr_stream extends riscv_amo_base_instr_stream;
 
-  riscv_rand_instr amo_instr[];
+  riscv_instr amo_instr[];
 
   constraint reasonable_c {
     solve num_amo before num_mixed_instr;
@@ -121,22 +129,19 @@ class riscv_amo_instr_stream extends riscv_amo_base_instr_stream;
   virtual function void gen_amo_instr();
     amo_instr = new[num_amo];
     foreach (amo_instr[i]) begin
-      amo_instr[i] = riscv_rand_instr::type_id::create($sformatf("amo_instr_%0d", i));
-      amo_instr[i].cfg = cfg;
-      amo_instr[i].disable_a_extension_c.constraint_mode(0);
-      `ifdef DSIM
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(amo_instr[i],
-                                       rs1 == rs1_reg;
-                                       rd != rs1_reg;
-                                       instr_name inside {[AMOSWAP_W:AMOMAXU_D]};)
-      `else
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(amo_instr[i],
-                                       rs1 == rs1_reg;
-                                       rd != rs1_reg;
-                                       category == AMO;)
-      `endif
+      amo_instr[i] = riscv_instr::get_rand_instr(.include_category({AMO}));
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(amo_instr[i],
+        if (reserved_rd.size() > 0) {
+          !(rd inside {reserved_rd});
+        }
+        if (cfg.reserved_regs.size() > 0) {
+          !(rd inside {cfg.reserved_regs});
+        }
+        rs1 == rs1_reg;
+        rd != rs1_reg;
+      )
       instr_list.push_front(amo_instr[i]);
     end
   endfunction
 
-endclass
+endclass : riscv_amo_instr_stream

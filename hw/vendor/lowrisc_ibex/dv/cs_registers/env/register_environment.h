@@ -23,6 +23,8 @@ class RegisterEnvironment {
 
   void GetStopReq(unsigned char *stop_req);
 
+  void GetTestPass(unsigned char *test_passed);
+
  private:
   CSRParams params_;
   SimCtrl *simctrl_;

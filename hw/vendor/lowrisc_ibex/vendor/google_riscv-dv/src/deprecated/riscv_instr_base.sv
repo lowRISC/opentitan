@@ -32,9 +32,9 @@ class riscv_instr_base extends uvm_object;
   rand bit [31:0]               imm;
   rand imm_t                    imm_type;
   rand bit [4:0]                imm_len;
-  rand bit                      is_pseudo_instr;
   rand bit                      aq;
   rand bit                      rl;
+  bit                           is_pseudo_instr;
   bit                           is_branch_target;
   bit                           has_label = 1'b1;
   bit                           atomic = 0;
@@ -58,11 +58,11 @@ class riscv_instr_base extends uvm_object;
   string                        label;
   bit                           is_local_numeric_label;
   int                           idx = -1;
+  `VECTOR_INCLUDE("riscv_instr_base_inc_riscv_instr_base_declares.sv")
 
   `uvm_object_utils(riscv_instr_base)
 
   constraint default_c {
-    soft is_pseudo_instr == 0;
     instr_name != INVALID_INSTR;
   }
 
@@ -369,6 +369,7 @@ class riscv_instr_base extends uvm_object;
   `add_instr(C_ADDI4SPN, CIW_FORMAT, ARITHMETIC, RV32C, NZUIMM)
   `add_instr(C_ADDI,     CI_FORMAT, ARITHMETIC, RV32C, NZIMM)
   `add_instr(C_ADDI16SP, CI_FORMAT, ARITHMETIC, RV32C, NZIMM)
+
   `add_instr(C_LI,       CI_FORMAT, ARITHMETIC, RV32C)
   `add_instr(C_LUI,      CI_FORMAT, ARITHMETIC, RV32C, NZUIMM)
   `add_instr(C_SUB,      CA_FORMAT, ARITHMETIC, RV32C)
@@ -449,6 +450,8 @@ class riscv_instr_base extends uvm_object;
   // Supervisor Instructions
   `add_instr(SFENCE_VMA, R_FORMAT,SYNCH,RV32I)
 
+  `VECTOR_INCLUDE("riscv_instr_base_inc_add_instr.sv")
+
   function void post_randomize();
     if (group inside {RV32C, RV64C, RV128C, RV32DC, RV32FC}) begin
       is_compressed = 1'b1;
@@ -519,6 +522,9 @@ class riscv_instr_base extends uvm_object;
         has_rs1 = 1'b1;
       end
     end
+
+    `VECTOR_INCLUDE("riscv_instr_base_inc_post_randomize.sv")
+
   endfunction
 
   function void mask_imm();
@@ -758,6 +764,7 @@ class riscv_instr_base extends uvm_object;
       end else begin
         asm_str = $sformatf("%0s %0s, %0s, (%0s)", asm_str, rd.name(), rs2.name(), rs1.name());
       end
+    `VECTOR_INCLUDE("riscv_instr_base_inc_convert2asm.sv")
     end else begin
       // For EBREAK,C.EBREAK, making sure pc+4 is a valid instruction boundary
       // This is needed to resume execution from epc+4 after ebreak handling
@@ -1202,42 +1209,7 @@ class riscv_instr_base extends uvm_object;
     this.has_fs3           = obj.has_fs3;
     this.has_fd            = obj.has_fd;
     this.is_floating_point = obj.is_floating_point;
-  endfunction
-
-endclass
-
-// Psuedo instructions are used to simplify assembly program writing
-class riscv_pseudo_instr extends riscv_instr_base;
-
-  rand riscv_pseudo_instr_name_t  pseudo_instr_name;
-
-  constraint default_c {
-    is_pseudo_instr == 1'b1;
-  }
-
-  `add_pseudo_instr(LI,    I_FORMAT, LOAD, RV32I)
-  `add_pseudo_instr(LA,    I_FORMAT, LOAD, RV32I)
-
-  `uvm_object_utils(riscv_pseudo_instr)
-
-  function new(string name = "");
-    super.new(name);
-    process_load_store = 0;
-  endfunction
-
-  // Convert the instruction to assembly code
-  virtual function string convert2asm(string prefix = "");
-    string asm_str;
-    asm_str = format_string(get_instr_name(), MAX_INSTR_STR_LEN);
-    // instr rd,imm
-    asm_str = $sformatf("%0s%0s, %0s", asm_str, rd.name(), get_imm());
-    if(comment != "")
-      asm_str = {asm_str, " #",comment};
-    return asm_str.tolower();
-  endfunction
-
-  virtual function string get_instr_name();
-    return pseudo_instr_name.name();
-  endfunction
+    `VECTOR_INCLUDE("riscv_instr_base_inc_copy_base_instr.sv")
+   endfunction
 
 endclass
