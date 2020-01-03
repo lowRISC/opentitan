@@ -15,6 +15,8 @@ void SimCtrl::RequestStop(bool success) {
 
 bool SimCtrl::StopRequested() { return stop_requested_; }
 
+bool SimCtrl::TestPassed() { return success_; }
+
 void SimCtrl::OnFinal() {
   std::cout << std::endl
             << "//-------------//" << std::endl

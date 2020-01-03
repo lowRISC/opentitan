@@ -10,11 +10,17 @@
 
 /**
  * Instruction decoder
+ *
+ * This module is fully combinatorial, clock and reset are used for
+ * assertions only.
  */
 module ibex_decoder #(
     parameter bit RV32E = 0,
     parameter bit RV32M = 1
 ) (
+    input  logic                 clk_i,
+    input  logic                 rst_ni,
+
     // to/from controller
     output logic                 illegal_insn_o,        // illegal instr encountered
     output logic                 ebrk_insn_o,           // trap instr encountered
@@ -395,7 +401,7 @@ module ibex_decoder #(
           end
 
           default: begin
-            alu_operator_o = alu_op_e'({$bits(alu_op_e){1'bX}});
+            alu_operator_o = ALU_SLTU;
           end
         endcase
       end
@@ -614,5 +620,13 @@ module ibex_decoder #(
 
   // do not propgate regfile write enable if non-available registers are accessed in RV32E
   assign regfile_we_o = regfile_we & ~illegal_reg_rv32e;
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // Selectors must be known/valid.
+  `ASSERT(IbexRegImmAluOpKnown, (opcode == OPCODE_OP_IMM) |->
+      !$isunknown(instr[14:12]), clk_i, !rst_ni)
 
 endmodule // controller

@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv_dpi:jtagdpi
       - lowrisc:dv_dpi:spidpi
       - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:dv_verilator:memutil_verilator
 
     files:
       - rtl/top_earlgrey_usb_verilator.sv: { file_type: systemVerilogSource }

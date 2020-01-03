@@ -3,17 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module tb_cs_registers #(
+    parameter bit          DbgTriggerEn     = 0,
     parameter int unsigned MHPMCounterNum   = 8,
     parameter int unsigned MHPMCounterWidth = 40,
     parameter bit          PMPEnable        = 0,
     parameter int unsigned PMPGranularity   = 0,
     parameter int unsigned PMPNumRegions    = 4,
-    parameter bit RV32E                     = 0,
-    parameter bit RV32M                     = 0
+    parameter bit          RV32E            = 0,
+    parameter bit          RV32M            = 0
 ) (
     // Clock and Reset
     inout  wire                 clk_i,
-    inout  wire                 in_rst_ni
+    inout  wire                 in_rst_ni,
+    output wire                 test_passed_o
 );
 
   logic                 dpi_rst_ni;
@@ -44,6 +46,7 @@ module tb_cs_registers #(
   logic                 irq_external_i;
   logic [14:0]          irq_fast_i;
   logic                 irq_pending_o;          // interupt request pending
+  logic                 nmi_mode_i;             // core is handling an NMI
   logic                 csr_msip_o;             // software interrupt pending
   logic                 csr_mtip_o;             // timer interrupt pending
   logic                 csr_meip_o;             // external interrupt pending
@@ -63,6 +66,7 @@ module tb_cs_registers #(
   logic                 debug_single_step_o;
   logic                 debug_ebreakm_o;
   logic                 debug_ebreaku_o;
+  logic                 trigger_match_o;
 
   logic [31:0]          pc_if_i;
   logic [31:0]          pc_id_i;
@@ -115,6 +119,7 @@ module tb_cs_registers #(
 `endif
 
   ibex_cs_registers #(
+    .DbgTriggerEn     (DbgTriggerEn),
     .MHPMCounterNum   (MHPMCounterNum),
     .MHPMCounterWidth (MHPMCounterWidth),
     .PMPEnable        (PMPEnable),
@@ -126,6 +131,7 @@ module tb_cs_registers #(
 
   // DPI calls
   bit stop_simulation;
+  bit test_passed;
   bit [31:0] seed;
 
   initial begin
@@ -140,12 +146,16 @@ module tb_cs_registers #(
   end
 
   always_ff @(posedge clk_i) begin
-    env_dpi::env_tick(stop_simulation);
+    env_dpi::env_tick(stop_simulation, test_passed);
     rst_dpi::rst_tick("rstn_driver", dpi_rst_ni);
     if (stop_simulation) begin
       $finish();
     end
   end
+
+  // Signal test pass / fail as an output (Verilator sims can pick this up and use it as a
+  // return code)
+  assign test_passed_o = test_passed;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     reg_dpi::monitor_tick("reg_driver",

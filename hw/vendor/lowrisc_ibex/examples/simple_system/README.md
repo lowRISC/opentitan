@@ -92,6 +92,26 @@ The simulator produces several output files
 * ibex_simple_system_pcount.csv - A csv of the performance counters
 * trace_core_00000000.log - An instruction trace of execution
 
+## Simulating with Synopsys VCS
+
+Similar to the Verilator flow the Simple System simulator binary can be built using:
+
+```
+fusesoc --cores-root=. run --target=sim --tool=vcs --setup --build lowrisc:ibex:ibex_simple_system --RV32M=1 --RV32E=0 --SRAM_INIT_FILE=`<sw_vmem_file>`
+```
+
+`<sw_vmem_file>` should be a path to a vmem file built as described above, use
+./examples/sw/simple_system/hello_test/hello_test.vmem to run the hello_test
+binary.
+
+To run the simulator:
+
+```
+./build/lowrisc_ibex_ibex_simple_system_0/sim-vcs/lowrisc_ibex_ibex_simple_system_0
+```
+
+Pass `-gui` to use the DVE GUI.
+
 ## System Memory Map
 
 | Address             | Description                                                                                            |

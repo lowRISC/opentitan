@@ -86,7 +86,11 @@ package riscv_instr_pkg;
     RV32C,
     RV64C,
     RV128I,
-    RV128C
+    RV128C,
+    RV32V,
+    RV32B,
+    RV64V,
+    RV64B
   } riscv_instr_group_t;
 
   typedef enum {
@@ -318,6 +322,7 @@ package riscv_instr_pkg;
     SRET,
     WFI,
     SFENCE_VMA,
+    `VECTOR_INCLUDE("riscv_instr_pkg_inc_riscv_instr_name_t.sv")
     // You can add other instructions here
     INVALID_INSTR
   } riscv_instr_name_t;
@@ -331,12 +336,14 @@ package riscv_instr_pkg;
     S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, T3, T4, T5, T6
   } riscv_reg_t;
 
+  `VECTOR_INCLUDE("riscv_instr_pkg_inc_enum.sv")
+
   typedef enum bit [4:0] {
     F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15,
     F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27, F28, F29, F30, F31
   } riscv_fpr_t;
 
-  typedef enum bit [3:0] {
+  typedef enum bit [5:0] {
     J_FORMAT = 0,
     U_FORMAT,
     I_FORMAT,
@@ -352,10 +359,11 @@ package riscv_instr_pkg;
     CL_FORMAT,
     CS_FORMAT,
     CSS_FORMAT,
-    CIW_FORMAT
+    `VECTOR_INCLUDE("riscv_instr_pkg_inc_riscv_instr_format_t.sv")
+    CIW_FORMAT // (last one)
   } riscv_instr_format_t;
 
-  typedef enum bit [3:0] {
+  typedef enum bit [5:0] {
     LOAD = 0,
     STORE,
     SHIFT,
@@ -371,7 +379,8 @@ package riscv_instr_pkg;
     CHANGELEVEL,
     TRAP,
     INTERRUPT,
-    AMO
+    `VECTOR_INCLUDE("riscv_instr_pkg_inc_riscv_instr_category_t.sv")
+    AMO // (last one)
   } riscv_instr_category_t;
 
   typedef bit [11:0] riscv_csr_t;
@@ -602,7 +611,8 @@ package riscv_instr_pkg;
     DCSR            = 'h7B0,  // Debug control and status register
     DPC             = 'h7B1,  // Debug PC
     DSCRATCH0       = 'h7B2,  // Debug scratch register
-    DSCRATCH1       = 'h7B3   // Debug scratch register
+    `VECTOR_INCLUDE("riscv_instr_pkg_inc_privileged_reg_t.sv")
+    DSCRATCH1       = 'h7B3  // Debug scratch register (last one)
   } privileged_reg_t;
 
   typedef enum bit [5:0] {
@@ -714,6 +724,21 @@ package riscv_instr_pkg;
   } hazard_e;
 
   `include "riscv_core_setting.sv"
+
+  // TODO hardware target definition so should move to riscv_core_setting.sv
+  `ifdef ENABLE_VECTORS
+    parameter bit has_vector_engine = 'b1;
+    parameter int VLEN = `VLEN;
+    parameter int ELEN = `ELEN;
+    parameter int SLEN = `SLEN;
+  `else
+    parameter bit has_vector_engine = 'b0;
+    parameter int VLEN = 512;
+    parameter int ELEN = 64;
+    parameter int SLEN = 64;
+  `endif
+
+  `VECTOR_INCLUDE("riscv_instr_pkg_inc_variables.sv")
 
   typedef bit [15:0] program_id_t;
 
@@ -844,8 +869,42 @@ package riscv_instr_pkg;
 
   riscv_reg_t compressed_gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5};
 
-  `include "riscv_instr_base.sv"
-  `include "riscv_instr_gen_config.sv"
+  riscv_instr_category_t all_categories[] = {
+    LOAD, STORE, SHIFT, ARITHMETIC, LOGICAL, COMPARE, BRANCH, JUMP,
+    SYNCH, SYSTEM, COUNTER, CSR, CHANGELEVEL, TRAP, INTERRUPT, AMO
+  };
+
+  `ifdef DEPRECATED
+    `define INSTR riscv_instr_base
+    `include "deprecated/riscv_instr_base.sv"
+    `include "deprecated/riscv_instr_gen_config.sv"
+  `else
+    `define INSTR riscv_instr
+    typedef class riscv_instr;
+    `include "riscv_instr_gen_config.sv"
+    `include "isa/riscv_instr.sv"
+    `include "isa/riscv_amo_instr.sv"
+    `include "isa/riscv_floating_point_instr.sv"
+    `include "isa/riscv_vector_instr.sv"
+    `include "isa/riscv_compressed_instr.sv"
+    `include "isa/rv32a_instr.sv"
+    `include "isa/rv32c_instr.sv"
+    `include "isa/rv32dc_instr.sv"
+    `include "isa/rv32d_instr.sv"
+    `include "isa/rv32fc_instr.sv"
+    `include "isa/rv32f_instr.sv"
+    `include "isa/rv32i_instr.sv"
+    `include "isa/rv32m_instr.sv"
+    `include "isa/rv64a_instr.sv"
+    `include "isa/rv64c_instr.sv"
+    `include "isa/rv64d_instr.sv"
+    `include "isa/rv64f_instr.sv"
+    `include "isa/rv64i_instr.sv"
+    `include "isa/rv64m_instr.sv"
+    `include "isa/rv128c_instr.sv"
+  `endif
+
+  `include "riscv_pseudo_instr.sv"
   `include "riscv_illegal_instr.sv"
   `include "riscv_reg.sv"
   `include "riscv_privil_reg.sv"
@@ -856,14 +915,25 @@ package riscv_instr_pkg;
   `include "riscv_privileged_common_seq.sv"
   `include "riscv_callstack_gen.sv"
   `include "riscv_data_page_gen.sv"
-  `include "riscv_rand_instr.sv"
+
+`ifdef DEPRECATED
+  `include "deprecated/riscv_rand_instr.sv"
+  `include "deprecated/riscv_instr_stream.sv"
+  `include "deprecated/riscv_loop_instr.sv"
+  `include "deprecated/riscv_directed_instr_lib.sv"
+  `include "deprecated/riscv_load_store_instr_lib.sv"
+  `include "deprecated/riscv_amo_instr_lib.sv"
+`else
   `include "riscv_instr_stream.sv"
   `include "riscv_loop_instr.sv"
   `include "riscv_directed_instr_lib.sv"
   `include "riscv_load_store_instr_lib.sv"
   `include "riscv_amo_instr_lib.sv"
+`endif
+
   `include "riscv_instr_sequence.sv"
   `include "riscv_asm_program_gen.sv"
+  `include "riscv_debug_rom_gen.sv"
   `include "riscv_instr_cov_item.sv"
   `include "riscv_instr_cover_group.sv"
   `include "user_extension.svh"

@@ -20,6 +20,7 @@ Instantiation Template
       .RV32E                    ( 0            ),
       .RV32M                    ( 1            ),
       .MultiplierImplementation ( "fast"       ),
+      .DbgTriggerEn             ( 0            ),
       .DmHaltAddr               ( 32'h1A110800 ),
       .DmExceptionAddr          ( 32'h1A110808 )
   ) u_core (
@@ -87,6 +88,8 @@ Parameters
 | ``RV32M``                    | bit         | 1          | M(ultiply) extension enable                                     |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``MultiplierImplementation`` | string      | "fast"     | Multiplicator type, "slow", or "fast"                           |
++------------------------------+-------------+------------+-----------------------------------------------------------------+
+| ``DbgTriggerEn``             | bit         | 0          | Enable debug trigger support (one trigger only)                 |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``DmHaltAddr``               | int         | 0x1A110800 | Address to jump to when entering Debug Mode                     |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+

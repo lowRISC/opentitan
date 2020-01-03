@@ -84,7 +84,7 @@ RISCV_DV_OPTS=--custom_target=${DV_DIR}/riscv_dv_extension \
      ${RISCV_DV_OPTS} \
      ${COMMON_OPTS} \
      ${CSR_OPTS} \
-     --sim_opts="+uvm_set_type_override=riscv_asm_program_gen,ibex_asm_program_gen \
+     --sim_opts="+uvm_set_inst_override=riscv_asm_program_gen,ibex_asm_program_gen,"uvm_test_top.asm_gen" \
                  +signature_addr=${SIGNATURE_ADDR}";
 
 # Compile the generated assmebly programs to ELF/BIN

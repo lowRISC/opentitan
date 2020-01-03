@@ -1,4 +1,4 @@
-class riscv_instr_cov_item extends riscv_instr_base;
+class riscv_instr_cov_item extends `INSTR;
 
   typedef enum bit[1:0] {
     POSITIVE, NEGATIVE
@@ -23,6 +23,9 @@ class riscv_instr_cov_item extends riscv_instr_base;
   rand bit [XLEN-1:0]   rs1_value;
   rand bit [XLEN-1:0]   rs2_value;
   rand bit [XLEN-1:0]   rd_value;
+  rand bit [XLEN-1:0]   fs1_value;
+  rand bit [XLEN-1:0]   fs2_value;
+  rand bit [XLEN-1:0]   fd_value;
   bit [31:0]            binary;
   bit [XLEN-1:0]        pc;
   bit [XLEN-1:0]        mem_addr;
@@ -45,6 +48,8 @@ class riscv_instr_cov_item extends riscv_instr_base;
   compare_result_e      compare_result;
   logical_similarity_e  logical_similarity;
   string                trace;
+
+  `VECTOR_INCLUDE("riscv_instr_cov_item_inc_declares.sv")
 
   `uvm_object_utils(riscv_instr_cov_item)
   `uvm_object_new

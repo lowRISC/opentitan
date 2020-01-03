@@ -64,7 +64,7 @@ module ibex_load_store_unit (
   logic         data_sign_ext_q;
   logic         data_we_q;
 
-  logic [1:0]   wdata_offset;   // mux control for data to be written to memory
+  logic [1:0]   data_offset;   // mux control for data to be written to memory
 
   logic [3:0]   data_be;
   logic [31:0]  data_wdata;
@@ -89,7 +89,8 @@ module ibex_load_store_unit (
 
   ls_fsm_e ls_fsm_cs, ls_fsm_ns;
 
-  assign data_addr = adder_result_ex_i;
+  assign data_addr   = adder_result_ex_i;
+  assign data_offset = data_addr[1:0];
 
   ///////////////////
   // BE generation //
@@ -99,33 +100,33 @@ module ibex_load_store_unit (
     unique case (data_type_ex_i) // Data type 00 Word, 01 Half word, 11,10 byte
       2'b00: begin // Writing a word
         if (!handle_misaligned_q) begin // first part of potentially misaligned transaction
-          unique case (data_addr[1:0])
+          unique case (data_offset)
             2'b00:   data_be = 4'b1111;
             2'b01:   data_be = 4'b1110;
             2'b10:   data_be = 4'b1100;
             2'b11:   data_be = 4'b1000;
-            default: data_be = 'X;
-          endcase // case (data_addr[1:0])
+            default: data_be = 4'b1111;
+          endcase // case (data_offset)
         end else begin // second part of misaligned transaction
-          unique case (data_addr[1:0])
+          unique case (data_offset)
             2'b00:   data_be = 4'b0000; // this is not used, but included for completeness
             2'b01:   data_be = 4'b0001;
             2'b10:   data_be = 4'b0011;
             2'b11:   data_be = 4'b0111;
-            default: data_be = 'X;
-          endcase // case (data_addr[1:0])
+            default: data_be = 4'b1111;
+          endcase // case (data_offset)
         end
       end
 
       2'b01: begin // Writing a half word
         if (!handle_misaligned_q) begin // first part of potentially misaligned transaction
-          unique case (data_addr[1:0])
+          unique case (data_offset)
             2'b00:   data_be = 4'b0011;
             2'b01:   data_be = 4'b0110;
             2'b10:   data_be = 4'b1100;
             2'b11:   data_be = 4'b1000;
-            default: data_be = 'X;
-          endcase // case (data_addr[1:0])
+            default: data_be = 4'b1111;
+          endcase // case (data_offset)
         end else begin // second part of misaligned transaction
           data_be = 4'b0001;
         end
@@ -133,16 +134,16 @@ module ibex_load_store_unit (
 
       2'b10,
       2'b11: begin // Writing a byte
-        unique case (data_addr[1:0])
+        unique case (data_offset)
           2'b00:   data_be = 4'b0001;
           2'b01:   data_be = 4'b0010;
           2'b10:   data_be = 4'b0100;
           2'b11:   data_be = 4'b1000;
-          default: data_be = 'X;
-        endcase // case (data_addr[1:0])
+          default: data_be = 4'b1111;
+        endcase // case (data_offset)
       end
 
-      default:     data_be = 'X;
+      default:     data_be = 4'b1111;
     endcase // case (data_type_ex_i)
   end
 
@@ -152,15 +153,14 @@ module ibex_load_store_unit (
 
   // prepare data to be written to the memory
   // we handle misaligned accesses, half word and byte accesses here
-  assign wdata_offset = data_addr[1:0];
   always_comb begin
-    unique case (wdata_offset)
+    unique case (data_offset)
       2'b00:   data_wdata =  data_wdata_ex_i[31:0];
       2'b01:   data_wdata = {data_wdata_ex_i[23:0], data_wdata_ex_i[31:24]};
       2'b10:   data_wdata = {data_wdata_ex_i[15:0], data_wdata_ex_i[31:16]};
       2'b11:   data_wdata = {data_wdata_ex_i[ 7:0], data_wdata_ex_i[31: 8]};
-      default: data_wdata = 'X;
-    endcase // case (wdata_offset)
+      default: data_wdata =  data_wdata_ex_i[31:0];
+    endcase // case (data_offset)
   end
 
   /////////////////////
@@ -184,7 +184,7 @@ module ibex_load_store_unit (
       data_sign_ext_q <= 1'b0;
       data_we_q       <= 1'b0;
     end else if (ctrl_update) begin
-      rdata_offset_q  <= data_addr[1:0];
+      rdata_offset_q  <= data_offset;
       data_type_q     <= data_type_ex_i;
       data_sign_ext_q <= data_sign_ext_ex_i;
       data_we_q       <= data_we_ex_i;
@@ -208,7 +208,7 @@ module ibex_load_store_unit (
       2'b01:   rdata_w_ext = {data_rdata_i[ 7:0], rdata_q[31:8]};
       2'b10:   rdata_w_ext = {data_rdata_i[15:0], rdata_q[31:16]};
       2'b11:   rdata_w_ext = {data_rdata_i[23:0], rdata_q[31:24]};
-      default: rdata_w_ext = 'X;
+      default: rdata_w_ext =  data_rdata_i[31:0];
     endcase
   end
 
@@ -251,7 +251,7 @@ module ibex_load_store_unit (
         end
       end
 
-      default: rdata_h_ext = 'X;
+      default: rdata_h_ext = {16'h0000, data_rdata_i[15:0]};
     endcase // case (rdata_offset_q)
   end
 
@@ -290,7 +290,7 @@ module ibex_load_store_unit (
         end
       end
 
-      default: rdata_b_ext = 'X;
+      default: rdata_b_ext = {24'h00_0000, data_rdata_i[7:0]};
     endcase // case (rdata_offset_q)
   end
 
@@ -300,8 +300,8 @@ module ibex_load_store_unit (
       2'b00:       data_rdata_ext = rdata_w_ext;
       2'b01:       data_rdata_ext = rdata_h_ext;
       2'b10,2'b11: data_rdata_ext = rdata_b_ext;
-      default:     data_rdata_ext = 'X;
-    endcase //~case(rdata_type_q)
+      default:     data_rdata_ext = rdata_w_ext;
+    endcase // case (data_type_q)
   end
 
   /////////////
@@ -310,8 +310,8 @@ module ibex_load_store_unit (
 
   // check for misaligned accesses that need to be split into two word-aligned accesses
   assign split_misaligned_access =
-      ((data_type_ex_i == 2'b00) && (data_addr[1:0] != 2'b00)) || // misaligned word access
-      ((data_type_ex_i == 2'b01) && (data_addr[1:0] == 2'b11));   // misaligned half-word access
+      ((data_type_ex_i == 2'b00) && (data_offset != 2'b00)) || // misaligned word access
+      ((data_type_ex_i == 2'b01) && (data_offset == 2'b11));   // misaligned half-word access
 
   // FSM
   always_comb begin
@@ -433,7 +433,7 @@ module ibex_load_store_unit (
       end
 
       default: begin
-        ls_fsm_ns = ls_fsm_e'(1'bX);
+        ls_fsm_ns = IDLE;
       end
     endcase
   end
@@ -482,26 +482,30 @@ module ibex_load_store_unit (
   // Assertions //
   ////////////////
 
-`ifndef VERILATOR
-  // there must not be an rvalid unless the FSM is handlling it
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (data_rvalid_i) |-> ((ls_fsm_cs == WAIT_RVALID) ||
-      (ls_fsm_cs == WAIT_RVALID_MIS) || (ls_fsm_cs == WAIT_RVALID_DONE))) else
-    $display("Data response valid received without expecting it");
+  // Selectors must be known/valid.
+  `ASSERT_KNOWN(IbexDataTypeKnown, data_type_ex_i, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IbexDataOffsetKnown, data_offset, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IbexRDataOffsetQKnown, rdata_offset_q, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IbexDataTypeQKnown, data_type_q, clk_i, !rst_ni)
+  `ASSERT(IbexLsuStateValid, ls_fsm_cs inside {
+      IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT, WAIT_RVALID,
+      WAIT_RVALID_DONE
+      }, clk_i, !rst_ni)
 
-  // errors must only be sent together with rvalid
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (data_err_i) |-> (data_rvalid_i)) else
-    $display("Data error not sent with rvalid");
+  // There must not be an rvalid unless the FSM is handlling it.
+  `ASSERT(IbexRvalidNotHandled, data_rvalid_i |-> (
+      (ls_fsm_cs == WAIT_RVALID) ||
+      (ls_fsm_cs == WAIT_RVALID_MIS) ||
+      (ls_fsm_cs == WAIT_RVALID_DONE)
+      ), clk_i, !rst_ni)
 
-  // address must not contain X when request is sent
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (data_req_o) |-> (!$isunknown(data_addr_o))) else
-    $display("Data address not valid");
+  // Errors must only be sent together with rvalid.
+  `ASSERT(IbexDataErrWithoutRvalid, data_err_i |-> data_rvalid_i, clk_i, !rst_ni)
 
-  // address must be word aligned when request is sent
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (data_req_o) |-> (data_addr_o[1:0] == 2'b00)) else
-    $display("Data address not word aligned");
-`endif
+  // Address must not contain X when request is sent.
+  `ASSERT(IbexDataAddrUnknown, data_req_o |-> !$isunknown(data_addr_o), clk_i, !rst_ni)
+
+  // Address must be word aligned when request is sent.
+  `ASSERT(IbexDataAddrUnaligned, data_req_o |-> (data_addr_o[1:0] == 2'b00), clk_i, !rst_ni)
+
 endmodule

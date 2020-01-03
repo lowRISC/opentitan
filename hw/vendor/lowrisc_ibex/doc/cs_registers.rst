@@ -46,6 +46,18 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x3BF  | ``pmpaddr15``      | WARL   | PMP Address Register                          |
 +---------+--------------------+--------+-----------------------------------------------+
+|  0x7A0  | ``tselect``        | WARL   | Trigger Select Register                       |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x7A1  | ``tdata1``         | WARL   | Trigger Data Register 1                       |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x7A2  | ``tdata2``         | WARL   | Trigger Data Register 2                       |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x7A3  | ``tdata3``         | WARL   | Trigger Data Register 3                       |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x7A8  | ``mcontext``       | WARL   | Machine Context Register                      |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x7AA  | ``scontext``       | WARL   | Supervisor Context Register                   |
++---------+--------------------+--------+-----------------------------------------------+
 |  0x7B0  | ``dcsr``           | WARL   | Debug Control and Status Register             |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7B1  | ``dpc``            | RW     | Debug PC                                      |
@@ -281,6 +293,122 @@ Reset Value: ``0x0000_0000``
 +----------------+
 | address[33:2]  |
 +----------------+
+
+.. _csr-tselect:
+
+Trigger Select Register (tselect)
+---------------------------------
+
+CSR Address: ``0x7A0``
+
+Reset Value: ``0x0000_0000``
+
+Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
+
+Ibex implements a single trigger, therefore this register will always read as zero.
+
+.. _csr-tdata1:
+
+Trigger Data Register 1 (tdata1)
+--------------------------------
+
+CSR Address: ``0x7A1``
+
+Reset Value: ``0x2800_1000``
+
+Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
+Since native triggers are not supported, writes to this register from M-Mode will be ignored.
+
+Ibex only implements one type of trigger, instruction address match.
+Most fields of this register will read as a fixed value to reflect the mode that is supported.
+
++-------+------+------------------------------------------------------------------+
+| Bit#  | R/W  | Description                                                      |
++-------+------+------------------------------------------------------------------+
+| 31:28 | R    | **type:** 2 = Address/Data match trigger type.                   |
++-------+------+------------------------------------------------------------------+
+| 27    | R    | **dmode:** 1 = Only debug mode can write tdata registers         |
++-------+------+------------------------------------------------------------------+
+| 26:21 | R    | **maskmax:** 0 = Only exact matching supported.                  |
++-------+------+------------------------------------------------------------------+
+| 20    | R    | **hit:** 0 = Hit indication not supported.                       |
++-------+------+------------------------------------------------------------------+
+| 19    | R    | **select:** 0 = Only address matching is supported.              |
++-------+------+------------------------------------------------------------------+
+| 18    | R    | **timing:** 0 = Break before the instruction at the specified    |
+|       |      | address.                                                         |
++-------+------+------------------------------------------------------------------+
+| 17:16 | R    | **sizelo:** 0 = Match accesses of any size.                      |
++-------+------+------------------------------------------------------------------+
+| 15:12 | R    | **action:** 1 = Enter debug mode on match.                       |
++-------+------+------------------------------------------------------------------+
+| 11    | R    | **chain:** 0 = Chaining not supported.                           |
++-------+------+------------------------------------------------------------------+
+| 10:7  | R    | **match:** 0 = Match the whole address.                          |
++-------+------+------------------------------------------------------------------+
+| 6     | R    | **m:** 1 = Match in M-Mode.                                      |
++-------+------+------------------------------------------------------------------+
+| 5     | R    | zero.                                                            |
++-------+------+------------------------------------------------------------------+
+| 4     | R    | **s:** 0 = S-Mode not supported.                                 |
++-------+------+------------------------------------------------------------------+
+| 3     | R    | **u:** 1 = Match in U-Mode.                                      |
++-------+------+------------------------------------------------------------------+
+| 2     | RW   | **execute:** Enable matching on instruction address.             |
++-------+------+------------------------------------------------------------------+
+| 1     | R    | **store:** 0 = Store address / data matching not supported.      |
++-------+------+------------------------------------------------------------------+
+| 0     | R    | **load:** 0 = Load address / data matching not supported.        |
++-------+------+------------------------------------------------------------------+
+
+Details of these configuration bits can be found in the RISC-V Debug Specification, version 0.13.2 (see Trigger Registers, Section 5.2).
+
+.. _csr-tdata2:
+
+Trigger Data Register 2 (tdata2)
+--------------------------------
+
+CSR Address: ``0x7A2``
+
+Reset Value: ``0x0000_0000``
+
+Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
+Since native triggers are not supported, writes to this register from M-Mode will be ignored.
+
+This register stores the instruction address to match against for a breakpoint trigger.
+
+Trigger Data Register 3 (tdata3)
+--------------------------------
+
+CSR Address: ``0x7A3``
+
+Reset Value: ``0x0000_0000``
+
+Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
+
+Ibex does not support the features requiring this register, so writes are ignored and it will always read as zero.
+
+Machine Context Register (mcontext)
+-----------------------------------
+
+CSR Address: ``0x7A8``
+
+Reset Value: ``0x0000_0000``
+
+Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
+
+Ibex does not support the features requiring this register, so writes are ignored and it will always read as zero.
+
+Supervisor Context Register (scontext)
+--------------------------------------
+
+CSR Address: ``0x7AA``
+
+Reset Value: ``0x0000_0000``
+
+Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
+
+Ibex does not support the features requiring this register, so writes are ignored and it will always read as zero.
 
 .. _csr-dcsr:
 

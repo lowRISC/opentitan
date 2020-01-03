@@ -60,7 +60,6 @@
   iterations: 2
   gen_test: riscv_rand_instr_test
   gen_opts: >
-    +require_signature_addr=1
     +instr_cnt=6000
     +num_of_sub_program=0
     +enable_access_invalid_csr_level=1
@@ -122,8 +121,15 @@
     Enable floating point instructions
   gen_opts: >
     +enable_floating_point=1
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,4
+    +directed_instr_3=riscv_mem_region_stress_test,4
+    +directed_instr_4=riscv_jal_instr,4
   iterations: 1
-  gen_test: riscv_rand_instr_test
+  gen_test: riscv_instr_base_test
   rtl_test: core_base_test
 
 - test: riscv_floating_point_mmu_stress_test

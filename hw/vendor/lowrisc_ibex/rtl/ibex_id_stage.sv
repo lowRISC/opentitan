@@ -97,6 +97,7 @@ module ibex_id_stage #(
     input  logic [14:0]           csr_mfip_i,
     input  logic                  irq_pending_i,
     input  logic                  irq_nm_i,
+    output logic                  nmi_mode_o,
 
     input  logic                  lsu_load_err_i,
     input  logic                  lsu_store_err_i,
@@ -109,6 +110,7 @@ module ibex_id_stage #(
     input  logic                  debug_single_step_i,
     input  logic                  debug_ebreakm_i,
     input  logic                  debug_ebreaku_i,
+    input  logic                  trigger_match_i,
 
     // Write back signal
     input  logic [31:0]           regfile_wdata_lsu_i,
@@ -231,7 +233,7 @@ module ibex_id_stage #(
       OP_A_FWD:    alu_operand_a = lsu_addr_last_i;
       OP_A_CURRPC: alu_operand_a = pc_id_i;
       OP_A_IMM:    alu_operand_a = imm_a;
-      default:     alu_operand_a = 'X;
+      default:     alu_operand_a = pc_id_i;
     endcase
   end
 
@@ -249,7 +251,7 @@ module ibex_id_stage #(
       IMM_B_J:         imm_b = imm_j_type;
       IMM_B_INCR_PC:   imm_b = instr_is_compressed_i ? 32'h2 : 32'h4;
       IMM_B_INCR_ADDR: imm_b = 32'h4;
-      default:         imm_b = 'X;
+      default:         imm_b = 32'h4;
     endcase
   end
 
@@ -271,8 +273,8 @@ module ibex_id_stage #(
       RF_WD_EX:  regfile_wdata = regfile_wdata_ex_i;
       RF_WD_LSU: regfile_wdata = regfile_wdata_lsu_i;
       RF_WD_CSR: regfile_wdata = csr_rdata_i;
-      default:   regfile_wdata = 'X;
-    endcase;
+      default:   regfile_wdata = regfile_wdata_ex_i;
+    endcase
   end
 
   ///////////////////
@@ -315,6 +317,9 @@ module ibex_id_stage #(
       .RV32E ( RV32E ),
       .RV32M ( RV32M )
   ) decoder_i (
+      .clk_i                           ( clk_i                ),
+      .rst_ni                          ( rst_ni               ),
+
       // controller
       .illegal_insn_o                  ( illegal_insn_dec     ),
       .ebrk_insn_o                     ( ebrk_insn            ),
@@ -433,6 +438,7 @@ module ibex_id_stage #(
       .csr_mfip_i                     ( csr_mfip_i             ),
       .irq_pending_i                  ( irq_pending_i          ),
       .irq_nm_i                       ( irq_nm_i               ),
+      .nmi_mode_o                     ( nmi_mode_o             ),
 
       // CSR Controller Signals
       .csr_save_if_o                  ( csr_save_if_o          ),
@@ -452,6 +458,7 @@ module ibex_id_stage #(
       .debug_single_step_i            ( debug_single_step_i    ),
       .debug_ebreakm_i                ( debug_ebreakm_i        ),
       .debug_ebreaku_i                ( debug_ebreaku_i        ),
+      .trigger_match_i                ( trigger_match_i        ),
 
       // stall signals
       .stall_lsu_i                    ( stall_lsu              ),
@@ -596,7 +603,7 @@ module ibex_id_stage #(
       end
 
       default: begin
-        id_wb_fsm_ns = id_fsm_e'(1'bX);
+        id_wb_fsm_ns = IDLE;
       end
     endcase
   end
@@ -607,28 +614,38 @@ module ibex_id_stage #(
   // Assertions //
   ////////////////
 
-`ifndef VERILATOR
-  // branch decision must be valid when jumping
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (branch_decision_i !== 1'bx || !branch_in_dec)) else
-    $display("Branch decision is X");
+  // Selectors must be known/valid.
+  `ASSERT_KNOWN(IbexAluOpMuxSelKnown, alu_op_a_mux_sel, clk_i, !rst_ni)
+  `ASSERT(IbexImmBMuxSelValid, imm_b_mux_sel inside {
+      IMM_B_I,
+      IMM_B_S,
+      IMM_B_B,
+      IMM_B_U,
+      IMM_B_J,
+      IMM_B_INCR_PC,
+      IMM_B_INCR_ADDR
+      }, clk_i, !rst_ni)
+  `ASSERT(IbexRegfileWdataSelValid, regfile_wdata_sel inside {
+      RF_WD_LSU,
+      RF_WD_EX,
+      RF_WD_CSR
+      }, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IbexWbStateKnown, id_wb_fsm_cs, clk_i, !rst_ni)
 
-`ifdef CHECK_MISALIGNED
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (!lsu_addr_incr_req_i)) else
-    $display("Misaligned memory access at %x",pc_id_i);
-`endif
+  // Branch decision must be valid when jumping.
+  `ASSERT(IbexBranchDecisionValid, branch_in_dec |-> !$isunknown(branch_decision_i), clk_i, !rst_ni)
 
-  // instruction delivered to ID stage must always be valid
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |->
-      (!$isunknown(instr_rdata_i))) else
-    $display("Instruction is valid, but has at least one X");
+  // Instruction delivered to ID stage can not contain X.
+  `ASSERT(IbexIdInstrKnown,
+      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_i),
+      clk_i, !rst_ni)
 
-  // multicycle enable signals must be unique
-  assert property (@(posedge clk_i) disable iff (!rst_ni)
-      ($onehot0({data_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))) else
-    $display("Multicycle enable signals are not unique");
-`endif
+  // Multicycle enable signals must be unique.
+  `ASSERT(IbexMulticycleEnableUnique,
+      $onehot0({data_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}), clk_i, !rst_ni)
+
+  `ifdef CHECK_MISALIGNED
+  `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i, clk_i, !rst_ni)
+  `endif
 
 endmodule

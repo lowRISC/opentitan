@@ -27,12 +27,12 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
   rand bit [2:0]           num_of_nested_loop;
   rand int                 num_of_instr_in_loop;
   rand riscv_instr_name_t  branch_type[];
-  riscv_instr_base         loop_init_instr[];
-  riscv_instr_base         loop_update_instr[];
-  riscv_instr_base         loop_branch_instr[];
-  riscv_rand_instr         loop_branch_target_instr[];
+  riscv_instr              loop_init_instr[];
+  riscv_instr              loop_update_instr[];
+  riscv_instr              loop_branch_instr[];
+  riscv_instr              loop_branch_target_instr[];
   // Aggregated loop instruction stream
-  riscv_instr_base         loop_instr[];
+  riscv_instr         loop_instr[];
 
   constraint legal_loop_regs_c {
     solve num_of_nested_loop before loop_cnt_reg;
@@ -124,9 +124,8 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
     loop_branch_target_instr = new[num_of_nested_loop];
     for(int i = 0; i < num_of_nested_loop; i++) begin
       // Instruction to init the loop counter
-      loop_init_instr[2*i] = riscv_instr_base::type_id::create("loop_init_instr");
+      loop_init_instr[2*i] = riscv_instr::get_rand_instr(.include_instr({ADDI}));
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_init_instr[2*i],
-                                     instr_name == ADDI;
                                      rd == loop_cnt_reg[i];
                                      rs1 == ZERO;
                                      imm == loop_init_val[i];,
@@ -134,9 +133,8 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
       loop_init_instr[2*i].comment = $sformatf("init loop %0d counter", i);
 
       // Instruction to init loop limit
-      loop_init_instr[2*i+1] = riscv_instr_base::type_id::create("loop_init_instr");
+      loop_init_instr[2*i+1] = riscv_instr::get_rand_instr(.include_instr({ADDI}));
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_init_instr[2*i+1],
-                                     instr_name == ADDI;
                                      rd == loop_limit_reg[i];
                                      rs1 == ZERO;
                                      imm == loop_limit_val[i];,
@@ -144,28 +142,30 @@ class riscv_loop_instr extends riscv_rand_instr_stream;
       loop_init_instr[2*i+1].comment = $sformatf("init loop %0d limit", i);
 
       // Branch target instruction, can be anything
-      loop_branch_target_instr[i] = riscv_rand_instr::type_id::create("loop_branch_target_instr");
-      loop_branch_target_instr[i].cfg = cfg;
-      loop_branch_target_instr[i].reserved_rd = reserved_rd;
+      loop_branch_target_instr[i] = riscv_instr::get_rand_instr(
+          .include_category({ARITHMETIC, LOGICAL, COMPARE}),
+          .exclude_instr({C_ADDI16SP}));
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_branch_target_instr[i],
-                                     !(category inside {LOAD, STORE, BRANCH, JUMP});,
-                                     "Cannot randomize branch target instruction")
+                                     if (format == CB_FORMAT) {
+                                       !(rs1 inside {reserved_rd, cfg.reserved_regs});
+                                     }
+                                     if (has_rd) {
+                                       !(rd inside {reserved_rd, cfg.reserved_regs});
+                                     }, "Cannot randomize branch target instruction")
       loop_branch_target_instr[i].label = $sformatf("%0s_%0d_t", label, i);
 
       // Instruction to update loop counter
-      loop_update_instr[i] = riscv_instr_base::type_id::create("loop_update_instr");
+      loop_update_instr[i] = riscv_instr::get_rand_instr(.include_instr({ADDI}));
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_update_instr[i],
-                                     instr_name == ADDI;
                                      rd == loop_cnt_reg[i];
-                                     rs1== loop_cnt_reg[i];
+                                     rs1 == loop_cnt_reg[i];
                                      imm == loop_step_val[i];,
                                      "Cannot randomize loop update instruction")
       loop_update_instr[i].comment = $sformatf("update loop %0d counter", i);
 
       // Backward branch instruction
-      loop_branch_instr[i] = riscv_instr_base::type_id::create("loop_branch_instr");
+      loop_branch_instr[i] = riscv_instr::get_rand_instr(.include_instr({branch_type[i]}));
       `DV_CHECK_RANDOMIZE_WITH_FATAL(loop_branch_instr[i],
-                                     instr_name == branch_type[i];
                                      rs1 == loop_cnt_reg[i];
                                      if (!(branch_type[i] inside {C_BEQZ, C_BNEZ})) {
                                        rs2 == loop_limit_reg[i];

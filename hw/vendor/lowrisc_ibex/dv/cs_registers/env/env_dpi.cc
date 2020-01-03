@@ -35,7 +35,10 @@ void env_final() {
   delete reg_env;
 }
 
-void env_tick(svBit *stop_req) { reg_env->GetStopReq(stop_req); }
+void env_tick(svBit *stop_req, svBit *test_passed) {
+  reg_env->GetStopReq(stop_req);
+  reg_env->GetTestPass(test_passed);
+}
 
 #ifdef __cplusplus
 }

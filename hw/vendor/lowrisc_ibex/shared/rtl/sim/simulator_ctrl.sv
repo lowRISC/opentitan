@@ -36,7 +36,7 @@ module simulator_ctrl #(
   localparam SIM_CTRL_ADDR = 1;
 
   logic [7:0] ctrl_addr;
-  logic [2:0] sim_finish;
+  logic [2:0] sim_finish = 3'b000;
 
   integer log_fd;
 
@@ -78,9 +78,7 @@ module simulator_ctrl #(
         endcase
       end
     end
-  end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (sim_finish != 'b0) begin
       sim_finish <= sim_finish + 1;
     end
@@ -88,6 +86,7 @@ module simulator_ctrl #(
       $finish;
     end
   end
+
   assign rdata_o = '0;
 endmodule
 
