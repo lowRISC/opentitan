@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+r"""Command-line tool to perform LEC on all AES S-Box implementations using Yosys
+
+"""
+import glob
+import os
+import subprocess
+import sys
+
+
+def replace_module_name(file_name, string_search, string_replace):
+    fin = open(file_name, 'rt')
+    data = fin.read()
+    data = data.replace(string_search, string_replace)
+    fin.close()
+    fin = open(file_name, 'wt')
+    fin.write(data)
+    fin.close()
+
+
+rtl_path = '../../rtl/'
+
+# List all S-Box reference implementation + AES package
+impl_gold = 'aes_sbox_lut'
+file_pkg = 'aes_pkg.sv'
+
+# Detect all S-Box implementations to check
+impl_list = glob.glob(rtl_path + 'aes_sbox_*.sv')
+impl_list = [
+    impl_dut.replace(rtl_path, '').replace('.sv', '') for impl_dut in impl_list
+]
+impl_list.remove(impl_gold)
+
+# Create workdir
+os.makedirs('scratch', exist_ok=True)
+
+# Convert the reference implementation to Verilog
+sv2v_cmd = ['sv2v', rtl_path + impl_gold + '.sv', rtl_path + file_pkg]
+with open('scratch/aes_sbox_ref.v', 'w') as outfile:
+    subprocess.run(sv2v_cmd, stdout=outfile)
+
+# Change module name
+replace_module_name('scratch/aes_sbox_ref.v', impl_gold, 'aes_sbox_ref')
+
+print('Running LEC on ' + str(len(impl_list)) + ' S-Box implementation(s)...')
+
+# Check every implementation separately
+num_impl_success = 0
+num_impl_failed = 0
+for impl_dut in impl_list:
+
+    # Convert DUT to Verilog
+    sv2v_cmd = ['sv2v', rtl_path + impl_dut + '.sv', rtl_path + file_pkg]
+    with open('scratch/aes_sbox_dut.v', 'w') as outfile:
+        subprocess.run(sv2v_cmd, stdout=outfile)
+
+    # Change module name
+    replace_module_name('scratch/aes_sbox_dut.v', impl_dut, 'aes_sbox_dut')
+
+    ## Perform LEC in Yosys
+    yosys_cmd = ['yosys', '../aes_sbox_lec.ys']
+    lec_log = 'scratch/' + impl_dut + '_lec.log'
+    with open(lec_log, 'w') as outfile:
+        subprocess.run(yosys_cmd, cwd="scratch", stdout=outfile)
+
+    # Get actual LEC output
+    lec_string = 'Trying to prove $equiv'
+    lec_lines = []
+    with open(lec_log, 'rt') as fin:
+        data = fin.read()
+        for line in data.split('\n'):
+            if lec_string in line:
+                lec_lines.append(line)
+
+    # Check for LEC output
+    num_lec_success = 0
+    num_lec_failed = 0
+    for line in lec_lines:
+        if 'success!' in line:
+            num_lec_success = num_lec_success + 1
+        if 'failed.' in line:
+            num_lec_failed = num_lec_failed + 1
+
+    if (len(lec_lines) == 0) or (len(lec_lines) !=
+                                 num_lec_success) or (num_lec_failed > 0):
+        print("LEC failed: \t\t\t" + impl_dut + '.sv\n-> ' + 'Check ' +
+              lec_log + ' for details.')
+        num_impl_failed = num_impl_failed + 1
+    else:
+        print("LEC completed successfully: \t" + impl_dut + '.sv')
+        num_impl_success = num_impl_success + 1
+
+# Print output
+print('Done.')
+if (num_impl_success == len(impl_list)) and not num_impl_failed:
+    print('SUCCESS!')
+else:
+    print('FAILED for ' + str(num_impl_failed) + ' implementation(s).')
+    sys.exit(1)
