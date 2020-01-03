@@ -6,15 +6,15 @@ module jtagdpi #(
   parameter string Name = "jtag0", // name of the JTAG interface (display only)
   parameter int ListenPort = 44853 // TCP port to listen on
 )(
-  input  clk_i,
-  input  rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
-  output jtag_tck,
-  output jtag_tms,
-  output jtag_tdi,
-  input  jtag_tdo,
-  output jtag_trst_n,
-  output jtag_srst_n
+  output logic jtag_tck,
+  output logic jtag_tms,
+  output logic jtag_tdi,
+  input  logic jtag_tdo,
+  output logic jtag_trst_n,
+  output logic jtag_srst_n
 );
 
   import "DPI-C"
