@@ -8,8 +8,9 @@ module prim_fifo_sync #(
   parameter int unsigned Width       = 16,
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
+  // derived parameter
   localparam int unsigned DepthWNorm = $clog2(Depth+1),
-  localparam int unsigned DepthW     = (DepthWNorm == 0) ? 1 : DepthWNorm // derived parameter
+  localparam int unsigned DepthW     = (DepthWNorm == 0) ? 1 : DepthWNorm
 ) (
   input                   clk_i,
   input                   rst_ni,
@@ -46,7 +47,6 @@ module prim_fifo_sync #(
 
   // Normal FIFO construction
   end else begin : gen_normal_fifo
-    `ASSERT_INIT(paramCheckDepthW, DepthW == $clog2(Depth+1))
 
     // consider Depth == 1 case when $clog2(1) == 0
     localparam int unsigned PTRV_W    = $clog2(Depth) + ~|$clog2(Depth);

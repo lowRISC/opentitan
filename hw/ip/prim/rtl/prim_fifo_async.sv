@@ -5,9 +5,9 @@
 // Generic asynchronous fifo for use in a variety of devices.
 
 module prim_fifo_async #(
-  parameter int unsigned Width = 16,
-  parameter int unsigned Depth = 3,
-  parameter int unsigned DepthW = $clog2(Depth+1) // derived parameter representing [0..Depth]
+  parameter  int unsigned Width  = 16,
+  parameter  int unsigned Depth  = 3,
+  localparam int unsigned DepthW = $clog2(Depth+1) // derived parameter representing [0..Depth]
 ) (
   // write port
   input                  clk_wr_i,
@@ -27,7 +27,6 @@ module prim_fifo_async #(
 );
 
   `ASSERT_INIT(paramCheckDepth,  Depth >= 3)
-  `ASSERT_INIT(paramCheckDepthW, DepthW == $clog2(Depth+1))
 
   localparam int unsigned PTRV_W = $clog2(Depth);
   localparam logic [PTRV_W-1:0] DepthMinus1 = PTRV_W'(Depth - 1);

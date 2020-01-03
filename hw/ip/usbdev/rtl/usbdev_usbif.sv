@@ -8,13 +8,13 @@
 
 // This module runs on the 48MHz USB clock
 module usbdev_usbif  #(
-  parameter int AVFifoWidth = 4,
-  parameter int RXFifoWidth = 4,
-  parameter int MaxPktSizeByte = 64,
-  parameter int NBuf = 4,
-  parameter int SramAw = 4,
-  parameter int NBufWidth = $clog2(NBuf), // derived parameter
-  parameter int PktW = $clog2(MaxPktSizeByte) // derived parameter
+  parameter  int AVFifoWidth = 4,
+  parameter  int RXFifoWidth = 4,
+  parameter  int MaxPktSizeByte = 64,
+  parameter  int NBuf = 4,
+  parameter  int SramAw = 4,
+  localparam int NBufWidth = $clog2(NBuf), // derived parameter
+  localparam int PktW = $clog2(MaxPktSizeByte) // derived parameter
 ) (
   input                            clk_48mhz_i, // 48MHz USB clock
   input                            rst_ni,

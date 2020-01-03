@@ -9,11 +9,10 @@ module spi_fwm_txf_ctrl #(
   parameter int FifoDw = 8,
   parameter int SramAw = 11,
   parameter int SramDw = 32,
-  // Do not touch below
   // SramDw should be multiple of FifoDw
-  parameter int NumBytes = SramDw/FifoDw, // derived parameter
-  parameter int SDW = $clog2(NumBytes),   // derived parameter
-  parameter int PtrW = SramAw + SDW + 1   // derived parameter
+  localparam int NumBytes = SramDw/FifoDw, // derived parameter
+  localparam int SDW = $clog2(NumBytes),   // derived parameter
+  localparam int PtrW = SramAw + SDW + 1   // derived parameter
 ) (
   input clk_i,
   input rst_ni,
@@ -40,10 +39,6 @@ module spi_fwm_txf_ctrl #(
   input        [SramDw-1:0] sram_rdata,
   input               [1:0] sram_error
 );
-
-  `ASSERT_INIT(paramCheckNumBytes, NumBytes == (SramDw/FifoDw))
-  `ASSERT_INIT(paramCheckSDW,      SDW      == $clog2(NumBytes))
-  `ASSERT_INIT(paramCheckPtrW,     PtrW     == (SramAw + SDW + 1))
 
   logic [SDW-1:0] pos;    // Current write position
   logic [SramAw-1:0] sramf_limit;

@@ -11,9 +11,9 @@ module spi_fwm_rxf_ctrl #(
   parameter int unsigned SramDw = 32,
   // Do not touch below
   // SramDw should be multiple of FifoDw
-  parameter int unsigned NumBytes = SramDw/FifoDw,  // derived parameter
-  parameter int unsigned SDW = $clog2(NumBytes),    // derived parameter
-  parameter int unsigned PtrW = SramAw + SDW + 1    // derived parameter
+  localparam int unsigned NumBytes = SramDw/FifoDw,    // derived parameter
+  localparam int unsigned SDW      = $clog2(NumBytes), // derived parameter
+  localparam int unsigned PtrW     = SramAw + SDW + 1  // derived parameter
 ) (
   input clk_i,
   input rst_ni,
@@ -41,10 +41,6 @@ module spi_fwm_rxf_ctrl #(
   input        [SramDw-1:0] sram_rdata,
   input               [1:0] sram_error
 );
-
-  `ASSERT_INIT(paramCheckNumBytes, NumBytes == (SramDw/FifoDw))
-  `ASSERT_INIT(paramCheckSDW,      SDW      == $clog2(NumBytes))
-  `ASSERT_INIT(paramCheckPtrW,     PtrW     == (SramAw + SDW + 1))
 
   // Internal variable
   logic [NumBytes-1:0] byte_enable;
