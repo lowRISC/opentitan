@@ -8,23 +8,22 @@
 // 0x01 -- monitor_usb (packet level)
 // 0x08 -- bit level
 
-module usbdpi
-  #(
+module usbdpi #(
   parameter string NAME = "usb0",
   parameter LOG_LEVEL = 1
-  )(
-  input  clk_i,
-  input  rst_ni,
-  input  clk_48MHz_i,
-  output dp_p2d,
-  input  dp_d2p,
-  input  dp_en_d2p,
-  output dn_p2d,
-  input  dn_d2p,
-  input  dn_en_d2p,
-  output sense_p2d,
-  input  pullup_d2p,
-  input  pullup_en_d2p
+)(
+  input  logic clk_i,
+  input  logic rst_ni,
+  input  logic clk_48MHz_i,
+  output logic dp_p2d,
+  input  logic dp_d2p,
+  input  logic dp_en_d2p,
+  output logic dn_p2d,
+  input  logic dn_d2p,
+  input  logic dn_en_d2p,
+  output logic sense_p2d,
+  input  logic pullup_d2p,
+  input  logic pullup_en_d2p
 );
   import "DPI-C" function
     chandle usbdpi_create(input string name, input int loglevel);
