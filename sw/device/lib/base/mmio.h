@@ -9,6 +9,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// This disables the definitions for reg32_t, reg32_read, and reg32_write for
+// testing purposes, but does not disable functions that are implemented in
+// terms of them. This is useful for mocking out read and write in tests,
+// without having to replicate all the other functions.
+#ifndef MOCK_MMIO
 /**
  * A reg32_t is an opaque handle to an MMIO register; it should only be modified
  * using the functions provided in this header.
@@ -54,6 +59,7 @@ inline uint32_t reg32_read(reg32_t base, ptrdiff_t offset) {
 inline void reg32_write(reg32_t base, ptrdiff_t offset, uint32_t value) {
   base.inner_ptr[offset / sizeof(uint32_t)] = value;
 }
+#endif  // MOCK_MMIO
 
 /**
  * Clears the bits in |mask| from the MMIO register |base| at the given offset.

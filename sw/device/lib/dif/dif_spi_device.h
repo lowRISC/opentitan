@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef MOCK_MMIO
+#include "sw/device/lib/dif/testing/mock_mmio.h"
+#endif  // MOCK_MMIO
+
 #include "sw/device/lib/base/mmio.h"
 
 /**
