@@ -31,7 +31,7 @@ For more information on building software targets refer to the [Software Getting
 ```console
 $ cd $REPO_TOP
 $ ./meson_init.sh
-$ ninja -C build-out/sw/device/sim-verilator all
+$ ninja -C build-out/sw/sim-verilator all
 ```
 
 Now the simulation can be run.
@@ -104,7 +104,8 @@ $ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator
 To connect GDB use the following command (noting it needs to be altered to point to the sw binary in use).
 
 ```console
-$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/sim_hello_world/sw.elf
+$ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
+  build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf
 ```
 
 Note that debug support is not yet mature (see https://github.com/lowRISC/opentitan/issues/574).
@@ -165,8 +166,8 @@ Tracing slows down the simulation by roughly factor of 1000.
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --meminit=rom,sw/device/sim_boot_rom/rom.elf \
-  --meminit=flash,sw/device/sim_hello_world/sw.elf \
+  --meminit=rom,build-bin/sw/device/sim-verilator/boot_rom/boot_rom.elf \
+  --meminit=flash,build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf \
   --trace
 $ gtkwave sim.fst
 ```
