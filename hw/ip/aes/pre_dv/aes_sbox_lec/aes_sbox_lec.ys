@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Yosys script to perform LEC between two different AES S-Box implementations.
+
+# Read the Verilog sources
+read_verilog aes_sbox_ref.v aes_sbox_dut.v
+
+# Do some preprocessing
+proc
+
+# Set up equivalence check
+equiv_make aes_sbox_ref aes_sbox_dut aes_sbox_equiv
+
+# Do the logic equivalence check
+equiv_simple
