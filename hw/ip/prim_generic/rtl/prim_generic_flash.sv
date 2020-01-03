@@ -11,7 +11,7 @@ module prim_generic_flash #(
   parameter int DataWidth   = 32,   // bits per word
   parameter bit SkipInit = 1,       // this is an option to reset flash to all F's at reset
 
-  //Do not touch - Derived parameters
+  // Derived parameters
   localparam int PageW = $clog2(PagesPerBank),
   localparam int WordW = $clog2(WordsPerPage),
   localparam int AddrW = PageW + WordW

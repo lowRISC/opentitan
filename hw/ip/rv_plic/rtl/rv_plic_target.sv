@@ -35,8 +35,6 @@ module rv_plic_target #(
 
   // this only works with 2 or more sources
   `ASSERT_INIT(NumSources_A, N_SOURCE >= 2)
-  `ASSERT_INIT(paramCheckSRCW,  SRCW  == $clog2(N_SOURCE+1))
-  `ASSERT_INIT(paramCheckPRIOW, PRIOW == $clog2(MAX_PRIO+1))
 
   // To occupy threshold + 1 value
   localparam int unsigned MAX_PRIOW = $clog2(MAX_PRIO+2);

@@ -7,11 +7,10 @@
 //   Implementing ECC should be done inside wrapper not this model.
 
 module prim_xilinx_ram_2p #(
-  parameter int Width    = 32, // bit
-  parameter int Depth    = 128,
+  parameter  int Width = 32, // bit
+  parameter  int Depth = 128,
 
-  // Do not touch
-  parameter int Aw = $clog2(Depth)  // derived parameter
+  localparam int Aw    = $clog2(Depth)  // derived parameter
 ) (
   input clk_a_i,
   input clk_b_i,
@@ -28,8 +27,6 @@ module prim_xilinx_ram_2p #(
   input        [Width-1:0] b_wdata_i,
   output logic [Width-1:0] b_rdata_o
 );
-
-  `ASSERT_INIT(paramCheckAw, Aw == $clog2(Depth))
 
   logic [Width-1:0] storage [Depth];
 

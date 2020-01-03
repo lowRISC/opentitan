@@ -5,10 +5,10 @@
 // Synchronous single-port SRAM model
 
 module prim_generic_ram_1p #(
-  parameter int Width           = 32, // bit
-  parameter int Depth           = 128,
-  parameter int DataBitsPerMask = 1, // Number of data bits per bit of write mask
-  localparam int Aw             = $clog2(Depth)  // derived parameter
+  parameter  int Width           = 32, // bit
+  parameter  int Depth           = 128,
+  parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
+  localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input clk_i,
   input rst_ni,       // Memory content reset
@@ -25,9 +25,6 @@ module prim_generic_ram_1p #(
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask
   localparam int MaskWidth = Width / DataBitsPerMask;
-
-  `ASSERT_INIT(paramCheckAw, Aw == $clog2(Depth))
-
 
   logic [Width-1:0] mem [Depth];
   logic [MaskWidth-1:0] wmask;
