@@ -36,8 +36,19 @@ class chip_base_vseq extends dv_base_vseq #(
     if (do_cpu_init) cpu_init();
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    fork
+      begin
+        super.apply_reset(kind);
+      end
+      begin
+        cfg.m_jtag_agent_cfg.do_trst_n();
+      end
+    join
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
+    super.dut_init(reset_kind);
     cfg.m_uart_agent_cfg.set_baud_rate(BaudRate1Mbps);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});

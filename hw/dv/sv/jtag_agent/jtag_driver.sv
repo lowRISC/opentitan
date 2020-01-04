@@ -22,7 +22,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   virtual task reset_signals();
     if (cfg.if_mode == Host) begin
       cfg.vif.tck_en <= 1'b0;
-      cfg.vif.trst_n <= 1'b1;
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= 1'b0;
     end
