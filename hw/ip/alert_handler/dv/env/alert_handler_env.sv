@@ -37,9 +37,16 @@ class alert_handler_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    foreach (alert_host_agent[i]) begin
-      if (cfg.alert_host_cfg[i].is_active) begin
-        virtual_sequencer.alert_host_seqr_h[i] = alert_host_agent[i].sequencer;
+    if (cfg.en_scb) begin
+      foreach (alert_host_agent[i]) begin
+        alert_host_agent[i].monitor.alert_port.connect(scoreboard.alert_fifo[i].analysis_export);
+      end
+    end
+    if (cfg.is_active) begin
+      foreach (alert_host_agent[i]) begin
+        if (cfg.alert_host_cfg[i].is_active) begin
+          virtual_sequencer.alert_host_seqr_h[i] = alert_host_agent[i].sequencer;
+        end
       end
     end
   endfunction

@@ -15,6 +15,7 @@ class alert_seq_item extends uvm_sequence_item;
   rand bit ack_int_err;
   rand bit ping_send;
   rand bit ping_int_err;
+  rand bit timeout;
 
   // for alert_monitor
   rand alert_type_e      alert_type;
@@ -41,6 +42,7 @@ class alert_seq_item extends uvm_sequence_item;
     `uvm_field_int (ack_int_err,   UVM_DEFAULT)
     `uvm_field_int (ping_send,     UVM_DEFAULT)
     `uvm_field_int (ping_int_err,  UVM_DEFAULT)
+    `uvm_field_int (timeout,       UVM_DEFAULT)
     `uvm_field_enum(alert_type_e, alert_type, UVM_DEFAULT)
     `uvm_field_enum(alert_handshake_e, alert_handshake_sta, UVM_DEFAULT)
   `uvm_object_utils_end
