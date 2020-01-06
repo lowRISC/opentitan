@@ -58,7 +58,7 @@ package dv_utils_pkg;
   typedef struct {
     uvm_reg_addr_t start_addr;
     uvm_reg_addr_t end_addr;
-  } mem_addr_s;
+  } addr_range_t;
 
   string msg_id = "dv_utils_pkg";
 

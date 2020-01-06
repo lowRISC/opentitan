@@ -53,8 +53,7 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
         // Current port is a host port, get pair device port from the address
         foreach (xbar_devices[j]) begin
           if (xbar_devices[j].device_name inside {xbar_hosts[i].valid_devices} &&
-              tr.a_addr inside {[xbar_devices[j].start_address :
-                                 xbar_devices[j].end_address]}) begin
+              is_device_valid_addr(xbar_devices[j].device_name, tr.a_addr)) begin
               return {queue_prefix, xbar_devices[j].device_name};
           end
         end
@@ -84,8 +83,7 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       if (xbar_hosts[i].host_name == tl_port) begin
         foreach (xbar_devices[j]) begin
           if (xbar_devices[j].device_name inside {xbar_hosts[i].valid_devices} &&
-              tr.a_addr inside {[xbar_devices[j].start_address :
-                                 xbar_devices[j].end_address]}) begin
+              is_device_valid_addr(xbar_devices[j].device_name, tr.a_addr)) begin
             if (cfg.en_cov) cov.host_access_mapped_addr_cg[tl_port].sample(1);
             return 1; // host port and mapped address
           end
@@ -100,15 +98,19 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
   virtual function void process_src_packet(input tl_seq_item  tr,
                                            input string port_name,
                                            output tl_seq_item transformed_tr[$]);
+    tl_seq_item modified_tr;
     if (is_access_to_mapped_addr(tr, port_name)) begin
-      transformed_tr = {modify_source_id(tr)};
+      modified_tr = modify_source_id(tr);
+      // d_data is 0, when it's a write
+      if (modified_tr.d_opcode == tlul_pkg::AccessAck) modified_tr.d_data = 0;
+      transformed_tr = {modified_tr};
     end else begin
       tl_seq_item rsp;
       `downcast(rsp, tr.clone());
       rsp.d_source    = tr.a_source;
       rsp.d_size      = tr.a_size;
       rsp.d_error     = 1;
-      rsp.d_data      = '1;
+      rsp.d_data      = rsp.a_opcode == tlul_pkg::Get ? '1 : 0;
       rsp.d_opcode    = rsp.a_opcode == tlul_pkg::Get ?
                         tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
       transformed_tr  = {rsp};

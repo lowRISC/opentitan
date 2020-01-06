@@ -13,4 +13,4 @@ FUSESOC_CORE    := lowrisc:dv:xbar_${xbar.name}_sim:0.1
 # default COV_COMMON_EXCL isn't applicable to xbar, use its own el file
 COV_COMMON_EXCL  = ${'$'}{CURRENT_DIR}/../cov/xbar_cov_excl.el
 
-include ${'$'}{DV_DIR}/../../../dv/sv/xbar_dv/Makefile
+include ${'$'}{DV_DIR}/../../../ip/tlul/generic_dv/xbar.mk

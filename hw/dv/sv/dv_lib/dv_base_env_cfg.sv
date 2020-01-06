@@ -16,7 +16,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // reg model & q of valid csr addresses
   RAL_T                 ral;
   bit [TL_AW-1:0]       csr_addrs[$];
-  mem_addr_s            mem_addrs[$];
+  addr_range_t          mem_ranges[$];
   // mem access support, if not enabled, will trigger error
   bit                   en_mem_byte_write = 0;
   bit                   en_mem_read       = 1;

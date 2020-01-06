@@ -20,4 +20,4 @@ targets:
   default: &default_target
     filesets:
       - files_rtl
-    toplevel: xbar_main
+    toplevel: xbar_${xbar.name}
