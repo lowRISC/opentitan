@@ -74,8 +74,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item);
     uvm_reg_addr_t addr = get_normalized_addr(item.a_addr) - cfg.csr_base_addr;
-    foreach (cfg.mem_addrs[i]) begin
-      if (addr inside {[cfg.mem_addrs[i].start_addr : cfg.mem_addrs[i].end_addr]}) begin
+    foreach (cfg.mem_ranges[i]) begin
+      if (addr inside {[cfg.mem_ranges[i].start_addr : cfg.mem_ranges[i].end_addr]}) begin
         return 1;
       end
     end

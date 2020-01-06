@@ -14,14 +14,6 @@ module tb;
   wire tlul_assert_ctrl;
   pins_if #(1) tlul_assert_ctrl_if(tlul_assert_ctrl);
 
-  xbar_main dut(
-    .clk_main_i(clk),
-    .rst_main_ni(rst_n),
-    // TODO temp use same clk to avoid failure due to new feature (multi-clk #903)
-    .clk_fixed_i(clk),
-    .rst_fixed_ni(rst_n)
-  );
-
   // this file is auto-generated and the path to this file should be provided in xbar_*_sim.core
   `include "tb__xbar_connect.sv"
 

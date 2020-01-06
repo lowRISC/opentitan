@@ -15,8 +15,7 @@ package xbar_env_pkg;
 
   typedef struct {
     string                      device_name;
-    bit [top_pkg::TL_AW-1 : 0]  start_address;
-    bit [top_pkg::TL_AW-1 : 0]  end_address;
+    addr_range_t                addr_ranges[$];
   } tl_device_t;
 
   typedef struct {
@@ -41,6 +40,20 @@ package xbar_env_pkg;
         foreach (xbar_hosts[i].valid_devices[j]) begin
           if (xbar_hosts[i].valid_devices[j] == device_name)
             return 1;
+        end
+      end
+    end
+    return 0;
+  endfunction
+
+  function automatic bit is_device_valid_addr(string device_name, bit [top_pkg::TL_AW-1 : 0] addr);
+    foreach (xbar_devices[i]) begin
+      if (xbar_devices[i].device_name == device_name) begin
+        foreach (xbar_devices[i].addr_ranges[j]) begin
+          if (addr inside {[xbar_devices[i].addr_ranges[j].start_addr :
+                           xbar_devices[i].addr_ranges[j].end_addr]}) begin
+            return 1;
+          end
         end
       end
     end

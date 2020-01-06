@@ -12,13 +12,10 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   endfunction : initialize_csr_addr_map_size
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    mem_addr_s mem_addr;
     super.initialize(csr_base_addr);
     en_mem_byte_write   = 1;
     en_mem_read         = 0;
-    mem_addr.start_addr = HMAC_MSG_FIFO_BASE;
-    mem_addr.end_addr   = HMAC_MSG_FIFO_LAST_ADDR;
-    mem_addrs.push_back(mem_addr);
+    mem_ranges.push_back('{HMAC_MSG_FIFO_BASE, HMAC_MSG_FIFO_LAST_ADDR});
     list_of_alerts      = {"msg_push_sha_disabled"};
   endfunction
 

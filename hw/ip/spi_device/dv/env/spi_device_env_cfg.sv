@@ -18,7 +18,6 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   endfunction : initialize_csr_addr_map_size
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    mem_addr_s mem_addr;
     super.initialize(csr_base_addr);
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
@@ -27,9 +26,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
 
     sram_start_addr     = SRAM_OFFSET;
     sram_end_addr       = sram_start_addr + SRAM_SIZE - 1;
-    mem_addr.start_addr = sram_start_addr;
-    mem_addr.end_addr   = sram_end_addr;
-    mem_addrs.push_back(mem_addr);
+    mem_ranges.push_back('{sram_start_addr, sram_end_addr});
   endfunction
 
 endclass

@@ -72,16 +72,16 @@ package csr_utils_pkg;
   endfunction
 
   // Get all valid mem addr ranges - useful to check if incoming addr falls in the mem range.
-  function automatic void get_mem_addrs(input uvm_reg_block ral, ref mem_addr_s mem_addrs[$]);
+  function automatic void get_mem_addr_ranges(uvm_reg_block ral, ref addr_range_t mem_ranges[$]);
     uvm_mem mems[$];
     ral.get_memories(mems);
     mems.delete();
     foreach (mems[i]) begin
-      mem_addr_s mem_addr;
-      mem_addr.start_addr = mems[i].get_address();
-      mem_addr.end_addr   = mem_addr.start_addr +
-                            mems[i].get_size() * mems[i].get_n_bytes() - 1;
-      mem_addrs.push_back(mem_addr);
+      addr_range_t mem_range;
+      mem_range.start_addr = mems[i].get_address();
+      mem_range.end_addr   = mem_range.start_addr +
+                             mems[i].get_size() * mems[i].get_n_bytes() - 1;
+      mem_ranges.push_back(mem_range);
     end
   endfunction
 
