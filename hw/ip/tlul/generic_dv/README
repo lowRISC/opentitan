@@ -2,4 +2,6 @@
 Don't run xbar simulation in the current directory: `hw/ip/tlul/generic_dv`.
 Currently directory only contains the generic portion of the xbar TB, which is
 used by all flavors of xbar. The simulation directory is along with actual xbar
-design, for example: hw/top_earlgrey/ip/xbar/dv/autogen
+design, for example:
+* hw/top_earlgrey/ip/xbar_main/dv/autogen
+* hw/top_earlgrey/ip/xbar_peri/dv/autogen
