@@ -1,11 +1,48 @@
 {
   name: "2x2",
-  clock: "main",
+  clock: "clk_main_i",
+  clock_connections: {
+    clk_main_i:   "main"
+    clk_periph_i: "fixed"
+  }
+  reset: "rst_main_ni",
+  reset_connections: {
+    rst_main_ni:   "sys"
+    rst_periph_ni: "sys_fixed"
+  }
   nodes: [
-    { name: "h0", type: "host", clock: "main" },
-    { name: "h1", type: "host", clock: "periph" },
-    { name: "d0", type: "device", clock: "main", base_addr: "0x0000", size_byte: "0x1000" },
-    { name: "d1", type: "device", clock: "main", base_addr: "0x1000", size_byte: "0x1000" }
+    { name: "h0",
+      type: "host",
+      clock: "clk_main_i",
+      reset: "rst_main_ni"
+      xbar: false
+    },
+    { name: "h1",
+      type: "host",
+      clock: "clk_periph_i",
+      reset: "rst_periph_ni"
+      xbar: false
+    },
+    { name: "d0",
+      type: "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      addr_range: [{
+        base_addr: "0x0000",
+        size_byte: "0x1000"
+      }]
+      xbar: false
+    },
+    { name: "d1",
+      type: "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      addr_range: [{
+        base_addr: "0x1000",
+        size_byte: "0x1000"
+      }]
+      xbar: false
+    }
   ],
   connections: {
     h0: ["d0", "d1"],

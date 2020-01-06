@@ -2,82 +2,187 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "main",
-  clock: "main", // Main clock, used in sockets
+  type: "xbar",
+  clock: "clk_main_i", // Main clock, used in sockets
+  clock_connections: {
+    clk_main_i:   "main"
+    clk_jtag_i:   "main"
+    clk_periph_i: "fixed"
+    clk_crypt_i:  "main"
+  }
+  reset: "rst_main_ni" 
+  reset_connections: {
+    rst_main_ni:   "sys"
+    rst_jtag_ni:   "sys"
+    rst_periph_ni: "sys_fixed"
+    rst_crypt_ni:  "sys"
+  }
   nodes: [
     { name:  "ibexif",
       type:  "host",
-      clock: "main",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
 
+      xbar: false
       pipeline: "false"
     },
     { name:  "ibexlsu",
       type:  "host",
-      clock: "periph",
+      clock: "clk_periph_i",
+      reset: "rst_periph_ni",
 
+      xbar: false
       pipeline: "false"
     },
     { name:  "dm_sba", // DM
       type:  "host",
-      clock: "jtag",
+      clock: "clk_jtag_i",
+      reset: "rst_jtag_ni",
 
+      xbar: false
       pipeline_byp: "false"
     },
-    { name:      "rom",
-      type:      "device",
-      clock:     "main",
-      base_addr: "0x00000000",
-      size_byte: "0x10000",   // 64kB
+    { name:  "rom",
+      type:  "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x00000000",
+        size_byte: "0x10000",   // 64kB
+      }]
     },
-    { name:      "debug_rom",
-      type:      "device",
-      clock:     "jtag",
-      base_addr: "0x10040000",
-      size_byte: "0x1000"
+    { name:  "debug_rom",
+      type:  "device",
+      clock: "clk_jtag_i",
+      reset: "rst_jtag_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x10040000",
+        size_byte: "0x1000"
+      }]
     },
-    { name:      "sram",
-      type:      "device",
-      clock:     "main",
-      base_addr: "0x10000000",
-      size_byte: "0x10000",
+    { name:  "sram",
+      type:  "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x10000000",
+        size_byte: "0x10000",
+      }]
     },
-    { name:      "flash_ctrl",
-      type:      "device",
+    { name: "flash_ctrl",
+      type: "device",
       // clock is omitted --> use default clock
-      base_addr: "0x10080000",
-      size_byte: "0x10000",
+      xbar: false
+      addr_range: [{
+        base_addr: "0x10080000",
+        size_byte: "0x10000",
+      }]
     },
-    { name:      "uart0",
-      type:      "device",
-      clock:     "periph",
-      base_addr: "0x40000000",
-      size_byte: "0x10000",
+    { name:  "uart0",
+      type:  "device",
+      clock: "clk_periph_i",
+      reset: "rst_periph_ni",
+      xbar: false
+      addr_range: [{
+        base_addr: "0x40000000",
+        size_byte: "0x10000",
+      }]
     },
-    { name:      "gpio0",
-      type:      "device",
-      clock:     "periph",
-      base_addr: "0x40010000",
-      size_byte: "0x10000",
+    { name:  "gpio0",
+      type:  "device",
+      clock: "clk_periph_i",
+      reset: "rst_periph_ni",
+      xbar: false
+      addr_range: [{
+        base_addr: "0x40010000",
+        size_byte: "0x10000",
+      }]
     },
-    { name:      "spi_device",
-      type:      "device",
-      clock:     "periph",
-      base_addr: "0x40020000",
-      size_byte: "0x10000",
+    { name:  "spi_device",
+      type:  "device",
+      clock: "clk_periph_i",
+      reset: "rst_periph_ni",
+      xbar: false
+      addr_range: [{
+        base_addr: "0x40020000",
+        size_byte: "0x10000",
+      }]
     },
-    { name:      "spi_host",
-      type:      "device",
-      clock:     "periph",
-      base_addr: "0x40030000",
-      size_byte: "0x10000",
+    { name:  "spi_host",
+      type:  "device",
+      clock: "clk_periph_i",
+      reset: "rst_periph_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x40030000",
+        size_byte: "0x10000",
+      }]
     },
-    { name: "timer0",   type: "device", clock: "main", base_addr: "0x50000000", size_byte: "0x1000" },
-    { name: "watchdog", type: "device", clock: "main", base_addr: "0x50010000", size_byte: "0x1000" },
-    { name: "alert_h",  type: "device", clock: "main", base_addr: "0x50020000", size_byte: "0x1000" },
+    { name:  "timer0",
+      type:  "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x50000000",
+        size_byte: "0x1000"
+      }]
+    },
+    { name:  "watchdog",
+      type:  "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x50010000",
+        size_byte: "0x1000"
+      }]
+    },
+    { name:  "alert_h",
+      type:  "device",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x50020000",
+        size_byte: "0x1000"
+      }]
+    },
 
     // Crypto domain : use crypt clock
-    { name: "aes",    type: "device", clock: "crypt", base_addr: "0x60000000", size_byte: "0x8000"  },
-    { name: "hmac",   type: "device", clock: "crypt", base_addr: "0x60010000", size_byte: "0x10000" },
-    { name: "keymgr", type: "device", clock: "crypt", base_addr: "0x60080000", size_byte: "0x20000" },
+    { name:  "aes",
+      type:  "device",
+      clock: "clk_crypt_i",
+      reset: "rst_crypt_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x60000000",
+        size_byte: "0x8000"
+      }]
+    },
+    { name:  "hmac",
+      type:  "device",
+      clock: "clk_crypt_i",
+      reset: "rst_crypt_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x60010000",
+        size_byte: "0x10000"
+      }]
+    },
+    { name:  "keymgr",
+      type:  "device",
+      clock: "clk_crypt_i",
+      reset: "rst_crypt_ni",
+      xbar:  false
+      addr_range: [{
+        base_addr: "0x60080000",
+        size_byte: "0x20000"
+      }]
+    },
   ],
   connections: {
     ibexif: ["rom", "debug_rom", "sram", "flash_ctrl"],
