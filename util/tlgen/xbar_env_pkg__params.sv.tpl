@@ -16,10 +16,14 @@ tl_device_t xbar_devices[$] = '{
   spaces = ""
   spaces = spaces.ljust(name_len - len(device.name))
 %>\
+    '{"${device.name}", '{
+    % for addr in device.addr_range:
+        '{32'h${"%08x" % addr[0]}, 32'h${"%08x" % addr[1]}}${"," if not loop.last else ""}
+    % endfor
   % if loop.last:
-    '{"${device.name}",${spaces} 32'h${"%08x" % device.address_from}, 32'h${"%08x" % device.address_to}}};
+}}};
   % else:
-    '{"${device.name}",${spaces} 32'h${"%08x" % device.address_from}, 32'h${"%08x" % device.address_to}},
+    }},
   % endif
 % endfor
 
