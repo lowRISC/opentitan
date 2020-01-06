@@ -42,6 +42,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           ral.classa_ctrl.en_e2.get() | ral.classa_ctrl.en_e3.get()) begin
         clear_esc();
       end
+      read_alert_cause();
     end
   endtask : body
 

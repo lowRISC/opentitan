@@ -17,15 +17,13 @@ class alert_monitor extends dv_base_monitor#(
 
   bit under_ping_rsp;
 
-  uvm_analysis_port #(alert_seq_item) sender_port;
-  uvm_analysis_port #(alert_seq_item) receiver_port;
+  uvm_analysis_port #(alert_seq_item) alert_port;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    sender_port = new("sender_port", this);
-    receiver_port = new("receiver_port", this);
+    alert_port = new("alert_port", this);
   endfunction : build_phase
 
   //TODO: currently only support sync mode
@@ -54,31 +52,33 @@ class alert_monitor extends dv_base_monitor#(
         phase.raise_objection(this);
         under_ping_rsp = 1;
         req = alert_seq_item::type_id::create("req");
-        req.alert_type = ping_trans;
+        req.alert_type = PingTrans;
         fork
           begin : isolation_fork
             fork
               begin : wait_ping_timeout
                 repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+                req.timeout = 1'b1;
               end
               begin : wait_ping_handshake
                 cfg.vif.wait_alert();
-                req.alert_handshake_sta = alert_received;
+                req.alert_handshake_sta = AlertReceived;
                 cfg.vif.wait_ack();
-                req.alert_handshake_sta = ack_received;
+                req.alert_handshake_sta = AckReceived;
                 cfg.vif.wait_alert_complete();
-                req.alert_handshake_sta = alert_complete;
+                req.alert_handshake_sta = AlertComplete;
                 under_ping_rsp = 0;
+                // TODO: if now another alert triggered, will both sample the ack signal?
                 cfg.vif.wait_ack_complete();
-                req.alert_handshake_sta = ack_complete;
+                req.alert_handshake_sta = AckComplete;
               end
             join_any
             disable fork;
           end : isolation_fork
         join
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
-            req.alert_type.name(), req.alert_handshake_sta.name()), UVM_LOW)
-        sender_port.write(req);
+            req.alert_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
+        alert_port.write(req);
         phase.drop_objection(this);
         under_ping_rsp = 0;
       end
@@ -93,28 +93,31 @@ class alert_monitor extends dv_base_monitor#(
       if (!alert_p && cfg.vif.monitor_cb.alert_tx.alert_p === 1'b1 && !under_ping_rsp) begin
         phase.raise_objection(this);
         req = alert_seq_item::type_id::create("req");
-        req.alert_type = alert_trans;
+        req.alert_type = AlertTrans;
+        req.alert_handshake_sta = AlertReceived;
+        alert_port.write(req);
         fork
           begin : isolation_fork
             fork
               begin : alert_timeout
                 repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+                req.timeout = 1'b1;
               end
               begin : wait_alert_handshake
                 cfg.vif.wait_ack();
-                req.alert_handshake_sta = ack_received;
+                req.alert_handshake_sta = AckReceived;
                 cfg.vif.wait_alert_complete();
-                req.alert_handshake_sta = alert_complete;
+                req.alert_handshake_sta = AlertComplete;
                 cfg.vif.wait_ack_complete();
-                req.alert_handshake_sta = ack_complete;
+                req.alert_handshake_sta = AckComplete;
               end
             join_any
             disable fork;
           end : isolation_fork
         join
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
-            req.alert_type.name(), req.alert_handshake_sta.name()), UVM_LOW)
-        receiver_port.write(req);
+            req.alert_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
+        alert_port.write(req);
         phase.drop_objection(this);
       end
       alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;

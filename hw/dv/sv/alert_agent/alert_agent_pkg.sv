@@ -15,16 +15,16 @@ package alert_agent_pkg;
   typedef dv_base_driver #(alert_seq_item, alert_agent_cfg) alert_base_driver;
 
   typedef enum {
-    ping_trans,
-    alert_trans,
-    int_fail
+    PingTrans,
+    AlertTrans,
+    IntFail
   } alert_type_e;
 
   typedef enum {
-    alert_received,
-    ack_received,
-    alert_complete,
-    ack_complete
+    AlertReceived,
+    AckReceived,
+    AlertComplete,
+    AckComplete
   } alert_handshake_e;
 
   // macro includes

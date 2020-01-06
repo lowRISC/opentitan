@@ -50,4 +50,11 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   virtual task clear_esc();
     csr_wr(.csr(ral.classa_clr), .value(1));
   endtask
+
+  virtual task read_alert_cause();
+    bit [TL_DW-1:0] alert_cause;
+    // checking for this CSR is done in scb
+    csr_rd(.ptr(ral.alert_cause), .value(alert_cause));
+  endtask
+
 endclass : alert_handler_base_vseq
