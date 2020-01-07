@@ -9,7 +9,9 @@ hjson
 isort
 livereload
 mako
-meson >= 0.51.0 # Matches version in meson.build
+# Meson 0.53.0 broke compatibility with Python 3.5.2, see
+# https://github.com/lowRISC/opentitan/issues/1288 for details.
+meson >= 0.51.0, < 0.53.0 # minimum matches version in meson.build
 mistletoe>=0.7.2
 pyftdi
 pygments
