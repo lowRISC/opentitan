@@ -317,7 +317,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         { bits: "11:10",
           name: "MAP_E2",
           resval: 2,
-          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+          desc: "Determines in which escalation phase escalation signal 2 shall be asserted.",
         }
         { bits: "13:12",
           name: "MAP_E3",
