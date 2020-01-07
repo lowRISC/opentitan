@@ -428,7 +428,8 @@ module usbdev (
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0),
 
-    .MemT ("REGISTER")
+    // large memory, implement with SRAMs
+    .MemT ("SRAM")
   ) u_memory_2p (
     .clk_a_i    (clk_i),
     .clk_b_i    (clk_usb_48mhz_i),

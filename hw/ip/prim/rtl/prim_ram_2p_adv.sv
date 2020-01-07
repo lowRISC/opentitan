@@ -6,7 +6,7 @@
 //   This module to connect SRAM interface to actual SRAM interface
 //   At this time, it doesn't utilize ECC or any pipeline.
 //   This module stays to include any additional calculation logic later on.
-//   Instantiating SRAM is up to the top design to remove process dependancy.
+//   Instantiating SRAM is up to the top design to remove process dependency.
 
 // Parameter
 //   EnableECC:
@@ -25,7 +25,7 @@ module prim_ram_2p_adv #(
   parameter bit EnableInputPipeline  = 0,
   parameter bit EnableOutputPipeline = 0,
 
-  parameter MemT = "REGISTER",
+  parameter MemT = "REGISTER", // can be "REGISTER" or "SRAM"
 
   // Do not touch
   parameter int SramAw = $clog2(Depth)
@@ -85,7 +85,8 @@ module prim_ram_2p_adv #(
     prim_ram_2p #(
       .Width (TotalWidth),
       .Depth (Depth),
-      .Impl  (prim_pkg::ImplGeneric)
+      // force register implementation for all targets
+      .Impl(prim_pkg::ImplGeneric)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
@@ -102,16 +103,37 @@ module prim_ram_2p_adv #(
       .b_wdata_i  (b_wdata_q),
       .b_rdata_o  (b_rdata_sram)
     );
-    always_ff @(posedge clk_i, negedge rst_ni) begin
-      if (!rst_ni) begin
-         a_rvalid_sram <= '0;
-         b_rvalid_sram <= '0;
-      end else begin
-        a_rvalid_sram <= a_req_q & ~a_write_q;
-        b_rvalid_sram <= b_req_q & ~b_write_q;
-      end
-    end
   // end else if (TotalWidth == aa && Depth == yy) begin
+  end else if (MemT == "SRAM") begin : gen_srammem
+    prim_ram_2p #(
+      .Width (TotalWidth),
+      .Depth (Depth)
+    ) u_mem (
+      .clk_a_i    (clk_i),
+      .clk_b_i    (clk_i),
+
+      .a_req_i    (a_req_q),
+      .a_write_i  (a_write_q),
+      .a_addr_i   (a_addr_q),
+      .a_wdata_i  (a_wdata_q),
+      .a_rdata_o  (a_rdata_sram),
+
+      .b_req_i    (b_req_q),
+      .b_write_i  (b_write_q),
+      .b_addr_i   (b_addr_q),
+      .b_wdata_i  (b_wdata_q),
+      .b_rdata_o  (b_rdata_sram)
+    );
+  end
+
+ always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+       a_rvalid_sram <= '0;
+       b_rvalid_sram <= '0;
+    end else begin
+      a_rvalid_sram <= a_req_q & ~a_write_q;
+      b_rvalid_sram <= b_req_q & ~b_write_q;
+    end
   end
 
   assign a_req_d              = a_req_i;
@@ -129,13 +151,13 @@ module prim_ram_2p_adv #(
   assign b_rerror_o           = b_rerror_q;
 
   // TODO: Parity Logic
-  if (EnableParity == 1) begin : gen_parity
-    initial begin
-      $fatal("Current wrapper doesn't support PARITY");
-    end
-  end
+  `ASSERT_INIT(ParityNotYetSupported_A, EnableParity == 0)
 
   if (EnableParity == 0 && EnableECC) begin : gen_secded
+
+    // check supported widths
+    `ASSERT_INIT(SecDecWidth_A, Width inside {32})
+
     if (Width == 32) begin : gen_secded_39_32
       prim_secded_39_32_enc u_enc_a (.in(a_wdata_i), .out(a_wdata_d));
       prim_secded_39_32_dec u_dec_a (
@@ -153,12 +175,6 @@ module prim_ram_2p_adv #(
       );
       assign a_rvalid_d = a_rvalid_sram;
       assign b_rvalid_d = b_rvalid_sram;
-    end else begin : gen_error
-    `ifndef VERILATOR
-      initial begin
-        $fatal("Current wrapper doesn't support SECDED with Width %d", Width);
-      end
-    `endif
     end
   end else begin : gen_nosecded
     assign a_wdata_d[0+:Width] = a_wdata_i;

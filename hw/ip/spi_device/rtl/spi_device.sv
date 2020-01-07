@@ -519,8 +519,8 @@ module spi_device #(
     .EnableParity        (0),
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0),
-
-    .MemT ("REGISTER")
+    // this is a large memory, implement with SRAM
+    .MemT ("SRAM")
   ) u_memory_2p (
     .clk_i,
     .rst_ni,

@@ -21,7 +21,7 @@ module prim_filter_ctr #(parameter Cycles = 4) (
 );
 
   localparam CTR_WIDTH = $clog2(Cycles);
-  localparam [CTR_WIDTH-1:0] CYCLESM1 = Cycles-1;
+  localparam [CTR_WIDTH-1:0] CYCLESM1 = (CTR_WIDTH)'(Cycles-1);
 
   logic [CTR_WIDTH-1:0] diff_ctr_q, diff_ctr_d;
   logic filter_q, stored_value_q, update_stored_value;

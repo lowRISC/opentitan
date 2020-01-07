@@ -17,6 +17,7 @@ module tlul_assert #(
 );
 
 `ifndef VERILATOR
+`ifndef SYNTHESIS
 
   import tlul_pkg::*;
   import top_pkg::*;
@@ -280,5 +281,6 @@ module tlul_assert #(
   //  make sure ready is not X after reset
   `ASSERT_KNOWN(aReadyKnown_A, d2h.a_ready, clk_i, !rst_ni)
   `ASSERT_KNOWN(dReadyKnown_A, h2d.d_ready, clk_i, !rst_ni)
+`endif
 `endif
 endmodule : tlul_assert

@@ -19,8 +19,6 @@ check_cov -init -model {branch statement functional} \
 
 # only one scr file exists in this folder
 analyze -sv09                 \
-  +define+ASIC_SYNTHESIS      \
-  +define+SYNTHESIS           \
   +define+FPV_ON              \
   -f [glob *.scr]
 

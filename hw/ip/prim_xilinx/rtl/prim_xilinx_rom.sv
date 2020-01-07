@@ -48,9 +48,9 @@ module prim_xilinx_rom #(
     end
   end
   `else
-    // If the ROM is not initialized it reads X for all addresses
+    // ROM is not initialized
     always_ff @(posedge clk_i) begin
-      dout_o <= 'x;
+      dout_o <= '0;
     end
   `endif
 
