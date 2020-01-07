@@ -378,6 +378,9 @@ module prim_lfsr #(
 
   `ASSERT_KNOWN(DataKnownO_A, state_o, clk_i, !rst_ni)
 
+// the code below is not meant to be synthesized,
+// but it is intended to be used in simulation and FPV
+`ifndef SYNTHESIS
   function automatic logic[LfsrDw-1:0] compute_next_state(logic[LfsrDw-1:0]    lfsrcoeffs,
                                                           logic[EntropyDw-1:0] entropy,
                                                           logic[LfsrDw-1:0]    state);
@@ -410,16 +413,17 @@ module prim_lfsr #(
     return state;
   endfunction : compute_next_state
 
+  // check whether next state is computed correctly
+  `ASSERT(NextStateCheck_A, lfsr_en_i && !seed_en_i |=> lfsr_q ==
+    compute_next_state(coeffs, $past(entropy_i,1), $past(lfsr_q,1)),
+    clk_i, !rst_ni )
+`endif
+
   `ASSERT_INIT(InputWidth_A, LfsrDw >= EntropyDw)
   `ASSERT_INIT(OutputWidth_A, LfsrDw >= StateOutDw)
 
   // MSB must be one in any case
   `ASSERT(CoeffCheck_A, coeffs[LfsrDw-1], clk_i, !rst_ni)
-
-  // check whether next state is computed correctly
-  `ASSERT(NextStateCheck_A, lfsr_en_i && !seed_en_i |=> lfsr_q ==
-    compute_next_state(coeffs, $past(entropy_i,1), $past(lfsr_q,1)),
-    clk_i, !rst_ni )
 
   // output check
   `ASSERT_KNOWN(OutputKnown_A, state_o, clk_i, !rst_ni)
@@ -445,20 +449,9 @@ module prim_lfsr #(
         clk_i, !rst_ni)
   end
 
-  // the code below is not meant to be synthesized,
-  // but it is intended to be used in simulation and FPV
-  // the formal tool defines SYNTHESIS, hence this workaround
-`ifdef FPV_ON
-  localparam bit MaxLenSVALocal = MaxLenSVA;
-`else
-`ifndef SYNTHESIS
-  localparam bit MaxLenSVALocal = MaxLenSVA;
-`else
-  localparam bit MaxLenSVALocal = 1'b0;
-`endif
-`endif
+  if (MaxLenSVA) begin : gen_max_len_sva
 
-  if (MaxLenSVALocal) begin : gen_max_len_sva
+`ifndef SYNTHESIS
     // the code below is a workaround to enable long sequences to be checked.
     // some simulators do not support SVA sequences longer than 2**32-1.
     logic [LfsrDw-1:0] cnt_d, cnt_q;
@@ -482,6 +475,7 @@ module prim_lfsr #(
         perturbed_q <= perturbed_d;
       end
     end
+`endif
 
     `ASSERT(MaximalLengthCheck0_A, cnt_q == 0 |-> lfsr_q == DefaultSeed,
         clk_i, !rst_ni || perturbed_q)
