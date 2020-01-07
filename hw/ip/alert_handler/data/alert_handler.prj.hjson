@@ -7,6 +7,6 @@
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",
-    verification_stage: "V0",
-    notes:              "will be verified at top level; formal at block level",
+    verification_stage: "V1",
+    notes:              "will be verified at top level; formal and DV at block level",
 }
