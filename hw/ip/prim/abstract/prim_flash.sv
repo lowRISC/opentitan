@@ -68,6 +68,31 @@ module prim_flash #(
       .rd_data_o,
       .init_busy_o
     );
+  end else if (Impl == ImplAsic) begin : gen_asic
+    prim_asic_flash #(
+      .PagesPerBank(PagesPerBank),
+      .WordsPerPage(WordsPerPage),
+      .DataWidth(DataWidth)
+    ) u_impl_asic (
+      .clk_i,
+      .rst_ni,
+      .req_i,
+      .host_req_i,
+      .host_addr_i,
+      .rd_i,
+      .prog_i,
+      .pg_erase_i,
+      .bk_erase_i,
+      .addr_i,
+      .prog_data_i,
+      .host_req_rdy_o,
+      .host_req_done_o,
+      .rd_done_o,
+      .prog_done_o,
+      .erase_done_o,
+      .rd_data_o,
+      .init_busy_o
+    );
   end else begin : gen_failure
     // TODO: Find code that works across tools and causes a compile failure
   end

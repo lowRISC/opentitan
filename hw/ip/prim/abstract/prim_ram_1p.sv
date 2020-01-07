@@ -47,6 +47,21 @@ module prim_ram_1p #(
       .rvalid_o,
       .rdata_o
     );
+   end else if (Impl == ImplAsic) begin : gen_mem_asic
+    prim_asic_ram_1p #(
+      .Width(Width),
+      .Depth(Depth)
+    ) u_impl_asic (
+      .clk_i,
+      .rst_ni,
+      .req_i,
+      .write_i,
+      .addr_i,
+      .wdata_i,
+      .wmask_i,
+      .rvalid_o,
+      .rdata_o
+    );
   end else begin : gen_failure
     // TODO: Find code that works across tools and causes a compile failure
   end

@@ -45,6 +45,16 @@ module prim_pad_wrapper #(
       .oe_i,
       .attr_i
     );
+  end else if (Impl == ImplAsic) begin : gen_pad_asic
+    prim_asic_pad_wrapper #(
+      .AttrDw(AttrDw)
+    ) i_pad_wrapper (
+      .inout_io,
+      .in_o,
+      .out_i,
+      .oe_i,
+      .attr_i
+    );
   end else begin : gen_failure
     // TODO: Find code that works across tools and causes a compile failure
   end

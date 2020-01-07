@@ -46,6 +46,12 @@ filesets:
       - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
+  files_rtl_asic:
+    depend:
+      # need to include technology-specific prim wrappers
+      - lowrisc:prim_asic:all
+    files:
+    file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
@@ -95,7 +101,6 @@ targets:
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_earlgrey
-
   lint:
     <<: *default_target
     default_tool: verilator
@@ -106,3 +111,14 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+  asic-synth:
+    # TODO switch to DC once supported by Edalize
+    # olofk/edalize#89
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+      - files_rtl_asic
+    parameters:
+      - SYNTHESIS=True
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplAsic
+    toplevel: top_earlgrey

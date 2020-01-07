@@ -34,6 +34,13 @@ module prim_clock_gating #(
       .test_en_i,
       .clk_o
     );
+  end else if (Impl == ImplAsic) begin : gen_asic
+    prim_asic_clock_gating u_impl_asic (
+      .clk_i,
+      .en_i,
+      .test_en_i,
+      .clk_o
+    );
   end else begin : gen_failure
     // TODO: Find code that works across tools and causes a compile failure
   end

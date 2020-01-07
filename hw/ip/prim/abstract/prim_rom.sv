@@ -47,6 +47,17 @@ module prim_rom #(
       .dout_o,
       .dvalid_o
     );
+  end else if (Impl == ImplAsic) begin: gen_rom_asic
+    prim_asic_rom #(
+      .Width(Width),
+      .Depth(Depth)
+    ) u_impl_asic (
+      .clk_i,
+      .addr_i,
+      .cs_i,
+      .dout_o,
+      .dvalid_o
+    );
   end else begin : gen_rom_unsupported_impl
     // TODO: Find code that works across tools and causes a compile failure
   end

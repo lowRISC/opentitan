@@ -34,6 +34,13 @@ module prim_clock_mux2 #(
       .sel_i,
       .clk_o
     );
+  end else if (Impl == ImplAsic) begin : gen_asic
+    prim_asic_clock_mux2 u_impl_asic (
+      .clk0_i,
+      .clk1_i,
+      .sel_i,
+      .clk_o
+    );
   end else begin : gen_failure
     // TODO: Find code that works across tools and causes a compile failure
   end

@@ -72,6 +72,26 @@ module prim_ram_2p #(
       .b_wdata_i,
       .b_rdata_o
     );
+  end else if (Impl == ImplAsic) begin : gen_mem_asic
+    prim_asic_ram_2p #(
+      .Width(Width),
+      .Depth(Depth)
+    ) u_impl_asic (
+      .clk_a_i,
+      .clk_b_i,
+      .a_req_i,
+      .a_write_i,
+      .a_addr_i,
+      .a_wdata_i,
+      .a_wmask_i({Width{1'b1}}),
+      .a_rdata_o,
+      .b_req_i,
+      .b_write_i,
+      .b_addr_i,
+      .b_wdata_i,
+      .b_wmask_i({Width{1'b1}}),
+      .b_rdata_o
+    );
   end else begin : gen_failure
     // TODO: Find code that works across tools and causes a compile failure
   end
