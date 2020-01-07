@@ -53,7 +53,7 @@ class uart_intr_vseq extends uart_base_vseq;
     case (uart_intr)
       TxWatermark: begin
         int level = ral.fifo_ctrl.txilvl.get_mirrored_value();
-        int watermark_bytes = get_watermark_bytes_by_level(level);
+        int watermark_bytes = get_watermark_bytes_by_level(level, UartTx);
         //  when tx is enabled, one extra item is in the data path
         //  when watermark_bytes==1, watermark interrupt is triggered before item is processed
         if (en_tx && watermark_bytes > 1) watermark_bytes += 1;

@@ -35,10 +35,11 @@ package uart_env_pkg;
     NumUartIntr = 8
   } uart_intr_e;
 
+
   // get the number of bytes that triggers watermark interrupt
-  function automatic int get_watermark_bytes_by_level(int lvl);
+  function automatic int get_watermark_bytes_by_level(int lvl, uart_dir_e dir=UartRx);
     case(lvl)
-      0: return 1;
+      0: return 1 + dir;
       1: return 4;
       2: return 8;
       3: return 16;

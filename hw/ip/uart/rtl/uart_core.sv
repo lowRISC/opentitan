@@ -295,7 +295,7 @@ module uart_core (
 
   always_comb begin
     unique case(uart_fifo_txilvl)
-      2'h0:    tx_watermark_d = (tx_fifo_depth < 6'd1);
+      2'h0:    tx_watermark_d = (tx_fifo_depth < 6'd2);
       2'h1:    tx_watermark_d = (tx_fifo_depth < 6'd4);
       2'h2:    tx_watermark_d = (tx_fifo_depth < 6'd8);
       default: tx_watermark_d = (tx_fifo_depth < 6'd16);
@@ -349,12 +349,12 @@ module uart_core (
 
   assign event_rx_timeout = (rx_timeout_count_q == uart_rxto_val) & uart_rxto_en;
 
-  assign tx_empty_d = tx_fifo_depth == 6'h0;
+  assign tx_empty_d = hw2reg.status.txidle.d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rx_timeout_count_q   <= 24'd0;
       rx_fifo_depth_prev_q <= 6'd0;
-      tx_empty_prev_q      <= 1'd0;
+      tx_empty_prev_q      <= 1'd1;
     end else begin
       rx_timeout_count_q    <= rx_timeout_count_d;
       rx_fifo_depth_prev_q  <= rx_fifo_depth;

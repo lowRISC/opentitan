@@ -17,8 +17,8 @@ package uart_agent_pkg;
 
   // local types
   typedef enum bit {
-    UartTx,
-    UartRx
+    UartRx,
+    UartTx
   } uart_dir_e;
 
   typedef enum int {

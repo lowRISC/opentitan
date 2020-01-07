@@ -215,13 +215,14 @@
         }
         { bits: "6:5",
           name: "TXILVL",
-          desc: '''Trigger level for TX interrupts. If the FIFO depth is greater than or equal to
+          desc: '''Trigger level for TX interrupts. If the FIFO depth is less than
                 the setting, it raises tx_watermark interrupt.
                 ''',
           enum: [
             { value: "0",
               name: "txlvl1",
-              desc: "1 character"
+              desc: '''2 characters.  This is different from RXLVL because 1 character is the same
+                     as empty and there is already an existing interrupt for that purpose'''
             },
             { value: "1",
               name: "txlvl4",

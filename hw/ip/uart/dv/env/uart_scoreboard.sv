@@ -115,7 +115,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   endtask
 
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size, bit just_cleared = 0);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
+    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value(), UartTx);
+    `uvm_info(`gfn, $sformatf("tx watermark level is %d", watermark), UVM_LOW)
     intr_exp[TxWatermark] |= (tx_q_size < watermark);
   endfunction
 
