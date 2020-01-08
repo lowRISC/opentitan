@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip:usbfs_nb_pe
+      - lowrisc:ip:usb_fs_nb_pe
     files:
       - rtl/usbuart_reg_pkg.sv
       - rtl/usbuart_reg_top.sv
