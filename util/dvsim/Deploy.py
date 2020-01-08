@@ -8,6 +8,7 @@ Classes
 
 import logging as log
 import pprint
+import random
 import re
 import shlex
 import sys
@@ -26,10 +27,10 @@ class Deploy():
     # Register the builds and runs  with the parent class
     items = []
 
-    sim_cfg = None
-    links = {}
-
+    # Maintain a list of dispatched items.
     dispatch_counter = 0
+
+    # Misc common deploy settings.
     print_interval = 5
     max_parallel = 32
     max_odirs = 5
@@ -48,11 +49,30 @@ class Deploy():
     def __repr__(self):
         return self.__self_str__()
 
-    def __add_mandatory_attrs__(self):
+    def __init__(self, sim_cfg):
+        # Cross ref the whole cfg object for ease.
+        self.sim_cfg = sim_cfg
+
         # Common vars
         self.cmd = ""
         self.odir = ""
         self.log = ""
+
+        # Create directories with links for ease of debug / triage.
+        self.links = {
+            "D": self.sim_cfg.scratch_path + "/" + "dispatched",
+            "P": self.sim_cfg.scratch_path + "/" + "passed",
+            "F": self.sim_cfg.scratch_path + "/" + "failed",
+            "K": self.sim_cfg.scratch_path + "/" + "killed"
+        }
+
+        for link in self.links.keys():
+            try:
+                os.system("/bin/rm -rf " + self.links[link])
+                os.system("mkdir -p " + self.links[link])
+            except IOError:
+                log.error("Unable to create dir %s", self.links[link])
+                sys.exit(1)
 
         # Flag to indicate whether to 'overwrite' if odir already exists,
         # or to backup the existing one and create a new one.
@@ -81,7 +101,8 @@ class Deploy():
             "dry_run": False
         })
 
-    def __init__(self, ddict):
+    # Function to parse a dict and extract the mandatory cmd and misc attrs.
+    def parse_dict(self, ddict):
         if not hasattr(self, "target"):
             log.error(
                 "Class %s does not have the mandatory attribute \"target\" defined",
@@ -155,7 +176,7 @@ class Deploy():
         try:
             self.odir_limiter()
             os.system("mkdir -p " + self.odir)
-            os.system("ln -s " + self.odir + " " + Deploy.links['D'] + '/' +
+            os.system("ln -s " + self.odir + " " + self.links['D'] + '/' +
                       self.odir_ln)
             f = open(self.log, "w")
             self.process = subprocess.Popen(args,
@@ -179,9 +200,8 @@ class Deploy():
         try:
             # If output directory exists, back it up.
             if os.path.exists(self.odir):
-                raw_ts = run_cmd("stat -c '%y' " + self.odir)
-                ts = run_cmd("date '" + Deploy.sim_cfg.ts_format + "' -d \"" +
-                             raw_ts + "\"")
+                ts = run_cmd("date '" + self.sim_cfg.ts_format + "' -d \"" +
+                             "$(stat -c '%y' " + self.odir + ")\"")
                 os.system('mv ' + self.odir + " " + self.odir + "_" + ts)
         except IOError:
             log.error('Failed to back up existing output directory %s',
@@ -232,8 +252,8 @@ class Deploy():
         if self.status == '.':
             log.error("Method unexpectedly called!")
         else:
-            cmd = "mv " + Deploy.links['D'] + "/" + self.odir_ln + " " + \
-                  Deploy.links[self.status] + "/."
+            cmd = "mv " + self.links['D'] + "/" + self.odir_ln + " " + \
+                  self.links[self.status] + "/."
             os.system(cmd)
 
     def get_status(self):
@@ -250,30 +270,6 @@ class Deploy():
                     self.status)
             Deploy.dispatch_counter -= 1
             self.link_odir()
-
-    @staticmethod
-    def initialize(sim_cfg):
-        Deploy.sim_cfg = sim_cfg
-        Deploy.links['D'] = sim_cfg.scratch_path + "/" + "dispatched"
-        Deploy.links['P'] = sim_cfg.scratch_path + "/" + "passed"
-        Deploy.links['F'] = sim_cfg.scratch_path + "/" + "failed"
-        Deploy.links['K'] = sim_cfg.scratch_path + "/" + "killed"
-        for link in Deploy.links.keys():
-            try:
-                os.system("/bin/rm -rf " + Deploy.links[link])
-                os.system("mkdir -p " + Deploy.links[link])
-            except:
-                log.error("Unable to create dir %s", Deploy.links[link])
-                sys.exit(1)
-
-        if hasattr(sim_cfg, 'print_interval'):
-            Deploy.print_interval = sim_cfg.print_interval
-
-        if hasattr(sim_cfg, 'max_parallel'):
-            Deploy.max_parallel = sim_cfg.max_parallel
-
-        if hasattr(sim_cfg, 'max_odirs'):
-            Deploy.max_odirs = sim_cfg.max_odirs
 
     @staticmethod
     def deploy(items):
@@ -339,6 +335,7 @@ class Deploy():
                 all_done = 1
             else:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
+                trig_print = True
                 if len(dispatch_items_queue) > num_slots:
                     dispatch_items(dispatch_items_queue[0:num_slots])
                     dispatch_items_queue = dispatch_items_queue[num_slots:]
@@ -399,9 +396,11 @@ class CompileSim(Deploy):
         self.mandatory_misc_attrs = {}
 
         # Initialize
-        super().__add_mandatory_attrs__()
-        super().__init__(build_mode.__dict__)
-        super().__init__(sim_cfg.__dict__)
+        super().__init__(sim_cfg)
+        super().parse_dict(build_mode.__dict__)
+        # Call this method again with the sim_cfg dict passed as the object,
+        # since it may contain additional mandatory attrs.
+        super().parse_dict(sim_cfg.__dict__)
         self.build_mode = self.name
         self.__post_init__()
         CompileSim.items.append(self)
@@ -411,6 +410,9 @@ class RunTest(Deploy):
     """
     Abstraction for running tests. This is one per seed for each test.
     """
+
+    # Initial seed values when running tests (if available).
+    seeds = []
 
     # Register all runs with the class
     items = []
@@ -438,12 +440,14 @@ class RunTest(Deploy):
         }
 
         self.index = index
-        self.seed = sim_cfg.get_seed()
+        self.seed = RunTest.get_seed()
 
         # Initialize
-        super().__add_mandatory_attrs__()
-        super().__init__(test.__dict__)
-        super().__init__(sim_cfg.__dict__)
+        super().__init__(sim_cfg)
+        super().parse_dict(test.__dict__)
+        # Call this method again with the sim_cfg dict passed as the object,
+        # since it may contain additional mandatory attrs.
+        super().parse_dict(sim_cfg.__dict__)
         self.test = self.name
         self.renew_odir = True
         self.build_mode = test.build_mode.name
@@ -453,3 +457,17 @@ class RunTest(Deploy):
         # and index
         self.odir_ln = self.run_dir_name
         RunTest.items.append(self)
+
+    @staticmethod
+    def get_seed():
+        if RunTest.seeds == []:
+            try:
+                # Pre-populate 1000 seeds at a time
+                RunTest.seeds = run_cmd(
+                    "od -vAn -N4000 -tu < /dev/random | xargs").split()
+                random.shuffle(RunTest.seeds)
+            except Exception as e:
+                log.error("%s. Failed to generate a list of 1000 random seeds",
+                          e)
+                sys.exit(1)
+        return RunTest.seeds.pop(0)

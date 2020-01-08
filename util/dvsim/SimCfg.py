@@ -9,11 +9,12 @@ Class describing simulation configuration object
 import datetime
 import logging as log
 import pprint
-import random
 import re
 import sys
 
 import hjson
+
+from testplanner import class_defs, testplan_utils
 
 from .Deploy import *
 from .Modes import *
@@ -26,6 +27,11 @@ class SimCfg():
     A simulation configuration class holds key information required for building a DV
     regression framework.
     """
+
+    # Static variables - indicate timestamp.
+    ts_format_long = "%A %B %d %Y %I:%M:%S%p %Z"
+    ts_format = '+%a.%m.%d.%y__%I.%M.%S%p'
+
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
@@ -34,7 +40,6 @@ class SimCfg():
 
     def __init__(self, proj_root, args):
         # Options set from command line
-        self.flow = args.flow
         self.cfg_files = []
         self.cfg_files.append(args.cfg)
         self.items = args.items
@@ -50,7 +55,6 @@ class SimCfg():
         self.build_unique = args.build_unique
         self.build_only = args.build_only
         self.run_only = args.run_only
-        self.seeds = args.seeds
         self.reseed_ovrd = args.reseed
         self.reseed_multiplier = args.reseed_multiplier
         self.waves = args.waves
@@ -58,7 +62,6 @@ class SimCfg():
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.profile = args.profile
-        self.max_odirs = args.max_odirs
         self.no_rerun = args.no_rerun
         self.verbosity = "{" + args.verbosity + "}"
         self.email = args.email
@@ -66,8 +69,6 @@ class SimCfg():
         self.dry_run = args.dry_run
         self.skip_ral = args.skip_ral
         self.job_prefix = args.job_prefix
-        self.print_interval = args.print_interval
-        self.max_parallel = args.max_parallel
 
         # Set default sim modes for unpacking
         if self.waves is True: self.en_build_modes.append("waves")
@@ -76,6 +77,7 @@ class SimCfg():
 
         # Options built from cfg_file files
         self.project = ""
+        self.flow = ""
         self.flow_makefile = ""
         self.scratch_path = ""
         self.build_dir = ""
@@ -103,13 +105,18 @@ class SimCfg():
         self.dump_file = ""
         self.exports = []
 
-        # Current timestamp
-        self.ts_format_long = "%A %B %d %Y %I:%M:%S%p %Z"
-        self.ts_format = '+%a.%m.%d.%y__%I.%M.%S%p'
+        # Register the seeds from command line with RunTest class.
+        RunTest.seeds = args.seeds
 
+        # Register the common deploy settings.
+        Deploy.print_interval = args.print_interval
+        Deploy.max_parallel = args.max_parallel
+        Deploy.max_odirs = args.max_odirs
+
+        # Current timestamp
         curr_ts = datetime.datetime.now()
-        self.timestamp_long = curr_ts.strftime(self.ts_format_long)
-        self.timestamp = curr_ts.strftime(self.ts_format)
+        self.timestamp_long = curr_ts.strftime(SimCfg.ts_format_long)
+        self.timestamp = curr_ts.strftime(SimCfg.ts_format)
 
         # Parse the cfg_file file tree
         self.parse_sim_cfg(args.cfg)
@@ -153,20 +160,11 @@ class SimCfg():
         self.run_list = []
         self.create_build_and_run_list()
 
-        # Process reseed override
-        for test in self.run_list:
-            # Override reseed if available.
-            if self.reseed_ovrd != -1:
-                test.reseed = self.reseed_ovrd
-
-            # Apply reseed multiplier if set on the command line.
-            test.reseed *= self.reseed_multiplier
-
         # Create deploy objects
         self.create_deploy_objects()
 
-        # Deploy the builds and runs
-        Deploy.deploy(self.deploy)
+        # Print info
+        log.info("Scratch path: %s", self.scratch_path)
 
     def process_exports(self):
         # Convert 'exports' to dict
@@ -208,7 +206,8 @@ class SimCfg():
 
                 # Case 1: key value in class and hjson_dict differ - error!
                 if type(hjson_dict_val) != type(self_val):
-                    log.error("Coflicting key types: %s {%s, %s}", key,
+                    log.error("Coflicting key types: \"%s\" {\"%s, \"%s\"}",
+                              key,
                               type(hjson_dict_val).__name__,
                               type(self_val).__name__)
                     sys.exit(1)
@@ -224,7 +223,7 @@ class SimCfg():
                         rm_hjson_dict_keys.append(key)
                     elif not self_val in defaults and not hjson_dict_val in defaults:
                         log.error(
-                            "Coflicting values {%s, %s} encountered for key %s",
+                            "Coflicting values {\"%s\", \"%s\"} encountered for key \"%s\"",
                             str(self_val), str(hjson_dict_val), key)
                         sys.exit(1)
 
@@ -262,7 +261,8 @@ class SimCfg():
                 cfg_file = subst_wildcards(cfg_file, self.__dict__)
                 self.parse_sim_cfg(cfg_file)
             else:
-                log.error("Sim cfg file %s has already been parsed", cfg_file)
+                log.error("Sim cfg file \"%s\" has already been parsed",
+                          cfg_file)
 
     def create_objects(self):
         # Create build and run modes objects
@@ -378,9 +378,17 @@ class SimCfg():
                       "to see a list of available tests / regressions for run", items_list)
             sys.exit(1)
 
-        # Create the build_list
+        # Process reseed override and create the build_list
         build_list_names = []
         for test in self.run_list:
+            # Override reseed if available.
+            if self.reseed_ovrd != -1:
+                test.reseed = self.reseed_ovrd
+
+            # Apply reseed multiplier if set on the command line.
+            test.reseed *= self.reseed_multiplier
+
+            # Create the unique set of builds needed.
             if test.build_mode.name not in build_list_names:
                 self.build_list.append(test.build_mode)
                 build_list_names.append(test.build_mode.name)
@@ -388,7 +396,6 @@ class SimCfg():
     def create_deploy_objects(self):
         builds = []
         build_map = {}
-        Deploy.initialize(self)
         for build in self.build_list:
             item = CompileSim(build, self)
             builds.append(item)
@@ -407,14 +414,41 @@ class SimCfg():
         else:
             self.deploy = builds
 
-    def get_seed(self):
-        if self.seeds == []:
-            try:
-                # Pre-populate 1000 seeds at a time
-                self.seeds = run_cmd(
-                    "od -vAn -N4000 -tu < /dev/random | xargs").split()
-                random.shuffle(self.seeds)
-            except:
-                log.error("Faild to generate a list of 1000 random seeds")
-                sys.exit(1)
-        return self.seeds.pop(-1)
+    def gen_results(self, fmt="md"):
+        '''
+        The function is called after the regression has completed. It collates the status of
+        all run targets and generates a dict. It parses the testplan and maps the generated
+        result to the testplan entries to generate a final table (list). It uses the fmt arg
+        to dump the final result as a markdown of html.
+        '''
+
+        # TODO: add support for html
+        def retrieve_result(name, results):
+            for item in results:
+                if name == item["name"]: return item
+            return None
+
+        def gen_results_sub(items, results):
+            if items == []: return results
+            for item in items:
+                # Only generate results table for runs.
+                if item.target == "run":
+                    result = retrieve_result(item.name, results)
+                    if result is None:
+                        result = {"name": item.name, "passing": 0, "total": 0}
+                        results.append(result)
+                    if item.status == "P": result["passing"] += 1
+                    result["total"] += 1
+                results = gen_results_sub(item.sub, results)
+            return results
+
+        # Generate results table for runs.
+        regr_results = {}
+        regr_results["timestamp"] = self.timestamp_long
+        regr_results["test_results"] = gen_results_sub(self.deploy, [])
+        results_str = "# " + self.name.upper() + " Regression Results\n"
+        results_str += "  Run on " + regr_results["timestamp"] + "\n"
+        results_str += "\n## Test Results\n"
+        testplan = testplan_utils.parse_testplan(self.testplan)
+        results_str += testplan.results_table(regr_results["test_results"])
+        print(results_str)

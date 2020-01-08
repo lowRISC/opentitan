@@ -189,7 +189,7 @@
       name: stress_all_with_reset
       desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
       milestone: V2
-      tests: ["uart_stress_all_with_reset"]
+      tests: ["uart_stress_all_with_rand_reset"]
     }
   ]
 }
