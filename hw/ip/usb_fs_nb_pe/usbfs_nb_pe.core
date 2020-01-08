@@ -8,13 +8,14 @@ description: "USB Full Speed Non-Buffered Protocol Engine"
 # the tinyfpga::TinyFPGA-Bootloader-common without the _nb_ in the filename
 filesets:
   files_rtl:
-    depend:
-      - tinyfpga::tinyfpga-bootloader-common
     files:
       - rtl/usb_consts_pkg.sv
       - rtl/usb_fs_nb_in_pe.sv
       - rtl/usb_fs_nb_out_pe.sv
       - rtl/usb_fs_nb_pe.sv
+      - rtl/usb_fs_rx.sv
+      - rtl/usb_fs_tx.sv
+      - rtl/usb_fs_tx_mux.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

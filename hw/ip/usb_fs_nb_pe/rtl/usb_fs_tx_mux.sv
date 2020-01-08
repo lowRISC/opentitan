@@ -1,3 +1,9 @@
+// Copyright lowRISC contributors.
+// Copyright ETH Zurich.
+// Copyright Luke Valenty (TinyFPGA project, https://github.com/tinyfpga/TinyFPGA-Bootloader).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 module usb_fs_tx_mux (
   // interface to IN Protocol Engine
   input in_tx_pkt_start,
