@@ -5,6 +5,8 @@
 // Interface: pins_if
 // Description: Pin interface for driving and sampling individual pins such as interrupts, alerts
 // and gpios.
+`ifndef SYNTHESIS
+
 interface pins_if #(
   parameter int Width = 1
 ) (
@@ -91,3 +93,4 @@ interface pins_if #(
   endgenerate
 
 endinterface
+`endif

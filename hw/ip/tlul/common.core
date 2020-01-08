@@ -8,6 +8,7 @@ description: "TL-UL common building blocks"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:dv:pins_if
       - lowrisc:prim:all
       - lowrisc:tlul:headers
     files:
