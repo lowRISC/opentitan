@@ -544,9 +544,7 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   }
   switch (ctx->state) {
     case ST_IDLE:
-      if ((VerilatorSimCtrl::GetInstance().TracingEnabled() &&
-           (ctx->frame == 20)) ||
-          (ctx->frame > 50)) {
+      if (ctx->frame == 20) {
         printf("USB: usbdpi done, frame: %d, success: %d, state: %d\n",
                ctx->frame, ctx->baudrate_set_successfully, ctx->state);
 
