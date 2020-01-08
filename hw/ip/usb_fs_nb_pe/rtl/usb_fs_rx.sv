@@ -6,36 +6,36 @@
 
 module usb_fs_rx (
   // A 48MHz clock is required to recover the clock from the incoming data. 
-  input clk_48mhz,
-  input reset,
+  input  logic clk_i,
+  input  logic rst_ni,
+  input  logic link_reset_i,
 
   // USB data+ and data- lines.
-  input dp,
-  input dn,
+  input  logic dp_i,
+  input  logic dn_i,
 
   // pulse on every bit transition.
-  output bit_strobe,
+  output logic bit_strobe_o,
 
   // Pulse on beginning of new packet.
-  output pkt_start,
+  output logic pkt_start_o,
 
   // Pulse on end of current packet.
-  output pkt_end,
+  output logic pkt_end_o,
 
   // Most recent packet decoded.
-  output [3:0] pid,
-  output reg [6:0] addr = 0,
-  output reg [3:0] endp = 0,
-  output reg [10:0] frame_num = 0,
+  output logic [3:0]  pid_o,
+  output logic [6:0]  addr_o,
+  output logic [3:0]  endp_o,
+  output logic [10:0] frame_num_o,
 
   // Pulse on valid data on rx_data.
-  output rx_data_put,
-  output [7:0] rx_data,
+  output logic rx_data_put_o,
+  output logic [7:0] rx_data_o,
 
   // Most recent packet passes PID and CRC checks
-  output valid_packet
+  output logic valid_packet_o
 );
-  wire clk = clk_48mhz;
 
   ////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -55,10 +55,19 @@ module usb_fs_rx (
     the signal twice ensures it will be either 1 or 0 and nothing in between.
   */
 
-  reg [3:0] dpair_q = 0;
+  logic [3:0] dpair_q, dpair_d;
+  assign dpair_d = {dpair_q[1:0], dp_i, dn_i};
 
-  always @(posedge clk) begin
-      dpair_q[3:0] <= {dpair_q[1:0], dp, dn};
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_dpair_q
+    if(!rst_ni) begin
+      dpair_q <= 0;
+    end else begin
+      if (link_reset_i) begin
+        dpair_q <= 0;
+      end else begin
+        dpair_q <= dpair_d;
+      end
+    end
   end
 
 
@@ -75,37 +84,54 @@ module usb_fs_rx (
     packet will fail the data integrity checks.
   */
 
-  reg [2:0] line_state = 0;
+  logic [2:0] line_state_q, line_state_d;
   localparam  DT = 3'b100;
   localparam  DJ = 3'b010;
   localparam  DK = 3'b001;
   localparam SE0 = 3'b000;
   localparam SE1 = 3'b011;
 
-  wire [1:0] dpair = dpair_q[3:2];
+  // Mute the input if we're transmitting
+  logic [1:0] dpair;
+  assign dpair = dpair_q[3:2];
 
-  always @(posedge clk) begin
-      case (line_state)
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_line_state_q
+    if(!rst_ni) begin
+      line_state_q <= SE0;
+    end else begin
+      if (link_reset_i) begin
+        line_state_q <= SE0;
+      end else begin
+        line_state_q <= line_state_d;
+      end
+    end
+  end
+
+  always_comb begin : proc_line_state_d
+      // Default assignment
+      line_state_d = line_state_q;
+      
+      case (line_state_q)
           // if we are in a transition state, then we can sample the pair and 
           // move to the next corresponding line state
           DT : begin
               case (dpair)
-                  2'b10 : line_state <= DJ;
-                  2'b01 : line_state <= DK;
-                  2'b00 : line_state <= SE0;
-                  2'b11 : line_state <= SE1;
+                  2'b10 : line_state_d = DJ;
+                  2'b01 : line_state_d = DK;
+                  2'b00 : line_state_d = SE0;
+                  2'b11 : line_state_d = SE1;
               endcase
           end
 
           // if we are in a valid line state and the value of the pair changes,
           // then we need to move to the transition state
-          DJ  : if (dpair != 2'b10) line_state <= DT;
-          DK  : if (dpair != 2'b01) line_state <= DT;
-          SE0 : if (dpair != 2'b00) line_state <= DT;
-          SE1 : if (dpair != 2'b11) line_state <= DT;        
+          DJ  : if (dpair != 2'b10) line_state_d = DT;
+          DK  : if (dpair != 2'b01) line_state_d = DT;
+          SE0 : if (dpair != 2'b00) line_state_d = DT;
+          SE1 : if (dpair != 2'b11) line_state_d = DT;        
 
           // if we are in an invalid state we should move to the transition state
-          default : line_state <= DT;
+          default : line_state_d = DT;
       endcase
   end
 
@@ -123,19 +149,24 @@ module usb_fs_rx (
     bit_phase         0   0   1   2   3   0   1   2   3   0   1   2   0   1   2
   */
 
-  reg [1:0] bit_phase = 0;
+  logic [1:0] bit_phase_q, bit_phase_d;
 
-  wire line_state_valid = (bit_phase == 1);
-  assign bit_strobe = (bit_phase == 2);
+  wire line_state_valid = (bit_phase_q == 1);
+  assign bit_strobe_o = (bit_phase_q == 2);
 
-  always @(posedge clk) begin
-      // keep track of phase within each bit
-      if (line_state == DT) begin
-          bit_phase <= 0;
+  // keep track of phase within each bit
+  assign bit_phase_d = (line_state_q == DT) ? 0 : bit_phase_q + 1;
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bit_phase_q
+    if(!rst_ni) begin
+      bit_phase_q <= 0;
+    end else begin
+      if (link_reset_i) begin
+        bit_phase_q <= 0;
       end else begin
-          bit_phase <= bit_phase + 1;
+        bit_phase_q <= bit_phase_d;
       end
+    end
   end
 
 
@@ -146,42 +177,47 @@ module usb_fs_rx (
     denote the end of a packet.  this state machine recognizes the beginning and
     end of packets for subsequent layers to process.
   */
-  reg [5:0] line_history = 0;
-  reg packet_valid = 0;
-  reg next_packet_valid;
-  wire packet_start = next_packet_valid && !packet_valid;
-  wire packet_end = !next_packet_valid && packet_valid;
+  logic [5:0] line_history_q, line_history_d;
+  logic packet_valid_q, packet_valid_d;
+  
+  wire packet_start = packet_valid_d && !packet_valid_q;
+  wire packet_end = !packet_valid_d && packet_valid_q;
 
-  always @* begin
+  always_comb begin : proc_packet_valid_d
     if (line_state_valid) begin
       // check for packet start: KJKJKK
-      if (!packet_valid && line_history[5:0] == 6'b100101) begin
-        next_packet_valid <= 1;
+      if (!packet_valid_q && line_history_q[5:0] == 6'b100101) begin
+        packet_valid_d = 1;
       end
  
       // check for packet end: SE0 SE0
-      else if (packet_valid && line_history[3:0] == 4'b0000) begin
-        next_packet_valid <= 0;
+      else if (packet_valid_q && line_history_q[3:0] == 4'b0000) begin
+        packet_valid_d = 0;
 
       end else begin
-        next_packet_valid <= packet_valid;
+        packet_valid_d = packet_valid_q;
       end
     end else begin
-      next_packet_valid <= packet_valid;
-    end
+      packet_valid_d = packet_valid_q;
+    end  
   end
 
-  always @(posedge clk) begin
-    if (reset) begin
-      line_history <= 6'b101010;
-      packet_valid <= 0;
+  // keep a history of the last two states on the line
+  assign line_history_d = line_state_valid ? {line_history_q[3:0], line_state_q[1:0]} : line_history_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_pkt_line
+    if(!rst_ni) begin
+      packet_valid_q <= 0;
+      line_history_q <= 6'b101010;
     end else begin
-      // keep a history of the last two states on the line
-      if (line_state_valid) begin
-        line_history[5:0] <= {line_history[3:0], line_state[1:0]};
+      if (link_reset_i) begin
+        packet_valid_q <= 0;
+        line_history_q <= 6'b101010;
+      end else begin
+        packet_valid_q <= packet_valid_d;
+        line_history_q <= line_history_d;
       end
     end
-    packet_valid <= next_packet_valid;
   end
 
 
@@ -193,44 +229,56 @@ module usb_fs_rx (
 
     https://en.wikipedia.org/wiki/Non-return-to-zero
   */
-  reg dvalid_raw;
-  reg din;
+  logic dvalid_raw;
+  logic din;
 
-  always @* begin
-    case (line_history[3:0])
-      4'b0101 : din <= 1;
-      4'b0110 : din <= 0;
-      4'b1001 : din <= 0;
-      4'b1010 : din <= 1;
-      default : din <= 0;
+  always_comb begin
+    case (line_history_q[3:0])
+      4'b0101 : din = 1;
+      4'b0110 : din = 0;
+      4'b1001 : din = 0;
+      4'b1010 : din = 1;
+      default : din = 0;
     endcase
  
-    if (packet_valid && line_state_valid) begin
-      case (line_history[3:0])
-        4'b0101 : dvalid_raw <= 1;
-        4'b0110 : dvalid_raw <= 1;
-        4'b1001 : dvalid_raw <= 1;
-        4'b1010 : dvalid_raw <= 1;
-        default : dvalid_raw <= 0;
+    if (packet_valid_q && line_state_valid) begin
+      case (line_history_q[3:0])
+        4'b0101 : dvalid_raw = 1;
+        4'b0110 : dvalid_raw = 1;
+        4'b1001 : dvalid_raw = 1;
+        4'b1010 : dvalid_raw = 1;
+        default : dvalid_raw = 0;
       endcase
     end else begin
-      dvalid_raw <= 0;
+      dvalid_raw = 0;
     end
   end
 
-  reg [5:0] bitstuff_history = 0;
+  logic [5:0] bitstuff_history_q, bitstuff_history_d;
 
-  always @(posedge clk) begin
-    if (reset || packet_end) begin
-      bitstuff_history <= 6'b000000;
+  always_comb begin : proc_bitstuff_history_d
+    if (packet_end) begin
+      bitstuff_history_d = '0;
+    end else if (dvalid_raw) begin
+      bitstuff_history_d = {bitstuff_history_q[4:0], din};
     end else begin
-      if (dvalid_raw) begin
-        bitstuff_history <= {bitstuff_history[4:0], din};
-      end
+      bitstuff_history_d = bitstuff_history_q;
     end  
   end
 
-  assign dvalid = dvalid_raw && !(bitstuff_history == 6'b111111);
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff_history_q
+    if(!rst_ni) begin
+      bitstuff_history_q <= 0;
+    end else begin
+      if (link_reset_i) begin
+        bitstuff_history_q <= 0;
+      end else begin
+        bitstuff_history_q <= bitstuff_history_d;
+      end
+    end
+  end
+
+  assign dvalid = dvalid_raw && !(bitstuff_history_q == 6'b111111);
 
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -238,134 +286,187 @@ module usb_fs_rx (
   /*
     shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
   */
+  logic [8:0] full_pid_q, full_pid_d;
+  wire pid_valid = full_pid_q[4:1] == ~full_pid_q[8:5];
+  wire pid_complete = full_pid_q[0];
 
-  reg [8:0] full_pid = 0;
-  wire pid_valid = full_pid[4:1] == ~full_pid[8:5];
-  wire pid_complete = full_pid[0];
-
-  always @(posedge clk) begin
-    if (packet_start) begin
-      full_pid <= 9'b100000000;
-    end
-
+  always_comb begin : proc_full_pid_d
     if (dvalid && !pid_complete) begin
-        full_pid <= {din, full_pid[8:1]};
-    end
+      full_pid_d = {din, full_pid_q[8:1]};
+    end else if (packet_start) begin
+      full_pid_d = 9'b100000000;
+    end else begin
+      full_pid_d = full_pid_q;
+    end  
   end
-
 
   ////////////////////////////////////////////////////////////////////////////////
   // check crc5
-  reg [4:0] crc5 = 0;
-  wire crc5_valid = crc5 == 5'b01100;
-  wire crc5_invert = din ^ crc5[4];
-  always @(posedge clk) begin
+  logic [4:0] crc5_q, crc5_d;
+  wire crc5_valid = crc5_q == 5'b01100;
+  wire crc5_invert = din ^ crc5_q[4];
+
+
+  always_comb begin
+    crc5_d = crc5_q; // default value
+
     if (packet_start) begin
-      crc5 <= 5'b11111;
+      crc5_d = 5'b11111;
     end
 
     if (dvalid && pid_complete) begin
-      crc5[4] <= crc5[3];
-      crc5[3] <= crc5[2];
-      crc5[2] <= crc5[1] ^ crc5_invert;
-      crc5[1] <= crc5[0];
-      crc5[0] <= crc5_invert;
+      crc5_d[4] = crc5_q[3];
+      crc5_d[3] = crc5_q[2];
+      crc5_d[2] = crc5_q[1] ^ crc5_invert;
+      crc5_d[1] = crc5_q[0];
+      crc5_d[0] = crc5_invert;
     end
   end
 
 
   ////////////////////////////////////////////////////////////////////////////////
   // check crc16
-  reg [15:0] crc16 = 0;
-  wire crc16_valid = crc16 == 16'b1000000000001101;
-  wire crc16_invert = din ^ crc16[15];  
+  logic [15:0] crc16_q, crc16_d;
+  wire crc16_valid = crc16_q == 16'b1000000000001101;
+  wire crc16_invert = din ^ crc16_q[15];  
 
-  always @(posedge clk) begin
+  always_comb begin
+    crc16_d = crc16_q; // default value
+
     if (packet_start) begin
-      crc16 <= 16'b1111111111111111;
+      crc16_d = 16'b1111111111111111;
     end
 
     if (dvalid && pid_complete) begin
-      crc16[15] <= crc16[14] ^ crc16_invert;
-      crc16[14] <= crc16[13];
-      crc16[13] <= crc16[12];
-      crc16[12] <= crc16[11];
-      crc16[11] <= crc16[10];
-      crc16[10] <= crc16[9];
-      crc16[9] <= crc16[8];
-      crc16[8] <= crc16[7];
-      crc16[7] <= crc16[6];
-      crc16[6] <= crc16[5];
-      crc16[5] <= crc16[4];
-      crc16[4] <= crc16[3];
-      crc16[3] <= crc16[2];
-      crc16[2] <= crc16[1] ^ crc16_invert;
-      crc16[1] <= crc16[0];
-      crc16[0] <= crc16_invert;
+      crc16_d[15] = crc16_q[14] ^ crc16_invert;
+      crc16_d[14] = crc16_q[13];
+      crc16_d[13] = crc16_q[12];
+      crc16_d[12] = crc16_q[11];
+      crc16_d[11] = crc16_q[10];
+      crc16_d[10] = crc16_q[9];
+      crc16_d[9] = crc16_q[8];
+      crc16_d[8] = crc16_q[7];
+      crc16_d[7] = crc16_q[6];
+      crc16_d[6] = crc16_q[5];
+      crc16_d[5] = crc16_q[4];
+      crc16_d[4] = crc16_q[3];
+      crc16_d[3] = crc16_q[2];
+      crc16_d[2] = crc16_q[1] ^ crc16_invert;
+      crc16_d[1] = crc16_q[0];
+      crc16_d[0] = crc16_invert;
     end
   end
 
 
   ////////////////////////////////////////////////////////////////////////////////
   // output control signals
-  wire pkt_is_token = full_pid[2:1] == 2'b01;
-  wire pkt_is_data = full_pid[2:1] == 2'b11;
-  wire pkt_is_handshake = full_pid[2:1] == 2'b10;
+  wire pkt_is_token = full_pid_q[2:1] == 2'b01;
+  wire pkt_is_data = full_pid_q[2:1] == 2'b11;
+  wire pkt_is_handshake = full_pid_q[2:1] == 2'b10;
 
 
   // TODO: need to check for data packet babble
   // TODO: do i need to check for bitstuff error?
-  assign valid_packet = pid_valid && (
+  assign valid_packet_o = pid_valid && (
     (pkt_is_handshake) || 
     (pkt_is_data && crc16_valid) ||
     (pkt_is_token && crc5_valid)
   );
   
+  logic [11:0] token_payload_q, token_payload_d;
+  wire token_payload_done = token_payload_q[0];
 
-  reg [11:0] token_payload = 0;
-  wire token_payload_done = token_payload[0];
+  logic [6:0] addr_q, addr_d;
+  logic [3:0] endp_q, endp_d;
+  logic [10:0] frame_num_q, frame_num_d;
 
-  always @(posedge clk) begin
+  always_comb begin
+    token_payload_d = token_payload_q; // default
+
     if (packet_start) begin
-      token_payload <= 12'b100000000000;
+      token_payload_d = 12'b100000000000;
     end
 
     if (dvalid && pid_complete && pkt_is_token && !token_payload_done) begin
-      token_payload <= {din, token_payload[11:1]};
+      token_payload_d = {din, token_payload_q[11:1]};
     end
   end
 
-  always @(posedge clk) begin
+  always_comb begin
+    // defaults
+    addr_d      = addr_q;
+    endp_d      = endp_q;
+    frame_num_d = frame_num_q;
+
     if (token_payload_done && pkt_is_token) begin
-      addr <= token_payload[7:1];
-      endp <= token_payload[11:8];
-      frame_num <= token_payload[11:1];
+      addr_d      = token_payload_q[7:1];
+      endp_d      = token_payload_q[11:8];
+      frame_num_d = token_payload_q[11:1];
     end
   end
 
-  assign pkt_start = packet_start;
-  assign pkt_end = packet_end; 
-  assign pid = full_pid[4:1]; 
-  //assign addr = token_payload[7:1];
-  //assign endp = token_payload[11:8];
-  //assign frame_num = token_payload[11:1];
+  assign addr_o      = addr_q;
+  assign endp_o      = endp_q;
+  assign frame_num_o = frame_num_q;
+  assign pid_o       = full_pid_q[4:1]; 
+
+  assign pkt_start_o = packet_start;
+  assign pkt_end_o   = packet_end; 
   
 
   ////////////////////////////////////////////////////////////////////////////////
   // deserialize and output data
   //assign rx_data_put = dvalid && pid_complete && pkt_is_data;
-  reg [8:0] rx_data_buffer = 0;
-  wire rx_data_buffer_full = rx_data_buffer[0];
-  assign rx_data_put = rx_data_buffer_full;
-  assign rx_data = rx_data_buffer[8:1];
+  logic [8:0] rx_data_buffer_q, rx_data_buffer_d;
+  wire rx_data_buffer_full = rx_data_buffer_q[0];
+  assign rx_data_put_o     = rx_data_buffer_full;
+  assign rx_data_o         = rx_data_buffer_q[8:1];
 
-  always @(posedge clk) begin
+  always_comb begin
+    rx_data_buffer_d = rx_data_buffer_q; // default
+
     if (packet_start || rx_data_buffer_full) begin
-      rx_data_buffer <= 9'b100000000;
+      rx_data_buffer_d = 9'b100000000;
     end
 
     if (dvalid && pid_complete && pkt_is_data) begin
-        rx_data_buffer <= {din, rx_data_buffer[8:1]};
+        rx_data_buffer_d = {din, rx_data_buffer_q[8:1]};
+    end
+  end
+
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Registers
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_gp_regs
+    if(!rst_ni) begin
+      full_pid_q          <= 0;
+      crc16_q             <= 0;
+      crc5_q              <= 0;
+      token_payload_q     <= 0;
+      addr_q              <= 0;
+      endp_q              <= 0;
+      frame_num_q         <= 0;
+      rx_data_buffer_q    <= 0;
+    end else begin
+      if (link_reset_i) begin
+        full_pid_q          <= 0;
+        crc16_q             <= 0;
+        crc5_q              <= 0;
+        token_payload_q     <= 0;
+        addr_q              <= 0;
+        endp_q              <= 0;
+        frame_num_q         <= 0;
+        rx_data_buffer_q    <= 0;
+      end else begin
+        full_pid_q          <= full_pid_d;
+        crc16_q             <= crc16_d;
+        crc5_q              <= crc5_d;
+        token_payload_q     <= token_payload_d;
+        addr_q              <= addr_d;
+        endp_q              <= endp_d;
+        frame_num_q         <= frame_num_d;
+        rx_data_buffer_q    <= rx_data_buffer_d;
+      end
     end
   end
 

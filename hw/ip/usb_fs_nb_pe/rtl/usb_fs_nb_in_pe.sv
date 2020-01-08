@@ -194,8 +194,13 @@ module usb_fs_nb_in_pe #(
     endcase
   end
 
-  always_ff @(posedge clk_48mhz_i) begin
-    tx_data_o <= in_ep_data_i;
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      tx_data_o <= 0;
+    end else begin
+      tx_data_o <= in_ep_data_i;
+    end
+    
   end
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin

@@ -7,243 +7,375 @@
 module usb_fs_tx (
   // A 48MHz clock is required to receive USB data at 12MHz
   // it's simpler to juse use 48MHz everywhere
-  input clk_48mhz,
-  input reset,
+  input  logic clk_i,
+  input  logic rst_ni,  // asyc reset
+  input  logic link_reset_i, // USB reset, sync to 48 MHz, active high
 
   // bit strobe from rx to align with senders clock
-  input bit_strobe,
+  input  logic bit_strobe_i,
 
   // output enable to take ownership of bus and data out
-  output reg oe = 0,
-  output reg dp = 0,
-  output reg dn = 0,
+  output logic oe_o,
+  output logic dp_o,
+  output logic dn_o,
 
   // pulse to initiate new packet transmission
-  input pkt_start,
-  output pkt_end,
+  input  logic pkt_start_i,
+  output logic pkt_end_o,
 
-  // pid to send
-  input [3:0] pid,
+  // pid_i to send
+  input  logic [3:0] pid_i,
 
   // tx logic pulls data until there is nothing available
-  input tx_data_avail,  
-  output reg tx_data_get = 0,
-  input [7:0] tx_data
+  input  logic tx_data_avail_i,  
+  output logic tx_data_get_o,
+  input  logic [7:0] tx_data_i
 );
-  wire clk = clk_48mhz;
 
-  // save packet parameters at pkt_start
-  reg [3:0] pidq = 0;
 
-  always @(posedge clk) begin
-    if (pkt_start) begin
-      pidq <= pid;
+  typedef enum {IDLE, SYNC, PID, DATA_OR_CRC16_0, CRC16_1, EOP} state_t;
+
+    
+  // -------------------------------------------------
+  //  Signal Declarations
+  // -------------------------------------------------
+  logic [3:0] pid_q, pid_d;
+  logic bitstuff;
+  logic bitstuff_q;
+  logic bitstuff_qq;
+  logic bitstuff_qqq;
+  logic bitstuff_qqqq;
+
+  logic [5:0] bit_history;
+
+  state_t state_d, state_q;
+
+
+  logic [7:0] data_shift_reg_q, data_shift_reg_d;
+  logic [7:0] oe_shift_reg_q, oe_shift_reg_d;
+  logic [7:0] se0_shift_reg_q, se0_shift_reg_d;
+  logic data_payload_q, data_payload_d;
+  logic tx_data_get_q, tx_data_get_d;
+  logic byte_strobe_q, byte_strobe_d;
+  logic [4:0] bit_history_d, bit_history_q;
+  logic [2:0] bit_count_d, bit_count_q;
+
+  logic [15:0] crc16_d, crc16_q;
+
+  logic oe_q, oe_d;
+  logic dp_q, dp_d;
+  logic dn_q, dn_d;
+  logic [2:0] dp_eop_q, dp_eop_d;
+
+  logic serial_tx_data;
+  logic serial_tx_oe;
+  logic serial_tx_se0;
+  logic crc16_invert;
+
+  // save packet parameters at pkt_start_i
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_pid
+    if(!rst_ni) begin
+      pid_q <= 0;
+    end else begin
+      if (link_reset_i) begin
+        pid_q <= 0;
+      end else begin
+        pid_q <= pid_d;
+      end      
     end
   end
 
-  reg [7:0] data_shift_reg = 0;
-  reg [7:0] oe_shift_reg = 0;
-  reg [7:0] se0_shift_reg = 0;
+  assign pid_d = pkt_start_i ? pid_i : pid_q;
 
 
-  wire serial_tx_data = data_shift_reg[0];
-  wire serial_tx_oe = oe_shift_reg[0];
-  wire serial_tx_se0 = se0_shift_reg[0];
+  assign serial_tx_data = data_shift_reg_q[0];
+  assign serial_tx_oe = oe_shift_reg_q[0];
+  assign serial_tx_se0 = se0_shift_reg_q[0];
 
 
-  // serialize sync, pid, data payload, and crc16
-  reg byte_strobe = 0;
-  reg [2:0] bit_count = 0;
+  // serialize sync, pid_i, data payload, and crc16
+  assign bit_history = {serial_tx_data, bit_history_q};
+  assign bitstuff = bit_history == 6'b111111;
 
-  reg [4:0] bit_history_q = 0;
-  wire [5:0] bit_history = {serial_tx_data, bit_history_q};
-  wire bitstuff = bit_history == 6'b111111;
-  reg bitstuff_q = 0;
-  reg bitstuff_qq = 0;
-  reg bitstuff_qqq = 0;
-  reg bitstuff_qqqq = 0;
-
-
-  always @(posedge clk) begin
-    bitstuff_q <= bitstuff;
-    bitstuff_qq <= bitstuff_q;
-    bitstuff_qqq <= bitstuff_qq;
-    bitstuff_qqqq <= bitstuff_qqq;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff
+    if(!rst_ni) begin
+      bitstuff_q <= 0;
+      bitstuff_qq <= 0;
+      bitstuff_qqq <= 0;
+      bitstuff_qqqq <= 0;
+    end else begin
+      if (link_reset_i) begin
+        bitstuff_q <= 0;
+        bitstuff_qq <= 0;
+        bitstuff_qqq <= 0;
+        bitstuff_qqqq <= 0;          
+      end else begin
+        bitstuff_q <= bitstuff;
+        bitstuff_qq <= bitstuff_q;
+        bitstuff_qqq <= bitstuff_qq;
+        bitstuff_qqqq <= bitstuff_qqq;
+      end
+    end
   end
 
-  assign pkt_end = bit_strobe && se0_shift_reg[1:0] == 2'b01;
+  assign pkt_end_o = bit_strobe_i && se0_shift_reg_q[1:0] == 2'b01;
 
-  reg data_payload = 0;
 
-  reg [31:0] pkt_state = 0;
-  localparam IDLE = 0;
-  localparam SYNC = 1;
-  localparam PID = 2;
-  localparam DATA_OR_CRC16_0 = 3;
-  localparam CRC16_1 = 4;
-  localparam EOP = 5;
+  // -------------------------------------------------
+  //  FSM
+  // -------------------------------------------------
+  always_comb begin : proc_fsm 
+    // Default assignments
+    state_d          = state_q;
+    data_shift_reg_d = data_shift_reg_q;
+    oe_shift_reg_d   = oe_shift_reg_q;
+    se0_shift_reg_d  = se0_shift_reg_q;
+    data_payload_d   = data_payload_q;
+    tx_data_get_d    = tx_data_get_q;
+    bit_history_d    = bit_history_q;
+    bit_count_d      = bit_count_q;
 
-  reg [15:0] crc16 = 0;
 
-  always @(posedge clk) begin
-    case (pkt_state)
+    case (state_q)
       IDLE : begin
-        if (pkt_start) begin
-          pkt_state <= SYNC;
+        if (pkt_start_i) begin
+          state_d = SYNC;
         end
       end
 
       SYNC : begin
-        if (byte_strobe) begin
-          pkt_state <= PID;
-          data_shift_reg <= 8'b10000000;
-          oe_shift_reg <= 8'b11111111;
-          se0_shift_reg <= 8'b00000000;
+        if (byte_strobe_q) begin
+          state_d = PID;
+          data_shift_reg_d = 8'b10000000;
+          oe_shift_reg_d = 8'b11111111;
+          se0_shift_reg_d = 8'b00000000;
         end
       end
 
       PID : begin
-        if (byte_strobe) begin
-          if (pidq[1:0] == 2'b11) begin
-            pkt_state <= DATA_OR_CRC16_0;
+        if (byte_strobe_q) begin
+          if (pid_q[1:0] == 2'b11) begin
+            state_d = DATA_OR_CRC16_0;
           end else begin
-            pkt_state <= EOP;
+            state_d = EOP;
           end
 
-          data_shift_reg <= {~pidq, pidq};
-          oe_shift_reg <= 8'b11111111;
-          se0_shift_reg <= 8'b00000000;
+          data_shift_reg_d = {~pid_q, pid_q};
+          oe_shift_reg_d = 8'b11111111;
+          se0_shift_reg_d = 8'b00000000;
         end
       end
 
       DATA_OR_CRC16_0 : begin
-        if (byte_strobe) begin
-          if (tx_data_avail) begin
-            pkt_state <= DATA_OR_CRC16_0;
-            data_payload <= 1;
-            tx_data_get <= 1;
-            data_shift_reg <= tx_data;
-            oe_shift_reg <= 8'b11111111;
-            se0_shift_reg <= 8'b00000000;
+        if (byte_strobe_q) begin
+          if (tx_data_avail_i) begin
+            state_d = DATA_OR_CRC16_0;
+            data_payload_d = 1;
+            tx_data_get_d = 1;
+            data_shift_reg_d = tx_data_i;
+            oe_shift_reg_d = 8'b11111111;
+            se0_shift_reg_d = 8'b00000000;
           end else begin
-            pkt_state <= CRC16_1;
-            data_payload <= 0;
-            tx_data_get <= 0;
-            data_shift_reg <= ~{crc16[8], crc16[9], crc16[10], crc16[11], crc16[12], crc16[13], crc16[14], crc16[15]};
-            oe_shift_reg <= 8'b11111111;
-            se0_shift_reg <= 8'b00000000;
+            state_d = CRC16_1;
+            data_payload_d = 0;
+            tx_data_get_d = 0;
+            data_shift_reg_d = ~{crc16_q[8], crc16_q[9], crc16_q[10], crc16_q[11], crc16_q[12], crc16_q[13], crc16_q[14], crc16_q[15]};
+            oe_shift_reg_d = 8'b11111111;
+            se0_shift_reg_d = 8'b00000000;
           end
         end else begin
-          tx_data_get <= 0; 
+          tx_data_get_d = 0; 
         end
       end
 
       CRC16_1 : begin
-        if (byte_strobe) begin
-          pkt_state <= EOP;
-          data_shift_reg <= ~{crc16[0], crc16[1], crc16[2], crc16[3], crc16[4], crc16[5], crc16[6], crc16[7]};
-          oe_shift_reg <= 8'b11111111;
-          se0_shift_reg <= 8'b00000000;
+        if (byte_strobe_q) begin
+          state_d = EOP;
+          data_shift_reg_d = ~{crc16_q[0], crc16_q[1], crc16_q[2], crc16_q[3], crc16_q[4], crc16_q[5], crc16_q[6], crc16_q[7]};
+          oe_shift_reg_d = 8'b11111111;
+          se0_shift_reg_d = 8'b00000000;
         end
       end
 
       EOP : begin
-        if (byte_strobe) begin
-          pkt_state <= IDLE;
-          oe_shift_reg <= 8'b00000111;
-          se0_shift_reg <= 8'b00000111;
+        if (byte_strobe_q) begin
+          state_d = IDLE;
+          oe_shift_reg_d = 8'b00000111;
+          se0_shift_reg_d = 8'b00000111;
         end
       end
     endcase
 
-    if (bit_strobe && !bitstuff) begin
-      byte_strobe <= (bit_count == 3'b000);
-    end else begin
-      byte_strobe <= 0;
-    end
+    // Logic closely coupled to the FSM
+    if (pkt_start_i) begin
+      bit_count_d   = 1;
+      bit_history_d = 0;
 
-    if (pkt_start) begin
-      bit_count <= 1;
-      bit_history_q <= 0;
-
-    end else if (bit_strobe) begin
+    end else if (bit_strobe_i) begin
       // bitstuff
       if (bitstuff /* && !serial_tx_se0*/) begin
-        bit_history_q <= bit_history[5:1];
-        data_shift_reg[0] <= 0;
+        bit_history_d       = bit_history[5:1];
+        data_shift_reg_d[0] = 0;
 
       // normal deserialize
       end else begin
-        bit_count <= bit_count + 1;
+        bit_count_d = bit_count_q + 1;
 
-        data_shift_reg <= (data_shift_reg >> 1);
-        oe_shift_reg <= (oe_shift_reg >> 1);
-        se0_shift_reg <= (se0_shift_reg >> 1);
+        data_shift_reg_d  = (data_shift_reg_q >> 1);
+        oe_shift_reg_d    = (oe_shift_reg_q >> 1);
+        se0_shift_reg_d   = (se0_shift_reg_q >> 1);
 
-        bit_history_q <= bit_history[5:1];
+        bit_history_d = bit_history[5:1];
       end
     end
   end
 
+  always_comb begin : proc_byte_str
+    if (bit_strobe_i && !bitstuff) begin
+      byte_strobe_d = (bit_count_q == 3'b000);
+    end else begin
+      byte_strobe_d = 0;
+    end
+  
+  end
 
+  assign tx_data_get_o = tx_data_get_q;
 
   // calculate crc16
-  wire crc16_invert = serial_tx_data ^ crc16[15];  
+  assign crc16_invert = serial_tx_data ^ crc16_q[15];
 
-  always @(posedge clk) begin
-    if (pkt_start) begin
-      crc16 <= 16'b1111111111111111;
+  always_comb begin : proc_crc16
+    crc16_d = crc16_q; // default assignment
+
+    if (pkt_start_i) begin
+      crc16_d = 16'b1111111111111111;
     end
 
-    if (bit_strobe && data_payload && !bitstuff_qqqq && !pkt_start) begin
-      crc16[15] <= crc16[14] ^ crc16_invert;
-      crc16[14] <= crc16[13];
-      crc16[13] <= crc16[12];
-      crc16[12] <= crc16[11];
-      crc16[11] <= crc16[10];
-      crc16[10] <= crc16[9];
-      crc16[9] <= crc16[8];
-      crc16[8] <= crc16[7];
-      crc16[7] <= crc16[6];
-      crc16[6] <= crc16[5];
-      crc16[5] <= crc16[4];
-      crc16[4] <= crc16[3];
-      crc16[3] <= crc16[2];
-      crc16[2] <= crc16[1] ^ crc16_invert;
-      crc16[1] <= crc16[0];
-      crc16[0] <= crc16_invert;
+    if (bit_strobe_i && data_payload_q && !bitstuff_qqqq && !pkt_start_i) begin
+      crc16_d[15] = crc16_q[14] ^ crc16_invert;
+      crc16_d[14] = crc16_q[13];
+      crc16_d[13] = crc16_q[12];
+      crc16_d[12] = crc16_q[11];
+      crc16_d[11] = crc16_q[10];
+      crc16_d[10] = crc16_q[9];
+      crc16_d[9] = crc16_q[8];
+      crc16_d[8] = crc16_q[7];
+      crc16_d[7] = crc16_q[6];
+      crc16_d[6] = crc16_q[5];
+      crc16_d[5] = crc16_q[4];
+      crc16_d[4] = crc16_q[3];
+      crc16_d[3] = crc16_q[2];
+      crc16_d[2] = crc16_q[1] ^ crc16_invert;
+      crc16_d[1] = crc16_q[0];
+      crc16_d[0] = crc16_invert;
+    end      
+  end
+
+  // -------------------------------------------------
+  //  Regular Registers
+  // -------------------------------------------------
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg
+    if(!rst_ni) begin
+      state_q           <= IDLE;
+      data_payload_q    <= 0;
+      data_shift_reg_q  <= 0;
+      oe_shift_reg_q    <= 0;
+      se0_shift_reg_q   <= 0;
+      data_payload_q    <= 0;
+      tx_data_get_q     <= 0;
+      byte_strobe_q     <= 0;
+      bit_history_q     <= 0;
+      bit_count_q       <= 0;
+      crc16_q           <= 0;
+    end else begin
+      if (link_reset_i) begin
+        state_q           <= IDLE;
+        data_payload_q    <= 0;
+        data_shift_reg_q  <= 0;
+        oe_shift_reg_q    <= 0;
+        se0_shift_reg_q   <= 0;
+        data_payload_q    <= 0;
+        tx_data_get_q     <= 0;
+        byte_strobe_q     <= 0;
+        bit_history_q     <= 0;
+        bit_count_q       <= 0;
+        crc16_q           <= 0;
+      end else begin
+        state_q           <= state_d;
+        data_payload_q    <= data_payload_d;
+        data_shift_reg_q  <= data_shift_reg_d;
+        oe_shift_reg_q    <= oe_shift_reg_d;
+        se0_shift_reg_q   <= se0_shift_reg_d;
+        data_payload_q    <= data_payload_d;
+        tx_data_get_q     <= tx_data_get_d;
+        byte_strobe_q     <= byte_strobe_d;
+        bit_history_q     <= bit_history_d;
+        bit_count_q       <= bit_count_d;
+        crc16_q           <= crc16_d;
+      end
     end
   end
 
-  reg [2:0] dp_eop = 0;
-
-
+  // -------------------------------------------------
   // nrzi and differential driving
-  always @(posedge clk) begin
-    if (pkt_start) begin
-      // J
-      dp <= 1;
-      dn <= 0;
-      
-      dp_eop <= 3'b100;
+  // -------------------------------------------------
+  always_comb begin : proc_diff
+    dp_d     = dp_q;
+    dn_d     = dn_q;
+    oe_d     = oe_q;
+    dp_eop_d = dp_eop_q;
 
-    end else if (bit_strobe) begin
-      oe <= serial_tx_oe;
+    if (pkt_start_i) begin
+      // J
+      dp_d = 1;
+      dn_d = 0;
+      
+      dp_eop_d = 3'b100;
+
+    end else if (bit_strobe_i) begin
+      oe_d = serial_tx_oe;
 
       if (serial_tx_se0) begin
-        dp <= dp_eop[0];
-        dn <= 0;
+        dp_d = dp_eop_q[0];
+        dn_d = 0;
 
-        dp_eop <= dp_eop >> 1;
+        dp_eop_d = dp_eop_q >> 1;
 
       end else if (serial_tx_data) begin
         // value should stay the same, do nothing
 
       end else begin
-        dp <= !dp;
-        dn <= !dn;
+        dp_d = !dp_q;
+        dn_d = !dn_q;
       end
     end
-  end 
+  
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_diff_reg
+    if(!rst_ni) begin
+      dp_eop_q  <= 0;
+      oe_q      <= 0;
+      dp_q      <= 0;
+      dn_q      <= 0;
+    end else begin
+      if (link_reset_i) begin
+        dp_eop_q  <= 0;
+        oe_q      <= 0;
+        dp_q      <= 0;
+        dn_q      <= 0;        
+      end else begin
+        dp_eop_q  <= dp_eop_d;
+        oe_q      <= oe_d;
+        dp_q      <= dp_d;
+        dn_q      <= dn_d;
+      end
+    end
+  end
+
+  assign oe_o = oe_q;
+  assign dp_o = dp_q;
+  assign dn_o = dn_q;
 
 endmodule
