@@ -6,11 +6,6 @@
 //  - Provides default clk and rst options to simplify code
 //  - Provides boiler plate template for common assertions
 
-// TODO:
-//  - double check whether VERILATOR and SYNTHESIS checks are really needed
-//  - should we add ASSERT_INIT_DISABLE?
-//  - should we add "pragma coverage off" and "VCS coverage off"?
-
 `ifdef UVM
   // report assertion error with UVM if compiled
   package assert_rpt_pkg;
@@ -21,7 +16,6 @@
     endfunction
   endpackage
 `endif
-
 
 ///////////////////
 // Helper macros //
@@ -178,6 +172,3 @@
 `ifdef FPV_ON                                    \
    `COVER(__name, __prop, __clk, __rst)          \
 `endif
-
-// undefine local helper macro
-`undef INC_ASSERT
