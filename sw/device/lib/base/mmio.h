@@ -5,10 +5,27 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
 
+// This file is included in C and C++, and, as such, needs to be marked as
+// extern "C" in C++ to make sure linking works out.
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
+/**
+ * Memory-mapped IO functions, which either map to volatile accesses, or can be
+ * replaced with instrumentation calls at compile time, for use with tests.
+ *
+ * Compiling translation units that pull in this header with |-DMOCK_MMIO| will
+ * disable the definitions of |mmio_region_read| and |mmio_region_write|. These
+ * symbols can then be defined by a test harness to allow for instrumentation of
+ * MMIO accesses.
+ */
+
+#ifndef MOCK_MMIO
 /**
  * An mmio_region_t is an opaque handle to an MMIO region; it should only be
  * modified using the functions provided in this header.
@@ -119,6 +136,28 @@ inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
                                 uint32_t value) {
   ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
 }
+#else   // MOCK_MMIO
+/**
+ * "Instrumented" mmio_region_t.
+ *
+ * Instead of containing a volatile pointer, mmio_region_t becomes a |void *|
+ * when |-DMOCK_MMIO| is enabled. This makes it incompatible with the non-mock
+ * version of |mmio_region_t|, which prevents users from being able to access
+ * the pointer inside.
+ */
+typedef struct mmio_region { void *mock; } mmio_region_t;
+
+/**
+ * Stubbed-out read/write operations for overriding by a testing library.
+ */
+uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
+uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset);
+uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset);
+
+void mmio_region_write8(mmio_region_t base, ptrdiff_t offset, uint8_t value);
+void mmio_region_write16(mmio_region_t base, ptrdiff_t offset, uint16_t value);
+void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value);
+#endif  // MOCK_MMIO
 
 /**
  * Reads the bits in |mask| from the MMIO region |base| at the given offset.
@@ -225,5 +264,9 @@ inline void mmio_region_nonatomic_set_bit32(mmio_region_t base,
                                             uint32_t bit_index) {
   mmio_region_nonatomic_set_mask32(base, offset, 0x1, bit_index);
 }
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
