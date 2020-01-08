@@ -17,6 +17,8 @@ project(
     'build.werror=true',
     'debug=true',
     'build.debug=true',
+    'b_staticpic=false', # Disable PIC for device static libraries
+    'b_pie=false',       # Disable PIE for device executables
   ],
 )
 
