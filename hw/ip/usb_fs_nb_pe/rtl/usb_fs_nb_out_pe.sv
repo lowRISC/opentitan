@@ -156,9 +156,13 @@ module usb_fs_nb_out_pe #(
     end
   end
 
-  always_ff @(posedge clk_48mhz_i) begin
-    if (rx_data_put_i) begin
-      out_ep_data_o <= rx_data_i;
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      out_ep_data_o <= 0;
+    end else begin
+      if (rx_data_put_i) begin
+        out_ep_data_o <= rx_data_i;
+      end
     end
   end
 

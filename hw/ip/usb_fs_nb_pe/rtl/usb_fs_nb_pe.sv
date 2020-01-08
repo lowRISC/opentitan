@@ -21,8 +21,8 @@ module usb_fs_nb_pe #(
   parameter PktW = $clog2(MaxPktSizeByte)
 ) (
   input                          clk_48mhz_i,
-  input                          rst_ni,
-  input                          link_reset_i, // synchronous with clk_48mhz_i
+  input                          rst_ni,        // Async. reset, active low
+  input                          link_reset_i,  // USB reset, sync to 48 MHz, active high
   input [6:0]                    dev_addr_i,
 
   ////////////////////////////
@@ -105,123 +105,125 @@ module usb_fs_nb_pe #(
   assign frame_index_o = rx_frame_num;
 
   usb_fs_nb_in_pe #(
-    .NumInEps(NumInEps),
-    .MaxInPktSizeByte(MaxPktSizeByte)
+    .NumInEps           (NumInEps),
+    .MaxInPktSizeByte   (MaxPktSizeByte)
   ) u_usb_fs_nb_in_pe (
-    .clk_48mhz_i(clk_48mhz_i),
-    .rst_ni(rst_ni),
-    .link_reset_i(link_reset_i),
-    .dev_addr_i(dev_addr_i),
+    .clk_48mhz_i        (clk_48mhz_i),
+    .rst_ni             (rst_ni),
+    .link_reset_i       (link_reset_i),
+    .dev_addr_i         (dev_addr_i),
 
     // endpoint interface
-    .in_ep_current_o(in_ep_current_o),
-    .in_ep_rollback_o(in_ep_rollback_o),
-    .in_ep_acked_o(in_ep_acked_o),
-    .in_ep_get_addr_o(in_ep_get_addr_o),
-    .in_ep_data_get_o(in_ep_data_get_o),
-    .in_ep_newpkt_o(in_ep_newpkt_o),
-    .in_ep_stall_i(in_ep_stall_i),
-    .in_ep_has_data_i(in_ep_has_data_i),
-    .in_ep_data_i(in_ep_data_i),
-    .in_ep_data_done_i(in_ep_data_done_i),
+    .in_ep_current_o    (in_ep_current_o),
+    .in_ep_rollback_o   (in_ep_rollback_o),
+    .in_ep_acked_o      (in_ep_acked_o),
+    .in_ep_get_addr_o   (in_ep_get_addr_o),
+    .in_ep_data_get_o   (in_ep_data_get_o),
+    .in_ep_newpkt_o     (in_ep_newpkt_o),
+    .in_ep_stall_i      (in_ep_stall_i),
+    .in_ep_has_data_i   (in_ep_has_data_i),
+    .in_ep_data_i       (in_ep_data_i),
+    .in_ep_data_done_i  (in_ep_data_done_i),
 
     // rx path
-    .rx_pkt_start_i(rx_pkt_start),
-    .rx_pkt_end_i(rx_pkt_end),
-    .rx_pkt_valid_i(rx_pkt_valid),
-    .rx_pid_i(rx_pid),
-    .rx_addr_i(rx_addr),
-    .rx_endp_i(rx_endp),
+    .rx_pkt_start_i     (rx_pkt_start),
+    .rx_pkt_end_i       (rx_pkt_end),
+    .rx_pkt_valid_i     (rx_pkt_valid),
+    .rx_pid_i           (rx_pid),
+    .rx_addr_i          (rx_addr),
+    .rx_endp_i          (rx_endp),
 
     // tx path
-    .tx_pkt_start_o(in_tx_pkt_start),
-    .tx_pkt_end_i(tx_pkt_end),
-    .tx_pid_o(in_tx_pid),
-    .tx_data_avail_o(tx_data_avail),
-    .tx_data_get_i(tx_data_get),
-    .tx_data_o(tx_data)
+    .tx_pkt_start_o     (in_tx_pkt_start),
+    .tx_pkt_end_i       (tx_pkt_end),
+    .tx_pid_o           (in_tx_pid),
+    .tx_data_avail_o    (tx_data_avail),
+    .tx_data_get_i      (tx_data_get),
+    .tx_data_o          (tx_data)
   );
 
   usb_fs_nb_out_pe #(
-    .NumOutEps(NumOutEps),
-    .MaxOutPktSizeByte(MaxPktSizeByte)
+    .NumOutEps           (NumOutEps),
+    .MaxOutPktSizeByte   (MaxPktSizeByte)
   ) u_usb_fs_nb_out_pe (
-    .clk_48mhz_i(clk_48mhz_i),
-    .rst_ni(rst_ni),
-    .link_reset_i(link_reset_i),
-    .dev_addr_i(dev_addr_i),
+    .clk_48mhz_i         (clk_48mhz_i),
+    .rst_ni              (rst_ni),
+    .link_reset_i        (link_reset_i),
+    .dev_addr_i          (dev_addr_i),
 
     // endpoint interface
-    .out_ep_current_o(out_ep_current_o),
-    .out_ep_data_put_o(out_ep_data_put_o),
-    .out_ep_put_addr_o(out_ep_put_addr_o),
-    .out_ep_data_o(out_ep_data_o),
-    .out_ep_newpkt_o(out_ep_newpkt_o),
-    .out_ep_acked_o(out_ep_acked_o),
-    .out_ep_rollback_o(out_ep_rollback_o),
-    .out_ep_setup_o(out_ep_setup_o),
-    .out_ep_full_i(out_ep_full_i),
-    .out_ep_stall_i(out_ep_stall_i),
+    .out_ep_current_o    (out_ep_current_o),
+    .out_ep_data_put_o   (out_ep_data_put_o),
+    .out_ep_put_addr_o   (out_ep_put_addr_o),
+    .out_ep_data_o       (out_ep_data_o),
+    .out_ep_newpkt_o     (out_ep_newpkt_o),
+    .out_ep_acked_o      (out_ep_acked_o),
+    .out_ep_rollback_o   (out_ep_rollback_o),
+    .out_ep_setup_o      (out_ep_setup_o),
+    .out_ep_full_i       (out_ep_full_i),
+    .out_ep_stall_i      (out_ep_stall_i),
 
     // rx path
-    .rx_pkt_start_i(rx_pkt_start),
-    .rx_pkt_end_i(rx_pkt_end),
-    .rx_pkt_valid_i(rx_pkt_valid),
-    .rx_pid_i(rx_pid),
-    .rx_addr_i(rx_addr),
-    .rx_endp_i(rx_endp),
-    .rx_data_put_i(rx_data_put),
-    .rx_data_i(rx_data),
+    .rx_pkt_start_i      (rx_pkt_start),
+    .rx_pkt_end_i        (rx_pkt_end),
+    .rx_pkt_valid_i      (rx_pkt_valid),
+    .rx_pid_i            (rx_pid),
+    .rx_addr_i           (rx_addr),
+    .rx_endp_i           (rx_endp),
+    .rx_data_put_i       (rx_data_put),
+    .rx_data_i           (rx_data),
 
     // tx path
-    .tx_pkt_start_o(out_tx_pkt_start),
-    .tx_pkt_end_i(tx_pkt_end),
-    .tx_pid_o(out_tx_pid)
+    .tx_pkt_start_o      (out_tx_pkt_start),
+    .tx_pkt_end_i        (tx_pkt_end),
+    .tx_pid_o            (out_tx_pid)
   );
 
   usb_fs_rx u_usb_fs_rx (
-    .clk_48mhz(clk_48mhz_i),
-    .reset(link_reset_i),
-    .dp(usb_p_rx_i),
-    .dn(usb_n_rx_i),
-    .bit_strobe(bit_strobe),
-    .pkt_start(rx_pkt_start),
-    .pkt_end(rx_pkt_end),
-    .pid(rx_pid),
-    .addr(rx_addr),
-    .endp(rx_endp),
-    .frame_num(rx_frame_num),
-    .rx_data_put(rx_data_put),
-    .rx_data(rx_data),
-    .valid_packet(rx_pkt_valid)
+    .clk_i           (clk_48mhz_i),
+    .rst_ni          (rst_ni),
+    .link_reset_i    (link_reset_i),
+    .dp_i            (usb_p_rx_i),
+    .dn_i            (usb_n_rx_i),
+    .bit_strobe_o    (bit_strobe),
+    .pkt_start_o     (rx_pkt_start),
+    .pkt_end_o       (rx_pkt_end),
+    .pid_o           (rx_pid),
+    .addr_o          (rx_addr),
+    .endp_o          (rx_endp),
+    .frame_num_o     (rx_frame_num),
+    .rx_data_put_o   (rx_data_put),
+    .rx_data_o       (rx_data),
+    .valid_packet_o  (rx_pkt_valid)
   );
 
   usb_fs_tx_mux u_usb_fs_tx_mux (
     // interface to IN Protocol Engine
-    .in_tx_pkt_start(in_tx_pkt_start),
-    .in_tx_pid(in_tx_pid),
+    .in_tx_pkt_start_i  (in_tx_pkt_start),
+    .in_tx_pid_i        (in_tx_pid),
 
     // interface to OUT Protocol Engine
-    .out_tx_pkt_start(out_tx_pkt_start),
-    .out_tx_pid(out_tx_pid),
+    .out_tx_pkt_start_i (out_tx_pkt_start),
+    .out_tx_pid_i       (out_tx_pid),
 
     // interface to tx module
-    .tx_pkt_start(tx_pkt_start),
-    .tx_pid(tx_pid)
+    .tx_pkt_start_o     (tx_pkt_start),
+    .tx_pid_o           (tx_pid)
   );
 
   usb_fs_tx u_usb_fs_tx (
-    .clk_48mhz(clk_48mhz_i),
-    .reset(link_reset_i),
-    .bit_strobe(bit_strobe),
-    .oe(usb_tx_en_o),
-    .dp(usb_p_tx_o),
-    .dn(usb_n_tx_o),
-    .pkt_start(tx_pkt_start),
-    .pkt_end(tx_pkt_end),
-    .pid(tx_pid),
-    .tx_data_avail(tx_data_avail),
-    .tx_data_get(tx_data_get),
-    .tx_data(tx_data)
-  );
+    .clk_i           (clk_48mhz_i),
+    .rst_ni          (rst_ni),
+    .link_reset_i    (link_reset_i),
+    .bit_strobe_i    (bit_strobe),
+    .oe_o            (usb_tx_en_o),
+    .dp_o            (usb_p_tx_o),
+    .dn_o            (usb_n_tx_o),
+    .pkt_start_i     (tx_pkt_start),
+    .pkt_end_o       (tx_pkt_end),
+    .pid_i           (tx_pid),
+    .tx_data_avail_i (tx_data_avail),
+    .tx_data_get_o   (tx_data_get),
+    .tx_data_i       (tx_data)
+  );  
 endmodule
