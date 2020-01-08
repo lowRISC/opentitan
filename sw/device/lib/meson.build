@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('base')
+subdir('testing')
 
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(

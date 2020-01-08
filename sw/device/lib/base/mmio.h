@@ -27,6 +27,9 @@ inline reg32_t reg32_from_addr(uintptr_t address) {
   };
 }
 
+// Declare but not define reg32_read and reg32_write if compiling for tests
+// since these functions will be mocked in tests.
+#ifndef MOCK_MMIO
 /**
  * Reads an aligned word from the MMIO register |base| at the given byte offset.
  *
@@ -54,6 +57,10 @@ inline uint32_t reg32_read(reg32_t base, ptrdiff_t offset) {
 inline void reg32_write(reg32_t base, ptrdiff_t offset, uint32_t value) {
   base.inner_ptr[offset / sizeof(uint32_t)] = value;
 }
+#else
+uint32_t reg32_read(reg32_t base, ptrdiff_t offset);
+void reg32_write(reg32_t base, ptrdiff_t offset, uint32_t value);
+#endif  // MOCK_MMIO
 
 /**
  * Reads the bits in |mask| from the MMIO register |base| at the given offset.
