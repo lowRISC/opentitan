@@ -129,8 +129,8 @@ def gen_html_regr_results_table(testplan, regr_results, outbuf):
         else:
             tests_str = tests
             results_str = results
-        if ms == "na": ms = ""
-        if name == "<ignore>":
+        if ms == "N.A.": ms = ""
+        if name == "N.A.":
             name = ""
             tests_str = "<strong>" + tests_str + "</strong>"
             results_str = "<strong>" + results_str + "</strong>"

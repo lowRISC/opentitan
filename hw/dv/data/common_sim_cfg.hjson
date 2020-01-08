@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   project:          opentitan
+  flow:             sim
   flow_makefile:    "{proj_root}/hw/dv/data/sim.mk"
 
   import_cfgs:      ["{proj_root}/hw/dv/data/common_modes.hjson",

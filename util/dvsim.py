@@ -22,7 +22,7 @@ from pathlib import Path
 
 import hjson
 
-from dvsim import SimCfg, utils
+from dvsim import Deploy, SimCfg, utils
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
@@ -73,7 +73,7 @@ def resolve_branch(arg_branch):
         arg_branch = result.stdout.decode("utf-8").strip()
         if arg_branch == "":
             log.warning(
-                "Failed to find current git branch. Setting it to \"master\"")
+                "Failed to find current git branch. Setting it to \"default\"")
             arg_branch = "default"
     return (arg_branch)
 
@@ -88,35 +88,25 @@ def main():
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument(
-        "-f",
-        "--flow",
-        default="sim",
-        metavar="lint|elab|synth|formal|sim",
-        help="which simulation flow' currently only dv flow supported")
+    parser.add_argument("cfg",
+                        metavar="<cfg-hjson-file>",
+                        help="""Configuration hjson file.""")
+
+    parser.add_argument("-i",
+                        "--items",
+                        nargs="*",
+                        default=["sanity"],
+                        metavar="regr1, regr2, regr3|test1, test2, test3, ...",
+                        help="""Indicate which regressions or tests to run.""")
 
     parser.add_argument(
-        "--cfg",
-        default="cfg.hjson",
-        metavar="<file>",
-        help="""simulation configuration file; if this is not supplied, it will
-                              attempt to look for \"<flow>_cfg.hjson\" file in PWD"""
-    )
-
-    parser.add_argument(
-        "items",
-        nargs="*",
-        default=["sanity"],
-        metavar="""regr1, regr2, regr3|test1, test2, test3, ...""",
-        help="""Indicate which regression or tests to run""")
-
-    parser.add_argument(
+        "-l",
         "--list",
         nargs="+",
         default=[],
         metavar="build_modes|run_modes|tests|regressions",
         help=
-        """Provides a list of modes / tests / regressions available for use."""
+        """List the available build_modes / run_modes / tests / regressions for use."""
     )
 
     parser.add_argument("-s",
@@ -140,9 +130,12 @@ def main():
     parser.add_argument(
         "-br",
         "--branch",
-        metavar="<github-branch>",
-        help="""GitHub branch name. This is used to construct the build and run
-                              directories""")
+        default="",
+        metavar="<branch-name>",
+        help=
+        """This variable is used to construct the scratch path directory name. If not
+                specified, it defaults to the GitHub branch name. The idea is to uniquefy the
+                scratch paths between different branches.""")
 
     parser.add_argument(
         "-bo",
@@ -214,15 +207,15 @@ def main():
         default=[],
         metavar="seed0 seed1 ...",
         help=
-        """Run tests with a specific seeds; if not specified, tool will use a
-                              randomly generated seed""")
+        """Run tests with a specific seeds. Note that these specific seeds are applied to
+           items being run in the order they are passed.""")
 
     parser.add_argument(
         "--reseed",
         type=int,
         default=-1,
         metavar="N",
-        help="""repeat tests with N iterations with different seeds""")
+        help="""Repeat tests with N iterations with different seeds""")
 
     parser.add_argument("-rx",
                         "--reseed-multiplier",
@@ -262,7 +255,7 @@ def main():
                         "--profile",
                         default="none",
                         metavar="time|mem",
-                        help="turn on simulation profiling")
+                        help="Turn on simulation profiling")
 
     parser.add_argument(
         "--job-prefix",
@@ -366,7 +359,6 @@ def main():
     elif args.verbose == "debug": log_level = log.DEBUG
     log.basicConfig(format=log_format, level=log_level)
 
-    if args.cfg == "cfg.hjson": args.cfg = args.flow + "_" + args.cfg
     if not os.path.exists(args.cfg):
         log.fatal("Simulation config file %s appears to be invalid.", args.cfg)
         sys.exit(1)
@@ -375,7 +367,15 @@ def main():
     args.branch = resolve_branch(args.branch)
     args.cfg = os.path.abspath(args.cfg)
 
+    # Build infrastructure from hjson file and create the list of items to
+    # be deployed.
     cfg = SimCfg.SimCfg(proj_root=get_proj_root(), args=args)
+
+    # Deploy the builds and runs
+    Deploy.Deploy.deploy(cfg.deploy)
+
+    # Generate results.
+    cfg.gen_results()
 
     # sim_cfg_list = dvsim_parser.run(args)
     # dvsim_scheduler.dispatch(sim_cfg_list)

@@ -8,6 +8,8 @@ r"""TestplanEntry and Testplan classes for maintaining testplan entries
 import re
 import sys
 
+from tabulate import tabulate
+
 
 class TestplanEntry():
     """An entry in the testplan
@@ -22,7 +24,7 @@ class TestplanEntry():
     tests = []
 
     fields = ("name", "desc", "milestone", "tests")
-    milestones = ("na", "V1", "V2", "V3")
+    milestones = ("N.A.", "V1", "V2", "V3")
 
     def __init__(self, name, desc, milestone, tests, substitutions=[]):
         self.name = name
@@ -188,7 +190,6 @@ class Testplan():
     def map_regr_results(self, regr_results):
         '''map regression results to testplan entries
         '''
-
         def sum_results(totals, entry):
             '''function to generate milestone and grand totals
             '''
@@ -200,16 +201,14 @@ class Testplan():
 
         totals = {}
         for ms in TestplanEntry.milestones:
-            name = "<ignore>"
-            totals[ms] = TestplanEntry(
-                name=name,
-                desc=name,
-                milestone=ms,
-                tests=[{
-                    "name": "TOTAL",
-                    "passing": 0,
-                    "total": 0
-                }])
+            totals[ms] = TestplanEntry(name="N.A.",
+                                       desc="Total tests",
+                                       milestone=ms,
+                                       tests=[{
+                                           "name": "TOTAL",
+                                           "passing": 0,
+                                           "total": 0
+                                       }])
 
         for entry in self.entries:
             regr_results = entry.map_regr_results(regr_results)
@@ -221,26 +220,26 @@ class Testplan():
             if not "mapped" in regr_result.keys():
                 unmapped_regr_results.append(regr_result)
 
-        unmapped = TestplanEntry(
-            name="Unmapped tests",
-            desc="Unmapped tests",
-            milestone="na",
-            tests=unmapped_regr_results)
+        unmapped = TestplanEntry(name="Unmapped tests",
+                                 desc="""A list of tests in the regression result that are not
+                                      mapped to testplan entries.""",
+                                 milestone="N.A.",
+                                 tests=unmapped_regr_results)
         totals = sum_results(totals, unmapped)
 
-        # add the grand total: "na" key used for grand total
+        # Add the grand total: repurpose the milestone = "N.A." key used for it.
         for ms in TestplanEntry.milestones:
-            if ms != "na":
-                totals["na"].tests[0]["passing"] += totals[ms].tests[0][
+            if ms != "N.A.":
+                totals["N.A."].tests[0]["passing"] += totals[ms].tests[0][
                     "passing"]
-                totals["na"].tests[0]["total"] += totals[ms].tests[0]["total"]
+                totals["N.A."].tests[0]["total"] += totals[ms].tests[0]["total"]
 
         # add total back into 'entries'
         for key in totals.keys():
-            if key != "na": self.entries.append(totals[key])
+            if key != "N.A.": self.entries.append(totals[key])
         self.sort()
         self.entries.append(unmapped)
-        self.entries.append(totals["na"])
+        self.entries.append(totals["N.A."])
 
     def display(self):
         '''display the complete testplan for debug
@@ -248,3 +247,21 @@ class Testplan():
         print("name: ", self.name)
         for entry in self.entries:
             entry.display()
+
+    def results_table(self, regr_results, tablefmt="github"):
+        '''Print the mapped regression results into a table.
+        '''
+        self.map_regr_results(regr_results)
+        table = [["Milestone", "Name", "Tests", "Results"]]
+        for entry in self.entries:
+            milestone = entry.milestone
+            entry_name = entry.name
+            if milestone == "N.A.": milestone = ""
+            if entry_name == "N.A.": entry_name = ""
+            for test in entry.tests:
+                results_str = str(test["passing"]) + "/" + str(test["total"])
+                table.append(
+                    [milestone, entry_name, test["name"], results_str])
+                milestone = ""
+                entry_name = ""
+        return tabulate(table, headers="firstrow", tablefmt=tablefmt)
