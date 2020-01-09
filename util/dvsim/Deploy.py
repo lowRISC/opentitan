@@ -311,7 +311,7 @@ class Deploy():
         while all_done == 0:
             time.sleep(1)
             num_secs += 1
-            trig_print = False
+            trig_print = ((num_secs % Deploy.print_interval) == 0)
             for item in Deploy.items:
                 if item.target not in status.keys():
                     status[item.target] = {}
@@ -335,13 +335,14 @@ class Deploy():
                 all_done = 1
             else:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
-                trig_print = True
-                if len(dispatch_items_queue) > num_slots:
-                    dispatch_items(dispatch_items_queue[0:num_slots])
-                    dispatch_items_queue = dispatch_items_queue[num_slots:]
-                else:
-                    dispatch_items(dispatch_items_queue)
-                    dispatch_items_queue = []
+                if num_slots > 0:
+                    trig_print = True
+                    if len(dispatch_items_queue) > num_slots:
+                        dispatch_items(dispatch_items_queue[0:num_slots])
+                        dispatch_items_queue = dispatch_items_queue[num_slots:]
+                    else:
+                        dispatch_items(dispatch_items_queue)
+                        dispatch_items_queue = []
 
             status_str = {}
             for target in status.keys():
@@ -354,7 +355,7 @@ class Deploy():
                 status_str[target] += "]"
 
             # Print the status string periodically
-            if trig_print or (num_secs % Deploy.print_interval) == 0:
+            if trig_print:
                 for target in status_str.keys():
                     if targets_done[target] is True: continue
                     log.info("[dvsim]: [%06ds] [%s]: %s", num_secs, target,
