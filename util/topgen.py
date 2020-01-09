@@ -83,6 +83,8 @@ def generate_xbars(top, out_path):
         with core_filepath.open(mode='w', encoding='UTF-8') as fout:
             fout.write(out_core)
 
+        # generate testbench for xbar
+        tlgen.generate_tb(xbar, dv_path)
 
 def generate_alert_handler(top, out_path):
     # default values
