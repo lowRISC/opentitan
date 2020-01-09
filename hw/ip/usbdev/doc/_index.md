@@ -18,7 +18,7 @@ title: "Simple USB Full Speed Device IP Technical Specification"
 
 - Support SETUP, IN and OUT transactions
 
-- Support for Bulk, Control and Interrupt endpoints and transactions
+- Support for Bulk, Control, Interrupt and Isochronous endpoints and transactions
 
 - Initial version does not support Isochronous transfers larger than
   64 bytes (later extension)
@@ -32,8 +32,8 @@ title: "Simple USB Full Speed Device IP Technical Specification"
 
 The USB device module is a simple software-driven gneric USB device
 interface for Full-Speed USB operation. The IP includes the physical
-layer interface (capable of using 3.3V I/O pads, but could be extended
-to a more formal USB PHY), the low level USB protocol and a packet
+layer interface (switchable between regular 3.3V I/O pads, or a differential
+USB transceiver), the low level USB protocol and a packet
 buffer interface to the software.
 
 
@@ -60,7 +60,8 @@ The USB Full-Speed interface runs at a 12MHz datarate. The interface
 runs at four times this and must be clocked from an accurate 48MHz
 clock source. The USB specification for a Full-Speed device requires
 the average bit-rate is 12Mbps +/- 0.25%, so the clock needs to
-support maximum error of 2,500ppm.
+support maximum error of 2,500ppm. The maximum allowable integrated 
+jitter is +/- 1ns over 1 to 7 bit-periods.
 
 Control transfers pass through asynchronous FIFOs or have a ready bit
 synchronized across the clock domain boundary. A dual-port
@@ -72,74 +73,33 @@ clock and USB clock domains.
 The interface pin table summarizes the external pins.
 
 
-<table>
-  <tr>
-   <td>External Pin
-   </td>
-   <td>Internal signal
-   </td>
-   <td>Notes
-   </td>
-  </tr>
-  <tr>
-   <td>USB D+
-<p>
-USB D-
-   </td>
-   <td>usb_dp_i, usb_dn_i
-<p>
-usb_dp_o, usb_dn_o
-   </td>
-   <td>External pins are bidirectional. When the pins are driven the input should be stable at dp=1, dn=0.
-   </td>
-  </tr>
-  <tr>
-   <td>
-   </td>
-   <td>usb_dp_en_o
-<p>
-usb_dn_en_o
-   </td>
-   <td>Enable driving the external pins.
-   </td>
-  </tr>
-  <tr>
-   <td>[usb_pullup]
-   </td>
-   <td>usb_pullup_o
-   </td>
-   <td>When the usb_pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin.
-   </td>
-  </tr>
-  <tr>
-   <td>usb_sense
-   </td>
-   <td>usb_sense_i
-   </td>
-   <td>The sense pin indicates the presence of VBUS from the host.
-   </td>
-  </tr>
-</table>
-
+|External Pin|Internal Signal|Notes|
+|------------|---------------|-----|
+|USB D+, USB D-|usb_d_i, usb_dp_i, usb_dn_i, usb_d_o, usb_se0_o|Interface to a differential USB transceiver. This interface can be selected by writing 1 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}.|
+|USB D+, USB D-|usb_dp_i, usb_dn_i, usb_dp_o, usb_dn_o|Single-ended interface to regular IO cells. This interface can be used for prototyping on an FPGA, but will probably not be USB compliant. This interface can be selected by writing 0 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}.|
+||usb_oe_o|Enable driving the external pins.|
+|[usb_pullup]|usb_pullup_o|When the usb_pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin. A permanently connected resistor can also be used.|
+|[TX Mode]|tx_mode_se_o|Indicates the selected TX mode. 1 corresponds to single-ended operation.|
+|usb_sense|usb_sense_i|The sense pin indicates the presence of VBUS from the host.|
 
 The USB 2.0 Full Speed specification uses a bidirectional serial
 interface that can be implemented with pseudo-differential 3.3V GPIO
 pins and an oversampling receiver for recovery of the bitstream and
-clock alignment. (Use of a differential receiver would improve signal
-integrity and may be required for full spec compliance.) The IP
-interface for the D+ and D- pins is presented using a pair of transmit
-signals, a pair of receive signals and a transmit enable. External to
-the IP these should be combined to drive the pins when transmit is
-enabled and receive when transmit is not enabled. Note that to avoid
-confusing the clock recovery, the receive signals should be set to
-receive p = 1 and receive n = 0 when transmission is enabled (this is
-done outside the IP block to allow interfacing of alternative
-PHYs). Using standard 3.3V I/O pads allows use on most FPGAs although
+clock alignment. The IP interface for the D+ and D- pins is presented using a 
+pair of transmit signals, a pair of receive signals and a transmit enable. 
+External to the IP these should be combined to drive the pins when transmit is
+enabled and receive when transmit is not enabled. 
+Using standard 3.3V I/O pads allows use on most FPGAs although
 the drive strength and series termination resistors may need to be
 adjusted to meet the USB signal eye. On a Xilinx Artix-7 (and less
 well tested Spartan-7) part, setting the driver to the 8mA, FAST
 setting seems to work well with a 22R series termination (and with a
 0R series termination).
+
+Alternatively, a dedicated USB transceiver can be used. This is required
+for USB compliance. Examples for such a transceiver are the USB1T11A or 
+USB1T20. In this case differential signaling should be used for better 
+receive sensitivity and lower transmit jitter.
 
 A Full-Speed device identifies itself by providing a 1.5k pullup
 resistor (to 3.3V) on the D+ line. The IP block produces a signal
@@ -168,14 +128,23 @@ acceptable voltage for the input pin.
 
 The USB link has a number of states. These are detected and reported
 in {{< regref "usbstat.link_state" >}} and state changes are reported using
-interrupts.
+interrupts. The FSM implements a subset of the USB device state diagram
+shown in Figure 9-1 of the USB 2.0 specification.
 
 |State| Description |
 |-----|-------------|
 |Disconnected | The link is disconnected. This is signalled when the VBUS is not driven by the host, which results in the sense input pin being low. An interrupt is raised on entering this state.|
-|Reset | The link is reset whenever the D+ and D- are both low (an SE0 condition) for an extended period. The host will assert reset for a minumum of 10ms, but the USB specification allows the device to detect and respond to a reset after 2.5us. The implementation here will report the reset state and raise an interrupt when the link is in SE0 for 3us.|
-|Suspened| The link is suspended when at idle (a J condition) for more than 3ms. An interrupt is generated when the suspend is detected and a resume interrupt is generated when the link exits the suspend state.|
+|Powered| The device has been powered as VBUS is being driven by the host, but has not been reset yet. The link is reset whenever the D+ and D- are both low (an SE0 condition) for an extended period. The host will assert reset for a minumum of 10ms, but the USB specification allows the device to detect and respond to a reset after 2.5us. The implementation here will report the reset state and raise an interrupt when the link is in SE0 for 3us.|
+|Powered Suspend| The link is suspended when at idle (a J condition) for more than 3ms. An interrupt is generated when the suspend is detected and a resume interrupt is generated when the link exits the suspend state. This state is entered, if the device has not been reset yet.|
 |Active| The link is active when it is running normally|
+|Suspened| Similar to 'Powered Suspend', but the device was in the active state before being suspended.|
+
+|Link Events| Description |
+|-----------|-------------|
+|Disconnect| VBUS has been lost. |
+|Link Reset| The link has been in the SE0 state for 3us.|
+|Link Suspend| The link has been in the J state for more than 3ms, upon which we have to enter the suspend state.|
+|Link Resume| The link has been driven to a non-J state after being in suspend.|
 |Host Lost| The host lost interrupt will be signalled if the link is active but a start of frame has not been received from the host in 4.096ms. The host is required to send a SOF every 1ms. This is not an expected condition.|
 
 
@@ -188,7 +157,7 @@ At the lowest level of the USB stack the transmit bitstream is
 serialized, converted to NRZI encoding with bit-stuffing and sent to
 the transmitter. The received bitstream is recovered, clock aligned
 and decoded and has bit-stuffing removed. The recovered clock
-alignment is used for transmission
+alignment is used for transmission.
 
 The higher level protocol engine forms the bitstream into packets,
 performs CRC checking and recognizes IN, OUT and SETUP
@@ -235,9 +204,7 @@ they are received then software can implement selective flow-control
 by disabling OUT or SETUP transactions for a particular endpoint,
 which will result in a request to that endpoint being NACKed. In the
 unfortunate event that the available-buffer FIFO is empty or receive
-FIFO is full then all OUT/SETUP transactions are NACKed. (Do we need
-to be able to STALL? Currently in INCfg but it may need to be its own
-register)
+FIFO is full then all OUT/SETUP transactions are NACKed.
 
 To send data to the host in response to an IN transaction the software
 writes the data into a free buffer and writes the buffer number, data
@@ -388,12 +355,23 @@ register with the rdy bit set.
 ## Stall
 
 The {{< regref "stall" >}} register is used to Stall an endpoint. This is used if it
-is shutdown for some reason, or to signal certain error
-conditions. Unused endpoints can have their {{< regref "stall" >}} register bit left
+is shutdown for some reason, or to signal certain error conditions (functional
+stall). Control endpoints also use a STALL to indicate unsupported requests
+(protocol stall). This register is used in both cases.
+Unused endpoints can have their {{< regref "stall" >}} register bit left
 clear, so in many cases there is no need to use the {{< regref "stall" >}}
 register. If the stall bit is set for an endpoint then the STALL
-response will be provided to any (IN, OUT or SETUP) request on that
+response will be provided to all IN or OUT requests on that
 endpoint.
+
+In the case of a protocol stall, the device must send a STALL for all
+IN and OUT requests until the next SETUP token is received. To support this,
+the software sets the STALL bit for an endpoint when an unsupported transfer
+is requested. The hardware will then send a STALL response to all IN/OUT
+transactions until the next SETUP is received for this endpoint. Receiving
+the **SETUP token then clears the STALL flag** for the endpoint. The hardware 
+then sends NAKs to any IN/OUT requets until the software has decided what
+action to take for the new SETUP request.
 
 
 ## Register Table
