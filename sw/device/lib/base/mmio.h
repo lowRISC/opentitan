@@ -10,147 +10,220 @@
 #include <stdint.h>
 
 /**
- * A reg32_t is an opaque handle to an MMIO register; it should only be modified
- * using the functions provided in this header.
+ * An mmio_region_t is an opaque handle to an MMIO region; it should only be
+ * modified using the functions provided in this header.
  */
-typedef struct reg32 { volatile uint32_t *inner_ptr; } reg32_t;
+typedef struct mmio_region { volatile void *base; } mmio_region_t;
 
 /**
- * Create a new |reg32_t| from the given address.
+ * Create a new |mmio_region_t| from the given address.
  *
- * @param address an address to an MMIO register.
- * @return a |reg32_t| value representing that register.
+ * @param address an address to an MMIO region.
+ * @return a |mmio_region_t| value representing that region.
  */
-inline reg32_t reg32_from_addr(uintptr_t address) {
-  return (reg32_t){
-      .inner_ptr = (volatile uint32_t *)address,
+inline mmio_region_t mmio_region_from_addr(uintptr_t address) {
+  return (mmio_region_t){
+      .base = (volatile void *)address,
   };
 }
 
 /**
- * Reads an aligned word from the MMIO register |base| at the given byte offset.
+ * Reads an aligned uint8_t from the MMIO region |base| at the given byte
+ * offset.
  *
  * This function is guaranteed to commit a read to memory, and will not be
- * reordered with respect to other register manipulations.
+ * reordered with respect to other MMIO manipulations.
  *
- * @param base the register to read from.
+ * @param base the region to read from.
  * @param offset the offset to read at, in bytes.
- * @return the read word.
+ * @return the read value.
  */
-inline uint32_t reg32_read(reg32_t base, ptrdiff_t offset) {
-  return base.inner_ptr[offset / sizeof(uint32_t)];
+inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
+  return ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)];
 }
 
 /**
- * Writes an aligned word to the MMIO register |base| at the given byte offset.
+ * Reads an aligned uint16_t from the MMIO region |base| at the given byte
+ * offset.
+ *
+ * This function is guaranteed to commit a read to memory, and will not be
+ * reordered with respect to other MMIO manipulations.
+ *
+ * @param base the region to read from.
+ * @param offset the offset to read at, in bytes.
+ * @return the read value.
+ */
+inline uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset) {
+  return ((volatile uint16_t *)base.base)[offset / sizeof(uint16_t)];
+}
+
+/**
+ * Reads an aligned uint32_t from the MMIO region |base| at the given byte
+ * offset.
+ *
+ * This function is guaranteed to commit a read to memory, and will not be
+ * reordered with respect to other MMIO manipulations.
+ *
+ * @param base the region to read from.
+ * @param offset the offset to read at, in bytes.
+ * @return the read value.
+ */
+inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+}
+
+/**
+ * Writes an aligned uint8_t to the MMIO region |base| at the given byte
+ * offset.
  *
  * This function is guaranteed to commit a write to memory, and will not be
- * reordered with respect to other register manipulations.
+ * reordered with respect to other region manipulations.
  *
- * @param base the register to write to.
+ * @param base the region to write to.
  * @param offset the offset to write at, in bytes.
- * @param value the word to write.
+ * @param value the value to write.
  */
-inline void reg32_write(reg32_t base, ptrdiff_t offset, uint32_t value) {
-  base.inner_ptr[offset / sizeof(uint32_t)] = value;
+inline void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
+                               uint8_t value) {
+  ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
 }
 
 /**
- * Reads the bits in |mask| from the MMIO register |base| at the given offset.
+ * Writes an aligned uint16_t to the MMIO region |base| at the given byte
+ * offset.
  *
- * This function has the same guarantees as |reg32_read()| and |reg32_write()|.
+ * This function is guaranteed to commit a write to memory, and will not be
+ * reordered with respect to other region manipulations.
  *
- * @param base the register to mask.
+ * @param base the region to write to.
+ * @param offset the offset to write at, in bytes.
+ * @param value the value to write.
+ */
+inline void mmio_region_write16(mmio_region_t base, ptrdiff_t offset,
+                                uint16_t value) {
+  ((volatile uint16_t *)base.base)[offset / sizeof(uint16_t)] = value;
+}
+
+/**
+ * Writes an aligned uint32_t to the MMIO region |base| at the given byte
+ * offset.
+ *
+ * This function is guaranteed to commit a write to memory, and will not be
+ * reordered with respect to other region manipulations.
+ *
+ * @param base the region to write to.
+ * @param offset the offset to write at, in bytes.
+ * @param value the value to write.
+ */
+inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
+                                uint32_t value) {
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+}
+
+/**
+ * Reads the bits in |mask| from the MMIO region |base| at the given offset.
+ *
+ * This function has the same guarantees as |mmio_region_read32()| and
+ * |mmio_region_write32()|.
+ *
+ * @param base the region to mask.
  * @param offset the offset to apply the mask at, in bytes.
  * @param mask the mask to read from the selected register.
  * @param mask_index mask position within the selected register.
  * @retun return the value of the read mask.
  */
-inline uint32_t reg32_read_mask(reg32_t base, ptrdiff_t offset, uint32_t mask,
-                                uint32_t mask_index) {
-  uint32_t value = reg32_read(base, offset);
+inline uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
+                                        uint32_t mask, uint32_t mask_index) {
+  uint32_t value = mmio_region_read32(base, offset);
 
   return (value >> mask_index) & mask;
 }
 
 /**
- * Checks whether the |bit_index|th bit is set in the MMIO register |base| at
+ * Checks whether the |bit_index|th bit is set in the MMIO region |base| at
  * the given offset.
  *
- * This function has the same guarantees as |reg32_read()| and |reg32_write()|.
+ * This function has the same guarantees as |mmio_region_read32()| and
+ * |mmio_region_write32()|.
  *
- * @param base the register to mask.
+ * @param base the region to mask.
  * @param offset the offset to apply the mask at.
  * @param bit_index the bit to check.
  * @return true if the bit is set, false otherwise
  */
-inline bool reg32_get_bit(reg32_t base, ptrdiff_t offset, uint32_t bit_index) {
-  return (reg32_read(base, offset) >> bit_index) & 0x1;
+inline bool mmio_region_get_bit32(mmio_region_t base, ptrdiff_t offset,
+                                  uint32_t bit_index) {
+  return (mmio_region_read32(base, offset) >> bit_index) & 0x1;
 }
 
 /**
- * Clears the bits in |mask| from the MMIO register |base| at the given offset.
+ * Clears the bits in |mask| from the MMIO region |base| at the given offset.
  *
  * This function performs a non-atomic read-write-modify operation on a
- * MMIO register.
+ * MMIO region.
  *
- * @param base the register to mask.
+ * @param base the region to mask.
  * @param offset the offset to apply the mask at, in bytes.
  * @param mask the mask to clear from the selected register.
  * @param mask_index mask position within the selected register.
  */
-inline void reg32_nonatomic_clear_mask(reg32_t base, ptrdiff_t offset,
-                                       uint32_t mask, uint32_t mask_index) {
-  uint32_t value = reg32_read(base, offset);
+inline void mmio_region_nonatomic_clear_mask32(mmio_region_t base,
+                                               ptrdiff_t offset, uint32_t mask,
+                                               uint32_t mask_index) {
+  uint32_t value = mmio_region_read32(base, offset);
   uint32_t clear_mask = ~(mask << mask_index);
   value &= clear_mask;
-  reg32_write(base, offset, value);
+  mmio_region_write32(base, offset, value);
 }
 
 /**
- * Sets the bits in |mask| from the MMIO register |base| at the given offset.
+ * Sets the bits in |mask| from the MMIO region |base| at the given offset.
  *
  * This function performs a non-atomic read-write-modify operation on a
- * MMIO register.
+ * MMIO region.
  *
- * @param base the register to mask.
+ * @param base the region to mask.
  * @param offset the offset to apply the mask at, in bytes.
  * @param mask the mask to set on the selected register.
  * @param mask_index mask position within the selected register.
  */
-inline void reg32_nonatomic_set_mask(reg32_t base, ptrdiff_t offset,
-                                     uint32_t mask, uint32_t mask_index) {
-  uint32_t value = reg32_read(base, offset);
+inline void mmio_region_nonatomic_set_mask32(mmio_region_t base,
+                                             ptrdiff_t offset, uint32_t mask,
+                                             uint32_t mask_index) {
+  uint32_t value = mmio_region_read32(base, offset);
   value |= (mask << mask_index);
-  reg32_write(base, offset, value);
+  mmio_region_write32(base, offset, value);
 }
 
 /**
- * Clears the |bit_index|th bit in the MMIO register |base| at the given offset.
+ * Clears the |bit_index|th bit in the MMIO region |base| at the given offset.
  *
- * This function has the same guarantees as |reg32_nonatomic_clear_mask()|.
+ * This function has the same guarantees as
+ * |mmio_region_nonatomic_clear_mask()|.
  *
- * @param base the register to mask.
+ * @param base the region to mask.
  * @param offset the offset to apply the mask at.
  * @param bit_index the bit to clear.
  */
-inline void reg32_nonatomic_clear_bit(reg32_t base, ptrdiff_t offset,
-                                      uint32_t bit_index) {
-  reg32_nonatomic_clear_mask(base, offset, 0x1, bit_index);
+inline void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
+                                              ptrdiff_t offset,
+                                              uint32_t bit_index) {
+  mmio_region_nonatomic_clear_mask32(base, offset, 0x1, bit_index);
 }
 
 /**
- * Sets the |bit_index|th bit in the MMIO register |base| at the given offset.
+ * Sets the |bit_index|th bit in the MMIO region |base| at the given offset.
  *
- * This function has the same guarantees as |reg32_nonatomic_set_mask()|.
+ * This function has the same guarantees as |mmio_region_nonatomic_set_mask()|.
  *
- * @param base the register to mask.
+ * @param base the region to mask.
  * @param offset the offset to apply the mask at.
  * @param bit_index the bit to set.
  */
-inline void reg32_nonatomic_set_bit(reg32_t base, ptrdiff_t offset,
-                                    uint32_t bit_index) {
-  reg32_nonatomic_set_mask(base, offset, 0x1, bit_index);
+inline void mmio_region_nonatomic_set_bit32(mmio_region_t base,
+                                            ptrdiff_t offset,
+                                            uint32_t bit_index) {
+  mmio_region_nonatomic_set_mask32(base, offset, 0x1, bit_index);
 }
 
 #endif  // SW_DEVICE_LIB_BASE_MMIO_H_
