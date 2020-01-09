@@ -80,6 +80,7 @@ package ${block.name}_ral_pkg;
         .has_reset(1),
         .is_rand(1),
         .individually_accessible(1));
+      ${f.name}.set_original_access("${field_access}");
 % endfor
     endfunction : build
 
@@ -164,6 +165,7 @@ package ${block.name}_ral_pkg;
   reg_right = r.dvrights
   reg_width = block.width
   reg_offset =  str(reg_width) + "'h" + "%x" % r.offset
+  reg_wen = r.regwen
 %>\
       ${reg_name} = ${gen_dv.rcname(block, r)}::type_id::create("${reg_name}");
       ${reg_name}.configure(.blk_parent(this));
@@ -171,6 +173,9 @@ package ${block.name}_ral_pkg;
       default_map.add_reg(.rg(${reg_name}),
                           .offset(${reg_offset}),
                           .rights("${reg_right}"));
+% if reg_wen:
+      ${reg_wen}.add_locked_reg(${reg_name});
+% endif
 % endfor
 % if block.wins:
 
