@@ -18,7 +18,7 @@ class aes_base_test extends cip_base_test #(
 
 //    function configure_knobs()
 //      endfunction // configure_knobs
-  
+
 
 endclass : aes_base_test
 

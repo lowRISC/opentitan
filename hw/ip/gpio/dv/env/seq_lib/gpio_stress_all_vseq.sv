@@ -37,10 +37,12 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
         `downcast(common_vseq, gpio_vseq);
         common_vseq.common_seq_type = "intr_test";
       end
-      `uvm_info(`gfn, $sformatf("seq_idx = %0d, sequence is %0s", seq_idx, gpio_vseq.get_name()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("seq_idx = %0d, sequence is %0s", seq_idx, gpio_vseq.get_name()),
+                UVM_HIGH)
 
       gpio_vseq.start(p_sequencer);
-      `uvm_info(`gfn, $sformatf("End of sequence %0s with seq_idx = %0d", gpio_vseq.get_name(), seq_idx), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("End of sequence %0s with seq_idx = %0d", gpio_vseq.get_name(),
+          seq_idx), UVM_HIGH)
     end
   endtask : body
 

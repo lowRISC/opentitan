@@ -174,7 +174,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       update_rx_mem_fifo_and_wptr();
     end
     else begin
-      `uvm_info(`gfn, $sformatf("RX overflow data: 0x%0h ptr: 0x%0h", data, rx_wptr_exp), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("RX overflow data: 0x%0h ptr: 0x%0h", data, rx_wptr_exp),
+                UVM_MEDIUM)
     end
   endfunction
 
