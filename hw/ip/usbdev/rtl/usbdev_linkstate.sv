@@ -14,6 +14,7 @@ module usbdev_linkstate (
   input logic  usb_rx_se0_i,
   input        sof_valid_i,
   output logic link_disconnect_o,  // level
+  output logic link_connect_o,     // level
   output logic link_reset_o,       // level
   output logic link_suspend_o,     // level
   output logic link_resume_o,      // pulse
@@ -71,6 +72,7 @@ module usbdev_linkstate (
   logic         ev_bus_inactive, ev_reset;
 
   assign link_disconnect_o = (link_state_q == LinkDisconnect);
+  assign link_connect_o    = (link_state_q != LinkDisconnect);
   assign link_suspend_o    = (link_state_q == LinkSuspend || 
     link_state_q == LinkPoweredSuspend);
   assign link_active       = (link_state_q == LinkActive);
