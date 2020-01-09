@@ -11,6 +11,15 @@ class dv_base_reg extends uvm_reg;
     super.new(name, n_bits, has_coverage);
   endfunction : new
 
+
+  local dv_base_reg locked_regs[$];
+
+  function void get_dv_base_reg_fields(ref dv_base_reg_field dv_fields[$]);
+    uvm_reg_field ral_fields[$];
+    get_fields(ral_fields);
+    foreach (ral_fields[i]) `downcast(dv_fields[i], ral_fields[i])
+  endfunction
+
   // get_n_bits will return number of all the bits in the csr
   // while this function will return actual number of bits used in reg field
   function uint get_n_used_bits();
@@ -28,4 +37,33 @@ class dv_base_reg extends uvm_reg;
       if (field_msb_pos > get_msb_pos) get_msb_pos = field_msb_pos;
     end
   endfunction
+
+  // if the register is an enable reg, it will add controlled registers in the queue
+  function void add_locked_reg(dv_base_reg locked_reg);
+    locked_regs.push_back(locked_reg);
+  endfunction
+
+  function bit is_enable_reg();
+    return (locked_regs.size() > 0);
+  endfunction
+
+  // if enable register is set to 1, the locked registers will be set to RO access
+  // once enable register is reset to 0, the locked registers will be set back to original access
+  function void set_locked_regs_access(string access = "original_access");
+    foreach (locked_regs[i]) begin
+      dv_base_reg_field locked_fields[$];
+      locked_regs[i].get_dv_base_reg_fields(locked_fields);
+      foreach (locked_fields[i]) locked_fields[i].set_locked_fields_access(access);
+    end
+  endfunction
+
+  function void get_locked_regs(ref dv_base_reg locked_regs_q[$]);
+    locked_regs_q = locked_regs;
+  endfunction
+
+  // post_write callback to handle reg enables
+  virtual task post_write(uvm_reg_item rw);
+    if (is_enable_reg() && (rw.value[0] & 1)) set_locked_regs_access("RO");
+  endtask
+
 endclass

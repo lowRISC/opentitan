@@ -21,18 +21,6 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
 
     // write exclusions - these should not apply to hw_reset test
     if (csr_test_type != "hw_reset") begin
-      // these should not be written since they have sideffects on write access
-      // of the other regs
-      csr_excl.add_excl({scope, ".", "regen"},        CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "classa_clren"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "classb_clren"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "classc_clren"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "classd_clren"}, CsrExclWrite);
-      // these regs are write only
-      csr_excl.add_excl({scope, ".", "classa_clr"},   CsrExclWriteCheck);
-      csr_excl.add_excl({scope, ".", "classb_clr"},   CsrExclWriteCheck);
-      csr_excl.add_excl({scope, ".", "classc_clr"},   CsrExclWriteCheck);
-      csr_excl.add_excl({scope, ".", "classd_clr"},   CsrExclWriteCheck);
       // exclude due to side effects on intr state reg
       csr_excl.add_excl({scope, ".", "intr_test"},    CsrExclWrite);
     end

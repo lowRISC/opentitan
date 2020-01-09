@@ -216,14 +216,13 @@ class csr_rw_seq extends csr_base_seq;
       `DV_CHECK_FATAL(randomize(do_csr_rd_check, do_csr_field_rd_check))
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, m_csr_excl_item);
-      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0));
 
       // if external checker is not enabled and writes are made non-blocking, then we need to
       // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
       // might pick up stale mirrored value
-      if (!external_checker) begin
-        void'(test_csrs[i].predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
-      end
+      // the pre-predict also needs to happen after the register is being written, to make sure the
+      // register is getting the updated access information.
+      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
       // check if parent block or register is excluded from read-check
       if (m_csr_excl_item.is_excl(test_csrs[i], CsrExclWriteCheck)) begin

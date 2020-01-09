@@ -214,14 +214,21 @@ package csr_utils_pkg;
                         input uvm_reg_data_t value,
                         input uvm_check_e    check = UVM_CHECK,
                         input uvm_path_e     path = UVM_DEFAULT_PATH,
-                        input  bit           blocking = default_csr_blocking,
+                        input bit            blocking = default_csr_blocking,
                         input uint           timeout_ns = default_timeout_ns,
+                        input bit            predict = 0,
                         input uvm_reg_map    map = null);
     if (blocking) begin
       csr_wr_sub(csr, value, check, path, timeout_ns, map);
+      if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
     end else begin
       fork
-        csr_wr_sub(csr, value, check, path, timeout_ns, map);
+        begin
+          csr_wr_sub(csr, value, check, path, timeout_ns, map);
+          // predict after csr_wr_sub, to ensure predict after enable register overwrite the locked
+          // registers' access information
+          if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
+        end
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -341,14 +348,16 @@ package csr_utils_pkg;
 
             increment_outstanding_access();
             csr_or_fld = decode_csr_or_field(ptr);
-            // get mirrored value before the read
+        
+            csr_rd(.ptr(ptr), .value(obs), .check(check), .path(path),
+                   .blocking(1), .timeout_ns(timeout_ns), .map(map));
+
+            // get mirrored value after read to make sure the read reg access is updated
             if (csr_or_fld.field != null) begin
               exp = csr_or_fld.field.get_mirrored_value();
             end else begin
               exp = csr_or_fld.csr.get_mirrored_value();
             end
-            csr_rd(.ptr(ptr), .value(obs), .check(check), .path(path),
-                   .blocking(1), .timeout_ns(timeout_ns), .map(map));
             if (compare && !under_reset) begin
               obs = obs & compare_mask;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;

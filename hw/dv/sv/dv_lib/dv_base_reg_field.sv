@@ -4,6 +4,8 @@
 //
 // base register reg class which will be used to generate the reg field
 class dv_base_reg_field extends uvm_reg_field;
+  local string m_original_access;
+
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
 
@@ -15,6 +17,26 @@ class dv_base_reg_field extends uvm_reg_field;
 
     if (get_access(map) == "WO") return cur_val;
     else return super.XpredictX(cur_val, wr_val, map);
+  endfunction
+
+  virtual function string get_original_access();
+    return m_original_access;
+  endfunction
+
+  virtual function void set_original_access(string access);
+    if (m_original_access == "") begin
+      m_original_access = access;
+    end else begin
+      `uvm_fatal(`gfn, "register original access can only be written once")
+    end
+  endfunction
+
+  virtual function void set_locked_fields_access(string access = "original_access");
+    case (access)
+      "RO": void'(this.set_access(access));
+      "original_access": void'(this.set_access(m_original_access));
+      default: `uvm_fatal(`gfn, $sformatf("attempt to set access to %s", access))
+    endcase
   endfunction
 
 endclass

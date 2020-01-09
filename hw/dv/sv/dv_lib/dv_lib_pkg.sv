@@ -18,8 +18,8 @@ package dv_lib_pkg;
 
   // package sources
   // base ral
-  `include "dv_base_reg.sv"
   `include "dv_base_reg_field.sv"
+  `include "dv_base_reg.sv"
   `include "dv_base_mem.sv"
   `include "dv_base_reg_block.sv"
   `include "dv_base_reg_map.sv"
