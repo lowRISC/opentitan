@@ -142,6 +142,17 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
     REG32(USBDEV_INTR_STATE()) =
         istate & ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
                    (1 << USBDEV_INTR_STATE_PKT_SENT));
+    if (istate & (1 << USBDEV_INTR_ENABLE_LINK_RESET)) {
+      // Link reset
+      for (int ep = 0; ep < NUM_ENDPOINTS; ep++) {
+        if (ctx->reset[ep]) {
+          ctx->reset[ep](ctx->ep_ctx[ep]);
+        }
+      }
+
+      // Clear the interupt
+      REG32(USBDEV_INTR_STATE()) = (1 << USBDEV_INTR_ENABLE_LINK_RESET);
+    }
   }
   // TODO - clean this up
   // Frame ticks every 1ms, use to flush data every 16ms
@@ -163,6 +174,22 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
   // TODO Errors? What Errors?
 }
 
+unsigned int usbdev_get_status(usbdev_ctx_t *ctx) {
+  unsigned int status = REG32(USBDEV_USBSTAT());
+  return status;
+}
+
+unsigned int usbdev_get_link_state(usbdev_ctx_t *ctx) {
+  unsigned int link_state =
+      EXTRACT(REG32(USBDEV_USBSTAT()), USBSTAT_LINK_STATE);
+  return link_state;
+}
+
+unsigned int usbdev_get_address(usbdev_ctx_t *ctx) {
+  unsigned int addr = EXTRACT(REG32(USBDEV_USBCTRL()), USBCTRL_DEVICE_ADDRESS);
+  return addr;
+}
+
 void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid) {
   REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE) |
                             (deviceid << USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET);
@@ -182,17 +209,38 @@ void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable) {
   // for now it just sees its traffic has stopped
 }
 
+void usbdev_set_iso(usbdev_ctx_t *ctx, int endpoint, int enable) {
+  if (enable) {
+    REG32(USBDEV_ISO()) = SETBIT(REG32(USBDEV_ISO()), endpoint);
+  } else {
+    REG32(USBDEV_ISO()) = CLRBIT(REG32(USBDEV_ISO()), endpoint);
+  }
+}
+
+void usbdev_clear_data_toggle(usbdev_ctx_t *ctx, int endpoint) {
+  REG32(USBDEV_DATA_TOGGLE_CLEAR()) = (1 << endpoint);
+}
+
+void usbdev_set_ep0_stall(usbdev_ctx_t *ctx, int stall) {
+  if (stall) {
+    REG32(USBDEV_STALL()) = REG32(USBDEV_STALL()) | 1;
+  } else {
+    REG32(USBDEV_STALL()) = REG32(USBDEV_STALL()) & ~(1);
+  }
+}
+
 // TODO got hang with this inline
 int usbdev_can_rem_wake(usbdev_ctx_t *ctx) { return ctx->can_wake; }
 
 void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
                            void *ep_ctx, void (*tx_done)(void *),
                            void (*rx)(void *, usbbufid_t, int, int),
-                           void (*flush)(void *)) {
+                           void (*flush)(void *), void (*reset)(void *)) {
   ctx->ep_ctx[ep] = ep_ctx;
   ctx->tx_done_callback[ep] = tx_done;
   ctx->rx_callback[ep] = rx;
   ctx->flush[ep] = flush;
+  ctx->reset[ep] = reset;
   if (enableout) {
     uint32_t rxen = REG32(USBDEV_RXENABLE_OUT());
     rxen |= (1 << (ep + USBDEV_RXENABLE_OUT_OUT0));
@@ -203,7 +251,7 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
 void usbdev_init(usbdev_ctx_t *ctx) {
   // setup context
   for (int i = 0; i < NUM_ENDPOINTS; i++) {
-    usbdev_endpoint_setup(ctx, i, 0, NULL, NULL, NULL, NULL);
+    usbdev_endpoint_setup(ctx, i, 0, NULL, NULL, NULL, NULL, NULL);
   }
   ctx->halted = 0;
   ctx->can_wake = 0;

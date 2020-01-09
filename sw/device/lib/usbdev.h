@@ -31,6 +31,7 @@ struct usbdev_ctx {
   void (*tx_done_callback[NUM_ENDPOINTS])(void *);
   void (*rx_callback[NUM_ENDPOINTS])(void *, usbbufid_t, int, int);
   void (*flush[NUM_ENDPOINTS])(void *);
+  void (*reset[NUM_ENDPOINTS])(void *);
 };
 
 /**
@@ -98,6 +99,27 @@ void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
 void usbdev_poll(usbdev_ctx_t *ctx);
 
 /**
+ * Get the content of the USB status register
+ * @param ctx usbdev context pointer
+ * @return USB status register
+ */
+unsigned int usbdev_get_status(usbdev_ctx_t *ctx);
+
+/**
+ * Get the current USB link state
+ * @param ctx usbdev context pointer
+ * @return USB link state
+ */
+unsigned int usbdev_get_link_state(usbdev_ctx_t *ctx);
+
+/**
+ * Get the current USB address
+ * @param ctx usbdev context pointer
+ * @return USB address
+ */
+unsigned int usbdev_get_address(usbdev_ctx_t *ctx);
+
+/**
  * Set the USB device ID
  *
  * Device ID must be zero at init. When the host assigns an ID
@@ -132,6 +154,33 @@ inline int usbdev_halted(usbdev_ctx_t *ctx, int endpoint) {
 }
 
 /**
+ * Configure an endpoint as ISO / non-ISO
+ *
+ * By default endpoints are non-ISO, but they can be set to ISO
+ *
+ * @param usbdev context pointer
+ * @param endpoint number
+ * @param enable 0: non-ISO, 1: ISO
+ */
+void usbdev_set_iso(usbdev_ctx_t *ctx, int endpoint, int enable);
+
+/**
+ * Clear the data toggle bit for an endpoint
+ * @param usbdev context pointer
+ * @param endpoint Endpoint number
+ */
+void usbdev_clear_data_toggle(usbdev_ctx_t *ctx, int endpoint);
+
+/**
+ * Updates the stall setting for EP0. If stall is set then an IN, or
+ * OUT transaction to EP0 will be responded to with a STALL return. This
+ * flag is cleared on a a SETUP transaction
+ * @param ctx usbdev context pointer
+ * @param stall
+ */
+void usbdev_set_ep0_stall(usbdev_ctx_t *ctx, int stall);
+
+/**
  * Enable or disable remote wake
  *
  * @param usbdev context pointer
@@ -161,11 +210,12 @@ int usbdev_can_rem_wake(usbdev_ctx_t *ctx);
  * @param rx(void *ep_ctx, usbbufid_t buf, int size, int setup)
           called when a packet is received
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
+ * @param reset(void *ep_ctx) called when an USB link reset is detected
  */
 void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
                            void *ep_ctx, void (*tx_done)(void *),
                            void (*rx)(void *, usbbufid_t, int, int),
-                           void (*flush)(void *));
+                           void (*flush)(void *), void (*reset)(void *));
 
 /**
  * Initialize the usbdev interface
