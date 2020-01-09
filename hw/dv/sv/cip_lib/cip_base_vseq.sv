@@ -341,7 +341,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             begin : seq_wo_reset
               fork
                 begin : tl_err_seq
-                  if (do_tl_err) run_tl_errors_vseq(.num_times($urandom_range(10, 1000)));
+                  if (do_tl_err) begin
+                    run_tl_errors_vseq(.num_times($urandom_range(10, 1000)), .do_wait_clk(1'b1));
+                  end
                 end
                 begin : stress_seq
                   uvm_sequence seq;

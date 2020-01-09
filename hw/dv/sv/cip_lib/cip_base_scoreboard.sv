@@ -12,9 +12,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifo;
 
-  // predict tl error at address phase, and compare it at data phase
-  bit is_tl_err_exp, is_tl_unmapped_addr;
-
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -39,7 +36,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     forever begin
       tl_a_chan_fifo.get(item);
       if (!cfg.en_scb) continue;
-      // do nothing; we are using d_chan_fifo items for completed transactions
+      if (predict_tl_err(item, AddrChannel)) continue;
       process_tl_access(item, AddrChannel);
     end
   endtask
@@ -52,17 +49,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
       // check tl packet integrity
       void'(item.is_ok());
+      if (predict_tl_err(item, DataChannel)) continue;
       process_tl_access(item, DataChannel);
     end
   endtask
 
   // task to process tl access
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
-    if (channel == AddrChannel) begin
-      predict_tl_err(item);
-    end else begin
-      `DV_CHECK_EQ(item.d_error, is_tl_err_exp)
-    end
+    `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 
   // only lsb addr is used, the other can be ignored, use this function to normalize the addr to
@@ -81,30 +75,34 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endfunction
 
-  // check if there is any error cases and set is_tl_err_exp and is_tl_unmapped_addr
+  // check if there is any tl error, return 1 in case of error or if it is an unmapped addr
+  // if it is data channel, will check if d_error is set correctly
   //  - access unmapped address
   //  - memory/register write addr isn't word-aligned
   //  - memory write isn't full word
   //  - register write size is less than actual register width
   //  - TL protocol violation
-  virtual function void predict_tl_err(tl_seq_item item);
-    is_tl_err_exp       = 0;
-    is_tl_unmapped_addr = 0;
+  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel);
+    bit is_tl_unmapped_addr, is_tl_err;
 
     if (!is_tl_access_mapped_addr(item)) begin
       is_tl_unmapped_addr = 1;
+      // if devmode is enabled, d_error won't be set
       if (cfg.en_devmode == 0 || cfg.devmode_vif.sample()) begin
-        is_tl_err_exp = 1;
-        return;
+        is_tl_err = 1;
       end
     end
 
-    if (!is_tl_mem_access_allowed(item)           ||
-        !is_tl_csr_write_addr_word_aligned(item)  ||
-        !is_tl_csr_write_size_gte_csr_width(item) ||
-        item.get_exp_d_error())begin
-      is_tl_err_exp = 1;
+    if (!is_tl_err && (!is_tl_mem_access_allowed(item) ||
+        !is_tl_csr_write_addr_word_aligned(item)       ||
+        !is_tl_csr_write_size_gte_csr_width(item)      ||
+        item.get_exp_d_error())) begin
+      is_tl_err = 1;
     end
+    if ((is_tl_err || is_tl_unmapped_addr) && channel == DataChannel) begin
+      `DV_CHECK_EQ(item.d_error, is_tl_err)
+    end
+    return (is_tl_unmapped_addr || is_tl_err);
   endfunction
 
   // check if address is mapped
@@ -137,7 +135,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // check if csr write size greater or equal to csr width
   virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item);
-    if (is_tl_unmapped_addr || is_mem_addr(item)) return 1;
+    if (!is_tl_access_mapped_addr(item) || is_mem_addr(item)) return 1;
     if (item.is_write()) begin
       dv_base_reg    csr;
       uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);

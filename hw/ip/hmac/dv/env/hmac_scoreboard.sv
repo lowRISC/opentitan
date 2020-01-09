@@ -35,9 +35,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit     write                   = item.is_write();
     uvm_reg_addr_t csr_addr         = get_normalized_addr(item.a_addr);
 
-    super.process_tl_access(item, channel);
-    if (is_tl_err_exp || is_tl_unmapped_addr) return;
-
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
@@ -132,7 +129,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH;
           bit             hmac_fifo_empty  = hmac_fifo_depth == 0;
           bit [TL_DW-1:0] hmac_status_data = (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
-                                             (hmac_fifo_full << HmacStaMsgFifoFull) |
+                                             (hmac_fifo_full  << HmacStaMsgFifoFull) |
                                              (hmac_fifo_depth << HmacStaMsgFifoDepth);
           void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
         end
@@ -158,7 +155,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
           // intr_test is WO, every time after write for a clk cycle, RTL will reset it, but for
           // coverage purpose, we will reset intr_test after collected the coverage
-          void'(ral.intr_test.predict(.value(0), .kind(UVM_PREDICT_DIRECT)));
+          void'(ral.intr_test.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
           if (item.d_data[HmacDone] == 1) begin
             hmac_wr_cnt = 0;
             hmac_rd_cnt = 0;
@@ -280,10 +277,13 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : process_hmac_key_pad
         forever begin
-          wait(!under_reset && sha_en === 1);
+          wait(!under_reset);
+          // delay 1ps to make sure all variables are being reset, before moving to the next
+          // forever loop
+          #1ps;
           fork
             begin : key_padding
-              wait(hmac_start);
+              wait(hmac_start && sha_en);
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
                 // 80 cycles for hmac key padding, 1 cycle for hash_start reg to reset
                 cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
@@ -306,10 +306,13 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
       begin : process_internal_fifo_rd
         forever begin
-          wait(!under_reset && sha_en === 1);
+          wait(!under_reset);
+          // delay 1ps to make sure all variables are being reset, before moving to the next
+          // forever loop
+          #1ps;
           fork
             begin : hmac_fifo_rd
-              wait(hmac_wr_cnt > hmac_rd_cnt);
+              wait((hmac_wr_cnt > hmac_rd_cnt) && (sha_en));
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
                 wait(key_processed);
               end

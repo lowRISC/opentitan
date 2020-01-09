@@ -114,13 +114,13 @@ virtual task tl_read_mem_err();
 endtask
 
 // generic task to check interrupt test reg functionality
-virtual task run_tl_errors_vseq(int num_times = 1);
+virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   bit test_mem_err_byte_write = (cfg.mem_ranges.size > 0) && !cfg.en_mem_byte_write;
   bit test_mem_err_read       = (cfg.mem_ranges.size > 0) && !cfg.en_mem_read;
-  `uvm_info(`gfn, "Running run_tl_errors_vseq", UVM_LOW)
   cfg.tlul_assert_ctrl_vif.drive(1'b0);
 
   for (int trans = 1; trans <= num_times; trans++) begin
+    `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
     if (cfg.en_devmode == 1) begin
       cfg.devmode_vif.drive($urandom_range(0, 1));
     end
@@ -139,6 +139,7 @@ virtual task run_tl_errors_vseq(int num_times = 1);
       end
     join_none
     wait fork;
+    if (do_wait_clk) cfg.clk_rst_vif.wait_clks($urandom_range(500, 10_000));
   end // for
   cfg.tlul_assert_ctrl_vif.drive(1'b1);
 endtask : run_tl_errors_vseq
