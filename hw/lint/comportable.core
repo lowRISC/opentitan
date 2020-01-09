@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:lint:comportable:0.1"
+description: "Waiver files for comportable IPs"
+filesets:
+  files_verilator_waiver:
+    files:
+      - comportable.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    files:
+      - comportable.waiver
+    file_type: waiver
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+
+

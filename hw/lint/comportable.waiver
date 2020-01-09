@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# comportable IP waiver rules for ascentlint
+
+# auto-generated register files
+
+waive -rules CONST_FF             -location {*_reg_top*} -regexp {rsp_opcode.*is driven by constant zeros} \
+      -comment "makes the code more readable"
+waive -rules CONST_OUTPUT         -location {*_reg_top*} -regexp {Output 'tl_o.d_(param|size|sink|user)' is driven by constant} \
+      -comment "makes the code more readable"
+waive -rules INPUT_NOT_READ       -location {*_reg_top*} -regexp {Input port.*a_(address|param|user).*not read from} \
+      -comment "several TLUL signals are not used by register file"
+waive -rules HIER_NET_NOT_READ    -location {*_reg_top*} -regexp {Net 'tl_reg_h2d.a_(address|param|user).* is not read from} \
+      -comment "several TLUL signals are not used by register file"
+waive -rules CASE_SEL_CONST       -location {*_reg_top*} \
+      -comment "addr_hit is one hot encoded."
+waive -rules LINE_LENGTH          -location {*_reg_top*} -regexp {Line length of .* exceeds .* character limit} \
+      -comment "These files are one-liners in order to comply with our SV style guide."
+

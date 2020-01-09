@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# common waiver rules for ascentlint
+
+# waiver for unused_* signals for HIER_* rules (note that our policy file has a
+# similar exception list for rule NOT_READ)
+waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -pattern {unused_*}
+waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -pattern {gen_*.unused_*}
+
