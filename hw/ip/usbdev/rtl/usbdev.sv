@@ -433,7 +433,8 @@ module usbdev (
   ) u_memory_2p (
     .clk_a_i    (clk_i),
     .clk_b_i    (clk_usb_48mhz_i),
-    .rst_ni     (rst_ni),
+    .rst_a_ni   (rst_ni),
+    .rst_b_ni   (rst_ni),
     .a_req_i    (mem_a_req),
     .a_write_i  (mem_a_write),
     .a_addr_i   (mem_a_addr),

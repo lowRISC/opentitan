@@ -32,7 +32,8 @@ module prim_ram_2p_async_adv #(
 ) (
   input clk_a_i,
   input clk_b_i,
-  input rst_ni,
+  input rst_a_ni,
+  input rst_b_ni,
 
   input                     a_req_i,
   input                     a_write_i,
@@ -127,11 +128,19 @@ module prim_ram_2p_async_adv #(
     );
   end
 
-  always_ff @(posedge clk_a_i) begin
-    a_rvalid_sram <= a_req_q & ~a_write_q;
+  always_ff @(posedge clk_a_i or negedge rst_a_ni) begin
+    if (!rst_a_ni) begin
+      a_rvalid_sram <= 1'b0;
+    end else begin
+      a_rvalid_sram <= a_req_q & ~a_write_q;
+    end
   end
-  always_ff @(posedge clk_b_i) begin
-    b_rvalid_sram <= b_req_q & ~b_write_q;
+  always_ff @(posedge clk_b_i or negedge rst_b_ni) begin
+    if (!rst_b_ni) begin
+      b_rvalid_sram <= 1'b0;
+    end else begin
+      b_rvalid_sram <= b_req_q & ~b_write_q;
+    end
   end
 
   assign a_req_d              = a_req_i;
@@ -187,8 +196,8 @@ module prim_ram_2p_async_adv #(
 
   if (EnableInputPipeline) begin : gen_regslice_input
     // Put the register slices between ECC encoding to SRAM port
-    always_ff @(posedge clk_a_i or negedge rst_ni) begin
-      if (!rst_ni) begin
+    always_ff @(posedge clk_a_i or negedge rst_a_ni) begin
+      if (!rst_a_ni) begin
         a_req_q   <= '0;
         a_write_q <= '0;
         a_addr_q  <= '0;
@@ -200,8 +209,8 @@ module prim_ram_2p_async_adv #(
         a_wdata_q <= a_wdata_d;
       end
     end
-    always_ff @(posedge clk_b_i or negedge rst_ni) begin
-      if (!rst_ni) begin
+    always_ff @(posedge clk_b_i or negedge rst_b_ni) begin
+      if (!rst_b_ni) begin
         b_req_q   <= '0;
         b_write_q <= '0;
         b_addr_q  <= '0;
@@ -227,8 +236,8 @@ module prim_ram_2p_async_adv #(
 
   if (EnableOutputPipeline) begin : gen_regslice_output
     // Put the register slices between ECC decoding to output
-    always_ff @(posedge clk_a_i or negedge rst_ni) begin
-      if (!rst_ni) begin
+    always_ff @(posedge clk_a_i or negedge rst_a_ni) begin
+      if (!rst_a_ni) begin
         a_rvalid_q <= '0;
         a_rdata_q  <= '0;
         a_rerror_q <= '0;
@@ -238,8 +247,8 @@ module prim_ram_2p_async_adv #(
         a_rerror_q <= a_rerror_d;
       end
     end
-    always_ff @(posedge clk_b_i or negedge rst_ni) begin
-      if (!rst_ni) begin
+    always_ff @(posedge clk_b_i or negedge rst_b_ni) begin
+      if (!rst_b_ni) begin
         b_rvalid_q <= '0;
         b_rdata_q  <= '0;
         b_rerror_q <= '0;
