@@ -42,7 +42,7 @@ package test_vectors_pkg;
         `uvm_fatal(header, "Cannot find $plusarg for the test_vectors_dir.")
       end
     end
-    path = {test_vectors_dir, file_name};
+    path = {test_vectors_dir, "/", file_name};
   endfunction : get_test_vectors_path
 
   function automatic void open_file(input string path, output int fd);

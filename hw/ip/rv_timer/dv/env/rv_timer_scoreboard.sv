@@ -40,9 +40,6 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
 
-    super.process_tl_access(item, channel);
-    if (is_tl_err_exp || is_tl_unmapped_addr) return;
-
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
