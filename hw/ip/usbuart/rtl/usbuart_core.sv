@@ -8,19 +8,23 @@
 module usbuart_core (
   input        clk_i,
   input        rst_ni,
+  input        clk_usb_48mhz_i,
+  input        rst_usb_ni,
 
   input        usbuart_reg_pkg::usbuart_reg2hw_t reg2hw,
   output       usbuart_reg_pkg::usbuart_hw2reg_t hw2reg,
 
-  input        clk_usb_48mhz_i,
-  input        usb_dp_i,
-  output logic usb_dp_o,
-  input        usb_dn_i,
-  output logic usb_dn_o,
-  output logic usb_tx_en_o,
+  input        cio_usb_dp_i,
+  output logic cio_usb_dp_o,
+  output logic cio_usb_dp_en_o,
 
-  input        usb_sense_i,
-  output logic usb_pullup_o,
+  input        cio_usb_dn_i,
+  output logic cio_usb_dn_o,
+  output logic cio_usb_dn_en_o,
+
+  input        cio_usb_sense_i,
+
+  output logic cio_usb_pullup_en_o,  
 
   output logic intr_tx_watermark_o,
   output logic intr_rx_watermark_o,
@@ -147,7 +151,8 @@ module usbuart_core (
   // TX Logic //
   //////////////
 
-  assign tx_fifo_rst_n = rst_ni & ~uart_fifo_txrst;
+  // TODO: This is not a safe way to create a reset signal
+  assign tx_fifo_rst_n = rst_usb_ni & ~uart_fifo_txrst;
 
   // Character fifo also crosses to USB clock domain
   //`$dfifo_uart_tx->mname()`
@@ -176,7 +181,8 @@ module usbuart_core (
   logic [5:0]        usb_rx_wdepth;
   logic              usb_rx_oflw;
 
-  assign rx_fifo_rst_n = rst_ni & ~uart_fifo_rxrst;
+  // TODO: This is not a safe way to create a reset signal
+  assign rx_fifo_rst_n = rst_usb_ni & ~uart_fifo_rxrst;
 
   //`$dfifo_uart_rx->mname()`
   prim_fifo_async #(
@@ -208,15 +214,21 @@ module usbuart_core (
   assign usb_rx_wvalid     = sys_loopback ? lb_data_move      : usb_if_rx_write;
   assign usb_rx_fifo_wdata = sys_loopback ? usb_tx_fifo_rdata : usb_if_rx_fifo_wdata;
 
+  logic usb_rx_d;
+  logic usb_rx_se0;
+  logic usb_tx_d;
+  logic usb_tx_se0;
+  logic usb_tx_oe;
+
   usbuart_usbif usbuart_usbif (
     .clk_48mhz_i    (clk_usb_48mhz_i),
-    .rst_ni         (rst_ni & usb_sense_i),
+    .rst_ni         (rst_usb_ni & cio_usb_sense_i), // TODO: This is not a safe way to create a reset signal
 
-    .usb_dp_o       (usb_dp_o),
-    .usb_dn_o       (usb_dn_o),
-    .usb_dp_i       (usb_dp_i),
-    .usb_dn_i       (usb_dn_i),
-    .usb_tx_en_o    (usb_tx_en_o),
+    .usb_d_i                (usb_rx_d),
+    .usb_se0_i              (usb_rx_se0),
+    .usb_d_o                (usb_tx_d),
+    .usb_se0_o              (usb_tx_se0),
+    .usb_oe_o               (usb_tx_oe),
 
     // Fifo used to communicate with system
     // fake tx always empty and rx never full when in internal loopback
@@ -295,9 +307,11 @@ module usbuart_core (
       rx_fifo_depth_prev  <= rx_fifo_depth;
     end
 
+  logic sys_usb_sense; // USB sense synced to clk_i
+
   assign event_rx_overflow  = usb_rx_oflw; // TODO CDC
   assign event_tx_overflow  = reg2hw.wdata.qe & (~tx_fifo_wready);
-  assign event_rx_break_err = ~usb_sense_i |
+  assign event_rx_break_err = ~sys_usb_sense |
                               (reg2hw.ctrl.rxblvl.q == 0) ? host_lost : host_timeout;
   assign event_rx_frame_err = 0; // TODO is there a related USB error?
   assign event_rx_parity_err = 0; // TODO is there a related USB error?
@@ -390,6 +404,52 @@ module usbuart_core (
     .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_parity_err.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_parity_err.d),
     .intr_o                 (intr_rx_parity_err_o)
+  );
+
+  /////////////////////////////////
+  // USB IO Muxing               //
+  /////////////////////////////////  
+
+  // Static configuration
+  usbdev_reg_pkg::usbdev_reg2hw_phy_config_reg_t     usb_phy_config;
+  assign usb_phy_config.rx_differential_mode.q   = 1'b0;
+  assign usb_phy_config.tx_differential_mode.q   = 1'b0;
+  assign usb_phy_config.eop_single_bit.q         = 1'b1;
+  assign usb_phy_config.override_pwr_sense_en.q  = 1'b0;
+  assign usb_phy_config.override_pwr_sense_val.q = 1'b0;
+
+  usbdev_iomux i_usbdev_iomux (
+    .clk_i                  ( clk_i                  ),
+    .rst_ni                 ( rst_ni                 ),
+    .clk_usb_48mhz_i        ( clk_usb_48mhz_i        ),
+    .rst_usb_ni             ( rst_usb_ni             ),
+    .rx_differential_mode_i ( 1'b0                   ),
+    .tx_differential_mode_i ( 1'b0                   ),
+
+    .sys_reg2hw_config_i    (                        ),
+    .sys_usb_sense_o        ( sys_usb_sense          ),
+
+    .cio_usb_d_i            ( 1'b0                   ),
+    .cio_usb_dp_i           ( cio_usb_dp_i           ),
+    .cio_usb_dn_i           ( cio_usb_dn_i           ),
+    .cio_usb_d_o            (                        ),
+    .cio_usb_se0_o          (                        ),
+    .cio_usb_dp_o           ( cio_usb_dp_o           ),
+    .cio_usb_dn_o           ( cio_usb_dn_o           ),
+    .cio_usb_oe_o           ( cio_usb_oe_o           ),
+    .cio_usb_tx_mode_se_o   (                        ),
+    .cio_usb_sense_i        ( cio_usb_sense_i        ),
+    .cio_usb_pullup_en_o    ( cio_usb_pullup_en_o    ),
+    .cio_usb_suspend_o      (                        ),
+
+    .usb_rx_d_o             ( usb_rx_d               ),
+    .usb_rx_se0_o           ( usb_rx_se0             ),
+    .usb_tx_d_i             ( usb_tx_d               ),
+    .usb_tx_se0_i           ( usb_tx_se0             ),
+    .usb_tx_oe_i            ( usb_tx_oe              ),
+    .usb_pwr_sense_o        (                        ),
+    .usb_pullup_en_i        (                        ),
+    .usb_suspend_i          (                        )
   );
 
 endmodule
