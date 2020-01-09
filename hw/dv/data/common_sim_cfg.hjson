@@ -94,18 +94,24 @@
   // tests.
   regressions: [
     {
+      name: sanity
+      tests: ["{name}_sanity"]
+    }
+
+    {
       name: all
       tests: []
     }
+
     {
       name: all_once
       reseed: 1
       tests: []
     }
+
     {
       name: nightly
       tests: []
-      // excl_tests: []
       en_sim_modes: ["cov"]
     }
   ]

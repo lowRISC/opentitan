@@ -36,6 +36,11 @@
 
   regressions: [
     {
+      name: sanity
+      tests: ["{name}_csr_hw_reset", "{name}_csr_rw"]
+    }
+
+    {
       name: sw_access
       tests: ["{name}_csr_hw_reset",
               "{name}_csr_rw",
