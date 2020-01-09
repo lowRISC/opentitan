@@ -582,6 +582,7 @@ module top_earlgrey_usb #(
       .intr_pkt_received_o     (intr_spi_device_rxf),
       .intr_pkt_sent_o         (intr_spi_device_txlvl),
       .intr_disconnected_o     (),
+      .intr_connected_o        (),
       .intr_host_lost_o        (),
       .intr_link_reset_o       (),
       .intr_link_suspend_o     (),
