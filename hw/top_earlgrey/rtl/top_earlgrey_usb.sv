@@ -475,6 +475,7 @@ module top_earlgrey_usb #(
       .clk_i                (clk_i),
       .clk_48mhz_i          (clk_48mhz_i),
       .rst_ni               (sys_rst_n),
+      .rst_usb_ni           (sys_rst_n),
       .tl_i                 (tl_uart_d_h2d),
       .tl_o                 (tl_uart_d_d2h),
       .cio_usb_dp_i         (dio_usb_dp_i[USB_UART - 1]),
@@ -484,8 +485,8 @@ module top_earlgrey_usb #(
       .cio_usb_dn_o         (dio_usb_dn_o[USB_UART - 1]),
       .cio_usb_dn_en_o      (dio_usb_dn_en_o[USB_UART - 1]),
       .cio_usb_sense_i      (dio_usb_sense_i[USB_UART - 1]),
-      .cio_pullup_o     (dio_usb_pullup_o[USB_UART - 1]),
-      .cio_pullup_en_o  (dio_usb_pullup_en_o[USB_UART - 1]),
+      .cio_pullup_o         (dio_usb_pullup_o[USB_UART - 1]),
+      .cio_pullup_en_o      (dio_usb_pullup_en_o[USB_UART - 1]),
 
       .intr_tx_watermark_o  (intr_uart_tx_watermark),
       .intr_rx_watermark_o  (intr_uart_rx_watermark),

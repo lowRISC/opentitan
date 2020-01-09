@@ -10,13 +10,12 @@ module usbuart_usbif (
 
   // USB lines.  Split into input vs. output and oe control signal to maintain
   // highest level of compatibility with synthesis tools.
-  output              usb_dp_o,
-  output              usb_dn_o,
+  input  logic        usb_d_i,
+  input  logic        usb_se0_i,
 
-  input               usb_dp_i,
-  input               usb_dn_i,
-
-  output              usb_tx_en_o,
+  output logic        usb_d_o,
+  output logic        usb_se0_o,
+  output logic        usb_oe_o,
 
   // Fifo used to communicate with system
   input               tx_empty,
@@ -178,51 +177,64 @@ module usbuart_usbif (
     .baud_o(baud_o)
   );
 
-  // usb_fs_nb_pe #(
-  //   .NumOutEps(2),
-  //   .NumInEps(2),
-  //   .MaxPktSizeByte(MaxPktSizeByte)
-  // ) u_usb_fs_nb_pe (
-  //   .clk_48mhz_i(clk_48mhz_i),
-  //   .rst_ni(rst_ni),
-  //   .link_reset_i(1'b0), // TODO need to reset if link resets
+  usb_fs_nb_pe #(
+    .NumOutEps(2),
+    .NumInEps(2),
+    .MaxPktSizeByte(MaxPktSizeByte)
+  ) u_usb_fs_nb_pe (
+    .clk_48mhz_i                (clk_48mhz_i),
+    .rst_ni                     (rst_ni),
+    .link_reset_i               (1'b0), // TODO need to reset if link resets
 
-  //   .usb_p_tx_o(usb_dp_o),
-  //   .usb_n_tx_o(usb_dn_o),
-  //   .usb_p_rx_i(usb_dp_i),
-  //   .usb_n_rx_i(usb_dn_i),
-  //   .usb_tx_en_o(usb_tx_en_o),
+    // USB TRX interface (sync)
+    .usb_d_i                    (usb_d_i),
+    .usb_se0_i                  (usb_se0_i),
+    .usb_d_o                    (usb_d_o),
+    .usb_se0_o                  (usb_se0_o),
+    .usb_oe_o                   (usb_oe_o),
 
-  //   .dev_addr_i(dev_addr),
+    // Global configuration (static)
+    .cfg_eop_single_bit_i       (1'b1),
+    .tx_osc_test_mode_i         (1'b0),
+    .data_toggle_clear_i        (2'b0),
 
-  //   // out endpoint interfaces
-  //   .out_ep_current_o(out_ep_current),
-  //   .out_ep_data_put_o(out_ep_data_put),
-  //   .out_ep_put_addr_o(out_ep_put_addr),
-  //   .out_ep_data_o(out_ep_data),
-  //   .out_ep_acked_o(out_ep_acked),
-  //   .out_ep_rollback_o(out_ep_rollback),
-  //   .out_ep_newpkt_o(),
-  //   .out_ep_setup_o({serial_out_ep_setup, ctrl_out_ep_setup}),
-  //   .out_ep_full_i({serial_out_ep_full, ctrl_out_ep_full}),
-  //   .out_ep_stall_i({serial_out_ep_stall, ctrl_out_ep_stall}),
+    .dev_addr_i                 (dev_addr),
 
-  //   // in endpoint interfaces
-  //   .in_ep_current_o(in_ep_current),
-  //   .in_ep_rollback_o(in_ep_rollback),
-  //   .in_ep_acked_o(in_ep_acked),
-  //   .in_ep_get_addr_o(in_ep_get_addr),
-  //   .in_ep_data_get_o(in_ep_data_get),
-  //   .in_ep_newpkt_o(),
-  //   .in_ep_stall_i({serial_in_ep_stall, ctrl_in_ep_stall}),
-  //   .in_ep_has_data_i({serial_in_ep_has_data, ctrl_in_ep_has_data}),
-  //   .in_ep_data_i((in_ep_current == 4'b1) ? serial_in_ep_data : ctrl_in_ep_data),
-  //   .in_ep_data_done_i({serial_in_ep_data_done, ctrl_in_ep_data_done}),
+    // out endpoint interfaces
+    .out_ep_current_o           (out_ep_current),
+    .out_ep_data_put_o          (out_ep_data_put),
+    .out_ep_put_addr_o          (out_ep_put_addr),
+    .out_ep_data_o              (out_ep_data),
+    .out_ep_acked_o             (out_ep_acked),
+    .out_ep_rollback_o          (out_ep_rollback),
+    .out_ep_newpkt_o            (),
+    .out_ep_setup_o             ({serial_out_ep_setup, ctrl_out_ep_setup}),
+    .out_ep_full_i              ({serial_out_ep_full, ctrl_out_ep_full}),
+    .out_ep_stall_i             ({serial_out_ep_stall, ctrl_out_ep_stall}),
+    .out_ep_iso_i               (2'b0),
 
-  //   // sof interface
-  //   .sof_valid_o(sof_valid),
-  //   .frame_index_o(frame_index_raw)
-  // );
+    // in endpoint interfaces
+    .in_ep_current_o            (in_ep_current),
+    .in_ep_rollback_o           (in_ep_rollback),
+    .in_ep_acked_o              (in_ep_acked),
+    .in_ep_get_addr_o           (in_ep_get_addr),
+    .in_ep_data_get_o           (in_ep_data_get),
+    .in_ep_newpkt_o             (),
+    .in_ep_stall_i              ({serial_in_ep_stall, ctrl_in_ep_stall}),
+    .in_ep_has_data_i           ({serial_in_ep_has_data, ctrl_in_ep_has_data}),
+    .in_ep_data_i               ((in_ep_current == 4'b1) ? serial_in_ep_data : ctrl_in_ep_data),
+    .in_ep_data_done_i          ({serial_in_ep_data_done, ctrl_in_ep_data_done}),
+    .in_ep_iso_i                (2'b0),
+
+    // Errors
+    .rx_crc_err_o               (),
+    .rx_pid_err_o               (),
+    .rx_bitstuff_err_o          (),
+
+    // sof interface
+    .sof_valid_o                (sof_valid),
+    .frame_index_o              (frame_index_raw)
+  );
 
   // host presence detection
   // host_lost if no sof in 2.048ms (supposed to be every 1ms)

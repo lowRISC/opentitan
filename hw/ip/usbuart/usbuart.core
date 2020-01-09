@@ -18,6 +18,7 @@ filesets:
       - rtl/usb_serial_fifo_ep.sv
       - rtl/usb_serial_ctrl_ep.sv
       - rtl/usbuart.sv
+      - rtl/rising_edge_detector.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

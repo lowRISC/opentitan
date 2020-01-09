@@ -101,9 +101,10 @@ module usb_serial_ctrl_ep  #(
   assign more_data_to_send = !all_data_sent;
 
   rising_edge_detector detect_in_data_transfer_done (
-    .clk(clk_i),
-    .in(all_data_sent),
-    .out(in_data_transfer_done)
+    .clk_ci(clk_i),
+    .rst_ni(rst_ni),
+    .in_i  (all_data_sent),
+    .out_o (in_data_transfer_done)
   );
 
   assign in_ep_has_data_o = more_data_to_send || send_zero_length_data_pkt;

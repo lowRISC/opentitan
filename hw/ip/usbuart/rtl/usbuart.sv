@@ -7,8 +7,9 @@
 
 module usbuart (
   input        clk_i,
+  input        rst_ni, // Reset synchronized to clk_i
   input        clk_48mhz_i,
-  input        rst_ni,
+  input        rst_usb_ni, // Reset synchronized to clk_48mhz_i
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
@@ -64,18 +65,20 @@ module usbuart (
   usbuart_core usbuart_core (
     .clk_i,
     .rst_ni,
+    .clk_usb_48mhz_i (clk_48mhz_i),
+    .rst_usb_ni      (rst_usb_ni),
     .reg2hw,
     .hw2reg,
 
-    .clk_usb_48mhz_i(clk_48mhz_i),
-    .usb_dp_i(cio_usb_dp_i),
-    .usb_dp_o(cio_usb_dp_o),
-    .usb_dn_i(cio_usb_dn_i),
-    .usb_dn_o(cio_usb_dn_o),
-    .usb_tx_en_o(usb_tx_en_o),
+    .cio_usb_sense_i     (cio_usb_sense_i),
 
-    .usb_sense_i(cio_usb_sense_i),
-    .usb_pullup_o(cio_pullup_o),
+    .cio_usb_dp_i        (cio_usb_dp_i),
+    .cio_usb_dn_i        (cio_usb_dn_i),
+    .cio_usb_dp_o        (cio_usb_dp_o),
+    .cio_usb_dn_o        (cio_usb_dn_o),
+    .cio_usb_dp_en_o     (cio_usb_dp_en_o),
+    .cio_usb_dn_en_o     (cio_usb_dn_en_o),
+    .cio_usb_pullup_en_o (cio_pullup_o),
 
     .intr_tx_watermark_o  (intr_tx_watermark_o ),
     .intr_rx_watermark_o  (intr_rx_watermark_o ),
