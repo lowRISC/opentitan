@@ -165,11 +165,11 @@ module xbar_${xbar.name} (
   % if len(leaf.addr_range) == 1:
       % if lib.is_pow2((leaf.addr_range[0][1]-leaf.addr_range[0][0])+1):
     ${prefix}(${addr_sig} & ~(${name_mask})) == ${name_space}) begin
-      dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
       % else:
-      ((${addr_sig} <= (${name_mask} + ${name_space})) &&
-       (${addr_sig} >= ${name_space}))${" ||" if not loop.last else ""}
+    ${prefix}((${addr_sig} <= (${name_mask} + ${name_space})) &&
+       (${addr_sig} >= ${name_space}))) begin
       % endif
+      dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
     ${"end" if loop.last else ""}
   % else:
     ## Xbar device port
