@@ -73,9 +73,9 @@ def main():
     # Generate
     out_rtl, out_pkg, out_core = tlgen.generate(xbar)
 
-    rtl_path = Path(args.outdir) / 'rtl'
+    rtl_path = Path(args.outdir) / 'rtl/autogen'
     rtl_path.mkdir(parents=True, exist_ok=True)
-    dv_path = Path(args.outdir) / 'dv'
+    dv_path = Path(args.outdir) / 'dv/autogen'
     dv_path.mkdir(parents=True, exist_ok=True)
 
     rtl_filename = "xbar_%s.sv" % (xbar.name)
