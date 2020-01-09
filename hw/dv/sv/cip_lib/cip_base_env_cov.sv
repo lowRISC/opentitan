@@ -34,7 +34,8 @@ covergroup intr_test_cg (uint num_interrupts) with function sample(uint intr,
   }
 endgroup
 
-covergroup intr_pins_cg (uint num_interrupts) with function sample(uint intr_pin, bit intr_pin_value);
+covergroup intr_pins_cg (uint num_interrupts) with function sample(uint intr_pin,
+                                                                   bit  intr_pin_value);
   cp_intr_pin: coverpoint intr_pin {
     bins all_pins[] = {[0:num_interrupts-1]};
   }
@@ -59,8 +60,8 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
   intr_pins_cg   intr_pins_cg;
   alert_cg       alert_cg;
   // Coverage for sticky interrupt functionality described in CIP specification
-  // As some interrupts are non-sticky, this covergroup should be populated on "as and when needed" basis
-  // in extended <ip>_env_cov class for interrupt types that are sticky
+  // As some interrupts are non-sticky, this covergroup should be populated on "as and when needed"
+  // basis in extended <ip>_env_cov class for interrupt types that are sticky
   dv_base_generic_cov_obj sticky_intr_cov[string];
 
   `uvm_component_new

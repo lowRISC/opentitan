@@ -73,12 +73,14 @@ module tb;
     .AxiUserWidth ( 16)
   ) u_dm_top (
     .clk_i         (clk),         // in clock
-    .rst_ni        (rst_n),       // in asynchronous reset active low, connect PoR here, not the system reset
+    // in asynchronous reset active low, connect PoR here, not the system reset
+    .rst_ni        (rst_n),
     .testmode_i    (1'b0),        // in
     .ndmreset_o    (ndmrst),      // out               non-debug module reset
     .dmactive_o    (dmactive),    // out               debug module is active
     .debug_req_o   (debug_req),   // out [NrHarts-1:0] async debug request
-    .unavailable_i (unavailable), // in  [NrHarts-1:0] communicate whether the hart is unavailable (e.g.: power down)
+    // in  [NrHarts-1:0] communicate whether the hart is unavailable (e.g.: power down)
+    .unavailable_i (unavailable),
 
     // bus device, for an execution based technique
     //.tl_d_i        (tlul_mem_if.device.h2d),
@@ -122,11 +124,11 @@ module tb;
     .tdo_oe_o         (jtag.dut.tdo_oe)
   );
 
-  localparam JTCK_PERIOD = 27.3ns;
+  localparam time JtckPeriod = 27.3ns;
   initial begin
     jtag.tb.tck = 0;
     forever begin
-      #(JTCK_PERIOD/2) jtag.tb.tck = ~jtag.tb.tck;
+      #(JtckPeriod/2) jtag.tb.tck = ~jtag.tb.tck;
     end
   end
   initial begin

@@ -60,19 +60,19 @@ class rv_dm_env extends dv_base_env #(
     super.connect_phase(phase);
     if (cfg.en_scb) begin
       m_jtag_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
-      m_tl_host_agent.mon.a_chan_port.connect(scoreboard.tl_host_a_chan_fifo.analysis_export);
-      m_tl_host_agent.mon.d_chan_port.connect(scoreboard.tl_host_d_chan_fifo.analysis_export);
-      m_tl_device_agent.mon.a_chan_port.connect(scoreboard.tl_host_a_chan_fifo.analysis_export);
-      m_tl_device_agent.mon.d_chan_port.connect(scoreboard.tl_host_d_chan_fifo.analysis_export);
+      m_tl_host_agent.monitor.a_chan_port.connect(scoreboard.tl_host_a_chan_fifo.analysis_export);
+      m_tl_host_agent.monitor.d_chan_port.connect(scoreboard.tl_host_d_chan_fifo.analysis_export);
+      m_tl_device_agent.monitor.a_chan_port.connect(scoreboard.tl_host_a_chan_fifo.analysis_export);
+      m_tl_device_agent.monitor.d_chan_port.connect(scoreboard.tl_host_d_chan_fifo.analysis_export);
     end
     if (cfg.is_active && cfg.m_jtag_agent_cfg.is_active) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
     end
     if (cfg.is_active && cfg.m_tl_host_agent_cfg.is_active) begin
-      virtual_sequencer.tl_host_sequencer_h = m_tl_host_agent.seqr;
+      virtual_sequencer.tl_host_sequencer_h = m_tl_host_agent.sequencer;
     end
     if (cfg.is_active && cfg.m_tl_device_agent_cfg.is_active) begin
-      virtual_sequencer.tl_device_sequencer_h = m_tl_device_agent.seqr;
+      virtual_sequencer.tl_device_sequencer_h = m_tl_device_agent.sequencer;
     end
   endfunction
 

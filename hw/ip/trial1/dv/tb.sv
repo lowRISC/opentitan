@@ -9,7 +9,7 @@ module tb;
 
   // Clock gen
   logic clk, rst_n;
-  parameter CLK_PERIOD = 10ns;
+  parameter time CLK_PERIOD = 10ns;
   initial begin
     clk = 0;
     forever begin

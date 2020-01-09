@@ -9,12 +9,12 @@ class aes_sanity_vseq extends aes_base_vseq;
   `uvm_object_new
 
   task body();
-    
+
     `uvm_info(`gfn, $sformatf("STARTING AES SEQUENCE"), UVM_LOW);
     `DV_CHECK_RANDOMIZE_FATAL(this)
     `uvm_info(`gfn, $sformatf("running aes sanity sequence"), UVM_LOW);
-      
-  endtask : body  
+
+  endtask : body
 
 endclass : aes_sanity_vseq
 

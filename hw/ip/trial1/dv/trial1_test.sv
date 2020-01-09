@@ -21,9 +21,9 @@ module trial1_test (
   // for now always accept read responses
   assign  tl_h2d.d_ready = 1'b1;
 
-  task send_wr (
-    input [11:0] waddr,
-    input [31:0] wdata
+  task automatic send_wr (
+    input bit [11:0] waddr,
+    input bit [31:0] wdata
   );
     begin
       tl_h2d.a_address = waddr;
@@ -43,9 +43,9 @@ module trial1_test (
     end
   endtask
 
-  task send_rd (
-    input  [11:0] raddr,
-    output [31:0] rdata
+  task automatic send_rd (
+    input  bit [11:0] raddr,
+    output bit [31:0] rdata
   );
     begin
       tl_h2d.a_address  = raddr;
@@ -65,10 +65,10 @@ module trial1_test (
     end
   endtask
 
-  task test_q (
+  task automatic test_q (
     string regname,
-    input [31:0] gotval,
-    input [31:0] expval
+    input bit [31:0] gotval,
+    input bit [31:0] expval
   );
     begin
       if (gotval !== expval) begin
@@ -110,24 +110,25 @@ module trial1_test (
   // externalized register
   assign hw2reg.rotype1.d = rotype1_capture;
 
-  task test_capture (
+  task automatic test_capture (
     string regname,
-    input [31:0] gotval,
-    input [31:0] expval
+    input bit [31:0] gotval,
+    input bit [31:0] expval
   );
     begin
       if (gotval !== expval) begin
-        $display("ERROR: expected hwqe captured value for %s is %x got %x", regname, expval, gotval);
+        $display("ERROR: expected hwqe captured value for %s is %x got %x", regname, expval,
+                 gotval);
         errorcount++;
       end else if (DEBUG)
         $display("INFO: got expected hwqe captured value for %s of %x", regname, expval);
     end
   endtask
 
-  task test_reg (
+  task automatic test_reg (
     string regname,
-    input [11:0] addr,
-    input [31:0] expval
+    input bit [11:0] addr,
+    input bit [31:0] expval
   );
     begin
       logic [31:0] gotval;
@@ -140,7 +141,7 @@ module trial1_test (
     end
   endtask
 
-  task test_rwtype0(input [31:0] expdata);
+  task automatic test_rwtype0(input bit [31:0] expdata);
     // test register read
     test_reg("RWTYPE0", 12'h0, expdata);
     // test q
@@ -153,9 +154,9 @@ module trial1_test (
     test_q("RWTYPE0", reg2hw.rwtype0.q, expdata);
   endtask
 
-  task test_rwtype1(input [31:0] expdata);
+  task automatic test_rwtype1(input bit [31:0] expdata);
     logic [31:0] maskexp;
-    assign maskexp = expdata & 32'h0000ff13;
+    maskexp = expdata & 32'h0000ff13;
     test_reg("RWTYPE1", 12'h4, maskexp);
     // test q's
     test_q("RWTYPE1.field0", reg2hw.rwtype1.field0.q, maskexp[0]);
@@ -172,7 +173,7 @@ module trial1_test (
     test_q("RWTYPE1.field15_8", reg2hw.rwtype1.field15_8.q, maskexp[15:8]);
   endtask
 
-  task test_rwtype2(input [31:0] expdata);
+  task automatic test_rwtype2(input bit [31:0] expdata);
     // test register read
     test_reg("RWTYPE2", 12'h8, expdata);
     // test q
@@ -185,7 +186,7 @@ module trial1_test (
     test_q("RWTYPE2", reg2hw.rwtype2.q, expdata);
   endtask
 
-  task test_rwtype3(input [31:0] expdata);
+  task automatic test_rwtype3(input bit [31:0] expdata);
     test_reg("RWTYPE3", 12'hc, expdata);
     // test q's
     test_q("RWTYPE3.field0", reg2hw.rwtype3.field0.q, expdata[15:0]);
@@ -198,7 +199,7 @@ module trial1_test (
     test_q("RWTYPE3.field1", reg2hw.rwtype3.field1.q, expdata[31:16]);
   endtask
 
-  task test_rwtype4(input [31:0] expdata);
+  task automatic test_rwtype4(input bit [31:0] expdata);
     test_reg("RWTYPE4", 12'h200, expdata);
     // test q's
     test_q("RWTYPE4.field0", reg2hw.rwtype4.field0.q, expdata[15:0]);
@@ -211,7 +212,7 @@ module trial1_test (
     test_q("RWTYPE4.field1", reg2hw.rwtype4.field1.q, expdata[31:16]);
   endtask
 
-  task test_rotype0(input [31:0] expdata);
+  task automatic test_rotype0(input bit [31:0] expdata);
     // test register read
     test_reg("ROTYPE0", 12'h204, expdata);
     // test q
@@ -224,7 +225,7 @@ module trial1_test (
     test_q("ROTYPE0", reg2hw.rotype0.q, expdata);
   endtask
 
-  task test_w1ctype0(input [31:0] expdata);
+  task automatic test_w1ctype0(input bit [31:0] expdata);
     // test register read
     test_reg("W1CTYPE0", 12'h208, expdata);
     // test q
@@ -237,7 +238,7 @@ module trial1_test (
     test_q("W1CTYPE0", reg2hw.w1ctype0.q, expdata);
   endtask
 
-  task test_w1ctype1(input [31:0] expdata);
+  task automatic test_w1ctype1(input bit [31:0] expdata);
     test_reg("W1CTYPE1", 12'h20c, expdata);
     // test q's
     test_q("W1CTYPE1.field0", reg2hw.w1ctype1.field0.q, expdata[15:0]);
@@ -250,7 +251,7 @@ module trial1_test (
     test_q("W1CTYPE1.field1", reg2hw.w1ctype1.field1.q, expdata[31:16]);
   endtask
 
-  task test_w1ctype2(input [31:0] expdata);
+  task automatic test_w1ctype2(input bit [31:0] expdata);
     // test register read
     test_reg("W1CTYPE2", 12'h210, expdata);
     // test q
@@ -263,7 +264,7 @@ module trial1_test (
     test_q("W1CTYPE2", reg2hw.w1ctype2.q, expdata);
   endtask
 
-  task test_w1stype2(input [31:0] expdata);
+  task automatic test_w1stype2(input bit [31:0] expdata);
     // test register read
     test_reg("W1STYPE2", 12'h214, expdata);
     // test q
@@ -276,7 +277,7 @@ module trial1_test (
     test_q("W1STYPE2", reg2hw.w1stype2.q, expdata);
   endtask
 
-  task test_w0ctype2(input [31:0] expdata);
+  task automatic test_w0ctype2(input bit [31:0] expdata);
     // test register read
     test_reg("W0CTYPE2", 12'h218, expdata);
     // test q
@@ -289,7 +290,7 @@ module trial1_test (
     test_q("W0CTYPE2", reg2hw.w0ctype2.q, expdata);
   endtask
 
-  task test_r0w1ctype2(input [31:0] expdata);
+  task automatic test_r0w1ctype2(input bit [31:0] expdata);
     // test register read
     test_reg("R0W1CTYPE2", 12'h21c, 0);
     // test q
@@ -302,7 +303,7 @@ module trial1_test (
     test_q("R0W1CTYPE2", reg2hw.r0w1ctype2.q, expdata);
   endtask
 
-  task test_rctype0(input [31:0] expdata);
+  task automatic test_rctype0(input bit [31:0] expdata);
     // test q
     test_q("RCTYPE0", reg2hw.rctype0.q, expdata);
     // test register read
@@ -315,7 +316,7 @@ module trial1_test (
     test_q("RCTYPE0", reg2hw.rctype0.q, 32'h0);
   endtask
 
-  task test_wotype0(input [31:0] expdata);
+  task automatic test_wotype0(input bit [31:0] expdata);
     // test register read, always returns zero
     test_reg("WOTYPE0", 12'h224, 0);
     // test q
@@ -328,7 +329,7 @@ module trial1_test (
     test_q("WOTYPE0", reg2hw.wotype0.q, expdata);
   endtask
 
-  task test_mixtype0(input [31:0] expdata);
+  task automatic test_mixtype0(input bit [31:0] expdata);
     // test q's
     test_q("MIXTYPE0.field0", reg2hw.mixtype0.field0.q, expdata[3:0]);
     test_q("MIXTYPE0.field1", reg2hw.mixtype0.field1.q, expdata[7:4]);
@@ -342,7 +343,8 @@ module trial1_test (
     test_reg("MIXTYPE0", 12'h228, expdata & 32'h0fffffff);  // [31:28] is write-only
     // hold value
     repeat(5) @(posedge clk);
-    test_reg("MIXTYPE0", 12'h228, expdata & 32'h00ffffff);  // [31:28] is write-only, [27:24] is read-clear
+    // [31:28] is write-only, [27:24] is read-clear
+    test_reg("MIXTYPE0", 12'h228, expdata & 32'h00ffffff);
     // test q
     test_q("MIXTYPE0.field0", reg2hw.mixtype0.field0.q, expdata[3:0]);
     test_q("MIXTYPE0.field1", reg2hw.mixtype0.field1.q, expdata[7:4]);
@@ -354,7 +356,7 @@ module trial1_test (
     test_q("MIXTYPE0.field7", reg2hw.mixtype0.field7.q, expdata[31:28]);
   endtask
 
-  task test_rwtype5(input [31:0] expdata);
+  task automatic test_rwtype5(input bit [31:0] expdata);
     // test register read
     test_reg("RWTYPE5", 12'h22c, expdata);
     // test q
@@ -367,12 +369,12 @@ module trial1_test (
     test_q("RWTYPE5", reg2hw.rwtype5.q, expdata);
   endtask
 
-  task test_rwtype5_capture(input [31:0] expdata);
+  task automatic test_rwtype5_capture(input bit [31:0] expdata);
     // test captured value
     test_capture("RWTYPE5", rwtype5_capture, expdata);
   endtask
 
-  task test_rwtype6(input [31:0] expdata);
+  task automatic test_rwtype6(input bit [31:0] expdata);
     // test register read
     test_reg("RWTYPE6", 12'h230, expdata);
     // holds value
@@ -381,12 +383,12 @@ module trial1_test (
     test_reg("RWTYPE6", 12'h230, expdata);
   endtask
 
-  task test_rwtype6_capture(input [31:0] expdata);
+  task automatic test_rwtype6_capture(input bit [31:0] expdata);
     // test captured value
     test_capture("RWTYPE6", rwtype6_capture, expdata);
   endtask
 
-  task test_rwtype7(input [31:0] expdata);
+  task automatic test_rwtype7(input bit [31:0] expdata);
     // test register read
     test_reg("RWTYPE7", 12'h23c, expdata);
     // holds value
@@ -395,7 +397,7 @@ module trial1_test (
     test_reg("RWTYPE7", 12'h23c, expdata);
   endtask
 
-  task test_rotype1(input [31:0] expdata);
+  task automatic test_rotype1(input bit [31:0] expdata);
     // test register read
     test_reg("ROTYPE1", 12'h234, expdata);
     // holds value
@@ -404,12 +406,12 @@ module trial1_test (
     test_reg("ROTYPE1", 12'h234, expdata);
   endtask
 
-  task test_rotype1_capture(input [31:0] expdata);
+  task automatic test_rotype1_capture(input bit [31:0] expdata);
     // test captured value
     test_capture("ROTYPE1", rotype1_capture, expdata);
   endtask
 
-  task test_rotype2(input [31:0] expdata);
+  task automatic test_rotype2(input bit [31:0] expdata);
     // test register read
     test_reg("ROTYPE2", 12'h238, expdata);
     // holds value

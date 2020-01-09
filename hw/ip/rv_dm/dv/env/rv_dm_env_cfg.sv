@@ -29,11 +29,11 @@ class rv_dm_env_cfg extends dv_base_env_cfg #(.RAL_T(rv_dm_reg_block));
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
     // create tl_host agent config obj
     m_tl_host_agent_cfg = tl_agent_cfg::type_id::create("m_tl_host_agent_cfg");
-    m_tl_host_agent_cfg.is_host = 1'b1;
+    m_tl_host_agent_cfg.if_mode = dv_utils_pkg::Host;
     m_tl_host_agent_cfg.is_active = 1'b1;
     // create tl_device agent config obj
     m_tl_device_agent_cfg = tl_agent_cfg::type_id::create("m_tl_device_agent_cfg");
-    m_tl_device_agent_cfg.is_host = 1'b0;
+    m_tl_device_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_tl_device_agent_cfg.is_active = 1'b1;
   endfunction
 

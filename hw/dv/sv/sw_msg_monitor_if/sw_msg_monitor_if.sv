@@ -435,7 +435,7 @@ interface sw_msg_monitor_if #(
 
     case (msg_type.tolower())
       "i", "info":            `uvm_info(msg_header, msg, level)
-      "w", "warn", "warning": `uvm_warning(msg_header, msg)
+      "w", "warn", "warning": `uvm_error(msg_header, msg)
       "e", "err", "error":    `uvm_error(msg_header, msg)
       "f", "fatal":           `uvm_fatal(msg_header, msg)
       default:                `uvm_info(msg_header, msg, level)

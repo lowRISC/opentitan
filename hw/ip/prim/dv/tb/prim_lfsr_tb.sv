@@ -14,9 +14,9 @@ module prim_lfsr_tb;
 // this can be overriden on the command line
 // supported types are GAL_XOR, FIB_XNOR
 `ifdef LFSR_TYPE
-  localparam                  LfsrType   = `LFSR_TYPE;
+  localparam string           LfsrType   = `LFSR_TYPE;
 `else
-  localparam                  LfsrType   = "GAL_XOR";
+  localparam string           LfsrType   = "GAL_XOR";
 `endif
 `ifdef MIN_LFSR_DW
   localparam int unsigned     MinLfsrDw  = `MIN_LFSR_DW;
@@ -32,7 +32,7 @@ module prim_lfsr_tb;
   // leave this constant
   localparam logic SEED       = 1'b1;
 
-  localparam time  CLK_PERIOD = 10000;
+  localparam time  ClkPeriod  = 10000;
 
 //////////////////////////////////////////////////////
 // clock
@@ -88,7 +88,7 @@ module prim_lfsr_tb;
     lfsr_en = '0;
     err     = '0;
 
-    main_clk.set_period_ns(CLK_PERIOD);
+    main_clk.set_period_ns(ClkPeriod);
     main_clk.set_active();
     main_clk.apply_reset();
 
