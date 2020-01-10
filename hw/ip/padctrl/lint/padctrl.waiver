@@ -1,0 +1,20 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for padctrl
+
+waive -rules HIER_NET_NOT_READ -regexp {Connected net 'attr\_i\[.*\]' at prim\_.*\_pad\_wrapper\.sv:.* is not read from in module.*}
+      -location {padring.sv}
+      -comment "Some IO attributes may not be implemented."
+
+waive -rules NOT_READ -regexp {Signal 'reg_wdata.* is not read from}
+      -location {padctrl_reg_top.sv}
+      -comment "Some wdata bits may be unconnected."
+
+waive -rules HIER_NET_NOT_READ -regexp {Net 'reg_wdata.* is not read from}
+      -location {padctrl_reg_top.sv}
+      -comment "Some wdata bits may be unconnected."
+
+waive -rules MULTI_DRIVEN -location {padring.sv} -regexp {('clk'|'rst_n') has 2 drivers, also driven at padring.sv.*}
+      -comment "This error is a false positive in this case, since OE is set to 0."

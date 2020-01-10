@@ -1,0 +1,101 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for Ibex core
+
+waive -rules ONE_BRANCH           -location {ibex_alu.sv} -regexp {unique case statement has only one branch} \
+      -comment "acceptable coding style, more readable than if-string"
+waive -rules EXPLICIT_BITLEN      -location {ibex_core.sv} -regexp {Bit length not specified for constant .*h2} \
+      -comment "better way to write it?"
+waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv} -regexp {Net 'instr_rdata_i.*is not read from in module} \
+      -comment "not all bits are used"
+waive -rules INPUT_NOT_READ       -location {ibex_decoder.sv} -regexp {Input port 'instr_rdata_i.*is not read from in module} \
+      -comment "not all bits are used"
+waive -rules HIER_BRANCH_NOT_READ -location {ibex_id_stage.sv} -regexp {[nN]et 'test_en_i' .* is not read from} \
+      -comment "testability signal used in some versions of register file"
+waive -rules INPUT_NOT_READ       -location {ibex_register_file_ff.sv} -regexp {Input port 'test_en_i' is not read from} \
+      -comment "testability signal used in some versions of register file"
+waive -rules INPUT_NOT_READ       -location {ibex_core.sv} -regexp {Input port 'clock_en_i' is not read from} \
+      -comment "clock enable signal used in behavioral code"
+waive -rules HIER_NET_NOT_READ    -location {rv_core_ibex.sv} -regexp {Net 'instr_addr_o.1.0.' is not read from} \
+      -comment "Bottom bits not needed, cleaner to keep them as inputs"
+waive -rules NOT_READ             -location {rv_core_ibex.sv} -regexp {Signal 'instr_addr_o.1.0.' is not read from} \
+      -comment "Bottom bits not needed, cleaner to keep them as inputs"
+waive -rules HIER_NET_NOT_READ    -location {rv_core_ibex.sv} -regexp {Net 'data_addr_o.1.0.' is not read from} \
+      -comment "Bottom bits not needed, cleaner to keep them as inputs"
+waive -rules NOT_READ             -location {rv_core_ibex.sv} -regexp {Signal 'data_addr_o.1.0.' is not read from} \
+      -comment "Bottom bits not needed, cleaner to keep them as inputs"
+waive -rules HIER_NET_NOT_READ    -location {ibex_ex_block.sv} -regexp {Net 'alu_adder_result_ext.0.' .* is not read from} \
+      -comment "Bottom bit is round, not needed"
+waive -rules HIER_NET_NOT_READ    -location {ibex_ex_block.sv} -regexp {Connected net 'alu_adder_ext_i.0.' .* is not read from} \
+      -comment "Bottom bit is round, not needed"
+waive -rules HIER_NET_NOT_READ    -location {ibex_core.sv} -regexp {[nN]et 'boot_addr_i.7:0.' .* is not read from} \
+      -comment "Boot address is 256B aligned, cleaner to pass all bits in"
+waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} -location {ibex_if_stage.sv} -regexp {'boot_addr_i.7:0.' is not read from} \
+      -comment "Boot address is 256B aligned, cleaner to pass all bits in"
+waive -rules HIER_NET_NOT_READ    -location {ibex_ex_block.sv} -regexp {[nN]et 'alu_adder.*0' is not read from} \
+      -comment "LSB is not needed here, shifting off before using"
+waive -rules INPUT_NOT_READ       -location {ibex_multdiv_fast.sv} -regexp {Input port 'alu_adder_ext_i.0.' is not read from} \
+      -comment "LSB is not needed here, shifting off before using"
+waive -rules HIER_NET_NOT_READ    -location {rv_core_ibex.sv} -regexp {Net 'tl_._fifo2ibex.d_(error|opcode|param|sink|size|source|user).*' is not read} \
+      -comment "Not all bits of instruction response needed"
+waive -rules NOT_READ             -location {rv_core_ibex.sv} -regexp {Signal 'tl_._fifo2ibex.d_(error|opcode|param|sink|size|source|user).*' is not read} \
+      -comment "Not all bits of instruction response needed"
+waive -rules NOT_READ             -location {ibex_cs_registers.sv} -regexp {Signal 'mstatus_n.mpp' is not read from} \
+      -comment "Cleaner to write this way even if currently fixed at M mode"
+waive -rules CONST_FF             -location {ibex_cs_registers.sv} -regexp {Flip.flop 'mstatus_q.mpp' is driven by constant ones} \
+      -comment "Cleaner to write this way even if currently fixed at M mode"
+waive -rules NOT_READ             -location {ibex_if_stage.sv} -regexp {Signal 'fetch_addr_n.0.' is not read from} \
+      -comment "cleaner to write all bits even if not all are used"
+waive -rules NOT_READ             -location {ibex_multdiv_fast.sv} -regexp {Signal 'mac_res_ext.34.' is not read from} \
+      -comment "cleaner to write all bits even if not all are used"
+waive -rules NOT_READ             -location {ibex_multdiv_fast.sv} -regexp {Signal 'res_adder_h.32.' is not read from} \
+      -comment "cleaner to write all bits even if not all are used"
+waive -rules MULTIPLY             -location {ibex_multdiv_fast.sv} -regexp {Multiply operation.*encountered} \
+      -comment "got to pay the price for the multiplier"
+waive -rules CONST_OUTPUT         -location {rv_core_ibex.sv} -regexp {Output 'tl_(i|d)_o..*' is driven by constant} \
+      -comment "not all bus constructs are used"
+waive -rules CONST_OUTPUT         -location {ibex_controller.sv} -regexp {Output 'exc_cause_o.5.' is driven by constant} \
+      -comment "easier to write with enum, not all causes used yet"
+waive -rules CONST_OUTPUT         -location {ibex_decoder.sv} -regexp {Output 'data_reg_offset_o' is driven by constant} \
+      -comment "fixed register offset"
+waive -rules CONST_OUTPUT         -location {ibex_decoder.sv} -regexp {Output 'alu_op_._mux_sel_o.*' is driven by constant} \
+      -comment "not all possible mux select values are used in enum"
+waive -rules CONST_OUTPUT         -location {ibex_multdiv_fast.sv} -regexp {Output 'alu_operand_._o.0.' is driven by constant} \
+      -comment "bottom bit set to 1 for rounding"
+waive -rules VAR_INDEX            -location {ibex_multdiv_fast.sv} -regexp {Variable index expression 'op_numerator_q.div_counter_n.' encountered} \
+      -comment "TODO: discuss: I don't think this is a problem"
+waive -rules VAR_INDEX            -location {ibex_register_file_ff.sv} -regexp {Variable index expression 'rf_reg.raddr_._i.' encountered} \
+      -comment "TODO: discuss: I don't think this is a problem"
+waive -rules NOT_READ             -location {ibex_cs_registers.sv} -regexp {Signal 'pccr_index' is not read from} \
+      -comment "Used in non synthesis scenario"
+waive -rules NOT_READ             -location {ibex_cs_registers.sv} -regexp {Signal 'pccr_all_sel' is not read from} \
+      -comment "Used in non synthesis scenario"
+waive -rules NOT_USED             -location {ibex_cs_registers.sv} -regexp {Signal 'PCCR_inc.*11.1.' is not used} \
+      -comment "Used in non synthesis scenario"
+waive -rules NOT_READ             -location {ibex_alu.sv} -regexp {Signal 'shift_right_result_ext.32.' is not read from} \
+      -comment "As mentioned in the RTL, MSB of shift_right_result_ext can be safely ignored"
+waive -rules NOT_READ             -location {ibex_id_stage.sv} -regexp {Signal 'operand_b_fw_id' is not read from in module 'ibex_id_stage'} \
+      -comment "This signal is actually used (not via a port but through hierarchical path) in ibex_core.sv"
+waive -rules INTEGER              -location {ibex_register_file_ff.sv rv_core_ibex.sv} -msg {'i' of type int used as a non-constant value} \
+      -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
+waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_core.sv} -regexp {Memory 'pmp_req_err' has word width which is single bit wide} \
+      -comment "For consistency with related signals, we use an unpacked array for this signal."
+waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
+      -comment "These signals are only used for assertions inside these two modules"
+waive -rules INPUT_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
+      -comment "These signals are only used for assertions inside these two modules"
+
+# Highlighting my main concerns here, documenting areas to review in next dive
+#
+# data_err_i is not used in load/store unit beyond assertions; this signal is
+# true when bus requests return in error. What is the right way to handle?
+#
+# lsu_load_err/lsu_store_err: similar above, except that the condition is
+# tied to false in ibex_load_store_unit and is unused in ID stage. Dead
+# code that should be removed? Or is this an indication of missing error
+# handling logic?
+#
+# output signal out_valid_stored_o from ibex_fetch_fifo is not used. Dead
+# code or indicating a bigger problem?

@@ -1,0 +1,27 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+# Adapter (SRAM)
+# INPUT_NOT_READ
+waive -rules INPUT_NOT_READ -location {tlul_adapter_sram.sv} -regexp {Input port 'tl_i.a_(mask|param|user)} \
+      -comment "Not necessary for SRAM access"
+waive -rules HIER_NET_NOT_READ -regexp {Connected net 'tl_i.a_(mask|param|user).* is not read from in module 'tlul_adapter_sram'} \
+      -comment "Not necessary for SRAM access"
+waive -rules HIER_NET_NOT_READ -regexp {'rspfifo_full' is not read from in module 'tlul_adapter_sram'} \
+      -comment "This signal is only used by assertions"
+waive -rules CONST_OUTPUT -location {tlul_adapter_sram.sv} -regexp {tl_o\.d_(param|sink|user)} \
+      -comment "Tied to 0"
+waive -rules INPUT_NOT_READ -regexp {Input port 'rerror_i.0.' is not read from in module 'tlul_adapter_sram'} \
+      -comment "This module only cares about bit [1] of error (i.e. uncorrectable errors), it doesn't care about correctable errors (bit [0])"
+waive -rules INPUT_NOT_READ -regexp {Input port 'tl_i.a_address.*' is not read from} \
+      -comment "Not all bits of a_address are used (depending on the address parameters)"
+waive -rules HIER_NET_NOT_READ -regexp {Connected net 'tl_i.a_address.*' at tlul_adapter_sram.sv.* is not read from in module 'tlul_adapter_sram'} \
+      -comment "Not all bits of a_address are used (depending on the address parameters)"
+waive -rules HIER_NET_NOT_READ -msg {Net 'rspfifo_wready' is not read from in module 'tlul_adapter_sram'} \
+      -comment "This signal is only used by an assertion"
+waive -rules NOT_READ -msg {Signal 'rspfifo_wready' is not read from in module 'tlul_adapter_sram'} \
+      -comment "This signal is only used by an assertion"
+

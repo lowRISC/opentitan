@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for GPIO lint
+
+waive -rules HIER_NET_NOT_READ -location {gpio.sv} -regexp {[nN]et.*a_(address|param|user).*not read from} \
+      -comment "several TLUL signals are not used by register file"
+waive -rules HIER_NET_NOT_READ -location {gpio.sv} -regexp {Net .reg2hw.*.qe. is not read from} \
+      -comment "registers with multiple fields often have unused qe's since they are duplicative"
+waive -rules NOT_READ -location {gpio.sv} -regexp {Signal 'reg2hw.*.qe' is not read from} \
+      -comment "registers with multiple fields often have unused qe's since they are duplicative"

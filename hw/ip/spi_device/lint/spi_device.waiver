@@ -1,0 +1,91 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for SPI Device
+
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*a_(address|param|user).*not read from} \
+      -comment "several TLUL signals are not used by register file"
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {Net .reg2hw.*.qe. is not read from} \
+      -comment "registers with multiple fields often have unused qe's since they are duplicative"
+waive -rules NOT_READ -location {spi_device.sv} -regexp {Signal 'reg2hw.*.qe' is not read from} \
+      -comment "registers with multiple fields often have unused qe's since they are duplicative"
+
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*tl_h_i.[ad]_(ready|param|sink|size|source|user)} \
+      -comment "TL-UL converter doesn't use the signals"
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*[tr]xf_addr\.(base|limit)\.q.*' is not read} \
+      -comment "Only lower 9bits are used for sram_addr but leaving the register fields flexible"
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*sram_base_addr.*' is not read} \
+      -comment "Sram base address is given by parameter. Didn't decided if this field is used."
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*[rt]xf_ptr.*' is not read} \
+      -comment "Only lower bits are used for sram_addr but leaving the register fields flexible"
+waive -rules NOT_READ -location {spi_device.sv} -regexp {Signal.*[tr]xf_addr\.(base|limit)\.q.*' is not read} \
+      -comment "Only lower 9bits are used for sram_addr but leaving the register fields flexible"
+waive -rules NOT_READ -location {spi_device.sv} -regexp {Signal.*sram_base_addr.*' is not read} \
+      -comment "Sram base address is given by parameter. Didn't decided if this field is used."
+waive -rules NOT_READ -location {spi_device.sv} -regexp {Signal.*[rt]xf_ptr.*' is not read} \
+      -comment "Only lower bits are used for sram_addr but leaving the register fields flexible"
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*spi_mode.* is not read} \
+      -comment "FwMode is used. This field is used when EEPROM is implemented"
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {[nN]et.*fwm_sram_error.* is not read} \
+      -comment "SRAM error correction code is not implemented"
+waive -rules HIER_NET_NOT_READ NOT_READ -location {spi_device.sv} -regexp {.*fifo_level\..xlvl\.q} \
+      -comment "RXLevel and TXLevel is used only for pointer width."
+waive -rules HIER_NET_NOT_READ -location {spi_device.sv} -regexp {(tl_sram_h2d|tl_i).*a_mask} \
+      -comment "TL SRAM adapter does not use mask"
+waive -rules HIER_NET_NOT_READ NOT_READ -location {spi_device.sv} -regexp {mem_(a|b)_(rerror|addr)} \
+      -comment "Only portion of Memory address is used depending on SramAw parameter"
+
+waive -rules NOT_READ -location {spi_fwm_rxf_ctrl.sv} -regexp {Signal 'ptr_cmp\[1:0\]' is not read} \
+      -comment "Only upper bits are used to compare FIFO full condition to avoid partial write"
+
+waive -rules CONST_OUTPUT -location {spi_fwm_txf_ctrl.sv} -regexp {Output 'sram_w.*' is driven} \
+      -comment "always read operation from TX FIFO CTRL"
+waive -rules CONST_OUTPUT -location {spi_fwm_*xf_ctrl.sv} -regexp {Output 'depth.*} \
+      -comment "Based on the SRAM size 2kB, it cannot hit the case"
+
+waive -rules CONST_FF -location {spi_fwmode.sv} -regexp {Flip-flop 'miso_shift\[0\]' is driven} \
+      -comment "Intended behavior"
+waive -rules CONST_FF -location {spi_device.sv} -regexp {fwm_rerr_q} \
+      -comment "Will implement the interrupt later. Waive for now"
+waive -rules CONST_FF -location {spi_fwmode.sv} -regexp {'tx_state' is driven by constant one} \
+      -comment "Intentionally reset to TxIdle and assign TxActive else. For CPHA=1 mode"
+
+waive -rules TWO_STATE_TYPE -location {spi_device.sv} -regexp {'fwm_fifo_e' is of} \
+      -comment "Intended declaration"
+
+waive -rules ONE_BIT_MEM_WIDTH -location {spi_device.sv} -regexp {Memory 'fwm_sram_.*' has word} \
+      -comment "Intended implementation to make it consistent with other signals"
+
+waive -rules EXPLICIT_BITLEN -location {spi_*} -regexp {for constant '1'} \
+      -comment "Parameter subtract is fine"
+
+waive -rules INPUT_NOT_READ -location {spi_fwm_*xf_ctrl.sv} -regexp {Input port 'sram_error' is not read} \
+      -comment "Sram error protection is not yet implemented"
+waive -rules INPUT_NOT_READ -location {spi_fwmode.sv} -regexp {Input port 'mode_i' is not read} \
+      -comment "Only FwMode is used at this moment"
+
+waive -rules CONST_FF -location {spi_device.sv} -msg {Flip-flop 'fwm_rxerr_q' is driven by constant zero} \
+      -comment "This is an unimplemented error signal which is currently tied to 0."
+
+# async resets
+waive -rules RESET_DRIVER -location {spi_device.sv} -regexp {'rst_(spi|txfifo|rxfifo)_n' is driven here, and used as an asynchronous reset} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_MUX    -location {spi_device.sv} -regexp {Asynchronous reset 'rst_(spi|txfifo|rxfifo)_n' is driven by a multiplexer} \
+      -comment "The MUX is needed to control the reset during scanmode (scanmode_i == 1)"
+
+# clock inverter and muxes
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is driven by a multiplexer here, used as a clock 'clk_(out|src)_i'} \
+      -comment "The multiplexer is needed to bypass the clock inverter during testing"
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_(in|out)' is driven by a multiplexer here, used as a clock 'clk_(in|out|src)_i'} \
+      -comment "Thes multiplexers are needed to select between inverted and non-inverted clock based on configuration"
+
+#### INFO
+waive -rules VAR_INDEX -location {spi_fwm_rxf_ctrl.sv} -regexp {'byte_enable\[pos\]'} \
+      -comment "Flip-flop implemented"
+waive -rules VAR_INDEX -location {spi_fwm_rxf_ctrl.sv} -regexp {'sram_[wr]data.*'} \
+      -comment "Flip-flop implemented"
+waive -rules VAR_INDEX -location {spi_fwm_txf_ctrl.sv} -regexp {'fifo_wdata_d.*'} \
+      -comment "fifo_data_d is latched to fifo_data[7:0]"
+waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement tag not} \
+      -comment "Enum type is used for state machine"

@@ -1,0 +1,49 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for Platform-Level Interrupt Controller
+
+waive -rules {CONST_FF RESET_ONLY PARTIAL_CONST_ASSIGN} -location {hmac_core.sv} -regexp {txcount\[4:0\]} \
+      -comment "lower 32bits of message are aligned. So ignoring txcount for lower 5 bits"
+waive -rules {CONST_FF RESET_ONLY PARTIAL_CONST_ASSIGN} -location {sha2.sv} -regexp {processed_length\[8:0\]} \
+      -comment "lower 512bits of message are aligned. So ignoring txcount for lower 9 bits"
+waive -rules {CONST_FF RESET_ONLY PARTIAL_CONST_ASSIGN} -location {sha2_pad.sv} -regexp {tx_count\[4:0\]} \
+      -comment "lower 32bits of message are aligned. So ignoring txcount for lower 5 bits"
+waive -rules {NOT_READ HIER_NET_NOT_READ CONST_OUTPUT} -location {sha2_pad.sv sha2.sv} \
+      -regexp {padded_length\[8:0\]} \
+      -comment "lower 512bits of padded message are 0 (always aligned message)"
+
+waive -rules {EXPLICIT_BITLEN} -location {hmac_*.sv} \
+      -comment "Bit length is guarded by the assigned wire (64bit)"
+
+waive -rules {EXPLICIT_BITLEN} -location {sha2.sv} -regexp {.*(0|1)} \
+      -comment "Added or subtracted by 1"
+
+waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {hmac_core.sv sha2_pad.sv} -regexp {wipe_(secret|v)} \
+      -comment "Not used but remained for future use"
+
+waive -rules {NOT_READ} -location {*_reg_top.sv} -regexp {(address|param|user)} \
+      -comment "Register module waiver"
+
+# ARITH_CONTEXT
+waive -rules {ARITH_CONTEXT} -location {sha2.sv}     -regexp {Bitlength of arithmetic operation '.processed_length.63:9. \+ 1'b1.'} \
+      -comment "Bitwidth overflow is intended"
+waive -rules {ARITH_CONTEXT} -location {sha2_pad.sv} -regexp {Bitlength of arithmetic operation 'tx_count.63:5. \+ 2'd1'} \
+      -comment "Bitwidth overflow is intended"
+waive -rules {ARITH_CONTEXT} -location {sha2_pad.sv} -regexp {Bitlength of arithmetic operation 'message_length.63:9. \+ (1'b1|2'b10)'} \
+      -comment "Bitwidth overflow is intended"
+
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {hmac.sv} -regexp {msg_fifo_addr.* is not read} \
+      -comment "Ignore Address intentionally"
+
+waive -rules {INTEGER}        -location {hmac_pkg.sv} -regexp {'amt' of type int used as a}
+waive -rules {TWO_STATE_TYPE} -location {hmac_pkg.sv} -regexp {'amt' is of two state type 'int'} \
+      -comment "shift function behaves as static, it is called with constant in the design"
+
+waive -rules {INTEGER}        -location {tlul_socket_1n.sv} -regexp {'idx' of type int used} \
+      -comment "It compares with the signal and used as constant"
+
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {hmac.sv} -regexp {'msg_fifo_wmask.* is not read} \
+      -comment "Only first bit in a byte is used"
+

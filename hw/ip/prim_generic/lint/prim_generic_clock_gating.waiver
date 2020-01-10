@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# primitives: prim_clock_gating
+waive -rules LATCH                -location {prim_generic_clock_gating.sv} -regexp {'en_latch' is a latch} \
+      -comment "clock gating cell creates a latch"
+waive -rules COMBO_NBA            -location {prim_generic_clock_gating.sv} -regexp {Non-blocking assignment to 'en_latch'} \
+      -comment "clock gating cell creates a latch"

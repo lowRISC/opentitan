@@ -1,0 +1,18 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+# socket M:1
+waive -rules HIER_NET_NOT_READ -location {tlul_socket_m1.sv} -regexp {a_.* in module 'tlul_socket_1n'} \
+      -comment "request collateral is not used in \[N\] case, just for error response"
+waive -rules HIER_NET_NOT_READ -location {tlul_socket_m1.sv} -regexp {Net 'arb_data.a_valid' is not read from in module 'tlul_socket_m1'} \
+      -comment "valid is not used, it is assumed valid if it got into the arbiter"
+waive -rules HIER_NET_NOT_READ -location {tlul_socket_m1.sv} -regexp {Net 'arb_data.d_ready' is not read from in module 'tlul_socket_m1'} \
+      -comment "ready is not used, it is assumed valid if it got into the arbiter"
+waive -rules NOT_READ          -location {tlul_socket_m1.sv} -regexp {Signal 'arb_data.a_valid' is not read from in module 'tlul_socket_m1'} \
+      -comment "valid is not used, it is assumed valid if it got into the arbiter"
+waive -rules NOT_READ          -location {tlul_socket_m1.sv} -regexp {Signal 'arb_data.d_ready' is not read from in module 'tlul_socket_m1'} \
+      -comment "ready is not used, it is assumed valid if it got into the arbiter"
+

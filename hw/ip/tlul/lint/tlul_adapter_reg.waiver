@@ -1,0 +1,13 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+# Adapter (RegIF)
+waive -rules PARTIAL_CONST_ASSIGN -location {tlul_adapter_reg.sv} -regexp {rspop.*conditionally assigned a constant} \
+      -comment "makes the code more readable"
+waive -rules CONST_FF             -location {tlul_adapter_reg.sv} -regexp {rspop.*is driven by constant zeros} \
+      -comment "makes the code more readable"
+waive -rules INPUT_NOT_READ       -location {tlul_adapter_reg.sv} -regexp {Input port.*a_(address|param|user).*not read from} \
+      -comment "several TLUL signals are not used by register file"

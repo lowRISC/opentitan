@@ -1,0 +1,24 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+# socket 1:N
+waive -rules INVALID_COMPARE   -location {tlul_socket_1n.sv} -regexp {Comparison '.dev_select_t == NWD'.*can never be true} \
+      -comment "lint appears to be confused about the width expansion of NWD'(2)'"
+waive -rules MIXED_SIGN        -location {tlul_socket_1n.sv} -regexp {Unsigned operand .* and signed .NWD} \
+      -comment "is there a way to make NWD'(idx)' an unsigned operand?"
+waive -rules HIER_NET_NOT_READ -location {tlul_socket_1n.sv} -regexp {a_(address|data|mask|param|size|user.*)' in module 'tlul_socket_1n'} \
+      -comment "request collateral is not used in \[N\] case, just for error response"
+waive -rules NOT_READ          -location {tlul_socket_1n.sv} -regexp {'tl_t_p.a_ready' is not read from in module 'tlul_socket_1n'} \
+      -comment "a_ready not needed, goes into FIFO"
+waive -rules INTEGER           -location {tlul_socket_1n.sv} -msg {'idx' of type int used as a non-constant value} \
+      -comment "This compares int idx (signed) with a multibit logic variable (unsigned), which is fine"
+
+# err_rsp
+waive -rules INPUT_NOT_READ    -location {tlul_err_resp.sv} -regexp {Input port 'tl_h_i.a_.*' is not read from in module 'tlul_err_resp'} \
+      -comment "error response does not require command/address information"
+waive -rules CONST_OUTPUT      -location {tlul_err_resp.sv} -regexp {Output 'tl_h_o.d_.*' is driven by constant} \
+      -comment "error response hard codes reponse data collateral"
+

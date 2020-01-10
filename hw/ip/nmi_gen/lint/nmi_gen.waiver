@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for nmi_gen
+
+waive -rules HIER_NET_NOT_READ -location {nmi_gen_reg_top.sv} -regexp {Net 'reg_wdata.*' is not read from.*} \
+      -comment "Not all wdata bits are used in this module due to its configuration"
+waive -rules HIER_NET_NOT_READ -location {nmi_gen_reg_top.sv} -regexp {Net 'reg_be.*' is not read from.*} \
+      -comment "Not all wdata bits are used in this module due to its configuration"
+waive -rules NOT_READ -location {nmi_gen_reg_top.sv} -regexp {Signal 'reg_wdata.*' is not read from.*} \
+      -comment "Not all wdata bits are used in this module due to its configuration"
