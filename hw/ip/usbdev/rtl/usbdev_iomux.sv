@@ -134,7 +134,7 @@ module usbdev_iomux (
   //  USB input pin mux
   // ----------------------------------------------------------------
   always_comb begin : proc_mux_data_input
-    usb_rx_se0_o = (!usb_rx_dp) && !(usb_rx_dn);
+    usb_rx_se0_o = ~usb_rx_dp & ~usb_rx_dn;
 
     if (rx_differential_mode_i) begin
       // Differential RX mode

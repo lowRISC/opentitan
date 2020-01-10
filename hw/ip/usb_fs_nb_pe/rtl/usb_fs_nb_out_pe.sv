@@ -153,7 +153,7 @@ module usb_fs_nb_out_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      out_ep_setup_o <= 0;
+      out_ep_setup_o <= '0;
     end else begin
       if (setup_token_received) begin
         out_ep_setup_o[rx_endp_i[0 +: OutEpW]] <= 1; // lint: rx_endp_i range was checked
@@ -288,9 +288,9 @@ module usb_fs_nb_out_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      data_toggle_q <= {NumOutEps{1'b0}}; // All endpoints
+      data_toggle_q <= '0; // All endpoints
     end else if (link_reset_i) begin
-      data_toggle_q <= {NumOutEps{1'b0}}; // All endpoints
+      data_toggle_q <= '0; // All endpoints
     end else begin
       data_toggle_q <= data_toggle_d;
     end
@@ -299,7 +299,7 @@ module usb_fs_nb_out_pe #(
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_ep_newpkt_o       <= 1'b0;
-      out_ep_current_o      <= 4'h0;
+      out_ep_current_o      <= '0;
       current_xfer_setup_q  <= 1'b0;
     end else begin
       if (out_xfr_start) begin
@@ -346,12 +346,12 @@ module usb_fs_nb_out_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      out_ep_put_addr_o <= 0;
+      out_ep_put_addr_o <= '0;
     end else begin
       if (out_xfr_state == StRcvdOut) begin
-        out_ep_put_addr_o <= 0;
+        out_ep_put_addr_o <= '0;
       end else if ((out_xfr_state == StRcvdDataStart) && increment_addr) begin
-        out_ep_put_addr_o <= out_ep_put_addr_o + 1;
+        out_ep_put_addr_o <= out_ep_put_addr_o + 1'b1;
       end
     end
   end

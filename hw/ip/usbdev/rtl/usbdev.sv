@@ -280,7 +280,7 @@ module usbdev (
   );
 
   always_comb begin : proc_usb_data_toggle_clear
-    usb_data_toggle_clear = {NEndpoints{1'b0}};
+    usb_data_toggle_clear = '0;
     for (int i = 0; i < NEndpoints; i++) begin
       if (usb_data_toggle_clear_en) begin
         usb_data_toggle_clear[i] = reg2hw.data_toggle_clear[i].q; 
@@ -301,7 +301,7 @@ module usbdev (
   );
 
   always_comb begin
-    set_sentbit = {NEndpoints{1'b0}};
+    set_sentbit = '0;
     if (set_sent) begin
       // synchronization of set_sent ensures usb_endpoint is stable
       set_sentbit[usb_in_endpoint] = 1; // lint: usb_in_endpoint range was checked
@@ -381,8 +381,8 @@ module usbdev (
   end
 
   always_comb begin
-    clear_rdybit = {NEndpoints{1'b0}};
-    update_pend  = {NEndpoints{1'b0}};
+    clear_rdybit = '0;
+    update_pend  = '0;
     if (event_link_reset && !event_link_reset_q) begin
       clear_rdybit = {NEndpoints{1'b1}};
       update_pend  = {NEndpoints{1'b1}};
@@ -551,7 +551,7 @@ module usbdev (
     .src_pulse_i (usb_clr_devaddr),
     .dst_pulse_o (hw2reg.usbctrl.device_address.de)
   );
-  assign hw2reg.usbctrl.device_address.d = 0;
+  assign hw2reg.usbctrl.device_address.d = '0;
 
   // AV empty is a single pulse so needs pulsesync
   prim_pulse_sync sync_usb_event_av_empty (

@@ -130,9 +130,9 @@ module usb_fs_nb_in_pe #(
     rx_pkt_valid_i &&
     rx_pid == UsbPidAck;
 
-  assign more_data_to_send = in_ep_has_data_i[in_ep_index] && ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
+  assign more_data_to_send = in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
 
-  assign tx_data_avail_o = (in_xfr_state == StSendData) && more_data_to_send;
+  assign tx_data_avail_o = logic'(in_xfr_state == StSendData) & more_data_to_send;
 
   ////////////////////////////////////////////////////////////////////////////////
   // in transfer state machine
@@ -210,7 +210,7 @@ module usb_fs_nb_in_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      tx_data_o <= 0;
+      tx_data_o <= '0;
     end else begin
       tx_data_o <= in_ep_data_i;
     end
@@ -232,10 +232,10 @@ module usb_fs_nb_in_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      in_ep_get_addr_o <= {PktW{1'b0}};
+      in_ep_get_addr_o <= '0;
     end else begin
       if (in_xfr_state == StIdle) begin
-        in_ep_get_addr_o <= {PktW{1'b0}};
+        in_ep_get_addr_o <= '0;
       end else if ((in_xfr_state == StSendData) && tx_data_get_i) begin
         in_ep_get_addr_o <= in_ep_get_addr_o + 1'b1;
       end
@@ -245,7 +245,7 @@ module usb_fs_nb_in_pe #(
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_ep_newpkt_o <= 1'b0;
-      in_ep_current_o <= 4'h0;
+      in_ep_current_o <= '0;
     end else begin
       if (in_token_received) begin
         in_ep_current_o <= rx_endp_i;
@@ -271,9 +271,9 @@ module usb_fs_nb_in_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      data_toggle_q <= {NumInEps{1'b0}}; // Clear for all endpoints
+      data_toggle_q <= '0; // Clear for all endpoints
     end else if (link_reset_i) begin
-      data_toggle_q <= {NumInEps{1'b0}}; // Clear for all endpoints
+      data_toggle_q <= '0; // Clear for all endpoints
     end else begin
       data_toggle_q <= data_toggle_d;
     end

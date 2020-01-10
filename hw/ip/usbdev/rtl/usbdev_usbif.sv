@@ -91,7 +91,7 @@ module usbdev_usbif  #(
 
 
   // OUT or SETUP direction
-  logic [PktW:0]                     out_max_used_next, out_max_used;
+  logic [PktW:0]                     out_max_used_d, out_max_used_q;
   logic [PktW-1:0]                   out_ep_put_addr;
   logic [7:0]                        out_ep_data;
 
@@ -113,29 +113,29 @@ module usbdev_usbif  #(
 
   always_comb begin
     if (out_ep_acked || out_ep_rollback) begin
-      out_max_used_next = 0;
+      out_max_used_d = 0;
     end else if (out_ep_data_put) begin
-      // In the normal case <MaxPktSizeByte this is out_max_used <= out_ep_put_addr
-      // Following all ones out_max_used will get 1,00..00 and 1,00..01 to cover
+      // In the normal case <MaxPktSizeByte this is out_max_used_q <= out_ep_put_addr
+      // Following all ones out_max_used_q will get 1,00..00 and 1,00..01 to cover
       // one and two bytes of the CRC overflowing, then stick at 1,00..01
 
       // TODO: This code should be re-written to be more human-readable, in the
       // current state is hard to understand or verify
-      out_max_used_next[0] = (out_max_used[PktW] & out_max_used[0]) ? 1'b1 : out_ep_put_addr[0];
-      out_max_used_next[PktW - 1: 1] = out_max_used[PktW] ? '0 : out_ep_put_addr[PktW - 1:1];
-      out_max_used_next[PktW] = (&out_max_used[PktW - 1:0]) | out_max_used[PktW];
+      out_max_used_d[0] = (out_max_used_q[PktW] & out_max_used_q[0]) ? 1'b1 : out_ep_put_addr[0];
+      out_max_used_d[PktW - 1: 1] = out_max_used_q[PktW] ? '0 : out_ep_put_addr[PktW - 1:1];
+      out_max_used_d[PktW] = (&out_max_used_q[PktW - 1:0]) | out_max_used_q[PktW];
     end else begin
-      out_max_used_next = out_max_used;
+      out_max_used_d = out_max_used_q;
     end
   end // always_comb
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      out_max_used <= {PktW+1{1'b0}};
-      wdata        <= {32{1'b0}};
-      std_write    <= 1'b0;
+      out_max_used_q <= '0;
+      wdata          <= '0;
+      std_write      <= 1'b0;
     end else begin
-      out_max_used <= out_max_used_next;
+      out_max_used_q <= out_max_used_d;
       if (out_ep_data_put) begin
         case (out_ep_put_addr[1:0])
           0: begin
@@ -152,7 +152,7 @@ module usbdev_usbif  #(
           end
         endcase
         // don't write if the address has wrapped (happens for two CRC bytes after max data)
-        if (!out_max_used[PktW] && (out_ep_put_addr[1:0] == 2'b11)) begin
+        if (!out_max_used_q[PktW] && (out_ep_put_addr[1:0] == 2'b11)) begin
           std_write <= 1'b1;
         end else begin
           std_write <= 1'b0;
@@ -165,8 +165,8 @@ module usbdev_usbif  #(
 
   // need extra write at end if packet not multiple of 4 bytes
   assign mem_write_o = std_write |
-                       (~out_max_used[PktW] & (out_max_used[1:0] != 2'b11) & out_ep_acked);
-  assign mem_waddr = {av_rdata_i, out_max_used[PktW-1:2]};
+                       (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked);
+  assign mem_waddr = {av_rdata_i, out_max_used_q[PktW-1:2]};
   assign mem_wdata_o = wdata;
   assign mem_addr_o = mem_write_o ? mem_waddr : mem_raddr;
   assign mem_req_o = mem_read | mem_write_o;
@@ -174,7 +174,7 @@ module usbdev_usbif  #(
 
   logic [PktW:0] out_max_minus1;
   // -2 for CRC bytes but +1 for zero-based address to size
-  assign out_max_minus1 = out_max_used - 1;
+  assign out_max_minus1 = out_max_used_q - 1;
 
   assign rx_wdata_o = {
       out_ep_current,
@@ -219,7 +219,7 @@ module usbdev_usbif  #(
   // Note: this does the correct thing for sending zero length packets
   assign in_data_done = {1'b0, in_ep_get_addr} == in_size_i;
   always_comb begin
-    in_ep_data_done = {NEndpoints{1'b0}};
+    in_ep_data_done = '0;
     in_ep_data_done[in_endpoint_o] = in_data_done;  // lint: in_endpoint_o range was checked
   end
 
@@ -307,12 +307,12 @@ module usbdev_usbif  #(
   assign us_tick = (ns_cnt == 6'd48);
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      ns_cnt <= 0;
+      ns_cnt <= '0;
     end else begin
       if (us_tick) begin
-        ns_cnt <= 0;
+        ns_cnt <= '0;
       end else begin
-        ns_cnt <= ns_cnt + 1;
+        ns_cnt <= ns_cnt + 1'b1;
       end
     end
   end
@@ -320,7 +320,7 @@ module usbdev_usbif  #(
   // Capture frame number (host sends evert 1ms)
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      frame_o <= 0;
+      frame_o <= '0;
     end else begin
       if (sof_valid) begin
         frame_o <= frame_index_raw;

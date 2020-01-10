@@ -113,7 +113,7 @@ module usb_fs_nb_pe #(
   logic usb_oe;
 
   // sof interface
-  assign sof_valid_o = rx_pkt_end && rx_pkt_valid && (usb_pid_e'(rx_pid) == UsbPidSof);
+  assign sof_valid_o = rx_pkt_end & rx_pkt_valid & (usb_pid_e'(rx_pid) == UsbPidSof);
   assign frame_index_o = rx_frame_num;
   assign usb_oe_o = usb_oe;
 

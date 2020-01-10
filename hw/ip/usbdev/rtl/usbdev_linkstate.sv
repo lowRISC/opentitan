@@ -304,12 +304,12 @@ module usbdev_linkstate (
   assign host_lost_o = host_presence_timer[12];
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      host_presence_timer <= 0;
+      host_presence_timer <= '0;
     end else begin
       if (sof_valid_i || !link_active || link_reset) begin
-        host_presence_timer <= 0;
+        host_presence_timer <= '0;
       end else if (us_tick_i && !host_lost_o) begin
-        host_presence_timer <= host_presence_timer + 1;
+        host_presence_timer <= host_presence_timer + 1'b1;
       end
     end
   end
