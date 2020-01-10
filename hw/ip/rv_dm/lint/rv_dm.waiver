@@ -1,0 +1,77 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for rv_dm lint
+
+# dmi_jtag_tap
+waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock 'tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \
+      -comment "This is permissible for now, but should be revised as soon as ASIC targets come into play."
+waive -rules INV_CLOCK -location {dmi_jtag_tap.sv} -regexp {'tck_i' is inverted, used as clock at dmi_jtag_tap.sv} \
+      -comment "This is permissible for now, but should be revised as soon as ASIC targets come into play."
+
+# dm_csrs
+waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'dmcontrol_q.*' is driven by constant zero} \
+      -comment "Parts of this struct are constantly set to zero."
+waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'abstractauto_q.*' is driven by constant zero.} \
+      -comment "Parts of this struct are constantly set to zero."
+waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbaccess(8|16|64|128|\[17\]|\[19\])' is driven by constant zero} \
+      -comment "Parts of this struct are constantly set to zero."
+      waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbasize\[(9:5|11)\]' is driven by constant zero} \
+      -comment "Parts of this struct are constantly set to zero."
+      waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbversion\[31:30\]' is driven by constant zero.} \
+      -comment "Parts of this struct are constantly set to zero."
+waive -rules CASE_SEL_EXPR -location {dm_csrs.sv} -regexp {Expression 'dm::dm_csr_e.*as case selector} \
+      -comment "acceptable use"
+waive -rules NOT_READ -location {dm_csrs.sv} -regexp {Signal 'dmcontrol.(clrresethaltreq|dmactive|haltreq|hartreset|hartselhi|hartsello|hasel|ndmreset|resumereq|setresethaltreq|zero[0-1])' is not read from} \
+      -comment "These signals are not needed by dm_csrs module"
+waive -rules NOT_READ -location {dm_csrs.sv} -regexp {Signal 'a_abstractcs.(busy|datacount|progbufsize|zero[0-3])' is not read from} \
+      -comment "These signals are not needed by dm_csrs module"
+
+# dm_mem
+waive -rules INPUT_NOT_READ -location {dm_mem.sv} -regexp {Input port 'hartsel_i\[19:1\]' is not read from.*} \
+      -comment "These bits are not used since the system has only one hart."
+waive -rules ARITH_CONTEXT -location {dm_mem.sv} -regexp {Bitlength.*DbgAddressBits.*self-determined} \
+      -comment "should be no concern about loss of bit accuracy"
+waive -rules ONE_BRANCH    -location {dm_mem.sv} -regexp {unique case statement has only one branch} \
+      -comment "easier to write this way for extendability"
+waive -rules NOT_READ -location {dm_mem.sv} -regexp {Signal 'ac_ar.(regno.13.|zero1)' is not read from in module 'dm_mem'} \
+      -comment "These bits and fields are not used, but all other bits and fields are used"
+
+# tlul_adapter_host
+waive -rules HIER_BRANCH_NOT_READ -location {tlul_adapter_host.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module 'tlul_adapter_host'} \
+      -comment "These 2 signals are only used by assertions"
+waive -rules INPUT_NOT_READ       -location {tlul_adapter_host.sv} -regexp {Input port 'tl_i.d_(error|opcode|param|sink|size|source|user)' is not read from} \
+      -comment "Not all fields of response needed"
+waive -rules HIER_NET_NOT_READ -location {rv_dm.sv} -regexp {Connected net 'tl_i.d_(error|opcode|param|sink|size|source|user).*' at tlul_adapter_host.* is not read from} \
+      -comment "Not all fields of response needed"
+
+# dm_sba
+waive -rules HIER_BRANCH_NOT_READ  -location {dm_sba.sv}            -regexp {Net 'dmactive_i' is not read from in module 'dm_sba'} \
+      -comment "This signal is only used in an assertion"
+waive -rules INPUT_NOT_READ        -location {dm_sba.sv}            -regexp {Input port 'dmactive_i' is not read from in module 'dm_sba'} \
+      -comment "This input is only used by an assertion"
+
+# dm_pkg
+waive -rules INPUT_NOT_READ -location {dm_pkg.sv} -regexp {Input port 'imm.0.' is not read from in function '(jal|auipc)'} \
+      -comment "These functions use all bits of input imm, except for bit 0"
+
+# debug_rom and dm_mem
+waive -rules INPUT_NOT_READ -location {debug_rom.sv} -regexp {Input port 'addr_i.(2:0|63:8).' is not read from in module 'debug_rom'} \
+      -comment "These bits are not used, but the remaining address bits are used"
+waive -rules HIER_NET_NOT_READ -location {dm_mem.sv} -regexp {Connected net 'addr_i.(2:0|31:8).' at debug_rom.sv} \
+      -comment "These bits are not used, but the remaining address bits are used"
+
+# rv_dm
+waive -rules HIER_NET_NOT_READ -location {rv_dm.sv} -regexp {Net 'hartsel\[19:1\]' in module 'rv_dm'} \
+      -comment "These bits are not used since the system has only one hart."
+# dmi_jtag
+waive -rules HIER_NET_NOT_READ -location {dmi_jtag.sv} -regexp {Net 'dmi_resp.resp' is not read from in module 'dmi_jtag'} \
+      -comment "This part of the struct is not read from within this module."
+# dmi_jtag
+waive -rules NOT_READ -location {dmi_jtag.sv} -regexp {Signal 'dmi_resp.resp' is not read from in module 'dmi_jtag'} \
+      -comment "This part of the struct is not read from within this module."
+
+# tlul_adapter_host
+waive -rules INPUT_NOT_READ -location {tlul_adapter_host.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module 'tlul_adapter_host'} \
+      -comment "The clock and reset signals are only used inside an assertion in this module"

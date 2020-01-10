@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_generic_pad_wrapper
+# note that this code is NOT synthesizable and meant for sim only
+
+waive -rules TRI_DRIVER -regexp {'inout_io' is driven by a tristate driver} -location {prim_generic_pad_wrapper.sv} \
+      -comment "This is a bidirectional pad inout."
+waive -rules MULTI_DRIVEN -regexp {.* drivers on 'inout_io' here} -location {prim_generic_pad_wrapper.sv} \
+      -comment "The pad simulation model has multiple drivers to emulate different IO terminations."
+waive -rules SELF_ASSIGN -regexp {LHS signal 'inout_io' encountered on the RHS of a continuous assignment statement} -location {prim_generic_pad_wrapper.sv} \
+      -comment "This implements a keeper termination (it's basically an explicit TRIREG)"
+waive -rules DRIVE_STRENGTH -regexp {Drive strength .* encountered on assignment to 'inout_io'} -location {prim_generic_pad_wrapper.sv} \
+      -comment "The pad simulation model uses driving strength attributes to emulate different IO terminations."
+waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i\[.:6\]' is not read from} -location {prim_generic_pad_wrapper.sv}\
+      -comment "Some IO attributes may not be implemented."

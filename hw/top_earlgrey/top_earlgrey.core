@@ -47,11 +47,27 @@ filesets:
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_earlgrey.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_earlgrey.waiver
+    file_type: waiver
+
+
 parameters:
   SYNTHESIS:
-    datatype: bool
-    paramtype: vlogdefine
-  ASIC_SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
@@ -61,13 +77,17 @@ parameters:
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
     default: prim_pkg::ImplGeneric
 
+
 targets:
   default: &default_target
     filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl_generic
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_earlgrey
+
   sim:
     default_tool: icarus
     filesets:
@@ -75,3 +95,14 @@ targets:
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_earlgrey
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_generic_rom
+
+waive -rules NOT_DRIVEN  -location {prim_generic_rom.sv} -regexp {Signal 'mem' has no driver in module 'prim_generic_rom'} \
+      -comment "since this is a ROM, the signal mem has no driver, but it is populated using an initialization file"
+

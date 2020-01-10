@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+# sram2tlul
+waive -rules CONST_OUTPUT -location {sram2tlul.sv} -regexp {Output 'tl_o\.[ad]_.*' is driven by constant} \
+      -comment "Outputs are fixed value for TL-UL converter"
+waive -rules HIER_BRANCH_NOT_READ -location {sram2tlul.sv} -regexp {Net '(clk_i|rst_ni)' is not read from} \
+      -comment "Leaving clock and reset port for next update, looking at TL-UL ready signal"
+waive -rules INPUT_NOT_READ -location {sram2tlul.sv} -regexp {Input.*'(clk_i|rst_ni)' is not read} \
+      -comment "leaving clock and reset in converter for future use, handling a_ready"
+waive -rules INPUT_NOT_READ -location {sram2tlul.sv} -regexp {Input.*'tl_i\.[ad]_(ready|param|sink|size|source|user.*)' is not read} \
+      -comment "Those values are not checked by SRAM TL-UL adapter"
+

@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for common TLUL elements
+
+# TLUL Error
+waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ INPUT_NOT_READ NOT_READ PARAM_NOT_USED} -location {tlul_err.sv} \
+      -comment "All error checkings are comb logic and only portion of signals are used"
+waive -rules {ASSIGN_SIGN} -location {tlul_err.sv} -regexp {Unsigned target 'mask'} \
+      -comment "Waive for readability"
+waive -rules {HIER_NET_NOT_READ} -regexp {Connected net 'tl_i.a_(address|param|user).*in module 'tlul_err'} \
+      -comment "unused signal is back-propagated to the instance"
+
+# TODO: move this into the top-level waiver file
+## xbar
+#waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \
+#      -comment "upper bits of a_source are shifted off when going through M:1 sockets"
+#
+#waive -rules LINE_LENGTH -location {xbar_main.sv} -regexp {Line length of .* exceeds 100 character limit} \
+#      -comment "This is a generated file and it is hence permissible to have line lengths that exceed this limit"

@@ -11,8 +11,26 @@ filesets:
       - rtl/prim_generic_flash.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_generic_flash.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_generic_flash.waiver
+    file_type: waiver
+
+
 targets:
-  default: &default_target
+  default:
     filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
-    toplevel: prim_generic_flash

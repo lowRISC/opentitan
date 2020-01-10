@@ -14,8 +14,44 @@ filesets:
       - rtl/tlul_adapter_sram.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/tlul_adapter_sram.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/tlul_adapter_sram.waiver
+    file_type: waiver
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
 targets:
   default: &default_target
     filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
     toplevel: tlul_adapter_sram
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
