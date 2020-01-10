@@ -145,6 +145,21 @@ module usbdev_reg_top (
   logic intr_state_av_overflow_qs;
   logic intr_state_av_overflow_wd;
   logic intr_state_av_overflow_we;
+  logic intr_state_link_in_err_qs;
+  logic intr_state_link_in_err_wd;
+  logic intr_state_link_in_err_we;
+  logic intr_state_rx_crc_err_qs;
+  logic intr_state_rx_crc_err_wd;
+  logic intr_state_rx_crc_err_we;
+  logic intr_state_rx_pid_err_qs;
+  logic intr_state_rx_pid_err_wd;
+  logic intr_state_rx_pid_err_we;
+  logic intr_state_rx_bitstuff_err_qs;
+  logic intr_state_rx_bitstuff_err_wd;
+  logic intr_state_rx_bitstuff_err_we;
+  logic intr_state_frame_qs;
+  logic intr_state_frame_wd;
+  logic intr_state_frame_we;
   logic intr_enable_pkt_received_qs;
   logic intr_enable_pkt_received_wd;
   logic intr_enable_pkt_received_we;
@@ -175,6 +190,21 @@ module usbdev_reg_top (
   logic intr_enable_av_overflow_qs;
   logic intr_enable_av_overflow_wd;
   logic intr_enable_av_overflow_we;
+  logic intr_enable_link_in_err_qs;
+  logic intr_enable_link_in_err_wd;
+  logic intr_enable_link_in_err_we;
+  logic intr_enable_rx_crc_err_qs;
+  logic intr_enable_rx_crc_err_wd;
+  logic intr_enable_rx_crc_err_we;
+  logic intr_enable_rx_pid_err_qs;
+  logic intr_enable_rx_pid_err_wd;
+  logic intr_enable_rx_pid_err_we;
+  logic intr_enable_rx_bitstuff_err_qs;
+  logic intr_enable_rx_bitstuff_err_wd;
+  logic intr_enable_rx_bitstuff_err_we;
+  logic intr_enable_frame_qs;
+  logic intr_enable_frame_wd;
+  logic intr_enable_frame_we;
   logic intr_test_pkt_received_wd;
   logic intr_test_pkt_received_we;
   logic intr_test_pkt_sent_wd;
@@ -195,6 +225,16 @@ module usbdev_reg_top (
   logic intr_test_rx_full_we;
   logic intr_test_av_overflow_wd;
   logic intr_test_av_overflow_we;
+  logic intr_test_link_in_err_wd;
+  logic intr_test_link_in_err_we;
+  logic intr_test_rx_crc_err_wd;
+  logic intr_test_rx_crc_err_we;
+  logic intr_test_rx_pid_err_wd;
+  logic intr_test_rx_pid_err_we;
+  logic intr_test_rx_bitstuff_err_wd;
+  logic intr_test_rx_bitstuff_err_we;
+  logic intr_test_frame_wd;
+  logic intr_test_frame_we;
   logic usbctrl_enable_qs;
   logic usbctrl_enable_wd;
   logic usbctrl_enable_we;
@@ -205,7 +245,7 @@ module usbdev_reg_top (
   logic usbstat_frame_re;
   logic usbstat_host_lost_qs;
   logic usbstat_host_lost_re;
-  logic [1:0] usbstat_link_state_qs;
+  logic [2:0] usbstat_link_state_qs;
   logic usbstat_link_state_re;
   logic usbstat_usb_sense_qs;
   logic usbstat_usb_sense_re;
@@ -515,6 +555,81 @@ module usbdev_reg_top (
   logic configin11_rdy11_qs;
   logic configin11_rdy11_wd;
   logic configin11_rdy11_we;
+  logic iso_iso0_qs;
+  logic iso_iso0_wd;
+  logic iso_iso0_we;
+  logic iso_iso1_qs;
+  logic iso_iso1_wd;
+  logic iso_iso1_we;
+  logic iso_iso2_qs;
+  logic iso_iso2_wd;
+  logic iso_iso2_we;
+  logic iso_iso3_qs;
+  logic iso_iso3_wd;
+  logic iso_iso3_we;
+  logic iso_iso4_qs;
+  logic iso_iso4_wd;
+  logic iso_iso4_we;
+  logic iso_iso5_qs;
+  logic iso_iso5_wd;
+  logic iso_iso5_we;
+  logic iso_iso6_qs;
+  logic iso_iso6_wd;
+  logic iso_iso6_we;
+  logic iso_iso7_qs;
+  logic iso_iso7_wd;
+  logic iso_iso7_we;
+  logic iso_iso8_qs;
+  logic iso_iso8_wd;
+  logic iso_iso8_we;
+  logic iso_iso9_qs;
+  logic iso_iso9_wd;
+  logic iso_iso9_we;
+  logic iso_iso10_qs;
+  logic iso_iso10_wd;
+  logic iso_iso10_we;
+  logic iso_iso11_qs;
+  logic iso_iso11_wd;
+  logic iso_iso11_we;
+  logic data_toggle_clear_clear0_wd;
+  logic data_toggle_clear_clear0_we;
+  logic data_toggle_clear_clear1_wd;
+  logic data_toggle_clear_clear1_we;
+  logic data_toggle_clear_clear2_wd;
+  logic data_toggle_clear_clear2_we;
+  logic data_toggle_clear_clear3_wd;
+  logic data_toggle_clear_clear3_we;
+  logic data_toggle_clear_clear4_wd;
+  logic data_toggle_clear_clear4_we;
+  logic data_toggle_clear_clear5_wd;
+  logic data_toggle_clear_clear5_we;
+  logic data_toggle_clear_clear6_wd;
+  logic data_toggle_clear_clear6_we;
+  logic data_toggle_clear_clear7_wd;
+  logic data_toggle_clear_clear7_we;
+  logic data_toggle_clear_clear8_wd;
+  logic data_toggle_clear_clear8_we;
+  logic data_toggle_clear_clear9_wd;
+  logic data_toggle_clear_clear9_we;
+  logic data_toggle_clear_clear10_wd;
+  logic data_toggle_clear_clear10_we;
+  logic data_toggle_clear_clear11_wd;
+  logic data_toggle_clear_clear11_we;
+  logic phy_config_rx_differential_mode_qs;
+  logic phy_config_rx_differential_mode_wd;
+  logic phy_config_rx_differential_mode_we;
+  logic phy_config_tx_differential_mode_qs;
+  logic phy_config_tx_differential_mode_wd;
+  logic phy_config_tx_differential_mode_we;
+  logic phy_config_eop_single_bit_qs;
+  logic phy_config_eop_single_bit_wd;
+  logic phy_config_eop_single_bit_we;
+  logic phy_config_override_pwr_sense_en_qs;
+  logic phy_config_override_pwr_sense_en_wd;
+  logic phy_config_override_pwr_sense_en_we;
+  logic phy_config_override_pwr_sense_val_qs;
+  logic phy_config_override_pwr_sense_val_wd;
+  logic phy_config_override_pwr_sense_val_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -776,6 +891,136 @@ module usbdev_reg_top (
 
     // to register interface (read)
     .qs     (intr_state_av_overflow_qs)
+  );
+
+
+  //   F[link_in_err]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_link_in_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_link_in_err_we),
+    .wd     (intr_state_link_in_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.link_in_err.de),
+    .d      (hw2reg.intr_state.link_in_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.link_in_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_link_in_err_qs)
+  );
+
+
+  //   F[rx_crc_err]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_crc_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_crc_err_we),
+    .wd     (intr_state_rx_crc_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_crc_err.de),
+    .d      (hw2reg.intr_state.rx_crc_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_crc_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_crc_err_qs)
+  );
+
+
+  //   F[rx_pid_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_pid_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_pid_err_we),
+    .wd     (intr_state_rx_pid_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_pid_err.de),
+    .d      (hw2reg.intr_state.rx_pid_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_pid_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_pid_err_qs)
+  );
+
+
+  //   F[rx_bitstuff_err]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_bitstuff_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_bitstuff_err_we),
+    .wd     (intr_state_rx_bitstuff_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_bitstuff_err.de),
+    .d      (hw2reg.intr_state.rx_bitstuff_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_bitstuff_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_bitstuff_err_qs)
+  );
+
+
+  //   F[frame]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_frame (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_frame_we),
+    .wd     (intr_state_frame_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.frame.de),
+    .d      (hw2reg.intr_state.frame.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.frame.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_frame_qs)
   );
 
 
@@ -1041,6 +1286,136 @@ module usbdev_reg_top (
   );
 
 
+  //   F[link_in_err]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_link_in_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_link_in_err_we),
+    .wd     (intr_enable_link_in_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.link_in_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_link_in_err_qs)
+  );
+
+
+  //   F[rx_crc_err]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_crc_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_crc_err_we),
+    .wd     (intr_enable_rx_crc_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_crc_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_crc_err_qs)
+  );
+
+
+  //   F[rx_pid_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_pid_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_pid_err_we),
+    .wd     (intr_enable_rx_pid_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_pid_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_pid_err_qs)
+  );
+
+
+  //   F[rx_bitstuff_err]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_bitstuff_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_bitstuff_err_we),
+    .wd     (intr_enable_rx_bitstuff_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_bitstuff_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_bitstuff_err_qs)
+  );
+
+
+  //   F[frame]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_frame (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_frame_we),
+    .wd     (intr_enable_frame_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.frame.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_frame_qs)
+  );
+
+
   // R[intr_test]: V(True)
 
   //   F[pkt_received]: 0:0
@@ -1193,6 +1568,81 @@ module usbdev_reg_top (
   );
 
 
+  //   F[link_in_err]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_link_in_err (
+    .re     (1'b0),
+    .we     (intr_test_link_in_err_we),
+    .wd     (intr_test_link_in_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.link_in_err.qe),
+    .q      (reg2hw.intr_test.link_in_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_crc_err]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_crc_err (
+    .re     (1'b0),
+    .we     (intr_test_rx_crc_err_we),
+    .wd     (intr_test_rx_crc_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_crc_err.qe),
+    .q      (reg2hw.intr_test.rx_crc_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_pid_err]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_pid_err (
+    .re     (1'b0),
+    .we     (intr_test_rx_pid_err_we),
+    .wd     (intr_test_rx_pid_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_pid_err.qe),
+    .q      (reg2hw.intr_test.rx_pid_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_bitstuff_err]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_bitstuff_err (
+    .re     (1'b0),
+    .we     (intr_test_rx_bitstuff_err_we),
+    .wd     (intr_test_rx_bitstuff_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_bitstuff_err.qe),
+    .q      (reg2hw.intr_test.rx_bitstuff_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[frame]: 14:14
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_frame (
+    .re     (1'b0),
+    .we     (intr_test_frame_we),
+    .wd     (intr_test_frame_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.frame.qe),
+    .q      (reg2hw.intr_test.frame.q ),
+    .qs     ()
+  );
+
+
   // R[usbctrl]: V(False)
 
   //   F[enable]: 0:0
@@ -1279,9 +1729,9 @@ module usbdev_reg_top (
   );
 
 
-  //   F[link_state]: 13:12
+  //   F[link_state]: 14:12
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_usbstat_link_state (
     .re     (usbstat_link_state_re),
     .we     (1'b0),
@@ -1294,7 +1744,7 @@ module usbdev_reg_top (
   );
 
 
-  //   F[usb_sense]: 14:14
+  //   F[usb_sense]: 15:15
   prim_subreg_ext #(
     .DW    (1)
   ) u_usbstat_usb_sense (
@@ -2426,8 +2876,8 @@ module usbdev_reg_top (
     .wd     (stall_stall0_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[0].de),
+    .d      (hw2reg.stall[0].d ),
 
     // to internal hardware
     .qe     (),
@@ -2452,8 +2902,8 @@ module usbdev_reg_top (
     .wd     (stall_stall1_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[1].de),
+    .d      (hw2reg.stall[1].d ),
 
     // to internal hardware
     .qe     (),
@@ -2478,8 +2928,8 @@ module usbdev_reg_top (
     .wd     (stall_stall2_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[2].de),
+    .d      (hw2reg.stall[2].d ),
 
     // to internal hardware
     .qe     (),
@@ -2504,8 +2954,8 @@ module usbdev_reg_top (
     .wd     (stall_stall3_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[3].de),
+    .d      (hw2reg.stall[3].d ),
 
     // to internal hardware
     .qe     (),
@@ -2530,8 +2980,8 @@ module usbdev_reg_top (
     .wd     (stall_stall4_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[4].de),
+    .d      (hw2reg.stall[4].d ),
 
     // to internal hardware
     .qe     (),
@@ -2556,8 +3006,8 @@ module usbdev_reg_top (
     .wd     (stall_stall5_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[5].de),
+    .d      (hw2reg.stall[5].d ),
 
     // to internal hardware
     .qe     (),
@@ -2582,8 +3032,8 @@ module usbdev_reg_top (
     .wd     (stall_stall6_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[6].de),
+    .d      (hw2reg.stall[6].d ),
 
     // to internal hardware
     .qe     (),
@@ -2608,8 +3058,8 @@ module usbdev_reg_top (
     .wd     (stall_stall7_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[7].de),
+    .d      (hw2reg.stall[7].d ),
 
     // to internal hardware
     .qe     (),
@@ -2634,8 +3084,8 @@ module usbdev_reg_top (
     .wd     (stall_stall8_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[8].de),
+    .d      (hw2reg.stall[8].d ),
 
     // to internal hardware
     .qe     (),
@@ -2660,8 +3110,8 @@ module usbdev_reg_top (
     .wd     (stall_stall9_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[9].de),
+    .d      (hw2reg.stall[9].d ),
 
     // to internal hardware
     .qe     (),
@@ -2686,8 +3136,8 @@ module usbdev_reg_top (
     .wd     (stall_stall10_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[10].de),
+    .d      (hw2reg.stall[10].d ),
 
     // to internal hardware
     .qe     (),
@@ -2712,8 +3162,8 @@ module usbdev_reg_top (
     .wd     (stall_stall11_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stall[11].de),
+    .d      (hw2reg.stall[11].d ),
 
     // to internal hardware
     .qe     (),
@@ -4012,8 +4462,762 @@ module usbdev_reg_top (
 
 
 
+  // Subregister 0 of Multireg iso
+  // R[iso]: V(False)
 
-  logic [22:0] addr_hit;
+  // F[iso0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso0_we),
+    .wd     (iso_iso0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[0].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso0_qs)
+  );
+
+
+  // F[iso1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso1_we),
+    .wd     (iso_iso1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[1].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso1_qs)
+  );
+
+
+  // F[iso2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso2_we),
+    .wd     (iso_iso2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[2].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso2_qs)
+  );
+
+
+  // F[iso3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso3_we),
+    .wd     (iso_iso3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[3].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso3_qs)
+  );
+
+
+  // F[iso4]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso4_we),
+    .wd     (iso_iso4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[4].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso4_qs)
+  );
+
+
+  // F[iso5]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso5_we),
+    .wd     (iso_iso5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[5].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso5_qs)
+  );
+
+
+  // F[iso6]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso6_we),
+    .wd     (iso_iso6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[6].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso6_qs)
+  );
+
+
+  // F[iso7]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso7_we),
+    .wd     (iso_iso7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[7].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso7_qs)
+  );
+
+
+  // F[iso8]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso8 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso8_we),
+    .wd     (iso_iso8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[8].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso8_qs)
+  );
+
+
+  // F[iso9]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso9 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso9_we),
+    .wd     (iso_iso9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[9].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso9_qs)
+  );
+
+
+  // F[iso10]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso10 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso10_we),
+    .wd     (iso_iso10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[10].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso10_qs)
+  );
+
+
+  // F[iso11]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_iso_iso11 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (iso_iso11_we),
+    .wd     (iso_iso11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.iso[11].q ),
+
+    // to register interface (read)
+    .qs     (iso_iso11_qs)
+  );
+
+
+
+
+  // Subregister 0 of Multireg data_toggle_clear
+  // R[data_toggle_clear]: V(False)
+
+  // F[clear0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear0_we),
+    .wd     (data_toggle_clear_clear0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[0].qe),
+    .q      (reg2hw.data_toggle_clear[0].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear1_we),
+    .wd     (data_toggle_clear_clear1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[1].qe),
+    .q      (reg2hw.data_toggle_clear[1].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear2_we),
+    .wd     (data_toggle_clear_clear2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[2].qe),
+    .q      (reg2hw.data_toggle_clear[2].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear3_we),
+    .wd     (data_toggle_clear_clear3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[3].qe),
+    .q      (reg2hw.data_toggle_clear[3].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear4]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear4_we),
+    .wd     (data_toggle_clear_clear4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[4].qe),
+    .q      (reg2hw.data_toggle_clear[4].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear5]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear5_we),
+    .wd     (data_toggle_clear_clear5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[5].qe),
+    .q      (reg2hw.data_toggle_clear[5].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear6]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear6_we),
+    .wd     (data_toggle_clear_clear6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[6].qe),
+    .q      (reg2hw.data_toggle_clear[6].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear7]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear7_we),
+    .wd     (data_toggle_clear_clear7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[7].qe),
+    .q      (reg2hw.data_toggle_clear[7].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear8]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear8 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear8_we),
+    .wd     (data_toggle_clear_clear8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[8].qe),
+    .q      (reg2hw.data_toggle_clear[8].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear9]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear9 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear9_we),
+    .wd     (data_toggle_clear_clear9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[9].qe),
+    .q      (reg2hw.data_toggle_clear[9].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear10]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear10 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear10_we),
+    .wd     (data_toggle_clear_clear10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[10].qe),
+    .q      (reg2hw.data_toggle_clear[10].q ),
+
+    .qs     ()
+  );
+
+
+  // F[clear11]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_data_toggle_clear_clear11 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (data_toggle_clear_clear11_we),
+    .wd     (data_toggle_clear_clear11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.data_toggle_clear[11].qe),
+    .q      (reg2hw.data_toggle_clear[11].q ),
+
+    .qs     ()
+  );
+
+
+
+  // R[phy_config]: V(False)
+
+  //   F[rx_differential_mode]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_config_rx_differential_mode (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_config_rx_differential_mode_we),
+    .wd     (phy_config_rx_differential_mode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.rx_differential_mode.q ),
+
+    // to register interface (read)
+    .qs     (phy_config_rx_differential_mode_qs)
+  );
+
+
+  //   F[tx_differential_mode]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_config_tx_differential_mode (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_config_tx_differential_mode_we),
+    .wd     (phy_config_tx_differential_mode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.tx_differential_mode.q ),
+
+    // to register interface (read)
+    .qs     (phy_config_tx_differential_mode_qs)
+  );
+
+
+  //   F[eop_single_bit]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_phy_config_eop_single_bit (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_config_eop_single_bit_we),
+    .wd     (phy_config_eop_single_bit_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.eop_single_bit.q ),
+
+    // to register interface (read)
+    .qs     (phy_config_eop_single_bit_qs)
+  );
+
+
+  //   F[override_pwr_sense_en]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_config_override_pwr_sense_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_config_override_pwr_sense_en_we),
+    .wd     (phy_config_override_pwr_sense_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.override_pwr_sense_en.q ),
+
+    // to register interface (read)
+    .qs     (phy_config_override_pwr_sense_en_qs)
+  );
+
+
+  //   F[override_pwr_sense_val]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_config_override_pwr_sense_val (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_config_override_pwr_sense_val_we),
+    .wd     (phy_config_override_pwr_sense_val_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.override_pwr_sense_val.q ),
+
+    // to register interface (read)
+    .qs     (phy_config_override_pwr_sense_val_qs)
+  );
+
+
+
+
+  logic [25:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
@@ -4039,6 +5243,9 @@ module usbdev_reg_top (
     addr_hit[20] = (reg_addr == USBDEV_CONFIGIN9_OFFSET);
     addr_hit[21] = (reg_addr == USBDEV_CONFIGIN10_OFFSET);
     addr_hit[22] = (reg_addr == USBDEV_CONFIGIN11_OFFSET);
+    addr_hit[23] = (reg_addr == USBDEV_ISO_OFFSET);
+    addr_hit[24] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
+    addr_hit[25] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -4069,6 +5276,9 @@ module usbdev_reg_top (
     if (addr_hit[20] && reg_we && (USBDEV_PERMIT[20] != (USBDEV_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[21] && reg_we && (USBDEV_PERMIT[21] != (USBDEV_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[22] && reg_we && (USBDEV_PERMIT[22] != (USBDEV_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[23] && reg_we && (USBDEV_PERMIT[23] != (USBDEV_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[24] && reg_we && (USBDEV_PERMIT[24] != (USBDEV_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[25] && reg_we && (USBDEV_PERMIT[25] != (USBDEV_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_pkt_received_we = addr_hit[0] & reg_we & ~wr_err;
@@ -4101,6 +5311,21 @@ module usbdev_reg_top (
   assign intr_state_av_overflow_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_av_overflow_wd = reg_wdata[9];
 
+  assign intr_state_link_in_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_in_err_wd = reg_wdata[10];
+
+  assign intr_state_rx_crc_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_crc_err_wd = reg_wdata[11];
+
+  assign intr_state_rx_pid_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_pid_err_wd = reg_wdata[12];
+
+  assign intr_state_rx_bitstuff_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_bitstuff_err_wd = reg_wdata[13];
+
+  assign intr_state_frame_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_frame_wd = reg_wdata[14];
+
   assign intr_enable_pkt_received_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_pkt_received_wd = reg_wdata[0];
 
@@ -4131,6 +5356,21 @@ module usbdev_reg_top (
   assign intr_enable_av_overflow_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_av_overflow_wd = reg_wdata[9];
 
+  assign intr_enable_link_in_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_in_err_wd = reg_wdata[10];
+
+  assign intr_enable_rx_crc_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_crc_err_wd = reg_wdata[11];
+
+  assign intr_enable_rx_pid_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_pid_err_wd = reg_wdata[12];
+
+  assign intr_enable_rx_bitstuff_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_bitstuff_err_wd = reg_wdata[13];
+
+  assign intr_enable_frame_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_frame_wd = reg_wdata[14];
+
   assign intr_test_pkt_received_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_pkt_received_wd = reg_wdata[0];
 
@@ -4160,6 +5400,21 @@ module usbdev_reg_top (
 
   assign intr_test_av_overflow_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_av_overflow_wd = reg_wdata[9];
+
+  assign intr_test_link_in_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_in_err_wd = reg_wdata[10];
+
+  assign intr_test_rx_crc_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_crc_err_wd = reg_wdata[11];
+
+  assign intr_test_rx_pid_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_pid_err_wd = reg_wdata[12];
+
+  assign intr_test_rx_bitstuff_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_bitstuff_err_wd = reg_wdata[13];
+
+  assign intr_test_frame_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_frame_wd = reg_wdata[14];
 
   assign usbctrl_enable_we = addr_hit[3] & reg_we & ~wr_err;
   assign usbctrl_enable_wd = reg_wdata[0];
@@ -4482,6 +5737,93 @@ module usbdev_reg_top (
   assign configin11_rdy11_we = addr_hit[22] & reg_we & ~wr_err;
   assign configin11_rdy11_wd = reg_wdata[31];
 
+  assign iso_iso0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso0_wd = reg_wdata[0];
+
+  assign iso_iso1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso1_wd = reg_wdata[1];
+
+  assign iso_iso2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso2_wd = reg_wdata[2];
+
+  assign iso_iso3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso3_wd = reg_wdata[3];
+
+  assign iso_iso4_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso4_wd = reg_wdata[4];
+
+  assign iso_iso5_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso5_wd = reg_wdata[5];
+
+  assign iso_iso6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso6_wd = reg_wdata[6];
+
+  assign iso_iso7_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso7_wd = reg_wdata[7];
+
+  assign iso_iso8_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso8_wd = reg_wdata[8];
+
+  assign iso_iso9_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso9_wd = reg_wdata[9];
+
+  assign iso_iso10_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso10_wd = reg_wdata[10];
+
+  assign iso_iso11_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso11_wd = reg_wdata[11];
+
+  assign data_toggle_clear_clear0_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear0_wd = reg_wdata[0];
+
+  assign data_toggle_clear_clear1_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear1_wd = reg_wdata[1];
+
+  assign data_toggle_clear_clear2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear2_wd = reg_wdata[2];
+
+  assign data_toggle_clear_clear3_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear3_wd = reg_wdata[3];
+
+  assign data_toggle_clear_clear4_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear4_wd = reg_wdata[4];
+
+  assign data_toggle_clear_clear5_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear5_wd = reg_wdata[5];
+
+  assign data_toggle_clear_clear6_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear6_wd = reg_wdata[6];
+
+  assign data_toggle_clear_clear7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear7_wd = reg_wdata[7];
+
+  assign data_toggle_clear_clear8_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear8_wd = reg_wdata[8];
+
+  assign data_toggle_clear_clear9_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear9_wd = reg_wdata[9];
+
+  assign data_toggle_clear_clear10_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear10_wd = reg_wdata[10];
+
+  assign data_toggle_clear_clear11_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear11_wd = reg_wdata[11];
+
+  assign phy_config_rx_differential_mode_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_rx_differential_mode_wd = reg_wdata[0];
+
+  assign phy_config_tx_differential_mode_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_tx_differential_mode_wd = reg_wdata[1];
+
+  assign phy_config_eop_single_bit_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_eop_single_bit_wd = reg_wdata[2];
+
+  assign phy_config_override_pwr_sense_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_override_pwr_sense_en_wd = reg_wdata[3];
+
+  assign phy_config_override_pwr_sense_val_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_override_pwr_sense_val_wd = reg_wdata[4];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -4497,6 +5839,11 @@ module usbdev_reg_top (
         reg_rdata_next[7] = intr_state_av_empty_qs;
         reg_rdata_next[8] = intr_state_rx_full_qs;
         reg_rdata_next[9] = intr_state_av_overflow_qs;
+        reg_rdata_next[10] = intr_state_link_in_err_qs;
+        reg_rdata_next[11] = intr_state_rx_crc_err_qs;
+        reg_rdata_next[12] = intr_state_rx_pid_err_qs;
+        reg_rdata_next[13] = intr_state_rx_bitstuff_err_qs;
+        reg_rdata_next[14] = intr_state_frame_qs;
       end
 
       addr_hit[1]: begin
@@ -4510,6 +5857,11 @@ module usbdev_reg_top (
         reg_rdata_next[7] = intr_enable_av_empty_qs;
         reg_rdata_next[8] = intr_enable_rx_full_qs;
         reg_rdata_next[9] = intr_enable_av_overflow_qs;
+        reg_rdata_next[10] = intr_enable_link_in_err_qs;
+        reg_rdata_next[11] = intr_enable_rx_crc_err_qs;
+        reg_rdata_next[12] = intr_enable_rx_pid_err_qs;
+        reg_rdata_next[13] = intr_enable_rx_bitstuff_err_qs;
+        reg_rdata_next[14] = intr_enable_frame_qs;
       end
 
       addr_hit[2]: begin
@@ -4523,6 +5875,11 @@ module usbdev_reg_top (
         reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
+        reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+        reg_rdata_next[12] = '0;
+        reg_rdata_next[13] = '0;
+        reg_rdata_next[14] = '0;
       end
 
       addr_hit[3]: begin
@@ -4533,8 +5890,8 @@ module usbdev_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[10:0] = usbstat_frame_qs;
         reg_rdata_next[11] = usbstat_host_lost_qs;
-        reg_rdata_next[13:12] = usbstat_link_state_qs;
-        reg_rdata_next[14] = usbstat_usb_sense_qs;
+        reg_rdata_next[14:12] = usbstat_link_state_qs;
+        reg_rdata_next[15] = usbstat_usb_sense_qs;
         reg_rdata_next[18:16] = usbstat_av_depth_qs;
         reg_rdata_next[23] = usbstat_av_full_qs;
         reg_rdata_next[26:24] = usbstat_rx_depth_qs;
@@ -4694,6 +6051,44 @@ module usbdev_reg_top (
         reg_rdata_next[14:8] = configin11_size11_qs;
         reg_rdata_next[30] = configin11_pend11_qs;
         reg_rdata_next[31] = configin11_rdy11_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[0] = iso_iso0_qs;
+        reg_rdata_next[1] = iso_iso1_qs;
+        reg_rdata_next[2] = iso_iso2_qs;
+        reg_rdata_next[3] = iso_iso3_qs;
+        reg_rdata_next[4] = iso_iso4_qs;
+        reg_rdata_next[5] = iso_iso5_qs;
+        reg_rdata_next[6] = iso_iso6_qs;
+        reg_rdata_next[7] = iso_iso7_qs;
+        reg_rdata_next[8] = iso_iso8_qs;
+        reg_rdata_next[9] = iso_iso9_qs;
+        reg_rdata_next[10] = iso_iso10_qs;
+        reg_rdata_next[11] = iso_iso11_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
+        reg_rdata_next[3] = '0;
+        reg_rdata_next[4] = '0;
+        reg_rdata_next[5] = '0;
+        reg_rdata_next[6] = '0;
+        reg_rdata_next[7] = '0;
+        reg_rdata_next[8] = '0;
+        reg_rdata_next[9] = '0;
+        reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
+        reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
+        reg_rdata_next[2] = phy_config_eop_single_bit_qs;
+        reg_rdata_next[3] = phy_config_override_pwr_sense_en_qs;
+        reg_rdata_next[4] = phy_config_override_pwr_sense_val_qs;
       end
 
       default: begin

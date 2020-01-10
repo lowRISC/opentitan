@@ -72,6 +72,35 @@
             FIFO was full.
             '''
     }
+    { name: "link_in_err",
+      desc: '''
+            Raised if a packet to an IN endpoint started to be received but was
+            then dropped due to an error. After transmitting the IN payload,
+            the USB device expects a valid ACK handshake packet. This error is
+            raised if either the packet or CRC is invalid or a different token
+            was received.
+            '''
+    }
+    { name: "rx_crc_err",
+      desc: '''
+            Raised if a CRC error occured.
+            '''
+    }
+    { name: "rx_pid_err",
+      desc: '''
+            Raised if an invalid PID was received.
+            '''
+    }
+    { name: "rx_bitstuff_err",
+      desc: '''
+            Raised if an invalid bitstuffing was received.
+            '''
+    }
+    { name: "frame",
+      desc: '''
+            Raised when the USB frame number is updated with a valid SOF frame.
+            '''
+    }
   ]
   regwidth: "32",
   registers: [
@@ -123,7 +152,7 @@
                 '''
         }
         {
-          bits: "13:12",
+          bits: "14:12",
           name: "link_state",
           desc: '''
                 State of USB link, decoded from line.
@@ -134,21 +163,26 @@
               desc: "Link disconnected (no VBUS)"
             },
             { value: "1",
-              name: "reset",
-              desc: "Link reset (constant SE0 for > 3us)"
+              name: "powered",
+              desc: "Link powered, but not reset yet"
             },
             { value: "2",
-              name: "suspend",
-              desc: "Link suspended (constant idle for > 3ms)"
+              name: "powered_suspend",
+              desc: "Link suspended (constant idle for > 3ms), but not reset yet"
             },
             { value: "3",
               name: "active",
               desc: "Link active"
-            }
-	  ]
+            },
+            { value: "4",
+              name: "suspend",
+              desc: "Link suspended (constant idle for > 3ms)"
+            },
+
+          ]
         }
         {
-          bits: "14",
+          bits: "15",
           name: "usb_sense",
           desc: '''
                 Refelects the state of the usb_sense pin. 1 indicates that
@@ -312,16 +346,20 @@
         cname: "Endpoint"
         desc: "Endpoint STALL control",
         swaccess: "rw",
-        hwaccess: "hro",
+        hwaccess: "hrw",
         fields: [
           {
                 bits: "0",
                 name: "stall",
                 desc: '''
-                      If this bit is set then an IN, OUT or SETUP
+                      If this bit is set then an IN or OUT
                       transaction to this endpoint will be responded to
                       with a STALL return. This is used when the endpoint
-                      is disabled.
+                      is disabled (functional stall) or when a control transfer
+                      is not supported (protocol stall). SETUP transactions 
+                      are always accepted and a SETUP will clear the stall
+                      flag (this is necessary for protocol stalls, to avoid 
+                      sending stalls on subsequent IN/OUT transfers).
                       '''
           }
         ]
@@ -363,9 +401,9 @@
                   This bit indicates a pending transaction was canceled by the hardware.
 
                   The bit is set when the rdy bit is cleared by hardware because of a
-		  SETUP packet being received or a link reset being detected.
+                  SETUP packet being received or a link reset being detected.
 
-		  The bit remains set until cleared by being written with a 1.
+                  The bit remains set until cleared by being written with a 1.
                   '''
           }
           {
@@ -382,13 +420,100 @@
                   use of the IN channel for transfer of SETUP information.
                   The original buffer must be resubmitted after the SETUP
                   sequence is complete. A link reset also clears the bit.
-		  In either of the cases where the hardware cancels the
-		  transaction it will also set the pend bit.
+                  In either of the cases where the hardware cancels the
+                  transaction it will also set the pend bit.
                   '''
           }
         ]
       }
     }
+    { multireg: {
+        name: "iso",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: "Endpoint ISO setting",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          {
+                bits: "0",
+                name: "iso",
+                desc: '''
+                      If this bit is set then the endpoint will be treated
+                      as an ISO endpoint. No handshake packet will be sent
+                      for an OUT transaction and no handshake packet will be
+                      expected for an IN transaction.
+                      '''
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "data_toggle_clear",
+        count: "NEndpoints"
+        cname: "Endpoint"
+        desc: "Clear the data toggle flag",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwqe: "true",
+        fields: [
+          {
+                bits: "0",
+                name: "clear",
+                desc: '''
+                      Writing 1 to this bit will clear the data toggle bit for
+                      this endpoint to Data0 in both IN and OUT directions.
+                      The register must no be written again within 200 ns.
+                      '''
+          }
+        ]
+      }
+    }
+    { name: "phy_config",
+      desc: "USB PHY Configuration",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          resval: "0",
+          name: "rx_differential_mode",
+          desc: '''
+               Use the differential RX signal instead of the single ended signals.
+               Currently only 0 (single-ended operation) is supported.
+          '''
+        }
+        {
+          bits: "1",
+          resval: "0",
+          name: "tx_differential_mode",
+          desc: '''
+               Use the differential TX signal instead of the single ended signals.
+               Currently only 0 (single-ended operation) is supported.
+          '''
+        }
+        {
+          bits: "2",
+          name: "eop_single_bit",
+          resval: "1",
+          desc: '''
+               Recognize a single SE0 bit as an end of packet, otherwise two 
+               successive bits are required.
+          '''
+        }
+        {
+          bits: "3",
+          name: "override_pwr_sense_en",
+          desc: "Override the USB Power sense value with override_pwr_sense_val."
+        }
+        {
+          bits: "4",
+          name: "override_pwr_sense_val",
+          desc: "0: USB power not present, 1: present."
+        }
+      ]
+    }
+
     { window: {
         name: "buffer",
         items: "512",
