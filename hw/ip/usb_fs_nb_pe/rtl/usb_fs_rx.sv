@@ -10,9 +10,15 @@ module usb_fs_rx (
   input  logic rst_ni,
   input  logic link_reset_i,
 
-  // USB data+ and data- lines.
-  input  logic dp_i,
-  input  logic dn_i,
+  // EOP configuration
+  input  logic cfg_eop_single_bit_i,
+
+  // USB data+ and data- lines (synchronous)
+  input  logic usb_d_i,
+  input  logic usb_se0_i,
+
+  // Transmit enable disables the receier
+  input  logic tx_en_i,
 
   // pulse on every bit transition.
   output logic bit_strobe_o,
@@ -34,8 +40,17 @@ module usb_fs_rx (
   output logic [7:0] rx_data_o,
 
   // Most recent packet passes PID and CRC checks
-  output logic valid_packet_o
+  output logic valid_packet_o,
+
+  // Error detection
+  output logic crc_error_o,
+  output logic pid_error_o,
+  output logic bitstuff_error_o
 );
+
+  logic [6:0] bitstuff_history_q, bitstuff_history_d;
+  logic       bitstuff_error;
+  logic       bitstuff_error_q, bitstuff_error_d;
 
   ////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -43,33 +58,7 @@ module usb_fs_rx (
   //////// usb receive path
   ////////
   ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-
-  
-  ////////////////////////////////////////////////////////////////////////////////
-  // double flop for metastability
-  /*
-    all asynchronous inputs into the RTL need to be double-flopped to protect 
-    against metastable scenarios.  if the RTL clock samples an asynchronous signal
-    at the same time the signal is transitioning the result is undefined.  flopping
-    the signal twice ensures it will be either 1 or 0 and nothing in between.
-  */
-
-  logic [3:0] dpair_q, dpair_d;
-  assign dpair_d = {dpair_q[1:0], dp_i, dn_i};
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_dpair_q
-    if(!rst_ni) begin
-      dpair_q <= 0;
-    end else begin
-      if (link_reset_i) begin
-        dpair_q <= 0;
-      end else begin
-        dpair_q <= dpair_d;
-      end
-    end
-  end
-
+  //////////////////////////////////////////////////////////////////////////////// 
 
   ////////////////////////////////////////////////////////////////////////////////
   // line state recovery state machine
@@ -83,7 +72,6 @@ module usb_fs_rx (
     if there is enough noise on the line then the data may be corrupted and the
     packet will fail the data integrity checks.
   */
-
   logic [2:0] line_state_q, line_state_d;
   localparam  DT = 3'b100;
   localparam  DJ = 3'b010;
@@ -93,7 +81,14 @@ module usb_fs_rx (
 
   // Mute the input if we're transmitting
   logic [1:0] dpair;
-  assign dpair = dpair_q[3:2];
+  always_comb begin : proc_dpair_mute
+    if (tx_en_i) begin
+      dpair = 2'b10; // J
+    end else begin
+      dpair = (usb_se0_i) ? 2'b00 : {usb_d_i, !usb_d_i};
+      // dpair = dpair_q[3:2];
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_line_state_q
     if(!rst_ni) begin
@@ -110,7 +105,7 @@ module usb_fs_rx (
   always_comb begin : proc_line_state_d
       // Default assignment
       line_state_d = line_state_q;
-      
+
       case (line_state_q)
           // if we are in a transition state, then we can sample the pair and 
           // move to the next corresponding line state
@@ -177,21 +172,28 @@ module usb_fs_rx (
     denote the end of a packet.  this state machine recognizes the beginning and
     end of packets for subsequent layers to process.
   */
-  logic [5:0] line_history_q, line_history_d;
+  logic [11:0] line_history_q, line_history_d;
   logic packet_valid_q, packet_valid_d;
+  logic see_eop;
   
   wire packet_start = packet_valid_d && !packet_valid_q;
   wire packet_end = !packet_valid_d && packet_valid_q;
 
+  // EOP detection is configurable for 1/2 bit periods of SE0.
+  // The standard (Table 7-7) mandates min = 82 ns = 1 bit period.
+  // We also trigger an EOP on seeing a bitstuff error.
+  assign see_eop = (cfg_eop_single_bit_i && line_history_q[1:0] == 2'b00) 
+    || (line_history_q[3:0] == 4'b0000) || bitstuff_error_q;
+
   always_comb begin : proc_packet_valid_d
     if (line_state_valid) begin
-      // check for packet start: KJKJKK
-      if (!packet_valid_q && line_history_q[5:0] == 6'b100101) begin
+      // check for packet start: KJKJKK, we use the last 6 bits
+      if (!packet_valid_q && line_history_q[11:0] == 12'b011001100101) begin
         packet_valid_d = 1;
       end
  
       // check for packet end: SE0 SE0
-      else if (packet_valid_q && line_history_q[3:0] == 4'b0000) begin
+      else if (packet_valid_q && see_eop) begin
         packet_valid_d = 0;
 
       end else begin
@@ -203,16 +205,16 @@ module usb_fs_rx (
   end
 
   // keep a history of the last two states on the line
-  assign line_history_d = line_state_valid ? {line_history_q[3:0], line_state_q[1:0]} : line_history_q;
+  assign line_history_d = line_state_valid ? {line_history_q[9:0], line_state_q[1:0]} : line_history_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_pkt_line
     if(!rst_ni) begin
       packet_valid_q <= 0;
-      line_history_q <= 6'b101010;
+      line_history_q <= 12'b101010101010; // all K
     end else begin
       if (link_reset_i) begin
         packet_valid_q <= 0;
-        line_history_q <= 6'b101010;
+        line_history_q <= 12'b101010101010; // all K
       end else begin
         packet_valid_q <= packet_valid_d;
         line_history_q <= line_history_d;
@@ -254,13 +256,14 @@ module usb_fs_rx (
     end
   end
 
-  logic [5:0] bitstuff_history_q, bitstuff_history_d;
+  ////////////////////////////////////////////////////////////////////////////////
+  // Undo bit stuffing and detect bit stuffing errors
 
   always_comb begin : proc_bitstuff_history_d
     if (packet_end) begin
       bitstuff_history_d = '0;
     end else if (dvalid_raw) begin
-      bitstuff_history_d = {bitstuff_history_q[4:0], din};
+      bitstuff_history_d = {bitstuff_history_q[5:0], din};
     end else begin
       bitstuff_history_d = bitstuff_history_q;
     end  
@@ -278,7 +281,33 @@ module usb_fs_rx (
     end
   end
 
-  assign dvalid = dvalid_raw && !(bitstuff_history_q == 6'b111111);
+  assign dvalid = dvalid_raw && !(bitstuff_history_q[5:0] == 6'b111111);
+
+  // 7 consecutive ones should not be seen on the bus
+  // USB spec, 7.1.9.1: "If the receiver sees seven
+  // consecutive ones anywhere in the packet, then a bit stuffing error 
+  // has occurred and the packet should be ignored."
+  assign bitstuff_error = bitstuff_history_q == 7'b1111111;
+
+  // remember the bitstuff errors
+  always_comb begin : proc_bistuff_error_d
+    bitstuff_error_d = bitstuff_error_q;
+    if (packet_start) begin
+      bitstuff_error_d = 0;
+    end else if (bitstuff_error && dvalid_raw) begin
+      bitstuff_error_d = 1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff_error_q
+    if(~rst_ni) begin
+      bitstuff_error_q <= 0;
+    end else begin
+      bitstuff_error_q <= bitstuff_error_d;
+    end
+  end
+
+  assign bitstuff_error_o = bitstuff_error_q && packet_end;
 
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -366,12 +395,18 @@ module usb_fs_rx (
 
 
   // TODO: need to check for data packet babble
-  // TODO: do i need to check for bitstuff error?
-  assign valid_packet_o = pid_valid && (
-    (pkt_is_handshake) || 
+  assign valid_packet_o = pid_valid && !bitstuff_error_q &&
+    ((pkt_is_handshake) || 
     (pkt_is_data && crc16_valid) ||
     (pkt_is_token && crc5_valid)
   );
+
+  // Detect CRC errors
+  assign crc_error_o = ((pkt_is_data && !crc16_valid) ||
+    (pkt_is_token && !crc5_valid)) && packet_end;
+
+  // Detect PID errors
+  assign pid_error_o = !pid_valid && packet_end;
   
   logic [11:0] token_payload_q, token_payload_d;
   wire token_payload_done = token_payload_q[0];

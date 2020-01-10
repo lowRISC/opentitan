@@ -52,17 +52,36 @@ module usbdpi #(
   logic       unused_dummy;
   logic       unused_clk = clk_i;
   logic       unused_rst = rst_ni;
+  logic       dp_int, dn_int;
 
   assign d2p = {dp_d2p, dp_en_d2p, dn_d2p, dn_en_d2p, pullup_d2p & pullup_en_d2p};
   always_ff @(posedge clk_48MHz_i) begin
-    automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
-    dp_p2d <= p2d[2];
-    dn_p2d <= p2d[1];
-    sense_p2d <= p2d[0];
-    unused_dummy <= |p2d[7:3];
-    d2p_r <= d2p;
-    if (d2p_r != d2p) begin
-      usbdpi_device_to_host(ctx, d2p);
+    if (pullup_d2p && pullup_en_d2p) begin
+      automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
+      dp_int <= p2d[2];
+      dn_int <= p2d[1];
+      sense_p2d <= p2d[0];
+      unused_dummy <= |p2d[7:3];
+      d2p_r <= d2p;
+      if (d2p_r != d2p) begin
+        usbdpi_device_to_host(ctx, d2p);
+      end
+    end else begin
+      dp_int <= 0;
+      dn_int <= 0;
+    end
+  end
+
+  always_comb begin : proc_data
+    if (dp_en_d2p) begin
+      dp_p2d = dp_d2p;
+    end else begin
+      dp_p2d = dp_int;
+    end
+    if (dn_en_d2p) begin
+      dn_p2d = dn_d2p;
+    end else begin
+      dn_p2d = dn_int;
     end
   end
 endmodule

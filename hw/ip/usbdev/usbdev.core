@@ -16,6 +16,7 @@ filesets:
       - rtl/usbdev_usbif.sv
       - rtl/usbdev_flop_2syncpulse.sv
       - rtl/usbdev_linkstate.sv
+      - rtl/usbdev_iomux.sv
       - rtl/usbdev.sv
     file_type: systemVerilogSource
 

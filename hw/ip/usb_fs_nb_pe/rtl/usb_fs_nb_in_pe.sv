@@ -25,16 +25,19 @@ module usb_fs_nb_in_pe #(
   ////////////////////
   // endpoint interface
   ////////////////////
-  output logic [3:0]        in_ep_current_o, // Other signals addressed to this ep
-  output logic              in_ep_rollback_o, // Bad termination, rollback transaction
-  output logic              in_ep_acked_o, // good termination, transaction complete
-  output logic [PktW - 1:0] in_ep_get_addr_o, // Offset requested (0..pktlen)
-  output logic              in_ep_data_get_o, // Accept data (get_addr advances too)
-  output logic              in_ep_newpkt_o, // New IN packet starting (with in_ep_current_o update)
-  input [NumInEps-1:0]      in_ep_stall_i, // Endpoint in a stall state
-  input [NumInEps-1:0]      in_ep_has_data_i, // Endpoint has data to supply
-  input [7:0]               in_ep_data_i, // Data for current get_addr
-  input [NumInEps-1:0]      in_ep_data_done_i, // Set when out of data
+  output logic [3:0]            in_ep_current_o, // Other signals addressed to this ep
+  output logic                  in_ep_rollback_o, // Bad termination, rollback transaction
+  output logic                  in_ep_acked_o, // good termination, transaction complete
+  output logic [PktW - 1:0]     in_ep_get_addr_o, // Offset requested (0..pktlen)
+  output logic                  in_ep_data_get_o, // Accept data (get_addr advances too)
+  output logic                  in_ep_newpkt_o, // New IN packet starting (with in_ep_current_o update)
+  input [NumInEps-1:0]          in_ep_stall_i, // Endpoint in a stall state
+  input [NumInEps-1:0]          in_ep_has_data_i, // Endpoint has data to supply
+  input [7:0]                   in_ep_data_i, // Data for current get_addr
+  input [NumInEps-1:0]          in_ep_data_done_i, // Set when out of data
+  input  logic [NumInEps-1:0]   in_ep_iso_i, // Configure endpoint in isochronous mode
+
+  input  logic [NumInEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
 
   ////////////////////
   // rx path
@@ -76,11 +79,11 @@ module usb_fs_nb_in_pe #(
 
   import usb_consts_pkg::*;
 
-  typedef enum logic [1:0] {
-    StIdle     = 2'h0,
-    StRcvdIn   = 2'h1,
-    StSendData = 2'h2,
-    StWaitAck  = 2'h3
+  typedef enum {
+    StIdle,
+    StRcvdIn,
+    StSendData,
+    StWaitAck  
   } state_in_e;
 
   state_in_e  in_xfr_state;
@@ -91,7 +94,7 @@ module usb_fs_nb_in_pe #(
   assign in_ep_acked_o = in_xfr_end;
 
   // data toggle state
-  logic [NumInEps - 1:0] data_toggle;
+  logic [NumInEps - 1:0] data_toggle_q, data_toggle_d;
 
   // endpoint data buffer
   logic                    token_received, setup_token_received, in_token_received, ack_received;
@@ -127,7 +130,7 @@ module usb_fs_nb_in_pe #(
     rx_pkt_valid_i &&
     rx_pid == UsbPidAck;
 
-  assign more_data_to_send = ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
+  assign more_data_to_send = in_ep_has_data_i && ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
 
   assign tx_data_avail_o = (in_xfr_state == StSendData) && more_data_to_send;
 
@@ -158,9 +161,16 @@ module usb_fs_nb_in_pe #(
         if (in_ep_stall_i[in_ep_index]) begin  // lint: in_ep_index range was checked
           in_xfr_state_next = StIdle;
           tx_pid_o = {UsbPidStall}; // STALL
+        end else if (in_ep_iso_i[in_ep_index]) begin
+          // ISO endpoint
+          // We always need to transmit. When no data is available, we send
+          // a zero-length packet
+          in_xfr_state_next = StSendData;
+          tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1 lint: checked
+
         end else if (in_ep_has_data_i[in_ep_index]) begin  // lint: in_ep_index range was checked
           in_xfr_state_next = StSendData;
-          tx_pid_o = {data_toggle[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1 lint: checked
+          tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1 lint: checked
         end else begin
           in_xfr_state_next = StIdle;
           tx_pid_o = {UsbPidNak}; // NAK
@@ -170,7 +180,11 @@ module usb_fs_nb_in_pe #(
       StSendData: begin
         // Use &in_ep_get_addr so width can vary, looking for all ones
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
-          in_xfr_state_next = StWaitAck;
+          if (in_ep_iso_i[in_ep_index]) begin
+            in_xfr_state_next = StIdle; // no ACK for ISO EPs
+          end else begin
+            in_xfr_state_next = StWaitAck;
+          end
         end else begin
           in_xfr_state_next = StSendData;
         end
@@ -218,10 +232,10 @@ module usb_fs_nb_in_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      in_ep_get_addr_o <= '0;
+      in_ep_get_addr_o <= {PktW{1'b0}};
     end else begin
       if (in_xfr_state == StIdle) begin
-        in_ep_get_addr_o <= '0;
+        in_ep_get_addr_o <= {PktW{1'b0}};
       end else if ((in_xfr_state == StSendData) && tx_data_get_i) begin
         in_ep_get_addr_o <= in_ep_get_addr_o + 1'b1;
       end
@@ -231,7 +245,7 @@ module usb_fs_nb_in_pe #(
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_ep_newpkt_o <= 1'b0;
-      in_ep_current_o <= '0;
+      in_ep_current_o <= 4'h0;
     end else begin
       if (in_token_received) begin
         in_ep_current_o <= rx_endp_i;
@@ -242,18 +256,26 @@ module usb_fs_nb_in_pe #(
     end
   end
 
+  always_comb begin : proc_data_toggle_d
+    data_toggle_d = data_toggle_q;
+
+    if (setup_token_received) begin
+      // Ok because token_recieved only triggers if rx_endp_i is in range
+      data_toggle_d[rx_endp_i[0 +: InEpW]] = 1'b1;
+    end else if ((in_xfr_state == StWaitAck) && ack_received) begin
+      data_toggle_d[in_ep_index] = ~data_toggle_q[in_ep_index]; // lint: range was checked
+    end
+
+    data_toggle_d = data_toggle_d & ~data_toggle_clear_i;
+  end
+
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      data_toggle <= '0; // Clear for all endpoints
+      data_toggle_q <= {NumInEps{1'b0}}; // Clear for all endpoints
     end else if (link_reset_i) begin
-      data_toggle <= '0; // Clear for all endpoints
+      data_toggle_q <= {NumInEps{1'b0}}; // Clear for all endpoints
     end else begin
-      if (setup_token_received) begin
-        // Ok because token_recieved only triggers if rx_endp_i is in range
-        data_toggle[rx_endp_i[0 +: InEpW]] <= 1'b1;
-      end else if ((in_xfr_state == StWaitAck) && ack_received) begin
-        data_toggle[in_ep_index] <= ~data_toggle[in_ep_index]; // lint: range was checked
-      end
+      data_toggle_q <= data_toggle_d;
     end
   end
 

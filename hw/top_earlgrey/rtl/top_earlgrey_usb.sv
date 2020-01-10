@@ -547,6 +547,8 @@ module top_earlgrey_usb #(
     logic unused_sck = cio_spi_device_sck_p2d;
     logic unused_csb = cio_spi_device_csb_p2d;
     logic unused_mosi = cio_spi_device_mosi_p2d;
+    logic usbdev_usb_oe;
+    logic usbdev_usb_pullup_en;
 
     assign intr_spi_device_rxlvl = 0;
     assign intr_spi_device_txf = 0;
@@ -554,32 +556,53 @@ module top_earlgrey_usb #(
     assign cio_spi_device_miso_en_o = 0;
 
     usbdev udev (
-      .clk_i                (clk_i),
-      .clk_usb_48mhz_i      (clk_48mhz_i),
-      .rst_ni               (spi_device_rst_n),
-      .tl_d_i               (tl_spi_device_d_h2d),
-      .tl_d_o               (tl_spi_device_d_d2h),
-      .cio_usb_dp_i         (dio_usb_dp_i[USB_DEVICE - 1]),
-      .cio_usb_dp_o         (dio_usb_dp_o[USB_DEVICE - 1]),
-      .cio_usb_dp_en_o      (dio_usb_dp_en_o[USB_DEVICE - 1]),
-      .cio_usb_dn_i         (dio_usb_dn_i[USB_DEVICE - 1]),
-      .cio_usb_dn_o         (dio_usb_dn_o[USB_DEVICE - 1]),
-      .cio_usb_dn_en_o      (dio_usb_dn_en_o[USB_DEVICE - 1]),
-      .cio_usb_sense_i      (dio_usb_sense_i[USB_DEVICE - 1]),
-      .cio_usb_pullup_o     (dio_usb_pullup_o[USB_DEVICE - 1]),
-      .cio_usb_pullup_en_o  (dio_usb_pullup_en_o[USB_DEVICE - 1]),
+      .clk_i                   (clk_i),
+      .clk_usb_48mhz_i         (clk_48mhz_i),
+      .rst_ni                  (spi_device_rst_n),
+      .rst_usb_ni              (spi_device_rst_n), // TODO: Need a real USB reset here
+      .tl_d_i                  (tl_spi_device_d_h2d),
+      .tl_d_o                  (tl_spi_device_d_d2h),
 
-      .intr_pkt_received_o  (intr_spi_device_rxf),
-      .intr_pkt_sent_o      (intr_spi_device_txlvl),
-      .intr_disconnected_o  (),
-      .intr_host_lost_o     (),
-      .intr_link_reset_o    (),
-      .intr_link_suspend_o  (),
-      .intr_link_resume_o   (),
-      .intr_av_empty_o      (intr_spi_device_rxlvl),
-      .intr_rx_full_o       (intr_spi_device_rxerr),
-      .intr_av_overflow_o   (intr_spi_device_txunderflow)
+      .cio_usb_d_i             (1'b0),
+      .cio_usb_dp_i            (dio_usb_dp_i[USB_DEVICE - 1]),
+      .cio_usb_dn_i            (dio_usb_dn_i[USB_DEVICE - 1]),
+
+      .cio_usb_d_o             (),
+      .cio_usb_se0_o           (),
+      .cio_usb_dp_o            (dio_usb_dp_o[USB_DEVICE - 1]),
+      .cio_usb_dn_o            (dio_usb_dn_o[USB_DEVICE - 1]),
+      .cio_usb_oe_o            (usbdev_usb_oe),
+      
+      .cio_usb_tx_mode_se_o    (),
+      .cio_usb_sense_i         (dio_usb_sense_i[USB_DEVICE - 1]),
+      .cio_usb_pullup_en_o     (usbdev_usb_pullup_en),
+      .cio_usb_suspend_o       (),
+
+      .intr_pkt_received_o     (intr_spi_device_rxf),
+      .intr_pkt_sent_o         (intr_spi_device_txlvl),
+      .intr_disconnected_o     (),
+      .intr_host_lost_o        (),
+      .intr_link_reset_o       (),
+      .intr_link_suspend_o     (),
+      .intr_link_resume_o      (),
+      .intr_av_empty_o         (intr_spi_device_rxlvl),
+      .intr_rx_full_o          (intr_spi_device_rxerr),
+      .intr_av_overflow_o      (intr_spi_device_txunderflow),
+      .intr_link_in_err_o      (),
+      .intr_rx_crc_err_o       (),
+      .intr_rx_pid_err_o       (),
+      .intr_rx_bitstuff_err_o  (),
+      .intr_frame_o            ()
     );
+
+    assign dio_usb_dp_en_o[USB_DEVICE - 1] = usbdev_usb_oe;
+    assign dio_usb_dn_en_o[USB_DEVICE - 1] = usbdev_usb_oe;
+
+    // Enable -- This is working but should these be swapped so there is no active pull down?
+    assign dio_usb_pullup_o[USB_DEVICE - 1]    = usbdev_usb_pullup_en;
+    assign dio_usb_pullup_en_o[USB_DEVICE - 1] = 1'b1;
+
+
   end // block: gen_usbdev
 
   // Tie off unused USB
