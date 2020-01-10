@@ -87,7 +87,7 @@ completes one byte of data transfer.
 
 ### Transmission
 
-A write to {{< regref "WDATA" >}} enqueues a data byte into the 32 depth write FIFO, which
+A write to {{< regref "WDATA" >}} enqueues a data byte into the 32 byte deep write FIFO, which
 triggers the transmit module to start UART TX serial data transfer. The TX
 module dequeues the byte from the FIFO and shifts it bit by bit out to the UART
 TX pin on positive edges of the baud clock.
@@ -203,7 +203,7 @@ and unexpected event interrupts.
 
 #### tx_watermark / rx_watermark
 If the TX FIFO level becomes smaller than the TX water mark level (configurable via {{< regref "FIFO_CTRL.RXILVL" >}} and {{< regref "FIFO_CTRL.TXILVL" >}}), the `tx_watermark` interrupt is raised to inform SW.
-If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via {{< regref "FIFO_CTRL.RXILVL" >}} and {{< regref "FIFO_CTRL.TXILVL" >}}), the rx_watermark` interrupt is raised to inform SW.
+If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via {{< regref "FIFO_CTRL.RXILVL" >}} and {{< regref "FIFO_CTRL.TXILVL" >}}), the `rx_watermark` interrupt is raised to inform SW.
 
 #### tx_empty
 If TX FIFO becomes empty as part of transmit, the interrupt `tx_empty` is asserted.
