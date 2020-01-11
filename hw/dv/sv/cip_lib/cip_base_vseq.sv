@@ -49,7 +49,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // tl_access task: does a single TL_W-bit write or read transaction to the specified address
   // note that this task does not update ral model; optionally also checks for error response
-  // TODO: add additional args? respose data check? spinwait?
   // TODO: randomize size, addr here based on given addr range, data, and mask, eventually can be
   // reused for mem_read, partial read, and hmac msg fifo write
   virtual task tl_access(input bit [TL_AW-1:0]  addr,
@@ -59,12 +58,17 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [TL_SZW-1:0] size = 2,
                          input bit              check_rsp = 1'b1,
                          input bit              exp_err_rsp = 1'b0,
+                         input bit [TL_DW-1:0]  exp_data = 0,
+                         input bit              check_exp_data = 1'b0,
+                         input bit [TL_DW-1:0]  compare_mask = '1,
                          input bit              blocking = csr_utils_pkg::default_csr_blocking);
     if (blocking) begin
-      tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp);
+      tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp, exp_data,
+                    compare_mask, check_exp_data);
     end else begin
       fork
-        tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp);
+        tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp, exp_data,
+                      compare_mask, check_exp_data);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -77,7 +81,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit [TL_DBW-1:0] mask = '1,
                              input bit [TL_SZW-1:0] size = 2,
                              input bit              check_rsp = 1'b1,
-                             input bit              exp_err_rsp = 1'b0);
+                             input bit              exp_err_rsp = 1'b0,
+                             input bit [TL_DW-1:0]  exp_data = 0,
+                             input bit [TL_DW-1:0]  compare_mask = '1,
+                             input bit              check_exp_data = 1'b0);
     `DV_SPINWAIT(
         // thread to read/write tlul
         tl_host_single_seq  tl_seq;
@@ -99,7 +106,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   opcode  == tlul_pkg::Get;
                 })
         `uvm_send_pri(tl_seq, 100)
-        if (!write) data = tl_seq.rsp.d_data;
+        if (!write) begin
+          data = tl_seq.rsp.d_data;
+          if (check_exp_data && !cfg.under_reset) begin
+            bit [TL_DW-1:0] masked_data = data & compare_mask;
+            exp_data &= compare_mask;
+            `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+          end
+        end
         if (check_rsp && !cfg.under_reset) begin
           `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
         end
@@ -234,6 +248,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "intr_test":                  run_intr_test_vseq(num_times);
       "tl_errors":                  run_tl_errors_vseq(num_times);
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
+      "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
       default:                      run_csr_vseq_wrapper(num_times);
     endcase
   endtask
@@ -290,7 +305,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           for (int j = 0; j < intr_test_csrs[i].get_n_used_bits(); j++) begin
             bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
             `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j], $sformatf(
-                "exp_intr_state: %0h, en_intr: %0h", exp_intr_state[i], intr_enable_val[i]))
+                "exp_intr_state: 0x%0h, en_intr: 0x%0h", exp_intr_state[i], intr_enable_val[i]))
           end
           num_used_bits += intr_test_csrs[i].get_n_used_bits();
         end
@@ -387,6 +402,47 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     csr_excl_item csr_excl = create_and_add_csr_excl("hw_reset");
     `uvm_info(`gfn, "running csr hw_reset vseq", UVM_HIGH)
     run_csr_vseq(.csr_test_type("hw_reset"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
+  endtask
+
+  virtual task run_same_csr_outstanding_vseq(int num_times);
+    csr_excl_item csr_excl = create_and_add_csr_excl("csr_excl");
+    uvm_reg     test_csrs[$];
+    ral.get_registers(test_csrs);
+
+    for (int trans = 1; trans <= num_times; trans++) begin
+      `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
+                                 trans, num_times), UVM_LOW)
+      test_csrs.shuffle();
+
+      foreach (test_csrs[i]) begin
+        uvm_reg_data_t exp_data = test_csrs[i].get_reset();
+        uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
+
+        rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_excl);
+        wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_excl);
+
+        // reset before every csr to avoid situation of writing one csr affect another's value
+        dut_init("HARD");
+        repeat ($urandom_range(10, 100)) begin
+          // do read, exclude CsrExclWriteCheck, CsrExclCheck
+          if ($urandom_range(0, 1) && !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck)) begin
+            tl_access(.addr(test_csrs[i].get_address()), .write(0), .data(rd_data),
+                      .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask), .blocking(0));
+          end
+          // do write, exclude CsrExclWrite
+          if ($urandom_range(0, 1) && !csr_excl.is_excl(test_csrs[i], CsrExclWrite)) begin
+            uvm_reg_field csr_fields[$];
+            test_csrs[i].get_fields(csr_fields);
+            `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
+            wr_data &= wr_mask;
+            tl_access(.addr(test_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
+            void'(test_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
+            exp_data = test_csrs[i].get_mirrored_value();
+          end
+        end
+        csr_utils_pkg::wait_no_outstanding_access();
+      end
+    end
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();

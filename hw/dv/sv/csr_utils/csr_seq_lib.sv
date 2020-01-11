@@ -112,22 +112,6 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
     test_csrs.shuffle();
   endfunction
 
-  // Fields could be excluded from writes & reads - This function zeros out the excluded fields
-  virtual function uvm_reg_data_t get_mask_excl_fields(uvm_reg csr,
-                                                       csr_excl_type_e csr_excl_type);
-    uvm_reg_field flds[$];
-    csr.get_fields(flds);
-    get_mask_excl_fields = '1;
-    foreach (flds[i]) begin
-      if (m_csr_excl_item.is_excl(flds[i], csr_excl_type)) begin
-        csr_field_s fld_params = decode_csr_or_field(flds[i]);
-        `uvm_info(`gtn, $sformatf("Skipping field %0s due to %0s exclusion",
-                                  flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)
-        get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
-      end
-    end
-  endfunction
-
 endclass
 
 //--------------------------------------------------------------------------------------------------
@@ -153,7 +137,7 @@ class csr_hw_reset_seq extends csr_base_seq;
       `uvm_info(`gtn, $sformatf("Verifying reset value of register %0s",
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
-      compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclInitCheck);
+      compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclInitCheck, m_csr_excl_item);
       csr_rd_check(.ptr           (test_csrs[i]),
                    .blocking      (0),
                    .compare       (!external_checker),
@@ -188,7 +172,7 @@ class csr_write_seq extends csr_base_seq;
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite);
+      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, m_csr_excl_item);
       csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0));
     end
   endtask
@@ -231,7 +215,7 @@ class csr_rw_seq extends csr_base_seq;
 
       `DV_CHECK_FATAL(randomize(do_csr_rd_check, do_csr_field_rd_check))
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite);
+      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, m_csr_excl_item);
       csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0));
 
       // if external checker is not enabled and writes are made non-blocking, then we need to
@@ -248,7 +232,7 @@ class csr_rw_seq extends csr_base_seq;
         continue;
       end
 
-      compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck);
+      compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, m_csr_excl_item);
       if (do_csr_rd_check) begin
         csr_rd_check(.ptr           (test_csrs[i]),
                      .blocking      (0),
@@ -422,7 +406,7 @@ class csr_aliasing_seq extends csr_base_seq;
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite);
+      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, m_csr_excl_item);
       csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0));
 
       // if external checker is not enabled and writes are made non-blocking, then we need to
@@ -444,7 +428,7 @@ class csr_aliasing_seq extends csr_base_seq;
           continue;
         end
 
-        compare_mask = get_mask_excl_fields(all_csrs[j], CsrExclWriteCheck);
+        compare_mask = get_mask_excl_fields(all_csrs[j], CsrExclWriteCheck, m_csr_excl_item);
         csr_rd_check(.ptr           (all_csrs[j]),
                      .blocking      (0),
                      .compare       (!external_checker),

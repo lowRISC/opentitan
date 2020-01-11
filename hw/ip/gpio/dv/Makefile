@@ -99,6 +99,9 @@ ifeq (${TEST_NAME},gpio_csr_aliasing)
   RUN_OPTS      += +do_clear_all_interrupts=0
 endif
 
+ifeq (${TEST_NAME},gpio_same_csr_outstanding)
+  RUN_OPTS      += +do_clear_all_interrupts=0
+endif
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##
 ## Dont add anything else below it!                                                               ##
