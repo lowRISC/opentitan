@@ -83,6 +83,18 @@ This IP also supports clock-stretching, should that be required by target device
 
 ## Design Details 
 
+### Virtual Open Drain
+
+In devices which lack a true open drain buffer functionality, this IP implements a "virtual Open Drain" functionality.
+The SDA and SCL outputs are assumed to be connected to a tri-state buffer, with independent enable outputs for both signals.
+
+Rather than toggling the buffer inputs, the buffer inputs are *continuously asserted low*, and instead the buffer *enable* signals are toggled.
+The SDA or SCL buffers are enabled for a logical "Low" output on the respective signal, and are disabled for logical "High" outputs.
+This arrangement allows the the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- muli-host functionality).
+
+This arrangement is necessary for FPGA builds.
+
+
 ### Override Mode for Direct Pin Access
 
 The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
