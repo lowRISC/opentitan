@@ -520,8 +520,26 @@ package csr_utils_pkg;
     join
   endtask : mem_wr_sub
 
-  // sources
   `include "csr_excl_item.sv"
+
+  // Fields could be excluded from writes & reads - This function zeros out the excluded fields
+  function automatic uvm_reg_data_t get_mask_excl_fields(uvm_reg csr,
+                                                         csr_excl_type_e csr_excl_type,
+                                                         csr_excl_item m_csr_excl_item);
+    uvm_reg_field flds[$];
+    csr.get_fields(flds);
+    get_mask_excl_fields = '1;
+    foreach (flds[i]) begin
+      if (m_csr_excl_item.is_excl(flds[i], csr_excl_type)) begin
+        csr_field_s fld_params = decode_csr_or_field(flds[i]);
+        `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
+                                  flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)
+        get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
+      end
+    end
+  endfunction
+
+  // sources
   `include "csr_seq_lib.sv"
 
 endpackage

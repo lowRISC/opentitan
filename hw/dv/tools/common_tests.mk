@@ -35,6 +35,12 @@ ifeq (${TEST_NAME},${TEST_PREFIX}_csr_aliasing)
   RUN_OPTS      += +en_scb=0
 endif
 
+ifeq (${TEST_NAME},${TEST_PREFIX}_same_csr_outstanding)
+  UVM_TEST_SEQ   = ${TEST_PREFIX}_common_vseq
+  RUN_OPTS      += +run_same_csr_outstanding
+  RUN_OPTS      += +en_scb=0
+endif
+
 # make sure DUT has memory and support this seq before run the test
 ifeq (${TEST_NAME},${TEST_PREFIX}_csr_mem_walk)
   UVM_TEST_SEQ   = ${TEST_PREFIX}_common_vseq

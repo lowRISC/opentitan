@@ -35,9 +35,6 @@ class uart_common_vseq extends uart_base_vseq;
     // writes to ovrd.txen causes tx output to be forced to ovrd.txval causing protocol violation
     csr_excl.add_excl({scope, ".", "ovrd.txen"}, CsrExclWrite);
 
-    // exclude txrst and rxrst fields in fifo_ctrl - these pulse for 1 clock and read back 0
-    csr_excl.add_excl({scope, ".", "fifo_ctrl.*rst"}, CsrExclWriteCheck);
-
     // writing 0 to timeout csr can cause rx_timeout to assert - exclude this in bit_bash seq
     if (csr_test_type == "bit_bash")
       csr_excl.add_excl({scope, ".", "intr_state.rx_timeout"}, CsrExclWriteCheck);

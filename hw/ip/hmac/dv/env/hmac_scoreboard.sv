@@ -8,12 +8,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit       sha_en;
-  bit [7:0] msg_q[$];
-  bit       hmac_start, hmac_process;
-  bit       fifo_full;
-  int       hmac_wr_cnt;
-  int       hmac_rd_cnt;
+  bit             sha_en, fifo_full;
+  bit [7:0]       msg_q[$];
+  bit             hmac_start, hmac_process;
+  int             hmac_wr_cnt, hmac_rd_cnt;
+  bit [TL_DW-1:0] key[8];
+  bit [TL_DW-1:0] intr_test; //WO reg
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -33,12 +33,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit     do_read_check           = 1'b1;
     bit     do_cycle_accurate_check = 1'b1;
     bit     write                   = item.is_write();
-    uvm_reg_addr_t csr_addr         = get_normalized_addr(item.a_addr);
+    string  csr_name;
+    uvm_reg_addr_t  csr_addr         = get_normalized_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
+      csr_name = csr.get_name();
     // if addr inside msg fifo, no ral model
     end else if (!(item.a_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]})) begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
@@ -65,7 +67,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           foreach (msg[i]) msg_q.push_back(msg[i]);
         end
       end else begin
-        case (csr.get_name())
+        case (csr_name)
           "cmd": begin
             if (sha_en) begin
               {hmac_process, hmac_start} = item.a_data[1:0];
@@ -86,6 +88,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
             bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
+            intr_test = item.a_data;
           end
           "cfg": begin
             if (hmac_start) return; // won't update configs if hash start
@@ -98,12 +101,15 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end
           end
           "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7": begin
+            string str_index;
             if (hmac_start) begin
               void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
               void'(ral.err_code.predict(.value(SwUpdateSecretKeyInProcess),
                                          .kind(UVM_PREDICT_DIRECT)));
               return;
             end
+            str_index = csr_name.substr(3,3);
+            key[str_index.atoi()] = item.a_data;
           end
           "wipe_secret", "intr_enable", "intr_state": begin
             // Do nothing
@@ -124,7 +130,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
     // predict status based on csr read addr channel
     if (!write && channel != DataChannel) begin
-        if (csr.get_name() == "status") begin
+        if (csr_name == "status") begin
           bit [4:0]       hmac_fifo_depth  = hmac_wr_cnt - hmac_rd_cnt;
           bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH;
           bit             hmac_fifo_empty  = hmac_fifo_depth == 0;
@@ -138,7 +144,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write) begin
-      case (csr.get_name())
+      case (csr_name)
         "intr_state": begin
           if (!do_cycle_accurate_check) do_read_check = 0;
           if (cfg.en_cov) begin
@@ -146,7 +152,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             intr = intr.first;
             do begin
               bit [TL_DW-1:0] intr_en   = ral.intr_enable.get_mirrored_value();
-              bit [TL_DW-1:0] intr_test = ral.intr_test.get_mirrored_value();
               cov.intr_cg.sample(intr, intr_en[intr], item.d_data[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
               cov.intr_test_cg.sample(intr, intr_test[intr], intr_en[intr], item.d_data[intr]);
@@ -155,7 +160,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
           // intr_test is WO, every time after write for a clk cycle, RTL will reset it, but for
           // coverage purpose, we will reset intr_test after collected the coverage
-          void'(ral.intr_test.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+          intr_test = 0;
+          // void'(ral.intr_test.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
           if (item.d_data[HmacDone] == 1) begin
             hmac_wr_cnt = 0;
             hmac_rd_cnt = 0;
@@ -199,8 +205,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       endcase
       if (do_read_check) begin
         `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
-                                  csr.get_name(), csr.get_mirrored_value()), UVM_HIGH);
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, csr.get_name())
+                                  csr_name, csr.get_mirrored_value()), UVM_HIGH);
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, csr_name)
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
@@ -212,6 +218,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     sha_en      = 0;
     hmac_wr_cnt = 0;
     hmac_rd_cnt = 0;
+    intr_test   = 0;
+    key         = '{default:0};
   endfunction
 
   // clear variables after expected digest is calculated
@@ -349,15 +357,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit          sha_en  = ral.cfg.sha_en.get_mirrored_value();
     case ({hmac_en, sha_en})
       2'b11: begin
-        bit [31:0] key[8];
-        key[0] = ral.key0.get_mirrored_value();
-        key[1] = ral.key1.get_mirrored_value();
-        key[2] = ral.key2.get_mirrored_value();
-        key[3] = ral.key3.get_mirrored_value();
-        key[4] = ral.key4.get_mirrored_value();
-        key[5] = ral.key5.get_mirrored_value();
-        key[6] = ral.key6.get_mirrored_value();
-        key[7] = ral.key7.get_mirrored_value();
         cryptoc_dpi_pkg::get_hmac_sha256(key, msg_q, exp_digest);
       end
       2'b01: begin

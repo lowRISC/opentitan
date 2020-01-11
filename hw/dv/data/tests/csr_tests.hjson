@@ -32,6 +32,12 @@
       run_opts: ["+csr_aliasing"]
       en_run_modes: ["csr_tests_mode"]
     }
+
+    {
+      name: "{name}_same_csr_outstanding"
+      run_opts: ["+run_same_csr_outstanding"]
+      en_run_modes: ["csr_tests_mode"]
+    }
   ]
 
   regressions: [
@@ -45,7 +51,8 @@
       tests: ["{name}_csr_hw_reset",
               "{name}_csr_rw",
               "{name}_csr_bit_bash",
-              "{name}_csr_aliasing"]
+              "{name}_csr_aliasing",
+              "{name}_same_csr_outstanding"]
     }
   ]
 }

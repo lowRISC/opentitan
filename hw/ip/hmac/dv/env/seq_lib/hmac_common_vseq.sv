@@ -25,12 +25,8 @@ class hmac_common_vseq extends hmac_base_vseq;
                                            string           scope = "ral");
     // write exclusions - these should not apply to hw_reset test
     if (csr_test_type != "hw_reset") begin
-      // the following csrs is WO - uvm_reg_field assumes reading WO will result in bus error; in
-      // reality it does not - dut reads back 0s, but uvm_reg_field expects original written value
+      // intr_test csr will result in intr_state change
       csr_excl.add_excl({scope, ".", "intr_test"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "wipe_secret"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "key?"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "msg_fifo"}, CsrExclWrite);
 
       // don't enable hmac and sha data paths - we will do that in functional tests
       csr_excl.add_excl({scope, ".", "cfg.hmac_en"}, CsrExclWrite);
@@ -38,9 +34,8 @@ class hmac_common_vseq extends hmac_base_vseq;
     end
 
     // design assertion : after hash_start sets, can only wr msg or set hash_process
-    csr_excl.add_excl({scope, ".", "cmd.hash_start"}, CsrExclWrite);
     // design assertion : hash_process can be set only after hash_start is set
-    csr_excl.add_excl({scope, ".", "cmd.hash_process"}, CsrExclWrite);
+    csr_excl.add_excl({scope, ".", "cmd"}, CsrExclWrite);
   endfunction
 
 endclass
