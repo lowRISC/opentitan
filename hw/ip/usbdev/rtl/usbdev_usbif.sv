@@ -101,7 +101,7 @@ module usbdev_usbif  #(
   logic [NEndpoints-1:0]             out_ep_setup, out_ep_full, out_ep_stall;
   logic [NEndpoints-1:0]             setup_blocked, out_blocked;
   logic [31:0]                       wdata;
-  logic                              std_write, mem_read;
+  logic                              mem_read;
   logic [SramAw-1:0]                 mem_waddr, mem_raddr;
   logic                              link_reset;
   logic                              sof_valid;
@@ -114,28 +114,37 @@ module usbdev_usbif  #(
   always_comb begin
     if (out_ep_acked || out_ep_rollback) begin
       out_max_used_d = 0;
+      
     end else if (out_ep_data_put) begin
       // In the normal case <MaxPktSizeByte this is out_max_used_q <= out_ep_put_addr
       // Following all ones out_max_used_q will get 1,00..00 and 1,00..01 to cover
       // one and two bytes of the CRC overflowing, then stick at 1,00..01
+      if (out_max_used_q < MaxPktSizeByte - 1) begin
+        out_max_used_d = out_ep_put_addr;
+      end else if (out_max_used_q < MaxPktSizeByte + 1) begin
+        out_max_used_d = out_max_used_q + 1;
+      end else begin
+        out_max_used_d = out_max_used_q;
+      end
 
-      // TODO: This code should be re-written to be more human-readable, in the
-      // current state is hard to understand or verify
-      out_max_used_d[0] = (out_max_used_q[PktW] & out_max_used_q[0]) ? 1'b1 : out_ep_put_addr[0];
-      out_max_used_d[PktW - 1: 1] = out_max_used_q[PktW] ? '0 : out_ep_put_addr[PktW - 1:1];
-      out_max_used_d[PktW] = (&out_max_used_q[PktW - 1:0]) | out_max_used_q[PktW];
     end else begin
       out_max_used_d = out_max_used_q;
     end
   end // always_comb
 
+  // don't write if the address has wrapped (happens for two CRC bytes after max data)
+  logic std_write_d, std_write_q;
+  assign std_write_d = out_ep_data_put & ((out_max_used_q < MaxPktSizeByte - 1) & (out_ep_put_addr[1:0] == 2'b11));
+
+
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_max_used_q <= '0;
       wdata          <= '0;
-      std_write      <= 1'b0;
+      std_write_q    <= 1'b0;
     end else begin
       out_max_used_q <= out_max_used_d;
+      std_write_q    <= std_write_d;
       if (out_ep_data_put) begin
         unique case (out_ep_put_addr[1:0])
           0: begin
@@ -151,20 +160,12 @@ module usbdev_usbif  #(
             wdata[31:24] <= out_ep_data;
           end
         endcase
-        // don't write if the address has wrapped (happens for two CRC bytes after max data)
-        if (!out_max_used_q[PktW] && (out_ep_put_addr[1:0] == 2'b11)) begin
-          std_write <= 1'b1;
-        end else begin
-          std_write <= 1'b0;
-        end
-      end else begin
-        std_write <= 1'b0;
       end
     end
   end // always_ff @ (posedge clk_48mhz_i)
 
   // need extra write at end if packet not multiple of 4 bytes
-  assign mem_write_o = std_write |
+  assign mem_write_o = std_write_q |
                        (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked);
   assign mem_waddr = {av_rdata_i, out_max_used_q[PktW-1:2]};
   assign mem_wdata_o = wdata;
