@@ -7,9 +7,9 @@
 module usbdev_flop_2syncpulse #(
   parameter Width = 16
 ) (
-  input                    clk_i,    // receive clock
-  input                    rst_ni,
-  input        [Width-1:0] d,
+  input  logic             clk_i,    // receive clock
+  input  logic             rst_ni,
+  input  logic [Width-1:0] d,
   output logic [Width-1:0] q
 );
 
