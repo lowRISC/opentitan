@@ -10,6 +10,8 @@ from reggen.validate import check_bool, check_int, check_ln, val_types
 from .item import Edge, Node, NodeType
 from .xbar import Xbar
 
+from .lib import simplify_addr
+
 # val_types = {
 #     'd': ["int", "integer (binary 0b, octal 0o, decimal, hex 0x)"],
 #     'x': ["xint", "x for undefined otherwise int"],
@@ -251,6 +253,10 @@ def validate(obj):  # OrderedDict -> Xbar
         if node.node_type == NodeType.DEVICE:
             node.xbar = nodeobj["xbar"]
             node.addr_range = []
+
+            # Compact the address ranges
+            if node.xbar:
+                nodeobj["addr_range"] = simplify_addr(nodeobj, obj)
 
             for addr in nodeobj["addr_range"]:
                 address_from = int(addr["base_addr"], 0)
