@@ -110,7 +110,7 @@ class TestplanEntry():
         if resolved_tests != []: self.tests = resolved_tests
         return True
 
-    def map_regr_results(self, regr_results):
+    def map_regr_results(self, regr_results, map_full_testplan=True):
         '''map regression results to tests in this entry
 
         Given a list of regression results (a tuple containing {test name, # passing and
@@ -130,12 +130,12 @@ class TestplanEntry():
                     break
 
             # if a test was not found in regr results, indicate 0/1 passing
-            if not found:
+            if map_full_testplan and not found:
                 test_results.append({"name": test, "passing": 0, "total": 1})
 
         # if no written tests were indicated in the testplan, reuse planned
         # test name and indicate 0/1 passing
-        if self.tests == []:
+        if map_full_testplan and self.tests == []:
             test_results.append({"name": self.name, "passing": 0, "total": 1})
 
         # replace tests with test results
@@ -187,7 +187,7 @@ class Testplan():
         '''
         self.entries = sorted(self.entries, key=lambda entry: entry.milestone)
 
-    def map_regr_results(self, regr_results):
+    def map_regr_results(self, regr_results, map_full_testplan=True):
         '''map regression results to testplan entries
         '''
         def sum_results(totals, entry):
@@ -195,11 +195,24 @@ class Testplan():
             '''
             ms = entry.milestone
             for test in entry.tests:
+                # Create dummy tests entry for milestone total
+                if totals[ms].tests == []:
+                    totals[ms].tests = [{
+                        "name": "TOTAL",
+                        "passing": 0,
+                        "total": 0
+                    }]
+                # Sum milestone total
                 totals[ms].tests[0]["passing"] += test["passing"]
                 totals[ms].tests[0]["total"] += test["total"]
+                # Sum grand total
+                if ms != "N.A.":
+                    totals["N.A."].tests[0]["passing"] += test["passing"]
+                    totals["N.A."].tests[0]["total"] += test["total"]
             return totals
 
         totals = {}
+        # Create entry for total in each milestone; & the grand total.
         for ms in TestplanEntry.milestones:
             totals[ms] = TestplanEntry(name="N.A.",
                                        desc="Total tests",
@@ -209,9 +222,11 @@ class Testplan():
                                            "passing": 0,
                                            "total": 0
                                        }])
+            if ms != "N.A.": totals[ms].tests = []
 
         for entry in self.entries:
-            regr_results = entry.map_regr_results(regr_results)
+            regr_results = entry.map_regr_results(regr_results,
+                                                  map_full_testplan)
             totals = sum_results(totals, entry)
 
         # extract unmapped tests from regr_results and create 'unmapped' entry
@@ -220,23 +235,17 @@ class Testplan():
             if not "mapped" in regr_result.keys():
                 unmapped_regr_results.append(regr_result)
 
-        unmapped = TestplanEntry(name="Unmapped tests",
-                                 desc="""A list of tests in the regression result that are not
+        unmapped = TestplanEntry(
+            name="Unmapped tests",
+            desc="""A list of tests in the regression result that are not
                                       mapped to testplan entries.""",
-                                 milestone="N.A.",
-                                 tests=unmapped_regr_results)
+            milestone="N.A.",
+            tests=unmapped_regr_results)
         totals = sum_results(totals, unmapped)
 
-        # Add the grand total: repurpose the milestone = "N.A." key used for it.
-        for ms in TestplanEntry.milestones:
-            if ms != "N.A.":
-                totals["N.A."].tests[0]["passing"] += totals[ms].tests[0][
-                    "passing"]
-                totals["N.A."].tests[0]["total"] += totals[ms].tests[0]["total"]
-
         # add total back into 'entries'
-        for key in totals.keys():
-            if key != "N.A.": self.entries.append(totals[key])
+        for ms in TestplanEntry.milestones[1:]:
+            self.entries.append(totals[ms])
         self.sort()
         self.entries.append(unmapped)
         self.entries.append(totals["N.A."])
@@ -248,11 +257,15 @@ class Testplan():
         for entry in self.entries:
             entry.display()
 
-    def results_table(self, regr_results, tablefmt="github"):
+    def results_table(self,
+                      regr_results,
+                      map_full_testplan=True,
+                      tablefmt="pipe"):
         '''Print the mapped regression results into a table.
         '''
-        self.map_regr_results(regr_results)
+        self.map_regr_results(regr_results, map_full_testplan)
         table = [["Milestone", "Name", "Tests", "Results"]]
+        align = ["center", "center", "right", "center"]
         for entry in self.entries:
             milestone = entry.milestone
             entry_name = entry.name
@@ -264,4 +277,7 @@ class Testplan():
                     [milestone, entry_name, test["name"], results_str])
                 milestone = ""
                 entry_name = ""
-        return tabulate(table, headers="firstrow", tablefmt=tablefmt)
+        return tabulate(table,
+                        headers="firstrow",
+                        tablefmt=tablefmt,
+                        colalign=align)

@@ -200,7 +200,7 @@ class Deploy():
         try:
             # If output directory exists, back it up.
             if os.path.exists(self.odir):
-                ts = run_cmd("date '" + self.sim_cfg.ts_format + "' -d \"" +
+                ts = run_cmd("date '+" + self.sim_cfg.ts_format + "' -d \"" +
                              "$(stat -c '%y' " + self.odir + ")\"")
                 os.system('mv ' + self.odir + " " + self.odir + "_" + ts)
         except IOError:
