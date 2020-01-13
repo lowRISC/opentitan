@@ -20,10 +20,10 @@ module usb_fs_nb_pe #(
   parameter MaxPktSizeByte = 32,
   parameter PktW = $clog2(MaxPktSizeByte)
 ) (
-  input                          clk_48mhz_i,
-  input                          rst_ni,        // Async. reset, active low
-  input                          link_reset_i,  // USB reset, sync to 48 MHz, active high
-  input [6:0]                    dev_addr_i,
+  input  logic                   clk_48mhz_i,
+  input  logic                   rst_ni,        // Async. reset, active low
+  input  logic                   link_reset_i,  // USB reset, sync to 48 MHz, active high
+  input  logic [6:0]             dev_addr_i,
 
   input  logic                   cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                   tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
@@ -45,9 +45,9 @@ module usb_fs_nb_pe #(
   output logic                   out_ep_acked_o, // good termination, device has acked
   output logic                   out_ep_rollback_o, // bad termination, discard data
   output logic [NumOutEps-1:0]   out_ep_setup_o,
-  input [NumOutEps-1:0]          out_ep_full_i, // Cannot accept data
-  input [NumOutEps-1:0]          out_ep_stall_i, // Stalled
-  input logic  [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
+  input  logic [NumOutEps-1:0]   out_ep_full_i, // Cannot accept data
+  input  logic [NumOutEps-1:0]   out_ep_stall_i, // Stalled
+  input  logic [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
 
   // in endpoint interfaces
   output logic [3:0]             in_ep_current_o, // Other signals addressed to this ep
@@ -56,15 +56,15 @@ module usb_fs_nb_pe #(
   output logic [PktW - 1:0]      in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                   in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                   in_ep_newpkt_o, // New IN pkt start (with in_ep_current_o update)
-  input [NumInEps-1:0]           in_ep_stall_i, // Endpoint in a stall state
-  input [NumInEps-1:0]           in_ep_has_data_i, // Endpoint has data to supply
-  input [7:0]                    in_ep_data_i, // Data for current get_addr
-  input [NumInEps-1:0]           in_ep_data_done_i, // Set when out of data
-  input logic  [NumInEps-1:0]    in_ep_iso_i, // Configure endpoint in isochronous mode
+  input  logic [NumInEps-1:0]    in_ep_stall_i, // Endpoint in a stall state
+  input  logic [NumInEps-1:0]    in_ep_has_data_i, // Endpoint has data to supply
+  input  logic [7:0]             in_ep_data_i, // Data for current get_addr
+  input  logic [NumInEps-1:0]    in_ep_data_done_i, // Set when out of data
+  input  logic  [NumInEps-1:0]   in_ep_iso_i, // Configure endpoint in isochronous mode
 
   // sof interface
-  output                         sof_valid_o,
-  output [10:0]                  frame_index_o,
+  output logic                   sof_valid_o,
+  output logic [10:0]            frame_index_o,
 
   // RX errors
   output logic                   rx_crc_err_o,

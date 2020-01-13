@@ -16,10 +16,10 @@ module usb_fs_nb_in_pe #(
   parameter PktW = $clog2(MaxInPktSizeByte),
   parameter InEpW = $clog2(NumInEps)
 ) (
-  input                     clk_48mhz_i,
-  input                     rst_ni,
-  input                     link_reset_i,
-  input [6:0]               dev_addr_i,
+  input  logic               clk_48mhz_i,
+  input  logic               rst_ni,
+  input  logic               link_reset_i,
+  input  logic [6:0]         dev_addr_i,
 
 
   ////////////////////
@@ -31,10 +31,10 @@ module usb_fs_nb_in_pe #(
   output logic [PktW - 1:0]     in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                  in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                  in_ep_newpkt_o, // New IN packet starting (with in_ep_current_o update)
-  input [NumInEps-1:0]          in_ep_stall_i, // Endpoint in a stall state
-  input [NumInEps-1:0]          in_ep_has_data_i, // Endpoint has data to supply
-  input [7:0]                   in_ep_data_i, // Data for current get_addr
-  input [NumInEps-1:0]          in_ep_data_done_i, // Set when out of data
+  input  logic [NumInEps-1:0]   in_ep_stall_i, // Endpoint in a stall state
+  input  logic [NumInEps-1:0]   in_ep_has_data_i, // Endpoint has data to supply
+  input  logic [7:0]            in_ep_data_i, // Data for current get_addr
+  input  logic [NumInEps-1:0]   in_ep_data_done_i, // Set when out of data
   input  logic [NumInEps-1:0]   in_ep_iso_i, // Configure endpoint in isochronous mode
 
   input  logic [NumInEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
@@ -44,14 +44,14 @@ module usb_fs_nb_in_pe #(
   ////////////////////
 
   // Strobed on reception of packet.
-  input                     rx_pkt_start_i,
-  input                     rx_pkt_end_i,
-  input                     rx_pkt_valid_i,
+  input  logic              rx_pkt_start_i,
+  input  logic              rx_pkt_end_i,
+  input  logic              rx_pkt_valid_i,
 
   // Most recent packet received.
-  input [3:0]               rx_pid_i,
-  input [6:0]               rx_addr_i,
-  input [3:0]               rx_endp_i,
+  input  logic [3:0]        rx_pid_i,
+  input  logic [6:0]        rx_addr_i,
+  input  logic [3:0]        rx_endp_i,
 
   ////////////////////
   // tx path
@@ -59,13 +59,13 @@ module usb_fs_nb_in_pe #(
 
   // Strobe to send new packet.
   output logic              tx_pkt_start_o,
-  input                     tx_pkt_end_i,
+  input  logic              tx_pkt_end_i,
   // Packet type to send
   output logic [3:0]        tx_pid_o,
 
   // Data payload to send if any
-  output                    tx_data_avail_o,
-  input                     tx_data_get_i,
+  output logic              tx_data_avail_o,
+  input  logic              tx_data_get_i,
   output logic [7:0]        tx_data_o
 );
   // suppress warnings

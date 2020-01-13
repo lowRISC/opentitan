@@ -8,14 +8,14 @@
 
 
 module usbdev (
-  input        clk_i,
-  input        rst_ni,
-  input        clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
-  input        rst_usb_ni, // async reset, with relase sync to clk_usb_48_mhz_i
+  input  logic       clk_i,
+  input  logic       rst_ni,
+  input  logic       clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
+  input  logic       rst_usb_ni, // async reset, with relase sync to clk_usb_48_mhz_i
 
   // Register interface
-  input        tlul_pkg::tl_h2d_t tl_d_i,
-  output       tlul_pkg::tl_d2h_t tl_d_o,
+  input  tlul_pkg::tl_h2d_t tl_d_i,
+  output tlul_pkg::tl_d2h_t tl_d_o,
 
   // USB Interface
   input  logic       cio_usb_d_i,

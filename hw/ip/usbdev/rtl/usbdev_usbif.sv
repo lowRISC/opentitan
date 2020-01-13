@@ -17,8 +17,8 @@ module usbdev_usbif  #(
   localparam int NBufWidth = $clog2(NBuf), // derived parameter
   localparam int PktW = $clog2(MaxPktSizeByte) // derived parameter
 ) (
-  input                            clk_48mhz_i, // 48MHz USB clock
-  input                            rst_ni,
+  input  logic                     clk_48mhz_i, // 48MHz USB clock
+  input  logic                     rst_ni,
 
   // Pins (synchronous)
   input  logic                     usb_d_i,
@@ -29,29 +29,29 @@ module usbdev_usbif  #(
   output logic                     usb_oe_o,
 
   output logic                     usb_pullup_en_o,
-  input                            usb_sense_i,
+  input  logic                     usb_sense_i,
 
   // receive (OUT or SETUP) side
-  input [NEndpoints-1:0]           rx_setup_i,
-  input [NEndpoints-1:0]           rx_out_i,
-  input [NEndpoints-1:0]           rx_stall_i,
-  input                            av_rvalid_i,
+  input  logic [NEndpoints-1:0]    rx_setup_i,
+  input  logic [NEndpoints-1:0]    rx_out_i,
+  input  logic [NEndpoints-1:0]    rx_stall_i,
+  input  logic                     av_rvalid_i,
   output logic                     av_rready_o,
-  input [AVFifoWidth - 1: 0]       av_rdata_i,
+  input  logic [AVFifoWidth - 1: 0]av_rdata_i,
   output logic                     event_av_empty_o,
 
   output logic                     rx_wvalid_o,
-  input                            rx_wready_i,
+  input  logic                     rx_wready_i,
   output logic [RXFifoWidth - 1:0] rx_wdata_o,
   output logic                     event_rx_full_o,
   output logic                     setup_received_o,
   output [3:0]                     out_endpoint_o,
 
   // transmit (IN) side
-  input [NBufWidth - 1:0]          in_buf_i,
-  input [PktW:0]                   in_size_i,
-  input [NEndpoints-1:0]           in_stall_i,
-  input [NEndpoints-1:0]           in_rdy_i,
+  input  logic [NBufWidth - 1:0]   in_buf_i,
+  input  logic [PktW:0]            in_size_i,
+  input  logic [NEndpoints-1:0]    in_stall_i,
+  input  logic [NEndpoints-1:0]    in_rdy_i,
   output logic                     set_sent_o,
   output [3:0]                     in_endpoint_o,
 
@@ -60,12 +60,12 @@ module usbdev_usbif  #(
   output logic                     mem_write_o,
   output logic [SramAw-1:0]        mem_addr_o,
   output logic [31:0]              mem_wdata_o,
-  input logic [31:0]               mem_rdata_i,
+  input  logic [31:0]              mem_rdata_i,
 
   // control
-  input                            enable_i,
-  input [6:0]                      devaddr_i,
-  output                           clr_devaddr_o,
+  input  logic                     enable_i,
+  input  logic [6:0]               devaddr_i,
+  output logic                     clr_devaddr_o,
   input  logic [NEndpoints-1:0]    ep_iso_i,
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)

@@ -17,10 +17,10 @@ module usb_fs_nb_out_pe #(
   parameter PktW = $clog2(MaxOutPktSizeByte),
   parameter OutEpW = $clog2(NumOutEps)
 ) (
-  input                        clk_48mhz_i,
-  input                        rst_ni,
-  input                        link_reset_i,
-  input [6:0]                  dev_addr_i,
+  input  logic                   clk_48mhz_i,
+  input  logic                   rst_ni,
+  input  logic                   link_reset_i,
+  input  logic [6:0]             dev_addr_i,
 
   ////////////////////////
   // endpoint interface //
@@ -33,9 +33,9 @@ module usb_fs_nb_out_pe #(
   output logic                   out_ep_acked_o, // good termination, device has acked
   output logic                   out_ep_rollback_o, // bad termination, discard data
   output logic [NumOutEps-1:0]   out_ep_setup_o,
-  input [NumOutEps-1:0]          out_ep_full_i, // Cannot accept data
-  input [NumOutEps-1:0]          out_ep_stall_i, // Stalled
-  input logic  [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
+  input  logic [NumOutEps-1:0]   out_ep_full_i, // Cannot accept data
+  input  logic [NumOutEps-1:0]   out_ep_stall_i, // Stalled
+  input  logic [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
 
   input logic  [NumOutEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
 
@@ -44,18 +44,18 @@ module usb_fs_nb_out_pe #(
   /////////////
 
   // Strobed on reception of packet.
-  input                        rx_pkt_start_i,
-  input                        rx_pkt_end_i,
-  input                        rx_pkt_valid_i,
+  input  logic                 rx_pkt_start_i,
+  input  logic                 rx_pkt_end_i,
+  input  logic                 rx_pkt_valid_i,
 
   // Most recent packet received.
-  input [3:0]                  rx_pid_i,
-  input [6:0]                  rx_addr_i,
-  input [3:0]                  rx_endp_i,
+  input  logic [3:0]           rx_pid_i,
+  input  logic [6:0]           rx_addr_i,
+  input  logic [3:0]           rx_endp_i,
 
   // rx_data is pushed into endpoint controller.
-  input                        rx_data_put_i,
-  input [7:0]                  rx_data_i,
+  input  logic                 rx_data_put_i,
+  input  logic [7:0]           rx_data_i,
 
 
   /////////////
@@ -64,7 +64,7 @@ module usb_fs_nb_out_pe #(
 
   // Strobe to send new packet.
   output logic                 tx_pkt_start_o,
-  input                        tx_pkt_end_i,
+  input  logic                 tx_pkt_end_i,
   output logic [3:0]           tx_pid_o
 );
 

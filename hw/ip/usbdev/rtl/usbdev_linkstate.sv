@@ -6,13 +6,13 @@
 //
 
 module usbdev_linkstate (
-  input        clk_48mhz_i,
-  input        rst_ni,
-  input        us_tick_i,
-  input        usb_sense_i,
-  input logic  usb_rx_d_i,
-  input logic  usb_rx_se0_i,
-  input        sof_valid_i,
+  input  logic clk_48mhz_i,
+  input  logic rst_ni,
+  input  logic us_tick_i,
+  input  logic usb_sense_i,
+  input  logic usb_rx_d_i,
+  input  logic usb_rx_se0_i,
+  input  logic sof_valid_i,
   output logic link_disconnect_o,  // level
   output logic link_connect_o,     // level
   output logic link_reset_o,       // level
