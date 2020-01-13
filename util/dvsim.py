@@ -329,6 +329,13 @@ def main():
         "Print dvsim tool messages only, without actually running any command")
 
     parser.add_argument(
+        "--map-full-testplan",
+        default=False,
+        action='store_true',
+        help="Force complete testplan annotated results to be shown at the end."
+    )
+
+    parser.add_argument(
         "-pi",
         "--print-interval",
         type=int,
@@ -371,14 +378,21 @@ def main():
     # be deployed.
     cfg = SimCfg.SimCfg(proj_root=get_proj_root(), args=args)
 
+    # Purge the scratch path if --purge option is set.
+    if args.purge:
+        cfg.do_purge()
+        sys.exit(0)
+
+    # List items available for run if --list switch is passed, and exit.
+    if args.list != []:
+        cfg.print_list()
+        sys.exit(0)
+
     # Deploy the builds and runs
     Deploy.Deploy.deploy(cfg.deploy)
 
     # Generate results.
-    cfg.gen_results()
-
-    # sim_cfg_list = dvsim_parser.run(args)
-    # dvsim_scheduler.dispatch(sim_cfg_list)
+    print(cfg.gen_results())
 
 
 if __name__ == '__main__':

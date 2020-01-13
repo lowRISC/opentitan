@@ -28,9 +28,12 @@ class SimCfg():
     regression framework.
     """
 
+    # Maintain a list of registered top level cfgs
+    cfgs = []
+
     # Static variables - indicate timestamp.
     ts_format_long = "%A %B %d %Y %I:%M:%S%p %Z"
-    ts_format = '+%a.%m.%d.%y__%I.%M.%S%p'
+    ts_format = "%a.%m.%d.%y__%I.%M.%S%p"
 
     def __str__(self):
         return pprint.pformat(self.__dict__)
@@ -69,6 +72,7 @@ class SimCfg():
         self.dry_run = args.dry_run
         self.skip_ral = args.skip_ral
         self.job_prefix = args.job_prefix
+        self.map_full_testplan = args.map_full_testplan
 
         # Set default sim modes for unpacking
         if self.waves is True: self.en_build_modes.append("waves")
@@ -150,10 +154,6 @@ class SimCfg():
         # tests and regressions
         self.create_objects()
 
-        # Once all objects are constructed, check if the --list option is passed
-        # Is yes, then simply print the items requested and exit.
-        self.print_list()
-
         # Look at list of items and build the list of tests to run
         self.deploy = []
         self.build_list = []
@@ -165,6 +165,21 @@ class SimCfg():
 
         # Print info
         log.info("Scratch path: %s", self.scratch_path)
+
+        # Register self
+        SimCfg.cfgs.append(self)
+
+    def do_purge(self):
+        if self.scratch_path is not "":
+            try:
+                log.info("Purging scratch path %s", self.scratch_path)
+                os.system("/bin/rm -rf " + self.scratch_path)
+            except IOError:
+                log.error('Failed to purge scratch directory %s',
+                          self.scratch_path)
+
+            # TODO: can't exit here!
+            sys.exit(0)
 
     def process_exports(self):
         # Convert 'exports' to dict
@@ -306,16 +321,13 @@ class SimCfg():
         setattr(self, "regressions", regressions)
 
     def print_list(self):
-        if self.list_items != []:
-            for list_item in self.list_items:
-                if hasattr(self, list_item):
-                    items = getattr(self, list_item)
-                    for item in items:
-                        log.info(item)
-                else:
-                    log.error("Item %s does not exist!", list_item)
-                    sys.exit(1)
-            sys.exit(0)
+        for list_item in self.list_items:
+            if hasattr(self, list_item):
+                items = getattr(self, list_item)
+                for item in items:
+                    log.info(item)
+            else:
+                log.error("Item %s does not exist!", list_item)
 
     def create_build_and_run_list(self):
         # Walk through the list of items to run and create the build and run
@@ -429,6 +441,14 @@ class SimCfg():
             return None
 
         def gen_results_sub(items, results):
+            '''
+            Generate the results table from the test runs (builds are ignored).
+            The table has 3 columns - name, passing and total as a list of dicts.
+            This is populated for all tests. The number of passing and total is
+            in reference to the number of iterations or reseeds for that test.
+            This list of dicts is directly consumed by the Testplan::results_table
+            method for testplan mapping / annotation.
+            '''
             if items == []: return results
             for item in items:
                 # Only generate results table for runs.
@@ -443,12 +463,17 @@ class SimCfg():
             return results
 
         # Generate results table for runs.
-        regr_results = {}
-        regr_results["timestamp"] = self.timestamp_long
-        regr_results["test_results"] = gen_results_sub(self.deploy, [])
         results_str = "# " + self.name.upper() + " Regression Results\n"
-        results_str += "  Run on " + regr_results["timestamp"] + "\n"
+        results_str += "  Run on " + self.timestamp_long + "\n"
         results_str += "\n## Test Results\n"
         testplan = testplan_utils.parse_testplan(self.testplan)
-        results_str += testplan.results_table(regr_results["test_results"])
-        print(results_str)
+        results_str += testplan.results_table(
+            regr_results=gen_results_sub(self.deploy, []),
+            map_full_testplan=self.map_full_testplan)
+
+        # Write results to the scratch area
+        regr_results_file = self.scratch_path + "/regr_results_" + self.timestamp + "." + fmt
+        f = open(regr_results_file, 'w')
+        f.write(results_str)
+        f.close()
+        return results_str
