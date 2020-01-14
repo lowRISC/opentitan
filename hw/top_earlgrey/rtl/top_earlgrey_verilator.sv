@@ -18,12 +18,18 @@ module top_earlgrey_verilator (
   logic cio_spi_device_mosi_p2d;
   logic cio_spi_device_miso_d2p, cio_spi_device_miso_en_d2p;
 
+  logic cio_usbdev_sense_p2d, cio_usbdev_pullup_d2p, cio_usbdev_pullup_en_d2p;
+  logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
+  logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
+
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
   // Top-level design
   top_earlgrey top_earlgrey (
     .clk_i                    (clk_i),
     .rst_ni                   (rst_ni),
+
+    .clk_usb_48mhz_i          (clk_i),
 
     .jtag_tck_i               (cio_jtag_tck),
     .jtag_tms_i               (cio_jtag_tms),
@@ -47,7 +53,17 @@ module top_earlgrey_verilator (
     .dio_spi_device_miso_o    (cio_spi_device_miso_d2p),
     .dio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
 
-    .scanmode_i                   (1'b0)
+    .dio_usbdev_sense_i       (cio_usbdev_sense_p2d),
+    .dio_usbdev_pullup_o      (cio_usbdev_pullup_d2p),
+    .dio_usbdev_pullup_en_o   (cio_usbdev_pullup_en_d2p),
+    .dio_usbdev_dp_i          (cio_usbdev_dp_p2d),
+    .dio_usbdev_dp_o          (cio_usbdev_dp_d2p),
+    .dio_usbdev_dp_en_o       (cio_usbdev_dp_en_d2p),
+    .dio_usbdev_dn_i          (cio_usbdev_dn_p2d),
+    .dio_usbdev_dn_o          (cio_usbdev_dn_d2p),
+    .dio_usbdev_dn_en_o       (cio_usbdev_dn_en_d2p),
+
+    .scanmode_i               (1'b0)
   );
 
   // GPIO DPI
@@ -96,6 +112,22 @@ module top_earlgrey_verilator (
     .spi_device_mosi_o    (cio_spi_device_mosi_p2d),
     .spi_device_miso_i    (cio_spi_device_miso_d2p),
     .spi_device_miso_en_i (cio_spi_device_miso_en_d2p)
+  );
+
+  // USB DPI
+  usbdpi u_usbdpi (
+    .clk_i         (clk_i),
+    .rst_ni        (rst_ni),
+    .clk_48MHz_i   (clk_i),
+    .sense_p2d     (cio_usbdev_sense_p2d),
+    .pullup_d2p    (cio_usbdev_pullup_d2p),
+    .pullup_en_d2p (cio_usbdev_pullup_en_d2p),
+    .dp_p2d        (cio_usbdev_dp_p2d),
+    .dp_d2p        (cio_usbdev_dp_d2p),
+    .dp_en_d2p     (cio_usbdev_dp_en_d2p),
+    .dn_p2d        (cio_usbdev_dn_p2d),
+    .dn_d2p        (cio_usbdev_dn_d2p),
+    .dn_en_d2p     (cio_usbdev_dn_en_d2p)
   );
 
   // monitor for termination

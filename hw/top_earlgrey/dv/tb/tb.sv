@@ -16,13 +16,14 @@ module tb;
   `include "dv_macros.svh"
   `include "chip_hier_macros.svh"
 
-  wire clk, rst_n;
+  wire clk, clk_usb_48mhz, rst_n;
   wire [NUM_GPIOS-1:0] gpio_pins;
   wire jtag_tck;
   wire jtag_tms;
   wire jtag_trst_n;
   wire jtag_tdi;
   wire jtag_tdo;
+  wire usb_dp0, usb_dn0, usb_sense0, usb_pullup0;
 
   bit stub_cpu;
 
@@ -33,6 +34,13 @@ module tb;
   uart_if uart_if();
   jtag_if jtag_if();
 
+  // USB-related signals
+  assign clk_usb_48mhz = clk; // TODO: Generate the 48MHz clock
+  assign usb_dp0 = 1'bz; // TODO: Do something more reasonable, is I/O
+  assign usb_dn0 = 1'bz; // TODO: Do something more reasonable, is I/O
+  assign usb_sense0 = 1'bz; // TODO: Do something more reasonable, is I/O
+  // TODO: Do something reasonable with usb_pullup0
+
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
@@ -40,34 +48,40 @@ module tb;
 
   top_earlgrey_asic dut (
     // Clock and Reset
-    .IO_CLK     (clk),
-    .IO_RST_N   (rst_n),
+    .IO_CLK           (clk),
+    .IO_RST_N         (rst_n),
+    .IO_CLK_USB_48MHZ (clk_usb_48mhz),
     // JTAG interface
-    .IO_JTCK    (jtag_tck),
-    .IO_JTMS    (jtag_tms),
-    .IO_JTRST_N (jtag_trst_n),
-    .IO_JTDI    (jtag_tdi),
-    .IO_JTDO    (jtag_tdo),
+    .IO_JTCK          (jtag_tck),
+    .IO_JTMS          (jtag_tms),
+    .IO_JTRST_N       (jtag_trst_n),
+    .IO_JTDI          (jtag_tdi),
+    .IO_JTDO          (jtag_tdo),
     // UART interface
-    .IO_URX     (uart_if.uart_rx),
-    .IO_UTX     (uart_if.uart_tx),
+    .IO_URX           (uart_if.uart_rx),
+    .IO_UTX           (uart_if.uart_tx),
+    // USB interface
+    .IO_USB_DP0       (usb_dp0),
+    .IO_USB_DN0       (usb_dn0),
+    .IO_USB_SENSE0    (usb_sense0),
+    .IO_USB_PULLUP0   (usb_pullup0),
     // GPIO x 16 interface
-    .IO_GP0     (gpio_pins[0 ]),
-    .IO_GP1     (gpio_pins[1 ]),
-    .IO_GP2     (gpio_pins[2 ]),
-    .IO_GP3     (gpio_pins[3 ]),
-    .IO_GP4     (gpio_pins[4 ]),
-    .IO_GP5     (gpio_pins[5 ]),
-    .IO_GP6     (gpio_pins[6 ]),
-    .IO_GP7     (gpio_pins[7 ]),
-    .IO_GP8     (gpio_pins[8 ]),
-    .IO_GP9     (gpio_pins[9 ]),
-    .IO_GP10    (gpio_pins[10]),
-    .IO_GP11    (gpio_pins[11]),
-    .IO_GP12    (gpio_pins[12]),
-    .IO_GP13    (gpio_pins[13]),
-    .IO_GP14    (gpio_pins[14]),
-    .IO_GP15    (gpio_pins[15])
+    .IO_GP0           (gpio_pins[0 ]),
+    .IO_GP1           (gpio_pins[1 ]),
+    .IO_GP2           (gpio_pins[2 ]),
+    .IO_GP3           (gpio_pins[3 ]),
+    .IO_GP4           (gpio_pins[4 ]),
+    .IO_GP5           (gpio_pins[5 ]),
+    .IO_GP6           (gpio_pins[6 ]),
+    .IO_GP7           (gpio_pins[7 ]),
+    .IO_GP8           (gpio_pins[8 ]),
+    .IO_GP9           (gpio_pins[9 ]),
+    .IO_GP10          (gpio_pins[10]),
+    .IO_GP11          (gpio_pins[11]),
+    .IO_GP12          (gpio_pins[12]),
+    .IO_GP13          (gpio_pins[13]),
+    .IO_GP14          (gpio_pins[14]),
+    .IO_GP15          (gpio_pins[15])
   );
 
   // connect sw_msg_monitor

@@ -2,18 +2,39 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdbool.h>
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
+#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 #include "sw/device/lib/usbdev.h"
 
 // These just for the '/' printout
-#define USBDEV_BASE_ADDR 0x40020000
+#define USBDEV_BASE_ADDR 0x40150000
 #include "usbdev_regs.h"  // Generated.
+
+#define SPI_MAX 32
+
+// called from ctr0 when something bad happens
+// char I=illegal instruction, A=lsu error (address), E=ecall
+void trap_handler(uint32_t mepc, char c) {
+  uart_send_char(c);
+  uart_send_uint(mepc, 32);
+  while (1) {
+    gpio_write_all(0xAA00);  // pattern
+    usleep(200 * 1000);
+    gpio_write_all(0x5500);  // pattern
+    usleep(100 * 1000);
+  }
+}
+
+#define MK_PRINT(c) \
+  (((c != 0xa) && (c != 0xd) && ((c < 32) || (c > 126))) ? '_' : c)
 
 // Build Configuration descriptor array
 static uint8_t cfg_dscr[] = {
@@ -33,42 +54,32 @@ static usbdev_ctx_t usbdev_ctx;
 static usb_controlep_ctx_t control_ctx;
 static usb_ss_ctx_t ss_ctx[2];
 
-static void test_error(void) {
-  while (1) {
-    gpio_write_all(0xAA00);  // pattern
-    usleep(200 * 1000);
-    gpio_write_all(0x5500);  // pattern
-    usleep(100 * 1000);
-  }
-}
-
-// Override default handler routines
-void handler_instr_ill_fault(void) {
-  uart_send_str("Instruction Illegal fault");
-  test_error();
-}
-
-// Override default handler routines
-void handler_lsu_fault(void) {
-  uart_send_str("Load/Store Fault");
-  test_error();
-}
-
-#define MK_PRINT(c) \
-  (((c != 0xa) && (c != 0xd) && ((c < 32) || (c > 126))) ? '_' : c)
+// We signal PASS! after receiving USB_MAX.
+static volatile unsigned int num_chars_rx = 0;
+#ifndef USB_MAX
+#define USB_MAX 6
+#endif
 
 /* Inbound USB characters get printed to the UART via these callbacks */
 /* Not ideal because the UART is slower */
-static void serial_rx0(uint8_t c) { uart_send_char(MK_PRINT(c)); }
+static void serial_rx0(uint8_t c) {
+  uart_send_char(MK_PRINT(c));
+  num_chars_rx++;
+}
 /* Add one to rx character so you can tell it is the second instance */
-static void serial_rx1(uint8_t c) { uart_send_char(MK_PRINT(c + 1)); }
+static void serial_rx1(uint8_t c) {
+  uart_send_char(MK_PRINT(c + 1));
+  num_chars_rx++;
+}
 
 int main(int argc, char **argv) {
   uart_init(UART_BAUD_RATE);
 
+  pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
   gpio_init(0xFF00);
 
+  spid_init();
   // Add DATE and TIME because I keep fooling myself with old versions
   uart_send_str(
       "Hello USB! "__DATE__
@@ -87,13 +98,19 @@ int main(int argc, char **argv) {
   usb_controlep_init(&control_ctx, &usbdev_ctx, 0, cfg_dscr, sizeof(cfg_dscr));
   usb_simpleserial_init(&ss_ctx[0], &usbdev_ctx, 1, serial_rx0);
   usb_simpleserial_init(&ss_ctx[1], &usbdev_ctx, 2, serial_rx1);
+  bool pass_signaled = false;
 
   uint32_t gpio_in;
   uint32_t gpio_in_prev = 0;
   uint32_t gpio_in_changes;
+  uint8_t spi_buf[SPI_MAX];
+  uint32_t spi_in;
+
+  spid_send("SPI!", 4);
 
   while (1) {
     usbdev_poll(&usbdev_ctx);
+
     // report changed switches over UART
     gpio_in = gpio_read() & 0x100FF;  // 0-7 is switch input, 16 is FTDI
     gpio_in_changes = (gpio_in & ~gpio_in_prev) | (~gpio_in & gpio_in_prev);
@@ -113,13 +130,25 @@ int main(int argc, char **argv) {
     }
     gpio_in_prev = gpio_in;
 
+    // SPI character echo
+    spi_in = spid_read_nb(spi_buf, SPI_MAX);
+    if (spi_in) {
+      uint32_t d = (*(uint32_t *)spi_buf) ^ 0x01010101;
+      spid_send(&d, 4);
+      uart_send_str("SPI: ");
+      for (int i = 0; i < spi_in; i++) {
+        uart_send_char(MK_PRINT(spi_buf[i]));
+      }
+      uart_send_str("\r\n");
+    }
     // UART echo
     char rcv_char;
     while (uart_rcv_char(&rcv_char) != -1) {
       uart_send_char(rcv_char);
+      gpio_write_all(rcv_char << 8);
       if (rcv_char == '/') {
         uart_send_char('I');
-        uart_send_uint(REG32(USBDEV_INTR_STATE()), 12);
+        uart_send_uint(REG32(USBDEV_INTR_STATE()), 16);
         uart_send_char('-');
         uart_send_uint(REG32(USBDEV_USBSTAT()), 32);
         uart_send_char(' ');
@@ -127,7 +156,15 @@ int main(int argc, char **argv) {
         usb_simpleserial_send_byte(&ss_ctx[0], rcv_char);
         usb_simpleserial_send_byte(&ss_ctx[1], rcv_char + 1);
       }
-      gpio_write_all(rcv_char << 8);
+    }
+
+    // Signal that the simulation passed
+    if ((num_chars_rx >= USB_MAX) && (pass_signaled == false)) {
+      uart_send_str("\r\nPASS!\r\n");
+      pass_signaled = true;
     }
   }
+  uart_send_str("\r\nUSB received 0x");
+  uart_send_uint(num_chars_rx, 32);
+  uart_send_str(" characters.\r\n");
 }

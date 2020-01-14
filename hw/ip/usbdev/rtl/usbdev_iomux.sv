@@ -15,7 +15,7 @@ module usbdev_iomux (
   input  logic                          clk_i,
   input  logic                          rst_ni,
   input  logic                          clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
-  input  logic                          rst_usb_ni,
+  input  logic                          rst_usb_48mhz_ni,
 
   // Configuration (quasi-static)
   input  logic                          rx_differential_mode_i,
@@ -83,7 +83,7 @@ module usbdev_iomux (
     .Width (4)
   ) cdc_io_to_usb (
     .clk_i  (clk_usb_48mhz_i),
-    .rst_ni (rst_usb_ni),
+    .rst_ni (rst_usb_48mhz_ni),
     .d      ({cio_usb_dp_i,
               cio_usb_dn_i,
               cio_usb_d_i,

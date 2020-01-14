@@ -6,6 +6,11 @@
 set_property -dict { PACKAGE_PIN R4    IOSTANDARD LVCMOS33 } [get_ports { IO_CLK }]; #IO_L13P_T2_MRCC_34 Sch=sysclk
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_CLK]
 
+## Clock Domain Crossings
+create_generated_clock -name clk_50_unbuf -source [get_pin clkgen/pll/CLKIN1] [get_pin clkgen/pll/CLKOUT0]
+create_generated_clock -name clk_48_unbuf -source [get_pin clkgen/pll/CLKIN1] [get_pin clkgen/pll/CLKOUT1]
+set_clock_groups -group clk_50_unbuf -group clk_48_unbuf -asynchronous
+
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets IO_SDCK_IBUF]; # SDCK clock to be ignored
 
 ## FMC Transceiver clocks (Must be set to value provided by Mezzanine card, currently set to 156.25 MHz)
@@ -121,10 +126,10 @@ set_property -dict { PACKAGE_PIN V9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [
 set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN0 }]; #IO_L21N_T3_DQS_34 Sch=jb_n[1]
 set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_PULLUP0 }]; #IO_L19P_T3_34 Sch=jb_p[2]
 set_property -dict { PACKAGE_PIN W7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE0 }]; #IO_L19N_T3_VREF_34 Sch=jb_n[2]
-set_property -dict { PACKAGE_PIN W9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DP1 }]; #IO_L24P_T3_34 Sch=jb_p[3]
-set_property -dict { PACKAGE_PIN Y9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN1 }]; #IO_L24N_T3_34 Sch=jb_n[3]
-set_property -dict { PACKAGE_PIN Y8    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_PULLUP1 }]; #IO_L23P_T3_34 Sch=jb_p[4]
-set_property -dict { PACKAGE_PIN Y7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE1 }]; #IO_L23N_T3_34 Sch=jb_n[4]
+#set_property -dict { PACKAGE_PIN W9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DP1 }]; #IO_L24P_T3_34 Sch=jb_p[3]
+#set_property -dict { PACKAGE_PIN Y9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN1 }]; #IO_L24N_T3_34 Sch=jb_n[3]
+#set_property -dict { PACKAGE_PIN Y8    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_PULLUP1 }]; #IO_L23P_T3_34 Sch=jb_p[4]
+#set_property -dict { PACKAGE_PIN Y7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE1 }]; #IO_L23N_T3_34 Sch=jb_n[4]
 
 
 ## Pmod header JC
@@ -132,7 +137,7 @@ set_property -dict { PACKAGE_PIN Y7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB
 #set_property -dict { PACKAGE_PIN AA6   IOSTANDARD LVCMOS33 } [get_ports { IO_SDCSB  }]; #IO_L18N_T2_34 Sch=jc_n[1]
 #set_property -dict { PACKAGE_PIN AA8   IOSTANDARD LVCMOS33 } [get_ports { IO_SDMOSI }]; #IO_L22P_T3_34 Sch=jc_p[2]
 #set_property -dict { PACKAGE_PIN AB8   IOSTANDARD LVCMOS33 } [get_ports { IO_SDMISO }]; #IO_L22N_T3_34 Sch=jc_n[2]
-set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33 } [get_ports { IO_OBS }]; #IO_L18P_T2_34 Sch=jc_p[1]
+#set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33 } [get_ports { IO_OBS }]; #IO_L18P_T2_34 Sch=jc_p[1]
 #set_property -dict { PACKAGE_PIN AA6   IOSTANDARD LVCMOS33 } [get_ports { jc[1] }]; #IO_L18N_T2_34 Sch=jc_n[1]
 #set_property -dict { PACKAGE_PIN AA8   IOSTANDARD LVCMOS33 } [get_ports { jc[2] }]; #IO_L22P_T3_34 Sch=jc_p[2]
 #set_property -dict { PACKAGE_PIN AB8   IOSTANDARD LVCMOS33 } [get_ports { jc[3] }]; #IO_L22N_T3_34 Sch=jc_n[2]

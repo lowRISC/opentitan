@@ -406,7 +406,9 @@ module xbar_main (
       ((tl_s1n_20_us_h2d.a_address <= (ADDR_MASK_PERI[0] + ADDR_SPACE_PERI[0])) &&
        (tl_s1n_20_us_h2d.a_address >= ADDR_SPACE_PERI[0])) ||
       ((tl_s1n_20_us_h2d.a_address <= (ADDR_MASK_PERI[1] + ADDR_SPACE_PERI[1])) &&
-       (tl_s1n_20_us_h2d.a_address >= ADDR_SPACE_PERI[1]))
+       (tl_s1n_20_us_h2d.a_address >= ADDR_SPACE_PERI[1])) ||
+      ((tl_s1n_20_us_h2d.a_address <= (ADDR_MASK_PERI[2] + ADDR_SPACE_PERI[2])) &&
+       (tl_s1n_20_us_h2d.a_address >= ADDR_SPACE_PERI[2]))
     ) begin
       dev_sel_s1n_20 = 4'd4;
     
@@ -449,7 +451,9 @@ module xbar_main (
       ((tl_s1n_30_us_h2d.a_address <= (ADDR_MASK_PERI[0] + ADDR_SPACE_PERI[0])) &&
        (tl_s1n_30_us_h2d.a_address >= ADDR_SPACE_PERI[0])) ||
       ((tl_s1n_30_us_h2d.a_address <= (ADDR_MASK_PERI[1] + ADDR_SPACE_PERI[1])) &&
-       (tl_s1n_30_us_h2d.a_address >= ADDR_SPACE_PERI[1]))
+       (tl_s1n_30_us_h2d.a_address >= ADDR_SPACE_PERI[1])) ||
+      ((tl_s1n_30_us_h2d.a_address <= (ADDR_MASK_PERI[2] + ADDR_SPACE_PERI[2])) &&
+       (tl_s1n_30_us_h2d.a_address >= ADDR_SPACE_PERI[2]))
     ) begin
       dev_sel_s1n_30 = 4'd3;
     

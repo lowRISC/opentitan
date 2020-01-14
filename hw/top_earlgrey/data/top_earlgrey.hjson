@@ -11,6 +11,7 @@
   clocks: [
     { name: "main", freq: "100000000" }
     { name: "fixed", freq: "100000000" }
+    { name: "usb", freq: "48000000" }
   ]
 
   // Reset attributes
@@ -23,6 +24,7 @@
     { name: "sys", type: "root", clk: "main"}
     { name: "sys_fixed", type: "leaf", root: "sys", clk: "fixed"}
     { name: "spi_device", type: "leaf", root: "sys", clk: "fixed"}
+    { name: "usb", type: "leaf", root: "sys", clk: "usb"}
   ]
 
   // Number of cores: used in rv_plic and timer
@@ -120,6 +122,12 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40140000",
     }
+    { name: "usbdev",
+      type: "usbdev",
+      clock_connections: {clk_i: "fixed", clk_usb_48mhz_i: "usb"},
+      reset_connections: {rst_ni: "sys_fixed", rst_usb_48mhz_ni: "usb"},
+      base_addr: "0x40150000",
+    },
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -170,7 +178,7 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen" ]
+                     "hmac", "alert_handler", "nmi_gen", "usbdev" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -205,6 +213,7 @@
       //{ name: "uart.tx", pad: ["ChA[0]"]},
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
+      { name: "usbdev", pad: ["ChC[0..3]"]},
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are
@@ -240,6 +249,7 @@
     pads: [
       { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
       { name: "ChB" type: "IO_33V", count: 4, attr: ["KEEP", "WEAK"]},
+      { name: "ChC" type: "IO_33V", count: 4, attr: ["KEEP", "STRONG"]},
     ]
   }
 

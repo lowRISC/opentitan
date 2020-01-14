@@ -26,6 +26,9 @@ module top_${top["name"]} #(
   input               clk_i,
   input               rst_ni,
 
+  // USB clock
+  input               clk_usb_48mhz_i,
+
   // JTAG interface
   input               jtag_tck_i,
   input               jtag_tms_i,
@@ -195,10 +198,15 @@ module top_${top["name"]} #(
   end
 % endif
 
-  // clock assignments
+  // Clock assignments
 % for clock in top['clocks']:
+  % if clock['name'] != "usb" :
   assign ${clock['name']}_clk = clk_i;
+  % endif
 % endfor
+
+  // Separate clock input for USB clock
+  assign usb_clk = clk_usb_48mhz_i;
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -209,12 +217,19 @@ module top_${top["name"]} #(
   assign lc_rst_n = rst_ni;
   assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
 
-  //non-root reset assignments
+  // Non-root reset assignments
 % for reset in top['resets']:
-  % if reset['type'] in ['leaf']:
+  % if reset['type'] in ['leaf'] and reset['name'] != "usb" :
   assign ${reset['name']}_rst_n = ${reset['root']}_rst_n;
   % endif
 % endfor
+
+  // Reset synchronizer for USB
+  logic [1:0] usb_rst_q;
+  always_ff @(posedge usb_clk) begin
+    usb_rst_q <= {usb_rst_q[0], sys_rst_n};
+  end
+  assign usb_rst_n = sys_rst_n & usb_rst_q[1];
 
   // debug request from rv_dm to core
   logic debug_req;
@@ -522,21 +537,42 @@ else:
       .tl_h_o (tl_${m["name"]}_h_h2d),
       .tl_h_i (tl_${m["name"]}_h_d2h),
     % endif
-    % for p_in in m["available_input_list"] + m["available_inout_list"]:
-      % if loop.first:
+    % if m["type"] == "usbdev":
+
+      // Differential data - Currently not used.
+      .cio_d_i          (1'b0),
+      .cio_d_o          (),
+      .cio_se0_o        (),
+
+      // Single-ended data
+      .cio_dp_i         (cio_usbdev_dp_p2d),
+      .cio_dn_i         (cio_usbdev_dn_p2d),
+      .cio_dp_o         (cio_usbdev_dp_d2p),
+      .cio_dn_o         (cio_usbdev_dn_d2p),
+
+      // Non-data I/O
+      .cio_sense_i      (cio_usbdev_sense_p2d),
+      .cio_oe_o         (cio_usbdev_dp_en_d2p),
+      .cio_tx_mode_se_o (),
+      .cio_pullup_en_o  (cio_usbdev_pullup_en_d2p),
+      .cio_suspend_o    (),
+    % else:
+      % for p_in in m["available_input_list"] + m["available_inout_list"]:
+        % if loop.first:
 
       // Input
-      % endif
+        % endif
       .${lib.ljust("cio_"+p_in["name"]+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in["name"]}_p2d),
-    % endfor
-    % for p_out in m["available_output_list"] + m["available_inout_list"]:
-      % if loop.first:
+      % endfor
+      % for p_out in m["available_output_list"] + m["available_inout_list"]:
+        % if loop.first:
 
       // Output
-      % endif
+        % endif
       .${lib.ljust("cio_"+p_out["name"]+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_d2p),
       .${lib.ljust("cio_"+p_out["name"]+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_en_d2p),
-    % endfor
+      % endfor
+    % endif
     % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
       % if loop.first:
 
@@ -608,6 +644,10 @@ else:
   );
 
 % endfor
+  // USB assignments
+  assign cio_usbdev_dn_en_d2p = cio_usbdev_dp_en_d2p; // have a single output enable only
+  assign cio_usbdev_pullup_d2p = 1'b1;
+
   // interrupt assignments
   assign intr_vector = {
   % for intr in top["interrupt"][::-1]:

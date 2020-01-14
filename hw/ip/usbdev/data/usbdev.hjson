@@ -2,19 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "usbdev",
-  clock_primary: "clk_fixed",
-  other_clock_list: [ "clk_48MHz" ]
+  clock_primary: "clk_i",
+  other_clock_list: [ "clk_usb_48mhz_i" ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_usb_48mhz_ni" ]
   bus_device: "tlul",
   bus_host: "none",
   available_inout_list: [
-    { name: "usb_dp", desc: "USB data D+" }
-    { name: "usb_dn", desc: "USB data D-" }
+    #{ name: "d", desc: "USB data differential" }
+    { name: "dp", desc: "USB data D+" }
+    { name: "dn", desc: "USB data D-" }
   ],
   available_input_list: [
-    {  name: "usb_sense", desc: "USB host VBUS sense" }
+    {  name: "sense", desc: "USB host VBUS sense" }
   ],
   available_output_list: [
-    { name: "usb_pullup", desc: "USB Full Speed pullup control" }
+    { name: "pullup", desc: "USB Full Speed pullup control" }
   ],
   param_list: [
     { name:    "NEndpoints",

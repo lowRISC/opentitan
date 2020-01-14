@@ -19,6 +19,10 @@
       name: fixed
       freq: "100000000"
     }
+    {
+      name: usb
+      freq: "48000000"
+    }
   ]
   resets:
   [
@@ -43,6 +47,12 @@
       type: leaf
       root: sys
       clk: fixed
+    }
+    {
+      name: usb
+      type: leaf
+      root: sys
+      clk: usb
     }
   ]
   num_cores: "1"
@@ -534,6 +544,138 @@
       alert_list: []
       scan: "false"
     }
+    {
+      name: usbdev
+      type: usbdev
+      clock_connections:
+      {
+        clk_i: fixed
+        clk_usb_48mhz_i: usb
+      }
+      reset_connections:
+      {
+        rst_ni: sys_fixed
+        rst_usb_48mhz_ni: usb
+      }
+      base_addr: 0x40150000
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list:
+      [
+        {
+          name: sense
+          width: 1
+          type: input
+        }
+      ]
+      available_output_list:
+      [
+        {
+          name: pullup
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list:
+      [
+        {
+          name: dp
+          width: 1
+          type: inout
+        }
+        {
+          name: dn
+          width: 1
+          type: inout
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: pkt_received
+          width: 1
+          type: interrupt
+        }
+        {
+          name: pkt_sent
+          width: 1
+          type: interrupt
+        }
+        {
+          name: disconnected
+          width: 1
+          type: interrupt
+        }
+        {
+          name: host_lost
+          width: 1
+          type: interrupt
+        }
+        {
+          name: link_reset
+          width: 1
+          type: interrupt
+        }
+        {
+          name: link_suspend
+          width: 1
+          type: interrupt
+        }
+        {
+          name: link_resume
+          width: 1
+          type: interrupt
+        }
+        {
+          name: av_empty
+          width: 1
+          type: interrupt
+        }
+        {
+          name: rx_full
+          width: 1
+          type: interrupt
+        }
+        {
+          name: av_overflow
+          width: 1
+          type: interrupt
+        }
+        {
+          name: link_in_err
+          width: 1
+          type: interrupt
+        }
+        {
+          name: rx_crc_err
+          width: 1
+          type: interrupt
+        }
+        {
+          name: rx_pid_err
+          width: 1
+          type: interrupt
+        }
+        {
+          name: rx_bitstuff_err
+          width: 1
+          type: interrupt
+        }
+        {
+          name: frame
+          width: 1
+          type: interrupt
+        }
+        {
+          name: connected
+          width: 1
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
   ]
   memory:
   [
@@ -760,6 +902,10 @@
               base_addr: 0x40080000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x40150000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -901,6 +1047,7 @@
           gpio
           spi_device
           rv_timer
+          usbdev
         ]
       }
       nodes:
@@ -983,6 +1130,23 @@
           xbar: false
           pipeline_byp: "true"
         }
+        {
+          name: usbdev
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: usbdev
+          addr_range:
+          [
+            {
+              base_addr: 0x40150000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
       ]
       clock: clk_peri_i
     }
@@ -996,6 +1160,7 @@
     hmac
     alert_handler
     nmi_gen
+    usbdev
   ]
   interrupt:
   [
@@ -1159,6 +1324,86 @@
       width: 1
       type: interrupt
     }
+    {
+      name: usbdev_pkt_received
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_pkt_sent
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_disconnected
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_host_lost
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_link_reset
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_link_suspend
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_link_resume
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_av_empty
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_rx_full
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_av_overflow
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_link_in_err
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_rx_crc_err
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_rx_pid_err
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_rx_bitstuff_err
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_frame
+      width: 1
+      type: interrupt
+    }
+    {
+      name: usbdev_connected
+      width: 1
+      type: interrupt
+    }
   ]
   alert_module:
   [
@@ -1190,6 +1435,13 @@
         pad:
         [
           ChA[0..1]
+        ]
+      }
+      {
+        name: usbdev
+        pad:
+        [
+          ChC[0..3]
         ]
       }
     ]
@@ -1277,6 +1529,54 @@
           }
         ]
       }
+      {
+        name: usbdev_sense
+        width: 1
+        type: input
+        pad:
+        [
+          {
+            name: ChC
+            index: 0
+          }
+        ]
+      }
+      {
+        name: usbdev_pullup
+        width: 1
+        type: output
+        pad:
+        [
+          {
+            name: ChC
+            index: 1
+          }
+        ]
+      }
+      {
+        name: usbdev_dp
+        width: 1
+        type: inout
+        pad:
+        [
+          {
+            name: ChC
+            index: 2
+          }
+        ]
+      }
+      {
+        name: usbdev_dn
+        width: 1
+        type: inout
+        pad:
+        [
+          {
+            name: ChC
+            index: 3
+          }
+        ]
+      }
     ]
     inputs: []
     outputs: []
@@ -1310,6 +1610,16 @@
         [
           KEEP
           WEAK
+        ]
+      }
+      {
+        name: ChC
+        type: IO_33V
+        count: 4
+        attr:
+        [
+          KEEP
+          STRONG
         ]
       }
     ]
