@@ -75,8 +75,8 @@ module pinmux_csr_assert_fpv import tlul_pkg::*; (
 // for all the regsters, declare assertion
 
   // read/write assertions for register: regen
-  `ASSERT(regen_wr_A, wr_P(0, 5'h0, i_pinmux.i_reg_top.regen_we, 0), clk_i, !rst_ni)
-  `ASSERT(regen_rd_A, rd_P(0, 5'h0, i_pinmux.i_reg_top.regen_qs), clk_i, !rst_ni)
+  `ASSERT(regen_wr_A, wr_P(0, 5'h0, i_pinmux.i_reg_top.regen_we, 0))
+  `ASSERT(regen_rd_A, rd_P(0, 5'h0, i_pinmux.i_reg_top.regen_qs))
 
   // define local fpv variable for the multi_reg
   logic [63:0] periph_insel_q_fpv;
@@ -85,14 +85,14 @@ module pinmux_csr_assert_fpv import tlul_pkg::*; (
   end
 
   // read/write assertions for register: periph_insel0
-  `ASSERT(periph_insel0_wr_A, wr_P(31, 5'h4, periph_insel_q_fpv[31:0], i_pinmux.i_reg_top.regen_qs), clk_i, !rst_ni)
-  `ASSERT(periph_insel0_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, periph_insel_q_fpv[31:0]), clk_i, !rst_ni)
-  `ASSERT(periph_insel0_rd_A, rd_P(31, 5'h4, periph_insel_q_fpv[31:0]), clk_i, !rst_ni)
+  `ASSERT(periph_insel0_wr_A, wr_P(31, 5'h4, periph_insel_q_fpv[31:0], i_pinmux.i_reg_top.regen_qs))
+  `ASSERT(periph_insel0_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, periph_insel_q_fpv[31:0]))
+  `ASSERT(periph_insel0_rd_A, rd_P(31, 5'h4, periph_insel_q_fpv[31:0]))
 
   // read/write assertions for register: periph_insel1
-  `ASSERT(periph_insel1_wr_A, wr_P(31, 5'h8, periph_insel_q_fpv[63:32], i_pinmux.i_reg_top.regen_qs), clk_i, !rst_ni)
-  `ASSERT(periph_insel1_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, periph_insel_q_fpv[63:32]), clk_i, !rst_ni)
-  `ASSERT(periph_insel1_rd_A, rd_P(31, 5'h8, periph_insel_q_fpv[63:32]), clk_i, !rst_ni)
+  `ASSERT(periph_insel1_wr_A, wr_P(31, 5'h8, periph_insel_q_fpv[63:32], i_pinmux.i_reg_top.regen_qs))
+  `ASSERT(periph_insel1_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, periph_insel_q_fpv[63:32]))
+  `ASSERT(periph_insel1_rd_A, rd_P(31, 5'h8, periph_insel_q_fpv[63:32]))
 
   // define local fpv variable for the multi_reg
   logic [39:0] mio_outsel_q_fpv;
@@ -101,13 +101,13 @@ module pinmux_csr_assert_fpv import tlul_pkg::*; (
   end
 
   // read/write assertions for register: mio_outsel0
-  `ASSERT(mio_outsel0_wr_A, wr_P(29, 5'hc, mio_outsel_q_fpv[29:0], i_pinmux.i_reg_top.regen_qs), clk_i, !rst_ni)
-  `ASSERT(mio_outsel0_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, mio_outsel_q_fpv[29:0]), clk_i, !rst_ni)
-  `ASSERT(mio_outsel0_rd_A, rd_P(29, 5'hc, mio_outsel_q_fpv[29:0]), clk_i, !rst_ni)
+  `ASSERT(mio_outsel0_wr_A, wr_P(29, 5'hc, mio_outsel_q_fpv[29:0], i_pinmux.i_reg_top.regen_qs))
+  `ASSERT(mio_outsel0_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, mio_outsel_q_fpv[29:0]))
+  `ASSERT(mio_outsel0_rd_A, rd_P(29, 5'hc, mio_outsel_q_fpv[29:0]))
 
   // read/write assertions for register: mio_outsel1
-  `ASSERT(mio_outsel1_wr_A, wr_P(9, 5'h10, mio_outsel_q_fpv[39:30], i_pinmux.i_reg_top.regen_qs), clk_i, !rst_ni)
-  `ASSERT(mio_outsel1_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, mio_outsel_q_fpv[39:30]), clk_i, !rst_ni)
-  `ASSERT(mio_outsel1_rd_A, rd_P(9, 5'h10, mio_outsel_q_fpv[39:30]), clk_i, !rst_ni)
+  `ASSERT(mio_outsel1_wr_A, wr_P(9, 5'h10, mio_outsel_q_fpv[39:30], i_pinmux.i_reg_top.regen_qs))
+  `ASSERT(mio_outsel1_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, mio_outsel_q_fpv[39:30]))
+  `ASSERT(mio_outsel1_rd_A, rd_P(9, 5'h10, mio_outsel_q_fpv[39:30]))
 
 endmodule

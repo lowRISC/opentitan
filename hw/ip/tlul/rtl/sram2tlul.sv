@@ -55,6 +55,6 @@ module sram2tlul #(
 
   // below assertion fails when TL-UL doesn't accept request in a cycle,
   // which is currently not supported by sram2tlul
-  `ASSERT(validNotReady, tl_o.a_valid |-> tl_i.a_ready, clk_i, !rst_ni)
+  `ASSERT(validNotReady, tl_o.a_valid |-> tl_i.a_ready)
 
 endmodule

@@ -96,7 +96,7 @@ module tlul_socket_m1 #(
       reqid_sub
     };
 
-  `ASSERT(idInRange, tl_h_i[i].a_valid |-> tl_h_i[i].a_source[IDW-1 -:STIDW] == '0, clk_i, !rst_ni)
+  `ASSERT(idInRange, tl_h_i[i].a_valid |-> tl_h_i[i].a_source[IDW-1 -:STIDW] == '0)
 
     // assign not connected bits to nc_* signal to make lint happy
     logic [IDW-1 : IDW-STIDW] unused_tl_h_source;
@@ -251,6 +251,6 @@ module tlul_socket_m1 #(
 
   // this assertion fails when rspid[0+:STIDW] not in [0..M-1]
   `ASSERT(rspIdInRange, drsp_fifo_o.d_valid |->
-      drsp_fifo_o.d_source[0+:STIDW] >= 0 && drsp_fifo_o.d_source[0+:STIDW] < M, clk_i, !rst_ni)
+      drsp_fifo_o.d_source[0+:STIDW] >= 0 && drsp_fifo_o.d_source[0+:STIDW] < M)
 
 endmodule

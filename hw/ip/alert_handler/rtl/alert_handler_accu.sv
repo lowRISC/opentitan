@@ -47,7 +47,7 @@ module alert_handler_accu import alert_pkg::*; (
   // Assertions //
   ////////////////
 
-  `ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o, clk_i, !rst_ni)
-  `ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i, clk_i, !rst_ni)
+  `ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o)
+  `ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i)
 
 endmodule : alert_handler_accu

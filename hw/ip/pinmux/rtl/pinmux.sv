@@ -72,10 +72,10 @@ module pinmux (
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
-  `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(MioOutKnownO_A, mio_out_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o)
+  `ASSERT_KNOWN(MioOutKnownO_A, mio_out_o)
+  `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o)
 
 endmodule : pinmux

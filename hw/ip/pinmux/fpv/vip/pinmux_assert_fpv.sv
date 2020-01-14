@@ -30,11 +30,11 @@ module pinmux_assert_fpv (
   assign periph_insel = pinmux.reg2hw.periph_insel[periph_sel_i];
 
   `ASSERT(InSel0_A, periph_insel.q == 0 |->
-      mio_to_periph_o[periph_sel_i] == 1'b0, clk_i, !rst_ni)
+      mio_to_periph_o[periph_sel_i] == 1'b0)
   `ASSERT(InSel1_A, periph_insel.q == 1 |->
-      mio_to_periph_o[periph_sel_i] == 1'b1, clk_i, !rst_ni)
+      mio_to_periph_o[periph_sel_i] == 1'b1)
   `ASSERT(InSelN_A, periph_insel.q > 1  |->
-      mio_to_periph_o[periph_sel_i] == mio_in_i[periph_insel.q - 2], clk_i, !rst_ni)
+      mio_to_periph_o[periph_sel_i] == mio_in_i[periph_insel.q - 2])
 
   ////////////////
   // Output Mux //
@@ -46,20 +46,20 @@ module pinmux_assert_fpv (
   assign mio_outsel = pinmux.reg2hw.mio_outsel[mio_sel_i];
 
   `ASSERT(OutSel0_A, mio_outsel.q == 0 |->
-      mio_out_o[mio_sel_i] == 1'b0, clk_i, !rst_ni)
+      mio_out_o[mio_sel_i] == 1'b0)
   `ASSERT(OutSel1_A, mio_outsel.q == 1 |->
-      mio_out_o[mio_sel_i] == 1'b1, clk_i, !rst_ni)
+      mio_out_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSel2_A, mio_outsel.q == 2 |->
-      mio_out_o[mio_sel_i] == 1'b0, clk_i, !rst_ni)
+      mio_out_o[mio_sel_i] == 1'b0)
   `ASSERT(OutSelN_A, mio_outsel.q > 2  |->
-      mio_out_o[mio_sel_i] == periph_to_mio_i[mio_outsel.q - 3], clk_i, !rst_ni)
+      mio_out_o[mio_sel_i] == periph_to_mio_i[mio_outsel.q - 3])
   `ASSERT(OutSelOe0_A, mio_outsel.q == 0 |->
-      mio_oe_o[mio_sel_i] == 1'b1, clk_i, !rst_ni)
+      mio_oe_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSelOe1_A, mio_outsel.q == 1 |->
-      mio_oe_o[mio_sel_i] == 1'b1, clk_i, !rst_ni)
+      mio_oe_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSelOe2_A, mio_outsel.q == 2 |->
-      mio_oe_o[mio_sel_i] == 1'b0, clk_i, !rst_ni)
+      mio_oe_o[mio_sel_i] == 1'b0)
   `ASSERT(OutSelOeN_A, mio_outsel.q > 2  |->
-      mio_oe_o[mio_sel_i] == periph_to_mio_oe_i[mio_outsel.q - 3], clk_i, !rst_ni)
+      mio_oe_o[mio_sel_i] == periph_to_mio_oe_i[mio_outsel.q - 3])
 
 endmodule : pinmux_assert_fpv

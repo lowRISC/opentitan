@@ -234,9 +234,9 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   ////////////////
 
   // internals
-  `ASSERT(PingOH0_A, $onehot0(ping_sel), clk_i, !rst_ni)
+  `ASSERT(PingOH0_A, $onehot0(ping_sel))
   // we should never get into the ping state without knowing
   // which module to ping
-  `ASSERT(PingOH_A, ping_en |-> $onehot(ping_sel), clk_i, !rst_ni)
+  `ASSERT(PingOH_A, ping_en |-> $onehot(ping_sel))
 
 endmodule : alert_handler_ping_timer

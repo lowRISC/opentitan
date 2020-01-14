@@ -381,18 +381,18 @@ module aes_control (
   assign data_out_clear_o    = 1'b0;
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesModeKnown, mode_i, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesModeKnown, mode_i)
   `ASSERT(AesKeyLenValid, key_len_i inside {
       AES_128,
       AES_192,
       AES_256
-      }, clk_i, !rst_ni)
+      })
   `ASSERT(AesControlStateValid, aes_ctrl_cs inside {
       IDLE,
       INIT,
       ROUND,
       FINISH,
       CLEAR
-      }, clk_i, !rst_ni)
+      })
 
 endmodule

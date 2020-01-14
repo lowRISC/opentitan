@@ -33,64 +33,63 @@ module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
 
   // symbolic variable. we want to assess all valid indices
   int unsigned ping_en_sel;
-  `ASSUME_FPV(PingEnSelRange_M, ping_en_sel >= 0 && ping_en_sel < (N_ESC_SEV+NAlerts),
-       clk_i, !rst_ni)
-  `ASSUME_FPV(PingEnSelStable_M, ##1 $stable(ping_en_sel), clk_i, !rst_ni)
+  `ASSUME_FPV(PingEnSelRange_M, ping_en_sel >= 0 && ping_en_sel < (N_ESC_SEV+NAlerts))
+  `ASSUME_FPV(PingEnSelStable_M, ##1 $stable(ping_en_sel))
   // assume that the alert enable configuration is locked once en_i is high
   // this is ensured by the CSR regfile on the outside
-  `ASSUME_FPV(ConfigLocked0_M, en_i |-> ($stable(alert_en_i) [*]), clk_i, !rst_ni)
-  `ASSUME_FPV(ConfigLocked1_M, en_i |-> ($stable(ping_timeout_cyc_i) [*]), clk_i, !rst_ni)
+  `ASSUME_FPV(ConfigLocked0_M, en_i |-> ($stable(alert_en_i) [*]))
+  `ASSUME_FPV(ConfigLocked1_M, en_i |-> ($stable(ping_timeout_cyc_i) [*]))
   // enable stays high forever, once it has been asserted
   // this can be enabled in DV as well
-  `ASSUME(ConfigLocked2_M, en_i |-> (##1 en_i) [*], clk_i, !rst_ni)
+  `ASSUME(ConfigLocked2_M, en_i |-> (##1 en_i) [*])
   // reduce state space by reducing length of wait period
-  `ASSUME_FPV(WaitPeriod_M, wait_cyc_mask_i == 7, clk_i, !rst_ni)
+  `ASSUME_FPV(WaitPeriod_M, wait_cyc_mask_i == 7)
 
   ////////////////////////
   // Forward Assertions //
   ////////////////////////
 
   // no pings on disabled alerts
-  `ASSERT(DisabledNoAlertPings_A, ((~alert_en_i) & alert_ping_en_o) == 0, clk_i, !rst_ni)
+  `ASSERT(DisabledNoAlertPings_A, ((~alert_en_i) & alert_ping_en_o) == 0)
   // no pings when not enabled
-  `ASSERT(NoPingsWhenDisabled0_A, !en_i |-> !alert_ping_en_o, clk_i, !rst_ni)
-  `ASSERT(NoPingsWhenDisabled1_A, !en_i |-> !esc_ping_en_o, clk_i, !rst_ni)
+  `ASSERT(NoPingsWhenDisabled0_A, !en_i |-> !alert_ping_en_o)
+  `ASSERT(NoPingsWhenDisabled1_A, !en_i |-> !esc_ping_en_o)
   `ASSERT(NoPingsWhenDisabled2_A, en_i && !ping_en_mask[ping_en_sel] |->
-      !ping_en_vector[ping_en_sel], clk_i, !rst_ni)
+      !ping_en_vector[ping_en_sel])
 
   // spurious pings (i.e. pings that where not requested)
   // on alert channels
   `ASSERT(SpuriousPingsDetected0_A, en_i && !ping_en_vector[ping_en_sel] &&
       ping_ok_vector[ping_en_sel] && ping_en_sel < NAlerts |->
-      alert_ping_fail_o, clk_i, !rst_ni)
+      alert_ping_fail_o)
   // on escalation channels
   `ASSERT(SpuriousPingsDetected1_A, en_i && !ping_en_vector[ping_en_sel] &&
       ping_ok_vector[ping_en_sel] && ping_en_sel >= NAlerts |->
-      esc_ping_fail_o, clk_i, !rst_ni)
+      esc_ping_fail_o)
   // response must be one hot
   `ASSERT(SpuriousPingsDetected2_A, en_i && !$onehot0(ping_ok_vector) |->
-      esc_ping_fail_o || alert_ping_fail_o, clk_i, !rst_ni)
+      esc_ping_fail_o || alert_ping_fail_o)
 
   /////////////////////////
   // Backward Assertions //
   /////////////////////////
 
   // no pings when not enabled
-  `ASSERT(NoPingsWhenDisabledBkwd0_A, alert_ping_en_o |-> en_i, clk_i, !rst_ni)
-  `ASSERT(NoPingsWhenDisabledBkwd1_A, esc_ping_en_o   |-> en_i, clk_i, !rst_ni)
+  `ASSERT(NoPingsWhenDisabledBkwd0_A, alert_ping_en_o |-> en_i)
+  `ASSERT(NoPingsWhenDisabledBkwd1_A, esc_ping_en_o   |-> en_i)
 
   // spurious pings (i.e. pings that where not requested)
   // on alert channels
   `ASSERT(SpuriousPingsDetectedBkwd0_A, !alert_ping_fail_o |->
       !en_i || ping_en_vector[ping_en_sel] ||
-      !ping_ok_vector[ping_en_sel] || ping_en_sel >= NAlerts, clk_i, !rst_ni)
+      !ping_ok_vector[ping_en_sel] || ping_en_sel >= NAlerts)
   // on escalation channels
   `ASSERT(SpuriousPingsDetectedBkwd1_A, !esc_ping_fail_o |->
       !en_i || ping_en_vector[ping_en_sel] ||
-      !ping_ok_vector[ping_en_sel] || ping_en_sel < NAlerts, clk_i, !rst_ni)
+      !ping_ok_vector[ping_en_sel] || ping_en_sel < NAlerts)
   // response must be one hot
   `ASSERT(SpuriousPingsDetectedBkwd2_A, !esc_ping_fail_o && !alert_ping_fail_o |->
-      !en_i || $onehot0(ping_ok_vector), clk_i, !rst_ni)
+      !en_i || $onehot0(ping_ok_vector))
 
   //////////////////////////////////////////////////////////
   // Currently not Tested in FPV due to large state space //

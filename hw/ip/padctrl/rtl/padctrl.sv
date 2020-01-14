@@ -111,9 +111,9 @@ module padctrl #(
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
-  `ASSERT_KNOWN(MioKnownO_A, mio_attr_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(DioKnownO_A, dio_attr_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
+  `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
 
 endmodule : padctrl

@@ -477,15 +477,15 @@ module rv_timer_reg_top (
   end
 
   // Assertions for Register Interface
-  `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
-  `ASSERT_PULSE(rePulse, reg_re, clk_i, !rst_ni)
+  `ASSERT_PULSE(wePulse, reg_we)
+  `ASSERT_PULSE(rePulse, reg_re)
 
-  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o.d_valid, clk_i, !rst_ni)
+  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o.d_valid)
 
-  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), clk_i, !rst_ni)
+  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit))
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  `ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.parity_en == 1'b0, clk_i, !rst_ni)
+  `ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.parity_en == 1'b0)
 
 endmodule
