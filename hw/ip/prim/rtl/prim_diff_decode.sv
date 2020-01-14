@@ -211,29 +211,29 @@ module prim_diff_decode #(
   // shared assertions
   // sigint -> level stays the same during sigint
   // $isunknown is needed to avoid false assertion in first clock cycle
-  `ASSERT(SigintLevelCheck_A, ##1 sigint_o |-> $stable(level_o), clk_i, !rst_ni)
+  `ASSERT(SigintLevelCheck_A, ##1 sigint_o |-> $stable(level_o))
   // sigint -> no additional events asserted at output
-  `ASSERT(SigintEventCheck_A, sigint_o |-> !event_o, clk_i, !rst_ni)
-  `ASSERT(SigintRiseCheck_A,  sigint_o |-> !rise_o, clk_i, !rst_ni)
-  `ASSERT(SigintFallCheck_A,  sigint_o |-> !fall_o, clk_i, !rst_ni)
+  `ASSERT(SigintEventCheck_A, sigint_o |-> !event_o)
+  `ASSERT(SigintRiseCheck_A,  sigint_o |-> !rise_o)
+  `ASSERT(SigintFallCheck_A,  sigint_o |-> !fall_o)
 
   if (AsyncOn) begin : gen_async_assert
     // assertions for asynchronous case
     // correctly detect sigint issue (only one transition cycle of permissible due to skew)
-    `ASSERT(SigintCheck0_A, diff_pi == diff_ni [*2] |-> ##[1:2] sigint_o, clk_i, !rst_ni)
+    `ASSERT(SigintCheck0_A, diff_pi == diff_ni [*2] |-> ##[1:2] sigint_o)
     // the synchronizer adds 2 cycles of latency
     `ASSERT(SigintCheck1_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
         $rose(diff_pi) && $stable(diff_ni) ##1 $stable(diff_pi) && $fell(diff_ni) |->
-        ##2 rise_o, clk_i, !rst_ni)
+        ##2 rise_o)
     `ASSERT(SigintCheck2_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
         $fell(diff_pi) && $stable(diff_ni) ##1 $stable(diff_pi) && $rose(diff_ni) |->
-        ##2 fall_o, clk_i, !rst_ni)
+        ##2 fall_o)
     `ASSERT(SigintCheck3_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
         $rose(diff_ni) && $stable(diff_pi) ##1 $stable(diff_ni) && $fell(diff_pi) |->
-        ##2 fall_o, clk_i, !rst_ni)
+        ##2 fall_o)
     `ASSERT(SigintCheck4_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
         $fell(diff_ni) && $stable(diff_pi) ##1 $stable(diff_ni) && $rose(diff_pi) |->
-        ##2 rise_o, clk_i, !rst_ni)
+        ##2 rise_o)
     // correctly detect edges
     `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)     && (diff_pi ^ diff_ni) |->
         ##[2:3] rise_o,  clk_i, !rst_ni || sigint_o)
@@ -248,13 +248,13 @@ module prim_diff_decode #(
   end else begin : gen_sync_assert
     // assertions for synchronous case
     // correctly detect sigint issue
-    `ASSERT(SigintCheck_A, diff_pi == diff_ni |-> sigint_o, clk_i, !rst_ni)
+    `ASSERT(SigintCheck_A, diff_pi == diff_ni |-> sigint_o)
     // correctly detect edges
-    `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o, clk_i, !rst_ni)
-    `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o, clk_i, !rst_ni)
-    `ASSERT(EventCheck_A, ##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> event_o, clk_i, !rst_ni)
+    `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o)
+    `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o)
+    `ASSERT(EventCheck_A, ##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> event_o)
     // correctly detect level
-    `ASSERT(LevelCheck_A, (diff_pi ^ diff_ni) |-> diff_pi == level_o, clk_i, !rst_ni)
+    `ASSERT(LevelCheck_A, (diff_pi ^ diff_ni) |-> diff_pi == level_o)
   end
 
 endmodule : prim_diff_decode

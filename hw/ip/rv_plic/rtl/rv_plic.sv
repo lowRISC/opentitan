@@ -80,12 +80,12 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     end
   end
 
-  //`ASSERT_PULSE(claimPulse, claim_re[i], clk_i, !rst_ni)
-  //`ASSERT_PULSE(completePulse, complete_we[i], clk_i, !rst_ni)
+  //`ASSERT_PULSE(claimPulse, claim_re[i])
+  //`ASSERT_PULSE(completePulse, complete_we[i])
 
-  `ASSERT(onehot0Claim, $onehot0(claim_re), clk_i, !rst_ni)
+  `ASSERT(onehot0Claim, $onehot0(claim_re))
 
-  `ASSERT(onehot0Complete, $onehot0(complete_we), clk_i, !rst_ni)
+  `ASSERT(onehot0Complete, $onehot0(complete_we))
 
   //////////////
   // Priority //
@@ -224,12 +224,12 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   );
 
   // Assertions
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IrqKnownO_A, irq_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(MsipKnownO_A, msip_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(IrqKnownO_A, irq_o)
+  `ASSERT_KNOWN(MsipKnownO_A, msip_o)
   for (genvar k = 0; k < NumTarget; k++) begin : gen_irq_id_known
-    `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k], clk_i, !rst_ni)
+    `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
   end
 
 endmodule

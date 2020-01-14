@@ -467,18 +467,17 @@ module flash_ctrl (
 
   // Assertions
 
-  `ASSERT_KNOWN(TlDValidKnownO_A,       tl_o.d_valid,       clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlAReadyKnownO_A,       tl_o.a_ready,       clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlDValidKnownO_A,       tl_o.d_valid     )
+  `ASSERT_KNOWN(TlAReadyKnownO_A,       tl_o.a_ready     )
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,
-                                         flash_o.bk_erase}, clk_i, !rst_ni)
-  `ASSERT_VALID_DATA(FlashAddrKnown_A,  flash_o.req, flash_o.addr, clk_i, !rst_ni)
-  `ASSERT_VALID_DATA(FlashProgKnown_A,  flash_o.prog & flash_o.req, flash_o.prog_data,
-                                        clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o,  clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o,    clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o,     clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o,      clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o,     clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrOpErrorKnownO_A,    intr_op_error_o,    clk_i, !rst_ni)
+                                         flash_o.bk_erase})
+  `ASSERT_VALID_DATA(FlashAddrKnown_A,  flash_o.req, flash_o.addr)
+  `ASSERT_VALID_DATA(FlashProgKnown_A,  flash_o.prog & flash_o.req, flash_o.prog_data)
+  `ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o)
+  `ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o  )
+  `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )
+  `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
+  `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
+  `ASSERT_KNOWN(IntrOpErrorKnownO_A,    intr_op_error_o  )
 
 endmodule

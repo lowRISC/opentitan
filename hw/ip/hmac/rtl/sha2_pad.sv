@@ -311,7 +311,6 @@ module sha2_pad import hmac_pkg::*; (
 
   // When fifo_partial, fifo shouldn't be empty and hash_process was set
   `ASSERT(ValidPartialConditionAssert,
-          fifo_partial && fifo_rvalid |-> hash_process_flag,
-          clk_i, !rst_ni)
+          fifo_partial && fifo_rvalid |-> hash_process_flag)
 
 endmodule

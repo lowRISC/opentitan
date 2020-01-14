@@ -154,15 +154,15 @@ module prim_esc_receiver import prim_pkg::*; (
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(EscEnKnownO_A, esc_en_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(RespPKnownO_A, esc_rx_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(EscEnKnownO_A, esc_en_o)
+  `ASSERT_KNOWN(RespPKnownO_A, esc_rx_o)
 
   `ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=>
       esc_rx_o.resp_p == esc_rx_o.resp_n, clk_i, !rst_ni)
-  `ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt, clk_i, !rst_ni)
+  `ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt)
   // correct diff encoding
   `ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=>
-      esc_rx_o.resp_p ^ esc_rx_o.resp_n, clk_i, !rst_ni)
+      esc_rx_o.resp_p ^ esc_rx_o.resp_n)
   // disable in case of ping integrity issue
   `ASSERT(PingRespCheck_A, $rose(esc_tx_i.esc_p) |=> $fell(esc_tx_i.esc_p) |->
       $rose(esc_rx_o.resp_p) |=> $fell(esc_rx_o.resp_p),
@@ -170,9 +170,9 @@ module prim_esc_receiver import prim_pkg::*; (
   // escalation response needs to continuously toggle
   `ASSERT(EscRespCheck_A, esc_tx_i.esc_p && $past(esc_tx_i.esc_p) &&
       (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && $past(esc_tx_i.esc_p ^ esc_tx_i.esc_n)
-      |=> esc_rx_o.resp_p != $past(esc_rx_o.resp_p), clk_i, !rst_ni)
+      |=> esc_rx_o.resp_p != $past(esc_rx_o.resp_p))
   // detect escalation pulse
   `ASSERT(EscEnCheck_A, esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
-      |=> esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_en_o, clk_i, !rst_ni )
+      |=> esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_en_o)
 
 endmodule : prim_esc_receiver

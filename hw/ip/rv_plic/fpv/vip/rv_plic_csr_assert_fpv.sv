@@ -83,7 +83,7 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
   end
 
   // read/write assertions for register: ip
-  `ASSERT(ip_rd_A, rd_P(31, 9'h0, ip_d_fpv[31:0]), clk_i, !rst_ni)
+  `ASSERT(ip_rd_A, rd_P(31, 9'h0, ip_d_fpv[31:0]))
 
   // define local fpv variable for the multi_reg
   logic [31:0] le_q_fpv;
@@ -92,136 +92,136 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
   end
 
   // read/write assertions for register: le
-  `ASSERT(le_wr_A, wr_P(31, 9'h4, le_q_fpv[31:0], 0), clk_i, !rst_ni)
-  `ASSERT(le_rd_A, rd_P(31, 9'h4, le_q_fpv[31:0]), clk_i, !rst_ni)
+  `ASSERT(le_wr_A, wr_P(31, 9'h4, le_q_fpv[31:0], 0))
+  `ASSERT(le_rd_A, rd_P(31, 9'h4, le_q_fpv[31:0]))
 
   // read/write assertions for register: prio0
-  `ASSERT(prio0_wr_A, wr_P(2, 9'h8, i_rv_plic.reg2hw.prio0.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio0_rd_A, rd_P(2, 9'h8, i_rv_plic.reg2hw.prio0.q), clk_i, !rst_ni)
+  `ASSERT(prio0_wr_A, wr_P(2, 9'h8, i_rv_plic.reg2hw.prio0.q, 0))
+  `ASSERT(prio0_rd_A, rd_P(2, 9'h8, i_rv_plic.reg2hw.prio0.q))
 
   // read/write assertions for register: prio1
-  `ASSERT(prio1_wr_A, wr_P(2, 9'hc, i_rv_plic.reg2hw.prio1.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio1_rd_A, rd_P(2, 9'hc, i_rv_plic.reg2hw.prio1.q), clk_i, !rst_ni)
+  `ASSERT(prio1_wr_A, wr_P(2, 9'hc, i_rv_plic.reg2hw.prio1.q, 0))
+  `ASSERT(prio1_rd_A, rd_P(2, 9'hc, i_rv_plic.reg2hw.prio1.q))
 
   // read/write assertions for register: prio2
-  `ASSERT(prio2_wr_A, wr_P(2, 9'h10, i_rv_plic.reg2hw.prio2.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio2_rd_A, rd_P(2, 9'h10, i_rv_plic.reg2hw.prio2.q), clk_i, !rst_ni)
+  `ASSERT(prio2_wr_A, wr_P(2, 9'h10, i_rv_plic.reg2hw.prio2.q, 0))
+  `ASSERT(prio2_rd_A, rd_P(2, 9'h10, i_rv_plic.reg2hw.prio2.q))
 
   // read/write assertions for register: prio3
-  `ASSERT(prio3_wr_A, wr_P(2, 9'h14, i_rv_plic.reg2hw.prio3.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio3_rd_A, rd_P(2, 9'h14, i_rv_plic.reg2hw.prio3.q), clk_i, !rst_ni)
+  `ASSERT(prio3_wr_A, wr_P(2, 9'h14, i_rv_plic.reg2hw.prio3.q, 0))
+  `ASSERT(prio3_rd_A, rd_P(2, 9'h14, i_rv_plic.reg2hw.prio3.q))
 
   // read/write assertions for register: prio4
-  `ASSERT(prio4_wr_A, wr_P(2, 9'h18, i_rv_plic.reg2hw.prio4.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio4_rd_A, rd_P(2, 9'h18, i_rv_plic.reg2hw.prio4.q), clk_i, !rst_ni)
+  `ASSERT(prio4_wr_A, wr_P(2, 9'h18, i_rv_plic.reg2hw.prio4.q, 0))
+  `ASSERT(prio4_rd_A, rd_P(2, 9'h18, i_rv_plic.reg2hw.prio4.q))
 
   // read/write assertions for register: prio5
-  `ASSERT(prio5_wr_A, wr_P(2, 9'h1c, i_rv_plic.reg2hw.prio5.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio5_rd_A, rd_P(2, 9'h1c, i_rv_plic.reg2hw.prio5.q), clk_i, !rst_ni)
+  `ASSERT(prio5_wr_A, wr_P(2, 9'h1c, i_rv_plic.reg2hw.prio5.q, 0))
+  `ASSERT(prio5_rd_A, rd_P(2, 9'h1c, i_rv_plic.reg2hw.prio5.q))
 
   // read/write assertions for register: prio6
-  `ASSERT(prio6_wr_A, wr_P(2, 9'h20, i_rv_plic.reg2hw.prio6.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio6_rd_A, rd_P(2, 9'h20, i_rv_plic.reg2hw.prio6.q), clk_i, !rst_ni)
+  `ASSERT(prio6_wr_A, wr_P(2, 9'h20, i_rv_plic.reg2hw.prio6.q, 0))
+  `ASSERT(prio6_rd_A, rd_P(2, 9'h20, i_rv_plic.reg2hw.prio6.q))
 
   // read/write assertions for register: prio7
-  `ASSERT(prio7_wr_A, wr_P(2, 9'h24, i_rv_plic.reg2hw.prio7.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio7_rd_A, rd_P(2, 9'h24, i_rv_plic.reg2hw.prio7.q), clk_i, !rst_ni)
+  `ASSERT(prio7_wr_A, wr_P(2, 9'h24, i_rv_plic.reg2hw.prio7.q, 0))
+  `ASSERT(prio7_rd_A, rd_P(2, 9'h24, i_rv_plic.reg2hw.prio7.q))
 
   // read/write assertions for register: prio8
-  `ASSERT(prio8_wr_A, wr_P(2, 9'h28, i_rv_plic.reg2hw.prio8.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio8_rd_A, rd_P(2, 9'h28, i_rv_plic.reg2hw.prio8.q), clk_i, !rst_ni)
+  `ASSERT(prio8_wr_A, wr_P(2, 9'h28, i_rv_plic.reg2hw.prio8.q, 0))
+  `ASSERT(prio8_rd_A, rd_P(2, 9'h28, i_rv_plic.reg2hw.prio8.q))
 
   // read/write assertions for register: prio9
-  `ASSERT(prio9_wr_A, wr_P(2, 9'h2c, i_rv_plic.reg2hw.prio9.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio9_rd_A, rd_P(2, 9'h2c, i_rv_plic.reg2hw.prio9.q), clk_i, !rst_ni)
+  `ASSERT(prio9_wr_A, wr_P(2, 9'h2c, i_rv_plic.reg2hw.prio9.q, 0))
+  `ASSERT(prio9_rd_A, rd_P(2, 9'h2c, i_rv_plic.reg2hw.prio9.q))
 
   // read/write assertions for register: prio10
-  `ASSERT(prio10_wr_A, wr_P(2, 9'h30, i_rv_plic.reg2hw.prio10.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio10_rd_A, rd_P(2, 9'h30, i_rv_plic.reg2hw.prio10.q), clk_i, !rst_ni)
+  `ASSERT(prio10_wr_A, wr_P(2, 9'h30, i_rv_plic.reg2hw.prio10.q, 0))
+  `ASSERT(prio10_rd_A, rd_P(2, 9'h30, i_rv_plic.reg2hw.prio10.q))
 
   // read/write assertions for register: prio11
-  `ASSERT(prio11_wr_A, wr_P(2, 9'h34, i_rv_plic.reg2hw.prio11.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio11_rd_A, rd_P(2, 9'h34, i_rv_plic.reg2hw.prio11.q), clk_i, !rst_ni)
+  `ASSERT(prio11_wr_A, wr_P(2, 9'h34, i_rv_plic.reg2hw.prio11.q, 0))
+  `ASSERT(prio11_rd_A, rd_P(2, 9'h34, i_rv_plic.reg2hw.prio11.q))
 
   // read/write assertions for register: prio12
-  `ASSERT(prio12_wr_A, wr_P(2, 9'h38, i_rv_plic.reg2hw.prio12.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio12_rd_A, rd_P(2, 9'h38, i_rv_plic.reg2hw.prio12.q), clk_i, !rst_ni)
+  `ASSERT(prio12_wr_A, wr_P(2, 9'h38, i_rv_plic.reg2hw.prio12.q, 0))
+  `ASSERT(prio12_rd_A, rd_P(2, 9'h38, i_rv_plic.reg2hw.prio12.q))
 
   // read/write assertions for register: prio13
-  `ASSERT(prio13_wr_A, wr_P(2, 9'h3c, i_rv_plic.reg2hw.prio13.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio13_rd_A, rd_P(2, 9'h3c, i_rv_plic.reg2hw.prio13.q), clk_i, !rst_ni)
+  `ASSERT(prio13_wr_A, wr_P(2, 9'h3c, i_rv_plic.reg2hw.prio13.q, 0))
+  `ASSERT(prio13_rd_A, rd_P(2, 9'h3c, i_rv_plic.reg2hw.prio13.q))
 
   // read/write assertions for register: prio14
-  `ASSERT(prio14_wr_A, wr_P(2, 9'h40, i_rv_plic.reg2hw.prio14.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio14_rd_A, rd_P(2, 9'h40, i_rv_plic.reg2hw.prio14.q), clk_i, !rst_ni)
+  `ASSERT(prio14_wr_A, wr_P(2, 9'h40, i_rv_plic.reg2hw.prio14.q, 0))
+  `ASSERT(prio14_rd_A, rd_P(2, 9'h40, i_rv_plic.reg2hw.prio14.q))
 
   // read/write assertions for register: prio15
-  `ASSERT(prio15_wr_A, wr_P(2, 9'h44, i_rv_plic.reg2hw.prio15.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio15_rd_A, rd_P(2, 9'h44, i_rv_plic.reg2hw.prio15.q), clk_i, !rst_ni)
+  `ASSERT(prio15_wr_A, wr_P(2, 9'h44, i_rv_plic.reg2hw.prio15.q, 0))
+  `ASSERT(prio15_rd_A, rd_P(2, 9'h44, i_rv_plic.reg2hw.prio15.q))
 
   // read/write assertions for register: prio16
-  `ASSERT(prio16_wr_A, wr_P(2, 9'h48, i_rv_plic.reg2hw.prio16.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio16_rd_A, rd_P(2, 9'h48, i_rv_plic.reg2hw.prio16.q), clk_i, !rst_ni)
+  `ASSERT(prio16_wr_A, wr_P(2, 9'h48, i_rv_plic.reg2hw.prio16.q, 0))
+  `ASSERT(prio16_rd_A, rd_P(2, 9'h48, i_rv_plic.reg2hw.prio16.q))
 
   // read/write assertions for register: prio17
-  `ASSERT(prio17_wr_A, wr_P(2, 9'h4c, i_rv_plic.reg2hw.prio17.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio17_rd_A, rd_P(2, 9'h4c, i_rv_plic.reg2hw.prio17.q), clk_i, !rst_ni)
+  `ASSERT(prio17_wr_A, wr_P(2, 9'h4c, i_rv_plic.reg2hw.prio17.q, 0))
+  `ASSERT(prio17_rd_A, rd_P(2, 9'h4c, i_rv_plic.reg2hw.prio17.q))
 
   // read/write assertions for register: prio18
-  `ASSERT(prio18_wr_A, wr_P(2, 9'h50, i_rv_plic.reg2hw.prio18.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio18_rd_A, rd_P(2, 9'h50, i_rv_plic.reg2hw.prio18.q), clk_i, !rst_ni)
+  `ASSERT(prio18_wr_A, wr_P(2, 9'h50, i_rv_plic.reg2hw.prio18.q, 0))
+  `ASSERT(prio18_rd_A, rd_P(2, 9'h50, i_rv_plic.reg2hw.prio18.q))
 
   // read/write assertions for register: prio19
-  `ASSERT(prio19_wr_A, wr_P(2, 9'h54, i_rv_plic.reg2hw.prio19.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio19_rd_A, rd_P(2, 9'h54, i_rv_plic.reg2hw.prio19.q), clk_i, !rst_ni)
+  `ASSERT(prio19_wr_A, wr_P(2, 9'h54, i_rv_plic.reg2hw.prio19.q, 0))
+  `ASSERT(prio19_rd_A, rd_P(2, 9'h54, i_rv_plic.reg2hw.prio19.q))
 
   // read/write assertions for register: prio20
-  `ASSERT(prio20_wr_A, wr_P(2, 9'h58, i_rv_plic.reg2hw.prio20.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio20_rd_A, rd_P(2, 9'h58, i_rv_plic.reg2hw.prio20.q), clk_i, !rst_ni)
+  `ASSERT(prio20_wr_A, wr_P(2, 9'h58, i_rv_plic.reg2hw.prio20.q, 0))
+  `ASSERT(prio20_rd_A, rd_P(2, 9'h58, i_rv_plic.reg2hw.prio20.q))
 
   // read/write assertions for register: prio21
-  `ASSERT(prio21_wr_A, wr_P(2, 9'h5c, i_rv_plic.reg2hw.prio21.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio21_rd_A, rd_P(2, 9'h5c, i_rv_plic.reg2hw.prio21.q), clk_i, !rst_ni)
+  `ASSERT(prio21_wr_A, wr_P(2, 9'h5c, i_rv_plic.reg2hw.prio21.q, 0))
+  `ASSERT(prio21_rd_A, rd_P(2, 9'h5c, i_rv_plic.reg2hw.prio21.q))
 
   // read/write assertions for register: prio22
-  `ASSERT(prio22_wr_A, wr_P(2, 9'h60, i_rv_plic.reg2hw.prio22.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio22_rd_A, rd_P(2, 9'h60, i_rv_plic.reg2hw.prio22.q), clk_i, !rst_ni)
+  `ASSERT(prio22_wr_A, wr_P(2, 9'h60, i_rv_plic.reg2hw.prio22.q, 0))
+  `ASSERT(prio22_rd_A, rd_P(2, 9'h60, i_rv_plic.reg2hw.prio22.q))
 
   // read/write assertions for register: prio23
-  `ASSERT(prio23_wr_A, wr_P(2, 9'h64, i_rv_plic.reg2hw.prio23.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio23_rd_A, rd_P(2, 9'h64, i_rv_plic.reg2hw.prio23.q), clk_i, !rst_ni)
+  `ASSERT(prio23_wr_A, wr_P(2, 9'h64, i_rv_plic.reg2hw.prio23.q, 0))
+  `ASSERT(prio23_rd_A, rd_P(2, 9'h64, i_rv_plic.reg2hw.prio23.q))
 
   // read/write assertions for register: prio24
-  `ASSERT(prio24_wr_A, wr_P(2, 9'h68, i_rv_plic.reg2hw.prio24.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio24_rd_A, rd_P(2, 9'h68, i_rv_plic.reg2hw.prio24.q), clk_i, !rst_ni)
+  `ASSERT(prio24_wr_A, wr_P(2, 9'h68, i_rv_plic.reg2hw.prio24.q, 0))
+  `ASSERT(prio24_rd_A, rd_P(2, 9'h68, i_rv_plic.reg2hw.prio24.q))
 
   // read/write assertions for register: prio25
-  `ASSERT(prio25_wr_A, wr_P(2, 9'h6c, i_rv_plic.reg2hw.prio25.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio25_rd_A, rd_P(2, 9'h6c, i_rv_plic.reg2hw.prio25.q), clk_i, !rst_ni)
+  `ASSERT(prio25_wr_A, wr_P(2, 9'h6c, i_rv_plic.reg2hw.prio25.q, 0))
+  `ASSERT(prio25_rd_A, rd_P(2, 9'h6c, i_rv_plic.reg2hw.prio25.q))
 
   // read/write assertions for register: prio26
-  `ASSERT(prio26_wr_A, wr_P(2, 9'h70, i_rv_plic.reg2hw.prio26.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio26_rd_A, rd_P(2, 9'h70, i_rv_plic.reg2hw.prio26.q), clk_i, !rst_ni)
+  `ASSERT(prio26_wr_A, wr_P(2, 9'h70, i_rv_plic.reg2hw.prio26.q, 0))
+  `ASSERT(prio26_rd_A, rd_P(2, 9'h70, i_rv_plic.reg2hw.prio26.q))
 
   // read/write assertions for register: prio27
-  `ASSERT(prio27_wr_A, wr_P(2, 9'h74, i_rv_plic.reg2hw.prio27.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio27_rd_A, rd_P(2, 9'h74, i_rv_plic.reg2hw.prio27.q), clk_i, !rst_ni)
+  `ASSERT(prio27_wr_A, wr_P(2, 9'h74, i_rv_plic.reg2hw.prio27.q, 0))
+  `ASSERT(prio27_rd_A, rd_P(2, 9'h74, i_rv_plic.reg2hw.prio27.q))
 
   // read/write assertions for register: prio28
-  `ASSERT(prio28_wr_A, wr_P(2, 9'h78, i_rv_plic.reg2hw.prio28.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio28_rd_A, rd_P(2, 9'h78, i_rv_plic.reg2hw.prio28.q), clk_i, !rst_ni)
+  `ASSERT(prio28_wr_A, wr_P(2, 9'h78, i_rv_plic.reg2hw.prio28.q, 0))
+  `ASSERT(prio28_rd_A, rd_P(2, 9'h78, i_rv_plic.reg2hw.prio28.q))
 
   // read/write assertions for register: prio29
-  `ASSERT(prio29_wr_A, wr_P(2, 9'h7c, i_rv_plic.reg2hw.prio29.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio29_rd_A, rd_P(2, 9'h7c, i_rv_plic.reg2hw.prio29.q), clk_i, !rst_ni)
+  `ASSERT(prio29_wr_A, wr_P(2, 9'h7c, i_rv_plic.reg2hw.prio29.q, 0))
+  `ASSERT(prio29_rd_A, rd_P(2, 9'h7c, i_rv_plic.reg2hw.prio29.q))
 
   // read/write assertions for register: prio30
-  `ASSERT(prio30_wr_A, wr_P(2, 9'h80, i_rv_plic.reg2hw.prio30.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio30_rd_A, rd_P(2, 9'h80, i_rv_plic.reg2hw.prio30.q), clk_i, !rst_ni)
+  `ASSERT(prio30_wr_A, wr_P(2, 9'h80, i_rv_plic.reg2hw.prio30.q, 0))
+  `ASSERT(prio30_rd_A, rd_P(2, 9'h80, i_rv_plic.reg2hw.prio30.q))
 
   // read/write assertions for register: prio31
-  `ASSERT(prio31_wr_A, wr_P(2, 9'h84, i_rv_plic.reg2hw.prio31.q, 0), clk_i, !rst_ni)
-  `ASSERT(prio31_rd_A, rd_P(2, 9'h84, i_rv_plic.reg2hw.prio31.q), clk_i, !rst_ni)
+  `ASSERT(prio31_wr_A, wr_P(2, 9'h84, i_rv_plic.reg2hw.prio31.q, 0))
+  `ASSERT(prio31_rd_A, rd_P(2, 9'h84, i_rv_plic.reg2hw.prio31.q))
 
   // define local fpv variable for the multi_reg
   logic [31:0] ie0_q_fpv;
@@ -230,19 +230,19 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
   end
 
   // read/write assertions for register: ie0
-  `ASSERT(ie0_wr_A, wr_P(31, 9'h100, ie0_q_fpv[31:0], 0), clk_i, !rst_ni)
-  `ASSERT(ie0_rd_A, rd_P(31, 9'h100, ie0_q_fpv[31:0]), clk_i, !rst_ni)
+  `ASSERT(ie0_wr_A, wr_P(31, 9'h100, ie0_q_fpv[31:0], 0))
+  `ASSERT(ie0_rd_A, rd_P(31, 9'h100, ie0_q_fpv[31:0]))
 
   // read/write assertions for register: threshold0
-  `ASSERT(threshold0_wr_A, wr_P(2, 9'h104, i_rv_plic.reg2hw.threshold0.q, 0), clk_i, !rst_ni)
-  `ASSERT(threshold0_rd_A, rd_P(2, 9'h104, i_rv_plic.reg2hw.threshold0.q), clk_i, !rst_ni)
+  `ASSERT(threshold0_wr_A, wr_P(2, 9'h104, i_rv_plic.reg2hw.threshold0.q, 0))
+  `ASSERT(threshold0_rd_A, rd_P(2, 9'h104, i_rv_plic.reg2hw.threshold0.q))
 
   // read/write assertions for register: cc0
-  `ASSERT(cc0_wr_A, wr_ext_P(5, 9'h108, i_rv_plic.reg2hw.cc0.q, 0), clk_i, !rst_ni)
-  `ASSERT(cc0_rd_A, rd_ext_P(5, 9'h108, i_rv_plic.hw2reg.cc0.d), clk_i, !rst_ni)
+  `ASSERT(cc0_wr_A, wr_ext_P(5, 9'h108, i_rv_plic.reg2hw.cc0.q, 0))
+  `ASSERT(cc0_rd_A, rd_ext_P(5, 9'h108, i_rv_plic.hw2reg.cc0.d))
 
   // read/write assertions for register: msip0
-  `ASSERT(msip0_wr_A, wr_P(0, 9'h10c, i_rv_plic.reg2hw.msip0.q, 0), clk_i, !rst_ni)
-  `ASSERT(msip0_rd_A, rd_P(0, 9'h10c, i_rv_plic.reg2hw.msip0.q), clk_i, !rst_ni)
+  `ASSERT(msip0_wr_A, wr_P(0, 9'h10c, i_rv_plic.reg2hw.msip0.q, 0))
+  `ASSERT(msip0_rd_A, rd_P(0, 9'h10c, i_rv_plic.reg2hw.msip0.q))
 
 endmodule

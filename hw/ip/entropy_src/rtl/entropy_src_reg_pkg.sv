@@ -7,7 +7,7 @@
 package entropy_src_reg_pkg;
 
   // Param list
-  localparam int EsFifoDepth = 32;
+  parameter int EsFifoDepth = 32;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -148,19 +148,19 @@ package entropy_src_reg_pkg;
   } entropy_src_hw2reg_t;
 
   // Register Address
-  parameter ENTROPY_SRC_INTR_STATE_OFFSET = 6'h 0;
-  parameter ENTROPY_SRC_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter ENTROPY_SRC_INTR_TEST_OFFSET = 6'h 8;
-  parameter ENTROPY_SRC_ES_REGEN_OFFSET = 6'h c;
-  parameter ENTROPY_SRC_ES_CONF_OFFSET = 6'h 10;
-  parameter ENTROPY_SRC_ES_REV_OFFSET = 6'h 14;
-  parameter ENTROPY_SRC_ES_ENTROPY_OFFSET = 6'h 18;
-  parameter ENTROPY_SRC_ES_CTRL_OFFSET = 6'h 1c;
-  parameter ENTROPY_SRC_ES_STATUS_OFFSET = 6'h 20;
-  parameter ENTROPY_SRC_ES_FDEPTHST_OFFSET = 6'h 24;
-  parameter ENTROPY_SRC_ES_THRESH_OFFSET = 6'h 28;
-  parameter ENTROPY_SRC_ES_RATE_OFFSET = 6'h 2c;
-  parameter ENTROPY_SRC_ES_SEED_OFFSET = 6'h 30;
+  parameter logic [5:0] ENTROPY_SRC_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [5:0] ENTROPY_SRC_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [5:0] ENTROPY_SRC_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [5:0] ENTROPY_SRC_ES_REGEN_OFFSET = 6'h c;
+  parameter logic [5:0] ENTROPY_SRC_ES_CONF_OFFSET = 6'h 10;
+  parameter logic [5:0] ENTROPY_SRC_ES_REV_OFFSET = 6'h 14;
+  parameter logic [5:0] ENTROPY_SRC_ES_ENTROPY_OFFSET = 6'h 18;
+  parameter logic [5:0] ENTROPY_SRC_ES_CTRL_OFFSET = 6'h 1c;
+  parameter logic [5:0] ENTROPY_SRC_ES_STATUS_OFFSET = 6'h 20;
+  parameter logic [5:0] ENTROPY_SRC_ES_FDEPTHST_OFFSET = 6'h 24;
+  parameter logic [5:0] ENTROPY_SRC_ES_THRESH_OFFSET = 6'h 28;
+  parameter logic [5:0] ENTROPY_SRC_ES_RATE_OFFSET = 6'h 2c;
+  parameter logic [5:0] ENTROPY_SRC_ES_SEED_OFFSET = 6'h 30;
 
 
   // Register Index
@@ -181,7 +181,7 @@ package entropy_src_reg_pkg;
   } entropy_src_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] ENTROPY_SRC_PERMIT [13] = '{
+  parameter logic [3:0] ENTROPY_SRC_PERMIT [13] = '{
     4'b 0001, // index[ 0] ENTROPY_SRC_INTR_STATE
     4'b 0001, // index[ 1] ENTROPY_SRC_INTR_ENABLE
     4'b 0001, // index[ 2] ENTROPY_SRC_INTR_TEST

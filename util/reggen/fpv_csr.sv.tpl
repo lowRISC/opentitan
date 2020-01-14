@@ -177,21 +177,21 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; (
   // read/write assertions for register: ${reg_name}
     % if reg_flat.dvrights in {"RW", "WO"}:
       % if reg_flat.get_n_bits(["q", "d"]) == 0:
-  `ASSERT(${reg_name}_wr_A, ${wr_prperty}(${reg_msb}, ${reg_offset}, ${reg_we_path}, ${reg_wen}), clk_i, !rst_ni)
+  `ASSERT(${reg_name}_wr_A, ${wr_prperty}(${reg_msb}, ${reg_offset}, ${reg_we_path}, ${reg_wen}))
       % else:
-  `ASSERT(${reg_name}_wr_A, ${wr_prperty}(${reg_msb}, ${reg_offset}, ${reg_q_path}, ${reg_wen}), clk_i, !rst_ni)
+  `ASSERT(${reg_name}_wr_A, ${wr_prperty}(${reg_msb}, ${reg_offset}, ${reg_q_path}, ${reg_wen}))
       % endif
       % if regwen:
-  `ASSERT(${reg_name}_stable_A, wr_regen_stable_P(${reg_wen}, ${reg_q_path}), clk_i, !rst_ni)
+  `ASSERT(${reg_name}_stable_A, wr_regen_stable_P(${reg_wen}, ${reg_q_path}))
       % endif
     % endif
     % if reg_flat.dvrights in {"RW", "RO"}:
       % if reg_flat.get_n_bits(["q", "d"]) == 0:
-  `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_qs_path}), clk_i, !rst_ni)
+  `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_qs_path}))
       % elif reg_flat.get_n_bits(["d"]):
-  `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_d_path}), clk_i, !rst_ni)
+  `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_d_path}))
       % elif reg_flat.get_n_bits(["q"]) and (r.ishomog or ((not r.ishomog) and r.get_fields_flat()[0].get_n_bits(["q"]))):
-  `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_q_path}), clk_i, !rst_ni)
+  `ASSERT(${reg_name}_rd_A, ${rd_prperty}(${reg_msb}, ${reg_offset}, ${reg_q_path}))
       % endif
     % endif
   % endfor

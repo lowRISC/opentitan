@@ -45,14 +45,14 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // Assumptions //
   /////////////////
 
-  `ASSUME(TimeoutCycles_M, timeout_cyc_i < MAX_TIMEOUT_CYCLES, clk_i, !rst_ni)
-  `ASSUME(TimeoutCyclesConst_M, ##1 $stable(timeout_cyc_i), clk_i, !rst_ni)
+  `ASSUME(TimeoutCycles_M, timeout_cyc_i < MAX_TIMEOUT_CYCLES)
+  `ASSUME(TimeoutCyclesConst_M, ##1 $stable(timeout_cyc_i))
 
-  `ASSUME(PhaseCycles_M, phase_cyc_i < MAX_PHASE_CYCLES, clk_i, !rst_ni)
-  `ASSUME(PhaseCyclesConst_M, ##1 $stable(phase_cyc_i), clk_i, !rst_ni)
+  `ASSUME(PhaseCycles_M, phase_cyc_i < MAX_PHASE_CYCLES)
+  `ASSUME(PhaseCyclesConst_M, ##1 $stable(phase_cyc_i))
 
-  `ASSUME(EscSelConst_M, ##1 $stable(esc_sel), clk_i, !rst_ni)
-  `ASSUME(PhaseSelConst_M, ##1 $stable(phase_sel), clk_i, !rst_ni)
+  `ASSUME(EscSelConst_M, ##1 $stable(esc_sel))
+  `ASSUME(PhaseSelConst_M, ##1 $stable(phase_sel))
 
   ////////////////////////
   // Forward Assertions //
@@ -60,9 +60,9 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   // if the class is not enabled and we are in IDLE state,
   // neither of the two escalation mechanisms shall fire
-  `ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o, clk_i, !rst_ni)
-  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i |-> !esc_sig_en_o, clk_i, !rst_ni)
-  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] |-> !esc_sig_en_o[esc_sel], clk_i, !rst_ni)
+  `ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o)
+  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i |-> !esc_sig_en_o)
+  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] |-> !esc_sig_en_o[esc_sel])
 
   // if timeout counter is enabled due to a pending interrupt, check escalation
   // assume accumulation trigger is not asserted during this sequence
@@ -72,20 +72,20 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   // check whether an accum trig leads to escalation if enabled
   `ASSERT(AccumEscTrig_A, ##1 en_i && accum_trig_i && esc_state_o inside {Idle, Timeout} |=>
-      esc_has_triggered_q, clk_i, !rst_ni)
+      esc_has_triggered_q)
 
   // check escalation cnt and state out
-  `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == esc_state_o, clk_i, !rst_ni)
-  `ASSERT(EscCntOut_A, alert_handler_esc_timer.cnt_q == esc_cnt_o, clk_i, !rst_ni)
+  `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == esc_state_o)
+  `ASSERT(EscCntOut_A, alert_handler_esc_timer.cnt_q == esc_cnt_o)
 
   // check clr input
   // we cannot use clr to exit from the timeout state
   `ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout}) |=>
-      esc_state_o == Idle, clk_i, !rst_ni)
+      esc_state_o == Idle)
 
   // check escalation map
   `ASSERT(PhaseEscMap_A, esc_state_o == phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
-      esc_en_i[esc_sel] |-> esc_sig_en_o[esc_sel], clk_i, !rst_ni)
+      esc_en_i[esc_sel] |-> esc_sig_en_o[esc_sel])
 
   // check terminal state is reached eventually if triggered and not cleared
   `ASSERT(TerminalState_A, esc_trig_o |-> strong(##[1:$] esc_state_o == Terminal),
@@ -98,13 +98,13 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // escalation can only be triggered when in Idle or Timeout state. Trigger mechanisms are either
   // the accumulation trigger or a timeout trigger
   `ASSERT(EscTrigBkwd_A, esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accum_trig_i ||
-      esc_state_o  == Timeout && esc_cnt_o >= timeout_cyc_i, clk_i, !rst_ni)
+      esc_state_o  == Timeout && esc_cnt_o >= timeout_cyc_i)
   `ASSERT(NoEscTrigBkwd_A, !esc_trig_o |-> !(esc_state_o inside {Idle, Timeout}) ||
-      (!en_i || !accum_trig_i || !timeout_en_i), clk_i, !rst_ni)
+      (!en_i || !accum_trig_i || !timeout_en_i))
 
   // escalation signals can only be asserted in the escalation phase states
   `ASSERT(EscBkwd_A, esc_sig_en_o[esc_sel] |-> esc_en_i[esc_sel] &&
-      esc_has_triggered_q, clk_i, !rst_ni)
+      esc_has_triggered_q)
   `ASSERT(NoEscBkwd_A, !esc_sig_en_o[esc_sel] |-> !esc_en_i[esc_sel] ||
       esc_state_o != phases[esc_map_i[esc_sel]], clk_i, !rst_ni || clr_i)
 

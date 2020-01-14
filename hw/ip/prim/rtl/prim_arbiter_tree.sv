@@ -179,42 +179,42 @@ module prim_arbiter_tree #(
   ////////////////
 
   // we can only grant one requestor at a time
-  `ASSERT(CheckHotOne_A, $onehot0(gnt_o), clk_i, !rst_ni)
+  `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
-  `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i, clk_i, !rst_ni)
+  `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
   // A grant implies that the arbiter asserts valid as well
-  `ASSERT(GntImpliesValid_A, |gnt_o |-> valid_o, clk_i, !rst_ni)
+  `ASSERT(GntImpliesValid_A, |gnt_o |-> valid_o)
   // A request and a sink that is ready imply a grant
-  `ASSERT(ReqAndReadyImplyGrant_A, |req_i && ready_i |-> |gnt_o, clk_i, !rst_ni)
+  `ASSERT(ReqAndReadyImplyGrant_A, |req_i && ready_i |-> |gnt_o)
   // A request and a sink that is ready imply a grant
-  `ASSERT(ReqImpliesValid_A, |req_i |-> valid_o, clk_i, !rst_ni)
+  `ASSERT(ReqImpliesValid_A, |req_i |-> valid_o)
   // Both conditions above combined and reversed
-  `ASSERT(ReadyAndValidImplyGrant_A, ready_i && valid_o |-> |gnt_o, clk_i, !rst_ni)
+  `ASSERT(ReadyAndValidImplyGrant_A, ready_i && valid_o |-> |gnt_o)
   // Both conditions above combined and reversed
-  `ASSERT(NoReadyValidNoGrant_A, !(ready_i || valid_o) |-> gnt_o == 0, clk_i, !rst_ni)
+  `ASSERT(NoReadyValidNoGrant_A, !(ready_i || valid_o) |-> gnt_o == 0)
   // check index / grant correspond
-  `ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o], clk_i, !rst_ni)
+  `ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
   // data flow
-  `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o], clk_i, !rst_ni)
+  `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
   // KNOWN assertions on outputs, except for data as that may be partially X in simulation
   // e.g. when used on a BUS
-  `ASSERT_KNOWN(ValidKnown_A, valid_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(GrantKnown_A, gnt_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IdxKnown_A, idx_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(ValidKnown_A, valid_o)
+  `ASSERT_KNOWN(GrantKnown_A, gnt_o)
+  `ASSERT_KNOWN(IdxKnown_A, idx_o)
 
 `ifndef SYNTHESIS
   // A grant implies a request
   int unsigned k; // this is a symbolic variable
   `ASSUME(KStable_M, ##1 $stable(k), clk_i, !rst_ni)
   `ASSUME(KRange_M, k < N, clk_i, !rst_ni)
-  `ASSERT(GntImpliesReq_A, gnt_o[k] |-> req_i[k], clk_i, !rst_ni)
+  `ASSERT(GntImpliesReq_A, gnt_o[k] |-> req_i[k])
 
   if (Lock) begin : gen_lock_assertion
     // requests must stay asserted until they have been granted
     `ASSUME(ReqStaysHighUntilGranted_M, (|req_i) && !ready_i |=>
         (req_i & $past(req_i)) == $past(req_i), clk_i, !rst_ni)
     // check that the arbitration decision is held if the sink is not ready
-    `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o), clk_i, !rst_ni)
+    `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o))
   end
 
 `endif

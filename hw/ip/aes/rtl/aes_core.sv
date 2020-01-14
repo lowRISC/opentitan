@@ -410,26 +410,26 @@ module aes_core #(
   ////////////////
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesModeKnown, mode_q, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AesModeKnown, mode_q)
   `ASSERT(AesKeyLenValid, key_len_q inside {
       AES_128,
       AES_192,
       AES_256
-      }, clk_i, !rst_ni)
+      })
   `ASSERT(AesStateSelValid, state_sel inside {
       STATE_INIT,
       STATE_ROUND,
       STATE_CLEAR
-      }, clk_i, !rst_ni)
+      })
   `ASSERT(AesAddRKSelValid, add_round_key_in_sel inside {
       ADD_RK_INIT,
       ADD_RK_ROUND,
       ADD_RK_FINAL
-      }, clk_i, !rst_ni)
-  `ASSERT_KNOWN(AesKeyInitSelKnown, key_init_sel, clk_i, !rst_ni)
-  `ASSERT_KNOWN(AesKeyFullSelKnown, key_full_sel, clk_i, !rst_ni)
-  `ASSERT_KNOWN(AesKeyDecSelKnown, key_dec_sel, clk_i, !rst_ni)
-  `ASSERT_KNOWN(AesKeyWordsSelKnown, key_words_sel, clk_i, !rst_ni)
-  `ASSERT_KNOWN(AesRoundKeySelKnown, round_key_sel, clk_i, !rst_ni)
+      })
+  `ASSERT_KNOWN(AesKeyInitSelKnown, key_init_sel)
+  `ASSERT_KNOWN(AesKeyFullSelKnown, key_full_sel)
+  `ASSERT_KNOWN(AesKeyDecSelKnown, key_dec_sel)
+  `ASSERT_KNOWN(AesKeyWordsSelKnown, key_words_sel)
+  `ASSERT_KNOWN(AesRoundKeySelKnown, round_key_sel)
 
 endmodule

@@ -74,34 +74,33 @@ module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
 
   // when IP is set, previous cycle should follow edge or level triggered criteria
   `ASSERT(LevelTriggeredIp_A, $rose(ip[src_sel]) |->
-          $past(le[src_sel]) || $past(intr_src_i[src_sel]), clk_i, !rst_ni)
+          $past(le[src_sel]) || $past(intr_src_i[src_sel]))
 
   `ASSERT(EdgeTriggeredIp_A, $rose(ip[src_sel]) |->
-          !$past(le[src_sel]) || $rose($past(intr_src_i[src_sel])), clk_i, !rst_ni)
+          !$past(le[src_sel]) || $rose($past(intr_src_i[src_sel])))
 
   // when interrupt is trigger, and nothing claimed yet, then next cycle should assert IP.
   `ASSERT(LevelTriggeredIpWithClaim_A, !le[src_sel] && intr_src_i[src_sel] && !claimed |=>
-          ip[src_sel], clk_i, !rst_ni)
+          ip[src_sel])
 
   `ASSERT(EdgeTriggeredIpWithClaim_A, le[src_sel] && $rose(intr_src_i[src_sel]) && !claimed |=>
-          ip[src_sel], clk_i, !rst_ni)
+          ip[src_sel])
 
   // ip stays stable until claimed, reset to 0 after claimed, and stays 0 until complete
-  `ASSERT(IpStableAfterTriggered_A, ip[src_sel] && !claimed  |=> ip[src_sel], clk_i, !rst_ni)
-  `ASSERT(IpClearAfterClaim_A, ip[src_sel] && claim[src_sel] |=> !ip[src_sel], clk_i, !rst_ni)
-  `ASSERT(IpStableAfterClaimed_A, claimed |=> !ip[src_sel], clk_i, !rst_ni)
+  `ASSERT(IpStableAfterTriggered_A, ip[src_sel] && !claimed  |=> ip[src_sel])
+  `ASSERT(IpClearAfterClaim_A, ip[src_sel] && claim[src_sel] |=> !ip[src_sel])
+  `ASSERT(IpStableAfterClaimed_A, claimed |=> !ip[src_sel])
 
   // when ip is set and priority is the largest and above threshold, and interrupt enable is set,
   // assertion irq_o at next cycle
   `ASSERT(TriggerIrqForwardCheck_A, ip[src_sel] && prio[src_sel] > threshold[tgt_sel] &&
-          max_priority && ie[tgt_sel][src_sel] |=> irq_o[tgt_sel], clk_i, !rst_ni)
+          max_priority && ie[tgt_sel][src_sel] |=> irq_o[tgt_sel])
 
   `ASSERT(TriggerIrqBackwardCheck_A, $rose(irq_o[tgt_sel]) |->
-          $past(irq) && (irq_id_o[tgt_sel] - 1) == $past(i_high_prio), clk_i, !rst_ni)
+          $past(irq) && (irq_id_o[tgt_sel] - 1) == $past(i_high_prio))
 
   // when irq ID changed, but not to ID=0, irq_o should be high, or irq represents the largest prio
   // but smaller than the threshold
   `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
-          irq_o[tgt_sel] || ((irq_id_o[tgt_sel] - 1) == $past(i_high_prio) && !$past(irq)),
-          clk_i, !rst_ni)
+          irq_o[tgt_sel] || ((irq_id_o[tgt_sel] - 1) == $past(i_high_prio) && !$past(irq)))
 endmodule : rv_plic_assert_fpv

@@ -53,6 +53,6 @@ module tlul_adapter_host #(
   assign rdata_o = tl_i.d_data;
 
   // this assertion fails when DBG adapter cannot handle error response
-  `ASSERT(handleErrorResponse, tl_i.d_valid |-> (tl_i.d_error == 1'b0), clk_i, !rst_ni)
+  `ASSERT(handleErrorResponse, tl_i.d_valid |-> (tl_i.d_error == 1'b0))
 
 endmodule
