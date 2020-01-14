@@ -95,7 +95,10 @@ class alert_monitor extends dv_base_monitor#(
         req = alert_seq_item::type_id::create("req");
         req.alert_type = AlertTrans;
         req.alert_handshake_sta = AlertReceived;
+        // Write alert packet to scb when receiving alert signal
         alert_port.write(req);
+        // Duplicate req for writing alert packet at the end of alert handshake
+        `downcast(req, req.clone())
         fork
           begin : isolation_fork
             fork
