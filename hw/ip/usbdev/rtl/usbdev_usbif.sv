@@ -122,7 +122,7 @@ module usbdev_usbif  #(
       // TODO: This code should be re-written to be more human-readable, in the
       // current state is hard to understand or verify
       out_max_used_next[0] = (out_max_used[PktW] & out_max_used[0]) ? 1'b1 : out_ep_put_addr[0];
-      out_max_used_next[PktW - 1: 1] = out_max_used[PktW] ? {PktW{1'b0}} : out_ep_put_addr[PktW - 1:1];
+      out_max_used_next[PktW - 1: 1] = out_max_used[PktW] ? '0 : out_ep_put_addr[PktW - 1:1];
       out_max_used_next[PktW] = (&out_max_used[PktW - 1:0]) | out_max_used[PktW];
     end else begin
       out_max_used_next = out_max_used;
