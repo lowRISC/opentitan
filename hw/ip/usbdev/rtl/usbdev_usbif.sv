@@ -137,7 +137,7 @@ module usbdev_usbif  #(
     end else begin
       out_max_used_q <= out_max_used_d;
       if (out_ep_data_put) begin
-        case (out_ep_put_addr[1:0])
+        unique case (out_ep_put_addr[1:0])
           0: begin
             wdata[7:0] <= out_ep_data;
           end

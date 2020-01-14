@@ -146,7 +146,7 @@ module usb_fs_nb_in_pe #(
     tx_pkt_start_o = 1'b0;
     tx_pid_o = 4'b0000;
     rollback_in_xfr = 1'b0;
-    case (in_xfr_state)
+    unique case (in_xfr_state)
       StIdle: begin
         if (in_token_received) begin
           in_xfr_state_next = StRcvdIn;

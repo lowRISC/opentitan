@@ -52,26 +52,23 @@ module usb_fs_rx (
   logic       bitstuff_error;
   logic       bitstuff_error_q, bitstuff_error_d;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////
-  //////// usb receive path
-  ////////
-  ////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////// 
+  //////////////////////
+  // usb receive path //
+  //////////////////////
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // line state recovery state machine
-  /*
-    the recieve path doesn't currently use a differential reciever.  because of
-    this there is a chance that one of the differential pairs will appear to have
-    changed to the new state while the other is still in the old state.  the 
-    following state machine detects transitions and waits an extra sampling clock
-    before decoding the state on the differential pair.  this transition period 
-    will only ever last for one clock as long as there is no noise on the line.
-    if there is enough noise on the line then the data may be corrupted and the
-    packet will fail the data integrity checks.
-  */
+  ///////////////////////////////////////
+  // line state recovery state machine //
+  ///////////////////////////////////////  
+
+  // The receive path doesn't currently use a differential reciever.  because of
+  // this there is a chance that one of the differential pairs will appear to have
+  // changed to the new state while the other is still in the old state.  the 
+  // following state machine detects transitions and waits an extra sampling clock
+  // before decoding the state on the differential pair.  this transition period 
+  // will only ever last for one clock as long as there is no noise on the line.
+  // if there is enough noise on the line then the data may be corrupted and the
+  // packet will fail the data integrity checks.
+  
   logic [2:0] line_state_q, line_state_d;
   localparam  DT = 3'b100;
   localparam  DJ = 3'b010;
@@ -83,15 +80,14 @@ module usb_fs_rx (
   logic [1:0] dpair;
   always_comb begin : proc_dpair_mute
     if (tx_en_i) begin
-      dpair = 2'b10; // J
+      dpair = DJ[1:0]; // J
     end else begin
-      dpair = (usb_se0_i) ? 2'b00 : {usb_d_i, !usb_d_i};
-      // dpair = dpair_q[3:2];
+      dpair = (usb_se0_i) ? 2'b00 : {usb_d_i, ~usb_d_i};
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_line_state_q
-    if(!rst_ni) begin
+    if (!rst_ni) begin
       line_state_q <= SE0;
     end else begin
       if (link_reset_i) begin
@@ -106,55 +102,45 @@ module usb_fs_rx (
     // Default assignment
     line_state_d = line_state_q;
 
-    case (line_state_q)
+    if (line_state_q == DT) begin
       // if we are in a transition state, then we can sample the pair and 
       // move to the next corresponding line state
-      DT : begin
-        case (dpair)
-          2'b10 : line_state_d = DJ;
-          2'b01 : line_state_d = DK;
-          2'b00 : line_state_d = SE0;
-          2'b11 : line_state_d = SE1;
-        endcase
-      end
+      line_state_d = {1'b0, dpair};
 
+    end else begin
       // if we are in a valid line state and the value of the pair changes,
       // then we need to move to the transition state
-      DJ  : if (dpair != 2'b10) line_state_d = DT;
-      DK  : if (dpair != 2'b01) line_state_d = DT;
-      SE0 : if (dpair != 2'b00) line_state_d = DT;
-      SE1 : if (dpair != 2'b11) line_state_d = DT;        
-
-      // if we are in an invalid state we should move to the transition state
-      default : line_state_d = DT;
-    endcase
+      if (dpair != line_state_q[1:0]) begin
+        line_state_d = DT;
+      end
+    end
   end
 
+  ////////////////////
+  // clock recovery //
+  ////////////////////
+  
+  // the DT state from the line state recovery state machine is used to align to 
+  // transmit clock.  the line state is sampled in the middle of the bit time.
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // clock recovery
-  /*
-    the DT state from the line state recovery state machine is used to align to 
-    transmit clock.  the line state is sampled in the middle of the bit time.
-
-    example of signal relationships
-    -------------------------------
-    line_state        DT  DJ  DJ  DJ  DT  DK  DK  DK  DK  DK  DK  DT  DJ  DJ  DJ
-    line_state_valid  ________----____________----____________----________----____
-    bit_phase         0   0   1   2   3   0   1   2   3   0   1   2   0   1   2
-  */
+  // example of signal relationships
+  // -------------------------------
+  // line_state        DT  DJ  DJ  DJ  DT  DK  DK  DK  DK  DK  DK  DT  DJ  DJ  DJ
+  // line_state_valid  ________----____________----____________----________----____
+  // bit_phase         0   0   1   2   3   0   1   2   3   0   1   2   0   1   2
+  
 
   logic [1:0] bit_phase_q, bit_phase_d;
   logic line_state_valid;
 
-  assign line_state_valid = (bit_phase_q == 1);
-  assign bit_strobe_o     = (bit_phase_q == 2);
+  assign line_state_valid = (bit_phase_q == 2'd1);
+  assign bit_strobe_o     = (bit_phase_q == 2'd2);
 
   // keep track of phase within each bit
   assign bit_phase_d = (line_state_q == DT) ? 0 : bit_phase_q + 1;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bit_phase_q
-    if(!rst_ni) begin
+    if (!rst_ni) begin
       bit_phase_q <= 0;
     end else begin
       if (link_reset_i) begin
@@ -166,19 +152,20 @@ module usb_fs_rx (
   end
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // packet detection 
-  /*
-    usb uses a sync to denote the beginning of a packet and two single-ended-0 to
-    denote the end of a packet.  this state machine recognizes the beginning and
-    end of packets for subsequent layers to process.
-  */
+  //////////////////////
+  // packet detection //
+  //////////////////////
+  
+  // usb uses a sync to denote the beginning of a packet and two single-ended-0 to
+  // denote the end of a packet.  this state machine recognizes the beginning and
+  // end of packets for subsequent layers to process.
+  
   logic [11:0] line_history_q, line_history_d;
   logic packet_valid_q, packet_valid_d;
   logic see_eop, packet_start, packet_end;
   
-  assign packet_start = packet_valid_d && !packet_valid_q;
-  assign packet_end   = !packet_valid_d && packet_valid_q;
+  assign packet_start = packet_valid_d & ~packet_valid_q;
+  assign packet_end   = ~packet_valid_d & packet_valid_q;
 
   // EOP detection is configurable for 1/2 bit periods of SE0.
   // The standard (Table 7-7) mandates min = 82 ns = 1 bit period.
@@ -209,7 +196,7 @@ module usb_fs_rx (
   assign line_history_d = line_state_valid ? {line_history_q[9:0], line_state_q[1:0]} : line_history_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_pkt_line
-    if(!rst_ni) begin
+    if (!rst_ni) begin
       packet_valid_q <= 0;
       line_history_q <= 12'b101010101010; // all K
     end else begin
@@ -224,19 +211,20 @@ module usb_fs_rx (
   end
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // NRZI decode
-  /*
-    in order to ensure there are enough bit transitions for a receiver to recover
-    the clock usb uses NRZI encoding.
+  /////////////////
+  // NRZI decode //
+  /////////////////
+  
+  // in order to ensure there are enough bit transitions for a receiver to recover
+  // the clock usb uses NRZI encoding.
 
-    https://en.wikipedia.org/wiki/Non-return-to-zero
-  */
+  // https://en.wikipedia.org/wiki/Non-return-to-zero
+  
   logic dvalid_raw;
   logic din;
 
   always_comb begin
-    case (line_history_q[3:0])
+    unique case (line_history_q[3:0])
       4'b0101 : din = 1;
       4'b0110 : din = 0;
       4'b1001 : din = 0;
@@ -245,7 +233,7 @@ module usb_fs_rx (
     endcase
  
     if (packet_valid_q && line_state_valid) begin
-      case (line_history_q[3:0])
+      unique case (line_history_q[3:0])
         4'b0101 : dvalid_raw = 1;
         4'b0110 : dvalid_raw = 1;
         4'b1001 : dvalid_raw = 1;
@@ -257,8 +245,9 @@ module usb_fs_rx (
     end
   end
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // Undo bit stuffing and detect bit stuffing errors
+  //////////////////////////////////////////////////////
+  // Undo bit stuffing and detect bit stuffing errors //
+  //////////////////////////////////////////////////////
 
   always_comb begin : proc_bitstuff_history_d
     if (packet_end) begin
@@ -271,7 +260,7 @@ module usb_fs_rx (
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff_history_q
-    if(!rst_ni) begin
+    if (!rst_ni) begin
       bitstuff_history_q <= 0;
     end else begin
       if (link_reset_i) begin
@@ -302,7 +291,7 @@ module usb_fs_rx (
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff_error_q
-    if(~rst_ni) begin
+    if (!rst_ni) begin
       bitstuff_error_q <= 0;
     end else begin
       bitstuff_error_q <= bitstuff_error_d;
@@ -312,11 +301,12 @@ module usb_fs_rx (
   assign bitstuff_error_o = bitstuff_error_q && packet_end;
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // save and check pid
-  /*
-    shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
-  */
+  ////////////////////////
+  // save and check pid //
+  ////////////////////////
+  
+  // shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
+  
   logic [8:0] full_pid_q, full_pid_d;
   logic pid_valid, pid_complete;
 
@@ -333,8 +323,9 @@ module usb_fs_rx (
     end
   end
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // check crc5
+  ////////////////
+  // check crc5 //
+  ////////////////
   logic [4:0] crc5_q, crc5_d;
   logic crc5_valid, crc5_invert; 
   assign crc5_valid  = crc5_q == 5'b01100;
@@ -348,17 +339,14 @@ module usb_fs_rx (
     end
 
     if (dvalid && pid_complete) begin
-      crc5_d[4] = crc5_q[3];
-      crc5_d[3] = crc5_q[2];
-      crc5_d[2] = crc5_q[1] ^ crc5_invert;
-      crc5_d[1] = crc5_q[0];
-      crc5_d[0] = crc5_invert;
+      crc5_d = {crc5_q[3:0], 1'b0} ^ ({5{crc5_invert}} & 5'b00101);
     end
   end
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // check crc16
+  /////////////////
+  // check crc16 //
+  /////////////////
   logic [15:0] crc16_q, crc16_d;
   logic crc16_valid, crc16_invert;
 
@@ -373,28 +361,14 @@ module usb_fs_rx (
     end
 
     if (dvalid && pid_complete) begin
-      crc16_d[15] = crc16_q[14] ^ crc16_invert;
-      crc16_d[14] = crc16_q[13];
-      crc16_d[13] = crc16_q[12];
-      crc16_d[12] = crc16_q[11];
-      crc16_d[11] = crc16_q[10];
-      crc16_d[10] = crc16_q[9];
-      crc16_d[9] = crc16_q[8];
-      crc16_d[8] = crc16_q[7];
-      crc16_d[7] = crc16_q[6];
-      crc16_d[6] = crc16_q[5];
-      crc16_d[5] = crc16_q[4];
-      crc16_d[4] = crc16_q[3];
-      crc16_d[3] = crc16_q[2];
-      crc16_d[2] = crc16_q[1] ^ crc16_invert;
-      crc16_d[1] = crc16_q[0];
-      crc16_d[0] = crc16_invert;
+      crc16_d = {crc16_q[14:0], 1'b0} ^ ({16{crc16_invert}} & 16'b1000000000000101);
     end
   end
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // output control signals
+  ////////////////////////////
+  // output control signals //
+  ////////////////////////////
   logic pkt_is_token, pkt_is_data, pkt_is_handshake;
   assign pkt_is_token     = full_pid_q[2:1] == 2'b01;
   assign pkt_is_data      = full_pid_q[2:1] == 2'b11;
@@ -458,8 +432,9 @@ module usb_fs_rx (
   assign pkt_end_o   = packet_end; 
   
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // deserialize and output data
+  /////////////////////////////////
+  // deserialize and output data //
+  /////////////////////////////////
   //assign rx_data_put = dvalid && pid_complete && pkt_is_data;
   logic [8:0] rx_data_buffer_q, rx_data_buffer_d;
   logic rx_data_buffer_full;
@@ -481,10 +456,11 @@ module usb_fs_rx (
   end
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // Registers
+  ///////////////
+  // Registers //
+  ///////////////
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_gp_regs
-    if(!rst_ni) begin
+    if (!rst_ni) begin
       full_pid_q          <= 0;
       crc16_q             <= 0;
       crc5_q              <= 0;
