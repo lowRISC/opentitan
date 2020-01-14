@@ -281,6 +281,7 @@ module usb_fs_rx (
     end
   end
 
+  logic dvalid;
   assign dvalid = dvalid_raw && !(bitstuff_history_q[5:0] == 6'b111111);
 
   // 7 consecutive ones should not be seen on the bus

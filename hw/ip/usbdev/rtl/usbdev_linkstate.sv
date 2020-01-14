@@ -66,7 +66,7 @@ module usbdev_linkstate (
 
 
   // Events that are not triggered by a timeout
-  logic         ev_bus_active, ev_sense_pwr;
+  logic         ev_bus_active;
 
   // Events that are triggered by timeout
   logic         ev_bus_inactive, ev_reset;
@@ -110,7 +110,6 @@ module usbdev_linkstate (
   );
 
   // Simple events
-  assign ev_sense_pwr  = see_pwr_sense;
   assign ev_bus_active = !see_idle;
 
   always_comb begin

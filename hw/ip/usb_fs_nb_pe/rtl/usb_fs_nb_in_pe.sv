@@ -130,7 +130,7 @@ module usb_fs_nb_in_pe #(
     rx_pkt_valid_i &&
     rx_pid == UsbPidAck;
 
-  assign more_data_to_send = in_ep_has_data_i && ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
+  assign more_data_to_send = in_ep_has_data_i[in_ep_index] && ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
 
   assign tx_data_avail_o = (in_xfr_state == StSendData) && more_data_to_send;
 

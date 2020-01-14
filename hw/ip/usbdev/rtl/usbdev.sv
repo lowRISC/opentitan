@@ -580,7 +580,7 @@ module usbdev (
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
         hw2reg.stall[i].d  = 1'b0;              
-        if (setup_received && usb_out_endpoint == i) begin
+        if (setup_received && usb_out_endpoint == 4'(i)) begin
           hw2reg.stall[i].de = 1'b1;
         end else begin
           hw2reg.stall[i].de = 1'b0;
