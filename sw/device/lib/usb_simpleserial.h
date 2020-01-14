@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef __USB_SIMPLESERIAL_H__
-#define __USB_SIMPLESERIAL_H__
+#ifndef OPENTITAN_SW_DEVICE_LIB_USB_SIMPLESERIAL_H_
+#define OPENTITAN_SW_DEVICE_LIB_USB_SIMPLESERIAL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -43,4 +43,4 @@ void usb_simpleserial_send_byte(usb_ss_ctx_t *ssctx, uint8_t c);
 void usb_simpleserial_init(usb_ss_ctx_t *ssctx, usbdev_ctx_t *ctx, int ep,
                            void (*got_byte)(uint8_t));
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_USB_SIMPLESERIAL_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _USB_CONSTS_H_
-#define _USB_CONSTS_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_USB_CONSTS_H_
+#define OPENTITAN_SW_DEVICE_LIB_USB_CONSTS_H_
 
 // SETUP requests
 typedef enum usb_setup_req {
@@ -51,4 +51,4 @@ typedef enum usb_status {
   kUsbStatusHalted = 1        // Endpoint status request
 } usb_status_t;
 
-#endif  // _USB_CONSTS_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_USB_CONSTS_H_

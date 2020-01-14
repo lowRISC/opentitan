@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_BOOTSTRAP_MSGS_H__
-#define _F_BOOTSTRAP_MSGS_H__
+#ifndef OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_MSGS_H_
+#define OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_MSGS_H_
 #include <stdint.h>
 
 #define RAW_BUFFER_SIZE 1024
@@ -35,4 +35,4 @@ typedef struct {
 #define E_BS_NOTEMPTY 11
 #define E_BS_WRITE 12
 
-#endif  // _F_BOOTSTRAP_MSGS_H__
+#endif  // OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_MSGS_H_

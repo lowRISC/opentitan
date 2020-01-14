@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _UART_H_
-#define _UART_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_UART_H_
+#define OPENTITAN_SW_DEVICE_LIB_UART_H_
 
 #include <stdint.h>
 
@@ -35,4 +35,4 @@ int uart_tx_idle(void);
  */
 int uart_rcv_char(char *c);
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_UART_H_

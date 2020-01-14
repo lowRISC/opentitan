@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_FLASH_CTRL_H__
-#define _F_FLASH_CTRL_H__
+#ifndef OPENTITAN_SW_DEVICE_LIB_FLASH_CTRL_H_
+#define OPENTITAN_SW_DEVICE_LIB_FLASH_CTRL_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -97,4 +97,4 @@ void flash_write_scratch_reg(uint32_t value);
 /** Read scratch register */
 uint32_t flash_read_scratch_reg(void);
 
-#endif  // _F_FLASH_CTRL_H__
+#endif  // OPENTITAN_SW_DEVICE_LIB_FLASH_CTRL_H_

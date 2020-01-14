@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _LOG_IMPL_H
-#define _LOG_IMPL_H
+#ifndef OPENTITAN_SW_DEVICE_LIB_LOG_UART_LOG_IMPL_H_
+#define OPENTITAN_SW_DEVICE_LIB_LOG_UART_LOG_IMPL_H_
 
 #include "sw/device/lib/print_log.h"
 #include "sw/device/lib/uart.h"
@@ -54,4 +54,4 @@
 #define PRINT_LOG(log_header, ...) \
   print_log(&uart_send_char, log_header __VA_ARGS__);
 
-#endif  // _LOG_IMPL_H
+#endif  // OPENTITAN_SW_DEVICE_LIB_LOG_UART_LOG_IMPL_H_

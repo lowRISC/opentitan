@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SW_DEVICE_LIB_BASE_MMIO_H_
-#define SW_DEVICE_LIB_BASE_MMIO_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -153,4 +153,4 @@ inline void reg32_nonatomic_set_bit(reg32_t base, ptrdiff_t offset,
   reg32_nonatomic_set_mask(base, offset, 0x1, bit_index);
 }
 
-#endif  // SW_DEVICE_LIB_BASE_MMIO_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_

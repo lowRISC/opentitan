@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SW_DEVICE_LIB_BASE_MEMORY_H_
-#define SW_DEVICE_LIB_BASE_MEMORY_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
 
 #include <stdalign.h>
 #include <stdbool.h>
@@ -94,4 +94,4 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t len);
  */
 void *memset(void *dest, int value, size_t len);
 
-#endif  // SW_DEVICE_LIB_BASE_MEMORY_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_

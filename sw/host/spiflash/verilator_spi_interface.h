@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_SPIFLASH_VERILATOR_SPI_INTERFACE_H__
-#define _F_SPIFLASH_VERILATOR_SPI_INTERFACE_H__
+#ifndef OPENTITAN_SW_HOST_SPIFLASH_VERILATOR_SPI_INTERFACE_H_
+#define OPENTITAN_SW_HOST_SPIFLASH_VERILATOR_SPI_INTERFACE_H_
 
 #include <string>
 
@@ -41,4 +41,4 @@ class VerilatorSpiInterface : public SpiInterface {
 }  // namespace spiflash
 }  // namespace opentitan
 
-#endif  // _F_SPIFLASH_VERILATOR_SPI_INTERFACE_H__
+#endif  // OPENTITAN_SW_HOST_SPIFLASH_VERILATOR_SPI_INTERFACE_H_

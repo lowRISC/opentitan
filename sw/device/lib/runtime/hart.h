@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SW_DEVICE_LIB_RUNTIME_HART_H_
-#define SW_DEVICE_LIB_RUNTIME_HART_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_HART_H_
+#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_HART_H_
 
 #include <stddef.h>
 #include <stdnoreturn.h>
@@ -37,4 +37,4 @@ void busy_sleep_micros(size_t microseconds);
  */
 noreturn void abort(void);
 
-#endif  // SW_DEVICE_LIB_RUNTIME_HART_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_HART_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_BOOTSTRAP_H__
-#define _F_BOOTSTRAP_H__
+#ifndef OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_H_
+#define OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_H_
 
 #include "sw/device/boot_rom/bootstrap_msgs.h"
 
@@ -21,4 +21,4 @@
  */
 int bootstrap(void);
 
-#endif  // _F_BOOTSTRAP_H__
+#endif  // OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_H_

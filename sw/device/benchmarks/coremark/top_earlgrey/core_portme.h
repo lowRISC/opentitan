@@ -9,8 +9,8 @@
    different platforms
 */
 
-#ifndef CORE_PORTME_H
-#define CORE_PORTME_H
+#ifndef OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
+#define OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
 
 #include <stddef.h>
 
@@ -203,4 +203,4 @@ void portable_fini(core_portable *p);
 
 int ee_printf(const char *fmt, ...);
 
-#endif /* CORE_PORTME_H */
+#endif  // OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_

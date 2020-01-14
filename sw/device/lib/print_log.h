@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _MSG_PRINT_H_
-#define _MSG_PRINT_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_PRINT_LOG_H_
+#define OPENTITAN_SW_DEVICE_LIB_PRINT_LOG_H_
 
 // Pointer to a function that prints a character.
 typedef void (*print_char_func)(char);
@@ -35,4 +35,4 @@ typedef void (*print_char_func)(char);
  */
 void print_log(print_char_func print_char, const char *fmt, ...);
 
-#endif  // _MSG_PRINT_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_PRINT_LOG_H_
