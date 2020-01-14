@@ -226,7 +226,7 @@ module usb_serial_fifo_ep  #(
   assign more_data_to_send = !all_data_sent;
 
   rising_edge_detector detect_in_data_transfer_done (
-    .clk_ci(clk_i),
+    .clk_i (clk_i),
     .rst_ni(rst_ni),
     .in_i  (all_data_sent),
     .out_o (in_data_transfer_done)

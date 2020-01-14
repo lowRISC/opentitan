@@ -36,8 +36,8 @@ module usb_fs_tx (
 );
 
 
-  typedef enum {IDLE, SYNC, PID, DATA_OR_CRC16_0, CRC16_1, EOP, OSC_TEST} state_e;
-  typedef enum {Idle, WaitByte, Transmit} out_state_e;
+  typedef enum logic [2:0] {IDLE, SYNC, PID, DATA_OR_CRC16_0, CRC16_1, EOP, OSC_TEST} state_e;
+  typedef enum logic [1:0] {Idle, WaitByte, Transmit} out_state_e;
 
     
   // -------------------------------------------------
@@ -375,7 +375,6 @@ module usb_fs_tx (
       default : out_state_d = Idle;
     endcase  
   end
-
 
   always_comb begin : proc_diff
     usb_d_d   = usb_d_q;

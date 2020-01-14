@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:usb_fs_nb_pe:0.1"
 description: "USB Full Speed Non-Buffered Protocol Engine"
-# A buffered version of this protocol engin is in
-# the tinyfpga::TinyFPGA-Bootloader-common without the _nb_ in the filename
 filesets:
   files_rtl:
     files:

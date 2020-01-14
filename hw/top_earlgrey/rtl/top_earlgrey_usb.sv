@@ -604,7 +604,6 @@ module top_earlgrey_usb #(
     assign dio_usb_pullup_o[USB_DEVICE - 1]    = usbdev_usb_pullup_en;
     assign dio_usb_pullup_en_o[USB_DEVICE - 1] = 1'b1;
 
-
   end // block: gen_usbdev
 
   // Tie off unused USB

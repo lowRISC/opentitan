@@ -77,7 +77,7 @@ module usb_fs_nb_out_pe #(
   ////////////////////////////////
   import usb_consts_pkg::*;
 
-  typedef enum {
+  typedef enum logic [2:0] {
     StIdle,
     StRcvdOut,
     StRcvdDataStart,
@@ -351,7 +351,7 @@ module usb_fs_nb_out_pe #(
       if (out_xfr_state == StRcvdOut) begin
         out_ep_put_addr_o <= '0;
       end else if ((out_xfr_state == StRcvdDataStart) && increment_addr) begin
-        out_ep_put_addr_o <= out_ep_put_addr_o + 1'b1;
+        out_ep_put_addr_o <= out_ep_put_addr_o + 1;
       end
     end
   end

@@ -56,12 +56,10 @@ including the main register access paths.
 
 ## Clocking
 
-The USB Full-Speed interface runs at a 12MHz datarate. The interface
-runs at four times this and must be clocked from an accurate 48MHz
-clock source. The USB specification for a Full-Speed device requires
-the average bit-rate is 12Mbps +/- 0.25%, so the clock needs to
-support maximum error of 2,500ppm. The maximum allowable integrated 
-jitter is +/- 1ns over 1 to 7 bit-periods.
+The USB Full-Speed interface runs at a 12MHz datarate. 
+The interface runs at four times this and must be clocked from an accurate 48MHz clock source. 
+The USB specification for a Full-Speed device requires the average bit-rate is 12Mbps +/- 0.25%, so the clock needs to support maximum error of 2,500ppm.  
+The maximum allowable integrated jitter is +/- 1ns over 1 to 7 bit-periods.
 
 Control transfers pass through asynchronous FIFOs or have a ready bit
 synchronized across the clock domain boundary. A dual-port
@@ -82,24 +80,16 @@ The interface pin table summarizes the external pins.
 |[TX Mode]|tx_mode_se_o|Indicates the selected TX mode. 1 corresponds to single-ended operation.|
 |usb_sense|usb_sense_i|The sense pin indicates the presence of VBUS from the host.|
 
-The USB 2.0 Full Speed specification uses a bidirectional serial
-interface that can be implemented with pseudo-differential 3.3V GPIO
-pins and an oversampling receiver for recovery of the bitstream and
-clock alignment. The IP interface for the D+ and D- pins is presented using a 
-pair of transmit signals, a pair of receive signals and a transmit enable. 
-External to the IP these should be combined to drive the pins when transmit is
-enabled and receive when transmit is not enabled. 
-Using standard 3.3V I/O pads allows use on most FPGAs although
-the drive strength and series termination resistors may need to be
-adjusted to meet the USB signal eye. On a Xilinx Artix-7 (and less
-well tested Spartan-7) part, setting the driver to the 8mA, FAST
-setting seems to work well with a 22R series termination (and with a
-0R series termination).
+The USB 2.0 Full Speed specification uses a bidirectional serial interface that can be implemented with pseudo-differential 3.3V GPIO pins and an oversampling receiver for recovery of the bitstream and clock alignment.
+The IP interface for the D+ and D- pins is presented using a pair of transmit signals, a pair of receive signals and a transmit enable.
+External to the IP these should be combined to drive the pins when transmit is enabled and receive when transmit is not enabled.
+Using standard 3.3V I/O pads allows use on most FPGAs although the drive strength and series termination resistors may need to be adjusted to meet the USB signal eye.
+On a Xilinx Artix-7 (and less well tested Spartan-7) part, setting the driver to the 8mA, FAST setting seems to work well with a 22R series termination (and with a 0R series termination).
 
-Alternatively, a dedicated USB transceiver can be used. This is required
-for USB compliance. Examples for such a transceiver are the USB1T11A or 
-USB1T20. In this case differential signaling should be used for better 
-receive sensitivity and lower transmit jitter.
+Alternatively, a dedicated USB transceiver can be used. 
+This is required for USB compliance. 
+Examples for such a transceiver are the USB1T11A or USB1T20. 
+In this case differential signaling should be used for better receive sensitivity and lower transmit jitter.
 
 A Full-Speed device identifies itself by providing a 1.5k pullup
 resistor (to 3.3V) on the D+ line. The IP block produces a signal
@@ -126,10 +116,9 @@ acceptable voltage for the input pin.
 
 ## USB Link State
 
-The USB link has a number of states. These are detected and reported
-in {{< regref "usbstat.link_state" >}} and state changes are reported using
-interrupts. The FSM implements a subset of the USB device state diagram
-shown in Figure 9-1 of the USB 2.0 specification.
+The USB link has a number of states. 
+These are detected and reported in {{< regref "usbstat.link_state" >}} and state changes are reported using interrupts. 
+The FSM implements a subset of the USB device state diagram shown in Figure 9-1 of the USB 2.0 specification.
 
 |State| Description |
 |-----|-------------|
@@ -153,11 +142,9 @@ shown in Figure 9-1 of the USB 2.0 specification.
 The USB 2.0 Full Speed Protocol Engine is provided by the common USB
 interface code and is not part of this module.
 
-At the lowest level of the USB stack the transmit bitstream is
-serialized, converted to NRZI encoding with bit-stuffing and sent to
-the transmitter. The received bitstream is recovered, clock aligned
-and decoded and has bit-stuffing removed. The recovered clock
-alignment is used for transmission.
+At the lowest level of the USB stack the transmit bitstream is serialized, converted to NRZI encoding with bit-stuffing and sent to the transmitter. 
+The received bitstream is recovered, clock aligned and decoded and has bit-stuffing removed. 
+The recovered clock alignment is used for transmission.
 
 The higher level protocol engine forms the bitstream into packets,
 performs CRC checking and recognizes IN, OUT and SETUP
@@ -354,24 +341,17 @@ register with the rdy bit set.
 
 ## Stall
 
-The {{< regref "stall" >}} register is used to Stall an endpoint. This is used if it
-is shutdown for some reason, or to signal certain error conditions (functional
-stall). Control endpoints also use a STALL to indicate unsupported requests
-(protocol stall). This register is used in both cases.
-Unused endpoints can have their {{< regref "stall" >}} register bit left
-clear, so in many cases there is no need to use the {{< regref "stall" >}}
-register. If the stall bit is set for an endpoint then the STALL
-response will be provided to all IN or OUT requests on that
-endpoint.
+The {{< regref "stall" >}} register is used to Stall an endpoint. 
+This is used if it is shutdown for some reason, or to signal certain error conditions (functional stall). 
+Control endpoints also use a STALL to indicate unsupported requests (protocol stall). 
+This register is used in both cases. Unused endpoints can have their {{< regref "stall" >}} register bit left clear, so in many cases there is no need to use the {{< regref "stall" >}} register. 
+If the stall bit is set for an endpoint then the STALL response will be provided to all IN or OUT requests on that endpoint.
 
-In the case of a protocol stall, the device must send a STALL for all
-IN and OUT requests until the next SETUP token is received. To support this,
-the software sets the STALL bit for an endpoint when an unsupported transfer
-is requested. The hardware will then send a STALL response to all IN/OUT
-transactions until the next SETUP is received for this endpoint. Receiving
-the **SETUP token then clears the STALL flag** for the endpoint. The hardware 
-then sends NAKs to any IN/OUT requets until the software has decided what
-action to take for the new SETUP request.
+In the case of a protocol stall, the device must send a STALL for all IN and OUT requests until the next SETUP token is received. 
+To support this, the software sets the STALL bit for an endpoint when an unsupported transfer is requested. 
+The hardware will then send a STALL response to all IN/OUT transactions until the next SETUP is received for this endpoint.
+Receiving the **SETUP token then clears the STALL flag** for the endpoint. 
+The hardware then sends NAKs to any IN/OUT requets until the software has decided what action to take for the new SETUP request.
 
 
 ## Register Table
