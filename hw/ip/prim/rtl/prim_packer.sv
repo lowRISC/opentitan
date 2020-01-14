@@ -200,8 +200,7 @@ module prim_packer #(
   // e.g: 0011100 --> OK
   //      0100011 --> Not OK
   `ASSUME(ContiguousOnesMask_M,
-          valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2,
-          clk_i, !rst_ni)
+          valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
 
   // Assume data pattern to reduce FPV test time
   //`ASSUME_FPV(FpvDataWithin_M,
@@ -209,41 +208,34 @@ module prim_packer #(
   //            clk_i, !rst_ni)
 
   // Flush and Write Enable cannot be asserted same time
-  `ASSUME(ExFlushValid_M, flush_i |-> !valid_i, clk_i, !rst_ni)
+  `ASSUME(ExFlushValid_M, flush_i |-> !valid_i)
 
   // While in flush state, new request shouldn't come
   `ASSUME(ValidIDeassertedOnFlush_M,
-          flush_st == FlushWait |-> $stable(valid_i),
-          clk_i, !rst_ni)
+          flush_st == FlushWait |-> $stable(valid_i))
 
   // If not acked, input port keeps asserting valid and data
   `ASSUME(DataIStable_M,
           ##1 valid_i && $past(valid_i) && !$past(ready_o)
-          |-> $stable(data_i) && $stable(mask_i),
-          clk_i, !rst_ni)
+          |-> $stable(data_i) && $stable(mask_i))
   `ASSUME(ValidIPairedWithReadyO_M,
-          valid_i && !ready_o |=> valid_i,
-          clk_i, !rst_ni)
+          valid_i && !ready_o |=> valid_i)
 
   `ASSERT(FlushFollowedByDone_A,
-          ##1 $rose(flush_i) && !flush_done_o |-> !flush_done_o [*0:$] ##1 flush_done_o,
-          clk_i, !rst_ni)
+          ##1 $rose(flush_i) && !flush_done_o |-> !flush_done_o [*0:$] ##1 flush_done_o)
 
   // If not acked, valid_o should keep asserting
   `ASSERT(ValidOPairedWidthReadyI_A,
-          valid_o && !ready_i |=> valid_o,
-          clk_i, !rst_ni)
+          valid_o && !ready_i |=> valid_o)
 
   // If input mask + stored data is greater than output width, valid should be asserted
   `ASSERT(ValidOAssertedForInputGTEOutW_A,
-          valid_i && (($countones(mask_i) + $countones(stored_mask)) >= OutW) |-> valid_o,
-          clk_i, !rst_ni)
+          valid_i && (($countones(mask_i) + $countones(stored_mask)) >= OutW) |-> valid_o)
 
   // If output port doesn't accept the data, the data should be stable
   `ASSERT(DataOStableWhenPending_A,
           ##1 valid_o && $past(valid_o)
-          && !$past(ready_i) |-> $stable(data_o),
-          clk_i, !rst_ni)
+          && !$past(ready_i) |-> $stable(data_o))
 
   // If input data & stored data are greater than OutW, remained should be stored
   // TODO: Find out how the FPV time can be reduced.
@@ -257,7 +249,6 @@ module prim_packer #(
           ack_in && (($countones(mask_i) + $countones(stored_mask)) > OutW) |=>
           ($past(mask_i) >>
           ($past(lod_idx)+OutW-$countones($past(stored_mask))))
-            == stored_mask,
-          clk_i, !rst_ni)
+            == stored_mask)
 
 endmodule

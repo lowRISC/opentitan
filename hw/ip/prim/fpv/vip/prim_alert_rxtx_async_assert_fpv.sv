@@ -50,9 +50,9 @@ module prim_alert_rxtx_async_assert_fpv (
   end
 
   // Note: we can only detect sigint errors where one wire is flipped.
-  `ASSUME_FPV(PingErrorsAreOH_M,  $onehot0({ping_err_pi, ping_err_ni}),   clk_i, !rst_ni)
-  `ASSUME_FPV(AckErrorsAreOH_M,   $onehot0({ack_err_pi, ack_err_ni}),     clk_i, !rst_ni)
-  `ASSUME_FPV(AlertErrorsAreOH_M, $onehot0({alert_err_pi, alert_err_ni}), clk_i, !rst_ni)
+  `ASSUME_FPV(PingErrorsAreOH_M,  $onehot0({ping_err_pi, ping_err_ni})  )
+  `ASSUME_FPV(AckErrorsAreOH_M,   $onehot0({ack_err_pi, ack_err_ni})    )
+  `ASSUME_FPV(AlertErrorsAreOH_M, $onehot0({alert_err_pi, alert_err_ni}))
 
   // ping will stay high until ping ok received, then it must be deasserted
   // TODO: this excludes the case where no ping ok will be returned due to an error

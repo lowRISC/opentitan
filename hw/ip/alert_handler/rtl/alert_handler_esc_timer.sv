@@ -224,15 +224,15 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
   // a clear should always bring us back to idle
   `ASSERT(CheckClr, clr_i && !(state_q inside {Idle, Timeout}) |=>
-      state_q == Idle, clk_i, !rst_ni)
+      state_q == Idle)
   // if currently in idle and not enabled, must remain here
   `ASSERT(CheckEn,  state_q == Idle && !en_i |=>
-      state_q == Idle, clk_i, !rst_ni)
+      state_q == Idle)
   // Check if accumulation trigger correctly captured
   `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == Idle && en_i |=>
-      state_q == Phase0, clk_i, !rst_ni)
+      state_q == Phase0)
   `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == Timeout && en_i |=>
-      state_q == Phase0, clk_i, !rst_ni)
+      state_q == Phase0)
   // Check if timeout correctly captured
   `ASSERT(CheckTimeout0, state_q == Idle && timeout_en_i && en_i && timeout_cyc_i != 0 |=>
       state_q == Timeout, clk_i, !rst_ni || accum_trig_i)
@@ -242,15 +242,15 @@ module alert_handler_esc_timer import alert_pkg::*; (
       state_q == Idle, clk_i, !rst_ni || accum_trig_i)
   // Check if timeout correctly triggers escalation
   `ASSERT(CheckTimeoutTrig, state_q == Timeout && timeout_en_i &&
-      cnt_q == timeout_cyc_i |=> state_q == Phase0, clk_i, !rst_ni)
+      cnt_q == timeout_cyc_i |=> state_q == Phase0)
   // Check whether escalation phases are correctly switched
   `ASSERT(CheckPhase0, state_q == Phase0 && !clr_i && cnt_q >= phase_cyc_i[0] |=>
-      state_q == Phase1, clk_i, !rst_ni)
+      state_q == Phase1)
   `ASSERT(CheckPhase1, state_q == Phase1 && !clr_i && cnt_q >= phase_cyc_i[1] |=>
-      state_q == Phase2, clk_i, !rst_ni)
+      state_q == Phase2)
   `ASSERT(CheckPhase2, state_q == Phase2 && !clr_i && cnt_q >= phase_cyc_i[2] |=>
-      state_q == Phase3, clk_i, !rst_ni)
+      state_q == Phase3)
   `ASSERT(CheckPhase3, state_q == Phase3 && !clr_i && cnt_q >= phase_cyc_i[3] |=>
-      state_q == Terminal, clk_i, !rst_ni)
+      state_q == Terminal)
 
 endmodule : alert_handler_esc_timer

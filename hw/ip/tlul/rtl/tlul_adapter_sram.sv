@@ -264,21 +264,21 @@ module tlul_adapter_sram #(
   );
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
-  `ASSERT(rvalidHighReqFifoEmpty, rvalid_i |-> reqfifo_rvalid, clk_i, !rst_ni)
+  `ASSERT(rvalidHighReqFifoEmpty, rvalid_i |-> reqfifo_rvalid)
 
   // below assertion fails when outstanding value is too small (SRAM rvalid is asserted
   // even though the RspFifo is full)
-  `ASSERT(rvalidHighWhenRspFifoFull, rvalid_i |-> rspfifo_wready, clk_i, !rst_ni)
+  `ASSERT(rvalidHighWhenRspFifoFull, rvalid_i |-> rspfifo_wready)
 
   // If both ErrOnWrite and ErrOnRead are set, this block is useless
   `ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
 
   // make sure outputs are defined
-  `ASSERT_KNOWN(TlOutKnown_A,    tl_o,    clk_i, !rst_ni)
-  `ASSERT_KNOWN(ReqOutKnown_A,   req_o,   clk_i, !rst_ni)
-  `ASSERT_KNOWN(WeOutKnown_A,    we_o,    clk_i, !rst_ni)
-  `ASSERT_KNOWN(AddrOutKnown_A,  addr_o,  clk_i, !rst_ni)
-  `ASSERT_KNOWN(WdataOutKnown_A, wdata_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlOutKnown_A,    tl_o   )
+  `ASSERT_KNOWN(ReqOutKnown_A,   req_o  )
+  `ASSERT_KNOWN(WeOutKnown_A,    we_o   )
+  `ASSERT_KNOWN(AddrOutKnown_A,  addr_o )
+  `ASSERT_KNOWN(WdataOutKnown_A, wdata_o)
+  `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o)
 
 endmodule

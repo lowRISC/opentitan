@@ -378,7 +378,7 @@ module prim_lfsr #(
   // shared assertions //
   ///////////////////////
 
-  `ASSERT_KNOWN(DataKnownO_A, state_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(DataKnownO_A, state_o)
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
@@ -417,29 +417,27 @@ module prim_lfsr #(
 
   // check whether next state is computed correctly
   `ASSERT(NextStateCheck_A, lfsr_en_i && !seed_en_i |=> lfsr_q ==
-    compute_next_state(coeffs, $past(entropy_i,1), $past(lfsr_q,1)),
-    clk_i, !rst_ni )
+    compute_next_state(coeffs, $past(entropy_i,1), $past(lfsr_q,1)))
 `endif
 
   `ASSERT_INIT(InputWidth_A, LfsrDw >= EntropyDw)
   `ASSERT_INIT(OutputWidth_A, LfsrDw >= StateOutDw)
 
   // MSB must be one in any case
-  `ASSERT(CoeffCheck_A, coeffs[LfsrDw-1], clk_i, !rst_ni)
+  `ASSERT(CoeffCheck_A, coeffs[LfsrDw-1])
 
   // output check
-  `ASSERT_KNOWN(OutputKnown_A, state_o, clk_i, !rst_ni)
-  `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q), clk_i, !rst_ni)
+  `ASSERT_KNOWN(OutputKnown_A, state_o)
+  `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q))
 
   // if no external input changes the lfsr state, a lockup must not occur (by design)
   //`ASSERT(NoLockups_A, (!entropy_i) && (!seed_en_i) |=> !lockup, clk_i, !rst_ni)
-  `ASSERT(NoLockups_A, lfsr_en_i && !entropy_i && !seed_en_i |=> !lockup, clk_i, !rst_ni)
+  `ASSERT(NoLockups_A, lfsr_en_i && !entropy_i && !seed_en_i |=> !lockup)
 
   // this can be disabled if unused in order to not distort coverage
   if (ExtSeedSVA) begin : gen_ext_seed_sva
     // check that external seed is correctly loaded into the state
-    `ASSERT(ExtDefaultSeedInputCheck_A, seed_en_i |=> lfsr_q == $past(seed_i),
-        clk_i, !rst_ni)
+    `ASSERT(ExtDefaultSeedInputCheck_A, seed_en_i |=> lfsr_q == $past(seed_i))
   end
 
   // if the external seed mechanism is not used,
@@ -447,8 +445,7 @@ module prim_lfsr #(
   // in order to not distort coverage, this SVA can be disabled in such cases
   if (LockupSVA) begin : gen_lockup_mechanism_sva
     // check that a stuck LFSR is correctly reseeded
-    `ASSERT(LfsrLockupCheck_A, lfsr_en_i && lockup && !seed_en_i |=> !lockup,
-        clk_i, !rst_ni)
+    `ASSERT(LfsrLockupCheck_A, lfsr_en_i && lockup && !seed_en_i |=> !lockup)
   end
 
   if (MaxLenSVA) begin : gen_max_len_sva

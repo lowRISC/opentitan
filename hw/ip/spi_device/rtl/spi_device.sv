@@ -564,13 +564,13 @@ module spi_device #(
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(CioMisoEnOKnown, cio_miso_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CioMisoEnOKnown, cio_miso_en_o)
 
-  `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o,         clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o,       clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrTxlvlOKnown,       intr_txlvl_o,       clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrRxerrOKnown,       intr_rxerr_o,       clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_rxoverflow_o,  clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_txunderflow_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o        )
+  `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o      )
+  `ASSERT_KNOWN(IntrTxlvlOKnown,       intr_txlvl_o      )
+  `ASSERT_KNOWN(IntrRxerrOKnown,       intr_rxerr_o      )
+  `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_rxoverflow_o )
+  `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_txunderflow_o)
 
 endmodule

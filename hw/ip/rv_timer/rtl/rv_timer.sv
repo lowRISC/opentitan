@@ -124,8 +124,8 @@ module rv_timer (
   ////////////////
   // Assertions //
   ////////////////
-  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrTimerExpired00Known, intr_timer_expired_0_0_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(IntrTimerExpired00Known, intr_timer_expired_0_0_o)
 
 endmodule

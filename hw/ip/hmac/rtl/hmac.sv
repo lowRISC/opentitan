@@ -523,30 +523,28 @@ module hmac
 
   // the host doesn't write data after hash_process until hash_start.
   // Same as "message_length shouldn't be changed between hash_process and done
-  `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process, clk_i, !rst_ni)
+  `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
   // `hash_process` shall be toggle and paired with `hash_start`.
-  `ASSERT(ValidHashStartAssert, hash_start |-> !initiated, clk_i, !rst_ni)
-  `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated, clk_i, !rst_ni)
+  `ASSERT(ValidHashStartAssert, hash_start |-> !initiated)
+  `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated)
 
   // between `hash_done` and `hash_start`, message FIFO should be empty
   `ASSERT(MsgFifoEmptyWhenNoOpAssert,
-          !in_process && !initiated |-> $stable(message_length),
-          clk_i, !rst_ni)
+          !in_process && !initiated |-> $stable(message_length))
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,
-          hmac_en != $past(hmac_en) |-> !in_process && !initiated,
-          clk_i, !rst_ni)
+          hmac_en != $past(hmac_en) |-> !in_process && !initiated)
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntrFifoFullOKnown, intr_fifo_full_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
+  `ASSERT_KNOWN(IntrFifoFullOKnown, intr_fifo_full_o)
+  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
 
   // Alert outputs
-  `ASSERT_KNOWN(AlertTxOKnown, alert_tx_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AlertTxOKnown, alert_tx_o)
 
 `endif // SYNTHESIS
 `endif // VERILATOR

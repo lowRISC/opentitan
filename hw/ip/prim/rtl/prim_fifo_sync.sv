@@ -139,7 +139,7 @@ module prim_fifo_sync #(
       assign empty = fifo_empty;
     end
 
-    `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth <= DepthW'(Depth), clk_i, !rst_ni)
+    `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth <= DepthW'(Depth))
   end // block: gen_normal_fifo
 
 
@@ -147,9 +147,9 @@ module prim_fifo_sync #(
   // Known Assertions //
   //////////////////////
 
-  `ASSERT(DataKnown_A, rvalid |-> !$isunknown(rdata), clk_i, !rst_ni)
-  `ASSERT_KNOWN(DepthKnown_A, depth, clk_i, !rst_ni)
-  `ASSERT_KNOWN(RvalidKnown_A, rvalid, clk_i, !rst_ni)
-  `ASSERT_KNOWN(WreadyKnown_A, wready, clk_i, !rst_ni)
+  `ASSERT(DataKnown_A, rvalid |-> !$isunknown(rdata))
+  `ASSERT_KNOWN(DepthKnown_A, depth)
+  `ASSERT_KNOWN(RvalidKnown_A, rvalid)
+  `ASSERT_KNOWN(WreadyKnown_A, wready)
 
 endmodule

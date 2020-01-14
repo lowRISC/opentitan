@@ -191,18 +191,18 @@ module prim_alert_sender import prim_pkg::*; #(
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(AlertPKnownO_A, alert_tx_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(AlertPKnownO_A, alert_tx_o)
 
   if (AsyncOn) begin : gen_async_assert
     // check propagation of sigint issues to output within three cycles
     `ASSERT(SigIntPing_A, alert_rx_i.ping_p == alert_rx_i.ping_n [*2] |->
-        ##3 alert_tx_o.alert_p == alert_tx_o.alert_n, clk_i, !rst_ni)
+        ##3 alert_tx_o.alert_p == alert_tx_o.alert_n)
     `ASSERT(SigIntAck_A,  alert_rx_i.ack_p == alert_rx_i.ack_n   [*2] |->
-        ##3 alert_tx_o.alert_p == alert_tx_o.alert_n, clk_i, !rst_ni)
+        ##3 alert_tx_o.alert_p == alert_tx_o.alert_n)
     // output must be driven diff unless sigint issue detected
     `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
         (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
-        ##3 alert_tx_o.alert_p ^ alert_tx_o.alert_n, clk_i, !rst_ni)
+        ##3 alert_tx_o.alert_p ^ alert_tx_o.alert_n)
 
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the
@@ -214,13 +214,12 @@ module prim_alert_sender import prim_pkg::*; #(
   end else begin : gen_sync_assert
     // check propagation of sigint issues to output within one cycle
     `ASSERT(SigIntPing_A, alert_rx_i.ping_p == alert_rx_i.ping_n |=>
-        alert_tx_o.alert_p == alert_tx_o.alert_n, clk_i, !rst_ni)
+        alert_tx_o.alert_p == alert_tx_o.alert_n)
     `ASSERT(SigIntAck_A,  alert_rx_i.ack_p == alert_rx_i.ack_n   |=>
-        alert_tx_o.alert_p == alert_tx_o.alert_n, clk_i, !rst_ni)
+        alert_tx_o.alert_p == alert_tx_o.alert_n)
     // output must be driven diff unless sigint issue detected
     `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |=> alert_tx_o.alert_p ^ alert_tx_o.alert_n,
-        clk_i, !rst_ni)
+        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |=> alert_tx_o.alert_p ^ alert_tx_o.alert_n)
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the handshake
     // is correctly initiated and defer the full handshake checking to the testbench.

@@ -171,25 +171,25 @@ module prim_alert_receiver import prim_pkg::*; #(
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(AlertKnownO_A, alert_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(PingPKnownO_A, alert_rx_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o)
+  `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o)
+  `ASSERT_KNOWN(AlertKnownO_A, alert_o)
+  `ASSERT_KNOWN(PingPKnownO_A, alert_rx_o)
 
   // check encoding of outgoing diffpairs
-  `ASSERT(PingDiffOk_A, alert_rx_o.ping_p ^ alert_rx_o.ping_n, clk_i, !rst_ni)
-  `ASSERT(AckDiffOk_A, alert_rx_o.ack_p ^ alert_rx_o.ack_n, clk_i, !rst_ni)
+  `ASSERT(PingDiffOk_A, alert_rx_o.ping_p ^ alert_rx_o.ping_n)
+  `ASSERT(AckDiffOk_A, alert_rx_o.ack_p ^ alert_rx_o.ack_n)
   // ping request at input -> need to see encoded ping request
-  `ASSERT(PingRequest0_A, ##1 $rose(ping_en_i) |=> $changed(alert_rx_o.ping_p), clk_i, !rst_ni)
+  `ASSERT(PingRequest0_A, ##1 $rose(ping_en_i) |=> $changed(alert_rx_o.ping_p))
   // ping response implies it has been requested
-  `ASSERT(PingResponse0_A, ping_ok_o |-> ping_pending_q, clk_i, !rst_ni)
+  `ASSERT(PingResponse0_A, ping_ok_o |-> ping_pending_q)
   // correctly latch ping request
-  `ASSERT(PingPending_A, ##1 $rose(ping_en_i) |=> ping_pending_q, clk_i, !rst_ni)
+  `ASSERT(PingPending_A, ##1 $rose(ping_en_i) |=> ping_pending_q)
 
   if (AsyncOn) begin : gen_async_assert
     // signal integrity check propagation
     `ASSERT(SigInt_A, alert_tx_i.alert_p == alert_tx_i.alert_n [*2] |->
-        ##2 integ_fail_o, clk_i, !rst_ni)
+        ##2 integ_fail_o)
     // TODO: need to add skewed cases as well, the assertions below assume no skew at the moment
     // ping response
     `ASSERT(PingResponse1_A, ##1 $rose(alert_tx_i.alert_p) &&
@@ -200,7 +200,7 @@ module prim_alert_receiver import prim_pkg::*; #(
         state_q == Idle && !ping_pending_q |-> alert_o, clk_i, !rst_ni || integ_fail_o)
   end else begin : gen_sync_assert
     // signal integrity check propagation
-    `ASSERT(SigInt_A, alert_tx_i.alert_p == alert_tx_i.alert_n |-> integ_fail_o, clk_i, !rst_ni)
+    `ASSERT(SigInt_A, alert_tx_i.alert_p == alert_tx_i.alert_n |-> integ_fail_o)
     // ping response
     `ASSERT(PingResponse1_A, ##1 $rose(alert_tx_i.alert_p) && state_q == Idle && ping_pending_q |->
         ping_ok_o, clk_i, !rst_ni || integ_fail_o)

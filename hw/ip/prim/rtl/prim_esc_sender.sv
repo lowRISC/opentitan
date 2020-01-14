@@ -210,14 +210,14 @@ module prim_esc_sender import prim_pkg::*; (
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(EscPKnownO_A, esc_tx_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o)
+  `ASSERT_KNOWN(IntegFailKnownO_A, integ_fail_o)
+  `ASSERT_KNOWN(EscPKnownO_A, esc_tx_o)
 
   // diff encoding of output
-  `ASSERT(DiffEncCheck_A, esc_tx_o.esc_p ^ esc_tx_o.esc_n, clk_i, !rst_ni)
+  `ASSERT(DiffEncCheck_A, esc_tx_o.esc_p ^ esc_tx_o.esc_n)
   // signal integrity check propagation
-  `ASSERT(SigIntCheck0_A, esc_rx_i.resp_p == esc_rx_i.resp_n  |-> integ_fail_o, clk_i, !rst_ni)
+  `ASSERT(SigIntCheck0_A, esc_rx_i.resp_p == esc_rx_i.resp_n  |-> integ_fail_o)
   // this happens in case we did not get a correct escalation response
   `ASSERT(SigIntCheck1_A, ##1 $rose(esc_en_i) &&
       state_q inside {Idle, CheckPingResp1, CheckPingResp3} ##1 !esc_rx_i.resp_p |->
@@ -228,9 +228,9 @@ module prim_esc_sender import prim_pkg::*; (
       integ_fail_o, clk_i, !rst_ni || (esc_rx_i.resp_p == esc_rx_i.resp_n) ||
       (state_q == Idle && resp))
   // unexpected response
-  `ASSERT(SigIntCheck3_A, state_q == Idle && resp |-> integ_fail_o, clk_i, !rst_ni)
+  `ASSERT(SigIntCheck3_A, state_q == Idle && resp |-> integ_fail_o)
   // check that escalation signal is at least 2 cycles high
-  `ASSERT(EscCheck_A, esc_en_i |-> esc_tx_o.esc_p [*2] , clk_i, !rst_ni)
+  `ASSERT(EscCheck_A, esc_en_i |-> esc_tx_o.esc_p [*2] )
   // escalation / ping collision
   `ASSERT(EscPingCheck_A, esc_en_i && ping_en_i |-> ping_ok_o, clk_i, !rst_ni || integ_fail_o)
   // check that ping request results in only a single cycle pulse

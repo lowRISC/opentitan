@@ -143,8 +143,8 @@ module gpio (
   );
 
   // Assert Known: Outputs
-  `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
+  `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
+  `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)
 
 endmodule

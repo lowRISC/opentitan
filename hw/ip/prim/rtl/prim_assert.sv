@@ -47,6 +47,10 @@
 // Simple assertion and cover macros //
 ///////////////////////////////////////
 
+// Default clk and reset signals used by assertion macros below.
+`define ASSERT_DEFAULT_CLK clk_i
+`define ASSERT_DEFAULT_RST !rst_ni
+
 // Immediate assertion
 // Note that immediate assertions are sensitive to simulation glitches.
 `define ASSERT_I(__name, __prop)                                       \
@@ -75,10 +79,10 @@
 
 // Assert a concurrent property directly.
 // It can be called as a module (or interface) body item.
-`define ASSERT(__name, __prop, __clk, __rst)                                     \
-`ifdef INC_ASSERT                                                                \
-  __name: assert property (@(posedge __clk) disable iff (__rst !== '0) (__prop)) \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))           \
+`define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                        \
+  __name: assert property (@(posedge __clk) disable iff (__rst !== '0) (__prop))         \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))                   \
 `endif
 // Note: Above we use (__rst !== '0) in the disable iff statements instead of
 // (__rst == '1).  This properly disables the assertion in cases when reset is X at
@@ -86,23 +90,23 @@
 // assertion.
 
 // Assert a concurrent property NEVER happens
-`define ASSERT_NEVER(__name, __prop, __clk, __rst)                                   \
-`ifdef INC_ASSERT                                                                    \
-  __name: assert property (@(posedge __clk) disable iff (__rst !== '0) not (__prop)) \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))               \
+`define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                              \
+  __name: assert property (@(posedge __clk) disable iff (__rst !== '0) not (__prop))           \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))                         \
 `endif
 
 // Assert that signal has a known value (each bit is either '0' or '1') after reset.
 // It can be called as a module (or interface) body item.
-`define ASSERT_KNOWN(__name, __sig, __clk, __rst)   \
-`ifdef INC_ASSERT                                   \
-  `ASSERT(__name, !$isunknown(__sig), __clk, __rst) \
+`define ASSERT_KNOWN(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                             \
+  `ASSERT(__name, !$isunknown(__sig), __clk, __rst)                                           \
 `endif
 
 //  Cover a concurrent property
-`define COVER(__name, __prop, __clk, __rst)                                      \
-`ifdef INC_ASSERT                                                                \
-  __name: cover property (@(posedge __clk) disable iff (__rst !== '0) (__prop)); \
+`define COVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                       \
+  __name: cover property (@(posedge __clk) disable iff (__rst !== '0) (__prop));        \
 `endif
 
 //////////////////////////////
@@ -110,24 +114,24 @@
 //////////////////////////////
 
 // Assert that signal is an active-high pulse with pulse length of 1 clock cycle
-`define ASSERT_PULSE(__name, __sig, __clk, __rst)          \
-`ifdef INC_ASSERT                                          \
-  `ASSERT(__name, $rose(__sig) |=> !(__sig), __clk, __rst) \
+`define ASSERT_PULSE(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                             \
+  `ASSERT(__name, $rose(__sig) |=> !(__sig), __clk, __rst)                                    \
 `endif
 
 // Assert that valid is known after reset and data is known when valid == 1
-`define ASSERT_VALID_DATA(__name, __valid, __dat, __clk, __rst)                  \
-`ifdef INC_ASSERT                                                                \
-  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                       \
-  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst) \
+`define ASSERT_VALID_DATA(__name, __valid, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                                           \
+  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                                  \
+  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                            \
 `endif
 
 // Same as ASSERT_VALID_DATA, but also assert that ready is known after reset
-`define ASSERT_VALID_READY_DATA(__name, __valid, __ready, __dat, __clk, __rst)   \
-`ifdef INC_ASSERT                                                                \
-  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                       \
-  `ASSERT_KNOWN(__name``KnownReady, __ready, __clk, __rst)                       \
-  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst) \
+`define ASSERT_VALID_READY_DATA(__name, __valid, __ready, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                                                          \
+  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                                                 \
+  `ASSERT_KNOWN(__name``KnownReady, __ready, __clk, __rst)                                                                 \
+  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                                           \
 `endif
 
 ///////////////////////
@@ -135,10 +139,10 @@
 ///////////////////////
 
 // Assume a concurrent property
-`define ASSUME(__name, __prop, __clk, __rst)                                      \
-`ifdef INC_ASSERT                                                                 \
-  __name: assume property (@(posedge __clk) disable iff (__rst !== '0) (__prop))  \
-     else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end \
+`define ASSUME(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                        \
+  __name: assume property (@(posedge __clk) disable iff (__rst !== '0) (__prop))         \
+     else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end        \
 `endif
 
 // Assume an immediate property
@@ -157,9 +161,9 @@
 
 // ASSUME_FPV
 // Assume a concurrent property during formal verification only.
-`define ASSUME_FPV(__name, __prop, __clk, __rst) \
-`ifdef FPV_ON                                    \
-   `ASSUME(__name, __prop, __clk, __rst)         \
+`define ASSUME_FPV(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef FPV_ON                                                                                \
+   `ASSUME(__name, __prop, __clk, __rst)                                                     \
 `endif
 
 // ASSUME_I_FPV
@@ -171,9 +175,9 @@
 
 // COVER_FPV
 // Cover a concurrent property during formal verification
-`define COVER_FPV(__name, __prop, __clk, __rst)  \
-`ifdef FPV_ON                                    \
-   `COVER(__name, __prop, __clk, __rst)          \
+`define COVER_FPV(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef FPV_ON                                                                               \
+   `COVER(__name, __prop, __clk, __rst)                                                     \
 `endif
 
 `endif // PRIM_ASSERT_SV

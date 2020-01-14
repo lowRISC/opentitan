@@ -36,8 +36,8 @@ module prim_esc_rxtx_assert_fpv (
 
   // assume that the ping enable and escalation enable signals will eventually be deasserted (and
   // esc will stay low for more than 2 cycles)
-  `ASSUME_FPV(FiniteEsc_M, esc_en_i |-> strong(##[1:$] !esc_en_i [*2]), clk_i, !rst_ni)
-  `ASSUME_FPV(FinitePing_M, ping_en_i |-> strong(##[1:$] !ping_en_i), clk_i, !rst_ni)
+  `ASSUME_FPV(FiniteEsc_M, esc_en_i |-> strong(##[1:$] !esc_en_i [*2]))
+  `ASSUME_FPV(FinitePing_M, ping_en_i |-> strong(##[1:$] !ping_en_i))
 
   // ping response mus occur within 4 cycles (given that no
   // error occured within the previous cycles)
@@ -53,9 +53,9 @@ module prim_esc_rxtx_assert_fpv (
 
   // check that a single error on the diffpairs is detected
   `ASSERT(SingleSigIntDetected0_A, {esc_err_pi, esc_err_ni} == '0 ##1
-      $onehot({resp_err_pi, resp_err_ni}) |-> integ_fail_o, clk_i, !rst_ni)
+      $onehot({resp_err_pi, resp_err_ni}) |-> integ_fail_o)
   `ASSERT(SingleSigIntDetected1_A, $onehot({esc_err_pi, esc_err_ni}) ##1
-      {resp_err_pi, resp_err_ni} == '0 |-> integ_fail_o, clk_i, !rst_ni)
+      {resp_err_pi, resp_err_ni} == '0 |-> integ_fail_o)
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A, (prim_esc_rxtx_fpv.i_prim_esc_sender.state_q !=
