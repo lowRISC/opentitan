@@ -9,6 +9,9 @@ module top_earlgrey #(
   input               clk_i,
   input               rst_ni,
 
+  // USB clock
+  input               clk_usb_48mhz_i,
+
   // JTAG interface
   input               jtag_tck_i,
   input               jtag_tms_i,
@@ -30,6 +33,15 @@ module top_earlgrey #(
   input               dio_uart_rx_i,
   output logic        dio_uart_tx_o,
   output logic        dio_uart_tx_en_o,
+  input               dio_usbdev_sense_i,
+  output logic        dio_usbdev_pullup_o,
+  output logic        dio_usbdev_pullup_en_o,
+  input               dio_usbdev_dp_i,
+  output logic        dio_usbdev_dp_o,
+  output logic        dio_usbdev_dp_en_o,
+  input               dio_usbdev_dn_i,
+  output logic        dio_usbdev_dn_o,
+  output logic        dio_usbdev_dn_en_o,
 
   input               scanmode_i  // 1 for Scan
 );
@@ -85,6 +97,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_alert_handler_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
   tl_d2h_t  tl_nmi_gen_d_d2h;
+  tl_h2d_t  tl_usbdev_d_h2d;
+  tl_d2h_t  tl_usbdev_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -106,10 +120,12 @@ module top_earlgrey #(
   logic sys_rst_n;
   logic sys_fixed_rst_n;
   logic spi_device_rst_n;
+  logic usb_rst_n;
 
   //clock wires declaration
   logic main_clk;
   logic fixed_clk;
+  logic usb_clk;
 
   // Signals
   logic [31:0] m2p;
@@ -137,9 +153,19 @@ module top_earlgrey #(
   // pinmux
   // alert_handler
   // nmi_gen
+  // usbdev
+  logic        cio_usbdev_sense_p2d;
+  logic        cio_usbdev_dp_p2d;
+  logic        cio_usbdev_dn_p2d;
+  logic        cio_usbdev_pullup_d2p;
+  logic        cio_usbdev_pullup_en_d2p;
+  logic        cio_usbdev_dp_d2p;
+  logic        cio_usbdev_dp_en_d2p;
+  logic        cio_usbdev_dn_d2p;
+  logic        cio_usbdev_dn_en_d2p;
 
 
-  logic [62:0]  intr_vector;
+  logic [78:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -174,13 +200,29 @@ module top_earlgrey #(
   logic intr_nmi_gen_esc1;
   logic intr_nmi_gen_esc2;
   logic intr_nmi_gen_esc3;
+  logic intr_usbdev_pkt_received;
+  logic intr_usbdev_pkt_sent;
+  logic intr_usbdev_disconnected;
+  logic intr_usbdev_host_lost;
+  logic intr_usbdev_link_reset;
+  logic intr_usbdev_link_suspend;
+  logic intr_usbdev_link_resume;
+  logic intr_usbdev_av_empty;
+  logic intr_usbdev_rx_full;
+  logic intr_usbdev_av_overflow;
+  logic intr_usbdev_link_in_err;
+  logic intr_usbdev_rx_crc_err;
+  logic intr_usbdev_rx_pid_err;
+  logic intr_usbdev_rx_bitstuff_err;
+  logic intr_usbdev_frame;
+  logic intr_usbdev_connected;
 
 
   
   logic [0:0] irq_plic;
   logic [0:0] msip;
-  logic [5:0] irq_id[1];
-  logic [5:0] unused_irq_id[1];
+  logic [6:0] irq_id[1];
+  logic [6:0] unused_irq_id[1];
 
   // this avoids lint errors
   assign unused_irq_id = irq_id;
@@ -193,9 +235,12 @@ module top_earlgrey #(
   prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
 
 
-  // clock assignments
+  // Clock assignments
   assign main_clk = clk_i;
   assign fixed_clk = clk_i;
+
+  // Separate clock input for USB clock
+  assign usb_clk = clk_usb_48mhz_i;
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -206,9 +251,16 @@ module top_earlgrey #(
   assign lc_rst_n = rst_ni;
   assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
 
-  //non-root reset assignments
+  // Non-root reset assignments
   assign sys_fixed_rst_n = sys_rst_n;
   assign spi_device_rst_n = sys_rst_n;
+
+  // Reset synchronizer for USB
+  logic [1:0] usb_rst_q;
+  always_ff @(posedge usb_clk) begin
+    usb_rst_q <= {usb_rst_q[0], sys_rst_n};
+  end
+  assign usb_rst_n = sys_rst_n & usb_rst_q[1];
 
   // debug request from rv_dm to core
   logic debug_req;
@@ -619,8 +671,74 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
+  usbdev usbdev (
+      .tl_i (tl_usbdev_d_h2d),
+      .tl_o (tl_usbdev_d_d2h),
+
+      // Differential data - Currently not used.
+      .cio_d_i          (1'b0),
+      .cio_d_o          (),
+      .cio_se0_o        (),
+
+      // Single-ended data
+      .cio_dp_i         (cio_usbdev_dp_p2d),
+      .cio_dn_i         (cio_usbdev_dn_p2d),
+      .cio_dp_o         (cio_usbdev_dp_d2p),
+      .cio_dn_o         (cio_usbdev_dn_d2p),
+
+      // Non-data I/O
+      .cio_sense_i      (cio_usbdev_sense_p2d),
+      .cio_oe_o         (cio_usbdev_dp_en_d2p),
+      .cio_tx_mode_se_o (),
+      .cio_pullup_en_o  (cio_usbdev_pullup_en_d2p),
+      .cio_suspend_o    (),
+
+      // Interrupt
+      .intr_pkt_received_o    (intr_usbdev_pkt_received),
+      .intr_pkt_sent_o        (intr_usbdev_pkt_sent),
+      .intr_disconnected_o    (intr_usbdev_disconnected),
+      .intr_host_lost_o       (intr_usbdev_host_lost),
+      .intr_link_reset_o      (intr_usbdev_link_reset),
+      .intr_link_suspend_o    (intr_usbdev_link_suspend),
+      .intr_link_resume_o     (intr_usbdev_link_resume),
+      .intr_av_empty_o        (intr_usbdev_av_empty),
+      .intr_rx_full_o         (intr_usbdev_rx_full),
+      .intr_av_overflow_o     (intr_usbdev_av_overflow),
+      .intr_link_in_err_o     (intr_usbdev_link_in_err),
+      .intr_rx_crc_err_o      (intr_usbdev_rx_crc_err),
+      .intr_rx_pid_err_o      (intr_usbdev_rx_pid_err),
+      .intr_rx_bitstuff_err_o (intr_usbdev_rx_bitstuff_err),
+      .intr_frame_o           (intr_usbdev_frame),
+      .intr_connected_o       (intr_usbdev_connected),
+
+      .clk_i (fixed_clk),
+      .clk_usb_48mhz_i (usb_clk),
+      .rst_ni (sys_fixed_rst_n),
+      .rst_usb_48mhz_ni (usb_rst_n)
+  );
+
+  // USB assignments
+  assign cio_usbdev_dn_en_d2p = cio_usbdev_dp_en_d2p; // have a single output enable only
+  assign cio_usbdev_pullup_d2p = 1'b1;
+
   // interrupt assignments
   assign intr_vector = {
+      intr_usbdev_connected,
+      intr_usbdev_frame,
+      intr_usbdev_rx_bitstuff_err,
+      intr_usbdev_rx_pid_err,
+      intr_usbdev_rx_crc_err,
+      intr_usbdev_link_in_err,
+      intr_usbdev_av_overflow,
+      intr_usbdev_rx_full,
+      intr_usbdev_av_empty,
+      intr_usbdev_link_resume,
+      intr_usbdev_link_suspend,
+      intr_usbdev_link_reset,
+      intr_usbdev_host_lost,
+      intr_usbdev_disconnected,
+      intr_usbdev_pkt_sent,
+      intr_usbdev_pkt_received,
       intr_nmi_gen_esc3,
       intr_nmi_gen_esc2,
       intr_nmi_gen_esc1,
@@ -707,6 +825,8 @@ module top_earlgrey #(
     .tl_spi_device_i (tl_spi_device_d_d2h),
     .tl_rv_timer_o   (tl_rv_timer_d_h2d),
     .tl_rv_timer_i   (tl_rv_timer_d_d2h),
+    .tl_usbdev_o     (tl_usbdev_d_h2d),
+    .tl_usbdev_i     (tl_usbdev_d_d2h),
 
     .scanmode_i
   );
@@ -730,6 +850,15 @@ module top_earlgrey #(
   assign cio_uart_rx_p2d          = dio_uart_rx_i;
   assign dio_uart_tx_o            = cio_uart_tx_d2p;
   assign dio_uart_tx_en_o         = cio_uart_tx_en_d2p;
+  assign cio_usbdev_sense_p2d     = dio_usbdev_sense_i;
+  assign dio_usbdev_pullup_o      = cio_usbdev_pullup_d2p;
+  assign dio_usbdev_pullup_en_o   = cio_usbdev_pullup_en_d2p;
+  assign cio_usbdev_dp_p2d        = dio_usbdev_dp_i;
+  assign dio_usbdev_dp_o          = cio_usbdev_dp_d2p;
+  assign dio_usbdev_dp_en_o       = cio_usbdev_dp_en_d2p;
+  assign cio_usbdev_dn_p2d        = dio_usbdev_dn_i;
+  assign dio_usbdev_dn_o          = cio_usbdev_dn_d2p;
+  assign dio_usbdev_dn_en_o       = cio_usbdev_dn_en_d2p;
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)

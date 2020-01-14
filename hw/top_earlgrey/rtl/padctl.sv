@@ -31,6 +31,21 @@ module padctl (
   inout   IO_GP13,
   inout   IO_GP14,
   inout   IO_GP15,
+  // USB device side
+  output cio_usbdev_sense_p2d,
+  input  cio_usbdev_pullup_d2p,
+  input  cio_usbdev_pullup_en_d2p,
+  output cio_usbdev_dp_p2d,
+  input  cio_usbdev_dp_d2p,
+  input  cio_usbdev_dp_en_d2p,
+  output cio_usbdev_dn_p2d,
+  input  cio_usbdev_dn_d2p,
+  input  cio_usbdev_dn_en_d2p,
+  // USB pads
+  inout  IO_USB_DP0,
+  inout  IO_USB_DN0,
+  input  IO_USB_SENSE0,
+  output IO_USB_PULLUP0,
 
   // SPI device interface
   output cio_spi_device_sck_p2d,
@@ -55,6 +70,19 @@ module padctl (
   input  IO_DPS6,
   input  IO_DPS7
 );
+
+  // USB
+  assign cio_usbdev_sense_p2d = IO_USB_SENSE0;
+  assign IO_USB_PULLUP0       = cio_usbdev_pullup_en_d2p ? cio_usbdev_pullup_d2p : 1'bz;
+
+  assign IO_USB_DP0 = cio_usbdev_dp_en_d2p ? cio_usbdev_dp_d2p : 1'bz;
+  assign IO_USB_DN0 = cio_usbdev_dn_en_d2p ? cio_usbdev_dn_d2p : 1'bz;
+
+  // Note that while transmitting, the receive (p2d) line must be fixed.
+  // Otherwise you are trying to regenerate the bit clock from the bit
+  // clock you are regenerating, rather than just holding the phase.
+  assign cio_usbdev_dp_p2d = cio_usbdev_dp_en_d2p ? 1'b1 : IO_USB_DP0;
+  assign cio_usbdev_dn_p2d = cio_usbdev_dn_en_d2p ? 1'b0 : IO_USB_DN0;
 
   // JTAG or SPI mux to the FTDI MSEE pins DPS0-DPS6
   logic    jtag_spi_n, dps2, dps2_en;

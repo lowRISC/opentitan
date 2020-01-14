@@ -21,10 +21,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#if TOOL_VERILATOR
-#include "verilator_sim_ctrl.h"
-#endif
-
 static const char *st_states[] = {"ST_IDLE 0", "ST_SEND 1", "ST_GET 2",
                                   "ST_SYNC 3", "ST_EOP 4",  "ST_EOP0 5"};
 
@@ -626,19 +622,6 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   }
   switch (ctx->state) {
     case ST_IDLE:
-#if TOOL_VERILATOR
-      if (ctx->frame == 35) {
-        printf("USB: usbdpi done, frame: %d, success: %d, state: %d\n",
-               ctx->frame, ctx->baudrate_set_successfully, ctx->state);
-
-        // If we were able to set the BAUD rate sucessfully, the DUT
-        // provided reasonable responses to our requests. Ideally, we
-        // would have a more advanced test here.
-        VerilatorSimCtrl::GetInstance().RequestStop(
-            ctx->baudrate_set_successfully);
-      }
-#endif
-
       switch (ctx->frame) {
         case 1:
           setDeviceAddress(ctx);

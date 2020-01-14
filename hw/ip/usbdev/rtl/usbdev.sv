@@ -11,27 +11,27 @@ module usbdev (
   input  logic       clk_i,
   input  logic       rst_ni,
   input  logic       clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
-  input  logic       rst_usb_ni, // async reset, with relase sync to clk_usb_48_mhz_i
+  input  logic       rst_usb_48mhz_ni, // async reset, with relase sync to clk_usb_48_mhz_i
 
   // Register interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
   // USB Interface
-  input  logic       cio_usb_d_i,
-  input  logic       cio_usb_dp_i,
-  input  logic       cio_usb_dn_i,
+  input  logic       cio_d_i,
+  input  logic       cio_dp_i,
+  input  logic       cio_dn_i,
 
-  output logic       cio_usb_d_o,
-  output logic       cio_usb_se0_o,
-  output logic       cio_usb_dp_o,
-  output logic       cio_usb_dn_o,
-  output logic       cio_usb_oe_o,
+  output logic       cio_d_o,
+  output logic       cio_se0_o,
+  output logic       cio_dp_o,
+  output logic       cio_dn_o,
+  output logic       cio_oe_o,
 
-  output logic       cio_usb_tx_mode_se_o,
-  input  logic       cio_usb_sense_i,
-  output logic       cio_usb_pullup_en_o,
-  output logic       cio_usb_suspend_o,
+  output logic       cio_tx_mode_se_o,
+  input  logic       cio_sense_i,
+  output logic       cio_pullup_en_o,
+  output logic       cio_suspend_o,
 
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
@@ -165,7 +165,7 @@ module usbdev (
     .wdepth    (hw2reg.usbstat.av_depth.d),
 
     .clk_rd_i  (clk_usb_48mhz_i),
-    .rst_rd_ni (rst_usb_ni),
+    .rst_rd_ni (rst_usb_48mhz_ni),
     .rvalid    (usb_av_rvalid),
     .rready    (usb_av_rready),
     .rdata     (usb_av_rdata),
@@ -177,7 +177,7 @@ module usbdev (
     .Depth(RXFifoDepth)
   ) usbdev_rxfifo (
     .clk_wr_i  (clk_usb_48mhz_i),
-    .rst_wr_ni (rst_usb_ni),
+    .rst_wr_ni (rst_usb_48mhz_ni),
 
     .wvalid    (usb_rx_wvalid),
     .wready    (usb_rx_wready),
@@ -236,7 +236,7 @@ module usbdev (
     .Width(3*NEndpoints)
   ) usbdev_sync_ep_cfg (
     .clk_i  (clk_usb_48mhz_i),
-    .rst_ni (rst_usb_ni),
+    .rst_ni (rst_usb_48mhz_ni),
     .d      ({enable_setup, enable_out, ep_stall}),
     .q      ({usb_enable_setup, usb_enable_out, usb_ep_stall})
   );
@@ -266,7 +266,7 @@ module usbdev (
     .Width (NEndpoints)
   ) usbdev_rdysync (
     .clk_i  (clk_usb_48mhz_i),
-    .rst_ni (rst_usb_ni),
+    .rst_ni (rst_usb_48mhz_ni),
     .d      (in_rdy_async),
     .q      (usb_in_rdy)
   );
@@ -277,7 +277,7 @@ module usbdev (
     .clk_src_i   (clk_i),
     .clk_dst_i   (clk_usb_48mhz_i),
     .rst_src_ni  (rst_ni),
-    .rst_dst_ni  (rst_usb_ni),
+    .rst_dst_ni  (rst_usb_48mhz_ni),
     .src_pulse_i (reg2hw.data_toggle_clear[0].qe),
     .dst_pulse_o (usb_data_toggle_clear_en)
   );
@@ -297,7 +297,7 @@ module usbdev (
   prim_pulse_sync usbdev_setsent (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_set_sent),
     .dst_pulse_o (set_sent)
@@ -322,7 +322,7 @@ module usbdev (
   prim_pulse_sync usbdev_sync_in_err (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_in_err),
     .dst_pulse_o (event_in_err)
@@ -331,7 +331,7 @@ module usbdev (
   prim_pulse_sync usbdev_outrdyclr (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_setup_received),
     .dst_pulse_o (setup_received)
@@ -340,7 +340,7 @@ module usbdev (
   prim_pulse_sync sync_usb_event_rx_crc_err (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_rx_crc_err),
     .dst_pulse_o (event_rx_crc_err)
@@ -349,7 +349,7 @@ module usbdev (
   prim_pulse_sync sync_usb_event_rx_pid_err (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_rx_pid_err),
     .dst_pulse_o (event_rx_pid_err)
@@ -358,7 +358,7 @@ module usbdev (
   prim_pulse_sync sync_usb_event_rx_bitstuff_err (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_rx_bitstuff_err),
     .dst_pulse_o (event_rx_bitstuff_err)
@@ -367,7 +367,7 @@ module usbdev (
   prim_pulse_sync sync_usb_event_frame (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_frame),
     .dst_pulse_o (event_frame)
@@ -375,8 +375,8 @@ module usbdev (
 
   logic event_link_reset_q;
 
-  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_ni) begin
-    if (!rst_usb_ni) begin
+  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
+    if (!rst_usb_48mhz_ni) begin
       event_link_reset_q <= 0;
     end else begin
       event_link_reset_q <= event_link_reset;
@@ -431,7 +431,7 @@ module usbdev (
     .SramAw         (SramAw)
   ) usbdev_impl (
     .clk_48mhz_i          (clk_usb_48mhz_i),
-    .rst_ni               (rst_usb_ni),
+    .rst_ni               (rst_usb_48mhz_ni),
 
     // Pins
     .usb_d_i              (usb_rx_d),
@@ -517,7 +517,7 @@ module usbdev (
     .Width      (1+7)
   ) cdc_sys_to_usb (
     .clk_i  (clk_usb_48mhz_i),
-    .rst_ni (rst_usb_ni),
+    .rst_ni (rst_usb_48mhz_ni),
     .d      ({reg2hw.usbctrl.enable.q, reg2hw.usbctrl.device_address.q}),
     .q      ({usb_enable,              usb_device_addr})
   );
@@ -537,7 +537,7 @@ module usbdev (
   prim_pulse_sync usbdev_resume (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_link_resume),
     .dst_pulse_o (event_link_resume)
@@ -549,7 +549,7 @@ module usbdev (
   prim_pulse_sync usbdev_devclr (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_clr_devaddr),
     .dst_pulse_o (hw2reg.usbctrl.device_address.de)
@@ -560,7 +560,7 @@ module usbdev (
   prim_pulse_sync sync_usb_event_av_empty (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_av_empty),
     .dst_pulse_o (event_av_empty)
@@ -570,7 +570,7 @@ module usbdev (
   prim_pulse_sync sync_usb_event_rx_full (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_usb_ni),
+    .rst_src_ni  (rst_usb_48mhz_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (usb_event_rx_full),
     .dst_pulse_o (event_rx_full)
@@ -634,7 +634,7 @@ module usbdev (
     .clk_a_i    (clk_i),
     .clk_b_i    (clk_usb_48mhz_i),
     .rst_a_ni   (rst_ni),
-    .rst_b_ni   (rst_usb_ni),
+    .rst_b_ni   (rst_usb_48mhz_ni),
     .a_req_i    (mem_a_req),
     .a_write_i  (mem_a_write),
     .a_addr_i   (mem_a_addr),
@@ -854,25 +854,25 @@ module usbdev (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .clk_usb_48mhz_i        (clk_usb_48mhz_i),
-    .rst_usb_ni             (rst_usb_ni),
+    .rst_usb_48mhz_ni             (rst_usb_48mhz_ni),
     .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode),
     .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode),
     .sys_reg2hw_config_i    (reg2hw.phy_config),
     .sys_usb_sense_o        (hw2reg.usbstat.usb_sense.d),
 
     // Chip IO
-    .cio_usb_d_i            (cio_usb_d_i),
-    .cio_usb_dp_i           (cio_usb_dp_i),
-    .cio_usb_dn_i           (cio_usb_dn_i),
-    .cio_usb_d_o            (cio_usb_d_o),
-    .cio_usb_se0_o          (cio_usb_se0_o),
-    .cio_usb_dp_o           (cio_usb_dp_o),
-    .cio_usb_dn_o           (cio_usb_dn_o),
-    .cio_usb_oe_o           (cio_usb_oe_o),
-    .cio_usb_tx_mode_se_o   (cio_usb_tx_mode_se_o),
-    .cio_usb_sense_i        (cio_usb_sense_i),
-    .cio_usb_pullup_en_o    (cio_usb_pullup_en_o),
-    .cio_usb_suspend_o      (cio_usb_suspend_o),
+    .cio_usb_d_i            (cio_d_i),
+    .cio_usb_dp_i           (cio_dp_i),
+    .cio_usb_dn_i           (cio_dn_i),
+    .cio_usb_d_o            (cio_d_o),
+    .cio_usb_se0_o          (cio_se0_o),
+    .cio_usb_dp_o           (cio_dp_o),
+    .cio_usb_dn_o           (cio_dn_o),
+    .cio_usb_oe_o           (cio_oe_o),
+    .cio_usb_tx_mode_se_o   (cio_tx_mode_se_o),
+    .cio_usb_sense_i        (cio_sense_i),
+    .cio_usb_pullup_en_o    (cio_pullup_en_o),
+    .cio_usb_suspend_o      (cio_suspend_o),
 
     // Internal interface
     .usb_rx_d_o             (usb_rx_d),

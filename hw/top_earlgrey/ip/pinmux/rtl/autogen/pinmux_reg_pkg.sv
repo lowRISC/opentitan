@@ -7,9 +7,9 @@
 package pinmux_reg_pkg;
 
   // Param list
-  localparam int NPeriphIn = 32;
-  localparam int NPeriphOut = 32;
-  localparam int NMioPads = 32;
+  parameter int NPeriphIn = 32;
+  parameter int NPeriphOut = 32;
+  parameter int NMioPads = 32;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -37,21 +37,21 @@ package pinmux_reg_pkg;
   ///////////////////////////////////////
 
   // Register Address
-  parameter PINMUX_REGEN_OFFSET = 6'h 0;
-  parameter PINMUX_PERIPH_INSEL0_OFFSET = 6'h 4;
-  parameter PINMUX_PERIPH_INSEL1_OFFSET = 6'h 8;
-  parameter PINMUX_PERIPH_INSEL2_OFFSET = 6'h c;
-  parameter PINMUX_PERIPH_INSEL3_OFFSET = 6'h 10;
-  parameter PINMUX_PERIPH_INSEL4_OFFSET = 6'h 14;
-  parameter PINMUX_PERIPH_INSEL5_OFFSET = 6'h 18;
-  parameter PINMUX_PERIPH_INSEL6_OFFSET = 6'h 1c;
-  parameter PINMUX_MIO_OUTSEL0_OFFSET = 6'h 20;
-  parameter PINMUX_MIO_OUTSEL1_OFFSET = 6'h 24;
-  parameter PINMUX_MIO_OUTSEL2_OFFSET = 6'h 28;
-  parameter PINMUX_MIO_OUTSEL3_OFFSET = 6'h 2c;
-  parameter PINMUX_MIO_OUTSEL4_OFFSET = 6'h 30;
-  parameter PINMUX_MIO_OUTSEL5_OFFSET = 6'h 34;
-  parameter PINMUX_MIO_OUTSEL6_OFFSET = 6'h 38;
+  parameter logic [5:0] PINMUX_REGEN_OFFSET = 6'h 0;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL0_OFFSET = 6'h 4;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL1_OFFSET = 6'h 8;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL2_OFFSET = 6'h c;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL3_OFFSET = 6'h 10;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL4_OFFSET = 6'h 14;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL5_OFFSET = 6'h 18;
+  parameter logic [5:0] PINMUX_PERIPH_INSEL6_OFFSET = 6'h 1c;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL0_OFFSET = 6'h 20;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL1_OFFSET = 6'h 24;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL2_OFFSET = 6'h 28;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL3_OFFSET = 6'h 2c;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL4_OFFSET = 6'h 30;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL5_OFFSET = 6'h 34;
+  parameter logic [5:0] PINMUX_MIO_OUTSEL6_OFFSET = 6'h 38;
 
 
   // Register Index
@@ -74,7 +74,7 @@ package pinmux_reg_pkg;
   } pinmux_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] PINMUX_PERMIT [15] = '{
+  parameter logic [3:0] PINMUX_PERMIT [15] = '{
     4'b 0001, // index[ 0] PINMUX_REGEN
     4'b 1111, // index[ 1] PINMUX_PERIPH_INSEL0
     4'b 1111, // index[ 2] PINMUX_PERIPH_INSEL1

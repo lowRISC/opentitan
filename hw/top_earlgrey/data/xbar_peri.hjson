@@ -35,9 +35,15 @@
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline: "false"
+    },
+    { name:      "usbdev",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline: "false"
     }
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer"],
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev"],
   },
 }

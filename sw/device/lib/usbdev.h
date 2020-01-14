@@ -224,10 +224,18 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
  */
 void usbdev_init(usbdev_ctx_t *ctx);
 
-// Used for tracing what is going on
+// Used for tracing what is going on. This may impact timing which is critical
+// when simulating with the USB DPI module.
+//#define ENABLE_TRC
+#ifdef ENABLE_TRC
 #include "sw/device/lib/uart.h"
 #define TRC_S(s) uart_send_str(s)
 #define TRC_I(i, b) uart_send_uint(i, b)
 #define TRC_C(c) uart_send_char(c)
+#else
+#define TRC_S(s)
+#define TRC_I(i, b)
+#define TRC_C(c)
+#endif
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_USBDEV_H_

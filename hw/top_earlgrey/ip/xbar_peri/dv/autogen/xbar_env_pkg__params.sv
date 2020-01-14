@@ -18,6 +18,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"rv_timer", '{
         '{32'h40080000, 32'h40080fff}
+    }},
+    '{"usbdev", '{
+        '{32'h40150000, 32'h40150fff}
 }}};
 
   // List of Xbar hosts
@@ -26,5 +29,6 @@ tl_host_t xbar_hosts[$] = '{
         "uart",
         "gpio",
         "spi_device",
-        "rv_timer"}}
+        "rv_timer",
+        "usbdev"}}
 };

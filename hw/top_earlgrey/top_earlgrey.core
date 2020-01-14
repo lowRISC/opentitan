@@ -23,6 +23,7 @@ filesets:
       - lowrisc:ip:flash_ctrl:0.1
       - lowrisc:constants:top_pkg
       - lowrisc:ip:nmi_gen
+      - lowrisc:ip:usbdev
     files:
       - ip/xbar_main/rtl/autogen/tl_main_pkg.sv
       - ip/xbar_main/rtl/autogen/xbar_main.sv

@@ -7,18 +7,18 @@
 package alert_handler_reg_pkg;
 
   // Param list
-  localparam int NAlerts = 1;
-  localparam int EscCntDw = 32;
-  localparam int AccuCntDw = 16;
-  localparam int LfsrSeed = 2147483647;
-  localparam logic [NAlerts-1:0] AsyncOn = 1'b0;
-  localparam int N_CLASSES = 4;
-  localparam int N_ESC_SEV = 4;
-  localparam int N_PHASES = 4;
-  localparam int N_LOC_ALERT = 4;
-  localparam int PING_CNT_DW = 24;
-  localparam int PHASE_DW = 2;
-  localparam int CLASS_DW = 2;
+  parameter int NAlerts = 1;
+  parameter int EscCntDw = 32;
+  parameter int AccuCntDw = 16;
+  parameter int LfsrSeed = 2147483647;
+  parameter logic [NAlerts-1:0] AsyncOn = 1'b0;
+  parameter int N_CLASSES = 4;
+  parameter int N_ESC_SEV = 4;
+  parameter int N_PHASES = 4;
+  parameter int N_LOC_ALERT = 4;
+  parameter int PING_CNT_DW = 24;
+  parameter int PHASE_DW = 2;
+  parameter int CLASS_DW = 2;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -526,65 +526,65 @@ package alert_handler_reg_pkg;
   } alert_handler_hw2reg_t;
 
   // Register Address
-  parameter ALERT_HANDLER_INTR_STATE_OFFSET = 8'h 0;
-  parameter ALERT_HANDLER_INTR_ENABLE_OFFSET = 8'h 4;
-  parameter ALERT_HANDLER_INTR_TEST_OFFSET = 8'h 8;
-  parameter ALERT_HANDLER_REGEN_OFFSET = 8'h c;
-  parameter ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET = 8'h 10;
-  parameter ALERT_HANDLER_ALERT_EN_OFFSET = 8'h 14;
-  parameter ALERT_HANDLER_ALERT_CLASS_OFFSET = 8'h 18;
-  parameter ALERT_HANDLER_ALERT_CAUSE_OFFSET = 8'h 1c;
-  parameter ALERT_HANDLER_LOC_ALERT_EN_OFFSET = 8'h 20;
-  parameter ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET = 8'h 24;
-  parameter ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET = 8'h 28;
-  parameter ALERT_HANDLER_CLASSA_CTRL_OFFSET = 8'h 2c;
-  parameter ALERT_HANDLER_CLASSA_CLREN_OFFSET = 8'h 30;
-  parameter ALERT_HANDLER_CLASSA_CLR_OFFSET = 8'h 34;
-  parameter ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 8'h 38;
-  parameter ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET = 8'h 3c;
-  parameter ALERT_HANDLER_CLASSA_TIMEOUT_CYC_OFFSET = 8'h 40;
-  parameter ALERT_HANDLER_CLASSA_PHASE0_CYC_OFFSET = 8'h 44;
-  parameter ALERT_HANDLER_CLASSA_PHASE1_CYC_OFFSET = 8'h 48;
-  parameter ALERT_HANDLER_CLASSA_PHASE2_CYC_OFFSET = 8'h 4c;
-  parameter ALERT_HANDLER_CLASSA_PHASE3_CYC_OFFSET = 8'h 50;
-  parameter ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 8'h 54;
-  parameter ALERT_HANDLER_CLASSA_STATE_OFFSET = 8'h 58;
-  parameter ALERT_HANDLER_CLASSB_CTRL_OFFSET = 8'h 5c;
-  parameter ALERT_HANDLER_CLASSB_CLREN_OFFSET = 8'h 60;
-  parameter ALERT_HANDLER_CLASSB_CLR_OFFSET = 8'h 64;
-  parameter ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 8'h 68;
-  parameter ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET = 8'h 6c;
-  parameter ALERT_HANDLER_CLASSB_TIMEOUT_CYC_OFFSET = 8'h 70;
-  parameter ALERT_HANDLER_CLASSB_PHASE0_CYC_OFFSET = 8'h 74;
-  parameter ALERT_HANDLER_CLASSB_PHASE1_CYC_OFFSET = 8'h 78;
-  parameter ALERT_HANDLER_CLASSB_PHASE2_CYC_OFFSET = 8'h 7c;
-  parameter ALERT_HANDLER_CLASSB_PHASE3_CYC_OFFSET = 8'h 80;
-  parameter ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 8'h 84;
-  parameter ALERT_HANDLER_CLASSB_STATE_OFFSET = 8'h 88;
-  parameter ALERT_HANDLER_CLASSC_CTRL_OFFSET = 8'h 8c;
-  parameter ALERT_HANDLER_CLASSC_CLREN_OFFSET = 8'h 90;
-  parameter ALERT_HANDLER_CLASSC_CLR_OFFSET = 8'h 94;
-  parameter ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 8'h 98;
-  parameter ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET = 8'h 9c;
-  parameter ALERT_HANDLER_CLASSC_TIMEOUT_CYC_OFFSET = 8'h a0;
-  parameter ALERT_HANDLER_CLASSC_PHASE0_CYC_OFFSET = 8'h a4;
-  parameter ALERT_HANDLER_CLASSC_PHASE1_CYC_OFFSET = 8'h a8;
-  parameter ALERT_HANDLER_CLASSC_PHASE2_CYC_OFFSET = 8'h ac;
-  parameter ALERT_HANDLER_CLASSC_PHASE3_CYC_OFFSET = 8'h b0;
-  parameter ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 8'h b4;
-  parameter ALERT_HANDLER_CLASSC_STATE_OFFSET = 8'h b8;
-  parameter ALERT_HANDLER_CLASSD_CTRL_OFFSET = 8'h bc;
-  parameter ALERT_HANDLER_CLASSD_CLREN_OFFSET = 8'h c0;
-  parameter ALERT_HANDLER_CLASSD_CLR_OFFSET = 8'h c4;
-  parameter ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 8'h c8;
-  parameter ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET = 8'h cc;
-  parameter ALERT_HANDLER_CLASSD_TIMEOUT_CYC_OFFSET = 8'h d0;
-  parameter ALERT_HANDLER_CLASSD_PHASE0_CYC_OFFSET = 8'h d4;
-  parameter ALERT_HANDLER_CLASSD_PHASE1_CYC_OFFSET = 8'h d8;
-  parameter ALERT_HANDLER_CLASSD_PHASE2_CYC_OFFSET = 8'h dc;
-  parameter ALERT_HANDLER_CLASSD_PHASE3_CYC_OFFSET = 8'h e0;
-  parameter ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 8'h e4;
-  parameter ALERT_HANDLER_CLASSD_STATE_OFFSET = 8'h e8;
+  parameter logic [7:0] ALERT_HANDLER_INTR_STATE_OFFSET = 8'h 0;
+  parameter logic [7:0] ALERT_HANDLER_INTR_ENABLE_OFFSET = 8'h 4;
+  parameter logic [7:0] ALERT_HANDLER_INTR_TEST_OFFSET = 8'h 8;
+  parameter logic [7:0] ALERT_HANDLER_REGEN_OFFSET = 8'h c;
+  parameter logic [7:0] ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET = 8'h 10;
+  parameter logic [7:0] ALERT_HANDLER_ALERT_EN_OFFSET = 8'h 14;
+  parameter logic [7:0] ALERT_HANDLER_ALERT_CLASS_OFFSET = 8'h 18;
+  parameter logic [7:0] ALERT_HANDLER_ALERT_CAUSE_OFFSET = 8'h 1c;
+  parameter logic [7:0] ALERT_HANDLER_LOC_ALERT_EN_OFFSET = 8'h 20;
+  parameter logic [7:0] ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET = 8'h 24;
+  parameter logic [7:0] ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET = 8'h 28;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_CTRL_OFFSET = 8'h 2c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_CLREN_OFFSET = 8'h 30;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_CLR_OFFSET = 8'h 34;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 8'h 38;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET = 8'h 3c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_OFFSET = 8'h 40;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_OFFSET = 8'h 44;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_OFFSET = 8'h 48;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_OFFSET = 8'h 4c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_OFFSET = 8'h 50;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 8'h 54;
+  parameter logic [7:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 8'h 58;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_CTRL_OFFSET = 8'h 5c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_CLREN_OFFSET = 8'h 60;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_CLR_OFFSET = 8'h 64;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 8'h 68;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET = 8'h 6c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_OFFSET = 8'h 70;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_OFFSET = 8'h 74;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_OFFSET = 8'h 78;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_OFFSET = 8'h 7c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_OFFSET = 8'h 80;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 8'h 84;
+  parameter logic [7:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 8'h 88;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_CTRL_OFFSET = 8'h 8c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_CLREN_OFFSET = 8'h 90;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_CLR_OFFSET = 8'h 94;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 8'h 98;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET = 8'h 9c;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_OFFSET = 8'h a0;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_OFFSET = 8'h a4;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_OFFSET = 8'h a8;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_OFFSET = 8'h ac;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_OFFSET = 8'h b0;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 8'h b4;
+  parameter logic [7:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 8'h b8;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_CTRL_OFFSET = 8'h bc;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_CLREN_OFFSET = 8'h c0;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_CLR_OFFSET = 8'h c4;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 8'h c8;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET = 8'h cc;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_OFFSET = 8'h d0;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_OFFSET = 8'h d4;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_OFFSET = 8'h d8;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_OFFSET = 8'h dc;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_OFFSET = 8'h e0;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 8'h e4;
+  parameter logic [7:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 8'h e8;
 
 
   // Register Index
@@ -651,7 +651,7 @@ package alert_handler_reg_pkg;
   } alert_handler_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] ALERT_HANDLER_PERMIT [59] = '{
+  parameter logic [3:0] ALERT_HANDLER_PERMIT [59] = '{
     4'b 0001, // index[ 0] ALERT_HANDLER_INTR_STATE
     4'b 0001, // index[ 1] ALERT_HANDLER_INTR_ENABLE
     4'b 0001, // index[ 2] ALERT_HANDLER_INTR_TEST

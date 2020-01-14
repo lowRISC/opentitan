@@ -73,7 +73,7 @@ The interface pin table summarizes the external pins.
 
 |External Pin|Internal Signal|Notes|
 |------------|---------------|-----|
-|USB D+, USB D-|usb_d_i, usb_dp_i, usb_dn_i, usb_d_o, usb_se0_o|Interface to a differential USB transceiver. This interface can be selected by writing 1 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}.|
+|USB D+, USB D-|usb_d_i, usb_dp_i, usb_dn_i, usb_d_o, usb_se0_o|Interface to a differential USB transceiver. This interface can be selected by writing 1 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}. In differential mode, the single-ended signals usb_dp_i and usb_dn_i are used to detect the SE0 state.|
 |USB D+, USB D-|usb_dp_i, usb_dn_i, usb_dp_o, usb_dn_o|Single-ended interface to regular IO cells. This interface can be used for prototyping on an FPGA, but will probably not be USB compliant. This interface can be selected by writing 0 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}.|
 ||usb_oe_o|Enable driving the external pins.|
 |[usb_pullup]|usb_pullup_o|When the usb_pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin. A permanently connected resistor can also be used.|

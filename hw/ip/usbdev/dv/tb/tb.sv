@@ -49,7 +49,7 @@ module tb;
     .rst_ni               (rst_n      ),
 
     .clk_usb_48mhz_i      (usb_clk    ),
-    .rst_usb_ni           (usb_rst_n  ),
+    .rst_usb_48mhz_ni     (usb_rst_n  ),
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),
@@ -57,20 +57,20 @@ module tb;
 
     // USB Interface
     // TOOD: need to hook up an interface
-    .cio_usb_d_i          (1'b0),
-    .cio_usb_dp_i         (1'b1),
-    .cio_usb_dn_i         (1'b0),
+    .cio_d_i              (1'b0),
+    .cio_dp_i             (1'b1),
+    .cio_dn_i             (1'b0),
 
-    .cio_usb_d_o          (),
-    .cio_usb_se0_o        (),
-    .cio_usb_dp_o         (),
-    .cio_usb_dn_o         (),
-    .cio_usb_oe_o         (),
+    .cio_d_o              (),
+    .cio_se0_o            (),
+    .cio_dp_o             (),
+    .cio_dn_o             (),
+    .cio_oe_o             (),
 
-    .cio_usb_tx_mode_se_o (),
-    .cio_usb_sense_i      (1'b0),
-    .cio_usb_pullup_en_o  (),
-    .cio_usb_suspend_o    (),
+    .cio_tx_mode_se_o     (),
+    .cio_sense_i          (1'b0),
+    .cio_pullup_en_o      (),
+    .cio_suspend_o        (),
 
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),

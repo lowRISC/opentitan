@@ -25,6 +25,7 @@
       gpio
       spi_device
       rv_timer
+      usbdev
     ]
   }
   nodes:
@@ -101,6 +102,23 @@
       [
         {
           base_addr: 0x40080000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: usbdev
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: usbdev
+      addr_range:
+      [
+        {
+          base_addr: 0x40150000
           size_byte: 0x1000
         }
       ]
