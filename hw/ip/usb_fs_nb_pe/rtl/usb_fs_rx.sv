@@ -103,31 +103,31 @@ module usb_fs_rx (
   end
 
   always_comb begin : proc_line_state_d
-      // Default assignment
-      line_state_d = line_state_q;
+    // Default assignment
+    line_state_d = line_state_q;
 
-      case (line_state_q)
-          // if we are in a transition state, then we can sample the pair and 
-          // move to the next corresponding line state
-          DT : begin
-              case (dpair)
-                  2'b10 : line_state_d = DJ;
-                  2'b01 : line_state_d = DK;
-                  2'b00 : line_state_d = SE0;
-                  2'b11 : line_state_d = SE1;
-              endcase
-          end
+    case (line_state_q)
+      // if we are in a transition state, then we can sample the pair and 
+      // move to the next corresponding line state
+      DT : begin
+        case (dpair)
+          2'b10 : line_state_d = DJ;
+          2'b01 : line_state_d = DK;
+          2'b00 : line_state_d = SE0;
+          2'b11 : line_state_d = SE1;
+        endcase
+      end
 
-          // if we are in a valid line state and the value of the pair changes,
-          // then we need to move to the transition state
-          DJ  : if (dpair != 2'b10) line_state_d = DT;
-          DK  : if (dpair != 2'b01) line_state_d = DT;
-          SE0 : if (dpair != 2'b00) line_state_d = DT;
-          SE1 : if (dpair != 2'b11) line_state_d = DT;        
+      // if we are in a valid line state and the value of the pair changes,
+      // then we need to move to the transition state
+      DJ  : if (dpair != 2'b10) line_state_d = DT;
+      DK  : if (dpair != 2'b01) line_state_d = DT;
+      SE0 : if (dpair != 2'b00) line_state_d = DT;
+      SE1 : if (dpair != 2'b11) line_state_d = DT;        
 
-          // if we are in an invalid state we should move to the transition state
-          default : line_state_d = DT;
-      endcase
+      // if we are in an invalid state we should move to the transition state
+      default : line_state_d = DT;
+    endcase
   end
 
 
@@ -145,9 +145,10 @@ module usb_fs_rx (
   */
 
   logic [1:0] bit_phase_q, bit_phase_d;
+  logic line_state_valid;
 
-  wire line_state_valid = (bit_phase_q == 1);
-  assign bit_strobe_o = (bit_phase_q == 2);
+  assign line_state_valid = (bit_phase_q == 1);
+  assign bit_strobe_o     = (bit_phase_q == 2);
 
   // keep track of phase within each bit
   assign bit_phase_d = (line_state_q == DT) ? 0 : bit_phase_q + 1;
@@ -174,10 +175,10 @@ module usb_fs_rx (
   */
   logic [11:0] line_history_q, line_history_d;
   logic packet_valid_q, packet_valid_d;
-  logic see_eop;
+  logic see_eop, packet_start, packet_end;
   
-  wire packet_start = packet_valid_d && !packet_valid_q;
-  wire packet_end = !packet_valid_d && packet_valid_q;
+  assign packet_start = packet_valid_d && !packet_valid_q;
+  assign packet_end   = !packet_valid_d && packet_valid_q;
 
   // EOP detection is configurable for 1/2 bit periods of SE0.
   // The standard (Table 7-7) mandates min = 82 ns = 1 bit period.
@@ -201,7 +202,7 @@ module usb_fs_rx (
       end
     end else begin
       packet_valid_d = packet_valid_q;
-    end  
+    end
   end
 
   // keep a history of the last two states on the line
@@ -266,7 +267,7 @@ module usb_fs_rx (
       bitstuff_history_d = {bitstuff_history_q[5:0], din};
     end else begin
       bitstuff_history_d = bitstuff_history_q;
-    end  
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff_history_q
@@ -317,8 +318,10 @@ module usb_fs_rx (
     shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
   */
   logic [8:0] full_pid_q, full_pid_d;
-  wire pid_valid = full_pid_q[4:1] == ~full_pid_q[8:5];
-  wire pid_complete = full_pid_q[0];
+  logic pid_valid, pid_complete;
+
+  assign pid_valid    = full_pid_q[4:1] == ~full_pid_q[8:5];
+  assign pid_complete = full_pid_q[0];
 
   always_comb begin : proc_full_pid_d
     if (dvalid && !pid_complete) begin
@@ -327,15 +330,15 @@ module usb_fs_rx (
       full_pid_d = 9'b100000000;
     end else begin
       full_pid_d = full_pid_q;
-    end  
+    end
   end
 
   ////////////////////////////////////////////////////////////////////////////////
   // check crc5
   logic [4:0] crc5_q, crc5_d;
-  wire crc5_valid = crc5_q == 5'b01100;
-  wire crc5_invert = din ^ crc5_q[4];
-
+  logic crc5_valid, crc5_invert; 
+  assign crc5_valid  = crc5_q == 5'b01100;
+  assign crc5_invert = din ^ crc5_q[4];
 
   always_comb begin
     crc5_d = crc5_q; // default value
@@ -357,8 +360,10 @@ module usb_fs_rx (
   ////////////////////////////////////////////////////////////////////////////////
   // check crc16
   logic [15:0] crc16_q, crc16_d;
-  wire crc16_valid = crc16_q == 16'b1000000000001101;
-  wire crc16_invert = din ^ crc16_q[15];  
+  logic crc16_valid, crc16_invert;
+
+  assign crc16_valid  = crc16_q == 16'b1000000000001101;
+  assign crc16_invert = din ^ crc16_q[15];  
 
   always_comb begin
     crc16_d = crc16_q; // default value
@@ -390,9 +395,10 @@ module usb_fs_rx (
 
   ////////////////////////////////////////////////////////////////////////////////
   // output control signals
-  wire pkt_is_token = full_pid_q[2:1] == 2'b01;
-  wire pkt_is_data = full_pid_q[2:1] == 2'b11;
-  wire pkt_is_handshake = full_pid_q[2:1] == 2'b10;
+  logic pkt_is_token, pkt_is_data, pkt_is_handshake;
+  assign pkt_is_token     = full_pid_q[2:1] == 2'b01;
+  assign pkt_is_data      = full_pid_q[2:1] == 2'b11;
+  assign pkt_is_handshake = full_pid_q[2:1] == 2'b10;
 
 
   // TODO: need to check for data packet babble
@@ -410,7 +416,9 @@ module usb_fs_rx (
   assign pid_error_o = !pid_valid && packet_end;
   
   logic [11:0] token_payload_q, token_payload_d;
-  wire token_payload_done = token_payload_q[0];
+  logic token_payload_done;
+
+  assign token_payload_done = token_payload_q[0];
 
   logic [6:0] addr_q, addr_d;
   logic [3:0] endp_q, endp_d;
@@ -454,9 +462,11 @@ module usb_fs_rx (
   // deserialize and output data
   //assign rx_data_put = dvalid && pid_complete && pkt_is_data;
   logic [8:0] rx_data_buffer_q, rx_data_buffer_d;
-  wire rx_data_buffer_full = rx_data_buffer_q[0];
-  assign rx_data_put_o     = rx_data_buffer_full;
-  assign rx_data_o         = rx_data_buffer_q[8:1];
+  logic rx_data_buffer_full;
+
+  assign rx_data_buffer_full = rx_data_buffer_q[0];
+  assign rx_data_put_o       = rx_data_buffer_full;
+  assign rx_data_o           = rx_data_buffer_q[8:1];
 
   always_comb begin
     rx_data_buffer_d = rx_data_buffer_q; // default
@@ -466,7 +476,7 @@ module usb_fs_rx (
     end
 
     if (dvalid && pid_complete && pkt_is_data) begin
-        rx_data_buffer_d = {din, rx_data_buffer_q[8:1]};
+      rx_data_buffer_d = {din, rx_data_buffer_q[8:1]};
     end
   end
 

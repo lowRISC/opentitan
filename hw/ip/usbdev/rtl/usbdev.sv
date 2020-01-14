@@ -11,7 +11,7 @@ module usbdev (
   input        clk_i,
   input        rst_ni,
   input        clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
-  input        rst_usb_ni, // async reset, with relase sync. to clk_usb_48_mhz_i
+  input        rst_usb_ni, // async reset, with relase sync to clk_usb_48_mhz_i
 
   // Register interface
   input        tlul_pkg::tl_h2d_t tl_d_i,
@@ -260,12 +260,12 @@ module usbdev (
   end
 
   prim_flop_2sync #(
-    .Width(NEndpoints)
+    .Width (NEndpoints)
   ) usbdev_rdysync (
-    .clk_i (clk_usb_48mhz_i),
+    .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_ni),
-    .d( in_rdy_async ),
-    .q(usb_in_rdy)
+    .d      (in_rdy_async),
+    .q      (usb_in_rdy)
   );
 
   // CDC: We synchronize the qe (write pulse) and assume that the
@@ -579,16 +579,14 @@ module usbdev (
   // setup_received, as it is stable 
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
-        hw2reg.stall[i].d  = 1'b0;              
-        if (setup_received && usb_out_endpoint == 4'(i)) begin
-          hw2reg.stall[i].de = 1'b1;
-        end else begin
-          hw2reg.stall[i].de = 1'b0;
-        end        
-      end  
-  end
-
-
+      hw2reg.stall[i].d  = 1'b0;              
+      if (setup_received && usb_out_endpoint == 4'(i)) begin
+        hw2reg.stall[i].de = 1'b1;
+      end else begin
+        hw2reg.stall[i].de = 1'b0;
+      end        
+    end  
+  end  
 
   logic        unused_mem_a_rerror_d;
 

@@ -37,13 +37,13 @@ module usbdev_linkstate (
     LinkSuspend = 4
   } link_state_e;
 
-  typedef enum {
+  typedef enum logic [1:0] {
     NoRst,
     RstCnt,
     RstPend
   } link_rst_state_e;
 
-  typedef enum {
+  typedef enum logic [1:0] {
     Active,
     InactCnt,
     InactPend
@@ -66,10 +66,10 @@ module usbdev_linkstate (
 
 
   // Events that are not triggered by a timeout
-  logic         ev_bus_active;
+  logic ev_bus_active;
 
   // Events that are triggered by timeout
-  logic         ev_bus_inactive, ev_reset;
+  logic ev_bus_inactive, ev_reset;
 
   assign link_disconnect_o = (link_state_q == LinkDisconnect);
   assign link_connect_o    = (link_state_q != LinkDisconnect);
@@ -169,7 +169,7 @@ module usbdev_linkstate (
     end
   end
 
-    always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       link_state_q <= LinkDisconnect;
     end else begin
@@ -177,9 +177,9 @@ module usbdev_linkstate (
     end
   end
 
-  // --------------------------------------------------------------------
-  //  Reset detection
-  // --------------------------------------------------------------------
+  /////////////////////
+  // Reset detection //
+  /////////////////////
   //  Here we clean up the SE0 signal and generate a signle ev_reset at
   //  the end of a valid reset
 
@@ -238,9 +238,9 @@ module usbdev_linkstate (
     end
   end
 
-  // --------------------------------------------------------------------
-  //  Idle detection
-  // --------------------------------------------------------------------
+  ////////////////////
+  // Idle detection //
+  ////////////////////
   //  Here we clean up the idle signal and generate a signle ev_bus_inactive
   //  after the timer expires
   always_comb begin : proc_idle_det
@@ -269,7 +269,6 @@ module usbdev_linkstate (
             link_inac_timer_d = link_inac_timer_q + 1;
           end
         end
-
       end
 
       // Counter expired & event sent, wait here
@@ -283,7 +282,6 @@ module usbdev_linkstate (
     endcase  
   end
 
-
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin : proc_reg_idle_det
     if(~rst_ni) begin
       link_inac_state_q <= Active;
@@ -294,9 +292,9 @@ module usbdev_linkstate (
     end
   end
 
-  // --------------------------------------------------------------------
-  //  Host loss detection
-  // --------------------------------------------------------------------
+  /////////////////////////
+  // Host loss detection //
+  /////////////////////////
   // host_lost if no sof in 4.096ms (supposed to be every 1ms)
   // and the link is active
   logic [12:0] host_presence_timer;
@@ -309,7 +307,7 @@ module usbdev_linkstate (
       if (sof_valid_i || !link_active || link_reset) begin
         host_presence_timer <= '0;
       end else if (us_tick_i && !host_lost_o) begin
-        host_presence_timer <= host_presence_timer + 1'b1;
+        host_presence_timer <= host_presence_timer + 1;
       end
     end
   end

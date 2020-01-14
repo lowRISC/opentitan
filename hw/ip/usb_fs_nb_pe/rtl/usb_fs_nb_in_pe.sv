@@ -79,11 +79,11 @@ module usb_fs_nb_in_pe #(
 
   import usb_consts_pkg::*;
 
-  typedef enum {
+  typedef enum logic [1:0] {
     StIdle,
     StRcvdIn,
     StSendData,
-    StWaitAck  
+    StWaitAck
   } state_in_e;
 
   state_in_e  in_xfr_state;
