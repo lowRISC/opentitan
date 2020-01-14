@@ -186,7 +186,7 @@ module usb_fs_nb_out_pe #(
     new_pkt_end = 1'b0;
     rollback_data = 1'b0;
 
-    case (out_xfr_state)
+    unique case (out_xfr_state)
       StIdle: begin
         if (out_token_received || setup_token_received) begin
           out_xfr_state_next = StRcvdOut;
@@ -254,7 +254,7 @@ module usb_fs_nb_out_pe #(
         end else begin
           // We got a valid packet, but we don't send an ACK on the bus
           new_pkt_end    = 1'b1;
-          out_ep_acked_o = 1'b1;          
+          out_ep_acked_o = 1'b1;
         end
 
       end
@@ -280,7 +280,7 @@ module usb_fs_nb_out_pe #(
     if (setup_token_received) begin
       data_toggle_d[rx_endp_i[0 +: OutEpW]] = 1'b0; // lint: rx_endp_i range was checked
     end else if (new_pkt_end) begin
-      data_toggle_d[out_ep_index] = !data_toggle_q[out_ep_index]; // lint: range was checked
+      data_toggle_d[out_ep_index] = ~data_toggle_q[out_ep_index]; // lint: range was checked
     end
 
     data_toggle_d = data_toggle_d & ~data_toggle_clear_i;

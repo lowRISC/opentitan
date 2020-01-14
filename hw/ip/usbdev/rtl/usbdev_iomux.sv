@@ -106,7 +106,7 @@ module usbdev_iomux (
     cio_usb_pullup_en_o    = usb_pullup_en_i;
     cio_usb_suspend_o      = usb_suspend_i;
 
-    if(tx_differential_mode_i) begin
+    if (tx_differential_mode_i) begin
       // Differential mode
       cio_usb_tx_mode_se_o   = 1'b0;
 

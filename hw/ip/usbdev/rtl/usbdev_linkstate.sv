@@ -121,7 +121,7 @@ module usbdev_linkstate (
     if (!see_pwr_sense) begin
       link_state_d = LinkDisconnect;
     end else begin
-      case (link_state_q)
+      unique case (link_state_q)
         // No USB supply detected (USB spec: Attached)
         LinkDisconnect: begin
           if (see_pwr_sense) begin
@@ -189,7 +189,7 @@ module usbdev_linkstate (
     ev_reset          = 1'b0;
     link_reset        = 1'b0;
 
-    case (link_rst_state_q)
+    unique case (link_rst_state_q)
       // No reset signal detected
       NoRst: begin
         if (see_se0) begin
@@ -229,7 +229,7 @@ module usbdev_linkstate (
   assign link_reset_o = link_reset;
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin : proc_reg_rst
-    if(!rst_ni) begin
+    if (!rst_ni) begin
       link_rst_state_q <= NoRst;
       link_rst_timer_q <= 0;
     end else begin
@@ -248,7 +248,7 @@ module usbdev_linkstate (
     link_inac_timer_d = link_inac_timer_q;
     ev_bus_inactive   = 0;
 
-    case (link_inac_state_q)
+    unique case (link_inac_state_q)
       // Active or disabled
       Active: begin
         link_inac_timer_d = 0;
@@ -283,7 +283,7 @@ module usbdev_linkstate (
   end
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin : proc_reg_idle_det
-    if(~rst_ni) begin
+    if (!rst_ni) begin
       link_inac_state_q <= Active;
       link_inac_timer_q <= 0;
     end else begin
