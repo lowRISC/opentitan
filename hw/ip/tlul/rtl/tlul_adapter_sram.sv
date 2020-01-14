@@ -126,7 +126,8 @@ module tlul_adapter_sram #(
       d_size   : (d_valid) ? reqfifo_rdata.size : '0,
       d_source : (d_valid) ? reqfifo_rdata.source : '0,
       d_sink   : 1'b0,
-      d_data   : (d_valid && reqfifo_rdata.op == OpRead) ? rspfifo_rdata.data : '0,
+      d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
+                 ? rspfifo_rdata.data : '0,
       d_user   : '0,
       d_error  : d_error,
 
