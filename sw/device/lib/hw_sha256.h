@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_LIB_SHA256_H__
-#define _F_LIB_SHA256_H__
+#ifndef OPENTITAN_SW_DEVICE_LIB_HW_SHA256_H_
+#define OPENTITAN_SW_DEVICE_LIB_HW_SHA256_H_
 
 #include <stddef.h>
 
@@ -47,4 +47,4 @@ const uint8_t *hw_SHA256_final(HW_SHA256_CTX *ctx);
  */
 const uint8_t *hw_SHA256_hash(const void *data, size_t len, uint8_t *digest);
 
-#endif  // _F_LIB_SHA256_H__
+#endif  // OPENTITAN_SW_DEVICE_LIB_HW_SHA256_H_

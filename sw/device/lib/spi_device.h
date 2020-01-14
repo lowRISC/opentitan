@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _SPI_DEVICE_H_
-#define _SPI_DEVICE_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_SPI_DEVICE_H_
+#define OPENTITAN_SW_DEVICE_LIB_SPI_DEVICE_H_
 
 #include <stdint.h>
 
@@ -35,4 +35,4 @@ uint32_t spid_read_nb(void *data, uint32_t len);
  */
 uint32_t spid_bytes_available(void);
 
-#endif /* _SPI_DEVICE_H_ */
+#endif  // OPENTITAN_SW_DEVICE_LIB_SPI_DEVICE_H_

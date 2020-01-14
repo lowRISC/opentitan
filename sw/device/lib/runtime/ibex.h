@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SW_DEVICE_LIB_RUNTIME_IBEX_H_
-#define SW_DEVICE_LIB_RUNTIME_IBEX_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
+#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
 
 #include <stddef.h>
 
@@ -38,4 +38,4 @@ inline void ibex_busy_loop(size_t cycles) {
       : "0"(cycles));
 }
 
-#endif  // SW_DEVICE_LIB_RUNTIME_IBEX_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_

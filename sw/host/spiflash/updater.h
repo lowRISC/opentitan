@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_SPIFLASH_UPDATER_H__
-#define _F_SPIFLASH_UPDATER_H__
+#ifndef OPENTITAN_SW_HOST_SPIFLASH_UPDATER_H_
+#define OPENTITAN_SW_HOST_SPIFLASH_UPDATER_H_
 
 #include <openssl/sha.h>
 
@@ -78,4 +78,4 @@ class Updater {
 }  // namespace spiflash
 }  // namespace opentitan
 
-#endif
+#endif  // OPENTITAN_SW_HOST_SPIFLASH_UPDATER_H_

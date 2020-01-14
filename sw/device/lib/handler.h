@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _HANDLER_H_
-#define _HANDLER_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_HANDLER_H_
+#define OPENTITAN_SW_DEVICE_LIB_HANDLER_H_
 
 typedef enum exc_id {
   kInstMisa = 0,
@@ -126,4 +126,4 @@ void handler_lsu_fault(void);
  */
 void handler_ecall(void);
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_HANDLER_H_

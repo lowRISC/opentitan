@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_LIB_HMAC_H__
-#define _F_LIB_HMAC_H__
+#ifndef OPENTITAN_SW_DEVICE_LIB_HMAC_H_
+#define OPENTITAN_SW_DEVICE_LIB_HMAC_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -49,4 +49,4 @@ void hmac_update(const void *data, size_t size_in_bytes);
  */
 void hmac_done(uint32_t *digest);
 
-#endif  // _F_LIB_HMAC_H__
+#endif  // OPENTITAN_SW_DEVICE_LIB_HMAC_H_

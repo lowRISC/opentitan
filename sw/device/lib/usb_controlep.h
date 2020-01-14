@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef __USB_CONTROLEP_H__
-#define __USB_CONTROLEP_H__
+#ifndef OPENTITAN_SW_DEVICE_LIB_USB_CONTROLEP_H_
+#define OPENTITAN_SW_DEVICE_LIB_USB_CONTROLEP_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -94,4 +94,4 @@ void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_USB_CONTROLEP_H_

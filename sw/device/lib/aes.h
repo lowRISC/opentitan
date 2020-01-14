@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _F_LIB_AES_H__
-#define _F_LIB_AES_H__
+#ifndef OPENTITAN_SW_DEVICE_LIB_AES_H_
+#define OPENTITAN_SW_DEVICE_LIB_AES_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -109,4 +109,4 @@ bool aes_idle(void);
  */
 void aes_clear(void);
 
-#endif  // _F_LIB_AES_H__
+#endif  // OPENTITAN_SW_DEVICE_LIB_AES_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _COMMON_H_
-#define _COMMON_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_COMMON_H_
+#define OPENTITAN_SW_DEVICE_LIB_COMMON_H_
 
 #ifdef SIMULATION
 static const unsigned long UART_BAUD_RATE = 9600;
@@ -27,4 +27,4 @@ static const unsigned long UART_BAUD_RATE = 230400;
 
 #define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_COMMON_H_

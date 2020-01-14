@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _GPIO_H_
-#define _GPIO_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_GPIO_H_
+#define OPENTITAN_SW_DEVICE_LIB_GPIO_H_
 
 #include <stdint.h>
 
@@ -22,4 +22,4 @@ void gpio_write_bit(unsigned int bit, unsigned int val);
 void gpio_write_all(uint32_t val);
 uint32_t gpio_read(void);
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_GPIO_H_

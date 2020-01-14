@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _USBDEV_H_
-#define _USBDEV_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_USBDEV_H_
+#define OPENTITAN_SW_DEVICE_LIB_USBDEV_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -230,4 +230,4 @@ void usbdev_init(usbdev_ctx_t *ctx);
 #define TRC_I(i, b) uart_send_uint(i, b)
 #define TRC_C(c) uart_send_char(c)
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_USBDEV_H_

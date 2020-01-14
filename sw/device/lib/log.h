@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _LOG_H_
-#define _LOG_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_LOG_H_
+#define OPENTITAN_SW_DEVICE_LIB_LOG_H_
 
 #ifdef DV_SIM
 #include "sw/device/lib/log_uart/log_impl.h"
@@ -214,4 +214,4 @@
 #define LOG_FATAL(...) PRINT_LOG(LOG_HEADER(LOG_TYPE_FATAL, ""), __VA_ARGS__)
 #endif
 
-#endif  // _LOG_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_LOG_H_

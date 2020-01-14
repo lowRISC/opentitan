@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SW_DEVICE_LIB_BASE_STDASM_H_
-#define SW_DEVICE_LIB_BASE_STDASM_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_STDASM_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_STDASM_H_
 
 /**
  * This header simply provides the |asm| keyword, in analogy with the ISO C
@@ -12,4 +12,4 @@
 
 #define asm __asm__
 
-#endif  // SW_DEVICE_LIB_BASE_STDASM_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_STDASM_H_
