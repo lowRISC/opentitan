@@ -81,6 +81,20 @@ jobs:
     displayName: 'Use clang-format to check C/C++ coding style'
 
   - bash: |
+      fork_origin="$(git merge-base --fork-point origin/master)"
+      changed_files="$(git diff --name-only "$fork_origin")"
+      if [[ -z "$changed_files" ]]; then
+        xargs util/fix_include_guard.py --dry-run <<< "$changed_files" | tee fix-include-guard-output
+        if [[ -s fix-include-guard-output ]]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Include guard check failed. Please run util/fix_include_guard.py on the above files."
+          exit 1
+        fi
+      fi
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: 'Check formatting on header guards'
+
+  - bash: |
       commit_range=$(git merge-base --fork-point origin/master)..HEAD
       # Notes:
       # * Merge commits are not checked. We always use rebases instead of
