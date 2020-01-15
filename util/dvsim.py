@@ -257,6 +257,11 @@ def main():
                         metavar="time|mem",
                         help="Turn on simulation profiling")
 
+    parser.add_argument("--xprop-off",
+                        default=False,
+                        action='store_true',
+                        help="Turn off Xpropagation")
+
     parser.add_argument(
         "--job-prefix",
         default="",

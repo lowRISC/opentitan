@@ -34,7 +34,7 @@
 
   // Defaults for VCS
   cov_metrics:          "line+cond+fsm+tgl+branch+assert"
-  vcs_cov_hier:         ""
+  vcs_cov_hier:         "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg"
   vcs_cov_assert_hier:  ""
 
   build_modes: [
@@ -77,10 +77,15 @@
                    "-assert nopostproc"]
     }
     {
+      name: vcs_xprop
+      is_sim_mode: 1
+      build_opts: ["-xprop={proj_root}/hw/dv/tools/vcs/xprop.cfg"]
+    }
+    {
       name: vcs_profile
       is_sim_mode: 1
-      build_opts: ["--simprofile"]
-      run_opts:   ["--simprofile {profile}"]
+      build_opts: ["-simprofile"]
+      run_opts:   ["-simprofile {profile}"]
     }
   ]
 }

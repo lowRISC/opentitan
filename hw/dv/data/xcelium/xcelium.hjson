@@ -1,0 +1,49 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd:  "{job_prefix} xrun -elaborate"
+  build_ex:   "xrun"
+  run_cmd:    "{job_prefix} {build_ex}"
+
+  tcl:        "{proj_root}/hw/dv/tools/xcelium/xcelium_{dump}.tcl"
+
+  build_opts: ["-64bit -access +r -sv",
+               "-messages -errormax 50",
+               "-timescale 1ns/1ps",
+               "-f {sv_flist}",
+               "-uvmhome {UVM_HOME}",
+               "-xmlibdirname {build_dir}/xcelium.d"]
+
+  run_opts:   ["-input {tcl}",
+               "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
+               "+SVSEED={seed}",
+               "+UVM_TESTNAME={uvm_test}",
+               "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  build_modes: [
+    {
+      name: xcelium_waves
+      is_sim_mode: 1
+    }
+    // TODO support coverage for xcelium
+    {
+      name: xcelium_cov
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+    // TODO support profile for xcelium
+    {
+      name: xcelium_profile
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+    {
+      name: xcelium_xprop
+      is_sim_mode: 1
+      build_opts: ["-xprop F"] # -xverbose  << add to see which modules does not have xprop enabled
+    }
+  ]
+}
