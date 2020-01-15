@@ -51,7 +51,7 @@ def run_cmd_with_timeout(cmd, timeout=-1, exit_on_failure=1):
         while time.time() - start < timeout:
             if p.poll() is not None:
                 break
-            time.sleep(0.2)
+            time.sleep(.01)
 
     # Capture output and status if cmd exited, else kill it
     if p.poll() is not None:
@@ -66,6 +66,22 @@ def run_cmd_with_timeout(cmd, timeout=-1, exit_on_failure=1):
         if exit_on_failure == 1: sys.exit(status)
 
     return (result, status)
+
+
+# Parse hjson and return a dict
+def parse_hjson(hjson_file):
+    hjson_cfg_dict = None
+    try:
+        log.debug("Parsing %s", hjson_file)
+        f = open(hjson_file, 'rU')
+        text = f.read()
+        hjson_cfg_dict = hjson.loads(text, use_decimal=True)
+        f.close()
+    except:
+        log.fatal("Failed to parse \"%s\" possibly due to bad path",
+                  hjson_file)
+        sys.exit(1)
+    return hjson_cfg_dict
 
 
 def subst_wildcards(var, mdict, ignored_wildcards=[]):

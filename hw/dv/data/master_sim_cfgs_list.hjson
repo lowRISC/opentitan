@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // This is the master cfg hjson for DV simulations. It imports ALL individual DV sim
+  // cfgs in OpenTitan so that regressions in all available DUTs can be invoked together in
+  // one shot.
+  use_cfgs: ["{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
+             "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson"]
+}
