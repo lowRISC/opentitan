@@ -58,22 +58,6 @@ class Deploy():
         self.odir = ""
         self.log = ""
 
-        # Create directories with links for ease of debug / triage.
-        self.links = {
-            "D": self.sim_cfg.scratch_path + "/" + "dispatched",
-            "P": self.sim_cfg.scratch_path + "/" + "passed",
-            "F": self.sim_cfg.scratch_path + "/" + "failed",
-            "K": self.sim_cfg.scratch_path + "/" + "killed"
-        }
-
-        for link in self.links.keys():
-            try:
-                os.system("/bin/rm -rf " + self.links[link])
-                os.system("mkdir -p " + self.links[link])
-            except IOError:
-                log.error("Unable to create dir %s", self.links[link])
-                sys.exit(1)
-
         # Flag to indicate whether to 'overwrite' if odir already exists,
         # or to backup the existing one and create a new one.
         # For builds, we want to overwrite existing to leverage the tools'
@@ -176,8 +160,8 @@ class Deploy():
         try:
             self.odir_limiter()
             os.system("mkdir -p " + self.odir)
-            os.system("ln -s " + self.odir + " " + self.links['D'] + '/' +
-                      self.odir_ln)
+            os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
+                      '/' + self.odir_ln)
             f = open(self.log, "w")
             self.process = subprocess.Popen(args,
                                             stdout=f,
@@ -252,8 +236,8 @@ class Deploy():
         if self.status == '.':
             log.error("Method unexpectedly called!")
         else:
-            cmd = "mv " + self.links['D'] + "/" + self.odir_ln + " " + \
-                  self.links[self.status] + "/."
+            cmd = "mv " + self.sim_cfg.links['D'] + "/" + self.odir_ln + " " + \
+                  self.sim_cfg.links[self.status] + "/."
             os.system(cmd)
 
     def get_status(self):
@@ -306,7 +290,7 @@ class Deploy():
         num_secs = 0
         status = {}
         status_str = {}
-        targets_done = {}
+        status_str_prev = {}
 
         while all_done == 0:
             time.sleep(1)
@@ -315,8 +299,6 @@ class Deploy():
             for item in Deploy.items:
                 if item.target not in status.keys():
                     status[item.target] = {}
-                if item.target not in targets_done.keys():
-                    targets_done[item.target] = False
                 if item not in status[item.target].keys():
                     status[item.target][item] = ""
 
@@ -336,7 +318,6 @@ class Deploy():
             else:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
                 if num_slots > 0:
-                    trig_print = True
                     if len(dispatch_items_queue) > num_slots:
                         dispatch_items(dispatch_items_queue[0:num_slots])
                         dispatch_items_queue = dispatch_items_queue[num_slots:]
@@ -344,6 +325,7 @@ class Deploy():
                         dispatch_items(dispatch_items_queue)
                         dispatch_items_queue = []
 
+            status_str_prev = status_str.copy()
             status_str = {}
             for target in status.keys():
                 if target not in status_str.keys(): status_str[target] = "["
@@ -357,11 +339,12 @@ class Deploy():
             # Print the status string periodically
             if trig_print:
                 for target in status_str.keys():
-                    if targets_done[target] is True: continue
+                    if (target in status_str_prev.keys()) and \
+                       (status_str[target] == status_str_prev[target]) and \
+                       (status_str[target].find(".") == -1):
+                        continue
                     log.info("[dvsim]: [%06ds] [%s]: %s", num_secs, target,
                              status_str[target])
-                    if status_str[target].find(".") == -1:
-                        targets_done[target] = True
 
 
 class CompileSim(Deploy):
@@ -452,7 +435,6 @@ class RunTest(Deploy):
         self.test = self.name
         self.renew_odir = True
         self.build_mode = test.build_mode.name
-        self.scratch_path = sim_cfg.scratch_path
         self.__post_init__()
         # Construct custom odir link name for RunTest items by combining name
         # and index

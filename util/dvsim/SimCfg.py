@@ -6,55 +6,40 @@ r"""
 Class describing simulation configuration object
 """
 
-import datetime
 import logging as log
-import pprint
-import re
 import sys
-
-import hjson
 
 from testplanner import class_defs, testplan_utils
 
 from .Deploy import *
+from .FlowCfg import FlowCfg
 from .Modes import *
 from .utils import *
 
 
-class SimCfg():
+class SimCfg(FlowCfg):
     """Simulation configuration object
 
     A simulation configuration class holds key information required for building a DV
     regression framework.
     """
-
-    # Maintain a list of registered top level cfgs
-    cfgs = []
-
-    # Static variables - indicate timestamp.
-    ts_format_long = "%A %B %d %Y %I:%M:%S%p %Z"
-    ts_format = "%a.%m.%d.%y__%I.%M.%S%p"
-
-    def __str__(self):
-        return pprint.pformat(self.__dict__)
-
-    def __repr__(self):
-        return pprint.pformat(self.__dict__)
-
-    def __init__(self, proj_root, args):
+    def __init__(self, flow_cfg_file, proj_root, args):
+        super().__init__(flow_cfg_file, proj_root, args)
         # Options set from command line
-        self.cfg_files = []
-        self.cfg_files.append(args.cfg)
-        self.items = args.items
-        self.list_items = args.list
+        self.items = []
+        self.items.extend(args.items)
+        self.list_items = []
+        self.list_items.extend(args.list)
         self.simulator = args.simulator
-        self.proj_root = proj_root
-        self.scratch_root = args.scratch_root
         self.branch = args.branch
-        self.build_opts = args.build_opts
-        self.en_build_modes = args.build_modes
-        self.run_opts = args.run_opts
-        self.en_run_modes = args.run_modes
+        self.build_opts = []
+        self.build_opts.extend(args.build_opts)
+        self.en_build_modes = []
+        self.en_build_modes.extend(args.build_modes)
+        self.run_opts = []
+        self.run_opts.extend(args.run_opts)
+        self.en_run_modes = []
+        self.en_run_modes.extend(args.run_modes)
         self.build_unique = args.build_unique
         self.build_only = args.build_only
         self.run_only = args.run_only
@@ -111,21 +96,17 @@ class SimCfg():
         self.dump_file = ""
         self.exports = []
 
-        # Register the seeds from command line with RunTest class.
-        RunTest.seeds = args.seeds
-
-        # Register the common deploy settings.
-        Deploy.print_interval = args.print_interval
-        Deploy.max_parallel = args.max_parallel
-        Deploy.max_odirs = args.max_odirs
-
-        # Current timestamp
-        curr_ts = datetime.datetime.now()
-        self.timestamp_long = curr_ts.strftime(SimCfg.ts_format_long)
-        self.timestamp = curr_ts.strftime(SimCfg.ts_format)
+        # Generated data structures
+        self.links = {}
+        self.build_list = []
+        self.run_list = []
+        self.deploy = []
 
         # Parse the cfg_file file tree
-        self.parse_sim_cfg(args.cfg)
+        self.parse_flow_cfg(flow_cfg_file)
+
+        # Stop here if this is a master cfg list
+        if self.is_master_cfg: return
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
@@ -140,38 +121,42 @@ class SimCfg():
                                                       self.__dict__,
                                                       ignored_wildcards)
 
-        # Check if there are items to run
-        if self.items == []:
-            log.error(
-                "No items provided for running this simulation / regression")
-            sys.exit(1)
+        # Print info
+        log.info("Scratch path for %s: %s", self.name, self.scratch_path)
+
+        # Set directories with links for ease of debug / triage.
+        self.links = {
+            "D": self.scratch_path + "/" + "dispatched",
+            "P": self.scratch_path + "/" + "passed",
+            "F": self.scratch_path + "/" + "failed",
+            "K": self.scratch_path + "/" + "killed"
+        }
 
         # Use the default build mode for tests that do not specify it
         if not hasattr(self, "build_mode"):
             setattr(self, "build_mode", "default")
 
-        self.process_exports()
+        self._process_exports()
 
         # Create objects from raw dicts - build_modes, sim_modes, run_modes,
         # tests and regressions
-        self.create_objects()
+        self._create_objects()
 
-        # Look at list of items and build the list of tests to run
-        self.deploy = []
-        self.build_list = []
-        self.run_list = []
-        self.create_build_and_run_list()
+        # Post init checks
+        self.__post_init__()
 
-        # Create deploy objects
-        self.create_deploy_objects()
+    def __post_init__(self):
+        # Run some post init checks
+        super().__post_init__()
 
-        # Print info
-        log.info("Scratch path: %s", self.scratch_path)
+    @staticmethod
+    def create_instance(flow_cfg_file, proj_root, args):
+        '''Create a new instance of this class as with given parameters.
+        '''
+        return SimCfg(flow_cfg_file, proj_root, args)
 
-        # Register self
-        SimCfg.cfgs.append(self)
-
-    def do_purge(self):
+    # Purge the output directories. This operates on self.
+    def _purge(self):
         if self.scratch_path is not "":
             try:
                 log.info("Purging scratch path %s", self.scratch_path)
@@ -180,108 +165,7 @@ class SimCfg():
                 log.error('Failed to purge scratch directory %s',
                           self.scratch_path)
 
-            # TODO: can't exit here!
-            sys.exit(0)
-
-    def process_exports(self):
-        # Convert 'exports' to dict
-        exports_dict = {}
-        if self.exports != []:
-            for item in self.exports:
-                if type(item) is dict:
-                    exports_dict.update(item)
-                elif type(item) is str:
-                    [key, value] = item.split(':', 1)
-                    if type(key) is not str: key = str(key)
-                    if type(value) is not str: value = str(value)
-                    exports_dict.update({key.strip(): value.strip()})
-                else:
-                    log.error("Type error in \"exports\": %s", str(item))
-                    sys.exit(1)
-        self.exports = exports_dict
-
-    def parse_sim_cfg(self, sim_cfg_file):
-        try:
-            log.debug("Parsing %s", sim_cfg_file)
-            f = open(sim_cfg_file, 'rU')
-            text = f.read()
-            f.close()
-        except:
-            log.fatal("Failed to parse \"%s\"", sim_cfg_file)
-            sys.exit(1)
-        self.resolve_hjson_raw(hjson.loads(text, use_decimal=True))
-
-    def resolve_hjson_raw(self, hjson_dict):
-        attrs = self.__dict__.keys()
-        rm_hjson_dict_keys = []
-        import_cfgs = []
-        for key in hjson_dict.keys():
-            if key in attrs:
-                hjson_dict_val = hjson_dict[key]
-                self_val = getattr(self, key)
-                scalar_types = {str: [""], int: [0, -1], bool: [False]}
-
-                # Case 1: key value in class and hjson_dict differ - error!
-                if type(hjson_dict_val) != type(self_val):
-                    log.error("Coflicting key types: \"%s\" {\"%s, \"%s\"}",
-                              key,
-                              type(hjson_dict_val).__name__,
-                              type(self_val).__name__)
-                    sys.exit(1)
-
-                # Case 2: key value in class and hjson_dict are strs - set if
-                # not already set, else error!
-                elif type(hjson_dict_val) in scalar_types.keys():
-                    defaults = scalar_types[type(hjson_dict_val)]
-                    if self_val == hjson_dict_val:
-                        rm_hjson_dict_keys.append(key)
-                    elif self_val in defaults and not hjson_dict_val in defaults:
-                        setattr(self, key, hjson_dict_val)
-                        rm_hjson_dict_keys.append(key)
-                    elif not self_val in defaults and not hjson_dict_val in defaults:
-                        log.error(
-                            "Coflicting values {\"%s\", \"%s\"} encountered for key \"%s\"",
-                            str(self_val), str(hjson_dict_val), key)
-                        sys.exit(1)
-
-                # Case 3: key value in class and hjson_dict are lists - merge'em
-                elif type(hjson_dict_val) is list and type(self_val) is list:
-                    self_val.extend(hjson_dict_val)
-                    setattr(self, key, self_val)
-                    rm_hjson_dict_keys.append(key)
-
-                # Case 4: unknown issue
-                else:
-                    log.error(
-                        "Type of \"%s\" (%s) in %s appears to be invalid (should be %s)",
-                        key,
-                        type(hjson_dict_val).__name__, hjson_dict,
-                        type(self_val).__name__)
-                    sys.exit(1)
-            # If key is 'import_cfgs' then add to the list of sim_cfgs to
-            # process
-            elif key == 'import_cfgs':
-                import_cfgs.extend(hjson_dict[key])
-                rm_hjson_dict_keys.append(key)
-
-            else:
-                # add key-value to class
-                setattr(self, key, hjson_dict[key])
-                rm_hjson_dict_keys.append(key)
-
-        # Parse imported sim_cfgs
-        for cfg_file in import_cfgs:
-            if not cfg_file in self.cfg_files:
-                self.cfg_files.append(cfg_file)
-                # Substitute wildcards in cfg_file files since we need to process
-                # them right away.
-                cfg_file = subst_wildcards(cfg_file, self.__dict__)
-                self.parse_sim_cfg(cfg_file)
-            else:
-                log.error("Sim cfg file \"%s\" has already been parsed",
-                          cfg_file)
-
-    def create_objects(self):
+    def _create_objects(self):
         # Create build and run modes objects
         build_modes = Modes.create_modes(BuildModes,
                                          getattr(self, "build_modes"))
@@ -322,8 +206,9 @@ class SimCfg():
             getattr(self, "regressions"), self, tests)
         setattr(self, "regressions", regressions)
 
-    def print_list(self):
+    def _print_list(self):
         for list_item in self.list_items:
+            log.info("---- List of %s in %s ----", list_item, self.name)
             if hasattr(self, list_item):
                 items = getattr(self, list_item)
                 for item in items:
@@ -331,7 +216,7 @@ class SimCfg():
             else:
                 log.error("Item %s does not exist!", list_item)
 
-    def create_build_and_run_list(self):
+    def _create_build_and_run_list(self):
         # Walk through the list of items to run and create the build and run
         # objects.
         # Allow multiple regressions to run as long as the do not enable
@@ -348,6 +233,12 @@ class SimCfg():
             for item in items:
                 if item not in marked_items: pruned_items.append(item)
             return pruned_items
+
+        # Check if there are items to run
+        if self.items == []:
+            log.error(
+                "No items provided for running this simulation / regression")
+            sys.exit(1)
 
         items_list = self.items
         run_list_names = []
@@ -388,8 +279,9 @@ class SimCfg():
 
         # Check if all items has been processed
         if items_list != []:
-            log.error("The items %s added for run were not found! Use the --list switch " + \
-                      "to see a list of available tests / regressions for run", items_list)
+            log.error("The items %s added for run were not found in \n%s!" + \
+                      "\nUse the --list switch to see a list of available tests / regressions.", \
+                      items_list, self.flow_cfg_file)
             sys.exit(1)
 
         # Process reseed override and create the build_list
@@ -407,7 +299,32 @@ class SimCfg():
                 self.build_list.append(test.build_mode)
                 build_list_names.append(test.build_mode.name)
 
-    def create_deploy_objects(self):
+    def _create_dirs(self):
+        '''Create initial set of directories
+        '''
+        # Invoking system calls has a performance penalty.
+        # Construct a single command line chained with '&&' to invoke
+        # the system call only once, rather than multiple times.
+        create_link_dirs_cmd = ""
+        for link in self.links.keys():
+            create_link_dirs_cmd += "/bin/rm -rf " + self.links[link] + " && "
+            create_link_dirs_cmd += "mkdir -p " + self.links[link] + " && "
+        create_link_dirs_cmd += " true"
+
+        try:
+            os.system(create_link_dirs_cmd)
+        except IOError:
+            log.error("Error running when running the cmd \"%s\"",
+                      create_link_dirs_cmd)
+            sys.exit(1)
+
+    def _create_deploy_objects(self):
+        '''Create deploy objects from the build and run lists.
+        '''
+
+        # Create the build and run list first
+        self._create_build_and_run_list()
+
         builds = []
         build_map = {}
         for build in self.build_list:
@@ -428,12 +345,15 @@ class SimCfg():
         else:
             self.deploy = builds
 
-    def gen_results(self, fmt="md"):
+        # Create initial set of directories before kicking off the regression.
+        self._create_dirs()
+
+    def _gen_results(self, fmt="md"):
         '''
         The function is called after the regression has completed. It collates the status of
         all run targets and generates a dict. It parses the testplan and maps the generated
         result to the testplan entries to generate a final table (list). It uses the fmt arg
-        to dump the final result as a markdown of html.
+        to dump the final result as a markdown or html.
         '''
 
         # TODO: add support for html

@@ -13,14 +13,12 @@ dependencies and provide us with a filelist that will be consumed by the sim too
 """
 
 import argparse
-import glob
+import datetime
 import logging as log
 import os
 import subprocess
 import sys
 from pathlib import Path
-
-import hjson
 
 from dvsim import Deploy, SimCfg, utils
 
@@ -35,24 +33,27 @@ version = 0.1
 # Try to create the directory if it does not already exist.
 def resolve_scratch_root(arg_scratch_root):
     scratch_root = os.environ.get('SCRATCH_ROOT')
-    if arg_scratch_root == "scratch":
+    if arg_scratch_root == None or arg_scratch_root == "":
         if scratch_root == None:
-            arg_scratch_root = os.getcwd() + '/' + arg_scratch_root
+            arg_scratch_root = os.getcwd() + "/scratch"
         else:
             # Scratch space could be mounted in a filesystem (such as NFS) on a network drive.
             # If the network is down, it could cause the access access check to hang. So run a
             # simple ls command with a timeout to prevent the hang.
             (out,
              status) = utils.run_cmd_with_timeout(cmd="ls -d " + scratch_root,
-                                                  timeout=5,
+                                                  timeout=1,
                                                   exit_on_failure=0)
             if status == 0 and out != "":
                 arg_scratch_root = scratch_root
             else:
-                arg_scratch_root = os.getcwd() + '/' + arg_scratch_root
+                arg_scratch_root = os.getcwd() + "/scratch"
                 log.warning(
                     "Env variable $SCRATCH_ROOT=\"%s\" is not accessible.\n" +
                     "Using \"%s\" instead.", scratch_root, arg_scratch_root)
+    else:
+        arg_scratch_root = os.path.realpath(arg_scratch_root)
+
     try:
         os.system("mkdir -p " + arg_scratch_root)
     except:
@@ -118,7 +119,6 @@ def main():
     parser.add_argument(
         "-sr",
         "--scratch-root",
-        default="scratch",
         metavar="path",
         help="""root scratch directory path where all build / run drectories go;
                       by default, the tool will create the {scratch_path} = {scratch_root}/{dut}
@@ -271,7 +271,7 @@ def main():
     parser.add_argument("--purge",
                         default=False,
                         action='store_true',
-                        help="Clean the scratch directory.")
+                        help="Clean the scratch directory before running.")
 
     parser.add_argument(
         "-mo",
@@ -379,25 +379,49 @@ def main():
     args.branch = resolve_branch(args.branch)
     args.cfg = os.path.abspath(args.cfg)
 
+    # Add timestamp to args that all downstream objects can use.
+    # Static variables - indicate timestamp.
+    ts_format_long = "%A %B %d %Y %I:%M:%S%p %Z"
+    ts_format = "%a.%m.%d.%y__%I.%M.%S%p"
+    curr_ts = datetime.datetime.now()
+    timestamp_long = curr_ts.strftime(ts_format_long)
+    timestamp = curr_ts.strftime(ts_format)
+    setattr(args, "ts_format_long", ts_format_long)
+    setattr(args, "ts_format", ts_format)
+    setattr(args, "timestamp_long", timestamp_long)
+    setattr(args, "timestamp", timestamp)
+
+    # Register the seeds from command line with RunTest class.
+    Deploy.RunTest.seeds = args.seeds
+
+    # Register the common deploy settings.
+    Deploy.Deploy.print_interval = args.print_interval
+    Deploy.Deploy.max_parallel = args.max_parallel
+    Deploy.Deploy.max_odirs = args.max_odirs
+
     # Build infrastructure from hjson file and create the list of items to
     # be deployed.
-    cfg = SimCfg.SimCfg(proj_root=get_proj_root(), args=args)
+    # TODO: SimCfg item below implies DV - need to solve this once we add FPV
+    # and other ASIC flow targets.
+    cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
 
     # Purge the scratch path if --purge option is set.
     if args.purge:
-        cfg.do_purge()
-        sys.exit(0)
+        cfg.purge()
 
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:
         cfg.print_list()
         sys.exit(0)
 
+    # Create deploy objects.
+    cfg.create_deploy_objects()
+
     # Deploy the builds and runs
     Deploy.Deploy.deploy(cfg.deploy)
 
     # Generate results.
-    print(cfg.gen_results())
+    results = cfg.gen_results()
 
 
 if __name__ == '__main__':
