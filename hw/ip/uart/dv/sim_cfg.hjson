@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // Name of the sim cfg - typically same as the IP under test.
+  // Name of the sim cfg - typically same as the DUT under test.
   name: uart
 
   // Top level dut name (sv module).
