@@ -96,6 +96,16 @@ def main():
                 tb and tests to place all of the testbench sources. (default set to './<name>')"""
     )
 
+    parser.add_argument(
+        "-m",
+        "--add-makefile",
+        default=False,
+        action='store_true',
+        help=
+        """Tests are now run with dvsim.py tool that requires a hjson based sim cfg.
+             Setting this option will also result in the Makefile to be auto-generated (which is
+             the older way of building and running sims going through deprecation).""")
+
     args = parser.parse_args()
     if args.agent_outdir == "name": args.agent_outdir = args.name
     if args.env_outdir == "name": args.env_outdir = args.name
@@ -112,7 +122,8 @@ def main():
                         args.has_interrupts, \
                         args.has_alerts, \
                         args.env_agents, \
-                        args.env_outdir)
+                        args.env_outdir, \
+                        args.add_makefile)
 
 
 if __name__ == '__main__':
