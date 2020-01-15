@@ -22,6 +22,11 @@
       is_sim_mode: 1
       en_build_modes: ["{simulator}_profile"]
     }
+    {
+      name: xprop
+      is_sim_mode: 1
+      en_build_modes: ["{simulator}_xprop"]
+    }
   ]
 
   run_modes: [

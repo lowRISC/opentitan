@@ -65,6 +65,7 @@ class SimCfg():
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.profile = args.profile
+        self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
         self.verbosity = "{" + args.verbosity + "}"
         self.email = args.email
@@ -78,6 +79,7 @@ class SimCfg():
         if self.waves is True: self.en_build_modes.append("waves")
         if self.cov is True: self.en_build_modes.append("cov")
         if self.profile is not 'none': self.en_build_modes.append("profile")
+        if self.xprop_off is not True: self.en_build_modes.append("xprop")
 
         # Options built from cfg_file files
         self.project = ""
