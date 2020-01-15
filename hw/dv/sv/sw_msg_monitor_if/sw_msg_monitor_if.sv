@@ -4,40 +4,40 @@
 
 // shortcuts for use in switching # of args to insert in formatted string
 `define _0_ARGS(a)
-`define _1_ARGS(a)      , a[0]
-`define _2_ARGS(a)      `_1_ARGS(a), a[1]
-`define _3_ARGS(a)      `_2_ARGS(a), a[2]
-`define _4_ARGS(a)      `_3_ARGS(a), a[3]
-`define _5_ARGS(a)      `_4_ARGS(a), a[4]
-`define _6_ARGS(a)      `_5_ARGS(a), a[5]
-`define _7_ARGS(a)      `_6_ARGS(a), a[6]
-`define _8_ARGS(a)      `_7_ARGS(a), a[7]
-`define _9_ARGS(a)      `_8_ARGS(a), a[8]
-`define _10_ARGS(a)     `_9_ARGS(a), a[9]
-`define _11_ARGS(a)     `_10_ARGS(a), a[10]
-`define _12_ARGS(a)     `_11_ARGS(a), a[11]
-`define _13_ARGS(a)     `_12_ARGS(a), a[12]
-`define _14_ARGS(a)     `_13_ARGS(a), a[13]
-`define _15_ARGS(a)     `_14_ARGS(a), a[14]
-`define _16_ARGS(a)     `_15_ARGS(a), a[15]
-`define _17_ARGS(a)     `_16_ARGS(a), a[16]
-`define _18_ARGS(a)     `_17_ARGS(a), a[17]
-`define _19_ARGS(a)     `_18_ARGS(a), a[18]
-`define _20_ARGS(a)     `_19_ARGS(a), a[19]
-`define _21_ARGS(a)     `_20_ARGS(a), a[20]
-`define _22_ARGS(a)     `_21_ARGS(a), a[21]
-`define _23_ARGS(a)     `_22_ARGS(a), a[22]
-`define _24_ARGS(a)     `_23_ARGS(a), a[23]
-`define _25_ARGS(a)     `_24_ARGS(a), a[24]
-`define _26_ARGS(a)     `_25_ARGS(a), a[25]
-`define _27_ARGS(a)     `_26_ARGS(a), a[26]
-`define _28_ARGS(a)     `_27_ARGS(a), a[27]
-`define _29_ARGS(a)     `_28_ARGS(a), a[28]
-`define _30_ARGS(a)     `_29_ARGS(a), a[29]
-`define _31_ARGS(a)     `_30_ARGS(a), a[30]
-`define _32_ARGS(a)     `_31_ARGS(a), a[31]
-`define _ADD_ARGS(a, n) `_``n``_ARGS(a)
-`define NARGS_CASE(n)   n: msg = $sformatf(msg `_ADD_ARGS(sw_msg.arg, n));
+`define _1_ARGS(a)                  , a[0]
+`define _2_ARGS(a)                  `_1_ARGS(a), a[1]
+`define _3_ARGS(a)                  `_2_ARGS(a), a[2]
+`define _4_ARGS(a)                  `_3_ARGS(a), a[3]
+`define _5_ARGS(a)                  `_4_ARGS(a), a[4]
+`define _6_ARGS(a)                  `_5_ARGS(a), a[5]
+`define _7_ARGS(a)                  `_6_ARGS(a), a[6]
+`define _8_ARGS(a)                  `_7_ARGS(a), a[7]
+`define _9_ARGS(a)                  `_8_ARGS(a), a[8]
+`define _10_ARGS(a)                 `_9_ARGS(a), a[9]
+`define _11_ARGS(a)                 `_10_ARGS(a), a[10]
+`define _12_ARGS(a)                 `_11_ARGS(a), a[11]
+`define _13_ARGS(a)                 `_12_ARGS(a), a[12]
+`define _14_ARGS(a)                 `_13_ARGS(a), a[13]
+`define _15_ARGS(a)                 `_14_ARGS(a), a[14]
+`define _16_ARGS(a)                 `_15_ARGS(a), a[15]
+`define _17_ARGS(a)                 `_16_ARGS(a), a[16]
+`define _18_ARGS(a)                 `_17_ARGS(a), a[17]
+`define _19_ARGS(a)                 `_18_ARGS(a), a[18]
+`define _20_ARGS(a)                 `_19_ARGS(a), a[19]
+`define _21_ARGS(a)                 `_20_ARGS(a), a[20]
+`define _22_ARGS(a)                 `_21_ARGS(a), a[21]
+`define _23_ARGS(a)                 `_22_ARGS(a), a[22]
+`define _24_ARGS(a)                 `_23_ARGS(a), a[23]
+`define _25_ARGS(a)                 `_24_ARGS(a), a[24]
+`define _26_ARGS(a)                 `_25_ARGS(a), a[25]
+`define _27_ARGS(a)                 `_26_ARGS(a), a[26]
+`define _28_ARGS(a)                 `_27_ARGS(a), a[27]
+`define _29_ARGS(a)                 `_28_ARGS(a), a[28]
+`define _30_ARGS(a)                 `_29_ARGS(a), a[29]
+`define _31_ARGS(a)                 `_30_ARGS(a), a[30]
+`define _32_ARGS(a)                 `_31_ARGS(a), a[31]
+`define _ADD_ARGS(a, n)             `_``n``_ARGS(a)
+`define FORMATTED_MSG_WITH_NARGS(n) $sformatf(msg `_ADD_ARGS(sw_msg.arg, n))
 
 interface sw_msg_monitor_if #(
   // width of the data bus
@@ -364,39 +364,39 @@ interface sw_msg_monitor_if #(
 
     // construct formatted string based on args
     case (sw_msg.nargs)
-      `NARGS_CASE(0)
-      `NARGS_CASE(1)
-      `NARGS_CASE(2)
-      `NARGS_CASE(3)
-      `NARGS_CASE(4)
-      `NARGS_CASE(5)
-      `NARGS_CASE(6)
-      `NARGS_CASE(7)
-      `NARGS_CASE(8)
-      `NARGS_CASE(9)
-      `NARGS_CASE(10)
-      `NARGS_CASE(11)
-      `NARGS_CASE(12)
-      `NARGS_CASE(13)
-      `NARGS_CASE(14)
-      `NARGS_CASE(15)
-      `NARGS_CASE(16)
-      `NARGS_CASE(17)
-      `NARGS_CASE(18)
-      `NARGS_CASE(19)
-      `NARGS_CASE(20)
-      `NARGS_CASE(21)
-      `NARGS_CASE(22)
-      `NARGS_CASE(23)
-      `NARGS_CASE(24)
-      `NARGS_CASE(25)
-      `NARGS_CASE(26)
-      `NARGS_CASE(27)
-      `NARGS_CASE(28)
-      `NARGS_CASE(29)
-      `NARGS_CASE(30)
-      `NARGS_CASE(31)
-      `NARGS_CASE(32)
+       0: msg = `FORMATTED_MSG_WITH_NARGS(0);
+       1: msg = `FORMATTED_MSG_WITH_NARGS(1);
+       2: msg = `FORMATTED_MSG_WITH_NARGS(2);
+       3: msg = `FORMATTED_MSG_WITH_NARGS(3);
+       4: msg = `FORMATTED_MSG_WITH_NARGS(4);
+       5: msg = `FORMATTED_MSG_WITH_NARGS(5);
+       6: msg = `FORMATTED_MSG_WITH_NARGS(6);
+       7: msg = `FORMATTED_MSG_WITH_NARGS(7);
+       8: msg = `FORMATTED_MSG_WITH_NARGS(8);
+       9: msg = `FORMATTED_MSG_WITH_NARGS(9);
+      10: msg = `FORMATTED_MSG_WITH_NARGS(10);
+      11: msg = `FORMATTED_MSG_WITH_NARGS(11);
+      12: msg = `FORMATTED_MSG_WITH_NARGS(12);
+      13: msg = `FORMATTED_MSG_WITH_NARGS(13);
+      14: msg = `FORMATTED_MSG_WITH_NARGS(14);
+      15: msg = `FORMATTED_MSG_WITH_NARGS(15);
+      16: msg = `FORMATTED_MSG_WITH_NARGS(16);
+      17: msg = `FORMATTED_MSG_WITH_NARGS(17);
+      18: msg = `FORMATTED_MSG_WITH_NARGS(18);
+      19: msg = `FORMATTED_MSG_WITH_NARGS(19);
+      20: msg = `FORMATTED_MSG_WITH_NARGS(20);
+      21: msg = `FORMATTED_MSG_WITH_NARGS(21);
+      22: msg = `FORMATTED_MSG_WITH_NARGS(22);
+      23: msg = `FORMATTED_MSG_WITH_NARGS(23);
+      24: msg = `FORMATTED_MSG_WITH_NARGS(24);
+      25: msg = `FORMATTED_MSG_WITH_NARGS(25);
+      26: msg = `FORMATTED_MSG_WITH_NARGS(26);
+      27: msg = `FORMATTED_MSG_WITH_NARGS(27);
+      28: msg = `FORMATTED_MSG_WITH_NARGS(28);
+      29: msg = `FORMATTED_MSG_WITH_NARGS(29);
+      30: msg = `FORMATTED_MSG_WITH_NARGS(30);
+      31: msg = `FORMATTED_MSG_WITH_NARGS(31);
+      32: msg = `FORMATTED_MSG_WITH_NARGS(32);
       default: msg_fatal("UNSUPPORTED", $sformatf("nargs = %0d (only 0:32 allowed)", sw_msg.nargs));
     endcase
 
@@ -508,4 +508,4 @@ endinterface
 `undef _31_ARGS
 `undef _32_ARGS
 `undef _ADD_ARGS
-`undef NARGS_CASE
+`undef FORMATTED_MSG_WITH_NARGS
