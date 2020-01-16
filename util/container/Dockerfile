@@ -16,7 +16,7 @@ ARG RISCV_TOOLCHAIN_TAR_VERSION=20190807-1
 # transports.
 FROM ubuntu:16.04 AS openocd
 RUN apt-get update && apt-get install -y \
-    autoconf
+    autoconf \
     git \
     libftdi1-dev \
     libtool \
