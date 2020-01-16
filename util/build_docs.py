@@ -81,6 +81,7 @@ config = {
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/spi_device/data/spi_device_testplan.hjson",
         "hw/ip/uart/data/uart_testplan.hjson",
+        "hw/ip/usbdev/data/usbdev_testplan.hjson",
         "hw/ip/tlul/data/tlul_testplan.hjson",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
         "util/testplanner/examples/foo_testplan.hjson",

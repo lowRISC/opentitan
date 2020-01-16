@@ -194,7 +194,7 @@ module top_earlgrey_usb #(
   logic intr_nmi_gen_esc2;
   logic intr_nmi_gen_esc3;
 
-  
+
   logic [0:0] irq_plic;
   logic [0:0] msip;
   logic [5:0] irq_id[1];
@@ -561,8 +561,8 @@ module top_earlgrey_usb #(
       .clk_usb_48mhz_i         (clk_48mhz_i),
       .rst_ni                  (spi_device_rst_n),
       .rst_usb_ni              (spi_device_rst_n), // TODO: Need a real USB reset here
-      .tl_d_i                  (tl_spi_device_d_h2d),
-      .tl_d_o                  (tl_spi_device_d_d2h),
+      .tl_i                    (tl_spi_device_d_h2d),
+      .tl_o                    (tl_spi_device_d_d2h),
 
       .cio_usb_d_i             (1'b0),
       .cio_usb_dp_i            (dio_usb_dp_i[USB_DEVICE - 1]),
@@ -573,7 +573,7 @@ module top_earlgrey_usb #(
       .cio_usb_dp_o            (dio_usb_dp_o[USB_DEVICE - 1]),
       .cio_usb_dn_o            (dio_usb_dn_o[USB_DEVICE - 1]),
       .cio_usb_oe_o            (usbdev_usb_oe),
-      
+
       .cio_usb_tx_mode_se_o    (),
       .cio_usb_sense_i         (dio_usb_sense_i[USB_DEVICE - 1]),
       .cio_usb_pullup_en_o     (usbdev_usb_pullup_en),

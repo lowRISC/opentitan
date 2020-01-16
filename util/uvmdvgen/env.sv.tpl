@@ -25,6 +25,7 @@ class ${name}_env extends dv_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 % for agent in env_agents:
+    // create components
     m_${agent}_agent = ${agent}_agent::type_id::create("m_${agent}_agent", this);
     uvm_config_db#(${agent}_agent_cfg)::set(this, "m_${agent}_agent*", "cfg", cfg.m_${agent}_agent_cfg);
 % endfor

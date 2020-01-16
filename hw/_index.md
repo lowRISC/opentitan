@@ -32,3 +32,4 @@ This includes: top level specification(s); processor core(s) specifications; and
 | `spi_device`    | [design spec]({{< relref "hw/ip/spi_device/doc" >}})    | [DV plan]({{< relref "hw/ip/spi_device/doc/dv_plan" >}}) |
 | `tlul`          | [design spec]({{< relref "hw/ip/tlul/doc" >}})          | [DV plan]({{< relref "hw/ip/tlul/doc/dv_plan" >}})
 | `uart`          | [design spec]({{< relref "hw/ip/uart/doc" >}})          | [DV plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) |
+| `usbdev`        | [design spec]({{< relref "hw/ip/usbdev/doc" >}})        | [DV plan]({{< relref "hw/ip/usbdev/doc/dv_plan" >}}) |

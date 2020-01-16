@@ -219,6 +219,7 @@
         {
           bits: "31",
           name: "rx_empty",
+          resval: "1",
           desc: "Receive FIFO is empty"
         }
       ]
@@ -359,9 +360,9 @@
                       transaction to this endpoint will be responded to
                       with a STALL return. This is used when the endpoint
                       is disabled (functional stall) or when a control transfer
-                      is not supported (protocol stall). SETUP transactions 
+                      is not supported (protocol stall). SETUP transactions
                       are always accepted and a SETUP will clear the stall
-                      flag (this is necessary for protocol stalls, to avoid 
+                      flag (this is necessary for protocol stalls, to avoid
                       sending stalls on subsequent IN/OUT transfers).
                       '''
           }
@@ -500,7 +501,7 @@
           name: "eop_single_bit",
           resval: "1",
           desc: '''
-               Recognize a single SE0 bit as an end of packet, otherwise two 
+               Recognize a single SE0 bit as an end of packet, otherwise two
                successive bits are required.
           '''
         }
