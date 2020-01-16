@@ -37,14 +37,9 @@ class chip_base_vseq extends dv_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    fork
-      begin
-        super.apply_reset(kind);
-      end
-      begin
-        cfg.m_jtag_agent_cfg.do_trst_n();
-      end
-    join
+    // finish the other resets before system reset. When system reset is done, SW starts to run
+    cfg.m_jtag_agent_cfg.do_trst_n();
+    super.apply_reset(kind);
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
