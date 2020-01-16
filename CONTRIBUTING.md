@@ -8,7 +8,7 @@ text), which is closely derived from the Apache Individual Contributor License
 Agreement. The sign-off text must be included once per commit, in the commit
 message. The sign-off can be automatically inserted using a command such as
 `git commit -s`, which will generate the text in the form:
-`Signed-Off-By: Random J Developer <random@developer.example.org>`
+`Signed-off-by: Random J Developer <random@developer.example.org>`
 
 By adding this sign-off, you are certifying:
 
