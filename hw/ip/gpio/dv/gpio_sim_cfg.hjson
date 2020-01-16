@@ -1,0 +1,120 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: gpio
+
+  // Top level dut name (sv module).
+  dut: gpio
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:gpio_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/gpio/data/gpio_testplan.hjson"
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{proj_root}/hw/ip/gpio/data/gpio.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/data/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // Default UVM test and seq class name.
+  uvm_test: gpio_base_test
+  uvm_test_seq: gpio_base_vseq
+
+  // List of test specifications.
+  tests: [
+    {
+      name: gpio_sanity
+      uvm_test_seq: gpio_sanity_vseq
+    }
+
+    {
+      name: gpio_sanity_no_pullup_pulldown
+      uvm_test_seq: gpio_sanity_vseq
+      run_opts: ["+no_pullup_pulldown=1"]
+    }
+
+    {
+      name: gpio_random_dout_din
+      uvm_test_seq: gpio_random_dout_din_vseq
+    }
+
+    {
+      name: gpio_random_dout_din_no_pullup_pulldown
+      uvm_test_seq: gpio_random_dout_din_vseq
+      run_opts: ["+no_pullup_pulldown=1"]
+    }
+
+    {
+      name: gpio_dout_din_regs_random_rw
+      uvm_test_seq: gpio_din_regs_random_rw_vseq
+    }
+
+    {
+      name: gpio_intr_rand_pgm
+      uvm_test_seq: gpio_intr_rand_pgm_vseq
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_rand_intr_trigger
+      uvm_test_seq: gpio_rand_intr_trigger_vseq
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_intr_with_filter_rand_intr_event
+      uvm_test_seq: gpio_intr_with_filter_rand_intr_event
+      run_opts: ["+en_scb=0", "+zero_delays=1", "+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_filter_stress
+      uvm_test_seq: gpio_filter_stress_vseq
+      run_opts: ["+en_scb=0", "+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_random_long_reg_writes_reg_reads
+      uvm_test_seq: gpio_random_long_reg_writes_reg_reads_vseq
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_full_random
+      uvm_test_seq: gpio_full_random_vseq
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_stress_all
+      uvm_test_seq: gpio_stress_all_vseq
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_csr_rw
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_csr_aliasing
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+  ]
+}

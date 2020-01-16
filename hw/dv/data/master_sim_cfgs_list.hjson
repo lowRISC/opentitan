@@ -6,5 +6,11 @@
   // cfgs in OpenTitan so that regressions in all available DUTs can be invoked together in
   // one shot.
   use_cfgs: ["{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
-             "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson"]
+             "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
+             "{proj_root}/hw/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
+             "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
+             "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
+             "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
+             "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson"]
 }
