@@ -71,10 +71,10 @@ def process_sail_sim_log(sail_log, csv):
             # Write the extracted instruction to a csvcol buffer file
             instr_cnt += 1
             rv_instr_trace = RiscvInstructionTraceEntry()
-            rv_instr_trace.rd = gpr_to_abi("x%0s" % m.group("reg"))
-            rv_instr_trace.rd_val = m.group("val").lower()
-            rv_instr_trace.privileged_mode = pri
-            rv_instr_trace.addr = addr
+            rv_instr_trace.gpr.append(
+              gpr_to_abi("x%0s" % m.group("reg")) + ":" + m.group("val").lower())
+            rv_instr_trace.mode = pri
+            rv_instr_trace.pc = addr
             rv_instr_trace.binary = binary
             rv_instr_trace.instr_str = instr_str
             trace_csv.write_trace_entry(rv_instr_trace)

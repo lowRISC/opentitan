@@ -75,10 +75,16 @@
               -sv -uvm -uvmhome CDNS-1.2
               -f ibex_dv.f
               -elaborate -licqueue
-              -l <out>/ius/compile.log"
+              -l <out>/ius/compile.log <cov_opts>"
+    cov_opts: >
+      -coverage all
+      -covfile cover.ccf
   sim:
     cmd: >
-      irun -R -nclibdirpath <out>/ius <sim_opts> -svseed <seed> -licqueue <wave_opts>
+      irun -R -nclibdirpath <out>/ius <sim_opts> -svseed <seed> -licqueue <wave_opts> <cov_opts>
+    cov_opts: >
+      -covoverwrite
+      -covworkdir <out>/cov_work
+      -covbaserun test
     wave_opts: >
       -input <cwd>/ius.tcl
-

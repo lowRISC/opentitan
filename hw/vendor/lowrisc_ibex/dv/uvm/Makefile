@@ -23,6 +23,7 @@ ISA                 := "rv32imc"
 # Test name (default: full regression)
 TEST                := "all"
 # Seed for instruction generator and RTL simulation
+TESTLIST            := ${DV_DIR}/riscv_dv_extension/testlist.yaml
 SEED                := -1
 # Verbose logging
 VERBOSE             :=
@@ -56,7 +57,7 @@ clean:
 # Common options for all targets
 COMMON_OPTS:=--seed=${SEED} \
              --test=${TEST} \
-             --testlist=${DV_DIR}/riscv_dv_extension/testlist.yaml \
+             --testlist=${TESTLIST} \
              --iterations=${ITERATIONS}
 
 ifeq ($(VERBOSE), 1)
@@ -153,5 +154,11 @@ fcov:
           --custom_target ${DV_DIR}/riscv_dv_extension \
 
 # Load verdi to review coverage
-cov:
+cov_vcs:
 	cd ${OUT}/rtl_sim; verdi -cov -covdir test.vdb &
+
+cov_ius:
+	if [ ! -d "${OUT}/rtl_sim/cov_work/scope/merged_cov" ]; \
+	  then imc -execcmd "merge -out ${OUT}/rtl_sim/cov_work/scope/merged_cov ${OUT}/rtl_sim/cov_work/scope/test_*"; \
+  	fi
+	imc -load ${OUT}/rtl_sim/cov_work/scope/merged_cov &

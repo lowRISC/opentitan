@@ -1,0 +1,17 @@
+language: python
+dist: xenial
+matrix:
+    include:
+        - python: 3.5
+          env: TOX_ENV=py35
+        - python: 3.6
+          env: TOX_ENV=py36
+        - python: 3.7
+          env: TOX_ENV=py37
+install:
+    # Install riscv-dv using pip to ensure dependencies are downloaded correctly.
+    - pip install -r requirements.txt
+    - pip install .
+script:
+    - sphinx-build -E -W -b linkcheck docs/source build
+    - pip uninstall -y riscv-dv

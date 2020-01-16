@@ -242,25 +242,24 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
           rd  inside {avail_regs};
         }
       }
-      if (reserved_rd.size() > 0) {
+      foreach (reserved_rd[i]) {
         if (has_rd) {
-          !(rd inside {reserved_rd});
+          rd != reserved_rd[i];
         }
         if (format == CB_FORMAT) {
-          !(rs1 inside {reserved_rd});
+          rs1 != reserved_rd[i];
         }
       }
-      if (cfg.reserved_regs.size() > 0) {
+      foreach (cfg.reserved_regs[i]) {
         if (has_rd) {
-          !(rd inside {cfg.reserved_regs});
+          rd != cfg.reserved_regs[i];
         }
         if (format == CB_FORMAT) {
-          !(rs1 inside {cfg.reserved_regs});
+          rs1 != cfg.reserved_regs[i];
         }
       }
       // TODO: Add constraint for CSR, floating point register
     )
   endfunction
-
 
 endclass

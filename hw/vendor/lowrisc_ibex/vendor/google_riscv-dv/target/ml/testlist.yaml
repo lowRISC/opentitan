@@ -21,6 +21,7 @@
 # iterations      : Number of iterations of this test
 # no_iss          : Enable/disable ISS simulator (Optional)
 # gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
 # rtl_test        : RTL simulation test name
 # cmp_opts        : Compile options passed to the instruction generator
 # sim_opts        : Simulation options passed to the instruction generator
@@ -49,6 +50,8 @@
     +stream_freq_4=4
     +stream_name_5=riscv_jal_instr
     +stream_freq_5=4
+    +stream_name_6=riscv_int_numeric_corner_stream
+    +stream_freq_6=4
     +dist_control_mode=1
     +dist_shift=10
     +dist_arithmetic=10

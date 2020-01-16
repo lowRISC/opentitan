@@ -124,6 +124,16 @@
       bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
     })
 
+`define CI_INSTR_NON_ZERO_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_rd       : coverpoint instr.rd { \
+      ignore_bins non_zero = {ZERO}; \
+    } \
+    cp_imm_sign : coverpoint instr.imm_sign; \
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
+      bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
+    })
+
 `define CSS_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_rs2      : coverpoint instr.rs2; \
@@ -135,7 +145,6 @@
 
 `define CIW_INSTR_CG_BEGIN(INSTR_NAME) \
   `INSTR_CG_BEGIN(INSTR_NAME) \
-    cp_imm_sign : coverpoint instr.imm_sign; \
     cp_rd       : coverpoint instr.rd { \
       bins gpr[] = {S0, S1, A0, A1, A2, A3, A4, A5}; \
     } \
@@ -225,6 +234,7 @@ class riscv_instr_cover_group;
   int unsigned            branch_instr_cnt;
   bit [4:0]               branch_hit_history; // The last 5 branch result
   exception_cause_t       ignored_exceptions[];
+  exception_cause_t       exception_list[$];
 
   // Mode of the coverage model
 
@@ -255,7 +265,15 @@ class riscv_instr_cover_group;
     cp_sign_cross: cross cp_rs1_sign, cp_rs2_sign, cp_rd_sign;
   `CG_END
 
-  `I_INSTR_CG_BEGIN(addi)
+  `INSTR_CG_BEGIN(addi)
+    cp_rs1         : coverpoint instr.rs1;
+    cp_rd          : coverpoint instr.rd {
+      ignore_bins non_zero = {ZERO}; // treated as nop
+    }
+    cp_rs1_sign    : coverpoint instr.rs1_sign;
+    cp_rd_sign     : coverpoint instr.rd_sign;
+    cp_imm_sign    : coverpoint instr.imm_sign;
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;)
     cp_sign_cross: cross cp_rs1_sign, cp_imm_sign, cp_rd_sign;
   `CG_END
 
@@ -408,6 +426,7 @@ class riscv_instr_cover_group;
 
   // JUMP instruction
   `J_INSTR_CG_BEGIN(jal)
+    cp_imm_align : coverpoint instr.imm[1];
   `CG_END
 
   `J_INSTR_CG_BEGIN(jalr)
@@ -421,6 +440,9 @@ class riscv_instr_cover_group;
       bins t1 = {T1};
       bins non_link = default;
     }
+    cp_imm_align : coverpoint instr.imm[1:0];
+    cp_rs1_align : coverpoint instr.rs1_value[1:0];
+    cp_align : cross cp_imm_align, cp_rs1_align;
     cp_ras : cross cp_rs1_link, cp_rd_link;
   `CG_END
 
@@ -448,7 +470,13 @@ class riscv_instr_cover_group;
 
   covergroup rv32i_misc_cg with function sample(riscv_instr_cov_item instr);
     cp_misc : coverpoint instr.instr_name {
-      bins instr[] = {FENCE, FENCE_I, EBREAK, ECALL, MRET, WFI};
+      bins instr[] = {FENCE, FENCE_I, EBREAK, ECALL, MRET};
+    }
+  endgroup
+
+  covergroup wfi_cg with function sample(riscv_instr_cov_item instr);
+    cp_misc : coverpoint instr.instr_name {
+      bins wfi = {WFI};
     }
   endgroup
 
@@ -475,7 +503,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   `R_INSTR_CG_BEGIN(divu)
-    cp_div_result: coverpoint instr.div_result;
+    cp_div_result: coverpoint instr.div_result {
+      ignore_bins no_overflow = {riscv_instr_cov_item::DIV_OVERFLOW};
+    }
     cp_sign_cross: cross cp_rs1_sign, cp_rs2_sign;
   `CG_END
 
@@ -485,7 +515,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   `R_INSTR_CG_BEGIN(remu)
-    cp_div_result: coverpoint instr.div_result;
+    cp_div_result: coverpoint instr.div_result {
+      ignore_bins no_overflow = {riscv_instr_cov_item::DIV_OVERFLOW};
+    }
     cp_sign_cross: cross cp_rs1_sign, cp_rs2_sign;
   `CG_END
 
@@ -507,7 +539,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   `R_INSTR_CG_BEGIN(divuw)
-    cp_div_result: coverpoint instr.div_result;
+    cp_div_result: coverpoint instr.div_result {
+      ignore_bins no_overflow = {riscv_instr_cov_item::DIV_OVERFLOW};
+    }
     cp_div_zero  : coverpoint instr.rs2_value iff (instr.rs2_value[31:0] == 0) {
       bins zero     = {0};
       bins non_zero = default;
@@ -525,7 +559,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   `R_INSTR_CG_BEGIN(remuw)
-    cp_div_result: coverpoint instr.div_result;
+    cp_div_result: coverpoint instr.div_result {
+      ignore_bins no_overflow = {riscv_instr_cov_item::DIV_OVERFLOW};
+    }
     cp_div_zero  : coverpoint instr.rs2_value iff (instr.rs2_value[31:0] == 0) {
       bins zero     = {0};
       bins non_zero = default;
@@ -624,7 +660,7 @@ class riscv_instr_cover_group;
   `CIW_INSTR_CG_BEGIN(c_addi4spn)
   `CG_END
 
-  `CI_INSTR_CG_BEGIN(c_addi)
+  `CI_INSTR_NON_ZERO_CG_BEGIN(c_addi)
   `CG_END
 
   `INSTR_CG_BEGIN(c_addi16sp)
@@ -634,7 +670,7 @@ class riscv_instr_cover_group;
     })
   `CG_END
 
-  `CI_INSTR_CG_BEGIN(c_li)
+  `CI_INSTR_NON_ZERO_CG_BEGIN(c_li)
   `CG_END
 
   `INSTR_CG_BEGIN(c_lui)
@@ -646,10 +682,26 @@ class riscv_instr_cover_group;
   `CA_INSTR_CG_BEGIN(c_sub)
   `CG_END
 
-  `CR_INSTR_CG_BEGIN(c_add)
+  `INSTR_CG_BEGIN(c_add)
+    cp_rs2         : coverpoint instr.rs2 {
+      ignore_bins non_zero = {ZERO};
+    }
+    cp_rd          : coverpoint instr.rd {
+      ignore_bins non_zero = {ZERO};
+    }
+    cp_rs2_sign    : coverpoint instr.rs2_sign;
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard;)
   `CG_END
 
-  `CR_INSTR_CG_BEGIN(c_mv)
+  `INSTR_CG_BEGIN(c_mv)
+    cp_rs2         : coverpoint instr.rs2 {
+      ignore_bins non_zero = {ZERO};
+    }
+    cp_rd          : coverpoint instr.rd {
+      ignore_bins non_zero = {ZERO};
+    }
+    cp_rs2_sign    : coverpoint instr.rs2_sign;
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard;)
   `CG_END
 
   `CB_INSTR_CG_BEGIN(c_andi)
@@ -680,7 +732,9 @@ class riscv_instr_cover_group;
   `CG_END
 
   `INSTR_CG_BEGIN(c_slli)
-    cp_rd          : coverpoint instr.rd;
+    cp_rd : coverpoint instr.rd {
+      ignore_bins non_zero = {ZERO};
+    }
     `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard {
       bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
     })
@@ -693,16 +747,18 @@ class riscv_instr_cover_group;
   `CG_END
 
   `INSTR_CG_BEGIN(c_jr)
-    cp_rs1      : coverpoint instr.rs1 {
+    cp_rs1 : coverpoint instr.rs1 {
       `DV(ignore_bins zero = {ZERO};)
     }
+    cp_rs1_align : coverpoint instr.rs1_value[1:0];
   `CG_END
 
   `INSTR_CG_BEGIN(c_jalr)
-    cp_rs1      : coverpoint instr.rs1 {
+    cp_rs1 : coverpoint instr.rs1 {
       `DV(ignore_bins zero = {ZERO};)
     }
-    cp_rd_align : coverpoint instr.rd_value[1];
+    cp_rs1_align : coverpoint instr.rs1_value[1:0];
+    cp_rd_align : coverpoint instr.rs1_value[1];
   `CG_END
 
   // RV64C
@@ -719,7 +775,7 @@ class riscv_instr_cover_group;
   `CS_SP_INSTR_CG_BEGIN(c_sdsp)
   `CG_END
 
-  `CI_INSTR_CG_BEGIN(c_addiw)
+  `CI_INSTR_NON_ZERO_CG_BEGIN(c_addiw)
   `CG_END
 
   `CA_INSTR_CG_BEGIN(c_subw)
@@ -754,16 +810,25 @@ class riscv_instr_cover_group;
     }
   `CG_END
 
-  // Cover all illegal instruction
+  // Cover all illegal compressed instruction
   covergroup illegal_compressed_instr_cg with function sample(bit [31:0] binary);
-    cp_point : coverpoint binary {
-      wildcard bins c_addi4spn = {32'bxxxx_xxxxx_0000_0000_000x_xx00};
-      wildcard bins c_addi16sp = {32'bxxxx_xxxxx_0110_0001_0000_0001};
-      wildcard bins c_lui      = {32'bxxxx_xxxxx_0110_xxxx_1000_0001,
-                                  32'bxxxx_xxxxx_0110_xx1x_x000_0001,
-                                  32'bxxxx_xxxxx_0110_x1xx_x000_0001,
-                                  32'bxxxx_xxxxx_0110_1xxx_x000_0001};
-      wildcard bins c_jr       = {32'bxxxx_xxxxx_1000_0000_0000_0001};
+    cp_point : coverpoint binary[15:0] {
+      wildcard bins c_illegal  = {16'b0};
+      wildcard bins c_addi4spn = {16'b0000_0000_000x_x100,
+                                  16'b0000_0000_000x_1x00,
+                                  16'b0000_0000_0001_xx00};
+      wildcard bins c_addiw    = {16'b001x_0000_0xxx_xx01};
+      wildcard bins c_addi16sp = {16'b0110_0001_0000_0001};
+      wildcard bins c_lui      = {16'b0110_xxxx_1000_0001,
+                                  16'b0110_xx1x_x000_0001,
+                                  16'b0110_x1xx_x000_0001,
+                                  16'b0110_1xxx_x000_0001};
+      wildcard bins c_reserv_0 = {16'b1001_11xx_x10x_xx01};
+      wildcard bins c_reserv_1 = {16'b1001_11xx_x11x_xx01};
+      wildcard bins c_jr       = {16'b1000_0000_0000_0010};
+      wildcard bins c_lwsp     = {16'b010x_0000_0xxx_xx10};
+      wildcard bins c_lqsp     = {16'b001x_0000_0xxx_xx10};
+      wildcard bins c_ldsp     = {16'b011x_0000_0xxx_xx10};
     }
   endgroup
 
@@ -813,8 +878,8 @@ class riscv_instr_cover_group;
   // Privileged CSR covergroup
   covergroup mcause_exception_cg with function sample(exception_cause_t exception);
     cp_exception: coverpoint exception {
-       bins exception[] = cp_exception with ((item inside {implemented_exception}) &&
-                                            !(item inside {ignored_exceptions}));
+        bins exception[] = cp_exception with ((item inside {implemented_exception}));
+       // bins exception[] = cp_exception with ((item inside {exception_list}));
     }
   endgroup
 
@@ -926,10 +991,15 @@ class riscv_instr_cover_group;
     end
 
     if (!compliance_mode) begin
-        // instr_trans_cg = new();
-        branch_hit_history_cg = new();
-        rv32i_misc_cg = new();
-        opcode_cg = new();
+      // instr_trans_cg = new();
+      branch_hit_history_cg = new();
+      rv32i_misc_cg = new();
+      opcode_cg = new();
+      // TODO: Enable WFI covergroup. It's currently disabled because OVPSIM will stop program
+      // execution upon decoding WFI instruction
+      if (!iss_mode) begin
+        wfi_cg = new();
+      end
     end
 
     if (RV32C inside {supported_isa} || RV64C inside {supported_isa}) begin
@@ -1021,22 +1091,30 @@ class riscv_instr_cover_group;
 
     // Ignore the exception which cannot be covered when running with ISS
     if (iss_mode) begin
+      int i;
       ignored_exceptions = {INSTRUCTION_ACCESS_FAULT, LOAD_ACCESS_FAULT};
       if (support_unaligned_load_store) begin
         ignored_exceptions = {ignored_exceptions, LOAD_ADDRESS_MISALIGNED};
       end
     end
 
+    foreach (riscv_instr_pkg::implemented_exception[i]) begin
+      if (!(riscv_instr_pkg::implemented_exception[i] inside {ignored_exceptions})) begin
+        exception_list.push_back(riscv_instr_pkg::implemented_exception[i]);
+      end
+    end
+
     if (!compliance_mode) begin
-      privileged_csr_cg = new();
-      mcause_exception_cg = new();
       if (!iss_mode) begin
+        // Expect to cover below coverpoint in RTL sim mode only
+        privileged_csr_cg = new();
+        mcause_exception_cg = new();
         mcause_interrupt_cg = new();
+        mstatus_m_cg = new();
       end
       if (!cfg.disable_compressed_instr) begin
         mepc_alignment_cg = new();
       end
-      mstatus_m_cg = new();
     end
   endfunction
 
@@ -1046,15 +1124,12 @@ class riscv_instr_cover_group;
       instr.check_hazard_condition(pre_instr);
     end
     if ((instr.binary[1:0] != 2'b11) && (RV32C inside {supported_isa})) begin
-      if (!compliance_mode) begin
-        hint_cg.sample(instr);
-        compressed_opcode_cg.sample(instr.binary[15:0]);
-      end
+      `SAMPLE(hint_cg, instr);
+      `SAMPLE(compressed_opcode_cg, instr.binary[15:0]);
+      `SAMPLE(illegal_compressed_instr_cg, instr.binary);
     end
     if (instr.binary[1:0] == 2'b11) begin
-      if (!compliance_mode) begin
-        opcode_cg.sample(instr.binary[6:2]);
-      end
+      `SAMPLE(opcode_cg, instr.binary[6:2]);
     end
     case (instr.instr_name)
       ADD        : `SAMPLE(add_cg, instr)
@@ -1067,21 +1142,15 @@ class riscv_instr_cover_group;
       SRA        : `SAMPLE(sra_cg, instr)
       SLLI       : begin
                      `SAMPLE(slli_cg, instr)
-                     if (RV64I inside {supported_isa}) begin
-                       `SAMPLE(slli64_cg, instr)
-                     end
+                     `SAMPLE(slli64_cg, instr)
                    end
       SRLI       : begin
                      `SAMPLE(srli_cg, instr)
-                     if (RV64I inside {supported_isa}) begin
-                       `SAMPLE(srli64_cg, instr)
-                     end
+                     `SAMPLE(srli64_cg, instr)
                    end
       SRAI       : begin
                      `SAMPLE(srai_cg, instr)
-                     if (RV64I inside {supported_isa}) begin
-                       `SAMPLE(srai64_cg, instr)
-                     end
+                     `SAMPLE(srai64_cg, instr)
                    end
       AND        : `SAMPLE(and_cg, instr)
       OR         : `SAMPLE(or_cg, instr)
@@ -1115,6 +1184,7 @@ class riscv_instr_cover_group;
       CSRRWI     : `SAMPLE(csrrwi_cg, instr)
       CSRRSI     : `SAMPLE(csrrsi_cg, instr)
       CSRRCI     : `SAMPLE(csrrci_cg, instr)
+      WFI        : `SAMPLE(wfi_cg, instr)
       MUL        : `SAMPLE(mul_cg, instr)
       MULH       : `SAMPLE(mulh_cg, instr)
       MULHSU     : `SAMPLE(mulhsu_cg, instr)
@@ -1174,15 +1244,8 @@ class riscv_instr_cover_group;
       C_ADDIW    : `SAMPLE(c_addiw_cg, instr)
       `VECTOR_INCLUDE("riscv_instr_cover_group_inc_cg_sample.sv")
       default: begin
-        if (RV32C inside {supported_isa}) begin
-          if (!compliance_mode) begin
-            illegal_compressed_instr_cg.sample(instr.binary);
-          end
-        end
         if (instr.group == RV32I) begin
-          if (!compliance_mode) begin
-            rv32i_misc_cg.sample(instr);
-          end
+          `SAMPLE(rv32i_misc_cg, instr);
         end
       end
     endcase
@@ -1196,38 +1259,26 @@ class riscv_instr_cover_group;
       end
     end
     if (instr.category == CSR) begin
-      if (!compliance_mode) begin
-        privileged_csr_cg.sample(instr.csr);
-      end
+      `SAMPLE(privileged_csr_cg, instr.csr);
       case (instr.csr)
         MCAUSE: begin
           if (instr.rd_value[XLEN-1]) begin
             interrupt_cause_t interrupt;
             if ($cast(interrupt, instr.rd_value[3:0])) begin
-              if (!compliance_mode && !iss_mode) begin
-                mcause_interrupt_cg.sample(interrupt);
-              end
+              `SAMPLE(mcause_interrupt_cg, interrupt);
             end
           end else begin
             exception_cause_t exception;
             if ($cast(exception, instr.rd_value[3:0])) begin
-              if (!compliance_mode) begin
-                mcause_exception_cg.sample(exception);
-              end
+              `SAMPLE(mcause_exception_cg, exception);
             end
           end
         end
         MEPC: begin
-          if (RV32C inside {supported_isa}) begin
-            if (!compliance_mode) begin
-              mepc_alignment_cg.sample(instr.rd_value);
-            end
-          end
+          `SAMPLE(mepc_alignment_cg, instr.rd_value);
         end
         MSTATUS: begin
-          if (!compliance_mode) begin
-            mstatus_m_cg.sample(instr.rd_value);
-          end
+          `SAMPLE(mstatus_m_cg, instr.rd_value);
         end
       endcase
     end

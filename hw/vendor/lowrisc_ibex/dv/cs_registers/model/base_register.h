@@ -74,4 +74,22 @@ class NonImpRegister : public BaseRegister {
   uint32_t RegisterClear(uint32_t newval);
 };
 
+/**
+ * Generic class of WARL registers
+ */
+class WARLRegister : public BaseRegister {
+  using BaseRegister::BaseRegister;
+
+ protected:
+  uint32_t register_mask_;
+  uint32_t register_value_reset_;
+
+ public:
+  WARLRegister(uint32_t addr,
+               std::vector<std::unique_ptr<BaseRegister>> *map_pointer,
+               uint32_t mask, uint32_t resval);
+  uint32_t GetLockMask();
+  void RegisterReset();
+};
+
 #endif  // BASE_REGISTER_H_

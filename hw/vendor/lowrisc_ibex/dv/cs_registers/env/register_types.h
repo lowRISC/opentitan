@@ -9,6 +9,8 @@ struct CSRParams {
   bool PMPEnable;
   unsigned int PMPGranularity;
   unsigned int PMPNumRegions;
+  unsigned int MHPMCounterNum;
+  unsigned int MHPMCounterWidth;
 };
 
 #endif  // REGISTER_TYPES_H_

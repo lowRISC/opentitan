@@ -42,8 +42,6 @@ def process_whisper_sim_log(whisper_log, csv, full_trace = 0):
   logging.info("Processing whisper log : %s" % whisper_log)
   instr_cnt = 0
   whisper_instr = ""
-  gpr = {}
-  gpr["zero"] = 0
 
   with open(whisper_log, "r") as f, open(csv, "w") as csv_fd:
     trace_csv = RiscvInstructionTraceCsv(csv_fd)
@@ -63,8 +61,7 @@ def process_whisper_sim_log(whisper_log, csv, full_trace = 0):
           rv_instr_trace.instr_str = whisper_instr
           rv_instr_trace.binary = m.group("bin")
           reg = "x" + str(int(m.group("reg"), 16))
-          rv_instr_trace.rd = gpr_to_abi(reg)
-          rv_instr_trace.rd_val = m.group("val")
+          rv_instr_trace.gpr.append(gpr_to_abi(reg) + ":" + m.group("val"))
           trace_csv.write_trace_entry(rv_instr_trace)
       instr_cnt += 1
   logging.info("Processed instruction count : %d" % instr_cnt)

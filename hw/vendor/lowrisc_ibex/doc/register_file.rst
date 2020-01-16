@@ -17,9 +17,20 @@ Flip-Flop-Based Register File
 
 The flip-flop-based register file uses regular, positive-edge-triggered flip-flops to implement the registers.
 
-This makes it the **first choice for FPGA synthesis** or when simulating the design using Verilator.
+This makes it the **first choice when simulating the design using Verilator**.
 
 To select the flip-flop-based register file, make sure to use the source file ``ibex_register_file_ff.sv`` in your project.
+
+FPGA Register File
+--------------------------
+
+The FPGA register file leverages synchronous-write / asynchronous-read RAM design elements, where available on FPGA targets.
+
+For Xilinx FPGAs, synthesis results in an implementation using RAM32M primitives. Using this design with a Xilinx Artya7-100 FPGA conserves around 600 Logic LUTs and 1000 flip-flops at the expense of 48 LUTRAMs for the 31-entry register file as compared to the flip-flop-based register file.
+
+This makes it the **first choice for FPGA synthesis**.
+
+To select the FPGA register file, make sure to use the source file ``ibex_register_file_fpga.sv`` in your project.
 
 Latch-Based Register File
 -------------------------

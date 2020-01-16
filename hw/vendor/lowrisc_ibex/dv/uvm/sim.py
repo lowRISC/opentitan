@@ -112,11 +112,13 @@ def rtl_compile(compile_cmd, test_list, output_dir, lsf_cmd, opts):
     run_cmd(cmd)
 
 
-def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts):
+def rtl_sim(sim_cmd, simulator, test_list, output_dir, bin_dir,
+            lsf_cmd, seed, opts):
   """Run the instruction generator
 
   Args:
     sim_cmd    : Simulation command
+    simulator  : Simulator being used
     test_list  : List of assembly programs
     output_dir : Simulation output directory
     bin_dir    : Directory of the ELF files
@@ -124,6 +126,12 @@ def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts):
     seed       : Seed of RTL simulation
     opts       : Simulation options
   """
+  check_return_code = True
+  # Don't check return code for IUS sims, as a failure will short circuit
+  # the entire simulation flow
+  if simulator == "ius":
+    check_return_code = False
+    logging.debug("Disable return code checking for %s simulator" % simulator)
   # Run the RTL simulation
   sim_cmd = re.sub("<out>", output_dir, sim_cmd)
   sim_cmd = re.sub("<sim_opts>", opts, sim_cmd)
@@ -148,12 +156,12 @@ def rtl_sim(sim_cmd, test_list, output_dir, bin_dir, lsf_cmd, seed, opts):
       cmd = re.sub('\n', '', cmd)
       if lsf_cmd == "":
         logging.info("Running %s with %s" % (test['rtl_test'], binary))
-        run_cmd(cmd, 300)
+        run_cmd(cmd, 300, check_return_code = check_return_code)
       else:
         cmd_list.append(cmd)
   if lsf_cmd != "":
     logging.info("Running %0d simulation jobs." % len(cmd_list))
-    run_parallel_cmd(cmd_list, 600)
+    run_parallel_cmd(cmd_list, 600, check_return_code = check_return_code)
 
 
 def compare(test_list, iss, output_dir, verbose):
@@ -276,8 +284,8 @@ if args.steps == "all" or re.match("compile", args.steps):
 
 # Run RTL simulation
 if args.steps == "all" or re.match("sim", args.steps):
-  rtl_sim(sim_cmd, matched_list, output_dir, bin_dir, args.lsf_cmd,
-          args.seed, args.sim_opts)
+  rtl_sim(sim_cmd, args.simulator, matched_list, output_dir, bin_dir,
+          args.lsf_cmd, args.seed, args.sim_opts)
 
 # Compare RTL & ISS simulation result.;
 if args.steps == "all" or re.match("compare", args.steps):

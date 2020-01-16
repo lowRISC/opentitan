@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-`define EXPERIMENTAL
-
 //-----------------------------------------------------------------------------
 // Processor feature configuration
 //-----------------------------------------------------------------------------
@@ -29,12 +27,11 @@ parameter satp_mode_t SATP_MODE = SV39;
 privileged_mode_t supported_privileged_mode[] = {USER_MODE, SUPERVISOR_MODE, MACHINE_MODE};
 
 // Unsupported instructions
-riscv_instr_name_t unsupported_instr[];
+riscv_instr_name_t unsupported_instr[] = {VWMACCSU};
 
 // ISA supported by the processor
 riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV64I, RV64M, RV32C, RV64C, RV32A, RV64A,
-                                        RV32F, RV64F, RV32D, RV64D};
-
+                                        RV32F, RV64F, RV32D, RV64D, RV32V, RV64V};
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 
@@ -53,6 +50,12 @@ bit support_sfence = 1;
 
 // Support unaligned load/store
 bit support_unaligned_load_store = 1'b1;
+
+// Parameter for vector extension
+parameter int VECTOR_EXTENSION_ENABLE = 1;
+parameter int VLEN = 512;
+parameter int ELEN = 64;
+parameter int SLEN = 64;
 
 // ----------------------------------------------------------------------------
 // Previleged CSR implementation
@@ -132,7 +135,6 @@ exception_cause_t implemented_exception[] = {
 `else
 parameter exception_cause_t implemented_exception[] = {
 `endif
-    INSTRUCTION_ADDRESS_MISALIGNED,
     INSTRUCTION_ACCESS_FAULT,
     ILLEGAL_INSTRUCTION,
     BREAKPOINT,

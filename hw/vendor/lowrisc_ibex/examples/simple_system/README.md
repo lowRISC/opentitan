@@ -5,8 +5,8 @@ run stand-alone binaries. It contains:
 
 * An Ibex Core
 * A single memory for instructions and data
-* A basic peripheral to write ASCII output to a file and halt simulation from
-  software
+* A basic peripheral to write ASCII output to a file and halt simulation from software
+* A basic timer peripheral capable of generating interrupts based on the RISC-V Machine Timer Registers (see RISC-V Privileged Specification, version 1.11, Section 3.1.10)
 * A software framework to build programs for it
 
 ## Prerequisites
@@ -118,5 +118,9 @@ Pass `-gui` to use the DVE GUI.
 |---------------------|--------------------------------------------------------------------------------------------------------|
 | 0x20000             | ASCII Out, write ASCII characters here that will get output to the log file                            |
 | 0x20004             | Simulator Halt, write 1 here to halt the simulation                                                    |
+| 0x30000             | RISCV timer mtime register                                                                             |
+| 0x30004             | RISCV timer mtimeh register                                                                            |
+| 0x30008             | RISCV timer mtimecmp register                                                                          |
+| 0x3000C             | RISCV timer mtimecmph register                                                                         |
 | 0x100000 – 0x1FFFFF | 1 MB memory for instruction and data. Execution starts at 0x100080, exception handler base is 0x100000 |
 
