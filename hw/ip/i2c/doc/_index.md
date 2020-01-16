@@ -208,10 +208,43 @@ When the I2C module is in transmit mode, the `scl_interference` or `sda_interfer
 If should be noted that the `scl_interference` interrupt is not raised in the case when the target device is stretching the clock.
 (However, it may be raised if the target allows SCL to go high and then pulls SCL down before the end of the current clock cycle.)
 
+A target device should never assert 0 on the SDA lines, and in the absence of multi-host support, the `sda_interference` interrupt is raised whenever the host IP detects that another device is pulling SDA low.
+
+On the other hand, it is legal for the a target device to assert SCL low for clock stretching purposes.
+With clock stretching, the target can delay the start of the following SCL pulse by holding SCL low between clock pulses.
+However the target device must assert SCL low before the start of the SCL pulse.
+If SCL is pulsed low during an SCL pulse, this interruption of the SCL pulse will be registered as an exception by the I2C core, which will then assert the `scl_interference` interrupt.
+
+{{<wavejson>}}
+{signal: [
+  {name: 'Clock', wave: 'p.....|.......|......'},
+  {name: 'SCL Host Driver', wave: '0.z..0|.z....0|..z.x.'},
+  {name: 'SCL Target Driver', wave: 'z.....|0..z...|...0..'},
+  {name: 'SCL bus', wave: '0.u..0|...u..0|..u0..'},
+  {name: 'scl_interference', wave: '0.....|.......|....1.'},
+],
+  head: {text: 'SCL pulses: Normal SCL pulse (Cycle 3),  SCL pulse with clock strectching (cycle 11), and SCL interference (interrupted SCL pulse)',tick:1}}
+{{</wavejson>}}
+
+
 Though normal clock stretching does not count as SCL interference, if the module detects that a target device has held SCL low and stretched the any given SCL cycle for more than {{< regref TIMEOUT_CTRL.VAL >}} clock ticks this will cause the stretch timeout interrupt to be asserted.
 This interrupt is suppressed, however, if {{< regref TIMEOUT_CTRL.EN >}} is deasserted low.
 
-Exempt for START and STOP symbols, the I2C specification requires that the SDA signal remains constant whenever SCL is high.
+{{<wavejson>}}
+{signal: [
+  {name: 'Clock', wave: 'p............'},
+  {name: 'SCL Host Driver', wave: '0..z.......x.'},
+  {name: 'SCL Target Driver', wave: 'z0...........'},
+  {name: 'SCL bus', wave: '0............'},
+  {name: 'TIMEOUT_CNTRL.VAL', wave: '2............', data: "8"},
+  {name: 'SCL timeout counter', wave: '2...22222222x', data: '0 1 2 3 4 5 6 7 8'},
+  {name: 'TIMEOUT_CNTRL.EN', wave: '1............'},
+  {name: 'scl_timeout', wave: '0..........1.'},
+],
+  head: {text: 'SCL Timeout Example',tick:-3}}
+{{</wavejson>}}
+
+Except for START and STOP symbols, the I2C specification requires that the SDA signal remains constant whenever SCL is high.
 The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse.
 
 ### Implementation Details: Format Flag Parsing
