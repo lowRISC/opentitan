@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:usb20_agent:0.1"
+description: "USB20 DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+    files:
+      - usb20_if.sv
+      - usb20_agent_pkg.sv
+      - usb20_agent_cfg.sv: {is_include_file: true}
+      - usb20_agent_cov.sv: {is_include_file: true}
+      - usb20_item.sv: {is_include_file: true}
+      - usb20_host_driver.sv: {is_include_file: true}
+      - usb20_device_driver.sv: {is_include_file: true}
+      - usb20_monitor.sv: {is_include_file: true}
+      - usb20_agent.sv: {is_include_file: true}
+      - seq_lib/usb20_base_seq.sv: {is_include_file: true}
+      - seq_lib/usb20_seq_list.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

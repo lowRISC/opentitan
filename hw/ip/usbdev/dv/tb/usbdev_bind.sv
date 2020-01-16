@@ -9,8 +9,8 @@ module usbdev_bind;
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_d_i),
-    .d2h  (tl_d_o)
+    .h2d  (tl_i),
+    .d2h  (tl_o)
   );
 
 endmodule

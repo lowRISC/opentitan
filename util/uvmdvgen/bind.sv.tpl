@@ -5,7 +5,9 @@
 module ${name}_bind;
 % if is_cip:
 
-  bind ${name} tlul_assert tlul_assert_host (
+  bind ${name} tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),

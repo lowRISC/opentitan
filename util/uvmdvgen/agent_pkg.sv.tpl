@@ -22,13 +22,13 @@ package ${name}_agent_pkg;
 % if has_separate_host_device_driver:
   // add typedef for ${name}_driver which is dv_base_driver with the right parameter set
   // ${name}_host_driver and ${name}_device_driver will extend from this
-  typedef dv_base_driver #(.ITEM_T        (${name}_item),
-                           .CFG_T         (${name}_agent_cfg)) ${name}_driver;
+  typedef dv_base_driver #(.ITEM_T(${name}_item),
+                           .CFG_T (${name}_agent_cfg)) ${name}_driver;
 
 % endif
   // reuse dv_base_seqeuencer as is with the right parameter set
-  typedef dv_base_sequencer #(.ITEM_T     (${name}_item),
-                              .CFG_T      (${name}_agent_cfg)) ${name}_sequencer;
+  typedef dv_base_sequencer #(.ITEM_T(${name}_item),
+                              .CFG_T (${name}_agent_cfg)) ${name}_sequencer;
 
   // functions
 
@@ -46,4 +46,4 @@ package ${name}_agent_pkg;
   `include "${name}_agent.sv"
   `include "${name}_seq_list.sv"
 
-  endpackage: ${name}_agent_pkg
+endpackage: ${name}_agent_pkg
