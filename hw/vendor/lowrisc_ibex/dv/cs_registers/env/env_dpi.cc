@@ -17,12 +17,15 @@ extern "C" {
 RegisterEnvironment *reg_env;
 
 void env_initial(svBitVecVal *seed, svBit PMPEnable,
-                 svBitVecVal *PMPGranularity, svBitVecVal *PMPNumRegions) {
+                 svBitVecVal *PMPGranularity, svBitVecVal *PMPNumRegions,
+                 svBitVecVal *MHPMCounterNum, svBitVecVal *MHPMCounterWidth) {
   // Package up parameters
   CSRParams params;
   params.PMPEnable = PMPEnable;
   params.PMPGranularity = *PMPGranularity;
   params.PMPNumRegions = *PMPNumRegions;
+  params.MHPMCounterNum = *MHPMCounterNum;
+  params.MHPMCounterWidth = *MHPMCounterWidth;
   // Create TB environment
   reg_env = new RegisterEnvironment(params);
 

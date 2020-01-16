@@ -51,6 +51,12 @@ bit support_sfence = 1;
 // Support unaligned load/store
 bit support_unaligned_load_store = 1'b1;
 
+// Parameter for vector extension
+parameter int VECTOR_EXTENSION_ENABLE = 0;
+parameter int VLEN = 512;
+parameter int ELEN = 64;
+parameter int SLEN = 64;
+
 // ----------------------------------------------------------------------------
 // Previleged CSR implementation
 // ----------------------------------------------------------------------------
@@ -129,7 +135,6 @@ exception_cause_t implemented_exception[] = {
 `else
 parameter exception_cause_t implemented_exception[] = {
 `endif
-    INSTRUCTION_ADDRESS_MISALIGNED,
     INSTRUCTION_ACCESS_FAULT,
     ILLEGAL_INSTRUCTION,
     BREAKPOINT,

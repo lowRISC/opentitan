@@ -1,0 +1,36 @@
+# set ibex_core_tracing as top of coverage tree
+select_coverage -bef -module ibex_core_tracing...
+
+# Toggle coverage should only apply to the top level of DUT
+select_coverage -toggle -module ibex_core_tracing
+
+# Remove the tracer module from all coverage collection
+deselect_coverage -all -module ibex_tracer
+
+# top level toggle coverage only collected for input/output ports
+set_toggle_portsonly
+
+# allow toggle coverage to be collected for SV multidimensional arrays and enums
+set_toggle_scoring -sv_mda -sv_enum
+
+# exclude constants from coverage collection
+set_com
+
+# enables coverage scoring for statements
+set_assign_scoring
+
+# enable coverage score for branches and ternary assignments
+set_branch_scoring
+
+# enable coverage of all operators and continuous/procedural statements
+set_expr_coverable_operators -all
+set_expr_coverable_statements -all
+
+# enable coverage of FSM reset states
+set_fsm_reset_scoring
+
+# disable FSM arc coverage
+set_fsm_arc_scoring -off
+
+# enables coverage for all assertions/covergroups
+select_functional

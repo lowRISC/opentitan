@@ -279,34 +279,50 @@ endclass
 // This instruction stream focus more on hazard handling of load store unit.
 class riscv_load_store_hazard_instr_stream extends riscv_load_store_base_instr_stream;
 
-  rand int avail_addr[];
+  rand int hazard_ratio;
 
-  constraint legal_c {
-    num_load_store inside {[10:30]};
-    num_mixed_instr inside {[10:30]};
+  constraint hazard_ratio_c {
+    hazard_ratio inside {[20:100]};
   }
 
-  constraint avail_addr_c {
-    avail_addr.size() inside {[1:3]};
-    foreach(avail_addr[i]) {
-      avail_addr[i] inside {[0 : max_load_store_offset - 1]};
-    }
+  constraint legal_c {
+    num_load_store inside {[10:20]};
+    num_mixed_instr inside {[1:7]};
   }
 
   `uvm_object_utils(riscv_load_store_hazard_instr_stream)
   `uvm_object_new
 
-  // Randomize each address in the post_randomize to reduce the complexity of solving everything
-  // in one shot.
-  function void post_randomize();
-    int temp_addr;
-    foreach(addr[i]) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(temp_addr,
-                                         temp_addr inside {avail_addr};,
-                                         "Cannot randomize address")
-      addr[i] = temp_addr;
+  virtual function void randomize_offset();
+    int offset_, addr_;
+    offset = new[num_load_store];
+    addr = new[num_load_store];
+    for (int i = 0; i < num_load_store; i++) begin
+      if ((i > 0) && ($urandom_range(0, 100) < hazard_ratio)) begin
+        offset[i] = offset[i-1];
+        addr[i] = addr[i-1];
+      end else begin
+        if (!std::randomize(offset_, addr_) with {
+          if (locality == NARROW) {
+            soft offset_ inside {[-16:16]};
+          } else if (locality == HIGH) {
+            soft offset_ inside {[-64:64]};
+          } else if (locality == MEDIUM) {
+            soft offset_ inside {[-256:256]};
+          } else if (locality == SPARSE) {
+            soft offset_ inside {[-2048:2047]};
+          }
+          addr_ == base + offset_;
+          addr_ inside {[0 : max_load_store_offset - 1]};
+        }) begin
+          `uvm_fatal(`gfn, "Cannot randomize load/store offset")
+        end
+        offset[i] = offset_;
+        addr[i] = addr_;
+      end
     end
-  endfunction
+  endfunction : randomize_offset
+
 endclass
 
 // Back to back access to multiple data pages
@@ -450,7 +466,7 @@ class riscv_load_store_rand_addr_instr_stream extends riscv_load_store_base_inst
     )
     li_instr.imm_str = $sformatf("0x%0x", addr_offset);
     // Add offset to the base address
-    add_instr = riscv_instr::get_rand_instr(.include_instr({ADD}));
+    add_instr = riscv_instr::get_instr(ADD);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(add_instr,
        rs1 == gpr;
        rs2 == li_instr.rd;
@@ -459,7 +475,7 @@ class riscv_load_store_rand_addr_instr_stream extends riscv_load_store_base_inst
     instr.push_back(li_instr);
     instr.push_back(add_instr);
     // Create SW instruction template
-    store_instr = riscv_instr::get_rand_instr(.include_instr({SB}));
+    store_instr = riscv_instr::get_instr(SB);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(store_instr,
        instr_name == SB;
        rs1 == gpr;

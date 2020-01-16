@@ -338,6 +338,9 @@ class riscv_asm_program_gen extends uvm_object;
     if (cfg.enable_floating_point) begin
       init_floating_point_gpr();
     end
+    if (cfg.enable_vector_extension) begin
+      init_vector_engine();
+    end
     core_is_initialized();
     gen_dummy_csr_write(); // TODO add a way to disable xStatus read
   endfunction
@@ -358,6 +361,7 @@ class riscv_asm_program_gen extends uvm_object;
         RV32A, RV64A         : misa[MISA_EXT_A] = 1'b1;
         RV32F, RV64F, RV32FC : misa[MISA_EXT_F] = 1'b1;
         RV32D, RV64D, RV32DC : misa[MISA_EXT_D] = 1'b1;
+        RV32V, RV64V         : misa[MISA_EXT_V] = 1'b1;
         default : `uvm_fatal(`gfn, $sformatf("%0s is not yet supported",
                                    supported_isa[i].name()))
       endcase
@@ -457,6 +461,20 @@ class riscv_asm_program_gen extends uvm_object;
     // Initialize rounding mode of FCSR
     str = $sformatf("%0sfsrmi %0d", indent, cfg.fcsr_rm);
     instr_stream.push_back(str);
+  endfunction
+
+  // Initialize vector registers
+  virtual function void init_vector_engine();
+    string str[$];
+    // Initialize vtype, vl
+    str = {str, $sformatf("li x%0d, %0d", cfg.gpr[1], cfg.vector_cfg.vl),
+                $sformatf("vsetvli x%0d, x%0d, e%0d",
+                          cfg.gpr[0], cfg.gpr[1], 8 * (2 ** cfg.vector_cfg.vtype.vsew))};
+    for(int i = 0; i < 32; i++) begin
+      // Use integer register to initialize vector register
+      str = {str, $sformatf("vmv.v.x v%0d, x%0d", i, i)};
+    end
+    instr_stream = {instr_stream, str};
   endfunction
 
   // Generate "test_done" section, test is finished by an ECALL instruction

@@ -77,10 +77,11 @@ class riscv_privil_reg extends riscv_reg#(privileged_reg_t);
         add_field("TVM",   1,  WARL);
         add_field("TW",    1,  WARL);
         add_field("TSR",   1,  WARL);
+        add_field("VS",    2,  WARL);
         if(XLEN == 32) begin
-          add_field("WPRI3", 8,  WPRI);
+          add_field("WPRI3", 6,  WPRI);
         end else begin
-          add_field("WPRI3", 9,  WPRI);
+          add_field("WPRI3", 7,  WPRI);
           add_field("UXL",   2,  WARL);
           add_field("SXL",   2,  WARL);
           add_field("WPRI4", XLEN - 37, WPRI);

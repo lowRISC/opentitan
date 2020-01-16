@@ -13,88 +13,77 @@ sys.path.insert(0, "../../vendor/google_riscv-dv/scripts")
 from riscv_trace_csv import *
 from lib import *
 
-REGS = ["zero","ra","sp","gp","tp","t0","t1","t2","s0","s1",
-        "a0","a1","a2","a3","a4","a5","a6","a7",
-        "s2","s3","s4","s5","s6","s7","s8","s9","s10","s11",
-        "t3","t4","t5","t6"]
+
+INSTR_RE = re.compile(r"^\s*(?P<time>\d+)\s+(?P<cycle>\d+)\s+(?P<pc>[0-9a-f]+)\s+" \
+                      "(?P<bin>[0-9a-f]+)\s+(?P<instr>\S+\s+\S+)\s*")
+RD_RE = re.compile(r"(x(?P<rd>[1-9]\d*)=0x(?P<rd_val>[0-9a-f]+))")
+ADDR_RE  = re.compile(r"(?P<imm>[\-0-9]+?)\((?P<rs1>.*)\)")
+
 
 def process_ibex_sim_log(ibex_log, csv, full_trace = 1):
-    """Process ibex simulation log.
+  """Process ibex simulation log.
 
-    Extract instruction and affected register information from ibex simulation
-    log and save to a standard CSV format.
-    """
-    logging.info("Processing ibex log : %s" % ibex_log)
-    instr_cnt = 0
-    ibex_instr = ""
+  Extract instruction and affected register information from ibex simulation
+  log and save to a standard CSV format.
+  """
+  logging.info("Processing ibex log : %s" % ibex_log)
+  instr_cnt = 0
+  ibex_instr = ""
 
-    gpr = {}
-    for g in REGS:
-      gpr[g] = 0
+  with open(ibex_log, "r") as f, open(csv, "w") as csv_fd:
+    trace_csv = RiscvInstructionTraceCsv(csv_fd)
+    trace_csv.start_new_trace()
+    for line in f:
+      if re.search("ecall", line):
+        break
+      # Extract instruction information
+      m = INSTR_RE.search(line)
+      if m:
+        instr_cnt += 1
+        # Write the extracted instruction to a csvcol buffer file
+        rv_instr_trace = RiscvInstructionTraceEntry()
+        rv_instr_trace.instr_str = m.group("instr")
+        rv_instr_trace.instr = m.group("instr").split()[0]
+        rv_instr_trace.pc = m.group("pc")
+        rv_instr_trace.binary = m.group("bin")
+        if full_trace:
+          rv_instr_trace.operand = m.group("instr").split()[1]
+          process_trace(rv_instr_trace)
+      c = RD_RE.search(line)
+      if c:
+        rv_instr_trace.gpr.append(gpr_to_abi("x%0s" % c.group("rd")) + ":" + c.group("rd_val"))
+        trace_csv.write_trace_entry(rv_instr_trace)
 
-    with open(ibex_log, "r") as f, open(csv, "w") as csv_fd:
-        trace_csv = RiscvInstructionTraceCsv(csv_fd)
-        trace_csv.start_new_trace()
-        for line in f:
-            if re.search("ecall", line):
-              break
-            # Extract instruction information
-            m = re.search(r"^\s*(?P<time>\d+)\s+" \
-                          "(?P<cycle>\d+)\s+" \
-                          "(?P<pc>[0-9a-f]+)\s+" \
-                          "(?P<bin>[0-9a-f]+)\s+" \
-                          "(?P<instr>\S+\s+\S+)\s*" \
-                          "(x(?P<rs1>\d+):0x(?P<rs1_val>[0-9a-f]+))?\s*" \
-                          "(x(?P<rs2>\d+):0x(?P<rs2_val>[0-9a-f]+))?\s*" \
-                          "(x(?P<rd>[1-9]\d*)=0x(?P<rd_val>[0-9a-f]+))", line)
-            if m:
-                instr_cnt += 1
-                # Write the extracted instruction to a csvcol buffer file
-                rv_instr_trace = RiscvInstructionTraceEntry()
-                rv_instr_trace.rd = gpr_to_abi("x%0s" % m.group("rd"))
-                rv_instr_trace.rd_val = m.group("rd_val")
-                rv_instr_trace.rs1 = gpr_to_abi("x%0s" % m.group("rs1"))
-                rv_instr_trace.rs1_val = m.group("rs1_val")
-                rv_instr_trace.rs2 = gpr_to_abi("x%0s" % m.group("rs2"))
-                rv_instr_trace.rs2_val = m.group("rs2_val")
-                rv_instr_trace.addr = m.group("pc")
-                rv_instr_trace.binary = m.group("bin")
-                rv_instr_trace.instr_str = m.group("instr")
-                rv_instr_trace.instr = rv_instr_trace.instr_str.split()[0]
+  logging.info("Processed instruction count : %d" % instr_cnt)
+  if instr_cnt == 0:
+    logging.error("No instructions in logfile: %s" % ibex_log)
+    sys.exit(RET_FATAL)
+  logging.info("CSV saved to : %s" % csv)
 
-                # Extract all missing operand values
-                if full_trace:
-                  gpr[rv_instr_trace.rd] = rv_instr_trace.rd_val
-                  o = re.search(r"(?P<instr_name>[a-z.]*)\s+(?P<operands>.*)", rv_instr_trace.instr_str)
-                  if o:
-                    operands = o.group("operands").split(",")
-                    # Convert to ABI representation
-                    for i in range(len(operands)):
-                      abi = re.search(r"(^|\()(?P<gpr>x\d+)", operands[i])
-                      if abi:
-                        reg = abi.group("gpr")
-                        operands[i] = operands[i].replace(reg, gpr_to_abi(reg))
-                    if rv_instr_trace.instr in ['jalr']:
-                      # Ibex displays two operands for jalr
-                      rv_instr_trace.rd = operands[0]
-                      rv_instr_trace.rd_val = gpr[rv_instr_trace.rd]
-                      n = ADDR_RE.search(operands[1])
-                      if n:
-                        rv_instr_trace.rs1 = n.group("rs1")
-                        rv_instr_trace.rs1_val = gpr[rv_instr_trace.rs1]
-                        rv_instr_trace.imm = get_imm_hex_val(n.group("imm"))
-                    elif rv_instr_trace.instr in ['c.jal']:
-                      rv_instr_trace.imm = get_imm_hex_val("0x" + operands[0])
-                    elif rv_instr_trace.instr in ['jal']:
-                      rv_instr_trace.rd = operands[0]
-                      rv_instr_trace.rd_val = gpr[rv_instr_trace.rd]
-                      rv_instr_trace.imm = get_imm_hex_val("0x" + operands[1])
-                    else:
-                      assign_operand(rv_instr_trace, operands, gpr)
 
-                trace_csv.write_trace_entry(rv_instr_trace)
+def process_trace(trace):
+  """ Process instruction trace """
+  process_imm(trace)
+  if trace.instr == 'jalr':
+    n = ADDR_RE.search(trace.operand)
+    if n:
+      trace.imm = get_imm_hex_val(n.group("imm"))
 
-    logging.info("Processed instruction count : %d" % instr_cnt)
+
+def process_imm(trace):
+  """ Process imm to follow RISC-V standard convention """
+  if trace.instr in ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'c.beqz',
+                     'c.bnez', 'beqz', 'bnez', 'bgez', 'bltz', 'blez', 'bgtz',
+                     'c.j', 'j', 'c.jal', 'jal']:
+    idx = trace.operand.rfind(',')
+    if idx == -1:
+      imm = trace.operand
+      imm = str(sint_to_hex(int(imm, 16) - int(trace.pc, 16)))
+      trace.operand = imm
+    else:
+      imm = trace.operand[idx + 1 : ]
+      imm = str(sint_to_hex(int(imm, 16) - int(trace.pc, 16)))
+      trace.operand = trace.operand[0 : idx + 1] + imm
 
 
 def check_ibex_uvm_log(uvm_log, core_name, test_name, report, write=True):

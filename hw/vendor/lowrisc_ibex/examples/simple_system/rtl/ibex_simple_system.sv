@@ -30,11 +30,15 @@ module ibex_simple_system (
 
   typedef enum {
     Ram,
-    SimCtrl
+    SimCtrl,
+    Timer
   } bus_device_e;
 
-  localparam NrDevices = 2;
+  localparam NrDevices = 3;
   localparam NrHosts = 2;
+
+  // interrupts
+  logic timer_irq;
 
   // host and device signals
   logic           host_req    [NrHosts];
@@ -64,6 +68,8 @@ module ibex_simple_system (
   assign cfg_device_addr_mask[Ram] = ~32'hFFFFF; // 1 MB
   assign cfg_device_addr_base[SimCtrl] = 32'h20000;
   assign cfg_device_addr_mask[SimCtrl] = ~32'h3FF; // 1 kB
+  assign cfg_device_addr_base[Timer] = 32'h30000;
+  assign cfg_device_addr_mask[Timer] = ~32'h3FF; // 1 kB
 
 
   `ifdef VERILATOR
@@ -152,7 +158,7 @@ module ibex_simple_system (
       .data_err_i            (host_err[CoreD]),
 
       .irq_software_i        (1'b0),
-      .irq_timer_i           (1'b0),
+      .irq_timer_i           (timer_irq),
       .irq_external_i        (1'b0),
       .irq_fast_i            (15'b0),
       .irq_nm_i              (1'b0),
@@ -193,12 +199,30 @@ module ibex_simple_system (
       .rdata_o   (device_rdata[SimCtrl])
     );
 
+  timer #(
+    .DataWidth    (32),
+    .AddressWidth (32)
+    ) u_timer (
+      .clk_i          (clk_sys),
+      .rst_ni         (rst_sys_n),
+
+      .timer_req_i    (device_req[Timer]),
+      .timer_we_i     (device_we[Timer]),
+      .timer_be_i     (device_be[Timer]),
+      .timer_addr_i   (device_addr[Timer]),
+      .timer_wdata_i  (device_wdata[Timer]),
+      .timer_rvalid_o (device_rvalid[Timer]),
+      .timer_rdata_o  (device_rdata[Timer]),
+      .timer_err_o    (device_err[Timer]),
+      .timer_intr_o   (timer_irq)
+    );
+
   // Expose the performance counter array so it's easy to access in
   // a verilator siumulation
   logic [63:0] mhpmcounter_vals [32] /*verilator public_flat*/;
 
   for(genvar i = 0;i < 32; i = i + 1) begin
-      assign mhpmcounter_vals[i] = u_core.u_ibex_core.cs_registers_i.mhpmcounter_q[i];
+      assign mhpmcounter_vals[i] = u_core.u_ibex_core.cs_registers_i.mhpmcounter[i];
   end
 endmodule
 

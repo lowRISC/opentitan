@@ -17,6 +17,7 @@ lint_off -msg PINCONNECTEMPTY
 // implementation choices for the same module.
 lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
 lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
+lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_fpga.sv"
 
 // Bits of signal are not used: boot_addr_i[7:0]
 // Boot address is 256B aligned, cleaner to pass all bits in
@@ -45,6 +46,7 @@ lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 68
 // Signal is not used: test_en_i
 // testability signal
 lint_off -msg UNUSED -file "*/rtl/ibex_register_file_ff.sv" -lines 21
+lint_off -msg UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -lines 22
 
 // Signal is not used: clk_i
 // leaving clk and reset connected in-case we want to add assertions
@@ -57,6 +59,7 @@ lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 21
 lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 16
 lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 15
 lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 22
+lint_off -msg UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -lines 20
 
 // Signal unoptimizable: Feedback to clock or circular logic:
 // ibex_core.cs_registers_i.mie_q

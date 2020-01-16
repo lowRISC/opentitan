@@ -18,7 +18,6 @@ Regression script for RISC-V random instruction generator
 
 import argparse
 import os
-import subprocess
 import re
 import sys
 import logging
@@ -27,195 +26,156 @@ from scripts.lib import *
 from scripts.spike_log_to_trace_csv import *
 from scripts.ovpsim_log_to_trace_csv import *
 from scripts.sail_log_to_trace_csv import *
+from types import SimpleNamespace
 
 LOGGER = logging.getLogger()
 
+def build_cov(out, cfg, cwd, opts_vec, opts_cov):
+  """Building the coverage collection framework
 
-def collect_cov(log_dir, out, core, iss, testlist, batch_size, lsf_cmd, steps, \
-                opts, timeout, simulator, simulator_yaml, custom_target, \
-                isa, target, stop_on_first_error,
-                dont_truncate_after_first_ecall,
-                vector_options, coverage_options, compliance_mode):
-  """Collect functional coverage from the instruction trace
   Args:
-    log_dir             : Trace log directory
     out                 : Output directory
-    core                : RISC-V core to be used for analysis
-    iss                 : Instruction set simulator
-    testlist            : Testlist of the coverage test
-    batch_size          : Number of trace CSV to process per test
-    lsf_cmd             : LSF command used to run the instruction generator
-    steps               : csv:log to CSV, cov:sample coverage
-    opts                : Additional options to the instruction generator
-    timeout             : Timeout limit in seconds
-    simulator           : RTL simulator used to run
-    simulator_yaml      : RTL simulator configuration file in YAML format
-    custom_target       : Path for the custom target dir
-    isa                 : RISC-V ISA variant
-    target              : Predefined target
-    stop_on_first_error : will end run on first error detected
-    vector_options      : Enable Vectors and set vector config options
-    coverage_options    : Set coverage config options
-    compliance_mode     : Run coverage model for compliance test
+    cfg                 : Loaded configuration dictionary.
+    cwd                 : Filesystem path to RISCV-DV repo
+    opts_vec            : Vector options
+    opts_cov            : Coverage options
   """
-  cwd = os.path.dirname(os.path.realpath(__file__))
+  # Convert key dictionary to argv variable
+  argv= SimpleNamespace(**cfg)
+  logging.info("Building the coverage collection framework")
+  build_cmd = ("python3 %s/run.py --simulator %s --simulator_yaml %s "
+                " --co -o %s --cov -tl %s %s --cmp_opts \"%s %s\" --noclean" %
+                (cwd, argv.simulator, argv.simulator_yaml, out, argv.testlist, argv.opts,
+                 opts_vec, opts_cov))
+  if argv.target:
+    build_cmd += (" --target %s" % argv.target)
+  if argv.custom_target:
+    build_cmd += (" --custom_target %s" % argv.custom_target)
+  if argv.stop_on_first_error:
+    build_cmd += (" --stop_on_first_error")
+  run_cmd(build_cmd)
+
+def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
+  """Simulation the coverage collection
+
+  Args:
+    out                 : Output directory
+    cfg                 : Loaded configuration dictionary.
+    cwd                 : Filesystem path to RISCV-DV repo
+    opts_vec            : Vector options
+    opts_cov            : Coverage options
+    csv_list            : The list of trace csv
+  """
+  # Convert key dictionary to argv variable
+  argv= SimpleNamespace(**cfg)
+  logging.info("Collecting functional coverage from %0d trace CSV" % len(csv_list))
+  test_name = "riscv_instr_cov_test"
+  base_sim_cmd = ("python3 %s/run.py --simulator %s --simulator_yaml %s --noclean "
+                  "--so -o %s --cov -tl %s %s "
+                  "-tn %s --steps gen --sim_opts \"<trace_csv_opts> %s %s\" " %
+                  (cwd, argv.simulator, argv.simulator_yaml, out, argv.testlist,
+                   argv.opts, test_name, opts_vec, opts_cov))
+  if argv.target:
+    base_sim_cmd += (" --target %s" % argv.target)
+  if argv.custom_target:
+    base_sim_cmd += (" --custom_target %s" % argv.custom_target)
+  if argv.stop_on_first_error:
+    base_sim_cmd += (" --stop_on_first_error")
+  file_idx = 0
+  trace_idx = 0
+  trace_csv_opts = ""
+  batch_cnt = 1
+  sim_cmd_list = []
+  if argv.batch_size > 0:
+    batch_cnt = (len(csv_list) + argv.batch_size - 1)/ argv.batch_size;
+    logging.info("Batch size: %0d, Batch cnt:%0d" % (argv.batch_size, batch_cnt))
+  for i in range(len(csv_list)):
+    file_idx = 0
+    trace_idx = i
+    if argv.batch_size > 0:
+      file_idx = i / argv.batch_size;
+      trace_idx = i % argv.batch_size;
+    trace_csv_opts += (" +trace_csv_%0d=%s" % (trace_idx, csv_list[i]))
+    if ((i == len(csv_list)-1) or ((argv.batch_size > 0) and (trace_idx == argv.batch_size-1))):
+      sim_cmd = base_sim_cmd.replace("<trace_csv_opts>", trace_csv_opts)
+      sim_cmd += ("  --log_suffix _%d" % file_idx)
+      if argv.lsf_cmd == "":
+        logging.info("Processing batch %0d/%0d" % (file_idx+1, batch_cnt))
+        run_cmd(sim_cmd)
+      else:
+        sim_cmd += (" --lsf_cmd \"%s\"" % argv.lsf_cmd)
+        sim_cmd_list.append(sim_cmd)
+      trace_csv_opts = ""
+  if argv.lsf_cmd != "":
+    run_parallel_cmd(sim_cmd_list, argv.timeout)
+  logging.info("Collecting functional coverage from %0d trace CSV...done" % len(csv_list))
+
+def collect_cov(out, cfg, cwd):
+  """Collect functional coverage from the instruction trace
+
+  Args:
+    out              : Output directory
+    cfg              : Loaded configuration dictionary.
+    cwd              : Filesystem path to RISCV-DV repo
+  """
+  # Convert key dictionary to argv variable
+  argv= SimpleNamespace(**cfg)
   log_list = []
   csv_list = []
-  logging.info("Processing trace log under %s" % log_dir)
-  if core:
+  if not argv.dir:
+    logging.error("Missing directory of trace log files")
+    sys.exit(RET_FAIL)
+  logging.info("Processing trace log under %s" % argv.dir)
+  if not os.path.isdir(argv.dir) or not os.listdir(argv.dir):
+    logging.error("Cannot find %s directory, or it is empty", argv.dir)
+    sys.exit(RET_FAIL)
+  if argv.core:
     """
     If functional coverage is being collected from an RTL core implementation,
     the flow assumes that the core's trace logs have already been converted to
     CSV files by the post_compare step of the flow.
     """
-    trace_log = ("%s/%s_trace_log" % (out, core))
-    run_cmd("find %s -name \"*.csv\" | sort > %s" % (log_dir, trace_log))
+    trace_log = ("%s/%s_trace_log" % (out, argv.core))
+    run_cmd("find %s -name \"*.csv\" | sort > %s" % (argv.dir, trace_log))
   else:
-    trace_log = ("%s/%s_trace_log" % (out, iss))
-    run_cmd("find %s -name \"*.log\" | sort > %s" % (log_dir, trace_log))
+    trace_log = ("%s/%s_trace_log" % (out, argv.iss))
+    run_cmd("find %s -name \"*.log\" | sort > %s" % (argv.dir, trace_log))
   with open(trace_log) as f:
     for line in f:
       line = line.rstrip()
       log_list.append(line)
       csv = line[0:-4] + ".csv"
       csv_list.append(csv)
-  if steps == "all" or re.match("csv", steps):
+  if argv.steps == "all" or re.match("csv", argv.steps):
     for i in range(len(log_list)):
       log = log_list[i]
       csv = csv_list[i]
       # If a core target is defined, prioritize over ISS
-      if core:
-        logging.info("Process %0s log[%0d/%0d] : %s" % (core, i+1, len(log_list), log))
+      if argv.core:
+        logging.info("Process %0s log[%0d/%0d] : %s" % (argv.core, i+1, len(log_list), log))
       else:
-        logging.info("Process %0s log[%0d/%0d] : %s" % (iss, i+1, len(log_list), log))
-        if iss == "spike":
+        logging.info("Process %0s log[%0d/%0d] : %s" % (argv.iss, i+1, len(log_list), log))
+        if argv.iss == "spike":
           process_spike_sim_log(log, csv, 1)
-        elif iss == "ovpsim":
-          process_ovpsim_sim_log(log, csv, 1, stop_on_first_error,
-                dont_truncate_after_first_ecall)
+        elif argv.iss == "ovpsim":
+          process_ovpsim_sim_log(log, csv, argv.stop_on_first_error,
+                                 argv.dont_truncate_after_first_ecall, 1)
         else:
-          logging.error("Full trace for %s is not supported yet" % iss)
+          logging.error("Full trace for %s is not supported yet" % argv.iss)
           sys.exit(RET_FAIL)
-  if steps == "all" or re.match("cov", steps):
+  if argv.steps == "all" or re.match("cov", argv.steps):
     opts_vec = ""
     opts_cov = ""
-    if vector_options:
-      opts_vec = ("%0s" % vector_options)
-    if coverage_options:
-      opts_cov = ("%0s" % coverage_options)
-    if compliance_mode:
+    if argv.vector_options:
+      opts_vec = ("%0s" % argv.vector_options)
+    if argv.coverage_options:
+      opts_cov = ("%0s" % argv.coverage_options)
+    if argv.compliance_mode:
       opts_cov += " +define+COMPLIANCE_MODE"
-    build_cmd = ("python3 %s/run.py --simulator %s --simulator_yaml %s "
-                 " --co -o %s --cov -tl %s %s --cmp_opts \"%s %s\" " %
-                 (cwd, simulator, simulator_yaml, out, testlist, opts,
-                    opts_vec, opts_cov))
-    base_sim_cmd = ("python3 %s/run.py --simulator %s --simulator_yaml %s "
-                    "--so -o %s --cov -tl %s %s "
-                    "-tn riscv_instr_cov_test --steps gen --sim_opts \"<trace_csv_opts> %s %s\" " %
-                    (cwd, simulator, simulator_yaml, out, testlist, opts,
-                        opts_vec, opts_cov))
-    if target:
-      build_cmd += (" --target %s" % target)
-      base_sim_cmd += (" --target %s" % target)
-    if custom_target:
-      build_cmd += (" --custom_target %s" % custom_target)
-      base_sim_cmd += (" --custom_target %s" % custom_target)
-    if stop_on_first_error:
-      build_cmd += (" --stop_on_first_error")
-      base_sim_cmd += (" --stop_on_first_error")
-    logging.info("Building the coverage collection framework")
-    run_cmd(build_cmd)
-    file_idx = 0
-    trace_idx = 0
-    trace_csv_opts = ""
-    batch_cnt = 1
-    sim_cmd_list = []
-    logging.info("Collecting functional coverage from %0d trace CSV" % len(csv_list))
-    if batch_size > 0:
-      batch_cnt = (len(csv_list)+batch_size-1)/batch_size;
-      logging.info("Batch size: %0d, Batch cnt:%0d" % (batch_size, batch_cnt))
-    for i in range(len(csv_list)):
-      file_idx = 0
-      trace_idx = i
-      if batch_size > 0:
-        file_idx = i / batch_size;
-        trace_idx = i % batch_size;
-      trace_csv_opts += (" +trace_csv_%0d=%s" % (trace_idx, csv_list[i]))
-      if ((i == len(csv_list)-1) or ((batch_size > 0) and (trace_idx == batch_size-1))):
-        sim_cmd = base_sim_cmd.replace("<trace_csv_opts>", trace_csv_opts)
-        sim_cmd += ("  --log_suffix _%d" % file_idx)
-        if lsf_cmd == "":
-          logging.info("Processing batch %0d/%0d" % (file_idx+1, batch_cnt))
-          run_cmd(sim_cmd)
-        else:
-          sim_cmd += (" --lsf_cmd \"%s\"" % lsf_cmd)
-          sim_cmd_list.append(sim_cmd)
-        trace_csv_opts = ""
-    if lsf_cmd != "":
-      run_parallel_cmd(sim_cmd_list, timeout)
-    logging.info("Collecting functional coverage from %0d trace CSV...done" % len(csv_list))
-
-
-def run_cov_debug_test(out, instr_cnt, testlist, batch_size, opts, lsf_cmd,\
-                       timeout, simulator, simulator_yaml, custom_target, isa, target):
-  """Collect functional coverage from the instruction trace
-
-  Args:
-    out              : Output directory
-    instr_cnt        : Number of instruction to randomize
-    test_list        : Testlist of the coverage test
-    batch_size       : Number of trace CSV to process per test
-    lsf_cmd          : LSF command used to run the instruction generator
-    opts             : Additional options to the instruction generator
-    timeout          : Timeout limit in seconds
-    simulator        : RTL simulator used to run
-    simulator_yaml   : RTL simulator configuration file in YAML format
-    custom_target    : Path for the custom target dir
-    isa              : RISC-V ISA variant
-    target           : Predefined target
-  """
-  cwd = os.path.dirname(os.path.realpath(__file__))
-  sim_cmd_list = []
-  logging.info("Building the coverage collection framework")
-  build_cmd = ("python3 %s/run.py --simulator %s --simulator_yaml %s "
-               "--co -o %s --cov -tl %s %s" %
-               (cwd, simulator, simulator_yaml, out, testlist, opts))
-  base_sim_cmd = ("python3 %s/run.py --simulator %s --simulator_yaml %s "
-                  "--so -o %s --cov -tl %s --isa %s %s "
-                  "-tn riscv_instr_cov_debug_test --steps gen "
-                  "--sim_opts \"+num_of_iterations=<instr_cnt>\"" %
-                  (cwd, simulator, simulator_yaml, out, testlist, isa, opts))
-  if target:
-    build_cmd += (" --target %s" % target)
-    base_sim_cmd += (" --target %s" % target)
-  if custom_target:
-    build_cmd += (" --custom_target %s" % custom_target)
-    base_sim_cmd += (" --custom_target %s" % custom_target)
-  logging.info("Building the coverage collection framework")
-  run_cmd(build_cmd)
-  batch_cnt = 1
-  if batch_size > 0:
-    batch_cnt = int((instr_cnt+batch_size-1)/batch_size)
-    logging.info("Batch size: %0d, Batch cnt:%0d" % (batch_size, batch_cnt))
-  logging.info("Randomizing %0d instructions in %0d batches", instr_cnt, batch_cnt)
-  for i in range(batch_cnt):
-    batch_instr_cnt = instr_cnt
-    if batch_size > 0:
-      batch_instr_cnt = batch_size
-      if i == batch_cnt - 1:
-        batch_instr_cnt = instr_cnt - batch_size * (batch_cnt - 1)
-    sim_cmd = base_sim_cmd.replace("<instr_cnt>", str(batch_instr_cnt))
-    sim_cmd += ("  --log_suffix _%d" % i)
-    if lsf_cmd == "":
-      logging.info("Running batch %0d/%0d" % (i+1, batch_cnt))
-      run_cmd(sim_cmd)
-    else:
-      sim_cmd += (" --lsf_cmd \"%s\"" % lsf_cmd)
-      sim_cmd_list.append(sim_cmd)
-  if lsf_cmd != "":
-    run_parallel_cmd(sim_cmd_list, timeout)
-  logging.info("Collecting functional coverage from %0d random instructions...done" % instr_cnt)
-
+    # Building the coverage collection framework
+    build_cov(out, cfg, cwd, opts_vec, opts_cov)
+    # Simulation the coverage collection
+    sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list)
 
 def setup_parser():
   """Create a command line parser.
@@ -226,15 +186,13 @@ def setup_parser():
   parser = argparse.ArgumentParser()
   parser.add_argument("-o", "--output", type=str,
                       help="Output directory name", dest="o")
-  parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
+  parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False,
                       help="Verbose logging")
   parser.add_argument("--dir", type=str,
                       help="Directory of trace log files")
   parser.add_argument("-bz", "--batch_size", dest="batch_size", type=int, default=0,
                       help="Number of CSV to process per run")
-  parser.add_argument("-d", "--debug_mode", dest="debug_mode", action="store_true",
-                      help="Debug mode, randomize and sample the coverage directly")
-  parser.add_argument("--compliance_mode", action="store_true",
+  parser.add_argument("--compliance_mode", action="store_true", default=False,
                       help="Run the coverage model in compliance test mode")
   parser.add_argument("-i", "--instr_cnt", dest="instr_cnt", type=int, default=0,
                       help="Random instruction count for debug mode")
@@ -268,40 +226,35 @@ def setup_parser():
   parser.add_argument("-cs", "--core_setting_dir", type=str, default="",
                       help="Path for the riscv_core_setting.sv")
   parser.add_argument("--stop_on_first_error", dest="stop_on_first_error",
-                      action="store_true", help="Stop on detecting first error")
+                      action="store_true", default=False,
+                      help="Stop on detecting first error")
   parser.add_argument("--dont_truncate_after_first_ecall", dest="dont_truncate_after_first_ecall",
-                      action="store_true", help="Do not truncate log and csv file on first ecall")
-  parser.add_argument("--noclean", action="store_true",
+                      action="store_true", default=False,
+                      help="Do not truncate log and csv file on first ecall")
+  parser.add_argument("--noclean", action="store_true", default=False,
                       help="Do not clean the output of the previous runs")
   parser.add_argument("--vector_options", type=str, default="",
                       help="Enable Vectors and set options")
   parser.add_argument("--coverage_options", type=str, default="",
                       help="Controlling coverage coverpoints")
-  parser.set_defaults(verbose=False)
-  parser.set_defaults(debug_mode=False)
-  parser.set_defaults(compliance_mode=False)
-  parser.set_defaults(stop_on_first_error=False)
-  parser.set_defaults(dont_truncate_after_first_ecall=False)
-  parser.set_defaults(vector_options="")
-  parser.set_defaults(coverage_options="")
+  parser.add_argument("--exp", action="store_true", default=False,
+                      help="Run generator with experimental features")
   return parser
 
-def main():
-  """This is the main entry point."""
-  parser = setup_parser()
-  args = parser.parse_args()
-  cwd = os.path.dirname(os.path.realpath(__file__))
-  setup_logging(args.verbose)
+def load_config(args, cwd):
+  """
+  Load configuration from the command line and the configuration file.
 
+  Args:
+      args:   Parsed command-line configuration
+  Returns:
+      Loaded configuration dictionary.
+  """
   if args.verbose:
     args.opts += "-v"
 
   if not args.simulator_yaml:
     args.simulator_yaml = cwd + "/yaml/simulator.yaml"
-
-  # Debug mode only works for RV64GC target
-  if args.debug_mode:
-    args.target = "rv64gc"
 
   # Disable ISS coverage if a core is passed in
   if args.core:
@@ -319,31 +272,28 @@ def main():
     args.core_setting_dir = cwd + "/target/"+ args.target
 
   args.testlist = cwd + "/yaml/cov_testlist.yaml" ## needed if need to force
+  # Create loaded configuration dictionary.
+  cfg = vars(args)
+  return cfg
 
-  # Create output directory
-  output_dir = create_output(args.o, "cov_out_")
-
-  if args.noclean is False:
-    os.system("rm -rf %s" % output_dir)
-
-  logging.info("Creating output directory: %s" % output_dir)
-  subprocess.run(["mkdir", "-p", output_dir])
-
-  if args.debug_mode:
-    run_cov_debug_test(output_dir, args.instr_cnt, args.testlist,
-                       args.batch_size, args.opts, args.lsf_cmd, args.timeout,
-                       args.simulator, args.simulator_yaml, args.custom_target,
-                       args.isa, args.target)
-  else:
-    collect_cov(args.dir, output_dir, args.core, args.iss, args.testlist,
-                args.batch_size, args.lsf_cmd, args.steps, args.opts, args.timeout,
-                args.simulator, args.simulator_yaml, args.custom_target,
-                args.isa, args.target, args.stop_on_first_error,
-                args.dont_truncate_after_first_ecall,
-                args.vector_options,
-                args.coverage_options,
-                args.compliance_mode)
+def main():
+  """This is the main entry point."""
+  try:
+    parser = setup_parser()
+    args = parser.parse_args()
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    setup_logging(args.verbose)
+    # Load configuration from the command line and the configuration file.
+    cfg = load_config(args, cwd)
+    # Create output directory
+    output_dir = create_output(args.o, args.noclean, "cov_out_")
+    # Collect coverage for the trace CSV
+    collect_cov(output_dir, cfg ,cwd)
     logging.info("Coverage results are saved to %s" % output_dir)
+    sys.exit(RET_SUCCESS)
+  except KeyboardInterrupt:
+    logging.info("\nExited Ctrl-C from user request.")
+    sys.exit(130)
 
 if __name__ == "__main__":
   main()

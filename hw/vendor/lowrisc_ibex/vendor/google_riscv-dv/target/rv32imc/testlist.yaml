@@ -21,6 +21,7 @@
 # iterations      : Number of iterations of this test
 # no_iss          : Enable/disable ISS simulator (Optional)
 # gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
 # rtl_test        : RTL simulation test name
 # cmp_opts        : Compile options passed to the instruction generator
 # sim_opts        : Simulation options passed to the instruction generator

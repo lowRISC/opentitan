@@ -11,3 +11,4 @@ qrun.out/
 qrun.log
 *.ucdb
 *.vstf
+riscv_dv.egg-info

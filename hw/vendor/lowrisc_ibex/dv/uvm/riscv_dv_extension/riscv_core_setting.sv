@@ -20,6 +20,12 @@
 // XLEN
 parameter int XLEN = 32;
 
+// Vector extension parameters - not used in Ibex
+parameter int VECTOR_EXTENSION_ENABLE = 0;
+parameter int VLEN = 512;
+parameter int ELEN = 64;
+parameter int SLEN = 64;
+
 // Parameter for SATP mode, set to BARE if address translation is not supported
 parameter satp_mode_t SATP_MODE = BARE;
 

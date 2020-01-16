@@ -27,7 +27,8 @@ filesets:
       # XXX: Figure out the best way to switch these two implementations
       # dynamically on the target.
 #      - rtl/ibex_register_file_latch.sv # ASIC
-      - rtl/ibex_register_file_ff.sv # FPGA
+#      - rtl/ibex_register_file_fpga.sv # FPGA
+      - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_core.sv
     file_type: systemVerilogSource
 
@@ -69,9 +70,6 @@ targets:
 
   lint:
     filesets:
-      # Note on Verilator waivers:
-      # You *must* include the waiver file first, otherwise only global waivers
-      # are applied, but not file-specific waivers.
       - tool_verilator ? (files_lint_verilator)
       - files_rtl
       - files_lint

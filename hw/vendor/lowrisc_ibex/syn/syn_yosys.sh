@@ -4,50 +4,56 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# This script converts all SystemVerilog RTL files to Verilog and then
-# runs Yosys for ibex_core
-#
-# The following tools are required:
-#  - sv2v: SystemVerilog-to-Verilog converter from github.com/zachjs/sv2v
-#  - yosys: synthesis tool from github.com/YosysHQ/yosys
-#
-# Usage:
-#   syn_yosys.sh 2>&1 | tee syn.std
-#
-# Above command generates two files:
-#   ibex_core_premap.v  : premap netlist (before mapping it onto std. cells)
-#   ibex_core_netlist.v : final netlist
+# This script drives the experimental Ibex synthesis flow. More details can be
+# found in README.md
 
-# TODO: below should be replaced by elegant fusesoc commands
+if [ ! -f syn_setup.sh ]; then
+  echo "Must provide syn_setup.sh file"
+  echo "See example in syn_setup.example.sh and README.md for instructions"
+  exit 1
+fi
+
+#-------------------------------------------------------------------------
+# setup flow variables
+#-------------------------------------------------------------------------
+source syn_setup.sh
 
 #-------------------------------------------------------------------------
 # use sv2v to convert all SystemVerilog files to Verilog
 #-------------------------------------------------------------------------
-rm -Rf syn_out
-mkdir syn_out
+
+mkdir -p "$LR_SYNTH_OUT_DIR/generated"
+mkdir -p "$LR_SYNTH_OUT_DIR/log"
+mkdir -p "$LR_SYNTH_OUT_DIR/reports/timing"
 
 for file in ../rtl/*.sv; do
   module=`basename -s .sv $file`
   sv2v \
     --define=SYNTHESIS \
     ../rtl/*_pkg.sv \
+    ../shared/rtl/prim_assert.sv \
     $file \
-    > syn_out/${module}.v
+    > $LR_SYNTH_OUT_DIR/generated/${module}.v
 
   # TODO: eventually remove below hack. It removes "unsigned" from params
   # because Yosys doesn't support unsigned parameters
-  sed -i 's/parameter unsigned/parameter/g'   syn_out/${module}.v
-  sed -i 's/localparam unsigned/localparam/g' syn_out/${module}.v
+  sed -i 's/parameter unsigned/parameter/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
+  sed -i 's/localparam unsigned/localparam/g' $LR_SYNTH_OUT_DIR/generated/${module}.v
+  sed -i 's/reg unsigned/reg/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 # remove generated *pkg.v files (they are empty files and not needed)
-rm -f syn_out/*_pkg.v
+rm -f $LR_SYNTH_OUT_DIR/generated/*_pkg.v
+
+# remove tracer (not needed for synthesis)
+rm -f $LR_SYNTH_OUT_DIR/generated/ibex_tracer.v
 
 # remove the latch-based register file (because we will use the
 # flop-based one instead)
-rm -f syn_out/ibex_register_file_latch.v
+rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_latch.v
 
-#-------------------------------------------------------------------------
-# run yosys
-#-------------------------------------------------------------------------
-yosys syn.ys -l syn.log
+yosys -c ./tcl/yosys_run_synth.tcl | tee ./$LR_SYNTH_OUT_DIR/log/syn.log
+
+sta ./tcl/sta_run_reports.tcl | tee ./$LR_SYNTH_OUT_DIR/log/sta.log
+
+./translate_timing_rpts.sh

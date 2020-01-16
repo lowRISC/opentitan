@@ -23,6 +23,8 @@
 
 class riscv_illegal_instr extends uvm_object;
 
+  string comment;
+
   typedef enum bit [2:0] {
     kIllegalOpcode,
     kIllegalCompressedOpcode,
@@ -32,6 +34,21 @@ class riscv_illegal_instr extends uvm_object;
     kHintInstr,
     kIllegalSystemInstr
   } illegal_instr_type_e;
+
+  typedef enum bit [3:0] {
+    kIllegalCompressed,
+    kReservedAddispn,
+    kReservedAddiw,
+    kReservedAddi16sp,
+    kReservedLui,
+    kReservedLwsp,
+    kReservedLdsp,
+    kReservedLqsp,
+    kReservedJr,
+    kReservedC0,
+    kReservedC1,
+    kReservedC2
+  } reserved_c_instr_e;
 
   // Default legal opcode for RV32I instructions
   bit [6:0]  legal_opcode[$] = '{7'b0000011,
@@ -56,6 +73,7 @@ class riscv_illegal_instr extends uvm_object;
                                      3'b110};
 
   rand illegal_instr_type_e  exception;
+  rand reserved_c_instr_e    reserved_c;
   rand bit [31:0]            instr_bin;
   rand bit [6:0]             opcode;
   rand bit                   compressed;
@@ -165,17 +183,37 @@ class riscv_illegal_instr extends uvm_object;
   }
 
   constraint reserved_compressed_instr_c {
+    solve exception  before reserved_c;
+    solve exception  before opcode;
+    solve reserved_c before instr_bin;
+    solve reserved_c before c_msb;
+    solve reserved_c before c_op;
+    if (XLEN == 32) {
+      //c.addiw is RV64/RV128 only instruction, the encoding is used for C.JAL for RV32C
+      reserved_c != kReservedAddiw;
+    }
     if (exception == kReservedCompressedInstr) {
-      ((instr_bin[15:5] == '0) && (c_op == 2'b00)) ||
-      ((c_msb == 3'b100) && (c_op == 2'b00)) ||
-      ((instr_bin[15:10] == 6'b100111) && (instr_bin[6:5] == 2'b10) && (c_op == 2'b01)) ||
-      ((instr_bin[15:10] == 6'b100111) && (instr_bin[6:5] == 2'b11) && (c_op == 2'b01)) ||
-      // C_LUI, imm = 0
-      ((c_msb == 3'b011) && (c_op == 2'b01) && !instr_bin[12] && (instr_bin[6:2] == 0)) ||
-      ((c_msb == 3'b001) && (c_op == 2'b10) && (instr_bin[11:7] == 5'b0)) ||
-      ((c_msb == 3'b010) && (c_op == 2'b10) && (instr_bin[11:7] == 5'b0)) ||
-      ((c_msb == 3'b011) && (c_op == 2'b10) && (instr_bin[11:7] == 5'b0)) ||
-      (instr_bin == 16'b1000_0000_0000_0010);
+      (reserved_c == kIllegalCompressed) -> (instr_bin[15:0] == 0);
+      (reserved_c == kReservedAddispn)   -> ((instr_bin[15:5] == '0) && (c_op == 2'b00));
+      (reserved_c == kReservedAddiw)     -> ((c_msb == 3'b001) && (c_op == 2'b01) &&
+                                             (instr_bin[11:7] == 5'b0));
+      (reserved_c == kReservedC0)        -> ((instr_bin[15:10] == 6'b100111) &&
+                                             (instr_bin[6:5] == 2'b10) && (c_op == 2'b01));
+      (reserved_c == kReservedC1)        -> ((instr_bin[15:10] == 6'b100111) &&
+                                             (instr_bin[6:5] == 2'b11) && (c_op == 2'b01));
+      (reserved_c == kReservedC2)        -> ((c_msb == 3'b100) && (c_op == 2'b00));
+      (reserved_c == kReservedAddi16sp)  -> ((c_msb == 3'b011) && (c_op == 2'b01) &&
+                                             (instr_bin[11:7] == 2) &&
+                                             !instr_bin[12] && (instr_bin[6:2] == 0));
+      (reserved_c == kReservedLui)       -> ((c_msb == 3'b011) && (c_op == 2'b01) &&
+                                             !instr_bin[12] && (instr_bin[6:2] == 0));
+      (reserved_c == kReservedJr)        -> (instr_bin == 16'b1000_0000_0000_0010);
+      (reserved_c == kReservedLqsp)      -> ((c_msb == 3'b001) && (c_op == 2'b10) &&
+                                             (instr_bin[11:7] == 5'b0));
+      (reserved_c == kReservedLwsp)      -> ((c_msb == 3'b010) && (c_op == 2'b10) &&
+                                             (instr_bin[11:7] == 5'b0));
+      (reserved_c == kReservedLdsp)      -> ((c_msb == 3'b011) && (c_op == 2'b10) &&
+                                             (instr_bin[11:7] == 5'b0));
     }
   }
 
@@ -217,7 +255,9 @@ class riscv_illegal_instr extends uvm_object;
 
   // TODO: Enable atomic instruction
   constraint no_atomic_c {
-    opcode != 7'b0101111;
+    if (exception != kIllegalOpcode) {
+      opcode != 7'b0101111;
+    }
   }
 
   constraint illegal_func3_c {
@@ -330,6 +370,15 @@ class riscv_illegal_instr extends uvm_object;
     end
     `uvm_info(`gfn, $sformatf("Illegal instruction type: %0s, illegal instruction: 0x%0x",
                                exception.name(), instr_bin), UVM_HIGH)
+  endfunction
+
+  function void post_randomize();
+    comment = exception.name();
+    if (exception == kReservedCompressedInstr) begin
+      comment = {comment, " ", reserved_c.name()};
+    end else if (exception == kIllegalOpcode) begin
+      comment = {comment, " ", $sformatf("%7b", opcode)};
+    end
   endfunction
 
 endclass

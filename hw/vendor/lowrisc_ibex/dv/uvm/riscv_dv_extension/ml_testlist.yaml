@@ -21,6 +21,7 @@
 # iterations      : Number of iterations of this test
 # no_iss          : Enable/disable ISS simulator (Optional)
 # gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
 # rtl_test        : RTL simulation test name
 # cmp_opts        : Compile options passed to the instruction generator
 # sim_opts        : Simulation options passed to the instruction generator
@@ -29,14 +30,38 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 
-- import: <riscv_dv_root>/target/rv64gc/testlist.yaml
-
-- test: riscv_instr_test
+- test: riscv_rand_test
   description: >
-    New experimental instruction class test
-  iterations: 0
-  gen_test: riscv_instr_test
+    Random test with all useful knobs
   gen_opts: >
     +instr_cnt=10000
     +num_of_sub_program=5
-    +boot_mode=m
+    +illegal_instr_ratio=5
+    +hint_instr_ratio=5
+    +stream_name_0=riscv_load_store_rand_instr_stream
+    +stream_freq_0=4
+    +stream_name_1=riscv_loop_instr
+    +stream_freq_1=4
+    +stream_name_2=riscv_hazard_instr_stream
+    +stream_freq_2=4
+    +stream_name_3=riscv_load_store_hazard_instr_stream
+    +stream_freq_3=4
+    +stream_name_4=riscv_mem_region_stress_test
+    +stream_freq_4=4
+    +stream_name_5=riscv_jal_instr
+    +stream_freq_5=4
+    +stream_name_6=riscv_int_numeric_corner_stream
+    +stream_freq_6=4
+    +dist_control_mode=1
+    +dist_shift=10
+    +dist_arithmetic=10
+    +dist_logical=10
+    +dist_compare=10
+    +dist_branch=10
+    +dist_synch=10
+    +dist_csr=10
+  iterations: 1
+  gcc_opts: >
+    -mno-strict-align
+  gen_test: riscv_ml_test
+  rtl_test: core_ibex_base_test

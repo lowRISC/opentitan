@@ -187,12 +187,16 @@ module ibex_cs_registers #(
   logic [PMP_CFG_W-1:0]        pmp_cfg_rdata   [PMP_MAX_REGIONS];
 
   // Hardware performance monitor signals
-  logic [31:0] mcountinhibit_d, mcountinhibit_q, mcountinhibit;
-  logic [31:0] mcountinhibit_force;
-  logic        mcountinhibit_we;
-  logic [63:0] mhpmcounter_mask [32];
+  logic [31:0]                 mcountinhibit;
+  // Only have mcountinhibit flops for counters that actually exist
+  logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
+  logic                        mcountinhibit_we;
+
   logic [63:0] mhpmcounter_d [32];
-  logic [63:0] mhpmcounter_q [32];
+  // mhpmcounter flops are elaborated below providing only the precise number that is required based
+  // on MHPMCounterNum/MHPMCounterWidth. This signal connects to the Q output of these flops
+  // where they exist and is otherwise 0.
+  logic [63:0] mhpmcounter [32];
   logic [31:0] mhpmcounter_we;
   logic [31:0] mhpmcounterh_we;
   logic [31:0] mhpmcounter_incr;
@@ -360,7 +364,7 @@ module ibex_cs_registers #(
       CSR_MHPMCOUNTER20, CSR_MHPMCOUNTER21, CSR_MHPMCOUNTER22, CSR_MHPMCOUNTER23,
       CSR_MHPMCOUNTER24, CSR_MHPMCOUNTER25, CSR_MHPMCOUNTER26, CSR_MHPMCOUNTER27,
       CSR_MHPMCOUNTER28, CSR_MHPMCOUNTER29, CSR_MHPMCOUNTER30, CSR_MHPMCOUNTER31: begin
-        csr_rdata_int = mhpmcounter_q[mhpmcounter_idx][31:0];
+        csr_rdata_int = mhpmcounter[mhpmcounter_idx][31:0];
       end
 
       CSR_MCYCLEH,
@@ -373,7 +377,7 @@ module ibex_cs_registers #(
       CSR_MHPMCOUNTER20H, CSR_MHPMCOUNTER21H, CSR_MHPMCOUNTER22H, CSR_MHPMCOUNTER23H,
       CSR_MHPMCOUNTER24H, CSR_MHPMCOUNTER25H, CSR_MHPMCOUNTER26H, CSR_MHPMCOUNTER27H,
       CSR_MHPMCOUNTER28H, CSR_MHPMCOUNTER29H, CSR_MHPMCOUNTER30H, CSR_MHPMCOUNTER31H: begin
-        csr_rdata_int = mhpmcounter_q[mhpmcounter_idx][63:32];
+        csr_rdata_int = mhpmcounter[mhpmcounter_idx][63:32];
       end
 
       // Debug triggers
@@ -835,14 +839,11 @@ module ibex_cs_registers #(
   // update enable signals
   always_comb begin : mcountinhibit_update
     if (mcountinhibit_we == 1'b1) begin
-      mcountinhibit_d = {csr_wdata_int[31:2], 1'b0, csr_wdata_int[0]}; // bit 1 must always be 0
+      mcountinhibit_d = {csr_wdata_int[MHPMCounterNum+2:2], 1'b0, csr_wdata_int[0]}; // bit 1 must always be 0
     end else begin
       mcountinhibit_d = mcountinhibit_q;
     end
   end
-
-  assign mcountinhibit_force = {{29-MHPMCounterNum{1'b1}}, {MHPMCounterNum{1'b0}}, 3'b000};
-  assign mcountinhibit       = mcountinhibit_q | mcountinhibit_force;
 
   // event selection (hardwired) & control
   always_comb begin : gen_mhpmcounter_incr
@@ -887,55 +888,67 @@ module ibex_cs_registers #(
     end
   end
 
-  // mask, controls effective counter width
-  always_comb begin : gen_mask
-
-    for (int i=0; i<3; i++) begin : gen_mask_fixed
-      // mcycle, mtime, minstret are always 64 bit wide
-      mhpmcounter_mask[i] = {64{1'b1}};
-    end
-
-    for (int unsigned i=3; i<3+MHPMCounterNum; i++) begin : gen_mask_configurable
-      // mhpmcounters have a configurable width
-      mhpmcounter_mask[i] = {{64-MHPMCounterWidth{1'b0}}, {MHPMCounterWidth{1'b1}}};
-    end
-
-    for (int unsigned i=3+MHPMCounterNum; i<32; i++) begin : gen_mask_inactive
-      // mask inactive mhpmcounters
-      mhpmcounter_mask[i] = '0;
-    end
-  end
-
   // update
   always_comb begin : mhpmcounter_update
-    mhpmcounter_d = mhpmcounter_q;
+    mhpmcounter_d = mhpmcounter;
 
     for (int i=0; i<32; i++) begin : gen_mhpmcounter_update
 
       // increment
       if (mhpmcounter_incr[i] & ~mcountinhibit[i]) begin
-        mhpmcounter_d[i] = mhpmcounter_mask[i] & (mhpmcounter_q[i] + 64'h1);
+        mhpmcounter_d[i] = mhpmcounter[i] + 64'h1;
       end
 
       // write
       if (mhpmcounter_we[i]) begin
-        mhpmcounter_d[i][31: 0] = mhpmcounter_mask[i][31: 0] & csr_wdata_int;
+        mhpmcounter_d[i][31: 0] = csr_wdata_int;
       end else if (mhpmcounterh_we[i]) begin
-        mhpmcounter_d[i][63:32] = mhpmcounter_mask[i][63:32] & csr_wdata_int;
+        mhpmcounter_d[i][63:32] = csr_wdata_int;
       end
     end
   end
 
-  // performance monitor registers
-  always_ff @(posedge clk_i or negedge rst_ni) begin : perf_counter_registers
-    if (!rst_ni) begin
-      mcountinhibit_q    <= '0;
-      for (int i=0; i<32; i++) begin
-        mhpmcounter_q[i] <= '0;
+  // Performance monitor registers
+  // Only elaborate flops that are needed from the given MHPMCounterWidth and MHPMCounterNum
+  // parameters
+  for (genvar i = 0; i < 32; i++) begin : g_mhpmcounter
+    // First 3 counters (cycle, time, instret) must always be elaborated
+    if (i < 3 + MHPMCounterNum) begin : g_mhpmcounter_exists
+      // First 3 counters must be 64-bit the rest have parameterisable width
+      localparam int unsigned IMHPMCounterWidth = i < 3 ? 64 : MHPMCounterWidth;
+
+      logic [IMHPMCounterWidth-1:0] mhpmcounter_q;
+
+      always @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+          mhpmcounter_q <= '0;
+        end else begin
+          mhpmcounter_q <= mhpmcounter_d[i][IMHPMCounterWidth-1:0];
+        end
       end
+
+      if (IMHPMCounterWidth < 64) begin : g_mhpmcounter_narrow
+        assign mhpmcounter[i][IMHPMCounterWidth-1:0] = mhpmcounter_q;
+        assign mhpmcounter[i][63:IMHPMCounterWidth]  = '0;
+      end else begin : g_mhpmcounter_full
+        assign mhpmcounter[i] = mhpmcounter_q;
+      end
+    end else begin : g_no_mhpmcounter
+      assign mhpmcounter[i] = '0;
+    end
+  end
+
+  if(MHPMCounterNum < 29) begin : g_mcountinhibit_reduced
+    assign mcountinhibit = {{29-MHPMCounterNum{1'b1}}, mcountinhibit_q};
+  end else begin : g_mcountinhibit_full
+    assign mcountinhibit = mcountinhibit_q;
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      mcountinhibit_q <= '0;
     end else begin
-      mhpmcounter_q      <= mhpmcounter_d;
-      mcountinhibit_q    <= mcountinhibit_d;
+      mcountinhibit_q <= mcountinhibit_d;
     end
   end
 

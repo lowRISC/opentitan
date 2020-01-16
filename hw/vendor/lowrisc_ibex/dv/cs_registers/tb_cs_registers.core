@@ -73,6 +73,16 @@ parameters:
     paramtype: vlogparam
     default: 0
     description: Minimum PMP matching granularity [0/31]
+  MHPMCounterNum:
+    datatype: int
+    paramtype: vlogparam
+    default: 8
+    description: Number of performance monitor event counters [0/29]
+  MHPMCounterWidth:
+    datatype: int
+    paramtype: vlogparam
+    default: 40
+    description: Bit width of performance monitor event counters [32/64]
 
 targets:
   sim:
@@ -88,6 +98,8 @@ targets:
       - PMPEnable
       - PMPNumRegions
       - PMPGranularity
+      - MHPMCounterNum
+      - MHPMCounterWidth
 
     tools:
       vcs:

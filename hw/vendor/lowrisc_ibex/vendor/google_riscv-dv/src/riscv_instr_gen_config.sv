@@ -60,6 +60,7 @@ class riscv_instr_gen_config extends uvm_object;
   rand bit               mstatus_sum;
   rand bit               mstatus_tvm;
   rand bit [1:0]         mstatus_fs;
+  rand bit [1:0]         mstatus_vs;
   rand mtvec_mode_t      mtvec_mode;
 
   // Floating point rounding mode
@@ -86,6 +87,9 @@ class riscv_instr_gen_config extends uvm_object;
 
   // Virtual address translation is on for this test
   rand bit               virtual_addr_translation_on;
+
+  // Vector extension setting
+  rand riscv_vector_cfg  vector_cfg;
 
   //-----------------------------------------------------------------------------
   //  User space memory region and stack setting
@@ -163,6 +167,8 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_illegal_csr_instruction;
   // Enable accessing CSRs at an invalid privilege level
   bit                    enable_access_invalid_csr_level;
+  // Enable misaligned instruction (caused by JALR instruction)
+  bit                    enable_misaligned_instr;
   // Enable some dummy writes to main system CSRs (xSTATUS/xIE) at beginning of test
   // to check repeated writes
   bit                    enable_dummy_csr_write;
@@ -210,6 +216,8 @@ class riscv_instr_gen_config extends uvm_object;
   riscv_reg_t            reserved_regs[];
   // Floating point support
   bit                    enable_floating_point;
+  // Vector extension support
+  bit                    enable_vector_extension;
 
   //-----------------------------------------------------------------------------
   // Command line options for instruction distribution control
@@ -339,7 +347,7 @@ class riscv_instr_gen_config extends uvm_object;
   }
 
   constraint ra_c {
-    ra dist {RA := 5, T1 := 2, [SP:T0] :/ 1, [T2:T6] :/ 2};
+    ra dist {RA := 3, T1 := 2, [SP:T0] :/ 1, [T2:T6] :/ 4};
     ra != sp;
     ra != tp;
     ra != ZERO;
@@ -347,7 +355,6 @@ class riscv_instr_gen_config extends uvm_object;
 
   constraint sp_tp_c {
     sp != tp;
-    sp dist {SP := 6, RA := 1, [GP:T6] :/ 3};
     !(sp inside {GP, RA, ZERO});
     !(tp inside {GP, RA, ZERO});
   }
@@ -382,6 +389,14 @@ class riscv_instr_gen_config extends uvm_object;
     }
   }
 
+  constraint mstatus_vs_c {
+    if (enable_vector_extension) {
+      mstatus_vs == 2'b01;
+    } else {
+      mstatus_vs == 2'b00;
+    }
+  }
+
   `uvm_object_utils_begin(riscv_instr_gen_config)
     `uvm_field_int(main_program_instr_cnt, UVM_DEFAULT)
     `uvm_field_sarray_int(sub_program_instr_cnt, UVM_DEFAULT)
@@ -411,6 +426,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(bare_program_mode, UVM_DEFAULT)
     `uvm_field_int(enable_illegal_csr_instruction, UVM_DEFAULT)
     `uvm_field_int(enable_access_invalid_csr_level, UVM_DEFAULT)
+    `uvm_field_int(enable_misaligned_instr, UVM_DEFAULT)
     `uvm_field_int(enable_dummy_csr_write, UVM_DEFAULT)
     `uvm_field_int(randomize_csr, UVM_DEFAULT)
     `uvm_field_int(allow_sfence_exception, UVM_DEFAULT)
@@ -431,6 +447,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(max_branch_step, UVM_DEFAULT)
     `uvm_field_int(max_directed_instr_stream_seq, UVM_DEFAULT)
     `uvm_field_int(enable_floating_point, UVM_DEFAULT)
+    `uvm_field_int(enable_vector_extension, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new (string name = "");
@@ -453,6 +470,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+no_csr_instr=", no_csr_instr);
     get_bool_arg_value("+enable_illegal_csr_instruction=", enable_illegal_csr_instruction);
     get_bool_arg_value("+enable_access_invalid_csr_level=", enable_access_invalid_csr_level);
+    get_bool_arg_value("+enable_misaligned_instr=", enable_misaligned_instr);
     get_bool_arg_value("+enable_dummy_csr_write=", enable_dummy_csr_write);
     get_bool_arg_value("+allow_sfence_exception=", allow_sfence_exception);
     get_bool_arg_value("+no_data_page=", no_data_page);
@@ -478,6 +496,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_debug_single_step=", enable_debug_single_step);
     get_bool_arg_value("+set_mstatus_tw=", set_mstatus_tw);
     get_bool_arg_value("+enable_floating_point=", enable_floating_point);
+    get_bool_arg_value("+enable_vector_extension=", enable_vector_extension);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
       `uvm_info(get_full_name(), $sformatf(
                 "Got boot mode option - %0s", boot_mode_opts), UVM_LOW)
@@ -513,6 +532,7 @@ class riscv_instr_gen_config extends uvm_object;
     if (!(RV32C inside {supported_isa})) begin
       disable_compressed_instr = 1;
     end
+    vector_cfg = riscv_vector_cfg::type_id::create("vector_cfg");
     setup_instr_distribution();
     get_invalid_priv_lvl_csr();
   endfunction

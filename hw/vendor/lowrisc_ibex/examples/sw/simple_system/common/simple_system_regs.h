@@ -9,4 +9,10 @@
 #define SIM_CTRL_OUT 0x0
 #define SIM_CTRL_CTRL 0x4
 
+#define TIMER_BASE 0x30000
+#define TIMER_MTIME 0x0
+#define TIMER_MTIMEH 0x4
+#define TIMER_MTIMECMP 0x8
+#define TIMER_MTIMECMPH 0xC
+
 #endif  // SIMPLE_SYSTEM_REGS_H__

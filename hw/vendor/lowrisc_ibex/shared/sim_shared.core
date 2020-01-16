@@ -6,11 +6,14 @@ name: "lowrisc:ibex:sim_shared"
 description: "Collection of useful RTL for building simulations"
 filesets:
   files_sim_sv:
+    depend:
+      - lowrisc:prim:assert
     files:
       - ./rtl/prim_clock_gating.sv
       - ./rtl/ram_1p.sv
       - ./rtl/bus.sv
       - ./rtl/sim/simulator_ctrl.sv
+      - ./rtl/timer.sv
     file_type: systemVerilogSource
 
 targets:

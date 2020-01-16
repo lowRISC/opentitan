@@ -31,7 +31,7 @@
 - iss: sail
   path_var: SAIL_RISCV
   cmd: >
-    <path_var> <elf>
+    <path_var>/riscv_ocaml_sim_RV<xlen> <elf>
 
 - iss: whisper
   path_var: WHISPER_ISS

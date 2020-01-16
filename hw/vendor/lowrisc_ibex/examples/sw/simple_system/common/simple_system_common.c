@@ -139,3 +139,52 @@ void simple_exc_handler(void) {
 
   while(1);
 }
+
+volatile uint64_t time_elapsed;
+uint64_t time_increment;
+
+inline static void increment_timecmp(uint64_t time_base) {
+  uint64_t current_time = timer_read();
+  current_time += time_base;
+  timecmp_update(current_time);
+}
+
+void timer_enable(uint64_t time_base) {
+  time_elapsed = 0;
+  time_increment = time_base;
+  // Set timer values
+  increment_timecmp(time_base);
+  // enable timer interrupt
+  asm volatile("csrs  mie, %0\n" : : "r"(0x80));
+  // enable global interrupt
+  asm volatile("csrs  mstatus, %0\n" : : "r"(0x8));
+}
+
+void timer_disable(void) { asm volatile("csrc  mie, %0\n" : : "r"(0x80)); }
+
+uint64_t timer_read(void) {
+  uint32_t current_timeh;
+  uint32_t current_time;
+  // check if time overflowed while reading and try again
+  do {
+    current_timeh = DEV_READ(TIMER_BASE + TIMER_MTIMEH, 0);
+    current_time = DEV_READ(TIMER_BASE + TIMER_MTIME, 0);
+  } while (current_timeh != DEV_READ(TIMER_BASE + TIMER_MTIMEH, 0));
+  uint64_t final_time = ((uint64_t)current_timeh << 32) | current_time;
+  return final_time;
+}
+
+void timecmp_update(uint64_t new_time) {
+  DEV_WRITE(TIMER_BASE + TIMER_MTIMECMP, -1);
+  DEV_WRITE(TIMER_BASE + TIMER_MTIMECMPH, new_time >> 32);
+  DEV_WRITE(TIMER_BASE + TIMER_MTIMECMP, new_time);
+}
+
+uint64_t get_elapsed_time(void) { return time_elapsed; }
+
+void simple_timer_handler(void) __attribute__((interrupt));
+
+void simple_timer_handler(void) {
+  increment_timecmp(time_increment);
+  time_elapsed++;
+}

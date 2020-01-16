@@ -1,0 +1,16 @@
+include sample/*
+include scripts/*
+include src/*
+include target/*
+include test/*
+include user_extension/*
+include yaml/*
+include README.md
+include LICENSE.txt
+include HANDSHAKE.md
+include files.f
+include qrun_option.f
+include questa_sim.tcl
+include run.py
+include requirements.txt
+include vcs.compile.option.f
