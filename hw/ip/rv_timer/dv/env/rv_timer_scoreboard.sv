@@ -153,9 +153,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
           for (int i = 0; i < NUM_HARTS; i++) begin
             string intr_test_str = $sformatf("intr_test%0d", i);
             if (csr_name == intr_test_str) begin
-              uint intr_test_val = get_reg_fld_mirror_value(ral, intr_test_str);
-              // this field is WO - always returns 0
-              void'(csr.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+              uint intr_test_val = item.a_data;
               foreach (intr_test_val[j]) begin
                 int intr_pin_idx = i * NUM_TIMERS + j;
                 if (intr_test_val[j]) intr_status_exp[i][j] = intr_test_val[j];

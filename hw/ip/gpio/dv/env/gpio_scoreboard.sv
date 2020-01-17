@@ -32,6 +32,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // (ii) store information of which all interupt bits were cleared
   bit [TL_DW-1:0] cleared_intr_bits;
 
+  // mask are WO, store the values in scb
+  uvm_reg_data_t masked_out_lower_mask;
+  uvm_reg_data_t masked_out_upper_mask;
+
   `uvm_component_utils(gpio_scoreboard)
 
   `uvm_component_new
@@ -181,6 +185,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                       mask[each_pin], data[each_pin]);
                 end
               end
+            end
+            // these fields are WO, save values in scb
+            if (csr.get_name() == "masked_out_lower") begin
+              masked_out_lower_mask = get_field_val(ral.masked_out_lower.mask, item.a_data);
+            end else if (csr.get_name() == "masked_out_upper") begin
+              masked_out_upper_mask = get_field_val(ral.masked_out_upper.mask, item.a_data);
             end
             void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           end
@@ -358,12 +368,11 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           update_gpio_out_regs();
         end
         "masked_out_lower": begin
-          uvm_reg_data_t mask = ral.masked_out_lower.mask.get_mirrored_value();
           uvm_reg_data_t data = ral.masked_out_lower.data.get_mirrored_value();
 
           for (uint pin_idx = 0;
                pin_idx < ral.masked_out_lower.mask.get_n_bits(); pin_idx++) begin
-            if (mask[pin_idx] == 1'b1) begin
+            if (masked_out_lower_mask[pin_idx] == 1'b1) begin
               data_out[pin_idx] = data[pin_idx];
             end
           end
@@ -373,11 +382,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           update_gpio_out_regs();
         end
         "masked_out_upper": begin
-          uvm_reg_data_t mask = ral.masked_out_upper.mask.get_mirrored_value();
           uvm_reg_data_t data = ral.masked_out_upper.data.get_mirrored_value();
 
           for (uint pin_idx = 0; pin_idx < ral.masked_out_upper.mask.get_n_bits(); pin_idx++) begin
-            if (mask[pin_idx] == 1'b1) begin
+            if (masked_out_upper_mask[pin_idx] == 1'b1) begin
               data_out[(NUM_GPIOS / 2) + pin_idx] = data[pin_idx];
             end
           end
@@ -702,7 +710,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   //        before calling the method.
   function void update_gpio_out_regs();
     uvm_reg_data_t data;
-    const uvm_reg_data_t mask = 0;
     // 1. Update "direct_out" register for writes to masked_out_* registers
     //    For write to "direct_out", it must have been updated already.
     void'(ral.direct_out.predict(.value(data_out), .kind(UVM_PREDICT_WRITE)));
@@ -713,7 +720,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
          idx++) begin
       data[idx] = 1'b0;
     end
-    void'(ral.masked_out_lower.mask.predict(.value(mask), .kind(UVM_PREDICT_WRITE)));
     void'(ral.masked_out_lower.data.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
     // 3. Update masked_out_upper
     data = 0;
@@ -722,7 +728,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
          idx++) begin
       data[idx - ral.masked_out_upper.data.get_n_bits()] = data_out[idx];
     end
-    void'(ral.masked_out_upper.mask.predict(.value(mask), .kind(UVM_PREDICT_WRITE)));
     void'(ral.masked_out_upper.data.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
     // Coverage Sampling: Coverage on DATA_OUT values and its combinations with DATA_OE
     sample_data_out_data_oe_coverage();
