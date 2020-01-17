@@ -9,36 +9,33 @@
 #include "sw/device/lib/base/mmio.h"
 #include "uart_regs.h"  // Generated.
 
-// Fake base address
-#define UART0_BASE_ADDR 0x0
-
 #define UART_RX_FIFO_SIZE_BYTES 32u
 #define UART_TX_FIFO_SIZE_BYTES 32u
 
 static bool uart_tx_full(const dif_uart_t *uart) {
-  return mmio_region_get_bit32(uart->base_addr, UART_STATUS(0),
+  return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
                                UART_STATUS_TXFULL);
 }
 
 static bool uart_tx_empty(const dif_uart_t *uart) {
-  return mmio_region_get_bit32(uart->base_addr, UART_STATUS(0),
+  return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
                                UART_STATUS_TXEMPTY);
 }
 
 static bool uart_rx_empty(const dif_uart_t *uart) {
-  return mmio_region_get_bit32(uart->base_addr, UART_STATUS(0),
+  return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
                                UART_STATUS_RXEMPTY);
 }
 
 static uint8_t uart_rx_fifo_read(const dif_uart_t *uart) {
-  uint32_t reg = mmio_region_read32(uart->base_addr, UART_RDATA(0));
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_RDATA_REG_OFFSET);
 
   return reg & UART_RDATA_MASK;
 }
 
 static void uart_tx_fifo_write(const dif_uart_t *uart, uint8_t byte) {
   uint32_t reg = (byte & UART_WDATA_MASK) << UART_WDATA_OFFSET;
-  mmio_region_write32(uart->base_addr, UART_WDATA(0), reg);
+  mmio_region_write32(uart->base_addr, UART_WDATA_REG_OFFSET, reg);
 }
 
 /**
@@ -108,15 +105,15 @@ static bool uart_configure(const dif_uart_t *uart,
   if (config->parity == kDifUartParityOdd) {
     reg |= (1u << UART_CTRL_PARITY_ODD);
   }
-  mmio_region_write32(uart->base_addr, UART_CTRL(0), reg);
+  mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, reg);
 
   // Reset RX/TX FIFOs
   reg = (1u << UART_FIFO_CTRL_RXRST);
   reg |= (1u << UART_FIFO_CTRL_TXRST);
-  mmio_region_write32(uart->base_addr, UART_FIFO_CTRL(0), reg);
+  mmio_region_write32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET, reg);
 
   // Disable interrupts
-  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE(0), 0u);
+  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
 
   return true;
 }
@@ -199,7 +196,7 @@ bool dif_uart_watermark_rx_set(const dif_uart_t *uart,
   }
 
   // Set watermark level
-  mmio_region_nonatomic_set_mask32(uart->base_addr, UART_FIFO_CTRL(0),
+  mmio_region_nonatomic_set_mask32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
                                    rxi_level, UART_FIFO_CTRL_RXILVL_OFFSET);
 
   return true;
@@ -233,7 +230,7 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
   }
 
   // Set watermark level
-  mmio_region_nonatomic_set_mask32(uart->base_addr, UART_FIFO_CTRL(0),
+  mmio_region_nonatomic_set_mask32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
                                    txi_level, UART_FIFO_CTRL_TXILVL_OFFSET);
 
   return true;
@@ -311,8 +308,8 @@ bool dif_uart_irq_state_get(const dif_uart_t *uart,
 
   // Get the requested interrupt state (enabled/disabled)
   ptrdiff_t offset = uart_irq_offset_get(irq_type);
-  bool enabled =
-      mmio_region_get_bit32(uart->base_addr, UART_INTR_STATE(0), offset);
+  bool enabled = mmio_region_get_bit32(uart->base_addr,
+                                       UART_INTR_STATE_REG_OFFSET, offset);
   if (enabled) {
     *state = kDifUartEnable;
   } else {
@@ -328,10 +325,11 @@ bool dif_uart_irqs_disable(const dif_uart_t *uart, uint32_t *state) {
   }
 
   // Get the current interrupts state
-  uint32_t reg = mmio_region_read32(uart->base_addr, UART_INTR_ENABLE(0));
+  uint32_t reg =
+      mmio_region_read32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET);
 
   // Disable all UART interrupts
-  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE(0), 0u);
+  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
 
   // Pass the previous interrupt state to the caller
   if (state != NULL) {
@@ -347,7 +345,7 @@ bool dif_uart_irqs_restore(const dif_uart_t *uart, uint32_t state) {
   }
 
   // Restore the interrupt state
-  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE(0), state);
+  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, state);
 
   return true;
 }
@@ -361,11 +359,11 @@ bool dif_uart_irq_enable(const dif_uart_t *uart, dif_uart_interrupt_t irq_type,
   // Enable/disable the requested interrupt
   ptrdiff_t offset = uart_irq_offset_get(irq_type);
   if (enable == kDifUartEnable) {
-    mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_ENABLE(0),
-                                    offset);
+    mmio_region_nonatomic_set_bit32(uart->base_addr,
+                                    UART_INTR_ENABLE_REG_OFFSET, offset);
   } else {
-    mmio_region_nonatomic_clear_bit32(uart->base_addr, UART_INTR_ENABLE(0),
-                                      offset);
+    mmio_region_nonatomic_clear_bit32(uart->base_addr,
+                                      UART_INTR_ENABLE_REG_OFFSET, offset);
   }
 
   return true;
@@ -378,7 +376,8 @@ bool dif_uart_irq_force(const dif_uart_t *uart, dif_uart_interrupt_t irq_type) {
 
   // Force the requested interrupt
   ptrdiff_t offset = uart_irq_offset_get(irq_type);
-  mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_TEST(0), offset);
+  mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_TEST_REG_OFFSET,
+                                  offset);
 
   return true;
 }
@@ -390,7 +389,7 @@ bool dif_uart_rx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
 
   // RX FIFO fill level (in bytes)
   *num_bytes = (size_t)mmio_region_read_mask32(
-      uart->base_addr, UART_FIFO_STATUS(0), UART_FIFO_STATUS_RXLVL_MASK,
+      uart->base_addr, UART_FIFO_STATUS_REG_OFFSET, UART_FIFO_STATUS_RXLVL_MASK,
       UART_FIFO_STATUS_RXLVL_OFFSET);
 
   return true;
@@ -403,7 +402,7 @@ bool dif_uart_tx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
 
   // TX FIFO fill level (in bytes)
   uint32_t fill_bytes = mmio_region_read_mask32(
-      uart->base_addr, UART_FIFO_STATUS(0), UART_FIFO_STATUS_TXLVL_MASK,
+      uart->base_addr, UART_FIFO_STATUS_REG_OFFSET, UART_FIFO_STATUS_TXLVL_MASK,
       UART_FIFO_STATUS_TXLVL_OFFSET);
 
   *num_bytes = UART_TX_FIFO_SIZE_BYTES - fill_bytes;
