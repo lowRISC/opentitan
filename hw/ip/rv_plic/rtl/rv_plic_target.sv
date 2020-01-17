@@ -77,16 +77,28 @@ module rv_plic_target #(
         end
       // this creates the node assignments
       end else begin : gen_nodes
+        // NOTE: the code below has been written in this way in order to work
+        // around a synthesis issue in Vivado 2018.3 and 2019.2 where the whole
+        // module would be optimized away if these assign statements contained
+        // ternary statements to implement the muxes.
+        //
+        // TODO: rewrite these lines with ternary statmements onec the problem
+        // has been fixed in the tool.
+        //
+        // See also originating issue:
+        // https://github.com/lowRISC/opentitan/issues/1355
+        // Xilinx issue:
+        // https://forums.xilinx.com/t5/Synthesis/Simulation-Synthesis-Mismatch-with-Vivado-2018-3/m-p/1065923#M33849
+
         logic sel; // local helper variable
         // in case only one of the parent has a pending irq, forward that one
         // in case both irqs are pending, forward the one with higher priority
-        assign sel = (!is_tree[c0] && is_tree[c1])                               ? 1'b1 :
-                     (is_tree[c0] && is_tree[c1] && max_tree[c1] > max_tree[c0]) ? 1'b1 :
-                                                                                   1'b0;
+        assign sel = (~is_tree[c0] & is_tree[c1]) |
+                     (is_tree[c0] & is_tree[c1] & logic'(max_tree[c1] > max_tree[c0]));
         // forwarding muxes
-        assign is_tree[pa]  = (sel) ? is_tree[c1]  : is_tree[c0];
-        assign id_tree[pa]  = (sel) ? id_tree[c1]  : id_tree[c0];
-        assign max_tree[pa] = (sel) ? max_tree[c1] : max_tree[c0];
+        assign is_tree[pa]  = (sel          & is_tree[c1])  | ((~sel)        & is_tree[c0]);
+        assign id_tree[pa]  = ({SRCW{sel}}  & id_tree[c1])  | ({SRCW{~sel}}  & id_tree[c0]);
+        assign max_tree[pa] = ({PRIOW{sel}} & max_tree[c1]) | ({PRIOW{~sel}} & max_tree[c0]);
       end
     end : gen_level
   end : gen_tree
