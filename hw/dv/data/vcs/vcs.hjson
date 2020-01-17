@@ -14,7 +14,6 @@
                "-o {run_cmd}",
                "-f {sv_flist}",
                "+incdir+{build_dir}",
-               "-debug_access+pp",
                // Turn on warnings for non-void functions called with return values ignored
                "+warn=SV-NFIVC",
                "+warn=noUII-L",
