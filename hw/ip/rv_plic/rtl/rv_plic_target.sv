@@ -36,15 +36,12 @@ module rv_plic_target #(
   // this only works with 2 or more sources
   `ASSERT_INIT(NumSources_A, N_SOURCE >= 2)
 
-  // To occupy threshold + 1 value
-  localparam int unsigned MAX_PRIOW = $clog2(MAX_PRIO+2);
-
   // align to powers of 2 for simplicity
   // a full binary tree with N levels has 2**N + 2**N-1 nodes
   localparam int unsigned N_LEVELS = $clog2(N_SOURCE);
-  logic [2**(N_LEVELS+1)-2:0]                is_tree;
-  logic [2**(N_LEVELS+1)-2:0][SRCW-1:0]      id_tree;
-  logic [2**(N_LEVELS+1)-2:0][MAX_PRIOW-1:0] max_tree;
+  logic [2**(N_LEVELS+1)-2:0]            is_tree;
+  logic [2**(N_LEVELS+1)-2:0][SRCW-1:0]  id_tree;
+  logic [2**(N_LEVELS+1)-2:0][PRIOW-1:0] max_tree;
 
   for (genvar level = 0; level < N_LEVELS+1; level++) begin : gen_tree
     //
@@ -71,8 +68,8 @@ module rv_plic_target #(
       if (level == N_LEVELS) begin : gen_leafs
         if (offset < N_SOURCE) begin : gen_assign
           assign is_tree[pa]  = ip[offset] & ie[offset];
-          assign id_tree[pa]  = unsigned'(SRCW'(offset))+1'b1;
-          assign max_tree[pa] = unsigned'(MAX_PRIOW'(prio[offset]));
+          assign id_tree[pa]  = offset+1'b1;
+          assign max_tree[pa] = prio[offset];
         end else begin : gen_tie_off
           assign is_tree[pa]  = '0;
           assign id_tree[pa]  = '0;
@@ -98,7 +95,7 @@ module rv_plic_target #(
   logic [SRCW-1:0] irq_id_d, irq_id_q;
 
   // the results can be found at the tree root
-  assign irq_d    = (max_tree[0] > unsigned'(MAX_PRIOW'(threshold))) ? is_tree[0] : 1'b0;
+  assign irq_d    = (max_tree[0] > threshold) ? is_tree[0] : 1'b0;
   assign irq_id_d = (is_tree[0]) ? id_tree[0] : '0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : gen_regs
