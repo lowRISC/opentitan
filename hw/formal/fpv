@@ -50,7 +50,11 @@ echo ""
 \rm -Rf build jgproject
 # we just run the setup for the default target in order to generate the filelist
 if [ "${CORE_PATH}" == "" ]; then
-  CORE_PATH="fpv:${FPV_TOP}"
+  if [[ $FPV_TOP == *"_fpv" ]]; then
+    CORE_PATH="fpv:${FPV_TOP}"
+  else
+    CORE_PATH="ip:${FPV_TOP}:0.1"
+  fi
 fi
 echo "core_file path: lowrisc:${CORE_PATH}"
 
