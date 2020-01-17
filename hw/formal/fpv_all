@@ -15,7 +15,7 @@ declare -a blocks=(
   "uart"
   "hmac"
   "flash_ctrl"
-  "usbuart"
+  #"usbuart"
   "usbdev"
   # "usb_fs_nb_pe" This module doesn't have any assertions yet
   # TODO: bind files are deleted
@@ -24,9 +24,10 @@ declare -a blocks=(
   # "tlul_socket_m1"
   # "sram2tlul"
   # "xbar_main"
-  "top_earlgrey"
+  #"top_earlgrey"
   # run formal on dedicated FPV testbenches
   "prim_lfsr_fpv"
+  "prim_fifo_sync_fpv"
   "prim_alert_rxtx_fpv"
   "prim_alert_rxtx_async_fpv"
   "prim_esc_rxtx_fpv"
@@ -41,8 +42,8 @@ declare -a blocks=(
 printf "FPV RESULTS PER BLOCK\n"
 printf "Below table shows the total number of assertions, and\n"
 printf "the percentages of covered and proven assertions.\n\n"
-format1="%18s %10s %10s %10s \n"
-format2="%18s %10s %9.0f%% %9.0f%% \n"
+format1="%28s %10s %10s %10s \n"
+format2="%28s %10s %9.0f%% %9.0f%% \n"
 printf "${format1}" "Block" "Asserts" "Covered" "Proven"
 echo "----------------------------------------------------"
 
@@ -53,7 +54,7 @@ echo "----------------------------------------------------"
 
 for block in "${blocks[@]}" ; do
 
-  fpv $block > /dev/null 2>&1
+  ./fpv $block > /dev/null 2>&1
   cp fpv.log fpv_${block}.log
 
   # summarize results
