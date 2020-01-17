@@ -25,13 +25,25 @@ class spi_device_base_vseq extends cip_base_vseq #(
   rand uint sram_device_base_addr;
   rand uint sram_device_limit_addr;
 
+  // core clk freq / spi clk freq is from 1/4 to 8. use below 2 var to represent the ratio
+  // if spi_freq_faster,  core_spi_freq_ratio = spi clk freq / core clk freq (1:4)
+  // if !spi_freq_faster, core_spi_freq_ratio = core clk freq / spi clk freq (1:8)
+  rand uint core_spi_freq_ratio;
+  rand bit  spi_freq_faster;
+
   // override it in random seq
-  constraint sram_constraints_c {
+  constraint sram_addr_c {
     // host and device addr space within sram should not overlap
     sram_host_base_addr == 32'h0;
     sram_host_limit_addr == 32'h1ff; // 512 bytes
     sram_device_base_addr == 32'h200;
     sram_device_limit_addr == 32'h3ff; // 512 bytes
+  }
+
+  // core clk freq / spi clk freq is from 1/4 to 8
+  constraint freq_c {
+    core_spi_freq_ratio inside {[1:8]};
+    spi_freq_faster -> core_spi_freq_ratio <= 4;
   }
 
   `uvm_object_new
@@ -64,8 +76,13 @@ class spi_device_base_vseq extends cip_base_vseq #(
   // rx is data received over mosi (host traffic from SPI agent)
 
   // TODO: use spi_device_pkg spi_mode enum instead
-  // TODO: randomize spi sck period (cfg.m_spi_agent_cfg.sck_period_ns)
   virtual task spi_device_init();
+    // set clk period
+    if (spi_freq_faster) begin
+      cfg.m_spi_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps / core_spi_freq_ratio;
+    end else begin
+      cfg.m_spi_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
+    end
     // update host agent
     cfg.m_spi_agent_cfg.sck_polarity = sck_polarity;
     cfg.m_spi_agent_cfg.sck_phase = sck_phase;
