@@ -22,7 +22,7 @@ The AES unit supports the following features:
 - On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see Theory of Operations below)
 
 This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per round).
-High-speed, single-cycle operation for high-bandwidth data streaming is not required, rather such high-performance targets might bring this unit into conflict with International Traffic in Arms Regulations (ITAR).
+High-speed, single-cycle operation for high-bandwidth data streaming is not required.
 
 Cipher modes other than ECB are beyond this version of the AES unit but might be supported in future versions.
 
