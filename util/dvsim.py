@@ -352,7 +352,7 @@ def main():
         "-mp",
         "--max-parallel",
         type=int,
-        default=32,
+        default=16,
         metavar="N",
         help="""Run only upto a fixed number of builds/tests at a time.""")
 

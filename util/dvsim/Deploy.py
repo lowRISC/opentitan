@@ -236,9 +236,14 @@ class Deploy():
         if self.status == '.':
             log.error("Method unexpectedly called!")
         else:
-            cmd = "mv " + self.sim_cfg.links['D'] + "/" + self.odir_ln + " " + \
-                  self.sim_cfg.links[self.status] + "/."
-            os.system(cmd)
+            old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
+            new_link = self.sim_cfg.links[self.status] + "/" + self.odir_ln
+            cmd = "ln -s " + self.odir + " " + new_link + "; "
+            cmd += "rm " + old_link
+            try:
+                os.system(cmd)
+            except Exception as e:
+                log.error("Cmd \"%s\" could not be run", cmd)
 
     def get_status(self):
         if self.status != ".": return

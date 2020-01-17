@@ -267,7 +267,7 @@ class Testplan():
                 regressions[entry.milestone] = []
             # Append new tests to the list
             for test in entry.tests:
-                if test not in regressions[entry.milestone]:
+                if test not in regressions[entry.milestone] and test != "":
                     regressions[entry.milestone].append(test)
 
         # Build regressions dict into a hjson like data structure
