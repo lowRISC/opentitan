@@ -12,7 +12,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   if_mode_e       mode;               // host or device mode
 
   // host mode cfg knobs
-  time            sck_period_ns = 50; // TODO: set to 20MHz, add randomization
+  time            sck_period_ps = 50_000; // 20MHz
   bit             sck_polarity;       // aka CPOL
   bit             sck_phase;          // aka CPHA
   bit             host_bit_dir;       // 1 - lsb -> msb, 0 - msb -> lsb
@@ -28,7 +28,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (is_active,        UVM_DEFAULT)
     `uvm_field_int (en_cov,           UVM_DEFAULT)
     `uvm_field_enum(if_mode_e, mode,  UVM_DEFAULT)
-    `uvm_field_int (sck_period_ns,    UVM_DEFAULT)
+    `uvm_field_int (sck_period_ps,    UVM_DEFAULT)
     `uvm_field_int (sck_polarity,     UVM_DEFAULT)
     `uvm_field_int (sck_phase,        UVM_DEFAULT)
     `uvm_field_int (host_bit_dir,     UVM_DEFAULT)

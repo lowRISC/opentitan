@@ -35,16 +35,16 @@ class spi_host_driver extends spi_driver;
       forever begin
         if (sck_pulses > 0 || cfg.sck_on) begin
           cfg.vif.sck <= ~cfg.vif.sck;
-          #(cfg.sck_period_ns / 2 * 1ns);
+          #(cfg.sck_period_ps / 2 * 1ps);
           cfg.vif.sck <= ~cfg.vif.sck;
-          #(cfg.sck_period_ns / 2 * 1ns);
+          #(cfg.sck_period_ps / 2 * 1ps);
           if (sck_pulses > 0) sck_pulses--;
         end else begin
           @(cfg.sck_on, sck_pulses);
           if (sck_pulses > 0) begin
             // drive half cycle first
             cfg.vif.sck <= cfg.sck_polarity;
-            #(cfg.sck_period_ns / 2 * 1ns);
+            #(cfg.sck_period_ps / 2 * 1ps);
           end
         end
         cfg.vif.sck_pulses = sck_pulses;
