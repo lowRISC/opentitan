@@ -184,7 +184,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         if (write && channel == AddrChannel) begin
           uart_item tx_item = uart_item::type_id::create("tx_item");;
 
-          tx_item.data = csr.get_mirrored_value();
+          tx_item.data = item.a_data;
           if (tx_q.size() < UART_FIFO_DEPTH) begin
             tx_q.push_back(tx_item);
             `uvm_info(`gfn, $sformatf("After push one item, tx_q size: %0d", tx_q.size), UVM_HIGH)
@@ -216,8 +216,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       end
       "fifo_ctrl": begin
         if (write && channel == AddrChannel) begin
-          // these fields pulse & read back 0
-          if (ral.fifo_ctrl.txrst.get_mirrored_value()) begin
+          // these fields are WO
+          bit txrst_val = bit'(get_field_val(ral.fifo_ctrl.txrst, item.a_data));
+          bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
+          if (txrst_val) begin
             if (tx_enabled && tx_q.size > 0 && tx_processing_item_q.size == 0) begin
               // keep the 1st item in the queue, as it's being sent
               tx_processing_item_q.push_back(tx_q.pop_front());
@@ -231,7 +233,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                                        .rst(1));
             end
           end
-          if (ral.fifo_ctrl.rxrst.get_mirrored_value()) begin
+          if (rxrst_val) begin
             rx_q.delete();
             void'(ral.fifo_ctrl.rxrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
             if (cfg.en_cov) begin
@@ -247,15 +249,13 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
-          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          bit [TL_DW-1:0] intr_en = item.a_data;
           intr_exp |= item.a_data;
           if (cfg.en_cov) begin
             foreach (intr_exp[i]) begin
               cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
             end
           end
-          // this field is WO - always returns 0
-          void'(csr.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
         end
       end
       "status": begin
