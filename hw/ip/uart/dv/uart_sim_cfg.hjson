@@ -36,6 +36,9 @@
   uvm_test: uart_base_test
   uvm_test_seq: uart_base_vseq
 
+  // Add UART specific exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/uart/dv/cov/uart_cov_excl.el"]
+
   // List of test specifications.
   tests: [
     {
