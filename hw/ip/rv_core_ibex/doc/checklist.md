@@ -116,7 +116,7 @@ Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | N/A         |
 Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
 Tests         | [SANITY_TEST_PASSING][]               | Done        |
 Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Done        |
-Tool Setup    | [ALT_TOOL_SETUP][]                    | Waived      | waived for now, doesn’t follow standard tool flow
+Tool Setup    | [ALT_TOOL_SETUP][]                    | Waived      | waived for now, doesn't follow standard tool flow
 Regression    | [SANITY_REGRESSION_SETUP][]           | Done        |
 Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done        |
 Coverage      | [COVERAGE_MODEL_ADDED][]              | Done        |

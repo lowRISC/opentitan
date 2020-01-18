@@ -146,7 +146,7 @@ It hangs and does not drop data.
 It only continues once the previous output data has been read and the corresponding registers can be safely overwritten.
 In contrast, the initial key can only be updated if the AES unit is idle, which eases design verification (DV).
 
-The architecture of the AES unit is derived from the architecture proposed by Satoh et al.: [“A compact Rijndael Hardware Architecture with S-Box Optimization”](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
+The architecture of the AES unit is derived from the architecture proposed by Satoh et al.: ["A compact Rijndael Hardware Architecture with S-Box Optimization"](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
 The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (AES-128 only).
 
 For a description of the various sub modules, see the following sections.
@@ -163,7 +163,7 @@ The design of this S-Box and its inverse can have a big impact on circuit area, 
 Since the S-Boxes can be decoupled from the rest of the AES unit, they can easily be replaced by a different implementation if required.
 The AES unit currently uses a LUT-based S-Box implementation (default) but also supports the implementation proposed by [Canright: "A very compact Rijndael S-Box"](https://hdl.handle.net/10945/25608) (selectable by a compile-time parameter).
 
-A possible candidate implementation that employs masking (i.e. that randomizes the power consumption of the AES unit in every cipher round) to aggravate power analysis attacks has been proposed by [Canright and Batina: “A very compact “perfectly masked” S-Box for AES (corrected)”](https://eprint.iacr.org/2009/011.pdf).
+A possible candidate implementation that employs masking (i.e. that randomizes the power consumption of the AES unit in every cipher round) to aggravate power analysis attacks has been proposed by [Canright and Batina: "A very compact "perfectly masked" S-Box for AES (corrected)"](https://eprint.iacr.org/2009/011.pdf).
 
 
 ### ShiftRows
@@ -219,7 +219,7 @@ Once the new key has been provided via the control and status registers (top), t
 The cipher data path remains idle (`AES mode`=IDLE).
 In every round, the value in `key_full` is updated.
 After 10 encryption rounds, the value in `key_full` equals the start key for decryption.
-This value is stored into the Decryption Key register (`key_dec` = K0-3’ at the very bottom).
+This value is stored into the Decryption Key register (`key_dec` = K0-3' at the very bottom).
 Now the AES unit can switch between encryption/decryption without overhead as both the start key for encryption (`key_init`) and decryption (`key_dec`) can be loaded into `full_key`.
 
 For details on the KeyExpand operation refer to the [AES specification, Section 5.2](https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf).

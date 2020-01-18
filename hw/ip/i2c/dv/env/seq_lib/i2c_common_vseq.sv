@@ -62,7 +62,7 @@ class i2c_common_vseq extends i2c_base_vseq;
       csr_excl.add_excl({scope, ".", "intr_test"}, CsrExclInitCheck);
     end
 
-    // bit_bash: write 1’s and 0’s to every bit of non-RO registers (CsrExclWrite/WriteCheck)
+    // bit_bash: write 1's and 0's to every bit of non-RO registers (CsrExclWrite/WriteCheck)
     // making sure that the resulting value matches the mirrored value
     if (csr_test_type == "bit_bash") begin
       // specify at least one RW register for this test
