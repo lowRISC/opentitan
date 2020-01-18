@@ -251,22 +251,22 @@ package spi_device_reg_pkg;
   } spi_device_hw2reg_t;
 
   // Register Address
-  parameter SPI_DEVICE_INTR_STATE_OFFSET = 12'h 0;
-  parameter SPI_DEVICE_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter SPI_DEVICE_INTR_TEST_OFFSET = 12'h 8;
-  parameter SPI_DEVICE_CONTROL_OFFSET = 12'h c;
-  parameter SPI_DEVICE_CFG_OFFSET = 12'h 10;
-  parameter SPI_DEVICE_FIFO_LEVEL_OFFSET = 12'h 14;
-  parameter SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET = 12'h 18;
-  parameter SPI_DEVICE_STATUS_OFFSET = 12'h 1c;
-  parameter SPI_DEVICE_RXF_PTR_OFFSET = 12'h 20;
-  parameter SPI_DEVICE_TXF_PTR_OFFSET = 12'h 24;
-  parameter SPI_DEVICE_RXF_ADDR_OFFSET = 12'h 28;
-  parameter SPI_DEVICE_TXF_ADDR_OFFSET = 12'h 2c;
+  parameter logic [11:0] SPI_DEVICE_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [11:0] SPI_DEVICE_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [11:0] SPI_DEVICE_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [11:0] SPI_DEVICE_CONTROL_OFFSET = 12'h c;
+  parameter logic [11:0] SPI_DEVICE_CFG_OFFSET = 12'h 10;
+  parameter logic [11:0] SPI_DEVICE_FIFO_LEVEL_OFFSET = 12'h 14;
+  parameter logic [11:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET = 12'h 18;
+  parameter logic [11:0] SPI_DEVICE_STATUS_OFFSET = 12'h 1c;
+  parameter logic [11:0] SPI_DEVICE_RXF_PTR_OFFSET = 12'h 20;
+  parameter logic [11:0] SPI_DEVICE_TXF_PTR_OFFSET = 12'h 24;
+  parameter logic [11:0] SPI_DEVICE_RXF_ADDR_OFFSET = 12'h 28;
+  parameter logic [11:0] SPI_DEVICE_TXF_ADDR_OFFSET = 12'h 2c;
 
   // Window parameter
-  parameter SPI_DEVICE_BUFFER_OFFSET = 12'h 800;
-  parameter SPI_DEVICE_BUFFER_SIZE   = 12'h 800;
+  parameter logic [11:0] SPI_DEVICE_BUFFER_OFFSET = 12'h 800;
+  parameter logic [11:0] SPI_DEVICE_BUFFER_SIZE   = 12'h 800;
 
   // Register Index
   typedef enum int {
@@ -285,7 +285,7 @@ package spi_device_reg_pkg;
   } spi_device_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] SPI_DEVICE_PERMIT [12] = '{
+  parameter logic [3:0] SPI_DEVICE_PERMIT [12] = '{
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
     4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST

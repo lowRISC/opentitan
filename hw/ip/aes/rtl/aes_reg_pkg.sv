@@ -7,8 +7,8 @@
 package aes_reg_pkg;
 
   // Param list
-  localparam int NumRegsKey = 8;
-  localparam int NumRegsData = 4;
+  parameter int NumRegsKey = 8;
+  parameter int NumRegsData = 4;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -145,25 +145,25 @@ package aes_reg_pkg;
   } aes_hw2reg_t;
 
   // Register Address
-  parameter AES_KEY0_OFFSET = 7'h 0;
-  parameter AES_KEY1_OFFSET = 7'h 4;
-  parameter AES_KEY2_OFFSET = 7'h 8;
-  parameter AES_KEY3_OFFSET = 7'h c;
-  parameter AES_KEY4_OFFSET = 7'h 10;
-  parameter AES_KEY5_OFFSET = 7'h 14;
-  parameter AES_KEY6_OFFSET = 7'h 18;
-  parameter AES_KEY7_OFFSET = 7'h 1c;
-  parameter AES_DATA_IN0_OFFSET = 7'h 20;
-  parameter AES_DATA_IN1_OFFSET = 7'h 24;
-  parameter AES_DATA_IN2_OFFSET = 7'h 28;
-  parameter AES_DATA_IN3_OFFSET = 7'h 2c;
-  parameter AES_DATA_OUT0_OFFSET = 7'h 30;
-  parameter AES_DATA_OUT1_OFFSET = 7'h 34;
-  parameter AES_DATA_OUT2_OFFSET = 7'h 38;
-  parameter AES_DATA_OUT3_OFFSET = 7'h 3c;
-  parameter AES_CTRL_OFFSET = 7'h 40;
-  parameter AES_TRIGGER_OFFSET = 7'h 44;
-  parameter AES_STATUS_OFFSET = 7'h 48;
+  parameter logic [6:0] AES_KEY0_OFFSET = 7'h 0;
+  parameter logic [6:0] AES_KEY1_OFFSET = 7'h 4;
+  parameter logic [6:0] AES_KEY2_OFFSET = 7'h 8;
+  parameter logic [6:0] AES_KEY3_OFFSET = 7'h c;
+  parameter logic [6:0] AES_KEY4_OFFSET = 7'h 10;
+  parameter logic [6:0] AES_KEY5_OFFSET = 7'h 14;
+  parameter logic [6:0] AES_KEY6_OFFSET = 7'h 18;
+  parameter logic [6:0] AES_KEY7_OFFSET = 7'h 1c;
+  parameter logic [6:0] AES_DATA_IN0_OFFSET = 7'h 20;
+  parameter logic [6:0] AES_DATA_IN1_OFFSET = 7'h 24;
+  parameter logic [6:0] AES_DATA_IN2_OFFSET = 7'h 28;
+  parameter logic [6:0] AES_DATA_IN3_OFFSET = 7'h 2c;
+  parameter logic [6:0] AES_DATA_OUT0_OFFSET = 7'h 30;
+  parameter logic [6:0] AES_DATA_OUT1_OFFSET = 7'h 34;
+  parameter logic [6:0] AES_DATA_OUT2_OFFSET = 7'h 38;
+  parameter logic [6:0] AES_DATA_OUT3_OFFSET = 7'h 3c;
+  parameter logic [6:0] AES_CTRL_OFFSET = 7'h 40;
+  parameter logic [6:0] AES_TRIGGER_OFFSET = 7'h 44;
+  parameter logic [6:0] AES_STATUS_OFFSET = 7'h 48;
 
 
   // Register Index
@@ -190,7 +190,7 @@ package aes_reg_pkg;
   } aes_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] AES_PERMIT [19] = '{
+  parameter logic [3:0] AES_PERMIT [19] = '{
     4'b 1111, // index[ 0] AES_KEY0
     4'b 1111, // index[ 1] AES_KEY1
     4'b 1111, // index[ 2] AES_KEY2

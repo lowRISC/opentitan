@@ -12,10 +12,10 @@
 // this version contains no packet buffers
 
 module usb_fs_nb_out_pe #(
-  parameter NumOutEps = 1,
-  parameter MaxOutPktSizeByte = 32,
-  parameter PktW = $clog2(MaxOutPktSizeByte),
-  parameter OutEpW = $clog2(NumOutEps)
+  parameter int unsigned NumOutEps = 1,
+  parameter int unsigned MaxOutPktSizeByte = 32,
+  parameter int unsigned PktW = $clog2(MaxOutPktSizeByte),
+  parameter int unsigned OutEpW = $clog2(NumOutEps)
 ) (
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,

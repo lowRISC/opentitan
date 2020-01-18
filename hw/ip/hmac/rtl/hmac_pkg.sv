@@ -12,10 +12,10 @@ package hmac_pkg;
 
   localparam int MsgFifoDepth = 16;
 
-  localparam NumRound = 64;   // SHA-224, SHA-256
+  localparam int NumRound = 64;   // SHA-224, SHA-256
 
   typedef logic [31:0] sha_word_t;
-  localparam WordByte = $bits(sha_word_t)/8;
+  localparam int WordByte = $bits(sha_word_t)/8;
 
   typedef struct packed {
     sha_word_t           data;
@@ -81,7 +81,10 @@ package hmac_pkg;
     compress[0] = (temp1 + temp2); // a = (temp1 + temp2)
   endfunction : compress
 
-  function automatic sha_word_t calc_w(input sha_word_t w_0, w_1, w_9, w_14);
+  function automatic sha_word_t calc_w(input sha_word_t w_0,
+                                       input sha_word_t w_1,
+                                       input sha_word_t w_9,
+                                       input sha_word_t w_14);
     automatic sha_word_t sum0, sum1;
     sum0 = rotr(w_1,   7) ^ rotr(w_1,  18) ^ shiftr(w_1,   3);
     sum1 = rotr(w_14, 17) ^ rotr(w_14, 19) ^ shiftr(w_14, 10);

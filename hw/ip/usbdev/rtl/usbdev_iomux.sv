@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 //  USB IO Mux
-// 
+//
 //  Muxes the USB IO signals from: register access, differential signaling,
 //  single-ended signaling. The incomming signals are also muxed and synchronized
 //  to the corresponding clock domain.
@@ -112,7 +112,7 @@ module usbdev_iomux (
 
     end else begin
       // Single-ended mode
-      cio_usb_tx_mode_se_o   = 1'b1;        
+      cio_usb_tx_mode_se_o   = 1'b1;
       if (usb_tx_se0_i) begin
         cio_usb_dp_o = 1'b0;
         cio_usb_dn_o = 1'b0;
@@ -151,7 +151,7 @@ module usbdev_iomux (
       async_pwr_sense = sys_reg2hw_config_i.override_pwr_sense_val.q;
     end else begin
       async_pwr_sense = cio_usb_sense_i;
-    end  
+    end
   end
 
 endmodule

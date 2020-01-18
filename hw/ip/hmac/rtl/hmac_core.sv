@@ -41,9 +41,9 @@ module hmac_core import hmac_pkg::*; (
   output [63:0] sha_message_length
 );
 
-  localparam BlockSize = 512;
-  localparam BlockSizeBits = $clog2(BlockSize);
-  localparam HashWordBits = $clog2($bits(sha_word_t));
+  localparam int unsigned BlockSize = 512;
+  localparam int unsigned BlockSizeBits = $clog2(BlockSize);
+  localparam int unsigned HashWordBits = $clog2($bits(sha_word_t));
 
   logic hash_start; // generated from internal state machine
   logic hash_process; // generated from internal state machine to trigger hash

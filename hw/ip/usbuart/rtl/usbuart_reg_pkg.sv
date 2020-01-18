@@ -323,20 +323,20 @@ package usbuart_reg_pkg;
   } usbuart_hw2reg_t;
 
   // Register Address
-  parameter USBUART_INTR_STATE_OFFSET = 6'h 0;
-  parameter USBUART_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter USBUART_INTR_TEST_OFFSET = 6'h 8;
-  parameter USBUART_CTRL_OFFSET = 6'h c;
-  parameter USBUART_STATUS_OFFSET = 6'h 10;
-  parameter USBUART_RDATA_OFFSET = 6'h 14;
-  parameter USBUART_WDATA_OFFSET = 6'h 18;
-  parameter USBUART_FIFO_CTRL_OFFSET = 6'h 1c;
-  parameter USBUART_FIFO_STATUS_OFFSET = 6'h 20;
-  parameter USBUART_OVRD_OFFSET = 6'h 24;
-  parameter USBUART_VAL_OFFSET = 6'h 28;
-  parameter USBUART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
-  parameter USBUART_USBSTAT_OFFSET = 6'h 30;
-  parameter USBUART_USBPARAM_OFFSET = 6'h 34;
+  parameter logic [5:0] USBUART_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [5:0] USBUART_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [5:0] USBUART_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [5:0] USBUART_CTRL_OFFSET = 6'h c;
+  parameter logic [5:0] USBUART_STATUS_OFFSET = 6'h 10;
+  parameter logic [5:0] USBUART_RDATA_OFFSET = 6'h 14;
+  parameter logic [5:0] USBUART_WDATA_OFFSET = 6'h 18;
+  parameter logic [5:0] USBUART_FIFO_CTRL_OFFSET = 6'h 1c;
+  parameter logic [5:0] USBUART_FIFO_STATUS_OFFSET = 6'h 20;
+  parameter logic [5:0] USBUART_OVRD_OFFSET = 6'h 24;
+  parameter logic [5:0] USBUART_VAL_OFFSET = 6'h 28;
+  parameter logic [5:0] USBUART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
+  parameter logic [5:0] USBUART_USBSTAT_OFFSET = 6'h 30;
+  parameter logic [5:0] USBUART_USBPARAM_OFFSET = 6'h 34;
 
 
   // Register Index
@@ -358,7 +358,7 @@ package usbuart_reg_pkg;
   } usbuart_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] USBUART_PERMIT [14] = '{
+  parameter logic [3:0] USBUART_PERMIT [14] = '{
     4'b 0001, // index[ 0] USBUART_INTR_STATE
     4'b 0001, // index[ 1] USBUART_INTR_ENABLE
     4'b 0001, // index[ 2] USBUART_INTR_TEST

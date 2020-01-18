@@ -96,9 +96,9 @@ package nmi_gen_reg_pkg;
   } nmi_gen_hw2reg_t;
 
   // Register Address
-  parameter NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
-  parameter NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
-  parameter NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
+  parameter logic [3:0] NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
+  parameter logic [3:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
+  parameter logic [3:0] NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
 
 
   // Register Index
@@ -109,7 +109,7 @@ package nmi_gen_reg_pkg;
   } nmi_gen_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] NMI_GEN_PERMIT [3] = '{
+  parameter logic [3:0] NMI_GEN_PERMIT [3] = '{
     4'b 0001, // index[0] NMI_GEN_INTR_STATE
     4'b 0001, // index[1] NMI_GEN_INTR_ENABLE
     4'b 0001  // index[2] NMI_GEN_INTR_TEST

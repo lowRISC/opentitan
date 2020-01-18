@@ -26,9 +26,9 @@ module spi_device_reg_top (
 
   import spi_device_reg_pkg::* ;
 
-  localparam AW = 12;
-  localparam DW = 32;
-  localparam DBW = DW/8;                    // Byte Width
+  localparam int AW = 12;
+  localparam int DW = 32;
+  localparam int DBW = DW/8;                    // Byte Width
 
   // register signals
   logic           reg_we;

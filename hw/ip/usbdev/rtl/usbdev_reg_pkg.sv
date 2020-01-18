@@ -7,7 +7,7 @@
 package usbdev_reg_pkg;
 
   // Param list
-  localparam int NEndpoints = 12;
+  parameter int NEndpoints = 12;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -440,36 +440,36 @@ package usbdev_reg_pkg;
   } usbdev_hw2reg_t;
 
   // Register Address
-  parameter USBDEV_INTR_STATE_OFFSET = 12'h 0;
-  parameter USBDEV_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter USBDEV_INTR_TEST_OFFSET = 12'h 8;
-  parameter USBDEV_USBCTRL_OFFSET = 12'h c;
-  parameter USBDEV_USBSTAT_OFFSET = 12'h 10;
-  parameter USBDEV_AVBUFFER_OFFSET = 12'h 14;
-  parameter USBDEV_RXFIFO_OFFSET = 12'h 18;
-  parameter USBDEV_RXENABLE_SETUP_OFFSET = 12'h 1c;
-  parameter USBDEV_RXENABLE_OUT_OFFSET = 12'h 20;
-  parameter USBDEV_IN_SENT_OFFSET = 12'h 24;
-  parameter USBDEV_STALL_OFFSET = 12'h 28;
-  parameter USBDEV_CONFIGIN0_OFFSET = 12'h 2c;
-  parameter USBDEV_CONFIGIN1_OFFSET = 12'h 30;
-  parameter USBDEV_CONFIGIN2_OFFSET = 12'h 34;
-  parameter USBDEV_CONFIGIN3_OFFSET = 12'h 38;
-  parameter USBDEV_CONFIGIN4_OFFSET = 12'h 3c;
-  parameter USBDEV_CONFIGIN5_OFFSET = 12'h 40;
-  parameter USBDEV_CONFIGIN6_OFFSET = 12'h 44;
-  parameter USBDEV_CONFIGIN7_OFFSET = 12'h 48;
-  parameter USBDEV_CONFIGIN8_OFFSET = 12'h 4c;
-  parameter USBDEV_CONFIGIN9_OFFSET = 12'h 50;
-  parameter USBDEV_CONFIGIN10_OFFSET = 12'h 54;
-  parameter USBDEV_CONFIGIN11_OFFSET = 12'h 58;
-  parameter USBDEV_ISO_OFFSET = 12'h 5c;
-  parameter USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 60;
-  parameter USBDEV_PHY_CONFIG_OFFSET = 12'h 64;
+  parameter logic [11:0] USBDEV_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [11:0] USBDEV_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [11:0] USBDEV_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [11:0] USBDEV_USBCTRL_OFFSET = 12'h c;
+  parameter logic [11:0] USBDEV_USBSTAT_OFFSET = 12'h 10;
+  parameter logic [11:0] USBDEV_AVBUFFER_OFFSET = 12'h 14;
+  parameter logic [11:0] USBDEV_RXFIFO_OFFSET = 12'h 18;
+  parameter logic [11:0] USBDEV_RXENABLE_SETUP_OFFSET = 12'h 1c;
+  parameter logic [11:0] USBDEV_RXENABLE_OUT_OFFSET = 12'h 20;
+  parameter logic [11:0] USBDEV_IN_SENT_OFFSET = 12'h 24;
+  parameter logic [11:0] USBDEV_STALL_OFFSET = 12'h 28;
+  parameter logic [11:0] USBDEV_CONFIGIN0_OFFSET = 12'h 2c;
+  parameter logic [11:0] USBDEV_CONFIGIN1_OFFSET = 12'h 30;
+  parameter logic [11:0] USBDEV_CONFIGIN2_OFFSET = 12'h 34;
+  parameter logic [11:0] USBDEV_CONFIGIN3_OFFSET = 12'h 38;
+  parameter logic [11:0] USBDEV_CONFIGIN4_OFFSET = 12'h 3c;
+  parameter logic [11:0] USBDEV_CONFIGIN5_OFFSET = 12'h 40;
+  parameter logic [11:0] USBDEV_CONFIGIN6_OFFSET = 12'h 44;
+  parameter logic [11:0] USBDEV_CONFIGIN7_OFFSET = 12'h 48;
+  parameter logic [11:0] USBDEV_CONFIGIN8_OFFSET = 12'h 4c;
+  parameter logic [11:0] USBDEV_CONFIGIN9_OFFSET = 12'h 50;
+  parameter logic [11:0] USBDEV_CONFIGIN10_OFFSET = 12'h 54;
+  parameter logic [11:0] USBDEV_CONFIGIN11_OFFSET = 12'h 58;
+  parameter logic [11:0] USBDEV_ISO_OFFSET = 12'h 5c;
+  parameter logic [11:0] USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 60;
+  parameter logic [11:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 64;
 
   // Window parameter
-  parameter USBDEV_BUFFER_OFFSET = 12'h 800;
-  parameter USBDEV_BUFFER_SIZE   = 12'h 800;
+  parameter logic [11:0] USBDEV_BUFFER_OFFSET = 12'h 800;
+  parameter logic [11:0] USBDEV_BUFFER_SIZE   = 12'h 800;
 
   // Register Index
   typedef enum int {
@@ -502,7 +502,7 @@ package usbdev_reg_pkg;
   } usbdev_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] USBDEV_PERMIT [26] = '{
+  parameter logic [3:0] USBDEV_PERMIT [26] = '{
     4'b 0011, // index[ 0] USBDEV_INTR_STATE
     4'b 0011, // index[ 1] USBDEV_INTR_ENABLE
     4'b 0011, // index[ 2] USBDEV_INTR_TEST

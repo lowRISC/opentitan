@@ -36,8 +36,8 @@ module flash_phy #(
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
   // in order blocking read. Since the data cannot be returned out of order, this simply
   // does the reads in advance and store them in a FIFO
-  localparam FlashMacroOustanding = 1;
-  localparam SeqFifoDepth = FlashMacroOustanding * NumBanks;
+  localparam int FlashMacroOustanding = 1;
+  localparam int SeqFifoDepth = FlashMacroOustanding * NumBanks;
 
   // flash_phy forwards incoming host transactions to the appropriate bank but is not aware of
   // any controller / host arbitration within the bank.  This means it is possible for

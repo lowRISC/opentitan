@@ -21,9 +21,9 @@ module rv_timer_reg_top (
 
   import rv_timer_reg_pkg::* ;
 
-  localparam AW = 9;
-  localparam DW = 32;
-  localparam DBW = DW/8;                    // Byte Width
+  localparam int AW = 9;
+  localparam int DW = 32;
+  localparam int DBW = DW/8;                    // Byte Width
 
   // register signals
   logic           reg_we;

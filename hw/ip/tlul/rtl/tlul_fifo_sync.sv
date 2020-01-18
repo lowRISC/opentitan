@@ -7,12 +7,12 @@
 // and one for the response side.
 
 module tlul_fifo_sync #(
-  parameter ReqPass  = 1'b1,
-  parameter RspPass  = 1'b1,
-  parameter ReqDepth = 2,
-  parameter RspDepth = 2,
-  parameter SpareReqW = 1,
-  parameter SpareRspW = 1
+  parameter int unsigned ReqPass  = 1'b1,
+  parameter int unsigned RspPass  = 1'b1,
+  parameter int unsigned ReqDepth = 2,
+  parameter int unsigned RspDepth = 2,
+  parameter int unsigned SpareReqW = 1,
+  parameter int unsigned SpareRspW = 1
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -27,7 +27,7 @@ module tlul_fifo_sync #(
 );
 
   // Put everything on the request side into one FIFO
-  localparam REQFIFO_WIDTH = $bits(tlul_pkg::tl_h2d_t) -2 + SpareReqW;
+  localparam int unsigned REQFIFO_WIDTH = $bits(tlul_pkg::tl_h2d_t) -2 + SpareReqW;
 
   prim_fifo_sync #(.Width(REQFIFO_WIDTH), .Pass(ReqPass), .Depth(ReqDepth)) reqfifo (
     .clk_i,
@@ -59,7 +59,7 @@ module tlul_fifo_sync #(
 
   // Put everything on the response side into the other FIFO
 
-  localparam RSPFIFO_WIDTH = $bits(tlul_pkg::tl_d2h_t) -2 + SpareRspW;
+  localparam int unsigned RSPFIFO_WIDTH = $bits(tlul_pkg::tl_d2h_t) -2 + SpareRspW;
 
   prim_fifo_sync #(.Width(RSPFIFO_WIDTH), .Pass(RspPass), .Depth(RspDepth)) rspfifo (
     .clk_i,

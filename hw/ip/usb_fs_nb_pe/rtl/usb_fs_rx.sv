@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module usb_fs_rx (
-  // A 48MHz clock is required to recover the clock from the incoming data. 
+  // A 48MHz clock is required to recover the clock from the incoming data.
   input  logic clk_i,
   input  logic rst_ni,
   input  logic link_reset_i,
@@ -58,23 +58,23 @@ module usb_fs_rx (
 
   ///////////////////////////////////////
   // line state recovery state machine //
-  ///////////////////////////////////////  
+  ///////////////////////////////////////
 
   // The receive path doesn't currently use a differential reciever.  because of
   // this there is a chance that one of the differential pairs will appear to have
-  // changed to the new state while the other is still in the old state.  the 
+  // changed to the new state while the other is still in the old state.  the
   // following state machine detects transitions and waits an extra sampling clock
-  // before decoding the state on the differential pair.  this transition period 
+  // before decoding the state on the differential pair.  this transition period
   // will only ever last for one clock as long as there is no noise on the line.
   // if there is enough noise on the line then the data may be corrupted and the
   // packet will fail the data integrity checks.
-  
+
   logic [2:0] line_state_q, line_state_d;
-  localparam  DT = 3'b100;
-  localparam  DJ = 3'b010;
-  localparam  DK = 3'b001;
-  localparam SE0 = 3'b000;
-  localparam SE1 = 3'b011;
+  localparam logic [2:0]  DT = 3'b100;
+  localparam logic [2:0]  DJ = 3'b010;
+  localparam logic [2:0]  DK = 3'b001;
+  localparam logic [2:0] SE0 = 3'b000;
+  localparam logic [2:0] SE1 = 3'b011;
 
   // Mute the input if we're transmitting
   logic [1:0] dpair;
@@ -103,7 +103,7 @@ module usb_fs_rx (
     line_state_d = line_state_q;
 
     if (line_state_q == DT) begin
-      // if we are in a transition state, then we can sample the pair and 
+      // if we are in a transition state, then we can sample the pair and
       // move to the next corresponding line state
       line_state_d = {1'b0, dpair};
 
@@ -119,8 +119,8 @@ module usb_fs_rx (
   ////////////////////
   // clock recovery //
   ////////////////////
-  
-  // the DT state from the line state recovery state machine is used to align to 
+
+  // the DT state from the line state recovery state machine is used to align to
   // transmit clock.  the line state is sampled in the middle of the bit time.
 
   // example of signal relationships
@@ -128,7 +128,7 @@ module usb_fs_rx (
   // line_state        DT  DJ  DJ  DJ  DT  DK  DK  DK  DK  DK  DK  DT  DJ  DJ  DJ
   // line_state_valid  ________----____________----____________----________----____
   // bit_phase         0   0   1   2   3   0   1   2   3   0   1   2   0   1   2
-  
+
 
   logic [1:0] bit_phase_q, bit_phase_d;
   logic line_state_valid;
@@ -155,22 +155,22 @@ module usb_fs_rx (
   //////////////////////
   // packet detection //
   //////////////////////
-  
+
   // usb uses a sync to denote the beginning of a packet and two single-ended-0 to
   // denote the end of a packet.  this state machine recognizes the beginning and
   // end of packets for subsequent layers to process.
-  
+
   logic [11:0] line_history_q, line_history_d;
   logic packet_valid_q, packet_valid_d;
   logic see_eop, packet_start, packet_end;
-  
+
   assign packet_start = packet_valid_d & ~packet_valid_q;
   assign packet_end   = ~packet_valid_d & packet_valid_q;
 
   // EOP detection is configurable for 1/2 bit periods of SE0.
   // The standard (Table 7-7) mandates min = 82 ns = 1 bit period.
   // We also trigger an EOP on seeing a bitstuff error.
-  assign see_eop = (cfg_eop_single_bit_i && line_history_q[1:0] == 2'b00) 
+  assign see_eop = (cfg_eop_single_bit_i && line_history_q[1:0] == 2'b00)
     || (line_history_q[3:0] == 4'b0000) || bitstuff_error_q;
 
   always_comb begin : proc_packet_valid_d
@@ -179,7 +179,7 @@ module usb_fs_rx (
       if (!packet_valid_q && line_history_q[11:0] == 12'b011001100101) begin
         packet_valid_d = 1;
       end
- 
+
       // check for packet end: SE0 SE0
       else if (packet_valid_q && see_eop) begin
         packet_valid_d = 0;
@@ -214,12 +214,12 @@ module usb_fs_rx (
   /////////////////
   // NRZI decode //
   /////////////////
-  
+
   // in order to ensure there are enough bit transitions for a receiver to recover
   // the clock usb uses NRZI encoding.
 
   // https://en.wikipedia.org/wiki/Non-return-to-zero
-  
+
   logic dvalid_raw;
   logic din;
 
@@ -231,7 +231,7 @@ module usb_fs_rx (
       4'b1010 : din = 1;
       default : din = 0;
     endcase
- 
+
     if (packet_valid_q && line_state_valid) begin
       unique case (line_history_q[3:0])
         4'b0101 : dvalid_raw = 1;
@@ -276,7 +276,7 @@ module usb_fs_rx (
 
   // 7 consecutive ones should not be seen on the bus
   // USB spec, 7.1.9.1: "If the receiver sees seven
-  // consecutive ones anywhere in the packet, then a bit stuffing error 
+  // consecutive ones anywhere in the packet, then a bit stuffing error
   // has occurred and the packet should be ignored."
   assign bitstuff_error = bitstuff_history_q == 7'b1111111;
 
@@ -304,9 +304,9 @@ module usb_fs_rx (
   ////////////////////////
   // save and check pid //
   ////////////////////////
-  
+
   // shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
-  
+
   logic [8:0] full_pid_q, full_pid_d;
   logic pid_valid, pid_complete;
 
@@ -327,7 +327,7 @@ module usb_fs_rx (
   // check crc5 //
   ////////////////
   logic [4:0] crc5_q, crc5_d;
-  logic crc5_valid, crc5_invert; 
+  logic crc5_valid, crc5_invert;
   assign crc5_valid  = crc5_q == 5'b01100;
   assign crc5_invert = din ^ crc5_q[4];
 
@@ -351,7 +351,7 @@ module usb_fs_rx (
   logic crc16_valid, crc16_invert;
 
   assign crc16_valid  = crc16_q == 16'b1000000000001101;
-  assign crc16_invert = din ^ crc16_q[15];  
+  assign crc16_invert = din ^ crc16_q[15];
 
   always_comb begin
     crc16_d = crc16_q; // default value
@@ -377,7 +377,7 @@ module usb_fs_rx (
 
   // TODO: need to check for data packet babble
   assign valid_packet_o = pid_valid && !bitstuff_error_q &&
-    ((pkt_is_handshake) || 
+    ((pkt_is_handshake) ||
     (pkt_is_data && crc16_valid) ||
     (pkt_is_token && crc5_valid)
   );
@@ -388,7 +388,7 @@ module usb_fs_rx (
 
   // Detect PID errors
   assign pid_error_o = !pid_valid && packet_end;
-  
+
   logic [11:0] token_payload_q, token_payload_d;
   logic token_payload_done;
 
@@ -426,11 +426,11 @@ module usb_fs_rx (
   assign addr_o      = addr_q;
   assign endp_o      = endp_q;
   assign frame_num_o = frame_num_q;
-  assign pid_o       = full_pid_q[4:1]; 
+  assign pid_o       = full_pid_q[4:1];
 
   assign pkt_start_o = packet_start;
-  assign pkt_end_o   = packet_end; 
-  
+  assign pkt_end_o   = packet_end;
+
 
   /////////////////////////////////
   // deserialize and output data //

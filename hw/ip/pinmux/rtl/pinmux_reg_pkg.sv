@@ -7,9 +7,9 @@
 package pinmux_reg_pkg;
 
   // Param list
-  localparam int NPeriphIn = 16;
-  localparam int NPeriphOut = 16;
-  localparam int NMioPads = 8;
+  parameter int NPeriphIn = 16;
+  parameter int NPeriphOut = 16;
+  parameter int NMioPads = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -37,11 +37,11 @@ package pinmux_reg_pkg;
   ///////////////////////////////////////
 
   // Register Address
-  parameter PINMUX_REGEN_OFFSET = 5'h 0;
-  parameter PINMUX_PERIPH_INSEL0_OFFSET = 5'h 4;
-  parameter PINMUX_PERIPH_INSEL1_OFFSET = 5'h 8;
-  parameter PINMUX_MIO_OUTSEL0_OFFSET = 5'h c;
-  parameter PINMUX_MIO_OUTSEL1_OFFSET = 5'h 10;
+  parameter logic [4:0] PINMUX_REGEN_OFFSET = 5'h 0;
+  parameter logic [4:0] PINMUX_PERIPH_INSEL0_OFFSET = 5'h 4;
+  parameter logic [4:0] PINMUX_PERIPH_INSEL1_OFFSET = 5'h 8;
+  parameter logic [4:0] PINMUX_MIO_OUTSEL0_OFFSET = 5'h c;
+  parameter logic [4:0] PINMUX_MIO_OUTSEL1_OFFSET = 5'h 10;
 
 
   // Register Index
@@ -54,7 +54,7 @@ package pinmux_reg_pkg;
   } pinmux_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] PINMUX_PERMIT [5] = '{
+  parameter logic [3:0] PINMUX_PERMIT [5] = '{
     4'b 0001, // index[0] PINMUX_REGEN
     4'b 1111, // index[1] PINMUX_PERIPH_INSEL0
     4'b 1111, // index[2] PINMUX_PERIPH_INSEL1

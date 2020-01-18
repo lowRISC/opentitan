@@ -6,8 +6,8 @@
 // interface. It doesn't need register but combinational logics.
 
 module tlul_adapter_host #(
-  parameter AW = 32,
-  parameter DW = 32
+  parameter int unsigned AW = 32,
+  parameter int unsigned DW = 32
 ) (
   input clk_i   ,
   input rst_ni  ,

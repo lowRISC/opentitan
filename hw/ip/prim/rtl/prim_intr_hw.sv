@@ -7,7 +7,7 @@
 // This module can be instantiated once per interrupt field, or
 // "bussified" with all fields of the interrupt vector.
 
-module prim_intr_hw #(parameter Width = 1) (
+module prim_intr_hw #(parameter int unsigned Width = 1) (
   // event
   input  [Width-1:0]  event_intr_i,
 

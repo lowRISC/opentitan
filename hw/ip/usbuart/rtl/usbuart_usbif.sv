@@ -34,10 +34,10 @@ module usbuart_usbif (
   output logic [1:0]  parity_o,
   output logic [15:0] baud_o
   );
-  localparam MaxPktSizeByte = 32;
-  localparam PktW = $clog2(MaxPktSizeByte);
-  localparam CtrlEp = 0;
-  localparam FifoEp = 1;
+  localparam int unsigned MaxPktSizeByte = 32;
+  localparam int unsigned PktW = $clog2(MaxPktSizeByte);
+  localparam int unsigned CtrlEp = 0;
+  localparam int unsigned FifoEp = 1;
 
   // us_tick ticks for one cycle every us
   logic [5:0]   ns_cnt;
@@ -222,7 +222,7 @@ module usbuart_usbif (
     .in_ep_newpkt_o             (),
     .in_ep_stall_i              ({serial_in_ep_stall, ctrl_in_ep_stall}),
     .in_ep_has_data_i           ({serial_in_ep_has_data, ctrl_in_ep_has_data}),
-    .in_ep_data_i               ((in_ep_current == 4'b1) ? serial_in_ep_data : ctrl_in_ep_data),
+    .in_ep_data_i               ((in_ep_current == 4'b0001) ? serial_in_ep_data : ctrl_in_ep_data),
     .in_ep_data_done_i          ({serial_in_ep_data_done, ctrl_in_ep_data_done}),
     .in_ep_iso_i                (2'b0),
 

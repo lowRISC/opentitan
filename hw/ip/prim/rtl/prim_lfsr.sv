@@ -56,7 +56,7 @@ module prim_lfsr #(
 
   // automatically generated with get-lfsr-coeffs.py script
   localparam int unsigned GAL_XOR_LUT_OFF = 4;
-  localparam logic [63:0] GAL_XOR_COEFFS [0:60] =
+  localparam logic [63:0] GAL_XOR_COEFFS [61] =
     '{ 64'h9,
        64'h12,
        64'h21,
@@ -121,7 +121,7 @@ module prim_lfsr #(
 
   // automatically generated with get-lfsr-coeffs.py script
   localparam int unsigned FIB_XNOR_LUT_OFF = 3;
-  localparam logic [167:0] FIB_XNOR_COEFFS [0:165] =
+  localparam logic [167:0] FIB_XNOR_COEFFS [166] =
     '{ 168'h6,
        168'hC,
        168'h14,

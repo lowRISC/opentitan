@@ -345,23 +345,23 @@ package i2c_reg_pkg;
   } i2c_hw2reg_t;
 
   // Register Address
-  parameter I2C_INTR_STATE_OFFSET = 7'h 0;
-  parameter I2C_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter I2C_INTR_TEST_OFFSET = 7'h 8;
-  parameter I2C_CTRL_OFFSET = 7'h c;
-  parameter I2C_STATUS_OFFSET = 7'h 10;
-  parameter I2C_RDATA_OFFSET = 7'h 14;
-  parameter I2C_FDATA_OFFSET = 7'h 18;
-  parameter I2C_FIFO_CTRL_OFFSET = 7'h 1c;
-  parameter I2C_FIFO_STATUS_OFFSET = 7'h 20;
-  parameter I2C_OVRD_OFFSET = 7'h 24;
-  parameter I2C_VAL_OFFSET = 7'h 28;
-  parameter I2C_TIMING0_OFFSET = 7'h 2c;
-  parameter I2C_TIMING1_OFFSET = 7'h 30;
-  parameter I2C_TIMING2_OFFSET = 7'h 34;
-  parameter I2C_TIMING3_OFFSET = 7'h 38;
-  parameter I2C_TIMING4_OFFSET = 7'h 3c;
-  parameter I2C_TIMEOUT_CTRL_OFFSET = 7'h 40;
+  parameter logic [6:0] I2C_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [6:0] I2C_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [6:0] I2C_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [6:0] I2C_CTRL_OFFSET = 7'h c;
+  parameter logic [6:0] I2C_STATUS_OFFSET = 7'h 10;
+  parameter logic [6:0] I2C_RDATA_OFFSET = 7'h 14;
+  parameter logic [6:0] I2C_FDATA_OFFSET = 7'h 18;
+  parameter logic [6:0] I2C_FIFO_CTRL_OFFSET = 7'h 1c;
+  parameter logic [6:0] I2C_FIFO_STATUS_OFFSET = 7'h 20;
+  parameter logic [6:0] I2C_OVRD_OFFSET = 7'h 24;
+  parameter logic [6:0] I2C_VAL_OFFSET = 7'h 28;
+  parameter logic [6:0] I2C_TIMING0_OFFSET = 7'h 2c;
+  parameter logic [6:0] I2C_TIMING1_OFFSET = 7'h 30;
+  parameter logic [6:0] I2C_TIMING2_OFFSET = 7'h 34;
+  parameter logic [6:0] I2C_TIMING3_OFFSET = 7'h 38;
+  parameter logic [6:0] I2C_TIMING4_OFFSET = 7'h 3c;
+  parameter logic [6:0] I2C_TIMEOUT_CTRL_OFFSET = 7'h 40;
 
 
   // Register Index
@@ -386,7 +386,7 @@ package i2c_reg_pkg;
   } i2c_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] I2C_PERMIT [17] = '{
+  parameter logic [3:0] I2C_PERMIT [17] = '{
     4'b 0011, // index[ 0] I2C_INTR_STATE
     4'b 0011, // index[ 1] I2C_INTR_ENABLE
     4'b 0011, // index[ 2] I2C_INTR_TEST

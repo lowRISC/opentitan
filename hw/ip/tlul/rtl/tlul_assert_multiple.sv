@@ -5,7 +5,7 @@
 // Protocol checker for multiple TL-UL ports
 
 module tlul_assert_multiple #(
-  parameter N = 2,
+  parameter int unsigned N = 2,
   parameter EndpointType = "Device" // can be "Device" or "Host"
 ) (
   input clk_i,

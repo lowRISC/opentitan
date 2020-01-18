@@ -187,21 +187,21 @@ package gpio_reg_pkg;
   } gpio_hw2reg_t;
 
   // Register Address
-  parameter GPIO_INTR_STATE_OFFSET = 6'h 0;
-  parameter GPIO_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter GPIO_INTR_TEST_OFFSET = 6'h 8;
-  parameter GPIO_DATA_IN_OFFSET = 6'h c;
-  parameter GPIO_DIRECT_OUT_OFFSET = 6'h 10;
-  parameter GPIO_MASKED_OUT_LOWER_OFFSET = 6'h 14;
-  parameter GPIO_MASKED_OUT_UPPER_OFFSET = 6'h 18;
-  parameter GPIO_DIRECT_OE_OFFSET = 6'h 1c;
-  parameter GPIO_MASKED_OE_LOWER_OFFSET = 6'h 20;
-  parameter GPIO_MASKED_OE_UPPER_OFFSET = 6'h 24;
-  parameter GPIO_INTR_CTRL_EN_RISING_OFFSET = 6'h 28;
-  parameter GPIO_INTR_CTRL_EN_FALLING_OFFSET = 6'h 2c;
-  parameter GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET = 6'h 30;
-  parameter GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 6'h 34;
-  parameter GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 38;
+  parameter logic [5:0] GPIO_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [5:0] GPIO_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [5:0] GPIO_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [5:0] GPIO_DATA_IN_OFFSET = 6'h c;
+  parameter logic [5:0] GPIO_DIRECT_OUT_OFFSET = 6'h 10;
+  parameter logic [5:0] GPIO_MASKED_OUT_LOWER_OFFSET = 6'h 14;
+  parameter logic [5:0] GPIO_MASKED_OUT_UPPER_OFFSET = 6'h 18;
+  parameter logic [5:0] GPIO_DIRECT_OE_OFFSET = 6'h 1c;
+  parameter logic [5:0] GPIO_MASKED_OE_LOWER_OFFSET = 6'h 20;
+  parameter logic [5:0] GPIO_MASKED_OE_UPPER_OFFSET = 6'h 24;
+  parameter logic [5:0] GPIO_INTR_CTRL_EN_RISING_OFFSET = 6'h 28;
+  parameter logic [5:0] GPIO_INTR_CTRL_EN_FALLING_OFFSET = 6'h 2c;
+  parameter logic [5:0] GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET = 6'h 30;
+  parameter logic [5:0] GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 6'h 34;
+  parameter logic [5:0] GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 38;
 
 
   // Register Index
@@ -224,7 +224,7 @@ package gpio_reg_pkg;
   } gpio_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] GPIO_PERMIT [15] = '{
+  parameter logic [3:0] GPIO_PERMIT [15] = '{
     4'b 1111, // index[ 0] GPIO_INTR_STATE
     4'b 1111, // index[ 1] GPIO_INTR_ENABLE
     4'b 1111, // index[ 2] GPIO_INTR_TEST
