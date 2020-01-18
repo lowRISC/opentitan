@@ -29,6 +29,8 @@ It is an error if *required* keys are missing from the input JSON.
 *Optional* keys may be provided in the input file as needed, as noted in the tables the tool may insert them (with default or computed values) during validation so the output generators do not have to special case them.
 Keys marked as "inserted by tool" should not be in the input JSON (they will be silently overwritten if they are there), they are derived by the tool during validation of the input and available to the output generators.
 
+For more detail on the non-register entries of the Hjson configuration file, see [this section]({{< relref "doc/rm/comportability_specification/index.md#configuration-description-hjson" >}}) of the Comportability Specification.
+
 {{% selfdoc "reggen" %}}
 
 The tool will normally generate the register address offset by starting from 0 and allocating the registers in the order they are in the input file.
