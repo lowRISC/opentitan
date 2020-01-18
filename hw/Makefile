@@ -7,18 +7,22 @@ REG_OUTPUT_DV_DIR ?= ${REG_OUTPUT_DIR}/dv
 REG_OUTPUT_SW_DIR ?= ${REG_OUTPUT_DIR}/sw
 REG_OUTPUT_FPV_CSR_DIR ?= ${REG_OUTPUT_DIR}/fpv/vip
 
-IPS ?= uart          \
-       gpio          \
-       rv_plic       \
-       flash_ctrl    \
-       spi_device    \
-       rv_timer      \
-       hmac          \
-       usbuart       \
+IPS ?= aes           \
        alert_handler \
-       pinmux        \
+       flash_ctrl    \
+       gpio          \
+       hmac          \
+       i2c           \
+       nmi_gen       \
        padctrl       \
-       nmi_gen
+       pinmux        \
+       rv_plic       \
+       rv_timer      \
+       spi_device    \
+       trial1        \
+       uart          \
+       usbdev        \
+       usbuart
 
 TOPS ?= top_earlgrey
 
