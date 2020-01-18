@@ -5,7 +5,7 @@
 // Generic double-synchronizer flop followed by pulse generation
 
 module usbdev_flop_2syncpulse #(
-  parameter Width = 16
+  parameter int unsigned Width = 16
 ) (
   input  logic             clk_i,    // receive clock
   input  logic             rst_ni,

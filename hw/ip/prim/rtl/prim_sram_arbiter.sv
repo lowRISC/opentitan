@@ -42,7 +42,7 @@ module prim_sram_arbiter #(
     logic [SramDw-1:0] wdata;
   } req_t;
 
-  localparam ARB_DW = $bits(req_t);
+  localparam int ARB_DW = $bits(req_t);
 
   req_t req_packed [N];
 

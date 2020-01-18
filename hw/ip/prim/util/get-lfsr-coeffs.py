@@ -55,8 +55,8 @@ def dump_coeffs(lfsrType, widths, coeffs, outfile):
         decl_str = "localparam int unsigned %s_LUT_OFF = %d;\n" \
             % (lfsrType, min(widths))
         outfile.write(decl_str)
-        decl_str = "localparam logic [%d:0] %s_COEFFS [0:%d] = '{ " \
-            % (max(widths) - 1, lfsrType, max(widths)-min(widths))
+        decl_str = "localparam logic [%d:0] %s_COEFFS [%d] = '{ " \
+            % (max(widths) - 1, lfsrType, max(widths)-min(widths)+1)
         outfile.write(decl_str)
         comma = ',\n'
         spaces = ''

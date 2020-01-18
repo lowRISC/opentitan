@@ -24,7 +24,7 @@ module usbuart_core (
 
   input        cio_usb_sense_i,
 
-  output logic cio_usb_pullup_en_o,  
+  output logic cio_usb_pullup_en_o,
 
   output logic intr_tx_watermark_o,
   output logic intr_rx_watermark_o,
@@ -408,7 +408,7 @@ module usbuart_core (
 
   /////////////////////////////////
   // USB IO Muxing               //
-  /////////////////////////////////  
+  /////////////////////////////////
 
   // Static configuration
   usbdev_reg_pkg::usbdev_reg2hw_phy_config_reg_t     usb_phy_config;

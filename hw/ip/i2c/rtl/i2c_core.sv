@@ -90,7 +90,7 @@ module  i2c_core (
 
   logic        host_enable;
 
-  // Unused parts of exposed bits 
+  // Unused parts of exposed bits
   logic        unused_fifo_ctrl_rxilvl_qe;
   logic        unused_fifo_ctrl_fmtilvl_qe;
   logic [7:0]  unused_rx_fifo_rdata_q;
@@ -192,7 +192,7 @@ module  i2c_core (
   assign fmt_flag_read_bytes    = fmt_fifo_rdata[11];
   assign fmt_flag_nak_ok        = fmt_fifo_rdata[12];
 
-  // Unused parts of exposed bits 
+  // Unused parts of exposed bits
   assign unused_fifo_ctrl_rxilvl_qe  = reg2hw.fifo_ctrl.rxilvl.qe;
   assign unused_fifo_ctrl_fmtilvl_qe = reg2hw.fifo_ctrl.fmtilvl.qe;
   assign unused_rx_fifo_rdata_q = reg2hw.rdata.q;

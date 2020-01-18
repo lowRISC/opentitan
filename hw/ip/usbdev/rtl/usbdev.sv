@@ -236,7 +236,7 @@ module usbdev (
     .rst_ni (rst_usb_ni),
     .d      ({enable_setup, enable_out, ep_stall}),
     .q      ({usb_enable_setup, usb_enable_out, usb_ep_stall})
-  );  
+  );
 
   // CDC: ok, quasi-static
   always_comb begin : proc_map_iso
@@ -269,7 +269,7 @@ module usbdev (
   );
 
   // CDC: We synchronize the qe (write pulse) and assume that the
-  // rest of the register remains stable 
+  // rest of the register remains stable
   prim_pulse_sync usbdev_data_toggle_clear (
     .clk_src_i   (clk_i),
     .clk_dst_i   (clk_usb_48mhz_i),
@@ -283,9 +283,9 @@ module usbdev (
     usb_data_toggle_clear = '0;
     for (int i = 0; i < NEndpoints; i++) begin
       if (usb_data_toggle_clear_en) begin
-        usb_data_toggle_clear[i] = reg2hw.data_toggle_clear[i].q; 
-      end      
-    end  
+        usb_data_toggle_clear[i] = reg2hw.data_toggle_clear[i].q;
+      end
+    end
   end
 
   // Clear of ready and set of sent is a pulse in USB clock domain
@@ -389,7 +389,7 @@ module usbdev (
     end else begin
       // Clear pending when a SETUP is received
       // CDC: usb_out_endpoint is synchronized implicitly by
-      // setup_received, as it is stable 
+      // setup_received, as it is stable
       clear_rdybit[usb_out_endpoint] = setup_received;
       update_pend[usb_out_endpoint]  = setup_received;
 
@@ -517,7 +517,7 @@ module usbdev (
     .rst_ni (rst_usb_ni),
     .d      ({reg2hw.usbctrl.enable.q, reg2hw.usbctrl.device_address.q}),
     .q      ({usb_enable,              usb_device_addr})
-  );  
+  );
 
   // CDC for event signals (arguably they are there for a long time so would be ok)
   // Just want a pulse to ensure only one interrupt for an event
@@ -526,7 +526,7 @@ module usbdev (
     .rst_ni (rst_ni),
     .d      ({usb_event_disconnect, usb_event_link_reset, usb_event_link_suspend,
               usb_event_host_lost, usb_event_connect}),
-    .q      ({event_disconnect, event_link_reset, event_link_suspend, 
+    .q      ({event_disconnect, event_link_reset, event_link_suspend,
               event_host_lost, event_connect})
   );
 
@@ -576,17 +576,17 @@ module usbdev (
   // Clear the stall flag when a SETUP is received
 
   // CDC: usb_out_endpoint is synchronized implicitly by
-  // setup_received, as it is stable 
+  // setup_received, as it is stable
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
-      hw2reg.stall[i].d  = 1'b0;              
+      hw2reg.stall[i].d  = 1'b0;
       if (setup_received && usb_out_endpoint == 4'(i)) begin
         hw2reg.stall[i].de = 1'b1;
       end else begin
         hw2reg.stall[i].de = 1'b0;
-      end        
-    end  
-  end  
+      end
+    end
+  end
 
   logic        unused_mem_a_rerror_d;
 

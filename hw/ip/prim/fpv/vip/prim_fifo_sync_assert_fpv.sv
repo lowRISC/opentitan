@@ -78,7 +78,7 @@ module prim_fifo_sync_assert_fpv #(
     // general case
     end else begin : gen_ptrs
 
-      logic [Width-1:0]  fifo [0:Depth-1];
+      logic [Width-1:0]  fifo [Depth];
       logic [DepthW+2:0] wptr, rptr;
 
       // implements (++val) mod Depth
@@ -146,7 +146,7 @@ module prim_fifo_sync_assert_fpv #(
       clk_i, !rst_ni || clr_i)
 
   // this is unreachable in depth 1 no-pass through mode
-  if (Depth == 1 && Pass) begin
+  if (Depth == 1 && Pass) begin : gen_d1_passthru
     // check simultaneous write and read
     `ASSERT(WriteAndRead_A, wready && wvalid && rvalid && rready |=> depth == $past(depth),
         clk_i, !rst_ni || clr_i)

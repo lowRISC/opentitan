@@ -21,9 +21,9 @@ module uart_reg_top (
 
   import uart_reg_pkg::* ;
 
-  localparam AW = 6;
-  localparam DW = 32;
-  localparam DBW = DW/8;                    // Byte Width
+  localparam int AW = 6;
+  localparam int DW = 32;
+  localparam int DBW = DW/8;                    // Byte Width
 
   // register signals
   logic           reg_we;

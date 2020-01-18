@@ -1,6 +1,6 @@
 module usb_serial_fifo_ep  #(
-  parameter MaxPktSizeByte = 32,
-  parameter PktW = $clog2(MaxPktSizeByte)
+  parameter int unsigned MaxPktSizeByte = 32,
+  parameter int unsigned PktW = $clog2(MaxPktSizeByte)
 
 ) (
   input               clk_i,
@@ -57,7 +57,7 @@ module usb_serial_fifo_ep  #(
 
   // In future probably better to eliminate this buffer and add rollback to async FIFO
   // Will receive the 2 bytes of CRC, so may get MAX_PACKET_SIZE+2 bytes
-  logic [7:0] out_pkt_buffer [0:MaxPktSizeByte - 1];
+  logic [7:0] out_pkt_buffer [MaxPktSizeByte];
   logic [PktW - 1:0] ob_rptr;
   logic [PktW:0]     ob_max_used;
   logic          ob_unload;
@@ -120,7 +120,7 @@ module usb_serial_fifo_ep  #(
   ///////////////////////////////////////
 
   // packet buffer to allow rollback in the case of a NAK
-  logic [7:0]    in_pkt_buffer [0:MaxPktSizeByte - 1];
+  logic [7:0]    in_pkt_buffer [MaxPktSizeByte];
   logic [PktW:0] pb_wptr;
   logic          pb_freeze, pb_done;
   logic [7:0]    pb_rdata;

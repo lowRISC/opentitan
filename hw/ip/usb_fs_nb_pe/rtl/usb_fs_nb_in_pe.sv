@@ -12,9 +12,9 @@
 
 module usb_fs_nb_in_pe #(
   parameter logic [4:0] NumInEps = 11,
-  parameter MaxInPktSizeByte = 32,
-  parameter PktW = $clog2(MaxInPktSizeByte),
-  parameter InEpW = $clog2(NumInEps)
+  parameter int unsigned MaxInPktSizeByte = 32,
+  parameter int unsigned PktW = $clog2(MaxInPktSizeByte),
+  parameter int unsigned InEpW = $clog2(NumInEps)
 ) (
   input  logic               clk_48mhz_i,
   input  logic               rst_ni,
@@ -214,7 +214,7 @@ module usb_fs_nb_in_pe #(
     end else begin
       tx_data_o <= in_ep_data_i;
     end
-    
+
   end
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin

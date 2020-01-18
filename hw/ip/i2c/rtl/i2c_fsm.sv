@@ -649,7 +649,7 @@ module i2c_fsm (
       state_q <= state_d;
     end
   end
- 
+
   // I2C bus outputs
   assign scl_o = scl_temp;
   assign sda_o = sda_temp;

@@ -7,7 +7,7 @@
 package hmac_reg_pkg;
 
   // Param list
-  localparam int NumWords = 8;
+  parameter int NumWords = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -186,36 +186,36 @@ package hmac_reg_pkg;
   } hmac_hw2reg_t;
 
   // Register Address
-  parameter HMAC_INTR_STATE_OFFSET = 12'h 0;
-  parameter HMAC_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter HMAC_INTR_TEST_OFFSET = 12'h 8;
-  parameter HMAC_CFG_OFFSET = 12'h c;
-  parameter HMAC_CMD_OFFSET = 12'h 10;
-  parameter HMAC_STATUS_OFFSET = 12'h 14;
-  parameter HMAC_ERR_CODE_OFFSET = 12'h 18;
-  parameter HMAC_WIPE_SECRET_OFFSET = 12'h 1c;
-  parameter HMAC_KEY0_OFFSET = 12'h 20;
-  parameter HMAC_KEY1_OFFSET = 12'h 24;
-  parameter HMAC_KEY2_OFFSET = 12'h 28;
-  parameter HMAC_KEY3_OFFSET = 12'h 2c;
-  parameter HMAC_KEY4_OFFSET = 12'h 30;
-  parameter HMAC_KEY5_OFFSET = 12'h 34;
-  parameter HMAC_KEY6_OFFSET = 12'h 38;
-  parameter HMAC_KEY7_OFFSET = 12'h 3c;
-  parameter HMAC_DIGEST0_OFFSET = 12'h 40;
-  parameter HMAC_DIGEST1_OFFSET = 12'h 44;
-  parameter HMAC_DIGEST2_OFFSET = 12'h 48;
-  parameter HMAC_DIGEST3_OFFSET = 12'h 4c;
-  parameter HMAC_DIGEST4_OFFSET = 12'h 50;
-  parameter HMAC_DIGEST5_OFFSET = 12'h 54;
-  parameter HMAC_DIGEST6_OFFSET = 12'h 58;
-  parameter HMAC_DIGEST7_OFFSET = 12'h 5c;
-  parameter HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 60;
-  parameter HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 64;
+  parameter logic [11:0] HMAC_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [11:0] HMAC_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [11:0] HMAC_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [11:0] HMAC_CFG_OFFSET = 12'h c;
+  parameter logic [11:0] HMAC_CMD_OFFSET = 12'h 10;
+  parameter logic [11:0] HMAC_STATUS_OFFSET = 12'h 14;
+  parameter logic [11:0] HMAC_ERR_CODE_OFFSET = 12'h 18;
+  parameter logic [11:0] HMAC_WIPE_SECRET_OFFSET = 12'h 1c;
+  parameter logic [11:0] HMAC_KEY0_OFFSET = 12'h 20;
+  parameter logic [11:0] HMAC_KEY1_OFFSET = 12'h 24;
+  parameter logic [11:0] HMAC_KEY2_OFFSET = 12'h 28;
+  parameter logic [11:0] HMAC_KEY3_OFFSET = 12'h 2c;
+  parameter logic [11:0] HMAC_KEY4_OFFSET = 12'h 30;
+  parameter logic [11:0] HMAC_KEY5_OFFSET = 12'h 34;
+  parameter logic [11:0] HMAC_KEY6_OFFSET = 12'h 38;
+  parameter logic [11:0] HMAC_KEY7_OFFSET = 12'h 3c;
+  parameter logic [11:0] HMAC_DIGEST0_OFFSET = 12'h 40;
+  parameter logic [11:0] HMAC_DIGEST1_OFFSET = 12'h 44;
+  parameter logic [11:0] HMAC_DIGEST2_OFFSET = 12'h 48;
+  parameter logic [11:0] HMAC_DIGEST3_OFFSET = 12'h 4c;
+  parameter logic [11:0] HMAC_DIGEST4_OFFSET = 12'h 50;
+  parameter logic [11:0] HMAC_DIGEST5_OFFSET = 12'h 54;
+  parameter logic [11:0] HMAC_DIGEST6_OFFSET = 12'h 58;
+  parameter logic [11:0] HMAC_DIGEST7_OFFSET = 12'h 5c;
+  parameter logic [11:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 60;
+  parameter logic [11:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 64;
 
   // Window parameter
-  parameter HMAC_MSG_FIFO_OFFSET = 12'h 800;
-  parameter HMAC_MSG_FIFO_SIZE   = 12'h 800;
+  parameter logic [11:0] HMAC_MSG_FIFO_OFFSET = 12'h 800;
+  parameter logic [11:0] HMAC_MSG_FIFO_SIZE   = 12'h 800;
 
   // Register Index
   typedef enum int {
@@ -248,7 +248,7 @@ package hmac_reg_pkg;
   } hmac_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] HMAC_PERMIT [26] = '{
+  parameter logic [3:0] HMAC_PERMIT [26] = '{
     4'b 0001, // index[ 0] HMAC_INTR_STATE
     4'b 0001, // index[ 1] HMAC_INTR_ENABLE
     4'b 0001, // index[ 2] HMAC_INTR_TEST

@@ -39,9 +39,9 @@ module ${block.name}_reg_top ${print_param(params)}(
 
   import ${block.name}_reg_pkg::* ;
 
-  localparam AW = ${block.addr_width};
-  localparam DW = ${block.width};
-  localparam DBW = DW/8;                    // Byte Width
+  localparam int AW = ${block.addr_width};
+  localparam int DW = ${block.width};
+  localparam int DBW = DW/8;                    // Byte Width
 
   // register signals
   logic           reg_we;

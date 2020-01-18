@@ -7,8 +7,8 @@
 package flash_ctrl_reg_pkg;
 
   // Param list
-  localparam int NumBanks = 2;
-  localparam int NumRegions = 8;
+  parameter int NumBanks = 2;
+  parameter int NumRegions = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -252,33 +252,33 @@ package flash_ctrl_reg_pkg;
   } flash_ctrl_hw2reg_t;
 
   // Register Address
-  parameter FLASH_CTRL_INTR_STATE_OFFSET = 7'h 0;
-  parameter FLASH_CTRL_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter FLASH_CTRL_INTR_TEST_OFFSET = 7'h 8;
-  parameter FLASH_CTRL_CONTROL_OFFSET = 7'h c;
-  parameter FLASH_CTRL_ADDR_OFFSET = 7'h 10;
-  parameter FLASH_CTRL_REGION_CFG_REGWEN_OFFSET = 7'h 14;
-  parameter FLASH_CTRL_MP_REGION_CFG0_OFFSET = 7'h 18;
-  parameter FLASH_CTRL_MP_REGION_CFG1_OFFSET = 7'h 1c;
-  parameter FLASH_CTRL_MP_REGION_CFG2_OFFSET = 7'h 20;
-  parameter FLASH_CTRL_MP_REGION_CFG3_OFFSET = 7'h 24;
-  parameter FLASH_CTRL_MP_REGION_CFG4_OFFSET = 7'h 28;
-  parameter FLASH_CTRL_MP_REGION_CFG5_OFFSET = 7'h 2c;
-  parameter FLASH_CTRL_MP_REGION_CFG6_OFFSET = 7'h 30;
-  parameter FLASH_CTRL_MP_REGION_CFG7_OFFSET = 7'h 34;
-  parameter FLASH_CTRL_DEFAULT_REGION_OFFSET = 7'h 38;
-  parameter FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 7'h 3c;
-  parameter FLASH_CTRL_MP_BANK_CFG_OFFSET = 7'h 40;
-  parameter FLASH_CTRL_OP_STATUS_OFFSET = 7'h 44;
-  parameter FLASH_CTRL_STATUS_OFFSET = 7'h 48;
-  parameter FLASH_CTRL_SCRATCH_OFFSET = 7'h 4c;
-  parameter FLASH_CTRL_FIFO_LVL_OFFSET = 7'h 50;
+  parameter logic [6:0] FLASH_CTRL_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [6:0] FLASH_CTRL_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [6:0] FLASH_CTRL_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [6:0] FLASH_CTRL_CONTROL_OFFSET = 7'h c;
+  parameter logic [6:0] FLASH_CTRL_ADDR_OFFSET = 7'h 10;
+  parameter logic [6:0] FLASH_CTRL_REGION_CFG_REGWEN_OFFSET = 7'h 14;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG0_OFFSET = 7'h 18;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG1_OFFSET = 7'h 1c;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG2_OFFSET = 7'h 20;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG3_OFFSET = 7'h 24;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG4_OFFSET = 7'h 28;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG5_OFFSET = 7'h 2c;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG6_OFFSET = 7'h 30;
+  parameter logic [6:0] FLASH_CTRL_MP_REGION_CFG7_OFFSET = 7'h 34;
+  parameter logic [6:0] FLASH_CTRL_DEFAULT_REGION_OFFSET = 7'h 38;
+  parameter logic [6:0] FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 7'h 3c;
+  parameter logic [6:0] FLASH_CTRL_MP_BANK_CFG_OFFSET = 7'h 40;
+  parameter logic [6:0] FLASH_CTRL_OP_STATUS_OFFSET = 7'h 44;
+  parameter logic [6:0] FLASH_CTRL_STATUS_OFFSET = 7'h 48;
+  parameter logic [6:0] FLASH_CTRL_SCRATCH_OFFSET = 7'h 4c;
+  parameter logic [6:0] FLASH_CTRL_FIFO_LVL_OFFSET = 7'h 50;
 
   // Window parameter
-  parameter FLASH_CTRL_PROG_FIFO_OFFSET = 7'h 54;
-  parameter FLASH_CTRL_PROG_FIFO_SIZE   = 7'h 4;
-  parameter FLASH_CTRL_RD_FIFO_OFFSET = 7'h 58;
-  parameter FLASH_CTRL_RD_FIFO_SIZE   = 7'h 4;
+  parameter logic [6:0] FLASH_CTRL_PROG_FIFO_OFFSET = 7'h 54;
+  parameter logic [6:0] FLASH_CTRL_PROG_FIFO_SIZE   = 7'h 4;
+  parameter logic [6:0] FLASH_CTRL_RD_FIFO_OFFSET = 7'h 58;
+  parameter logic [6:0] FLASH_CTRL_RD_FIFO_SIZE   = 7'h 4;
 
   // Register Index
   typedef enum int {
@@ -306,7 +306,7 @@ package flash_ctrl_reg_pkg;
   } flash_ctrl_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] FLASH_CTRL_PERMIT [21] = '{
+  parameter logic [3:0] FLASH_CTRL_PERMIT [21] = '{
     4'b 0001, // index[ 0] FLASH_CTRL_INTR_STATE
     4'b 0001, // index[ 1] FLASH_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] FLASH_CTRL_INTR_TEST

@@ -13,8 +13,8 @@
 // is accepted.
 
 module prim_arbiter #(
-  parameter N   = 4,
-  parameter DW  = 32
+  parameter int N   = 4,
+  parameter int DW  = 32
 ) (
   input clk_i,
   input rst_ni,

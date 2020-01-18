@@ -3,9 +3,9 @@
 // -- conform to lowRISC coding style
 
 module usb_serial_ctrl_ep  #(
-  parameter MaxPktSizeByte = 32,
+  parameter int unsigned MaxPktSizeByte = 32,
   // localparam below here
-  parameter PktW = $clog2(MaxPktSizeByte)
+  parameter int unsigned PktW = $clog2(MaxPktSizeByte)
 ) (
   input              clk_i,
   input              rst_ni,

@@ -45,7 +45,7 @@ module rv_dm #(
   // Currently only 32 bit busses are supported by our TL-UL IP
   localparam int BusWidth = 32;
   // all harts have contiguous IDs
-  localparam SelectableHarts = {NrHarts{1'b1}};
+  localparam logic [NrHarts-1:0] SelectableHarts = {NrHarts{1'b1}};
 
   // Debug CSRs
   dm::hartinfo_t [NrHarts-1:0]      hartinfo;
@@ -212,7 +212,7 @@ module rv_dm #(
     .tl_i         (tl_h_i)
   );
 
-  localparam AddressWidthWords = BusWidth - $clog2(BusWidth/8);
+  localparam int unsigned AddressWidthWords = BusWidth - $clog2(BusWidth/8);
 
   logic                         req;
   logic                         we;

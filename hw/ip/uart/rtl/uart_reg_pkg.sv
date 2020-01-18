@@ -317,18 +317,18 @@ package uart_reg_pkg;
   } uart_hw2reg_t;
 
   // Register Address
-  parameter UART_INTR_STATE_OFFSET = 6'h 0;
-  parameter UART_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter UART_INTR_TEST_OFFSET = 6'h 8;
-  parameter UART_CTRL_OFFSET = 6'h c;
-  parameter UART_STATUS_OFFSET = 6'h 10;
-  parameter UART_RDATA_OFFSET = 6'h 14;
-  parameter UART_WDATA_OFFSET = 6'h 18;
-  parameter UART_FIFO_CTRL_OFFSET = 6'h 1c;
-  parameter UART_FIFO_STATUS_OFFSET = 6'h 20;
-  parameter UART_OVRD_OFFSET = 6'h 24;
-  parameter UART_VAL_OFFSET = 6'h 28;
-  parameter UART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
+  parameter logic [5:0] UART_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [5:0] UART_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [5:0] UART_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [5:0] UART_CTRL_OFFSET = 6'h c;
+  parameter logic [5:0] UART_STATUS_OFFSET = 6'h 10;
+  parameter logic [5:0] UART_RDATA_OFFSET = 6'h 14;
+  parameter logic [5:0] UART_WDATA_OFFSET = 6'h 18;
+  parameter logic [5:0] UART_FIFO_CTRL_OFFSET = 6'h 1c;
+  parameter logic [5:0] UART_FIFO_STATUS_OFFSET = 6'h 20;
+  parameter logic [5:0] UART_OVRD_OFFSET = 6'h 24;
+  parameter logic [5:0] UART_VAL_OFFSET = 6'h 28;
+  parameter logic [5:0] UART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
 
 
   // Register Index
@@ -348,7 +348,7 @@ package uart_reg_pkg;
   } uart_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] UART_PERMIT [12] = '{
+  parameter logic [3:0] UART_PERMIT [12] = '{
     4'b 0001, // index[ 0] UART_INTR_STATE
     4'b 0001, // index[ 1] UART_INTR_ENABLE
     4'b 0001, // index[ 2] UART_INTR_TEST

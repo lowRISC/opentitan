@@ -114,7 +114,7 @@ module usbdev_usbif  #(
   always_comb begin
     if (out_ep_acked || out_ep_rollback) begin
       out_max_used_d = 0;
-      
+
     end else if (out_ep_data_put) begin
       // In the normal case <MaxPktSizeByte this is out_max_used_q <= out_ep_put_addr
       // Following all ones out_max_used_q will get 1,00..00 and 1,00..01 to cover

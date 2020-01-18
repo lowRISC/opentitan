@@ -21,7 +21,7 @@
 //   DRspDepth:     Same as HReqDepth but for device response FIFO.
 
 module tlul_socket_m1 #(
-  parameter               M         = 4,
+  parameter int unsigned  M         = 4,
   parameter bit [M-1:0]   HReqPass  = {M{1'b1}},
   parameter bit [M-1:0]   HRspPass  = {M{1'b1}},
   parameter bit [M*4-1:0] HReqDepth = {M{4'h2}},
@@ -67,8 +67,8 @@ module tlul_socket_m1 #(
   //
   // Required ID width to distinguish between host ports
   //  Used in response steering
-  localparam IDW   = top_pkg::TL_AIW;
-  localparam STIDW = $clog2(M);
+  localparam int unsigned IDW   = top_pkg::TL_AIW;
+  localparam int unsigned STIDW = $clog2(M);
 
   tlul_pkg::tl_h2d_t hreq_fifo_o [M];
   tlul_pkg::tl_d2h_t hrsp_fifo_i [M];

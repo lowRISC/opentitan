@@ -15,7 +15,7 @@ package ${block.name}_reg_pkg;
   // Param list
 % endif
 % for param in [p for p in block.params if p["local"] == "true"]:
-  localparam ${param["type"]} ${param["name"]} = ${param["default"]};
+  parameter ${param["type"]} ${param["name"]} = ${param["default"]};
 % endfor
 
   ////////////////////////////
@@ -143,15 +143,15 @@ packbit = 0
 
   // Register Address
 % for r in block.get_regs_flat():
-  parameter ${block.name.upper()}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
+  parameter logic [${block.addr_width-1}:0] ${block.name.upper()}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
 % endfor
 
 % if len(block.wins) > 0:
   // Window parameter
 % endif
 % for i,w in enumerate(block.wins):
-  parameter ${block.name.upper()}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
-  parameter ${block.name.upper()}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
+  parameter logic [${block.addr_width-1}:0] ${block.name.upper()}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
+  parameter logic [${block.addr_width-1}:0] ${block.name.upper()}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
 % endfor
 
   // Register Index
@@ -162,7 +162,7 @@ packbit = 0
   } ${block.name}_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] ${block.name.upper()}_PERMIT [${block.get_n_regs_flat()}] = '{
+  parameter logic [3:0] ${block.name.upper()}_PERMIT [${block.get_n_regs_flat()}] = '{
 % for i,r in enumerate(block.get_regs_flat()):
 <% index_str = "{}".format(i).rjust(max_regs_char) %>\
   % if r.width > 24:

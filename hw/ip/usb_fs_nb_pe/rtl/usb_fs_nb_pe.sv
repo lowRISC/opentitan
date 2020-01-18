@@ -15,10 +15,10 @@
 // this version contains no packet buffers
 
 module usb_fs_nb_pe #(
-  parameter NumOutEps = 2,
-  parameter NumInEps = 2,
-  parameter MaxPktSizeByte = 32,
-  parameter PktW = $clog2(MaxPktSizeByte)
+  parameter int unsigned NumOutEps = 2,
+  parameter int unsigned NumInEps = 2,
+  parameter int unsigned MaxPktSizeByte = 32,
+  parameter int unsigned PktW = $clog2(MaxPktSizeByte)
 ) (
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,        // Async. reset, active low
@@ -250,5 +250,5 @@ module usb_fs_nb_pe #(
     .tx_data_avail_i        (tx_data_avail),
     .tx_data_get_o          (tx_data_get),
     .tx_data_i              (tx_data)
-  );  
+  );
 endmodule

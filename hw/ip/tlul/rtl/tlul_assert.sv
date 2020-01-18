@@ -63,24 +63,24 @@ module tlul_assert #(
   // use negedge clk to avoid possible race conditions
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      pend_req = '0;
+      pend_req <= '0;
     end else begin
       if (h2d.a_valid) begin
         // store each request in pend_req array (we use blocking statements below so
         // that we can handle the case where request and response for the same
         // source-ID happen in the same cycle)
         if (d2h.a_ready) begin
-          pend_req[h2d.a_source].pend    = 1;
-          pend_req[h2d.a_source].opcode  =  h2d.a_opcode;
-          pend_req[h2d.a_source].size    =  h2d.a_size;
-          pend_req[h2d.a_source].mask    =  h2d.a_mask;
+          pend_req[h2d.a_source].pend    <= 1;
+          pend_req[h2d.a_source].opcode  <= h2d.a_opcode;
+          pend_req[h2d.a_source].size    <= h2d.a_size;
+          pend_req[h2d.a_source].mask    <= h2d.a_mask;
         end
       end // h2d.a_valid
 
       if (d2h.d_valid) begin
         // update pend_req array
         if (h2d.d_ready) begin
-          pend_req[d2h.d_source].pend = 0;
+          pend_req[d2h.d_source].pend <= 0;
         end
       end //d2h.d_valid
     end

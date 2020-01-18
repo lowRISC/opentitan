@@ -7,8 +7,8 @@
 package rv_timer_reg_pkg;
 
   // Param list
-  localparam int N_HARTS = 1;
-  localparam int N_TIMERS = 1;
+  parameter int N_HARTS = 1;
+  parameter int N_TIMERS = 1;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -97,15 +97,15 @@ package rv_timer_reg_pkg;
   } rv_timer_hw2reg_t;
 
   // Register Address
-  parameter RV_TIMER_CTRL_OFFSET = 9'h 0;
-  parameter RV_TIMER_CFG0_OFFSET = 9'h 100;
-  parameter RV_TIMER_TIMER_V_LOWER0_OFFSET = 9'h 104;
-  parameter RV_TIMER_TIMER_V_UPPER0_OFFSET = 9'h 108;
-  parameter RV_TIMER_COMPARE_LOWER0_0_OFFSET = 9'h 10c;
-  parameter RV_TIMER_COMPARE_UPPER0_0_OFFSET = 9'h 110;
-  parameter RV_TIMER_INTR_ENABLE0_OFFSET = 9'h 114;
-  parameter RV_TIMER_INTR_STATE0_OFFSET = 9'h 118;
-  parameter RV_TIMER_INTR_TEST0_OFFSET = 9'h 11c;
+  parameter logic [8:0] RV_TIMER_CTRL_OFFSET = 9'h 0;
+  parameter logic [8:0] RV_TIMER_CFG0_OFFSET = 9'h 100;
+  parameter logic [8:0] RV_TIMER_TIMER_V_LOWER0_OFFSET = 9'h 104;
+  parameter logic [8:0] RV_TIMER_TIMER_V_UPPER0_OFFSET = 9'h 108;
+  parameter logic [8:0] RV_TIMER_COMPARE_LOWER0_0_OFFSET = 9'h 10c;
+  parameter logic [8:0] RV_TIMER_COMPARE_UPPER0_0_OFFSET = 9'h 110;
+  parameter logic [8:0] RV_TIMER_INTR_ENABLE0_OFFSET = 9'h 114;
+  parameter logic [8:0] RV_TIMER_INTR_STATE0_OFFSET = 9'h 118;
+  parameter logic [8:0] RV_TIMER_INTR_TEST0_OFFSET = 9'h 11c;
 
 
   // Register Index
@@ -122,7 +122,7 @@ package rv_timer_reg_pkg;
   } rv_timer_id_e;
 
   // Register width information to check illegal writes
-  localparam logic [3:0] RV_TIMER_PERMIT [9] = '{
+  parameter logic [3:0] RV_TIMER_PERMIT [9] = '{
     4'b 0001, // index[0] RV_TIMER_CTRL
     4'b 0111, // index[1] RV_TIMER_CFG0
     4'b 1111, // index[2] RV_TIMER_TIMER_V_LOWER0

@@ -5,7 +5,7 @@
 // Register slice conforming to Comportibility guide.
 
 module prim_subreg_ext #(
-  parameter DW       = 32
+  parameter int unsigned DW = 32
 ) (
   input          re,
   input          we,

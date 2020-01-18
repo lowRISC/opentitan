@@ -10,6 +10,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
       - lowrisc:ip:usb_fs_nb_pe
+      - lowrisc:ip:usbdev
     files:
       - rtl/usbuart_reg_pkg.sv
       - rtl/usbuart_reg_top.sv

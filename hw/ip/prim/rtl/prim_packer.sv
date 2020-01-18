@@ -5,8 +5,8 @@
 // Combine InW data and write to OutW data if packed to full word or stop signal
 
 module prim_packer #(
-  parameter InW  = 32,
-  parameter OutW = 32
+  parameter int InW  = 32,
+  parameter int OutW = 32
 ) (
   input clk_i ,
   input rst_ni,
