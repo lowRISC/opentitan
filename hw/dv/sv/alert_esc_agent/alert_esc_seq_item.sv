@@ -6,7 +6,7 @@
 // Alert sender receiver sequence item
 // ---------------------------------------------
 
-class alert_seq_item extends uvm_sequence_item;
+class alert_esc_seq_item extends uvm_sequence_item;
 
   // prefix 's' for sender, 'r' for receiver
   rand bit s_alert_send;
@@ -47,7 +47,7 @@ class alert_seq_item extends uvm_sequence_item;
     int_err == 0;
   }
 
-  `uvm_object_utils_begin(alert_seq_item)
+  `uvm_object_utils_begin(alert_esc_seq_item)
     `uvm_field_int (s_alert_send,      UVM_DEFAULT)
     `uvm_field_int (s_alert_ping_rsp,  UVM_DEFAULT)
     `uvm_field_int (r_alert_rsp,       UVM_DEFAULT)
@@ -64,4 +64,4 @@ class alert_seq_item extends uvm_sequence_item;
     super.new(name);
   endfunction : new
 
-endclass : alert_seq_item
+endclass : alert_esc_seq_item

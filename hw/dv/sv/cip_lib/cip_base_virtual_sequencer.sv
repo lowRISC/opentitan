@@ -7,8 +7,8 @@ class cip_base_virtual_sequencer #(type CFG_T = cip_base_env_cfg,
                                    extends dv_base_virtual_sequencer #(CFG_T, COV_T);
   `uvm_component_param_utils(cip_base_virtual_sequencer #(CFG_T, COV_T))
 
-  tl_sequencer    tl_sequencer_h;
-  alert_sequencer alert_sequencer_h[string];
+  tl_sequencer        tl_sequencer_h;
+  alert_esc_sequencer alert_esc_sequencer_h[string];
 
   `uvm_component_new
 

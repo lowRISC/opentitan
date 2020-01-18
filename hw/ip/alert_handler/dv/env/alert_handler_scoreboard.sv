@@ -12,8 +12,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(alert_seq_item) alert_fifo[alert_pkg::NAlerts];
-  uvm_tlm_analysis_fifo #(alert_seq_item) esc_fifo[alert_pkg::N_ESC_SEV];
+  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[alert_pkg::NAlerts];
+  uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[alert_pkg::N_ESC_SEV];
 
   // local queues to hold incoming packets pending comparison
 
@@ -47,7 +47,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int index = i;
       fork
         forever begin
-          alert_seq_item act_item;
+          alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
           // once the alert is received
           if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
@@ -74,7 +74,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int index = i;
       fork
         forever begin
-          alert_seq_item act_item;
+          alert_esc_seq_item act_item;
           esc_fifo[index].get(act_item);
         end
       join_none

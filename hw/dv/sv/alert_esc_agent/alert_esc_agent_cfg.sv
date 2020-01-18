@@ -6,8 +6,8 @@
 // ---------------------------------------------
 // Configuration class for Alert agent
 // ---------------------------------------------
-class alert_agent_cfg extends dv_base_agent_cfg;
-  virtual alert_if vif;
+class alert_esc_agent_cfg extends dv_base_agent_cfg;
+  virtual alert_esc_if vif;
 
   bit     is_alert = 1;
   // sender mode
@@ -30,7 +30,7 @@ class alert_agent_cfg extends dv_base_agent_cfg;
 
   int unsigned ping_timeout_cycle = 200;
 
-  `uvm_object_utils_begin(alert_agent_cfg)
+  `uvm_object_utils_begin(alert_esc_agent_cfg)
     `uvm_field_int(alert_delay_min, UVM_DEFAULT)
     `uvm_field_int(alert_delay_max, UVM_DEFAULT)
     `uvm_field_int(ack_delay_min,   UVM_DEFAULT)
@@ -42,4 +42,4 @@ class alert_agent_cfg extends dv_base_agent_cfg;
   `uvm_object_utils_end
   `uvm_object_new
 
-endclass : alert_agent_cfg
+endclass : alert_esc_agent_cfg

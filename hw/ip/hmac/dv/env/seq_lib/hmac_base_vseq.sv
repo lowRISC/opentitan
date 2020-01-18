@@ -65,7 +65,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task alert_send_ping();
     alert_receiver_seq ping_seq;
-    `uvm_create_on(ping_seq, p_sequencer.alert_sequencer_h[cfg.list_of_alerts[0]]);
+    `uvm_create_on(ping_seq, p_sequencer.alert_esc_sequencer_h[cfg.list_of_alerts[0]]);
     `DV_CHECK_RANDOMIZE_FATAL(ping_seq)
     `uvm_send(ping_seq)
   endtask

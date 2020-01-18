@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_lib
       - lowrisc:dv:tl_agent
-      - lowrisc:dv:alert_agent
+      - lowrisc:dv:alert_esc_agent
     files:
       - cip_base_pkg.sv
       - cip_base_env_cfg.sv: {is_include_file: true}
