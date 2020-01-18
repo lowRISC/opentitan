@@ -65,9 +65,15 @@ $(ips_lint):
 # creates a (filtered) summary report from all available ascentlint logs/rpts
 # note that lint reports have to be filtered using this script before publishing
 # any information from these reports publicly
+# note, the filtering script is simplistic ATM and just looks for *.rpt files
+# hence we have to temporarily write the output to a file with a different extension
+# since otherwise the gen_report script will try to process the summary report as well.
 report:
+	$(eval TMPFILE=$(shell mktemp))
 	rm -f ${REPORT_DIR}/lint_summary.rpt
-	./gen_report.sh | tee ${REPORT_DIR}/lint_summary.rpt
+	./gen_report.sh | tee $(TMPFILE)
+	cp $(TMPFILE) ${REPORT_DIR}/lint_summary.rpt
+	rm -f $(TMPFILE)
 
 #####################
 # verilator targets #
