@@ -60,7 +60,7 @@
           resval: "0"
           name: "ENABLEHOST"
           desc: '''
-	        Enable Host I2C functionality
+                Enable Host I2C functionality
                 '''
         }
       ]
@@ -84,7 +84,7 @@
           desc: "FMT FIFO is empty"
           resval: "1"
         }
-	{ bits: "5"
+        { bits: "5"
           name: "RXEMPTY"
           desc: "RX FIFO is empty"
           resval: "1"
@@ -123,12 +123,12 @@
         }
         { bits: "8"
           name: "START"
-	  desc: "Issue a START condition before transmitting BYTE."
+          desc: "Issue a START condition before transmitting BYTE."
         }
         { bits: "9"
           name: "STOP"
           desc: "Issue a STOP condition after this operation"
-	}
+        }
         { bits: "10"
           name: "READ"
           desc: "Read BYTE bytes from I2C. (256 if BYTE==0)"

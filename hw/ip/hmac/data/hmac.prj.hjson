@@ -6,12 +6,12 @@
     name:               "hmac",
     revisions: [
       {
-	    version:            "0.5",
-	    life_stage:         "L2",
-	    design_stage:       "D3",
-	    verification_stage: "V3",
-	    commit_id:          "635afdb8dedbb50c235bd772b36002925c499884",
-	    notes:              ""
+        version:            "0.5",
+        life_stage:         "L2",
+        design_stage:       "D3",
+        verification_stage: "V3",
+        commit_id:          "635afdb8dedbb50c235bd772b36002925c499884",
+        notes:              ""
       }
       {
         version:            "0.6",
