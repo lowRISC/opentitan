@@ -8,29 +8,29 @@ aliases:
 
 # General
 
-1. You may use the web pages located under the domain *OpenTitan.org* (“this
-   website”) on the terms set out on this page. They are not intended to form a
+1. You may use the web pages located under the domain *OpenTitan.org* ("this
+   website") on the terms set out on this page. They are not intended to form a
    contract between you and us.
 
 1. In these terms, certain words and phrases have a particular meaning as
    follows:
 
-  1. “content” means any text, images, video, audio or other multimedia
+  1. "content" means any text, images, video, audio or other multimedia
      content, software, or other information or material submitted to or on the
      website;
 
-  1. “intellectual property” means any rights in patents, design , copyright,
+  1. "intellectual property" means any rights in patents, design , copyright,
      databases, trade marks, domain names confidential information and all
      other forms of intellectual property, whether registered or unregistered,
      wherever in the world;
 
-  1. “you” or “your” means the person accessing or using the website or its
-     content; 
+  1. "you" or "your" means the person accessing or using the website or its
+     content;
 
-  1. “processing” when applied to personal information includes storage of that
+  1. "processing" when applied to personal information includes storage of that
      information; and
 
-  1. “we”, “us” or “our” refers to lowRISC Community Interest Company, company
+  1. "we", "us" or "our" refers to lowRISC Community Interest Company, company
      registration number 09272283, with VAT registration number 327 0252 32 and
      whose registered address is at 4a Newmarket Road, Cambridge, CB5 8DT, UK.
 
@@ -107,7 +107,7 @@ aliases:
    convenience only. We have no control over third party websites and accept no
    legal responsibility for any content, material or information contained in
    them. The display of any hyperlink and reference to any third party website
-   does not mean that we endorse that third party’s website, products or
+   does not mean that we endorse that third party's website, products or
    services. Your use of a third party site may be governed by the terms and
    conditions of that third party site.
 
@@ -125,7 +125,7 @@ aliases:
   1. any incompatibility of this website with any particular browser or browser
      plugin; or
 
-	1. economic loss or other loss of turnover, profit, business or goodwill. 
+	1. economic loss or other loss of turnover, profit, business or goodwill.
 
 1. These terms are to be interpreted in accordance with English law and the
    courts of England shall have jurisdiction to settle any disputes arising

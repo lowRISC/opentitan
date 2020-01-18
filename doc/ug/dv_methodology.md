@@ -301,7 +301,7 @@ Once the regression tool is developed, it will provide a way to enable these cap
 Collecting, analyzing and reporting coverage with waivers is another requirement to assert 'verification complete'.
 Any gaps in our measured coverage need to be understood and either waived (no need to cover) or closed by additional testing.
 The end goal is to achieve 100% coverage across all applicable coverage metrics.
-This process known as “coverage closure”, is done in close collaboration with the designer(s).
+This process known as "coverage closure", is done in close collaboration with the designer(s).
 Coverage collected from all tests run as a part of the regression is merged into a database for analysis.
 Our primary tool of choice for our coverage closure needs is Synopsys' VCS & Verdi.
 However, the use of other tools / simulators are welcome.
@@ -318,8 +318,8 @@ These metrics are explained briefly below:
 
 *  **Line Coverage**: This metric measures which lines of SystemVerilog RTL code were executed during the course of the simulation.
   This is probably the most intuitive metric to use.
-  Note that “assign” statements are always listed as covered using this metric.
-*  **Toggle Coverage**: This metric measures every logic bit to see if it transitions from 1→ 0 and 0 → 1.
+  Note that "assign" statements are always listed as covered using this metric.
+*  **Toggle Coverage**: This metric measures every logic bit to see if it transitions from 1 &rarr; 0 and 0 &rarr; 1.
   It is very difficult, and not particularly useful to achieve 100% toggle coverage across a design.
   Instead, we focus on closing toggle coverage only on the IO ports of the DUT and IO ports of pre-verified IPs within the DUT.
 *  **FSM state Coverage**: This metric measures which finite state machine states were executed during the course of a simulation.
@@ -344,7 +344,7 @@ Here are the metrics used with a brief explanation:
 
 *  **Assert Coverage**: This metric measures which assertions, cover properties and sequences have been exercised in the course of the simulation.
   Note, an assertion precondition counts as a cover point.
-*  **Covergroup Coverage**: This metric (sometimes called “Testbench Coverage”) measures covergroups during simulation.
+*  **Covergroup Coverage**: This metric (sometimes called "Testbench Coverage") measures covergroups during simulation.
   These are usually coded in the testbench to check that the desired stimulus was generated properly, but can also be embedded in the RTL.
 
 Code coverage can reach 100% but it may not be sufficient to indicate whether all interesting combinations of scenarios were exercised (such as boundary conditions, concurrent scenarios and different CSR fields holding specific combinations of values resulting in the DUT being exercised in interesting ways).

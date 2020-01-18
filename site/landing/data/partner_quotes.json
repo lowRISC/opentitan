@@ -25,6 +25,6 @@
     },
     {
         "partner": "Dominic Rizzo, OpenTitan Project Director, lowRISC",
-        "quote": "Customers are asked to put faith in proprietary root of trust chips for mission-critical systems without the ability to fully understand, inspect and therefore trust them. By creating OpenTitan with the broader hardware and academic community, we leverage the experience and security principles used to create Google’s Titan chips to make hardware root of trust designs more transparent, inspectable, and accessible to the rest of the industry. Security should never be built on opacity."
+        "quote": "Customers are asked to put faith in proprietary root of trust chips for mission-critical systems without the ability to fully understand, inspect and therefore trust them. By creating OpenTitan with the broader hardware and academic community, we leverage the experience and security principles used to create Google's Titan chips to make hardware root of trust designs more transparent, inspectable, and accessible to the rest of the industry. Security should never be built on opacity."
     }
 ]

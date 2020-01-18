@@ -53,7 +53,7 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
        a. (New node) Create SOCKET_1N node.
        b. Revise every edges from the node to have SOCKET_1N node as start node.
        c. (New Edge) Create a edge from the node to SOCKET_1N node.
-       d. (for loop) Repeat the algorithm with SOCKET_1N’s other side node.
+       d. (for loop) Repeat the algorithm with SOCKET_1N's other side node.
     """
 
     # If a node has different clock from main clock and not ASYNC_FIFO:

@@ -7,7 +7,7 @@ aliases:
 We take the privacy of those who visit this website seriously and we aim to be
 transparent about our processing of personal information. Accordingly, this
 page explains the kinds of information we may collect about you, and the
-reasons for collecting this information. 
+reasons for collecting this information.
 
 # General website information
 
@@ -17,7 +17,7 @@ and your IP address. We record this information in order to understand the ways
 in which people use our website; to detect bugs; and hostile access. We
 routinely delete our server logs after 30 days, and the analytics data
 associated with each user is only retained for 26 months after the last time
-they visit the site. 
+they visit the site.
 
 We share this information only with our website hosting service Google Cloud,
 and analytics provider Google Analytics, who are under an obligation not to use
@@ -26,7 +26,7 @@ your information for any other purpose.
 # Cookies
 
 To make this website work properly, we sometimes place small data files called
-“cookies” on your device. Most big websites do this too.
+"cookies" on your device. Most big websites do this too.
 
 # What are cookies?
 
@@ -34,7 +34,7 @@ A cookie is a small text file that a website (including this website) saves on
 your computer or mobile device when you visit the site. It enables the website,
 including plugins such as YouTube, to remember your actions and preferences
 (such as login, language, font size and other display preferences) over a
-period of time, so you don’t have to keep re-entering them whenever you come
+period of time, so you don't have to keep re-entering them whenever you come
 back to the site or browse from one page to another. It also enables us to
 analyse how this website is being used.
 
@@ -52,7 +52,7 @@ The following table explains the cookies we use and why we use them.
 
 # How to control cookies
 
-You can control and/or delete cookies as you wish – for details, see
+You can control and/or delete cookies as you wish - for details, see
 [aboutcookies.org](https://aboutcookies.org). You can delete all cookies that
 are already on your computer and you can set most browsers to prevent them from
 being placed. If you do this, however, you may have to manually adjust some
@@ -66,8 +66,8 @@ the following information:
 
   * Email address
 
-Unless we are in direct correspondence with you – for example because you have
-asked us specific questions about our products or services – we will only use
+Unless we are in direct correspondence with you - for example because you have
+asked us specific questions about our products or services - we will only use
 this information for the following purposes:
 
   * Promotional emails, for example:
@@ -91,14 +91,14 @@ only on our instructions concerning your personal data.
 # Lawful basis
 
 It is lawful for us, under the General Data Protection Regulation (GDPR), to
-process the information described in this notice because we have a 
+process the information described in this notice because we have a
 
   * Legitimate interest in operating a website and using the information we
-    collect for these purposes. 
+    collect for these purposes.
   * Where you have signed up to a mailing list, we have a legitimate interest
     in emailing you so long as you do not object to our doing so.
 
-We do not believe the way in which we are processing them is likely to cause you any harm. 
+We do not believe the way in which we are processing them is likely to cause you any harm.
 
 # Transfer of data outside the United Kingdom & Europe
 
@@ -132,7 +132,7 @@ rights free of charge. In summary, those include rights to:
     circumstances
 
 For further information on each of those rights, including the circumstances in
-which they apply, see the [Guidance from the UK Information Commissioner’s
+which they apply, see the [Guidance from the UK Information Commissioner's
 Office (ICO) on individuals rights under the General Data Protection
 Regulation](http://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/).
 
@@ -145,7 +145,7 @@ If you would like to exercise any of those rights, please:
     website and from what location)
 
 If you would like to unsubscribe from any email newsletter you can also click
-on the ‘unsubscribe’ button at the bottom of the email newsletter. It may take
+on the 'unsubscribe' button at the bottom of the email newsletter. It may take
 up to seven days for this to take place.
 
 The [General Data Protection

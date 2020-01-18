@@ -25,7 +25,7 @@ For example:
 * Fabless semiconductors companies that design a chip and prepare a GDSII for silicon foundries
 * A silicon foundry which manufactures and wafer-tests the chip
 * An OSAT (see glossary) which packages and performs final tests
-* A provisioning entity that manages the chip’s provisioning process
+* A provisioning entity that manages the chip's provisioning process
 
 A creator may also be a single, vertically integrated entity that performs all the above functions.
 
@@ -63,7 +63,7 @@ The new owner must then provision a new **Owner Identity** by following the same
 In addition to assigning the chip an **Owner Identity**, the Silicon Owner is responsible for supplying a functional software stack.
 This can range from a full kernel / operating system to a bare-metal environment depending on application needs.
 
-In order to support secure boot without including verification keys directly in the silicon design, the owner creates an **“Owner Assignment Blob”** which is endorsed by the creator.
+In order to support secure boot without including verification keys directly in the silicon design, the owner creates an **"Owner Assignment Blob"** which is endorsed by the creator.
 This blob is loaded into the device as a part of ownership assignment and contains public keys used to verify the owner's initial boot stage.
 
 #### Overlap between Silicon Owner and Silicon Creator
