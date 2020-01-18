@@ -42,4 +42,4 @@ Building an executable `foo` destined to run on an OpenTitan device (i.e., under
 * `foo.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
 
 Building an executable destined to run on a host machine (i.e., under `sw/host`) will output a host excecutable under `build-bin/sw/host`, which can be run directly.
-Currently, each "platform" (`fpga`, `sim-verolator`, etc) have their own copies of all host targets; this is a limitation of our Meson setup, and they are otherwise indistinguishable.
+Currently, each "platform" (`fpga`, `sim-verilator`, etc) have their own copies of all host targets; this is a limitation of our Meson setup, and they are otherwise indistinguishable.

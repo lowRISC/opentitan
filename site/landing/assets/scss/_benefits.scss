@@ -80,7 +80,7 @@
       z-index: -1;
       will-change: transform;
       //animation: rot 18s linear infinite;
-      
+
       use {
         stroke-width: 1.5px;
       }
@@ -98,7 +98,7 @@
 	}
 	to {
 		transform: rotate(360deg)
-		           translate(-3em) 
+		           translate(-3em)
 		           rotate(-360deg);
 	}
 }

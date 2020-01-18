@@ -59,12 +59,12 @@
     opacity: 1;
     will-change: transform;
   }
-  
+
   .ul { transform: translate(-7px, -7px); }
   .ur { transform: translate(7px, -7px); }
-  .lr { transform: translate(7px, 7px); }  
-  .ll { transform: translate(-7px, 7px); }  
-  
+  .lr { transform: translate(7px, 7px); }
+  .ll { transform: translate(-7px, 7px); }
+
   .top {
     transform: scaleY(1);
     transform-origin: 41px 24px;
@@ -96,11 +96,11 @@
   60% {
     transform: rotate(0) scale(0.6);
   }
-  70% { 
+  70% {
     transform: rotate(90deg) scale(0.6);
     animation-timing-function: cubic-bezier(.21,1.85,.72,1);
-  } 
-  100% { 
+  }
+  100% {
     transform: rotate(90deg) scale(1);
   }
 }

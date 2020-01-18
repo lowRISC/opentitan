@@ -22,7 +22,7 @@ $m-s: calc(1em + 1vw);
   --rainbow-light: linear-gradient(90deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
   --rainbow-dark: linear-gradient(90deg, rgba(29,0,55,0.4),  rgba(29,0,55,0.4) 100%), linear-gradient(90deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
   --text-third: #1683B5;
-  
+
   --background: var(--white);
   --text-color: var(--black);
   --text-second: var(--medium-purple);
@@ -47,9 +47,9 @@ $m-s: calc(1em + 1vw);
     .intro {
       background-image: url(../img/dark/bg-intro.svg);
     }
-  
+
     .cta {
-      background-image: 
+      background-image:
         url('../img/dark/quote-top.svg'),
         url('../img/dark/quote-bottom.svg');
     }
@@ -75,7 +75,7 @@ $m-s: calc(1em + 1vw);
   }
 
   .cta {
-    background-image: 
+    background-image:
       url('../img/dark/quote-top.svg'),
       url('../img/dark/quote-bottom.svg');
   }
