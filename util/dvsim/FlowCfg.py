@@ -31,6 +31,14 @@ class FlowCfg():
         self.imported_cfg_files = []
         self.imported_cfg_files.append(flow_cfg_file)
 
+        # Add exports using 'exports' keyword - these are exported to the child
+        # process' environment.
+        self.exports = []
+
+        # Add overrides using the overrides keyword - existing attributes
+        # are overridden with the override values.
+        self.overrides = []
+
         # List of cfgs if the parsed cfg is a master cfg list
         self.cfgs = []
 
@@ -182,6 +190,56 @@ class FlowCfg():
                 cfg_file = subst_wildcards(cfg_file, self.__dict__)
                 self.cfgs.append(
                     self.create_instance(cfg_file, self.proj_root, self.args))
+
+    def _process_overrides(self):
+        # Look through the dict and find available overrides.
+        # If override is available, check if the type of the value for existing
+        # and the overridden keys are the same.
+        overrides_dict = {}
+        if hasattr(self, "overrides"):
+            overrides = getattr(self, "overrides")
+            if type(overrides) is not list:
+                log.error(
+                    "The type of key \"overrides\" is %s - it should be a list",
+                    type(overrides))
+                sys.exit(1)
+
+            # Process override one by one
+            for item in overrides:
+                if type(item) is dict and set(item.keys()) == set(
+                    ["name", "value"]):
+                    ov_name = item["name"]
+                    ov_value = item["value"]
+                    if ov_name not in overrides_dict.keys():
+                        overrides_dict[ov_name] = ov_value
+                        self._do_override(ov_name, ov_value)
+                    else:
+                        log.error(
+                            "Override for key \"%s\" already exists!\nOld: %s\nNew: %s",
+                            ov_name, overrides_dict[ov_name], ov_value)
+                        sys.exit(1)
+                else:
+                    log.error("\"overrides\" is is a list of dicts with {\"name\": <name>, " \
+                              "\"value\": <value>} pairs. Found this instead:\n%s",
+                              str(item))
+                    sys.exit(1)
+
+    def _do_override(self, ov_name, ov_value):
+        # Go through self attributes and replace with overrides
+        if hasattr(self, ov_name):
+            orig_value = getattr(self, ov_name)
+            if type(orig_value) == type(ov_value):
+                log.debug("Overriding \"%s\" value \"%s\" with \"%s\"",
+                          ov_name, orig_value, ov_value)
+                setattr(self, ov_name, ov_value)
+            else:
+                log.error("The type of override value \"%s\" for \"%s\" mismatches " + \
+                          "the type of original value \"%s\"",
+                          ov_value, ov_name, orig_value)
+                sys.exit(1)
+        else:
+            log.error("Override key \"%s\" not found in the cfg!", ov_name)
+            sys.exit(1)
 
     def _process_exports(self):
         # Convert 'exports' to dict

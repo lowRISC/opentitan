@@ -94,7 +94,6 @@ class SimCfg(FlowCfg):
         self.flist_file = ""
         self.run_cmd = ""
         self.dump_file = ""
-        self.exports = []
 
         # Generated data structures
         self.links = {}
@@ -111,6 +110,9 @@ class SimCfg(FlowCfg):
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
             self.build_dir += "_" + self.timestamp
+
+        # Process overrides before substituting the wildcards.
+        self._process_overrides()
 
         # Make substitutions, while ignoring the following wildcards
         # TODO: Find a way to set these in sim cfg instead
