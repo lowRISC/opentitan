@@ -41,8 +41,24 @@ def ordinal(n: int) -> str:
     suffix = 'stndrdth'[2*min(digit + (tens==1)*3, 3):]
     return '%i%s' % (n+1, suffix[:2])
 
-def create(element: ET.Element, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
-    """ """
+def create(element: str or ET.Element, /, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
+    """Construct an SVD element using the information provided.
+
+    If the first argument is not an `ET.Element` this constructs a new
+    `ET.Element` using the argument as a name. Any keyword arguments are
+    created a child elements whose text contents match the stringified
+    value given.
+
+    In addition to keyword arguments, this accepts any number of additional
+    positional arguments. These must be `ET.Element` objects and are
+    appended to the child elements *after* any named text arguments (even
+    though Python syntaxt requires specifying them *before* all named
+    parameters.) This is done to improve legibility of the generated XML,
+    placing the shorter, textual elements before any deeply nested tree.
+
+    This ignores any keyword arguments whose value is `None`. This
+    simplfies reading HJSON and converting it; liberal use of `hjson.get()`
+    will skip any values not present."""
 
     if type(element) != ET.Element:
         element = ET.Element(str(element))
@@ -176,7 +192,7 @@ def register(reg: hjson) -> ET.Element:
     size = flatten and fields[0]['bitinfo'][1] or None
 
     # Ignore an empty or flattened <fields>
-    def bitfields(flatten: bool, fields: [hjson]) -> ET.Element:
+    def regfields(flatten: bool, fields: [hjson]) -> ET.Element:
         if not flatten and fields != None:
             yield create('fields', *map(field, fields))
 
@@ -192,7 +208,7 @@ def register(reg: hjson) -> ET.Element:
             access              = access,
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues,
-            *bitfields(flatten, fields))
+            *regfields(flatten, fields))
 
 def window(window: hjson) -> ET.Element:
     """This should generate an SVD <register> element, likely with a set
