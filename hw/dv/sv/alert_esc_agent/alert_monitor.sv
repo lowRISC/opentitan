@@ -34,13 +34,13 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : reset_thread
 
   virtual task ping_thread(uvm_phase phase);
-    alert_seq_item req;
-    bit            ping_p;
+    alert_esc_seq_item req;
+    bit                ping_p;
     forever @(cfg.vif.monitor_cb) begin
       if (ping_p != cfg.vif.get_ping_p()) begin
         phase.raise_objection(this);
         under_ping_rsp = 1;
-        req = alert_seq_item::type_id::create("req");
+        req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscPingTrans;
         fork
           begin : isolation_fork
@@ -67,7 +67,7 @@ class alert_monitor extends alert_esc_base_monitor;
         join
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        alert_port.write(req);
+        alert_esc_port.write(req);
         phase.drop_objection(this);
         under_ping_rsp = 0;
       end
@@ -76,16 +76,16 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : ping_thread
 
   virtual task alert_thread(uvm_phase phase);
-    alert_seq_item req;
-    bit            alert_p;
+    alert_esc_seq_item req;
+    bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!alert_p && cfg.vif.get_alert_p() === 1'b1 && !under_ping_rsp) begin
         phase.raise_objection(this);
-        req = alert_seq_item::type_id::create("req");
+        req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
         // Write alert packet to scb when receiving alert signal
-        alert_port.write(req);
+        alert_esc_port.write(req);
         // Duplicate req for writing alert packet at the end of alert handshake
         `downcast(req, req.clone())
         fork
@@ -109,7 +109,7 @@ class alert_monitor extends alert_esc_base_monitor;
         join
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        alert_port.write(req);
+        alert_esc_port.write(req);
         phase.drop_objection(this);
       end
       alert_p = cfg.vif.get_alert_p();

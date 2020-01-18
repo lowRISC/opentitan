@@ -12,7 +12,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   tl_agent                    m_tl_agent;
   tl_reg_adapter              m_tl_reg_adapter;
-  alert_agent                 m_alert_agent[string];
+  alert_esc_agent             m_alert_agent[string];
 
   `uvm_component_new
 
@@ -49,10 +49,10 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       string agent_name = {"m_alert_agent_", alert_name};
-      m_alert_agent[alert_name] = alert_agent::type_id::create(agent_name, this);
-      cfg.m_alert_agent_cfg[alert_name] = alert_agent_cfg::type_id::create("m_alert_agent_cfg");
+      m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
+      cfg.m_alert_agent_cfg[alert_name] = alert_esc_agent_cfg::type_id::create("m_alert_agent_cfg");
       cfg.m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
-      uvm_config_db#(alert_agent_cfg)::set(this, agent_name, "cfg",
+      uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
           cfg.m_alert_agent_cfg[alert_name]);
     end
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
@@ -69,7 +69,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     end
     foreach(cfg.list_of_alerts[i]) begin
       if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
-        virtual_sequencer.alert_sequencer_h[cfg.list_of_alerts[i]] =
+        virtual_sequencer.alert_esc_sequencer_h[cfg.list_of_alerts[i]] =
             m_alert_agent[cfg.list_of_alerts[i]].sequencer;
       end
     end

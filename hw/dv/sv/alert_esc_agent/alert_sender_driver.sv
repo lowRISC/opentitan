@@ -28,7 +28,7 @@ class alert_sender_driver extends alert_esc_base_driver;
 
   virtual task send_alert();
     forever begin
-      alert_seq_item req, rsp;
+      alert_esc_seq_item req, rsp;
       wait(s_alert_send_q.size() > 0);
       req = s_alert_send_q.pop_front();
       $cast(rsp, req.clone());
@@ -48,7 +48,7 @@ class alert_sender_driver extends alert_esc_base_driver;
 
   virtual task rsp_ping();
     forever begin
-      alert_seq_item req, rsp;
+      alert_esc_seq_item req, rsp;
       wait(s_alert_ping_rsp_q.size() > 0);
       req = s_alert_ping_rsp_q.pop_front();
       $cast(rsp, req.clone());
@@ -67,7 +67,7 @@ class alert_sender_driver extends alert_esc_base_driver;
     end
   endtask : rsp_ping
 
-  virtual task set_alert_pins(alert_seq_item req);
+  virtual task set_alert_pins(alert_esc_seq_item req);
     int unsigned alert_delay, ack_delay;
     alert_delay = (cfg.use_seq_item_alert_delay) ? req.alert_delay :
         $urandom_range(cfg.alert_delay_max, cfg.alert_delay_min);

@@ -9,7 +9,7 @@ package hmac_env_pkg;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import tl_agent_pkg::*;
-  import alert_agent_pkg::*;
+  import alert_esc_agent_pkg::*;
   import cryptoc_dpi_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;

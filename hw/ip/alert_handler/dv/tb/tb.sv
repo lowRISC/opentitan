@@ -33,7 +33,7 @@ module tb;
   prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
   prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
 
-  alert_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
+  alert_esc_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_if
     assign alert_tx[k].alert_p = alert_host_if[k].alert_tx.alert_p;
     assign alert_tx[k].alert_n = alert_host_if[k].alert_tx.alert_n;
@@ -42,20 +42,20 @@ module tb;
     assign alert_host_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
     assign alert_host_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
     initial begin
-      uvm_config_db#(virtual alert_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
-                                            "vif", alert_host_if[k]);
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
+                                                "vif", alert_host_if[k]);
     end
   end
 
-  alert_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
   for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_esc_if
     assign esc_rx[k].resp_p = esc_device_if[k].esc_rx.resp_p;
     assign esc_rx[k].resp_n = esc_device_if[k].esc_rx.resp_n;
     assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;
     assign esc_device_if[k].esc_tx.esc_n = esc_tx[k].esc_n;
     initial begin
-      uvm_config_db#(virtual alert_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
-                                            "vif", esc_device_if[k]);
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
+                                                "vif", esc_device_if[k]);
     end
   end
   // main dut

@@ -453,7 +453,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           alert_receiver_alert_rsp_seq ack_seq =
               alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
           `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
-          ack_seq.start(p_sequencer.alert_sequencer_h[seqr_name]);
+          ack_seq.start(p_sequencer.alert_esc_sequencer_h[seqr_name]);
         end
       join_none
     end

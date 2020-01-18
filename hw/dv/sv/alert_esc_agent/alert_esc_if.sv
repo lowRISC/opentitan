@@ -5,7 +5,7 @@
 // ---------------------------------------------
 // Alert interface
 // ---------------------------------------------
-interface alert_if(input clk, input rst_n);
+interface alert_esc_if(input clk, input rst_n);
   wire prim_pkg::alert_tx_t alert_tx;
   wire prim_pkg::alert_rx_t alert_rx;
   wire prim_pkg::esc_tx_t esc_tx;
@@ -132,4 +132,4 @@ interface alert_if(input clk, input rst_n);
     return monitor_cb.esc_rx.resp_p;
   endfunction
 
-endinterface: alert_if
+endinterface: alert_esc_if

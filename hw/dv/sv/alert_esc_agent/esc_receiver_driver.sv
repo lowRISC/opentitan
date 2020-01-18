@@ -24,7 +24,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
 
   virtual task rsp_escalator();
     forever begin
-      alert_seq_item req, rsp;
+      alert_esc_seq_item req, rsp;
       wait(r_esc_rsp_q.size() > 0);
       req = r_esc_rsp_q.pop_front();
       $cast(rsp, req.clone());

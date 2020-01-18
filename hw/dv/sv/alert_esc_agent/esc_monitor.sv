@@ -31,12 +31,12 @@ class esc_monitor extends alert_esc_base_monitor;
   endtask : reset_thread
 
   virtual task esc_thread(uvm_phase phase);
-    alert_seq_item req;
-    bit            esc_p;
+    alert_esc_seq_item req;
+    bit                esc_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!esc_p && cfg.vif.get_esc_p() === 1'b1) begin
         phase.raise_objection(this);
-        req = alert_seq_item::type_id::create("req");
+        req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
 
         fork
@@ -61,14 +61,14 @@ class esc_monitor extends alert_esc_base_monitor;
         join
         `uvm_info("esc_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.esc_handshake_sta.name()), UVM_HIGH)
-        alert_port.write(req);
+        alert_esc_port.write(req);
         phase.drop_objection(this);
       end
       esc_p = cfg.vif.get_esc_p();
     end
   endtask : esc_thread
 
-  virtual task check_esc_resp_toggle(alert_seq_item req);
+  virtual task check_esc_resp_toggle(alert_esc_seq_item req);
     if (cfg.vif.get_resp_p() != 1) req.esc_handshake_sta = EscIntFail;
     @(cfg.vif.monitor_cb);
     if (cfg.vif.get_resp_p() != 0) req.esc_handshake_sta = EscIntFail;

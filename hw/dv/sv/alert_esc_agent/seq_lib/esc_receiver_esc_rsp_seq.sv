@@ -4,9 +4,9 @@
 
 // this sequence responses to escalation pins by sending the resp pins
 class esc_receiver_esc_rsp_seq extends dv_base_seq #(
-    .REQ         (alert_seq_item),
-    .CFG_T       (alert_agent_cfg),
-    .SEQUENCER_T (alert_sequencer)
+    .REQ         (alert_esc_seq_item),
+    .CFG_T       (alert_esc_agent_cfg),
+    .SEQUENCER_T (alert_esc_sequencer)
   );
 
   `uvm_object_utils(esc_receiver_esc_rsp_seq)

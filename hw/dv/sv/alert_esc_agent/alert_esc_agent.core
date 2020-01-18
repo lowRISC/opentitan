@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:alert_agent"
-description: "Alert handler sender receiver pair DV UVM agent"
+name: "lowrisc:dv:alert_esc_agent"
+description: "Alert handler or escalator sender receiver pair DV UVM agent"
 
 filesets:
   files_dv:
@@ -11,11 +11,11 @@ filesets:
       - lowrisc:prim:all:0.1
       - lowrisc:dv:dv_lib
     files:
-      - alert_if.sv
-      - alert_agent_pkg.sv
-      - alert_agent_cfg.sv: {is_include_file: true}
-      - alert_agent.sv: {is_include_file: true}
-      - alert_agent_cov.sv: {is_include_file: true}
+      - alert_esc_if.sv
+      - alert_esc_agent_pkg.sv
+      - alert_esc_agent_cfg.sv: {is_include_file: true}
+      - alert_esc_agent.sv: {is_include_file: true}
+      - alert_esc_agent_cov.sv: {is_include_file: true}
       - alert_esc_base_driver.sv: {is_include_file: true}
       - alert_sender_driver.sv: {is_include_file: true}
       - alert_receiver_driver.sv: {is_include_file: true}
@@ -24,8 +24,8 @@ filesets:
       - alert_esc_base_monitor.sv: {is_include_file: true}
       - alert_monitor.sv: {is_include_file: true}
       - esc_monitor.sv: {is_include_file: true}
-      - alert_seq_item.sv: {is_include_file: true}
-      - alert_sequencer.sv: {is_include_file: true}
+      - alert_esc_seq_item.sv: {is_include_file: true}
+      - alert_esc_sequencer.sv: {is_include_file: true}
       - seq_lib/alert_receiver_alert_rsp_seq.sv: {is_include_file: true}
       - seq_lib/alert_receiver_seq.sv: {is_include_file: true}
       - seq_lib/alert_sender_ping_rsp_seq.sv: {is_include_file: true}

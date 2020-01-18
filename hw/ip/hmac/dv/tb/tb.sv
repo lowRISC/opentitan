@@ -7,7 +7,7 @@ module tb;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
-  import alert_agent_pkg::*;
+  import alert_esc_agent_pkg::*;
   import hmac_env_pkg::*;
   import hmac_test_pkg::*;
 
@@ -31,7 +31,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  alert_if alert_if_msg_push_sha_disabled(.clk(clk), .rst_n(rst_n));
+  alert_esc_if alert_if_msg_push_sha_disabled(.clk(clk), .rst_n(rst_n));
 
   // dut
   hmac dut (
@@ -62,7 +62,7 @@ module tb;
     uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
         dut.tlul_assert_device.tlul_assert_ctrl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual alert_if)::set(null, "*.env.m_alert_agent_msg_push_sha_disabled",
+    uvm_config_db#(virtual alert_esc_if)::set(null, "*.env.m_alert_agent_msg_push_sha_disabled",
         "vif", alert_if_msg_push_sha_disabled);
     $timeformat(-12, 0, " ps", 12);
     run_test();
