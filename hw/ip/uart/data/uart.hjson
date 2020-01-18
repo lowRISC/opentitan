@@ -27,8 +27,8 @@
     { name: "rx_timeout"
       desc: '''
           raised if RX FIFO has characters remaining in the FIFO without being
-	  retrieved for the programmed time period.
-	  '''
+          retrieved for the programmed time period.
+          '''
     }
     { name: "rx_parity_err"
       desc: "raised if the receiver has detected a parity error."}
