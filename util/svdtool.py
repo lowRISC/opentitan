@@ -9,7 +9,6 @@ Generate SVD file from top and module hjson files.
 import argparse
 import hjson
 import pathlib
-import subprocess
 import sys
 
 import reggen
@@ -17,17 +16,6 @@ import svdgen
 import topgen
 
 from logging import info, warning, fatal
-
-def read_git_version() -> str:
-    """Read the repository version string from Git"""
-
-    describe = 'git describe --tags --long --dirty'.split()
-    describe = subprocess.run(describe, capture_output=True)
-    if describe.returncode != 0:
-        raise SystemExit('failed to determine Git repository version: %s' %
-                str(describe.stderr, 'UTF-8'))
-
-    return str(describe.stdout, 'UTF-8').strip()
 
 def load_top_hjson(path: pathlib.Path) -> hjson:
     """Load a top-level chip definition from an HJSON file. Basic sanity
@@ -67,12 +55,12 @@ def main():
     parser.add_argument('--filter-ip', action='append',
         default=['rv_plic', 'pinmux'],
         help='ignore peripheral .hjson and use top level instead')
-    parser.add_argument('--version',
+    parser.add_argument('--set-version',
         help='''the version string to embed in the <cpu> field
         (read from `git describe` if left unspecified)''')
 
     args = parser.parse_args()
-    version = args.version or read_git_version()
+    version = args.set_version or svdgen.read_git_version()
 
     # exclude rv_plic (to use top_earlgrey one) and
     ips = topgen.search_ips(pathlib.Path(args.ip_dir))

@@ -7,6 +7,7 @@ Generate SVD file from validated register JSON tree
 
 import hjson
 import pysvd
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
@@ -25,6 +26,17 @@ Copyright information found in source file: %s
 Licensing information found in source file: %s
 '''
 
+
+def read_git_version() -> str:
+    """Read the repository version string from Git"""
+
+    describe = 'git describe --tags --long --dirty'.split()
+    describe = subprocess.run(describe, capture_output=True)
+    if describe.returncode != 0:
+        raise SystemExit('failed to determine Git repository version: %s' %
+                str(describe.stderr, 'UTF-8'))
+
+    return str(describe.stdout, 'UTF-8').strip()
 
 def value(num: int) -> str or None:
     """Converts None -> None and everything else to hex"""
@@ -103,7 +115,7 @@ def interrupts(irqs: hjson) -> [ET.Element]:
     for (num, irq) in enumerate(irqs):
         yield create('interrupt',
             name        = irq['name'],
-            description = irq['desc'],
+            description = irq.get('name'),
             value       = num)
 
 def swaccess(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction, pysvd.type.modifiedWriteValues):

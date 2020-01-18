@@ -15,6 +15,7 @@ from mako.template import Template
 from mako import exceptions
 
 import tlgen
+import svdgen
 from reggen import gen_rtl, gen_dv, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
 
@@ -414,6 +415,13 @@ def main():
         '--hjson-only',
         action='store_true',
         help="If defined, the tool generates complete Hjson only")
+    parser.add_argument(
+        '--svd-only',
+        action='store_true',
+        help="If defined, the tool generates an SVD file")
+    parser.add_argument(
+        '--set-version',
+        help="If defined, override the version string from Git")
     # Generator options: generate dv ral model
     parser.add_argument(
         '--top_ral',
@@ -440,7 +448,7 @@ def main():
         raise SystemExit(sys.exc_info()[1])
 
     if not (args.hjson_only or args.plic_only or args.alert_handler_only or
-            args.tpl):
+            args.tpl) and not args.svd_only:
         log.error(
             "Template file can be omitted only if '--hjson-only' is true")
         raise SystemExit(sys.exc_info()[1])
@@ -461,7 +469,7 @@ def main():
 
     out_path = Path(outdir)
 
-    if not args.no_gen_hjson or args.hjson_only:
+    if not args.no_gen_hjson or args.hjson_only or args.svd_only:
         # load top configuration
         try:
             with open(args.topcfg, 'r') as ftop:
@@ -521,6 +529,7 @@ def main():
 
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
+    if not args.no_gen_hjson or args.hjson_only:
         genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
                                      completecfg["name"])
         gencmd = (
@@ -532,6 +541,16 @@ def main():
         else:
             genhjson_path.write_text(genhdr + gencmd +
                                      hjson.dumps(completecfg, for_json=True))
+
+    if args.svd_only:
+        ip_dict = dict((ip['name'].lower(), ip) for ip in ip_objs)
+        if list(map(log.fatal, svdgen.validate(completecfg, ip_dict))):
+            raise SystemExit('invalid top and/or register HJSON')
+
+        version = args.set_version or svdgen.read_git_version()
+        svd = svdgen.generate(completecfg, ip_dict, version)
+        svd.write(sys.stdout, encoding='unicode', xml_declaration=True)
+        sys.exit()
 
     if args.hjson_only:
         log.info("hjson is generated. Exiting...")
