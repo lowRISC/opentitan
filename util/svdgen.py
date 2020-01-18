@@ -156,9 +156,28 @@ def register(reg: hjson) -> ET.Element:
     Most of the work was previously done during validation and loading
     the HJSON file; what's left is mostly transliteration."""
 
-    # Ignore an empty <fields>
-    def fields(fields: [hjson]) -> ET.Element:
-        if fields != None:
+    # To define registers with smaller widths the HJSON includes a
+    # single field in the register; that field has a single element
+    # "bits". During `reggen.validate` the field is expanded with data
+    # gleaned from the parent register.
+    #
+    # SVD has a different semantics, where instead the register has a
+    # `<size>` element set specifying the width. (If not set, the width
+    # is inherited from the top-level <device>.)
+    #
+    # When generating a register we must detect and flatten the field
+    # into the register. This occurs when there is a single field whose
+    # name matches the register and whose bit offset is zero.
+    flatten = (fields := reg.get('fields')) != None and \
+            len(fields) == 1 and \
+            fields[0]['name'] == reg['name'] and \
+            fields[0]['bitinfo'][2] == 0
+
+    size = flatten and fields[0]['bitinfo'][1] or None
+
+    # Ignore an empty or flattened <fields>
+    def bitfields(flatten: bool, fields: [hjson]) -> ET.Element:
+        if not flatten and fields != None:
             yield create('fields', *map(field, fields))
 
     (access, readAction, modifiedWriteValues) = swaccess(reg)
@@ -166,20 +185,21 @@ def register(reg: hjson) -> ET.Element:
             name                = reg['name'],
             description         = reg['desc'],
             addressOffset       = hex(reg['genoffset']),
+            size                = size,
             mask                = value(reg.get('genbitsused')),
             resetValue          = value(reg.get('genresval')),
             resetMask           = value(reg.get('genresmask')),
             access              = access,
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues,
-            *fields(reg.get('fields')))
+            *bitfields(flatten, fields))
 
 def window(window: hjson) -> ET.Element:
     """This should generate an SVD <register> element, likely with a set
     of `dimElementGroup` subelements. Currently, it just returns a comment
     documenting the omission."""
 
-    # TODO:
+    # TODO: generate window register
     #gen_cdefine_window(outstr, reg['window'], component, regwidth, rnames)
     #hjson.dump(window, sys.stderr, indent='  ', sort_keys=True, default=str)
 
@@ -200,6 +220,10 @@ def multireg(multi: [hjson]) -> [ET.Element]:
     if len(genregs) == 1:
         yield register(genregs[0])
     elif len(genregs) > 1:
+        # TODO: svd2rust 0.17.0 returns the following error:
+        # "we shouldn't exist in the vec, but are at idx 0 Region"
+        return
+
         yield create('cluster',
                 name          = multi['name'],
                 description   = multi['desc'],
@@ -246,15 +270,19 @@ def cpu() -> ET.Element:
 
     # TODO: allow customizing these.
 
+    # RISCV is not present in pysvd so this would fail validation. We
+    # set it to the (inaccurate) value `other`, and patch it up after
+    # performing the validation step.
+    name = pysvd.type.cpuName.other
+
     return create('cpu',
-            # RISCV is available in pysvd master, but not PIP.
-            name       = pysvd.type.cpuName.other, #RISCV,
-            endian     = pysvd.type.endian.little,
-            revision   = 0,
-            mpuPresent = True,
-            fpuPresent = False,
-            nvicPrioBits = 0,
-            vendorSystickConfig = False,
+            name                = name,
+            endian              = pysvd.type.endian.little,
+            revision            = 0,
+            mpuPresent          = "true",
+            fpuPresent          = "false",
+            nvicPrioBits        = 0,
+            vendorSystickConfig = "false",
     )
 
 def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
@@ -285,6 +313,7 @@ def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
             version         = version,
             description     = DESCRIPTION,
             width           = top['datawidth'],
+            size            = top['datawidth'],
             addressUnitBits = 8)
 
 def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> ET.Element:
@@ -316,6 +345,9 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     # validate the structure of the XML tree.
     if validate:
         pysvd.element.Device(root)
+
+    # Workaround for limitations of SVD/pysvd. See comment in `cpu()`.
+    root.find('.cpu/name').text = 'RISCV'
 
     beautify(root)
     return ET.ElementTree(root)
