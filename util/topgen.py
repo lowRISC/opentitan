@@ -6,6 +6,7 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
+import re
 import sys
 from io import StringIO
 from pathlib import Path
@@ -353,6 +354,34 @@ def generate_top_ral(top, ip_objs, out_path):
     gen_dv.gen_ral(top_block, str(out_path))
 
 
+def extract_copyright(*paths):
+    """Grep through any number of hjson files, extracting the lines that
+    hold copyright data. Duplicate data is pruned; the results will have
+    only unique lines of text."""
+
+    extract = list((re.compile(regex, re.IGNORECASE) for regex in (
+        r'.*(Copyright.*)|(.*\(c\).*)',
+        r'.*(SPDX-License-Identifier:.+)',
+        r'.*(Licensed under.+)',
+    )))
+    results = list((set() for _ in extract))
+
+    for path in paths:
+        with (f := open(path, 'r')):
+            for line in f:
+                if not line.startswith('//'):
+                    continue
+
+                for (e, r) in zip(extract, results):
+                    if (m := e.match(line)):
+                        r.add(m.group(1))
+
+    copyright = []
+    for r in results:
+        copyright.extend(r)
+
+    return copyright
+
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
     parser.add_argument('--topcfg',
@@ -547,8 +576,10 @@ def main():
         if list(map(log.fatal, svdgen.validate(completecfg, ip_dict))):
             raise SystemExit('invalid top and/or register HJSON')
 
+        copyright = extract_copyright(args.topcfg, *ips)
         version = args.set_version or svdgen.read_git_version()
-        svd = svdgen.generate(completecfg, ip_dict, version)
+
+        svd = svdgen.generate(completecfg, ip_dict, copyright, version)
         svd.write(sys.stdout, encoding='unicode', xml_declaration=True)
 
         sys.exit()
