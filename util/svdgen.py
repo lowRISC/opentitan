@@ -179,7 +179,7 @@ def field(bits: hjson) -> ET.Element:
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues)
 
-def register(reg: hjson) -> ET.Element:
+def register(reg: hjson, base=0) -> ET.Element:
     """Convert a standard register definition into a <register> node.
     Most of the work was previously done during validation and loading
     the HJSON file; what's left is mostly transliteration."""
@@ -212,7 +212,7 @@ def register(reg: hjson) -> ET.Element:
     return create('register',
             name                = reg['name'],
             description         = reg['desc'],
-            addressOffset       = hex(reg['genoffset']),
+            addressOffset       = hex(reg['genoffset'] - base),
             size                = size,
             mask                = value(reg.get('genbitsused')),
             resetValue          = value(reg.get('genresval')),
@@ -238,25 +238,21 @@ def multireg(multi: [hjson]) -> [ET.Element]:
     multireg is empty this yields no items; if it contains a single item
     then it yields a single <register> node. When it contains multiple
     items then a <cluster> element is created containing a <register>
-    node for each"""
-
-    # TODO: convert base offset of children to relative from <cluster>?
-    # TODO: embed entries from 'fields', 'swacess', ...? (These don't
-    # appear to have a clean mapping to the <cluster> node itself.)
+    node for each."""
 
     genregs = multi['genregs']
     if len(genregs) == 1:
         yield register(genregs[0])
     elif len(genregs) > 1:
-        # TODO: svd2rust 0.17.0 returns the following error:
-        # "we shouldn't exist in the vec, but are at idx 0 Region"
-        return
+        # A cluster has a base address, and then registers within the
+        # cluster have address offsets relative to the cluster base.
+        base = min(reg['genoffset'] for reg in genregs)
 
         yield create('cluster',
                 name          = multi['name'],
                 description   = multi['desc'],
-                addressOffset = hex(0),
-                *map(register, multi['genregs']))
+                addressOffset = hex(base),
+                *(register(reg, base) for reg in genregs))
 
 def registers(regs: [hjson]) -> [ET.Element]:
     """Convert a list of register HJSON element into a <registers> node.
@@ -479,7 +475,7 @@ def test():
                             {
                                 'name':      'UART_CTRL_1',
                                 'desc':      'UART 1 control register',
-                                'genoffset': 8,
+                                'genoffset': 12,
                                 'fields': [
                                     {
                                         'bitinfo':  [31, 3, 8],
@@ -503,7 +499,7 @@ def test():
         '.width':   '64',
 
         # <cpu> is currently hard-coded
-        '.cpu/name':   'other',
+        '.cpu/name':   'RISCV',
         '.cpu/endian': 'little',
 
         '.peripherals/peripheral/name':       'uart0',
@@ -520,10 +516,11 @@ def test():
 
         '.peripherals/peripheral/registers/cluster/name':          'UART_CTRL_MULTI',
         '.peripherals/peripheral/registers/cluster/description':   'UART control multi',
+        '.peripherals/peripheral/registers/cluster/addressOffset': '0x8',
 
         '.peripherals/peripheral/registers/cluster/register/name':          'UART_CTRL_0',
         '.peripherals/peripheral/registers/cluster/register/description':   'UART 0 control register',
-        '.peripherals/peripheral/registers/cluster/register/addressOffset': '0x8',
+        '.peripherals/peripheral/registers/cluster/register/addressOffset': '0x0',
 
         '.peripherals/peripheral/registers/cluster/register/fields/field/name':        'UART_IER_0',
         '.peripherals/peripheral/registers/cluster/register/fields/field/description': 'UART 0 interrupt enable',

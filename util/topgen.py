@@ -550,6 +550,7 @@ def main():
         version = args.set_version or svdgen.read_git_version()
         svd = svdgen.generate(completecfg, ip_dict, version)
         svd.write(sys.stdout, encoding='unicode', xml_declaration=True)
+
         sys.exit()
 
     if args.hjson_only:
