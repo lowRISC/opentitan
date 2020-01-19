@@ -549,6 +549,8 @@ def test():
     }
 
     success = True
+    print('running tests for:', read_git_version())
+
     for error in validate(top, ips):
         success = False
         print('test data invalid:', error)
@@ -566,6 +568,16 @@ def test():
             success = False
         elif found.text.strip() != expect:
             print('node /device/%s text incorrect: %s' % (path[1:], found.text))
+            success = False
+
+    for i, o in {
+             0:  '1st',  1:  '2nd',  2:  '3rd',  3:  '4th',  9: '10th',
+            10: '11th', 11: '12th', 12: '13th', 13: '14th', 19: '20th',
+            20: '21st', 21: '22nd', 22: '23rd', 23: '24th', 29: '30th',
+            90: '91st', 91: '92nd', 92: '93rd', 93: '94th', 99:'100th',
+        }.items():
+        if not ordinal(i) == o:
+            print('ordinal(%d) != %s: %s' % (i, o, ordinal(i)))
             success = False
 
     if not success:
