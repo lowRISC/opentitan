@@ -227,11 +227,18 @@ def window(window: hjson) -> ET.Element:
     of `dimElementGroup` subelements. Currently, it just returns a comment
     documenting the omission."""
 
-    # TODO: generate window register
-    #gen_cdefine_window(outstr, reg['window'], component, regwidth, rnames)
-    #hjson.dump(window, sys.stderr, indent='  ', sort_keys=True, default=str)
+    window = create(register(window),
+            dim          = window['items'],
+            dimIncrement = value(int(window['genvalidbits']/8)))
 
-    return ET.Comment('skipped %d byte register window "%s"' % (int(window['items']), window['name']))
+    # SVD files require the magic string "%s" in the register to generate
+    # a numbered offset into the window. HJSON doesn't have this; append
+    # it as necessary.
+    name = window.find('./name')
+    if name.text.find('%s') < 0:
+        name.text += '%s'
+
+    return window
 
 def multireg(multi: [hjson]) -> [ET.Element]:
     """Generate a series of <register> nodes from a multireg. If the
@@ -442,6 +449,15 @@ def test():
                         'genregs': [],
                     },
                 },
+                {
+                    'window': {
+                        'name':         'UART_FIFO',
+                        'desc':         '16 byte UART FIFO buffer',
+                        'genoffset':    16,
+                        'items':        16,
+                        'genvalidbits': 8,
+                    },
+                },
                 { # Should flatten to single register
                     'multireg': {
                         'name':    'UART_FLATTEN',
@@ -503,12 +519,15 @@ def test():
         '.cpu/name':   'RISCV',
         '.cpu/endian': 'little',
 
-        '.peripherals/peripheral/name':       'uart0',
+        '.peripherals/peripheral/name':        'uart0',
         '.peripherals/peripheral/baseAddress': '0x12345678',
 
         '.peripherals/peripheral/registers/register/name':          'CTRL',
         '.peripherals/peripheral/registers/register/description':   'UART control register',
         '.peripherals/peripheral/registers/register/addressOffset': '0x0',
+
+        '.peripherals/peripheral/registers/register/dim':          '16',
+        '.peripherals/peripheral/registers/register/dimIncrement': '0x1',
 
         '.peripherals/peripheral/registers/register/fields/field/name':        'UART_IER',
         '.peripherals/peripheral/registers/register/fields/field/description': 'UART interrupt enable',
