@@ -97,10 +97,15 @@ $(tops_svd): $(foreach TOP,$(TOPS),${PRJ_DIR}/hw/$(TOP)/data/$(TOP).svd)
 	${PRJ_DIR}/util/topgen.py --svd-only $@ --topcfg $< \
 		--no-top --no-xbar --no-plic --no-gen-hjson
 
+.SECONDARY: ${PRJ_DIR}/hw/top_earlgrey/data/top_earlgrey.svd
+cargo: ${PRJ_DIR}/hw/top_earlgrey/data/src/lib.rs
+	(cd ${PRJ_DIR}/hw/top_earlgrey/data/ && cargo build)
+.PHONY: cargo
+
 # Example rule to generate `top_earlgrey.rs` from `top_earlgrey.svd`.
 # There's no way to specify the output path, so `cd` there first. Not
 # included in default build.
-%.rs: %.svd
-	(cd $(@D) && svd2rust --target=riscv -i $(<F) && mv lib.rs $(@F))
+${PRJ_DIR}/hw/top_earlgrey/data/src/lib.rs: ${PRJ_DIR}/hw/top_earlgrey/data/top_earlgrey.svd
+	(cd $(@D) && svd2rust --target=riscv -i ../$(<F))
 
 .PHONY: all banner $(ips_reg) $(tops_gen) $(tops_svd) $(ips_reg_header)

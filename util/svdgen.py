@@ -161,8 +161,10 @@ def swaccess(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction
 def bitfield(bitinfo: [int, int, int]) -> str:
     """Convert a generated `bitfield` to <bitRange> text"""
 
+    # HJSON bitinfo contains the LSB and field width; SVD <bitRange>
+    # specifies the range [LSB:MSB] inclusive.
     (width, lsb) = (bitinfo[1], bitinfo[2])
-    return '[%d:%d]' % (lsb+width, lsb)
+    return '[%d:%d]' % (lsb+width-1, lsb)
 
 def field(bits: hjson) -> ET.Element:
     """Convert an HJSON bit field to a <field> node"""
@@ -545,7 +547,7 @@ def test():
 
         '.peripherals/peripheral/registers/register/fields/field/name':        'UART_IER',
         '.peripherals/peripheral/registers/register/fields/field/description': 'UART interrupt enable',
-        '.peripherals/peripheral/registers/register/fields/field/bitRange':    '[7:1]',
+        '.peripherals/peripheral/registers/register/fields/field/bitRange':    '[6:1]',
         '.peripherals/peripheral/registers/register/fields/field/access':      'read-write',
 
         '.peripherals/peripheral/registers/cluster/name':          'UART_CTRL_MULTI',
@@ -558,7 +560,7 @@ def test():
 
         '.peripherals/peripheral/registers/cluster/register/fields/field/name':        'UART_IER_0',
         '.peripherals/peripheral/registers/cluster/register/fields/field/description': 'UART 0 interrupt enable',
-        '.peripherals/peripheral/registers/cluster/register/fields/field/bitRange':    '[8:4]',
+        '.peripherals/peripheral/registers/cluster/register/fields/field/bitRange':    '[7:4]',
         '.peripherals/peripheral/registers/cluster/register/fields/field/access':      'read-only',
     }
 
