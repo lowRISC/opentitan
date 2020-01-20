@@ -41,6 +41,8 @@ tops_gen = $(addsuffix _gen,$(TOPS))
 
 tops_reg = $(addsuffix _reg,$(TOPS))
 
+tops_svd = $(addsuffix _svd,$(TOPS))
+
 all: $(dynips_reg) $(tops_gen) $(tops_reg) banner
 
 banner:
@@ -90,5 +92,15 @@ $(tops_reg): pre_reg
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
 		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
 
+$(tops_svd): $(foreach TOP,$(TOPS),${PRJ_DIR}/hw/$(TOP)/data/$(TOP).svd)
+%.svd: %.hjson $(foreach IP,$(IPS),${PRJ_DIR}/hw/ip/$(IP)/data/$(IP).hjson)
+	${PRJ_DIR}/util/topgen.py --svd-only $@ --topcfg $< \
+		--no-top --no-xbar --no-plic --no-gen-hjson
 
-.PHONY: all banner $(ips_reg) $(tops_gen) $(ips_reg_header)
+# Example rule to generate `top_earlgrey.rs` from `top_earlgrey.svd`.
+# There's no way to specify the output path, so `cd` there first. Not
+# included in default build.
+%.rs: %.svd
+	(cd $(@D) && svd2rust --target=riscv -i $(<F) && mv lib.rs $(@F))
+
+.PHONY: all banner $(ips_reg) $(tops_gen) $(tops_svd) $(ips_reg_header)

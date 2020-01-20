@@ -367,7 +367,7 @@ def extract_copyright(*paths):
     results = list((set() for _ in extract))
 
     for path in paths:
-        with (f := open(path, 'r')):
+        with open(str(path), 'r') as f:
             for line in f:
                 if not line.startswith('//'):
                     continue
@@ -447,8 +447,7 @@ def main():
         help="If defined, the tool generates complete Hjson only")
     parser.add_argument(
         '--svd-only',
-        action='store_true',
-        help="If defined, the tool generates an SVD file")
+        help="If given, the tool generates the SVD file")
     parser.add_argument(
         '--set-version',
         help="If defined, override the version string from Git")
@@ -581,7 +580,8 @@ def main():
         version = args.set_version or svdgen.read_git_version()
 
         device = svdgen.generate(completecfg, ip_dict, version)
-        svdgen.write_to_file(device, copyright, sys.stdout)
+        with open(args.svd_only, 'w') as svd:
+            svdgen.write_to_file(device, copyright, svd)
 
         sys.exit()
 
