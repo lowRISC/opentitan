@@ -146,7 +146,7 @@ module usbdev (
   logic              rx_fifo_rvalid;
 
   logic [AVFifoWidth - 1:0] usb_av_rdata;
-  logic [RXFifoWidth - 1:0] usb_rx_wdata, rx_rdata;
+  logic [RXFifoWidth - 1:0] usb_rx_wdata, rx_rdata_raw, rx_rdata;
 
   assign event_av_overflow = reg2hw.avbuffer.qe & (~av_fifo_wready);
   assign hw2reg.usbstat.av_full.d = ~av_fifo_wready;
@@ -188,9 +188,12 @@ module usbdev (
     .rst_rd_ni (rst_ni),
     .rvalid    (rx_fifo_rvalid),
     .rready    (reg2hw.rxfifo.buffer.re),
-    .rdata     (rx_rdata),
+    .rdata     (rx_rdata_raw),
     .rdepth    (hw2reg.usbstat.rx_depth.d)
   );
+
+  // Return all zero if the FIFO is empty (instead of X)
+  assign rx_rdata = rx_fifo_rvalid ? rx_rdata_raw : '0;
   assign hw2reg.rxfifo.ep.d = rx_rdata[16:13];
   assign hw2reg.rxfifo.setup.d = rx_rdata[12];
   assign hw2reg.rxfifo.size.d = rx_rdata[11:5];
