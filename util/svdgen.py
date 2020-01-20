@@ -6,25 +6,11 @@ Generate SVD file from validated register JSON tree
 """
 
 import hjson
+import pathlib
 import pysvd
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
-
-DESCRIPTION = '''
-OpenTitan is an open source silicon Root of Trust (RoT) project. OpenTitan
-will make the silicon RoT design and implementation more transparent,
-trustworthy, and secure for enterprises, platform providers, and chip
-manufacturers. OpenTitan is administered by lowRISC CIC as a collaborative
-project to produce high quality, open IP for instantiation as a full-featured
-product. See the the OpenTitan site and OpenTitan docs for more information
-about the project.'''
-
-COPYRIGHT = ''' Generated register defines for "%s".
-
-Copyright information found in source file: %s
-Licensing information found in source file: %s
-'''
 
 
 def read_git_version() -> str:
@@ -37,6 +23,12 @@ def read_git_version() -> str:
                 str(describe.stderr, 'UTF-8'))
 
     return str(describe.stdout, 'UTF-8').strip()
+
+def read_relative_path(*components: [str]) -> str:
+    """Read the contents of a file relative to the current source."""
+
+    source_dir = pathlib.Path(__file__).parent
+    return source_dir.joinpath(*components).read_text()
 
 def value(num: int) -> str or None:
     """Converts None -> None and everything else to hex"""
@@ -345,7 +337,7 @@ def device(top: hjson, ips: {'name': hjson}, copyright: str, version: str) -> ET
             vendorID        = 'lowRISC',
             name            = top['name'],
             version         = version,
-            description     = DESCRIPTION,
+            description     = read_relative_path('..', 'README.md'),
             width           = top['datawidth'],
             size            = top['datawidth'],
             addressUnitBits = 8)
