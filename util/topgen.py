@@ -381,6 +381,7 @@ def extract_copyright(*paths):
         copyright.extend(r)
 
     return copyright
+    return '\n'.join(copyright)
 
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
@@ -579,8 +580,8 @@ def main():
         copyright = extract_copyright(args.topcfg, *ips)
         version = args.set_version or svdgen.read_git_version()
 
-        svd = svdgen.generate(completecfg, ip_dict, copyright, version)
-        svd.write(sys.stdout, encoding='unicode', xml_declaration=True)
+        device = svdgen.generate(completecfg, ip_dict, version)
+        svdgen.write_to_file(device, copyright, sys.stdout)
 
         sys.exit()
 

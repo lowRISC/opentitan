@@ -8,6 +8,7 @@ Generate SVD file from top and module hjson files.
 
 import argparse
 import hjson
+import itertools
 import pathlib
 import sys
 
@@ -72,8 +73,13 @@ def main():
     if list(map(fatal, svdgen.validate(top_hjson, ips_hjson))):
         raise SystemExit('invalid top and/or register HJSON')
 
-    svd = svdgen.generate(top_hjson, ips_hjson, version)
-    svd.write(sys.stdout, encoding='unicode', xml_declaration=True)
+    copyright = map(lambda l: l[2:-1],
+        itertools.takewhile(lambda l: l.startswith('# '),
+        itertools.dropwhile(lambda l: l.startswith('#!'),
+        open(__file__))))
+
+    device = svdgen.generate(top_hjson, ips_hjson, version)
+    svdgen.write_to_file(device, copyright, sys.stdout)
 
 if __name__ == '__main__':
     main()
