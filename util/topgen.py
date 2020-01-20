@@ -373,7 +373,8 @@ def extract_copyright(*paths):
                     continue
 
                 for (e, r) in zip(extract, results):
-                    if (m := e.match(line)):
+                    m = e.match(line)
+                    if m:
                         r.add(m.group(1))
 
     copyright = []

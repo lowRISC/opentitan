@@ -20,7 +20,7 @@ def read_git_version() -> str:
     """Read the repository version string from Git"""
 
     describe = 'git describe --tags --long --dirty'.split()
-    describe = subprocess.run(describe, capture_output=True)
+    describe = subprocess.run(describe, stdout=subprocess.PIPE)
     if describe.returncode != 0:
         raise SystemExit('failed to determine Git repository version: %s' %
                 str(describe.stderr, 'UTF-8'))
@@ -48,7 +48,7 @@ def ordinal(n: int) -> str:
     suffix = 'stndrdth'[2*min(digit + (tens==1)*3, 3):]
     return '%i%s' % (n+1, suffix[:2])
 
-def create(element: str or ET.Element, /, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
+def create(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
     """Construct an SVD element using the information provided.
 
     If the first argument is not an `ET.Element` this constructs a new
@@ -193,7 +193,8 @@ def register(reg: hjson, base=0) -> ET.Element:
     # When generating a register we must detect and flatten the field
     # into the register. This occurs when there is a single field whose
     # name matches the register and whose bit offset is zero.
-    flatten = (fields := reg.get('fields')) != None and \
+    fields = reg.get('fields')
+    flatten = fields != None and \
             len(fields) == 1 and \
             fields[0]['name'] == reg['name'] and \
             fields[0]['bitinfo'][2] == 0
@@ -415,7 +416,8 @@ def validate(top: hjson, ips: {"name": hjson}) -> bool:
             if not field in module:
                 yield 'missing field "%s" in %s module' % (field, name)
 
-        if (tipe := module.get('type')) != None and not tipe in ips:
+        tipe = module.get('type')
+        if tipe != None and not tipe in ips:
             yield 'module "%s" references missing IP hjson: "%s"' % (name, tipe)
 
     for ip in ips.values():
