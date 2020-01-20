@@ -121,42 +121,44 @@ def interrupts(irqs: hjson) -> [ET.Element]:
 def swaccess(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction, pysvd.type.modifiedWriteValues):
     """Converts from OpenTitan software register access level to equivalent
     SVD access types. Whereas OpenTitan uses a single string to identify
-    each different level, each OpenTitan level maps to a combincation of
-    SVD register attributes.
+    each different level SVD uses a combination of up to three optional
+    register attributes.
 
     This returns a triplet of pysvd types; each individual field may be
-    `None` to indicate no matching SVD field. See the following pysvd
-    enum datatypes for reference:
+    `None` to indicate no matching SVD field is necessary in the register
+    definition. See the following pysvd enum datatypes for reference:
        * `pysvd.type.access`
        * `pysvd.type.readAction`
-       * `pysvd.type.modifiedWriteValues`"""
+       * `pysvd.type.modifiedWriteValues`
+
+    There's one interesting access level with unique semantics: "r0w1c":
+    read-zero, write-one-clears. SVD doesn't have a corresponding value;
+    since software can always assume the value is zero this is mapped to
+    a write-only access level."""
+
+    # SVD register read/write access types:
+    read_only  = pysvd.type.access.read_only
+    read_write = pysvd.type.access.read_write
+    write_only = pysvd.type.access.write_only
+
+    # SVD action when register is read:
+    clear_on_read = pysvd.type.readAction.clear
+
+    # SVD modified register write semantics:
+    one_clears  = pysvd.type.modifiedWriteValues.oneToClear
+    one_sets    = pysvd.type.modifiedWriteValues.oneToSet
+    zero_clears = pysvd.type.modifiedWriteValues.zeroToClear
 
     swaccesses = {
-        None:    (None, None, None),
-        'ro':    (pysvd.type.access.read_only,
-                  None,
-                  None),
-        'rc':    (pysvd.type.access.read_only,
-                  pysvd.type.readAction.clear,
-                  None),
-        'rw':    (pysvd.type.access.read_write,
-                  None,
-                  None),
-        'r0w1c': (pysvd.type.access.write_only,
-                  None,
-                  pysvd.type.modifiedWriteValues.oneToClear),
-        'rw1s':  (pysvd.type.access.read_write,
-                  None,
-                  pysvd.type.modifiedWriteValues.oneToSet),
-        'rw1c':  (pysvd.type.access.read_write,
-                  None,
-                  pysvd.type.modifiedWriteValues.oneToClear),
-        'rw0c':  (pysvd.type.access.read_write,
-                  None,
-                  pysvd.type.modifiedWriteValues.zeroToClear),
-        'wo':    (pysvd.type.access.write_only,
-                  None,
-                  None),
+        None:    (None,       None,          None),
+        'ro':    (read_only,  None,          None),
+        'rc':    (read_only,  clear_on_read, None),
+        'rw':    (read_write, None,          None),
+        'r0w1c': (write_only, None,          one_clears),
+        'rw1s':  (read_write, None,          one_sets),
+        'rw1c':  (read_write, None,          one_clears),
+        'rw0c':  (read_write, None,          zero_clears),
+        'wo':    (write_only, None,          None),
     }
 
     return swaccesses[reg_or_field.get('swaccess')]
@@ -189,7 +191,7 @@ def register(reg: hjson, base=0) -> ET.Element:
     # "bits". During `reggen.validate` the field is expanded with data
     # gleaned from the parent register.
     #
-    # SVD has a different semantics, where instead the register has a
+    # SVD has different semantics. Instead the register may have a
     # `<size>` element set specifying the width. (If not set, the width
     # is inherited from the top-level <device>.)
     #
