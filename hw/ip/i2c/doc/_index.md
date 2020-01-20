@@ -147,37 +147,39 @@ In those cases this flag should be asserted with FBYTE indicating no ACK is expe
 For standard mode, fast-mode and fast-mode plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 In order to claim complete compatibility at each mode, the state machine timings need to be adapted to whether there are Standard-mode, Fast-mode and Fast-mode Plus targets on the bus.
 Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1Mbaud.
-For example, the host may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on T<sub>LOW</sub>, T<sub>HIGH</sub>, T<sub>r</sub>, and T<sub>f</sub>.
+For example, the host may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
 Assuming no clock stretching, for a given set of these four parameters the baud rate is then given to be:
-$$1/f_{SCL}=T_{LOW}+T_{HIGH}+T_{r}+T_{f}.$$ 
+$$ 1/f\_{SCL}=t\_{LOW}+t\_{HIGH}+t\_{r}+t\_{f}. $$ 
 
 Thus in order to ensure compliance with the spec in any particular configuration, software will program the I2C host IP with explicit values for each of the following timing parameters, as defined in Figure 38 of the specification.   
-- T<sub>LOW</sub>: set in register {{< regref TIMING0.TLOW >}}.
-- T<sub>HIGH</sub>: set in register {{< regref TIMING0.THIGH >}}.
-- T<sub>r</sub>: set in register {{< regref TIMING1.T_R >}}.
+- t<sub>LOW</sub>: set in register {{< regref TIMING0.TLOW >}}.
+- t<sub>HIGH</sub>: set in register {{< regref TIMING0.THIGH >}}.
+- t<sub>r</sub>: set in register {{< regref TIMING1.T_R >}}.
 (Note: The rise time cannot be explicitly controlled by internal hardware, and will be a function of the capacitance of the bus.
 Thus this parameter is largely budgetary, meaning that it tells the state machine how much time to wait for an RC rise.)
-- T<sub>f</sub>: set in register {{< regref TIMING1.T_F >}}.
+- t<sub>f</sub>: set in register {{< regref TIMING1.T_F >}}.
 (Note: The fall time cannot be explicitly controlled by internal hardware, and is a function of the pin driver.
 Thus this parameter is also budgetary.
 Given that the actual fall time cannot be controlled to stay above the minimum values set in Table 10 of the specification, and so this in this regard this module currently is not strictly compliant to the I2C spec.) 
-- T<sub>SU,STA</sub>: set in register {{< regref TIMING2.TSU_STA >}}
-- T<sub>HD,STA</sub>: set in register {{< regref TIMING2.THD_STA >}}
-- T<sub>SU,DAT</sub>: set in register {{< regref TIMING3.TSU_DAT >}}.
+- t<sub>SU,STA</sub>: set in register {{< regref TIMING2.TSU_STA >}}
+- t<sub>HD,STA</sub>: set in register {{< regref TIMING2.THD_STA >}}
+- t<sub>SU,DAT</sub>: set in register {{< regref TIMING3.TSU_DAT >}}.
 Taken to be synonymous with T<sub>SU,ACK</sub> 
-- T<sub>HD,DAT</sub>: set in register {{< regref TIMING3.THD_DAT >}}.
+- t<sub>HD,DAT</sub>: set in register {{< regref TIMING3.THD_DAT >}}.
 Taken to be synonymous with T<sub>HD,ACK</sub>.
 Moreover, since the pin driver fall time is likely to be less then one clock cycle, this parameter is also taken to be synonymous with the parameters T<sub>VD,DAT</sub> and T<sub>VD,ACK</sub>
-- T<sub>SU,STO</sub>: set in register {{< regref TIMING4.TSU_STO >}}.
-- T<sub>BUF</sub>: set in register {{< regref TIMING4.T_BUF >}}
+- t<sub>SU,STO</sub>: set in register {{< regref TIMING4.TSU_STO >}}.
+- t<sub>BUF</sub>: set in register {{< regref TIMING4.T_BUF >}}
 
 The values programmed into the registers {{< regref TIMING0 >}} through {{< regref TIMING4 >}} are to be expressed in units of the bus clock period.
 Note in order to ensure compliance with the I2C spec, firmware must program these registers with values within the ranges laid out in Table 10 of the specification.
 These values can be directly computed using DIFs given the desired speed standard, the desired operating frequency, and the actual line capacitance.
-These timings are then fed directly to the I2C state machine to control the bus timing.  
+These timing parameters are then fed directly to the I2C state machine to control the bus timing.
+
+A detailed description of the algorithm for determining these parameters--as well as a couple of concrete examples--are given in the [Programmers Guide section of this document.]({{<relref "#timing-parameter-tuning-algorithm">}})
 
 ### Timeout Control
-A malfunctioning (or otherwise very slow) target device can hold SCL low indefinitely stalling the bus.
+A malfunctioning (or otherwise very slow) target device can hold SCL low indefinitely, stalling the bus.
 For this reason {{< regref TIMEOUT_CTRL >}} provides a clock-stretching timeout mechanism to notify firmware of this sort of condition.
 If {{< regref TIMEOUT_CTRL.EN >}} is asserted, an interrupt will be asserted when the IP detects that another device (a target or, in possible future revisions, an alternate master) has been holding SCL low for more than {{< regref TIMEOUT_CTRL.VAL >}} clock ticks.
 
@@ -213,7 +215,7 @@ A target device should never assert 0 on the SDA lines, and in the absence of mu
 On the other hand, it is legal for the a target device to assert SCL low for clock stretching purposes.
 With clock stretching, the target can delay the start of the following SCL pulse by holding SCL low between clock pulses.
 However the target device must assert SCL low before the start of the SCL pulse.
-If SCL is pulsed low during an SCL pulse, this interruption of the SCL pulse will be registered as an exception by the I2C core, which will then assert the `scl_interference` interrupt.
+If SCL is pulled low during an SCL pulse which has already started, this interruption of the SCL pulse will be registered as an exception by the I2C core, which will then assert the `scl_interference` interrupt.
 
 {{<wavejson>}}
 {signal: [
@@ -262,6 +264,109 @@ Each sub-sequence has a terminal event--generically labeled "[completed]" which 
 However, all transitions which are dependent on formatting flags are shown explicitly in this figure.
 
 ![](I2C_state_diagram.svg)
+
+# Programmers guide
+
+## Initialization
+
+After reset, the initialization of the I2C HWIP primarily consists of four steps:
+1. Timing parameter initialization
+1. FIFO reset and configuration
+1. Interrupt configuration
+1. Enable I2C Host functionality
+
+### Timing Parameter Tuning Algorithm
+
+Of the four initialization steps, the timing parameter initialization is the most involved.  With so many timing parameters, it is essential to have dedicated device interface functions (DIF's) to determine appropriate values for the 10 timing parameters.
+
+The values of these parameters will depend primarily on three bus details:
+- The speed mode of the slowest device on the bus: standard mode (100 kbaud), fast mode (400 kbaud) or fast-mode plus (1 Mbaud).
+- The input clock period, t<sub>clk</sub> in ns.
+- The expected signal rise time, t<sub>r</sub>, in ns.
+   - This is not a firmware-controlled parameter.
+Rather, it is a function of the capacitance and physical design of the bus.
+The specification provides detailed guidelines on how to manage capacitance in an I2C system: 
+   - Section 5.2 of the I2C specification indicates that Fast-mode plus devices may operate at reduced clock speeds if the bus capacitance drives signal rise times (t<sub>r</sub>) outside the nominal 120ns limit.
+Excess capacitance can also be compensated for by reducing the size of the bus pullup resistor, so long as the total open-drain current does not exceed 20mA for fast-mode plus devices (as described in section 7.1 of the I2C specificaion).
+However the specification places a hard limit on rise times capping them at 1000ns.
+    - If there are standard- or fast-mode target devices on the bus, the specified open-drain current limit is reduced to 3mA (section 7.1), thus further restricting the minimum value of the pull-up resistor.
+    - In fast-mode bus designs, where the total line capacitance exceeds 200pF, the specification recommends replacing the pull-up resistor with an active current source, supplying 3mA or less (section 5.1).
+Regardless of the physical construction of the bus, the rise time (t<sub>r</sub>) is a system dependent, parameter that needs to be made known to firmware for I2C initialization.
+- The expected fall time, t<sub>f</sub>, in ns.
+   - Like t<sub>r</sub>, this parameter is not firmware controlled rather it is a function of the SCL driver, which in a strictly compliant device is expected to manage the slew-rate for the falling edge of the SDA and SCL signals, through proper design of the SCL output buffer.
+   - See table 10 of the I2C specification for more details.
+- (optional) The desired SCL cycle period, t<sub>SCL,user</sub> in ns.
+   - By default the device should operate at the maximum frequency for that mode.
+However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period  could be allowed as an additional functional parameter when calculating the timing parameters.
+
+Based on the inputs, the timing paramaters may be chosen using the following algorithm:
+1. The physical timing parameters t<sub>HD,STA</sub>, t<sub>SU,STA</sub>, t<sub>HD.DAT</sub>, t<sub>SU,DAT</sub>, t<sub>BUF</sub>, and t<sub>STO</sub>, t<sub>HIGH</sub>, and t<sub>LOW</sub> all have minimum allowed values which depend on the choice of speed mode (standard-mode, fast-mode or fast-mode plus).
+Using the speed mode input, look up the appropriate minimum value (in ns) for each parameter (i.e. t<sub>HD,STA,min</sub>, t<sub>SU,STA,min</sub>, etc)
+1. For each of these eight parameters, obtain an integer minimum by dividing the physical minimum parameter by the clock frequency and rounding up to the next highest integer:
+$$ \textrm{THIGH_MIN}=\lceil{t\_{HIGH,min}/t\_{clk}}\rceil $$
+$$ \textrm{TLOW_MIN}=\lceil{t\_{LOW,min}/t\_{clk}}\rceil $$
+$$ \textrm{THD_STA_MIN}= \lceil{t\_{HD,STA,min}/t\_{clk}}\rceil $$
+$$ \textrm{TSU_STA_MIN}= \lceil{t\_{SU,STA,min}/t\_{clk}}\rceil $$
+$$ \textrm{THD_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
+$$ \textrm{TSU_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
+$$ \textrm{T_BUF_MIN}= \lceil{t\_{BUF,min}/t\_{clk}}\rceil $$
+$$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
+   
+1. Input the integer timing parameters, THD_STA_MIN, TSU_STA_MIN, THD_DAT_MIN, TSU_DAT_MIN, T_BUF_MIN and T_STO_MIN into their corresponding registers (`TIMING2.THD_STA`, `TIMING2.TSU_STA`, `TIMING3.THD_DAT`, `TIMING3.TSU_DAT`, `TIMING4.T_BUF`, `TIMING4.T_STO`)
+    - This step allows the firmware to manage SDA signal delays to ensure that the SDA outputs are compliant with the specification.
+    - The registers `TIMING0.THIGH` and `TIMING0.TLOW` will be taken care of in a later step.
+1. Take the given values for for t<sub>f</sub> and t<sub>r</sub> and convert them to integer counts as well:
+$$ \textrm{T_R}= \lceil{t\_{r}/t\_{clk}}\rceil $$
+$$ \textrm{T_F}= \lceil{t\_{f}/t\_{clk}}\rceil $$
+1. Store T_R and T_F in their corresponding registers: `TIMING1.T_R` and `TIMING1.T_F`.
+1. Based on the input speed mode, look up the maximum permissable SCL frequency (f<sub>SCL,max</sub>)and calculate the minimum permissable SCL period:
+$$ t\_{SCL,min}= 1/f\_{SCL,max} $$
+1. As with each of the other physical parameters convert t<sub>SCL,min</sub> and, if provided, the t<sub>SCL,user</sub> to integers, MINPERIOD and USERPERIOD..
+$$ MINPERIOD = \lceil{t\_{SCL,min}/t\_{clk}}\rceil $$
+$$ USERPERIOD = \lceil{t\_{SCL,user}/t\_{clk}}\rceil $$
+1. Let PERIOD=max(MINPERIOD, USERPERIOD).
+1. Each SCL cycle will now be at least PERIOD clock cycles in duration, divided between four segments: T_R, THIGH, T_F, and TLOW.
+    - In other words: PERIOD=T_R+THIGH+T_F+TLOW.
+    - With T_R and T_F already established, the remaining integer parameters THIGH and TLOW are to be divided among the remaining clock cycles in PERIOD:
+$$ \textrm{THIGH}+\textrm{TLOW} \ge\textrm{PERIOD}-\textrm{T_F}-\textrm{T_R} $$
+    - Since t<sub>HIGH</sub> and t<sub>LOW</sub> both have minimum allowable values, which depends on the mode, high values of t<sub>r</sub> or t<sub>f</sub> may force an increase in the total SCL period, slowing down the data transit rate.
+    - The balance between t<sub>HIGH</sub> and t<sub>LOW</sub> can be manipulated in a variety of different ways (depending on the desired SCL duty cycle).
+    - It is, for instance, perfectly acceptable to simply set TLOW to the minimum possible value:
+$$ \textrm{TIMING0.TLOW}=\textrm{TLOW_MIN} $$
+1. THIGH is then set to satisfy both constraints in the desired SCL period and in the minimum permissable values for t<sub>HIGH</sub>:
+$$ \textrm{TIMING0.THIGH}=\max(\textrm{PERIOD}-\textrm{T_R} - \textrm{TIMING0.TLOW} -\textrm{T_F}, \textrm{THIGH_MIN}) $$
+
+
+#### Timing parameter examples
+
+The following tables show a couple of examples for calculating timing register parameters for Fast-mode Plus devices.
+Both examples assume a desired datarate of 1 Mbaud (the bus maximum) for an SCL period of 1us, and an internal device clock period of 3ns.
+
+| Parameter       | Spec. Min. (ns)  | Reg. Val.  | Phys. Val (ns) | Comment                                         |
+|-----------------|------------------|------------|----------------|-----------------------------------------------|
+| TIMING0.THIGH   | 260              | 120        | 360            | Chosen to satisfy SCL Period Minimum          |
+| TIMING0.TLOW    | 500              | 167        | 501            | Spec. t<sub>LOW</sub> Minimum                 |
+| TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         | 
+| TIMING1.T_R     | 0                | 40         | 120            | Based on pull-up resistance, line capacitance |
+| SCL Period      | 1000             | N/A        | 1002           | Constraint on THIGH+TLOW+T_R+T_F              |
+| TIMING2.THD_STA | 260              | 87         | 261            | Spec. Minimum                                 |
+| TIMING2.TSU_STA | 260              | 87         | 261            | Spec. Minimum                                 |
+| TIMING3.THD_DAT | 0                | 0          | 0              | Spec. Minimum                                 |
+| TIMING3.TSU_DAT | 260              | 87         | 261            | Spec. Minimum                                 |
+| TIMING4.T_BUF   | 500              | 167        | 501            | Spec. Minimum                                 |
+| TIMING4.T_STO   | 260              | 87         | 161            | Spec. Minimum                                 |
+
+This next example shows how the first SCL timing registers: `TIMING0` and `TIMING1` are altered in a high-capacitance Fast-mode Plus bus, where the physical value of t<sub>r</sub> driven to an atypical value of 400ns.
+As in the previous example the integer register values are determined based on a system clock period, t<sub>clk</sub>, of 3ns.
+All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged from the previous example. 
+
+| Parameter       | Spec. Min. (ns)  | Reg. Val.  | Phys. Val (ns) | Comment                                       |
+|-----------------|------------------|------------|----------------|-----------------------------------------------|
+| TIMING0.THIGH   | 260              | 87         | 261            | Spec. t<sub>HIGH</sub> Minimum                |
+| TIMING0.TLOW    | 500              | 167        | 501            | Spec. t<sub>LOW</sub> Minimum                 |
+| TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         | 
+| TIMING1.T_R     | 0                | 134        | 402            | Atypicallly high line capacitance             |
+| SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
 
 ## Register Table 
 
