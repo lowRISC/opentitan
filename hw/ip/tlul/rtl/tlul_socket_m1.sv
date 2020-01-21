@@ -169,14 +169,13 @@ module tlul_socket_m1 #(
   ) u_reqarb (
     .clk_i,
     .rst_ni,
-
-    .req        (hrequest),
-    .req_data   (hreq_fifo_o),
-    .gnt        (hgrant),
-
-    .arb_valid,
-    .arb_data,
-    .arb_ready
+    .req_i   ( hrequest    ),
+    .data_i  ( hreq_fifo_o ),
+    .gnt_o   ( hgrant      ),
+    .idx_o   (             ),
+    .valid_o ( arb_valid   ),
+    .data_o  ( arb_data    ),
+    .ready_i ( arb_ready   )
   );
 
   logic [  M-1:0] hfifo_rspvalid;
