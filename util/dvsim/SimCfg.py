@@ -203,6 +203,13 @@ class SimCfg(FlowCfg):
         tests = Tests.create_tests(getattr(self, "tests"), self)
         setattr(self, "tests", tests)
 
+        # Regressions
+        # Parse testplan if provided.
+        if self.testplan != "":
+            self.testplan = testplan_utils.parse_testplan(self.testplan)
+            # Extract tests in each milestone and add them as regression target.
+            self.regressions.extend(self.testplan.get_milestone_regressions())
+
         # Create regressions
         regressions = Regressions.create_regressions(
             getattr(self, "regressions"), self, tests)
@@ -390,8 +397,8 @@ class SimCfg(FlowCfg):
         results_str = "# " + self.name.upper() + " Regression Results\n"
         results_str += "  Run on " + self.timestamp_long + "\n"
         results_str += "\n## Test Results\n"
-        testplan = testplan_utils.parse_testplan(self.testplan)
-        results_str += testplan.results_table(
+        # TODO: check if testplan is not null?
+        results_str += self.testplan.results_table(
             regr_results=gen_results_sub(self.deploy, []),
             map_full_testplan=self.map_full_testplan)
 
