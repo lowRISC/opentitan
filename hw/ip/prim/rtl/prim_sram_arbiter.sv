@@ -58,17 +58,16 @@ module prim_sram_arbiter #(
   prim_arbiter #(
     .N (N),
     .DW(ARB_DW)
-  ) u_req_arb (
+  ) u_reqarb (
     .clk_i,
     .rst_ni,
-
-    .req,
-    .req_data (req_packed),
-    .gnt,
-
-    .arb_valid (sram_req),
-    .arb_data  (sram_packed),
-    .arb_ready (1'b1)
+    .req_i   ( req         ),
+    .data_i  ( req_packed  ),
+    .gnt_o   ( gnt         ),
+    .idx_o   (             ),
+    .valid_o ( sram_req    ),
+    .data_o  ( sram_packed ),
+    .ready_i ( 1'b1        )
   );
 
   logic [N-1:0] steer;    // Steering sram_rvalid
