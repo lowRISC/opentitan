@@ -26,20 +26,18 @@ module trial1_test (
     input bit [31:0] wdata
   );
     begin
-      tl_h2d.a_address = waddr;
-      tl_h2d.a_data = wdata;
-      tl_h2d.a_mask = 4'hF;
-      tl_h2d.a_size = 'h2;
-      tl_h2d.a_opcode = PutFullData;
-      tl_h2d.a_source = '0;
-      tl_h2d.a_param = '0;
-      tl_h2d.a_valid = 1'b1;
+      tl_h2d.a_address <= waddr;
+      tl_h2d.a_data <= wdata;
+      tl_h2d.a_mask <= 4'hF;
+      tl_h2d.a_size <= 'h2;
+      tl_h2d.a_opcode <= PutFullData;
+      tl_h2d.a_source <= '0;
+      tl_h2d.a_param <= '0;
+      tl_h2d.a_valid <= 1'b1;
       @(posedge clk);
-      while(!tl_d2h.a_ready)
-        @(posedge clk);
-      tl_h2d.a_valid = 1'b0;
-      while(!tl_d2h.d_valid)
-        @(posedge clk);
+      while (!tl_d2h.a_ready) @(posedge clk);
+      tl_h2d.a_valid <= 1'b0;
+      while (!tl_d2h.d_valid) @(posedge clk);
     end
   endtask
 
@@ -48,20 +46,19 @@ module trial1_test (
     output bit [31:0] rdata
   );
     begin
-      tl_h2d.a_address  = raddr;
-      tl_h2d.a_opcode = Get;
-      tl_h2d.a_mask = 4'hF;
-      tl_h2d.a_size = 'h2;
-      tl_h2d.a_source = '0;
-      tl_h2d.a_param = '0;
-      tl_h2d.a_valid = 1'b1;
+      tl_h2d.a_address  <= raddr;
+      tl_h2d.a_opcode <= Get;
+      tl_h2d.a_mask <= 4'hF;
+      tl_h2d.a_size <= 'h2;
+      tl_h2d.a_source <= '0;
+      tl_h2d.a_param <= '0;
+      tl_h2d.a_valid <= 1'b1;
       @(posedge clk);
-      while(!tl_d2h.a_ready)
-        @(posedge clk);
-      tl_h2d.a_valid = 1'b0;
-      while(!tl_d2h.d_valid)
-        @(posedge clk);
+      while (!tl_d2h.a_ready) @(posedge clk);
+      tl_h2d.a_valid <= 1'b0;
+      while (!tl_d2h.d_valid) @(negedge clk);
       rdata = tl_d2h.d_data;
+      @(posedge clk);
     end
   endtask
 
