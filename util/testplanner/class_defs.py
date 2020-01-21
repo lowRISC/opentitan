@@ -257,6 +257,28 @@ class Testplan():
         for entry in self.entries:
             entry.display()
 
+    def get_milestone_regressions(self):
+        regressions = {}
+        for entry in self.entries:
+            # Skip if milestone is "n.a."
+            if entry.milestone not in entry.milestones[1:]: continue
+            # if ms key doesnt exist, create one
+            if entry.milestone not in regressions.keys():
+                regressions[entry.milestone] = []
+            # Append new tests to the list
+            for test in entry.tests:
+                if test not in regressions[entry.milestone]:
+                    regressions[entry.milestone].append(test)
+
+        # Build regressions dict into a hjson like data structure
+        output = []
+        for ms in regressions.keys():
+            ms_dict = {}
+            ms_dict["name"] = ms
+            ms_dict["tests"] = regressions[ms]
+            output.append(ms_dict)
+        return output
+
     def results_table(self,
                       regr_results,
                       map_full_testplan=True,
