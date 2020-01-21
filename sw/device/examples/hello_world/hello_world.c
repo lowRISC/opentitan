@@ -19,9 +19,9 @@ void trap_handler(uint32_t mepc, char c) {
   uart_send_uint(mepc, 32);
   while (1) {
     gpio_write_all(0xAA00);  // pattern
-    busy_sleep_micros(200 * 1000);
+    usleep(200 * 1000);
     gpio_write_all(0x5500);  // pattern
-    busy_sleep_micros(100 * 1000);
+    usleep(100 * 1000);
   }
 }
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   // Give a LED pattern as startup indicator for 5 seconds
   gpio_write_all(0xFF00);  // all LEDs on
   for (int i = 0; i < 32; i++) {
-    busy_sleep_micros(100 * 1000);  // 100 ms
+    usleep(100 * 1000);  // 100 ms
 
     gpio_write_bit(8 + (i % 8), (i / 8));
   }
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
   spid_send("SPI!", 4);
 
   while (1) {
-    busy_sleep_micros(10 * 1000);  // 10 ms
+    usleep(10 * 1000);  // 10 ms
 
     // report changed switches over UART
     gpio_in = gpio_read() & 0x100FF;  // 0-7 is switch input, 16 is FTDI

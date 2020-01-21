@@ -36,9 +36,9 @@ static usb_ss_ctx_t ss_ctx[2];
 static void test_error(void) {
   while (1) {
     gpio_write_all(0xAA00);  // pattern
-    busy_sleep_micros(200 * 1000);
+    usleep(200 * 1000);
     gpio_write_all(0x5500);  // pattern
-    busy_sleep_micros(100 * 1000);
+    usleep(100 * 1000);
   }
 }
 
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 
   // Give a LED pattern as startup indicator for 5 seconds
   gpio_write_all(0xAA00);  // pattern
-  busy_sleep_micros(1000);
+  usleep(1000);
   gpio_write_all(0x5500);  // pattern
   // usbdev_init here so dpi code will not start until simulation
   // got through all the printing (which takes a while if --trace)

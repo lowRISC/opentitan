@@ -20,22 +20,29 @@
 extern const size_t kIbexClockFreqHz;
 
 /**
- * Spins for roughly the number of |cycles| given. For best results, |cycles|
- * should be a multiple of eight.
+ * Read the cycle counter.
  *
- * This function should not be used for time-keeping.
+ * The value of the counter is stored across two 32-bit registers: |mcycle| and
+ * |mcycleh|. This function is guaranteed to return a valid 64-bit cycle
+ * counter value, even if |mcycle| overflows before reading |mcycleh|.
  *
- * @param cycles the number of cycles to burn.
+ * Adapted from: The RISC-V Instruction Set Manual, Volume I: Unprivileged ISA
+ * V20191213, pp. 61.
  */
-inline void ibex_busy_loop(size_t cycles) {
-  size_t out;  // Used to create an inout parameter below.
+inline uint64_t ibex_mcycle_read() {
+  uint32_t cycle_low = 0;
+  uint32_t cycle_high = 0;
+  uint32_t cycle_high_2 = 0;
   asm volatile(
-      "busy_loop%=:"
-      "  nop; nop; nop; nop;"    // 4 cycles.
-      "  addi %1, %1, -8;"       // 1 cycle.
-      "  blez %1, busy_loop%=;"  // 3 cycles.
-      : "=&r"(out)
-      : "0"(cycles));
+      "read%=:"
+      "  csrr %0, mcycleh;"     // Read |mcycleh|.
+      "  csrr %1, mcycle;"      // Read |mcycle|.
+      "  csrr %2, mcycleh;"     // Read |mcycleh| again.
+      "  bne  %0, %2, read%=;"  // Try again if |mcycle| overflowed before
+                                // reading |mcycleh|.
+      : "+r"(cycle_high), "=r"(cycle_low), "+r"(cycle_high_2)
+      :);
+  return (uint64_t)cycle_high << 32 | cycle_low;
 }
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_

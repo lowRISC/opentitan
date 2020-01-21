@@ -10,4 +10,4 @@ const size_t kIbexClockFreqHz = 500 * 1000;  // 500 kHz
 const size_t kIbexClockFreqHz = 50 * 1000 * 1000;  // 50 MHz
 #endif
 
-extern void ibex_busy_loop(size_t);
+extern uint64_t ibex_mcycle_read();

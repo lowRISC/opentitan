@@ -10,9 +10,11 @@
 
 extern void wait_for_interrupt(void);
 
-void busy_sleep_micros(size_t microseconds) {
-  size_t cycles = kIbexClockFreqHz * microseconds / 10000000;
-  ibex_busy_loop(cycles);
+void usleep(uint32_t usec) {
+  uint64_t cycles = (uint64_t)kIbexClockFreqHz * usec / 1000000;
+  uint64_t start = ibex_mcycle_read();
+  while ((ibex_mcycle_read() - start) < cycles) {
+  }
 }
 
 noreturn void abort(void) {
