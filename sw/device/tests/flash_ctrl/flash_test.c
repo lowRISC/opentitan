@@ -14,7 +14,7 @@ static void break_on_error(uint32_t error) {
     // inifinitely fetch instructions, will flag an assertion error
     uart_send_str("FAIL!\r\n");
     while (1) {
-      busy_sleep_micros(100);
+      usleep(100);
     }
   }
 }

@@ -24,11 +24,11 @@
 inline void wait_for_interrupt(void) { asm volatile("wfi"); }
 
 /**
- * Spin for roughly the given number of microseconds.
+ * Spin for at least the given number of microseconds.
  *
- * @param microseconds the duration for which to spin.
+ * @param usec Duration in microseconds.
  */
-void busy_sleep_micros(size_t microseconds);
+void usleep(uint32_t usec);
 
 /**
  * Immediately halt program execution.
