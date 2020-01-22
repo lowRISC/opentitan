@@ -28,12 +28,12 @@
     { multireg: {
       name: "KEY",
       desc: '''
-        Initial Key Registers. Loaded into the internal Full Key register upon
-        starting encryption/decryption of the next block. Can only be updated
-        when the AES unit is idle. If the AES unit is non-idle, writes to these
-        registers are ignored. All key registers must be updated when the
-        key is changed, regardless of key length (write 0 for unusued bits).
+        Initial Key Registers.
+        Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+        All key registers must be written at least once when the key is changed, regardless of key length (write 0 for unusued bits).
         The order in which the registers are updated does not matter.
+        Can only be updated when the AES unit is idle.
+        If the AES unit is non-idle, writes to these registers are ignored.
       '''
       count: "NumRegsKey",
       cname: "KEY",
@@ -51,10 +51,12 @@
     { multireg: {
       name: "DATA_IN",
       desc: '''
-        Input Data Registers. Loaded into the internal State register upon
-        starting encryption/decryption of the next block. After that, the processor
-        can update the Input Data Register. The order in which the registers are
-        written does not matter.
+        Input Data Registers.
+        If MANUAL_START_TRIGGER=0 (see Control Register), the AES unit automatically starts encryption/decryption after these register have been written.
+        Each register has to be written at least once.
+        The order in which the registers are written does not matter.
+        Loaded into the internal State register upon starting encryption/decryption of the next block.
+        After that, the processor can update the Input Data Register.
       '''
       count: "NumRegsData",
       cname: "DATA_IN",
@@ -71,11 +73,11 @@
     { multireg: {
       name: "DATA_OUT",
       desc: '''
-        Output Data Register. Holds the output data produced by the AES unit
-        during the last encryption/decryption operation. If FORCE_DATA_OVERWRITE=0
-        (see Control Register), the AES unit is stalled when the previous output
-        data has not yet been read and is about to be overwritten. The order in
-        which the registers are read does not matter.
+        Output Data Register.
+        Holds the output data produced by the AES unit during the last encryption/decryption operation.
+        If FORCE_DATA_OVERWRITE=0 (see Control Register), the AES unit is stalled when the previous output data has not yet been read and is about to be overwritten.
+        Each register has to be read at least once.
+        The order in which the registers are read does not matter.
       '''
       count: "NumRegsData",
       cname: "DATA_OUT",
@@ -136,7 +138,10 @@
     ]
   },
   { name: "TRIGGER",
-    desc: "Trigger Register",
+    desc: '''
+      Trigger Register.
+      Each bit is individually cleared to 0 when executing the corresponding trigger.
+    '''
     swaccess: "wo",
     hwaccess: "hrw",
     fields: [
@@ -144,6 +149,7 @@
         name: "START",
         desc:  '''
           Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
+          This trigger is ignored if MANUAL_START_TRIGGER=0 (see Control Register).
         '''
       }
       { bits: "1",
