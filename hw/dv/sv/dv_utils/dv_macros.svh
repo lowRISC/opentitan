@@ -250,6 +250,16 @@
   end
 `endif
 
+// check for non-empty mailbox and print items that were uncompared at end of test
+`ifndef DV_EOT_PRINT_MAILBOX_CONTENTS
+`define DV_EOT_PRINT_MAILBOX_CONTENTS(TYP_, MAILBOX_, SEV_=error, ID_=`gfn) \
+  while (MAILBOX_.num() != 0) begin \
+    TYP_ item; \
+    void'(MAILBOX_.try_get(item)); \
+    `uvm_``SEV_(ID_, $sformatf("%s item uncompared:\n%s", `"MAILBOX_`", item.sprint())) \
+  end
+`endif
+
 // get parity - implemented as a macro so that it can be invoked in constraints as well
 `ifndef GET_PARITY
   `define GET_PARITY(val, odd=0) (^val ^ odd)
@@ -276,4 +286,3 @@
     disable fork; \
   end join
 `endif
-
