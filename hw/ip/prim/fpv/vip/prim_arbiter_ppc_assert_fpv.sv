@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Assertions for prim_arbiter.
+// Assertions for prim_arbiter_ppc.
 // Intended to be used with a formal tool.
 
-module prim_arbiter_assert_fpv #(
-  parameter  N = 4,
-  parameter  DW = 32 
+module prim_arbiter_ppc_assert_fpv #(
+  parameter int unsigned N = 4,
+  parameter int unsigned DW = 32 
 ) (
   input  clk_i,
   input  rst_ni,
   input [N-1:0] req_i,
   input [DW-1:0]data_i [N],
   input logic[N-1:0] gnt_o,
+  input logic[$clog2(N)-1:0] idx_o,
   input logic valid_o,
   input logic[DW-1:0] data_o,
   input  ready_i
@@ -41,4 +42,4 @@ module prim_arbiter_assert_fpv #(
 
   // `ASSERT(MyBkwdAssertion_A, ..., clk_i, !rst_ni)
 
-endmodule : prim_arbiter_assert_fpv
+endmodule : prim_arbiter_ppc_assert_fpv

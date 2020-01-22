@@ -2,17 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:prim_arbiter_fpv:0.1"
-description: "prim_arbiter FPV target"
+name: "lowrisc:fpv:prim_arbiter_ppc_fpv:0.1"
+description: "prim_arbiter_ppc FPV target"
 filesets:
   files_fpv:
     depend:
       - lowrisc:prim:all
       # TODO: add more dependencies here if needed
     files:
-      - vip/prim_arbiter_assert_fpv.sv
-      - tb/prim_arbiter_bind_fpv.sv
-      - tb/prim_arbiter_fpv.sv
+      - vip/prim_arbiter_ppc_assert_fpv.sv
+      - tb/prim_arbiter_ppc_bind_fpv.sv
+      - tb/prim_arbiter_ppc_fpv.sv
     file_type: systemVerilogSource
 
 targets:
@@ -22,4 +22,4 @@ targets:
     default_tool: icarus
     filesets:
       - files_fpv
-    toplevel: prim_arbiter_fpv
+    toplevel: prim_arbiter_ppc_fpv

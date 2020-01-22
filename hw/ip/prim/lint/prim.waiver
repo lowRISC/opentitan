@@ -30,11 +30,11 @@ waive -rules INTEGER           -location {prim_packer.sv} -msg {'i' of type int 
 waive -rules INPUT_NOT_READ       -location {prim_subreg.sv} -regexp {Input port 'wd' is not read from} \
       -comment "for RO wd is not used"
 
-# primitives: prim_arbiter
+# primitives: prim_arbiter_*
 
-waive -rules PARTIAL_CONST_ASSIGN -location {prim_arbiter.sv} -regexp {'mask.0.' is conditionally assigned a constant} \
+waive -rules PARTIAL_CONST_ASSIGN -location {prim_arbiter_*.sv} -regexp {'mask.0.' is conditionally assigned a constant} \
       -comment "makes the code more readable"
-waive -rules CONST_FF -location {prim_arbiter.sv} -regexp {Flip-flop 'mask.0.' is driven by constant} \
+waive -rules CONST_FF -location {prim_arbiter_*.sv} -regexp {Flip-flop 'mask.0.' is driven by constant} \
       -comment "makes the code more readable"
 
 # primitives: prim_sram_arbiter
