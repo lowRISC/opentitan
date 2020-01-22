@@ -66,11 +66,20 @@ If the next operation after a key switch is ECB **decryption**, the AES unit aut
 
 The AES unit uses a status register to indicate to the processor when ready to receive the next input data block via the register interface.
 While the AES unit is performing encryption/decryption of a data block, it is safe for the processor to provide the next input data block.
+The AES unit automatically starts the encryption/decryption of the next data block once the previous encryption/decryption is finished and new input data is available.
+The order in which the input registers are written does not matter.
+Every input register has to be written at least once for the AES unit to automatically start encryption/decryption.
+This is the default behavior.
+It can be disabled by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `1`.
+In this case, the AES unit only starts the encryption/decryption once the START bit in {{< regref "TRIGGER" >}} is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
+
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
 Also, there is a back-pressure mechanism for the output data.
 If the AES unit wants to finish the encryption/decryption of a data block but the previous output data has not yet been read by the processor, the AES unit is stalled.
 It hangs and does not drop data.
 It only continues once the previous output data has been read and the corresponding registers can be safely overwritten.
+The order in which the output registers are read does not matter.
+Every output register has to be read at least once for the AES unit to continue.
 This is the default behavior.
 It can be disabled by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `1`.
 In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
@@ -121,12 +130,17 @@ The only sequential logic in the cipher and round key generation are the State, 
 
 The AES unit operates as follows:
 
-1. The initial key as well as the input data are provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
-2. When receiving the start command, the AES unit first loads the input data as well as the initial key into the corresponding registers (State and Full Key at the top of the block diagram).
+1. The initial key and configuration is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
+   Each key register has to be written at least once.
+   The order in which the registers are written does not matter.
+1. The input data is provided to the AES unit via four CSRs.
+   Each input register has to be written at least once.
+   The order in which the registers are written does not matter.
+1. If new input data is available, or when receiving the start command in the case of manual operation, the AES unit first loads the input data as well as the initial key into the corresponding registers (State and Full Key at the top of the block diagram).
    Note, if the decryption is performed, the Full Key register is loaded with the value stored in the Decryption Key register.
-3. Once these registers have been loaded, the AES unit starts the encryption/decryption by adding the first round key to the state (all blocks in both data paths are bypassed).
+1. Once these registers have been loaded, the AES unit starts the encryption/decryption by adding the first round key to the state (all blocks in both data paths are bypassed).
    The result is stored back in the State register.
-4. Then, the AES unit performs 9/11/13 rounds of encryption/decryption when using a 128/192/256-bit key, respectively.
+1. Then, the AES unit performs 9/11/13 rounds of encryption/decryption when using a 128/192/256-bit key, respectively.
    In every round, the cipher data path performs the four following transformations.
    For more details, refer to the [AES specification](https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf).
     1. SubBytes Transformation: A non-linear byte substitution that operates independently on each byte of the state using a substitution table (S-Box).
@@ -135,8 +149,8 @@ The AES unit operates as follows:
     4. AddRoundKey Transformation: The round key is XORed with the output of the MixColumns operation and stored back into the State register.
        The 128-bit round key itself is extracted from the current value in the Full Key register.
        In parallel, the full key used for the next round is computed on the fly using the key expand module.
-5. Finally, the AES unit performs the final encryption/decryption round in which the MixColumns operation is skipped.
-   The output of this final round is forwarded to the output register in the CSRs and stored back into the State register.
+1. Finally, the AES unit performs the final encryption/decryption round in which the MixColumns operation is skipped.
+   The output of this final round is forwarded to the output register in the CSRs and not stored back into the State register.
 
 Having separate registers for input, output and internal state prevents the extraction of intermediate state via TL-UL bus interface and allows to overlap reconfiguration with operation.
 While the AES unit is performing encryption/decryption, the processor can safely write the next input data block into the CSRs or read the previous output data block from the CSRs.
@@ -144,7 +158,9 @@ The State register is internal to the AES unit and not exposed via the TL-UL bus
 If the AES unit wants to finish the encryption/decryption of an output data block but the previous one has not yet been read by the processor, the AES unit is stalled.
 It hangs and does not drop data.
 It only continues once the previous output data has been read and the corresponding registers can be safely overwritten.
-In contrast, the initial key can only be updated if the AES unit is idle, which eases design verification (DV).
+The order in which the output registers are read does not matter.
+Every output register has to be read at least once for the AES unit to continue.
+In contrast, the initial key and control register can only be updated if the AES unit is idle, which eases design verification (DV).
 
 The architecture of the AES unit is derived from the architecture proposed by Satoh et al.: ["A compact Rijndael Hardware Architecture with S-Box Optimization"](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
 The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (AES-128 only).
@@ -259,6 +275,7 @@ To initialize the AES unit, software must write the initial key to the Initial K
 Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
 Independent of the selected key length, software must always write all 8 32-bit registers.
+Each register has to be written at least once.
 The order in which these registers are written does not matter.
 Anything can be written to the unused key registers.
 For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
@@ -272,6 +289,7 @@ For block operation, software must initialize the AES unit as described in the p
    1. Automatically starts encryption/decryption when new input data is available by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `0`.
    2. Does not overwrite previous output data that has not been read by the processor by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `0`.
 2. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
+   Each register has to be written at least once.
    The order in which these registers are written does not matter.
 3. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
 4. Write Input Data Block `1` to the Input Data registers.
@@ -280,6 +298,7 @@ Then for every Data Block `I=0,..,N-3`, software must:
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
    The AES unit then directly starts processing the previously input block `I+1`
 2. Read Output Data Block `I` from the Output Data registers {{< regref "DATA_OUT0" >}} - {{< regref "DATA_OUT3" >}}.
+   Each register has to be read at least once.
    The order in which these registers are read does not matter.
 3. Write Input Data Block `I+2` into the Input Data register.
    There is no need to check INPUT_READY as the cycle following OUTPUT_VALID being set the current input is loaded in.
