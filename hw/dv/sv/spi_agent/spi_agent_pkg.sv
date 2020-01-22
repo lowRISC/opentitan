@@ -13,6 +13,13 @@ package spi_agent_pkg;
   `include "dv_macros.svh"
 
   // local types
+  // transaction type
+  typedef enum {
+    SpiTransNormal,    // normal SPI trans
+    SpiTransSckNoCsb,  // bad SPI trans with clk but no sb
+    SpiTransCsbNoScb   // bad SPI trans with csb but no clk
+  } spi_trans_type_e;
+
   // sck edge type - used by driver and monitor to wait for the right edge based on CPOL / CPHA
   typedef enum {
     LeadingEdge,

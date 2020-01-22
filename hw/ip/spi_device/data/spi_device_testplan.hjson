@@ -28,7 +28,7 @@
             - Send SPI transfer unless TX is empty or RX is full
             - Read RX memory unless RX is empty'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_txrx"]
     }
     {
       name: fifo_full
@@ -37,7 +37,7 @@
             - Reduce delay to write TX memory
             - Increase delay to read RX memory'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_fifo_full"]
     }
     {
       name: fifo_underflow_overflow
@@ -49,14 +49,31 @@
               mis-aligned
             - Ensure underflow/overflow is triggered correctly'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_fifo_underflow_overflow"]
+    }
+    {
+      name: dummy_sck_and_dummy_csb
+      desc: '''
+            Drive dummy sck without csb or drive dummy csb without sck, and test no impact on the
+            design'''
+      milestone: V2
+      tests: ["spi_device_dummy_item_extra_dly"]
+    }
+    {
+      name: extra_delay_on_spi
+      desc: '''
+            Add extra delay between spi clock edge or extra delay between 2 words data
+            This is to test host pause transfer for a while without turning off csb and then stream
+            in data again'''
+      milestone: V2
+      tests: ["spi_device_dummy_item_extra_dly"]
     }
     {
       name: async_fifo_reset
       desc: '''Reset async fifo when SPI interface is idle
             TODO: fifo may be fetching data from SRAM? What is the actual usage?'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_async_fifo_reset"]
     }
     {
       name: interrupts
@@ -67,20 +84,20 @@
             - rx error
             - overflow/underflow'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_interrupts"]
     }
     {
       name: abort
       desc: '''
             TODO: Need to clarify the behavior in spec'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_abort"]
     }
     {
       name: byte_transfer_on_spi
       desc: '''send spi transfer on byte granularity, and make sure the timer never expires'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_byte_transfer"]
     }
     {
       name: rx_timeout
@@ -90,7 +107,7 @@
               model the timer feature
             - Note: Timeout only for RX'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_rx_timeout"]
     }
     {
       name: bit_transfer_on_spi
@@ -99,19 +116,19 @@
             - If TX drives < 7 bits, this byte will be sent in next CSB.
             - If TX drives 7 bits and set CSB to high, this byte won't be sent in next CSB'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_bit_transfer"]
     }
     {
       name: extreme_fifo_setting
       desc: '''Set fifo size to 4 bytes(minimum), 2k-4bytes(maximum) and others'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_extreme_fifo_size"]
     }
     {
       name: mode
       desc: '''TODO :only support fw mode now'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_mode"]
     }
     {
       name: mem_ecc
@@ -120,27 +137,13 @@
             - Just cover basic functionality and connectivity
             - Complete verification will be done by PFV'''
       milestone: V2
-      tests: [""]
+      tests: ["spi_device_mem_ecc"]
     }
     {
       name: perf
       desc: '''Run spi_device_fifi_full_vseq with very small delays'''
       milestone: V2
-      tests: [""]
-    }
-    {
-      name: stress_all
-      desc: '''
-            - Combine above sequences in one test to run sequentially, except csr sequence
-            - Randomly add reset between each sequence'''
-      milestone: V2
-      tests: [""]
-    }
-    {
-      name: stress_all_with_reset
-      desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
-      milestone: V2
-      tests: [""]
+      tests: ["spi_device_perf"]
     }
   ]
 }

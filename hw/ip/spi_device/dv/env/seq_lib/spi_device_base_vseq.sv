@@ -131,7 +131,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   // set a byte of data via host agent, receive a byte of data from spi_device
   virtual task spi_host_xfer_byte(logic [7:0] host_data, ref logic [7:0] device_data);
-    spi_host_seq m_spi_host_seq = spi_host_seq::type_id::create("m_spi_host_seq");
+    spi_host_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                    data.size() == 1;
@@ -142,7 +142,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   // set a word (32 bits) of data via host agent, receive a word of data from spi_device
   virtual task spi_host_xfer_word(logic [31:0] host_data, ref logic [31:0] device_data);
-    spi_host_seq m_spi_host_seq = spi_host_seq::type_id::create("m_spi_host_seq");
+    spi_host_seq m_spi_host_seq;
     byte data_bytes[SRAM_WORD_SIZE];
     {<<8{data_bytes}} = host_data;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
@@ -156,7 +156,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   // set a random chunk of bytes of data via host agent and receive same number of data from device
   virtual task spi_host_xfer_bytes(int num_bytes = $urandom_range(1, 512),
                                    ref logic [7:0] device_data[$]);
-    spi_host_seq m_spi_host_seq = spi_host_seq::type_id::create("m_spi_host_seq");
+    spi_host_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq, data.size() == num_bytes;)
     `uvm_send(m_spi_host_seq)

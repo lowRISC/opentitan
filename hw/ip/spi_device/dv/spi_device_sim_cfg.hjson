@@ -25,9 +25,11 @@
                 "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/intr_test.hjson",
-                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson"
+                //"{proj_root}/hw/dv/data/tests/stress_tests.hjson" // no test yet
+                ]
 
   // Add additional tops for simulation.
   sim_tops: ["-top spi_device_bind"]
@@ -64,6 +66,11 @@
     {
       name: spi_device_extreme_fifo_size
       uvm_test_seq: spi_device_extreme_fifo_size_vseq
+    }
+
+    {
+      name: spi_device_dummy_item_extra_dly
+      uvm_test_seq: spi_device_dummy_item_extra_dly_vseq
     }
   ]
 }

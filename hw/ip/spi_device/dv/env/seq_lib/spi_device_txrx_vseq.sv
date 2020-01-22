@@ -24,6 +24,9 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   rand uint host_sram_word_size;
   rand uint device_sram_word_size;
 
+  rand bit  en_dummy_host_xfer;
+  rand bit  en_extra_dly;
+
   // semaphores to avoid updating fifo ptr when over/underflow is happening. Issue #103
   semaphore tx_ptr_sema, rx_ptr_sema;
   bit       allow_underflow_overflow;
@@ -65,6 +68,13 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     num_trans == 5;
   }
 
+  constraint en_dummy_host_xfer_c {
+    en_dummy_host_xfer dist {
+      0 :/ 4,
+      1 :/ 1 // 20% enable dummy transfer
+    };
+  }
+
   // lower 2 bits are ignored, use word granularity to contrain the sram setting
   constraint sram_constraints_c {
     // if limit is 0, it means 1 word
@@ -95,12 +105,17 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       0 :/ 1
     };
   }
+  virtual task spi_device_init();
+    super.spi_device_init();
+    cfg.m_spi_agent_cfg.en_extra_dly_btw_sck  = en_extra_dly;
+    cfg.m_spi_agent_cfg.en_extra_dly_btw_word = en_extra_dly;
+  endtask
 
   virtual task body();
     tx_ptr_sema = new(1);
     rx_ptr_sema = new(1);
     for (int i = 1; i <= num_trans; i++) begin
-      bit done_tx_write, done_rx_read;
+      bit done_tx_write, done_rx_read, done_xfer;
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       spi_device_init();
@@ -115,6 +130,14 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
         end
         begin
           while (!done_tx_write || !done_rx_read) process_spi_xfer();
+          done_xfer = 1;
+        end
+        begin // drive dummy host item
+          while (!done_xfer && en_dummy_host_xfer) begin
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_delay)
+            cfg.clk_rst_vif.wait_clks(tx_delay);
+            spi_host_xfer_dummy_item();
+          end
         end
       join
       check_for_tx_rx_idle();
@@ -231,5 +254,12 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     end
     `uvm_info(`gfn, "done process_spi_xfer", UVM_MEDIUM)
   endtask : process_spi_xfer
+
+  // send dummy item
+  virtual task spi_host_xfer_dummy_item();
+    spi_host_dummy_seq m_spi_host_seq;
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_send(m_spi_host_seq)
+  endtask
 
 endclass : spi_device_txrx_vseq

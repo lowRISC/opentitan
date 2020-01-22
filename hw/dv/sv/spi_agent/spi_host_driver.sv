@@ -35,10 +35,12 @@ class spi_host_driver extends spi_driver;
       forever begin
         if (sck_pulses > 0 || cfg.sck_on) begin
           cfg.vif.sck <= ~cfg.vif.sck;
-          #(cfg.sck_period_ps / 2 * 1ps);
+          #((cfg.sck_period_ps / 2 + get_rand_extra_delay_ns_btw_sck() * 1000) * 1ps);
           cfg.vif.sck <= ~cfg.vif.sck;
-          #(cfg.sck_period_ps / 2 * 1ps);
+          #((cfg.sck_period_ps / 2 + get_rand_extra_delay_ns_btw_sck() * 1000) * 1ps);
           if (sck_pulses > 0) sck_pulses--;
+          // dly after a word transfer is completed
+          if (sck_pulses % 32 == 0) #(get_rand_extra_delay_ns_btw_word() * 1ns);
         end else begin
           @(cfg.sck_on, sck_pulses);
           if (sck_pulses > 0) begin
@@ -67,38 +69,77 @@ class spi_host_driver extends spi_driver;
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("spi_host_driver: rcvd item:\n%0s", req.sprint()), UVM_HIGH)
-      cfg.vif.csb <= 1'b0;
-      sck_pulses = req.data.size() * 8;
-
-      // for mode 1 and 3, get the leading edges out of the way
-      cfg.wait_sck_edge(LeadingEdge);
-
-      // drive data
-      for (int i = 0; i < req.data.size(); i++) begin
-        logic [7:0] host_byte;
-        logic [7:0] device_byte;
-        int         which_bit;
-        host_byte = req.data[i];
-        for (int j = 0; j < 8; j++) begin
-          // drive mosi early so that it is stable at the sampling edge
-          which_bit = cfg.host_bit_dir ? j : 7 - j;
-          cfg.vif.mosi <= host_byte[which_bit];
-          // wait for sampling edge to sample miso (half cycle)
-          cfg.wait_sck_edge(SamplingEdge);
-          which_bit = cfg.device_bit_dir ? j : 7 - j;
-          device_byte[which_bit] = cfg.vif.miso;
-          // wait for driving edge to complete 1 cycle
-          if (i != req.data.size() - 1 || j != 7) cfg.wait_sck_edge(DrivingEdge);
-        end
-        rsp.data[i] = device_byte;
-      end
-
-      wait(sck_pulses == 0);
-      cfg.vif.csb <= 1'b1;
-      cfg.vif.mosi <= 1'bx;
+      case (req.item_type)
+        SpiTransNormal:   drive_normal_item();
+        SpiTransSckNoCsb: drive_sck_no_csb_item();
+        SpiTransCsbNoScb: drive_csb_no_sck_item();
+      endcase
       `uvm_info(`gfn, "spi_host_driver: item sent", UVM_HIGH)
       seq_item_port.item_done(rsp);
     end
   endtask
+
+  task drive_normal_item();
+    cfg.vif.csb <= 1'b0;
+    sck_pulses = req.data.size() * 8;
+
+    // for mode 1 and 3, get the leading edges out of the way
+    cfg.wait_sck_edge(LeadingEdge);
+
+    // drive data
+    for (int i = 0; i < req.data.size(); i++) begin
+      logic [7:0] host_byte;
+      logic [7:0] device_byte;
+      int         which_bit;
+      host_byte = req.data[i];
+      for (int j = 0; j < 8; j++) begin
+        // drive mosi early so that it is stable at the sampling edge
+        which_bit = cfg.host_bit_dir ? j : 7 - j;
+        cfg.vif.mosi <= host_byte[which_bit];
+        // wait for sampling edge to sample miso (half cycle)
+        cfg.wait_sck_edge(SamplingEdge);
+        which_bit = cfg.device_bit_dir ? j : 7 - j;
+        device_byte[which_bit] = cfg.vif.miso;
+        // wait for driving edge to complete 1 cycle
+        if (i != req.data.size() - 1 || j != 7) cfg.wait_sck_edge(DrivingEdge);
+      end
+      rsp.data[i] = device_byte;
+    end
+
+    wait(sck_pulses == 0);
+    cfg.vif.csb <= 1'b1;
+    cfg.vif.mosi <= 1'bx;
+  endtask
+
+  task drive_sck_no_csb_item();
+    repeat (req.dummy_clk_cnt) begin
+      #($urandom_range(1, 100) * 1ns);
+      cfg.vif.sck <= ~cfg.vif.sck;
+    end
+    cfg.vif.sck <= cfg.sck_polarity;
+    #1ps; // make sure sck and csb (for next item) not change at the same time
+  endtask
+
+  task drive_csb_no_sck_item();
+    cfg.vif.csb <= 1'b0;
+    #(req.dummy_sck_length_ns * 1ns);
+    cfg.vif.csb <= 1'b1;
+  endtask
+
+  function uint get_rand_extra_delay_ns_btw_sck();
+    if (cfg.en_extra_dly_btw_sck && ($urandom % 100) < cfg.extra_dly_chance_pc_btw_sck) begin
+      return $urandom_range(1, cfg.max_extra_dly_ns_btw_sck);
+    end else begin
+      return 0;
+    end
+  endfunction
+
+  function uint get_rand_extra_delay_ns_btw_word();
+    if (cfg.en_extra_dly_btw_word && ($urandom % 100) < cfg.extra_dly_chance_pc_btw_word) begin
+      return $urandom_range(1, cfg.max_extra_dly_ns_btw_word);
+    end else begin
+      return 0;
+    end
+  endfunction
 
 endclass
