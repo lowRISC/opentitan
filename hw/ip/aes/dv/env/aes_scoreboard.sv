@@ -24,7 +24,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-
     dut_fifo = new();
     ref_fifo = new();
     dut_item = new("dut_item");
@@ -240,10 +239,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    if ((dut_fifo.num() !=0 ) || (ref_fifo.num() != 0)) begin
-      `uvm_error(`gfn, $sformatf("\n\t ----| NO NO NO there are still items in the fifos dut: %d, ref %d"
-                                 , dut_fifo.num(), ref_fifo.num()))
-    end
+    `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, dut_fifo)
+    `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, ref_fifo)
   endfunction
 
 
