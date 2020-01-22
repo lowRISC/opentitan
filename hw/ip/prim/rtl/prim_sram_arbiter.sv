@@ -7,10 +7,13 @@
 // Parameter
 //  N:  Number of requst port
 //  DW: Data width (SECDED is not included)
+//  Aw: Address width
+//  ArbiterImpl: can be either PPC or BINTREE.
 module prim_sram_arbiter #(
   parameter int N  = 4,
   parameter int SramDw = 32,
-  parameter int SramAw = 12
+  parameter int SramAw = 12,
+  parameter ArbiterImpl = "PPC"
 ) (
   input clk_i,
   input rst_ni,
@@ -55,20 +58,40 @@ module prim_sram_arbiter #(
   assign sram_addr  = sram_packed.addr;
   assign sram_wdata = sram_packed.wdata;
 
-  prim_arbiter #(
-    .N (N),
-    .DW(ARB_DW)
-  ) u_reqarb (
-    .clk_i,
-    .rst_ni,
-    .req_i   ( req         ),
-    .data_i  ( req_packed  ),
-    .gnt_o   ( gnt         ),
-    .idx_o   (             ),
-    .valid_o ( sram_req    ),
-    .data_o  ( sram_packed ),
-    .ready_i ( 1'b1        )
-  );
+  if (ArbiterImpl == "PPC") begin : gen_arb_ppc
+    prim_arbiter_ppc #(
+      .N (N),
+      .DW(ARB_DW)
+    ) u_reqarb (
+      .clk_i,
+      .rst_ni,
+      .req_i   ( req         ),
+      .data_i  ( req_packed  ),
+      .gnt_o   ( gnt         ),
+      .idx_o   (             ),
+      .valid_o ( sram_req    ),
+      .data_o  ( sram_packed ),
+      .ready_i ( 1'b1        )
+    );
+  end else if (ArbiterImpl == "BINTREE") begin : gen_tree_arb
+    prim_arbiter_arb #(
+      .N (N),
+      .DW(ARB_DW)
+    ) u_reqarb (
+      .clk_i,
+      .rst_ni,
+      .req_i   ( req         ),
+      .data_i  ( req_packed  ),
+      .gnt_o   ( gnt         ),
+      .idx_o   (             ),
+      .valid_o ( sram_req    ),
+      .data_o  ( sram_packed ),
+      .ready_i ( 1'b1        )
+    );
+  end else begin : gen_unknown
+    `ASSERT_INIT(UnknownArbImpl_A, 0)
+  end
+
 
   logic [N-1:0] steer;    // Steering sram_rvalid
   logic sram_ack;         // Ack for rvalid. |sram_rvalid

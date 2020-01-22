@@ -19,7 +19,8 @@ filesets:
       - rtl/prim_clock_inverter.sv
       - rtl/prim_alert_receiver.sv
       - rtl/prim_alert_sender.sv
-      - rtl/prim_arbiter.sv
+      - rtl/prim_arbiter_ppc.sv
+      - rtl/prim_arbiter_tree.sv
       - rtl/prim_esc_receiver.sv
       - rtl/prim_esc_sender.sv
       - rtl/prim_sram_arbiter.sv
