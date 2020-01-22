@@ -21,6 +21,16 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   // how many bytes monitor samples per transaction
   int             num_bytes_per_trans_in_mon = 4;
 
+  // enable randomly injecting extra delay between 2 sck/word
+  bit  en_extra_dly_btw_sck;
+  uint max_extra_dly_ns_btw_sck     = 100;  // small delay to avoid transfer timeout
+  uint extra_dly_chance_pc_btw_sck  = 5;    // percentage of extra delay btw each spi clock edge
+  // Note: can't handle word delay, if a word is splitted into multiple csb.
+  // In that case, control delay in seq level
+  bit  en_extra_dly_btw_word;
+  uint max_extra_dly_ns_btw_word    = 1000; // no timeout btw word
+  uint extra_dly_chance_pc_btw_word = 5;    // percentage of extra delay btw each word
+
   // interface handle used by driver, monitor & the sequencer
   virtual spi_if  vif;
 
@@ -33,6 +43,12 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (sck_phase,        UVM_DEFAULT)
     `uvm_field_int (host_bit_dir,     UVM_DEFAULT)
     `uvm_field_int (device_bit_dir,   UVM_DEFAULT)
+    `uvm_field_int (en_extra_dly_btw_sck,         UVM_DEFAULT)
+    `uvm_field_int (max_extra_dly_ns_btw_sck,     UVM_DEFAULT)
+    `uvm_field_int (extra_dly_chance_pc_btw_sck,  UVM_DEFAULT)
+    `uvm_field_int (en_extra_dly_btw_word,        UVM_DEFAULT)
+    `uvm_field_int (max_extra_dly_ns_btw_word,    UVM_DEFAULT)
+    `uvm_field_int (extra_dly_chance_pc_btw_word, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

@@ -18,6 +18,7 @@ class spi_host_seq extends spi_base_seq;
     req = spi_item::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
+                                   item_type == SpiTransNormal;
                                    data.size() == local::data.size();
                                    foreach (data[i]) {
                                      data[i] == local::data[i];

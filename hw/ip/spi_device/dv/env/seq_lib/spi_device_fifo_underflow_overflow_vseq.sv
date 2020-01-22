@@ -29,13 +29,12 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
     end
     // there are some underflow data in fifo, clean them up
     // repeat twice in case some data in async_fifo when sram fifo is full
-    repeat (2) begin
+    for (uint i = 0; i < 2; i++) begin
       read_rx_avail_bytes(SramDataAvail, rx_avail_bytes);
       if (rx_avail_bytes == 0) break;
       read_host_words_rcvd(rx_avail_bytes / SRAM_WORD_SIZE, device_words_q);
-      // if sram fifo was full, data in async fifo will transfer to sram after sram fifo ptr
-      // is updated. Wait until data transfer is done
-      if (rx_avail_bytes == `get_rx_allocated_sram_size_bytes) begin
+      // in case data is transferred from async fifo, wait until transfer is done
+      if (i == 0) begin
         csr_spinwait(.ptr(ral.async_fifo_level.rxlvl), .exp_data(0));
         cfg.clk_rst_vif.wait_clks(2); // 2 cycle for fifo ptr to be updated
       end
