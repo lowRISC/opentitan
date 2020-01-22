@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   build_cmd:  "{job_prefix} vcs"
-  build_ex:   "simv"
-  run_cmd:    "{job_prefix} {build_dir}/{build_ex}"
+  build_ex:   "{build_dir}/simv"
+  run_cmd:    "{job_prefix} {build_ex}"
 
   tcl:        "{proj_root}/hw/dv/tools/vcs/vcs_fsdb.tcl"
 
   build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
                "-timescale=1ns/1ps",
-               "-Mdir={build_dir}/simv.csrc",
-               "-o {run_cmd}",
+               "-Mdir={build_ex}.csrc",
+               "-o {build_ex}",
                "-f {sv_flist}",
                "+incdir+{build_dir}",
                // Turn on warnings for non-void functions called with return values ignored
