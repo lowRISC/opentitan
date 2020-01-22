@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options for enabling the compilation of the C sources
+  // with DV simulators such as VCS and Xcelium.
+  build_modes: [
+    {
+      name: vcs_aes_model_build_opts
+      build_opts: ["-CFLAGS -I{proj_root}/hw/ip/aes/model", "-lcrypto"]
+    }
+
+    {
+      name: xcelium_aes_model_build_opts
+      build_opts: ["-I{proj_root}/hw/ip/aes/model", "-lcrypto"]
+    }
+  ]
+}

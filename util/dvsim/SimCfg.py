@@ -88,7 +88,6 @@ class SimCfg(FlowCfg):
 
         # Options from simulators - for building and running tests
         self.build_cmd = ""
-        self.build_ex = ""
         self.flist_gen_cmd = ""
         self.flist_gen_opts = []
         self.flist_file = ""

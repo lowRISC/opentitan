@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} xrun -elaborate"
-  build_ex:   "xrun"
-  run_cmd:    "{job_prefix} {build_ex}"
+  build_cmd:  "{job_prefix} xrun"
+  run_cmd:    "{job_prefix} xrun"
 
   tcl:        "{proj_root}/hw/dv/tools/xcelium/xcelium_{dump}.tcl"
 
-  build_opts: ["-64bit -access +r -sv",
+  build_opts: [" -elaborate -64bit -access +r -sv",
                "-messages -errormax 50",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
