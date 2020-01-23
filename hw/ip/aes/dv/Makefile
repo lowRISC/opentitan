@@ -23,10 +23,10 @@ UVM_TEST        ?= aes_base_test
 UVM_TEST_SEQ    ?= aes_base_vseq
 
 # Make GCC find aes.h
-ifeq (${SIMULATOR},vcs)
-  BUILD_OPTS += -CFLAGS "-I${DV_DIR}/../model"
-else ifeq (${SIMULATOR},xcelium)
+ifeq (${SIMULATOR},xcelium)
   BUILD_OPTS += -I${DV_DIR}/../model
+else
+  BUILD_OPTS += -CFLAGS "-I${DV_DIR}/../model"
 endif
 
 # Make GCC link OpenSSL/BoringSSL
