@@ -6,39 +6,43 @@ Generate SVD file from validated register JSON tree
 """
 
 import hjson
-import pathlib
 import pysvd
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
-DOCUMENT_COMMENT = '''
+genhdr = '''
   Copyright lowRISC contributors.
   Licensed under the Apache License, Version 2.0, see LICENSE for details.
   SPDX-License-Identifier: Apache-2.0
 
-  This file generated from HJSON source by "svdgen.py", do not edit.
+  This file generated from HJSON source by "topgen.py", do not edit.
 '''
 
 def read_git_version() -> str:
     """Read the repository version string from Git"""
 
-    describe = 'git describe --tags --long --dirty'.split()
-    describe = subprocess.run(describe, stdout=subprocess.PIPE)
+    cmd = ['git', 'describe', '--tags', '--long', '--dirty']
+    describe = subprocess.run(cmd, stdout=subprocess.PIPE)
     if describe.returncode != 0:
         raise SystemExit('failed to determine Git repository version: %s' %
                 str(describe.stderr, 'UTF-8'))
 
     return str(describe.stdout, 'UTF-8').strip()
 
-def value(num: int) -> str or None:
-    """Converts None -> None and everything else to hex"""
+def hex_or_none(num: int) -> str or None:
+    """Converts None -> None and everything else to a hex string. This
+    simplifies use with `svd_node()` which ignores elements whose value is
+    `None`."""
 
-    if num != None:
-        return hex(num)
+    if num == None:
+        return None
 
-def create(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
+    return hex(num)
+
+def svd_node(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
     """Construct an SVD element using the information provided.
 
     If the first argument is not an `ET.Element` this constructs a new
@@ -54,41 +58,59 @@ def create(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag":
     placing the shorter, textual elements before any deeply nested tree.
 
     This ignores any keyword arguments whose value is `None`. This
-    simplfies reading HJSON and converting it; liberal use of `hjson.get()`
-    will skip any values not present."""
+    simplifies reading HJSON and converting it; liberal use of `hjson.get()`
+    will skip any optional values which aren't set."""
 
-    if type(element) != ET.Element:
-        element = ET.Element(str(element))
+    if type(element) == str:
+        element = ET.Element(element)
+    elif type(element) != ET.Element:
+        raise TypeError('expected str or ET.Element')
 
     for (tag, value) in texts.items():
-        if value != None:
-            e = ET.Element(tag)
-            e.text = str(value)
-            element.append(e)
+        if value == None:
+            continue
+
+        e = ET.Element(tag)
+        e.text = str(value)
+        element.append(e)
 
     element.extend(elements)
     return element
 
-def beautify(element: ET.Element, indent='\n') -> ET.Element:
+def beautify(element: ET.Element, indent='\n'):
     """Pretty-print the given element. This modifies the element in place
     by tweaking the contents. It assumes that it is safe to adjust
-    whitespace in the XML nodes. (This is true for SVD)"""
+    whitespace in the XML nodes. (This is true for SVD.)
 
-    if len(element) != 0:
+    ElementTree prints all whitespace in the XML tree verbatim; it has
+    no option to automatically indent its output. Without first touching
+    this up the result is distracting to a human reader."""
+
+    # element.text appears immediately following the element's openings
+    # tag. In the case of a parent node this results in the child's
+    # indentation level.
+    #
+    # element.tail appears immediately following the closing tag, this
+    # results in padding for its next sibling/parent closing tag.
+    #
+    # This function takes advantage of a property of an SVD XML tree: a
+    # node is either a parent or it contains text, never both.
+
+    is_parent = len(element) != 0
+
+    if is_parent:
         element.text = indent + '  '
     elif element.text != None:
         element.text = element.text.strip()
 
     element.tail = indent
 
-    last = None
     for child in element:
-        last = beautify(child, indent + '  ')
+        beautify(child, indent + '  ')
+        last = child
 
-    if last != None:
+    if is_parent:
         last.tail = indent
-
-    return element
 
 def interrupts(irqs: hjson) -> [ET.Element]:
     """Generate a series of <interrupt> nodes from HJSON. Yields nothing
@@ -98,12 +120,12 @@ def interrupts(irqs: hjson) -> [ET.Element]:
         return
 
     for (num, irq) in enumerate(irqs):
-        yield create('interrupt',
+        yield svd_node('interrupt',
             name        = irq['name'],
             description = irq.get('name'),
             value       = num)
 
-def swaccess(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction, pysvd.type.modifiedWriteValues):
+def sw_access_modes(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction, pysvd.type.modifiedWriteValues):
     """Converts from OpenTitan software register access level to equivalent
     SVD access types. Whereas OpenTitan uses a single string to identify
     each different level SVD uses a combination of up to three optional
@@ -134,7 +156,7 @@ def swaccess(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction
     one_sets    = pysvd.type.modifiedWriteValues.oneToSet
     zero_clears = pysvd.type.modifiedWriteValues.zeroToClear
 
-    swaccesses = {
+    modes = {
         None:    (None,       None,          None),
         'ro':    (read_only,  None,          None),
         'rc':    (read_only,  clear_on_read, None),
@@ -146,7 +168,7 @@ def swaccess(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction
         'wo':    (write_only, None,          None),
     }
 
-    return swaccesses[reg_or_field.get('swaccess')]
+    return modes[reg_or_field.get('swaccess')]
 
 def bitfield(bitinfo: [int, int, int]) -> str:
     """Convert a generated `bitfield` to <bitRange> text"""
@@ -159,8 +181,8 @@ def bitfield(bitinfo: [int, int, int]) -> str:
 def field(bits: hjson) -> ET.Element:
     """Convert an HJSON bit field to a <field> node"""
 
-    (access, readAction, modifiedWriteValues) = swaccess(bits)
-    return create('field',
+    (access, readAction, modifiedWriteValues) = sw_access_modes(bits)
+    return svd_node('field',
             name                = bits['name'],
             description         = bits['desc'],
             bitRange            = bitfield(bits['bitinfo']),
@@ -173,7 +195,7 @@ def register(reg: hjson, base=0) -> ET.Element:
     Most of the work was previously done during validation and loading
     the HJSON file; what's left is mostly transliteration."""
 
-    # To define registers with smaller widths the HJSON includes a
+    # To define registers with smaller bit widths the HJSON includes a
     # single field in the register; that field has a single element
     # "bits". During `reggen.validate` the field is expanded with data
     # gleaned from the parent register.
@@ -191,35 +213,38 @@ def register(reg: hjson, base=0) -> ET.Element:
             fields[0]['name'] == reg['name'] and \
             fields[0]['bitinfo'][2] == 0
 
-    size = flatten and fields[0]['bitinfo'][1] or None
+    if flatten:
+        size = fields[0]['bitinfo'][1]
+    else:
+        size = None
 
     # Ignore an empty or flattened <fields>
     def regfields(flatten: bool, fields: [hjson]) -> ET.Element:
         if not flatten and fields != None:
-            yield create('fields', *map(field, fields))
+            yield svd_node('fields', *map(field, fields))
 
-    (access, readAction, modifiedWriteValues) = swaccess(reg)
-    return create('register',
+    (access, readAction, modifiedWriteValues) = sw_access_modes(reg)
+    return svd_node('register',
             name                = reg['name'],
             description         = reg['desc'],
-            addressOffset       = hex(reg['genoffset'] - base),
+            addressOffset       = hex_or_none(reg['genoffset'] - base),
             size                = size,
-            mask                = value(reg.get('genbitsused')),
-            resetValue          = value(reg.get('genresval')),
-            resetMask           = value(reg.get('genresmask')),
+            mask                = hex_or_none(reg.get('genbitsused')),
+            resetValue          = hex_or_none(reg.get('genresval')),
+            resetMask           = hex_or_none(reg.get('genresmask')),
             access              = access,
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues,
             *regfields(flatten, fields))
 
 def window(window: hjson) -> ET.Element:
-    """This should generate an SVD <register> element, likely with a set
-    of `dimElementGroup` subelements. Currently, it just returns a comment
-    documenting the omission."""
+    """Generate an SVD <register> element containing a buffer. This is
+    done by setting the the <dim> subelement, indicating the register
+    contains multiple items."""
 
-    window = create(register(window),
+    window = svd_node(register(window),
             dim          = window['items'],
-            dimIncrement = value(int(window['genvalidbits']/8)))
+            dimIncrement = hex_or_none(int(window['genvalidbits']/8)))
 
     # SVD files require the magic string "%s" in the register to generate
     # a numbered offset into the window. HJSON doesn't have this; append
@@ -246,10 +271,10 @@ def multireg(multi: [hjson]) -> ET.Element:
     # genoffset, and then generate all registers relative to this.
     base = min(reg['genoffset'] for reg in genregs)
 
-    return create('cluster',
+    return svd_node('cluster',
             name          = multi['name'],
             description   = multi['desc'],
-            addressOffset = hex(base),
+            addressOffset = hex_or_none(base),
             *(register(reg, base) for reg in genregs))
 
 def registers(regs: [hjson]) -> [ET.Element]:
@@ -279,12 +304,19 @@ def peripheral(module: hjson, ip: hjson) -> ET.Element:
 
     # argument ordering is deceptive; <name> and <baseAddress> will
     # preceed all <interrupt>s, <register>s, and the comment
-    return create('peripheral',
+    return svd_node('peripheral',
             *interrupts(ip.get('interrupt_list')),
-            create('registers', *registers(ip['registers'])),
+            svd_node('registers', *registers(ip['registers'])),
             ET.Comment('end of %s' % module['name']),
             name        = module['name'],
             baseAddress = module['base_addr'])
+
+def peripherals(modules: hjson, ips: {'name': hjson}) -> ET.Element:
+    """Generate a <peripherals> element filled by cross-referencing the
+    IP definition for each item in the top's module list."""
+
+    return svd_node('peripherals',
+            *(peripheral(module, ips[module['type']]) for module in modules))
 
 def cpu() -> ET.Element:
     """Generate a <cpu> element. Currently all values are hardcoded as
@@ -297,15 +329,14 @@ def cpu() -> ET.Element:
     # performing the validation step.
     name = pysvd.type.cpuName.other
 
-    return create('cpu',
+    return svd_node('cpu',
             name                = name,
             endian              = pysvd.type.endian.little,
             revision            = 0,
             mpuPresent          = "true",
             fpuPresent          = "false",
             nvicPrioBits        = 0,
-            vendorSystickConfig = "false",
-    )
+            vendorSystickConfig = "false")
 
 def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
     """Generate an SVD <device> node from the top-level HJSON. For each
@@ -316,22 +347,18 @@ def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
     HJSON descriptions. While they might be available elsewhere in the
     configuration, it's simplest just to declare them here."""
 
-    # Cross reference module with IP to generate a peripheral
-    def p(m: hjson) -> ET.Element:
-        return peripheral(m, ips[m['type']])
-
-    return create(ET.Element('device', attrib = {
+    return svd_node(ET.Element('device', attrib = {
                 'schemaVersion': '1.1',
                 'xmlns:xs': 'http://www.w3.org/2001/XMLSchema-instance',
                 'xs:noNamespaceSchemaLocation': 'CMSIS-SVD.xsd',
             }),
             cpu(),
-            create('peripherals', *map(p, top['module'])),
+            peripherals(top['module'], ips),
             vendor          = 'lowRISC OpenTitan',
             vendorID        = 'lowRISC',
             name            = top['name'],
             version         = version,
-            description     = read_relative_path('..', 'README.md'),
+            description     = (Path(__file__).parents[1] / 'README.md').read_text(),
             width           = top['datawidth'],
             size            = top['datawidth'],
             addressUnitBits = 8)
@@ -340,9 +367,9 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     """Convert a top-level configuration and IP register definition set
     into a System View Description ("SVD") file. SVD is an XML format,
     originally defined by ARM to "formalize the description of the system
-    contained in Arm Cortex-M processor-based microcontrollers".¹ It has
+    contained in Arm Cortex-M processor-based microcontrollers".[1] It has
     since been extended for use on other platforms, and is used in other
-    fields such as Rust embedded programming.²
+    fields such as Rust embedded programming.[2]
 
     SVD is an XML-based format with standardized definitions for memory
     layouts, register definitions, and similar microcontroller fields.
@@ -351,13 +378,13 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     full set of IP modeule definitions for that configuration. These two
     will be parsed and converted into a single XML tree with a top-level
     "<device>" node. Both the top configuration and IP modules must have
-    been previously validated. (see ??? and `reggen.validate()`)
+    been previously validated. (see `topgen.validate_top` and `reggen.validate()`)
 
     If `validate` is true then the resulting SVD file is validated using
     the `pysvd` module.
 
-    ¹ http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html
-    ² https://github.com/rust-embedded/svd2rust"""
+    [1] http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html
+    [2] https://github.com/rust-embedded/svd2rust"""
 
     root = device(top, ips, version)
 
@@ -369,6 +396,10 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     # Workaround for limitations of SVD/pysvd. See comment in `cpu()`.
     root.find('.cpu/name').text = 'RISCV'
 
+    # Manually indent the XML tree. When writing out XML ElementTree
+    # maintains all whitespace verbatim; skipping this step causes the
+    # SVD file's newlines and indentation to match what was read from
+    # the HJSON file.
     beautify(root)
     return root
 
@@ -382,13 +413,13 @@ def write_to_file(device: ET.Element, output):
         et = ET.ElementTree(element)
         et.write(output, encoding='unicode', xml_declaration=xml)
 
-    comment = ET.Comment('\n'.join(('', *copyright, GENERATED_NOTICE, '')))
+    comment = ET.Comment(genhdr)
     comment.tail = '\n'
 
     # The python3 ElementTree API doesn't natively support a top-level
     # documentation comment. Fake it for reader clarity.
-    write_element(comment, True)
-    write_element(device, False)
+    ET.ElementTree(comment).write(output, encoding='unicode', xml_declaration=True)
+    ET.ElementTree(device).write(output, encoding='unicode', xml_declaration=False)
 
 
 def test():
@@ -527,7 +558,7 @@ def test():
             success = False
 
     if not success:
-        svd.write(sys.stderr, encoding='unicode', xml_declaration=True)
+        ET.ElementTree(svd).write(sys.stderr, encoding='unicode', xml_declaration=True)
         raise SystemExit('svdgen tests failed')
 
 if __name__ == '__main__':
