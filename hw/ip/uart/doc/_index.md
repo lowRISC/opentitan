@@ -205,6 +205,16 @@ and unexpected event interrupts.
 If the TX FIFO level becomes smaller than the TX water mark level (configurable via {{< regref "FIFO_CTRL.RXILVL" >}} and {{< regref "FIFO_CTRL.TXILVL" >}}), the `tx_watermark` interrupt is raised to inform SW.
 If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via {{< regref "FIFO_CTRL.RXILVL" >}} and {{< regref "FIFO_CTRL.TXILVL" >}}), the `rx_watermark` interrupt is raised to inform SW.
 
+Note that the watermark interrupts are edge triggered events.
+This means the interrupt only triggers when the condition transitions from untrue->true.
+This is especially important in the tx_watermark case.
+When the TX FIFO is empty, it by default satisifies all the watermark conditions.
+In order for the interrupt to trigger then, it is required that software initiates a write burst that is greater than the programmed watermark value.
+
+For example, assume TX watermark is programmed to be less than 4 bytes, and software programs one byte at a time, waits for it to finish transmitting, before supplying the next byte.
+Under these conditions, the TX watermark interrupt will never trigger because the size of the FIFO never exceeds the watermark level.
+
+
 #### tx_empty
 If TX FIFO becomes empty as part of transmit, the interrupt `tx_empty` is asserted.
 The transmitted contents may be garbage at this point as old FIFO contents will likely be transmitted.

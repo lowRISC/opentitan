@@ -221,7 +221,7 @@
           enum: [
             { value: "0",
               name: "txlvl1",
-              desc: "1 character"
+              desc: "2 characters"
             },
             { value: "1",
               name: "txlvl4",
