@@ -39,15 +39,6 @@ def value(num: int) -> str or None:
     if num != None:
         return hex(num)
 
-def ordinal(n: int) -> str:
-    """Convert an integer into its English ordinal number: 1st, 2nd, ...
-    The returned value is 1-based to account for sequence numbering in a
-    list (intended for human consumption)."""
-
-    tens, digit = divmod(n%100, 10)
-    suffix = 'stndrdth'[2*min(digit + (tens==1)*3, 3):]
-    return '%i%s' % (n+1, suffix[:2])
-
 def create(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
     """Construct an SVD element using the information provided.
 
@@ -399,33 +390,6 @@ def write_to_file(device: ET.Element, copyright: [str], output):
     write_element(comment, True)
     write_element(device, False)
 
-def validate(top: hjson, ips: {"name": hjson}) -> bool:
-    """Validate the combined top-level HJSON and IP module definitions.
-    This checks for required fields in all the HJSON and ensures that a
-    corresponding IP block exists for all modules in `top`.
-
-    This assumes each individual IP module was previously validated using
-    the `reggen.validate.validate()` function."""
-
-    for field in ['name', 'datawidth', 'module']:
-        if not field in top:
-            yield 'missing required field %s in top hjson' % field
-
-    for (i, module) in enumerate(top['module']):
-        name = module.get('name') or ordinal(i)
-
-        for field in ['name', 'type', 'base_addr']:
-            if not field in module:
-                yield 'missing field "%s" in %s module' % (field, name)
-
-        tipe = module.get('type')
-        if tipe != None and not tipe in ips:
-            yield 'module "%s" references missing IP hjson: "%s"' % (name, tipe)
-
-    for ip in ips.values():
-        if ip['regwidth'] != top['datawidth']:
-            yield 'register width of module "%s" does not top hjson' % ip['name']
-
 
 def test():
     top = {
@@ -567,10 +531,6 @@ def test():
     success = True
     print('running tests for:', read_git_version())
 
-    for error in validate(top, ips):
-        success = False
-        print('test data invalid:', error)
-
     svd = generate(top, ips, 'g1234567-test', True)
 
     if not svd.tag == 'device':
@@ -584,16 +544,6 @@ def test():
             success = False
         elif found.text.strip() != expect:
             print('node /device/%s text incorrect: %s' % (path[1:], found.text))
-            success = False
-
-    for i, o in {
-             0:  '1st',  1:  '2nd',  2:  '3rd',  3:  '4th',  9: '10th',
-            10: '11th', 11: '12th', 12: '13th', 13: '14th', 19: '20th',
-            20: '21st', 21: '22nd', 22: '23rd', 23: '24th', 29: '30th',
-            90: '91st', 91: '92nd', 92: '93rd', 93: '94th', 99:'100th',
-        }.items():
-        if not ordinal(i) == o:
-            print('ordinal(%d) != %s: %s' % (i, o, ordinal(i)))
             success = False
 
     if not success:

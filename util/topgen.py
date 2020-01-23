@@ -574,8 +574,6 @@ def main():
 
     if args.svd_only:
         ip_dict = dict((ip['name'].lower(), ip) for ip in ip_objs)
-        if list(map(log.fatal, svdgen.validate(completecfg, ip_dict))):
-            raise SystemExit('invalid top and/or register HJSON')
 
         copyright = extract_copyright(args.topcfg, *ips)
         version = args.set_version or svdgen.read_git_version()
