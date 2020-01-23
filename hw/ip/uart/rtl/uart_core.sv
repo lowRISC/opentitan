@@ -56,7 +56,8 @@ module uart_core (
   logic           event_tx_watermark, event_rx_watermark, event_tx_empty, event_rx_overflow;
   logic           event_rx_frame_err, event_rx_break_err, event_rx_timeout, event_rx_parity_err;
   logic           tx_watermark_d, tx_watermark_prev_q;
-  logic           tx_empty_d, tx_empty_prev_q;
+  logic           rx_watermark_d, rx_watermark_prev_q;
+  logic           tx_uart_idle_q;
 
   assign tx_enable        = reg2hw.ctrl.tx.q;
   assign rx_enable        = reg2hw.ctrl.rx.q;
@@ -295,7 +296,7 @@ module uart_core (
 
   always_comb begin
     unique case(uart_fifo_txilvl)
-      2'h0:    tx_watermark_d = (tx_fifo_depth < 6'd1);
+      2'h0:    tx_watermark_d = (tx_fifo_depth < 6'd2);
       2'h1:    tx_watermark_d = (tx_fifo_depth < 6'd4);
       2'h2:    tx_watermark_d = (tx_fifo_depth < 6'd8);
       default: tx_watermark_d = (tx_fifo_depth < 6'd16);
@@ -303,25 +304,43 @@ module uart_core (
   end
 
   assign event_tx_watermark = tx_watermark_d & ~tx_watermark_prev_q;
+
+  // The empty condition handling is a bit different.
+  // If empty rising conditions were detected directly, then every first write of a burst
+  // would trigger an empty.  This is due to the fact that the uart_tx fsm immediately
+  // withdraws the content and asserts "empty".
+  // To guard against this false trigger, empty is qualified with idle to extend the window
+  // in which software has an opportunity to deposit new data.
+  // However, if software deposit speed is TOO slow, this would still be an issue.
+  //
+  // The alternative software fix is to disable tx_enable until it has a chance to
+  // burst in the desired amount of data.
+  assign event_tx_empty     = ~tx_fifo_rvalid & ~tx_uart_idle_q & tx_uart_idle;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      tx_watermark_prev_q   <= 1'd1;
+      tx_watermark_prev_q  <= 1'b1; // by default watermark condition is true
+      rx_watermark_prev_q  <= 1'b0; // by default watermark condition is false
+      tx_uart_idle_q       <= 1'b1;
     end else begin
-      tx_watermark_prev_q   <= tx_watermark_d;
+      tx_watermark_prev_q  <= tx_watermark_d;
+      rx_watermark_prev_q  <= rx_watermark_d;
+      tx_uart_idle_q       <= tx_uart_idle;
     end
   end
 
   always_comb begin
     unique case(uart_fifo_rxilvl)
-      3'h0:    event_rx_watermark = (rx_fifo_depth >= 6'd1);
-      3'h1:    event_rx_watermark = (rx_fifo_depth >= 6'd4);
-      3'h2:    event_rx_watermark = (rx_fifo_depth >= 6'd8);
-      3'h3:    event_rx_watermark = (rx_fifo_depth >= 6'd16);
-      3'h4:    event_rx_watermark = (rx_fifo_depth >= 6'd30);
-      default: event_rx_watermark = 1'b0;
+      3'h0:    rx_watermark_d = (rx_fifo_depth >= 6'd1);
+      3'h1:    rx_watermark_d = (rx_fifo_depth >= 6'd4);
+      3'h2:    rx_watermark_d = (rx_fifo_depth >= 6'd8);
+      3'h3:    rx_watermark_d = (rx_fifo_depth >= 6'd16);
+      3'h4:    rx_watermark_d = (rx_fifo_depth >= 6'd30);
+      default: rx_watermark_d = 1'b0;
     endcase
   end
 
+  assign event_rx_watermark = rx_watermark_d & ~rx_watermark_prev_q;
 
   // rx timeout interrupt
   assign uart_rxto_en  = reg2hw.timeout_ctrl.en.q;
@@ -349,25 +368,18 @@ module uart_core (
 
   assign event_rx_timeout = (rx_timeout_count_q == uart_rxto_val) & uart_rxto_en;
 
-  assign tx_empty_d = tx_fifo_depth == 6'h0;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rx_timeout_count_q   <= 24'd0;
       rx_fifo_depth_prev_q <= 6'd0;
-      tx_empty_prev_q      <= 1'd0;
     end else begin
       rx_timeout_count_q    <= rx_timeout_count_d;
       rx_fifo_depth_prev_q  <= rx_fifo_depth;
-      tx_empty_prev_q       <= tx_empty_d;
     end
   end
 
   assign event_rx_overflow  = rx_fifo_wvalid & ~rx_fifo_wready;
   assign event_rx_break_err = break_err & (break_st_q == BRK_CHK);
-  // this event is really a duplicate of uart_fifo_txilvl=0
-  // however, it is helpful to have both a non-1 entry watermark and an empty indication
-  assign event_tx_empty     = tx_empty_d & ~tx_empty_prev_q;
-
 
   // instantiate interrupt hardware primitives
 
