@@ -24,15 +24,12 @@ class Deploy():
     Abstraction for deploying builds and runs.
     """
 
-    # Register the builds and runs  with the parent class
-    items = []
-
     # Maintain a list of dispatched items.
     dispatch_counter = 0
 
     # Misc common deploy settings.
     print_interval = 5
-    max_parallel = 32
+    max_parallel = 16
     max_odirs = 5
 
     def __self_str__(self):
@@ -164,6 +161,8 @@ class Deploy():
                       '/' + self.odir_ln)
             f = open(self.log, "w")
             self.process = subprocess.Popen(args,
+                                            bufsize=4096,
+                                            universal_newlines=True,
                                             stdout=f,
                                             stderr=f,
                                             env=self.exports)
@@ -259,9 +258,11 @@ class Deploy():
                     self.status)
             Deploy.dispatch_counter -= 1
             self.link_odir()
+            del self.process
 
     @staticmethod
     def deploy(items):
+        dispatched_items = []
         def dispatch_items(items):
             item_names = {}
             for item in items:
@@ -275,7 +276,7 @@ class Deploy():
                     else:
                         item_names[item.target] += item.odir_ln + ", "
                     item.dispatch_cmd()
-                    Deploy.items.append(item)
+                    dispatched_items.append(item)
 
             for target in item_names.keys():
                 if item_names[target] != "[":
@@ -291,17 +292,17 @@ class Deploy():
         else:
             dispatch_items(items)
 
-        all_done = 0
+        all_done = False
         num_secs = 0
         status = {}
         status_str = {}
         status_str_prev = {}
 
-        while all_done == 0:
+        while not all_done:
             time.sleep(1)
             num_secs += 1
             trig_print = ((num_secs % Deploy.print_interval) == 0)
-            for item in Deploy.items:
+            for item in dispatched_items:
                 if item.target not in status.keys():
                     status[item.target] = {}
                 if item not in status[item.target].keys():
@@ -319,7 +320,7 @@ class Deploy():
 
             # Dispatch more from the queue
             if len(dispatch_items_queue) == 0:
-                all_done = 1
+                all_done = True
             else:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
                 if num_slots > 0:
@@ -338,7 +339,7 @@ class Deploy():
                     if status[target][item] is not None:
                         status_str[target] += status[target][item]
                         if status[target][item] == ".":
-                            all_done = 0
+                            all_done = False
                 status_str[target] += "]"
 
             # Print the status string periodically
