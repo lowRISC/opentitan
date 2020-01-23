@@ -231,26 +231,27 @@ def window(window: hjson) -> ET.Element:
 
     return window
 
-def multireg(multi: [hjson]) -> [ET.Element]:
-    """Generate a series of <register> nodes from a multireg. If the
-    multireg is empty this yields no items; if it contains a single item
-    then it yields a single <register> node. When it contains multiple
-    items then a <cluster> element is created containing a <register>
-    node for each."""
+def multireg(multi: [hjson]) -> ET.Element:
+    """Generate a <cluster> node from a multireg. The <cluster> will
+    contain a <register> for each register in `genregs`.
+
+    The <cluster> node will have its `addressOffset` set from its child
+    register's lowest `genoffset`; following SVD convention all the
+    <register> "addressOffset" values will be relative to the parent
+    <cluster>."""
 
     genregs = multi['genregs']
-    if len(genregs) == 1:
-        yield register(genregs[0])
-    elif len(genregs) > 1:
-        # A cluster has a base address, and then registers within the
-        # cluster have address offsets relative to the cluster base.
-        base = min(reg['genoffset'] for reg in genregs)
 
-        yield create('cluster',
-                name          = multi['name'],
-                description   = multi['desc'],
-                addressOffset = hex(base),
-                *(register(reg, base) for reg in genregs))
+    # All registers in the multiregs have their 'genoffset' set relative
+    # to the peripheral. Set the cluster's addressOffset to the lowest
+    # genoffset, and then generate all registers relative to this.
+    base = min(reg['genoffset'] for reg in genregs)
+
+    return create('cluster',
+            name          = multi['name'],
+            description   = multi['desc'],
+            addressOffset = hex(base),
+            *(register(reg, base) for reg in genregs))
 
 def registers(regs: [hjson]) -> [ET.Element]:
     """Convert a list of register HJSON element into a <registers> node.
@@ -269,7 +270,7 @@ def registers(regs: [hjson]) -> [ET.Element]:
         elif 'sameaddr' in reg:
             yield from map(register, reg['sameaddr'])
         elif 'multireg' in reg:
-            yield from multireg(reg['multireg'])
+            yield multireg(reg['multireg'])
         else:
             yield register(reg)
 
@@ -422,13 +423,6 @@ def test():
                         },
                     ],
                 },
-                { # Should be ignored
-                    'multireg': {
-                        'name':    'UART_IGNORED',
-                        'desc':    'UART ignored multireg',
-                        'genregs': [],
-                    },
-                },
                 {
                     'window': {
                         'name':         'UART_FIFO',
@@ -436,19 +430,6 @@ def test():
                         'genoffset':    16,
                         'items':        16,
                         'genvalidbits': 8,
-                    },
-                },
-                { # Should flatten to single register
-                    'multireg': {
-                        'name':    'UART_FLATTEN',
-                        'desc':    'UART flattened multireg',
-                        'genregs': [
-                            {
-                                'name':      'UART_FLATTENED',
-                                'desc':      'UART flattened',
-                                'genoffset': 4,
-                            },
-                        ],
                     },
                 },
                 { # Should be the first cluster
