@@ -354,36 +354,6 @@ def generate_top_ral(top, ip_objs, out_path):
     gen_dv.gen_ral(top_block, str(out_path))
 
 
-def extract_copyright(*paths):
-    """Grep through any number of hjson files, extracting the lines that
-    hold copyright data. Duplicate data is pruned; the results will have
-    only unique lines of text."""
-
-    extract = list((re.compile(regex, re.IGNORECASE) for regex in (
-        r'.*(Copyright.*)|(.*\(c\).*)',
-        r'.*(SPDX-License-Identifier:.+)',
-        r'.*(Licensed under.+)',
-    )))
-    results = list((set() for _ in extract))
-
-    for path in paths:
-        with open(str(path), 'r') as f:
-            for line in f:
-                if not line.startswith('//'):
-                    continue
-
-                for (e, r) in zip(extract, results):
-                    m = e.match(line)
-                    if m:
-                        r.add(m.group(1))
-
-    copyright = []
-    for r in results:
-        copyright.extend(r)
-
-    return copyright
-    return '\n'.join(copyright)
-
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
     parser.add_argument('--topcfg',
@@ -573,14 +543,12 @@ def main():
                                      hjson.dumps(completecfg, for_json=True))
 
     if args.svd_only:
-        ip_dict = dict((ip['name'].lower(), ip) for ip in ip_objs)
-
-        copyright = extract_copyright(args.topcfg, *ips)
+        ip_dict = {ip['name'].lower(): ip for ip in ip_objs}
         version = args.set_version or svdgen.read_git_version()
 
         device = svdgen.generate(completecfg, ip_dict, version)
         with open(args.svd_only, 'w') as svd:
-            svdgen.write_to_file(device, copyright, svd)
+            svdgen.write_to_file(device, svd)
 
         sys.exit()
 

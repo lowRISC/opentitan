@@ -13,8 +13,13 @@ import sys
 import xml.etree.ElementTree as ET
 
 
-GENERATED_NOTICE = '''
-This file generated from HJSON source by "svdgen.py", do not edit.'''
+DOCUMENT_COMMENT = '''
+  Copyright lowRISC contributors.
+  Licensed under the Apache License, Version 2.0, see LICENSE for details.
+  SPDX-License-Identifier: Apache-2.0
+
+  This file generated from HJSON source by "svdgen.py", do not edit.
+'''
 
 def read_git_version() -> str:
     """Read the repository version string from Git"""
@@ -26,12 +31,6 @@ def read_git_version() -> str:
                 str(describe.stderr, 'UTF-8'))
 
     return str(describe.stdout, 'UTF-8').strip()
-
-def read_relative_path(*components: [str]) -> str:
-    """Read the contents of a file relative to the current source."""
-
-    source_dir = pathlib.Path(__file__).parent
-    return source_dir.joinpath(*components).read_text()
 
 def value(num: int) -> str or None:
     """Converts None -> None and everything else to hex"""
@@ -373,7 +372,7 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     beautify(root)
     return root
 
-def write_to_file(device: ET.Element, copyright: [str], output):
+def write_to_file(device: ET.Element, output):
     """Write out the generated SVD <device> element and its children to a
     file in XML format. The SVD contents are preceeded by a comment with
     the given copyright notice and a warning that the file was generated
