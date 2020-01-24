@@ -25,3 +25,17 @@ dif_plic = declare_dependency(
     dependencies: [sw_lib_mmio]
   )
 )
+
+# GPIO DIF library
+sw_lib_dif_gpio = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_gpio',
+    sources: [
+      hw_ip_gpio_reg_h,
+      'dif_gpio.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
