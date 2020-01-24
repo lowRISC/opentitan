@@ -10,7 +10,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       sw_lib_runtime_hart,
       sw_lib_pinmux,
-      sw_lib_gpio,
+      sw_lib_dif_gpio,
       sw_lib_irq,
       sw_lib_spi_device,
       sw_lib_uart,

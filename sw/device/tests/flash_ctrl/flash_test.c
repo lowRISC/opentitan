@@ -5,8 +5,8 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/flash_ctrl.h"
-#include "sw/device/lib/gpio.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/uart.h"
 

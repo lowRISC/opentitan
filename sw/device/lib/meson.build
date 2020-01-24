@@ -32,19 +32,6 @@ sw_lib_flash_ctrl = declare_dependency(
   )
 )
 
-# GPIO library (sw_lib_gpio)
-sw_lib_gpio = declare_dependency(
-  sources: [hw_ip_gpio_reg_h],
-  link_with: static_library(
-    'gpio_ot',
-    sources: [
-      hw_ip_gpio_reg_h,
-      'gpio.c',
-    ],
-    dependencies: [sw_lib_runtime_hart],
-  )
-)
-
 # PINMUX library (sw_lib_pinmux)
 sw_lib_pinmux = declare_dependency(
   sources: [hw_top_earlgrey_pinmux_h],

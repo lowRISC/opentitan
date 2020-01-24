@@ -11,7 +11,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_irq,
       sw_lib_rv_timer,
       sw_lib_uart,
-      sw_lib_gpio,
+      sw_lib_dif_gpio,
       sw_lib_pinmux,
       riscv_crt,
       sw_lib_irq_handlers,
