@@ -388,6 +388,12 @@ def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, validate=
 
     root = generate_device(top, ips, version)
 
+    # Manually indent the XML tree. When writing out XML ElementTree
+    # maintains all whitespace verbatim; skipping this step causes the
+    # SVD file's newlines and indentation to match what was read from
+    # the HJSON file.
+    indent_tree(root)
+
     # Simply constructing a Device is enough to run the pysvd parser and
     # validate the structure of the XML tree.
     if validate:
@@ -396,11 +402,6 @@ def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, validate=
     # Workaround for limitations of SVD/pysvd. See comment in `cpu()`.
     root.find('.cpu/name').text = 'RISCV'
 
-    # Manually indent the XML tree. When writing out XML ElementTree
-    # maintains all whitespace verbatim; skipping this step causes the
-    # SVD file's newlines and indentation to match what was read from
-    # the HJSON file.
-    indent_tree(root)
     return root
 
 def write_svd(device: ET.Element, output):
