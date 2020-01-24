@@ -25,9 +25,10 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic alert_handler features
+  // alert_class default 0 -> all alert will trigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
-                                  bit                                 alert_en = 1'b1,
-                                  bit [TL_DW-1:0]                     alert_class = 'he4,
+                                  bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
+                                  bit [TL_DW-1:0]                     alert_class = 'h0,
                                   bit [TL_DW-1:0]                     classA_ctrl = 'h393d);
     // TODO: cfg_interrupts does not disable interrupt, need debug
     //cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
@@ -40,11 +41,25 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.classa_ctrl));
   endtask
 
-  virtual task drive_alert(int alert_index);
-    alert_sender_seq alert_seq;
-    `uvm_create_on(alert_seq, p_sequencer.alert_host_seqr_h[alert_index]);
-    `DV_CHECK_RANDOMIZE_FATAL(alert_seq)
-    `uvm_send(alert_seq)
+  virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger);
+    fork
+      begin : isolation_fork
+        foreach (alert_trigger[i]) begin
+          if (alert_trigger[i]) begin
+            automatic int index = i;
+            fork
+              begin
+                alert_sender_seq alert_seq;
+                `uvm_create_on(alert_seq, p_sequencer.alert_host_seqr_h[index]);
+                `DV_CHECK_RANDOMIZE_FATAL(alert_seq)
+                `uvm_send(alert_seq)
+              end
+            join_none
+          end
+        end
+        wait fork;
+      end
+    join
   endtask
 
   virtual task clear_esc();
