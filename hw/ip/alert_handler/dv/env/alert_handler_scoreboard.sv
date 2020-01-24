@@ -39,28 +39,30 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_alert_fifo();
-    uvm_reg_field list_of_alert_cause_fields[$];
-    uvm_reg_field list_of_intr_state_fields[$];
-    ral.alert_cause.get_fields(list_of_alert_cause_fields);
-    ral.intr_state.get_fields(list_of_intr_state_fields);
+    uvm_reg_field alert_cause_fields[$];
+    uvm_reg_field intr_state_fields[$];
+    ral.alert_cause.get_fields(alert_cause_fields);
+    ral.intr_state.get_fields(intr_state_fields);
     foreach (alert_fifo[i]) begin
+      automatic int index = i;
       fork
-        automatic int index = i;
-        alert_seq_item act_item;
         forever begin
+          alert_seq_item act_item;
           alert_fifo[index].get(act_item);
           // once the alert is received
           if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
               act_item.alert_handshake_sta == AlertReceived) begin
             uvm_reg_field alert_cause_field, intr_state_field;
-            bit [TL_DW-1:0] intr_class;
+            bit [TL_DW-1:0] alert_en = ral.alert_en.get_mirrored_value();
 
-            alert_cause_field = list_of_alert_cause_fields[index];
-            intr_class = ral.alert_class.get_mirrored_value();
-            intr_state_field =
-                list_of_intr_state_fields[intr_class << (TL_DW-2*index) >> (TL_DW-2)];
-            void'(alert_cause_field.predict(1));
-            void'(intr_state_field.predict(1));
+            if (alert_en[index]) begin
+              bit [TL_DW-1:0] intr_class = ral.alert_class.get_mirrored_value();
+              alert_cause_field = alert_cause_fields[index];
+              // extract the two bits that indicates which intr class this alert will trigger
+              intr_state_field = intr_state_fields[(intr_class >> index*2) & 'b11];
+              void'(alert_cause_field.predict(1));
+              void'(intr_state_field.predict(1));
+            end
           end
         end
       join_none
@@ -69,10 +71,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_esc_fifo();
     foreach (esc_fifo[i]) begin
+      automatic int index = i;
       fork
-        automatic int index = i;
-        alert_seq_item act_item;
         forever begin
+          alert_seq_item act_item;
           esc_fifo[index].get(act_item);
         end
       join_none
