@@ -77,7 +77,7 @@ def svd_node(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag
     element.extend(elements)
     return element
 
-def beautify(element: ET.Element, indent='\n'):
+def indent_tree(element: ET.Element, indent='\n'):
     """Pretty-print the given element. This modifies the element in place
     by tweaking the contents. It assumes that it is safe to adjust
     whitespace in the XML nodes. (This is true for SVD.)
@@ -106,15 +106,15 @@ def beautify(element: ET.Element, indent='\n'):
     element.tail = indent
 
     for child in element:
-        beautify(child, indent + '  ')
+        indent_tree(child, indent + '  ')
         last = child
 
     if is_parent:
         last.tail = indent
 
-def interrupts(irqs: hjson) -> [ET.Element]:
+def generate_all_interrupts(irqs: hjson) -> [ET.Element]:
     """Generate a series of <interrupt> nodes from HJSON. Yields nothing
-    if irqs is `None`. (This simplifies use in `peripheral()`.)"""
+    if irqs is `None`. (This simplifies use in `generate_peripheral()`.)"""
 
     if irqs == None:
         return
@@ -170,7 +170,7 @@ def sw_access_modes(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.rea
 
     return modes[reg_or_field.get('swaccess')]
 
-def bitfield(bitinfo: [int, int, int]) -> str:
+def generate_bitrange(bitinfo: [int, int, int]) -> str:
     """Convert a generated `bitfield` to <bitRange> text"""
 
     # HJSON bitinfo contains the LSB and field width; SVD <bitRange>
@@ -178,19 +178,19 @@ def bitfield(bitinfo: [int, int, int]) -> str:
     (width, lsb) = (bitinfo[1], bitinfo[2])
     return '[%d:%d]' % (lsb+width-1, lsb)
 
-def field(bits: hjson) -> ET.Element:
+def generate_field(bits: hjson) -> ET.Element:
     """Convert an HJSON bit field to a <field> node"""
 
     (access, readAction, modifiedWriteValues) = sw_access_modes(bits)
     return svd_node('field',
             name                = bits['name'],
             description         = bits['desc'],
-            bitRange            = bitfield(bits['bitinfo']),
+            bitRange            = generate_bitrange(bits['bitinfo']),
             access              = access,
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues)
 
-def register(reg: hjson, base=0) -> ET.Element:
+def generate_register(reg: hjson, base=0) -> ET.Element:
     """Convert a standard register definition into a <register> node.
     Most of the work was previously done during validation and loading
     the HJSON file; what's left is mostly transliteration."""
@@ -219,9 +219,9 @@ def register(reg: hjson, base=0) -> ET.Element:
         size = None
 
     # Ignore an empty or flattened <fields>
-    def regfields(flatten: bool, fields: [hjson]) -> ET.Element:
+    def generate_all_fields(flatten: bool, fields: [hjson]) -> ET.Element:
         if not flatten and fields != None:
-            yield svd_node('fields', *map(field, fields))
+            yield svd_node('fields', *map(generate_field, fields))
 
     (access, readAction, modifiedWriteValues) = sw_access_modes(reg)
     return svd_node('register',
@@ -235,14 +235,14 @@ def register(reg: hjson, base=0) -> ET.Element:
             access              = access,
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues,
-            *regfields(flatten, fields))
+            *generate_all_fields(flatten, fields))
 
-def window(window: hjson) -> ET.Element:
+def generate_dim_register(window: hjson) -> ET.Element:
     """Generate an SVD <register> element containing a buffer. This is
     done by setting the the <dim> subelement, indicating the register
     contains multiple items."""
 
-    window = svd_node(register(window),
+    window = svd_node(generate_register(window),
             dim          = window['items'],
             dimIncrement = hex_or_none(int(window['genvalidbits']/8)))
 
@@ -255,7 +255,7 @@ def window(window: hjson) -> ET.Element:
 
     return window
 
-def multireg(multi: [hjson]) -> ET.Element:
+def generate_cluster(multi: [hjson]) -> ET.Element:
     """Generate a <cluster> node from a multireg. The <cluster> will
     contain a <register> for each register in `genregs`.
 
@@ -275,9 +275,9 @@ def multireg(multi: [hjson]) -> ET.Element:
             name          = multi['name'],
             description   = multi['desc'],
             addressOffset = hex_or_none(base),
-            *(register(reg, base) for reg in genregs))
+            *(generate_register(reg, base) for reg in genregs))
 
-def registers(regs: [hjson]) -> [ET.Element]:
+def generate_all_registers(regs: [hjson]) -> [ET.Element]:
     """Convert a list of register HJSON element into a <registers> node.
     Like generating C headers, this needs to filter based on a register's
     type.
@@ -290,35 +290,35 @@ def registers(regs: [hjson]) -> [ET.Element]:
         if 'reserved' in reg or 'skipto' in reg:
             pass
         elif 'window' in reg:
-            yield window(reg['window'])
+            yield generate_dim_register(reg['window'])
         elif 'sameaddr' in reg:
-            yield from map(register, reg['sameaddr'])
+            yield from map(generate_register, reg['sameaddr'])
         elif 'multireg' in reg:
-            yield multireg(reg['multireg'])
+            yield generate_cluster(reg['multireg'])
         else:
-            yield register(reg)
+            yield generate_register(reg)
 
-def peripheral(module: hjson, ip: hjson) -> ET.Element:
+def generate_peripheral(module: hjson, ip: hjson) -> ET.Element:
     """Convert an IP module definition to a <peripheral> element. This
     pulls only the name and base address from the top-level HJSON."""
 
     # argument ordering is deceptive; <name> and <baseAddress> will
     # preceed all <interrupt>s, <register>s, and the comment
     return svd_node('peripheral',
-            *interrupts(ip.get('interrupt_list')),
-            svd_node('registers', *registers(ip['registers'])),
+            *generate_all_interrupts(ip.get('interrupt_list')),
+            svd_node('registers', *generate_all_registers(ip['registers'])),
             ET.Comment('end of %s' % module['name']),
             name        = module['name'],
             baseAddress = module['base_addr'])
 
-def peripherals(modules: hjson, ips: {'name': hjson}) -> ET.Element:
+def generate_peripherals(modules: hjson, ips: {'name': hjson}) -> ET.Element:
     """Generate a <peripherals> element filled by cross-referencing the
     IP definition for each item in the top's module list."""
 
     return svd_node('peripherals',
-            *(peripheral(module, ips[module['type']]) for module in modules))
+            *(generate_peripheral(module, ips[module['type']]) for module in modules))
 
-def cpu() -> ET.Element:
+def generate_cpu() -> ET.Element:
     """Generate a <cpu> element. Currently all values are hardcoded as
     they are not included in either the top level or IP module HJSON."""
 
@@ -338,7 +338,7 @@ def cpu() -> ET.Element:
             nvicPrioBits        = 0,
             vendorSystickConfig = "false")
 
-def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
+def generate_device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
     """Generate an SVD <device> node from the top-level HJSON. For each
     module defined in `top` the corresponding peripheral definition is
     generated by the IP block in `ips`.
@@ -352,8 +352,8 @@ def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
                 'xmlns:xs': 'http://www.w3.org/2001/XMLSchema-instance',
                 'xs:noNamespaceSchemaLocation': 'CMSIS-SVD.xsd',
             }),
-            cpu(),
-            peripherals(top['module'], ips),
+            generate_cpu(),
+            generate_peripherals(top['module'], ips),
             vendor          = 'lowRISC OpenTitan',
             vendorID        = 'lowRISC',
             name            = top['name'],
@@ -363,7 +363,7 @@ def device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Element:
             size            = top['datawidth'],
             addressUnitBits = 8)
 
-def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> ET.Element:
+def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> ET.Element:
     """Convert a top-level configuration and IP register definition set
     into a System View Description ("SVD") file. SVD is an XML format,
     originally defined by ARM to "formalize the description of the system
@@ -386,7 +386,7 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     [1] http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html
     [2] https://github.com/rust-embedded/svd2rust"""
 
-    root = device(top, ips, version)
+    root = generate_device(top, ips, version)
 
     # Simply constructing a Device is enough to run the pysvd parser and
     # validate the structure of the XML tree.
@@ -400,10 +400,10 @@ def generate(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> E
     # maintains all whitespace verbatim; skipping this step causes the
     # SVD file's newlines and indentation to match what was read from
     # the HJSON file.
-    beautify(root)
+    indent_tree(root)
     return root
 
-def write_to_file(device: ET.Element, output):
+def write_svd(device: ET.Element, output):
     """Write out the generated SVD <device> element and its children to a
     file in XML format. The SVD contents are preceeded by a comment with
     the given copyright notice and a warning that the file was generated
@@ -542,7 +542,7 @@ def test():
     success = True
     print('running tests for:', read_git_version())
 
-    svd = generate(top, ips, 'g1234567-test', True)
+    svd = convert_top_to_svd(top, ips, 'g1234567-test', True)
 
     if not svd.tag == 'device':
         success = False

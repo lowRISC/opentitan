@@ -546,9 +546,9 @@ def main():
         ip_dict = {ip['name'].lower(): ip for ip in ip_objs}
         version = args.set_version or svdgen.read_git_version()
 
-        device = svdgen.generate(completecfg, ip_dict, version)
+        device = svdgen.convert_top_to_svd(completecfg, ip_dict, version)
         with open(args.svd_only, 'w') as svd:
-            svdgen.write_to_file(device, svd)
+            svdgen.write_svd(device, svd)
 
         sys.exit()
 
