@@ -6,11 +6,14 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
-#include "sw/device/lib/gpio.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/uart.h"
 
+#define GPIO0_BASE_ADDR 0x40010000u
+
+static dif_gpio_t gpio;
 static uint32_t intr_handling_success = 0;
 static const uint32_t hart = 0;
 
@@ -21,7 +24,10 @@ int main(int argc, char **argv) {
 
   pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
-  gpio_init(0xFF00);
+  dif_gpio_config_t gpio_config = {.base_addr =
+                                       mmio_region_from_addr(GPIO0_BASE_ADDR)};
+  dif_gpio_init(&gpio_config, &gpio);
+  dif_gpio_output_mode_all_set(&gpio, 0xFF00);
 
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
@@ -30,7 +36,7 @@ int main(int argc, char **argv) {
   rv_timer_ctrl(hart, true);
   rv_timer_intr_enable(hart, true);
 
-  gpio_write_all(0xFF00);  // all LEDs on
+  dif_gpio_all_write(&gpio, 0xFF00);  // all LEDs on
 
   while (1) {
     if (intr_handling_success) {
@@ -38,7 +44,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  gpio_write_all(0xAA00);  // Test Completed
+  dif_gpio_all_write(&gpio, 0xAA00);  // Test Completed
 
   uart_send_str("PASS!\r\n");
 }

@@ -5,13 +5,16 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
-#include "sw/device/lib/gpio.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
 #define SPI_MAX 32
+#define GPIO0_BASE_ADDR 0x40010000u
+
+static dif_gpio_t gpio;
 
 // called from ctr0 when something bad happens
 // char I=illegal instruction, A=lsu error (address), E=ecall
@@ -19,9 +22,9 @@ void trap_handler(uint32_t mepc, char c) {
   uart_send_char(c);
   uart_send_uint(mepc, 32);
   while (1) {
-    gpio_write_all(0xAA00);  // pattern
+    dif_gpio_all_write(&gpio, 0xAA00);  // pattern
     usleep(200 * 1000);
-    gpio_write_all(0x5500);  // pattern
+    dif_gpio_all_write(&gpio, 0x5500);  // pattern
     usleep(100 * 1000);
   }
 }
@@ -30,12 +33,13 @@ void trap_handler(uint32_t mepc, char c) {
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
-
   pinmux_init();
-  // Enable GPIO: 0-7 and 16 is input, 8-15 is output
-  gpio_init(0xFF00);
-
   spid_init();
+  // Enable GPIO: 0-7 and 16 is input, 8-15 is output
+  dif_gpio_config_t gpio_config = {.base_addr =
+                                       mmio_region_from_addr(GPIO0_BASE_ADDR)};
+  dif_gpio_init(&gpio_config, &gpio);
+  dif_gpio_output_mode_all_set(&gpio, 0xFF00);
   // Add DATE and TIME because I keep fooling myself with old versions
   uart_send_str(
       "Hello World! "__DATE__
@@ -44,16 +48,16 @@ int main(int argc, char **argv) {
   uart_send_str("Watch the LEDs!\r\n");
 
   // Give a LED pattern as startup indicator for 5 seconds
-  gpio_write_all(0xFF00);  // all LEDs on
+  dif_gpio_all_write(&gpio, 0xFF00);  // all LEDs on
   for (int i = 0; i < 32; i++) {
     usleep(100 * 1000);  // 100 ms
 
-    gpio_write_bit(8 + (i % 8), (i / 8));
+    dif_gpio_pin_write(&gpio, 8 + (i % 8), (i / 8) % 2);
   }
 
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
-  gpio_write_all(0x0000);
+  dif_gpio_all_write(&gpio, 0x0000);
   uart_send_str("Try out the switches on the board\r\n");
   uart_send_str("or type anything into the console window.\r\n");
   uart_send_str("The LEDs show the ASCII code of the last character.\r\n");
@@ -70,7 +74,8 @@ int main(int argc, char **argv) {
     usleep(10 * 1000);  // 10 ms
 
     // report changed switches over UART
-    gpio_in = gpio_read() & 0x100FF;  // 0-7 is switch input, 16 is FTDI
+    dif_gpio_all_read(&gpio, &gpio_in);
+    gpio_in &= 0x100FF;  // 0-7 is switch input, 16 is FTDI
     gpio_in_changes = (gpio_in & ~gpio_in_prev) | (~gpio_in & gpio_in_prev);
     for (int b = 0; b < 8; b++) {
       if (gpio_in_changes & (1 << b)) {
@@ -103,7 +108,7 @@ int main(int argc, char **argv) {
     char rcv_char;
     while (uart_rcv_char(&rcv_char) != -1) {
       uart_send_char(rcv_char);
-      gpio_write_all(rcv_char << 8);
+      dif_gpio_all_write(&gpio, rcv_char << 8);
     }
   }
 }

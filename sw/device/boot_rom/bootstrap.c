@@ -6,11 +6,14 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/flash_ctrl.h"
-#include "sw/device/lib/gpio.h"
 #include "sw/device/lib/hw_sha256.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"  // TODO: Wrap uart in DEBUG macros.
+
+#define GPIO0_BASE_ADDR 0x40010000u
+#define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
 
 /* Checks if flash is blank to determine if bootstrap is needed. */
 /* TODO: Update this to check bootstrap pin instead in Verilator. */
@@ -21,7 +24,15 @@ static int bootstrap_requested(void) {
     return !!(REG32(FLASH_MEM_BASE_ADDR) == 0 ||
               REG32(FLASH_MEM_BASE_ADDR) == 0xFFFFFFFF);
   }
-  return !!(gpio_read() & GPIO_BOOTSTRAP_BIT_MASK);
+  // Initialize GPIO device
+  dif_gpio_t gpio;
+  dif_gpio_config_t gpio_config = {.base_addr =
+                                       mmio_region_from_addr(GPIO0_BASE_ADDR)};
+  dif_gpio_init(&gpio_config, &gpio);
+  // Read pin
+  uint32_t gpio_in;
+  dif_gpio_all_read(&gpio, &gpio_in);
+  return !!(gpio_in & GPIO_BOOTSTRAP_BIT_MASK);
 }
 
 /* Erase all flash, and verify blank. */
