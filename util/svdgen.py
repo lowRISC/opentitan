@@ -47,7 +47,7 @@ def svd_node(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag
 
     If the first argument is not an `ET.Element` this constructs a new
     `ET.Element` using the argument as a name. Any keyword arguments are
-    created a child elements whose text contents match the stringified
+    created as child elements whose text contents match the stringified
     value given.
 
     In addition to keyword arguments, this accepts any number of additional
@@ -320,20 +320,16 @@ def generate_peripherals(modules: hjson, ips: {'name': hjson}) -> ET.Element:
 
 def generate_cpu() -> ET.Element:
     """Generate a <cpu> element. Currently all values are hardcoded as
-    they are not included in either the top level or IP module HJSON."""
+    they are not included in either the top level or IP module HJSON.
 
-    # TODO: allow customizing these.
-
-    # RISCV is not present in pysvd so this would fail validation. We
-    # set it to the (inaccurate) value `other`, and patch it up after
-    # performing the validation step.
-    name = pysvd.type.cpuName.other
+    Multiple values are set to comply with the SVD specification, even
+    though the don't apply to the ibex processor."""
 
     return svd_node('cpu',
-            name                = name,
+            name                = pysvd.type.cpuName.other,
             endian              = pysvd.type.endian.little,
             revision            = 0,
-            mpuPresent          = "true",
+            mpuPresent          = "false",
             fpuPresent          = "false",
             nvicPrioBits        = 0,
             vendorSystickConfig = "false")
@@ -354,8 +350,7 @@ def generate_device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Elemen
             }),
             generate_cpu(),
             generate_peripherals(top['module'], ips),
-            vendor          = 'lowRISC OpenTitan',
-            vendorID        = 'lowRISC',
+            vendor          = 'lowRISC',
             name            = top['name'],
             version         = version,
             description     = (Path(__file__).parents[1] / 'README.md').read_text(),
@@ -363,28 +358,21 @@ def generate_device(top: hjson, ips: {'name': hjson}, version: str) -> ET.Elemen
             size            = top['datawidth'],
             addressUnitBits = 8)
 
-def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, validate=True) -> ET.Element:
+def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, verify=True) -> ET.Element:
     """Convert a top-level configuration and IP register definition set
-    into a System View Description ("SVD") file. SVD is an XML format,
-    originally defined by ARM to "formalize the description of the system
-    contained in Arm Cortex-M processor-based microcontrollers".[1] It has
-    since been extended for use on other platforms, and is used in other
-    fields such as Rust embedded programming.[2]
-
-    SVD is an XML-based format with standardized definitions for memory
-    layouts, register definitions, and similar microcontroller fields.
+    into a System View Description ("SVD") file.[1] This returns an
+    `xml.etree.ElementTree.Element` object matching the passed HJSON.
 
     The input HJSON must be a top-level configuration (earlgrey) and the
-    full set of IP modeule definitions for that configuration. These two
+    full set of IP module definitions for that configuration. These two
     will be parsed and converted into a single XML tree with a top-level
     "<device>" node. Both the top configuration and IP modules must have
     been previously validated. (see `topgen.validate_top` and `reggen.validate()`)
 
-    If `validate` is true then the resulting SVD file is validated using
+    If `verify` is true then the resulting SVD tree is validated using
     the `pysvd` module.
 
-    [1] http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html
-    [2] https://github.com/rust-embedded/svd2rust"""
+    [1] http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html"""
 
     root = generate_device(top, ips, version)
 
@@ -396,11 +384,8 @@ def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, validate=
 
     # Simply constructing a Device is enough to run the pysvd parser and
     # validate the structure of the XML tree.
-    if validate:
+    if verify:
         pysvd.element.Device(root)
-
-    # Workaround for limitations of SVD/pysvd. See comment in `cpu()`.
-    root.find('.cpu/name').text = 'RISCV'
 
     return root
 
@@ -409,10 +394,6 @@ def write_svd(device: ET.Element, output):
     file in XML format. The SVD contents are preceeded by a comment with
     the given copyright notice and a warning that the file was generated
     by this script."""
-
-    def write_element(element, xml):
-        et = ET.ElementTree(element)
-        et.write(output, encoding='unicode', xml_declaration=xml)
 
     comment = ET.Comment(genhdr)
     comment.tail = '\n'
@@ -508,7 +489,7 @@ def test():
         '.width':   '64',
 
         # <cpu> is currently hard-coded
-        '.cpu/name':   'RISCV',
+        '.cpu/name':   'other',
         '.cpu/endian': 'little',
 
         '.peripherals/peripheral/name':        'uart0',
