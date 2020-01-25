@@ -131,35 +131,65 @@
         },
       ]
     },
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "REGION_CFG_REGWEN"
-        desc: "Memory region registers configuration enable.",
-        count: "NumRegions",
-        swaccess: "rw0c",
-        hwaccess: "none",
-        fields: [
-            { bits: "0",
-              name: "REGION",
-              resval: "1"
-              desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
-              enum: [
-                { value: "0",
-                  name: "Region locked",
-                  desc: '''
-                    Region can no longer be configured until next reset
-                    '''
-                },
-                { value: "1",
-                  name: "Region enabled",
-                  desc: '''
-                    Region can be configured
-                    '''
-                },
-              ]
+// This multireg is temporarily removed until the nested multireg compact feature is fully implemented.
+// Until then, use only one register wen for all flash regions.
+// Another alternative solution is to move flash into topgen, this may have to be done anyways.
+
+//    { multireg: {
+//        cname: "FLASH_CTRL",
+//        name: "REGION_CFG_REGWEN"
+//        desc: "Memory region registers configuration enable.",
+//        count: "NumRegions",
+//        swaccess: "rw0c",
+//        hwaccess: "none",
+//        fields: [
+//            { bits: "0",
+//              name: "REGION",
+//              resval: "1"
+//              desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+//              enum: [
+//                { value: "0",
+//                  name: "Region locked",
+//                  desc: '''
+//                    Region can no longer be configured until next reset
+//                    '''
+//                },
+//                { value: "1",
+//                  name: "Region enabled",
+//                  desc: '''
+//                    Region can be configured
+//                    '''
+//                },
+//              ]
+//            },
+//        ],
+//      },
+//    },
+    { name: "REGION_CFG_REGWEN",
+      desc: "Memory region registers configuration enable.",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+          resval: "1",
+          enum: [
+            { value: "0",
+              name: "Region locked",
+              desc: '''
+                Region can no longer be configured until next reset
+                '''
             },
-        ],
-      },
+            { value: "1",
+              name: "Region enabled",
+              desc: '''
+                Region can be configured
+                '''
+            },
+          ],
+        },
+      ]
     },
 
     { multireg: {
@@ -169,8 +199,7 @@
         count: "NumRegions",
         swaccess: "rw",
         hwaccess: "hro",
-        regwen: "REGION_CFG_REGWEN_REGION",
-        regwen_incr: "true",
+        regwen: "REGION_CFG_REGWEN",
         fields: [
             { bits: "0",
               name: "EN",
