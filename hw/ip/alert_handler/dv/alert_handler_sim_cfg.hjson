@@ -45,6 +45,11 @@
       name: alert_handler_sanity
       uvm_test_seq: alert_handler_sanity_vseq
     }
+
+    {
+      name: alert_handler_random_alerts
+      uvm_test_seq: alert_handler_random_alerts_vseq
+    }
   ]
 
   // List of regressions.

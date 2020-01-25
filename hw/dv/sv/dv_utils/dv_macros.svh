@@ -244,7 +244,7 @@
 `define DV_EOT_PRINT_Q_ARR_CONTENTS(TYP_, Q_, SEV_=error, ID_=`gfn) \
   foreach (Q_[i]) begin \
     while (Q_[i].size() != 0) begin \
-      TYP_ item = Q[i].pop_front(); \
+      TYP_ item = Q_[i].pop_front(); \
       `uvm_``SEV_(ID_, $sformatf("%s[%0d] item uncompared:\n%s", `"Q_`", i, item.sprint())) \
     end \
   end

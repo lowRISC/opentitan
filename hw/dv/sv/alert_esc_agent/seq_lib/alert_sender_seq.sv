@@ -20,7 +20,7 @@ class alert_sender_seq extends dv_base_seq #(
         s_alert_send     == 1;
         s_alert_ping_rsp == 0;
     )
-    `uvm_info(`gfn, $sformatf("seq_item: alert_send, int_err=%0b", req.int_err), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("seq_item: alert_send, int_err=%0b", req.int_err), UVM_HIGH)
     finish_item(req);
     get_response(rsp);
     `uvm_info(`gfn, "alert sender transfer done", UVM_HIGH)

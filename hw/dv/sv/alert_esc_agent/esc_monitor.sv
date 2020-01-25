@@ -38,7 +38,11 @@ class esc_monitor extends alert_esc_base_monitor;
         phase.raise_objection(this);
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
-
+        req.esc_handshake_sta = EscReceived;
+        // Write alert packet to scb when receiving esc signal
+        alert_esc_port.write(req);
+        // Duplicate req for writing alert packet at the end of esc handshake
+        `downcast(req, req.clone())
         fork
           begin : isolation_fork
             fork
@@ -48,9 +52,7 @@ class esc_monitor extends alert_esc_base_monitor;
               begin : wait_esc_handshake
                 @(cfg.vif.monitor_cb);
                 check_esc_resp_toggle(req);
-                while (cfg.vif.get_esc_p() === 1) begin
-                  check_esc_resp_toggle(req);
-                end
+                while (cfg.vif.get_esc_p() === 1) check_esc_resp_toggle(req);
                 if (req.esc_handshake_sta != EscIntFail) begin
                   req.esc_handshake_sta = EscRespComplete;
                 end
@@ -72,7 +74,6 @@ class esc_monitor extends alert_esc_base_monitor;
     if (cfg.vif.get_resp_p() != 1) req.esc_handshake_sta = EscIntFail;
     @(cfg.vif.monitor_cb);
     if (cfg.vif.get_resp_p() != 0) req.esc_handshake_sta = EscIntFail;
-    @(cfg.vif.monitor_cb);
   endtask : check_esc_resp_toggle
 
 endclass : esc_monitor

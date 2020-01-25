@@ -22,8 +22,21 @@ package alert_handler_env_pkg;
   parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 256;
   parameter uint NUM_MAX_ESC_SEV             = 8;
   parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;
+  parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
 
   // types
+  typedef enum {
+    EscPhase0,
+    EscPhase1,
+    EscPhase2,
+    EscPhase3
+  } esc_phase_e;
+
+  typedef struct {
+    realtime    start_time;
+    esc_phase_e phase;
+  } esc_phase_t;
+
   // forward declare classes to allow typedefs below
   typedef virtual pins_if #(NUM_MAX_ESC_SEV) esc_en_vif;
   typedef virtual pins_if #(1) entropy_vif;

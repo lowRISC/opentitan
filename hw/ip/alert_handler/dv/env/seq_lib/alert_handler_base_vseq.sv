@@ -2,6 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define RAND_AND_WR_CLASS_PHASES_CYCLE(i) \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase0_cyc, \
+                                 class``i``_phase0_cyc.value inside {[0: max_phase_cyc]};); \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase1_cyc, \
+                                 class``i``_phase1_cyc.value inside {[0: max_phase_cyc]};); \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase2_cyc, \
+                                 class``i``_phase2_cyc.value inside {[0: max_phase_cyc]};); \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase3_cyc, \
+                                 class``i``_phase3_cyc.value inside {[0: max_phase_cyc]};); \
+  csr_update(ral.class``i``_phase0_cyc); \
+  csr_update(ral.class``i``_phase1_cyc); \
+  csr_update(ral.class``i``_phase2_cyc); \
+  csr_update(ral.class``i``_phase3_cyc);
+
 class alert_handler_base_vseq extends cip_base_vseq #(
     .CFG_T               (alert_handler_env_cfg),
     .RAL_T               (alert_handler_reg_block),
@@ -72,8 +86,24 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.alert_cause), .value(alert_cause));
   endtask
 
+  virtual task wait_alert_handshake_finish();
+    int wait_clk_cycs = ral.classa_phase0_cyc.get() + ral.classa_phase1_cyc.get()
+        + ral.classa_phase2_cyc.get() + ral.classa_phase3_cyc.get();
+    cfg.clk_rst_vif.wait_clks(wait_clk_cycs);
+    foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].vif.wait_ack_complete();
+    cfg.clk_rst_vif.wait_clks(2);
+    foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].vif.wait_esc_complete();
+  endtask
+
+  virtual task wr_phases_cycle(int max_phase_cyc);
+    `RAND_AND_WR_CLASS_PHASES_CYCLE(a);
+    `RAND_AND_WR_CLASS_PHASES_CYCLE(b);
+    `RAND_AND_WR_CLASS_PHASES_CYCLE(c);
+    `RAND_AND_WR_CLASS_PHASES_CYCLE(d);
+  endtask
+
   virtual task run_esc_rsp_seq_nonblocking();
-    foreach(cfg.esc_device_cfg[i]) begin
+    foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
@@ -87,7 +117,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task run_ping_rsp_seq_nonblocking();
-    foreach(cfg.alert_host_cfg[i]) begin
+    foreach (cfg.alert_host_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
@@ -101,3 +131,5 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
 endclass : alert_handler_base_vseq
+
+`undef RAND_AND_WR_CLASS_PHASES_CYCLE
