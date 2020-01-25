@@ -93,19 +93,14 @@ $(tops_reg): pre_reg
 		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
 
 $(tops_svd): $(foreach TOP,$(TOPS),${PRJ_DIR}/hw/$(TOP)/data/$(TOP).svd)
+
 %.svd: %.hjson $(foreach IP,$(IPS),${PRJ_DIR}/hw/ip/$(IP)/data/$(IP).hjson)
-	${PRJ_DIR}/util/topgen.py --svd-only $@ --topcfg $< \
-		--no-top --no-xbar --no-plic --no-gen-hjson
+	${PRJ_DIR}/util/svdgen.py --self-test \
+			--output $@ --topcfg $< \
+			--ip_dir ${PRJ_DIR}/hw/ip \
+			--version `git describe --tags --long --dirty` \
+			--readme  ${PRJ_DIR}/README.md
 
-.SECONDARY: ${PRJ_DIR}/hw/top_earlgrey/data/top_earlgrey.svd
-cargo: ${PRJ_DIR}/hw/top_earlgrey/data/src/lib.rs
-	(cd ${PRJ_DIR}/hw/top_earlgrey/data/ && cargo build)
-.PHONY: cargo
-
-# Example rule to generate `top_earlgrey.rs` from `top_earlgrey.svd`.
-# There's no way to specify the output path, so `cd` there first. Not
-# included in default build.
-${PRJ_DIR}/hw/top_earlgrey/data/src/lib.rs: ${PRJ_DIR}/hw/top_earlgrey/data/top_earlgrey.svd
-	(cd $(@D) && svd2rust --target=riscv -i ../$(<F))
+${PRJ_DIR}/hw/top_earlgrey/data/top_earlgrey.svd: ../util/svdgen.py
 
 .PHONY: all banner $(ips_reg) $(tops_gen) $(tops_svd) $(ips_reg_header)
