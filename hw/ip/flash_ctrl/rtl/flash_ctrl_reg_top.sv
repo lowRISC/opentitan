@@ -185,30 +185,9 @@ module flash_ctrl_reg_top (
   logic [31:0] addr_qs;
   logic [31:0] addr_wd;
   logic addr_we;
-  logic region_cfg_regwen_region0_qs;
-  logic region_cfg_regwen_region0_wd;
-  logic region_cfg_regwen_region0_we;
-  logic region_cfg_regwen_region1_qs;
-  logic region_cfg_regwen_region1_wd;
-  logic region_cfg_regwen_region1_we;
-  logic region_cfg_regwen_region2_qs;
-  logic region_cfg_regwen_region2_wd;
-  logic region_cfg_regwen_region2_we;
-  logic region_cfg_regwen_region3_qs;
-  logic region_cfg_regwen_region3_wd;
-  logic region_cfg_regwen_region3_we;
-  logic region_cfg_regwen_region4_qs;
-  logic region_cfg_regwen_region4_wd;
-  logic region_cfg_regwen_region4_we;
-  logic region_cfg_regwen_region5_qs;
-  logic region_cfg_regwen_region5_wd;
-  logic region_cfg_regwen_region5_we;
-  logic region_cfg_regwen_region6_qs;
-  logic region_cfg_regwen_region6_wd;
-  logic region_cfg_regwen_region6_we;
-  logic region_cfg_regwen_region7_qs;
-  logic region_cfg_regwen_region7_wd;
-  logic region_cfg_regwen_region7_we;
+  logic region_cfg_regwen_qs;
+  logic region_cfg_regwen_wd;
+  logic region_cfg_regwen_we;
   logic mp_region_cfg0_en0_qs;
   logic mp_region_cfg0_en0_wd;
   logic mp_region_cfg0_en0_we;
@@ -969,22 +948,19 @@ module flash_ctrl_reg_top (
   );
 
 
-
-  // Subregister 0 of Multireg region_cfg_regwen
   // R[region_cfg_regwen]: V(False)
 
-  // F[region0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region0 (
+  ) u_region_cfg_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (region_cfg_regwen_region0_we),
-    .wd     (region_cfg_regwen_region0_wd),
+    .we     (region_cfg_regwen_we),
+    .wd     (region_cfg_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -995,191 +971,8 @@ module flash_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (region_cfg_regwen_region0_qs)
+    .qs     (region_cfg_regwen_qs)
   );
-
-
-  // F[region1]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region1_we),
-    .wd     (region_cfg_regwen_region1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region1_qs)
-  );
-
-
-  // F[region2]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region2_we),
-    .wd     (region_cfg_regwen_region2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region2_qs)
-  );
-
-
-  // F[region3]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region3_we),
-    .wd     (region_cfg_regwen_region3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region3_qs)
-  );
-
-
-  // F[region4]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region4_we),
-    .wd     (region_cfg_regwen_region4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region4_qs)
-  );
-
-
-  // F[region5]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region5_we),
-    .wd     (region_cfg_regwen_region5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region5_qs)
-  );
-
-
-  // F[region6]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region6_we),
-    .wd     (region_cfg_regwen_region6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region6_qs)
-  );
-
-
-  // F[region7]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_region_cfg_regwen_region7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (region_cfg_regwen_region7_we),
-    .wd     (region_cfg_regwen_region7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (region_cfg_regwen_region7_qs)
-  );
-
 
 
 
@@ -1196,7 +989,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_en0_we & region_cfg_regwen_region0_qs),
+    .we     (mp_region_cfg0_en0_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg0_en0_wd),
 
     // from internal hardware
@@ -1222,7 +1015,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_rd_en0_we & region_cfg_regwen_region0_qs),
+    .we     (mp_region_cfg0_rd_en0_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg0_rd_en0_wd),
 
     // from internal hardware
@@ -1248,7 +1041,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_prog_en0_we & region_cfg_regwen_region0_qs),
+    .we     (mp_region_cfg0_prog_en0_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg0_prog_en0_wd),
 
     // from internal hardware
@@ -1274,7 +1067,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_erase_en0_we & region_cfg_regwen_region0_qs),
+    .we     (mp_region_cfg0_erase_en0_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg0_erase_en0_wd),
 
     // from internal hardware
@@ -1300,7 +1093,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_base0_we & region_cfg_regwen_region0_qs),
+    .we     (mp_region_cfg0_base0_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg0_base0_wd),
 
     // from internal hardware
@@ -1326,7 +1119,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_size0_we & region_cfg_regwen_region0_qs),
+    .we     (mp_region_cfg0_size0_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg0_size0_wd),
 
     // from internal hardware
@@ -1355,7 +1148,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_en1_we & region_cfg_regwen_region1_qs),
+    .we     (mp_region_cfg1_en1_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg1_en1_wd),
 
     // from internal hardware
@@ -1381,7 +1174,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_rd_en1_we & region_cfg_regwen_region1_qs),
+    .we     (mp_region_cfg1_rd_en1_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg1_rd_en1_wd),
 
     // from internal hardware
@@ -1407,7 +1200,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_prog_en1_we & region_cfg_regwen_region1_qs),
+    .we     (mp_region_cfg1_prog_en1_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg1_prog_en1_wd),
 
     // from internal hardware
@@ -1433,7 +1226,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_erase_en1_we & region_cfg_regwen_region1_qs),
+    .we     (mp_region_cfg1_erase_en1_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg1_erase_en1_wd),
 
     // from internal hardware
@@ -1459,7 +1252,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_base1_we & region_cfg_regwen_region1_qs),
+    .we     (mp_region_cfg1_base1_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg1_base1_wd),
 
     // from internal hardware
@@ -1485,7 +1278,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_size1_we & region_cfg_regwen_region1_qs),
+    .we     (mp_region_cfg1_size1_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg1_size1_wd),
 
     // from internal hardware
@@ -1514,7 +1307,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_en2_we & region_cfg_regwen_region2_qs),
+    .we     (mp_region_cfg2_en2_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg2_en2_wd),
 
     // from internal hardware
@@ -1540,7 +1333,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_rd_en2_we & region_cfg_regwen_region2_qs),
+    .we     (mp_region_cfg2_rd_en2_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg2_rd_en2_wd),
 
     // from internal hardware
@@ -1566,7 +1359,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_prog_en2_we & region_cfg_regwen_region2_qs),
+    .we     (mp_region_cfg2_prog_en2_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg2_prog_en2_wd),
 
     // from internal hardware
@@ -1592,7 +1385,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_erase_en2_we & region_cfg_regwen_region2_qs),
+    .we     (mp_region_cfg2_erase_en2_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg2_erase_en2_wd),
 
     // from internal hardware
@@ -1618,7 +1411,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_base2_we & region_cfg_regwen_region2_qs),
+    .we     (mp_region_cfg2_base2_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg2_base2_wd),
 
     // from internal hardware
@@ -1644,7 +1437,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_size2_we & region_cfg_regwen_region2_qs),
+    .we     (mp_region_cfg2_size2_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg2_size2_wd),
 
     // from internal hardware
@@ -1673,7 +1466,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_en3_we & region_cfg_regwen_region3_qs),
+    .we     (mp_region_cfg3_en3_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg3_en3_wd),
 
     // from internal hardware
@@ -1699,7 +1492,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_rd_en3_we & region_cfg_regwen_region3_qs),
+    .we     (mp_region_cfg3_rd_en3_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg3_rd_en3_wd),
 
     // from internal hardware
@@ -1725,7 +1518,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_prog_en3_we & region_cfg_regwen_region3_qs),
+    .we     (mp_region_cfg3_prog_en3_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg3_prog_en3_wd),
 
     // from internal hardware
@@ -1751,7 +1544,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_erase_en3_we & region_cfg_regwen_region3_qs),
+    .we     (mp_region_cfg3_erase_en3_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg3_erase_en3_wd),
 
     // from internal hardware
@@ -1777,7 +1570,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_base3_we & region_cfg_regwen_region3_qs),
+    .we     (mp_region_cfg3_base3_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg3_base3_wd),
 
     // from internal hardware
@@ -1803,7 +1596,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_size3_we & region_cfg_regwen_region3_qs),
+    .we     (mp_region_cfg3_size3_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg3_size3_wd),
 
     // from internal hardware
@@ -1832,7 +1625,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_en4_we & region_cfg_regwen_region4_qs),
+    .we     (mp_region_cfg4_en4_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg4_en4_wd),
 
     // from internal hardware
@@ -1858,7 +1651,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_rd_en4_we & region_cfg_regwen_region4_qs),
+    .we     (mp_region_cfg4_rd_en4_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg4_rd_en4_wd),
 
     // from internal hardware
@@ -1884,7 +1677,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_prog_en4_we & region_cfg_regwen_region4_qs),
+    .we     (mp_region_cfg4_prog_en4_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg4_prog_en4_wd),
 
     // from internal hardware
@@ -1910,7 +1703,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_erase_en4_we & region_cfg_regwen_region4_qs),
+    .we     (mp_region_cfg4_erase_en4_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg4_erase_en4_wd),
 
     // from internal hardware
@@ -1936,7 +1729,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_base4_we & region_cfg_regwen_region4_qs),
+    .we     (mp_region_cfg4_base4_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg4_base4_wd),
 
     // from internal hardware
@@ -1962,7 +1755,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_size4_we & region_cfg_regwen_region4_qs),
+    .we     (mp_region_cfg4_size4_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg4_size4_wd),
 
     // from internal hardware
@@ -1991,7 +1784,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_en5_we & region_cfg_regwen_region5_qs),
+    .we     (mp_region_cfg5_en5_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg5_en5_wd),
 
     // from internal hardware
@@ -2017,7 +1810,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_rd_en5_we & region_cfg_regwen_region5_qs),
+    .we     (mp_region_cfg5_rd_en5_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg5_rd_en5_wd),
 
     // from internal hardware
@@ -2043,7 +1836,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_prog_en5_we & region_cfg_regwen_region5_qs),
+    .we     (mp_region_cfg5_prog_en5_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg5_prog_en5_wd),
 
     // from internal hardware
@@ -2069,7 +1862,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_erase_en5_we & region_cfg_regwen_region5_qs),
+    .we     (mp_region_cfg5_erase_en5_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg5_erase_en5_wd),
 
     // from internal hardware
@@ -2095,7 +1888,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_base5_we & region_cfg_regwen_region5_qs),
+    .we     (mp_region_cfg5_base5_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg5_base5_wd),
 
     // from internal hardware
@@ -2121,7 +1914,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_size5_we & region_cfg_regwen_region5_qs),
+    .we     (mp_region_cfg5_size5_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg5_size5_wd),
 
     // from internal hardware
@@ -2150,7 +1943,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_en6_we & region_cfg_regwen_region6_qs),
+    .we     (mp_region_cfg6_en6_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg6_en6_wd),
 
     // from internal hardware
@@ -2176,7 +1969,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_rd_en6_we & region_cfg_regwen_region6_qs),
+    .we     (mp_region_cfg6_rd_en6_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg6_rd_en6_wd),
 
     // from internal hardware
@@ -2202,7 +1995,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_prog_en6_we & region_cfg_regwen_region6_qs),
+    .we     (mp_region_cfg6_prog_en6_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg6_prog_en6_wd),
 
     // from internal hardware
@@ -2228,7 +2021,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_erase_en6_we & region_cfg_regwen_region6_qs),
+    .we     (mp_region_cfg6_erase_en6_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg6_erase_en6_wd),
 
     // from internal hardware
@@ -2254,7 +2047,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_base6_we & region_cfg_regwen_region6_qs),
+    .we     (mp_region_cfg6_base6_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg6_base6_wd),
 
     // from internal hardware
@@ -2280,7 +2073,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_size6_we & region_cfg_regwen_region6_qs),
+    .we     (mp_region_cfg6_size6_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg6_size6_wd),
 
     // from internal hardware
@@ -2309,7 +2102,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_en7_we & region_cfg_regwen_region7_qs),
+    .we     (mp_region_cfg7_en7_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg7_en7_wd),
 
     // from internal hardware
@@ -2335,7 +2128,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_rd_en7_we & region_cfg_regwen_region7_qs),
+    .we     (mp_region_cfg7_rd_en7_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg7_rd_en7_wd),
 
     // from internal hardware
@@ -2361,7 +2154,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_prog_en7_we & region_cfg_regwen_region7_qs),
+    .we     (mp_region_cfg7_prog_en7_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg7_prog_en7_wd),
 
     // from internal hardware
@@ -2387,7 +2180,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_erase_en7_we & region_cfg_regwen_region7_qs),
+    .we     (mp_region_cfg7_erase_en7_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg7_erase_en7_wd),
 
     // from internal hardware
@@ -2413,7 +2206,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_base7_we & region_cfg_regwen_region7_qs),
+    .we     (mp_region_cfg7_base7_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg7_base7_wd),
 
     // from internal hardware
@@ -2439,7 +2232,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_size7_we & region_cfg_regwen_region7_qs),
+    .we     (mp_region_cfg7_size7_we & region_cfg_regwen_qs),
     .wd     (mp_region_cfg7_size7_wd),
 
     // from internal hardware
@@ -2990,29 +2783,8 @@ module flash_ctrl_reg_top (
   assign addr_we = addr_hit[4] & reg_we & ~wr_err;
   assign addr_wd = reg_wdata[31:0];
 
-  assign region_cfg_regwen_region0_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region0_wd = reg_wdata[0];
-
-  assign region_cfg_regwen_region1_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region1_wd = reg_wdata[1];
-
-  assign region_cfg_regwen_region2_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region2_wd = reg_wdata[2];
-
-  assign region_cfg_regwen_region3_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region3_wd = reg_wdata[3];
-
-  assign region_cfg_regwen_region4_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region4_wd = reg_wdata[4];
-
-  assign region_cfg_regwen_region5_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region5_wd = reg_wdata[5];
-
-  assign region_cfg_regwen_region6_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region6_wd = reg_wdata[6];
-
-  assign region_cfg_regwen_region7_we = addr_hit[5] & reg_we & ~wr_err;
-  assign region_cfg_regwen_region7_wd = reg_wdata[7];
+  assign region_cfg_regwen_we = addr_hit[5] & reg_we & ~wr_err;
+  assign region_cfg_regwen_wd = reg_wdata[0];
 
   assign mp_region_cfg0_en0_we = addr_hit[6] & reg_we & ~wr_err;
   assign mp_region_cfg0_en0_wd = reg_wdata[0];
@@ -3249,14 +3021,7 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = region_cfg_regwen_region0_qs;
-        reg_rdata_next[1] = region_cfg_regwen_region1_qs;
-        reg_rdata_next[2] = region_cfg_regwen_region2_qs;
-        reg_rdata_next[3] = region_cfg_regwen_region3_qs;
-        reg_rdata_next[4] = region_cfg_regwen_region4_qs;
-        reg_rdata_next[5] = region_cfg_regwen_region5_qs;
-        reg_rdata_next[6] = region_cfg_regwen_region6_qs;
-        reg_rdata_next[7] = region_cfg_regwen_region7_qs;
+        reg_rdata_next[0] = region_cfg_regwen_qs;
       end
 
       addr_hit[6]: begin
