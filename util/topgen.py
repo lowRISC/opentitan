@@ -6,7 +6,6 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
-import re
 import sys
 from io import StringIO
 from pathlib import Path
@@ -16,12 +15,8 @@ from mako.template import Template
 from mako import exceptions
 
 import tlgen
-import svdgen
 from reggen import gen_rtl, gen_dv, validate
-from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
-
-# Filter from IP list but adding generated hjson
-filter_list = ['rv_plic', 'pinmux']
+from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top, load_completecfg_and_ips
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -416,12 +411,6 @@ def main():
         '--hjson-only',
         action='store_true',
         help="If defined, the tool generates complete Hjson only")
-    parser.add_argument(
-        '--svd-only',
-        help="If given, the tool generates the SVD file")
-    parser.add_argument(
-        '--set-version',
-        help="If defined, override the version string from Git")
     # Generator options: generate dv ral model
     parser.add_argument(
         '--top_ral',
@@ -448,7 +437,7 @@ def main():
         raise SystemExit(sys.exc_info()[1])
 
     if not (args.hjson_only or args.plic_only or args.alert_handler_only or
-            args.tpl) and not args.svd_only:
+            args.tpl):
         log.error(
             "Template file can be omitted only if '--hjson-only' is true")
         raise SystemExit(sys.exc_info()[1])
@@ -469,68 +458,11 @@ def main():
 
     out_path = Path(outdir)
 
-    if not args.no_gen_hjson or args.hjson_only or args.svd_only:
-        # load top configuration
-        try:
-            with open(args.topcfg, 'r') as ftop:
-                topcfg = hjson.load(ftop, use_decimal=True)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
-
-        # Sweep the IP directory and gather the config files
-        ip_dir = Path(__file__).parents[1] / 'hw/ip'
-        ips = search_ips(ip_dir)
-
-        # exclude rv_plic (to use top_earlgrey one) and
-        ips = [x for x in ips if not x.parents[1].name in filter_list]
-
-        # It may require two passes to check if the module is needed.
-        # TODO: first run of topgen will fail due to the absent of rv_plic.
-        # It needs to run up to amend_interrupt in merge_top function
-        # then creates rv_plic.hjson then run xbar generation.
-        hjson_dir = Path(args.topcfg).parent
-        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/data/autogen/rv_plic.hjson'
-        ips.append(rv_plic_hjson)
-
-        pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
-        ips.append(pinmux_hjson)
-
-        # load Hjson and pass validate from reggen
-        try:
-            ip_objs = []
-            for x in ips:
-                # Skip if it is not in the module list
-                if not x.stem in [ip["type"] for ip in topcfg["module"]]:
-                    log.info(
-                        "Skip module %s as it isn't in the top module list" %
-                        x.stem)
-                    continue
-
-                obj = hjson.load(x.open('r'),
-                                 use_decimal=True,
-                                 object_pairs_hook=validate.checking_dict)
-                if validate.validate(obj) != 0:
-                    log.info("Parsing IP %s configuration failed. Skip" % x)
-                    continue
-                ip_objs.append(obj)
-
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
-
-        # Read the crossbars under the top directory
-        xbar_objs = get_hjsonobj_xbars(hjson_dir)
-
-        log.info("Detected crossbars: %s" %
-                 (", ".join([x["name"] for x in xbar_objs])))
-
-        topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
-        if error != 0:
-            raise SystemExit("Error occured while validating top.hjson")
-
-        completecfg = merge_top(topcfg, ip_objs, xbar_objs)
-
     if not args.no_gen_hjson or args.hjson_only:
-        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
+        topcfg_path = Path(args.topcfg)
+        completecfg, ip_objs = load_completecfg_and_ips(
+                    topcfg_path, Path(__file__).parents[1] / 'hw/ip')
+        genhjson_path = topcfg_path.parent / ("autogen/top_%s.gen.hjson" %
                                      completecfg["name"])
         gencmd = (
             "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --hjson-only "
@@ -541,16 +473,6 @@ def main():
         else:
             genhjson_path.write_text(genhdr + gencmd +
                                      hjson.dumps(completecfg, for_json=True))
-
-    if args.svd_only:
-        ip_dict = {ip['name'].lower(): ip for ip in ip_objs}
-        version = args.set_version or svdgen.read_git_version()
-
-        device = svdgen.convert_top_to_svd(completecfg, ip_dict, version)
-        with open(args.svd_only, 'w') as svd:
-            svdgen.write_svd(device, svd)
-
-        sys.exit()
 
     if args.hjson_only:
         log.info("hjson is generated. Exiting...")

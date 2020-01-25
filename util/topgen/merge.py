@@ -7,7 +7,12 @@ from copy import deepcopy
 from functools import partial
 
 from .lib import *
+from .validate import validate_top
+from reggen import validate
 import hjson
+
+# Filter from IP list but adding generated hjson
+earlgrey_filter_list = ['rv_plic', 'pinmux']
 
 
 def amend_ip(top, ip):
@@ -603,3 +608,76 @@ def merge_top(topcfg, ipobjs, xbarobjs):
     gencfg.pop('debug_mem_base_addr', None)
 
     return gencfg
+
+
+def load_completecfg_and_ips(topcfg_path, ip_dir_path, filter_list=earlgrey_filter_list):
+    """Read the specified top configuration and IP definitions from the
+    given paths. Validate the modules separately, then generate a
+    complete configuration by merging them together.
+
+    @param topcfg_path A pathlib.Path object to the top configuration
+                       HJSON file.
+    @param ip_dir_path A pathlib.Path object to the directory containing
+                       the IP modules and their HJSON files.
+    @return The complete configuration HJSON and a list of validated IP
+            HJSON objects.
+    """
+
+    # load top configuration
+    try:
+        with topcfg_path.open() as ftop:
+            topcfg = hjson.load(ftop, use_decimal=True)
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
+
+    # Sweep the IP directory and gather the config files
+    ips = search_ips(ip_dir_path)
+
+    # exclude rv_plic (to use top_earlgrey one) and
+    ips = [x for x in ips if not x.parents[1].name in filter_list]
+
+    # It may require two passes to check if the module is needed.
+    # TODO: first run of topgen will fail due to the absent of rv_plic.
+    # It needs to run up to amend_interrupt in merge_top function
+    # then creates rv_plic.hjson then run xbar generation.
+    hjson_dir = topcfg_path.parent
+    rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/data/autogen/rv_plic.hjson'
+    ips.append(rv_plic_hjson)
+
+    pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
+    ips.append(pinmux_hjson)
+
+    # load Hjson and pass validate from reggen
+    try:
+        ip_objs = []
+        for x in ips:
+            # Skip if it is not in the module list
+            if not x.stem in [ip["type"] for ip in topcfg["module"]]:
+                log.info(
+                    "Skip module %s as it isn't in the top module list" %
+                    x.stem)
+                continue
+
+            obj = hjson.load(x.open('r'),
+                             use_decimal=True,
+                             object_pairs_hook=validate.checking_dict)
+            if validate.validate(obj) != 0:
+                log.info("Parsing IP %s configuration failed. Skip" % x)
+                continue
+            ip_objs.append(obj)
+
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
+
+    # Read the crossbars under the top directory
+    xbar_objs = get_hjsonobj_xbars(hjson_dir)
+
+    log.info("Detected crossbars: %s" %
+             (", ".join([x["name"] for x in xbar_objs])))
+
+    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
+    if error != 0:
+        raise SystemExit("Error occured while validating top.hjson")
+
+    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+    return completecfg, ip_objs
