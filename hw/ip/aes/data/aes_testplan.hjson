@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "aes"
-  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",                         
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
    // {
@@ -47,8 +47,8 @@
       desc: '''
             - Tests what happens if a register is written a the wrong time?,
               if a key does not match the key setting etc. will module ignore or fail gracefully
-            - enter a 256bit key but set AES to use 128 for encryption. 
-              then enter the 128bit of the key and use for decryption. 
+            - enter a 256bit key but set AES to use 128 for encryption.
+              then enter the 128bit of the key and use for decryption.
               will result match plain text and vice verca'''
       milestone: V2
       tests: ["aes_stress"]
@@ -66,6 +66,6 @@
             Make sure that there is no residual data from latest operation '''
       milestone: V2
       tests: ["aes_stress"]
-    }    
+    }
   ]
 }

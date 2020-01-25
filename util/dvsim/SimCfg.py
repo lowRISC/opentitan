@@ -26,12 +26,7 @@ class SimCfg(FlowCfg):
     def __init__(self, flow_cfg_file, proj_root, args):
         super().__init__(flow_cfg_file, proj_root, args)
         # Options set from command line
-        self.items = []
-        self.items.extend(args.items)
-        self.list_items = []
-        self.list_items.extend(args.list)
         self.simulator = args.simulator
-        self.branch = args.branch
         self.build_opts = []
         self.build_opts.extend(args.build_opts)
         self.en_build_modes = []
@@ -57,7 +52,6 @@ class SimCfg(FlowCfg):
         self.verbose = args.verbose
         self.dry_run = args.dry_run
         self.skip_ral = args.skip_ral
-        self.job_prefix = args.job_prefix
         self.map_full_testplan = args.map_full_testplan
 
         # Set default sim modes for unpacking
@@ -356,7 +350,7 @@ class SimCfg(FlowCfg):
         # Create initial set of directories before kicking off the regression.
         self._create_dirs()
 
-    def _gen_results(self, fmt="md"):
+    def _gen_results(self):
         '''
         The function is called after the regression has completed. It collates the status of
         all run targets and generates a dict. It parses the testplan and maps the generated
@@ -370,7 +364,7 @@ class SimCfg(FlowCfg):
                 if name == item["name"]: return item
             return None
 
-        def gen_results_sub(items, results):
+        def gen_results_sub(items, results, fail_msgs):
             '''
             Generate the results table from the test runs (builds are ignored).
             The table has 3 columns - name, passing and total as a list of dicts.
@@ -379,9 +373,12 @@ class SimCfg(FlowCfg):
             This list of dicts is directly consumed by the Testplan::results_table
             method for testplan mapping / annotation.
             '''
-            if items == []: return results
+            if items == []: return (results, fail_msgs)
             for item in items:
-                # Only generate results table for runs.
+                if item.status == "F":
+                    fail_msgs += item.fail_msg
+
+                # Generate results table for runs.
                 if item.target == "run":
                     result = retrieve_result(item.name, results)
                     if result is None:
@@ -389,8 +386,18 @@ class SimCfg(FlowCfg):
                         results.append(result)
                     if item.status == "P": result["passing"] += 1
                     result["total"] += 1
-                results = gen_results_sub(item.sub, results)
-            return results
+                (results, fail_msgs) = gen_results_sub(item.sub, results,
+                                                       fail_msgs)
+            return (results, fail_msgs)
+
+        regr_results = []
+        fail_msgs = ""
+        (regr_results, fail_msgs) = gen_results_sub(self.deploy, regr_results,
+                                                    fail_msgs)
+
+        # Add title if there are indeed failures
+        if fail_msgs != "":
+            fail_msgs = "\n## List of Failures\n" + fail_msgs
 
         # Generate results table for runs.
         results_str = "# " + self.name.upper() + " Regression Results\n"
@@ -398,12 +405,19 @@ class SimCfg(FlowCfg):
         results_str += "\n## Test Results\n"
         # TODO: check if testplan is not null?
         results_str += self.testplan.results_table(
-            regr_results=gen_results_sub(self.deploy, []),
+            regr_results=regr_results,
             map_full_testplan=self.map_full_testplan)
+        results_str += "\n"
+
+        # Append failures for triage
+        self.results_md = results_str + fail_msgs
 
         # Write results to the scratch area
-        regr_results_file = self.scratch_path + "/regr_results_" + self.timestamp + "." + fmt
-        f = open(regr_results_file, 'w')
-        f.write(results_str)
+        self.results_file = self.scratch_path + "/regr_results_" + self.timestamp + ".md"
+        log.info("Detailed results are available at %s", self.results_file)
+        f = open(self.results_file, 'w')
+        f.write(self.results_md)
         f.close()
+
+        # Return only the tables
         return results_str

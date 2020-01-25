@@ -341,6 +341,12 @@ def main():
     )
 
     parser.add_argument(
+        "--publish",
+        default=False,
+        action='store_true',
+        help="Publish results to the reports.opentitan.org web server.")
+
+    parser.add_argument(
         "-pi",
         "--print-interval",
         type=int,
@@ -374,6 +380,9 @@ def main():
     if not os.path.exists(args.cfg):
         log.fatal("Simulation config file %s appears to be invalid.", args.cfg)
         sys.exit(1)
+
+    # If publishing results, then force full testplan mapping of results.
+    if args.publish: args.map_full_testplan = True
 
     args.scratch_root = resolve_scratch_root(args.scratch_root)
     args.branch = resolve_branch(args.branch)
@@ -422,6 +431,9 @@ def main():
 
     # Generate results.
     results = cfg.gen_results()
+
+    # Publish results
+    if args.publish: cfg.publish_results()
 
 
 if __name__ == '__main__':

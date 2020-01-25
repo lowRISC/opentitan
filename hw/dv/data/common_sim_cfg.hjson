@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   project:          opentitan
+  results_server:   "gs://reports.opentitan.org"
+
   flow:             sim
   flow_makefile:    "{proj_root}/hw/dv/data/sim.mk"
 
@@ -20,10 +22,10 @@
 
   // pass and fail patterns
   pass_patterns:    ["^TEST PASSED (UVM_)?CHECKS$"]
-  fail_patterns:    ["^TEST FAILED (UVM_)?CHECKS$",
-                     "^UVM_ERROR\\s[^:].*$",
+  fail_patterns:    ["^UVM_ERROR\\s[^:].*$",
                      "^Assert failed: ",
-                     "^\\s*Offending '.*'"]
+                     "^\\s*Offending '.*'",
+                     "^TEST FAILED (UVM_)?CHECKS$"]
 
   // Default TileLink widths
   tl_aw: 32
