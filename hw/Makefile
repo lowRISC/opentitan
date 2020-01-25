@@ -101,6 +101,4 @@ $(tops_svd): $(foreach TOP,$(TOPS),${PRJ_DIR}/hw/$(TOP)/data/$(TOP).svd)
 			--version `git describe --tags --long --dirty` \
 			--readme  ${PRJ_DIR}/README.md
 
-${PRJ_DIR}/hw/top_earlgrey/data/top_earlgrey.svd: ../util/svdgen.py
-
 .PHONY: all banner $(ips_reg) $(tops_gen) $(tops_svd) $(ips_reg_header)
