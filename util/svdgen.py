@@ -3,7 +3,59 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Generate SVD file from validated register JSON tree
+Generating a System View Description file:
+
+  This utility generates a CMSIS-SVD[1] file from the top configuration and
+  IP module HJSON files. The resulting SVD describes the chip's peripherals
+  and register layouts. This enables other tools such as `svd2rust`[2] to
+  generate software interfaces to the hardware.
+
+  When invoked from the command line this requires arguments pointing to
+  all HJSON files and other configuration options. See `./svdgen.py --help`
+  for the full options. The `hw/Makefile` script has an example command
+  line to generate `top_earlgrey.svd`.
+
+  [1] http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html
+  [2] https://docs.rs/svd2rust/
+
+Semantics of the conversion:
+
+  For the most part the HJSON files used by OpenTitan map directly to SVD
+  semantics. However, there are a few places where some interpretation is
+  required:
+
+  * SVD files must contain a top-level <cpu> element which describe the
+    high-level features of the chip. Some of these reflect SVD's origin
+    to describe ARM SOCs, and the values aren't necessary to accurately
+    described a RISC-V chip. To maintain compatibility with the SVD
+    specification these fields are included.
+
+    The fixed values are created in `generate_cpu()`.
+
+  * OpenTitan uses a single `swaccess` field to define what operations
+    software may use on a register. SVD uses a combination of three
+    separate elements to do the same: <access>, <readAction>, and
+    <modifiedWriteValues>.
+
+    This mapping is performed within `sw_access_modes()`.
+
+  * Most OpenTitan register definitions are assumed to be fixed width
+    (32 bits). Smaller register width are specified by listing a single
+    "field" element which specifies the reduced bit width. SVD instead
+    allows each register to specify the reduced width by directly setting
+    the <size> of a <register>.
+
+    The heuristic used to detect and flatten these fields is documented
+    in `generate_register()`.
+
+  * Both OpenTitan and SVD allowing grouping registers with related
+    funcationality. An OpenTitan "multireg" specifies all offsets
+    relative to the peripheral base address, while SVD instead gives a
+    <cluster> an <addressOffset>, and each <register> is relative to the
+    <cluster>.
+
+    This is computed in `generate_cluster()` and specified via the `base`
+    argument to `generate_register()`.
 """
 
 import argparse
@@ -21,7 +73,7 @@ genhdr = '''
   Licensed under the Apache License, Version 2.0, see LICENSE for details.
   SPDX-License-Identifier: Apache-2.0
 
-  This file generated from HJSON source by "topgen.py", do not edit.
+  This file generated from HJSON source by "svdgen.py", do not edit.
 '''
 
 def hex_or_none(num: int) -> str or None:
@@ -352,7 +404,7 @@ def generate_device(top: hjson, ips: {'name': hjson}, version: str, description:
 
 def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, description: str, verify=True) -> ET.Element:
     """Convert a top-level configuration and IP register definition set
-    into a System View Description ("SVD") file.[1] This returns an
+    into a System View Description ("SVD") file. This returns an
     `xml.etree.ElementTree.Element` object matching the passed HJSON.
 
     The input HJSON must be a top-level configuration (earlgrey) and the
@@ -362,9 +414,7 @@ def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, descripti
     been previously validated. (see `topgen.validate_top` and `reggen.validate()`)
 
     If `verify` is true then the resulting SVD tree is validated using
-    the `pysvd` module.
-
-    [1] http://www.keil.com/pack/doc/CMSIS/SVD/html/index.html"""
+    the `pysvd` module."""
 
     root = generate_device(top, ips, version, description)
 
@@ -397,6 +447,8 @@ def write_svd(device: ET.Element, output):
 
 
 def test():
+    """Run a series of self-tests to validate HJSON->SVD conversion."""
+
     top = {
         'name': 'earlgrey-test',
         'module': [
