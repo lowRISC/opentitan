@@ -234,7 +234,7 @@ def generate_field(bits: hjson) -> ET.Element:
             readAction          = readAction,
             modifiedWriteValues = modifiedWriteValues)
 
-def generate_register(reg: hjson, base=0) -> ET.Element:
+def generate_register(reg: hjson, base: int) -> ET.Element:
     """Convert a standard register definition into a <register> node.
     Most of the work was previously done during validation and loading
     the HJSON file; what's left is mostly transliteration."""
@@ -281,12 +281,12 @@ def generate_register(reg: hjson, base=0) -> ET.Element:
             modifiedWriteValues = modifiedWriteValues,
             *generate_all_fields(flatten, fields))
 
-def generate_dim_register(window: hjson) -> ET.Element:
+def generate_dim_register(window: hjson, base: int) -> ET.Element:
     """Generate an SVD <register> element containing a buffer. This is
     done by setting the the <dim> subelement, indicating the register
     contains multiple items."""
 
-    window = svd_node(generate_register(window),
+    window = svd_node(generate_register(window, base),
             dim          = window['items'],
             dimIncrement = hex_or_none(int(window['genvalidbits']/8)))
 
@@ -299,7 +299,7 @@ def generate_dim_register(window: hjson) -> ET.Element:
 
     return window
 
-def generate_cluster(multi: [hjson]) -> ET.Element:
+def generate_cluster(multi: [hjson], base: int) -> ET.Element:
     """Generate a <cluster> node from a multireg. The <cluster> will
     contain a <register> for each register in `genregs`.
 
@@ -307,6 +307,13 @@ def generate_cluster(multi: [hjson]) -> ET.Element:
     register's lowest `genoffset`; following SVD convention all the
     <register> "addressOffset" values will be relative to the parent
     <cluster>."""
+
+    # Correctly mapping this would require walking the nested register
+    # tree and computing relative <addressOffsets>. Nested "multiregs"
+    # aren't used in topgen/reggen so there's no need for the added
+    # complexity.
+    if base != 0:
+        raise SystemExit('nesting "multireg" elements is not supported')
 
     genregs = multi['genregs']
 
@@ -319,9 +326,9 @@ def generate_cluster(multi: [hjson]) -> ET.Element:
             name          = multi['name'],
             description   = multi['desc'],
             addressOffset = hex_or_none(base),
-            *(generate_register(reg, base) for reg in genregs))
+            *generate_all_registers(genregs, base))
 
-def generate_all_registers(regs: [hjson]) -> [ET.Element]:
+def generate_all_registers(regs: [hjson], base=0) -> [ET.Element]:
     """Convert a list of register HJSON element into a <registers> node.
     Like generating C headers, this needs to filter based on a register's
     type.
@@ -334,13 +341,13 @@ def generate_all_registers(regs: [hjson]) -> [ET.Element]:
         if 'reserved' in reg or 'skipto' in reg:
             pass
         elif 'window' in reg:
-            yield generate_dim_register(reg['window'])
+            yield generate_dim_register(reg['window'], base)
         elif 'sameaddr' in reg:
-            yield from map(generate_register, reg['sameaddr'])
+            yield from map(generate_register, reg['sameaddr'], base)
         elif 'multireg' in reg:
-            yield generate_cluster(reg['multireg'])
+            yield generate_cluster(reg['multireg'], base)
         else:
-            yield generate_register(reg)
+            yield generate_register(reg, base)
 
 def generate_peripheral(module: hjson, ip: hjson) -> ET.Element:
     """Convert an IP module definition to a <peripheral> element. This
