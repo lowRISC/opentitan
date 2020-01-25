@@ -19,7 +19,7 @@ class esc_receiver_esc_rsp_seq extends dv_base_seq #(
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
         r_esc_rsp == 1;
     )
-    `uvm_info(`gfn, $sformatf("seq_item: esc_rsp, int_err=%0b", req.int_err), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("seq_item: esc_rsp, int_err=%0b", req.int_err), UVM_HIGH)
     finish_item(req);
     get_response(rsp);
     `uvm_info(`gfn, "escalator receiver transfer done", UVM_HIGH)

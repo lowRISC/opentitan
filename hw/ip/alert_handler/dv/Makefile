@@ -33,6 +33,9 @@ UVM_TEST_SEQ    ?= alert_handler_base_vseq
    UVM_TEST_SEQ   = alert_handler_sanity_vseq
  endif
 
+ ifeq (${TEST_NAME},alert_handler_random_alerts)
+   UVM_TEST_SEQ   = alert_handler_random_alerts_vseq
+ endif
 ####################################################################################################
 ## Include the tool Makefile below                                                                ##
 ## Dont add anything else below it!                                                               ##

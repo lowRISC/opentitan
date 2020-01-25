@@ -109,6 +109,10 @@ interface alert_esc_if(input clk, input rst_n);
     while (esc_tx.esc_p !== 1'b1) @(monitor_cb);
   endtask : wait_esc
 
+  task automatic wait_esc_complete();
+    while (esc_tx.esc_p !== 1'b0) @(monitor_cb);
+  endtask : wait_esc_complete
+
   task automatic reset_esc();
     sender_cb.esc_tx.esc_p <= 1'b0;
     sender_cb.esc_tx.esc_n <= 1'b1;
