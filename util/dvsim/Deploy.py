@@ -54,6 +54,7 @@ class Deploy():
         self.cmd = ""
         self.odir = ""
         self.log = ""
+        self.fail_msg = ""
 
         # Flag to indicate whether to 'overwrite' if odir already exists,
         # or to backup the existing one and create a new one.
@@ -210,19 +211,31 @@ class Deploy():
     def set_status(self):
         self.status = 'P'
         if self.dry_run is False:
+            for fail_pattern in self.fail_patterns:
+                grep_cmd = "grep -m 1 -E \'" + fail_pattern + "\' " + self.log
+                (status, rslt) = subprocess.getstatusoutput(grep_cmd + " -c")
+                if rslt != "0":
+                    (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+                    msg = "```\n{}\n```\n".format(rslt)
+                    self.fail_msg += msg
+                    log.log(VERBOSE, msg)
+                    self.status = 'F'
+                    break
+
+            # Return if status is fail - no need to look for pass patterns.
+            if self.status == 'F': return
+
+            # If fail patterns were not found, ensure pass patterns indeed were.
             for pass_pattern in self.pass_patterns:
                 grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
                 (status, rslt) = subprocess.getstatusoutput(grep_cmd)
                 if rslt == "0":
-                    log.log(VERBOSE, "No pass patterns found: %s", self.name)
+                    msg = "Pass pattern \"{}\" not found.<br>\n".format(
+                        pass_pattern)
+                    self.fail_msg += msg
+                    log.log(VERBOSE, msg)
                     self.status = 'F'
-
-            for fail_pattern in self.fail_patterns:
-                grep_cmd = "grep -c -m 1 -E \'" + fail_pattern + "\' " + self.log
-                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-                if rslt != "0":
-                    log.log(VERBOSE, "Fail patterns found: %s", self.name)
-                    self.status = 'F'
+                    break
 
     # Recursively set sub-item's status if parent item fails
     def set_sub_status(self, status):
@@ -249,7 +262,14 @@ class Deploy():
         if self.process.poll() is not None:
             self.log_fd.close()
             if self.process.returncode != 0:
-                # TODO: read the log to diagnose the failure
+                msg = "Last 2 lines of the log:<br>\n"
+                self.fail_msg += msg
+                log.log(VERBOSE, msg)
+                get_fail_msg_cmd = "tail -n 2 " + self.log
+                msg = run_cmd(get_fail_msg_cmd)
+                msg = "```\n{}\n```\n".format(msg)
+                self.fail_msg += msg
+                log.log(VERBOSE, msg)
                 self.status = "F"
             else:
                 self.set_status()
@@ -263,6 +283,7 @@ class Deploy():
     @staticmethod
     def deploy(items):
         dispatched_items = []
+
         def dispatch_items(items):
             item_names = {}
             for item in items:
@@ -393,6 +414,12 @@ class CompileSim(Deploy):
         super().parse_dict(sim_cfg.__dict__)
         self.build_mode = self.name
         self.__post_init__()
+
+        # Start fail message construction
+        self.fail_msg = "\n**BUILD:** {}<br>\n".format(self.name)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_root + '/', '')
+        self.fail_msg += "**LOG: {}<br>\n".format(log_sub_path)
+
         CompileSim.items.append(self)
 
 
@@ -442,9 +469,15 @@ class RunTest(Deploy):
         self.renew_odir = True
         self.build_mode = test.build_mode.name
         self.__post_init__()
-        # Construct custom odir link name for RunTest items by combining name
-        # and index
+        # For output dir link, use run_dir_name instead.
         self.odir_ln = self.run_dir_name
+
+        # Start fail message construction
+        self.fail_msg = "\n**TEST:** {}, ".format(self.name)
+        self.fail_msg += "**SEED:** {}<br>\n".format(self.seed)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_root + '/', '')
+        self.fail_msg += "**LOG:** {}<br>\n".format(log_sub_path)
+
         RunTest.items.append(self)
 
     @staticmethod

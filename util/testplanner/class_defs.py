@@ -279,10 +279,7 @@ class Testplan():
             output.append(ms_dict)
         return output
 
-    def results_table(self,
-                      regr_results,
-                      map_full_testplan=True,
-                      tablefmt="pipe"):
+    def results_table(self, regr_results, map_full_testplan=True):
         '''Print the mapped regression results into a table.
         '''
         self.map_regr_results(regr_results, map_full_testplan)
@@ -301,5 +298,5 @@ class Testplan():
                 entry_name = ""
         return tabulate(table,
                         headers="firstrow",
-                        tablefmt=tablefmt,
+                        tablefmt="pipe",
                         colalign=align)
