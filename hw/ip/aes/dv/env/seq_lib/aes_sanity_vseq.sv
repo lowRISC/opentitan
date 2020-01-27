@@ -13,7 +13,7 @@
     `uvm_info(`gfn, $sformatf("STARTING AES SEQUENCE"), UVM_LOW);
 
     `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, key_size == 3'b001;)
-    set_mode(aes_item.mode);
+    set_operation(aes_item.operation);
     set_key_len(aes_item.key_size);
     // add key
     write_key(aes_item.key);

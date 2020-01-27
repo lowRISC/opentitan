@@ -66,7 +66,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       case (csr.get_name())
         // add individual case item for each csr
         "ctrl": begin
-          {dut_item.allow_data_ovrwrt, dut_item.man_trigger,dut_item.key_size,dut_item.mode}
+          {dut_item.allow_data_ovrwrt, dut_item.man_trigger,dut_item.key_size,dut_item.operation}
           = item.a_data[5:0];
         end
         "key0": begin
@@ -192,7 +192,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       ref_fifo.get(c_item );
       `uvm_info(`gfn, $sformatf("\n\t ----| GOT item "), UVM_HIGH)
 
-      sv_dpi_aes_crypt(1'b0, c_item.mode, c_item.key_size, c_item.key, c_item.data_in, c_item.data_out);
+      sv_dpi_aes_crypt(1'b0, c_item.operation, c_item.key_size, c_item.key, c_item.data_in,
+          c_item.data_out);
          `uvm_info(`gfn, $sformatf("\n\t ----| printing C MODEL %s", c_item.convert2string() )
                    , UVM_HIGH)
 

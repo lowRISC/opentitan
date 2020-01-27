@@ -103,10 +103,10 @@ module aes_reg_top (
   logic data_out2_re;
   logic [31:0] data_out3_qs;
   logic data_out3_re;
-  logic ctrl_mode_qs;
-  logic ctrl_mode_wd;
-  logic ctrl_mode_we;
-  logic ctrl_mode_re;
+  logic ctrl_operation_qs;
+  logic ctrl_operation_wd;
+  logic ctrl_operation_we;
+  logic ctrl_operation_re;
   logic [2:0] ctrl_key_len_qs;
   logic [2:0] ctrl_key_len_wd;
   logic ctrl_key_len_we;
@@ -437,18 +437,18 @@ module aes_reg_top (
 
   // R[ctrl]: V(True)
 
-  //   F[mode]: 0:0
+  //   F[operation]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_ctrl_mode (
-    .re     (ctrl_mode_re),
-    .we     (ctrl_mode_we),
-    .wd     (ctrl_mode_wd),
-    .d      (hw2reg.ctrl.mode.d),
+  ) u_ctrl_operation (
+    .re     (ctrl_operation_re),
+    .we     (ctrl_operation_we),
+    .wd     (ctrl_operation_wd),
+    .d      (hw2reg.ctrl.operation.d),
     .qre    (),
-    .qe     (reg2hw.ctrl.mode.qe),
-    .q      (reg2hw.ctrl.mode.q ),
-    .qs     (ctrl_mode_qs)
+    .qe     (reg2hw.ctrl.operation.qe),
+    .q      (reg2hw.ctrl.operation.q ),
+    .qs     (ctrl_operation_qs)
   );
 
 
@@ -797,9 +797,9 @@ module aes_reg_top (
 
   assign data_out3_re = addr_hit[15] && reg_re;
 
-  assign ctrl_mode_we = addr_hit[16] & reg_we & ~wr_err;
-  assign ctrl_mode_wd = reg_wdata[0];
-  assign ctrl_mode_re = addr_hit[16] && reg_re;
+  assign ctrl_operation_we = addr_hit[16] & reg_we & ~wr_err;
+  assign ctrl_operation_wd = reg_wdata[0];
+  assign ctrl_operation_re = addr_hit[16] && reg_re;
 
   assign ctrl_key_len_we = addr_hit[16] & reg_we & ~wr_err;
   assign ctrl_key_len_wd = reg_wdata[3:1];
@@ -898,7 +898,7 @@ module aes_reg_top (
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[0] = ctrl_mode_qs;
+        reg_rdata_next[0] = ctrl_operation_qs;
         reg_rdata_next[3:1] = ctrl_key_len_qs;
         reg_rdata_next[4] = ctrl_manual_start_trigger_qs;
         reg_rdata_next[5] = ctrl_force_data_overwrite_qs;

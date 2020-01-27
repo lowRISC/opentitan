@@ -10,9 +10,9 @@
 #include <stdint.h>
 
 /**
- * Supported AES modes: encode or decode.
+ * Supported AES operation modes: encode or decode.
  */
-typedef enum aes_mode { kAesEnc = 0, kAesDec = 1 } aes_mode_t;
+typedef enum aes_op { kAesEnc = 0, kAesDec = 1 } aes_op_t;
 
 /**
  * Supported AES key lengths: 128 bit, 192 bit or 256 bit. The hardware uses a
@@ -28,8 +28,8 @@ typedef enum aes_key_len {
  * AES unit configuration options.
  */
 typedef struct aes_cfg {
-  /** Operational mode @see aes_mode. */
-  aes_mode_t mode;
+  /** Operational mode @see aes_op. */
+  aes_op_t operation;
   /** Key length @see aes_key_len. */
   aes_key_len_t key_len;
   /** Set to 1 to only start upon getting a trigger signal. */

@@ -27,9 +27,9 @@ class aes_wake_up_vseq extends aes_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(this)
     `uvm_info(`gfn, $sformatf("running aes sanity sequence"), UVM_LOW)
 
-    `uvm_info(`gfn, $sformatf(" \n\t ---|setting mode to encrypt"), UVM_LOW)
-    // set mode to encrypt
-    set_mode(ENCRYPT);
+    `uvm_info(`gfn, $sformatf(" \n\t ---|setting operation to encrypt"), UVM_LOW)
+    // set operation to encrypt
+    set_operation(ENCRYPT);
 
 
     `uvm_info(`gfn, $sformatf(" \n\t ---| WRITING INIT KEY  %02h", init_key), UVM_LOW)
@@ -54,7 +54,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
 
     // set aes to decrypt
-    set_mode(DECRYPT);
+    set_operation(DECRYPT);
     cfg.clk_rst_vif.wait_clks(20);
     `uvm_info(`gfn, $sformatf("\n\t ---|WRITING INIT KEY FOR DECRYPT: %02h", init_key), UVM_LOW)
     write_key(init_key);

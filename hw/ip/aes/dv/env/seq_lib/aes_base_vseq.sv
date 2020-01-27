@@ -50,8 +50,8 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  virtual task set_mode(bit mode);
-    ral.ctrl.mode.set(mode);
+  virtual task set_operation(bit operation);
+    ral.ctrl.operation.set(operation);
     csr_update(.csr(ral.ctrl));
   endtask
 

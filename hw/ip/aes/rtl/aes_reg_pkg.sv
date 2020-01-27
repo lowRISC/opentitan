@@ -32,7 +32,7 @@ package aes_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } mode;
+    } operation;
     struct packed {
       logic [2:0]  q;
       logic        qe;
@@ -79,7 +79,7 @@ package aes_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } mode;
+    } operation;
     struct packed {
       logic [2:0]  d;
     } key_len;

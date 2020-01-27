@@ -8,9 +8,9 @@
 // Satoh et al., "A Compact Rijndael Hardware Architecture with S-Box Optimization"
 
 module aes_mix_single_column (
-  input  aes_pkg::mode_e  mode_i,
-  input  logic [3:0][7:0] data_i,
-  output logic [3:0][7:0] data_o
+  input  aes_pkg::ciph_op_e op_i,
+  input  logic [3:0][7:0]   data_i,
+  output logic [3:0][7:0]   data_o
 );
 
   import aes_pkg::*;
@@ -56,8 +56,8 @@ module aes_mix_single_column (
   assign z[1] = y2 ^ y[1];
 
   // Mux z
-  assign z_muxed[0] = (mode_i == AES_ENC) ? 8'b0 : z[0];
-  assign z_muxed[1] = (mode_i == AES_ENC) ? 8'b0 : z[1];
+  assign z_muxed[0] = (op_i == CIPH_FWD) ? 8'b0 : z[0];
+  assign z_muxed[1] = (op_i == CIPH_FWD) ? 8'b0 : z[1];
 
   // Drive outputs
   assign data_o[0] = data_i[1] ^ x_mul2[3] ^ x[1] ^ z_muxed[1];

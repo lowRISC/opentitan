@@ -12,7 +12,7 @@ class aes_seq_item extends uvm_sequence_item;
 
 
   // randomized values //
-  rand bit                                 mode; // TODO implement this as enum
+  rand bit                                 operation; // TODO implement this as enum
   // 0: auto start, 1: wait for start
   rand bit                                 man_trigger;
   // 0: output data cannot be overwritten
@@ -77,7 +77,7 @@ class aes_seq_item extends uvm_sequence_item;
              // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
   }
 
-  constraint c_mode_reg {mode == 0; man_trigger == 0; allow_data_ovrwrt == 0; }
+  constraint c_operation_reg {operation == 0; man_trigger == 0; allow_data_ovrwrt == 0; }
 
   function void post_randomize();
     if(key_mask) begin
@@ -109,11 +109,11 @@ class aes_seq_item extends uvm_sequence_item;
       return;
     end
     super.do_copy(rhs);
-    mode     = rhs_.mode;
-    data_in  = rhs_.data_in;
-    key      = rhs_.key;
-    key_size = rhs_.key_size;
-    data_out = rhs_.data_out;
+    operation = rhs_.operation;
+    data_in   = rhs_.data_in;
+    key       = rhs_.key;
+    key_size  = rhs_.key_size;
+    data_out  = rhs_.data_out;
   endfunction // copy
 
 
@@ -127,10 +127,10 @@ virtual function bit do_compare(uvm_object rhs, uvm_comparer comparer);
   end
 
 return(super.do_compare(rhs,comparer) &&
-  (mode     == rhs_.mode) &&
-  (data_in  == rhs_.data_in) &&
-  (key      == rhs_.key) &&
-  (data_out == rhs_.data_out) );
+  (operation == rhs_.operation) &&
+  (data_in   == rhs_.data_in) &&
+  (key       == rhs_.key) &&
+  (data_out  == rhs_.data_out) );
 endfunction // compare
 
 
@@ -141,7 +141,7 @@ virtual function string convert2string();
   str = {str,  $psprintf("\n\t ----| AES SEQUENCE ITEM                                  |----\t ")
         };
   str = {str,  $psprintf("\n\t ----| Mode:    \t %s                          |----\t ",
-        (mode==1'b0) ? "ENCRYPT" : "DECRYPT" ) };
+        (operation==1'b0) ? "ENCRYPT" : "DECRYPT" ) };
   str = {str,  $psprintf("\n\t ----| Key size:    \t %s                             |----\t ",
          (key_size==3'b001) ? "128b" : (key_size == 3'b010) ? "192b" : "256b") };
   str = {str,  $psprintf("\n\t ----| Key:         \t ") };

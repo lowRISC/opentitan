@@ -5,15 +5,15 @@
 // AES LUT-based SBox
 
 module aes_sbox_lut (
-  input  aes_pkg::mode_e mode_i,
-  input  logic [7:0]     data_i,
-  output logic [7:0]     data_o
+  input  aes_pkg::ciph_op_e op_i,
+  input  logic [7:0]        data_i,
+  output logic [7:0]        data_o
 );
 
   import aes_pkg::*;
 
   // Define the LUTs
-  const logic [7:0] sbox_enc [256] = '{
+  const logic [7:0] sbox_fwd [256] = '{
     8'h63, 8'h7C, 8'h77, 8'h7B, 8'hF2, 8'h6B, 8'h6F, 8'hC5,
     8'h30, 8'h01, 8'h67, 8'h2B, 8'hFE, 8'hD7, 8'hAB, 8'h76,
 
@@ -63,7 +63,7 @@ module aes_sbox_lut (
     8'h41, 8'h99, 8'h2D, 8'h0F, 8'hB0, 8'h54, 8'hBB, 8'h16
   };
 
-  const logic [7:0] sbox_dec [256] = '{
+  const logic [7:0] sbox_inv [256] = '{
     8'h52, 8'h09, 8'h6a, 8'hd5, 8'h30, 8'h36, 8'ha5, 8'h38,
     8'hbf, 8'h40, 8'ha3, 8'h9e, 8'h81, 8'hf3, 8'hd7, 8'hfb,
 
@@ -114,6 +114,6 @@ module aes_sbox_lut (
   };
 
   // Drive output
-  assign data_o = (mode_i == AES_ENC) ? sbox_enc[data_i] : sbox_dec[data_i];
+  assign data_o = (op_i == CIPH_FWD) ? sbox_fwd[data_i] : sbox_inv[data_i];
 
 endmodule

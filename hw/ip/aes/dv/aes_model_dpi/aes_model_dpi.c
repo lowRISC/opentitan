@@ -12,7 +12,7 @@
 
 #include "aes_model_dpi.h"
 
-void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
+void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
                      const svBitVecVal *key_len_i, const svBitVecVal *key_i,
                      const svBitVecVal *data_i, svBitVecVal *data_o) {
   // get input data from simulator
@@ -45,7 +45,7 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
   }
 
   if (impl_i == 0) {
-    if (!mode_i) {
+    if (!op_i) {
       aes_encrypt_block(ref_in, key, key_len, ref_out);
     } else {
       aes_decrypt_block(ref_in, key, key_len, ref_out);
@@ -58,7 +58,7 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
     // the final spare block produced by crypto_encrypt()
     int len = crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len);
 
-    if (mode_i) {
+    if (op_i) {
       // prepare
       unsigned char *ref_in_crypto =
           (unsigned char *)malloc(num_elem_ref_out * sizeof(unsigned char));
@@ -89,13 +89,13 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
   return;
 }
 
-void c_dpi_aes_sub_bytes(const unsigned char mode_i, const svBitVecVal *data_i,
+void c_dpi_aes_sub_bytes(const unsigned char op_i, const svBitVecVal *data_i,
                          svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
   // perform sub bytes
-  if (!mode_i) {
+  if (!op_i) {
     aes_sub_bytes(data);
   } else {
     aes_inv_sub_bytes(data);
@@ -107,13 +107,13 @@ void c_dpi_aes_sub_bytes(const unsigned char mode_i, const svBitVecVal *data_i,
   return;
 }
 
-void c_dpi_aes_shift_rows(const unsigned char mode_i, const svBitVecVal *data_i,
+void c_dpi_aes_shift_rows(const unsigned char op_i, const svBitVecVal *data_i,
                           svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
   // perform shift rows
-  if (!mode_i) {
+  if (!op_i) {
     aes_shift_rows(data);
   } else {
     aes_inv_shift_rows(data);
@@ -125,13 +125,13 @@ void c_dpi_aes_shift_rows(const unsigned char mode_i, const svBitVecVal *data_i,
   return;
 }
 
-void c_dpi_aes_mix_columns(const unsigned char mode_i,
-                           const svBitVecVal *data_i, svBitVecVal *data_o) {
+void c_dpi_aes_mix_columns(const unsigned char op_i, const svBitVecVal *data_i,
+                           svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
   // perform mix columns
-  if (!mode_i) {
+  if (!op_i) {
     aes_mix_columns(data);
   } else {
     aes_inv_mix_columns(data);
@@ -143,7 +143,7 @@ void c_dpi_aes_mix_columns(const unsigned char mode_i,
   return;
 }
 
-void c_dpi_aes_key_expand(const unsigned char mode_i, const svBitVecVal *rcon_i,
+void c_dpi_aes_key_expand(const unsigned char op_i, const svBitVecVal *rcon_i,
                           const svBitVecVal *round_i,
                           const svBitVecVal *key_len_i,
                           const svBitVecVal *key_i, svBitVecVal *key_o) {
@@ -165,7 +165,7 @@ void c_dpi_aes_key_expand(const unsigned char mode_i, const svBitVecVal *rcon_i,
   }
 
   // perform key expand
-  if (!mode_i) {
+  if (!op_i) {
     aes_rcon_prev(&rcon, key_len);
     aes_key_expand(round_key, key, key_len, &rcon, rnd);
   } else {

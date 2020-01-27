@@ -21,7 +21,7 @@ module aes_cipher_control (
   input  logic                    out_ready_i,
 
   // Control and sync signals
-  input  aes_pkg::mode_e          mode_i,
+  input  aes_pkg::ciph_op_e       op_i,
   input  aes_pkg::key_len_e       key_len_i,
   input  logic                    start_i,
   input  logic                    dec_key_gen_i,
@@ -37,7 +37,7 @@ module aes_cipher_control (
   output aes_pkg::add_rk_sel_e    add_rk_sel_o,
 
   // Control outputs key expand data path
-  output aes_pkg::mode_e          key_expand_mode_o,
+  output aes_pkg::ciph_op_e       key_expand_op_o,
   output aes_pkg::key_full_sel_e  key_full_sel_o,
   output logic                    key_full_we_o,
   output aes_pkg::key_dec_sel_e   key_dec_sel_o,
@@ -117,7 +117,7 @@ module aes_cipher_control (
 
             // Load full key
             key_full_sel_o = dec_key_gen_d ? KEY_FULL_ENC_INIT :
-                       (mode_i == AES_ENC) ? KEY_FULL_ENC_INIT :
+                        (op_i == CIPH_FWD) ? KEY_FULL_ENC_INIT :
                                              KEY_FULL_DEC_INIT;
             key_full_we_o  = 1'b1;
 
@@ -142,12 +142,12 @@ module aes_cipher_control (
         add_rk_sel_o = ADD_RK_INIT;
 
         // Select key words for initial add_round_key
-        key_words_sel_o = dec_key_gen_q                 ? KEY_WORDS_ZERO :
-            (key_len_i == AES_128)                      ? KEY_WORDS_0123 :
-            (key_len_i == AES_192 && mode_i == AES_ENC) ? KEY_WORDS_0123 :
-            (key_len_i == AES_192 && mode_i == AES_DEC) ? KEY_WORDS_2345 :
-            (key_len_i == AES_256 && mode_i == AES_ENC) ? KEY_WORDS_0123 :
-            (key_len_i == AES_256 && mode_i == AES_DEC) ? KEY_WORDS_4567 : KEY_WORDS_ZERO;
+        key_words_sel_o = dec_key_gen_q                ? KEY_WORDS_ZERO :
+            (key_len_i == AES_128)                     ? KEY_WORDS_0123 :
+            (key_len_i == AES_192 && op_i == CIPH_FWD) ? KEY_WORDS_0123 :
+            (key_len_i == AES_192 && op_i == CIPH_INV) ? KEY_WORDS_2345 :
+            (key_len_i == AES_256 && op_i == CIPH_FWD) ? KEY_WORDS_0123 :
+            (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_4567 : KEY_WORDS_ZERO;
 
         // Make key expand advance - AES-256 has two round keys available right from beginning.
         if (key_len_i != AES_256) begin
@@ -163,19 +163,19 @@ module aes_cipher_control (
         state_we_o = ~dec_key_gen_q;
 
         // Select key words for add_round_key
-        key_words_sel_o = dec_key_gen_q                 ? KEY_WORDS_ZERO :
-            (key_len_i == AES_128)                      ? KEY_WORDS_0123 :
-            (key_len_i == AES_192 && mode_i == AES_ENC) ? KEY_WORDS_2345 :
-            (key_len_i == AES_192 && mode_i == AES_DEC) ? KEY_WORDS_0123 :
-            (key_len_i == AES_256 && mode_i == AES_ENC) ? KEY_WORDS_4567 :
-            (key_len_i == AES_256 && mode_i == AES_DEC) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
+        key_words_sel_o = dec_key_gen_q                ? KEY_WORDS_ZERO :
+            (key_len_i == AES_128)                     ? KEY_WORDS_0123 :
+            (key_len_i == AES_192 && op_i == CIPH_FWD) ? KEY_WORDS_2345 :
+            (key_len_i == AES_192 && op_i == CIPH_INV) ? KEY_WORDS_0123 :
+            (key_len_i == AES_256 && op_i == CIPH_FWD) ? KEY_WORDS_4567 :
+            (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
 
         // Make key expand advance
         key_expand_step_o = 1'b1;
         key_full_we_o     = 1'b1;
 
         // Select round key: direct or mixed (equivalent inverse cipher)
-        round_key_sel_o = (mode_i == AES_ENC) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
+        round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
 
         // Update round
         round_d = round_q + 4'b1;
@@ -205,12 +205,12 @@ module aes_cipher_control (
         // Final round
 
         // Select key words for add_round_key
-        key_words_sel_o = dec_key_gen_q                 ? KEY_WORDS_ZERO :
-            (key_len_i == AES_128)                      ? KEY_WORDS_0123 :
-            (key_len_i == AES_192 && mode_i == AES_ENC) ? KEY_WORDS_2345 :
-            (key_len_i == AES_192 && mode_i == AES_DEC) ? KEY_WORDS_0123 :
-            (key_len_i == AES_256 && mode_i == AES_ENC) ? KEY_WORDS_4567 :
-            (key_len_i == AES_256 && mode_i == AES_DEC) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
+        key_words_sel_o = dec_key_gen_q                ? KEY_WORDS_ZERO :
+            (key_len_i == AES_128)                     ? KEY_WORDS_0123 :
+            (key_len_i == AES_192 && op_i == CIPH_FWD) ? KEY_WORDS_2345 :
+            (key_len_i == AES_192 && op_i == CIPH_INV) ? KEY_WORDS_0123 :
+            (key_len_i == AES_256 && op_i == CIPH_FWD) ? KEY_WORDS_4567 :
+            (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
 
         // Skip mix_columns
         add_rk_sel_o = ADD_RK_FINAL;
@@ -274,8 +274,8 @@ module aes_cipher_control (
   // Use separate signal for number of regular rounds.
   assign num_rounds_regular = num_rounds_q - 4'd2;
 
-  // Use separate signals for key expand mode and round.
-  assign key_expand_mode_o  = (dec_key_gen_d || dec_key_gen_q) ? AES_ENC : mode_i;
+  // Use separate signals for key expand operation and round.
+  assign key_expand_op_o    = (dec_key_gen_d || dec_key_gen_q) ? CIPH_FWD : op_i;
   assign key_expand_round_o = round_d;
 
   // Let the main controller know whate we are doing.
@@ -288,7 +288,7 @@ module aes_cipher_control (
   ////////////////
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesModeKnown, mode_i)
+  `ASSERT_KNOWN(AesCiphOpKnown, op_i)
   `ASSERT(AesKeyLenValid, key_len_i inside {
       AES_128,
       AES_192,

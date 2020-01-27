@@ -25,7 +25,7 @@ module aes_cipher_core #(
   input  logic                 out_ready_i,
 
   // Control and sync signals
-  input  aes_pkg::mode_e       mode_i,
+  input  aes_pkg::ciph_op_e    op_i,
   input  aes_pkg::key_len_e    key_len_i,
   input  logic                 start_i,
   input  logic                 dec_key_gen_i,
@@ -65,7 +65,7 @@ module aes_cipher_core #(
   logic                 key_dec_we;
   key_dec_sel_e         key_dec_sel;
   logic     [7:0][31:0] key_expand_out;
-  mode_e                key_expand_mode;
+  ciph_op_e             key_expand_op;
   logic                 key_expand_step;
   logic                 key_expand_clear;
   logic           [3:0] key_expand_round;
@@ -102,19 +102,19 @@ module aes_cipher_core #(
   aes_sub_bytes #(
     .SBoxImpl ( SBoxImpl )
   ) aes_sub_bytes (
-    .mode_i ( mode_i        ),
+    .op_i   ( op_i          ),
     .data_i ( state_q       ),
     .data_o ( sub_bytes_out )
   );
 
   aes_shift_rows aes_shift_rows (
-    .mode_i ( mode_i         ),
+    .op_i   ( op_i           ),
     .data_i ( sub_bytes_out  ),
     .data_o ( shift_rows_out )
   );
 
   aes_mix_columns aes_mix_columns (
-    .mode_i ( mode_i          ),
+    .op_i   ( op_i            ),
     .data_i ( shift_rows_out  ),
     .data_o ( mix_columns_out )
   );
@@ -177,7 +177,7 @@ module aes_cipher_core #(
   ) aes_key_expand (
     .clk_i     ( clk_i            ),
     .rst_ni    ( rst_ni           ),
-    .mode_i    ( key_expand_mode  ),
+    .op_i      ( key_expand_op    ),
     .step_i    ( key_expand_step  ),
     .clear_i   ( key_expand_clear ),
     .round_i   ( key_expand_round ),
@@ -200,7 +200,7 @@ module aes_cipher_core #(
   assign key_bytes = aes_transpose(key_words);
 
   aes_mix_columns aes_key_mix_columns (
-    .mode_i ( AES_DEC             ),
+    .op_i   ( CIPH_INV            ),
     .data_i ( key_bytes           ),
     .data_o ( key_mix_columns_out )
   );
@@ -226,7 +226,7 @@ module aes_cipher_core #(
     .in_ready_o             ( in_ready_o           ),
     .out_valid_o            ( out_valid_o          ),
     .out_ready_i            ( out_ready_i          ),
-    .mode_i                 ( mode_i               ),
+    .op_i                   ( op_i                 ),
     .key_len_i              ( key_len_i            ),
     .start_i                ( start_i              ),
     .dec_key_gen_i          ( dec_key_gen_i        ),
@@ -239,7 +239,7 @@ module aes_cipher_core #(
     .state_sel_o            ( state_sel            ),
     .state_we_o             ( state_we             ),
     .add_rk_sel_o           ( add_round_key_in_sel ),
-    .key_expand_mode_o      ( key_expand_mode      ),
+    .key_expand_op_o        ( key_expand_op        ),
     .key_full_sel_o         ( key_full_sel         ),
     .key_full_we_o          ( key_full_we          ),
     .key_dec_sel_o          ( key_dec_sel          ),
