@@ -174,8 +174,9 @@
     fields: [
       { bits: "0",
         name: "IDLE",
+        resval: "1",
         desc:  '''
-          The AES unit is idle (0) or busy (1).
+          The AES unit is idle (1) or busy (0).
         '''
       }
       { bits: "1",
