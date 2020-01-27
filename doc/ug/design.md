@@ -166,3 +166,32 @@ The process for getting started with a design involves many steps, including get
 These are discussed in the [Getting Started with a Design]({{< relref "getting_started_design.md" >}}) document.
 
 ## FPGA vs Silicon
+
+One output of the OpenTitan project will be silicon instantiations of hardware functionality described in this open source repository.
+The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides]({{< relref "doc/ug" >}})).
+That level is so-called "tapeout ready".
+Once the project reaches that milestone, the team will work with a vendor or vendors to ensure a trustworthy, industry-quality, fully functional OpenTitan chip is manufactured.
+
+It is important that any IP that *can* be open *is* open to ensure maximal trustworthiness and transparency of the final devices.
+
+To that end, OpenTitan will define compliance collateral that ensures correctness - that the FPGA and the eventual silicon work the same.
+Due to fundamental economic and technical limitations, there may, and likely will, be differences between these incarnations.
+Some examples include the following:
+
+* Silicon versions by definition use different technologies for fundamental vendor collateral, including memories, analog designs, pads, and standard cells.
+* Some of the silicon collateral is beyond the so-called "foundry boundry" and not available for open sourcing.
+
+Some IP blocks will undergo hardening of designs to protect them against physical attack to meet security and certification requirements.
+Some of this hardening, for instance in fuses, may be of necessity proprietary.
+These changes will not impact the functionality of the design, but are described in processes unique to an ASIC flow vs. the emulated flow of an FPGA.
+
+Even with these differences, the overriding objective is compliance equivalence between the FPGA and silicon versions.
+This may require instantiation-specific differences in the software implementation of the compliance suite.
+
+Consider the embedded flash macro.
+This design is highly dependent upon the silicon technology node.
+In the open source repository, the embedded flash macro is emulated by a model that approximates the timing one would typically find in silicon.
+It lacks the myriad timing knobs and configuration points required to control the final flash block.
+This necessitates that the compliance suite will have initialization sections for flash that differ between FPGA and silicon.
+
+We consider this demonstration of "security equivalence" to be an open, unsolved problem and committed to clearly delimiting any differences in the compliance suite implementation.

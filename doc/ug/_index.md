@@ -42,9 +42,3 @@ title: "User Guides"
   * Reviews
   * Filing Issues
   * Pending Work Items
-* *Validation Methodology* (TODO)
-  * How to download bit stream
-  * What tests exist today
-  * How to run tests
-  * How does this differ from verification
-  * How to add tests
