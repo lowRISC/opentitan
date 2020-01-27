@@ -9,7 +9,12 @@ package aes_pkg;
 typedef enum logic {
   AES_ENC = 1'b0,
   AES_DEC = 1'b1
-} mode_e;
+} aes_op_e;
+
+typedef enum logic {
+  CIPH_FWD = 1'b0,
+  CIPH_INV = 1'b1
+} ciph_op_e;
 
 typedef enum logic [2:0] {
   AES_128 = 3'b001,

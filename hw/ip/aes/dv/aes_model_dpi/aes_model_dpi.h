@@ -15,57 +15,57 @@ extern "C" {
  * Perform encryption/decryption of one block.
  *
  * @param  impl_i    Select reference impl.: 0 = C model, 1 = OpenSSL/BoringSSL
- * @param  mode_i    Operation mode: 0 = encryption, 1 = decryption
+ * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key
  * @param  data_i    Input data, 2D state matrix (3D packed array in SV)
  * @param  data_o    Output data, 2D state matrix (3D packed array in SV)
  */
-void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
+void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
                      const svBitVecVal *key_len_i, const svBitVecVal *key_i,
                      const svBitVecVal *data_i, svBitVecVal *data_o);
 
 /**
  * Perform sub bytes operation during encryption/decryption.
  *
- * @param  mode_i Operation mode: 0 = encryption, 1 = decryption
+ * @param  op_i   Operation: 0 = encrypt, 1 = decrypt
  * @param  data_i Input data
  * @param  data_o Output data
  */
-void c_dpi_aes_sub_bytes(const unsigned char mode_i, const svBitVecVal *data_i,
+void c_dpi_aes_sub_bytes(const unsigned char op_i, const svBitVecVal *data_i,
                          svBitVecVal *data_o);
 
 /**
  * Perform shift rows operation during encryption/decryption.
  *
- * @param  mode_i Operation mode: 0 = encryption, 1 = decryption
+ * @param  op_i   Operation: 0 = encrypt, 1 = decrypt
  * @param  data_i Input data
  * @param  data_o Output data
  */
-void c_dpi_aes_shift_rows(const unsigned char mode_i, const svBitVecVal *data_i,
+void c_dpi_aes_shift_rows(const unsigned char op_i, const svBitVecVal *data_i,
                           svBitVecVal *data_o);
 
 /**
  * Perform mix columns operation during encryption/decryption.
  *
- * @param  mode_i Operation mode: 0 = encryption, 1 = decryption
+ * @param  op_i   Operation: 0 = encrypt, 1 = decrypt
  * @param  data_i Input data
  * @param  data_o Output data
  */
-void c_dpi_aes_mix_columns(const unsigned char mode_i,
-                           const svBitVecVal *data_i, svBitVecVal *data_o);
+void c_dpi_aes_mix_columns(const unsigned char op_i, const svBitVecVal *data_i,
+                           svBitVecVal *data_o);
 
 /**
  * Generate full key for next round during encryption/decryption.
  *
- * @param  mode_i    Operation mode: 0 = encryption, 1 = decryption
+ * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
  * @param  rcon_old  Previous rcon (updates intenally before being used)
  * @param  round_i   Round index
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key
  * @param  key_o     Full output key
  */
-void c_dpi_aes_key_expand(const unsigned char mode_i, const svBitVecVal *rcon_i,
+void c_dpi_aes_key_expand(const unsigned char op_i, const svBitVecVal *rcon_i,
                           const svBitVecVal *round_i,
                           const svBitVecVal *key_len_i,
                           const svBitVecVal *key_i, svBitVecVal *key_o);

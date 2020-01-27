@@ -13,7 +13,7 @@
 
 void aes_init(aes_cfg_t aes_cfg) {
   REG32(AES_CTRL(0)) =
-      (aes_cfg.mode << AES_CTRL_MODE) |
+      (aes_cfg.operation << AES_CTRL_OPERATION) |
       ((aes_cfg.key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET) |
       (aes_cfg.manual_start_trigger << AES_CTRL_MANUAL_START_TRIGGER) |
       (aes_cfg.force_data_overwrite << AES_CTRL_FORCE_DATA_OVERWRITE);

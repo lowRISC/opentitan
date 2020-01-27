@@ -7,7 +7,7 @@
 module aes_sub_bytes #(
   parameter SBoxImpl = "lut"
 ) (
-  input  aes_pkg::mode_e       mode_i,
+  input  aes_pkg::ciph_op_e    op_i,
   input  logic [3:0][3:0][7:0] data_i,
   output logic [3:0][3:0][7:0] data_o
 );
@@ -18,7 +18,7 @@ module aes_sub_bytes #(
       aes_sbox #(
         .SBoxImpl ( SBoxImpl )
       ) aes_sbox_ij (
-        .mode_i ( mode_i       ),
+        .op_i   ( op_i         ),
         .data_i ( data_i[i][j] ),
         .data_o ( data_o[i][j] )
       );

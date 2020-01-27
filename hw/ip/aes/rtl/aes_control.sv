@@ -13,7 +13,7 @@ module aes_control (
   input  logic                    rst_ni,
 
   // Main control inputs
-  input  aes_pkg::mode_e          mode_i,
+  input  aes_pkg::ciph_op_e       cipher_op_i,
   input  logic                    manual_start_trigger_i,
   input  logic                    force_data_overwrite_i,
   input  logic                    start_i,
@@ -145,7 +145,7 @@ module aes_control (
           cipher_start_o = 1'b1;
           // We got a new initial key, but want to do decryption. The cipher core must first
           // generate the start key for decryption.
-          cipher_dec_key_gen_o = key_init_new & (mode_i == AES_DEC);
+          cipher_dec_key_gen_o = key_init_new & (cipher_op_i == CIPH_INV);
 
           // We have work for the cipher core, perform handshake.
           cipher_in_valid_o = 1'b1;
@@ -303,7 +303,7 @@ module aes_control (
   assign data_out_clear_o    = 1'b0;
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesModeKnown, mode_i)
+  `ASSERT_KNOWN(AesCiphOpKnown, cipher_op_i)
   `ASSERT_KNOWN(AesControlStateValid, aes_ctrl_cs)
 
 endmodule

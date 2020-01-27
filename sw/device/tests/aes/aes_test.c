@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   aes_key_put(key_32_1, aes_cfg.key_len);
 
   // Encode
-  aes_cfg.mode = kAesEnc;
+  aes_cfg.operation = kAesEnc;
   aes_init(aes_cfg);
   aes_data_put_wait(plain_text_1);
   aes_data_get_wait(buffer);
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
   }
 
   // Decode
-  aes_cfg.mode = kAesDec;
+  aes_cfg.operation = kAesDec;
   aes_init(aes_cfg);
   aes_data_put_wait(buffer);
   aes_data_get_wait(buffer);

@@ -60,7 +60,7 @@ All test sequences are extended from `aes_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
 * aes_init:    Configure aes control and can via a knob be set to randomize register content before starting a test.
-* set_mode:    Set AES to encrypt or decrypt.
+* set_op:      Set AES operation to encrypt or decrypt.
 * write_key:   Write initial key to aes init key registers.
 * add_data:    Add the next 128 block to the input registers.
 * read_output:  Poll the status reg for dataready bit and read the result from aes output regs

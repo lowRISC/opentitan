@@ -103,9 +103,9 @@
     hwqe:     "true",
     fields: [
       { bits: "0",
-        name: "MODE",
+        name: "OPERATION",
         desc:  '''
-          Select encryption(0) or decryption(1) operating mode of AES unit.
+          Select encryption(0) or decryption(1) operation of AES unit.
         '''
       }
       { bits: "3:1",

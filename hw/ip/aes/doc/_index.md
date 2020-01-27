@@ -117,7 +117,7 @@ This section discusses different design details of the AES module.
 ### Datapath Architecture and Operation
 
 The AES unit implements the Equivalent Inverse Cipher described in the [AES specification](https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf).
-This allows for more efficient cipher data path sharing between encryption/decryption as the operations are applied in the same order (less muxes, simpler control), but requires the round key in decryption mode to be transformed using an inverse MixColumns in all rounds except for the first and the last one.
+This allows for more efficient cipher data path sharing between encryption/decryption as the operations are applied in the same order (less muxes, simpler control), but requires the round key during decryption to be transformed using an inverse MixColumns in all rounds except for the first and the last one.
 
 This architectural choice targets at efficient cipher data path sharing and low area footprint.
 Depending on the application scenario, other architectures might offer a more suitable area/performance tradeoff.
@@ -210,29 +210,29 @@ The timing diagram below visualizes this process.
 {{< wavejson >}}
 {
   signal: [
-    {    name: 'clk',         wave: 'p........|.......'},
+    {    name: 'clk',       wave: 'p........|.......'},
     ['TL-UL IF',
-      {  name: 'write',       wave: '01...0...|.......'},
-      {  name: 'addr',        wave: 'x2345xxxx|xxxxxxx', data: 'K0 K1 K2 K3'},
-      {  name: 'wdata',       wave: 'x2345xxxx|xxxxxxx', data: 'K0 K1 K2 K3'},
+      {  name: 'write',     wave: '01...0...|.......'},
+      {  name: 'addr',      wave: 'x2345xxxx|xxxxxxx', data: 'K0 K1 K2 K3'},
+      {  name: 'wdata',     wave: 'x2345xxxx|xxxxxxx', data: 'K0 K1 K2 K3'},
     ],
     {},
     ['AES Unit',
-      {  name: 'Config mode', wave: 'x4...............', data: 'DECRYPT'},
-      {  name: 'AES mode',    wave: '2........|.4.....', data: 'IDLE DECRYPT'},
-      {  name: 'KEM mode',    wave: '2....3...|.4.....', data: 'IDLE ENCRYPT DECRYPT'},
-      {  name: 'round',       wave: 'xxxxx2.22|22.2222', data: '0 1 2 9 0 1 2 3 4'},
-      {  name: 'key_init',    wave: 'xxxx5....|.......', data: 'K0-3'},
-      {  name: 'key_full',    wave: 'xxxxx5222|4.22222', data: 'K0-3 f(K) f(K) f(K) K0-3\' f(K) f(K) f(K) f(K) f(K)'},
-      {  name: 'key_dec',     wave: 'xxxxxxxxx|4......', data: 'K0-3\''},
+      {  name: 'Config op', wave: 'x4...............', data: 'DECRYPT'},
+      {  name: 'AES op',    wave: '2........|.4.....', data: 'IDLE DECRYPT'},
+      {  name: 'KEM op',    wave: '2....3...|.4.....', data: 'IDLE ENCRYPT DECRYPT'},
+      {  name: 'round',     wave: 'xxxxx2.22|22.2222', data: '0 1 2 9 0 1 2 3 4'},
+      {  name: 'key_init',  wave: 'xxxx5....|.......', data: 'K0-3'},
+      {  name: 'key_full',  wave: 'xxxxx5222|4.22222', data: 'K0-3 f(K) f(K) f(K) K0-3\' f(K) f(K) f(K) f(K) f(K)'},
+      {  name: 'key_dec',   wave: 'xxxxxxxxx|4......', data: 'K0-3\''},
     ]
   ]
 }
 {{< /wavejson >}}
 
-The AES unit is configured to do decryption (`Config mode` = DECRYPT).
-Once the new key has been provided via the control and status registers (top), this new key is loaded into the Full Key register (`key_full` = K0-3) and the KEM starts performing encryption (`KEM mode`=ENCRYPT).
-The cipher data path remains idle (`AES mode`=IDLE).
+The AES unit is configured to do decryption (`Config op` = DECRYPT).
+Once the new key has been provided via the control and status registers (top), this new key is loaded into the Full Key register (`key_full` = K0-3) and the KEM starts performing encryption (`KEM op`=ENCRYPT).
+The cipher data path remains idle (`AES op`=IDLE).
 In every round, the value in `key_full` is updated.
 After 10 encryption rounds, the value in `key_full` equals the start key for decryption.
 This value is stored into the Decryption Key register (`key_dec` = K0-3' at the very bottom).
@@ -314,7 +314,7 @@ The code snippet below shows how to perform block operation.
 ```c
   // Enable autostart, disable overwriting of previous output data
   REG32(AES_CTRL(0)) =
-      mode << AES_CTRL_MODE |
+      op << AES_CTRL_OPERATION |
       (key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET |
       0x0 << AES_CTRL_MANUAL_START_TRIGGER |
       0x0 << AES_CTRL_FORCE_DATA_OVERWRITE;
