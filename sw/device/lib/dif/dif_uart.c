@@ -319,6 +319,20 @@ bool dif_uart_irq_state_get(const dif_uart_t *uart,
   return true;
 }
 
+bool dif_uart_irq_state_clear(const dif_uart_t *uart,
+                              dif_uart_interrupt_t irq_type) {
+  if (uart == NULL) {
+    return false;
+  }
+
+  // Writing to the register clears the corresponding bits
+  ptrdiff_t offset = uart_irq_offset_get(irq_type);
+  mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_STATE_REG_OFFSET,
+                                  offset);
+
+  return true;
+}
+
 bool dif_uart_irqs_disable(const dif_uart_t *uart, uint32_t *state) {
   if (uart == NULL) {
     return false;

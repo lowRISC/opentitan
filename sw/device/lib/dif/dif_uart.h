@@ -207,6 +207,18 @@ bool dif_uart_byte_receive_polled(const dif_uart_t *uart, uint8_t *byte);
 bool dif_uart_irq_state_get(const dif_uart_t *uart,
                             dif_uart_interrupt_t irq_type,
                             dif_uart_enable_t *state);
+/**
+ * UART clear requested IRQ state
+ *
+ * Clear the state of the requested IRQ in @p arg2. Primary use of this
+ * function is to de-assert the interrupt after it has been serviced.
+ *
+ * @param uart UART state data
+ * @param irq_type IRQ to be de-asserted
+ * @return true if the function was successful, false otherwise
+ */
+bool dif_uart_irq_state_clear(const dif_uart_t *uart,
+                              dif_uart_interrupt_t irq_type);
 
 /**
  * UART disable interrupts
