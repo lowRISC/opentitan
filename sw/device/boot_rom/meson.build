@@ -21,44 +21,47 @@ rom_linkfile = files(['rom_link.ld'])
 rom_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]), '-Wl,--build-id=none']
 rom_link_deps = [rom_linkfile]
 
-boot_rom_elf = executable(
-  'boot_rom',
-  sources: [
-    'boot_rom.c',
-    'bootstrap.c',
-    'irq_vector.S',
-    'rom_crt.S',
-  ],
-  name_suffix: 'elf',
-  link_args: rom_link_args,
-  link_depends: rom_link_deps,
-  dependencies: [
-    chip_info_h,
-    sw_lib_runtime_hart,
-    sw_lib_flash_ctrl,
-    sw_lib_pinmux,
-    sw_lib_gpio,
-    sw_lib_hmac,
-    sw_lib_spi_device,
-    sw_lib_uart,
-    sw_lib_log,
-  ],
-)
+foreach device_name, device_lib : sw_lib_arch_core_devices
+  boot_rom_elf = executable(
+    'boot_rom_' + device_name,
+    sources: [
+      'boot_rom.c',
+      'bootstrap.c',
+      'irq_vector.S',
+      'rom_crt.S',
+    ],
+    name_suffix: 'elf',
+    link_args: rom_link_args,
+    link_depends: rom_link_deps,
+    dependencies: [
+      chip_info_h,
+      sw_lib_runtime_hart,
+      sw_lib_flash_ctrl,
+      sw_lib_pinmux,
+      sw_lib_gpio,
+      sw_lib_hmac,
+      sw_lib_spi_device,
+      sw_lib_uart,
+      sw_lib_log,
+      device_lib,
+    ],
+  )
 
-boot_rom_embedded = custom_target(
-  'boot_rom',
-  command: make_embedded_target,
-  input: boot_rom_elf,
-  output: make_embedded_target_outputs,
-  build_by_default: true,
-)
+  boot_rom_embedded = custom_target(
+    'boot_rom_' + device_name,
+    command: make_embedded_target,
+    input: boot_rom_elf,
+    output: make_embedded_target_outputs,
+    build_by_default: true,
+  )
 
-custom_target(
-  'boot_rom_export',
-  command: export_embedded_target,
-  input: [boot_rom_elf, boot_rom_embedded],
-  output: 'boot_rom_export',
-  build_always_stale: true,
-  build_by_default: true,
-)
+  custom_target(
+    'boot_rom_export_' + device_name,
+    command: export_embedded_target,
+    input: [boot_rom_elf, boot_rom_embedded],
+    output: 'boot_rom_export_' + device_name,
+    build_always_stale: true,
+    build_by_default: true,
+  )
+endforeach
 

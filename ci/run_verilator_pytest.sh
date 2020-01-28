@@ -7,19 +7,19 @@ set -e
 . util/build_consts.sh
 
 readonly VERILATED_SYSTEM_DEFAULT="build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator"
-readonly SW_BUILD_DEFAULT="$(sw_bin_dir sim-verilator)"
+readonly SW_BUILD_DEFAULT="$DEV_BIN_DIR"
 
 VERILATED_SYSTEM_PATH="${VERILATED_SYSTEM_PATH:-$VERILATED_SYSTEM_DEFAULT}"
 SW_BUILD_PATH="${SW_BUILD_PATH:-$SW_BUILD_DEFAULT}"
 
-BOOT_ROM_TARGET="boot_rom/boot_rom.elf"
+BOOT_ROM_TARGET="boot_rom/boot_rom_sim_verilator.elf"
 
 TEST_TARGETS=(
-  "examples/hello_usbdev/hello_usbdev.elf"
-  "tests/aes/aes_test.elf"
-  "tests/flash_ctrl/flash_test.elf"
-  "tests/hmac/sha256_test.elf"
-  "tests/rv_timer/rv_timer_test.elf"
+  "examples/hello_usbdev/hello_usbdev_sim_verilator.elf"
+  "tests/aes/aes_test_sim_verilator.elf"
+  "tests/flash_ctrl/flash_test_sim_verilator.elf"
+  "tests/hmac/sha256_test_sim_verilator.elf"
+  "tests/rv_timer/rv_timer_test_sim_verilator.elf"
 )
 
 if [[ ! -z ${MAKE_BUILD+x} ]]; then

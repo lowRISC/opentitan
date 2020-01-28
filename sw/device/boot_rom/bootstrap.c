@@ -4,6 +4,7 @@
 
 #include "sw/device/boot_rom/bootstrap.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/gpio.h"
@@ -14,14 +15,13 @@
 /* Checks if flash is blank to determine if bootstrap is needed. */
 /* TODO: Update this to check bootstrap pin instead in Verilator. */
 static int bootstrap_requested(void) {
-// The following flash empty-sniff-check is done this way due to the lack of
-// clear eflash reset in SIM environments.
-#if defined(SIMULATION)
-  return !!(REG32(FLASH_MEM_BASE_ADDR) == 0 ||
-            REG32(FLASH_MEM_BASE_ADDR) == 0xFFFFFFFF);
-#else
+  // The following flash empty-sniff-check is done this way due to the lack of
+  // clear eflash reset in SIM environments.
+  if (kDeviceType == kDeviceSimVerilator) {
+    return !!(REG32(FLASH_MEM_BASE_ADDR) == 0 ||
+              REG32(FLASH_MEM_BASE_ADDR) == 0xFFFFFFFF);
+  }
   return !!(gpio_read() & GPIO_BOOTSTRAP_BIT_MASK);
-#endif
 }
 
 /* Erase all flash, and verify blank. */

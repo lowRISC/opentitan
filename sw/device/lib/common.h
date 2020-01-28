@@ -5,12 +5,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_COMMON_H_
 #define OPENTITAN_SW_DEVICE_LIB_COMMON_H_
 
-#ifdef SIMULATION
-static const unsigned long UART_BAUD_RATE = 9600;
-#else
-static const unsigned long UART_BAUD_RATE = 230400;
-#endif
-
 // Flash memory base defines, _SZ are presented in bytes
 #define FLASH_MEM_BASE_ADDR 0x20000000
 #define FLASH_WORDS_PER_PAGE 256

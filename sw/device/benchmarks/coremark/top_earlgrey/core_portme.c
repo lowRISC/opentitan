@@ -7,6 +7,7 @@
 */
 #include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/vendor/eembc_coremark/coremark.h"
 
@@ -106,7 +107,7 @@ ee_u32 default_num_contexts = 1;
         Test for some common mistakes.
 */
 void portable_init(core_portable *p, int *argc, char *argv[]) {
-  uart_init(UART_BAUD_RATE);
+  uart_init(kUartBaudrate);
 
   if (sizeof(ee_ptr_int) != sizeof(ee_u8 *)) {
     ee_printf(

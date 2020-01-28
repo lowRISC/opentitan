@@ -5,6 +5,7 @@
 #include "sw/device/lib/rv_timer.h"
 
 #include "rv_timer_regs.h"  // Generated.
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/runtime/ibex.h"
 
@@ -14,7 +15,7 @@
 static const uint32_t NS_IN_S = 1000 * 1000 * 1000;
 
 void rv_timer_set_us_tick(uint32_t hart) {
-  uint32_t ticks_per_us = (uint32_t)((1000 * kIbexClockFreqHz) / NS_IN_S) - 1;
+  uint32_t ticks_per_us = (uint32_t)((1000 * kClockFreqHz) / NS_IN_S) - 1;
 
   REG32(RV_TIMER_CFG0(0) + hart * 4) =
       (ticks_per_us & RV_TIMER_CFG0_PRESCALE_MASK) |

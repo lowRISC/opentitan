@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
   uint32_t bank0_last_page =
       FLASH_MEM_BASE_ADDR + (FLASH_PAGES_PER_BANK - 1) * FLASH_PAGE_SZ;
 
-  uart_init(UART_BAUD_RATE);
+  uart_init(kUartBaudrate);
   flash_init_block();
 
   // enable all access

@@ -4,10 +4,4 @@
 
 #include "sw/device/lib/runtime/ibex.h"
 
-#ifdef SIMULATION
-const size_t kIbexClockFreqHz = 500 * 1000;  // 500 kHz
-#else
-const size_t kIbexClockFreqHz = 50 * 1000 * 1000;  // 50 MHz
-#endif
-
 extern uint64_t ibex_mcycle_read();

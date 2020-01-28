@@ -63,9 +63,9 @@ The loading output is also shown.
 ```console
 $ cd ${REPO_TOP}
 $ ./meson_init.sh
-$ ninja -C build-out/sw/fpga all
+$ ninja -C build-out
 $ build-bin/sw/host/spiflash/spiflash \ 
-    --input build-bin/sw/device/fpga/examples/hello_world/hello_world.bin
+    --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
 
 Running SPI flash update.
 Image divided into 6 frames.

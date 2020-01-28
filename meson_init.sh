@@ -120,30 +120,24 @@ function purge_includes() {
   perl -pi -e 's#-I[^/][^@ ]+ # #g' -- "$ninja_file"
 }
 
-for platform in ${PLATFORMS[@]}; do
-  obj_dir="$(sw_obj_dir "$platform")"
-  reconf="${FLAGS_reconfigure}"
+reconf="${FLAGS_reconfigure}"
 
-  if [[ ! -d "$obj_dir" ]]; then
-    echo "Output directory for $platform does not exist at $obj_dir; creating." >&2
-    mkdir -p "$obj_dir"
-    reconf=""
-  elif [[ -z "$reconf" ]]; then
-    echo "Output directory for $platform already exists at $obj_dir; skipping." >&2
-    continue
-  fi
+if [[ ! -d "$OBJ_DIR" ]]; then
+  echo "Output directory does not exist at $OBJ_DIR; creating." >&2
+  mkdir -p "$OBJ_DIR"
+  reconf=""
+elif [[ -z "$reconf" ]]; then
+  echo "Output directory already exists at $OBJ_DIR; skipping." >&2
+  continue
+fi
 
-  bin_dir="$(sw_bin_dir "$platform")"
-  mkdir -p "$bin_dir"
-
-  set -x
-  meson $reconf \
-    -Dtarget="$platform" \
-    -Dot_version="$OT_VERSION" \
-    -Ddev_bin_dir="$bin_dir" \
-    -Dhost_bin_dir="$HOST_BIN_DIR" \
-    --cross-file="$CROSS_FILE" \
-    "$obj_dir"
-  { set +x; } 2>/dev/null
-  purge_includes "$obj_dir"
-done
+mkdir -p "$DEV_BIN_DIR"
+set -x
+meson $reconf \
+  -Dot_version="$OT_VERSION" \
+  -Ddev_bin_dir="$DEV_BIN_DIR" \
+  -Dhost_bin_dir="$HOST_BIN_DIR" \
+  --cross-file="$CROSS_FILE" \
+  "$OBJ_DIR"
+{ set +x; } 2>/dev/null
+purge_includes "$OBJ_DIR"

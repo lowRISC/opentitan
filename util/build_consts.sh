@@ -41,28 +41,9 @@ BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
 readonly OBJ_DIR="$BUILD_ROOT/build-out"
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 
-# PLATFORMS is an array of all of the "device platforms" which OpenTitan
-# software can be built for. These include:
-# - 'sim-verilator', i.e., Verilator.
-# - 'fpga', i.e., a NexysVideo FPGA board.
-readonly PLATFORMS=(
-  'sim-verilator'
-  'fpga'
-)
-
-# sw_obj_dir takes a platform name as an argument and produces a path to a
-# subdirectory of $OBJ_DIR where its build action artifacts should be written.
-#
-# The output of this function should be considered scratch space and not stable.
-function sw_obj_dir() {
-  echo "$OBJ_DIR/sw/$1"
-}
-
-# sw_bin_dir takes a platform name as an argument and produces a path to the
-# subdirectory of $BIN_DIR where its completed build outputs should be written.
-function sw_bin_dir() {
-  echo "$BIN_DIR/sw/device/$1"
-}
+# $DEV_BIN_DIR is a subdirectory of $BIN_DIR where device build outputs (i.e.,
+# compiled programs that should run on the OpenTitan SoC) should be written.
+DEV_BIN_DIR="$BIN_DIR/sw/device"
 
 # $HOST_BIN_DIR is a subdirectory of $BIN_DIR where host build outputs (i.e.,
 # compiled programs that should run on a host workstation or server) should be

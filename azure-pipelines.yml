@@ -145,8 +145,7 @@ jobs:
   - bash: |
       . util/build_consts.sh
       ./meson_init.sh -A
-      ninja -C "$(sw_obj_dir sim-verilator)" all
-      ninja -C "$(sw_obj_dir fpga)" all
+      ninja -C "$OBJ_DIR" all
     displayName: 'Build embedded targets'
   - template: 'ci/upload-artifacts-template.yml'
     parameters:
@@ -260,7 +259,7 @@ jobs:
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
-      BOOTROM_VMEM="$BIN_DIR/sw/device/fpga/boot_rom/boot_rom.vmem"
+      BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.vmem"
       test -f "$BOOTROM_VMEM"
 
       . /opt/xilinx/Vivado/2018.3/settings64.sh

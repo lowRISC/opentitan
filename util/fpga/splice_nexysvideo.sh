@@ -16,14 +16,13 @@ set -e
 
 . util/build_consts.sh
 
-BUILD_DIR="$(sw_obj_dir fpga)"
-TARGET_PREFIX="sw/device/boot_rom/boot_rom"
-TARGET="${BUILD_DIR}/${TARGET_PREFIX}"
+TARGET_PREFIX="sw/device/boot_rom/boot_rom_fpga_nexysvideo"
+TARGET="${DEV_BIN_DIR}/${TARGET_PREFIX}"
 FPGA_BUILD_DIR=build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/
 FPGA_BIT_NAME=lowrisc_systems_top_earlgrey_nexysvideo_0.1
 
 ./meson_init.sh
-ninja -C "$BUILD_DIR" "${TARGET_PREFIX}.bin"
+ninja -C "$DEV_BIN_DIR" "${TARGET_PREFIX}.bin"
 
 srec_cat "${TARGET}.bin" -binary -offset 0x0 -o "${TARGET}.brammem" \
   -vmem -Output_Block_Size 4;

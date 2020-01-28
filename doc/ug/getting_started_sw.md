@@ -17,12 +17,15 @@ $ cd $REPO_TOP
 $ ./meson_init.sh
 
 # Build the two targets we care about, specifically.
-$ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
-$ ninja -C build-out/sw/fpga sw/device/examples/hello_world/hello_world_export
+$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
+$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
 
-# Build *everything*.
-$ ninja -C build-out/sw/fpga all
+# Build *everything*, including targets for other devices.
+$ ninja -C build-out all
 ```
+
+Note that specific targets are followed by the device they are built for.
+OpenTitan needs to link the same device executable for multiple devices, so each executable target is duplicated one for each device we support.
 
 If your RISC-V toolchain isn't located in the default `/tools/riscv` location you use the `TOOLCHAIN_PATH` environment variable to set a different location before running `meson_init.sh`:
 
@@ -43,11 +46,12 @@ The locations of `build-{out,bin}` can be controled by setting the `$BUILD_ROOT`
 `./meson_init.sh` itself is idempotent, but this behavior can be changed with additional flags; see `./meson_init.sh` for more information.
 For this reason, most examples involving Meson will include a call to `./meson_init.sh`, but you will rarely need to run it more than once per checkout.
 
-Building an executable `foo` destined to run on an OpenTitan device (i.e., under `sw/device`) will output the following files under `build-bin/sw/device`:
-* `foo.elf`: the linked program, in ELF format.
-* `foo.bin`: the linked program, as a plain binary with ELF debug information removed.
-* `foo.dis`: the disassembled program with inline source code.
-* `foo.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
+Building an executable `foo` destined to run on the OpenTitan device `$DEVICE` will output the following files under `build-bin/sw/device`:
+* `foo_$DEVICE.elf`: the linked program, in ELF format.
+* `foo_$DEVICE.bin`: the linked program, as a plain binary with ELF debug information removed.
+* `foo_$DEVICE.dis`: the disassembled program with inline source code.
+* `foo_$DEVICE.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
+
+In general, this executable is built by building the `foo_export_$DEVICE` target.
 
 Building an executable destined to run on a host machine (i.e., under `sw/host`) will output a host excecutable under `build-bin/sw/host`, which can be run directly.
-Currently, each "platform" (`fpga`, `sim-verilator`, etc) have their own copies of all host targets; this is a limitation of our Meson setup, and they are otherwise indistinguishable.

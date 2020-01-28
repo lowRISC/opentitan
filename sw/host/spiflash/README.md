@@ -21,7 +21,7 @@ Build command for tool:
 ```console
 $ cd ${REPO_TOP}
 $ ./meson_init.sh
-$ ninja -C build-out/sw/fpga sw/host/spiflash/spiflash_export
+$ ninja -C build-out sw/host/spiflash/spiflash_export
 ```
 
 ## Setup instructions for Verilator and FPGA
@@ -29,20 +29,20 @@ Please refer to [verilator]({{< relref "doc/ug/getting_started_verilator" >}}) a
 
 ## Build boot ROM and demo program
 
-_If building for verilator, build in `build-out/sw/sim-verilator` instead._
-
 Build `boot_rom`:
 ```console
 $ cd ${REPO_TOP}
 $ ./meson_init.sh
-$ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
+$ ninja -C build-out sw/device/boot_rom/boot_rom_export_${DEVICE}
 ```
 
 Build the `hello_world` program:
 ```console
 $ cd ${REPO_TOP}
-$ ninja -C build-out/sw/fpga sw/device/examples/hello_world/hello_world_export
+$ ninja -C build-out sw/device/examples/hello_world/hello_world_export_${DEVICE}
 ```
+
+Where ${DEVICE} is one of 'sim_verilator' or 'fpga_nexysvideo'
 
 ## Run the tool in Verilator
 
@@ -51,7 +51,7 @@ Run Verilator with boot_rom enabled:
 ```console
 $ cd ${REPO_TOP}
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit build-bin/sw/device/sim-verilator/boot_rom/boot_rom.vmem
+  --rominit build-bin/sw/device/boot_rom/boot_rom_sim_verilator.vmem
 ```
 
 Run spiflash. In this example we use SPI device `/dev/pts/3` as an example.
@@ -60,7 +60,7 @@ After the transmission is complete, you should be able to see the hello_world ou
 ```console
 $ cd ${REPO_TOP}
 $ build-bin/sw/host/spiflash/spiflash \
-  --input     build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.bin \
+  --input     build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.bin \
   --verilator /dev/pts/3
 ```
 
@@ -74,5 +74,5 @@ If there are two FPGAs or multiple valid targets attached at the same time, it i
 ```console
 $ cd ${REPO_TOP}
 $ build-bin/sw/host/spiflash/spiflash \
-  --input build-bin/sw/device/fpga/examples/hello_world/hello_world.bin
+  --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
 ```
