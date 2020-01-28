@@ -11,30 +11,43 @@
 #
 # Here are some examples:
 #   fpv rv_plic_fpv
-#   fpv pinmux_fpv
+#   fpv gpio
 #
 # More options:
 # -p:  provide core file path
 # -gui: run JasperGold GUI
+# -cov: run coverage
+# -chk: run checks for assumptions: deadlock, conflict, live chks
 #
 # Example:
-#   fpv pinmux_fpv -p vip:pinmux_fpv -gui
+#   fpv pinmux_fpv -p vip:pinmux_fpv -gui -cov
 #
 # Note that the module to be tested needs to have an _fpv testbench
 # and a corresponding core file for this to work.
+
 export FPV_TOP=$1
 shift
 gui=0
+export COV=0
+export CHECK=0
 
 while [ "$1" != "" ]; do
   case "$1" in
     "-p")
       shift
-      export CORE_PATH=$1
+      CORE_PATH=$1
       ;;
     "-gui")
       gui=1
       echo "using jasper gold GUI"
+      ;;
+    "-cov")
+      COV=1
+      echo "enable FPV coverage"
+      ;;
+    "-chk")
+      CHECK=1
+      echo "enable assumption checks"
       ;;
   esac
   shift
