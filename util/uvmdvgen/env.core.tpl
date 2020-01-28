@@ -20,12 +20,15 @@ filesets:
       - ${name}_env_pkg.sv
       - ${name}_env_cfg.sv: {is_include_file: true}
       - ${name}_env_cov.sv: {is_include_file: true}
-      - ${name}_env.sv: {is_include_file: true}
 % if env_agents != []:
       - ${name}_virtual_sequencer.sv: {is_include_file: true}
 % endif
       - ${name}_scoreboard.sv: {is_include_file: true}
+      - ${name}_env.sv: {is_include_file: true}
       - seq_lib/${name}_vseq_list.sv: {is_include_file: true}
+      - seq_lib/${name}_base_vseq.sv: {is_include_file: true}
+      - seq_lib/${name}_common_vseq.sv: {is_include_file: true}
+      - seq_lib/${name}_sanity_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

@@ -12,14 +12,18 @@ filesets:
     files:
       - spi_if.sv
       - spi_agent_pkg.sv
+      - spi_item.sv: {is_include_file: true}
       - spi_agent_cfg.sv: {is_include_file: true}
       - spi_agent_cov.sv: {is_include_file: true}
-      - spi_item.sv: {is_include_file: true}
       - spi_driver.sv: {is_include_file: true}
+      - spi_host_driver.sv: {is_include_file: true}
+      - spi_device_driver.sv: {is_include_file: true}
       - spi_monitor.sv: {is_include_file: true}
       - spi_sequencer.sv: {is_include_file: true}
       - spi_agent.sv: {is_include_file: true}
       - seq_lib/spi_seq_list.sv: {is_include_file: true}
+      - seq_lib/spi_base_seq.sv: {is_include_file: true}
+      - seq_lib/spi_host_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

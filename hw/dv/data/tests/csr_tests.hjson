@@ -4,7 +4,6 @@
       name: csr_tests_mode
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+en_scb=0"]
-      reseed: 20
     }
   ]
 

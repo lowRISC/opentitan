@@ -40,6 +40,9 @@
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson"]
 % endif
 
+  // Add additional tops for simulation.
+  sim_tops: ["-top {name}_bind"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 

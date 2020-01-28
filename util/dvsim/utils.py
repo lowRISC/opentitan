@@ -105,10 +105,21 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
                     log.debug("Found wildcard in \"%s\": \"%s\"", var, item)
                     found = subst(item, mdict)
                     if found is not None:
-                        if type(found) is str:
+                        if type(found) is list:
+                            subst_found = []
+                            for element in found:
+                                element = subst_wildcards(element, mdict,
+                                                          ignored_wildcards)
+                                subst_found.append(element)
+                            # Expand list into a str since list within list is
+                            # not supported.
+                            found = " ".join(subst_found)
+
+                        elif type(found) is str:
                             found = subst_wildcards(found, mdict,
                                                     ignored_wildcards)
-                        if type(found) is bool:
+
+                        elif type(found) is bool:
                             found = int(found)
                         subst_list[item] = found
                     else:
@@ -157,5 +168,4 @@ def find_and_substitute_wildcards(sub_dict, full_dict, ignored_wildcards=[]):
         elif type(sub_dict[key]) is str:
             sub_dict[key] = subst_wildcards(sub_dict[key], full_dict,
                                             ignored_wildcards)
-
     return sub_dict

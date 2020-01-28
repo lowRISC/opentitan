@@ -12,9 +12,9 @@ filesets:
     files:
       - ${name}_if.sv
       - ${name}_agent_pkg.sv
+      - ${name}_item.sv: {is_include_file: true}
       - ${name}_agent_cfg.sv: {is_include_file: true}
       - ${name}_agent_cov.sv: {is_include_file: true}
-      - ${name}_item.sv: {is_include_file: true}
 % if has_separate_host_device_driver:
       - ${name}_host_driver.sv: {is_include_file: true}
       - ${name}_device_driver.sv: {is_include_file: true}
