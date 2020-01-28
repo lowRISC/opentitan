@@ -19,17 +19,19 @@ export TB_TOP   := tb
 FUSESOC_CORE    := lowrisc:dv:i2c_sim:0.1
 COMPILE_KEY     ?= default
 
-UVM_TEST        ?= i2c_base_test
-UVM_TEST_SEQ    ?= i2c_base_vseq
-
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
 # common tests/seqs
 include ${DV_DIR}/../../../dv/tools/common_tests.mk
 
+TEST_NAME       ?= i2c_sanity
+UVM_TEST        ?= i2c_base_test
+UVM_TEST_SEQ    ?= i2c_base_vseq
+
 ifeq (${TEST_NAME},i2c_sanity)
   UVM_TEST_SEQ   = i2c_sanity_vseq
+  RUN_OPTS      += +en_scb=0
 endif
 
 ####################################################################################################

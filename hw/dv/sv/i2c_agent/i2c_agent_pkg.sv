@@ -12,26 +12,30 @@ package i2c_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // parameters
+  // local macros
+  parameter uint addr_width = 8;     // [7:1]: device address, [0]: R/W bit
+  parameter uint data_width = 8;
 
-  // local types
+  typedef enum logic [3:0] {
+    BusFree,
+    HostSendStart, HostSendRestart, HostSendStop, HostSendAck, HostSendNoAck,
+    HostSendAddr, HostSendRWBit, HostReceiveData, HostWriteData,
+    TargetSendAck
+  } bus_status_e;
+
   // forward declare classes to allow typedefs below
   typedef class i2c_item;
   typedef class i2c_agent_cfg;
-
-  // reuse dv_base_seqeuencer as is with the right parameter set
-  typedef dv_base_sequencer #(.ITEM_T     (i2c_item),
-                              .CFG_T      (i2c_agent_cfg)) i2c_sequencer;
-
-  // functions
 
   // package sources
   `include "i2c_item.sv"
   `include "i2c_agent_cfg.sv"
   `include "i2c_agent_cov.sv"
-  `include "i2c_driver.sv"
   `include "i2c_monitor.sv"
+  `include "i2c_driver.sv"
+  `include "i2c_device_driver.sv"
+  `include "i2c_sequencer.sv"
   `include "i2c_agent.sv"
   `include "i2c_seq_list.sv"
 
-  endpackage: i2c_agent_pkg
+endpackage: i2c_agent_pkg

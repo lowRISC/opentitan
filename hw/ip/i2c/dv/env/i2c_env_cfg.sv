@@ -26,4 +26,4 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
     num_interrupts = ral.intr_state.get_n_used_bits();
   endfunction
 
-endclass
+endclass : i2c_env_cfg

@@ -4,7 +4,6 @@
 
 class i2c_virtual_sequencer extends cip_base_virtual_sequencer #(.CFG_T(i2c_env_cfg),
                                                                  .COV_T(i2c_env_cov));
-
   `uvm_component_utils(i2c_virtual_sequencer)
 
   i2c_sequencer    i2c_sequencer_h;

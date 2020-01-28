@@ -5,6 +5,7 @@
 package i2c_test_pkg;
   // dep packages
   import uvm_pkg::*;
+  import dv_utils_pkg::*;
   import cip_base_pkg::*;
   import i2c_env_pkg::*;
 

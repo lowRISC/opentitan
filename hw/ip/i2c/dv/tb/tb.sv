@@ -13,7 +13,7 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n;
+  wire clk_i, rst_ni;
   wire devmode;
   wire intr_fmt_watermark;
   wire intr_rx_watermark;
@@ -26,27 +26,35 @@ module tb;
   wire intr_sda_unstable;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
+  wire cio_scl_i;
+  wire cio_sda_i;
+  wire cio_scl_o;
+  wire cio_sda_o;
+  wire cio_scl_en_o;
+  wire cio_sda_en_o;
+
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if(.clk(clk_i), .rst_n(rst_ni));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
+
+  tl_if tl_if(.clk(clk_i), .rst_n(rst_ni));
   i2c_if i2c_if();
 
   // dut
   i2c dut (
-    .clk_i                   (clk        ),
-    .rst_ni                  (rst_n      ),
+    .clk_i                   (clk_i      ),
+    .rst_ni                  (rst_ni     ),
 
     .tl_i                    (tl_if.h2d  ),
     .tl_o                    (tl_if.d2h  ),
 
-    .cio_scl_i               (i2c_if.scl_i          ),
-    .cio_scl_o               (i2c_if.scl_o          ),
-    .cio_scl_en_o            (i2c_if.scl_en_o       ),
-    .cio_sda_i               (i2c_if.sda_i          ),
-    .cio_sda_o               (i2c_if.sda_o          ),
-    .cio_sda_en_o            (i2c_if.sda_en_o       ),
+    .cio_scl_i               (cio_scl_i             ),
+    .cio_scl_o               (cio_scl_o             ),
+    .cio_scl_en_o            (cio_scl_en_o          ),
+    .cio_sda_i               (cio_sda_i             ),
+    .cio_sda_o               (cio_sda_o             ),
+    .cio_sda_en_o            (cio_sda_en_o          ),
 
     .intr_fmt_watermark_o    (intr_fmt_watermark    ),
     .intr_rx_watermark_o     (intr_rx_watermark     ),
@@ -59,7 +67,17 @@ module tb;
     .intr_sda_unstable_o     (intr_sda_unstable     )
   );
 
+  // virtual open drain
+  assign i2c_if.scl_i = (cio_scl_en_o) ? cio_scl_o : ~cio_scl_o;
+  assign i2c_if.sda_i = (cio_sda_en_o) ? cio_sda_o : ~cio_sda_o;
+  assign cio_scl_i = i2c_if.scl_o;
+  assign cio_sda_i = i2c_if.sda_o;
 
+  // host -> device if
+  assign i2c_if.clk_i  = clk_i;
+  assign i2c_if.rst_ni = rst_ni;
+
+  // interrupt
   assign interrupts[FmtWatermark]   = intr_fmt_watermark;
   assign interrupts[RxWatermark]    = intr_rx_watermark;
   assign interrupts[FmtOverflow]    = intr_fmt_overflow;
@@ -84,4 +102,4 @@ module tb;
     run_test();
   end
 
-endmodule
+endmodule : tb

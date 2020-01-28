@@ -62,8 +62,8 @@ package dv_utils_pkg;
 
   // Enum representing a bus operation type - read or write.
   typedef enum bit {
-    BusOpRead,
-    BusOpWrite
+    BusOpWrite = 1'b0,
+    BusOpRead  = 1'b1
   } bus_op_e;
 
   // Enum representing a type of host requests - read only, write only or random read & write

@@ -20,7 +20,7 @@
               - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START.
               - Read and write transfer matching.'''
       milestone: V1
-      tests: ["i2c_sanity_ro", "i2c_sanity_wo", "i2c_sanity_rw"]
+      tests: ["i2c_sanity"]
     }
     {
       name: override
@@ -31,7 +31,7 @@
 
             Checking:
               - Check scl_o, sda_o override by programmed values in the OVRD register.'''
-      milestone: V1
+      milestone: V2
       tests: ["i2c_override"]
     }
     {
