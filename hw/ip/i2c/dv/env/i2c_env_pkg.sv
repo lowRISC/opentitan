@@ -12,10 +12,10 @@ package i2c_env_pkg;
   import i2c_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import i2c_reg_pkg::*;
   import i2c_ral_pkg::*;
 
   // macro includes
-  `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
@@ -31,6 +31,13 @@ package i2c_env_pkg;
     SdaUnstable    = 8,
     NumI2cIntr     = 9
   } i2c_intr_e;
+
+  typedef enum int {
+    None           = 0,
+    i2c_ro         = 1,
+    i2c_wo         = 2,
+    i2c_rw         = 3
+  } i2c_request_e;
 
   // csr and mem total size for IP, TODO confirm below value with spec
   parameter uint I2C_ADDR_MAP_SIZE  = 128;
@@ -68,17 +75,12 @@ package i2c_env_pkg;
     endcase
   endfunction : get_break_bytes_by_level
 
-  // get timing values from speed mode
-  function automatic int get_timing_values_by_speed_mode(int speed_mode);
-    // TODO
-  endfunction : get_timing_values_by_speed_mode
-
-  // get speed mode from timing values
-  function automatic int get_speed_mode_by_timing_values(int timing0, int timing1,
-                                                         int timing2, int timing3,
-                                                         int timing4, int timing5);
-    // TODO
-  endfunction : get_speed_mode_by_timing_values
+  // TX finishes the item at the beginning of last cycle and update reg value
+  // in the last 2 cycles, need to avoid driving and checking
+  `define TX_IGNORED_PERIOD {1, 2}
+  // RX finishes the item at the middle of last cycle and update reg value
+  // in the last cycle, need to avoid driving and checking
+  `define RX_IGNORED_PERIOD {1}
 
   // package sources
   `include "i2c_env_cfg.sv"

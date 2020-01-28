@@ -6,12 +6,21 @@ class i2c_common_vseq extends i2c_base_vseq;
   `uvm_object_utils(i2c_common_vseq)
 
   constraint num_trans_c {
-    num_trans inside {[1:2]};
+    num_trans inside {[10:25]};
   }
 
   `uvm_object_new
 
+  task pre_start();
+    super.pre_start();
+    num_trans.rand_mode(0);
+  endtask : pre_start
+
   virtual task body();
+    // disable i2c_monitor since it can not handle this test
+    `uvm_info(`gtn, $sformatf("disable i2c_monitor"), UVM_LOW)
+    cfg.m_i2c_agent_cfg.en_tx_monitor = 1'b0;
+    cfg.m_i2c_agent_cfg.en_rx_monitor = 1'b0;
     run_common_vseq_wrapper(num_trans); // inherit from cip_base_vseq.sv
   endtask : body
 
@@ -23,7 +32,6 @@ class i2c_common_vseq extends i2c_base_vseq;
     // by default, apply all init, write, and write-read check (CsrNoExcl) for all registers
     // write exclusions - these should not apply to hw_reset test
     if (csr_test_type != "hw_reset") begin
-
       // I2C oversampled values are updated by design according to setting and pin RX
       csr_excl.add_excl({scope, ".", "val"}, CsrExclCheck);
 
@@ -83,6 +91,7 @@ class i2c_common_vseq extends i2c_base_vseq;
       csr_excl.add_excl({scope, ".", "val"}, CsrExclAll);
     end
 
+    // for csr_rw test
     // fmtrst and rxrst fields in fifo_ctrl are WO - it read back 0s
     csr_excl.add_excl({scope, ".", "fifo_ctrl.*rst"}, CsrExclWrite);
 
@@ -93,5 +102,14 @@ class i2c_common_vseq extends i2c_base_vseq;
     csr_excl.add_excl({scope, ".", "status"}, CsrExclWrite);
 
   endfunction : add_csr_exclusions
+
+  task post_start();
+    `uvm_info(`gfn, "stop simulation", UVM_DEBUG)
+  endtask : post_start
+
+  // read interrupts and randomly clear interrupts if set
+  task process_interrupts();
+    // TODO
+  endtask : process_interrupts
 
 endclass : i2c_common_vseq

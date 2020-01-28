@@ -51,10 +51,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(item.a_addr);
+      csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+      `uvm_fatal(`gfn, $sformatf("access unexpected addr 0x%0h", csr_addr))
     end
 
     if (channel == AddrChannel) begin

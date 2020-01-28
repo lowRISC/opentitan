@@ -6,7 +6,7 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
   // the base class provides the following handles for use:
-  // i2c_env_cfg: cfg
+  //i2c_env_cfg  cfg;
 
   // covergroups
 

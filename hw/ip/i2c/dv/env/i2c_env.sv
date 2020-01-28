@@ -25,7 +25,7 @@ class i2c_env extends cip_base_env #(
     if (cfg.en_scb) begin
       m_i2c_agent.monitor.analysis_port.connect(scoreboard.i2c_fifo.analysis_export);
     end
-    if (cfg.is_active && cfg.m_i2c_agent_cfg.is_active) begin
+    if (cfg.m_i2c_agent_cfg.is_active) begin
       virtual_sequencer.i2c_sequencer_h = m_i2c_agent.sequencer;
     end
   endfunction
