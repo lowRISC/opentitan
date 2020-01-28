@@ -261,17 +261,24 @@ jobs:
 
       BOOTROM_VMEM="$BIN_DIR/sw/device/fpga/boot_rom/boot_rom.vmem"
       test -f "$BOOTROM_VMEM"
+      cat "$BOOTROM_VMEM"
 
       . /opt/xilinx/Vivado/2018.3/settings64.sh
+      vivado -version
+
       fusesoc --cores-root=. \
         run --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_nexysvideo \
+        lowrisc:systems:top_earlgrey_nexysvideo  \
         --ROM_INIT_FILE="$BOOTROM_VMEM"
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
     displayName: 'Build bitstream with Vivado'
+  - publish: "$(Build.ArtifactStagingDirectory)/build-out"
+    artifact: vivado-outputs
+    displayName: 'Debug: Upload all vivado outputs'
+    condition: always()
   - template: 'ci/upload-artifacts-template.yml'
     parameters:
       artifact: top_earlgrey_nexysvideo
