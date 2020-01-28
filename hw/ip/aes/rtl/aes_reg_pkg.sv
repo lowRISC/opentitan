@@ -78,8 +78,17 @@ package aes_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        d;
+    } mode;
+    struct packed {
       logic [2:0]  d;
     } key_len;
+    struct packed {
+      logic        d;
+    } manual_start_trigger;
+    struct packed {
+      logic        d;
+    } force_data_overwrite;
   } aes_hw2reg_ctrl_reg_t;
 
   typedef struct packed {
@@ -136,12 +145,12 @@ package aes_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_mreg_t [7:0] key; // [534:279]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [278:147]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [146:19]
-    aes_hw2reg_ctrl_reg_t ctrl; // [18:9]
-    aes_hw2reg_trigger_reg_t trigger; // [8:5]
-    aes_hw2reg_status_reg_t status; // [4:5]
+    aes_hw2reg_key_mreg_t [7:0] key; // [537:282]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [281:150]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [149:22]
+    aes_hw2reg_ctrl_reg_t ctrl; // [21:12]
+    aes_hw2reg_trigger_reg_t trigger; // [11:8]
+    aes_hw2reg_status_reg_t status; // [7:8]
   } aes_hw2reg_t;
 
   // Register Address

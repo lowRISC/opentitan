@@ -96,7 +96,7 @@
       AES unit is non-idle, writes to this register are ignored.
     '''
     swaccess: "rw",
-    hwaccess: "hro",
+    hwaccess: "hrw",
     hwext:    "true",
     hwqe:     "true",
     fields: [
