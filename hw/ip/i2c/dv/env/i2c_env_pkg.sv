@@ -12,10 +12,10 @@ package i2c_env_pkg;
   import i2c_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import i2c_reg_pkg::*;
   import i2c_ral_pkg::*;
 
   // macro includes
-  `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
@@ -33,10 +33,19 @@ package i2c_env_pkg;
   } i2c_intr_e;
 
   // csr and mem total size for IP, TODO confirm below value with spec
-  parameter uint I2C_ADDR_MAP_SIZE  = 128;
-  // local types
-  parameter uint I2C_FMT_FIFO_DEPTH = 32;
-  parameter uint I2C_RX_FIFO_DEPTH  = 32;
+  parameter uint I2C_ADDR_MAP_SIZE = 128;
+
+  // for constrains
+  parameter uint I2C_MIN_ADDR   = 0;
+  parameter uint I2C_MAX_ADDR   = 127;
+  parameter uint I2C_MIN_DATA   = 0;
+  parameter uint I2C_MAX_DATA   = 255;
+  parameter uint I2C_MIN_DLY    = 1;
+  parameter uint I2C_MAX_DLY    = 2;
+  parameter uint I2C_MIN_TIMING = 2;
+  parameter uint I2C_MAX_TIMING = 2;
+  parameter bit  I2C_FLAG_ON    = 1'b1;
+  parameter bit  I2C_FLAG_OFF   = 1'b0;
 
   // functions
   // get the number of bytes that triggers watermark interrupt
@@ -67,18 +76,6 @@ package i2c_env_pkg;
       end
     endcase
   endfunction : get_break_bytes_by_level
-
-  // get timing values from speed mode
-  function automatic int get_timing_values_by_speed_mode(int speed_mode);
-    // TODO
-  endfunction : get_timing_values_by_speed_mode
-
-  // get speed mode from timing values
-  function automatic int get_speed_mode_by_timing_values(int timing0, int timing1,
-                                                         int timing2, int timing3,
-                                                         int timing4, int timing5);
-    // TODO
-  endfunction : get_speed_mode_by_timing_values
 
   // package sources
   `include "i2c_env_cfg.sv"

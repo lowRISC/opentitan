@@ -4,27 +4,24 @@
 
 class i2c_item extends uvm_sequence_item;
 
-  // random variables
-  //rand i2c_bit_type_t  bit_type = 1'b0;
-  rand bit             sda_bit = 1'b1;
-  rand bit             scl_bit = 1'b1;
+  // queue of data/addr
+  bit [data_width-1:0] mem_datas[$];
+  bit [addr_width-1:0] mem_addrs[$];
+  // sampled signals to sb
+  bit [data_width-1:0] rd_data;
+  bit [data_width-1:0] wr_data;
+  bit [addr_width-1:0] addr; // addr[0]=r/w bit
 
-  rand bit             stop_detected = 1'b0;
-  rand bit             start_detected = 1'b0;
-
-  // dont override start_bit unless testing an error scenario
-  constraint sda_bit_c {
-    sda_bit == 1'b1;
-  }
-
-  // dont override stop_bit unless testing an error scenario
-  constraint scl_bit_c {
-    sda_bit == 1'b1;
-  }
+  rand int dly_to_send_nack;
+  rand int dly_to_send_ack;
+  rand int dly_to_send_stop;
+  rand int dly_to_send_data;
 
   `uvm_object_utils_begin(i2c_item)
-    `uvm_field_int(sda_bit,       UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
-    `uvm_field_int(scl_bit,       UVM_DEFAULT)
+    `uvm_field_int(dly_to_send_nack, UVM_DEFAULT)
+    `uvm_field_int(dly_to_send_ack,  UVM_DEFAULT)
+    `uvm_field_int(dly_to_send_stop, UVM_DEFAULT)
+    `uvm_field_int(dly_to_send_data, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

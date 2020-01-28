@@ -9,13 +9,14 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(i2c_scoreboard)
 
-  // local variables
+  //****************************************************************
+  // TODO: this class will be completed later with i2c_sanity test
+  // TODO: no need for review
+  //****************************************************************
+  virtual i2c_if i2c_vif;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(i2c_item) i2c_fifo;
-
-  // local queues to hold incoming packets pending comparison
-  i2c_item i2c_q[$];
 
   `uvm_component_new
 
@@ -36,12 +37,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_i2c_fifo();
-    i2c_item item;
-    forever begin
-      i2c_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received i2c item:\n%0s", item.sprint()), UVM_HIGH)
-    end
-  endtask
+    // TODO
+  endtask : process_i2c_fifo
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
@@ -51,10 +48,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(item.a_addr);
+      csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+      `uvm_fatal(`gfn, $sformatf("access unexpected addr 0x%0h", csr_addr))
     end
 
     if (channel == AddrChannel) begin
@@ -84,14 +81,25 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  function void compare(i2c_item act, i2c_item exp, string dir = "TX");
+    if (!act.compare(exp)) begin
+      `uvm_error(`gfn, $sformatf("%s item mismatch!\nexp:\n%0s\nobs:\n%0s",
+                                  dir, exp.sprint(), act.sprint()))
+    end
+    else begin
+      `uvm_info(`gfn, $sformatf("%s item match!\nexp:\n%0s\nobs:\n%0s",
+                                 dir, exp.sprint(), act.sprint()), UVM_HIGH)
+    end
+  endfunction : compare
+
   virtual function void reset(string kind = "HARD");
-    super.reset(kind);
     // reset local fifos queues and variables
-  endfunction
+    super.reset(kind);
+  endfunction : reset
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
 
-endclass
+endclass : i2c_scoreboard
