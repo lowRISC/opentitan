@@ -21,27 +21,34 @@
   end
 
 virtual task tl_access_unmapped_addr();
+  bit [TL_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs.size()];
+  bit [TL_AW-1:0] addr_mask = cfg.csr_addr_map_size - 1;
+  addr_mask[1:0] = 0;
+  // calculate normalized address outside the loop to improve perf
+  foreach (cfg.csr_addrs[i]) normalized_csr_addrs[i] = cfg.csr_addrs[i] - cfg.csr_base_addr;
+  // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
+    bit [TL_AW-1:0] unmapped_addr;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr, {
+        !((unmapped_addr & addr_mask) inside {normalized_csr_addrs});
+        foreach (cfg.mem_ranges[i]) {
+          !((unmapped_addr & addr_mask)
+              inside {[cfg.mem_ranges[i].start_addr : cfg.mem_ranges[i].end_addr]});}
+        })
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
-        foreach (local::cfg.csr_addrs[i]) {
-          {addr[TL_AW-1:2], 2'b00} % local::cfg.csr_addr_map_size !=
-              local::cfg.csr_addrs[i] - local::cfg.csr_base_addr;
-        }
-        foreach (local::cfg.mem_ranges[i]) {
-          !(addr % local::cfg.csr_addr_map_size
-              inside {[local::cfg.mem_ranges[i].start_addr : local::cfg.mem_ranges[i].end_addr]});
-        })
+        addr == unmapped_addr;)
   end
 endtask
 
 virtual task tl_write_csr_word_unaligned_addr();
+  bit [TL_AW-1:0] addr_mask = cfg.csr_addr_map_size - 1;
   repeat ($urandom_range(10, 100)) begin
     `create_tl_access_error_case(
         tl_write_csr_word_unaligned_addr,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
         foreach (local::cfg.mem_ranges[i]) {
-          !(addr % local::cfg.csr_addr_map_size
+          !((addr & addr_mask)
               inside {[local::cfg.mem_ranges[i].start_addr : local::cfg.mem_ranges[i].end_addr]});
         }
         addr[1:0] != 2'b00;)
@@ -125,20 +132,26 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
       cfg.devmode_vif.drive($urandom_range(0, 1));
     end
     // use multiple thread to create outstanding access
-    repeat ($urandom_range(5, 10)) fork
-      begin
-        randcase
-          1: tl_access_unmapped_addr();
-          1: tl_write_csr_word_unaligned_addr();
-          1: tl_write_less_than_csr_width();
-          1: tl_protocol_err();
-          // only run this task when the mem supports error response
-          test_mem_err_byte_write: tl_write_mem_less_than_word();
-          test_mem_err_read:       tl_read_mem_err();
-        endcase
-      end
-    join_none
-    wait fork;
+    fork
+      begin: isolation_fork
+        repeat ($urandom_range(10, 20)) begin
+          fork
+            begin
+              randcase
+                1: tl_access_unmapped_addr();
+                1: tl_write_csr_word_unaligned_addr();
+                1: tl_write_less_than_csr_width();
+                1: tl_protocol_err();
+                // only run this task when the mem supports error response
+                test_mem_err_byte_write: tl_write_mem_less_than_word();
+                test_mem_err_read:       tl_read_mem_err();
+              endcase
+            end
+          join_none
+        end
+        wait fork;
+      end: isolation_fork
+    join
     if (do_wait_clk) cfg.clk_rst_vif.wait_clks($urandom_range(500, 10_000));
   end // for
   cfg.tlul_assert_ctrl_vif.drive(1'b1);
