@@ -18,10 +18,8 @@ pygments
 pytest
 pytest-timeout
 pyyaml
-yapf
-fusesoc
-gitpython
 tabulate
+yapf
 
 # Develpment version to get around YAML parser warning triggered by fusesoc
 # Upstream tracking: https://github.com/olofk/ipyxact/issues/19
