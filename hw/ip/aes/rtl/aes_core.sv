@@ -398,6 +398,11 @@ module aes_core #(
 
   assign hw2reg.ctrl.key_len.d  = {key_len_q};
 
+  // These fields are actually hro. But software must be able observe the current value (rw).
+  assign hw2reg.ctrl.mode.d                 = mode_q;
+  assign hw2reg.ctrl.manual_start_trigger.d = manual_start_trigger_q;
+  assign hw2reg.ctrl.force_data_overwrite.d = force_data_overwrite_q;
+
   ////////////////
   // Assertions //
   ////////////////
