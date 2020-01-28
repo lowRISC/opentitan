@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/uart.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -14,7 +15,7 @@ static dif_uart_t uart0;
 void uart_init(unsigned int baud) {
   dif_uart_config_t config = {
       .baudrate = baud,
-      .clk_freq_hz = kIbexClockFreqHz,
+      .clk_freq_hz = kClockFreqHz,
       .parity_enable = kDifUartDisable,
       .parity = kDifUartParityEven,
   };

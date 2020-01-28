@@ -10,14 +10,9 @@
 #include "sw/device/lib/base/stdasm.h"
 
 /**
- * This header provides Ibex-specific functions, such as the clock frequency and
- * cycle-accurate busy loops.
+ * This header provides Ibex-specific functions, such as cycle-accurate busy
+ * loops.
  */
-
-/**
- * The clock frequency of the Ibex core, in hertz.
- */
-extern const size_t kIbexClockFreqHz;
 
 /**
  * Read the cycle counter.

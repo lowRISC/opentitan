@@ -5,10 +5,10 @@ To build CoreMark under meson:
 ```sh
 cd "${REPO_TOP}"
 ./meson_init.sh
-ninja -C build-out/sw/${TARGET} sw/device/benchmarks/coremark/coremark_export
+ninja -C build-out sw/device/benchmarks/coremark/coremark_export_${DEVICE}
 ```
 
-Where ${TARGET} is one of 'sim-verilator' or 'fpga'
+Where ${DEVICE} is one of 'sim_verilator' or 'fpga_nexysvideo'
 
 This will give you a .bin and .elf file (suitable for either spiflash or
 giving directly to `--meminit` for Verilator) which can be found in

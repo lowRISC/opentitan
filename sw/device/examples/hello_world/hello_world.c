@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
@@ -28,7 +29,7 @@ void trap_handler(uint32_t mepc, char c) {
 #define MK_PRINT(c) (((c < 32) || (c > 126)) ? '_' : c)
 
 int main(int argc, char **argv) {
-  uart_init(UART_BAUD_RATE);
+  uart_init(kUartBaudrate);
 
   pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output

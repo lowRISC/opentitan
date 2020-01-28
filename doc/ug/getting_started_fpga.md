@@ -33,7 +33,7 @@ To build it:
 ```console
 $ cd $REPO_TOP
 $ ./meson_init.sh
-$ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
+$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 ```
 
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
@@ -42,7 +42,7 @@ In the following example we synthesize the Earl Grey design for the Nexys Video 
 $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
 $ ./meson_init.sh
-$ ninja -C build-out/sw/fpga sw/device/boot_rom/boot_rom_export
+$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 $ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
@@ -123,10 +123,10 @@ Please follow the steps shown below.
   ```console
   $ cd ${REPO_TOP}
   $ ./meson_init.sh
-  $ ninja -C build-out/sw/fpga sw/device/examples/hello_world/hello_world_export
-  $ ninja -C build-out/sw/fpga sw/host/spiflash/spiflash_export
+  $ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
+  $ ninja -C build-out sw/host/spiflash/spiflash_export
   $ build-bin/sw/host/spiflash/spiflash \
-      --input build-bin/sw/device/fpga/examples/hello_world/hello_world.bin
+      --input build-bin/sw/device/fpga/examples/hello_world/hello_world_fpga_nexysvideo.bin
   ```
 
   which should report how the binary is split into frames:

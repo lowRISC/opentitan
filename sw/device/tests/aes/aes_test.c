@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/aes.h"
+
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/uart.h"
 
@@ -32,7 +34,7 @@ int main(int argc, char **argv) {
 
   uint8_t buffer[16];
 
-  uart_init(UART_BAUD_RATE);
+  uart_init(kUartBaudrate);
   uart_send_str("Running AES test\r\n");
 
   // Setup AES config

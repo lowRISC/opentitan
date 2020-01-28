@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('base')
+subdir('arch')
 subdir('runtime')
 subdir('testing')
 subdir('dif')

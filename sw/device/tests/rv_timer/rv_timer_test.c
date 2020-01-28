@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/rv_timer.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
 #include "sw/device/lib/irq.h"
@@ -16,7 +17,7 @@ static const uint32_t hart = 0;
 int main(int argc, char **argv) {
   const uint64_t cmp = 0x000000000000000F;
 
-  uart_init(UART_BAUD_RATE);
+  uart_init(kUartBaudrate);
 
   pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output

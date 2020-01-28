@@ -1,15 +1,4 @@
 option(
-  'target',
-  type: 'combo',
-  choices: [
-    'sim-verilator',
-    'fpga',
-    'undef',
-  ],
-  value: 'undef',
-)
-
-option(
   'dev_bin_dir',
   type: 'string',
   value: 'undef',

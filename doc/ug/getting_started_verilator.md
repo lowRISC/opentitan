@@ -31,7 +31,7 @@ For more information on building software targets refer to the [Software Getting
 ```console
 $ cd $REPO_TOP
 $ ./meson_init.sh
-$ ninja -C build-out/sw/sim-verilator all
+$ ninja -C build-out all
 ```
 
 Now the simulation can be run.
@@ -40,8 +40,8 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/sim-verilator/boot_rom/boot_rom.elf \
-  --meminit=flash,build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
 ```
 
 To stop the simulation press CTRL-c.
