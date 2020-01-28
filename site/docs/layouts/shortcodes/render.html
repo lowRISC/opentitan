@@ -1,0 +1,23 @@
+{{ $url := .Get 0 }}
+{{ $id := printf "__render_%v" .Ordinal }}
+<div id="{{ $id }}">
+  Loading {{ $url }}...
+</div>
+<script type="text/javascript">
+  (function() {
+    function renderContent(event) {
+      var md = window.markdownit();
+      var rendered = md.render(event.target.responseText);
+      document.getElementById('{{ $id }}').innerHTML = rendered;
+    }
+
+    function loadContent(event) {
+      var request = new XMLHttpRequest();
+      request.addEventListener('load', renderContent);
+      request.open('GET', '{{ $url }}');
+      request.send();
+    }
+
+    window.addEventListener('load', loadContent);
+  })();
+</script>
