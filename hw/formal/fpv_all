@@ -47,7 +47,7 @@ printf "the percentages of covered and proven assertions.\n\n"
 format1="%28s %10s %10s %10s \n"
 format2="%28s %10s %9.0f%% %9.0f%% \n"
 printf "${format1}" "Block" "Asserts" "Covered" "Proven"
-echo "----------------------------------------------------"
+echo "-----------------------------------------------------------------"
 
 #-------------------------------------------------------------------------
 # run fpv and summarize results
