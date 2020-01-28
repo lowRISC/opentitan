@@ -34,7 +34,7 @@ jobs:
       python3 --version
       yapf --version
       isort --version
-      clang-format -version
+      clang-format-5.0 -version
     displayName: 'Display tool versions'
 
 #   XXX: Python lint checks are disabled until Issue #313 is resolved

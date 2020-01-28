@@ -6,7 +6,7 @@
 autoconf
 bison
 build-essential
-clang-format
+clang-format-5.0
 curl
 flex
 g++
