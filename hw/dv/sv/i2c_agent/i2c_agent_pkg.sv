@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`ifndef __I2C_AGENT_PKG__
+`define __I2C_AGENT_PKG__
+
 package i2c_agent_pkg;
   // dep packages
   import uvm_pkg::*;
@@ -12,9 +15,27 @@ package i2c_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // parameters
+  // local macros
+  `define I2C_ADDR_WIDTH      8     // [7:1]: targetaddress, [0]: r/w
+  `define I2C_DATA_WIDTH      8
+  `define I2C_FLAG_WIDTH      5
 
   // local types
+  typedef enum logic {
+    WRITE  = 1'b0,
+    READ   = 1'b1
+  } i2c_rw_dir_e;
+
+  typedef enum logic[2:0] {
+    RESET      = 3'd0,
+    FREE       = 3'd1,
+    STOP       = 3'd2,
+    START      = 3'd3,
+    REPSTART   = 3'd4,
+    ACK        = 3'd5,
+    NACK       = 3'd6
+  } i2c_bus_status_e;
+
   // forward declare classes to allow typedefs below
   typedef class i2c_item;
   typedef class i2c_agent_cfg;
@@ -23,15 +44,17 @@ package i2c_agent_pkg;
   typedef dv_base_sequencer #(.ITEM_T     (i2c_item),
                               .CFG_T      (i2c_agent_cfg)) i2c_sequencer;
 
-  // functions
-
   // package sources
   `include "i2c_item.sv"
   `include "i2c_agent_cfg.sv"
   `include "i2c_agent_cov.sv"
+  `include "i2c_common_tasks.sv"
   `include "i2c_driver.sv"
+  `include "i2c_host_driver.sv"
+  `include "i2c_device_driver.sv"
   `include "i2c_monitor.sv"
   `include "i2c_agent.sv"
   `include "i2c_seq_list.sv"
 
-  endpackage: i2c_agent_pkg
+endpackage: i2c_agent_pkg
+`endif // __I2C_AGENT_PKG__
