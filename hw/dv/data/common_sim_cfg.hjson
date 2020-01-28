@@ -42,10 +42,12 @@
   // Default waves dump settings
   dump_file:  waves.{dump}
 
+  // Top level simulation entities.
+  sim_tops: ["-top {tb}"]
+
   // Default build and run opts
   build_opts: [// List multiple tops for the simulation
-               "-top {tb}",
-               "-top {dut}_bind",
+               "{sim_tops}",
                // Standard UVM defines
                "+define+UVM_NO_DEPRECATED",
                "+define+UVM_REGEX_NO_DPI",

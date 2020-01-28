@@ -9,8 +9,8 @@
     m_``ip``_common_vseq.add_csr_exclusions(csr_test_type, csr_excl, {scope, ".", `"ip`"}); \
   end
 
-class chip_csr_vseq extends chip_base_vseq;
-  `uvm_object_utils(chip_csr_vseq)
+class chip_common_vseq extends chip_base_vseq;
+  `uvm_object_utils(chip_common_vseq)
 
   constraint num_trans_c {
     num_trans inside {[1:2]};

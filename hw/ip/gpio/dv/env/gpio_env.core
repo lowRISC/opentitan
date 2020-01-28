@@ -13,12 +13,21 @@ filesets:
       - gpio_env_pkg.sv
       - gpio_env_cfg.sv: {is_include_file: true}
       - gpio_env_cov.sv: {is_include_file: true}
-      - gpio_env.sv: {is_include_file: true}
       - gpio_scoreboard.sv: {is_include_file: true}
+      - gpio_env.sv: {is_include_file: true}
       - seq_lib/gpio_vseq_list.sv: {is_include_file: true}
       - seq_lib/gpio_base_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_common_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_sanity_vseq.sv: {is_include_file: true}
-      - seq_lib/gpio_csr_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_rand_intr_trigger_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_random_dout_din_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_dout_din_regs_random_rw_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_random_long_reg_writes_reg_reads_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_filter_stress_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_full_random_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_intr_rand_pgm_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_intr_with_filter_rand_intr_event_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

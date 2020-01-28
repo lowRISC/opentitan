@@ -7,21 +7,20 @@ description: "SHA / HASH Crypto implementations in C from Chromium open source r
 filesets:
   files_dv:
     files:
-      - hash-internal.h: { file_type: systemVerilogSource, is_include_file: true }
-      - hash-internal.h: { file_type: systemVerilogSource, is_include_file: true }
-      - md5.h: { file_type: systemVerilogSource, is_include_file: true }
-      - sha.h: { file_type: systemVerilogSource, is_include_file: true }
-      - sha256.h: { file_type: systemVerilogSource, is_include_file: true }
-      - util.h: { file_type: systemVerilogSource, is_include_file: true }
-      - hmac.h: { file_type: systemVerilogSource, is_include_file: true }
-      - hmac_wrap.h: { file_type: systemVerilogSource, is_include_file: true }
-      - util.c: { file_type: systemVerilogSource }
-      - sha.c: { file_type: systemVerilogSource }
-      - sha256.c: { file_type: systemVerilogSource }
-      - hmac.c: { file_type: systemVerilogSource }
-      - hmac_wrap.c: { file_type: systemVerilogSource }
-      - cryptoc_dpi.c: { file_type: systemVerilogSource }
-      - cryptoc_dpi_pkg.sv: { file_type: systemVerilogSource }
+      - hash-internal.h: {file_type: cSource, is_include_file: true}
+      - sha.h: {file_type: cSource, is_include_file: true}
+      - sha256.h: {file_type: cSource, is_include_file: true}
+      - util.h: {file_type: cSource, is_include_file: true}
+      - hmac.h: {file_type: cSource, is_include_file: true}
+      - hmac_wrap.h: {file_type: cSource, is_include_file: true}
+      - util.c: {file_type: cSource}
+      - sha.c: {file_type: cSource}
+      - sha256.c: {file_type: cSource}
+      - hmac.c: {file_type: cSource}
+      - hmac_wrap.c: {file_type: cSource}
+      - cryptoc_dpi.c: {file_type: cSource}
+      - cryptoc_dpi_pkg.sv: {file_type: systemVerilogSource}
+    file_type: cSource
 
 targets:
   default:

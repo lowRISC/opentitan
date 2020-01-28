@@ -21,6 +21,7 @@ filesets:
       - alert_receiver_driver.sv: {is_include_file: true}
       - alert_sender_driver.sv: {is_include_file: true}
       - esc_receiver_driver.sv: {is_include_file: true}
+      - esc_sender_driver.sv: {is_include_file: true}
       - alert_esc_base_monitor.sv: {is_include_file: true}
       - alert_monitor.sv: {is_include_file: true}
       - esc_monitor.sv: {is_include_file: true}

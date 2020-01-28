@@ -14,16 +14,16 @@ filesets:
     files:
       - tl_if.sv
       - tl_agent_pkg.sv
+      - tl_seq_item.sv: {is_include_file: true}
       - tl_agent_cfg.sv: {is_include_file: true}
-      - tl_agent.sv: {is_include_file: true}
       - tl_agent_cov.sv: {is_include_file: true}
       - tl_device_driver.sv: {is_include_file: true}
       - tl_host_driver.sv: {is_include_file: true}
-      - tl_monitor.sv: {is_include_file: true}
-      - tl_reg_adapter.sv: {is_include_file: true}
-      - tl_seq_item.sv: {is_include_file: true}
-      - tl_seq_lib.sv: {is_include_file: true}
       - tl_sequencer.sv: {is_include_file: true}
+      - tl_monitor.sv: {is_include_file: true}
+      - tl_agent.sv: {is_include_file: true}
+      - tl_reg_adapter.sv: {is_include_file: true}
+      - tl_seq_lib.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

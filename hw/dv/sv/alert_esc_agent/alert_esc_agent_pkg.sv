@@ -52,9 +52,12 @@ package alert_esc_agent_pkg;
   `include "alert_monitor.sv"
   `include "esc_monitor.sv"
   `include "alert_esc_agent.sv"
+
+  // Sequences
   `include "seq_lib/alert_receiver_alert_rsp_seq.sv"
   `include "seq_lib/alert_receiver_seq.sv"
   `include "seq_lib/alert_sender_ping_rsp_seq.sv"
   `include "seq_lib/alert_sender_seq.sv"
   `include "seq_lib/esc_receiver_esc_rsp_seq.sv"
+
 endpackage

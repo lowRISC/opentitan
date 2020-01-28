@@ -18,7 +18,7 @@
       desc: '''
             Basic hello world,  encrypt a plain text read it back - decrypt and compare to input'''
       milestone: V1
-      tests: ["aes_wakeup"]
+      tests: ["aes_wake_up"]
     }
     {
       name: sanity

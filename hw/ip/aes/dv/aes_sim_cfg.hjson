@@ -32,6 +32,9 @@
                 // TODO: enable stress tests later.
                 // "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
 
+  // Add additional tops for simulation.
+  sim_tops: ["-top aes_bind"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
@@ -50,8 +53,9 @@
   // List of test specifications.
   tests: [
     {
-      name: aes_wakeup
+      name: aes_wake_up
       uvm_test_seq: aes_wake_up_vseq
+      reseed: 1
     }
 
     {

@@ -31,6 +31,9 @@
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
 
+  // Add additional tops for simulation.
+  sim_tops: ["-top rv_dm_bind"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 

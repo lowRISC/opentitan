@@ -1,10 +1,16 @@
 {
+  run_modes: [
+    {
+      name: mem_tests_mode
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+csr_mem_walk", "+en_scb=0"]
+    }
+  ]
+
   tests: [
     {
       name: "{name}_mem_walk"
-      uvm_test_seq: "{name}_common_vseq"
-      run_opts: ["+csr_mem_walk", "+en_scb=0"]
-      reseed: 20
+      en_run_modes: ["mem_tests_mode"]
     }
   ]
 
