@@ -56,7 +56,7 @@ targets:
     toplevel: top_earlgrey_nexysvideo
     parameters:
       - ROM_INIT_FILE
-      - PRIM_DEFAULT_IMPL="prim_pkg::ImplXilinx"
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:
         part: "xc7a200tsbg484-1" # Nexys Video
