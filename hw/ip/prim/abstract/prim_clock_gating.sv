@@ -6,7 +6,7 @@
 // "abstract module". This module is to be replaced by generated code.
 
 `ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+  `define PRIM_DEFAULT_IMPL prim_pkg::ImplXilinx
 `endif
 
 module prim_clock_gating #(
