@@ -67,9 +67,7 @@ jobs:
       fusesoc --cores-root=. \
         run --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_nexysvideo  \
-        --PRIM_DEFAULT_IMPL="prim_pkg::ImplXilinx"  \
-        --ROM_INIT_FILE="$BOOTROM_VMEM"
+        lowrisc:systems:top_earlgrey_nexysvideo
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
