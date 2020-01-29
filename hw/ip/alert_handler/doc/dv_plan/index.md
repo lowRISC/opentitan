@@ -14,7 +14,7 @@ title: "ALERT_HANDLER DV Plan"
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/alert_handler/dv/latest/results.html)
 
 ## Design features
 For detailed information on ALERT_HANDLER design features, please see the [ALERT_HANDLER HWIP technical specification]({{< relref "hw/ip/alert_handler/doc" >}}).

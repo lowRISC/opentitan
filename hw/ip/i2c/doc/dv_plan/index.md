@@ -12,7 +12,7 @@ title: "I2C DV Plan"
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/i2c/dv/latest/results.html)
 
 ## Design features
 For detailed information on I2C design features, please see the

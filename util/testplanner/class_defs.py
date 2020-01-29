@@ -198,7 +198,7 @@ class Testplan():
                 # Create dummy tests entry for milestone total
                 if totals[ms].tests == []:
                     totals[ms].tests = [{
-                        "name": "TOTAL",
+                        "name": "**TOTAL**",
                         "passing": 0,
                         "total": 0
                     }]
@@ -218,7 +218,7 @@ class Testplan():
                                        desc="Total tests",
                                        milestone=ms,
                                        tests=[{
-                                           "name": "TOTAL",
+                                           "name": "**TOTAL**",
                                            "passing": 0,
                                            "total": 0
                                        }])
@@ -283,20 +283,21 @@ class Testplan():
         '''Print the mapped regression results into a table.
         '''
         self.map_regr_results(regr_results, map_full_testplan)
-        table = [["Milestone", "Name", "Tests", "Results"]]
-        align = ["center", "center", "right", "center"]
+        table = [[
+            "Milestone", "Name", "Tests", "Passing", "Iterations", "Pass Rate"
+        ]]
         for entry in self.entries:
             milestone = entry.milestone
             entry_name = entry.name
             if milestone == "N.A.": milestone = ""
             if entry_name == "N.A.": entry_name = ""
             for test in entry.tests:
-                results_str = str(test["passing"]) + "/" + str(test["total"])
-                table.append(
-                    [milestone, entry_name, test["name"], results_str])
+                pass_rate = test["passing"] / test["total"] * 100
+                pass_rate = "{0:.2f}".format(round(pass_rate, 2))
+                table.append([
+                    milestone, entry_name, test["name"], test["passing"],
+                    test["total"], pass_rate
+                ])
                 milestone = ""
                 entry_name = ""
-        return tabulate(table,
-                        headers="firstrow",
-                        tablefmt="pipe",
-                        colalign=align)
+        return tabulate(table, headers="firstrow", tablefmt="pipe")

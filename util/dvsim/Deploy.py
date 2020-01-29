@@ -262,10 +262,10 @@ class Deploy():
         if self.process.poll() is not None:
             self.log_fd.close()
             if self.process.returncode != 0:
-                msg = "Last 2 lines of the log:<br>\n"
+                msg = "Last 5 lines of the log:<br>\n"
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
-                get_fail_msg_cmd = "tail -n 2 " + self.log
+                get_fail_msg_cmd = "tail -n 5 " + self.log
                 msg = run_cmd(get_fail_msg_cmd)
                 msg = "```\n{}\n```\n".format(msg)
                 self.fail_msg += msg
@@ -417,8 +417,8 @@ class CompileSim(Deploy):
 
         # Start fail message construction
         self.fail_msg = "\n**BUILD:** {}<br>\n".format(self.name)
-        log_sub_path = self.log.replace(self.sim_cfg.scratch_root + '/', '')
-        self.fail_msg += "**LOG: {}<br>\n".format(log_sub_path)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
 
         CompileSim.items.append(self)
 

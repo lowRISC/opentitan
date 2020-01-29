@@ -13,7 +13,7 @@ title: "SPI Device DV Plan"
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/results.html)
 
 ## Design features
 For detailed information on SPI Device design features, please see the [SPI_device design specification]({{< relref "hw/ip/spi_device/doc" >}}).

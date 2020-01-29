@@ -12,7 +12,7 @@ title: "RV_TIMER DV Plan"
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/results.html)
 
 ## Design features
 For detailed information on RV_TIMER design features, please see the [RV_TIMER design specification]({{< relref "hw/ip/rv_timer/doc" >}}).

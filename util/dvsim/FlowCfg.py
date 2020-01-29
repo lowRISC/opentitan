@@ -64,6 +64,12 @@ class FlowCfg():
         self.ts_format = args.ts_format
         self.timestamp = args.timestamp
 
+        # Results
+        self.results_title = ""
+
+        # Full results in md text.
+        self.results_md = ""
+
     def __post_init__(self):
         # Run some post init checks
         if not self.is_master_cfg:
@@ -332,8 +338,8 @@ class FlowCfg():
         '''Publish results to the opentitan web server.
         Results are uploaded to {results_server}/{rel_path}/latest/results.
         If the 'latest' directory exists, then it is renamed to its 'timestamp' directory.
-        If the list of directories in this area is > 7, then the oldest entry is removed.
-        {results_server}/{rel_path}/history.md contains links to the last 7 results.
+        If the list of directories in this area is > 14, then the oldest entry is removed.
+        Links to the last 7 regression results are appended at the end if the results page.
         '''
         if which('gsutil') is None or which('gcloud') is None:
             log.error(
@@ -342,9 +348,14 @@ class FlowCfg():
             return
 
         # Construct the paths
-        results_root_dir = self.results_server + '/' + self.rel_path
+        results_fname = 'results.html'
+        results_root_dir = "gs://" + self.results_server + '/' + self.rel_path
         results_dir = results_root_dir + '/latest'
-        results_page = results_dir + '/results.md'
+        results_page = results_dir + '/' + results_fname
+
+        # Assume that a 'style.css' is available at root path
+        css_path = (
+            (len(self.rel_path.split("/")) + 1) * "../") + "css/style.css"
 
         # Timeformat for moving the dir
         tf = "%Y.%m.%d_%H.%M.%S"
@@ -410,48 +421,45 @@ class FlowCfg():
         for rdir in results_dirs:
             dirname = rdir.replace(results_root_dir, '')
             dirname = dirname.replace('/', '')
-            if dirname in ['latest', 'history.md']: continue
+            if dirname == "latest": continue
             rdirs.append(dirname)
         rdirs.sort(reverse=True)
 
         rm_cmd = ""
-        history_txt = " History\n\n"
+        history_txt = "\n## Past Results\n"
         history_txt += "- [Latest](" + results_page + ")\n"
         if len(rdirs) > 0:
             for i in range(len(rdirs)):
-                if i < 6:
-                    rdir_url = results_root_dir + '/' + rdirs[i] + "/results.md"
+                if i < 7:
+                    rdir_url = results_root_dir + '/' + rdirs[
+                        i] + "/" + results_fname
                     history_txt += "- [{}]({})\n".format(rdirs[i], rdir_url)
-                else:
+                elif i > 14:
                     rm_cmd += results_root_dir + '/' + rdirs[i] + " "
 
         if rm_cmd != "":
             rm_cmd = "gsutil rm -r " + rm_cmd + "; "
 
-        # Publish the updated history page.
-        history_txt = history_txt.replace("gs://", "http://")
-        history_file = self.scratch_path + "/history_" + self.timestamp + ".md"
-        history_page = results_root_dir + "/history.md"
+        # Append the history to the results.
+        results_md = self.results_md + history_txt
 
-        f = open(history_file, 'w')
-        f.write(history_txt)
+        # Publish the results page.
+        # First, write the results html file temporarily to the scratch area.
+        results_html_file = self.results_file + ".html"
+        f = open(results_html_file, 'w')
+        f.write(md_results_to_html(self.results_title, css_path, results_md))
         f.close()
+        rm_cmd += "rm -rf " + results_html_file + "; "
 
-        # Construct history cp cmd
-        history_cp_cmd = "gsutil cp " + history_file + " " + history_page + \
-                          "; rm -rf " + history_file + "; "
-
-        # Copy over the latest regression result.
         log.info("Publishing results to %s",
-                 results_page.replace("gs://", "http://"))
-        cmd = history_cp_cmd + rm_cmd + \
-              "gsutil cp "  + self.results_file + " " + results_page
+                 results_page.replace("gs://", "https://"))
+        cmd = "gsutil cp " + results_html_file + " " + results_page + "; " + rm_cmd
 
         try:
             cmd_output = subprocess.run(args=cmd,
                                         shell=True,
                                         stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL)
+                                        stderr=subprocess.STDOUT)
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
 

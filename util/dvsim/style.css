@@ -1,0 +1,74 @@
+/* Copyright lowRISC contributors.
+ * Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* CSS for reports.opentitan.org.
+ * This is currently uploaded to reports.opentitan.org/css/style,css. It is
+ * referenced by all results published to the reports server for some basic
+ * styling. After making any change to this file, it needs to be manually
+ * copied over so that the new changes are reflected in the results pages.
+ * gsutil cp <this-file> gs://reports.opentitan.org/css/style.css
+ */
+
+.results {
+  width: 80%;
+  max-width: 960px;
+  padding-left: 40px;
+  padding-right: 40px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+.results p {
+  text-align: justify;
+}
+
+.results pre {
+   overflow-x: auto;
+   white-space: pre-wrap;
+   white-space: -moz-pre-wrap;
+   white-space: -pre-wrap;
+   white-space: -o-pre-wrap;
+}
+
+.results h1, .results h2, .results h3 {
+  text-align: center;
+}
+
+.results table {
+  width: 90%;
+  margin: 2% auto;
+  border: 1px solid #f2f2f2;
+  border-collapse: collapse;
+  text-align: center;
+  vertical-align: middle;
+  display: table;
+  table-layout: auto
+}
+
+.results th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: #3D1067;
+  text-transform: uppercase;
+  color: white;
+}
+
+.results th, .results td {
+  border: 1px solid #f2f2f2;
+  padding: 8px;
+}
+
+.results tr:hover {
+  background-color: #f2f2f2;
+}
+
+.results tbody tr:nth-child(even) {
+  background: #f2f2f2;
+}
