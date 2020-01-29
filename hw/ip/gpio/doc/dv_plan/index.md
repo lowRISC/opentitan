@@ -12,7 +12,7 @@ title: "GPIO DV Plan"
 ## Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/gpio/dv/latest/results.html)
 
 ## Design features
 For detailed information on GPIO design features, please see the [GPIO design specification]({{< relref "hw/ip/gpio/doc" >}}).

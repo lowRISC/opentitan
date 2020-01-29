@@ -21,7 +21,7 @@ ${'##'} Goals
 ${'##'} Current status
 * [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/${name}/dv/latest/results.html)
 
 ${'##'} Design features
 For detailed information on ${name.upper()} design features, please see the [${name.upper()} HWIP technical specification]({{< relref "hw/ip/${name}/doc" >}}).

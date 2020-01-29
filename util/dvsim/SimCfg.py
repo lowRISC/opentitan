@@ -143,6 +143,7 @@ class SimCfg(FlowCfg):
     def __post_init__(self):
         # Run some post init checks
         super().__post_init__()
+        self.results_title = self.name.upper() + " Simulation Results"
 
     @staticmethod
     def create_instance(flow_cfg_file, proj_root, args):
@@ -400,9 +401,14 @@ class SimCfg(FlowCfg):
             fail_msgs = "\n## List of Failures\n" + fail_msgs
 
         # Generate results table for runs.
-        results_str = "# " + self.name.upper() + " Regression Results\n"
-        results_str += "  Run on " + self.timestamp_long + "\n"
-        results_str += "\n## Test Results\n"
+        results_str = "## " + self.results_title + "\n"
+        results_str += "### " + self.timestamp_long + "\n"
+
+        # Add path to testplan.
+        testplan = "https://" + self.doc_server + '/' + self.rel_path
+        testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
+        results_str += "### [Testplan](" + testplan + ")\n\n"
+
         # TODO: check if testplan is not null?
         results_str += self.testplan.results_table(
             regr_results=regr_results,
@@ -413,7 +419,7 @@ class SimCfg(FlowCfg):
         self.results_md = results_str + fail_msgs
 
         # Write results to the scratch area
-        self.results_file = self.scratch_path + "/regr_results_" + self.timestamp + ".md"
+        self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
         log.info("Detailed results are available at %s", self.results_file)
         f = open(self.results_file, 'w')
         f.write(self.results_md)

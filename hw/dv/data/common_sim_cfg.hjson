@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   project:          opentitan
-  results_server:   "gs://reports.opentitan.org"
+  doc_server:       "docs.opentitan.org"
+  results_server:   "reports.opentitan.org"
 
   flow:             sim
   flow_makefile:    "{proj_root}/hw/dv/data/sim.mk"

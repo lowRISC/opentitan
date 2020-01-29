@@ -17,6 +17,7 @@ import time
 from collections import OrderedDict
 
 import hjson
+import mistletoe
 
 # For verbose logging
 VERBOSE = 15
@@ -77,9 +78,9 @@ def parse_hjson(hjson_file):
         text = f.read()
         hjson_cfg_dict = hjson.loads(text, use_decimal=True)
         f.close()
-    except:
-        log.fatal("Failed to parse \"%s\" possibly due to bad path",
-                  hjson_file)
+    except Exception as e:
+        log.fatal("Failed to parse \"%s\" possibly due to bad path or syntax error.\n%s",
+                  hjson_file, e)
         sys.exit(1)
     return hjson_cfg_dict
 
@@ -108,8 +109,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
                         if type(found) is list:
                             subst_found = []
                             for element in found:
-                                element = subst_wildcards(element, mdict,
-                                                          ignored_wildcards)
+                                element = subst_wildcards(
+                                    element, mdict, ignored_wildcards)
                                 subst_found.append(element)
                             # Expand list into a str since list within list is
                             # not supported.
@@ -169,3 +170,24 @@ def find_and_substitute_wildcards(sub_dict, full_dict, ignored_wildcards=[]):
             sub_dict[key] = subst_wildcards(sub_dict[key], full_dict,
                                             ignored_wildcards)
     return sub_dict
+
+
+def md_results_to_html(title, css_path, md_text):
+    '''Convert results in md format to html. Add a little bit of styling.
+    '''
+    html_text = "<!DOCTYPE html>\n"
+    html_text += "<html lang=\"en\">\n"
+    html_text += "<head>\n"
+    if title != "":
+        html_text += "  <title>{}</title>\n".format(title)
+    if css_path != "":
+        html_text += "  <link rel=\"stylesheet\" type=\"text/css\""
+        html_text += " href=\"{}\"/>\n".format(css_path)
+    html_text += "</head>\n"
+    html_text += "<body>\n"
+    html_text += "<div class=\"results\">\n"
+    html_text += mistletoe.markdown(md_text)
+    html_text += "</div>\n"
+    html_text += "</body>\n"
+    html_text += "</html>\n"
+    return html_text
