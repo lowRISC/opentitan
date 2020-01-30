@@ -7,7 +7,6 @@ import hjson
 import pysvd
 import xml.etree.ElementTree as ET
 
-
 genhdr = '''
   Copyright lowRISC contributors.
   Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -238,6 +237,22 @@ def generate_dim_register(window: hjson, base: int) -> ET.Element:
 
     return window
 
+def read_genoffset(reg: hjson) -> int:
+    """ Return the register's "genoffset" field. In most cases this will
+    be set directly in the register's JSON fields; but "window" registers
+    set this on an inner field."""
+
+    genoffset = reg.get('genoffset')
+    if genoffset != None:
+        return genoffset
+
+    window = reg.get('window')
+    if window != None:
+        return window['genoffset']
+
+    json = hjson.dumps(reg, indent='  ', sort_keys=True, default=str)
+    raise SystemExit('could not determine register "genoffset": %s' % json)
+
 def generate_cluster(multi: [hjson], base: int) -> ET.Element:
     """Generate a <cluster> node from a multireg. The <cluster> will
     contain a <register> for each register in `genregs`.
@@ -262,7 +277,7 @@ def generate_cluster(multi: [hjson], base: int) -> ET.Element:
     #
     # We need to special case window registers: these don't specify a
     # genoffset in the outer definition; instead we need to peek inside.
-    base = min(reg.get('genoffset') or reg['window']['genoffset'] for reg in genregs)
+    base = min(map(read_genoffset, genregs))
 
     return svd_node('cluster',
             name          = multi['name'],
