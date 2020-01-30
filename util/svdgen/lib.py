@@ -30,7 +30,13 @@ def hex_or_none(num: int) -> str or None:
 
     return hex(num)
 
-def svd_node(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag": object}) -> ET.Element:
+def extend_node(element: ET.Element, *elements: [ET.Element]) -> ET.Element:
+    """Append all elements to a node and return it."""
+
+    element.extend(elements)
+    return element
+
+def svd_node(element: str or ET.Element, **texts: {"tag": object}) -> ET.Element:
     """Construct an SVD element using the information provided.
 
     If the first argument is not an `ET.Element` this constructs a new
@@ -62,7 +68,6 @@ def svd_node(element: str or ET.Element, *elements: [ET.Element], **texts: {"tag
         e.text = str(value)
         element.append(e)
 
-    element.extend(elements)
     return element
 
 def indent_tree(element: ET.Element, indent='\n'):
@@ -210,10 +215,10 @@ def generate_register(reg: hjson, base: int) -> ET.Element:
     # Ignore an empty or flattened <fields>
     def generate_all_fields(flatten: bool, fields: [hjson]) -> ET.Element:
         if not flatten and fields != None:
-            yield svd_node('fields', *map(generate_field, fields))
+            yield extend_node(svd_node('fields'), *map(generate_field, fields))
 
     (access, readAction, modifiedWriteValues) = sw_access_modes(reg)
-    return svd_node('register',
+    register =  svd_node('register',
             name                = reg['name'],
             description         = reg['desc'],
             addressOffset       = hex_or_none(reg['genoffset'] - base),
@@ -223,8 +228,9 @@ def generate_register(reg: hjson, base: int) -> ET.Element:
             resetMask           = hex_or_none(reg.get('genresmask')),
             access              = access,
             readAction          = readAction,
-            modifiedWriteValues = modifiedWriteValues,
-            *generate_all_fields(flatten, fields))
+            modifiedWriteValues = modifiedWriteValues)
+
+    return extend_node(register, *generate_all_fields(flatten, fields))
 
 def generate_dim_register(window: hjson, base: int) -> ET.Element:
     """Generate an SVD <register> element containing a buffer. This is
@@ -286,11 +292,12 @@ def generate_cluster(multi: [hjson], base: int) -> ET.Element:
     # genoffset in the outer definition; instead we need to peek inside.
     base = min(map(read_genoffset, genregs))
 
-    return svd_node('cluster',
+    cluster = svd_node('cluster',
             name          = multi['name'],
             description   = multi['desc'],
-            addressOffset = hex_or_none(base),
-            *generate_all_registers(genregs, base))
+            addressOffset = hex_or_none(base))
+
+    return extend_node(cluster, *generate_all_registers(genregs, base))
 
 def generate_all_registers(regs: [hjson], base=0) -> [ET.Element]:
     """Convert a list of register HJSON element into a <registers> node.
@@ -317,20 +324,21 @@ def generate_peripheral(module: hjson, ip: hjson) -> ET.Element:
     """Convert an IP module definition to a <peripheral> element. This
     pulls only the name and base address from the top-level HJSON."""
 
-    # argument ordering is deceptive; <name> and <baseAddress> will
-    # preceed all <interrupt>s, <register>s, and the comment
-    return svd_node('peripheral',
-            *generate_all_interrupts(ip.get('interrupt_list')),
-            svd_node('registers', *generate_all_registers(ip['registers'])),
-            ET.Comment('end of %s' % module['name']),
+    registers = svd_node('registers')
+    peripheral = svd_node('peripheral',
             name        = module['name'],
             baseAddress = module['base_addr'])
+
+    return extend_node(peripheral,
+            *generate_all_interrupts(ip.get('interrupt_list')),
+            extend_node(registers, *generate_all_registers(ip['registers'])),
+            ET.Comment('end of %s' % module['name']))
 
 def generate_peripherals(modules: hjson, ips: {'name': hjson}) -> ET.Element:
     """Generate a <peripherals> element filled by cross-referencing the
     IP definition for each item in the top's module list."""
 
-    return svd_node('peripherals',
+    return extend_node(svd_node('peripherals'),
             *(generate_peripheral(module, ips[module['type']]) for module in modules))
 
 def generate_cpu() -> ET.Element:
@@ -358,13 +366,11 @@ def generate_device(top: hjson, ips: {'name': hjson}, version: str, description:
     HJSON descriptions. While they might be available elsewhere in the
     configuration, it's simplest just to declare them here."""
 
-    return svd_node(ET.Element('device', attrib = {
+    device = svd_node(ET.Element('device', attrib = {
                 'schemaVersion': '1.1',
                 'xmlns:xs': 'http://www.w3.org/2001/XMLSchema-instance',
                 'xs:noNamespaceSchemaLocation': 'CMSIS-SVD.xsd',
             }),
-            generate_cpu(),
-            generate_peripherals(top['module'], ips),
             vendor          = 'lowRISC',
             name            = top['name'],
             version         = version,
@@ -372,6 +378,10 @@ def generate_device(top: hjson, ips: {'name': hjson}, version: str, description:
             width           = top['datawidth'],
             size            = top['datawidth'],
             addressUnitBits = 8)
+
+    return extend_node(device,
+            generate_cpu(),
+            generate_peripherals(top['module'], ips))
 
 def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, description: str, verify=True) -> ET.Element:
     """Convert a top-level configuration and IP register definition set
