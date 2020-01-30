@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Test routines to validate generated SVD files."""
+
 import io
 import sys
 import xml.etree.ElementTree as ET
@@ -19,12 +21,12 @@ def check_xml_result(result_et, expect_xml):
     """Check a computed SVD ET.Element against an expected XML string."""
 
     def check_et_result(path, result, expect):
-        if expect == None:
+        if expect is None:
             yield 'extra element @ %s.%s' % (path, result.tag)
             return
 
         path = '%s.%s' % (path, expect.tag)
-        if result == None:
+        if result is None:
             yield 'missing element @ %s' % path
             return
 
@@ -35,8 +37,8 @@ def check_xml_result(result_et, expect_xml):
         if result.tail.strip() != '':
             yield 'invalid trailing text @ %s', path
 
-        rtext = (result.text and result.text.strip()) or ''
-        etext = (expect.text and expect.text.strip()) or ''
+        rtext = result.text.strip() if result.text else ''
+        etext = expect.text.strip() if expect.text else ''
         if rtext != etext:
             yield 'incorrect text @%s: "%s" != "%s"' % (path, rtext, etext)
 
@@ -49,6 +51,9 @@ def check_xml_result(result_et, expect_xml):
 
 
 def check_peripheral(name, top, ips, expect_xml):
+    """Yield an error description for each incorrect node which differs
+    between the expected XML and the results."""
+
     success = True
     svd = convert_top_to_svd(top, ips, '-', '-', False)
 
@@ -66,6 +71,8 @@ def check_peripheral(name, top, ips, expect_xml):
 
 
 def test_trees():
+    """Convert various IP definitions to SVD and validate the results."""
+
     top = {
         'name': 'tree-test',
         'module': [
@@ -555,7 +562,7 @@ def test_paths():
 
     for (path, expect) in tests.items():
         found = svd.find(path)
-        if found == None:
+        if found is None:
             print('missing node: /device/%s' % path[1:])
             success = False
         elif found.text.strip() != expect:
@@ -569,6 +576,5 @@ def test_paths():
 
 
 if __name__ == '__main__':
-    success = test_paths() and test_trees()
-    if not success:
+    if not test_paths() or not test_trees():
         raise SystemExit('svdgen tests failed')

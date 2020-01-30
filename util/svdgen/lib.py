@@ -3,11 +3,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import hjson
-import pysvd
+"""Functions to convert validated top-level and peripheral module HJSON
+to SVD files."""
+
 import xml.etree.ElementTree as ET
 
-genhdr = '''
+import hjson
+import pysvd
+
+
+GENHDR = '''
   Copyright lowRISC contributors.
   Licensed under the Apache License, Version 2.0, see LICENSE for details.
   SPDX-License-Identifier: Apache-2.0
@@ -15,26 +20,30 @@ genhdr = '''
   This file generated from HJSON source by "svdgen.py", do not edit.
 '''
 
-def case_compare(a: str, b: str) -> bool:
+
+def case_compare(left: str, right: str) -> bool:
     """Perform a case-insenstive equality check on two strings"""
 
-    return a.casefold() == b.casefold()
+    return left.casefold() == right.casefold()
+
 
 def hex_or_none(num: int) -> str or None:
     """Converts None -> None and everything else to a hex string. This
     simplifies use with `svd_node()` which ignores elements whose value is
     `None`."""
 
-    if num == None:
+    if num is None:
         return None
 
     return hex(num)
+
 
 def extend_node(element: ET.Element, *elements: [ET.Element]) -> ET.Element:
     """Append all elements to a node and return it."""
 
     element.extend(elements)
     return element
+
 
 def svd_node(element: str or ET.Element, **texts: {"tag": object}) -> ET.Element:
     """Construct an SVD element using the information provided.
@@ -55,20 +64,21 @@ def svd_node(element: str or ET.Element, **texts: {"tag": object}) -> ET.Element
     simplifies reading HJSON and converting it; liberal use of `hjson.get()`
     will skip any optional values which aren't set."""
 
-    if type(element) == str:
+    if isinstance(element, str):
         element = ET.Element(element)
-    elif type(element) != ET.Element:
+    elif not isinstance(element, ET.Element):
         raise TypeError('expected str or ET.Element')
 
     for (tag, value) in texts.items():
-        if value == None:
+        if value is None:
             continue
 
-        e = ET.Element(tag)
-        e.text = str(value)
-        element.append(e)
+        text = ET.Element(tag)
+        text.text = str(value)
+        element.append(text)
 
     return element
+
 
 def indent_tree(element: ET.Element, indent='\n'):
     """Pretty-print the given element. This modifies the element in place
@@ -93,7 +103,7 @@ def indent_tree(element: ET.Element, indent='\n'):
 
     if is_parent:
         element.text = indent + '  '
-    elif element.text != None:
+    elif element.text is not None:
         element.text = element.text.strip()
 
     element.tail = indent
@@ -105,17 +115,19 @@ def indent_tree(element: ET.Element, indent='\n'):
     if is_parent:
         last.tail = indent
 
+
 def generate_all_interrupts(irqs: hjson) -> [ET.Element]:
     """Generate a series of <interrupt> nodes from HJSON. Yields nothing
     if irqs is `None`. (This simplifies use in `generate_peripheral()`.)"""
 
-    if irqs == None:
+    if irqs is None:
         return
 
     for (num, irq) in enumerate(irqs):
         yield svd_node('interrupt',
             name        = irq['name'],
             value       = num)
+
 
 def sw_access_modes(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction, pysvd.type.modifiedWriteValues):
     """Converts from OpenTitan software register access level to equivalent
@@ -162,6 +174,7 @@ def sw_access_modes(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.rea
 
     return modes[reg_or_field.get('swaccess')]
 
+
 def generate_bitrange(bitinfo: [int, int, int]) -> str:
     """Convert a generated `bitfield` to <bitRange> text"""
 
@@ -170,17 +183,19 @@ def generate_bitrange(bitinfo: [int, int, int]) -> str:
     (width, lsb) = (bitinfo[1], bitinfo[2])
     return '[%d:%d]' % (lsb+width-1, lsb)
 
+
 def generate_field(bits: hjson) -> ET.Element:
     """Convert an HJSON bit field to a <field> node"""
 
-    (access, readAction, modifiedWriteValues) = sw_access_modes(bits)
+    (access, read_action, modified_write_values) = sw_access_modes(bits)
     return svd_node('field',
             name                = bits['name'],
             description         = bits['desc'],
             bitRange            = generate_bitrange(bits['bitinfo']),
             access              = access,
-            readAction          = readAction,
-            modifiedWriteValues = modifiedWriteValues)
+            readAction          = read_action,
+            modifiedWriteValues = modified_write_values)
+
 
 def generate_register(reg: hjson, base: int) -> ET.Element:
     """Convert a standard register definition into a <register> node.
@@ -202,7 +217,7 @@ def generate_register(reg: hjson, base: int) -> ET.Element:
     # a case-insensitive match, as there are many registers which have
     # identical names except for being capitalized.
     fields = reg.get('fields')
-    flatten = fields != None and \
+    flatten = fields is not None and \
             len(fields) == 1 and \
             case_compare(fields[0]['name'], reg['name']) and \
             fields[0]['bitinfo'][2] == 0
@@ -214,10 +229,10 @@ def generate_register(reg: hjson, base: int) -> ET.Element:
 
     # Ignore an empty or flattened <fields>
     def generate_all_fields(flatten: bool, fields: [hjson]) -> ET.Element:
-        if not flatten and fields != None:
+        if not flatten and fields is not None:
             yield extend_node(svd_node('fields'), *map(generate_field, fields))
 
-    (access, readAction, modifiedWriteValues) = sw_access_modes(reg)
+    (access, read_action, modified_write_values) = sw_access_modes(reg)
     register =  svd_node('register',
             name                = reg['name'],
             description         = reg['desc'],
@@ -227,10 +242,11 @@ def generate_register(reg: hjson, base: int) -> ET.Element:
             resetValue          = hex_or_none(reg.get('genresval')),
             resetMask           = hex_or_none(reg.get('genresmask')),
             access              = access,
-            readAction          = readAction,
-            modifiedWriteValues = modifiedWriteValues)
+            readAction          = read_action,
+            modifiedWriteValues = modified_write_values)
 
     return extend_node(register, *generate_all_fields(flatten, fields))
+
 
 def generate_dim_register(window: hjson, base: int) -> ET.Element:
     """Generate an SVD <register> element containing a buffer. This is
@@ -250,21 +266,23 @@ def generate_dim_register(window: hjson, base: int) -> ET.Element:
 
     return window
 
+
 def read_genoffset(reg: hjson) -> int:
     """ Return the register's "genoffset" field. In most cases this will
     be set directly in the register's JSON fields; but "window" registers
     set this on an inner field."""
 
     genoffset = reg.get('genoffset')
-    if genoffset != None:
+    if genoffset is not None:
         return genoffset
 
     window = reg.get('window')
-    if window != None:
+    if window is not None:
         return window['genoffset']
 
     json = hjson.dumps(reg, indent='  ', sort_keys=True, default=str)
     raise SystemExit('could not determine register "genoffset": %s' % json)
+
 
 def generate_cluster(multi: [hjson], base: int) -> ET.Element:
     """Generate a <cluster> node from a multireg. The <cluster> will
@@ -299,6 +317,7 @@ def generate_cluster(multi: [hjson], base: int) -> ET.Element:
 
     return extend_node(cluster, *generate_all_registers(genregs, base))
 
+
 def generate_all_registers(regs: [hjson], base=0) -> [ET.Element]:
     """Convert a list of register HJSON element into a <registers> node.
     Like generating C headers, this needs to filter based on a register's
@@ -320,6 +339,7 @@ def generate_all_registers(regs: [hjson], base=0) -> [ET.Element]:
         else:
             yield generate_register(reg, base)
 
+
 def generate_peripheral(module: hjson, ip: hjson) -> ET.Element:
     """Convert an IP module definition to a <peripheral> element. This
     pulls only the name and base address from the top-level HJSON."""
@@ -334,12 +354,14 @@ def generate_peripheral(module: hjson, ip: hjson) -> ET.Element:
             extend_node(registers, *generate_all_registers(ip['registers'])),
             ET.Comment('end of %s' % module['name']))
 
+
 def generate_peripherals(modules: hjson, ips: {'name': hjson}) -> ET.Element:
     """Generate a <peripherals> element filled by cross-referencing the
     IP definition for each item in the top's module list."""
 
     return extend_node(svd_node('peripherals'),
             *(generate_peripheral(module, ips[module['type']]) for module in modules))
+
 
 def generate_cpu() -> ET.Element:
     """Generate a <cpu> element. Currently all values are hardcoded as
@@ -356,6 +378,7 @@ def generate_cpu() -> ET.Element:
             fpuPresent          = "false",
             nvicPrioBits        = 0,
             vendorSystickConfig = "false")
+
 
 def generate_device(top: hjson, ips: {'name': hjson}, version: str, description: str) -> ET.Element:
     """Generate an SVD <device> node from the top-level HJSON. For each
@@ -382,6 +405,7 @@ def generate_device(top: hjson, ips: {'name': hjson}, version: str, description:
     return extend_node(device,
             generate_cpu(),
             generate_peripherals(top['module'], ips))
+
 
 def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, description: str, verify=True) -> ET.Element:
     """Convert a top-level configuration and IP register definition set
@@ -412,17 +436,17 @@ def convert_top_to_svd(top: hjson, ips: {'name': hjson}, version: str, descripti
 
     return root
 
+
 def write_svd(device: ET.Element, output):
     """Write out the generated SVD <device> element and its children to a
     file in XML format. The SVD contents are preceeded by a comment with
     the given copyright notice and a warning that the file was generated
     by this script."""
 
-    comment = ET.Comment(genhdr)
+    comment = ET.Comment(GENHDR)
     comment.tail = '\n'
 
     # The python3 ElementTree API doesn't natively support a top-level
     # documentation comment. Fake it for reader clarity.
     ET.ElementTree(comment).write(output, encoding='unicode', xml_declaration=True)
     ET.ElementTree(device).write(output, encoding='unicode', xml_declaration=False)
-
