@@ -60,6 +60,20 @@ package dv_utils_pkg;
     uvm_reg_addr_t end_addr;
   } addr_range_t;
 
+  // Enum representing a bus operation type - read or write.
+  typedef enum bit {
+    BusOpRead,
+    BusOpWrite
+  } bus_op_e;
+
+  // Enum representing a type of host requests - read only, write only or random read & write 
+  typedef enum int {
+    HostReqNone      = 0,
+    HostReqReadOnly  = 1,
+    HostReqWriteOnly = 2,
+    HostReqReadWrite = 3
+  } host_req_type_e;
+
   string msg_id = "dv_utils_pkg";
 
   // Simple function to set max errors before quitting sim
