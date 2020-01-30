@@ -343,7 +343,7 @@ def generate_all_registers(regs: [hjson], base=0) -> [ET.Element]:
         elif 'window' in reg:
             yield generate_dim_register(reg['window'], base)
         elif 'sameaddr' in reg:
-            yield from map(generate_register, reg['sameaddr'], base)
+            yield from generate_all_registers(reg['sameaddr'], base)
         elif 'multireg' in reg:
             yield generate_cluster(reg['multireg'], base)
         else:
