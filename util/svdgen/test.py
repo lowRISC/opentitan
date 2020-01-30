@@ -9,6 +9,12 @@ from itertools import zip_longest
 from .lib import convert_top_to_svd, write_svd
 
 
+def elements_sort(ets):
+    """Sort an iterable list of `ET.Element`s by tag name"""
+
+    return sorted(ets, key=lambda et: et.tag)
+
+
 def check_xml_result(result_et, expect_xml):
     """Check a computed SVD ET.Element against an expected XML string."""
 
@@ -34,7 +40,8 @@ def check_xml_result(result_et, expect_xml):
         if rtext != etext:
             yield 'incorrect text @%s: "%s" != "%s"' % (path, rtext, etext)
 
-        for (rchild, echild) in zip_longest(result, expect):
+        children = zip_longest(elements_sort(result), elements_sort(expect))
+        for (rchild, echild) in children:
             yield from check_et_result(path, rchild, echild)
 
     expect_et = ET.XML(expect_xml)
