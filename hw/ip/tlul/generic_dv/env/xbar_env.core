@@ -14,10 +14,20 @@ filesets:
       - xbar_env_pkg.sv
       - xbar_env_cfg.sv: {is_include_file: true}
       - xbar_env_cov.sv: {is_include_file: true}
-      - xbar_virtual_sequencer.sv.sv: {is_include_file: true}
+      - xbar_virtual_sequencer.sv: {is_include_file: true}
       - xbar_env.sv: {is_include_file: true}
       - xbar_scoreboard.sv: {is_include_file: true}
       - seq_lib/xbar_vseq_list.sv: {is_include_file: true}
+      - seq_lib/xbar_seq_err_item.sv: {is_include_file: true}
+      - seq_lib/xbar_tl_host_seq.sv: {is_include_file: true}
+      - seq_lib/xbar_base_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_random_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_access_same_device_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_same_source_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_unmapped_addr_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_stress_all_with_reset_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
