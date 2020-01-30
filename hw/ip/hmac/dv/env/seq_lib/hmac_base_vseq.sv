@@ -228,6 +228,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end
     // ensure all msg fifo are written before trigger hmac_process
     csr_utils_pkg::wait_no_outstanding_access();
+    if ($urandom_range(0, 1)) rd_msg_length();
   endtask
 
   // read fifo_depth reg and burst write a chunk of words
@@ -260,6 +261,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
         break;
       end
     csr_utils_pkg::wait_no_outstanding_access();
+    if ($urandom_range(0, 1)) rd_msg_length();
     end
   endtask
 

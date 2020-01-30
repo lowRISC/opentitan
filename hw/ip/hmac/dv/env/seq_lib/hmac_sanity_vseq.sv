@@ -106,9 +106,10 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         end
       end
 
+
       // if disable sha, digest should be cleared
       // read msg fifo length
-      rd_msg_length();
+      if ($urandom_range(0, 1)) rd_msg_length();
 
       // read digest from DUT
       rd_digest();

@@ -65,6 +65,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end
           end
           foreach (msg[i]) msg_q.push_back(msg[i]);
+          update_wr_msg_length(msg_q.size());
         end
       end else begin
         case (csr_name)
@@ -74,10 +75,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (hmac_process) begin
                 // check if msg all streamed in, could happen during wr msg or trigger process
                 predict_digest(msg_q);
-                update_wr_msg_length(msg_q.size());
                 msg_q.delete();
               end else if (hmac_start) begin
                 msg_q.delete(); // make sure did not include previous msg
+                update_wr_msg_length(msg_q.size());
               end
             end else if (item.a_data[HashStart] == 1) begin
               void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
