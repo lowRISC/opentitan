@@ -21,7 +21,7 @@ class uart_seq extends uart_base_seq;
 
   task body();
     `uvm_info(`gfn, $sformatf("starting uart rx byte xfer seq: 0x%0h", data), UVM_HIGH)
-    req = REQ::type_id::create("req");
+    req = uart_item::type_id::create("req");
     start_item(req);
     req.stop_bit_c.constraint_mode(0);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,

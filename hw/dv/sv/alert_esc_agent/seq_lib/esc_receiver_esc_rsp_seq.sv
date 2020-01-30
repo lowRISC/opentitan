@@ -14,7 +14,7 @@ class esc_receiver_esc_rsp_seq extends dv_base_seq #(
 
   virtual task body();
     `uvm_info(`gfn, $sformatf("starting escalator receiver transfer"), UVM_HIGH)
-    req = REQ::type_id::create("req");
+    req = alert_esc_seq_item::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
         r_esc_rsp == 1;

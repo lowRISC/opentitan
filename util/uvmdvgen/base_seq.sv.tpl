@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class ${name}_base_seq extends dv_base_seq #(
+    .REQ         (${name}_item),
     .CFG_T       (${name}_agent_cfg),
     .SEQUENCER_T (${name}_sequencer)
   );

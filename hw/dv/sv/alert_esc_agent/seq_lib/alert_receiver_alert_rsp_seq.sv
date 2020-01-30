@@ -14,7 +14,7 @@ class alert_receiver_alert_rsp_seq extends dv_base_seq #(
 
   virtual task body();
     `uvm_info(`gfn, $sformatf("starting alert receiver transfer"), UVM_HIGH)
-    req = REQ::type_id::create("req");
+    req = alert_esc_seq_item::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
         r_alert_ping_send == 0;
