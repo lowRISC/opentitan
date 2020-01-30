@@ -52,7 +52,7 @@
       name: "DATA_IN",
       desc: '''
         Input Data Registers.
-        If MANUAL_START_TRIGGER=0 (see Control Register), the AES unit automatically starts encryption/decryption after these register have been written.
+        If MANUAL_OPERATION=0 (see Control Register), the AES unit automatically starts encryption/decryption after these register have been written.
         Each register has to be written at least once.
         The order in which the registers are written does not matter.
         Loaded into the internal State register upon starting encryption/decryption of the next block.
@@ -75,7 +75,7 @@
       desc: '''
         Output Data Register.
         Holds the output data produced by the AES unit during the last encryption/decryption operation.
-        If FORCE_DATA_OVERWRITE=0 (see Control Register), the AES unit is stalled when the previous output data has not yet been read and is about to be overwritten.
+        If MANUAL_OPERATION=0 (see Control Register), the AES unit is stalled when the previous output data has not yet been read and is about to be overwritten.
         Each register has to be read at least once.
         The order in which the registers are read does not matter.
       '''
@@ -120,19 +120,13 @@
         '''
       }
       { bits: "4",
-        name: "MANUAL_START_TRIGGER",
+        name: "MANUAL_OPERATION",
         desc:  '''
-          Controls whether the AES unit should automatically start to encrypt/decrypt
-          when it receives new input data (0) or wait for separate trigger signal
-          before starting (1) (see Trigger Register).
-        '''
-      }
-      { bits: "5",
-        name: "FORCE_DATA_OVERWRITE",
-        desc:  '''
-          Control whether the AES unit is stalled during the last
-          encryption/decryption cycle if the previous output data has not yet been
-          read (0) or finishes the operation and overwrites the previous output data (1).
+          Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
+          In automatic mode (0), the AES unit automatically i) starts to encrypt/decrypt when it receives new input data, and ii) stalls during the last encryption/decryption cycle if the previous output data has not yet been read.
+          This is the most efficient mode to operate in.
+          In manual mode (1), the AES unit i) only starts to encrypt/decrypt after receiving a start trigger (see Trigger Register), and ii) overwrites previous output data irrespective of whether it has been read out or not.
+          This mode is useful if software needs full control over the AES unit.
         '''
       }
     ]
@@ -149,7 +143,7 @@
         name: "START",
         desc:  '''
           Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
-          This trigger is ignored if MANUAL_START_TRIGGER=0 (see Control Register).
+          This trigger is ignored if MANUAL_OPERATION=0 (see Control Register).
         '''
       }
       { bits: "1",

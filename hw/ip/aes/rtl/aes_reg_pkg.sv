@@ -40,11 +40,7 @@ package aes_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } manual_start_trigger;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } force_data_overwrite;
+    } manual_operation;
   } aes_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
@@ -85,10 +81,7 @@ package aes_reg_pkg;
     } key_len;
     struct packed {
       logic        d;
-    } manual_start_trigger;
-    struct packed {
-      logic        d;
-    } force_data_overwrite;
+    } manual_operation;
   } aes_hw2reg_ctrl_reg_t;
 
   typedef struct packed {
@@ -134,10 +127,10 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_reg2hw_key_mreg_t [7:0] key; // [541:278]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [277:146]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [145:14]
-    aes_reg2hw_ctrl_reg_t ctrl; // [13:4]
+    aes_reg2hw_key_mreg_t [7:0] key; // [539:276]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [275:144]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [143:12]
+    aes_reg2hw_ctrl_reg_t ctrl; // [11:4]
     aes_reg2hw_trigger_reg_t trigger; // [3:0]
   } aes_reg2hw_t;
 
@@ -145,12 +138,12 @@ package aes_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_mreg_t [7:0] key; // [537:282]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [281:150]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [149:22]
-    aes_hw2reg_ctrl_reg_t ctrl; // [21:12]
-    aes_hw2reg_trigger_reg_t trigger; // [11:8]
-    aes_hw2reg_status_reg_t status; // [7:8]
+    aes_hw2reg_key_mreg_t [7:0] key; // [536:281]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [280:149]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [148:21]
+    aes_hw2reg_ctrl_reg_t ctrl; // [20:13]
+    aes_hw2reg_trigger_reg_t trigger; // [12:9]
+    aes_hw2reg_status_reg_t status; // [8:9]
   } aes_hw2reg_t;
 
   // Register Address

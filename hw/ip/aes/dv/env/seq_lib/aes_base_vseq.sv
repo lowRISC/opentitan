@@ -43,8 +43,7 @@ class aes_base_vseq extends cip_base_vseq #(
     // initialize control register
     aes_ctrl[0]   = 0;        // set to encryption
     aes_ctrl[3:1] = 3'b001;   // set to 128b key
-    aes_ctrl[4]   = 0;        // start encryption automaticaly
-    aes_ctrl[5]   = 0;        // don't overwrite output reg.
+    aes_ctrl[4]   = 0;        // start encryption automatically, don't overwrite output reg
     csr_wr(.csr(ral.ctrl), .value(aes_ctrl));
     csr_wr(.csr(ral.trigger), .value(aes_trigger));
   endtask
@@ -62,14 +61,8 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  virtual task set_trigger(bit trigger);
-    ral.ctrl.manual_start_trigger.set(trigger);
-    csr_update(.csr(ral.ctrl));
-  endtask
-
-
-  virtual task set_force_overwrite(bit f_ovrwrt);
-    ral.ctrl.force_data_overwrite.set(f_ovrwrt);
+  virtual task set_manual_operation(bit manual_operation);
+    ral.ctrl.manual_operation.set(manual_operation);
     csr_update(.csr(ral.ctrl));
   endtask
 

@@ -37,9 +37,7 @@ int main(int argc, char **argv) {
 
   // Setup AES config
   aes_cfg_t aes_cfg = {
-      .key_len = kAes256,
-      .manual_start_trigger = false,
-      .force_data_overwrite = false,
+      .key_len = kAes256, .manual_operation = false,
   };
 
   aes_key_put(key_32_1, aes_cfg.key_len);
