@@ -14,8 +14,7 @@ module aes_control (
 
   // Main control inputs
   input  aes_pkg::ciph_op_e       cipher_op_i,
-  input  logic                    manual_start_trigger_i,
-  input  logic                    force_data_overwrite_i,
+  input  logic                    manual_operation_i,
   input  logic                    start_i,
   input  logic                    key_clear_i,
   input  logic                    data_in_clear_i,
@@ -92,10 +91,10 @@ module aes_control (
   logic       start, finish;
 
   // If not set to manually start, we start once we have valid data available.
-  assign start = manual_start_trigger_i ? start_i : data_in_new;
+  assign start = manual_operation_i ? start_i : data_in_new;
 
   // If not set to overwrite data, we wait for previous output data to be read.
-  assign finish = force_data_overwrite_i ? 1'b1 : ~output_valid_q;
+  assign finish = manual_operation_i ? 1'b1 : ~output_valid_q;
 
   // FSM
   always_comb begin : aes_ctrl_fsm

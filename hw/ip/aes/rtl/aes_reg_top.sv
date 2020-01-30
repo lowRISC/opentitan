@@ -111,14 +111,10 @@ module aes_reg_top (
   logic [2:0] ctrl_key_len_wd;
   logic ctrl_key_len_we;
   logic ctrl_key_len_re;
-  logic ctrl_manual_start_trigger_qs;
-  logic ctrl_manual_start_trigger_wd;
-  logic ctrl_manual_start_trigger_we;
-  logic ctrl_manual_start_trigger_re;
-  logic ctrl_force_data_overwrite_qs;
-  logic ctrl_force_data_overwrite_wd;
-  logic ctrl_force_data_overwrite_we;
-  logic ctrl_force_data_overwrite_re;
+  logic ctrl_manual_operation_qs;
+  logic ctrl_manual_operation_wd;
+  logic ctrl_manual_operation_we;
+  logic ctrl_manual_operation_re;
   logic trigger_start_wd;
   logic trigger_start_we;
   logic trigger_key_clear_wd;
@@ -467,33 +463,18 @@ module aes_reg_top (
   );
 
 
-  //   F[manual_start_trigger]: 4:4
+  //   F[manual_operation]: 4:4
   prim_subreg_ext #(
     .DW    (1)
-  ) u_ctrl_manual_start_trigger (
-    .re     (ctrl_manual_start_trigger_re),
-    .we     (ctrl_manual_start_trigger_we),
-    .wd     (ctrl_manual_start_trigger_wd),
-    .d      (hw2reg.ctrl.manual_start_trigger.d),
+  ) u_ctrl_manual_operation (
+    .re     (ctrl_manual_operation_re),
+    .we     (ctrl_manual_operation_we),
+    .wd     (ctrl_manual_operation_wd),
+    .d      (hw2reg.ctrl.manual_operation.d),
     .qre    (),
-    .qe     (reg2hw.ctrl.manual_start_trigger.qe),
-    .q      (reg2hw.ctrl.manual_start_trigger.q ),
-    .qs     (ctrl_manual_start_trigger_qs)
-  );
-
-
-  //   F[force_data_overwrite]: 5:5
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_ctrl_force_data_overwrite (
-    .re     (ctrl_force_data_overwrite_re),
-    .we     (ctrl_force_data_overwrite_we),
-    .wd     (ctrl_force_data_overwrite_wd),
-    .d      (hw2reg.ctrl.force_data_overwrite.d),
-    .qre    (),
-    .qe     (reg2hw.ctrl.force_data_overwrite.qe),
-    .q      (reg2hw.ctrl.force_data_overwrite.q ),
-    .qs     (ctrl_force_data_overwrite_qs)
+    .qe     (reg2hw.ctrl.manual_operation.qe),
+    .q      (reg2hw.ctrl.manual_operation.q ),
+    .qs     (ctrl_manual_operation_qs)
   );
 
 
@@ -805,13 +786,9 @@ module aes_reg_top (
   assign ctrl_key_len_wd = reg_wdata[3:1];
   assign ctrl_key_len_re = addr_hit[16] && reg_re;
 
-  assign ctrl_manual_start_trigger_we = addr_hit[16] & reg_we & ~wr_err;
-  assign ctrl_manual_start_trigger_wd = reg_wdata[4];
-  assign ctrl_manual_start_trigger_re = addr_hit[16] && reg_re;
-
-  assign ctrl_force_data_overwrite_we = addr_hit[16] & reg_we & ~wr_err;
-  assign ctrl_force_data_overwrite_wd = reg_wdata[5];
-  assign ctrl_force_data_overwrite_re = addr_hit[16] && reg_re;
+  assign ctrl_manual_operation_we = addr_hit[16] & reg_we & ~wr_err;
+  assign ctrl_manual_operation_wd = reg_wdata[4];
+  assign ctrl_manual_operation_re = addr_hit[16] && reg_re;
 
   assign trigger_start_we = addr_hit[17] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];
@@ -900,8 +877,7 @@ module aes_reg_top (
       addr_hit[16]: begin
         reg_rdata_next[0] = ctrl_operation_qs;
         reg_rdata_next[3:1] = ctrl_key_len_qs;
-        reg_rdata_next[4] = ctrl_manual_start_trigger_qs;
-        reg_rdata_next[5] = ctrl_force_data_overwrite_qs;
+        reg_rdata_next[4] = ctrl_manual_operation_qs;
       end
 
       addr_hit[17]: begin

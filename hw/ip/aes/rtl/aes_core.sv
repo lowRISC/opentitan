@@ -34,8 +34,7 @@ module aes_core #(
   ciph_op_e             cipher_op;
   key_len_e             key_len;
   key_len_e             key_len_d, key_len_q;
-  logic                 manual_start_trigger_q;
-  logic                 force_data_overwrite_q;
+  logic                 manual_operation_q;
 
   logic [3:0][3:0][7:0] state_init;
   logic [3:0][3:0][7:0] state_done;
@@ -105,7 +104,7 @@ module aes_core #(
   end
 
   assign ctrl_qe = reg2hw.ctrl.operation.qe & reg2hw.ctrl.key_len.qe &
-      reg2hw.ctrl.manual_start_trigger.qe & reg2hw.ctrl.force_data_overwrite.qe;
+      reg2hw.ctrl.manual_operation.qe;
 
   //////////////////
   // Data and Key //
@@ -179,8 +178,7 @@ module aes_core #(
     .rst_ni                  ( rst_ni                           ),
 
     .cipher_op_i             ( cipher_op                        ),
-    .manual_start_trigger_i  ( manual_start_trigger_q           ),
-    .force_data_overwrite_i  ( force_data_overwrite_q           ),
+    .manual_operation_i      ( manual_operation_q               ),
     .start_i                 ( reg2hw.trigger.start.q           ),
     .key_clear_i             ( reg2hw.trigger.key_clear.q       ),
     .data_in_clear_i         ( reg2hw.trigger.data_in_clear.q   ),
@@ -239,15 +237,13 @@ module aes_core #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_reg
     if (!rst_ni) begin
-      aes_op_q               <= AES_ENC;
-      key_len_q              <= AES_128;
-      manual_start_trigger_q <= '0;
-      force_data_overwrite_q <= '0;
+      aes_op_q           <= AES_ENC;
+      key_len_q          <= AES_128;
+      manual_operation_q <= '0;
     end else if (ctrl_we) begin
-      aes_op_q               <= aes_op_d;
-      key_len_q              <= key_len_d;
-      manual_start_trigger_q <= reg2hw.ctrl.manual_start_trigger.q;
-      force_data_overwrite_q <= reg2hw.ctrl.force_data_overwrite.q;
+      aes_op_q           <= aes_op_d;
+      key_len_q          <= key_len_d;
+      manual_operation_q <= reg2hw.ctrl.manual_operation.q;
     end
   end
 
@@ -282,9 +278,8 @@ module aes_core #(
   assign hw2reg.ctrl.key_len.d  = {key_len_q};
 
   // These fields are actually hro. But software must be able observe the current value (rw).
-  assign hw2reg.ctrl.operation.d            = {aes_op_q};
-  assign hw2reg.ctrl.manual_start_trigger.d = manual_start_trigger_q;
-  assign hw2reg.ctrl.force_data_overwrite.d = force_data_overwrite_q;
+  assign hw2reg.ctrl.operation.d        = {aes_op_q};
+  assign hw2reg.ctrl.manual_operation.d = manual_operation_q;
 
   ////////////////
   // Assertions //

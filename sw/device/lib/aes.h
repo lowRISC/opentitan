@@ -32,10 +32,9 @@ typedef struct aes_cfg {
   aes_op_t operation;
   /** Key length @see aes_key_len. */
   aes_key_len_t key_len;
-  /** Set to 1 to only start upon getting a trigger signal. */
-  bool manual_start_trigger;
-  /** Set to 1 to not stall when previous output data has not been read. */
-  bool force_data_overwrite;
+  /** Set to 1 to i) only start upon getting a trigger signal, and ii) not stall
+   * when previous output data has not been read. */
+  bool manual_operation;
 } aes_cfg_t;
 
 /**

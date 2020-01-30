@@ -70,7 +70,7 @@ The AES unit automatically starts the encryption/decryption of the next data blo
 The order in which the input registers are written does not matter.
 Every input register has to be written at least once for the AES unit to automatically start encryption/decryption.
 This is the default behavior.
-It can be disabled by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `1`.
+It can be disabled by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
 In this case, the AES unit only starts the encryption/decryption once the START bit in {{< regref "TRIGGER" >}} is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
 
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
@@ -81,7 +81,7 @@ It only continues once the previous output data has been read and the correspond
 The order in which the output registers are read does not matter.
 Every output register has to be read at least once for the AES unit to continue.
 This is the default behavior.
-It can be disabled by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `1`.
+It can be disabled by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
 In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
 
 
@@ -285,9 +285,8 @@ For AES-128 and AES-192, the actual initial key used for encryption is formed by
 
 For block operation, software must initialize the AES unit as described in the previous section and then:
 
-1. Make sure that the AES unit:
-   1. Automatically starts encryption/decryption when new input data is available by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `0`.
-   2. Does not overwrite previous output data that has not been read by the processor by setting the FORCE_DATA_OVERWRITE bit in {{< regref "CTRL" >}} to `0`.
+1. Configure AES unit to operate in normal/automatic mode by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `0`.
+   This ensures that the AES unit i) automatically starts encryption/decryption when new input data is available and ii) does not overwrite previous output data that has not been read by the processor.
 2. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
    Each register has to be written at least once.
    The order in which these registers are written does not matter.
@@ -316,8 +315,7 @@ The code snippet below shows how to perform block operation.
   REG32(AES_CTRL(0)) =
       op << AES_CTRL_OPERATION |
       (key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET |
-      0x0 << AES_CTRL_MANUAL_START_TRIGGER |
-      0x0 << AES_CTRL_FORCE_DATA_OVERWRITE;
+      0x0 << AES_CTRL_MANUAL_OPERATION;
 
   // Write Input Data Block 0 - Note: All registers are little-endian.
   for (int j = 0; j < 4; j++) {
@@ -359,14 +357,14 @@ The code snippet below shows how to perform block operation.
 ## De-Initialization
 
 After finishing operation, software must:
-1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_START_TRIGGER bit in {{< regref "CTRL" >}} to `1`.
+1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
 1. Clear all key registers as well as the Input Data and the Output Data registers by setting the KEY_CLEAR, DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
 The code snippet below shows how to perform this task.
 
 ```c
   // Disable autostart
-  REG32(AES_CTRL(0)) = 0x1 << AES_CTRL_MANUAL_START_TRIGGER;
+  REG32(AES_CTRL(0)) = 0x1 << AES_CTRL_MANUAL_OPERATION;
 
   // Clear all key register, Input Data and Output Data registers
   REG32(AES_TRIGGER(0)) =
