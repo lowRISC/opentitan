@@ -279,7 +279,7 @@ jobs:
 - job: "deploy_releaseartifacts"
   displayName: "Package and deploy release distribution"
   pool:
-    vmImage: "ubuntu-latest"
+    vmImage: "ubuntu-16.04"
   dependsOn:
     - lint
     - sw_build
