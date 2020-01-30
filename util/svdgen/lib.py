@@ -106,7 +106,6 @@ def generate_all_interrupts(irqs: hjson) -> [ET.Element]:
     for (num, irq) in enumerate(irqs):
         yield svd_node('interrupt',
             name        = irq['name'],
-            description = irq.get('name'),
             value       = num)
 
 def sw_access_modes(reg_or_field: [hjson]) -> (pysvd.type.access, pysvd.type.readAction, pysvd.type.modifiedWriteValues):
@@ -260,7 +259,10 @@ def generate_cluster(multi: [hjson], base: int) -> ET.Element:
     # All registers in the multiregs have their 'genoffset' set relative
     # to the peripheral. Set the cluster's addressOffset to the lowest
     # genoffset, and then generate all registers relative to this.
-    base = min(reg['genoffset'] for reg in genregs)
+    #
+    # We need to special case window registers: these don't specify a
+    # genoffset in the outer definition; instead we need to peek inside.
+    base = min(reg.get('genoffset') or reg['window']['genoffset'] for reg in genregs)
 
     return svd_node('cluster',
             name          = multi['name'],
