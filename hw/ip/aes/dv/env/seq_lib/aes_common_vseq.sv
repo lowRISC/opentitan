@@ -21,10 +21,13 @@ class aes_common_vseq extends aes_base_vseq;
 
     // write exclusions - these should not apply to hw_reset test
     if (csr_test_type != "hw_reset") begin
-      // TODO: below is a sample
-      // status reads back unexpected values due to writes to other csrs
-      // csr_excl.add_excl({scope, ".", "status"}, CsrExclWriteCheck);
-    end
-  endfunction
+      csr_excl.add_excl({scope, ".", "trigger"      }, CsrExclWriteCheck);
+      csr_excl.add_excl({scope, ".", "ctrl"         }, CsrExclWriteCheck);
 
+      // exclude dataout/status because they change once data in has been written
+      csr_excl.add_excl({scope, ".", "status"       }, CsrExclWriteCheck);
+      csr_excl.add_excl({scope, ".", "data_out*"    }, CsrExclWriteCheck);
+    end
+
+  endfunction
 endclass
