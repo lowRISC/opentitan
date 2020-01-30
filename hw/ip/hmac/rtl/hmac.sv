@@ -296,7 +296,7 @@ module hmac
   always_comb begin
     wmask_ones = '0;
     for (int i = 0 ; i < 32 ; i++) begin
-      wmask_ones = wmask_ones + reg_fifo_wmask[i];
+      wmask_ones = wmask_ones + msg_fifo_wmask[i];
     end
   end
 
@@ -306,7 +306,7 @@ module hmac
       message_length <= '0;
     end else if (hash_start) begin
       message_length <= '0;
-    end else if (reg_fifo_wvalid && fifo_wready && !hmac_fifo_wsel) begin
+    end else if (msg_write && sha_en && packer_ready) begin
       message_length <= message_length + 64'(wmask_ones);
     end
   end
