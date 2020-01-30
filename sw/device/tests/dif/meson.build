@@ -17,3 +17,19 @@ test('dif_spi_device_test', executable(
   c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
+
+test('dif_uart_test', executable(
+  'dif_uart_test',
+  sources: [
+    'dif_uart_test.cc',
+    meson.source_root() / 'sw/device/lib/dif/dif_uart.c',
+    hw_ip_uart_reg_h,
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'], 
+  cpp_args: ['-DMOCK_MMIO'],
+))
