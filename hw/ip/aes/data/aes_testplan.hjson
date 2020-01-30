@@ -31,14 +31,14 @@
     {
       name: algorithm
       desc: '''
-            Compare cypher text from AWS module with the output of a C model using same key and data'''
+            Compare cypher text from AES module with the output of a C model using same key and data'''
       milestone: V2
       tests: ["aes_sanity"]
     }
     {
       name: key_size
       desc: '''
-           Randomly select keysize to verify all supported keysizes are working'''
+           Randomly select key size to verify all supported key sizes are working'''
       milestone: V2
       tests: []
     }
