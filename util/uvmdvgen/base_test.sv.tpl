@@ -7,8 +7,8 @@ class ${name}_base_test extends cip_base_test #(
 % else:
 class ${name}_base_test extends dv_base_test #(
 % endif
-    .ENV_T(${name}_env),
-    .CFG_T(${name}_env_cfg)
+    .CFG_T(${name}_env_cfg),
+    .ENV_T(${name}_env)
   );
 
   `uvm_component_utils(${name}_base_test)
