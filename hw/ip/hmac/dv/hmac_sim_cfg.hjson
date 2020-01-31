@@ -92,5 +92,13 @@
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
     }
   ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["hmac_sanity", "hmac_test_sha_vectors"]
+    }
+  ]
 }
 

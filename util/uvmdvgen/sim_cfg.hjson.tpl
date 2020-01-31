@@ -59,5 +59,13 @@
 
     // TODO: add more tests here
   ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["${name}_sanity"]
+    }
+  ]
 }
 

@@ -100,7 +100,7 @@
   regressions: [
     {
       name: sanity
-      tests: ["{name}_sanity"]
+      reseed: 1
     }
 
     {
