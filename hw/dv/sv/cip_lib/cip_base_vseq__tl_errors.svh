@@ -29,12 +29,12 @@ virtual task tl_access_unmapped_addr();
   // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
     bit [TL_AW-1:0] unmapped_addr;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr, {
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
         !((unmapped_addr & addr_mask) inside {normalized_csr_addrs});
         foreach (cfg.mem_ranges[i]) {
           !((unmapped_addr & addr_mask)
               inside {[cfg.mem_ranges[i].start_addr : cfg.mem_ranges[i].end_addr]});}
-        })
+        )
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
         addr == unmapped_addr;)
