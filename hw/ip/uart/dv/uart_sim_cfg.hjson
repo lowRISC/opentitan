@@ -111,4 +111,12 @@
       run_opts: ["+zero_delays=1"]
     }
   ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["uart_sanity"]
+    }
+  ]
 }

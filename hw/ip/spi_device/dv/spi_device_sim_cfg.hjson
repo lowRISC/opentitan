@@ -73,4 +73,12 @@
       uvm_test_seq: spi_device_dummy_item_extra_dly_vseq
     }
   ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["spi_device_sanity"]
+    }
+  ]
 }

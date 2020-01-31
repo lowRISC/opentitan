@@ -68,4 +68,12 @@
       name: aes_stress
     }
   ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["aes_sanity"]
+    }
+  ]
 }

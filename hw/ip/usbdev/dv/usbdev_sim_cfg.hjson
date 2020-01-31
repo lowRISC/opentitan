@@ -57,5 +57,13 @@
       uvm_test_seq: usbdev_sanity_vseq
     }
   ]
+
+  // List of regressions.
+  regressions: [
+    // {
+    //   name: sanity
+    //   tests: ["usbdev_sanity"]
+    // }
+  ]
 }
 
