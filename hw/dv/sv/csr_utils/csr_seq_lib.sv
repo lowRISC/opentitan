@@ -115,9 +115,12 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
 endclass
 
 //--------------------------------------------------------------------------------------------------
-// Brief Description: generic CSR seq lib - HW reset seq
+// Class: csr_hw_reset_seq
+// Brief Description: This sequence reads all CSRs and checks it against the reset value provided
+// in the RAL specification. Note that this does not sufficiently qualify as the CSR HW reset test.
+// The 'full' CSR HW reset test is constructed externally by running the csr_write_seq below first,
+// issuing reset and only then running this sequence.
 //--------------------------------------------------------------------------------------------------
-
 class csr_hw_reset_seq extends csr_base_seq;
   `uvm_object_utils(csr_hw_reset_seq)
 
@@ -149,9 +152,10 @@ class csr_hw_reset_seq extends csr_base_seq;
 endclass
 
 //--------------------------------------------------------------------------------------------------
-// Brief Description: generic CSR seq lib - write all registers with random values
+// Class: csr_write_seq
+// Brief Description: This sequence writes a random value to all CSRs. It does not perform any
+// checks. It is run as the first step of the CSR HW reset test.
 //--------------------------------------------------------------------------------------------------
-
 class csr_write_seq extends csr_base_seq;
   `uvm_object_utils(csr_write_seq)
 
@@ -181,9 +185,12 @@ endclass
 
 
 //--------------------------------------------------------------------------------------------------
-// Brief Description: generic CSR seq lib - reg access seq
+// Class: csr_rw_seq
+// Brief Description: This seq writes a random value to a CSR and reads it back. The read value
+// is checked for correctness while adhering to its access policies. A random choice is made between
+// reading back the CSR as a whole or reading fields individually, so that partial accesses are made
+// into the DUT as well.
 //--------------------------------------------------------------------------------------------------
-
 class csr_rw_seq extends csr_base_seq;
   `uvm_object_utils(csr_rw_seq)
 
@@ -257,10 +264,11 @@ class csr_rw_seq extends csr_base_seq;
 endclass
 
 //--------------------------------------------------------------------------------------------------
-// Brief Description: generic CSR seq lib - bit bash seq
-// reusing pieces of code from uvm_reg_bit_bash_seq
+// Class: csr_bit_bash_seq
+// Brief Description: This sequence walks a 1 through each CSR by writing one bit at a time and
+// reading the CSR back. The read value is checked for correctness while adhering to its access
+// policies. This verifies that there is no aliasing within the fields / bits of a CSR.
 //--------------------------------------------------------------------------------------------------
-
 class csr_bit_bash_seq extends csr_base_seq;
   `uvm_object_utils(csr_bit_bash_seq)
 
@@ -383,9 +391,12 @@ class csr_bit_bash_seq extends csr_base_seq;
 endclass
 
 //--------------------------------------------------------------------------------------------------
-// Brief Description: generic CSR seq lib - aliasing seq
+// Class: csr_aliasing_seq
+// Brief Description: For each CSR, this sequence writes a random value to it and reads ALL CSRs
+// back. The read value of the CSR that was written is checked for correctness while adhering to its
+// access policies. The read value of all other CSRs are compared against their previous values.
+// This verifies that there is no aliasing across the address bits within the valid CSR space.
 //--------------------------------------------------------------------------------------------------
-
 class csr_aliasing_seq extends csr_base_seq;
   `uvm_object_utils(csr_aliasing_seq)
 
@@ -442,9 +453,10 @@ class csr_aliasing_seq extends csr_base_seq;
 endclass
 
 //--------------------------------------------------------------------------------------------------
-// Brief Description: generic CSR seq lib - mem walk
+// Class: csr_mem_walk_seq
+// Brief Description: This seq walks through each address of the memory by running the default
+// UVM mem walk sequence.
 //--------------------------------------------------------------------------------------------------
-
 class csr_mem_walk_seq extends csr_base_seq;
   uvm_mem_walk_seq mem_walk_seq;
 
