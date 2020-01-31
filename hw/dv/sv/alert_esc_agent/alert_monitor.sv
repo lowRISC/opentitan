@@ -38,7 +38,7 @@ class alert_monitor extends alert_esc_base_monitor;
     bit                ping_p;
     forever @(cfg.vif.monitor_cb) begin
       if (ping_p != cfg.vif.get_ping_p()) begin
-        phase.raise_objection(this);
+        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         under_ping_rsp = 1;
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscPingTrans;
@@ -68,7 +68,7 @@ class alert_monitor extends alert_esc_base_monitor;
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         alert_esc_port.write(req);
-        phase.drop_objection(this);
+        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
         under_ping_rsp = 0;
       end
       ping_p = cfg.vif.get_ping_p();
@@ -80,7 +80,7 @@ class alert_monitor extends alert_esc_base_monitor;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!alert_p && cfg.vif.get_alert_p() === 1'b1 && !under_ping_rsp) begin
-        phase.raise_objection(this);
+        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
@@ -110,7 +110,7 @@ class alert_monitor extends alert_esc_base_monitor;
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         alert_esc_port.write(req);
-        phase.drop_objection(this);
+        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       end
       alert_p = cfg.vif.get_alert_p();
     end

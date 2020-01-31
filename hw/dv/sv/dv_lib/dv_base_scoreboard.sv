@@ -48,13 +48,11 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // raise / drop objections based on certain events
   virtual function void process_objections(bit raise);
     if (raise && !obj_raised) begin
-      `uvm_info(`gfn, "raising objection", UVM_HIGH)
-      m_current_phase.raise_objection(this);
+      m_current_phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
       obj_raised = 1'b1;
     end
     else if (!raise && obj_raised) begin
-      `uvm_info(`gfn, "dropping objection", UVM_HIGH)
-      m_current_phase.drop_objection(this);
+      m_current_phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       obj_raised = 1'b0;
     end
   endfunction

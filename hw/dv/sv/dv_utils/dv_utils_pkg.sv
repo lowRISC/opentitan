@@ -66,7 +66,7 @@ package dv_utils_pkg;
     BusOpWrite
   } bus_op_e;
 
-  // Enum representing a type of host requests - read only, write only or random read & write 
+  // Enum representing a type of host requests - read only, write only or random read & write
   typedef enum int {
     HostReqNone      = 0,
     HostReqReadOnly  = 1,

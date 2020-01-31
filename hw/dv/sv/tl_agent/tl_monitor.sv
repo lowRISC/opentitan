@@ -55,7 +55,7 @@ class tl_monitor extends dv_base_monitor#(
       @(posedge cfg.vif.rst_n);
       pending_a_req.delete();
       if (objection_raised) begin
-        run_phase_h.drop_objection(this);
+        run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
         objection_raised = 1'b0;
       end
     end
@@ -85,7 +85,7 @@ class tl_monitor extends dv_base_monitor#(
           if (cfg.en_cov) cov.max_outstanding_cg.sample(pending_a_req.size());
         end
         if (!objection_raised) begin
-          run_phase_h.raise_objection(this);
+          run_phase_h.raise_objection(this, $sformatf("%s objection raised", `gfn));
           objection_raised = 1'b1;
         end
       end
@@ -117,7 +117,7 @@ class tl_monitor extends dv_base_monitor#(
             d_chan_port.write(rsp);
             pending_a_req.delete(i);
             if (pending_a_req.size() == 0) begin
-              run_phase_h.drop_objection(this);
+              run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
               objection_raised = 1'b0;
             end
             req_found = 1'b1;

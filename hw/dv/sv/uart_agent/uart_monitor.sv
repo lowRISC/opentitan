@@ -184,13 +184,11 @@ class uart_monitor extends dv_base_monitor#(
 
   virtual function void process_objections(uart_dir_e dir, bit raise);
     if (raise && !obj_raised[dir]) begin
-      `uvm_info(`gfn, $sformatf("raising objection for %0s", dir.name), UVM_HIGH)
-      m_current_phase.raise_objection(this);
+      m_current_phase.raise_objection(this, $sformatf("%s %s objection raised", `gfn, dir.name));
       obj_raised[dir] = 1'b1;
     end
     else if (!raise && obj_raised[dir]) begin
-      `uvm_info(`gfn, $sformatf("dropping objection for %0s", dir.name), UVM_HIGH)
-      m_current_phase.drop_objection(this);
+      m_current_phase.drop_objection(this, $sformatf("%s %s objection dropped", `gfn, dir.name));
       obj_raised[dir] = 1'b0;
     end
   endfunction

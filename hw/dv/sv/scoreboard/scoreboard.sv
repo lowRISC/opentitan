@@ -150,11 +150,11 @@ class scoreboard#(type ITEM_T = uvm_object,
 
   function void handle_objection();
     if ((num_of_act_item != num_of_exp_item) && !objection_raised) begin
-      run_phase_h.raise_objection(this);
+      run_phase_h.raise_objection(this, $sformatf("%s objection raised", `gfn));
       objection_raised = 1'b1;
     end
     if ((num_of_act_item == num_of_exp_item) && objection_raised) begin
-      run_phase_h.drop_objection(this);
+      run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       objection_raised = 1'b0;
     end
   endfunction
@@ -221,7 +221,7 @@ class scoreboard#(type ITEM_T = uvm_object,
                       "Scoreboard timeout caused by packet drop, act/exp items = %0d/%0d",
                       num_of_act_item, num_of_exp_item), UVM_LOW)
             if (objection_raised) begin
-              run_phase_h.drop_objection(this);
+              run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
               objection_raised = 1'b0;
             end
           end

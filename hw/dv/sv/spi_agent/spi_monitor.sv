@@ -35,9 +35,9 @@ class spi_monitor extends dv_base_monitor#(
 
     forever begin
       @(negedge cfg.vif.csb);
-      phase.raise_objection(this);
+      phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
       if (cfg.en_monitor_collect_trans) collect_curr_trans();
-      phase.drop_objection(this);
+      phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
     end
   endtask
 
