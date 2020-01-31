@@ -5,7 +5,20 @@
   entries: [
     {
       name: intr_test
-      desc: "Verify common intr_test CSRs to force interrupts via SW."
+      desc: '''
+            Verify common intr_test CSRs that allows SW to mock-inject interrupts.
+            - Enable a random set of interrupts by writing random value(s) to
+              intr_enable CSR(s).
+            - Randomly "turn on" interrupts by writing random value(s) to intr_test
+              CSR(s).
+            - Read all intr_state CSR(s) back to verify that it reflects the same value
+              as what was written to the corresponding intr_test CSR.
+            - Check the cfg.intr_vif pins to verify that only the interrupts that were
+              enabled and turned on are set.
+            - Clear a random set of interrupts by writing a randomly value to intr_state
+              CSR(s).
+            - Repeat the above steps a bunch of times.
+            '''
       milestone: V2
       tests: ["{name}{intf}_intr_test"]
     }

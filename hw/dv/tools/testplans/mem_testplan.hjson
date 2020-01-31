@@ -5,13 +5,22 @@
   entries: [
     {
       name: mem_walk
-      desc: "Walk 1 through memory addresses from all interfaces"
+      desc: '''
+            Verify accessibility of all memories in the design.
+            - Run the standard UVM mem walk sequence on all memories in the RAL model.
+            - It is mandatory to run this test from all available interfaces the
+              memories are accessible from.
+            '''
       milestone: V1
       tests: ["{name}{intf}_mem_walk"]
     }
     {
       name: mem_partial_access
-      desc: "Do partial accesses to memories."
+      desc: '''
+            Verify partial-accessibility of all memories in the design.
+            - Do partial reads and writes into the memories and verify the outcome for
+              correctness.
+            '''
       milestone: V1
       // mem_walk does partial writes, so we can reuse that test here
       tests: ["{name}{intf}_mem_walk"]

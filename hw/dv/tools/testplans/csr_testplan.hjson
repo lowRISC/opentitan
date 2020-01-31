@@ -4,16 +4,68 @@
 {
   entries: [
     {
-      name: csr
-      desc: '''Standard CSR suite of tests run from all valid interfaces to prove SW
-            accessibility.'''
+      name: csr_hw_reset
+      desc: '''
+            Verify the reset values as indicated in the RAL specification.
+            - Write all CSRs with a random value.
+            - Apply reset to the DUT as well as the RAL model.
+            - Read each CSR and compare it against the reset value.
+              it is mandatory to replicate this test for each reset that affects
+              all or a subset of the CSRs.
+            - It is mandatory to run this test for all available interfaces the
+              CSRs are accessible from.
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            '''
       milestone: V1
-      tests: ["{name}{intf}_csr_hw_reset",
-              "{name}{intf}_csr_rw",
-              "{name}{intf}_csr_bit_bash",
-              "{name}{intf}_csr_aliasing",]
+      tests: ["{name}{intf}_csr_hw_reset"]
     }
-    // TODO: add CSR accesses with reset
+    {
+      name: csr_rw
+      desc: '''
+            Verify accessibility of CSRs as indicated in the RAL specification.
+            - Loop through each CSR to write it with a random value.
+            - Read the CSR back and check for correctness while adhering to its
+              access policies.
+            - It is mandatory to run this test for all available interfaces the
+              CSRs are accessible from.
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            '''
+      milestone: V1
+      tests: ["{name}{intf}_csr_rw"]
+    }
+    {
+      name: csr_bit_bash
+      desc: '''
+            Verify no aliasing within individual bits of a CSR.
+            - Walk a 1 through each CSR by flipping 1 bit at a time.
+            - Read the CSR back and check for correctness while adhering to its
+              access policies.
+            - This verify that writing a specific bit within the CSR did not affect
+              any of the other bits.
+            - It is mandatory to run this test for all available interfaces the
+              CSRs are accessible from.
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            '''
+      milestone: V1
+      tests: ["{name}{intf}_csr_bit_bash"]
+    }
+    {
+      name: csr_aliasing
+      desc: '''
+            Verify no aliasing within the CSR address space.
+            - Loop through each CSR to write it with a random value
+            - Shuffle and read ALL CSRs back.
+            - All CSRs except for the one that was written in this iteration should
+              read back the previous value.
+            - The CSR that was written in this iteration is checked for correctness
+              while adhering to its access policies.
+            - It is mandatory to run this test for all available interfaces the
+              CSRs are accessible from.
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            '''
+      milestone: V1
+      tests: ["{name}{intf}_csr_aliasing",]
+    }
   ]
 }
 
