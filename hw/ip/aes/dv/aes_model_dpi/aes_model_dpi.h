@@ -21,9 +21,9 @@ extern "C" {
  * @param  data_i    Input data, 2D state matrix (3D packed array in SV)
  * @param  data_o    Output data, 2D state matrix (3D packed array in SV)
  */
-void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
-                   const svBitVecVal *key_len_i, const svBitVecVal *key_i,
-                   const svBitVecVal *data_i, svBitVecVal *data_o);
+void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
+                     const svBitVecVal *key_len_i, const svBitVecVal *key_i,
+                     const svBitVecVal *data_i, svBitVecVal *data_o);
 
 /**
  * Perform sub bytes operation during encryption/decryption.
@@ -32,8 +32,8 @@ void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
  * @param  data_i Input data
  * @param  data_o Output data
  */
-void aes_sub_bytes_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
-                       svBitVecVal *data_o);
+void c_dpi_aes_sub_bytes(const unsigned char mode_i, const svBitVecVal *data_i,
+                         svBitVecVal *data_o);
 
 /**
  * Perform shift rows operation during encryption/decryption.
@@ -42,8 +42,8 @@ void aes_sub_bytes_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
  * @param  data_i Input data
  * @param  data_o Output data
  */
-void aes_shift_rows_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
-                        svBitVecVal *data_o);
+void c_dpi_aes_shift_rows(const unsigned char mode_i, const svBitVecVal *data_i,
+                          svBitVecVal *data_o);
 
 /**
  * Perform mix columns operation during encryption/decryption.
@@ -52,8 +52,8 @@ void aes_shift_rows_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
  * @param  data_i Input data
  * @param  data_o Output data
  */
-void aes_mix_columns_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
-                         svBitVecVal *data_o);
+void c_dpi_aes_mix_columns(const unsigned char mode_i,
+                           const svBitVecVal *data_i, svBitVecVal *data_o);
 
 /**
  * Generate full key for next round during encryption/decryption.
@@ -65,10 +65,10 @@ void aes_mix_columns_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
  * @param  key_i     Full input key
  * @param  key_o     Full output key
  */
-void aes_key_expand_dpi(const unsigned char mode_i, const svBitVecVal *rcon_i,
-                        const svBitVecVal *round_i,
-                        const svBitVecVal *key_len_i, const svBitVecVal *key_i,
-                        svBitVecVal *key_o);
+void c_dpi_aes_key_expand(const unsigned char mode_i, const svBitVecVal *rcon_i,
+                          const svBitVecVal *round_i,
+                          const svBitVecVal *key_len_i,
+                          const svBitVecVal *key_i, svBitVecVal *key_o);
 
 /**
  * Get packed data block from simulation.

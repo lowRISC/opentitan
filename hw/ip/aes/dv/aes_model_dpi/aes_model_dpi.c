@@ -12,9 +12,9 @@
 
 #include "aes_model_dpi.h"
 
-void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
-                   const svBitVecVal *key_len_i, const svBitVecVal *key_i,
-                   const svBitVecVal *data_i, svBitVecVal *data_o) {
+void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char mode_i,
+                     const svBitVecVal *key_len_i, const svBitVecVal *key_i,
+                     const svBitVecVal *data_i, svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *key = aes_key_get(key_i);
   unsigned char *ref_in = aes_data_get(data_i);
@@ -89,8 +89,8 @@ void aes_crypt_dpi(const unsigned char impl_i, const unsigned char mode_i,
   return;
 }
 
-void aes_sub_bytes_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
-                       svBitVecVal *data_o) {
+void c_dpi_aes_sub_bytes(const unsigned char mode_i, const svBitVecVal *data_i,
+                         svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
@@ -107,8 +107,8 @@ void aes_sub_bytes_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
   return;
 }
 
-void aes_shift_rows_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
-                        svBitVecVal *data_o) {
+void c_dpi_aes_shift_rows(const unsigned char mode_i, const svBitVecVal *data_i,
+                          svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
@@ -125,8 +125,8 @@ void aes_shift_rows_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
   return;
 }
 
-void aes_mix_columns_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
-                         svBitVecVal *data_o) {
+void c_dpi_aes_mix_columns(const unsigned char mode_i,
+                           const svBitVecVal *data_i, svBitVecVal *data_o) {
   // get input data from simulator
   unsigned char *data = aes_data_get(data_i);
 
@@ -143,10 +143,10 @@ void aes_mix_columns_dpi(const unsigned char mode_i, const svBitVecVal *data_i,
   return;
 }
 
-void aes_key_expand_dpi(const unsigned char mode_i, const svBitVecVal *rcon_i,
-                        const svBitVecVal *round_i,
-                        const svBitVecVal *key_len_i, const svBitVecVal *key_i,
-                        svBitVecVal *key_o) {
+void c_dpi_aes_key_expand(const unsigned char mode_i, const svBitVecVal *rcon_i,
+                          const svBitVecVal *round_i,
+                          const svBitVecVal *key_len_i,
+                          const svBitVecVal *key_i, svBitVecVal *key_o) {
   unsigned char round_key[16];  // just used by model
 
   // get input data

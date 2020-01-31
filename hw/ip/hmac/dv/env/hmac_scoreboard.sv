@@ -358,10 +358,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit          sha_en  = ral.cfg.sha_en.get_mirrored_value();
     case ({hmac_en, sha_en})
       2'b11: begin
-        cryptoc_dpi_pkg::get_hmac_sha256(key, msg_q, exp_digest);
+        cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key, msg_q, exp_digest);
       end
       2'b01: begin
-        cryptoc_dpi_pkg::get_sha256_digest(msg_q, exp_digest);
+        cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg_q, exp_digest);
       end
       default: begin
         // disgest is cleared if sha_en = 0
