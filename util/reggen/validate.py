@@ -797,6 +797,13 @@ def validate_reg_defaults(reg, rname):
         if ierr:
             error += 1
             reg['hwext'] = "false"
+        elif hwext == True and default_hw == "hro" and (default_sw != "wo" and
+                                                        default_sw != "r0w1c"):
+            log.warning(
+                rname +
+                ": hwext register readable by software cannot be hro. " +
+                "Changing it to hrw.")
+            default_hw = "hrw"
     else:
         reg['hwext'] = "false"
 
