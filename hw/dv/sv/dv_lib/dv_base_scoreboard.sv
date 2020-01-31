@@ -11,7 +11,8 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
   RAL_T    ral;
   COV_T    cov;
 
-  bit obj_raised = 1'b0;
+  bit obj_raised      = 1'b0;
+  bit under_pre_abort = 1'b0;
 
   `uvm_component_new
 
@@ -65,7 +66,16 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void pre_abort();
     super.pre_abort();
-    if (has_uvm_fatal_occurred()) check_phase(m_current_phase);
+    // use under_pre_abort flag to prevent deadloop described below:
+    // when fatal_err occurred, it will skip check_phase. We add the additional check_phase call
+    // here to help debugging. But if inside the check_phase there are UVM_ERRORs, and the err cnt
+    // is larger than max_err_cnt, then check_phase will call pre_abort again. This will end up
+    // creating a deadloop.
+    if (has_uvm_fatal_occurred() && !under_pre_abort) begin
+      under_pre_abort = 1;
+      check_phase(m_current_phase);
+      under_pre_abort = 0;
+    end
   endfunction : pre_abort
 
 endclass
