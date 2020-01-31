@@ -34,6 +34,7 @@ module rv_timer (
   logic [63:0] mtime_d  [N_HARTS];
   logic [63:0] mtime    [N_HARTS];
   logic [63:0] mtimecmp [N_HARTS][N_TIMERS]; // Only [harts][0] is connected to mtimecmp CSRs
+  logic        mtimecmp_update [N_HARTS][N_TIMERS];
 
   logic [N_HARTS*N_TIMERS-1:0] intr_timer_set;
   logic [N_HARTS*N_TIMERS-1:0] intr_timer_en;
@@ -60,15 +61,16 @@ module rv_timer (
   assign hw2reg.timer_v_upper0.d = mtime_d[0][63:32];
   assign hw2reg.timer_v_lower0.d = mtime_d[0][31: 0];
   assign mtime[0] = {reg2hw.timer_v_upper0.q, reg2hw.timer_v_lower0.q};
-  assign mtimecmp = '{'{{reg2hw.compare_upper0_0,reg2hw.compare_lower0_0}}};
+  assign mtimecmp = '{'{{reg2hw.compare_upper0_0.q,reg2hw.compare_lower0_0.q}}};
+  assign mtimecmp_update[0][0] = reg2hw.compare_upper0_0.qe | reg2hw.compare_lower0_0.qe;
 
   assign intr_timer_expired_0_0_o = intr_out[0];
   assign intr_timer_en            = reg2hw.intr_enable0[0].q;
   assign intr_timer_state_q       = reg2hw.intr_state0[0].q;
   assign intr_timer_test_q        = reg2hw.intr_test0[0].q;
   assign intr_timer_test_qe       = reg2hw.intr_test0[0].qe;
-  assign hw2reg.intr_state0[0].de = intr_timer_state_de;
-  assign hw2reg.intr_state0[0].d  = intr_timer_state_d;
+  assign hw2reg.intr_state0[0].de = intr_timer_state_de | mtimecmp_update[0][0];
+  assign hw2reg.intr_state0[0].d  = intr_timer_state_d & ~mtimecmp_update[0][0];
 
 
   for (genvar h = 0 ; h < N_HARTS ; h++) begin : gen_harts

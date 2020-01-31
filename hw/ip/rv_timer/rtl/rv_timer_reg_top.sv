@@ -258,7 +258,7 @@ module rv_timer_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.compare_lower0_0.qe),
     .q      (reg2hw.compare_lower0_0.q ),
 
     // to register interface (read)
@@ -285,7 +285,7 @@ module rv_timer_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.compare_upper0_0.qe),
     .q      (reg2hw.compare_upper0_0.q ),
 
     // to register interface (read)

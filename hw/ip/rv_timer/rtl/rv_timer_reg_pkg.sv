@@ -36,10 +36,12 @@ package rv_timer_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } rv_timer_reg2hw_compare_lower0_0_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } rv_timer_reg2hw_compare_upper0_0_reg_t;
 
   typedef struct packed {
@@ -76,12 +78,12 @@ package rv_timer_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rv_timer_reg2hw_ctrl_mreg_t [0:0] ctrl; // [152:152]
-    rv_timer_reg2hw_cfg0_reg_t cfg0; // [151:132]
-    rv_timer_reg2hw_timer_v_lower0_reg_t timer_v_lower0; // [131:100]
-    rv_timer_reg2hw_timer_v_upper0_reg_t timer_v_upper0; // [99:68]
-    rv_timer_reg2hw_compare_lower0_0_reg_t compare_lower0_0; // [67:36]
-    rv_timer_reg2hw_compare_upper0_0_reg_t compare_upper0_0; // [35:4]
+    rv_timer_reg2hw_ctrl_mreg_t [0:0] ctrl; // [154:154]
+    rv_timer_reg2hw_cfg0_reg_t cfg0; // [153:134]
+    rv_timer_reg2hw_timer_v_lower0_reg_t timer_v_lower0; // [133:102]
+    rv_timer_reg2hw_timer_v_upper0_reg_t timer_v_upper0; // [101:70]
+    rv_timer_reg2hw_compare_lower0_0_reg_t compare_lower0_0; // [69:37]
+    rv_timer_reg2hw_compare_upper0_0_reg_t compare_upper0_0; // [36:4]
     rv_timer_reg2hw_intr_enable0_mreg_t [0:0] intr_enable0; // [3:3]
     rv_timer_reg2hw_intr_state0_mreg_t [0:0] intr_state0; // [2:2]
     rv_timer_reg2hw_intr_test0_mreg_t [0:0] intr_test0; // [1:0]

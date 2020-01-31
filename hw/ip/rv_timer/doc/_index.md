@@ -234,7 +234,11 @@ between `mtime` and `mtimecmp` care is needed. A couple of cases are:
 
 ## Interrupt Handling
 
-TBD
+If `mtime` is greater than or equal to the value of `mtimecmp`, the interrupt is generated from the RV_TIMER module.
+If the core enables the timer interrupt in `MIE` CSR, it jumps into the timer interupt service routine.
+Clearing the interrupt can be done by writing 1 into the Interrupt Status register {{<regref "INTR_STATE0">}}.
+The RV_TIMER module also follows RISC-V Previliged spec that requires the interrupt to be cleared by updating `mtimecmp` memory-mapped CSRs.
+In this case both {{<regref "COMPARE_LOWER0_0">}} and {{<regref "COMPARE_UPPER0_0">}} can clear the interrupt source.
 
 ## Register Table
 

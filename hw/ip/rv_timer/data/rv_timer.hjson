@@ -72,6 +72,7 @@
       desc: "Timer value Lower",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
       fields: [
         { bits: "31:0", name: "v", resval: "0xffffffff", desc: "Timer compare value [31:0]" },
       ],
@@ -80,6 +81,7 @@
       desc: "Timer value Upper",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
       fields: [
         { bits: "31:0", name: "v", resval: "0xffffffff", desc: "Timer compare value [63:32]" },
       ],
@@ -124,3 +126,4 @@
     },
   ],
 }
+

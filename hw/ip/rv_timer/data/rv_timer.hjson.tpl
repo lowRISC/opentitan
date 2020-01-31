@@ -6,7 +6,7 @@
 ##  - harts:  number of HART in timer module
 ##  - timers: number of timers in each hart
 { name: "rv_timer",
-  clock_primary: "clk_fixed",
+  clock_primary: "clk_i",
   bus_device: "tlul",
   bus_host: "none",
   available_input_list: [
@@ -81,6 +81,7 @@
       desc: "Timer value Lower",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
       fields: [
         { bits: "31:0", name: "v", resval: "0xffffffff", desc: "Timer compare value [31:0]" },
       ],
@@ -89,6 +90,7 @@
       desc: "Timer value Upper",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
       fields: [
         { bits: "31:0", name: "v", resval: "0xffffffff", desc: "Timer compare value [63:32]" },
       ],

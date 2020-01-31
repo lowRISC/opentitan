@@ -10,6 +10,8 @@ rv_timer_test_elf = executable(
     sw_lib_irq,
     sw_lib_rv_timer,
     sw_lib_uart,
+    sw_lib_gpio,
+    sw_lib_pinmux,
     riscv_crt,
     sw_lib_irq_handlers,
   ],

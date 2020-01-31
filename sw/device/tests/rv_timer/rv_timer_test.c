@@ -5,6 +5,8 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/rv_timer.h"
+#include "sw/device/lib/gpio.h"
+#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/uart.h"
 
 static uint32_t intr_handling_success = 0;
@@ -15,6 +17,10 @@ int main(int argc, char **argv) {
 
   uart_init(UART_BAUD_RATE);
 
+  pinmux_init();
+  // Enable GPIO: 0-7 and 16 is input, 8-15 is output
+  gpio_init(0xFF00);
+
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
   rv_timer_set_us_tick(hart);
@@ -22,11 +28,15 @@ int main(int argc, char **argv) {
   rv_timer_ctrl(hart, true);
   rv_timer_intr_enable(hart, true);
 
+  gpio_write_all(0xFF00);  // all LEDs on
+
   while (1) {
     if (intr_handling_success) {
       break;
     }
   }
+
+  gpio_write_all(0xAA00);  // Test Completed
 
   uart_send_str("PASS!\r\n");
 }
