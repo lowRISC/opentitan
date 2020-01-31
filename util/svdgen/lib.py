@@ -15,6 +15,11 @@ genhdr = '''
   This file generated from HJSON source by "svdgen.py", do not edit.
 '''
 
+def case_compare(a: str, b: str) -> bool:
+    """Perform a case-insenstive equality check on two strings"""
+
+    return a.casefold() == b.casefold()
+
 def hex_or_none(num: int) -> str or None:
     """Converts None -> None and everything else to a hex string. This
     simplifies use with `svd_node()` which ignores elements whose value is
@@ -188,11 +193,13 @@ def generate_register(reg: hjson, base: int) -> ET.Element:
     #
     # When generating a register we must detect and flatten the field
     # into the register. This occurs when there is a single field whose
-    # name matches the register and whose bit offset is zero.
+    # name matches the register and whose bit offset is zero. We perform
+    # a case-insensitive match, as there are many registers which have
+    # identical names except for being capitalized.
     fields = reg.get('fields')
     flatten = fields != None and \
             len(fields) == 1 and \
-            fields[0]['name'] == reg['name'] and \
+            case_compare(fields[0]['name'], reg['name']) and \
             fields[0]['bitinfo'][2] == 0
 
     if flatten:
