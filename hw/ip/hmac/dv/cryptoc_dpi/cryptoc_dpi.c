@@ -13,8 +13,8 @@
 
 typedef unsigned long long ull_t;
 
-extern void SHA_hash_dpi(const svOpenArrayHandle msg, ull_t len,
-                         uint8_t hash[8]) {
+extern void c_dpi_SHA_hash(const svOpenArrayHandle msg, ull_t len,
+                           uint8_t hash[8]) {
   unsigned char *arr;
   unsigned int *arr_ptr;
   ull_t i;
@@ -32,8 +32,8 @@ extern void SHA_hash_dpi(const svOpenArrayHandle msg, ull_t len,
   free(arr);
 }
 
-extern void SHA256_hash_dpi(const svOpenArrayHandle msg, ull_t len,
-                            uint8_t hash[8]) {
+extern void c_dpi_SHA256_hash(const svOpenArrayHandle msg, ull_t len,
+                              uint8_t hash[8]) {
   unsigned char *arr;
   unsigned int *arr_ptr;
   ull_t i;
@@ -56,9 +56,9 @@ extern void SHA256_hash_dpi(const svOpenArrayHandle msg, ull_t len,
   }
 }
 
-extern void HMAC_SHA_dpi(const svOpenArrayHandle key, ull_t key_len,
-                         const svOpenArrayHandle msg, ull_t msg_len,
-                         uint8_t hmac[8]) {
+extern void c_dpi_HMAC_SHA(const svOpenArrayHandle key, ull_t key_len,
+                           const svOpenArrayHandle msg, ull_t msg_len,
+                           uint8_t hmac[8]) {
   unsigned char *msg_arr;
   unsigned int *msg_arr_ptr;
   unsigned char *key_arr;
@@ -86,9 +86,9 @@ extern void HMAC_SHA_dpi(const svOpenArrayHandle key, ull_t key_len,
   free(key_arr);
 }
 
-extern void HMAC_SHA256_dpi(const svOpenArrayHandle key, ull_t key_len,
-                            const svOpenArrayHandle msg, ull_t msg_len,
-                            uint8_t hmac[8]) {
+extern void c_dpi_HMAC_SHA256(const svOpenArrayHandle key, ull_t key_len,
+                              const svOpenArrayHandle msg, ull_t msg_len,
+                              uint8_t hmac[8]) {
   unsigned char *msg_arr;
   unsigned int *msg_arr_ptr;
   unsigned char *key_arr;
