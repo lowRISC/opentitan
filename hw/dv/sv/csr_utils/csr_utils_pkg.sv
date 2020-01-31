@@ -348,7 +348,7 @@ package csr_utils_pkg;
 
             increment_outstanding_access();
             csr_or_fld = decode_csr_or_field(ptr);
-        
+
             csr_rd(.ptr(ptr), .value(obs), .check(check), .path(path),
                    .blocking(1), .timeout_ns(timeout_ns), .map(map));
 

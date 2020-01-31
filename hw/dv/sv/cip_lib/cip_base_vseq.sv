@@ -427,7 +427,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           // do read, exclude CsrExclWriteCheck, CsrExclCheck
           if ($urandom_range(0, 1) && !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck)) begin
             tl_access(.addr(test_csrs[i].get_address()), .write(0), .data(rd_data),
-                      .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask), .blocking(0));
+                      .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask),
+                      .blocking(0));
           end
           // do write, exclude CsrExclWrite
           if ($urandom_range(0, 1) && !csr_excl.is_excl(test_csrs[i], CsrExclWrite)) begin
