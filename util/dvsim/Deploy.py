@@ -10,6 +10,7 @@ import logging as log
 import pprint
 import random
 import re
+import secrets
 import shlex
 import sys
 import time
@@ -483,13 +484,9 @@ class RunTest(Deploy):
     @staticmethod
     def get_seed():
         if RunTest.seeds == []:
-            try:
-                # Pre-populate 1000 seeds at a time
-                RunTest.seeds = run_cmd(
-                    "od -vAn -N4000 -tu < /dev/random | xargs").split()
-                random.shuffle(RunTest.seeds)
-            except Exception as e:
-                log.error("%s. Failed to generate a list of 1000 random seeds",
-                          e)
-                sys.exit(1)
+            # Py lib 'secrets' provides crypto quality strong random numbers.
+            for i in range(1000):
+                seed = secrets.token_bytes(4)
+                seed = int.from_bytes(seed, byteorder='little')
+                RunTest.seeds.append(seed)
         return RunTest.seeds.pop(0)
