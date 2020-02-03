@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/common.h"
-#include "usbdev.h"
+#include "sw/device/lib/usbdev.h"
 
 // This is only here because caller of _init needs it
 typedef struct usb_ss_ctx {

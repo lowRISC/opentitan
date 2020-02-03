@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hmac.h"
+#include "sw/device/lib/hmac.h"
 
 #include "hmac_regs.h"  // Generated.
-
 #include "sw/device/lib/common.h"
 
 #define HMAC0_BASE_ADDR 0x40120000
