@@ -147,6 +147,11 @@ jobs:
       ninja -C "$OBJ_DIR" all
     displayName: Build embedded targets
   - template: ci/upload-artifacts-template.yml
+  - bash: |
+      . util/build_consts.sh
+      ninja -C "$OBJ_DIR" test
+    displayName: 'Run unit tests'
+  - template: 'ci/upload-artifacts-template.yml'
     parameters:
       artifact: sw_build
 
