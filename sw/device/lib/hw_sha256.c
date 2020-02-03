@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/hw_sha256.h"
 
-#include "hmac.h"
+#include "sw/device/lib/hmac.h"
 
 static const HASH_VTAB HW_SHA256_VTAB = {.init = &hw_SHA256_init,
                                          .update = &hw_SHA256_update,
