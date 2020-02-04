@@ -30,14 +30,13 @@ class uart_common_vseq extends uart_base_vseq;
 
       // intr_test csr is WO which - it reads back 0s, plus it affects the uart_state csr
       csr_excl.add_excl({scope, ".", "intr_test"}, CsrExclWrite);
+
+      // writing 0 to timeout csr can cause rx_timeout to assert
+      csr_excl.add_excl({scope, ".", "intr_state.rx_timeout"}, CsrExclWriteCheck);
     end
 
     // writes to ovrd.txen causes tx output to be forced to ovrd.txval causing protocol violation
     csr_excl.add_excl({scope, ".", "ovrd.txen"}, CsrExclWrite);
-
-    // writing 0 to timeout csr can cause rx_timeout to assert - exclude this in bit_bash seq
-    if (csr_test_type == "bit_bash")
-      csr_excl.add_excl({scope, ".", "intr_state.rx_timeout"}, CsrExclWriteCheck);
 
     // read wdata when fifo is empty, dut may return unknown data
     csr_excl.add_excl({scope, ".", "rdata"}, CsrExclCheck);

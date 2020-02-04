@@ -17,8 +17,6 @@ class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
   function new(string name, uvm_component parent);
     super.new(name, parent);
     fifo_level_cg = new();
-    sticky_intr_cov["TxWatermark"] = new(.name("TxWatermark"), .toggle_cov_en(0));
-    sticky_intr_cov["RxWatermark"] = new(.name("RxWatermark"), .toggle_cov_en(0));
   endfunction : new
 
 endclass

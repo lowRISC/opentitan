@@ -48,6 +48,8 @@ class uart_loopback_vseq extends uart_tx_rx_vseq;
     spinwait_txidle();
     spinwait_rxidle();
     csr_rd_check(.ptr(ral.rdata), .compare_value(tx_byte));
+    // clear TxEmpty interrupt
+    csr_wr(.csr(ral.intr_state), .value(1 << TxEmpty));
     // check status is default value
     csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
 

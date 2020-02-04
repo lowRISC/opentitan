@@ -24,6 +24,11 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   local int tx_q_size_at_addr_phase, rx_q_size_at_addr_phase;
   local bit [NumUartIntr-1:0] intr_exp_at_addr_phase;
 
+  // non sticky interrupts are edge-triggered
+  // set it when interrupt is triggered, clear it when interrupt condition is no longer true
+  local bit tx_watermark_triggered = 1;
+  local bit rx_watermark_triggered = 0;
+
   // TLM fifos to pick up the packets
   uvm_tlm_analysis_fifo #(uart_item)    uart_tx_fifo;
   uvm_tlm_analysis_fifo #(uart_item)    uart_rx_fifo;
@@ -66,8 +71,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       `DV_CHECK_EQ(tx_processing_item_q.size(), 1)
       exp_item = tx_processing_item_q.pop_front();
       // move item from fifo to process
-      if (tx_q.size > 0) tx_processing_item_q.push_back(tx_q.pop_front());
-      `uvm_info(`gfn, $sformatf("After drop one item, new tx_q size: %0d", tx_q.size), UVM_HIGH)
+      if (tx_q.size > 0) begin
+        tx_processing_item_q.push_back(tx_q.pop_front());
+        `uvm_info(`gfn, $sformatf("After drop one item, new tx_q size: %0d", tx_q.size), UVM_HIGH)
+      end
       compare(act_item, exp_item, "TX");
       // after an item is sent, check to see if size dipped below watermark
       predict_tx_watermark_intr();
@@ -114,16 +121,30 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     end // forever
   endtask
 
-  virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size, bit just_cleared = 0);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
-    intr_exp[TxWatermark] |= (tx_q_size < watermark);
+  // when interrupt is non-sticky, interrupt will be triggered once unless it exits interrupt
+  // condition
+  virtual function bit get_non_sticky_interrupt(bit cur_intr, bit new_intr, ref bit triggered);
+    bit final_intr = cur_intr || (new_intr & ~triggered);
+    if (!new_intr)       triggered = 0;
+    else if (final_intr) triggered = 1;
+
+    return final_intr;
   endfunction
 
-  virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size, bit just_cleared = 0);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value());
-    intr_exp[RxWatermark] |= (rx_q_size >= watermark);
-    // cover the interrupt sticky behavior
-    if (cfg.en_cov) cov.sticky_intr_cov["RxWatermark"].sample(just_cleared & intr_exp[RxWatermark]);
+  virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
+    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value(),
+                                                  UartTx);
+    intr_exp[TxWatermark] = get_non_sticky_interrupt(.cur_intr(intr_exp[TxWatermark]),
+                                                     .new_intr(tx_q_size < watermark),
+                                                     .triggered(tx_watermark_triggered));
+  endfunction
+
+  virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
+    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value(),
+                                                  UartRx);
+    intr_exp[RxWatermark] = get_non_sticky_interrupt(.cur_intr(intr_exp[RxWatermark]),
+                                                     .new_intr(rx_q_size >= watermark && rx_enabled),
+                                                     .triggered(rx_watermark_triggered));
   endfunction
 
   // we don't model uart cycle-acurrately, ignore checking when item is just/almost finished
@@ -174,6 +195,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           if ((tx_q.size > 0 || tx_processing_item_q.size > 0) && tx_enabled) begin
             if (tx_q.size > 0 && tx_processing_item_q.size == 0) begin
               tx_processing_item_q.push_back(tx_q.pop_front());
+              predict_tx_watermark_intr();
             end
             process_objections(1'b1);
           end
@@ -196,9 +218,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           // it takes 3 cycles to move item from fifo to process, which delays reg status change
           // and it also takes 3 cycles to trigger tx matermark interrupt
           fork begin
-            uint latch_tx_q_size = tx_q.size();
             cfg.clk_rst_vif.wait_n_clks(3); // use negedge to avoid race condition
-            predict_tx_watermark_intr(latch_tx_q_size);
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
               // if sys loopback is on, tx item isn't sent to uart pin but rx fifo
               uart_item tx_item = tx_q.pop_front();
@@ -211,6 +231,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               // raise objection if tx is enabled - there is work to do
               process_objections(1'b1);
             end
+            predict_tx_watermark_intr();
           end join_none
         end // write && channel == AddrChannel
       end
@@ -335,9 +356,6 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             // occur simultaneously
             cfg.clk_rst_vif.wait_clks(1);
             intr_exp &= ~intr_wdata;
-            // recalculate rx watermark, will be set again if fifo size >= watermark
-            predict_rx_watermark_intr(.just_cleared(pre_intr[RxWatermark] &
-                                                    intr_wdata[RxWatermark]));
           end join_none
         end else if (!write && channel == AddrChannel) begin // read & addr phase
           intr_exp_at_addr_phase = intr_exp;
@@ -377,6 +395,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             if (rx_q.size() > 0) begin
               uart_item rx_q_item = rx_q.pop_front();
               rdata_exp = rx_q_item.data;
+              predict_rx_watermark_intr();
             end else begin
               do_read_check = 1'b0;
               `uvm_error(`gfn, "unexpected read when fifo is empty")
@@ -479,6 +498,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     uart_rx_clk_pulses   = 0;
     tx_q_size_at_addr_phase = 0;
     rx_q_size_at_addr_phase = 0;
+    tx_watermark_triggered  = 1;
+    rx_watermark_triggered  = 0;
     tx_enabled           = ral.ctrl.tx.get_reset();
     rx_enabled           = ral.ctrl.rx.get_reset();
     tx_full_exp          = ral.status.txfull.get_reset();
