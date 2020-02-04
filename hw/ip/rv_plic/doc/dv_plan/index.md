@@ -28,14 +28,15 @@ architecture]({{< relref "hw/formal/README.md" >}}).
 ![Block diagram](fpv.svg)
 
 #### TLUL assertions
-* The `../fpv/tb/rv_plic_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}})
-  to rv_plic to ensure TileLink interface protocol compliance
-* TODO: Plan to implement csr assertions under `../fpv/vip/` to assert the
-  TileLink writes and reads correct CSRs
+* The `hw/rv_plic/fpv/tb/rv_plic_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}})
+  to rv_plic to ensure TileLink interface protocol compliance.
+* The `hw/rv_plic/fpv/tb/rv_plic_bind.sv` also binds the `rv_plic_csr_assert_fpv`
+  under `hw/rv_plic/fpv/vip/` to check if TileLink writes and reads correct
+  CSRs.
 
 #### RV_PLIC assertions
-The `../fpv/tb/rv_plic_bind.sv` binds the `rv_plic_assert` under
-`../fpv/vip/rv_plic_assert.sv`. The assertion file ensures RV_PLIC's outputs
+The `hw/rv_plic/fpv/tb/rv_plic_bind.sv` binds the `rv_plic_assert` under
+`hw/rv_plic/fpv/vip/rv_plic_assert.sv`. The assertion file ensures RV_PLIC's outputs
 (`irq_o` and `irq_id_o`) and important signals (`ip`) are being asserted.
 
 ##### Symbolic variables

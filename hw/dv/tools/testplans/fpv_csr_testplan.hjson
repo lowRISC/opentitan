@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  entries: [
+    {
+      name: fpv_csr_rw
+      desc: '''
+            Write assertions to verify all the CSRs from the TileLink. Each CSR will include a read
+            assertion to ensure the read value from the TileLink is expected, and a write assertion
+            to ensure the write value is updated correctly to DUT according to the register's access.
+            '''
+      milestone: V2
+      tests: ["{name}{intf}_fpv_csr_rw"]
+    }
+  ]
+}
+
