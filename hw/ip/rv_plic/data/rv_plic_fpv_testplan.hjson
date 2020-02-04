@@ -1,5 +1,6 @@
 {
   name: "rv_plic"
+  import_testplans: ["hw/dv/tools/testplans/fpv_csr_testplan.hjson"]
   entries: [
     {
       name: LevelTriggeredIp_A
