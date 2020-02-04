@@ -4,11 +4,14 @@
 
 {
     name:               "rv_plic",
-    design_spec:        "hw/ip/rv_plic/doc",
-    dv_plan:            "hw/ip/rv_plic/doc/dv_plan",
-    version:            "0.5",
-    life_stage:         "L1",
-    design_stage:       "D0",
-    verification_stage: "V0",
-    notes:              "will be verified at top level; formal at block level",
+    revisions: [
+      {
+        version:            "0.5",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V2",
+        commit_id:          "d4d5d2f3bb87af5ca2f2787af5bc19bee04ffc6a",
+        notes:              "based on FPV at block level",
+      }
+    ],
 }
