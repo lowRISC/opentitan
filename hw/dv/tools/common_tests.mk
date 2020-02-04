@@ -61,7 +61,8 @@ endif
 ifeq (${TEST_NAME},${TEST_PREFIX}_stress_all_with_rand_reset)
   UVM_TEST_SEQ   = ${TEST_PREFIX}_common_vseq
   RUN_OPTS      += +run_stress_all_with_rand_reset
-  RUN_OPTS      += +test_timeout_ns=10_000_000_000
+  // 10ms
+  RUN_OPTS      += +test_timeout_ns=10000000000
   RUN_OPTS      += +stress_seq=${TEST_PREFIX}_stress_all_vseq
 endif
 

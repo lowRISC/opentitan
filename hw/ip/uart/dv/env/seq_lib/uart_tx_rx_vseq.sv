@@ -118,6 +118,8 @@ class uart_tx_rx_vseq extends uart_base_vseq;
     // need to clear fifo when tx is disabled as data isn't sent out
     if (ral.ctrl.tx.get_mirrored_value() == 0) begin
       clear_fifos(.clear_tx_fifo(1), .clear_rx_fifo(0));
+      // wait for 1 cycle to allow tx_empty occur and be cleared later at super.post_start()
+      cfg.clk_rst_vif.wait_clks(1);
     end
     super.post_start();
   endtask
@@ -142,7 +144,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
 
     // for fifo interrupt, parity/frame error, don't clear it at ignored period
     // as it hasn't been checked
-    clear_tx_intr = clear_intr[TxWatermark] | clear_intr[TxWatermark];
+    clear_tx_intr = clear_intr[TxWatermark] | clear_intr[TxWatermark] | clear_intr[TxEmpty];
     clear_rx_intr = clear_intr[RxWatermark] | clear_intr[RxOverflow] | clear_intr[RxFrameErr] |
                     clear_intr[RxParityErr];
     wait_when_in_ignored_period(clear_tx_intr, clear_rx_intr);

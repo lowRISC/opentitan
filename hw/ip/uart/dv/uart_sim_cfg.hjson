@@ -72,12 +72,14 @@
     {
       name: uart_rx_oversample
       uvm_test_seq: uart_rx_oversample_vseq
+      run_opts: ["+zero_delays=1"]
     }
 
     {
       name: uart_intr
       uvm_test_seq: uart_intr_vseq
-      run_opts: ["+test_timeout_ns=3_000_000_000"]
+      // 3ms
+      run_opts: ["+test_timeout_ns=3000000000"]
     }
 
     {
