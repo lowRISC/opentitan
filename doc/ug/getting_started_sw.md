@@ -24,6 +24,14 @@ $ ninja -C build-out/sw/fpga sw/device/examples/hello_world/hello_world_export
 $ ninja -C build-out/sw/fpga all
 ```
 
+If your RISC-V toolchain isn't located in the default `/tools/riscv` location you use the `TOOLCHAIN_PATH` environment variable to set a different location before running `meson_init.sh`:
+
+```console
+# Set toolchain location
+$ export TOOLCHAIN_PATH=/path/to/toolchain
+$ ./meson_init.sh
+```
+
 In general, `clean` rules are unnecessary, and Meson will set up `ninja` such that it reruns `meson.build` files which have changed.
 
 Build intermediates will show up in `$REPO_TOP/build-out`, including unlinked object files and libraries, while completed executables are exported to `$REPO_TOP/build-bin`.
