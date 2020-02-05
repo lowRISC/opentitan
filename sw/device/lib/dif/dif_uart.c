@@ -12,6 +12,8 @@
 #define UART_RX_FIFO_SIZE_BYTES 32u
 #define UART_TX_FIFO_SIZE_BYTES 32u
 
+#define UART_INTR_STATE_MASK 0xffffffffu
+
 static bool uart_tx_full(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
                                UART_STATUS_TXFULL);
@@ -80,6 +82,19 @@ static bool uart_irq_offset_get(dif_uart_interrupt_t irq_type,
   return true;
 }
 
+static void uart_reset(const dif_uart_t *uart) {
+  mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, 0u);
+  // Write to the relevant bits clears the FIFOs
+  mmio_region_write32(
+      uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
+      (1u << UART_FIFO_CTRL_RXRST) | (1u << UART_FIFO_CTRL_TXRST));
+  mmio_region_write32(uart->base_addr, UART_OVRD_REG_OFFSET, 0u);
+  mmio_region_write32(uart->base_addr, UART_TIMEOUT_CTRL_REG_OFFSET, 0u);
+  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
+  mmio_region_write32(uart->base_addr, UART_INTR_STATE_REG_OFFSET,
+                      UART_INTR_STATE_MASK);
+}
+
 /**
  * Performs fundamental UART configuration.
  */
@@ -97,6 +112,9 @@ static bool uart_configure(const dif_uart_t *uart,
   if (nco != nco_masked) {
     return false;
   }
+
+  // Must be called before the first write to any of the UART registers
+  uart_reset(uart);
 
   // Set baudrate, enable RX and TX, configure parity
   uint32_t reg = (nco_masked << UART_CTRL_NCO_OFFSET);
