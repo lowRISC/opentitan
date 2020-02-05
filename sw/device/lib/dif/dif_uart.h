@@ -84,6 +84,17 @@ typedef struct dif_uart {
 } dif_uart_t;
 
 /**
+ * Resets an UART peripheral
+ *
+ * Resets an UART peipheral at the @p arg1 address. This function does not
+ * require an UART state structure, and can be used independently from the
+ * init routine.
+ * @param base_addr Base address of an instance of UART IP block
+ * @return true if the function was successful, false otherwise
+ */
+bool dif_uart_reset(mmio_region_t base_addr);
+
+/**
  * Initialise an instance of UART
  *
  * Initialise UART instance using the configuration data in @p arg2.

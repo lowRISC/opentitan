@@ -12,6 +12,8 @@
 #define UART_RX_FIFO_SIZE_BYTES 32u
 #define UART_TX_FIFO_SIZE_BYTES 32u
 
+#define UART_INTR_STATE_MASK 0x000000ffu
+
 static bool uart_tx_full(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
                                UART_STATUS_TXFULL);
@@ -144,6 +146,25 @@ static size_t uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
   }
 
   return bytes_read;
+}
+
+bool dif_uart_reset(mmio_region_t base_addr) {
+  if (base_addr.base == NULL) {
+    return false;
+  }
+
+  mmio_region_write32(base_addr, UART_CTRL_REG_OFFSET, 0u);
+  // Write to the relevant bits clears the FIFOs
+  mmio_region_write32(
+      base_addr, UART_FIFO_CTRL_REG_OFFSET,
+      (1u << UART_FIFO_CTRL_RXRST) | (1u << UART_FIFO_CTRL_TXRST));
+  mmio_region_write32(base_addr, UART_OVRD_REG_OFFSET, 0u);
+  mmio_region_write32(base_addr, UART_TIMEOUT_CTRL_REG_OFFSET, 0u);
+  mmio_region_write32(base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
+  mmio_region_write32(base_addr, UART_INTR_STATE_REG_OFFSET,
+                      UART_INTR_STATE_MASK);
+
+  return true;
 }
 
 bool dif_uart_init(mmio_region_t base_addr, const dif_uart_config_t *config,
