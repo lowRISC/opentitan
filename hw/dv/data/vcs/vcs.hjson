@@ -5,8 +5,7 @@
   build_cmd:  "{job_prefix} vcs"
   build_ex:   "{build_dir}/simv"
   run_cmd:    "{job_prefix} {build_ex}"
-
-  tcl:        "{proj_root}/hw/dv/tools/vcs/vcs_fsdb.tcl"
+  tool_srcs:  ["{proj_root}/hw/dv/tools/vcs/*"]
 
   build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
                "-timescale=1ns/1ps",
@@ -18,10 +17,18 @@
                "+warn=SV-NFIVC",
                "+warn=noUII-L",
                // Below option required for $error/$fatal system calls
-               "-assert svaext"]
+               "-assert svaext",
+               // Force DPI-C compilation in C99 mode
+               "-CFLAGS \"--std=c99\"",
+               // Without this magic LDFLAGS argument below, we get compile time errors with
+               // VCS on Google Linux machines that look like this:
+               // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
+               // .../libvcsnew.so: undefined reference to `snpsCheckStrdupFunc'
+               // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
+               "-LDFLAGS \"-Wl,--no-as-needed\""]
 
   run_opts:   ["-licqueue",
-               "-ucli -do {tcl}",
+               "-ucli -do {tool_dir}/vcs_fsdb.tcl",
                "+ntb_random_seed={seed}",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
@@ -79,7 +86,7 @@
     {
       name: vcs_xprop
       is_sim_mode: 1
-      build_opts: ["-xprop={proj_root}/hw/dv/tools/vcs/xprop.cfg"]
+      build_opts: ["-xprop={tool_dir}/xprop.cfg"]
     }
     {
       name: vcs_profile
