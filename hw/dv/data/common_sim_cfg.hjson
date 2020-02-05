@@ -16,6 +16,7 @@
 
   // Default directory structure for the output
   scratch_path:     "{scratch_root}/{branch}.{dut}.{flow}.{simulator}"
+  tool_dir:         "{scratch_path}/{simulator}"
   build_dir:        "{scratch_path}/{build_mode}"
   run_dir_name:     "{index}.{test}"
   run_dir:          "{scratch_path}/{run_dir_name}/out"

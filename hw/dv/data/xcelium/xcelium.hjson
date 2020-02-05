@@ -4,8 +4,7 @@
 {
   build_cmd:  "{job_prefix} xrun"
   run_cmd:    "{job_prefix} xrun"
-
-  tcl:        "{proj_root}/hw/dv/tools/xcelium/xcelium_{dump}.tcl"
+  tool_srcs:  ["{proj_root}/hw/dv/tools/xcelium/*"]
 
   build_opts: [" -elaborate -64bit -access +r -sv",
                "-messages -errormax 50",
@@ -14,7 +13,7 @@
                "-uvmhome {UVM_HOME}",
                "-xmlibdirname {build_dir}/xcelium.d"]
 
-  run_opts:   ["-input {tcl}",
+  run_opts:   ["-input {tool_dir}/xcelium_{dump}.tcl",
                "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
                "+SVSEED={seed}",
                "+UVM_TESTNAME={uvm_test}",

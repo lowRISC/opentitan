@@ -24,7 +24,9 @@ build: compile_result
 
 pre_compile:
 	@echo "[make]: pre_compile"
-	mkdir -p ${build_dir} && env > ${build_dir}/env_vars
+	mkdir -p ${build_dir} && env | sort > ${build_dir}/env_vars
+	mkdir -p ${tool_dir}
+	cp -Ru ${tool_srcs} ${tool_dir}/.
 
 gen_sv_flist: pre_compile ral
 	@echo "[make]: gen_sv_flist"
@@ -44,7 +46,7 @@ run: run_result
 
 pre_run:
 	@echo "[make]: pre_run"
-	mkdir -p ${run_dir} && env > ${run_dir}/env_vars
+	mkdir -p ${run_dir} && env | sort > ${run_dir}/env_vars
 
 sw_build: pre_run
 	@echo "[make]: sw_build"

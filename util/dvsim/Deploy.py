@@ -388,7 +388,12 @@ class CompileSim(Deploy):
         self.pass_patterns = []
         self.fail_patterns = []
 
-        self.mandatory_cmd_attrs = {  # RAL gen
+        self.mandatory_cmd_attrs = {
+            # tool srcs
+            "tool_srcs": False,
+            "tool_dir": False,
+
+            # RAL gen
             "skip_ral": False,
             "gen_ral_pkg_cmd": False,
             "gen_ral_pkg_dir": False,

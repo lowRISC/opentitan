@@ -409,11 +409,16 @@ class SimCfg(FlowCfg):
         testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
         results_str += "### [Testplan](" + testplan + ")\n\n"
 
-        # TODO: check if testplan is not null?
-        results_str += self.testplan.results_table(
-            regr_results=regr_results,
-            map_full_testplan=self.map_full_testplan)
-        results_str += "\n"
+        if regr_results == []:
+            results_str += "No results to display.\n"
+
+        else:
+            # TODO: check if testplan is not null?
+            # Map regr results to the testplan entries.
+            results_str += self.testplan.results_table(
+                regr_results=regr_results,
+                map_full_testplan=self.map_full_testplan)
+            results_str += "\n"
 
         # Append failures for triage
         self.results_md = results_str + fail_msgs
