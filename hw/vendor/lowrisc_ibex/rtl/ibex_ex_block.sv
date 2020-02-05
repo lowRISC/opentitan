@@ -10,31 +10,39 @@
  */
 module ibex_ex_block #(
     parameter bit    RV32M                    = 1,
+    parameter bit    BranchTargetALU          = 0,
     parameter        MultiplierImplementation = "fast"
 ) (
-    input  logic              clk_i,
-    input  logic              rst_ni,
+    input  logic                  clk_i,
+    input  logic                  rst_ni,
 
     // ALU
-    input  ibex_pkg::alu_op_e alu_operator_i,
-    input  logic [31:0]       alu_operand_a_i,
-    input  logic [31:0]       alu_operand_b_i,
+    input  ibex_pkg::alu_op_e     alu_operator_i,
+    input  logic [31:0]           alu_operand_a_i,
+    input  logic [31:0]           alu_operand_b_i,
+
+    // Branch Target ALU
+    // All of these signals are unusued when BranchTargetALU == 0
+    input  ibex_pkg::jt_mux_sel_e jt_mux_sel_i,
+    input  logic [11:0]           bt_operand_imm_i,
+    input  logic [31:0]           pc_id_i,
 
     // Multiplier/Divider
-    input  ibex_pkg::md_op_e  multdiv_operator_i,
-    input  logic              mult_en_i,
-    input  logic              div_en_i,
-    input  logic  [1:0]       multdiv_signed_mode_i,
-    input  logic [31:0]       multdiv_operand_a_i,
-    input  logic [31:0]       multdiv_operand_b_i,
+    input  ibex_pkg::md_op_e      multdiv_operator_i,
+    input  logic                  mult_en_i,
+    input  logic                  div_en_i,
+    input  logic                  multdiv_sel_i,
+    input  logic  [1:0]           multdiv_signed_mode_i,
+    input  logic [31:0]           multdiv_operand_a_i,
+    input  logic [31:0]           multdiv_operand_b_i,
 
     // Outputs
-    output logic [31:0]       alu_adder_result_ex_o, // to LSU
-    output logic [31:0]       regfile_wdata_ex_o,
-    output logic [31:0]       jump_target_o,         // to IF
-    output logic              branch_decision_o,     // to ID
+    output logic [31:0]           alu_adder_result_ex_o, // to LSU
+    output logic [31:0]           regfile_wdata_ex_o,
+    output logic [31:0]           jump_target_o,         // to IF
+    output logic                  branch_decision_o,     // to ID
 
-    output logic              ex_valid_o             // EX has valid output
+    output logic                  ex_valid_o             // EX has valid output
 );
 
   import ibex_pkg::*;
@@ -44,7 +52,7 @@ module ibex_ex_block #(
   logic [32:0] multdiv_alu_operand_b, multdiv_alu_operand_a;
   logic [33:0] alu_adder_result_ext;
   logic        alu_cmp_result, alu_is_equal_result;
-  logic        multdiv_valid, multdiv_en_sel;
+  logic        multdiv_valid;
   logic        multdiv_en;
 
   /*
@@ -53,10 +61,8 @@ module ibex_ex_block #(
     from the multdiv_i module are eliminated
   */
   if (RV32M) begin : gen_multdiv_m
-    assign multdiv_en_sel = MultiplierImplementation == "fast" ? div_en_i : mult_en_i | div_en_i;
     assign multdiv_en     = mult_en_i | div_en_i;
   end else begin : gen_multdiv_no_m
-    assign multdiv_en_sel = 1'b0;
     assign multdiv_en     = 1'b0;
   end
 
@@ -64,7 +70,25 @@ module ibex_ex_block #(
 
   // branch handling
   assign branch_decision_o  = alu_cmp_result;
-  assign jump_target_o      = alu_adder_result_ex_o;
+
+  if (BranchTargetALU) begin : g_branch_target_alu
+    logic [32:0] bt_alu_result;
+
+    assign bt_alu_result = {{19{bt_operand_imm_i[11]}}, bt_operand_imm_i, 1'b0} + pc_id_i;
+
+    assign jump_target_o = (jt_mux_sel_i == JT_ALU) ? alu_adder_result_ex_o : bt_alu_result[31:0];
+  end else begin : g_no_branch_target_alu
+    // Unused jt_mux_sel_i/bt_operand_imm_i/pc_id_i signals causes lint errors, this avoids them
+    ibex_pkg::jt_mux_sel_e unused_jt_mux_sel;
+    logic [11:0]           unused_bt_operand_imm;
+    logic [31:0]           unused_pc_id;
+
+    assign unused_jt_mux_sel     = jt_mux_sel_i;
+    assign unused_bt_operand_imm = bt_operand_imm_i;
+    assign unused_pc_id          = pc_id_i;
+
+    assign jump_target_o = alu_adder_result_ex_o;
+  end
 
   /////////
   // ALU //
@@ -76,7 +100,7 @@ module ibex_ex_block #(
       .operand_b_i         ( alu_operand_b_i           ),
       .multdiv_operand_a_i ( multdiv_alu_operand_a     ),
       .multdiv_operand_b_i ( multdiv_alu_operand_b     ),
-      .multdiv_en_i        ( multdiv_en_sel            ),
+      .multdiv_sel_i       ( multdiv_sel_i             ),
       .adder_result_o      ( alu_adder_result_ex_o     ),
       .adder_result_ext_o  ( alu_adder_result_ext      ),
       .result_o            ( alu_result                ),

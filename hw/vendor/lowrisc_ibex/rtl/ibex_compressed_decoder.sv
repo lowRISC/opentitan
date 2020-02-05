@@ -10,6 +10,9 @@
  * This module is fully combinatorial, clock and reset are used for
  * assertions only.
  */
+
+`include "prim_assert.sv"
+
 module ibex_compressed_decoder (
     input  logic        clk_i,
     input  logic        rst_ni,

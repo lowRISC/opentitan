@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-+define+BOOT_ADDR=32'h8000_0000
+// Boot address specified in decimal to avoid single quote in number, which
+// causes parsing errors of this file in Riviera.
++define+BOOT_ADDR=2147483648 // 32'h8000_0000
 +define+TRACE_EXECUTION
 +define+RVFI
++incdir+${PRJ_DIR}/ibex/shared/rtl
 
 ${PRJ_DIR}/ibex/shared/rtl/prim_clock_gating.sv
 

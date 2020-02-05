@@ -1,6 +1,7 @@
 ibex:
   incdirs: [
     rtl,
+    shared/rtl,
   ]
   files: [
     rtl/ibex_pkg.sv,

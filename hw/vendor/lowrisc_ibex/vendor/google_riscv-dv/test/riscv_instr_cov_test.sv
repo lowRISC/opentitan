@@ -39,17 +39,9 @@ class riscv_instr_cov_test extends uvm_test;
     cfg = riscv_instr_gen_config::type_id::create("cfg");
     // disable_compressed_instr is not relevant to coverage test
     cfg.disable_compressed_instr = 0;
-    `ifdef DEPRECATED
-      cfg.build_instruction_template(.skip_instr_exclusion(1));
-    `else
-      riscv_instr::create_instr_list(cfg);
-    `endif
+    riscv_instr::create_instr_list(cfg);
     instr = riscv_instr_cov_item::type_id::create("instr");
     instr.rand_mode(0);
-    `ifdef DEPRECATED
-    instr.no_hint_illegal_instr_c.constraint_mode(0);
-    instr.imm_val_c.constraint_mode(0);
-    `endif
     instr_cg = new(cfg);
     `uvm_info(`gfn, $sformatf("%0d CSV trace files to be processed", trace_csv.size()), UVM_LOW)
     foreach (trace_csv[i]) begin
@@ -142,13 +134,8 @@ class riscv_instr_cov_test extends uvm_test;
       `SAMPLE(instr_cg.opcode_cg, binary[6:2])
     end
     if (instr_enum::from_name(process_instr_name(trace["instr"]), instr_name)) begin
-    `ifdef DEPRECATED
-      if (cfg.instr_template.exists(instr_name)) begin
-        instr.copy_base_instr(cfg.instr_template[instr_name]);
-    `else
       if (riscv_instr::instr_template.exists(instr_name)) begin
         instr.copy(riscv_instr::instr_template[instr_name]);
-    `endif
         if (instr.group inside {RV32I, RV32M, RV32C, RV64I, RV64M, RV64C}) begin
           assign_trace_info_to_instr(instr);
         end

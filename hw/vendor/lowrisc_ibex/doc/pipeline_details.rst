@@ -67,13 +67,17 @@ Read the description for more information.
 +-----------------------+-----------------------+-------------------------------------------------------------+
 | Branch (Taken)        | 2 - N                 | Any branch where the condition is met will stall for 2      |
 |                       |                       | cycles as in the first cycle the branch is in ID/EX the ALU |
-|                       |                       | is used to calculate the branch condition.  The following   |
-|                       |                       | cycle the ALU is used again to calculate the branch target  |
+|                       | 1 - N (Branch Target  | is used to calculate the branch condition.  The following   |
+|                       | ALU enabled)          | cycle the ALU is used again to calculate the branch target  |
 |                       |                       | where it proceeds as Jump does above (Flush IF stage and    |
 |                       |                       | prefetch buffer, new PC on instruction-side memory          |
 |                       |                       | interface the same cycle it is calculated).  The longer the |
 |                       |                       | instruction-side memory interface takes to receive data the |
-|                       |                       | longer the branch will stall.                               |
+|                       |                       | longer the branch will stall. With the parameter            |
+|                       |                       | ``BranchTargetALU`` set to ``1`` a seperate ALU calculates  |
+|                       |                       | the branch target simultaneously to calculating the branch  |
+|                       |                       | condition with the main ALU so 1 less stall cycle is        |
+|                       |                       | required.                                                   |
 +-----------------------+-----------------------+-------------------------------------------------------------+
 | Instruction Fence     | 1 - N                 | The FENCE.I instruction as defined in 'Zifencei' of the     |
 |                       |                       | RISC-V specification. Internally it is implemented as a     |

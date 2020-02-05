@@ -45,12 +45,9 @@ module tb_cs_registers #(
   logic                 irq_timer_i;
   logic                 irq_external_i;
   logic [14:0]          irq_fast_i;
-  logic                 irq_pending_o;          // interupt request pending
   logic                 nmi_mode_i;             // core is handling an NMI
-  logic                 csr_msip_o;             // software interrupt pending
-  logic                 csr_mtip_o;             // timer interrupt pending
-  logic                 csr_meip_o;             // external interrupt pending
-  logic [14:0]          csr_mfip_o;             // fast interrupt pending
+  logic                 irq_pending_o;          // interupt request pending
+  ibex_pkg::irqs_t      irqs_o;
   logic                 csr_mstatus_mie_o;
   logic [31:0]          csr_mepc_o;
 

@@ -11,6 +11,7 @@ filesets:
     files:
       - ./rtl/prim_clock_gating.sv
       - ./rtl/ram_1p.sv
+      - ./rtl/ram_2p.sv
       - ./rtl/bus.sv
       - ./rtl/sim/simulator_ctrl.sv
       - ./rtl/timer.sv

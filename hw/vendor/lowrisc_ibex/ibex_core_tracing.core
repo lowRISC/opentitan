@@ -46,6 +46,12 @@ parameters:
     description: "Multiplier implementation. Valid values: fast, slow"
     default: fast
 
+  BranchTargetALU:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
+
 
 
 targets:

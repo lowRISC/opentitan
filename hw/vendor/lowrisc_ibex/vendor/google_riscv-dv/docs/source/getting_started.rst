@@ -179,21 +179,24 @@ real RISC-V processor::
     run --test=riscv_rand_instr_test --iss=ovpsim,whisper
     run --test=riscv_rand_instr_test --iss=spike,sail
 
-Run directed assembly tests
+Run directed assembly/C tests
 ---------------------------
 
-Sometimes it might be useful to run some hand-coded assembly tests to hit some
+Sometimes it might be useful to run some hand-coded assembly/C tests to hit some
 corner cases::
 
 
-    # Run a single/multiple assembly test
+    # Run a single/multiple assembly/C test
     run --asm_tests asm_test_path1/asm_test1.S,asm_test_path2/asm_test2.S
+    run --c_tests c_test_path1/c_test1.c,c_test_path2/c_test2.c
 
-    # Run regression with all assembly tests(*.S) under a given directory
+    # Run regression with all assembly tests(*.S)/ C tests(*.c) under a given directory
     run --asm_tests asm_test_path1,asm_test_path2
+    run --c_tests c_test_path1,c_test_path2
 
-    # Run mix between the assembly test and assembly tests under a directory
+    # Run mix between the assembly/C test and assembly/C tests under a directory
     run --asm_tests asm_test_path1/asm_test1.S,asm_test_path2
+    run --c_tests c_test_path1/c_test1.c,c_test_path2
 
-You could also use this approach to integrate the assembly tests
+You could also use this approach to integrate the assembly/C tests
 from other sources to riscv-dv flow.

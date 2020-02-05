@@ -32,6 +32,11 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Path to a vmem file to initialize the RAM with
+  BranchTargetALU:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]
 
 targets:
   sim:
@@ -41,6 +46,7 @@ targets:
     parameters:
       - RV32M
       - RV32E
+      - BranchTargetALU
       - SRAM_INIT_FILE
     toplevel: ibex_simple_system
     tools:

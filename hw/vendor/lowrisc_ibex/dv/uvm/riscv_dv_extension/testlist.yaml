@@ -280,12 +280,53 @@
     +require_signature_addr=1
     +gen_debug_section=1
     +randomize_csr=1
+    +no_csr_instr=1
     +enable_dummy_csr_write=1
     +boot_mode=m
   rtl_test: core_ibex_debug_csr_test
   sim_opts: >
     +require_signature_addr=1
     +enable_debug_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_irq_in_debug_mode_test
+  description: >
+    Send interrupts while the core is executing in debug mode, should ignore everything
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +enable_interrupt=1
+    +randomize_csr=1
+    +no_csr_instr=1
+    +no_fence=1
+  rtl_test: core_ibex_irq_in_debug_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+    +enable_irq_multiple_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_debug_in_irq_test
+  description: >
+    Send debug stimulus while core is in an interrupt handler
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +enable_interrupt=1
+    +randomize_csr=1
+    no_csr_instr=1
+    +no_fence=1
+  rtl_test: core_ibex_debug_in_irq_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+    +enable_irq_multiple_seq=1
   compare_opts:
     compare_final_value_only: 1
 
@@ -320,6 +361,26 @@
   sim_opts: >
     +require_signature_addr=1
     +enable_irq_multiple_seq=1
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_nested_interrupt_test
+  description: >
+    Assert interrupt, and then assert another interrupt during the first irq_handler routine
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +require_signature_addr=1
+    +enable_interrupt=1
+    +enable_nested_interrupt=1
+    +randomize_csr=1
+    +no_csr_instr=1
+  rtl_test: core_ibex_nested_irq_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_irq_multiple_seq=1
+    +enable_nested_irq=1
   compare_opts:
     compare_final_value_only: 1
 

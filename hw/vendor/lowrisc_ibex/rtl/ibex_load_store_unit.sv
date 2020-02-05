@@ -9,6 +9,9 @@
  * Load Store Unit, used to eliminate multiple access during processor stalls,
  * and to align bytes and halfwords.
  */
+
+`include "prim_assert.sv"
+
 module ibex_load_store_unit (
     input  logic         clk_i,
     input  logic         rst_ni,

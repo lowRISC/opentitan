@@ -362,6 +362,7 @@ class riscv_asm_program_gen extends uvm_object;
         RV32F, RV64F, RV32FC : misa[MISA_EXT_F] = 1'b1;
         RV32D, RV64D, RV32DC : misa[MISA_EXT_D] = 1'b1;
         RV32V, RV64V         : misa[MISA_EXT_V] = 1'b1;
+        RV32X, RV64X         : misa[MISA_EXT_X] = 1'b1;
         default : `uvm_fatal(`gfn, $sformatf("%0s is not yet supported",
                                    supported_isa[i].name()))
       endcase
@@ -820,21 +821,6 @@ class riscv_asm_program_gen extends uvm_object;
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
       string intr_handler[$];
       push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, cfg.sp, cfg.tp, intr_handler);
-      // If nested interrupts are enabled, set xSTATUS.xIE in the interrupt handler
-      // to re-enable interrupt handling capabilities
-      if (cfg.enable_nested_interrupt) begin
-        case (status)
-          MSTATUS: begin
-            intr_handler.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
-          end
-          SSTATUS: begin
-            intr_handler.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 2));
-          end
-          USTATUS: begin
-            intr_handler.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
-          end
-        endcase
-      end
       gen_signature_handshake(.instr(intr_handler), .signature_type(CORE_STATUS), .core_status(HANDLING_IRQ));
       intr_handler = {intr_handler,
                       $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], cause, cause.name()),
@@ -845,7 +831,7 @@ class riscv_asm_program_gen extends uvm_object;
       gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(cause));
       gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(ie));
       gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(ip));
-               // Jump to commmon interrupt handling routine
+      // Jump to commmon interrupt handling routine
       intr_handler = {intr_handler,
                       $sformatf("j %0smode_intr_handler", mode),
                       "1: j test_done"};
@@ -1022,6 +1008,25 @@ class riscv_asm_program_gen extends uvm_object;
       end
       default: `uvm_fatal(get_full_name(), $sformatf("Unsupported mode: %0s", mode.name()))
     endcase
+      // If nested interrupts are enabled, set xSTATUS.xIE in the interrupt handler
+      // to re-enable interrupt handling capabilities
+      if (cfg.enable_nested_interrupt) begin
+        interrupt_handler_instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], scratch));
+        interrupt_handler_instr.push_back($sformatf("bgtz x%0d, 1f", cfg.gpr[0]));
+        interrupt_handler_instr.push_back($sformatf("csrwi 0x%0x, 0x1", scratch));
+        case (status)
+          MSTATUS: begin
+            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
+          end
+          SSTATUS: begin
+            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 2));
+          end
+          USTATUS: begin
+            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
+          end
+        endcase
+        interrupt_handler_instr.push_back($sformatf("1: csrwi 0x%0x,0", scratch));
+      end
     // Read back interrupt related privileged CSR
     // The value of these CSR are checked by comparing with spike simulation result.
     interrupt_handler_instr = {

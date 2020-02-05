@@ -45,7 +45,7 @@ class core_ibex_vseq extends uvm_sequence;
       irq_drop_seq_h = irq_drop_seq::type_id::create("irq_drop_seq_h");
       irq_drop_seq_h.num_of_iterations = 1;
       irq_drop_seq_h.max_interval = 1;
-      irq_drop_seq_h.max_delay = 1;
+      irq_drop_seq_h.max_delay = 0;
       irq_drop_seq_h.interval = 0;
     end
     if (cfg.enable_debug_seq) begin
@@ -93,11 +93,13 @@ class core_ibex_vseq extends uvm_sequence;
     debug_seq_single_h.start(null);
   endtask
 
-  virtual task start_irq_raise_single_seq();
+  virtual task start_irq_raise_single_seq(bit no_nmi = 1'b0);
+    irq_raise_single_seq_h.no_nmi = no_nmi;
     irq_raise_single_seq_h.start(p_sequencer.irq_seqr);
   endtask
 
-  virtual task start_irq_raise_seq();
+  virtual task start_irq_raise_seq(bit no_nmi = 1'b0);
+    irq_raise_seq_h.no_nmi = no_nmi;
     irq_raise_seq_h.start(p_sequencer.irq_seqr);
   endtask
 

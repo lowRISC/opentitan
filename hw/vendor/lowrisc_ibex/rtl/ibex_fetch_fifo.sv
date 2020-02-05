@@ -9,6 +9,9 @@
  * input port: send address and data to the FIFO
  * clear_i clears the FIFO for the following cycle, including any new request
  */
+
+`include "prim_assert.sv"
+
 module ibex_fetch_fifo #(
   parameter int unsigned NUM_REQS = 2
 ) (

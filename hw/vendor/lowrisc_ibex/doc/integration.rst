@@ -87,6 +87,9 @@ Parameters
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``RV32M``                    | bit         | 1          | M(ultiply) extension enable                                     |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
+| ``BranchTargetALU``          | bit         | 0          | *EXPERIMENTAL* - Enables branch target ALU removing a stall     |
+|                              |             |            | cycle from taken branches                                       |
++------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``MultiplierImplementation`` | string      | "fast"     | Multiplicator type, "slow", or "fast"                           |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``DbgTriggerEn``             | bit         | 0          | Enable debug trigger support (one trigger only)                 |
@@ -95,6 +98,8 @@ Parameters
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``DmExceptionAddr``          | int         | 0x1A110808 | Address to jump to when an exception occurs while in Debug Mode |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
+
+Any parameter marked *EXPERIMENTAL* when enabled is not verified to the same standard as the rest of the Ibex core.
 
 Interfaces
 ----------

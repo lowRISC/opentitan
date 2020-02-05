@@ -93,3 +93,8 @@
 `define DEFINE_VA_INSTR(instr_n, instr_format, instr_category, instr_group, vav = {}, imm_tp = IMM)  \
   class riscv_``instr_n``_instr extends riscv_vector_instr;  \
     `VA_INSTR_BODY(instr_n, instr_format, instr_category, instr_group, vav, imm_tp)
+
+// Custom extension instruction
+`define DEFINE_CUSTOM_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+  class riscv_``instr_n``_instr extends riscv_custom_instr;  \
+    `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)

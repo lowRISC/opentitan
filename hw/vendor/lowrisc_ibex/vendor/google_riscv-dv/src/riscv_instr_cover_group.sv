@@ -1315,17 +1315,9 @@ class riscv_instr_cover_group;
     riscv_instr_name_t instr_name;
     instr_name = instr_name.first;
     do begin
-      `INSTR instr;
+      riscv_instr instr;
       if (!(instr_name inside {unsupported_instr}) && (instr_name != INVALID_INSTR)) begin
-        `ifdef DEPRECATED
-          instr = riscv_instr_base::type_id::create("instr");
-          if (!instr.randomize() with {instr_name == local::instr_name;}) begin
-            `uvm_fatal("riscv_instr_cover_group",
-                       $sformatf("Instruction %0s randomization failure", instr_name.name()))
-          end
-        `else
-          instr = riscv_instr::create_instr(instr_name);
-        `endif
+        instr = riscv_instr::create_instr(instr_name);
         if ((instr.group inside {supported_isa}) &&
             (instr.group inside {RV32I, RV32M, RV64M, RV64I, RV32C, RV64C,
                                  RV32V, RV64V, RV64B, RV32B})) begin

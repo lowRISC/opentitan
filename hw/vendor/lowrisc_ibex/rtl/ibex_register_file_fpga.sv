@@ -43,7 +43,7 @@ module ibex_register_file #(
   assign rdata_a_o = (raddr_a_i == '0) ? '0 : mem[raddr_a_i];
 
   // async_read b
-  assign rdata_b_o = (raddr_b_i == '0) ? '0 : mem[baddr_b_i];
+  assign rdata_b_o = (raddr_b_i == '0) ? '0 : mem[raddr_b_i];
 
   // we select
   assign we = (waddr_a_i == '0) ? 1'b0 : we_a_i;

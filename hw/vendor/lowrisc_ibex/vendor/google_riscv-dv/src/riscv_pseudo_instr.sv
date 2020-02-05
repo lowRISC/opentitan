@@ -1,5 +1,5 @@
 // Psuedo instructions are used to simplify assembly program writing
-class riscv_pseudo_instr extends `INSTR;
+class riscv_pseudo_instr extends riscv_instr;
 
   rand riscv_pseudo_instr_name_t  pseudo_instr_name;
 

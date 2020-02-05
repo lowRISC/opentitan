@@ -6,6 +6,9 @@
 /**
  * Main controller of the processor
  */
+
+`include "prim_assert.sv"
+
 module ibex_controller (
     input  logic                  clk_i,
     input  logic                  rst_ni,
@@ -53,11 +56,9 @@ module ibex_controller (
 
     // interrupt signals
     input  logic                  csr_mstatus_mie_i,     // M-mode interrupt enable bit
-    input  logic                  csr_msip_i,            // software interrupt pending
-    input  logic                  csr_mtip_i,            // timer interrupt pending
-    input  logic                  csr_meip_i,            // external interrupt pending
-    input  logic [14:0]           csr_mfip_i,            // fast interrupt pending
     input  logic                  irq_pending_i,         // interrupt request pending
+    input  ibex_pkg::irqs_t       irqs_i,                // interrupt requests qualified with
+                                                         // mie CSR
     input  logic                  irq_nm_i,              // non-maskeable interrupt
     output logic                  nmi_mode_o,            // core executing NMI handler
 
@@ -121,7 +122,7 @@ module ibex_controller (
   logic handle_irq;
 
   logic [3:0] mfip_id;
-  logic       unused_csr_mtip;
+  logic       unused_irq_timer;
 
   logic ecall_insn;
   logic mret_insn;
@@ -209,31 +210,34 @@ module ibex_controller (
                              priv_mode_i == PRIV_LVL_U ? debug_ebreaku_i :
                                                          1'b0;
 
-  // interrupts including NMI are ignored while in debug mode [Debug Spec v0.13.2, p.39]
-  assign handle_irq       = ~debug_mode_q &
-      ((irq_nm_i & ~nmi_mode_q) | (irq_pending_i & csr_mstatus_mie_i));
+  // Interrupts including NMI are ignored,
+  // - while in debug mode [Debug Spec v0.13.2, p.39],
+  // - while in NMI mode (nested NMIs are not supported, NMI has highest priority and
+  //   cannot be interrupted by regular interrupts).
+  assign handle_irq = ~debug_mode_q & ~nmi_mode_q &
+      (irq_nm_i | (irq_pending_i & csr_mstatus_mie_i));
 
   // generate ID of fast interrupts, highest priority to highest ID
   always_comb begin : gen_mfip_id
-    if      (csr_mfip_i[14]) mfip_id = 4'd14;
-    else if (csr_mfip_i[13]) mfip_id = 4'd13;
-    else if (csr_mfip_i[12]) mfip_id = 4'd12;
-    else if (csr_mfip_i[11]) mfip_id = 4'd11;
-    else if (csr_mfip_i[10]) mfip_id = 4'd10;
-    else if (csr_mfip_i[ 9]) mfip_id = 4'd9;
-    else if (csr_mfip_i[ 8]) mfip_id = 4'd8;
-    else if (csr_mfip_i[ 7]) mfip_id = 4'd7;
-    else if (csr_mfip_i[ 6]) mfip_id = 4'd6;
-    else if (csr_mfip_i[ 5]) mfip_id = 4'd5;
-    else if (csr_mfip_i[ 5]) mfip_id = 4'd5;
-    else if (csr_mfip_i[ 4]) mfip_id = 4'd4;
-    else if (csr_mfip_i[ 3]) mfip_id = 4'd3;
-    else if (csr_mfip_i[ 2]) mfip_id = 4'd2;
-    else if (csr_mfip_i[ 1]) mfip_id = 4'd1;
-    else                     mfip_id = 4'd0;
+    if      (irqs_i.irq_fast[14]) mfip_id = 4'd14;
+    else if (irqs_i.irq_fast[13]) mfip_id = 4'd13;
+    else if (irqs_i.irq_fast[12]) mfip_id = 4'd12;
+    else if (irqs_i.irq_fast[11]) mfip_id = 4'd11;
+    else if (irqs_i.irq_fast[10]) mfip_id = 4'd10;
+    else if (irqs_i.irq_fast[ 9]) mfip_id = 4'd9;
+    else if (irqs_i.irq_fast[ 8]) mfip_id = 4'd8;
+    else if (irqs_i.irq_fast[ 7]) mfip_id = 4'd7;
+    else if (irqs_i.irq_fast[ 6]) mfip_id = 4'd6;
+    else if (irqs_i.irq_fast[ 5]) mfip_id = 4'd5;
+    else if (irqs_i.irq_fast[ 5]) mfip_id = 4'd5;
+    else if (irqs_i.irq_fast[ 4]) mfip_id = 4'd4;
+    else if (irqs_i.irq_fast[ 3]) mfip_id = 4'd3;
+    else if (irqs_i.irq_fast[ 2]) mfip_id = 4'd2;
+    else if (irqs_i.irq_fast[ 1]) mfip_id = 4'd1;
+    else                          mfip_id = 4'd0;
   end
 
-  assign unused_csr_mtip = csr_mtip_i;
+  assign unused_irq_timer = irqs_i.irq_timer;
 
   /////////////////////
   // Core controller //
@@ -250,6 +254,10 @@ module ibex_controller (
     csr_save_cause_o      = 1'b0;
     csr_mtval_o           = '0;
 
+    // The values of pc_mux and exc_pc_mux are only relevant if pc_set is set. Some of the states
+    // below always set pc_mux and exc_pc_mux but only set pc_set if certain conditions are met.
+    // This avoid having to factor those conditions into the pc_mux and exc_pc_mux select signals
+    // helping timing.
     pc_mux_o              = PC_BOOT;
     pc_set_o              = 1'b0;
 
@@ -347,6 +355,11 @@ module ibex_controller (
         // 2. debug requests
         // 3. interrupt requests
 
+        // Set PC mux for branch and jump here to ease timing. Value is only relevant if pc_set_o is
+        // also set. Setting the mux value here avoids factoring in special_req and instr_valid_i
+        // which helps timing.
+        pc_mux_o = PC_JUMP;
+
         if (instr_valid_i) begin
 
           // get ready for special instructions, exceptions, pipeline flushes
@@ -358,7 +371,6 @@ module ibex_controller (
             halt_if     = 1'b1;
           // set PC in IF stage to branch or jump target
           end else if (branch_set_i || jump_set_i) begin
-            pc_mux_o       = PC_JUMP;
             pc_set_o       = 1'b1;
 
             perf_tbranch_o = branch_set_i;
@@ -391,10 +403,11 @@ module ibex_controller (
       end // DECODE
 
       IRQ_TAKEN: begin
+        pc_mux_o     = PC_EXC;
+        exc_pc_mux_o = EXC_PC_IRQ;
+
         if (handle_irq) begin
-          pc_mux_o         = PC_EXC;
           pc_set_o         = 1'b1;
-          exc_pc_mux_o     = EXC_PC_IRQ;
 
           csr_save_if_o    = 1'b1;
           csr_save_cause_o = 1'b1;
@@ -403,17 +416,17 @@ module ibex_controller (
           if (irq_nm_i && !nmi_mode_q) begin
             exc_cause_o = EXC_CAUSE_IRQ_NM;
             nmi_mode_d  = 1'b1; // enter NMI mode
-          end else if (csr_mfip_i != 15'b0) begin
+          end else if (irqs_i.irq_fast != 15'b0) begin
             // generate exception cause ID from fast interrupt ID:
             // - first bit distinguishes interrupts from exceptions,
             // - second bit adds 16 to fast interrupt ID
             // for example EXC_CAUSE_IRQ_FAST_0 = {1'b1, 5'd16}
             exc_cause_o = exc_cause_e'({2'b11, mfip_id});
-          end else if (csr_meip_i) begin
+          end else if (irqs_i.irq_external) begin
             exc_cause_o = EXC_CAUSE_IRQ_EXTERNAL_M;
-          end else if (csr_msip_i) begin
+          end else if (irqs_i.irq_software) begin
             exc_cause_o = EXC_CAUSE_IRQ_SOFTWARE_M;
-          end else begin // csr_mtip_i
+          end else begin // irqs_i.irq_timer
             exc_cause_o = EXC_CAUSE_IRQ_TIMER_M;
           end
         end
@@ -422,13 +435,14 @@ module ibex_controller (
       end
 
       DBG_TAKEN_IF: begin
+        pc_mux_o     = PC_EXC;
+        exc_pc_mux_o = EXC_PC_DBD;
+
         // enter debug mode and save PC in IF to dpc
         // jump to debug exception handler in debug memory
         if (debug_single_step_i || debug_req_i || trigger_match_i) begin
           flush_id         = 1'b1;
-          pc_mux_o         = PC_EXC;
           pc_set_o         = 1'b1;
-          exc_pc_mux_o     = EXC_PC_DBD;
 
           csr_save_if_o    = 1'b1;
           debug_csr_save_o = 1'b1;
@@ -485,6 +499,9 @@ module ibex_controller (
         halt_if     = 1'b1;
         flush_id    = 1'b1;
         ctrl_fsm_ns = DECODE;
+
+        // As pc_mux and exc_pc_mux can take various values in this state they aren't set early
+        // here.
 
         // exceptions: set exception PC, save PC and exception cause
         // exc_req_lsu is high for one clock cycle only (in DECODE)

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module top_artya7_100 (
+module top_artya7 (
     input               IO_CLK,
     input               IO_RST_N,
     output [3:0]        LED

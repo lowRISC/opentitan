@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ibex:top_artya7_100:0.1"
-description: "Ibex example toplevel for the Arty A7-100 board"
+name: "lowrisc:ibex:top_artya7:0.1"
+description: "Ibex example toplevel for Arty A7 boards (both, -35 and -100)"
 filesets:
   files_rtl_artya7:
     depend:
       - lowrisc:ibex:ibex_core
       - lowrisc:ibex:fpga_xilinx_shared
     files:
-      - rtl/top_artya7_100.sv
+      - rtl/top_artya7.sv
     file_type: systemVerilogSource
 
   files_constraints:
@@ -37,9 +37,9 @@ targets:
     filesets:
       - files_rtl_artya7
       - files_constraints
-    toplevel: top_artya7_100
+    toplevel: top_artya7
     parameters:
       - SRAM_INIT_FILE
     tools:
       vivado:
-        part: "xc7a100tcsg324-1"  # Arty A7-100
+        part: "xc7a100tcsg324-1"  # Default to Arty A7-100

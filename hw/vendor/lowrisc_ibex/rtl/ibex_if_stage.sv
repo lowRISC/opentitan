@@ -9,6 +9,9 @@
  * Instruction fetch unit: Selection of the next PC, and buffering (sampling) of
  * the read instruction.
  */
+
+`include "prim_assert.sv"
+
 module ibex_if_stage #(
     parameter int unsigned DmHaltAddr      = 32'h1A110800,
     parameter int unsigned DmExceptionAddr = 32'h1A110808
@@ -32,6 +35,8 @@ module ibex_if_stage #(
     output logic                  instr_valid_id_o,         // instr in IF-ID is valid
     output logic                  instr_new_id_o,           // instr in IF-ID is new
     output logic [31:0]           instr_rdata_id_o,         // instr for ID stage
+    output logic [31:0]           instr_rdata_alu_id_o,     // replicated instr for ID stage
+                                                            // to reduce fan-out
     output logic [15:0]           instr_rdata_c_id_o,       // compressed instr for ID stage
                                                             // (mtval), meaningful only if
                                                             // instr_is_compressed_id_o = 1'b1
@@ -234,6 +239,7 @@ module ibex_if_stage #(
       instr_new_id_o             <= 1'b0;
       instr_valid_id_o           <= 1'b0;
       instr_rdata_id_o           <= '0;
+      instr_rdata_alu_id_o       <= '0;
       instr_fetch_err_o          <= '0;
       instr_rdata_c_id_o         <= '0;
       instr_is_compressed_id_o   <= 1'b0;
@@ -244,6 +250,8 @@ module ibex_if_stage #(
       if (if_id_pipe_reg_we) begin
         instr_valid_id_o         <= 1'b1;
         instr_rdata_id_o         <= instr_decompressed;
+        // To reduce fan-out and help timing from the instr_rdata_id flops they are replicated.
+        instr_rdata_alu_id_o     <= instr_decompressed;
         instr_fetch_err_o        <= fetch_err;
         instr_rdata_c_id_o       <= fetch_rdata[15:0];
         instr_is_compressed_id_o <= instr_is_compressed_int;

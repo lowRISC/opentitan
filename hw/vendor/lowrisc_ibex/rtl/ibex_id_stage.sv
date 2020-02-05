@@ -13,9 +13,13 @@
  * Decode stage of the core. It decodes the instructions and hosts the register
  * file.
  */
+
+`include "prim_assert.sv"
+
 module ibex_id_stage #(
-    parameter bit RV32E = 0,
-    parameter bit RV32M = 1
+    parameter bit RV32E           = 0,
+    parameter bit RV32M           = 1,
+    parameter bit BranchTargetALU = 0
 ) (
     input  logic                  clk_i,
     input  logic                  rst_ni,
@@ -30,6 +34,7 @@ module ibex_id_stage #(
     input  logic                  instr_valid_i,
     input  logic                  instr_new_i,
     input  logic [31:0]           instr_rdata_i,         // from IF-ID pipeline registers
+    input  logic [31:0]           instr_rdata_alu_i,     // from IF-ID pipeline registers
     input  logic [15:0]           instr_rdata_c_i,       // from IF-ID pipeline registers
     input  logic                  instr_is_compressed_i,
     output logic                  instr_req_o,
@@ -58,9 +63,14 @@ module ibex_id_stage #(
     output logic [31:0]           alu_operand_a_ex_o,
     output logic [31:0]           alu_operand_b_ex_o,
 
+    // Branch target ALU
+    output ibex_pkg::jt_mux_sel_e jt_mux_sel_ex_o,
+    output logic [11:0]           bt_operand_imm_o,
+
     // MUL, DIV
     output logic                  mult_en_ex_o,
     output logic                  div_en_ex_o,
+    output logic                  multdiv_sel_ex_o,
     output ibex_pkg::md_op_e      multdiv_operator_ex_o,
     output logic  [1:0]           multdiv_signed_mode_ex_o,
     output logic [31:0]           multdiv_operand_a_ex_o,
@@ -91,11 +101,8 @@ module ibex_id_stage #(
 
     // Interrupt signals
     input  logic                  csr_mstatus_mie_i,
-    input  logic                  csr_msip_i,
-    input  logic                  csr_mtip_i,
-    input  logic                  csr_meip_i,
-    input  logic [14:0]           csr_mfip_i,
     input  logic                  irq_pending_i,
+    input  ibex_pkg::irqs_t       irqs_i,
     input  logic                  irq_nm_i,
     output logic                  nmi_mode_o,
 
@@ -146,7 +153,7 @@ module ibex_id_stage #(
   logic        wfi_insn_dec;
 
   logic        branch_in_dec;
-  logic        branch_set_n, branch_set_q;
+  logic        branch_set, branch_set_d;
   logic        jump_in_dec;
   logic        jump_set;
 
@@ -194,6 +201,7 @@ module ibex_id_stage #(
   // Multiplier Control
   logic        mult_en_id, mult_en_dec; // use integer multiplier
   logic        div_en_id, div_en_dec;   // use integer division or reminder
+  logic        multdiv_sel_dec;
   logic        multdiv_en_dec;
   md_op_e      multdiv_operator;
   logic [1:0]  multdiv_signed_mode;
@@ -314,8 +322,9 @@ module ibex_id_stage #(
   /////////////
 
   ibex_decoder #(
-      .RV32E ( RV32E ),
-      .RV32M ( RV32M )
+      .RV32E           ( RV32E           ),
+      .RV32M           ( RV32M           ),
+      .BranchTargetALU ( BranchTargetALU )
   ) decoder_i (
       .clk_i                           ( clk_i                ),
       .rst_ni                          ( rst_ni               ),
@@ -332,11 +341,13 @@ module ibex_id_stage #(
       // from IF-ID pipeline register
       .instr_new_i                     ( instr_new_i          ),
       .instr_rdata_i                   ( instr_rdata_i        ),
+      .instr_rdata_alu_i               ( instr_rdata_alu_i    ),
       .illegal_c_insn_i                ( illegal_c_insn_i     ),
 
       // immediates
       .imm_a_mux_sel_o                 ( imm_a_mux_sel        ),
       .imm_b_mux_sel_o                 ( imm_b_mux_sel_dec    ),
+      .jt_mux_sel_o                    ( jt_mux_sel_ex_o      ),
 
       .imm_i_type_o                    ( imm_i_type           ),
       .imm_s_type_o                    ( imm_s_type           ),
@@ -361,6 +372,7 @@ module ibex_id_stage #(
       // MULT & DIV
       .mult_en_o                       ( mult_en_dec          ),
       .div_en_o                        ( div_en_dec           ),
+      .multdiv_sel_o                   ( multdiv_sel_dec      ),
       .multdiv_operator_o              ( multdiv_operator     ),
       .multdiv_signed_mode_o           ( multdiv_signed_mode  ),
 
@@ -427,16 +439,13 @@ module ibex_id_stage #(
       .store_err_i                    ( lsu_store_err_i        ),
 
       // jump/branch control
-      .branch_set_i                   ( branch_set_q           ),
+      .branch_set_i                   ( branch_set             ),
       .jump_set_i                     ( jump_set               ),
 
       // interrupt signals
       .csr_mstatus_mie_i              ( csr_mstatus_mie_i      ),
-      .csr_msip_i                     ( csr_msip_i             ),
-      .csr_mtip_i                     ( csr_mtip_i             ),
-      .csr_meip_i                     ( csr_meip_i             ),
-      .csr_mfip_i                     ( csr_mfip_i             ),
       .irq_pending_i                  ( irq_pending_i          ),
+      .irqs_i                         ( irqs_i                 ),
       .irq_nm_i                       ( irq_nm_i               ),
       .nmi_mode_o                     ( nmi_mode_o             ),
 
@@ -503,8 +512,17 @@ module ibex_id_stage #(
   assign alu_operand_a_ex_o          = alu_operand_a;
   assign alu_operand_b_ex_o          = alu_operand_b;
 
+  if (BranchTargetALU) begin : g_bt_operand_imm
+    // Branch target ALU sign-extends and inserts bottom 0 bit so only want the
+    // 'raw' B-type immediate bits.
+    assign bt_operand_imm_o = imm_b_type[12:1];
+  end else begin : g_no_bt_operand_imm
+    assign bt_operand_imm_o = '0;
+  end
+
   assign mult_en_ex_o                = mult_en_id;
   assign div_en_ex_o                 = div_en_id;
+  assign multdiv_sel_ex_o            = multdiv_sel_dec;
 
   assign multdiv_operator_ex_o       = multdiv_operator;
   assign multdiv_signed_mode_ex_o    = multdiv_signed_mode;
@@ -518,14 +536,32 @@ module ibex_id_stage #(
   // ID-EX/WB Pipeline Register //
   ////////////////////////////////
 
+  if (BranchTargetALU) begin : g_branch_set_direct
+    // Branch set fed straight to controller with branch target ALU
+    // (condition pass/fail used same cycle as generated instruction request)
+    assign branch_set = branch_set_d;
+  end else begin : g_branch_set_flopped
+    // Branch set flopped without branch target ALU
+    // (condition pass/fail used next cycle where branch target is calculated)
+    logic branch_set_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        branch_set_q <= 1'b0;
+      end else begin
+        branch_set_q <= branch_set_d;
+      end
+    end
+
+    assign branch_set = branch_set_q;
+  end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : id_wb_pipeline_reg
     if (!rst_ni) begin
       id_wb_fsm_cs            <= IDLE;
-      branch_set_q            <= 1'b0;
       instr_multicycle_done_q <= 1'b0;
     end else begin
       id_wb_fsm_cs            <= id_wb_fsm_ns;
-      branch_set_q            <= branch_set_n;
       instr_multicycle_done_q <= instr_multicycle_done_n;
     end
   end
@@ -542,7 +578,7 @@ module ibex_id_stage #(
     stall_multdiv           = 1'b0;
     stall_jump              = 1'b0;
     stall_branch            = 1'b0;
-    branch_set_n            = 1'b0;
+    branch_set_d            = 1'b0;
     perf_branch_o           = 1'b0;
     instr_ret_o             = 1'b0;
 
@@ -570,7 +606,7 @@ module ibex_id_stage #(
               id_wb_fsm_ns            =  branch_decision_i ? WAIT_MULTICYCLE : IDLE;
               stall_branch            =  branch_decision_i;
               instr_multicycle_done_n = ~branch_decision_i;
-              branch_set_n            =  branch_decision_i;
+              branch_set_d            =  branch_decision_i;
               perf_branch_o           =  1'b1;
               instr_ret_o             = ~branch_decision_i;
             end
@@ -640,9 +676,17 @@ module ibex_id_stage #(
       (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_i),
       clk_i, !rst_ni)
 
+  // Instruction delivered to ID stage can not contain X.
+  `ASSERT(IbexIdInstrALUKnown,
+      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_alu_i),
+      clk_i, !rst_ni)
+
   // Multicycle enable signals must be unique.
   `ASSERT(IbexMulticycleEnableUnique,
       $onehot0({data_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}), clk_i, !rst_ni)
+
+  // Duplicated instruction flops must match
+  `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i == instr_rdata_alu_i, clk_i, !rst_ni);
 
   `ifdef CHECK_MISALIGNED
   `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i, clk_i, !rst_ni)

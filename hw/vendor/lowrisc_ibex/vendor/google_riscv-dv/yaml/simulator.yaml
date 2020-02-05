@@ -68,7 +68,6 @@
     cov_opts: >
       -do "coverage save -onexit <out>/cov.ucdb;"
 
-# TODO: Remove +DEPRECATED for dsim
 - tool: dsim
   env_var: DSIM,DSIM_LIB_PATH
   compile:
@@ -77,7 +76,6 @@
       - "<DSIM> -sv -work <out>/dsim
                 -genimage image
                 +incdir+$UVM_HOME/src
-                +define+DEPRECATED
                 $UVM_HOME/src/uvm_pkg.sv
                 +define+DSIM
                 +incdir+<setting>
