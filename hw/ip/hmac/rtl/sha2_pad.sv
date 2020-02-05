@@ -5,6 +5,8 @@
 // SHA-256 Padding logic
 //
 
+`include "prim_assert.sv"
+
 module sha2_pad import hmac_pkg::*; (
   input clk_i,
   input rst_ni,

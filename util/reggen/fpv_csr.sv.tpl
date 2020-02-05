@@ -14,6 +14,8 @@
 ${construct_classes(b)}
 % endfor
 
+`include "prim_assert.sv"
+
 // Block: ${block.name}
 module ${block.name}_csr_assert_fpv import tlul_pkg::*; (
   input clk_i,

@@ -20,6 +20,8 @@
 //   DReqDepth:     Same as HReqDepth but for device request FIFO.
 //   DRspDepth:     Same as HReqDepth but for device response FIFO.
 
+`include "prim_assert.sv"
+
 module tlul_socket_m1 #(
   parameter int unsigned  M         = 4,
   parameter bit [M-1:0]   HReqPass  = {M{1'b1}},

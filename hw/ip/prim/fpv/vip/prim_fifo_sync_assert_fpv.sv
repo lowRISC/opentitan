@@ -5,6 +5,8 @@
 // Assertions for prim_fifo_sync.
 // Intended to be used with a formal tool.
 
+`include "prim_assert.sv"
+
 module prim_fifo_sync_assert_fpv #(
   // can be desabled for deeper FIFOs
   parameter bit EnableDataCheck = 1'b1,

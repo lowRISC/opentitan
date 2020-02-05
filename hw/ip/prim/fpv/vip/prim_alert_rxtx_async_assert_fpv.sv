@@ -5,6 +5,8 @@
 // Assertions for alert sender/receiver pair for the asynchronous case.
 // Intended to use with a formal tool.
 
+`include "prim_assert.sv"
+
 module prim_alert_rxtx_async_assert_fpv (
   input        clk_i,
   input        rst_ni,

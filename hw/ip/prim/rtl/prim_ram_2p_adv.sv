@@ -14,6 +14,8 @@
 //   EnableInputPipeline:
 //   EnableOutputPipeline:
 
+`include "prim_assert.sv"
+
 module prim_ram_2p_adv #(
   parameter int Depth = 512,
   parameter int Width = 32,

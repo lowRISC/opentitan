@@ -10,6 +10,8 @@
 // https://github.com/pulp-platform/riscv-dbg to match the needs of
 // the TL-UL-based lowRISC chip design.
 
+`include "prim_assert.sv"
+
 module rv_dm #(
   parameter int                 NrHarts = 1,
   parameter logic [31:0]        IdcodeValue = 32'h 0000_0001

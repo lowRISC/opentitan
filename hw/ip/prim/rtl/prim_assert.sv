@@ -6,6 +6,9 @@
 //  - Provides default clk and rst options to simplify code
 //  - Provides boiler plate template for common assertions
 
+`ifndef PRIM_ASSERT_SV
+`define PRIM_ASSERT_SV
+
 `ifdef UVM
   // report assertion error with UVM if compiled
   package assert_rpt_pkg;
@@ -172,3 +175,5 @@
 `ifdef FPV_ON                                    \
    `COVER(__name, __prop, __clk, __rst)          \
 `endif
+
+`endif // PRIM_ASSERT_SV

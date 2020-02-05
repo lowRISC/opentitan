@@ -6,6 +6,8 @@
 // Note that only the mandatory pad attributes are tested here.
 
 
+`include "prim_assert.sv"
+
 `ifndef PRIM_DEFAULT_IMPL
   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif

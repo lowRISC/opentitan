@@ -4,6 +4,8 @@
 //
 // Description: I2C top level wrapper file
 
+`include "prim_assert.sv"
+
 module i2c (
   input                     clk_i,
   input                     rst_ni,

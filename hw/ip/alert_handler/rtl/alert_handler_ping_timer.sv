@@ -19,6 +19,8 @@
 // requested), the ping timer will also raise an internal alert.
 //
 
+`include "prim_assert.sv"
+
 module alert_handler_ping_timer import alert_pkg::*; #(
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA  = 1'b1,

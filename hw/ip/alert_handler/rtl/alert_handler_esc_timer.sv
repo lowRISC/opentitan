@@ -16,6 +16,8 @@
 // Note that escalation always takes precedence over the interrupt timeout.
 //
 
+`include "prim_assert.sv"
+
 module alert_handler_esc_timer import alert_pkg::*; (
   input                        clk_i,
   input                        rst_ni,

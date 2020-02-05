@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 
+`include "prim_assert.sv"
+
 module tlul_err import tlul_pkg::*; (
   input clk_i,
   input rst_ni,

@@ -5,6 +5,8 @@
 // Assertions for padring. Intended to use with a formal tool.
 // Note that only the mandatory pad attributes are tested here.
 
+`include "prim_assert.sv"
+
 module padring_assert_fpv (
   input                                 clk_pad_i,
   input                                 rst_pad_ni,

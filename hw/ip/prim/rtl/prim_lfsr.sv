@@ -24,6 +24,8 @@
 //       [2] https://users.ece.cmu.edu/~koopman/lfsr/
 //       [3] https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
 
+`include "prim_assert.sv"
+
 module prim_lfsr #(
   // Lfsr Type, can be FIB_XNOR or GAL_XOR
   parameter                    LfsrType     = "GAL_XOR",

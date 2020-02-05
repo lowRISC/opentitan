@@ -19,6 +19,8 @@
 //
 // See also: prim_esc_receiver, prim_diff_decode, alert_handler
 
+`include "prim_assert.sv"
+
 module prim_esc_sender import prim_pkg::*; (
   input           clk_i,
   input           rst_ni,

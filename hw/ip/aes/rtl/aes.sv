@@ -4,6 +4,8 @@
 //
 // AES top-level wrapper
 
+`include "prim_assert.sv"
+
 module aes #(
   parameter bit AES192Enable = 1,    // Can be 0 (disable), or 1 (enable).
   parameter     SBoxImpl     = "lut" // Can be "lut" (LUT-based SBox), or "canright".

@@ -5,6 +5,8 @@
 // Assertions for alert_handler_esc_timer.
 // Intended to be used with a formal tool.
 
+`include "prim_assert.sv"
+
 module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   input  clk_i,
   input  rst_ni,

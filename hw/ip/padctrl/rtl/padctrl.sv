@@ -7,6 +7,8 @@
 // to be consumed on the chiplevel.
 //
 
+`include "prim_assert.sv"
+
 `ifndef PRIM_DEFAULT_IMPL
   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif

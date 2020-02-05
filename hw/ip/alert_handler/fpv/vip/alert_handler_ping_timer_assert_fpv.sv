@@ -5,6 +5,8 @@
 // Assertions for ping timer in alert handler. Intended to use with
 // a formal tool.
 
+`include "prim_assert.sv"
+
 module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
   input                   clk_i,
   input                   rst_ni,

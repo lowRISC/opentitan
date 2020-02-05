@@ -4,6 +4,8 @@
 //
 // HMAC-SHA256
 
+`include "prim_assert.sv"
+
 module hmac
   import prim_pkg::*;
   import hmac_pkg::*;

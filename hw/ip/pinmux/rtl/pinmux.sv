@@ -5,6 +5,8 @@
 // Pinmux toplevel.
 //
 
+`include "prim_assert.sv"
+
 module pinmux (
   input                                         clk_i,
   input                                         rst_ni,

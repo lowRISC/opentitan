@@ -4,6 +4,8 @@
 //
 // Description: UART top level wrapper file
 
+`include "prim_assert.sv"
+
 module uart (
   input           clk_i,
   input           rst_ni,

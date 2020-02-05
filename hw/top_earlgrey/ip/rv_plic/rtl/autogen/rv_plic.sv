@@ -22,6 +22,8 @@
 // Verilog parameter
 //   MAX_PRIO: Maximum value of interrupt priority
 
+`include "prim_assert.sv"
+
 module rv_plic import rv_plic_reg_pkg::*; #(
   // derived parameter
   localparam int SRCW    = $clog2(NumSrc+1)

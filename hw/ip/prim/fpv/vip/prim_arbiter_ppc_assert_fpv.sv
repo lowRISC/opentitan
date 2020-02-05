@@ -5,6 +5,8 @@
 // Assertions for prim_arbiter_ppc.
 // Intended to be used with a formal tool.
 
+`include "prim_assert.sv"
+
 module prim_arbiter_ppc_assert_fpv #(
   parameter int unsigned N = 4,
   parameter int unsigned DW = 32 

@@ -6,6 +6,8 @@
 // to an TL-UL bus.  This instantiates two FIFOs, one for the request side,
 // and one for the response side.
 
+`include "prim_assert.sv"
+
 module tlul_fifo_async #(
   parameter int unsigned ReqDepth = 3,
   parameter int unsigned RspDepth = 3

@@ -4,6 +4,8 @@
 //
 // AES KeyExpand
 
+`include "prim_assert.sv"
+
 module aes_key_expand #(
   parameter bit AES192Enable = 1,
   parameter     SBoxImpl     = "lut"

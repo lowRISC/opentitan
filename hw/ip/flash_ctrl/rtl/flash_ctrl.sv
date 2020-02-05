@@ -6,6 +6,8 @@
 //
 //
 
+`include "prim_assert.sv"
+
 module flash_ctrl (
   input        clk_i,
   input        rst_ni,

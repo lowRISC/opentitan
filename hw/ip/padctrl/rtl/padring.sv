@@ -7,6 +7,8 @@
 // to the MIOs/DIOs and pad attributes coming from the padctrl block.
 //
 
+`include "prim_assert.sv"
+
 `ifndef PRIM_DEFAULT_IMPL
   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
