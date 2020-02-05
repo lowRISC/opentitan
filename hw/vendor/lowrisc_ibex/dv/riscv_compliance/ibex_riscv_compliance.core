@@ -29,6 +29,11 @@ parameters:
     paramtype: vlogparam
     default: 0
     description: Enable the E ISA extension (reduced register set) [0/1]
+  BranchTargetALU:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]
 
 targets:
   sim:
@@ -38,6 +43,7 @@ targets:
     parameters:
       - RV32M
       - RV32E
+      - BranchTargetALU
     toplevel: ibex_riscv_compliance
     tools:
       verilator:

@@ -90,7 +90,9 @@ package riscv_instr_pkg;
     RV32V,
     RV32B,
     RV64V,
-    RV64B
+    RV64B,
+    RV32X,
+    RV64X
   } riscv_instr_group_t;
 
   typedef enum {
@@ -491,6 +493,8 @@ package riscv_instr_pkg;
     SRET,
     WFI,
     SFENCE_VMA,
+    // Custom instructions
+    `include "isa/custom/riscv_custom_instr_enum.sv"
     // You can add other instructions here
     INVALID_INSTR
   } riscv_instr_name_t;
@@ -1076,37 +1080,33 @@ package riscv_instr_pkg;
     SYNCH, SYSTEM, COUNTER, CSR, CHANGELEVEL, TRAP, INTERRUPT, AMO
   };
 
-   `include "riscv_vector_cfg.sv"
-  `ifdef DEPRECATED
-    `define INSTR riscv_instr_base
-    `include "deprecated/riscv_instr_base.sv"
-    `include "deprecated/riscv_instr_gen_config.sv"
-  `else
-    `define INSTR riscv_instr
-    typedef class riscv_instr;
-    `include "riscv_instr_gen_config.sv"
-    `include "isa/riscv_instr.sv"
-    `include "isa/riscv_amo_instr.sv"
-    `include "isa/riscv_floating_point_instr.sv"
-    `include "isa/riscv_vector_instr.sv"
-    `include "isa/riscv_compressed_instr.sv"
-    `include "isa/rv32a_instr.sv"
-    `include "isa/rv32c_instr.sv"
-    `include "isa/rv32dc_instr.sv"
-    `include "isa/rv32d_instr.sv"
-    `include "isa/rv32fc_instr.sv"
-    `include "isa/rv32f_instr.sv"
-    `include "isa/rv32i_instr.sv"
-    `include "isa/rv32m_instr.sv"
-    `include "isa/rv64a_instr.sv"
-    `include "isa/rv64c_instr.sv"
-    `include "isa/rv64d_instr.sv"
-    `include "isa/rv64f_instr.sv"
-    `include "isa/rv64i_instr.sv"
-    `include "isa/rv64m_instr.sv"
-    `include "isa/rv128c_instr.sv"
-    `include "isa/rv32v_instr.sv"
-  `endif
+  `include "riscv_vector_cfg.sv"
+  typedef class riscv_instr;
+  `include "riscv_instr_gen_config.sv"
+  `include "isa/riscv_instr.sv"
+  `include "isa/riscv_amo_instr.sv"
+  `include "isa/riscv_floating_point_instr.sv"
+  `include "isa/riscv_vector_instr.sv"
+  `include "isa/riscv_compressed_instr.sv"
+  `include "isa/rv32a_instr.sv"
+  `include "isa/rv32c_instr.sv"
+  `include "isa/rv32dc_instr.sv"
+  `include "isa/rv32d_instr.sv"
+  `include "isa/rv32fc_instr.sv"
+  `include "isa/rv32f_instr.sv"
+  `include "isa/rv32i_instr.sv"
+  `include "isa/rv32m_instr.sv"
+  `include "isa/rv64a_instr.sv"
+  `include "isa/rv64c_instr.sv"
+  `include "isa/rv64d_instr.sv"
+  `include "isa/rv64f_instr.sv"
+  `include "isa/rv64i_instr.sv"
+  `include "isa/rv64m_instr.sv"
+  `include "isa/rv128c_instr.sv"
+  `include "isa/rv32v_instr.sv"
+  `include "isa/custom/riscv_custom_instr.sv"
+  `include "isa/custom/rv32x_instr.sv"
+  `include "isa/custom/rv64x_instr.sv"
 
   `include "riscv_pseudo_instr.sv"
   `include "riscv_illegal_instr.sv"
@@ -1120,20 +1120,11 @@ package riscv_instr_pkg;
   `include "riscv_callstack_gen.sv"
   `include "riscv_data_page_gen.sv"
 
-`ifdef DEPRECATED
-  `include "deprecated/riscv_rand_instr.sv"
-  `include "deprecated/riscv_instr_stream.sv"
-  `include "deprecated/riscv_loop_instr.sv"
-  `include "deprecated/riscv_directed_instr_lib.sv"
-  `include "deprecated/riscv_load_store_instr_lib.sv"
-  `include "deprecated/riscv_amo_instr_lib.sv"
-`else
   `include "riscv_instr_stream.sv"
   `include "riscv_loop_instr.sv"
   `include "riscv_directed_instr_lib.sv"
   `include "riscv_load_store_instr_lib.sv"
   `include "riscv_amo_instr_lib.sv"
-`endif
 
   `include "riscv_instr_sequence.sv"
   `include "riscv_asm_program_gen.sv"

@@ -14,7 +14,12 @@ if { $lr_synth_timing_run } {
   write_sdc_out $lr_synth_sdc_file_in $lr_synth_sdc_file_out
 }
 
-yosys "read -sv ./rtl/prim_clock_gating.v $lr_synth_out_dir/generated/*.v"
+yosys "read_verilog -sv ./rtl/prim_clock_gating.v $lr_synth_out_dir/generated/*.v"
+
+if { $lr_synth_ibex_branch_target_alu } {
+  yosys "chparam -set BranchTargetALU 1 ibex_core"
+}
+
 yosys "synth $flatten_opt -top $lr_synth_top_module"
 yosys "opt -purge"
 
@@ -23,8 +28,10 @@ yosys "write_verilog $lr_synth_pre_map_out"
 yosys "dfflibmap -liberty $lr_synth_cell_library_path"
 yosys "opt"
 
+set yosys_abc_clk_period [expr $lr_synth_clk_period - $lr_synth_abc_clk_uprate]
+
 if { $lr_synth_timing_run } {
-  yosys "abc -liberty $lr_synth_cell_library_path -constr $lr_synth_sdc_file_out -D $lr_synth_clk_period"
+  yosys "abc -liberty $lr_synth_cell_library_path -constr $lr_synth_sdc_file_out -D $yosys_abc_clk_period"
 } else {
   yosys "abc -liberty $lr_synth_cell_library_path"
 }

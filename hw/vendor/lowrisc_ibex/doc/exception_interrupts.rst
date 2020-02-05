@@ -5,8 +5,10 @@ Exceptions and Interrupts
 
 Ibex implements trap handling for interrupts and exceptions according to the RISC-V Privileged Specification, version 1.11.
 
+When entering an interrupt/exception handler, the core sets the ``mepc`` CSR to the current program counter and saves ``mstatus``.MIE to ``mstatus``.MPIE.
 All exceptions cause the core to jump to the base address of the vector table in the ``mtvec`` CSR.
 Interrupts are handled in vectored mode, i.e., the core jumps to the base address plus four times the interrupt ID.
+Upon executing an MRET instruction, the core jumps to the program counter previously saved in the ``mepc`` CSR and restores ``mstatus``.MPIE to ``mstatus``.MIE.
 
 The base address of the vector table is initialized to the boot address (must be aligned to 256 bytes, i.e., its least significant byte must be 0x00) when the core is booting.
 The base address can be changed after bootup by writing to the ``mtvec`` CSR.
@@ -47,10 +49,13 @@ After reset, all interrupts are disabled.
 To enable interrupts, both the global interrupt enable (MIE) bit in the ``mstatus`` CSR and the corresponding individual interrupt enable bit in the ``mie`` CSR need to be set.
 For more information, see the :ref:`cs-registers` documentation.
 
-If multiple interrupts are pending, the highest priority is given to the interrupt with the highest ID.
+If multiple interrupts are pending, they are handled in the priority order defined by the RISC-V Privileged Specification, version 1.11 (see Machine Interrupt Registers, Section 3.1.9).
+The highest priority is given to the interrupt with the highest ID, except for timer interrupts, which have the lowest priority.
 
 The NMI is enabled independent of the values in the ``mstatus`` and ``mie`` CSRs, and it is not visible through the ``mip`` CSR.
 It has interrupt ID 31, i.e., it has the highest priority of all interrupts and the core jumps to the trap-handler base address (in ``mtvec``) plus 0x7C to handle the NMI.
+When handling the NMI, all interrupts including the NMI are ignored.
+Nested NMIs are not supported.
 
 All interrupt lines are level-sensitive.
 It is assumed that the interrupt handler signals completion of the handling routine to the interrupt source, e.g., through a memory-mapped register, which then deasserts the corresponding interrupt line.
@@ -94,13 +99,51 @@ Ibex can trigger an exception due to the following exception causes:
 The illegal instruction exception, instruction access fault, LSU error exceptions and ECALL instruction exceptions cannot be disabled and are always active.
 
 
-Handling
---------
+Nested Interrupt/Exception Handling
+-----------------------------------
 
-Ibex does support nested interrupt/exception handling.
-Exceptions inside interrupt/exception handlers cause another exception.
-However, exceptions during the critical part of your exception handlers, i.e. before having saved the ``mepc`` and ``mstatus``, will cause those CSRs to be overwritten.
-Interrupts during interrupt/exception handlers are thus disabled by default, but can be explicitly enabled if desired.
+Ibex does support nested interrupt/exception handling in software.
+The hardware automatically disables interrupts upon entering an interrupt/exception handler.
+Otherwise, interrupts/exceptions during the critical part of the handler, i.e. before software has saved the ``mepc`` and ``mstatus`` CSRs, would cause those CSRs to be overwritten.
+If desired, software can explicitly enable interrupts by setting ``mstatus``.MIE to 1'b1 from within the handler.
+However, software should only do this after saving ``mepc`` and ``mstatus``.
+There is no limit on the maximum number of nested interrupts.
+Note that, after enabling interrupts by setting ``mstatus``.MIE to 1'b1, the current handler will be interrupted also by lower priority interrupts.
+To allow higher priority interrupts only, the handler must configure ``mie`` accordingly.
 
-When entering an interrupt/exception handler, the core sets ``mepc`` to the current program counter and saves ``mstatus``.MIE to ``mstatus``.MPIE.
-Upon executing an MRET instruction, the core jumps to the program counter saved in the ``mepc`` CSR and restores ``mstatus``.MPIE to ``mstatus``.MIE.
+The following pseudo-code snippet visualizes how to perform nested interrupt handling in software.
+
+.. code-block:: c
+   :linenos:
+
+   isr_handle_nested_interrupts(id) {
+     // Save mpec and mstatus to stack
+     mepc_bak = mepc;
+     mstatus_bak = mstatus;
+
+     // Save mie to stack (optional)
+     mie_bak = mie;
+
+     // Keep lower-priority interrupts disabled (optional)
+     mie = ~((1 << (id + 1)) - 1);
+
+     // Re-enable interrupts
+     mstatus.MIE = 1;
+
+     // Handle interrupt
+     // This code block can be interrupted by other interrupts.
+     // ...
+
+     // Restore mstatus (this disables interrupts) and mepc
+     mstatus = mstatus_bak;
+     mepc = mepc_bak;
+
+     // Restore mie (optional)
+     mie = mie_bak;
+   }
+
+Nesting of interrupts/exceptions in hardware is not supported.
+The purpose of the nonstandard ``mstack`` CSRs in Ibex is only to support recoverable NMIs.
+These CSRs are not accessible by software.
+While handling an NMI, all interrupts are ignored independent of ``mstatus``.MIE.
+Nested NMIs are not supported.

@@ -4,4 +4,5 @@ Sphinx
 Pallets-Sphinx-Themes
 sphinxcontrib-log-cabinet
 sphinx-issues
+sphinx_rtd_theme
 rst2pdf

@@ -51,14 +51,17 @@ module bus #(
   input        [AddressWidth-1:0] cfg_device_addr_mask [NrDevices]
 );
 
-  logic [$clog2(NrHosts)-1:0] host_sel_req, host_sel_resp;
-  logic [$clog2(NrDevices)-1:0] device_sel_req, device_sel_resp;
+  localparam int unsigned NumBitsHostSel = NrHosts > 1 ? $clog2(NrHosts) : 1;
+  localparam int unsigned NumBitsDeviceSel = NrDevices > 1 ? $clog2(NrDevices) : 1;
+
+  logic [NumBitsHostSel-1:0] host_sel_req, host_sel_resp;
+  logic [NumBitsDeviceSel-1:0] device_sel_req, device_sel_resp;
 
   // Master select prio arbiter
   always_comb begin
     for (integer host = NrHosts - 1; host >= 0; host = host - 1) begin
       if (host_req_i[host]) begin
-        host_sel_req = $clog2(NrHosts)'(host);
+        host_sel_req = NumBitsHostSel'(host);
       end
     end
   end
@@ -68,7 +71,7 @@ module bus #(
     for (integer device = 0; device < NrDevices; device = device + 1) begin
       if ((host_addr_i[host_sel_req] & cfg_device_addr_mask[device])
           == cfg_device_addr_base[device]) begin
-        device_sel_req = $clog2(NrDevices)'(device);
+        device_sel_req = NumBitsDeviceSel'(device);
       end
     end
   end
@@ -86,7 +89,7 @@ module bus #(
 
   always_comb begin
     for (integer device = 0; device < NrDevices; device = device + 1) begin
-      if ($clog2(NrDevices)'(device) == device_sel_req) begin
+      if (NumBitsDeviceSel'(device) == device_sel_req) begin
         device_req_o[device]   = host_req_i[host_sel_req];
         device_we_o[device]    = host_we_i[host_sel_req];
         device_addr_o[device]  = host_addr_i[host_sel_req];
@@ -105,8 +108,7 @@ module bus #(
   always_comb begin
     for (integer host = 0; host < NrHosts; host = host + 1) begin
       host_gnt_o[host] = 1'b0;
-
-      if ($clog2(NrHosts)'(host) == host_sel_resp) begin
+      if (NumBitsHostSel'(host) == host_sel_resp) begin
         host_rvalid_o[host] = device_rvalid_i[device_sel_resp];
         host_err_o[host]    = device_err_i[device_sel_resp];
         host_rdata_o[host]  = device_rdata_i[device_sel_resp];

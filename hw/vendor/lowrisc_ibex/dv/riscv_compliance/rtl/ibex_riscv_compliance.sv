@@ -15,8 +15,9 @@ module ibex_riscv_compliance (
   input IO_RST_N
 );
 
-  parameter bit RV32E = 0;
-  parameter bit RV32M = 1;
+  parameter bit RV32E           = 0;
+  parameter bit RV32M           = 1;
+  parameter bit BranchTargetALU = 0;
 
   logic clk_sys, rst_sys_n;
 
@@ -104,7 +105,8 @@ module ibex_riscv_compliance (
       .DmHaltAddr(32'h00000000),
       .DmExceptionAddr(32'h00000000),
       .RV32E(RV32E),
-      .RV32M(RV32M)
+      .RV32M(RV32M),
+      .BranchTargetALU(BranchTargetALU)
     ) u_core (
       .clk_i                 (clk_sys),
       .rst_ni                (rst_sys_n),

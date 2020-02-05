@@ -66,7 +66,8 @@ How to run RISC-V Compliance on Ibex
    export RISCV_TARGET=ibex
 
    # Note: rv32imc does not include the I and M extension tests
-   make RISCV_ISA=rv32i && make RISCV_ISA=rv32im && make RISCV_ISA=rv32imc
+   make RISCV_ISA=rv32i && make RISCV_ISA=rv32im && make RISCV_ISA=rv32imc && \
+      make RISCV_ISA=rv32Zicsr && make RISCV_ISA=rv32Zifencei
    ```
 
 Compliance test suite system

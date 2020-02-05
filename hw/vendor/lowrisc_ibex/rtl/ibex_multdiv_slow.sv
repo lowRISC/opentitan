@@ -8,6 +8,9 @@
  *
  * Baugh-Wooley multiplier and Long Division
  */
+
+`include "prim_assert.sv"
+
 module ibex_multdiv_slow (
     input  logic             clk_i,
     input  logic             rst_ni,

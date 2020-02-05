@@ -9,6 +9,9 @@
  * Control and Status Registers (CSRs) following the RISC-V Privileged
  * Specification, draft version 1.11
  */
+
+`include "prim_assert.sv"
+
 module ibex_cs_registers #(
     parameter bit          DbgTriggerEn     = 0,
     parameter int unsigned MHPMCounterNum   = 8,
@@ -49,12 +52,9 @@ module ibex_cs_registers #(
     input  logic                 irq_timer_i,
     input  logic                 irq_external_i,
     input  logic [14:0]          irq_fast_i,
-    output logic                 irq_pending_o,          // interupt request pending
     input  logic                 nmi_mode_i,
-    output logic                 csr_msip_o,             // software interrupt pending
-    output logic                 csr_mtip_o,             // timer interrupt pending
-    output logic                 csr_meip_o,             // external interrupt pending
-    output logic [14:0]          csr_mfip_o,             // fast interrupt pending
+    output logic                 irq_pending_o,          // interrupt request pending
+    output ibex_pkg::irqs_t      irqs_o,                 // interrupt requests qualified with mie
     output logic                 csr_mstatus_mie_o,
     output logic [31:0]          csr_mepc_o,
 
@@ -131,15 +131,6 @@ module ibex_cs_registers #(
     priv_lvl_e mpp;
   } StatusStk_t;
 
-  // struct for mip/mie CSRs
-  typedef struct packed {
-    logic        irq_software;
-    logic        irq_timer;
-    logic        irq_external;
-    logic [14:0] irq_fast; // 15 fast interrupts,
-                           // one interrupt is reserved for NMI (not visible through mip/mie)
-  } Interrupts_t;
-
   typedef struct packed {
       x_debug_ver_e xdebugver;
       logic [11:0]  zero2;
@@ -164,13 +155,13 @@ module ibex_cs_registers #(
   // CSRs
   priv_lvl_e   priv_lvl_q, priv_lvl_d;
   Status_t     mstatus_q, mstatus_d;
-  Interrupts_t mie_q, mie_d;
+  irqs_t       mie_q, mie_d;
   logic [31:0] mscratch_q, mscratch_d;
   logic [31:0] mepc_q, mepc_d;
   logic  [5:0] mcause_q, mcause_d;
   logic [31:0] mtval_q, mtval_d;
   logic [31:0] mtvec_q, mtvec_d;
-  Interrupts_t mip;
+  irqs_t       mip;
   Dcsr_t       dcsr_q, dcsr_d;
   logic [31:0] depc_q, depc_d;
   logic [31:0] dscratch0_q, dscratch0_d;
@@ -239,10 +230,10 @@ module ibex_cs_registers #(
   assign illegal_csr_insn_o = csr_access_i & (illegal_csr | illegal_csr_write | illegal_csr_priv);
 
   // mip CSR is purely combinational - must be able to re-enable the clock upon WFI
-  assign mip.irq_software = irq_software_i & mie_q.irq_software;
-  assign mip.irq_timer    = irq_timer_i    & mie_q.irq_timer;
-  assign mip.irq_external = irq_external_i & mie_q.irq_external;
-  assign mip.irq_fast     = irq_fast_i     & mie_q.irq_fast;
+  assign mip.irq_software = irq_software_i;
+  assign mip.irq_timer    = irq_timer_i;
+  assign mip.irq_external = irq_external_i;
+  assign mip.irq_fast     = irq_fast_i;
 
   // read logic
   always_comb begin
@@ -629,11 +620,6 @@ module ibex_cs_registers #(
   assign csr_rdata_o = csr_rdata_int;
 
   // directly output some registers
-  assign csr_msip_o  = mip.irq_software;
-  assign csr_mtip_o  = mip.irq_timer;
-  assign csr_meip_o  = mip.irq_external;
-  assign csr_mfip_o  = mip.irq_fast;
-
   assign csr_mepc_o  = mepc_q;
   assign csr_depc_o  = depc_q;
   assign csr_mtvec_o = mtvec_q;
@@ -644,7 +630,10 @@ module ibex_cs_registers #(
   assign debug_ebreakm_o     = dcsr_q.ebreakm;
   assign debug_ebreaku_o     = dcsr_q.ebreaku;
 
-  assign irq_pending_o = csr_msip_o | csr_mtip_o | csr_meip_o | (|csr_mfip_o);
+  // Qualify incoming interrupt requests in mip CSR with mie CSR for controller and to re-enable
+  // clock upon WFI (must be purely combinational).
+  assign irqs_o        = mip & mie_q;
+  assign irq_pending_o = |irqs_o;
 
   // actual registers
   always_ff @(posedge clk_i or negedge rst_ni) begin

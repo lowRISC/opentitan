@@ -11,6 +11,9 @@
  *
  * 16x16 kernel multiplier and Long Division
  */
+
+`include "prim_assert.sv"
+
 module ibex_multdiv_fast (
     input  logic             clk_i,
     input  logic             rst_ni,

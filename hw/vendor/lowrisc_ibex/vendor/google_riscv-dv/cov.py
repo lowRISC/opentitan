@@ -53,7 +53,7 @@ def build_cov(out, cfg, cwd, opts_vec, opts_cov):
     build_cmd += (" --custom_target %s" % argv.custom_target)
   if argv.stop_on_first_error:
     build_cmd += (" --stop_on_first_error")
-  run_cmd(build_cmd)
+  run_cmd(build_cmd, debug_cmd = argv.debug)
 
 def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
   """Simulation the coverage collection
@@ -101,7 +101,7 @@ def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
       sim_cmd += ("  --log_suffix _%d" % file_idx)
       if argv.lsf_cmd == "":
         logging.info("Processing batch %0d/%0d" % (file_idx+1, batch_cnt))
-        run_cmd(sim_cmd)
+        run_cmd(sim_cmd, debug_cmd = argv.debug)
       else:
         sim_cmd += (" --lsf_cmd \"%s\"" % argv.lsf_cmd)
         sim_cmd_list.append(sim_cmd)
@@ -127,8 +127,9 @@ def collect_cov(out, cfg, cwd):
     sys.exit(RET_FAIL)
   logging.info("Processing trace log under %s" % argv.dir)
   if not os.path.isdir(argv.dir) or not os.listdir(argv.dir):
-    logging.error("Cannot find %s directory, or it is empty", argv.dir)
-    sys.exit(RET_FAIL)
+    if not argv.debug:
+      logging.error("Cannot find %s directory, or it is empty", argv.dir)
+      sys.exit(RET_FAIL)
   if argv.core:
     """
     If functional coverage is being collected from an RTL core implementation,
@@ -239,6 +240,8 @@ def setup_parser():
                       help="Controlling coverage coverpoints")
   parser.add_argument("--exp", action="store_true", default=False,
                       help="Run generator with experimental features")
+  parser.add_argument("-d", "--debug", type=str, default="",
+                      help="Generate debug command log file")
   return parser
 
 def load_config(args, cwd):
@@ -250,6 +253,8 @@ def load_config(args, cwd):
   Returns:
       Loaded configuration dictionary.
   """
+  if args.debug:
+    args.debug = open(args.debug, "w")
   if args.verbose:
     args.opts += "-v"
 

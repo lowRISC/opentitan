@@ -422,7 +422,7 @@ bool VerilatorMemUtil::WriteElfToMem(const svScope &scope,
     retcode = false;
     goto ret;
   }
-  for (int i = 0; i < len_bytes / 4; ++i) {
+  for (int i = 0; i < (len_bytes + 3) / 4; ++i) {
     if (!simutil_verilator_set_mem(i, (svLogicVecVal *)&buf[4 * i])) {
       std::cerr << "ERROR: Could not set memory byte: " << i * 4 << "/"
                 << len_bytes << "" << std::endl;

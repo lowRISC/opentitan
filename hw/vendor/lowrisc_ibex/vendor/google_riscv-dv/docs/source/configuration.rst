@@ -108,7 +108,7 @@ Test list in `YAML format`_
       gen_test: riscv_instr_base_test
       rtl_test: core_base_test
 
-.. _YAML format: https://github.com/google/riscv-dv/blob/master/yaml/testlist.yaml
+.. _YAML format: https://github.com/google/riscv-dv/blob/master/yaml/base_testlist.yaml
 
 .. note:: To automatically generate CSR tests without having to explicitly run the
     script, include `riscv_csr_test` in the testlist as shown in the example YAML

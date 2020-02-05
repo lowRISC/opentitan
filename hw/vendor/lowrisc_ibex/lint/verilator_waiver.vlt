@@ -19,13 +19,9 @@ lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
 lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
 lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_fpga.sv"
 
-// Bits of signal are not used: boot_addr_i[7:0]
-// Boot address is 256B aligned, cleaner to pass all bits in
-lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 40
-
 // Bits of signal are not used: fetch_addr_n[0]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 80
+lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 85
 
 // Bits of signal are not used: shift_right_result_ext[32]
 // cleaner to write all bits even if not all are used
@@ -33,15 +29,15 @@ lint_off -msg UNUSED -file "*/rtl/ibex_alu.sv" -lines 104
 
 // Bits of signal are not used: alu_adder_ext_i[0]
 // Bottom bit is round, not needed
-lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 23
+lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 26
 
 // Bits of signal are not used: mac_res_ext[34]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 48
+lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 51
 
 // Bits of signal are not used: res_adder_h[32]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 68
+lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 71
 
 // Signal is not used: test_en_i
 // testability signal
@@ -50,18 +46,22 @@ lint_off -msg UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -lines 22
 
 // Signal is not used: clk_i
 // leaving clk and reset connected in-case we want to add assertions
-lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 15
-lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 14
-lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 21
+lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 17
+lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 25
 
 // Signal is not used: rst_ni
 // leaving clk and reset connected in-case we want to add assertions
-lint_off -msg UNUSED -file "*/rtl/ibex_pmp.sv" -lines 16
-lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 15
-lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 22
+lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 18
+lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 26
 lint_off -msg UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -lines 20
 
 // Signal unoptimizable: Feedback to clock or circular logic:
 // ibex_core.cs_registers_i.mie_q
 // Issue lowrisc/ibex#212
-lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 167
+lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 158
+
+// Bits of signal are not used: instr_alu[24:15,11:7]
+// instr flops are duplicated to reduce fan-out, neater to just leave unused
+// bits in fully duplicated instr for synthesiser to optimise out rather than
+// explicitly flopping only the bits we want.
+lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 106

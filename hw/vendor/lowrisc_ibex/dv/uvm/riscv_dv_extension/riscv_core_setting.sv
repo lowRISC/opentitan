@@ -80,7 +80,7 @@ int kernel_program_instr_cnt = 400;
 // ----------------------------------------------------------------------------
 
 // Implemented previlieged CSR list
-parameter privileged_reg_t implemented_csr[] = {
+const privileged_reg_t implemented_csr[] = {
     // Machine mode mode CSR
     MVENDORID,        // Vendor ID
     MARCHID,          // Architecture ID
@@ -151,14 +151,12 @@ parameter privileged_reg_t implemented_csr[] = {
 // --------------------------------------------------------------------------
 // Supported interrupt/exception setting, used for functional coverage
 // --------------------------------------------------------------------------
-
-parameter interrupt_cause_t implemented_interrupt[] = {
+const interrupt_cause_t implemented_interrupt[] = {
   M_SOFTWARE_INTR,
   M_TIMER_INTR,
   M_EXTERNAL_INTR
 };
-
-parameter exception_cause_t implemented_exception[] = {
+const exception_cause_t implemented_exception[] = {
   INSTRUCTION_ACCESS_FAULT,
   ILLEGAL_INSTRUCTION,
   BREAKPOINT,

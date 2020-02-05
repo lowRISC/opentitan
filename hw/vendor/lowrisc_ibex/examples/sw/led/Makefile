@@ -10,7 +10,7 @@ ARCH = rv32imc
 # ARCH = rv32im # to disable compressed instructions
 SRCS = $(PROGRAM).c
 
-CC = /tools/riscv/bin/riscv32-unknown-elf-gcc
+CC = riscv32-unknown-elf-gcc
 
 OBJCOPY ?= $(subst gcc,objcopy,$(wordlist 1,1,$(CC)))
 OBJDUMP ?= $(subst gcc,objdump,$(wordlist 1,1,$(CC)))

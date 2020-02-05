@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Example memory mapped timer
+
+`include "prim_assert.sv"
+
 module timer #(
   // Bus data width (must be 32)
   parameter int unsigned DataWidth    = 32,

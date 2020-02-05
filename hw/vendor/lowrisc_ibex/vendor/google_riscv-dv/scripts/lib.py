@@ -65,7 +65,7 @@ def read_yaml(yaml_file):
   return yaml_data
 
 
-def get_env_var(var):
+def get_env_var(var, debug_cmd = None):
   """Get the value of environment variable
 
   Args:
@@ -77,8 +77,11 @@ def get_env_var(var):
   try:
     val = os.environ[var]
   except KeyError:
-    logging.warning("Please set the environment variable %0s" % var)
-    sys.exit(RET_FAIL)
+    if debug_cmd:
+      return var
+    else:
+      logging.warning("Please set the environment variable %0s" % var)
+      sys.exit(RET_FAIL)
   return val
 
 
@@ -96,7 +99,7 @@ def get_seed(seed):
   return random.getrandbits(32)
 
 
-def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True):
+def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True, debug_cmd = None):
   """Run a command and return output
 
   Args:
@@ -106,6 +109,10 @@ def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True):
     command output
   """
   logging.debug(cmd)
+  if debug_cmd:
+      debug_cmd.write(cmd)
+      debug_cmd.write("\n\n")
+      return
   try:
     ps = subprocess.Popen("exec " + cmd,
                           shell=True,
@@ -135,7 +142,8 @@ def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True):
   return output
 
 
-def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0, check_return_code = True):
+def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0,
+                     check_return_code = True, debug_cmd = None):
   """Run a list of commands in parallel
 
   Args:
@@ -144,6 +152,11 @@ def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0, check_return_
   Returns:
     command output
   """
+  if debug_cmd:
+    for cmd in cmd_list:
+      debug_cmd.write(cmd)
+      debug_cmd.write("\n\n")
+    return
   children = []
   for cmd in cmd_list:
     ps = subprocess.Popen("exec " + cmd,
@@ -174,12 +187,16 @@ def run_parallel_cmd(cmd_list, timeout_s = 999, exit_on_error = 0, check_return_
     os.system("stty sane")
     logging.debug(output)
 
-def run_cmd_output(cmd):
+def run_cmd_output(cmd, debug_cmd = None):
   """Run a command and return output
   Args:
     cmd          : Command line to execute
   """
   logging.debug(" ".join(cmd))
+  if debug_cmd:
+      debug_cmd.write(" ".join(cmd))
+      debug_cmd.write("\n\n")
+      return
   try:
     output = subprocess.check_output(cmd)
   except subprocess.CalledProcessError as exc:

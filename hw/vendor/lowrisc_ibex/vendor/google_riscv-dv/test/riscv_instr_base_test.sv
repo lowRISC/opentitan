@@ -80,17 +80,10 @@ class riscv_instr_base_test extends uvm_test;
 
   task run_phase(uvm_phase phase);
     int fd;
-    `ifdef DEPRECATED
-      cfg.build_instruction_template();
-    `endif
     for(int i = 0; i < cfg.num_of_tests; i++) begin
       string test_name;
       randomize_cfg();
-      `ifdef DEPRECATED
-        cfg.build_instruction_list();
-      `else
-        riscv_instr::create_instr_list(cfg);
-      `endif
+      riscv_instr::create_instr_list(cfg);
       asm_gen = riscv_asm_program_gen::type_id::create("asm_gen", , `gfn);
       asm_gen.cfg = cfg;
       asm_gen.get_directed_instr_stream();

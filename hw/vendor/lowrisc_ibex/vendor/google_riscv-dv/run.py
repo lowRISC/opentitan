@@ -33,7 +33,7 @@ from types import SimpleNamespace
 
 LOGGER = logging.getLogger()
 
-def get_generator_cmd(simulator, simulator_yaml, cov, exp):
+def get_generator_cmd(simulator, simulator_yaml, cov, exp, debug_cmd):
   """ Setup the compile and simulation command for the generator
 
   Args:
@@ -41,6 +41,7 @@ def get_generator_cmd(simulator, simulator_yaml, cov, exp):
     simulator_yaml : RTL simulator configuration file in YAML format
     cov            : Enable functional coverage
     exp            : Use experimental version
+    debug_cmd      : Produce the debug cmd log without running
 
   Returns:
     compile_cmd    : RTL simulator command to compile the instruction generator
@@ -69,14 +70,15 @@ def get_generator_cmd(simulator, simulator_yaml, cov, exp):
       if 'env_var' in entry:
         for env_var in entry['env_var'].split(','):
           for i in range(len(compile_cmd)):
-            compile_cmd[i] = re.sub("<"+env_var+">", get_env_var(env_var), compile_cmd[i])
-          sim_cmd = re.sub("<"+env_var+">", get_env_var(env_var), sim_cmd)
+            compile_cmd[i] = re.sub("<"+env_var+">", get_env_var(env_var, debug_cmd = debug_cmd),
+                                    compile_cmd[i])
+          sim_cmd = re.sub("<"+env_var+">", get_env_var(env_var, debug_cmd = debug_cmd), sim_cmd)
       return compile_cmd, sim_cmd
   logging.error("Cannot find RTL simulator %0s" % simulator)
   sys.exit(RET_FAIL)
 
 
-def parse_iss_yaml(iss, iss_yaml, isa, setting_dir):
+def parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd):
   """Parse ISS YAML to get the simulation command
 
   Args:
@@ -84,6 +86,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, setting_dir):
     iss_yaml    : ISS configuration file in YAML format
     isa         : ISA variant passed to the ISS
     setting_dir : Generator setting directory
+    debug_cmd   : Produce the debug cmd log without running
 
   Returns:
     cmd         : ISS run command
@@ -95,7 +98,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, setting_dir):
     if entry['iss'] == iss:
       logging.info("Found matching ISS: %s" % entry['iss'])
       cmd = entry['cmd'].rstrip()
-      cmd = re.sub("\<path_var\>", get_env_var(entry['path_var']), cmd)
+      cmd = re.sub("\<path_var\>", get_env_var(entry['path_var'], debug_cmd = debug_cmd), cmd)
       m = re.search(r"rv(?P<xlen>[0-9]+?)(?P<variant>[a-z]+?)$", isa)
       if m:
         cmd = re.sub("\<xlen\>", m.group('xlen'), cmd)
@@ -130,7 +133,9 @@ def get_iss_cmd(base_cmd, elf, log):
   cmd += (" &> %s" % log)
   return cmd
 
-def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir, cmp_opts, output_dir):
+
+def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir,
+               cmp_opts, output_dir, debug_cmd):
   """Compile the instruction generator
 
   Args:
@@ -141,6 +146,7 @@ def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir, cmp_opts,
     ext_dir             : User extension directory
     cmd_opts            : Compile options for the generator
     output_dir          : Output directory of the ELF files
+    debug_cmd           : Produce the debug cmd log without running
   """
   if (not((len(test_list) == 1) and (test_list[0]['test'] == 'riscv_csr_test'))):
     logging.info("Building RISC-V instruction generator")
@@ -155,10 +161,11 @@ def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir, cmp_opts,
       cmd = re.sub("<cmp_opts>", cmp_opts, cmd)
 
       logging.debug("Compile command: %s" % cmd)
-      run_cmd(cmd)
+      run_cmd(cmd, debug_cmd = debug_cmd)
+
 
 def run_csr_test(cmd_list, cwd, csr_file, isa, iterations, lsf_cmd,
-                 end_signature_addr, timeout_s, output_dir):
+                 end_signature_addr, timeout_s, output_dir, debug_cmd):
   """Run CSR test
      It calls a separate python script to generate directed CSR test code,
      located at scripts/gen_csr_test.py.
@@ -172,11 +179,12 @@ def run_csr_test(cmd_list, cwd, csr_file, isa, iterations, lsf_cmd,
   if lsf_cmd:
     cmd_list.append(cmd)
   else:
-    run_cmd(cmd, timeout_s)
+    run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
+
 
 def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
                 isa, end_signature_addr, lsf_cmd, timeout_s, log_suffix,
-                batch_size, output_dir, verbose, check_return_code):
+                batch_size, output_dir, verbose, check_return_code, debug_cmd):
   """Run  the instruction generator
 
   Args:
@@ -195,6 +203,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
     batch_size            : Number of tests to generate per run
     output_dir            : Output directory of the ELF files
     check_return_code     : Check return code of the command
+    debug_cmd             : Produce the debug cmd log without running
   """
   cmd_list = []
   sim_cmd = re.sub("<out>", os.path.abspath(output_dir), sim_cmd)
@@ -212,7 +221,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
       # Running a CSR test
       if test['test'] == 'riscv_csr_test':
         run_csr_test(cmd_list, cwd, csr_file, isa, iterations, lsf_cmd,
-                     end_signature_addr, timeout_s, output_dir)
+                     end_signature_addr, timeout_s, output_dir, debug_cmd)
       else:
         batch_cnt = 1
         if batch_size > 0:
@@ -247,12 +256,13 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
           else:
             logging.info("Running %s, batch %0d/%0d, test_cnt:%0d" %
                          (test['test'], i+1, batch_cnt, test_cnt))
-            run_cmd(cmd, timeout_s, check_return_code = check_return_code)
+            run_cmd(cmd, timeout_s, check_return_code = check_return_code, debug_cmd = debug_cmd)
   if sim_seed:
     with open(('%s/seed.yaml' % os.path.abspath(output_dir)) , 'w') as outfile:
       yaml.dump(sim_seed, outfile, default_flow_style=False)
   if lsf_cmd:
-    run_parallel_cmd(cmd_list, timeout_s, check_return_code = check_return_code)
+    run_parallel_cmd(cmd_list, timeout_s, check_return_code = check_return_code,
+                     debug_cmd = debug_cmd)
 
 
 def gen(test_list, cfg, output_dir, cwd):
@@ -281,19 +291,20 @@ def gen(test_list, cfg, output_dir, cwd):
   # Setup the compile and simulation command for the generator
   compile_cmd = []
   sim_cmd = ""
-  compile_cmd, sim_cmd = get_generator_cmd(argv.simulator, argv.simulator_yaml, argv.cov, argv.exp);
+  compile_cmd, sim_cmd = get_generator_cmd(argv.simulator, argv.simulator_yaml, argv.cov,
+                                           argv.exp, argv.debug);
   # Compile the instruction generator
   if not argv.so:
     do_compile(compile_cmd, test_list, argv.core_setting_dir, cwd, argv.user_extension_dir,
-               argv.cmp_opts, output_dir)
+               argv.cmp_opts, output_dir, argv.debug)
   # Run the instruction generator
   if not argv.co:
     do_simulate(sim_cmd, test_list, cwd, argv.sim_opts, argv.seed_yaml, argv.seed, argv.csr_yaml,
                 argv.isa, argv.end_signature_addr, argv.lsf_cmd, argv.gen_timeout, argv.log_suffix,
-                argv.batch_size, output_dir, argv.verbose, check_return_code)
+                argv.batch_size, output_dir, argv.verbose, check_return_code, argv.debug)
 
 
-def gcc_compile(test_list, output_dir, isa, mabi, opts):
+def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
   """Use riscv gcc toolchain to compile the assembly program
 
   Args:
@@ -301,6 +312,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts):
     output_dir : Output directory of the ELF files
     isa        : ISA variant passed to GCC
     mabi       : MABI variant passed to GCC
+    debug_cmd  : Produce the debug cmd log without running
   """
   cwd = os.path.dirname(os.path.realpath(__file__))
   for test in test_list:
@@ -312,7 +324,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts):
       elf = prefix + ".o"
       binary = prefix + ".bin"
       test_isa = isa
-      if not os.path.isfile(asm):
+      if not os.path.isfile(asm) and not debug_cmd:
         logging.error("Cannot find assembly test: %s\n", asm)
         sys.exit(RET_FAIL)
       # gcc comilation
@@ -321,7 +333,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts):
              -nostartfiles %s \
              -I%s/user_extension \
              -T%s/scripts/link.ld %s -o %s " % \
-             (get_env_var("RISCV_GCC"), asm, cwd, cwd, opts, elf))
+             (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, cwd, opts, elf))
       if 'gcc_opts' in test:
         cmd += test['gcc_opts']
       if 'gen_opts' in test:
@@ -335,15 +347,16 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts):
       if not re.search('mabi', cmd):
         cmd += (" -mabi=%s" % mabi)
       logging.info("Compiling %s" % asm)
-      run_cmd_output(cmd.split())
+      run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
       # Convert the ELF to plain binary, used in RTL sim
       logging.info("Converting to %s" % binary)
-      cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY"), elf, binary))
-      run_cmd_output(cmd.split())
+      cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd),
+             elf, binary))
+      run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
 
 def run_assembly(asm_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir):
+                 setting_dir, debug_cmd):
   """Run a directed assembly test with ISS
 
   Args:
@@ -355,6 +368,7 @@ def run_assembly(asm_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     iss_opts    : Instruction set simulators
     output_dir  : Output directory of compiled test files
     setting_dir : Generator setting directory
+    debug_cmd   : Produce the debug cmd log without running
   """
   if not asm_test.endswith(".S"):
     logging.error("%s is not an assembly .S file" % asm_test)
@@ -377,30 +391,32 @@ def run_assembly(asm_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
          -nostartfiles %s \
          -I%s/user_extension \
          -T%s/scripts/link.ld %s -o %s " % \
-         (get_env_var("RISCV_GCC"), asm_test, cwd, cwd, gcc_opts, elf))
+         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd,
+                      cwd, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
-  run_cmd_output(cmd.split())
+  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
   # Convert the ELF to plain binary, used in RTL sim
   logging.info("Converting to %s" % binary)
-  cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY"), elf, binary))
-  run_cmd_output(cmd.split())
+  cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
+  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
   log_list = []
   # ISS simulation
   for iss in iss_list:
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, asm))
     log_list.append(log)
-    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, setting_dir)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
     cmd = get_iss_cmd(base_cmd, elf, log)
-    run_cmd(cmd, 10)
+    run_cmd(cmd, 10, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 
+
 def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
-                          output_dir, setting_dir):
+                          output_dir, setting_dir, debug_cmd):
   """Run a directed assembly test from a directory with spike
 
   Args:
@@ -412,6 +428,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     iss             : Instruction set simulators
     output_dir      : Output directory of compiled test files
     setting_dir     : Generator setting directory
+    debug_cmd       : Produce the debug cmd log without running
   """
   result = run_cmd("find %s -name \"*.S\"" % asm_test_dir)
   if result:
@@ -420,14 +437,105 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
                  (len(asm_list), asm_test_dir))
     for asm_file in asm_list:
       run_assembly(asm_file, iss_yaml, isa, mabi, gcc_opts, iss, output_dir,
-                   setting_dir)
+                   setting_dir, debug_cmd)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
         save_regr_report(report)
   else:
     logging.error("No assembly test(*.S) found under %s" % asm_test_dir)
 
-def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa, setting_dir, timeout_s):
+
+def run_c(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
+          setting_dir, debug_cmd):
+  """Run a directed c test with ISS
+
+  Args:
+    c_test      : C test file
+    iss_yaml    : ISS configuration file in YAML format
+    isa         : ISA variant passed to the ISS
+    mabi        : MABI variant passed to GCC
+    gcc_opts    : User-defined options for GCC compilation
+    iss_opts    : Instruction set simulators
+    output_dir  : Output directory of compiled test files
+    setting_dir : Generator setting directory
+    debug_cmd   : Produce the debug cmd log without running
+  """
+  if not c_test.endswith(".c"):
+    logging.error("%s is not a .c file" % c_test)
+    return
+  cwd = os.path.dirname(os.path.realpath(__file__))
+  c_test = os.path.expanduser(c_test)
+  report = ("%s/iss_regr.log" % output_dir).rstrip()
+  c = re.sub(r"^.*\/", "", c_test)
+  c = re.sub(r"\.c$", "", c)
+  prefix = ("%s/directed_c_tests/%s"  % (output_dir, c))
+  elf = prefix + ".o"
+  binary = prefix + ".bin"
+  iss_list = iss_opts.split(",")
+  run_cmd("mkdir -p %s/directed_c_tests" % output_dir)
+  logging.info("Compiling c test : %s" % c_test)
+
+  # gcc compilation
+  cmd = ("%s -mcmodel=medany -nostdlib \
+         -nostartfiles %s \
+         -I%s/user_extension \
+         -T%s/scripts/link.ld %s -o %s " % \
+         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,
+                      cwd, gcc_opts, elf))
+  cmd += (" -march=%s" % isa)
+  cmd += (" -mabi=%s" % mabi)
+  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
+  # Convert the ELF to plain binary, used in RTL sim
+  logging.info("Converting to %s" % binary)
+  cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
+  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
+  log_list = []
+  # ISS simulation
+  for iss in iss_list:
+    run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
+    log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
+    log_list.append(log)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
+    logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
+    cmd = get_iss_cmd(base_cmd, elf, log)
+    run_cmd(cmd, 10, debug_cmd = debug_cmd)
+    logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
+  if len(iss_list) == 2:
+    compare_iss_log(iss_list, log_list, report)
+
+
+def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
+                   output_dir, setting_dir, debug_cmd):
+  """Run a directed c test from a directory with spike
+
+  Args:
+    c_test_dir      : C test file directory
+    iss_yaml        : ISS configuration file in YAML format
+    isa             : ISA variant passed to the ISS
+    mabi            : MABI variant passed to GCC
+    gcc_opts        : User-defined options for GCC compilation
+    iss             : Instruction set simulators
+    output_dir      : Output directory of compiled test files
+    setting_dir     : Generator setting directory
+    debug_cmd       : Produce the debug cmd log without running
+  """
+  result = run_cmd("find %s -name \"*.c\"" % c_test_dir)
+  if result:
+    c_list = result.splitlines()
+    logging.info("Found %0d c tests under %s" %
+                 (len(c_list), c_test_dir))
+    for c_file in c_list:
+      run_c(c_file, iss_yaml, isa, mabi, gcc_opts, iss, output_dir,
+            setting_dir, debug_cmd)
+      if "," in iss:
+        report = ("%s/iss_regr.log" % output_dir).rstrip()
+        save_regr_report(report)
+  else:
+    logging.error("No c test(*.c) found under %s" % c_test_dir)
+
+
+def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa,
+            setting_dir, timeout_s, debug_cmd):
   """Run ISS simulation with the generated test program
 
   Args:
@@ -438,10 +546,11 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa, setting_dir, timeout
     isa         : ISA variant passed to the ISS
     setting_dir : Generator setting directory
     timeout_s   : Timeout limit in seconds
+    debug_cmd   : Produce the debug cmd log without running
   """
   for iss in iss_list.split(","):
     log_dir = ("%s/%s_sim" % (output_dir, iss))
-    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, setting_dir)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
     logging.info("%s sim log dir: %s" % (iss, log_dir))
     run_cmd_output(["mkdir", "-p", log_dir])
     for test in test_list:
@@ -455,13 +564,13 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa, setting_dir, timeout
           cmd = get_iss_cmd(base_cmd, elf, log)
           logging.info("Running %s sim: %s" % (iss, elf))
           if iss == "ovpsim":
-            run_cmd(cmd, timeout_s, check_return_code=False)
+            run_cmd(cmd, timeout_s, check_return_code=False, debug_cmd = debug_cmd)
           else:
-            run_cmd(cmd, timeout_s)
+            run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
 
 
-def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp):
+def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
   """Compare ISS simulation reult
 
   Args:
@@ -470,7 +579,10 @@ def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp):
     output_dir     : Output directory of the ELF files
     stop_on_first_error : will end run on first error detected
     exp            : Use experimental version
+    debug_cmd      : Produce the debug cmd log without running
   """
+  if debug_cmd:
+    return
   iss_list = iss.split(",")
   if len(iss_list) != 2:
     return
@@ -487,6 +599,7 @@ def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp):
         log_list.append("%s/%s_sim/%s.%d.log" % (output_dir, iss, test['test'], i))
       compare_iss_log(iss_list, log_list, report, stop_on_first_error, exp)
   save_regr_report(report)
+
 
 def compare_iss_log(iss_list, log_list, report, stop_on_first_error=0, exp=False):
   if (len(iss_list) != 2 or len(log_list) != 2) :
@@ -593,6 +706,8 @@ def setup_parser():
                       help="Path for the user extension directory")
   parser.add_argument("--asm_tests", type=str, default="",
                       help="Directed assembly tests")
+  parser.add_argument("--c_tests", type=str, default="",
+                      help="Directed c tests")
   parser.add_argument("--log_suffix", type=str, default="",
                       help="Simulation log name suffix")
   parser.add_argument("--exp", action="store_true", default=False,
@@ -605,7 +720,10 @@ def setup_parser():
                       help="Stop on detecting first error")
   parser.add_argument("--noclean", action="store_true", default=True,
                       help="Do not clean the output of the previous runs")
+  parser.add_argument("-d", "--debug", type=str, default="",
+                      help="Generate debug command log file")
   return parser
+
 
 def load_config(args, cwd):
   """
@@ -615,6 +733,8 @@ def load_config(args, cwd):
   Returns:
       Loaded configuration dictionary.
   """
+  if args.debug:
+    args.debug = open(args.debug, "w")
   if not args.csr_yaml:
     args.csr_yaml = cwd + "/yaml/csr_template.yaml"
 
@@ -666,6 +786,7 @@ def load_config(args, cwd):
   cfg = vars(args)
   return cfg
 
+
 def main():
   """This is the main entry point."""
   try:
@@ -687,11 +808,31 @@ def main():
         # path_asm_test is a directory
         if os.path.isdir(full_path):
           run_assembly_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
-                                args.gcc_opts, args.iss, output_dir, args.core_setting_dir)
+                                args.gcc_opts, args.iss, output_dir,
+                                args.core_setting_dir, args.debug)
         # path_asm_test is an assembly file
-        elif os.path.isfile(full_path):
+        elif os.path.isfile(full_path) or args.debug:
           run_assembly(full_path, args.iss_yaml, args.isa, args.mabi, args.gcc_opts,
-                       args.iss, output_dir, args.core_setting_dir)
+                       args.iss, output_dir, args.core_setting_dir, args.debug)
+        else:
+          logging.error('%s does not exist' % full_path)
+          sys.exit(RET_FAIL)
+      return
+
+    # Run any handcoded/directed c tests specified by args.c_tests
+    if args.c_tests != "":
+      c_test = args.c_tests.split(',')
+      for path_c_test in c_test:
+        full_path = os.path.expanduser(path_c_test)
+        # path_c_test is a directory
+        if os.path.isdir(full_path):
+          run_c_from_dir(full_path, args.iss_yaml, args.isa, args.mabi,
+                         args.gcc_opts, args.iss, output_dir,
+                         args.core_setting_dir, args.debug)
+        # path_c_test is a c file
+        elif os.path.isfile(full_path) or args.debug:
+          run_c(full_path, args.iss_yaml, args.isa, args.mabi, args.gcc_opts,
+                args.iss, output_dir, args.core_setting_dir, args.debug)
         else:
           logging.error('%s does not exist' % full_path)
           sys.exit(RET_FAIL)
@@ -701,27 +842,38 @@ def main():
     # Process regression test list
     matched_list = []
     # Any tests in the YAML test list that specify a directed assembly test
-    directed_list = []
+    asm_directed_list = []
+    # Any tests in the YAML test list that specify a directed c test
+    c_directed_list = []
 
     if not args.co:
       process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
       for t in list(matched_list):
+        # Check mutual exclusive between gen_test, asm_tests, and c_tests
         if 'asm_tests' in t:
-          if 'gen_test' in t:
-            logging.error('asm_test must not be defined in the testlist '
-                          'together with the gen_test field')
+          if 'gen_test' in t or 'c_tests' in t:
+            logging.error('asm_tests must not be defined in the testlist '
+                          'together with the gen_test or c_tests field')
             sys.exit(RET_FATAL)
-          directed_list.append(t)
+          asm_directed_list.append(t)
           matched_list.remove(t)
 
-      if len(matched_list) == 0 and len(directed_list) == 0:
+        if 'c_tests' in t:
+          if 'gen_test' in t or 'asm_tests' in t:
+            logging.error('c_tests must not be defined in the testlist '
+                          'together with the gen_test or asm_tests field')
+            sys.exit(RET_FATAL)
+          c_directed_list.append(t)
+          matched_list.remove(t)
+
+      if len(matched_list) == 0 and len(asm_directed_list) == 0 and len(c_directed_list) == 0:
         sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
 
     # Run instruction generator
     if args.steps == "all" or re.match(".*gen.*", args.steps):
       # Run any handcoded/directed assembly tests specified in YAML format
-      if len(directed_list) != 0:
-        for test_entry in directed_list:
+      if len(asm_directed_list) != 0:
+        for test_entry in asm_directed_list:
           gcc_opts = args.gcc_opts
           gcc_opts += test_entry.get('gcc_opts', '')
           path_asm_test = os.path.expanduser(test_entry.get('asm_tests'))
@@ -729,30 +881,56 @@ def main():
             # path_asm_test is a directory
             if os.path.isdir(path_asm_test):
               run_assembly_from_dir(path_asm_test, args.iss_yaml, args.isa, args.mabi,
-                                    gcc_opts, args.iss, output_dir, args.core_setting_dir)
+                                    gcc_opts, args.iss, output_dir,
+                                    args.core_setting_dir, args.debug)
             # path_asm_test is an assembly file
             elif os.path.isfile(path_asm_test):
               run_assembly(path_asm_test, args.iss_yaml, args.isa, args.mabi, gcc_opts,
-                           args.iss, output_dir, args.core_setting_dir)
+                           args.iss, output_dir, args.core_setting_dir, args.debug)
             else:
-              logging.error('%s does not exist' % path_asm_test)
-              sys.exit(RET_FAIL)
+              if not args.debug:
+                logging.error('%s does not exist' % path_asm_test)
+                sys.exit(RET_FAIL)
+
+      # Run any handcoded/directed C tests specified in YAML format
+      if len(c_directed_list) != 0:
+        for test_entry in c_directed_list:
+          gcc_opts = args.gcc_opts
+          gcc_opts += test_entry.get('gcc_opts', '')
+          path_c_test = os.path.expanduser(test_entry.get('c_tests'))
+          if path_c_test:
+            # path_c_test is a directory
+            if os.path.isdir(path_c_test):
+              run_c_from_dir(path_c_test, args.iss_yaml, args.isa, args.mabi,
+                             gcc_opts, args.iss, output_dir,
+                             args.core_setting_dir, args.debug)
+            # path_c_test is a C file
+            elif os.path.isfile(path_c_test):
+              run_c(path_c_test, args.iss_yaml, args.isa, args.mabi, gcc_opts,
+                    args.iss, output_dir, args.core_setting_dir, args.debug)
+            else:
+              if not args.debug:
+                logging.error('%s does not exist' % path_c_test)
+                sys.exit(RET_FAIL)
+
       # Run remaining tests using the instruction generator
       gen(matched_list, cfg, output_dir, cwd)
 
     if not args.co:
       # Compile the assembly program to ELF, convert to plain binary
       if args.steps == "all" or re.match(".*gcc_compile.*", args.steps):
-        gcc_compile(matched_list, output_dir, args.isa, args.mabi, args.gcc_opts)
+        gcc_compile(matched_list, output_dir, args.isa, args.mabi,
+                    args.gcc_opts, args.debug)
 
       # Run ISS simulation
       if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
         iss_sim(matched_list, output_dir, args.iss, args.iss_yaml,
-                args.isa, args.core_setting_dir, args.iss_timeout)
+                args.isa, args.core_setting_dir, args.iss_timeout, args.debug)
 
       # Compare ISS simulation result
       if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
-        iss_cmp(matched_list, args.iss, output_dir, args.stop_on_first_error, args.exp)
+        iss_cmp(matched_list, args.iss, output_dir, args.stop_on_first_error,
+                args.exp, args.debug)
 
     sys.exit(RET_SUCCESS)
   except KeyboardInterrupt:

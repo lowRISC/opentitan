@@ -14,6 +14,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 from pallets_sphinx_themes import ProjectLink
+import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
@@ -35,6 +36,7 @@ extensions = [
     "sphinxcontrib.log_cabinet",
     "sphinx_issues",
     "rst2pdf.pdfbuilder",
+    'sphinx_rtd_theme',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -51,20 +53,20 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "jinja"
-html_theme_options = {"index_sidebar_logo": False}
-
-html_context = {
-    "project_links": [
-        ProjectLink("Source Code", "https://github.com/google/riscv-dv.git"),
-        ProjectLink("Issue Tracker", "https://github.com/google/riscv-dv/issues"),
-    ]
-}
-
-html_sidebars = {
-    "index": ["project.html", "localtoc.html", "searchbox.html"],
-    "**": ["localtoc.html", "relations.html", "searchbox.html"],
-}
+html_theme = "sphinx_rtd_theme"
+#html_theme_options = {"index_sidebar_logo": False}
+#
+#html_context = {
+#    "project_links": [
+#        ProjectLink("Source Code", "https://github.com/google/riscv-dv.git"),
+#        ProjectLink("Issue Tracker", "https://github.com/google/riscv-dv/issues"),
+#    ]
+#}
+#
+#html_sidebars = {
+#    "index": ["project.html", "localtoc.html", "searchbox.html"],
+#    "**": ["localtoc.html", "relations.html", "searchbox.html"],
+#}
 
 # -- For PDF output ---------------------------------------------------------
 pdf_documents = [('index', u'riscv-dv', u'RISCV-DV', u'Google, Inc'),]

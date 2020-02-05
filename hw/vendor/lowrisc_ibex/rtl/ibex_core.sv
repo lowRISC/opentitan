@@ -18,6 +18,7 @@ module ibex_core #(
     parameter int unsigned MHPMCounterWidth         = 40,
     parameter bit          RV32E                    = 1'b0,
     parameter bit          RV32M                    = 1'b1,
+    parameter bit          BranchTargetALU          = 1'b0,
     parameter              MultiplierImplementation = "fast",
     parameter bit          DbgTriggerEn             = 1'b0,
     parameter int unsigned DmHaltAddr               = 32'h1A110800,
@@ -100,6 +101,8 @@ module ibex_core #(
   logic        instr_valid_id;
   logic        instr_new_id;
   logic [31:0] instr_rdata_id;         // Instruction sampled inside IF stage
+  logic [31:0] instr_rdata_alu_id;     // Instruction sampled inside IF stage (replicated to ease
+                                       // fan-out)
   logic [15:0] instr_rdata_c_id;       // Compressed instruction sampled inside IF stage
   logic        instr_is_compressed_id;
   logic        instr_fetch_err;        // Bus error on instr fetch
@@ -135,12 +138,16 @@ module ibex_core #(
   logic [31:0] alu_operand_a_ex;
   logic [31:0] alu_operand_b_ex;
 
+  jt_mux_sel_e jt_mux_sel_ex;
+  logic [11:0] bt_operand_imm_ex;
+
   logic [31:0] alu_adder_result_ex;    // Used to forward computed address to LSU
   logic [31:0] regfile_wdata_ex;
 
   // Multiplier Control
   logic        mult_en_ex;
   logic        div_en_ex;
+  logic        multdiv_sel_ex;
   md_op_e      multdiv_operator_ex;
   logic [1:0]  multdiv_signed_mode_ex;
   logic [31:0] multdiv_operand_a_ex;
@@ -177,10 +184,7 @@ module ibex_core #(
   // Interrupts
   logic        irq_pending;
   logic        nmi_mode;
-  logic        csr_msip;
-  logic        csr_mtip;
-  logic        csr_meip;
-  logic [14:0] csr_mfip;
+  irqs_t       irqs;
   logic        csr_mstatus_mie;
   logic [31:0] csr_mepc, csr_depc;
 
@@ -318,6 +322,7 @@ module ibex_core #(
       .instr_valid_id_o         ( instr_valid_id         ),
       .instr_new_id_o           ( instr_new_id           ),
       .instr_rdata_id_o         ( instr_rdata_id         ),
+      .instr_rdata_alu_id_o     ( instr_rdata_alu_id     ),
       .instr_rdata_c_id_o       ( instr_rdata_c_id       ),
       .instr_is_compressed_id_o ( instr_is_compressed_id ),
       .instr_fetch_err_o        ( instr_fetch_err        ),
@@ -356,8 +361,9 @@ module ibex_core #(
   //////////////
 
   ibex_id_stage #(
-      .RV32E ( RV32E ),
-      .RV32M ( RV32M )
+      .RV32E           ( RV32E ),
+      .RV32M           ( RV32M ),
+      .BranchTargetALU ( BranchTargetALU )
   ) id_stage_i (
       .clk_i                        ( clk                    ),
       .rst_ni                       ( rst_ni                 ),
@@ -373,6 +379,7 @@ module ibex_core #(
       .instr_valid_i                ( instr_valid_id         ),
       .instr_new_i                  ( instr_new_id           ),
       .instr_rdata_i                ( instr_rdata_id         ),
+      .instr_rdata_alu_i            ( instr_rdata_alu_id     ),
       .instr_rdata_c_i              ( instr_rdata_c_id       ),
       .instr_is_compressed_i        ( instr_is_compressed_id ),
 
@@ -401,8 +408,12 @@ module ibex_core #(
       .alu_operand_a_ex_o           ( alu_operand_a_ex       ),
       .alu_operand_b_ex_o           ( alu_operand_b_ex       ),
 
+      .jt_mux_sel_ex_o              ( jt_mux_sel_ex          ),
+      .bt_operand_imm_o             ( bt_operand_imm_ex      ),
+
       .mult_en_ex_o                 ( mult_en_ex             ),
       .div_en_ex_o                  ( div_en_ex              ),
+      .multdiv_sel_ex_o             ( multdiv_sel_ex         ),
       .multdiv_operator_ex_o        ( multdiv_operator_ex    ),
       .multdiv_signed_mode_ex_o     ( multdiv_signed_mode_ex ),
       .multdiv_operand_a_ex_o       ( multdiv_operand_a_ex   ),
@@ -436,11 +447,8 @@ module ibex_core #(
 
       // Interrupt Signals
       .csr_mstatus_mie_i            ( csr_mstatus_mie        ),
-      .csr_msip_i                   ( csr_msip               ),
-      .csr_mtip_i                   ( csr_mtip               ),
-      .csr_meip_i                   ( csr_meip               ),
-      .csr_mfip_i                   ( csr_mfip               ),
       .irq_pending_i                ( irq_pending            ),
+      .irqs_i                       ( irqs                   ),
       .irq_nm_i                     ( irq_nm_i               ),
       .nmi_mode_o                   ( nmi_mode               ),
 
@@ -482,6 +490,7 @@ module ibex_core #(
 
   ibex_ex_block #(
       .RV32M                      ( RV32M                    ),
+      .BranchTargetALU            ( BranchTargetALU          ),
       .MultiplierImplementation   ( MultiplierImplementation )
   ) ex_block_i (
       .clk_i                      ( clk                      ),
@@ -492,10 +501,16 @@ module ibex_core #(
       .alu_operand_a_i            ( alu_operand_a_ex         ),
       .alu_operand_b_i            ( alu_operand_b_ex         ),
 
+      // Branch target ALU signal from ID stage
+      .jt_mux_sel_i               ( jt_mux_sel_ex            ),
+      .bt_operand_imm_i           ( bt_operand_imm_ex        ),
+      .pc_id_i                    ( pc_id                    ),
+
       // Multipler/Divider signal from ID stage
       .multdiv_operator_i         ( multdiv_operator_ex      ),
       .mult_en_i                  ( mult_en_ex               ),
       .div_en_i                   ( div_en_ex                ),
+      .multdiv_sel_i              ( multdiv_sel_ex           ),
       .multdiv_signed_mode_i      ( multdiv_signed_mode_ex   ),
       .multdiv_operand_a_i        ( multdiv_operand_a_ex     ),
       .multdiv_operand_b_i        ( multdiv_operand_b_ex     ),
@@ -605,12 +620,9 @@ module ibex_core #(
       .irq_timer_i             ( irq_timer_i            ),
       .irq_external_i          ( irq_external_i         ),
       .irq_fast_i              ( irq_fast_i             ),
-      .irq_pending_o           ( irq_pending            ),
       .nmi_mode_i              ( nmi_mode               ),
-      .csr_msip_o              ( csr_msip               ),
-      .csr_mtip_o              ( csr_mtip               ),
-      .csr_meip_o              ( csr_meip               ),
-      .csr_mfip_o              ( csr_mfip               ),
+      .irq_pending_o           ( irq_pending            ),
+      .irqs_o                  ( irqs                   ),
       .csr_mstatus_mie_o       ( csr_mstatus_mie        ),
       .csr_mstatus_tw_o        ( csr_mstatus_tw         ),
       .csr_mepc_o              ( csr_mepc               ),
