@@ -17,8 +17,8 @@ module flash_ctrl (
   output       tlul_pkg::tl_d2h_t tl_o,
 
   // Flash Interface
-  input        flash_ctrl_pkg::flash_m2c_t flash_i,
-  output       flash_ctrl_pkg::flash_c2m_t flash_o,
+  input        flash_ctrl_pkg::flash_rsp_t flash_i,
+  output       flash_ctrl_pkg::flash_req_t flash_o,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty

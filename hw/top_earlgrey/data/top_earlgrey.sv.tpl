@@ -434,8 +434,8 @@ module top_${top["name"]} #(
   % elif m["type"] == "eflash":
 
   // flash controller to eflash communication
-  flash_c2m_t flash_c2m;
-  flash_m2c_t flash_m2c;
+  flash_req_t flash_req;
+  flash_rsp_t flash_rsp;
 
   // host to flash communication
   logic flash_host_req;
@@ -489,8 +489,8 @@ module top_${top["name"]} #(
     .host_req_rdy_o  (flash_host_req_rdy),
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
-    .flash_ctrl_i    (flash_c2m),
-    .flash_ctrl_o    (flash_m2c)
+    .flash_ctrl_i    (flash_req),
+    .flash_ctrl_o    (flash_rsp)
   );
 
   % else:
@@ -594,8 +594,8 @@ else:
     ## TODO: Inter-module Connection
     % if m["type"] == "flash_ctrl":
 
-      .flash_o(flash_c2m),
-      .flash_i(flash_m2c),
+      .flash_o(flash_req),
+      .flash_i(flash_rsp),
     % endif
     % if m["type"] == "rv_plic":
 

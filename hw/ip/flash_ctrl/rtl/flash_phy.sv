@@ -29,8 +29,8 @@ module flash_phy #(
   output logic host_req_rdy_o,
   output logic host_req_done_o,
   output logic [DataWidth-1:0] host_rdata_o,
-  input flash_ctrl_pkg::flash_c2m_t flash_ctrl_i,
-  output flash_ctrl_pkg::flash_m2c_t flash_ctrl_o
+  input flash_ctrl_pkg::flash_req_t flash_ctrl_i,
+  output flash_ctrl_pkg::flash_rsp_t flash_ctrl_o
 );
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an

@@ -38,7 +38,18 @@ package flash_ctrl_pkg;
     logic                         bk_erase;
     logic [top_pkg::FLASH_AW-1:0] addr;
     logic [top_pkg::FLASH_DW-1:0] prog_data;
-  } flash_c2m_t;
+  } flash_req_t;
+
+  // default value of flash_req_t (for dangling ports)
+  parameter flash_req_t FLASH_REQ_DEFAULT = '{
+    req:       1'b0,
+    rd:        1'b0,
+    prog:      1'b0,
+    pg_erase:  1'b0,
+    bk_erase:  1'b0,
+    addr:      '0,
+    prog_data: '0
+  };
 
   // memory to flash controller
   typedef struct packed {
@@ -47,6 +58,15 @@ package flash_ctrl_pkg;
     logic                         erase_done;
     logic [top_pkg::FLASH_DW-1:0] rd_data;
     logic                         init_busy;
-  } flash_m2c_t;
+  } flash_rsp_t;
+
+  // default value of flash_rsp_t (for dangling ports)
+  parameter flash_rsp_t FLASH_RSP_DEFAULT = '{
+    rd_done:    1'b0,
+    prog_done:  1'b0,
+    erase_done: 1'b0,
+    rd_data:    '0,
+    init_busy:  1'b0
+  };
 
 endpackage : flash_ctrl_pkg

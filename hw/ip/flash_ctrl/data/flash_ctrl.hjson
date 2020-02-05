@@ -13,6 +13,16 @@
     { name: "op_error",   desc: "Operation failed with error" },
   ],
 
+  // Define flash_ctrl <-> flash_phy struct package
+  inter_signal_list: [
+    { struct:  "flash",          // flash_req_t, flash_rsp_t
+      type:    "req_rsp",
+      name:    "flash",          // flash_o (req), flash_i (rsp)
+      act:     "requester",
+      package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
+    }
+  ],
+
   param_list: [
     { name: "NumBanks",
       desc: "Number of flash banks",
