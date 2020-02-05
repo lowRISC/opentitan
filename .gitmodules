@@ -1,0 +1,3 @@
+[submodule "sw/device/tock/third_party/tock"]
+	path = sw/device/tock/third_party/tock
+	url = https://github.com/tock/tock.git
