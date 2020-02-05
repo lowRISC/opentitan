@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Testbench module for rv_plic. Intended to use with a formal tool.
 
+`include "prim_assert.sv"
+
 module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
   input clk_i,
   input rst_ni,

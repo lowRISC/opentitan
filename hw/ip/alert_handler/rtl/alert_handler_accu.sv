@@ -10,6 +10,8 @@
 // does not wrap around.
 //
 
+`include "prim_assert.sv"
+
 module alert_handler_accu import alert_pkg::*; (
   input                        clk_i,
   input                        rst_ni,

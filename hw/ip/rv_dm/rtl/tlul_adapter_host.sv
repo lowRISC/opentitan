@@ -5,6 +5,8 @@
 // tlul_adapter (Host adapter) converts basic req/grant/rvalid into TL-UL
 // interface. It doesn't need register but combinational logics.
 
+`include "prim_assert.sv"
+
 module tlul_adapter_host #(
   parameter int unsigned AW = 32,
   parameter int unsigned DW = 32

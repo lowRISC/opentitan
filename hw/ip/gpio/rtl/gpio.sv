@@ -4,6 +4,8 @@
 //
 // General Purpose Input/Output module
 
+`include "prim_assert.sv"
+
 module gpio (
   input clk_i,
   input rst_ni,

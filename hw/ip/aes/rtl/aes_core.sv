@@ -4,6 +4,8 @@
 //
 // AES core implementation
 
+`include "prim_assert.sv"
+
 module aes_core #(
   parameter bit AES192Enable = 1,
   parameter     SBoxImpl     = "lut"

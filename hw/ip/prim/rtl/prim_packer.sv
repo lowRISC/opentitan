@@ -4,6 +4,8 @@
 //
 // Combine InW data and write to OutW data if packed to full word or stop signal
 
+`include "prim_assert.sv"
+
 module prim_packer #(
   parameter int InW  = 32,
   parameter int OutW = 32

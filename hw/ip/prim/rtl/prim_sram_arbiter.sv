@@ -9,6 +9,8 @@
 //  DW: Data width (SECDED is not included)
 //  Aw: Address width
 //  ArbiterImpl: can be either PPC or BINTREE.
+`include "prim_assert.sv"
+
 module prim_sram_arbiter #(
   parameter int N  = 4,
   parameter int SramDw = 32,

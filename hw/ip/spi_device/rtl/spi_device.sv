@@ -6,6 +6,8 @@
 //
 //
 
+`include "prim_assert.sv"
+
 module spi_device #(
   parameter int SramAw = 9, // 2kB, SRAM Width is DW
   parameter int SramDw = 32

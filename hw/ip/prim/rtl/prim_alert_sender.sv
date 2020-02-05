@@ -24,6 +24,8 @@
 //
 // See also: prim_alert_receiver, prim_diff_decode, alert_handler
 
+`include "prim_assert.sv"
+
 module prim_alert_sender import prim_pkg::*; #(
   // enables additional synchronization logic
   parameter bit AsyncOn = 1'b1

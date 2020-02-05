@@ -5,6 +5,8 @@
 // Assertions for escalation sender/receiver pair. Intended to use with
 // a formal tool.
 
+`include "prim_assert.sv"
+
 module prim_esc_rxtx_assert_fpv (
   input        clk_i,
   input        rst_ni,

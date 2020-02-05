@@ -5,6 +5,8 @@
 // Assertions for prim_arbiter_tree.
 // Intended to be used with a formal tool.
 
+`include "prim_assert.sv"
+
 module prim_arbiter_tree_assert_fpv #(
   parameter int unsigned N = 4,
   parameter int unsigned DW = 32,

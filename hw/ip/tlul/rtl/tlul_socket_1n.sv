@@ -34,6 +34,8 @@
 //
 // The maximum value of N is 15
 
+`include "prim_assert.sv"
+
 module tlul_socket_1n #(
   parameter int unsigned  N         = 4,
   parameter bit           HReqPass  = 1'b1,

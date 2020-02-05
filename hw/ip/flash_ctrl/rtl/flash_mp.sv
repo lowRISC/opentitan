@@ -5,6 +5,8 @@
 // Flash Memory Protection
 //
 
+`include "prim_assert.sv"
+
 module flash_mp #(
   parameter int MpRegions = 8,
   parameter int NumBanks = 2,

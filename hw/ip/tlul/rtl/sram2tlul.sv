@@ -7,6 +7,8 @@
 //      If SRAM interface requests more than MaxOutstanding cap, it generates
 //      error in simulation but not in Silicon.
 
+`include "prim_assert.sv"
+
 module sram2tlul #(
   parameter int                        SramAw = 12,
   parameter int                        SramDw = 32,

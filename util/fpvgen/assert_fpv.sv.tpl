@@ -5,6 +5,8 @@
 // Assertions for ${dut.name}.
 // Intended to be used with a formal tool.
 
+`include "prim_assert.sv"
+
 % if len(dut.pkgs) > 0:
 module ${dut.name}_assert_fpv
 % for pkg in dut.pkgs:

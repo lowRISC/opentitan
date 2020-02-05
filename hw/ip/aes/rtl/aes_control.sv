@@ -4,6 +4,8 @@
 //
 // AES control
 
+`include "prim_assert.sv"
+
 module aes_control (
   input  logic                    clk_i,
   input  logic                    rst_ni,

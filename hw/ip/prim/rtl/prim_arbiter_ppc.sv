@@ -20,6 +20,8 @@
 //
 // See also: prim_arbiter_tree
 
+`include "prim_assert.sv"
+
 module prim_arbiter_ppc #(
   parameter int unsigned N  = 4,
   parameter int unsigned DW = 32

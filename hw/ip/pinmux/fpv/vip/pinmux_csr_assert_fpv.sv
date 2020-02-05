@@ -6,6 +6,8 @@
 // Do Not Edit directly
 
 
+`include "prim_assert.sv"
+
 // Block: pinmux
 module pinmux_csr_assert_fpv import tlul_pkg::*; (
   input clk_i,

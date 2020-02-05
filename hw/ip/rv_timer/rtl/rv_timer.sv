@@ -4,6 +4,8 @@
 //
 
 
+`include "prim_assert.sv"
+
 module rv_timer (
   input clk_i,
   input rst_ni,

@@ -11,6 +11,8 @@
   max_regs_char = len("{}".format(block.get_n_regs_flat()-1))
   regs_flat = block.get_regs_flat()
 %>
+`include "prim_assert.sv"
+
 module ${block.name}_reg_top ${print_param(params)}(
   input clk_i,
   input rst_ni,

@@ -13,6 +13,9 @@
  * It is possible to force the mapping to BRAM or distributed RAM by using the
  * ROM_STYLE directive in an XDC file.
  */
+
+`include "prim_assert.sv"
+
 module prim_xilinx_rom #(
   parameter  int Width     = 32,
   parameter  int Depth     = 2048, // 8kB default

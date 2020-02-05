@@ -5,6 +5,8 @@
 // Generic, technology independent pad wrapper. This is NOT synthesizable!
 
 
+`include "prim_assert.sv"
+
 module prim_generic_pad_wrapper #(
   parameter int unsigned AttrDw = 6
 ) (

@@ -9,6 +9,9 @@
  *   it means that aliasing can happen if target slave size in TL-UL crossbar is bigger
  *   than SRAM size
  */
+
+`include "prim_assert.sv"
+
 module tlul_adapter_sram #(
   parameter int SramAw      = 12,
   parameter int SramDw      = 32, // Current version supports TL-UL width only

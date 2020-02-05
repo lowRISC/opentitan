@@ -8,6 +8,8 @@
 // have to be generated using the reg_alert_handler.py script.
 //
 
+`include "prim_assert.sv"
+
 module alert_handler import alert_pkg::*; import prim_pkg::*; (
   input                           clk_i,
   input                           rst_ni,

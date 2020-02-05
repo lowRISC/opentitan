@@ -8,7 +8,7 @@ description: "Assertion primitives"
 filesets:
   files_rtl:
     files:
-      - rtl/prim_assert.sv
+      - rtl/prim_assert.sv : {is_include_file : true}
     file_type: systemVerilogSource
 
 targets:

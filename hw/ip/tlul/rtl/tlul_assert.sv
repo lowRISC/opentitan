@@ -5,6 +5,8 @@
 // Protocol checker for TL-UL ports using assertions. Supports interface-widths
 // up to 64bit.
 
+`include "prim_assert.sv"
+
 module tlul_assert #(
   parameter EndpointType = "Device" // can be either "Host" or "Device"
 ) (
