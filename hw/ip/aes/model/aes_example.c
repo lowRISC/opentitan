@@ -213,8 +213,8 @@ int main(int argc, char *argv[]) {
   }
 
   // check state vs BoringSSL/OpenSSL
-  cipher_text_len =
-      crypto_encrypt(cipher_text, iv, plain_text, 16, key, key_len);
+  cipher_text_len = crypto_encrypt(cipher_text, iv, plain_text, 16, key,
+                                   key_len, kCryptoAesEcb);
   if (!check_block(state, cipher_text, 0)) {
     printf("SUCCESS: state matches %s cipher text\n", crypto_lib);
   } else {
@@ -333,8 +333,8 @@ int main(int argc, char *argv[]) {
   }
 
   // check state vs BoringSSL/OpenSSL
-  crypto_decrypt(decrypted_text, iv, cipher_text, cipher_text_len, key,
-                 key_len);
+  crypto_decrypt(decrypted_text, iv, cipher_text, cipher_text_len, key, key_len,
+                 kCryptoAesEcb);
   if (!check_block(state, decrypted_text, 0)) {
     printf("SUCCESS: state matches %s decrypted text\n", crypto_lib);
   } else {

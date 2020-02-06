@@ -46,9 +46,9 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
     unsigned char iv[16];
     memset(iv, 0, 16);
     if (!op_i) {
-      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len);
+      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len, kCryptoAesEcb);
     } else {
-      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len);
+      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len, kCryptoAesEcb);
     }
   }
 
