@@ -103,16 +103,30 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
         (!uvm_re_match("compare_lower*", csr_name)): begin
           for (int i = 0; i < NUM_HARTS; i++) begin
             for (int j = 0; j < NUM_TIMERS; j++) begin
+              int timer_idx = i * NUM_TIMERS + j;
               compare_val[i][j][31:0] = get_reg_fld_mirror_value(
                                             ral, $sformatf("compare_lower%0d_%0d", i, j), "v");
+              // Reset the interrupt when mtimecmp is updated
+              intr_status_exp[i][j] = 0;
+              if (cfg.en_cov) begin
+                cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
+                                    $sformatf("%0d", timer_idx)}].sample(1'b0);
+              end
             end
           end
         end
         (!uvm_re_match("compare_upper*", csr_name)): begin
           for (int i = 0; i < NUM_HARTS; i++) begin
             for (int j = 0; j < NUM_TIMERS; j++) begin
+              int timer_idx = i * NUM_TIMERS + j;
               compare_val[i][j][63:32] = get_reg_fld_mirror_value(
                                              ral, $sformatf("compare_upper%0d_%0d", i, j), "v");
+              // Reset the interrupt when mtimecmp is updated
+              intr_status_exp[i][j] = 0;
+              if (cfg.en_cov) begin
+                cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
+                                    $sformatf("%0d", timer_idx)}].sample(1'b0);
+              end
             end
           end
         end

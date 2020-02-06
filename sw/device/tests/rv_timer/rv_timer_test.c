@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/common.h"
-#include "sw/device/lib/irq.h"
 #include "sw/device/lib/rv_timer.h"
+
+#include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
+#include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/uart.h"
 

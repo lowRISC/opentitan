@@ -143,8 +143,9 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(intr_state_rg, null)
     is_fld = intr_state_rg.get_field_by_name($sformatf("is%0d", timer));
     `DV_CHECK_NE_FATAL(is_fld, null)
-    is_fld.set(1);
-    csr_update(.csr(intr_state_rg));
+    //is_fld.set(1);
+    //csr_update(.csr(intr_state_rg));
+    set_compare_val(hart, timer, 1);
     csr_rd(.ptr(intr_state_rg), .value(status));
   endtask
 
