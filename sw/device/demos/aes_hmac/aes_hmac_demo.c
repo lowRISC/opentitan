@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/aes.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/gpio.h"
@@ -117,102 +118,135 @@ int main(int argc, char **argv) {
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
   gpio_init(0xFF00);
 
-  // Feedback switch status to LEDs
-  uint8_t switches = gpio_read() & 0xFF;
-  gpio_write_all(switches << 8);
-
-  // Enable/disable interactive mode based on Switch 0
-  bool interactive = switches & 0x1;
 
   // Global variables
   char plain_text[MAX_LENGTH_TEXT] = "Welcome to the RISC-V Summit 2019!";
   char cipher_text[MAX_LENGTH_TEXT];
-  char aes_key[LENGTH_KEY] = "This key is not really secret.";
+  char aes_key[LENGTH_KEY] = "This key is not really secret*";
   int num_blocks = MAX_LENGTH_TEXT / 16;
   int num_chars = MAX_LENGTH_TEXT;
   char digest_initial[32];
   char digest_final[32];
+  char aes_key_auto_char = 'A';
 
   aes_cfg_t aes_cfg;
   aes_cfg.key_len = kAes256;
   aes_cfg.manual_start_trigger = false;
   aes_cfg.force_data_overwrite = false;
 
-  // Get Input
-  uart_send_str("I will encode and hash the following plain text: \r\n\"");
-  uart_send_str(plain_text);
-  uart_send_str("\"\r\n");
-  if (interactive) {
-    uart_send_str(
-        "Please enter your own plain text to change it. Otherwise hit "
-        "ENTER.\r\n");
-    overwrite_string(plain_text, MAX_LENGTH_TEXT);
-  }
-  uart_send_str("\r\n");
+  while(1) {
+    // Feedback switch status to LEDs
+    uint8_t switches = gpio_read() & 0xFF;
+    gpio_write_all(switches << 8);
 
-  uart_send_str("I will use the following AES-256 key: \r\n\"");
-  uart_send_str(aes_key);
-  uart_send_str("\"\r\n");
-  if (interactive) {
-    uart_send_str(
-        "Please enter your own key to change it. Otherwise hit ENTER.\r\n");
-    overwrite_string(aes_key, LENGTH_KEY);
-  }
-  uart_send_str("\r\n");
+    bool interactive = switches & 0x1;
 
-  // Determine number of 16-byte blocks to encrypt, number of characters to hash
-  for (int i = 0; i < MAX_LENGTH_TEXT; ++i) {
-    if (plain_text[i] == '\0') {
-      num_blocks = i / 16;
-      num_chars = i;
-      if (num_blocks * 16 < i) {
-        ++num_blocks;
+    // Get Input
+    uart_send_str("I will encode and hash the following plain text: \r\n\"");
+    uart_send_str(plain_text);
+    uart_send_str("\"\r\n");
+    if (interactive) {
+      uart_send_str(
+          "Please enter your own plain text to change it. Otherwise hit "
+          "ENTER.\r\n");
+      overwrite_string(plain_text, MAX_LENGTH_TEXT);
+    }
+    uart_send_str("\r\n");
+
+    if(!interactive) {
+      int i;
+      for (i = 0;i < LENGTH_KEY; i++) {
+        if (aes_key[i] == 0) {
+          break;
+        }
       }
-      break;
+
+      if(i == LENGTH_KEY) {
+        i = LENGTH_KEY - 2;
+      }
+      else if(i != 0) {
+        i--;
+      }
+
+      aes_key[i] = aes_key_auto_char;
+      aes_key[i + 1] = 0;
+
+      if (aes_key_auto_char == 'Z') {
+        aes_key_auto_char = 'A';
+      } else {
+        ++aes_key_auto_char;
+      }
+    }
+
+    uart_send_str("I will use the following AES-256 key: \r\n\"");
+    uart_send_str(aes_key);
+    uart_send_str("\"\r\n");
+    if (interactive) {
+      uart_send_str(
+          "Please enter your own key to change it. Otherwise hit ENTER.\r\n");
+      overwrite_string(aes_key, LENGTH_KEY);
+    }
+    uart_send_str("\r\n");
+
+    // Determine number of 16-byte blocks to encrypt, number of characters to hash
+    for (int i = 0; i < MAX_LENGTH_TEXT; ++i) {
+      if (plain_text[i] == '\0') {
+        num_blocks = i / 16;
+        num_chars = i;
+        if (num_blocks * 16 < i) {
+          ++num_blocks;
+        }
+        break;
+      }
+    }
+
+    // Calculate hash over plain text before encryption.
+    hw_SHA256_hash(plain_text, num_chars, (uint8_t *)digest_initial);
+
+    uart_send_str("Plain text hash: \r\n");
+    print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
+    uart_send_str("\n");
+
+    // Configure AES key
+    aes_key_put((const void *)aes_key, aes_cfg.key_len);
+
+    // Encode
+    aes_cfg.mode = kAesEnc;
+    aes_init(aes_cfg);
+    aes_process_blocks((void *)cipher_text, (const void *)plain_text, num_blocks);
+
+    // Output
+    uart_send_str("Encrypted cipher text: \r\n");
+    print_hex_buffer(cipher_text, num_blocks * 16);
+    uart_send_str("\n");
+
+    // Decode
+    aes_cfg.mode = kAesDec;
+    aes_init(aes_cfg);
+    aes_process_blocks((void *)plain_text, (const void *)cipher_text, num_blocks);
+
+    // Output
+    uart_send_str("Decrypted cipher text: \r\n\"");
+    uart_send_str(plain_text);
+    uart_send_str("\"\r\n\n");
+
+    // Calculate hash over recovered plain text after decryption.
+    hw_SHA256_hash(plain_text, num_chars, (uint8_t *)digest_final);
+    if (check_hash(digest_initial, digest_final)) {
+      uart_send_str("Detected hash mismatch on decrypted data!. Got: \r\n");
+      print_hex_buffer(digest_final, ARRAYSIZE(digest_final));
+      uart_send_str("Expected: \r\n");
+      print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
+    }
+
+    if(!interactive) {
+      for(int i = 0;i < 10000; ++i)
+        busy_sleep_micros(200);
     }
   }
 
-  // Calculate hash over plain text before encryption.
-  hw_SHA256_hash(plain_text, num_chars, (uint8_t *)digest_initial);
-
-  uart_send_str("Plain text hash: \r\n");
-  print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
-  uart_send_str("\n");
-
-  // Configure AES key
-  aes_key_put((const void *)aes_key, aes_cfg.key_len);
-
-  // Encode
-  aes_cfg.mode = kAesEnc;
-  aes_init(aes_cfg);
-  aes_process_blocks((void *)cipher_text, (const void *)plain_text, num_blocks);
-
-  // Output
-  uart_send_str("Encrypted cipher text: \r\n");
-  print_hex_buffer(cipher_text, num_blocks * 16);
-  uart_send_str("\n");
-
-  // Decode
-  aes_cfg.mode = kAesDec;
-  aes_init(aes_cfg);
-  aes_process_blocks((void *)plain_text, (const void *)cipher_text, num_blocks);
-
-  // Output
-  uart_send_str("Decrypted cipher text: \r\n\"");
-  uart_send_str(plain_text);
-  uart_send_str("\"\r\n\n");
-
-  // Calculate hash over recovered plain text after decryption.
-  hw_SHA256_hash(plain_text, num_chars, (uint8_t *)digest_final);
-  if (check_hash(digest_initial, digest_final)) {
-    uart_send_str("Detected hash mismatch on decrypted data!. Got: \r\n");
-    print_hex_buffer(digest_final, ARRAYSIZE(digest_final));
-    uart_send_str("Expected: \r\n");
-    print_hex_buffer(digest_initial, ARRAYSIZE(digest_initial));
-  }
-
   uart_send_str("DONE!\r\n");
-  __asm__ volatile("wfi;");
+  asm volatile("wfi;");
 
   return 0;
 }
