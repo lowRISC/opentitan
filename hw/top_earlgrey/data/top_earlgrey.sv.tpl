@@ -74,7 +74,6 @@ module top_${top["name"]} #(
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
-  import flash_ctrl_pkg::*;
 
   tl_h2d_t  tl_corei_h_h2d;
   tl_d2h_t  tl_corei_h_d2h;
@@ -433,9 +432,15 @@ module top_${top["name"]} #(
 
   % elif m["type"] == "eflash":
 
-  // flash controller to eflash communication
-  flash_req_t flash_req;
-  flash_rsp_t flash_rsp;
+  % if len(top["inter_signal"]["definitions"]) >= 1:
+  // define inter-module signals
+  % endif
+  % for sig in top["inter_signal"]["definitions"]:
+    % if sig["type"] == "req_rsp":
+  ${sig["package"]}::${sig["struct"]}_req_t ${sig["signame"]}_req;
+  ${sig["package"]}::${sig["struct"]}_rsp_t ${sig["signame"]}_rsp;
+    % endif
+  % endfor
 
   // host to flash communication
   logic flash_host_req;
@@ -489,8 +494,8 @@ module top_${top["name"]} #(
     .host_req_rdy_o  (flash_host_req_rdy),
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
-    .flash_ctrl_i    (flash_req),
-    .flash_ctrl_o    (flash_rsp)
+    .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
+    .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp)
   );
 
   % else:
@@ -592,10 +597,22 @@ else:
       .alert_rx_i  ( alert_rx[${slice}] ),
     % endif
     ## TODO: Inter-module Connection
-    % if m["type"] == "flash_ctrl":
+    % if "inter_signal_list" in m:
 
-      .flash_o(flash_req),
-      .flash_i(flash_rsp),
+      // Inter-module signals
+      % for sig in m["inter_signal_list"]:
+        % if sig["type"] == "req_rsp":
+          % if sig["act"] == "requester":
+      .${sig["name"]}_o(${sig["top_signame"]}_req),
+      .${sig["name"]}_i(${sig["top_signame"]}_rsp),
+          % elif sig["act"] == "responder":
+      .${sig["name"]}_i(${sig["top_signame"]}_req),
+      .${sig["name"]}_o(${sig["top_signame"]}_rsp),
+          % endif
+        % elif sig["type"] == "broadcast":
+          ## TODO: Broadcast type
+        % endif
+      % endfor
     % endif
     % if m["type"] == "rv_plic":
 

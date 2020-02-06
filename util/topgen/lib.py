@@ -70,6 +70,32 @@ def get_module_by_name(top, name):
     return module
 
 
+def intersignal_to_signalname(top, m_name, s_name) -> str:
+
+    # TODO: Find the signal in the `inter_module_list` and get the correct signal name
+
+    return "{m_name}_{s_name}".format(m_name=m_name, s_name=s_name)
+
+
+def get_package_name_by_intermodule_signal(top, struct) -> str:
+    """Search inter-module signal package with the struct name
+
+    For instance, if `flash_ctrl` has inter-module signal package,
+    this function returns the package name
+    """
+    instances = top["module"] + top["memory"]
+
+    intermodule_instances = [
+        x["inter_signal_list"] for x in top["module"] + top["memory"]
+        if "inter_signal_list" in x
+    ]
+
+    for m in intermodule_instances:
+        if m["name"] == struct and "package" in m:
+            return m["package"]
+    return ""
+
+
 def get_signal_by_name(module, name):
     """Return the signal struct with the type input/output/inout
     """

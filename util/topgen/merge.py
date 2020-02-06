@@ -7,7 +7,7 @@ from copy import deepcopy
 from functools import partial
 
 from .lib import *
-import hjson
+from .intermodule import elab_intermodule
 
 
 def amend_ip(top, ip):
@@ -111,6 +111,12 @@ def amend_ip(top, ip):
         ip_module["scan"] = ip["scan"]
     else:
         ip_module["scan"] = "false"
+
+    # inter-module
+    if "inter_signal_list" in ip:
+        ip_module["inter_signal_list"] = ip["inter_signal_list"]
+
+        # TODO: validate
 
 
 # TODO: Replace this part to be configurable from Hjson or template
@@ -580,6 +586,9 @@ def merge_top(topcfg, ipobjs, xbarobjs):
     # Combine ip cfg into topcfg
     for ip in ipobjs:
         amend_ip(gencfg, ip)
+
+    # Inter-module signals
+    elab_intermodule(gencfg)
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)

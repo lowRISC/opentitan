@@ -151,8 +151,26 @@
       reset_connections: {rst_ni: "lc"},
       type: "eflash",
       base_addr: "0x20000000",
-      size: "0x80000" },
+      size: "0x80000",
+      inter_signal_list: [
+        { struct: "flash",    // flash_req_t, flash_rsp_t
+          type: "req_rsp",
+          name: "flash_ctrl", // flash_ctrl_i (req), flash_ctrl_o (rsp)
+          act:  "responder",
+        }
+      ],
+    },
   ],
+
+  // Inter-module Connection.
+  // format:
+  //    requester: [ resp1, resp2, ... ],
+  //
+  //  the field and value should be module_inst.signal_name
+  //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
+  inter_module: {
+    'flash_ctrl.flash': ['eflash.flash_ctrl']
+  },
 
   debug_mem_base_addr: "0x1A110000",
 

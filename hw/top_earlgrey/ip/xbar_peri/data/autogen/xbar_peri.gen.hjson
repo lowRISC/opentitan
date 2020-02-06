@@ -50,8 +50,8 @@
       addr_range:
       [
         {
-          base_addr: 0x40000000
           size_byte: 0x1000
+          base_addr: 0x40000000
         }
       ]
       xbar: false
@@ -67,8 +67,8 @@
       addr_range:
       [
         {
-          base_addr: 0x40010000
           size_byte: 0x1000
+          base_addr: 0x40010000
         }
       ]
       xbar: false
@@ -84,8 +84,8 @@
       addr_range:
       [
         {
-          base_addr: 0x40020000
           size_byte: 0x1000
+          base_addr: 0x40020000
         }
       ]
       xbar: false
@@ -101,8 +101,8 @@
       addr_range:
       [
         {
-          base_addr: 0x40080000
           size_byte: 0x1000
+          base_addr: 0x40080000
         }
       ]
       xbar: false
@@ -118,8 +118,8 @@
       addr_range:
       [
         {
-          base_addr: 0x40150000
           size_byte: 0x1000
+          base_addr: 0x40150000
         }
       ]
       xbar: false
