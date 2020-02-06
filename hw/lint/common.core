@@ -13,7 +13,7 @@ filesets:
   files_ascentlint:
     files:
       - common.waiver: {file_type: waiver}
-      - ascentlint.policy: {file_type: tclSource}
+      - ascentlint-config.tcl: {file_type: tclSource}
 
 targets:
   default: &default_target
