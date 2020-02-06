@@ -5,9 +5,52 @@
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 
+#include "crypto.h"
+
+/**
+ * Get EVP_CIPHER type pointer defined by key_len and mode.
+ * If the selected cipher is not supported, the AES-128 ECB type is returned.
+ *
+ * @param  key_len   Encryption key length in bytes (16, 24, 32)
+ * @param  mode      AES cipher mode @see crypto_mode.
+ * @return Pointer to EVP_CIPHER type
+ */
+static const EVP_CIPHER *crypto_get_EVP_cipher(int key_len,
+                                               crypto_mode_t mode) {
+  const EVP_CIPHER *cipher;
+
+  if (mode == kCryptoAesCbc) {
+    if (key_len == 32) {
+      cipher = EVP_aes_256_cbc();
+    } else if (key_len == 24) {
+      cipher = EVP_aes_192_cbc();
+    } else {  // key_len = 16
+      cipher = EVP_aes_128_cbc();
+    }
+  } else if (mode == kCryptoAesCtr) {
+    if (key_len == 32) {
+      cipher = EVP_aes_256_ctr();
+    } else if (key_len == 24) {
+      cipher = EVP_aes_192_ctr();
+    } else {  // key_len = 16
+      cipher = EVP_aes_128_ctr();
+    }
+  } else {  // kCryptoAesEcb
+    if (key_len == 32) {
+      cipher = EVP_aes_256_ecb();
+    } else if (key_len == 24) {
+      cipher = EVP_aes_192_ecb();
+    } else {  // key_len = 16
+      cipher = EVP_aes_128_ecb();
+    }
+  }
+
+  return cipher;
+}
+
 int crypto_encrypt(unsigned char *output, const unsigned char *iv,
-                   const unsigned char *input, const int input_len,
-                   const unsigned char *key, const int key_len) {
+                   const unsigned char *input, int input_len,
+                   const unsigned char *key, int key_len, crypto_mode_t mode) {
   EVP_CIPHER_CTX *ctx;
   int ret;
   int len, output_len;
@@ -19,14 +62,12 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
+  // Get cipher
+  const EVP_CIPHER *cipher = crypto_get_EVP_cipher(key_len, mode);
+
   // Init encryption context
-  if (key_len == 16) {
-    ret = EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, iv);
-  } else if (key_len == 24) {
-    ret = EVP_EncryptInit_ex(ctx, EVP_aes_192_ecb(), NULL, key, iv);
-  } else {  // key_len = 32
-    ret = EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, key, iv);
-  }
+  ret = EVP_EncryptInit_ex(ctx, cipher, NULL, key, iv);
+
   if (ret != 1) {
     printf("ERROR: Initialization of encryption context failed\n");
     return -1;
@@ -58,8 +99,8 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
 }
 
 int crypto_decrypt(unsigned char *output, const unsigned char *iv,
-                   const unsigned char *input, const int input_len,
-                   const unsigned char *key, const int key_len) {
+                   const unsigned char *input, int input_len,
+                   const unsigned char *key, int key_len, crypto_mode_t mode) {
   EVP_CIPHER_CTX *ctx;
   int ret;
   int len, output_len;
@@ -71,14 +112,11 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
+  // Get cipher
+  const EVP_CIPHER *cipher = crypto_get_EVP_cipher(key_len, mode);
+
   // Init decryption context
-  if (key_len == 16) {
-    ret = EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, iv);
-  } else if (key_len == 24) {
-    ret = EVP_DecryptInit_ex(ctx, EVP_aes_192_ecb(), NULL, key, iv);
-  } else {  // key_len == 32
-    ret = EVP_DecryptInit_ex(ctx, EVP_aes_256_ecb(), NULL, key, iv);
-  }
+  ret = EVP_DecryptInit_ex(ctx, cipher, NULL, key, iv);
   if (ret != 1) {
     printf("ERROR: Initialization of decryption context failed\n");
     return -1;
