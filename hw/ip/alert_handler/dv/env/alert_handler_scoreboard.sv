@@ -110,6 +110,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // for read, update predication at address phase and compare at data phase
      case (csr.get_name())
       // add individual case item for each csr
+       "intr_test": begin
+         if (write) begin
+           bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
+           void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
+         end
+       end
        default: begin
         //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
        end
