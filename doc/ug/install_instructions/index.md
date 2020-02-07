@@ -55,12 +55,7 @@ A number of software packages from the distribution's package manager is require
 All installation instructions below are for Ubuntu 16.04.
 Adjust as necessary for other Linux distributions.
 
-```console
-$ sudo apt-get install git python3 python3-pip python3-setuptools \
-    build-essential autoconf flex bison ninja-build pkgconf \
-    srecord zlib1g-dev libftdi1-dev libftdi1-2 libssl-dev \
-    libusb-1.0-0-dev libtool libelf-dev
-```
+{{< apt_cmd >}}
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
 (Note that the `diff_generated_util_output.py` tool works better with Python 3.6 or later where the order is preserved in `dict` types, earlier versions of Python will show spurious differences caused by things being reordered.)
