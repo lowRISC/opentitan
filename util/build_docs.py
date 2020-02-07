@@ -18,6 +18,7 @@ import platform
 import re
 import shutil
 import subprocess
+import textwrap
 from pathlib import Path
 
 import hjson
@@ -166,6 +167,35 @@ def generate_selfdocs():
             elif tool == "tlgen":
                 fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
+def generate_apt_reqs():
+    """Generate an apt-get command line invocation from apt-requirements.txt
+
+    This will be saved in outdir-generated/apt_cmd.txt
+    """
+    # Read the apt-requirements.txt
+    apt_requirements = []
+    requirements_file = open(str(SRCTREE_TOP.joinpath("apt-requirements.txt")))
+    for package_line in requirements_file.readlines():
+        # Ignore everything after `#` on each line, and strip whitespace
+        package = package_line.split('#', 1)[0].strip()
+        if package:
+            # only add non-empty lines to packages
+            apt_requirements.append(package)
+
+    apt_cmd = "$ sudo apt-get install " + " ".join(apt_requirements)
+    apt_cmd_lines = textwrap.wrap(apt_cmd,
+                                  width=78,
+                                  replace_whitespace=True,
+                                  subsequent_indent='    ')
+    # Newlines need to be escaped
+    apt_cmd = " \\\n".join(apt_cmd_lines)
+
+    # And then to write the generated string directly to the file.
+    apt_cmd_path = config["outdir-generated"].joinpath('apt_cmd.txt')
+    apt_cmd_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(str(apt_cmd_path), mode='w') as fout:
+        fout.write(apt_cmd)
+
 
 def is_hugo_extended():
     args = ["hugo", "version"]
@@ -254,6 +284,7 @@ def main():
     generate_dashboards()
     generate_testplans()
     generate_selfdocs()
+    generate_apt_reqs()
 
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
