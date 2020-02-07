@@ -137,15 +137,22 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     uvm_reg         intr_state_rg;
     uvm_reg_field   is_fld;
     bit [TL_DW-1:0] status;
+    bit [TL_DW-1:0] wr_value;
     `DV_CHECK_LT_FATAL(hart, NUM_HARTS)
     `DV_CHECK_LT_FATAL(timer, NUM_TIMERS)
+    // randomly clear the intr by writing intr_state or mtimecmp
     intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
     `DV_CHECK_NE_FATAL(intr_state_rg, null)
-    is_fld = intr_state_rg.get_field_by_name($sformatf("is%0d", timer));
-    `DV_CHECK_NE_FATAL(is_fld, null)
-    //is_fld.set(1);
-    //csr_update(.csr(intr_state_rg));
-    set_compare_val(hart, timer, 1);
+
+    if ($urandom_range(0, 1)) begin
+      wr_value = 1 << timer;
+      csr_wr(.csr(intr_state_rg), .value(wr_value));
+    end else begin
+      wr_value = $urandom();
+      set_compare_val(hart, timer, wr_value);
+      // wait one clk cycle then check intr, to ensure get the sticky interrupt value
+      cfg.clk_rst_vif.wait_clks(1);
+    end
     csr_rd(.ptr(intr_state_rg), .value(status));
   endtask
 
