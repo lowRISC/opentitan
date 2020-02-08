@@ -27,7 +27,7 @@ filesets:
       - seq_lib/xbar_same_source_vseq.sv: {is_include_file: true}
       - seq_lib/xbar_unmapped_addr_vseq.sv: {is_include_file: true}
       - seq_lib/xbar_stress_all_vseq.sv: {is_include_file: true}
-      - seq_lib/xbar_stress_all_with_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_stress_all_with_rand_reset_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

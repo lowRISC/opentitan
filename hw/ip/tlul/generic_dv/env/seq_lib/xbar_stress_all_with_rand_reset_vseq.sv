@@ -4,8 +4,8 @@
 
 // one thread running the hmac_stress_all sequence
 // another thread randomly insert reset
-class xbar_stress_all_with_reset_vseq extends xbar_base_vseq;
-  `uvm_object_utils(xbar_stress_all_with_reset_vseq)
+class xbar_stress_all_with_rand_reset_vseq extends xbar_base_vseq;
+  `uvm_object_utils(xbar_stress_all_with_rand_reset_vseq)
 
   rand uint delay;
 

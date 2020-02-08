@@ -113,13 +113,13 @@ ifeq (${TEST_NAME},xbar_stress_all_with_error)
   UVM_TEST_SEQ   = xbar_stress_all_vseq
 endif
 
-ifeq (${TEST_NAME},xbar_stress_all_with_reset)
-  UVM_TEST_SEQ   = xbar_stress_all_with_reset_vseq
+ifeq (${TEST_NAME},xbar_stress_all_with_rand_reset)
+  UVM_TEST_SEQ   = xbar_stress_all_with_rand_reset_vseq
 endif
 
 ifeq (${TEST_NAME},xbar_stress_all_with_reset_error)
   UVM_TEST       = xbar_error_test
-  UVM_TEST_SEQ   = xbar_stress_all_with_reset_vseq
+  UVM_TEST_SEQ   = xbar_stress_all_with_rand_reset_vseq
 endif
 
 ####################################################################################################

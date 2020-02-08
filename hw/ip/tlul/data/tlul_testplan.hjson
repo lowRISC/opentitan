@@ -73,7 +73,7 @@
               stress seq and then start a new stress seq
             - Run a few iteration to ensure reset doesn't break the design'''
       milestone: V2
-      tests: ["xbar_stress_all_with_reset", "xbar_stress_all_with_reset_error"]
+      tests: ["xbar_stress_all_with_rand_reset", "xbar_stress_all_with_reset_error"]
     }
   ]
 }
