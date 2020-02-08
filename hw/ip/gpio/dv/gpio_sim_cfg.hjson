@@ -65,7 +65,7 @@
 
     {
       name: gpio_dout_din_regs_random_rw
-      uvm_test_seq: gpio_din_regs_random_rw_vseq
+      uvm_test_seq: gpio_dout_din_regs_random_rw_vseq
     }
 
     {
@@ -82,7 +82,7 @@
 
     {
       name: gpio_intr_with_filter_rand_intr_event
-      uvm_test_seq: gpio_intr_with_filter_rand_intr_event
+      uvm_test_seq: gpio_intr_with_filter_rand_intr_event_vseq
       run_opts: ["+en_scb=0", "+zero_delays=1", "+do_clear_all_interrupts=0"]
     }
 
