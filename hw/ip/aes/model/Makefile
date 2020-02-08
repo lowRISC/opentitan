@@ -1,6 +1,6 @@
 BORING_SSL_PATH=../boringssl
 
-NAME=aes_example
+NAME=aes_example aes_modes
 FLAGS=-Wall -O2 -g
 
 ifneq ($(wildcard $(BORING_SSL_PATH)/build/crypto/libcrypto.a),)
@@ -8,7 +8,9 @@ ifneq ($(wildcard $(BORING_SSL_PATH)/build/crypto/libcrypto.a),)
 endif
 
 all:
-	gcc $(FLAGS) crypto.c aes.c $(NAME).c -o $(NAME) -I$(BORING_SSL_PATH) -L$(BORING_SSL_PATH)/build/crypto -lcrypto -lpthread
+	@for f in $(NAME) ; do \
+		gcc $(FLAGS) crypto.c aes.c $${f}.c -o $${f} -I$(BORING_SSL_PATH) -L$(BORING_SSL_PATH)/build/crypto -lcrypto -lpthread ; \
+	done
 
 clean:
 	rm -f $(NAME)
