@@ -11,4 +11,4 @@
 `include "xbar_same_source_vseq.sv"
 `include "xbar_unmapped_addr_vseq.sv"
 `include "xbar_stress_all_vseq.sv"
-`include "xbar_stress_all_with_reset_vseq.sv"
+`include "xbar_stress_all_with_rand_reset_vseq.sv"
