@@ -62,11 +62,6 @@
       name: aes_sanity
       uvm_test_seq: aes_sanity_vseq
     }
-
-    {
-      // TODO: Need to add test below to get it to map to the testplan entry.
-      name: aes_stress
-    }
   ]
 
   // List of regressions.

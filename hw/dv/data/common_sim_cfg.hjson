@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   project:          opentitan
-  doc_server:       "docs.opentitan.org"
-  results_server:   "reports.opentitan.org"
+  doc_server:       docs.opentitan.org
+  results_server:   reports.opentitan.org
 
   flow:             sim
   flow_makefile:    "{proj_root}/hw/dv/data/sim.mk"
@@ -123,6 +123,14 @@
   ]
 
   // Project defaults for VCS
-  vcs_cov_hier: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg"
-  vcs_cov_excl_files: ["{proj_root}/hw/dv/tools/vcs/common_cov_excl.el"]
+  vcs_cov_hier: "-cm_hier {tool_dir}/cover.cfg"
+  vcs_cov_excl_files: ["{tool_dir}/common_cov_excl.el"]
+
+  // Results server stuff - indicate what command to use to copy over the results.
+  // Workaround for gsutil to fall back to using python2.7.
+  results_server_prefix:      "gs://"
+  results_server_url_prefix:  "https://"
+  results_server_cmd:     "CLOUDSDK_PYTHON=/usr/bin/python2.7 /usr/bin/gsutil"
+  results_server_path:    "{results_server_prefix}{results_server}/{rel_path}"
+  results_server_dir:     "{results_server_path}/latest"
 }

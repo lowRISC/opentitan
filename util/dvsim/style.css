@@ -72,3 +72,64 @@
 .results tbody tr:nth-child(even) {
   background: #f2f2f2;
 }
+
+/* Color encoding for percentages. */
+.cna  {
+  color: 000000;
+  background-color: #f8f8f8;
+}
+
+.c0  {
+  color: #ffffff;
+  background-color: #EF6F6F;
+}
+
+.c1  {
+  color: #ffffff;
+  background-color: #EF886F;
+}
+
+.c2  {
+  color: #000000;
+  background-color: #EFA26F;
+}
+
+.c3  {
+  color: #000000;
+  background-color: #EFBB6F;
+}
+
+.c4  {
+  color: #000000;
+  background-color: #EFD56F;
+}
+
+.c5  {
+  color: #000000;
+  background-color: #EEEF6F;
+}
+
+.c6  {
+  color: #000000;
+  background-color: #D5EF6F;
+}
+
+.c7  {
+  color: #000000;
+  background-color: #BBEF6F;
+}
+
+.c8  {
+  color: #000000;
+  background-color: #A2EF6F;
+}
+
+.c9  {
+  color: #000000;
+  background-color: #88EF6F;
+}
+
+.c10  {
+  color: #000000;
+  background-color: #6FEF6F;
+}

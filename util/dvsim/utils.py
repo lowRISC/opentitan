@@ -79,8 +79,9 @@ def parse_hjson(hjson_file):
         hjson_cfg_dict = hjson.loads(text, use_decimal=True)
         f.close()
     except Exception as e:
-        log.fatal("Failed to parse \"%s\" possibly due to bad path or syntax error.\n%s",
-                  hjson_file, e)
+        log.fatal(
+            "Failed to parse \"%s\" possibly due to bad path or syntax error.\n%s",
+            hjson_file, e)
         sys.exit(1)
     return hjson_cfg_dict
 
@@ -95,15 +96,19 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
 
     if "{eval_cmd}" in var:
         idx = var.find("{eval_cmd}") + 11
-        var = subst_wildcards(var[idx:], mdict, ignored_wildcards)
-        var = run_cmd(var)
+        subst_var = subst_wildcards(var[idx:], mdict, ignored_wildcards)
+        # If var has wildcards that were ignored, then skip running the command
+        # for now, assume that it will be handled later.
+        match = re.findall(r"{([A-Za-z0-9\_]+)}", subst_var)
+        if len(match) == 0:
+            var = run_cmd(subst_var)
     else:
         match = re.findall(r"{([A-Za-z0-9\_]+)}", var)
         if len(match) > 0:
             subst_list = {}
             for item in match:
                 if item not in ignored_wildcards:
-                    log.debug("Found wildcard in \"%s\": \"%s\"", var, item)
+                    log.debug("Found wildcard \"%s\" in \"%s\"", item, var)
                     found = subst(item, mdict)
                     if found is not None:
                         if type(found) is list:
@@ -190,4 +195,68 @@ def md_results_to_html(title, css_path, md_text):
     html_text += "</div>\n"
     html_text += "</body>\n"
     html_text += "</html>\n"
+    html_text = htmc_color_pc_cells(html_text)
     return html_text
+
+
+def htmc_color_pc_cells(text):
+    '''This function finds cells in a html table that contains a % sign. It then
+    uses the number in front if the % sign to color the cell based on the value
+    from a shade from red to green. These color styles are encoded in ./style.css
+    which is assumed to be accessible by the final webpage.
+    '''
+
+    # Replace <td> with <td class="color-class"> based on the fp
+    # value. "color-classes" are listed in ./style.css as follows: "cna"
+    # for NA value, "c0" to "c10" for fp value falling between 0.00-9.99,
+    # 10.00-19.99 ... 90.00-99.99, 100.0 respetively.
+    def color_cell(cell, cclass):
+        op = cell.replace("<td", "<td class=\"" + cclass + "\"")
+        # Remove '%' sign.
+        op = re.sub(r"\s*%\s*", "", op)
+        return op
+
+    # List of 'not applicable' identifiers.
+    na_list = ['--', 'NA', 'N.A.', 'N.A', 'na', 'n.a.', 'n.a']
+    na_list_patterns = '|'.join(na_list)
+
+    # List of floating point patterns: '0', '0.0' & '.0'
+    fp_patterns = "\d+|\d+\.\d+|\.\d+"
+
+    patterns = fp_patterns + '|' + na_list_patterns
+    match = re.findall(r"(<td.*>\s*(" + patterns + ")\s+%\s*</td>)", text)
+    if len(match) > 0:
+        subst_list = {}
+        fp_nums = []
+        for item in match:
+            # item is a tuple - first is the full string indicating the table
+            # cell which we want to replace, second is the floating point value.
+            cell = item[0]
+            fp_num = item[1]
+            # Skip if fp_num is already processed.
+            if fp_num in fp_nums: continue
+            fp_nums.append(fp_num)
+            if fp_num in na_list: subst = color_cell(cell, "cna")
+            else:
+                # Item is a fp num.
+                try:
+                    fp = float(fp_num)
+                except ValueError:
+                    log.error("Percentage item \"%s\" in cell \"%s\" is not an " + \
+                              "integer or a floating point number", fp_num, cell)
+                    continue
+                if fp >= 0.0 and fp < 10.0: subst = color_cell(cell, "c0")
+                elif fp >= 10.0 and fp < 20.0: subst = color_cell(cell, "c1")
+                elif fp >= 20.0 and fp < 30.0: subst = color_cell(cell, "c2")
+                elif fp >= 30.0 and fp < 40.0: subst = color_cell(cell, "c3")
+                elif fp >= 40.0 and fp < 50.0: subst = color_cell(cell, "c4")
+                elif fp >= 50.0 and fp < 60.0: subst = color_cell(cell, "c5")
+                elif fp >= 60.0 and fp < 70.0: subst = color_cell(cell, "c6")
+                elif fp >= 70.0 and fp < 80.0: subst = color_cell(cell, "c7")
+                elif fp >= 80.0 and fp < 90.0: subst = color_cell(cell, "c8")
+                elif fp >= 90.0 and fp < 100.0: subst = color_cell(cell, "c9")
+                elif fp >= 100.0: subst = color_cell(cell, "c10")
+            subst_list[cell] = subst
+        for item in subst_list:
+            text = text.replace(item, subst_list[item])
+    return text

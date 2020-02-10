@@ -16,6 +16,7 @@ import sys
 import time
 
 import hjson
+from tabulate import tabulate
 
 from .utils import *
 
@@ -75,7 +76,7 @@ class Deploy():
         self.log_fd = None
         self.status = None
 
-        # These are command, outut directory and log file
+        # These are command, output directory and log file
         self.mandatory_misc_attrs.update({
             "name": False,
             "build_mode": False,
@@ -157,7 +158,8 @@ class Deploy():
         self.exports.update(os.environ)
         args = shlex.split(self.cmd)
         try:
-            self.odir_limiter()
+            # If renew_odir flag is True - then move it.
+            if self.renew_odir: self.odir_limiter(odir=self.odir)
             os.system("mkdir -p " + self.odir)
             os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
                       '/' + self.odir_ln)
@@ -176,38 +178,57 @@ class Deploy():
             if self.log_fd: self.log_fd.close()
             self.status = "K"
 
-    # Function to backup previously run output directory to maintain a history of
-    # limited number of output directories. It deletes the output directory with the
-    # oldest timestamp, if the limit is reached.
-    def odir_limiter(self):
-        # Return if renew_odir flag is False - we'd be reusing the existing odir.
-        if not self.renew_odir: return
+    def odir_limiter(self, odir, max_odirs=-1):
+        '''Function to backup previously run output directory to maintain a
+        history of a limited number of output directories. It deletes the output
+        directory with the oldest timestamps, if the limit is reached. It returns
+        a list of directories that remain after deletion.
+        Arguments:
+        odir: The output directory to backup
+        max_odirs: Maximum output directories to maintain as history.
+
+        Returns:
+        dirs: Space-separated list of directories that remain after deletion.
+        '''
         try:
             # If output directory exists, back it up.
-            if os.path.exists(self.odir):
+            if os.path.exists(odir):
                 ts = run_cmd("date '+" + self.sim_cfg.ts_format + "' -d \"" +
-                             "$(stat -c '%y' " + self.odir + ")\"")
-                os.system('mv ' + self.odir + " " + self.odir + "_" + ts)
+                             "$(stat -c '%y' " + odir + ")\"")
+                os.system('mv ' + odir + " " + odir + "_" + ts)
         except IOError:
-            log.error('Failed to back up existing output directory %s',
-                      self.odir)
+            log.error('Failed to back up existing output directory %s', odir)
 
+        dirs = ""
         # Delete older directories.
         try:
-            pdir = os.path.realpath(self.odir + "/..")
+            pdir = os.path.realpath(odir + "/..")
+            # Fatal out if pdir got set to root.
+            if pdir == "/":
+                log.fatal(
+                    "Something went wrong while processing \"%s\": odir = \"%s\"",
+                    self.name, odir)
+                sys.exit(1)
+
             if os.path.exists(pdir):
                 find_cmd = "find " + pdir + " -mindepth 1 -maxdepth 1 -type d "
-                num_dirs = int(run_cmd(find_cmd + " | wc -l"))
-                num_rm_dirs = num_dirs - Deploy.max_odirs
+                dirs = run_cmd(find_cmd)
+                dirs = dirs.replace('\n', ' ')
+                list_dirs = dirs.split()
+                num_dirs = len(list_dirs)
+                if max_odirs == -1: max_odirs = self.max_odirs
+                num_rm_dirs = num_dirs - max_odirs
                 if num_rm_dirs > -1:
-                    dirs = run_cmd(find_cmd +
-                                   "-printf '%T+ %p\n' | sort | head -n " +
-                                   str(num_rm_dirs + 1) +
-                                   " | awk '{print $2}'")
-                    dirs = dirs.replace('\n', ' ')
-                    os.system("/usr/bin/rm -rf " + dirs)
+                    rm_dirs = run_cmd(find_cmd +
+                                      "-printf '%T+ %p\n' | sort | head -n " +
+                                      str(num_rm_dirs + 1) +
+                                      " | awk '{print $2}'")
+                    rm_dirs = rm_dirs.replace('\n', ' ')
+                    dirs = dirs.replace(rm_dirs, "")
+                    os.system("/usr/bin/rm -rf " + rm_dirs)
         except IOError:
             log.error("Failed to delete old run directories!")
+        return dirs
 
     def set_status(self):
         self.status = 'P'
@@ -263,10 +284,10 @@ class Deploy():
         if self.process.poll() is not None:
             self.log_fd.close()
             if self.process.returncode != 0:
-                msg = "Last 5 lines of the log:<br>\n"
+                msg = "Last 10 lines of the log:<br>\n"
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
-                get_fail_msg_cmd = "tail -n 5 " + self.log
+                get_fail_msg_cmd = "tail -n 10 " + self.log
                 msg = run_cmd(get_fail_msg_cmd)
                 msg = "```\n{}\n```\n".format(msg)
                 self.fail_msg += msg
@@ -330,7 +351,7 @@ class Deploy():
                 if item not in status[item.target].keys():
                     status[item.target][item] = ""
 
-                item.get_status()
+                if item.status == ".": item.get_status()
                 if item.status != status[
                         item.target][item] and item.status != ".":
                     trig_print = True
@@ -410,7 +431,7 @@ class CompileSim(Deploy):
             "build_opts": False
         }
 
-        self.mandatory_misc_attrs = {}
+        self.mandatory_misc_attrs = {"cov_db_dir": False}
 
         # Initialize
         super().__init__(sim_cfg)
@@ -427,6 +448,12 @@ class CompileSim(Deploy):
         self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
 
         CompileSim.items.append(self)
+
+    def dispatch_cmd(self):
+        # Delete previous cov_db_dir if it exists before dispatching new build.
+        if os.path.exists(self.cov_db_dir):
+            os.system("rm -rf " + self.cov_db_dir)
+        super().dispatch_cmd()
 
 
 class RunTest(Deploy):
@@ -458,6 +485,7 @@ class RunTest(Deploy):
 
         self.mandatory_misc_attrs = {
             "run_dir_name": False,
+            "cov_db_test_dir": False,
             "pass_patterns": False,
             "fail_patterns": False
         }
@@ -486,6 +514,17 @@ class RunTest(Deploy):
 
         RunTest.items.append(self)
 
+    def get_status(self):
+        '''Override base class get_status implementation for additional post-status
+        actions.'''
+        super().get_status()
+        if self.status not in [".", "P"]:
+            # Delete the coverage data if available.
+            if os.path.exists(self.cov_db_test_dir):
+                log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
+                        self.cov_db_test_dir)
+                os.system("/usr/bin/rm -rf " + self.cov_db_test_dir)
+
     @staticmethod
     def get_seed():
         if RunTest.seeds == []:
@@ -495,3 +534,192 @@ class RunTest(Deploy):
                 seed = int.from_bytes(seed, byteorder='little')
                 RunTest.seeds.append(seed)
         return RunTest.seeds.pop(0)
+
+
+class CovMerge(Deploy):
+    """
+    Abstraction for merging coverage databases. An item of this class is created AFTER
+    the regression is completed.
+    """
+
+    # Register all builds with the class
+    items = []
+
+    def __init__(self, sim_cfg):
+        self.target = "cov_merge"
+        self.pass_patterns = []
+        self.fail_patterns = []
+
+        # Construct local 'special' variable from cov directories that need to
+        # be merged.
+        self.cov_db_dirs = ""
+
+        self.mandatory_cmd_attrs = {
+            "cov_merge_cmd": False,
+            "cov_merge_opts": False
+        }
+
+        self.mandatory_misc_attrs = {
+            "cov_merge_dir": False,
+            "cov_merge_db_dir": False
+        }
+
+        # Initialize
+        super().__init__(sim_cfg)
+        super().parse_dict(sim_cfg.__dict__)
+        self.__post_init__()
+
+        # Override standard output and log patterns.
+        self.odir = self.cov_merge_db_dir
+        self.odir_ln = os.path.basename(os.path.normpath(self.odir))
+
+        # Start fail message construction
+        self.fail_msg = "\n**COV_MERGE:** {}<br>\n".format(self.name)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
+
+        CovMerge.items.append(self)
+
+    def __post_init__(self):
+        # Add cov db dirs from all the builds that were kicked off.
+        for bld in self.sim_cfg.builds:
+            self.cov_db_dirs += bld.cov_db_dir + " "
+
+        # Recursively search and replace wildcards, ignoring cov_db_dirs for now.
+        # We need to resolve it later based on cov_db_dirs value set below.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.__dict__, ignored_wildcards=["cov_db_dirs"])
+
+        # Prune previous merged cov directories.
+        prev_cov_db_dirs = self.odir_limiter(odir=self.cov_merge_db_dir)
+
+        # If a merged cov data base exists from a previous run, then consider
+        # that as well for merging, if the --cov-merge-previous command line
+        # switch is passed.
+        if self.sim_cfg.cov_merge_previous:
+            self.cov_db_dirs += prev_cov_db_dirs
+
+        # Call base class __post_init__ to do checks and substitutions
+        super().__post_init__()
+
+
+class CovReport(Deploy):
+    """
+    Abstraction for coverage report generation. An item of this class is created AFTER
+    the regression is completed.
+    """
+
+    # Register all builds with the class
+    items = []
+
+    def __init__(self, sim_cfg):
+        self.target = "cov_report"
+        self.pass_patterns = []
+        self.fail_patterns = []
+        self.cov_results = ""
+
+        self.mandatory_cmd_attrs = {
+            "cov_report_cmd": False,
+            "cov_report_opts": False
+        }
+
+        self.mandatory_misc_attrs = {
+            "cov_report_dir": False,
+            "cov_merge_db_dir": False,
+            "cov_report_dashboard": False
+        }
+
+        # Initialize
+        super().__init__(sim_cfg)
+        super().parse_dict(sim_cfg.__dict__)
+        self.__post_init__()
+
+        # Start fail message construction
+        self.fail_msg = "\n**COV_REPORT:** {}<br>\n".format(self.name)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
+
+        CovReport.items.append(self)
+
+    def get_status(self):
+        super().get_status()
+        # Once passed, extract the cov results summary from the dashboard.
+        if self.status == "P":
+            try:
+                with open(self.cov_report_dashboard, 'r') as f:
+                    for line in f:
+                        match = re.match("total coverage summary", line,
+                                         re.IGNORECASE)
+                        if match:
+                            results = []
+                            # Metrics on the next line.
+                            line = f.readline().strip()
+                            results.append(line.split())
+                            # Values on the next.
+                            line = f.readline().strip()
+                            # Pretty up the values - add % sign for ease of post
+                            # processing.
+                            values = []
+                            for val in line.split():
+                                val += " %"
+                                values.append(val)
+                            results.append(values)
+                            colalign = (("center", ) * len(values))
+                            self.cov_results = tabulate(results,
+                                                        headers="firstrow",
+                                                        tablefmt="pipe",
+                                                        colalign=colalign)
+                            break
+
+            except Exception as e:
+                ex_msg = "Failed to parse \"{}\":\n{}".format(
+                    self.cov_report_dashboard, str(e))
+                log.fail_msg += ex_msg
+                log.error(ex_msg)
+                self.status = "F"
+
+            if self.cov_results == "":
+                nf_msg = "Coverage summary not found in the reports dashboard!"
+                log.fail_msg += nf_msg
+                log.error(nf_msg)
+                self.status = "F"
+
+        if self.status == "P":
+            # Delete the cov report - not needed.
+            os.system("rm -rf " + self.log)
+
+
+class CovAnalyze(Deploy):
+    """
+    Abstraction for coverage analysis tool.
+    """
+
+    # Register all builds with the class
+    items = []
+
+    def __init__(self, sim_cfg):
+        self.target = "cov_analyze"
+        self.pass_patterns = []
+        self.fail_patterns = []
+
+        self.mandatory_cmd_attrs = {
+            "cov_analyze_cmd": False,
+            "cov_analyze_opts": False
+        }
+
+        self.mandatory_misc_attrs = {
+            "cov_analyze_dir": False,
+            "cov_merge_db_dir": False
+        }
+
+        # Initialize
+        super().__init__(sim_cfg)
+        super().parse_dict(sim_cfg.__dict__)
+        self.__post_init__()
+
+        # Start fail message construction
+        self.fail_msg = "\n**COV_ANALYZE:** {}<br>\n".format(self.name)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
+
+        CovAnalyze.items.append(self)
