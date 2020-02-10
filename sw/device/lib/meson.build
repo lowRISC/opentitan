@@ -9,7 +9,6 @@ subdir('dif')
 
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(
-  sources: [hw_ip_uart_reg_h],
   link_with: static_library(
     'uart_ot',
     sources: ['uart.c'],
