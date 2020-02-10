@@ -70,11 +70,11 @@ module usb_fs_rx (
   // packet will fail the data integrity checks.
 
   logic [2:0] line_state_q, line_state_d;
-  localparam logic [2:0]  DT = 3'b100;
-  localparam logic [2:0]  DJ = 3'b010;
-  localparam logic [2:0]  DK = 3'b001;
-  localparam logic [2:0] SE0 = 3'b000;
-  localparam logic [2:0] SE1 = 3'b011;
+  localparam logic [2:0]  DT = 3'b100; // transition state
+  localparam logic [2:0]  DJ = 3'b010; // J - idle line state
+  // localparam logic [2:0]  DK = 3'b001; // K - inverse of J
+  localparam logic [2:0] SE0 = 3'b000; // single-ended 0 - end of packet or detached
+  // localparam logic [2:0] SE1 = 3'b011; // single-ended 1 - illegal
 
   // Mute the input if we're transmitting
   logic [1:0] dpair;
@@ -193,7 +193,8 @@ module usb_fs_rx (
   end
 
   // keep a history of the last two states on the line
-  assign line_history_d = line_state_valid ? {line_history_q[9:0], line_state_q[1:0]} : line_history_q;
+  assign line_history_d = line_state_valid ? {line_history_q[9:0], line_state_q[1:0]} :
+                                              line_history_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_pkt_line
     if (!rst_ni) begin

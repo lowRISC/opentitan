@@ -12,10 +12,10 @@
 // this version contains no packet buffers
 
 module usb_fs_nb_out_pe #(
-  parameter int unsigned NumOutEps = 1,
+  parameter logic [4:0] NumOutEps = 1,
   parameter int unsigned MaxOutPktSizeByte = 32,
-  parameter int unsigned PktW = $clog2(MaxOutPktSizeByte),
-  parameter int unsigned OutEpW = $clog2(NumOutEps)
+  localparam int unsigned OutEpW = $clog2(NumOutEps), // derived parameter
+  localparam int unsigned PktW = $clog2(MaxOutPktSizeByte) // derived parameter
 ) (
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,
@@ -25,7 +25,8 @@ module usb_fs_nb_out_pe #(
   ////////////////////////
   // endpoint interface //
   ////////////////////////
-  output logic [3:0]             out_ep_current_o, // Other signals address to this ep, this signal will be stable for several cycles
+  output logic [3:0]             out_ep_current_o, // Other signals address to this ep,
+                                                   // stable for several cycles
   output logic                   out_ep_data_put_o, // put the data (put addr advances after)
   output logic [PktW - 1:0]      out_ep_put_addr_o, // Offset to put data (0..pktlen)
   output logic [7:0]             out_ep_data_o,
@@ -98,14 +99,12 @@ module usb_fs_nb_out_pe #(
   // data toggle state
   logic [NumOutEps - 1:0] data_toggle_q, data_toggle_d;
 
-  // Make widths work
-  logic [OutEpW - 1 : 0]    out_ep_index;
-  assign out_ep_index = out_ep_current_o[0 +: OutEpW];
-
   // Decode the rx token
-  logic token_received, out_token_received, setup_token_received;
-  logic invalid_packet_received, data_packet_received, non_data_packet_received;
-  logic bad_data_toggle;
+  logic       token_received, out_token_received, setup_token_received;
+  logic       invalid_packet_received, data_packet_received, non_data_packet_received;
+  logic       bad_data_toggle;
+  logic       ep_impl;
+  logic [3:0] out_ep_current_d;
 
   // 1: If the current transfer is a SETUP, 0: OUT
   logic current_xfer_setup_q;
@@ -116,12 +115,16 @@ module usb_fs_nb_out_pe #(
   assign rx_pid_type = usb_pid_type_e'(rx_pid_i[1:0]);
   assign rx_pid      = usb_pid_e'(rx_pid_i);
 
+  // Is the specified endpoint actually implemented?
+  assign ep_impl = {1'b0, rx_endp_i} < NumOutEps;
+
+  // If the specified endpoint is not implemented, we don't process the token and just ignore it.
   assign token_received =
     rx_pkt_end_i &&
     rx_pkt_valid_i &&
     rx_pid_type == UsbPidTypeToken &&
     rx_addr_i == dev_addr_i &&
-    rx_endp_i < NumOutEps;
+    ep_impl;
 
   assign out_token_received =
     token_received &&
@@ -140,25 +143,32 @@ module usb_fs_nb_out_pe #(
     rx_pkt_valid_i &&
     ((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
 
-
   assign non_data_packet_received =
     rx_pkt_end_i &&
     rx_pkt_valid_i &&
     !((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
 
+  assign out_ep_current_d = ep_impl ? rx_endp_i : '0;
+
+  // Make widths work - out_ep_current_d/out_ep_current_o only hold implemented endpoint IDs.
+  // These signals can be used to index signals of NumOutEps width.
+  logic [OutEpW-1:0] out_ep_index;
+  logic [OutEpW-1:0] out_ep_index_d;
+  assign out_ep_index   = out_ep_current_o[0 +: OutEpW];
+  assign out_ep_index_d = out_ep_current_d[0 +: OutEpW];
+
   assign bad_data_toggle =
     data_packet_received &&
-    rx_pid_i[3] != data_toggle_q[rx_endp_i[0 +: OutEpW]]; // lint: rx_endp_i range was checked
-
+    rx_pid_i[3] != data_toggle_q[out_ep_index_d];
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_ep_setup_o <= '0;
     end else begin
       if (setup_token_received) begin
-        out_ep_setup_o[rx_endp_i[0 +: OutEpW]] <= 1; // lint: rx_endp_i range was checked
+        out_ep_setup_o[out_ep_index_d] <= 1'b1;
       end else if (out_token_received) begin
-        out_ep_setup_o[rx_endp_i[0 +: OutEpW]] <= 0; // lint: rx_endp_i range was checked
+        out_ep_setup_o[out_ep_index_d] <= 1'b0;
       end
     end
   end
@@ -228,7 +238,7 @@ module usb_fs_nb_out_pe #(
         out_xfr_state_next = StIdle;
         tx_pkt_start_o = 1'b1;
 
-        if (out_ep_stall_i[out_ep_index] && !current_xfer_setup_q) begin // lint: out_ep_index range was checked
+        if (out_ep_stall_i[out_ep_index] && !current_xfer_setup_q) begin
           // We only send STALL for OUT transfers, not for SETUP transfers
           tx_pid_o = {UsbPidStall}; // STALL
         end else if (nak_out_transfer) begin
@@ -278,9 +288,9 @@ module usb_fs_nb_out_pe #(
     data_toggle_d = data_toggle_q;
 
     if (setup_token_received) begin
-      data_toggle_d[rx_endp_i[0 +: OutEpW]] = 1'b0; // lint: rx_endp_i range was checked
+      data_toggle_d[out_ep_index_d] = 1'b0;
     end else if (new_pkt_end) begin
-      data_toggle_d[out_ep_index] = ~data_toggle_q[out_ep_index]; // lint: range was checked
+      data_toggle_d[out_ep_index] = ~data_toggle_q[out_ep_index];
     end
 
     data_toggle_d = data_toggle_d & ~data_toggle_clear_i;
@@ -302,9 +312,9 @@ module usb_fs_nb_out_pe #(
       out_ep_current_o      <= '0;
       current_xfer_setup_q  <= 1'b0;
     end else begin
-      if (out_xfr_start) begin
+      if (out_xfr_start) begin // ep_impl factored in already
         out_ep_newpkt_o      <= 1'b1;
-        out_ep_current_o     <= rx_endp_i;
+        out_ep_current_o     <= out_ep_current_d;
         current_xfer_setup_q <= setup_token_received;
       end else begin
         out_ep_newpkt_o <= 1'b0;
@@ -331,7 +341,7 @@ module usb_fs_nb_out_pe #(
     end else begin
       if ((out_xfr_state == StIdle) || (out_xfr_state == StRcvdOut)) begin
         nak_out_transfer <= 1'b0;
-      end else if (out_ep_data_put_o && out_ep_full_i[out_ep_index]) begin // lint: range checked
+      end else if (out_ep_data_put_o && out_ep_full_i[out_ep_index]) begin
         nak_out_transfer <= 1'b1;
       end
     end
@@ -355,5 +365,17 @@ module usb_fs_nb_out_pe #(
       end
     end
   end
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // We receive a token for an endpoint that is not implemented.
+  `ASSERT(UsbOutEndPImpl,
+      rx_pkt_end_i &&
+      rx_pkt_valid_i &&
+      rx_pid_type == UsbPidTypeToken &&
+      rx_addr_i == dev_addr_i &&
+      !ep_impl)
 
 endmodule

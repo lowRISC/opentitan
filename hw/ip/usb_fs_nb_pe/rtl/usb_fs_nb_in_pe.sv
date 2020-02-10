@@ -11,10 +11,10 @@
 // this version contains no packet buffers
 
 module usb_fs_nb_in_pe #(
-  parameter logic [4:0] NumInEps = 11,
+  parameter logic [4:0] NumInEps = 12,
   parameter int unsigned MaxInPktSizeByte = 32,
-  parameter int unsigned PktW = $clog2(MaxInPktSizeByte),
-  parameter int unsigned InEpW = $clog2(NumInEps)
+  localparam int unsigned InEpW = $clog2(NumInEps), // derived parameter
+  localparam int unsigned PktW = $clog2(MaxInPktSizeByte) // derived parameter
 ) (
   input  logic               clk_48mhz_i,
   input  logic               rst_ni,
@@ -30,7 +30,7 @@ module usb_fs_nb_in_pe #(
   output logic                  in_ep_acked_o, // good termination, transaction complete
   output logic [PktW - 1:0]     in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                  in_ep_data_get_o, // Accept data (get_addr advances too)
-  output logic                  in_ep_newpkt_o, // New IN packet starting (with in_ep_current_o update)
+  output logic                  in_ep_newpkt_o, // New IN packet starting (updates in_ep_current_o)
   input  logic [NumInEps-1:0]   in_ep_stall_i, // Endpoint in a stall state
   input  logic [NumInEps-1:0]   in_ep_has_data_i, // Endpoint has data to supply
   input  logic [7:0]            in_ep_data_i, // Data for current get_addr
@@ -94,15 +94,13 @@ module usb_fs_nb_in_pe #(
   assign in_ep_acked_o = in_xfr_end;
 
   // data toggle state
-  logic [NumInEps - 1:0] data_toggle_q, data_toggle_d;
+  logic [NumInEps-1:0] data_toggle_q, data_toggle_d;
 
   // endpoint data buffer
-  logic                    token_received, setup_token_received, in_token_received, ack_received;
-  logic                    more_data_to_send;
-
-  // Make widths work
-  logic [InEpW - 1 : 0]    in_ep_index;
-  assign in_ep_index = in_ep_current_o[0 +: InEpW];
+  logic       token_received, setup_token_received, in_token_received, ack_received;
+  logic       more_data_to_send;
+  logic       ep_impl;
+  logic [3:0] in_ep_current_d;
 
   // More syntax so can compare with enum
   usb_pid_type_e rx_pid_type;
@@ -110,12 +108,16 @@ module usb_fs_nb_in_pe #(
   assign rx_pid_type = usb_pid_type_e'(rx_pid_i[1:0]);
   assign rx_pid      = usb_pid_e'(rx_pid_i);
 
+  // Is the specified endpoint actually implemented?
+  assign ep_impl = {1'b0, rx_endp_i} < NumInEps;
+
+  // If the specified endpoint is not implemented, we don't process the token and just ignore it.
   assign token_received =
     rx_pkt_end_i &&
     rx_pkt_valid_i &&
     rx_pid_type == UsbPidTypeToken &&
     rx_addr_i == dev_addr_i &&
-    {1'b0, rx_endp_i} < NumInEps;
+    ep_impl;
 
   assign setup_token_received =
     token_received &&
@@ -130,7 +132,16 @@ module usb_fs_nb_in_pe #(
     rx_pkt_valid_i &&
     rx_pid == UsbPidAck;
 
-  assign more_data_to_send = in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];  // lint: in_ep_index range was checked
+  assign in_ep_current_d = ep_impl ? rx_endp_i : '0;
+
+  // Make widths work - in_ep_current_d/in_ep_current_o only hold implemented endpoint IDs.
+  // These signals can be used to index signals of NumInEps width.
+  logic [InEpW-1:0] in_ep_index;
+  logic [InEpW-1:0] in_ep_index_d;
+  assign in_ep_index   = in_ep_current_o[0 +: InEpW];
+  assign in_ep_index_d = in_ep_current_d[0 +: InEpW];
+
+  assign more_data_to_send = in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];
 
   assign tx_data_avail_o = logic'(in_xfr_state == StSendData) & more_data_to_send;
 
@@ -158,7 +169,7 @@ module usb_fs_nb_in_pe #(
       StRcvdIn: begin
         tx_pkt_start_o = 1'b1; // Need to transmit NACK/STALL or DATA
 
-        if (in_ep_stall_i[in_ep_index]) begin  // lint: in_ep_index range was checked
+        if (in_ep_stall_i[in_ep_index]) begin
           in_xfr_state_next = StIdle;
           tx_pid_o = {UsbPidStall}; // STALL
         end else if (in_ep_iso_i[in_ep_index]) begin
@@ -166,11 +177,11 @@ module usb_fs_nb_in_pe #(
           // We always need to transmit. When no data is available, we send
           // a zero-length packet
           in_xfr_state_next = StSendData;
-          tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1 lint: checked
+          tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1
 
-        end else if (in_ep_has_data_i[in_ep_index]) begin  // lint: in_ep_index range was checked
+        end else if (in_ep_has_data_i[in_ep_index]) begin
           in_xfr_state_next = StSendData;
-          tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1 lint: checked
+          tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1
         end else begin
           in_xfr_state_next = StIdle;
           tx_pid_o = {UsbPidNak}; // NAK
@@ -205,6 +216,8 @@ module usb_fs_nb_in_pe #(
           in_xfr_state_next = StWaitAck;
         end
       end
+
+      default: in_xfr_state_next = StIdle;
     endcase
   end
 
@@ -248,7 +261,7 @@ module usb_fs_nb_in_pe #(
       in_ep_current_o <= '0;
     end else begin
       if (in_token_received) begin
-        in_ep_current_o <= rx_endp_i;
+        in_ep_current_o <= in_ep_current_d;
         in_ep_newpkt_o <= 1'b1;
       end else begin
         in_ep_newpkt_o <= 1'b0;
@@ -260,10 +273,9 @@ module usb_fs_nb_in_pe #(
     data_toggle_d = data_toggle_q;
 
     if (setup_token_received) begin
-      // Ok because token_recieved only triggers if rx_endp_i is in range
-      data_toggle_d[rx_endp_i[0 +: InEpW]] = 1'b1;
+      data_toggle_d[in_ep_index_d] = 1'b1;
     end else if ((in_xfr_state == StWaitAck) && ack_received) begin
-      data_toggle_d[in_ep_index] = ~data_toggle_q[in_ep_index]; // lint: range was checked
+      data_toggle_d[in_ep_index] = ~data_toggle_q[in_ep_index];
     end
 
     data_toggle_d = data_toggle_d & ~data_toggle_clear_i;
@@ -291,5 +303,16 @@ module usb_fs_nb_in_pe #(
     end
   end
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // We receive a token for an endpoint that is not implemented.
+  `ASSERT(UsbInEndPImpl,
+      rx_pkt_end_i &&
+      rx_pkt_valid_i &&
+      rx_pid_type == UsbPidTypeToken &&
+      rx_addr_i == dev_addr_i &&
+      !ep_impl)
 
 endmodule

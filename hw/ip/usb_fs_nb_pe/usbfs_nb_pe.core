@@ -6,6 +6,8 @@ name: "lowrisc:ip:usb_fs_nb_pe:0.1"
 description: "USB Full Speed Non-Buffered Protocol Engine"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:all
     files:
       - rtl/usb_consts_pkg.sv
       - rtl/usb_fs_nb_in_pe.sv

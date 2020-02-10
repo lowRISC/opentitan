@@ -68,7 +68,7 @@ module usbdev_usbif  #(
   output logic                     clr_devaddr_o,
   input  logic [NEndpoints-1:0]    ep_iso_i,
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
-  input  logic                     tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
+  input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
   input  logic [NEndpoints-1:0]    data_toggle_clear_i, // Clear the data toggles for an EP
 
   // status
@@ -89,7 +89,6 @@ module usbdev_usbif  #(
 
   assign usb_pullup_en_o = enable_i;
 
-
   // OUT or SETUP direction
   logic [PktW:0]                     out_max_used_d, out_max_used_q;
   logic [PktW-1:0]                   out_ep_put_addr;
@@ -106,7 +105,8 @@ module usbdev_usbif  #(
   logic                              link_reset;
   logic                              sof_valid;
 
-  assign out_endpoint_o = out_ep_current;
+  // Make sure out_endpoint_o can safely be used to index signals of NEndpoints width.
+  assign out_endpoint_o = (out_ep_current < NEndpoints) ? out_ep_current : '0;
   assign link_reset_o   = link_reset;
   assign clr_devaddr_o  = ~enable_i | link_reset;
   assign frame_start_o  = sof_valid;
@@ -134,8 +134,8 @@ module usbdev_usbif  #(
 
   // don't write if the address has wrapped (happens for two CRC bytes after max data)
   logic std_write_d, std_write_q;
-  assign std_write_d = out_ep_data_put & ((out_max_used_q < MaxPktSizeByte - 1) & (out_ep_put_addr[1:0] == 2'b11));
-
+  assign std_write_d = out_ep_data_put & ((out_max_used_q < MaxPktSizeByte - 1) &
+      (out_ep_put_addr[1:0] == 2'b11));
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -171,14 +171,14 @@ module usbdev_usbif  #(
   assign mem_wdata_o = wdata;
   assign mem_addr_o = mem_write_o ? mem_waddr : mem_raddr;
   assign mem_req_o = mem_read | mem_write_o;
-  assign current_setup = out_ep_setup[out_ep_current];  // lint: out_ep_current range was checked
+  assign current_setup = out_ep_setup[out_endpoint_o];
 
   logic [PktW:0] out_max_minus1;
   // -2 for CRC bytes but +1 for zero-based address to size
   assign out_max_minus1 = out_max_used_q - 1;
 
   assign rx_wdata_o = {
-      out_ep_current,
+      out_endpoint_o,
       current_setup,
       out_max_minus1,
       av_rdata_i
@@ -211,17 +211,21 @@ module usbdev_usbif  #(
   assign setup_received_o = current_setup & rx_wvalid_o;
 
   // IN (device to host) transfers
-  logic in_ep_acked, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
+  logic                  in_ep_acked, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
   logic [NEndpoints-1:0] in_ep_data_done;
-  logic [PktW-1:0] in_ep_get_addr;
-  logic [7:0]      in_ep_data;
+  logic [PktW-1:0]       in_ep_get_addr;
+  logic [7:0]            in_ep_data;
+  logic [3:0]            in_ep_current;
+
+  // Make sure in_endpoint_o can safely be used to index signals of NEndpoints width.
+  assign in_endpoint_o = (in_ep_current < NEndpoints) ? in_ep_current : '0;
 
   // The protocol engine will automatically generate done for a full-length packet
   // Note: this does the correct thing for sending zero length packets
   assign in_data_done = {1'b0, in_ep_get_addr} == in_size_i;
   always_comb begin
     in_ep_data_done = '0;
-    in_ep_data_done[in_endpoint_o] = in_data_done;  // lint: in_endpoint_o range was checked
+    in_ep_data_done[in_endpoint_o] = in_data_done;
   end
 
   // Need extra read at start of packet to get the first word of data
@@ -279,7 +283,7 @@ module usbdev_usbif  #(
     .out_ep_iso_i          (ep_iso_i),
 
     // in endpoint interfaces
-    .in_ep_current_o       (in_endpoint_o),
+    .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
     .in_ep_acked_o         (in_ep_acked),
     .in_ep_get_addr_o      (in_ep_get_addr),
@@ -346,5 +350,12 @@ module usbdev_usbif  #(
     .host_lost_o       (host_lost_o)
   );
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // Specified endpoint is not implemented.
+  `ASSERT(UsbIfOutEndPImpl, out_endpoint_o != out_ep_current)
+  `ASSERT(UsbIfInEndPImpl, in_endpoint_o != in_ep_current)
 
 endmodule
