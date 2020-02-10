@@ -186,6 +186,38 @@ This may change if we find cases where this initialization improves readability.
 When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed). Mixing designated and undesignated initializers, or using nested initializers, is still
 forbidden.
 
+### Inline Functions
+
+Functions that we strongly wish to be inlined, and which are part of a public interface, should be declared as an inline function.
+This annotation serves as an indication to the programmer that the function has a low calling overhead, despite being part of a public interface.
+Presence---or lack---of an `inline` annotation does not imply a function will---or will not---be inlined by the compiler.
+
+[C11](#c-version) standardised inline functions, learning from the mistakes in C++ and various nonstandard extensions.
+This means there are many legacy ways to define an inline function in C.
+We have chosen to follow how C11 designed the `inline` keyword.
+
+The function definition is written in a header file, with the keyword `inline`:
+```c
+// in my_inline.h
+inline int my_inline_function(long param1) {
+  // implementation
+}
+```
+
+There should be exactly one compilation unit with a compatible `extern` declaration of the same function:
+```c
+// in my_inline.c
+#include <my_inline.h>
+extern int my_inline_function(long param1);
+```
+
+Any compilation unit that includes `my_inline.h` must be linked to the compilation unit with the extern declarations.
+This ensures that if the compiler chooses not to inline `my_inline_function`, there is a function definition that can be called.
+This also ensures that the function can be used via a function pointer.
+
+Functions marked `static` should not be marked `inline`.
+The compiler is capable of inlining static functions without the `inline` annotation, and they should not be part of any public interface.
+
 ### Nonstandard Attributes
 
 The following nonstandard attributes may be used:
@@ -219,22 +251,8 @@ For builtins that correspond to a C library function, the unprefixed function mu
 Unfortunately, older versions of GCC do not support the `__has_builtin()` preprocessor function, so compiler detection of support for these builtins is next to impossible.
 In this case, a standards-compliant implementation of the unprefixed name must be provided, and the compilation unit should be compiled with `-fno-builtins`.
 
-For builtins that correspond to low-level byte and integer manipulations, an unprefixed inline function must be provided, which contains only a call to the prefixed name.
-Only the unprefixed name may be called by users.
-
-The inline function must be defined in a header, and exactly one compilation unit must have a compatible `extern` declaration for that function.
-For instance, `uint32_t __builtin_bswap32(uint32_t)` should not be called, instead the following should be implemented:
-```c
-// in bswap.h (can be included anywhere)
-inline uint32_t bswap32(uint32_t x) {
-  return __builtin_bswap32(x);
-}
-
-// only in bswap.c
-#include "bswap.h"
-extern uint32_t bswap32(uint32_t x);
-```
-
+For builtins that correspond to low-level byte and integer manipulations, an [inline function](#inline-functions) must be provided with the unprefixed name, which contains only a call to the prefixed builtin.
+Only the unprefixed name may be called by users: for instance, `uint32_t __builtin_bswap32(uint32_t)` should not be called, instead users should use `inline uint32_t bswap32(uint32_t x)`.
 This ensures changes to add compatibilty for other compilers are less invasive, as we already have a function to include a full implementation within.
 
 ## Code Lint
