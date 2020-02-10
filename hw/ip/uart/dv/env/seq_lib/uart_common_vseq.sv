@@ -28,11 +28,8 @@ class uart_common_vseq extends uart_base_vseq;
       // UART oversampled values are updated by design according to setting and pin RX
       csr_excl.add_excl({scope, ".", "val.rx"}, CsrExclCheck);
 
-      // intr_test csr is WO which - it reads back 0s, plus it affects the uart_state csr
-      csr_excl.add_excl({scope, ".", "intr_test"}, CsrExclWrite);
-
-      // writing 0 to timeout csr can cause rx_timeout to assert
-      csr_excl.add_excl({scope, ".", "intr_state.rx_timeout"}, CsrExclWriteCheck);
+      // don't check interrupt as it's affected by the other csrs
+      csr_excl.add_excl({scope, ".", "intr_state"}, CsrExclWriteCheck);
     end
 
     // writes to ovrd.txen causes tx output to be forced to ovrd.txval causing protocol violation
