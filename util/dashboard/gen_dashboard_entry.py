@@ -20,17 +20,25 @@ def genout(outfile, msg):
 
 
 STAGE_STRINGS = {
+    # Life Stage
     'L0': 'Specification',
     'L1': 'Development',
     'L2': 'Signed Off',
+    # Design Stage
     'D0': 'Initial Work',
     'D1': 'Functional',
     'D2': 'Feature Complete',
     'D3': 'Design Complete',
+    # Verification Stage
     'V0': 'Initial Work',
     'V1': 'Under Test',
     'V2': 'Testing Complete',
-    'V3': 'Verification Complete'
+    'V3': 'Verification Complete',
+    # DIF stage (S for Software)
+    'S0': 'Initial Work',
+    'S1': 'Functional',
+    'S2': 'Complete',
+    'S3': 'Frozen'
 }
 
 
@@ -83,12 +91,23 @@ def print_version1_format(obj, outfile):
     else:
         genout(outfile,
                     "        <td>&nbsp;</td>\n")
+
     if life_stage != 'L0' and 'verification_stage' in obj:
         verification_stage_mapping = convert_stage(obj['verification_stage'])
         genout(outfile,
                     "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
                     html.escape(verification_stage_mapping) + "'>" +
                     html.escape(obj['verification_stage']) + "</span></td>\n")
+    else:
+        genout(outfile,
+                    "        <td>&nbsp;</td>\n")
+
+    if life_stage != 'L0' and 'dif_stage' in obj:
+        dif_stage_mapping = convert_stage(obj['dif_stage'])
+        genout(outfile,
+                    "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
+                    html.escape(dif_stage_mapping) + "'>" +
+                    html.escape(obj['dif_stage']) + "</span></td>\n")
     else:
         genout(outfile,
                     "        <td>&nbsp;</td>\n")
@@ -150,6 +169,14 @@ def print_multiversion_format(obj, outfile):
             outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
             outstr += html.escape(verification_stage_mapping) + "'>"
             outstr += html.escape(rev['verification_stage']) + "</span></td>\n"
+        else:
+            outstr += "        <td>&nbsp;</td>\n"
+
+        if life_stage != 'L0' and 'dif_stage' in rev:
+            dif_stage_mapping = convert_stage(rev['dif_stage'])
+            outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
+            outstr += html.escape(dif_stage_mapping) + "'>"
+            outstr += html.escape(rev['dif_stage']) + "</span></td>\n"
         else:
             outstr += "        <td>&nbsp;</td>\n"
 

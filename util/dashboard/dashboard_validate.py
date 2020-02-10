@@ -35,6 +35,7 @@ field_required = {
 field_optional = {
     'design_stage': ['s', "design stage of module"],
     'verification_stage': ['s', "verification stage of module"],
+    'dif_stage': ['s', "DIF stage of module"],
     'notes': ['s', "random notes"],
 }
 
@@ -45,6 +46,7 @@ entry_required = {
 entry_optional = {
     'design_stage': ['s', "design stage of module"],
     'verification_stage': ['s', "verification stage of module"],
+    'dif_stage': ['s', "DIF stage of module"],
     'commit_id': ['s', "Staged commit ID"],
     'notes': ['s', "notes"],
 }
