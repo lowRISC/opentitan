@@ -215,8 +215,13 @@ Any compilation unit that includes `my_inline.h` must be linked to the compilati
 This ensures that if the compiler chooses not to inline `my_inline_function`, there is a function definition that can be called.
 This also ensures that the function can be used via a function pointer.
 
-Functions marked `static` should not be marked `inline`.
-The compiler is capable of inlining static functions without the `inline` annotation, and they should not be part of any public interface.
+### Static Declarations
+
+Declarations marked `static` must not appear in header files.
+Header files are declarations of public interfaces, and `static` definitions are copied, not shared, between compilation units.
+
+Functions marked `static` must not be marked `inline`.
+The compiler is capable of inlining static functions without the `inline` annotation.
 
 ### Nonstandard Attributes
 
