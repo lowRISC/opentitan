@@ -42,8 +42,9 @@ def generate_top(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
-              "-o hw/top_earlgrey/\n\n")
+
+    top_name = top["name"]
+    gencmd = ("// util/topgen.py -t hw/top_{0}/data/top_{0}.hjson -o hw/top_{0}/\n\n".format(top_name))
 
     for obj in top["xbar"]:
         xbar_path = out_path / 'ip/xbar_{}/data/autogen'.format(obj["name"])
@@ -166,9 +167,9 @@ def generate_alert_handler(top, out_path):
         return
 
     hjson_gen_path = doc_path / "alert_handler.hjson"
+    top_name = top["name"]
     gencmd = (
-        "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --alert-handler-only "
-        "-o hw/top_earlgrey/\n\n")
+        "// util/topgen.py -t hw/top_{0}/doc/top_{0}.hjson --alert-handler-only -o hw/top_{0}/\n\n".format(top_name))
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
@@ -221,9 +222,9 @@ def generate_plic(top, out_path):
         return
 
     hjson_gen_path = hjson_path / "rv_plic.hjson"
+    top_name = top["name"]
     gencmd = (
-        "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --plic-only "
-        "-o hw/top_earlgrey/\n\n")
+        "// util/topgen.py -t hw/top_{0}/data/top_{0}.hjson --plic-only -o hw/top_{0}/\n\n".format(top_name))
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
@@ -285,8 +286,8 @@ def generate_pinmux(top, out_path):
     tpl_path = out_path / '../ip/pinmux/data/pinmux.hjson.tpl'
 
     # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
-              "-o hw/top_earlgrey/\n\n")
+    top_name = top["name"]
+    gencmd   = ("// util/topgen.py -t hw/top_{0}/data/top_{0}.hjson -o hw/top_{0}/\n\n".format(top_name))
 
     hjson_gen_path = data_path / "pinmux.hjson"
 
@@ -521,11 +522,10 @@ def main():
 
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
-        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
-                                     completecfg["name"])
+        top_name = completecfg["name"]
+        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" % top_name)
         gencmd = (
-            "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --hjson-only "
-            "-o hw/top_earlgrey/\n")
+            "// util/topgen.py -t hw/top_{0}/data/top_{0}.hjson --hjson-only -o hw/top_{0}/\n".format(top_name) )
 
         if args.top_ral:
             generate_top_ral(completecfg, ip_objs, out_path)
