@@ -11,6 +11,7 @@ import logging as log
 import pprint
 from shutil import which
 
+from .Deploy import *
 from .utils import *
 
 
@@ -66,6 +67,11 @@ class FlowCfg():
 
         # Results
         self.results_title = ""
+        self.results_server_prefix = ""
+        self.results_server_url_prefix = ""
+        self.results_server_cmd = ""
+        self.results_server_path = ""
+        self.results_server_dir = ""
 
         # Full results in md text.
         self.results_md = ""
@@ -315,12 +321,17 @@ class FlowCfg():
         else:
             self._create_deploy_objects()
 
+    def deploy_objects(self):
+        '''Public facing API for deploying all available objects.'''
+        Deploy.deploy(self.deploy)
+
     def _gen_results(self, fmt="md"):
         '''
-        The function is called after the flow has executed. It collates the status of
-        all run targets and generates a dict. It parses the testplan and maps the generated
-        result to the testplan entries to generate a final table (list). It uses the fmt arg
-        to dump the final result as a markdown or html.
+        The function is called after the regression has completed. It collates the
+        status of all run targets and generates a dict. It parses the testplan and
+        maps the generated result to the testplan entries to generate a final table
+        (list). It also prints the full list of failures for debug / triage. The
+        final result is in markdown format.
         '''
         return
 
@@ -349,9 +360,9 @@ class FlowCfg():
 
         # Construct the paths
         results_fname = 'results.html'
-        results_root_dir = "gs://" + self.results_server + '/' + self.rel_path
-        results_dir = results_root_dir + '/latest'
-        results_page = results_dir + '/' + results_fname
+        results_page = self.results_server_dir + '/' + results_fname
+        results_page_url = results_page.replace(self.results_server_prefix,
+                                                self.results_server_url_prefix)
 
         # Assume that a 'style.css' is available at root path
         css_path = (
@@ -361,11 +372,14 @@ class FlowCfg():
         tf = "%Y.%m.%d_%H.%M.%S"
 
         # Extract the timestamp of the existing results_page
-        cmd = "gsutil ls -L " + results_page + " | " + "grep \'Creation time:\'"
+        cmd = self.results_server_cmd + " ls -L " + results_page + " | " + \
+              "grep \'Creation time:\'"
+        log.log(VERBOSE, cmd)
         cmd_output = subprocess.run(cmd,
                                     shell=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.DEVNULL)
+        log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         old_results_ts = cmd_output.stdout.decode("utf-8")
         old_results_ts = old_results_ts.replace("Creation time:", "")
         old_results_ts = old_results_ts.strip()
@@ -391,21 +405,28 @@ class FlowCfg():
                     datetime.timezone.utc) - datetime.timedelta(days=1)
                 old_results_ts = ts.strftime(tf)
 
-            old_results_dir = results_root_dir + "/" + old_results_ts
-            cmd = ["gsutil", "mv", results_dir, old_results_dir]
+            old_results_dir = self.results_server_path + "/" + old_results_ts
+            cmd = self.results_server_cmd + " mv " + self.results_server_dir + \
+                  " " + old_results_dir
+            log.log(VERBOSE, cmd)
             cmd_output = subprocess.run(cmd,
+                                        shell=True,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.DEVNULL)
+            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
             if cmd_output.returncode != 0:
                 log.error("Failed to mv old results page \"%s\" to \"%s\"!",
-                          results_dir, old_results_dir)
+                          self.results_server_dir, old_results_dir)
 
         # Do an ls in the results root dir to check what directories exist.
         results_dirs = []
-        cmd = ["gsutil", "ls", results_root_dir]
+        cmd = self.results_server_cmd + " ls " + self.results_server_path
+        log.log(VERBOSE, cmd)
         cmd_output = subprocess.run(args=cmd,
+                                    shell=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.DEVNULL)
+        log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         if cmd_output.returncode == 0:
             # Some directories exist. Check if 'latest' is one of them
             results_dirs = cmd_output.stdout.decode("utf-8").strip()
@@ -415,11 +436,11 @@ class FlowCfg():
 
         # Start pruning
         log.log(VERBOSE, "Pruning %s area to limit last 7 results",
-                results_root_dir)
+                self.results_server_path)
 
         rdirs = []
         for rdir in results_dirs:
-            dirname = rdir.replace(results_root_dir, '')
+            dirname = rdir.replace(self.results_server_path, '')
             dirname = dirname.replace('/', '')
             if dirname == "latest": continue
             rdirs.append(dirname)
@@ -427,18 +448,20 @@ class FlowCfg():
 
         rm_cmd = ""
         history_txt = "\n## Past Results\n"
-        history_txt += "- [Latest](" + results_page + ")\n"
+        history_txt += "- [Latest](" + results_page_url + ")\n"
         if len(rdirs) > 0:
             for i in range(len(rdirs)):
                 if i < 7:
-                    rdir_url = results_root_dir + '/' + rdirs[
+                    rdir_url = self.results_server_path + '/' + rdirs[
                         i] + "/" + results_fname
+                    rdir_url = rdir_url.replace(self.results_server_prefix,
+                                                self.results_server_url_prefix)
                     history_txt += "- [{}]({})\n".format(rdirs[i], rdir_url)
                 elif i > 14:
-                    rm_cmd += results_root_dir + '/' + rdirs[i] + " "
+                    rm_cmd += self.results_server_path + '/' + rdirs[i] + " "
 
         if rm_cmd != "":
-            rm_cmd = "gsutil rm -r " + rm_cmd + "; "
+            rm_cmd = self.results_server_cmd + " -m rm -r " + rm_cmd + "; "
 
         # Append the history to the results.
         results_md = self.results_md + history_txt
@@ -451,15 +474,16 @@ class FlowCfg():
         f.close()
         rm_cmd += "rm -rf " + results_html_file + "; "
 
-        log.info("Publishing results to %s",
-                 results_page.replace("gs://", "https://"))
-        cmd = "gsutil cp " + results_html_file + " " + results_page + "; " + rm_cmd
-
+        log.info("Publishing results to %s", results_page_url)
+        cmd = self.results_server_cmd + " cp " + results_html_file + " " + \
+              results_page + "; " + rm_cmd
+        log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,
                                         shell=True,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT)
+            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
 

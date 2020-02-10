@@ -69,7 +69,7 @@ def resolve_scratch_root(arg_scratch_root):
 # and sets the branch name to "default"
 def resolve_branch(arg_branch):
     if arg_branch is None or arg_branch == "":
-        result = subprocess.run(["git", "branch", "--show-current"],
+        result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
                                 stdout=subprocess.PIPE)
         arg_branch = result.stdout.decode("utf-8").strip()
         if arg_branch == "":
@@ -251,6 +251,20 @@ def main():
                         action='store_true',
                         help="turn on coverage collection")
 
+    parser.add_argument(
+        "--cov-merge-previous",
+        default=False,
+        action='store_true',
+        help="""Applicable when --cov switch is enabled. If a previous cov
+                        database directory exists, this switch will cause it to be merged with
+                        the current cov database.""")
+
+    parser.add_argument(
+        "--cov-analyze",
+        default=False,
+        action='store_true',
+        help="Analyze the coverage from the last regression result.")
+
     parser.add_argument("-p",
                         "--profile",
                         default="none",
@@ -422,26 +436,34 @@ def main():
     # and other ASIC flow targets.
     cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
 
-    # Purge the scratch path if --purge option is set.
-    if args.purge:
-        cfg.purge()
-
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:
         cfg.print_list()
         sys.exit(0)
 
-    # Create deploy objects.
-    cfg.create_deploy_objects()
+    # In simulation mode: if --cov-analyze switch is passed, then run the GUI
+    # tool.
+    if args.cov_analyze:
+        cfg.cov_analyze()
+        sys.exit(0)
+
+    # Purge the scratch path if --purge option is set.
+    if args.purge:
+        cfg.purge()
 
     # Deploy the builds and runs
-    Deploy.Deploy.deploy(cfg.deploy)
+    if args.items != []:
+        # Create deploy objects.
+        cfg.create_deploy_objects()
+        cfg.deploy_objects()
 
-    # Generate results.
-    results = cfg.gen_results()
+        # Generate results.
+        results = cfg.gen_results()
 
-    # Publish results
-    if args.publish: cfg.publish_results()
+        # Publish results
+        if args.publish: cfg.publish_results()
+    else:
+        log.info("No items specified to be run.")
 
 
 if __name__ == '__main__':

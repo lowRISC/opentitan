@@ -33,14 +33,14 @@
       desc: '''
             Compare cypher text from AWS module with the output of a C model using same key and data'''
       milestone: V2
-      tests: ["aes_sanity", "aes_stress"]
+      tests: ["aes_sanity"]
     }
     {
       name: key_size
       desc: '''
            Randomly select keysize to verify all supported keysizes are working'''
       milestone: V2
-      tests: ["aes_stress"]
+      tests: []
     }
     {
       name: failure_test
@@ -51,21 +51,21 @@
               then enter the 128bit of the key and use for decryption.
               will result match plain text and vice verca'''
       milestone: V2
-      tests: ["aes_stress"]
+      tests: []
     }
     {
       name: reset_recovery
       desc: '''
             Pull reset at random times make sure AES recover/resets correctly'''
       milestone: V2
-      tests: ["aes_stress"]
+      tests: []
     }
     {
       name: deinitialization
       desc: '''
             Make sure that there is no residual data from latest operation '''
       milestone: V2
-      tests: ["aes_stress"]
+      tests: []
     }
   ]
 }

@@ -44,6 +44,7 @@ class SimCfg(FlowCfg):
         self.dump = args.dump
         self.max_waves = args.max_waves
         self.cov = args.cov
+        self.cov_merge_previous = args.cov_merge_previous
         self.profile = args.profile
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
@@ -93,6 +94,12 @@ class SimCfg(FlowCfg):
         self.build_list = []
         self.run_list = []
         self.deploy = []
+        self.cov_merge_deploy = None
+        self.cov_report_deploy = None
+
+        # If is_master_cfg is set, then each cfg will have its own cov_deploy.
+        # Maintain an array of those in cov_deploys.
+        self.cov_deploys = []
 
         # Parse the cfg_file file tree
         self.parse_flow_cfg(flow_cfg_file)
@@ -110,7 +117,8 @@ class SimCfg(FlowCfg):
         # Make substitutions, while ignoring the following wildcards
         # TODO: Find a way to set these in sim cfg instead
         ignored_wildcards = [
-            "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq"
+            "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
+            "cov_db_dirs"
         ]
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
@@ -343,20 +351,54 @@ class SimCfg(FlowCfg):
                     build_map[test.build_mode].sub.append(item)
                 runs.append(item)
 
+        self.builds = builds
+        self.runs = runs
         if self.run_only is True:
             self.deploy = runs
         else:
             self.deploy = builds
 
+        # Create cov_merge and cov_report objects
+        if self.cov:
+            self.cov_merge_deploy = CovMerge(self)
+            self.cov_report_deploy = CovReport(self)
+            # Generate reports only if merge was successful; add it as a dependency
+            # of merge.
+            self.cov_merge_deploy.sub.append(self.cov_report_deploy)
+
         # Create initial set of directories before kicking off the regression.
         self._create_dirs()
 
+    def create_deploy_objects(self):
+        '''Public facing API for _create_deploy_objects().
+        '''
+        super().create_deploy_objects()
+
+        # Also, create cov_deploys
+        if self.cov:
+            for item in self.cfgs:
+                self.cov_deploys.append(item.cov_merge_deploy)
+
+    # deploy additional commands as needed. We do this separated for coverage
+    # since that needs to happen at the end.
+    def deploy_objects(self):
+        '''This is a public facing API, so we use "self.cfgs" instead of self.
+        '''
+        # Invoke the base class method to run the regression.
+        super().deploy_objects()
+
+        # If coverage is enabled, then deploy the coverage tasks.
+        if self.cov:
+            Deploy.deploy(self.cov_deploys)
+
     def _gen_results(self):
         '''
-        The function is called after the regression has completed. It collates the status of
-        all run targets and generates a dict. It parses the testplan and maps the generated
-        result to the testplan entries to generate a final table (list). It uses the fmt arg
-        to dump the final result as a markdown or html.
+        The function is called after the regression has completed. It collates the
+        status of all run targets and generates a dict. It parses the testplan and
+        maps the generated result to the testplan entries to generate a final table
+        (list). It also prints the full list of failures for debug / triage. If cov
+        is enabled, then the summary coverage report is also generated. The final
+        result is in markdown format.
         '''
 
         # TODO: add support for html
@@ -393,8 +435,10 @@ class SimCfg(FlowCfg):
 
         regr_results = []
         fail_msgs = ""
-        (regr_results, fail_msgs) = gen_results_sub(self.deploy, regr_results,
-                                                    fail_msgs)
+        deployed_items = self.deploy
+        if self.cov: deployed_items.append(self.cov_merge_deploy)
+        (regr_results, fail_msgs) = gen_results_sub(deployed_items,
+                                                    regr_results, fail_msgs)
 
         # Add title if there are indeed failures
         if fail_msgs != "":
@@ -420,6 +464,12 @@ class SimCfg(FlowCfg):
                 map_full_testplan=self.map_full_testplan)
             results_str += "\n"
 
+        # Append coverage results of coverage was enabled.
+        if self.cov and self.cov_report_deploy.status == "P":
+            results_str += "\n## Coverage Results\n"
+            results_str += "\n### [Coverage Dashboard](cov_report/dashboard.html)\n\n"
+            results_str += self.cov_report_deploy.cov_results
+
         # Append failures for triage
         self.results_md = results_str + fail_msgs
 
@@ -432,3 +482,45 @@ class SimCfg(FlowCfg):
 
         # Return only the tables
         return results_str
+
+    def _cov_analyze(self):
+        '''Use the last regression coverage data to open up the GUI tool to
+        analyze the coverage.
+        '''
+        cov_analyze_deploy = CovAnalyze(self)
+        try:
+            proc = subprocess.Popen(args=cov_analyze_deploy.cmd,
+                                    shell=True,
+                                    close_fds=True)
+        except Exception as e:
+            log.fatal("Failed to run coverage analysis cmd:\n\"%s\"\n%s",
+                      cov_analyze_deploy.cmd, e)
+            sys.exit(1)
+
+    def cov_analyze(self):
+        '''Public facing API for analyzing coverage.
+        '''
+        for item in self.cfgs:
+            item._cov_analyze()
+
+    def _publish_results(self):
+        '''Publish coverage results to the opentitan web server.'''
+        super()._publish_results()
+
+        if self.cov:
+            results_server_dir_url = self.results_server_dir.replace(
+                self.results_server_prefix, self.results_server_url_prefix)
+
+            log.info("Publishing coverage results to %s",
+                     results_server_dir_url)
+            cmd = self.results_server_cmd + " -m cp -R " + \
+                  self.cov_report_deploy.cov_report_dir + " " + self.results_server_dir
+            try:
+                cmd_output = subprocess.run(args=cmd,
+                                            shell=True,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT)
+                log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+            except Exception as e:
+                log.error("%s: Failed to publish results:\n\"%s\"", e,
+                          str(cmd))

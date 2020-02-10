@@ -73,16 +73,17 @@ debug_waves:
 ############################
 ## coverage rated targets ##
 ############################
+# Merge coverage if there are multiple builds.
 cov_merge:
-	# TODO: add script to merge coverage in scratch scope
+	${cov_merge_cmd} ${cov_merge_opts}
 
-# open coverage tool to review and create report or exclusion file
+# Open coverage tool to review and create report or exclusion file.
 cov_analyze:
-	cd ${scratch_path} && ${cov_analyze_cmd} ${cov_analyze_opts}
+	${cov_analyze_cmd} ${cov_analyze_opts}
 
-# generate coverage report directly
+# Generate coverage reports.
 cov_report:
-	cd ${scratch_path} && ${cov_report} ${cov_report_opts}
+	${cov_report_cmd} ${cov_report_opts}
 
 clean:
 	echo "[make]: clean"

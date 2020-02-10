@@ -132,12 +132,12 @@ class TestplanEntry():
 
             # if a test was not found in regr results, indicate 0/1 passing
             if map_full_testplan and not found:
-                test_results.append({"name": test, "passing": 0, "total": 1})
+                test_results.append({"name": test, "passing": 0, "total": 0})
 
         # if no written tests were indicated in the testplan, reuse planned
         # test name and indicate 0/1 passing
         if map_full_testplan and self.tests == []:
-            test_results.append({"name": self.name, "passing": 0, "total": 1})
+            test_results.append({"name": self.name, "passing": 0, "total": 0})
 
         # replace tests with test results
         self.tests = test_results
@@ -305,7 +305,7 @@ class Testplan():
         '''
         self.map_regr_results(regr_results, map_full_testplan)
         table = [[
-            "Milestone", "Name", "Tests", "Passing", "Iterations", "Pass Rate"
+            "Milestone", "Name", "Tests", "Passing", "Total", "Pass Rate"
         ]]
         colalign = ("center", "center", "left", "center", "center", "center")
         for entry in self.entries:
@@ -314,8 +314,10 @@ class Testplan():
             if milestone == "N.A.": milestone = ""
             if entry_name == "N.A.": entry_name = ""
             for test in entry.tests:
-                pass_rate = test["passing"] / test["total"] * 100
-                pass_rate = "{0:.2f}".format(round(pass_rate, 2))
+                if test["total"] == 0: pass_rate = "-- %"
+                else:
+                    pass_rate = test["passing"] / test["total"] * 100
+                    pass_rate = "{0:.2f} %".format(round(pass_rate, 2))
                 table.append([
                     milestone, entry_name, test["name"], test["passing"],
                     test["total"], pass_rate
