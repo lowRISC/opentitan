@@ -45,6 +45,8 @@ tops_gen = $(addsuffix _gen,$(TOPS))
 
 tops_reg = $(addsuffix _reg,$(TOPS))
 
+tops_clone = $(addsuffix _clone,$(TOPS))
+
 all: $(dynips_reg) $(tops_gen) $(tops_reg) banner
 
 banner:
@@ -94,5 +96,12 @@ $(tops_reg): pre_reg
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
 		-r -o ${REG_OUTPUT_DV_DIR}/$($@_TOP) ${toolflags}
 
+
+clone: $(tops_clone)
+$(tops_clone):
+	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
+	rm -rf ${PRJ_DIR}/hw/$($@_TOP)
+	mkdir -p ${PRJ_DIR}/hw/$($@_TOP)
+	${PRJ_DIR}/util/topclone.py -t $($@_TOP) ${toolflags}
 
 .PHONY: all banner $(ips_reg) $(tops_gen) $(ips_reg_header)
