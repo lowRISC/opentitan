@@ -307,7 +307,7 @@ module usbdev (
     set_sentbit = '0;
     if (set_sent) begin
       // synchronization of set_sent ensures usb_endpoint is stable
-      set_sentbit[usb_in_endpoint] = 1; // lint: usb_in_endpoint range was checked
+      set_sentbit[usb_in_endpoint] = 1'b1;
     end
   end
 
@@ -459,8 +459,8 @@ module usbdev (
     .out_endpoint_o       (usb_out_endpoint),  // will be stable for several cycles
 
     // transmit side
-    .in_buf_i             (usb_in_buf[usb_in_endpoint]),  // lint: usb_in_endpoint range was checked
-    .in_size_i            (usb_in_size[usb_in_endpoint]),  // lint: usb_in_endpoint range was checked
+    .in_buf_i             (usb_in_buf[usb_in_endpoint]),
+    .in_size_i            (usb_in_size[usb_in_endpoint]),
     .in_stall_i           (usb_ep_stall),
     .in_rdy_i             (usb_in_rdy),
     .set_sent_o           (usb_set_sent),

@@ -18,7 +18,7 @@ module usb_fs_nb_pe #(
   parameter int unsigned NumOutEps = 2,
   parameter int unsigned NumInEps = 2,
   parameter int unsigned MaxPktSizeByte = 32,
-  parameter int unsigned PktW = $clog2(MaxPktSizeByte)
+  localparam int unsigned PktW = $clog2(MaxPktSizeByte) // derived parameter
 ) (
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,        // Async. reset, active low

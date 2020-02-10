@@ -145,7 +145,6 @@ module usb_fs_tx (
     bit_count_d      = bit_count_q;
     test_mode_start  = 0;
 
-
     unique case (state_q)
       Idle : begin
         if (tx_osc_test_mode_i) begin
@@ -192,7 +191,8 @@ module usb_fs_tx (
             state_d = Crc161;
             data_payload_d = 0;
             tx_data_get_d = 0;
-            data_shift_reg_d = ~{crc16_q[8], crc16_q[9], crc16_q[10], crc16_q[11], crc16_q[12], crc16_q[13], crc16_q[14], crc16_q[15]};
+            data_shift_reg_d = ~{crc16_q[8],  crc16_q[9],  crc16_q[10], crc16_q[11],
+                                 crc16_q[12], crc16_q[13], crc16_q[14], crc16_q[15]};
             oe_shift_reg_d = 8'b11111111;
             se0_shift_reg_d = 8'b00000000;
           end
@@ -204,7 +204,8 @@ module usb_fs_tx (
       Crc161 : begin
         if (byte_strobe_q) begin
           state_d = Eop;
-          data_shift_reg_d = ~{crc16_q[0], crc16_q[1], crc16_q[2], crc16_q[3], crc16_q[4], crc16_q[5], crc16_q[6], crc16_q[7]};
+          data_shift_reg_d = ~{crc16_q[0], crc16_q[1], crc16_q[2], crc16_q[3],
+                               crc16_q[4], crc16_q[5], crc16_q[6], crc16_q[7]};
           oe_shift_reg_d = 8'b11111111;
           se0_shift_reg_d = 8'b00000000;
         end
@@ -229,6 +230,8 @@ module usb_fs_tx (
           se0_shift_reg_d  = 8'b00000000;
         end
       end
+
+      default: state_d = Idle;
     endcase
 
     // Logic closely coupled to the FSM
