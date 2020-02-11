@@ -784,6 +784,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     last_intr_update_except_clearing = '0;
     last_intr_test_event = '0;
     cleared_intr_bits = '0;
+    // call again to predict 'data_in_update_queue' to ensure data_in ral is updated
+    gpio_predict_and_compare();
   endfunction
 
   // Function: check_phase
