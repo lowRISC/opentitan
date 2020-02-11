@@ -120,18 +120,20 @@
 `endif
 
 // Assert that valid is known after reset and data is known when valid == 1
-`define ASSERT_VALID_DATA(__name, __valid, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-`ifdef INC_ASSERT                                                                                           \
-  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                                  \
-  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                            \
+`define ASSERT_VALID_DATA                                                              \
+    (__name, __valid, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                      \
+  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                             \
+  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)       \
 `endif
 
 // Same as ASSERT_VALID_DATA, but also assert that ready is known after reset
-`define ASSERT_VALID_READY_DATA(__name, __valid, __ready, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-`ifdef INC_ASSERT                                                                                                          \
-  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                                                 \
-  `ASSERT_KNOWN(__name``KnownReady, __ready, __clk, __rst)                                                                 \
-  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                                           \
+`define ASSERT_VALID_READY_DATA                                                                 \
+    (__name, __valid, __ready, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                               \
+  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                      \
+  `ASSERT_KNOWN(__name``KnownReady, __ready, __clk, __rst)                                      \
+  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                \
 `endif
 
 ///////////////////////
