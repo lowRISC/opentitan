@@ -7,24 +7,28 @@ package ${name}_env_pkg;
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
-  import csr_utils_pkg::*;
-  import tl_agent_pkg::*;
 % for agent in env_agents:
   import ${agent}_agent_pkg::*;
 % endfor
   import dv_lib_pkg::*;
 % if is_cip:
+  import tl_agent_pkg::*;
   import cip_base_pkg::*;
 % endif
+% if has_ral:
+  import csr_utils_pkg::*;
   import ${name}_ral_pkg::*;
+% endif
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
+% if has_ral:
   // TODO update below, or compile error occurs
   parameter uint ${name.upper()}_ADDR_MAP_SIZE = ;
+% endif
 
   // types
 

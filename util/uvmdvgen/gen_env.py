@@ -10,8 +10,8 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 
-def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir,
-            add_makefile):
+def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
+            root_dir, add_makefile):
     # yapf: disable
     # 4-tuple - sub-path, ip name, class name, file ext
     env_srcs = [('dv/env',          name + '_', 'env_cfg',            '.sv'),
@@ -62,6 +62,7 @@ def gen_env(name, is_cip, has_interrupts, has_alerts, env_agents, root_dir,
                 fout.write(
                     tpl.render(name=name,
                                is_cip=is_cip,
+                               has_ral=has_ral,
                                has_interrupts=has_interrupts,
                                has_alerts=has_alerts,
                                env_agents=env_agents))

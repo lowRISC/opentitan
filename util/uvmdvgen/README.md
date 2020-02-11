@@ -44,6 +44,8 @@ optional arguments:
                         extended from CIP library. If switch is not passed,
                         then the code will be extended from DV library
                         instead. (ignored if -e switch is not passed)
+  -hr, --has_ral        Specify whether the DUT has CSRs and thus needs a UVM
+                        RAL model
   -hi, --has_interrupts
                         CIP has interrupts. Create interrupts interface in tb
   -ha, --has_alerts     CIP has alerts. Create alerts interface in tb
@@ -305,21 +307,28 @@ $ util/uvmdvgen.py i2c -a -s -ao hw/dv/sv
 This will create the I2C agent with separate 'host' mode and 'device' mode drivers.
 
 ```console
-$ util/uvmdvgen.py i2c_host -e -c -hi -ea i2c -eo hw/ip/i2c_host/dv
+$ util/uvmdvgen.py i2c -e -c -hi -eo hw/ip/i2c/dv
+```
+This is an illegal command, it is not allowed to specify that an IP testbench
+extends from CIP lib or has interrupts without specifying that it should support
+a RAL model using the `-hr` flag.
+
+```console
+$ util/uvmdvgen.py i2c_host -e -c -hi -hr -ea i2c -eo hw/ip/i2c_host/dv
 ```
 This will create the complete `i2c_host` DV testbench extended from CIP lib and will
 instantiate `i2c_agent`. It will also create and hook up the interrupt interface
 in the testbench.
 
 ```console
-$ util/uvmdvgen.py foo -e -c -hi -ha -ea foo -eo hw/ip/i2c_host/dv
+$ util/uvmdvgen.py foo -e -c -hi -ha -hr -ea foo -eo hw/ip/i2c_host/dv
 ```
 This will create the complete foo DV testbench extended from CIP lib and
 will instantiate `foo_agent`. It will also create and hook up the interrupt interface
 as well as alerts interface in the testbench.
 
 ```console
-$ util/uvmdvgen.py aes -e -c -ea i2c -eo hw/ip/i2c_host/dv
+$ util/uvmdvgen.py aes -e -c -hr -ea i2c -eo hw/ip/i2c_host/dv
 ```
 This will create the complete `i2c_host` DV testbench extended from CIP lib and will
 instantiate `i2c_agent`.

@@ -17,6 +17,9 @@ package ${name}_test_pkg;
   `include "dv_macros.svh"
 
   // local types
+% if not has_ral:
+  typedef uvm_object ${name}_reg_block;
+% endif
 
   // functions
 
