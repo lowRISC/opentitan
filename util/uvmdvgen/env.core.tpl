@@ -15,7 +15,9 @@ filesets:
 % for agent in env_agents:
       - lowrisc:dv:${agent}_agent
 % endfor
+% if has_ral:
       - lowrisc:dv:gen_ral_pkg
+% endif
     files:
       - ${name}_env_pkg.sv
       - ${name}_env_cfg.sv: {is_include_file: true}

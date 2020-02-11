@@ -51,6 +51,15 @@ def main():
     )
 
     parser.add_argument(
+        "-hr",
+        "--has_ral",
+        default=False,
+        action='store_true',
+        help="""Specify whether the DUT has CSRs and thus needs a UVM RAL model.
+                This option is required if either --is_cip or --has_interrupts are
+                enabled.""")
+
+    parser.add_argument(
         "-hi",
         "--has_interrupts",
         default=False,
@@ -104,11 +113,18 @@ def main():
         help=
         """Tests are now run with dvsim.py tool that requires a hjson based sim cfg.
              Setting this option will also result in the Makefile to be auto-generated (which is
-             the older way of building and running sims going through deprecation).""")
+             the older way of building and running sims going through deprecation)."""
+    )
 
     args = parser.parse_args()
     if args.agent_outdir == "name": args.agent_outdir = args.name
     if args.env_outdir == "name": args.env_outdir = args.name
+
+    """ The has_ral option must be set if either is_cip or has_interrupts is set,
+        as both require use of a RAL model. As such, it is disallowed to not have
+        has_ral set if one of these options is set."""
+    if not args.has_ral:
+        args.has_ral = args.is_cip or args.has_interrupts
 
     if args.gen_agent:
         gen_agent.gen_agent(args.name, \
@@ -119,6 +135,7 @@ def main():
         if not args.env_agents: args.env_agents = []
         gen_env.gen_env(args.name, \
                         args.is_cip, \
+                        args.has_ral, \
                         args.has_interrupts, \
                         args.has_alerts, \
                         args.env_agents, \
