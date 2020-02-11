@@ -170,10 +170,28 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   assign reg2hw_wrap.ping_timeout_cyc = reg2hw.ping_timeout_cyc.q;
 
   // class enable
-  assign reg2hw_wrap.class_en = { reg2hw.classd_ctrl.en,
-                                  reg2hw.classc_ctrl.en,
-                                  reg2hw.classb_ctrl.en,
-                                  reg2hw.classa_ctrl.en };
+  // we require that at least one of the enable signals is
+  // set for a class to be enabled
+  assign reg2hw_wrap.class_en = { reg2hw.classd_ctrl.en & ( reg2hw.classd_ctrl.en_e3 |
+                                                            reg2hw.classd_ctrl.en_e2 |
+                                                            reg2hw.classd_ctrl.en_e1 |
+                                                            reg2hw.classd_ctrl.en_e0 ),
+                                  //
+                                  reg2hw.classc_ctrl.en & ( reg2hw.classc_ctrl.en_e3 |
+                                                            reg2hw.classc_ctrl.en_e2 |
+                                                            reg2hw.classc_ctrl.en_e1 |
+                                                            reg2hw.classc_ctrl.en_e0 ),
+                                  //
+                                  reg2hw.classb_ctrl.en & ( reg2hw.classb_ctrl.en_e3 |
+                                                            reg2hw.classb_ctrl.en_e2 |
+                                                            reg2hw.classb_ctrl.en_e1 |
+                                                            reg2hw.classb_ctrl.en_e0 ),
+                                  //
+                                  reg2hw.classa_ctrl.en & ( reg2hw.classa_ctrl.en_e3 |
+                                                            reg2hw.classa_ctrl.en_e2 |
+                                                            reg2hw.classa_ctrl.en_e1 |
+                                                            reg2hw.classa_ctrl.en_e0 ) };
+
 
   // autolock enable
   assign class_autolock_en = { reg2hw.classd_ctrl.lock,
