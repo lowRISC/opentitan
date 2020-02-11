@@ -8,28 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "rv_plic_regs.h"  // Generated.
 #include "sw/device/lib/base/mmio.h"
-
-// Interrupt Pending register offsets from the PLIC base.
-#define RV_PLIC_IP0 0x0u
-#define RV_PLIC_IP1 0x4u
-
-// Level/Edge register offsets from the PLIC base.
-#define RV_PLIC_LE0 0x8u
-#define RV_PLIC_LE1 0xCu
-
-// Priority register offsets from the PLIC base.
-#define RV_PLIC_PRIO0 0x10u
-
-// Interrupt Enable register offsets from the PLIC base.
-#define RV_PLIC_IE00 0x200u
-#define RV_PLIC_IE01 0x204u
-
-// Threshold register offsets from the PLIC base.
-#define RV_PLIC_THRESHOLD0 0x208u
-
-// Interrupt Claim register offsets from the PLIC base.
-#define RV_PLIC_CC0 0x20cu
 
 // The highest interrupt priority.
 #define RV_PLIC_MAX_PRIORITY 0x3u
@@ -82,9 +62,9 @@ typedef struct plic_peripheral_range {
 static const plic_target_reg_offset_t plic_target_reg_offsets[] = {
         [kDifPlicTargetIbex0] =
             {
-                .ie = RV_PLIC_IE00,
-                .cc = RV_PLIC_CC0,
-                .threshold = RV_PLIC_THRESHOLD0,
+                .ie = RV_PLIC_IE00_REG_OFFSET,
+                .cc = RV_PLIC_CC0_REG_OFFSET,
+                .threshold = RV_PLIC_THRESHOLD0_REG_OFFSET,
             },
 };
 
@@ -169,7 +149,7 @@ static void plic_irq_enable_reg_info(dif_plic_irq_id_t irq,
 static void plic_irq_trigger_type_reg_info(dif_plic_irq_id_t irq,
                                            plic_reg_info_t *reg_info) {
   ptrdiff_t offset = plic_offset_from_reg0(irq);
-  reg_info->offset = RV_PLIC_LE0 + offset;
+  reg_info->offset = RV_PLIC_LE0_REG_OFFSET + offset;
   reg_info->bit_index = plic_reg_bit_index_from_irq_id(irq);
 }
 
@@ -179,7 +159,7 @@ static void plic_irq_trigger_type_reg_info(dif_plic_irq_id_t irq,
 static void plic_irq_pending_reg_info(dif_plic_irq_id_t irq,
                                       plic_reg_info_t *reg_info) {
   ptrdiff_t offset = plic_offset_from_reg0(irq);
-  reg_info->offset = RV_PLIC_IP0 + offset;
+  reg_info->offset = RV_PLIC_IP0_REG_OFFSET + offset;
   reg_info->bit_index = plic_reg_bit_index_from_irq_id(irq);
 }
 
@@ -191,7 +171,7 @@ static void plic_irq_pending_reg_info(dif_plic_irq_id_t irq,
  */
 static ptrdiff_t plic_priority_reg_offset(dif_plic_irq_id_t irq) {
   ptrdiff_t offset = PLIC_ID_TO_INDEX(irq) * sizeof(uint32_t);
-  return RV_PLIC_PRIO0 + offset;
+  return RV_PLIC_PRIO0_REG_OFFSET + offset;
 }
 
 bool dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic) {
