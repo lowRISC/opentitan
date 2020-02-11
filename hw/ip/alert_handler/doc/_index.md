@@ -578,20 +578,20 @@ shown.
     { name: 'irq_o[0]',             wave: '01.|................' },
     { name: 'CLASSA_STATE',         wave: '3..|.3|3.|3..|3..|3.', data: ['Idle', '   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',       wave: '3..|.3|33|333|333|3.', data: ['0','1','1','2','1','2','3','1','2','3','0'] },
-    { name: 'esc_tx_o.esc_p[0]',    wave: '0..|.1|0............', node: '.....a.b' },
-    { name: 'esc_tx_o.esc_n[0]',    wave: '1..|.0|1............' },
-    { name: 'esc_tx_o.esc_p[1]',    wave: '0..|..|1.|0.........', node: '.......c..d' },
-    { name: 'esc_tx_o.esc_n[1]',    wave: '1..|..|0.|1.........' },
-    { name: 'esc_tx_o.esc_p[2]',    wave: '0..|.....|1..|0.....', node: '..........e...f' },
-    { name: 'esc_tx_o.esc_n[2]',    wave: '1..|.....|0..|1.....' },
-    { name: 'esc_tx_o.esc_p[3]',    wave: '0..|.........|1..|0.', node: '..............g...h' },
-    { name: 'esc_tx_o.esc_n[3]',    wave: '1..|.........|0..|1.' },
+    { name: 'esc_tx_o.esc_p[0]',    wave: '0..|.1|.0...........', node: '.....a..b' },
+    { name: 'esc_tx_o.esc_n[0]',    wave: '1..|.0|.1...........' },
+    { name: 'esc_tx_o.esc_p[1]',    wave: '0..|..|1.|.0........', node: '.......c...d' },
+    { name: 'esc_tx_o.esc_n[1]',    wave: '1..|..|0.|.1........' },
+    { name: 'esc_tx_o.esc_p[2]',    wave: '0..|.....|1..|.0....', node: '..........e....f' },
+    { name: 'esc_tx_o.esc_n[2]',    wave: '1..|.....|0..|.1....' },
+    { name: 'esc_tx_o.esc_p[3]',    wave: '0..|.........|1..|.0', node: '..............g....h' },
+    { name: 'esc_tx_o.esc_n[3]',    wave: '1..|.........|0..|.1' },
   ],
   edge: [
-   'a->b 1e3 cycles',
-   'c->d 1e4 cycles',
-   'e->f 1e5 cycles',
-   'g->h 1e6 cycles',
+   'a->b 1e3 + 1 cycles',
+   'c->d 1e4 + 1 cycles',
+   'e->f 1e5 + 1 cycles',
+   'g->h 1e6 + 1 cycles',
   ],
   head: {
     text: 'Alert class gathering and escalation triggers (fully synchronous case)',
@@ -613,7 +613,6 @@ the first occurrence within an alert class, the accumulation threshold shall be
 set to 0. Also note that it takes one cycle to activate escalation and enter
 phase 0.
 
-
 The next wave shows a case where an interrupt remains unhandled and hence the
 interrupt timeout counter triggers escalation.
 
@@ -626,14 +625,14 @@ interrupt timeout counter triggers escalation.
     { name: 'irq_o[0]',                wave: '01..|.................', node: '.a..|.b' },
     { name: 'CLASSA_ESC_STATE',        wave: '33..|.3|3.|3..|3...|3.', data: ['Idle', 'Timeout','   Phase0','Phase1','Phase2','Phase3','Terminal'] },
     { name: 'CLASSA_ESC_CNT',          wave: '3333|33|33|333|3333|3.', data: ['0', '1','2','3','1e4','1','1','2','1','2','3','1','2','3','4','0'] },
-    { name: 'esc_tx_o.esc_p[0]',       wave: '0...|.1|0.............' },
-    { name: 'esc_tx_o.esc_n[0]',       wave: '1...|.0|1.............' },
-    { name: 'esc_tx_o.esc_p[1]',       wave: '0...|..|1.|0..........' },
-    { name: 'esc_tx_o.esc_n[1]',       wave: '1...|..|0.|1..........' },
-    { name: 'esc_tx_o.esc_p[2]',       wave: '0...|.....|1..|0......' },
-    { name: 'esc_tx_o.esc_n[2]',       wave: '1...|.....|0..|1......' },
-    { name: 'esc_tx_o.esc_p[3]',       wave: '0...|.........|1...|0.' },
-    { name: 'esc_tx_o.esc_n[3]',       wave: '1...|.........|0...|1.' },
+    { name: 'esc_tx_o.esc_p[0]',       wave: '0...|.1|.0............' },
+    { name: 'esc_tx_o.esc_n[0]',       wave: '1...|.0|.1............' },
+    { name: 'esc_tx_o.esc_p[1]',       wave: '0...|..|1.|.0.........' },
+    { name: 'esc_tx_o.esc_n[1]',       wave: '1...|..|0.|.1.........' },
+    { name: 'esc_tx_o.esc_p[2]',       wave: '0...|.....|1..|.0.....' },
+    { name: 'esc_tx_o.esc_n[2]',       wave: '1...|.....|0..|.1.....' },
+    { name: 'esc_tx_o.esc_p[3]',       wave: '0...|.........|1...|.0' },
+    { name: 'esc_tx_o.esc_n[3]',       wave: '1...|.........|0...|.1' },
   ],
   edge: [
    'a->b 1e4 cycles',
@@ -647,6 +646,11 @@ interrupt timeout counter triggers escalation.
     }
 }
 {{< /wavejson >}}
+
+It should be noted here that the differential escalation signaling protocol
+distinguishes 'true' escalation conditions from mere pings by encoding them as
+pulses that are N + 1 cycles long. This is reflected in the two wave diagrams
+above. Refer to the subsequent section on escalation signaling for more details.
 
 ### Escalation Signaling
 
@@ -842,6 +846,8 @@ the security settings process) should do the following:
     - For each escalation signal (0..3):
         - Determine whether to enable the escalation signal, and set the
           {{< regref "CLASSA_CTRL.E0_EN" >}} bit accordingly (default is enabled).
+          Note that setting all of the `E*_EN` bits to 0 within a class has the same
+          effect of disabling the entire class by setting {{< regref "CLASSA_CTRL.EN" >}} to zero.
         - Determine the phase -> escalation mapping of this class and
           program it via the {{< regref "CLASSA_CTRL.E0_MAP" >}} values if it needs to be
           changed from the default mapping (0->0, 1->1, 2->2, 3->3).
