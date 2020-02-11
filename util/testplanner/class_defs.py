@@ -8,6 +8,7 @@ r"""TestplanEntry and Testplan classes for maintaining testplan entries
 import re
 import sys
 
+import mistletoe
 from tabulate import tabulate
 
 
@@ -279,13 +280,34 @@ class Testplan():
             output.append(ms_dict)
         return output
 
-    def results_table(self, regr_results, map_full_testplan=True):
-        '''Print the mapped regression results into a table.
+    def testplan_table(self, fmt="pipe"):
+        '''Generate testplan table from hjson entries in the format specified
+        by the 'fmt' arg.
+        '''
+        table = [["Milestone", "Name", "Description", "Tests"]]
+        colalign = ("center", "center", "left", "left")
+        for entry in self.entries:
+            tests = ""
+            for test in entry.tests:
+                tests += test + "<br>\n"
+            desc = entry.desc.strip()
+            if fmt == "html":
+                desc = mistletoe.markdown(desc)
+            table.append([entry.milestone, entry.name, desc, tests])
+        return tabulate(table,
+                        headers="firstrow",
+                        tablefmt=fmt,
+                        colalign=colalign)
+
+    def results_table(self, regr_results, map_full_testplan=True, fmt="pipe"):
+        '''Print the mapped regression results into a table in the format
+        specified by the 'fmt' arg.
         '''
         self.map_regr_results(regr_results, map_full_testplan)
         table = [[
             "Milestone", "Name", "Tests", "Passing", "Iterations", "Pass Rate"
         ]]
+        colalign = ("center", "center", "left", "center", "center", "center")
         for entry in self.entries:
             milestone = entry.milestone
             entry_name = entry.name
@@ -300,4 +322,7 @@ class Testplan():
                 ])
                 milestone = ""
                 entry_name = ""
-        return tabulate(table, headers="firstrow", tablefmt="pipe")
+        return tabulate(table,
+                        headers="firstrow",
+                        tablefmt="pipe",
+                        colalign=colalign)
