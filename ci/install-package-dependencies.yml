@@ -16,6 +16,22 @@ steps:
       # since apt-get doesn't actually provide such a feature.
       sed 's/#.*//' apt-requirements.txt \
         | xargs sudo apt-get install -y
-      sudo pip3 install -U -r python-requirements.txt
+      # Python requirements are installed to the local user directory so prepend
+      # appropriate bin directory to the PATH
+      export PATH=$HOME/.local/bin:$PATH
+      # Explicitly installing six is a workaround for pip dependency resolution:
+      # six is already installed as system package with a version below the
+      # required one.  Explicitly installing six through pip gets us a supported
+      # version.
+      #
+      # Explicitly updating pip and setuptools is required to have these tools
+      # properly parse Python-version metadata, which some packages uses to
+      # specify that an older version of a package must be used for a certain
+      # Python version. If that information is not read, pip installs the latest
+      # version, which then fails to run.
+      pip3 install --user -U setuptools pip six
+      pip3 install --user -U -r python-requirements.txt
+      # Propagate PATH changes to all subsequent steps of the job
+      echo "##vso[task.setvariable variable=PATH]$PATH"
     displayName: 'Install package dependencies'
 
