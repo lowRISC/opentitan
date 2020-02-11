@@ -162,6 +162,34 @@ Any nonstandard features that are used must be compatible with both GCC and Clan
 
 This rule deviates from the Google C++ style guide to align closer with a typical way of writing C code.
 
+***All symbols in a particular header must share the same unique prefix.***
+
+"Prefix" in this case refers to the identifying string of words, and not the specific type/struct/enum/constant/macro-based capitalisation.
+This rule also deviates from the Google C++ style guide, because C does not have namespaces, so we have to use long names to avoid name clashes.
+Symbols that have specific, global meaning imparted by an external script or specification may break this rule.
+For example:
+```c
+// in my_unit.h
+extern const int kMyUnitMaskValue = 0xFF;
+
+typedef enum { kMyUnitReturnOk } my_unit_return_t;
+
+my_unit_return_t my_unit_init(void);
+```
+
+***The names of enumeration constants must be prefixed with the name of their respective enumeration type.***
+
+Again, this is because C does not have namespaces.
+The exact capitalisation does not need to match, as enumeration type names have a different capitalisation rule to enumeration constants.
+For example:
+```c
+typedef enum my_wonderful_option {
+  kMyWonderfulOptionEnabled,
+  kMyWonderfulOptionDisabled,
+  kMyWonderfulOptionOnlySometimes
+} my_wonderful_option_t;
+```
+
 ### Preprocessor Macros
 
 Macros are often necessary and reasonable coding practice C (as opposed to C++) projects.
