@@ -20,18 +20,20 @@ waive -rules {INPUT_NOT_READ} -location {prim_ram_2p_adv.sv} -msg {Input port 'c
 # prim_assert
 waive -rules {UNDEF_MACRO_REF} -location {prim_assert.sv} -regexp {Macro definition for 'ASSERT_RPT' includes expansion of undefined macro '__(FILE|LINE)__'} \
       -comment "This is an UVM specific macro inside our assertion shortcuts"
+# unfortunately most tools do not support line wrapping within the declaration of macro functions, hence we have to waive
+# line length violations.
+waive -rules {LINE_LENGTH} -location {prim_assert.sv} -msg {Line length of} \
+      -comment "Some macros cannot be line-wrapped, as some tools do not support that."
 
 # prim_packer
 waive -rules INTEGER           -location {prim_packer.sv} -msg {'i' of type int used as a non-constant value} \
       -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
 
 # primitives: prim_subreg
-
 waive -rules INPUT_NOT_READ       -location {prim_subreg.sv} -regexp {Input port 'wd' is not read from} \
       -comment "for RO wd is not used"
 
 # primitives: prim_arbiter_*
-
 waive -rules PARTIAL_CONST_ASSIGN -location {prim_arbiter_*.sv} -regexp {'mask.0.' is conditionally assigned a constant} \
       -comment "makes the code more readable"
 waive -rules CONST_FF -location {prim_arbiter_*.sv} -regexp {Flip-flop 'mask.0.' is driven by constant} \
