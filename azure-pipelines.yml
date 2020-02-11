@@ -35,6 +35,7 @@ jobs:
       yapf --version
       isort --version
       clang-format -version
+      echo "PATH=$PATH"
     displayName: 'Display tool versions'
 
 #   XXX: Python lint checks are disabled until Issue #313 is resolved
