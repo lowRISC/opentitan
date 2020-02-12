@@ -11,6 +11,8 @@
 // Based on usb_fs_out_pe.v from the TinyFPGA-Bootloader project but
 // this version contains no packet buffers
 
+`include "prim_assert.sv"
+
 module usb_fs_nb_out_pe #(
   parameter logic [4:0] NumOutEps = 1,
   parameter int unsigned MaxOutPktSizeByte = 32,
@@ -372,10 +374,9 @@ module usb_fs_nb_out_pe #(
 
   // We receive a token for an endpoint that is not implemented.
   `ASSERT(UsbOutEndPImpl,
-      rx_pkt_end_i &&
+      (rx_pkt_end_i &&
       rx_pkt_valid_i &&
       rx_pid_type == UsbPidTypeToken &&
-      rx_addr_i == dev_addr_i &&
-      !ep_impl)
+      rx_addr_i == dev_addr_i) |-> ep_impl, clk_48mhz_i)
 
 endmodule
