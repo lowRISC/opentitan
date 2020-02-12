@@ -70,18 +70,18 @@ Additional details about the signal names and parameters are given in the sectio
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/pinmux/data/pinmux.hjson" >}}
+{{< hwcfg "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" >}}
 
 ## Parameters
 
 The following table lists the main parameters used throughout the `pinmux` design.
 Note that the pinmux is generated based on the system configuration, and hence these parameters are placed into a package as "localparams".
 
-Localparam     | Default (Max)         | Description
----------------|-----------------------|---------------
-`NPeriphOut`   | 16 (-)                | Number of peripheral outputs.
-`NPeriphIn`    | 16 (-)                | Number of peripheral input.
-`NMioPads`     | 8 (-)                 | Number of muxed bidirectional pads (depending on padctrl setup).
+Localparam     | Default (Max)  | Top Earlgrey | Description
+---------------|----------------|--------------|---------------
+`NPeriphOut`   | 16 (-)         | 32           | Number of peripheral outputs.
+`NPeriphIn`    | 16 (-)         | 32           | Number of peripheral input.
+`NMioPads`     | 8 (-)          | 32           | Number of muxed bidirectional pads (depending on padctrl setup).
 
 ## Additional IOs
 
@@ -125,7 +125,9 @@ The configuration can then not be altered anymore unless the system is reset.
 
 ## Register Table
 
-The layout of the register table can change, based on the parameterization.
-The register table below is an example and has been generated using the default parameters.
+The register description below matches the instance in the [Earl Grey top level
+design]({{< relref "hw/top_earlgrey/doc" >}}).
 
-{{< registers "hw/ip/pinmux/data/pinmux.hjson" >}}
+Similar register descriptions can be generated with different parameterizations.
+
+{{< registers "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" >}}
