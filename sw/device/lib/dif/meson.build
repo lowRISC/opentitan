@@ -98,3 +98,19 @@ sw_lib_dif_usbdev = declare_dependency(
     ],
   )
 )
+
+# HMAC device DIF library
+sw_dif_hmac = declare_dependency(
+  link_with: static_library(
+    'sw_dif_hmac',
+    sources: [
+      hw_ip_hmac_reg_h,
+      'dif_hmac.c'
+    ],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_mmio,
+    ],
+  )
+)
+
