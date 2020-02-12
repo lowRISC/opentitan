@@ -9,6 +9,8 @@ package aes_model_dpi_pkg;
   import "DPI-C" context function void c_dpi_aes_crypt(
     input  bit                impl_i,
     input  bit                op_i,
+    input  bit          [2:0] mode_i,
+    input  bit[3:0][3:0][7:0] iv_i,
     input  bit          [2:0] key_len_i,
     input  bit    [7:0][31:0] key_i,
     input  bit[3:0][3:0][7:0] data_i,
@@ -48,14 +50,17 @@ package aes_model_dpi_pkg;
   function automatic void sv_dpi_aes_crypt(
     input  bit             impl_i,
     input  bit             op_i,
+    input  bit       [2:0] mode_i,
+    input  bit [3:0][31:0] iv_i,
     input  bit       [2:0] key_len_i,
     input  bit [7:0][31:0] key_i,
     input  bit [3:0][31:0] data_i,
     output bit [3:0][31:0] data_o);
 
-    bit [3:0][3:0][7:0] data_in, data_out;
+    bit [3:0][3:0][7:0] iv_in, data_in, data_out;
     data_in = aes_transpose(data_i);
-    c_dpi_aes_crypt(impl_i, op_i, key_len_i, key_i, data_in, data_out);
+    iv_in   = aes_transpose(iv_i);
+    c_dpi_aes_crypt(impl_i, op_i, mode_i, iv_in, key_len_i, key_i, data_in, data_out);
     data_o  = aes_transpose(data_out);
     return;
   endfunction
