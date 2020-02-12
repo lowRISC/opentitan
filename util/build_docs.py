@@ -49,7 +49,7 @@ config = {
     # Pre-generate register and hwcfg fragments from these files.
     "hardware_definitions": [
         "hw/ip/aes/data/aes.hjson",
-        "hw/ip/alert_handler/data/alert_handler.hjson",
+        "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson",
         "hw/ip/entropy_src/data/entropy_src.hjson",
         "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
         "hw/ip/gpio/data/gpio.hjson",
@@ -57,8 +57,8 @@ config = {
         "hw/ip/i2c/data/i2c.hjson",
         "hw/ip/nmi_gen/data/nmi_gen.hjson",
         "hw/ip/padctrl/data/padctrl.hjson",
-        "hw/ip/pinmux/data/pinmux.hjson",
-        "hw/ip/rv_plic/data/rv_plic.hjson",
+        "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
+        "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson",
         "hw/ip/rv_timer/data/rv_timer.hjson",
         "hw/ip/spi_device/data/spi_device.hjson",
         "hw/ip/uart/data/uart.hjson",
