@@ -158,7 +158,7 @@ typedef struct dif_plic {
  * Initialises an instance of PLIC.
  *
  * Information that must be retained, and is required to program PLIC, shall
- * be stored in @p arg2.
+ * be stored in @p plic.
  *
  * @param base_addr Base address of an instance of the PLIC IP block
  * @param plic PLIC state data
