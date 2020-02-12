@@ -120,8 +120,8 @@ Example:
 /**
  * Do something amazing
  *
- * Create a rainbow and place a unicorn at the bottom of it. @p arg1 pots of
- * gold will be positioned on the east end of the rainbow.
+ * Create a rainbow and place a unicorn at the bottom of it. @p pots_of_gold
+ * pots of gold will be positioned on the east end of the rainbow.
  *
  * @param pots_of_gold Number of gold pots to place next to the rainbow
  * @param unicorns Number of unicorns to position on the rainbow
