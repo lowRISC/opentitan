@@ -104,6 +104,7 @@ class SimCfg(FlowCfg):
         # Parse the cfg_file file tree
         self.parse_flow_cfg(flow_cfg_file)
 
+        self.final_total = []
         # Stop here if this is a master cfg list
         if self.is_master_cfg: return
 
@@ -463,6 +464,9 @@ class SimCfg(FlowCfg):
                 regr_results=regr_results,
                 map_full_testplan=self.map_full_testplan)
             results_str += "\n"
+            self.final_total = self.testplan.final_total
+            # append link
+            self.final_total.append(self.append_result_link("Link"))
 
         # Append coverage results of coverage was enabled.
         if self.cov and self.cov_report_deploy.status == "P":
@@ -482,6 +486,27 @@ class SimCfg(FlowCfg):
 
         # Return only the tables
         return results_str
+
+    def gen_results_summary(self):
+
+        # sim summary result has 4 columns provided by Testplan::results_table
+        table = [["Name", "Passing", "Total", "Pass Rate", "Detail"]]
+        colalign = ("center", ) * 5
+        for item in self.cfgs:
+            table.append(item.final_total)
+        self.results_summary_md = "## Simulation Summary Results\n"
+        self.results_summary_md += tabulate(table,
+                                            headers="firstrow",
+                                            tablefmt="pipe",
+                                            colalign=colalign)
+        print(self.results_summary_md)
+        return self.results_summary_md
+
+    def append_result_link(self, link_name):
+        results_page = self.results_server_dir + '/' + 'results.html'
+        results_page_url = results_page.replace(self.results_server_prefix,
+                                                self.results_server_url_prefix)
+        return "[%s](%s)" % (link_name, results_page_url)
 
     def _cov_analyze(self):
         '''Use the last regression coverage data to open up the GUI tool to

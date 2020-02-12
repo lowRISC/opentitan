@@ -75,6 +75,8 @@ class FlowCfg():
 
         # Full results in md text.
         self.results_md = ""
+        # Summary results in md text.
+        self.results_summary_md = ""
 
     def __post_init__(self):
         # Run some post init checks
@@ -343,7 +345,51 @@ class FlowCfg():
             result = item._gen_results()
             print(result)
             results.append(result)
-        return results
+
+        if self.is_master_cfg: self.gen_results_summary()
+
+    def gen_results_summary(self):
+        '''Public facing API to generate summary results for each IP/cfg file
+        '''
+        return
+
+    def publish_results_summary(self):
+        '''Public facing API for publishing md format results to the opentitan web server.
+        '''
+        results_html_file = 'summary.html'
+        # master cfg doesn't have server info, instead, get it from cfgs[0]
+        path = self.cfgs[0].results_server_prefix + self.cfgs[0].results_server + '/' + \
+               self.rel_path
+        results_page = path + '/' + results_html_file
+        results_page_url = results_page.replace(
+            self.cfgs[0].results_server_prefix,
+            self.cfgs[0].results_server_url_prefix)
+
+        # Assume that a 'style.css' is available at root path
+        css_path = (
+            (len(self.rel_path.split("/")) + 2) * "../") + "css/style.css"
+
+        # Publish the results page.
+        # First, write the results html file temporarily to the scratch area.
+        f = open(results_html_file, 'w')
+        f.write(
+            md_results_to_html(self.results_title, css_path,
+                               self.results_summary_md))
+        f.close()
+        rm_cmd = "rm -rf " + results_html_file + "; "
+
+        log.info("Publishing results summary to %s", results_page_url)
+        cmd = self.cfgs[0].results_server_cmd + " cp " + results_html_file + " " + \
+              results_page + "; " + rm_cmd
+        log.log(VERBOSE, cmd)
+        try:
+            cmd_output = subprocess.run(args=cmd,
+                                        shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT)
+            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+        except Exception as e:
+            log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
 
     def _publish_results(self):
         '''Publish results to the opentitan web server.
@@ -492,3 +538,5 @@ class FlowCfg():
         '''
         for item in self.cfgs:
             item._publish_results()
+
+        if self.is_master_cfg: self.publish_results_summary()

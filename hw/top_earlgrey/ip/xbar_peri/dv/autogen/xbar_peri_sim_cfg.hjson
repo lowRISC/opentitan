@@ -7,12 +7,6 @@
   // Top level dut name (sv module).
   dut: xbar_peri
 
-  // Testplan hjson file.
-  testplan: "{proj_root}/hw/top_earlgrey/ip/xbar_peri/data/autogen/xbar_peri_testplan.hjson"
-
-  // Add xbar_peri specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/cov/xbar_cov_excl.el"]
-
   // Import additional common sim cfg files.
   import_cfgs: [// xbar common sim cfg file
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_sim_cfg.hjson"]
