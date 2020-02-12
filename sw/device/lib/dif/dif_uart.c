@@ -238,7 +238,7 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
 
 bool dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
                          size_t bytes_requested, size_t *bytes_written) {
-  if (uart == NULL || bytes_written == NULL) {
+  if (uart == NULL) {
     return false;
   }
 

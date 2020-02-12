@@ -142,7 +142,8 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
  *
  * Non-blocking UART send bytes routine. Can be used from inside an UART ISR.
  * This function attempts to write @p arg3 number of bytes to the UART TX FIFO
- * from @p arg3, and passes @p arg4 back to the caller.
+ * from @p arg3, and passes @p arg4 back to the caller. @p arg4 is optional,
+ * NULL should be passed in if the value is not needed.
  *
  * @param uart UART state data
  * @param data Data to be written
@@ -158,7 +159,8 @@ bool dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
  *
  * Non-blocking UART receive bytes routine. Can be used from inside an UART ISR.
  * This function attempts to read @p arg2 number of bytes from the UART RX FIFO
- * into @p arg3, and passes @p arg4 back to the caller.
+ * into @p arg3, and passes @p arg4 back to the caller. @p arg4 is optional,
+ * NULL should be passed in if the value is not needed.
  *
  * @param uart UART state data
  * @param bytes_requested Number of bytes requested to be read by the caller
