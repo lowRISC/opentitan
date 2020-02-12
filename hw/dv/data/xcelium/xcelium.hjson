@@ -4,7 +4,10 @@
 {
   build_cmd:  "{job_prefix} xrun"
   run_cmd:    "{job_prefix} xrun"
-  tool_srcs:  ["{proj_root}/hw/dv/tools/xcelium/*"]
+
+  // Indicate the simulator specific helper sources - these are copied over to the
+  // {simulator_srcs_dir} before running the simulation.
+  simulator_srcs:  ["{proj_root}/hw/dv/tools/xcelium/*"]
 
   build_opts: [" -elaborate -64bit -access +r -sv",
                "-messages -errormax 50",
@@ -13,7 +16,7 @@
                "-uvmhome {UVM_HOME}",
                "-xmlibdirname {build_dir}/xcelium.d"]
 
-  run_opts:   ["-input {tool_dir}/xcelium_{dump}.tcl",
+  run_opts:   ["-input {simulator_srcs_dir}/xcelium_{dump}.tcl",
                "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
                "+SVSEED={seed}",
                "+UVM_TESTNAME={uvm_test}",
@@ -31,20 +34,20 @@
   // Merging coverage.
   // "cov_db_dirs" is a special variable that appends all build directories in use.
   // It is constructed by the tool itself.
-  cov_merge_dir:    "{scratch_path}/cov_merge"
+  cov_merge_dir:    "{scratch_base_path}/cov_merge"
   cov_merge_db_dir: ""
   cov_merge_cmd:    ""
   cov_merge_opts:   []
 
   // Generate covreage reports in text as well as html.
-  cov_report_dir:       "{scratch_path}/cov_report"
+  cov_report_dir:       "{scratch_base_path}/cov_report"
   cov_report_cmd:       ""
   cov_report_opts:      []
   cov_report_dashboard: ""
 
   // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
   // GUI for visual analysis.
-  cov_analyze_dir:  "{scratch_path}/cov_analyze"
+  cov_analyze_dir:  "{scratch_base_path}/cov_analyze"
   cov_analyze_cmd:  ""
   cov_analyze_opts: []
 
@@ -70,7 +73,8 @@
     {
       name: xcelium_xprop
       is_sim_mode: 1
-      build_opts: ["-xprop F"] # -xverbose  << add to see which modules does not have xprop enabled
+      # -xverbose  << add to see which modules does not have xprop enabled
+      build_opts: ["-xprop F"]
     }
   ]
 }
