@@ -13,6 +13,7 @@
 #include "aes_model_dpi.h"
 
 void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
+                     const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                      const svBitVecVal *key_len_i, const svBitVecVal *key_i,
                      const svBitVecVal *data_i, svBitVecVal *data_o) {
   // get input data from simulator
@@ -29,26 +30,68 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
     key_len = 32;
   }
 
+  crypto_mode_t mode = (crypto_mode_t)*mode_i;
+
+  // Modes other than ECB require an IV from the simulator.
+  unsigned char *iv;
+  if (mode != kCryptoAesEcb) {
+    iv = aes_data_get(iv_i);
+  } else {
+    iv = (unsigned char *)malloc(16 * sizeof(unsigned char));
+    if (!iv) {
+      printf("ERROR: malloc() for c_dpi_aes_crypt failed");
+      return;
+    }
+    memset(iv, 0, 16);
+  }
+
   // allocate memory
   unsigned char *ref_out = (unsigned char *)malloc(16 * sizeof(unsigned char));
   if (!ref_out) {
-    printf("ERROR: malloc() for aes_crypt_dpi failed");
+    printf("ERROR: malloc() for c_dpi_aes_crypt failed");
     return;
   }
 
   if (impl_i == 0) {
-    if (!op_i) {
-      aes_encrypt_block(ref_in, key, key_len, ref_out);
-    } else {
-      aes_decrypt_block(ref_in, key, key_len, ref_out);
+    // The C model does ECB only. We "emulate" other modes here.
+    unsigned char data_in[16];
+    unsigned char data_out[16];
+
+    if (mode == kCryptoAesCbc) {
+      if (!op_i) {
+        // data_in = ref_in XOR iv (or previous data_out)
+        for (int i = 0; i < 16; ++i) {
+          data_in[i] = ref_in[i] ^ iv[i];
+        }
+        aes_encrypt_block(data_in, key, key_len, ref_out);
+      } else {
+        aes_decrypt_block(ref_in, key, key_len, data_out);
+        // ref_out = data_out XOR iv (or previous data_out)
+        for (int i = 0; i < 16; ++i) {
+          ref_out[i] = data_out[i] ^ iv[i];
+        }
+      }
+    } else if (mode == kCryptoAesCtr) {
+      // data_in = counter value
+      for (int i = 0; i < 16; ++i) {
+        data_in[i] = iv[i];
+      }
+      aes_encrypt_block(data_in, key, key_len, data_out);
+      for (int i = 0; i < 16; ++i) {
+        ref_out[i] = data_out[i] ^ ref_in[i];
+      }
+    } else {  // ECB
+      if (!op_i) {
+        aes_encrypt_block(ref_in, key, key_len, ref_out);
+      } else {
+        aes_decrypt_block(ref_in, key, key_len, ref_out);
+      }
     }
   } else {  // OpenSSL/BoringSSL
-    unsigned char iv[16];
-    memset(iv, 0, 16);
     if (!op_i) {
-      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len, kCryptoAesEcb);
+      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len, mode);
     } else {
-      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len, kCryptoAesEcb);
+      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len, mode);
     }
   }
 
@@ -56,6 +99,7 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
   aes_data_put(data_o, ref_out);
 
   // free memory
+  free(iv);
   free(key);
   free(ref_in);
 

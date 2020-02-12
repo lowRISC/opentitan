@@ -192,10 +192,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
       ref_fifo.get(c_item );
       `uvm_info(`gfn, $sformatf("\n\t ----| GOT item "), UVM_HIGH)
 
-      sv_dpi_aes_crypt(1'b0, c_item.operation, c_item.key_size, c_item.key, c_item.data_in,
-          c_item.data_out);
-         `uvm_info(`gfn, $sformatf("\n\t ----| printing C MODEL %s", c_item.convert2string() )
-                   , UVM_HIGH)
+      sv_dpi_aes_crypt(1'b0, c_item.operation, 3'b001, 128'b0, c_item.key_size, c_item.key,
+          c_item.data_in, c_item.data_out);
+      `uvm_info(`gfn, $sformatf("\n\t ----| printing C MODEL %s", c_item.convert2string() )
+          , UVM_HIGH)
 
       if (!rtl_item.compare(c_item)) begin
         txt = {txt,  $sformatf("\n\t ----| RTL_ITEM %s \n\t ", rtl_item.convert2string())};

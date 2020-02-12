@@ -16,19 +16,22 @@ extern "C" {
  *
  * @param  impl_i    Select reference impl.: 0 = C model, 1 = OpenSSL/BoringSSL
  * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
+ * @param  mode_i    Cipher mode: 3'b001 = ECB, 3'b010 = CBC, 3'b100 = CTR
+ * @param  iv_i      Initialization vector: 2D matrix (3D packed array in SV)
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key
  * @param  data_i    Input data, 2D state matrix (3D packed array in SV)
  * @param  data_o    Output data, 2D state matrix (3D packed array in SV)
  */
 void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
+                     const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                      const svBitVecVal *key_len_i, const svBitVecVal *key_i,
                      const svBitVecVal *data_i, svBitVecVal *data_o);
 
 /**
- * Perform sub bytes operation during encryption/decryption.
+ * Perform sub bytes operation for forward/inverse cipher operation.
  *
- * @param  op_i   Operation: 0 = encrypt, 1 = decrypt
+ * @param  op_i   Cipher operation: 0 = forward, 1 = inverse
  * @param  data_i Input data
  * @param  data_o Output data
  */
@@ -36,9 +39,9 @@ void c_dpi_aes_sub_bytes(const unsigned char op_i, const svBitVecVal *data_i,
                          svBitVecVal *data_o);
 
 /**
- * Perform shift rows operation during encryption/decryption.
+ * Perform shift rows operation for forward/inverse cipher operation.
  *
- * @param  op_i   Operation: 0 = encrypt, 1 = decrypt
+ * @param  op_i   Cipher operation: 0 = forward, 1 = inverse
  * @param  data_i Input data
  * @param  data_o Output data
  */
@@ -46,9 +49,9 @@ void c_dpi_aes_shift_rows(const unsigned char op_i, const svBitVecVal *data_i,
                           svBitVecVal *data_o);
 
 /**
- * Perform mix columns operation during encryption/decryption.
+ * Perform mix columns operation for forward/inverse cipher operation.
  *
- * @param  op_i   Operation: 0 = encrypt, 1 = decrypt
+ * @param  op_i   Cipher operation: 0 = forward, 1 = inverse
  * @param  data_i Input data
  * @param  data_o Output data
  */
@@ -56,9 +59,9 @@ void c_dpi_aes_mix_columns(const unsigned char op_i, const svBitVecVal *data_i,
                            svBitVecVal *data_o);
 
 /**
- * Generate full key for next round during encryption/decryption.
+ * Generate full key for next round for forward/inverse cipher operation.
  *
- * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
+ * @param  op_i      Cipher operation: 0 = forward, 1 = inverse
  * @param  rcon_old  Previous rcon (updates intenally before being used)
  * @param  round_i   Round index
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
