@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -10,133 +12,147 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/uart.h"
 
-static void break_on_error(uint32_t error) {
-  if (error) {
-    // inifinitely fetch instructions, will flag an assertion error
-    uart_send_str("FAIL!\r\n");
-    while (1) {
-      usleep(100);
-    }
+#define CHECK(cond)                                 \
+  do {                                              \
+    if (!(cond)) {                                  \
+      uart_send_str("Assertion failed at line 0x"); \
+      uart_send_uint(__LINE__, 32);                 \
+      uart_send_str("\r\nFAIL!\r\n");               \
+      abort();                                      \
+    }                                               \
+  } while (false)
+
+#define CHECK_ARRAYS_EQ(xs, ys, len) \
+  do {                               \
+    uint32_t *xs_ = (xs);            \
+    uint32_t *ys_ = (ys);            \
+    size_t len_ = (len);             \
+    for (int i = 0; i < len_; ++i) { \
+      CHECK(xs_[i] == ys_[i]);       \
+    }                                \
+  } while (false)
+
+#define CHECK_EQZ(x) CHECK((x) == 0)
+#define CHECK_NEZ(x) CHECK((x) != 0)
+
+static void test_basic_io(void) {
+  flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
+                              /*erase_en=*/true);
+
+  uintptr_t flash_bank_1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
+  mmio_region_t flash_bank_1 = mmio_region_from_addr(flash_bank_1_addr);
+
+  // Test erasing flash; this should turn the whole bank to all ones.
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr));
+  for (int i = 0; i < FLASH_WORDS_PER_PAGE; ++i) {
+    CHECK_EQZ(~mmio_region_read32(flash_bank_1, i * sizeof(uint32_t)));
   }
+
+  // Prepare an entire page of non-trivial data to program
+  // into flash.
+  uint32_t input_page[FLASH_WORDS_PER_PAGE];
+  uint32_t output_page[FLASH_WORDS_PER_PAGE];
+  memset(input_page, 0xa5, FLASH_WORDS_PER_PAGE * sizeof(uint32_t));
+  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i += 2) {
+    input_page[i] ^= 0xffffffff;
+  }
+
+  // Attempt to live-program an entire page, where the overall
+  // payload is much larger than the internal flash FIFO.
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr));
+
+  CHECK_EQZ(flash_write(flash_bank_1_addr, input_page, FLASH_WORDS_PER_PAGE));
+  CHECK_EQZ(flash_read(flash_bank_1_addr, FLASH_WORDS_PER_PAGE, output_page));
+
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+
+  uintptr_t flash_bank_0_last_page_addr = flash_bank_1_addr - FLASH_PAGE_SZ;
+  CHECK_EQZ(flash_page_erase(flash_bank_0_last_page_addr));
+
+  CHECK_EQZ(flash_write(flash_bank_0_last_page_addr, input_page,
+                        FLASH_WORDS_PER_PAGE));
+  CHECK_EQZ(flash_read(flash_bank_0_last_page_addr, FLASH_WORDS_PER_PAGE,
+                       output_page));
+
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 }
 
-/* Returns 1 if |a| and |b| are equal. */
-int check_arr_eq(const uint32_t *a, const uint32_t *b, uint32_t len) {
-  for (int i = 0; i < len; ++i) {
-    if (a[i] != b[i]) {
-      return 0;
-    }
+static void test_memory_protection(void) {
+  flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
+                              /*erase_en=*/true);
+
+  // A memory protection region representing the first page of the second bank.
+  mp_region_t protection_region = {
+      .num = 0x0,
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .rd_en = true,
+      .prog_en = true,
+      .erase_en = true,
+  };
+
+  uintptr_t ok_region_start =
+      FLASH_MEM_BASE_ADDR + (protection_region.base * FLASH_PAGE_SZ);
+  uintptr_t ok_region_end =
+      ok_region_start + (protection_region.size * FLASH_PAGE_SZ);
+  mmio_region_t ok_region = mmio_region_from_addr(ok_region_start);
+
+  uintptr_t bad_region_start = ok_region_end;
+
+  // Erase good and bad regions.
+  CHECK_EQZ(flash_page_erase(ok_region_start));
+  CHECK_EQZ(flash_page_erase(bad_region_start));
+
+  // Turn off flash access by default.
+  flash_default_region_access(/*rd_en=*/false, /*prog_en=*/false,
+                              /*erase_en=*/false);
+  flash_cfg_region(&protection_region);
+
+  // Attempt to perform a write.
+  uintptr_t region_boundary_start = bad_region_start - (FLASH_WORD_SZ * 3);
+  mmio_region_t region_boundary = mmio_region_from_addr(region_boundary_start);
+
+  uint32_t words[6];
+  memset(words, 0xa5, ARRAYSIZE(words) * sizeof(uint32_t));
+  for (int i = 0; i < ARRAYSIZE(words); ++i) {
+    words[i] += i;
   }
-  return 1;
+
+  // Perform a partial write.
+  CHECK_NEZ(flash_write(region_boundary_start, words, ARRAYSIZE(words)));
+  // Words in the good region should still match, while words in the bad
+  // region should be all-ones, since we erased
+  for (int i = 0; i < ARRAYSIZE(words); ++i) {
+    uint32_t expected = 0xffffffff;
+    if (i < ARRAYSIZE(words) / 2) {
+      expected = words[i];
+    }
+    CHECK(mmio_region_read32(region_boundary, i * sizeof(uint32_t)) ==
+          expected);
+  }
+
+  // Attempt to erase bad page, which should fail.
+  CHECK_NEZ(flash_page_erase(bad_region_start));
+
+  // Attempt to erase the good page, which should succeed.
+  CHECK_EQZ(flash_page_erase(ok_region_start));
+  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+    CHECK_EQZ(~mmio_region_read32(ok_region, i * sizeof(uint32_t)));
+  }
 }
 
 int main(int argc, char **argv) {
-  uint32_t i, iteration;
-  uint32_t prog_array[FLASH_WORDS_PER_PAGE];
-  uint32_t rd_array[FLASH_WORDS_PER_PAGE];
-  uint32_t test_addr;
-  uint32_t bank1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
-  uint32_t bank0_last_page =
-      FLASH_MEM_BASE_ADDR + (FLASH_PAGES_PER_BANK - 1) * FLASH_PAGE_SZ;
-
   uart_init(kUartBaudrate);
   flash_init_block();
 
-  // enable all access
   flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/true);
   flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/true);
-  flash_default_region_access(1, 1, 1);
-  break_on_error(flash_page_erase(bank1_addr));
-  flash_write_scratch_reg(0xFACEDEAD);
-  // read flash back via host to ensure everything is cleared
-  for (i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
-    if (REG32(bank1_addr + i * 4) != 0xFFFFFFFF) {
-      flash_write_scratch_reg(0xDEADBEEF);
-      break_on_error(1);
-    }
-  }
 
-  // do 4K programming
-  // employ the live programming method where overall payload >> flash fifo size
-  for (i = 0; i < ARRAYSIZE(prog_array); i++) {
-    prog_array[i] = (i % 2) ? 0xA5A5A5A5 : 0x5A5A5A5A;
-  }
-
-  // initialize test regions
-  break_on_error(flash_page_erase(bank1_addr));
-  break_on_error(flash_page_erase(bank0_last_page));
-  for (iteration = 0; iteration < 2; iteration++) {
-    test_addr = iteration ? bank1_addr : bank0_last_page;
-    break_on_error(flash_write(test_addr, prog_array, ARRAYSIZE(prog_array)));
-    break_on_error(flash_read(test_addr, ARRAYSIZE(rd_array), rd_array));
-    break_on_error(!check_arr_eq(rd_array, prog_array, ARRAYSIZE(rd_array)));
-  }
-
-  /////////////////////////////////////////////////////////////
-  // Begin flash memory protection testing
-  /////////////////////////////////////////////////////////////
-  uint32_t region_base_page = FLASH_PAGES_PER_BANK;
-  uint32_t region_size = 1;
-  uint32_t good_addr_start =
-      FLASH_MEM_BASE_ADDR + region_base_page * FLASH_PAGE_SZ;
-  uint32_t good_addr_end = good_addr_start + region_size * FLASH_PAGE_SZ - 1;
-  uint32_t bad_addr_start =
-      good_addr_end + 1;  // this is always aligned to a page
-  uint32_t good_words = 3;
-  uint32_t bad_words = 3;
-  uint32_t chk_addr = bad_addr_start - (FLASH_WORD_SZ * good_words);
-
-  mp_region_t region0 = {.num = 0,
-                         .base = region_base_page,
-                         .size = region_size,
-                         .rd_en = 1,
-                         .prog_en = 1,
-                         .erase_en = 1};
-
-  // initialize good and bad regions.
-  break_on_error(flash_page_erase(good_addr_start));
-  break_on_error(flash_page_erase(bad_addr_start));
-
-  // turn off default region all access
-  flash_default_region_access(0, 0, 0);
-  flash_cfg_region(&region0);
-
-  // expect write to fail.
-  for (uint32_t i = 0; i < good_words + bad_words; i++) {
-    prog_array[i] = 0xA5A5A5A5 + i;
-  }
-  break_on_error(!flash_write(chk_addr, prog_array, good_words + bad_words));
-
-  // the good words should match
-  for (uint32_t i = 0; i < good_words; i++) {
-    if (REG32(chk_addr + i * 4) != prog_array[i]) {
-      break_on_error(1);
-    }
-  }
-
-  // the bad word contents should not have gone through
-  for (uint32_t i = good_words; i < good_words + bad_words; i++) {
-    if (REG32(chk_addr + i * 4) != 0xFFFFFFFF) {
-      break_on_error(1);
-    }
-  }
-
-  // attempt to erase bad page, should error
-  break_on_error(!flash_page_erase(bad_addr_start));
-
-  // erase the good page
-  break_on_error(flash_page_erase(good_addr_start));
-
-  // double check erase results
-  for (uint32_t i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
-    if (REG32(good_addr_start + i * 4) != 0xFFFFFFFF) {
-      break_on_error(1);
-    }
-  }
+  test_basic_io();
+  test_memory_protection();
 
   flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/false);
   flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/false);
 
-  // cleanly terminate execution
   uart_send_str("PASS!\r\n");
 }
