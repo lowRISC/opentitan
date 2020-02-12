@@ -6,6 +6,8 @@
 //
 //
 
+`include "prim_assert.sv"
+
 // This module runs on the 48MHz USB clock
 module usbdev_usbif  #(
   parameter int NEndpoints = 12,
@@ -355,7 +357,7 @@ module usbdev_usbif  #(
   ////////////////
 
   // Specified endpoint is not implemented.
-  `ASSERT(UsbIfOutEndPImpl, out_endpoint_o != out_ep_current)
-  `ASSERT(UsbIfInEndPImpl, in_endpoint_o != in_ep_current)
+  `ASSERT(UsbIfOutEndPImpl, out_ep_newpkt |-> (out_endpoint_o == out_ep_current), clk_48mhz_i)
+  `ASSERT(UsbIfInEndPImpl, in_ep_newpkt |-> (in_endpoint_o == in_ep_current), clk_48mhz_i)
 
 endmodule
