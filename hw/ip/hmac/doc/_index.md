@@ -196,6 +196,20 @@ for the outer key, and 80 for the result of the first round) to complete a
 message. For instance, if an empty message is given, it takes 360 cycles(80 for
 msg itself and 240 for the extra) to get the HMAC authentication token.
 
+### MSG_FIFO
+
+The MSG_FIFO in the HMAC IP has a wide address range not just one 4 byte address.
+Any writes to the address range go into the single entry point of the `prim_packer`.
+Then `prim_packer` compacts the data into the word-size if not a word-write then writes to the MSG_FIFO.
+This is different from the conventional memory-mapped FIFO.
+
+By having wide address range pointing to a single entry point, the FIFO can free from the fixed address restriction.
+For instance, the core can use "store multiple" commands to feed the message fifo efficiently.
+If the FIFO has fixed word-size address, the core shall maintain the strict-order of the write sequence which may cause the stall of the pipeline in high pipelined processor.
+It affects the performance significantly.
+
+Also, the DMA engine which might not have the ability to be configured to the fixed write and incremental read may benefit from this behavior.
+
 # Programmers Guide
 
 This chapter shows how to use the HMAC-SHA256 IP by showing some snippets such
