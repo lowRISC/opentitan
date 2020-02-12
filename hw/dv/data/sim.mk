@@ -25,8 +25,8 @@ build: compile_result
 pre_compile:
 	@echo "[make]: pre_compile"
 	mkdir -p ${build_dir} && env | sort > ${build_dir}/env_vars
-	mkdir -p ${tool_dir}
-	cp -Ru ${tool_srcs} ${tool_dir}/.
+	mkdir -p ${simulator_srcs_dir}
+	cp -Ru ${simulator_srcs} ${simulator_srcs_dir}/.
 
 gen_sv_flist: pre_compile ral
 	@echo "[make]: gen_sv_flist"

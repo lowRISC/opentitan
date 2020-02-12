@@ -41,11 +41,12 @@
 
   // Add UART specific exclusion files.
 
-  // Add excl files to tool_srcs so that it gets copied over to the scratch area.
-  tool_srcs: ["{proj_root}/hw/ip/uart/dv/cov/uart_cov_excl.el"]
-  // Refer to the excl file with vcs_cov_excl_files var with the rel path from tool_dir
+  // Add excl files to simulator_srcs so that it gets copied over to the scratch area.
+  simulator_srcs: ["{proj_root}/hw/ip/uart/dv/cov/uart_cov_excl.el"]
+
+  // Refer to the excl file with vcs_cov_excl_files var with the rel path from simulator_srcs_dir
   // so the VCS can find it.
-  vcs_cov_excl_files: ["{tool_dir}/uart_cov_excl.el"]
+  vcs_cov_excl_files: ["{simulator_srcs_dir}/uart_cov_excl.el"]
 
   // List of test specifications.
   tests: [

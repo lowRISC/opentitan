@@ -411,8 +411,8 @@ class CompileSim(Deploy):
 
         self.mandatory_cmd_attrs = {
             # tool srcs
-            "tool_srcs": False,
-            "tool_dir": False,
+            "simulator_srcs": False,
+            "simulator_srcs_dir": False,
 
             # RAL gen
             "skip_ral": False,
