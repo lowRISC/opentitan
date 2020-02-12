@@ -458,10 +458,11 @@ def main():
         cfg.deploy_objects()
 
         # Generate results.
-        results = cfg.gen_results()
+        cfg.gen_results()
 
         # Publish results
         if args.publish: cfg.publish_results()
+
     else:
         log.info("No items specified to be run.")
 

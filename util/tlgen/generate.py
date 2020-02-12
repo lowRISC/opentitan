@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+
 from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
 from .item import NodeType
 from .xbar import Xbar
-
 
 
 def generate(xbar):  #xbar: Xbar -> str

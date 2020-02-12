@@ -162,6 +162,9 @@ class Testplan():
     def __init__(self, name):
         self.name = name
         self.entries = []
+        self.final_total = []
+        self.results = ""
+
         if name == "":
             print("Error: testplan name cannot be empty")
             sys.exit(1)
@@ -324,7 +327,13 @@ class Testplan():
                 ])
                 milestone = ""
                 entry_name = ""
-        return tabulate(table,
-                        headers="firstrow",
-                        tablefmt="pipe",
-                        colalign=colalign)
+                if entry.milestone == "N.A." and entry.name == "N.A.":
+                    self.final_total = [
+                        self.name.upper(), test["passing"], test["total"],
+                        pass_rate
+                    ]
+        self.results = tabulate(table,
+                                headers="firstrow",
+                                tablefmt="pipe",
+                                colalign=colalign)
+        return self.results

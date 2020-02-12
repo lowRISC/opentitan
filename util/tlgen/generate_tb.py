@@ -16,7 +16,7 @@ def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
     # list all the generate files for TB
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
-        "xbar.bind.sv", "Makefile", "xbar.sim_cfg.hjson"
+        "xbar.bind.sv", "Makefile", "xbar.sim_cfg.hjson", "xbar.testplan.hjson"
     ]
 
     for fname in tb_files:
@@ -29,8 +29,15 @@ def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
             fname = "xbar_%s_bind.sv" % (xbar.name)
         elif fname == "xbar.sim_cfg.hjson":
             fname = "xbar_%s_sim_cfg.hjson" % (xbar.name)
+        elif fname == "xbar.testplan.hjson":
+            fname = "xbar_%s_testplan.hjson" % (xbar.name)
 
-        dv_filepath = dv_path / fname
+        # save testplan at data directory
+        if fname == "xbar_%s_testplan.hjson" % (xbar.name):
+            dv_filepath = dv_path / '../../data/autogen' / fname
+        else:
+            dv_filepath = dv_path / fname
+
         with dv_filepath.open(mode='w', encoding='UTF-8') as fout:
             try:
                 fout.write(tpl.render(xbar=xbar))
