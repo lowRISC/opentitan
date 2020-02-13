@@ -6,3 +6,4 @@
 `include "alert_handler_sanity_vseq.sv"
 `include "alert_handler_common_vseq.sv"
 `include "alert_handler_random_alerts_vseq.sv"
+`include "alert_handler_random_classes_vseq.sv"

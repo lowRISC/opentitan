@@ -16,6 +16,10 @@
   csr_update(ral.class``i``_phase2_cyc); \
   csr_update(ral.class``i``_phase3_cyc);
 
+`define RAND_WRITE_CLASS_CTRL(i) \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == 1'b0;) \
+  csr_wr(.csr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
+
 class alert_handler_base_vseq extends cip_base_vseq #(
     .CFG_T               (alert_handler_env_cfg),
     .RAL_T               (alert_handler_reg_block),
@@ -42,17 +46,18 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // alert_class default 0 -> all alert will trigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
                                   bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
-                                  bit [TL_DW-1:0]                     alert_class = 'h0,
-                                  bit [TL_DW-1:0]                     classA_ctrl = 'h393d);
-    // TODO: cfg_interrupts does not disable interrupt, need debug
-    //cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
+                                  bit [TL_DW-1:0]                     alert_class = 'h0);
     csr_wr(.csr(ral.intr_enable), .value(intr_en));
-    ral.alert_en.set(alert_en);
-    ral.alert_class.set(alert_class);
-    ral.classa_ctrl.set(classA_ctrl);
-    csr_update(.csr(ral.alert_en));
-    csr_update(.csr(ral.alert_class));
-    csr_update(.csr(ral.classa_ctrl));
+    csr_wr(.csr(ral.alert_en), .value(alert_en));
+    csr_wr(.csr(ral.alert_class), .value(alert_class));
+  endtask
+
+  virtual task alert_handle_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en =
+                                               $urandom());
+    if (class_en[0]) `RAND_WRITE_CLASS_CTRL(a)
+    if (class_en[1]) `RAND_WRITE_CLASS_CTRL(b)
+    if (class_en[2]) `RAND_WRITE_CLASS_CTRL(c)
+    if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d)
   endtask
 
   virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger);
@@ -78,6 +83,9 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   virtual task clear_esc();
     csr_wr(.csr(ral.classa_clr), .value(1));
+    csr_wr(.csr(ral.classb_clr), .value(1));
+    csr_wr(.csr(ral.classc_clr), .value(1));
+    csr_wr(.csr(ral.classd_clr), .value(1));
   endtask
 
   virtual task read_alert_cause();
@@ -86,12 +94,11 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.alert_cause), .value(alert_cause));
   endtask
 
-  virtual task wait_alert_handshake_finish();
-    int wait_clk_cycs = ral.classa_phase0_cyc.get() + ral.classa_phase1_cyc.get()
-        + ral.classa_phase2_cyc.get() + ral.classa_phase3_cyc.get();
-    cfg.clk_rst_vif.wait_clks(wait_clk_cycs);
-    foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].vif.wait_ack_complete();
+  virtual task wait_alert_esc_handshake_done(int wait_clk_cycs_esc);
     cfg.clk_rst_vif.wait_clks(2);
+    foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].vif.wait_ack_complete();
+
+    cfg.clk_rst_vif.wait_clks(wait_clk_cycs_esc);
     foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].vif.wait_esc_complete();
   endtask
 
@@ -133,3 +140,4 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 endclass : alert_handler_base_vseq
 
 `undef RAND_AND_WR_CLASS_PHASES_CYCLE
+`undef RAND_WRITE_CLASS_CTRL

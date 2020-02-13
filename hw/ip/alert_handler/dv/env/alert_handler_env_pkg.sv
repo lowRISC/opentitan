@@ -21,8 +21,11 @@ package alert_handler_env_pkg;
   // parameters
   parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 256;
   parameter uint NUM_MAX_ESC_SEV             = 8;
+  parameter uint NUM_ESC_SIGNALS             = 4;
   parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;
+  parameter uint NUM_ESC_PHASES              = 4;
   parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
+  parameter uint MIN_CYCLE_PER_PHASE         = 2;
 
   // types
   typedef enum {
@@ -31,6 +34,19 @@ package alert_handler_env_pkg;
     EscPhase2,
     EscPhase3
   } esc_phase_e;
+
+  typedef enum {
+    AlertClassCtrlEn,
+    AlertClassCtrlLock,
+    AlertClassCtrlEnE0,
+    AlertClassCtrlEnE1,
+    AlertClassCtrlEnE2,
+    AlertClassCtrlEnE3,
+    AlertClassCtrlMapE0,
+    AlertClassCtrlMapE1,
+    AlertClassCtrlMapE2,
+    AlertClassCtrlMapE3
+  } class_ctrl_e;
 
   typedef struct {
     realtime    start_time;
