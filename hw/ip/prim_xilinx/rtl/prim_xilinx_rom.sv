@@ -38,7 +38,7 @@ module prim_xilinx_rom #(
    // instead. This severely degrades the synthesis quality for no good reason.
    logic [Width-1:0] mem [Depth];
 
-   localparam MEM_FILE = `"`ROM_INIT_FILE`";
+   localparam MEM_FILE = `PRIM_STRINGIFY(`ROM_INIT_FILE);
    initial
    begin
       $display("Initializing ROM from %s", MEM_FILE);
