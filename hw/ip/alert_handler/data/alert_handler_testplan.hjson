@@ -73,9 +73,15 @@
     }
     {
       name: random_alerts
-      desc: "Randomly configure classes and randomly input alerts"
+      desc: "Input random alerts and randomly write phase cycles"
       milestone: V2
       tests: ["alert_handler_random_alerts"]
+    }
+    {
+      name: random_classes
+      desc: "Randomly enable classes and randomly write phase cycles"
+      milestone: V2
+      tests: ["alert_handler_random_classes"]
     }
     {
       name: stress_all

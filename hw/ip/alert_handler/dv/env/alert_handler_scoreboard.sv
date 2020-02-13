@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `define ASSIGN_CLASS_PHASE_REGS(index, i) \
-  class_phase_cycs_q[``index``] = {ral.class``i``_phase0_cyc, ral.class``i``_phase1_cyc, \
-                                   ral.class``i``_phase2_cyc, ral.class``i``_phase3_cyc};
+  esc_phase_cycs_per_class_q[``index``] = {ral.class``i``_phase0_cyc, ral.class``i``_phase1_cyc, \
+                                          ral.class``i``_phase2_cyc, ral.class``i``_phase3_cyc};
 
 class alert_handler_scoreboard extends cip_base_scoreboard #(
     .CFG_T(alert_handler_env_cfg),
@@ -14,15 +14,29 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(alert_handler_scoreboard)
 
   // local variables
-  // for each escalator signals, stores the matching phase
-  esc_phase_e   esc_phases_q[NUM_ALERT_HANDLER_CLASSES][$];
-  dv_base_reg   class_phase_cycs_q[NUM_ALERT_HANDLER_CLASSES][$];
+  // esc_phase_per_sig_q: each escalation signal corresponse to one phase (from the class_ctrl reg)
+  // --- signal --- phase  ---
+  // ---    0   --- MAP_E0 ---
+  // ---    1   --- MAP_E1 ---
+  // ---    2   --- MAP_E2 ---
+  // ---    3   --- MAP_E3 ---
+  esc_phase_e   esc_phase_per_sig_q[NUM_ESC_SIGNALS][$];
+
+  // esc_phase_cyc_per_class_q: each class has four phase cycles, stores each cycle length
+  // --- class --- phase0_cyc    ---    phase1_cyc   ---    phase2_cyc   ---     phase3_cyc  ---
+  // ---   A   -classa_phase0_cyc - classa_phase1_cyc - classa_phase2_cyc - classa_phase3_cyc --
+  // ---   B   -classb_phase0_cyc - classb_phase1_cyc - classb_phase2_cyc - classb_phase3_cyc --
+  // ---   C   -classc_phase0_cyc - classc_phase1_cyc - classc_phase2_cyc - classc_phase3_cyc --
+  // ---   D   -classd_phase0_cyc - classd_phase1_cyc - classd_phase2_cyc - classd_phase3_cyc --
+  dv_base_reg   esc_phase_cycs_per_class_q[NUM_ALERT_HANDLER_CLASSES][$];
+
   uvm_reg_field alert_cause_fields[$];
   uvm_reg_field intr_state_fields[$];
   uvm_reg_field alert_cause_field, intr_state_field;
-  // once escalation triggers, no alerts can trigger another escalation until it is cleared
-  bit           under_esc;
-  bit [NUM_ALERT_HANDLER_CLASS_MSB:0] triggered_alert_class;
+  // once escalation triggers, no alerts can trigger another escalation in the same class
+  // until the class esc is cleared
+  bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_esc_classes;
+  bit [NUM_ALERT_HANDLER_CLASS_MSB:0] esc_class_trigger;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[alert_pkg::NAlerts];
@@ -86,7 +100,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // once esc signal is received
           if (act_item.alert_esc_type == AlertEscSigTrans &&
               act_item.esc_handshake_sta == EscReceived) begin
-            process_esc_sig(esc_phases_q[index], index, phase_info);
+            process_esc_sig(esc_phase_per_sig_q[index], index, phase_info);
           end
           if (act_item.alert_esc_type == AlertEscSigTrans &&
               act_item.esc_handshake_sta == EscRespComplete) begin
@@ -100,7 +114,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void process_alert_sig(int index);
     bit [TL_DW-1:0] alert_class = ral.alert_class.get_mirrored_value();
     // extract the two bits that indicates which intr class this alert will trigger
-    bit [NUM_ALERT_HANDLER_CLASS_MSB:0] intr_class  = (alert_class >> index * 2) & 'b11;
+    bit [NUM_ALERT_HANDLER_CLASS_MSB:0] intr_class = (alert_class >> index * 2) & 'b11;
     bit [TL_DW-1:0] class_ctrl;
     alert_cause_field = alert_cause_fields[index];
     intr_state_field = intr_state_fields[intr_class];
@@ -115,12 +129,13 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       default: `uvm_error(`gfn, $sformatf("no matches for intr class %0d", intr_class))
     endcase
     // if class escalation is enabled
-    if (class_ctrl[0] && (class_ctrl[5:2] > 0) && !under_esc) begin
-      under_esc = 1;
-      triggered_alert_class = intr_class;
+    if (class_ctrl[AlertClassCtrlEn] && (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0) &&
+        !under_esc_classes[intr_class]) begin
+      under_esc_classes[intr_class] = 1;
+      esc_class_trigger = intr_class;
       for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
-        if (class_ctrl[i + 2]) begin
-          push_and_check_queue(esc_phases_q[i], ((class_ctrl >> i*2+6) & 'b11));
+        if (class_ctrl[i + AlertClassCtrlEnE0]) begin
+          push_and_check_queue(esc_phase_per_sig_q[i], ((class_ctrl >> i*2+6) & 'b11));
         end
       end
     end
@@ -145,9 +160,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void check_esc_phase(ref esc_phase_t phase_info);
     realtime end_time = $realtime;
     int      cal_cycle, act_cycle;
-    if (!under_esc) `uvm_error(`gfn, "please check if esc signal goes high")
+    if (under_esc_classes == 0) `uvm_error(`gfn, "please check if esc signal goes high")
     cal_cycle = (end_time - phase_info.start_time) * 1000 / cfg.clk_rst_vif.clk_period_ps;
-    act_cycle = class_phase_cycs_q[triggered_alert_class][phase_info.phase].get_mirrored_value();
+    act_cycle =
+        esc_phase_cycs_per_class_q[esc_class_trigger][phase_info.phase].get_mirrored_value();
 
     if (act_cycle < 2) act_cycle = 2;
     `DV_CHECK_EQ(act_cycle, cal_cycle)
@@ -180,22 +196,22 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-     case (csr.get_name())
-      // add individual case item for each csr
-       "intr_test": begin
-         if (write) begin
+    if (write) begin
+      case (csr.get_name())
+        // add individual case item for each csr
+        "intr_test": begin
            bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
            void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
-         end
-       end
-       "classa_clr": if (under_esc && (triggered_alert_class == 0)) under_esc = 0;
-       "classb_clr": if (under_esc && (triggered_alert_class == 1)) under_esc = 0;
-       "classc_clr": if (under_esc && (triggered_alert_class == 2)) under_esc = 0;
-       "classd_clr": if (under_esc && (triggered_alert_class == 3)) under_esc = 0;
-       default: begin
-        //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-       end
-     endcase
+        end
+        "classa_clr": clr_reset_esc_class(0);
+        "classb_clr": clr_reset_esc_class(1);
+        "classc_clr": clr_reset_esc_class(2);
+        "classd_clr": clr_reset_esc_class(3);
+        default: begin
+         //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
+      endcase
+    end
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
@@ -215,9 +231,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-    foreach (esc_phases_q[i]) `DV_CHECK_EQ(esc_phases_q[i].size(), 0)
+    foreach (esc_phase_per_sig_q[i]) begin
+      `DV_CHECK_EQ(esc_phase_per_sig_q[i].size(), 0, $sformatf("failed esc_phase %0d", i))
+    end
   endfunction
 
+  function void clr_reset_esc_class(int index);
+    under_esc_classes[index] = 0;
+    foreach (esc_phase_per_sig_q[i]) esc_phase_per_sig_q[i].delete();
+  endfunction
 endclass
 
 `undef ASSIGN_CLASS_PHASE_REGS
