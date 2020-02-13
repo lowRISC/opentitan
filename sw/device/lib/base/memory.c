@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 
-extern uint32_t read_32(void *);
+extern uint32_t read_32(const void *);
 extern void write_32(uint32_t, void *);
 
 void *memcpy(void *restrict dest, const void *restrict src, size_t len) {
