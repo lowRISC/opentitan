@@ -26,6 +26,8 @@ typedef enum dif_uart_interrupt {
   kDifUartInterruptRxBreakErr,      /**< RX break condition */
   kDifUartInterruptRxTimeout, /**< RX FIFO timeout (not empty in a set time) */
   kDifUartInterruptRxParityErr, /**< RX parity error detection */
+  kDifUartInterruptLast =
+      kDifUartInterruptRxParityErr, /**< \internal Final UART interrupt */
 } dif_uart_interrupt_t;
 
 /**
@@ -39,6 +41,8 @@ typedef enum dif_uart_watermark {
   kDifUartWatermarkByte8,     /**< 8 bytes */
   kDifUartWatermarkByte16,    /**< 16 bytes */
   kDifUartWatermarkByte30,    /**< 30 bytes */
+  kDifUartWatermarkLast =
+      kDifUartWatermarkByte30, /**< \internal Final UART watermark */
 } dif_uart_watermark_t;
 
 /**
