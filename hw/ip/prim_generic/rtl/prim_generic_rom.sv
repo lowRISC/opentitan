@@ -65,7 +65,7 @@ module prim_generic_rom #(
   `endif
 
   `ifdef ROM_INIT_FILE
-    localparam MEM_FILE = `"`ROM_INIT_FILE`";
+    localparam MEM_FILE = `PRIM_STRINGIFY(`ROM_INIT_FILE);
     initial begin
       $display("Initializing ROM from %s", MEM_FILE);
       $readmemh(MEM_FILE, mem);
