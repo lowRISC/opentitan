@@ -153,7 +153,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
     // read digest value and output read value
-  virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[8]);
+  virtual task csr_rd_digest(output logic [TL_DW-1:0] digest[8]);
     csr_rd(.ptr(ral.digest0), .value(digest[0]));
     csr_rd(.ptr(ral.digest1), .value(digest[1]));
     csr_rd(.ptr(ral.digest2), .value(digest[2]));

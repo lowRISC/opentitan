@@ -149,7 +149,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     uint sram_avail_bytes;
     uint tx_write_bytes;
     while (remaining_bytes > 0) begin
-      bit [31:0] device_words_q[$];
+      logic [31:0] device_words_q[$];
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_delay)
       cfg.clk_rst_vif.wait_clks(tx_delay);
 
