@@ -31,7 +31,7 @@
  * @param ptr a word-aligned pointer pointed to at least four bytes of memory.
  * @return the word |ptr| points to.
  */
-inline uint32_t read_32(void *ptr) {
+inline uint32_t read_32(const void *ptr) {
   // Both GCC and Clang optimize the code below into a single word-load on most
   // platforms. It is necessary and sufficient to indicate to the compiler that
   // the pointer points to four bytes of four-byte-aligned memory.
