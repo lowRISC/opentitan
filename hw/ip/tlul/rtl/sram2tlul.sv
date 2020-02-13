@@ -32,9 +32,7 @@ module sram2tlul #(
 
   import tlul_pkg::*;
 
-  `ifndef SYNTHESIS
-  if (SramDw != top_pkg::TL_DW) $fatal("SRAM_DW should be same as TL-UL DW");
-  `endif
+  `ASSERT_INIT(wrongSramDw, SramDw == top_pkg::TL_DW)
 
   localparam int unsigned SRAM_DWB = $clog2(SramDw/8);
 
