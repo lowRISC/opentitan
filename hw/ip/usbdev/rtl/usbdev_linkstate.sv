@@ -115,7 +115,8 @@ module usbdev_linkstate (
   always_comb begin
     link_state_d = link_state_q;
     link_resume_o = 0;
-    monitor_inac = 0;
+    monitor_inac = see_pwr_sense ? ((link_state_q == LinkPowered) | (link_state_q == LinkActive)) :
+                                   1'b0;
 
     // If VBUS ever goes away the link has disconnected
     if (!see_pwr_sense) begin
@@ -130,7 +131,6 @@ module usbdev_linkstate (
         end
 
         LinkPowered: begin
-          monitor_inac = 1;
           if (ev_reset) begin
             link_state_d = LinkActive;
           end else if (ev_bus_inactive) begin
@@ -149,7 +149,6 @@ module usbdev_linkstate (
 
         // Active (USB spec: Default / Address / Configured)
         LinkActive: begin
-          monitor_inac = 1;
           if (ev_bus_inactive) begin
             link_state_d = LinkSuspend;
           end
