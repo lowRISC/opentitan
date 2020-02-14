@@ -8,6 +8,37 @@ from typing import Dict
 from .lib import *
 
 
+def intersignal_format(uid: int, req: Dict, rsp: Dict) -> str:
+    """Determine the signal format of the inter-module connections
+
+    @param[uid] Unique ID. Each inter-signal has its own ID at top
+
+    @param[req] Request struct. It has instance name, package format
+                and etc.
+
+    @param[rsp] Response struct. Same format as @param[req]
+    """
+
+    # TODO: Handle array signal
+    result = "{req}_{rsp}_{struct}".format(req=req["inst_name"],
+                                           rsp=rsp["inst_name"],
+                                           struct=req["struct"])
+
+    # check signal length if exceeds 100
+
+    # 7 : space + .
+    # 3 : _{i|o}(
+    # 6 : _{req|rsp}),
+    req_length = 7 + len(req["name"]) + 3 + len(result) + 6
+    rsp_length = 7 + len(rsp["name"]) + 3 + len(result) + 6
+
+    if max(req_length, rsp_length) > 100:
+        logmsg = "signal {0} length cannot be greater than 100"
+        log.warning(logmsg.format(result))
+        log.warning("Please consider shorten the instance name")
+    return result
+
+
 def elab_intermodule(topcfg):
     """Check the connection of inter-module and categorize them
 
@@ -62,6 +93,7 @@ def elab_intermodule(topcfg):
             # determine the signal name
             sig_name = "im{uid}_{req_s}".format(uid=uid,
                                                 req_s=req_struct['struct'])
+            sig_name = intersignal_format(uid, req_struct, rsp_struct)
 
             req_struct["top_signame"] = sig_name
             rsp_struct["top_signame"] = sig_name

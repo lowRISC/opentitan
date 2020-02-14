@@ -100,8 +100,8 @@
       addr_range:
       [
         {
-          size_byte: 0x2000
           base_addr: 0x00008000
+          size_byte: 0x2000
         }
       ]
       xbar: false
@@ -117,8 +117,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x1A110000
+          size_byte: 0x1000
         }
       ]
       xbar: false
@@ -134,8 +134,8 @@
       addr_range:
       [
         {
-          size_byte: 0x10000
           base_addr: 0x10000000
+          size_byte: 0x10000
         }
       ]
       xbar: false
@@ -151,8 +151,8 @@
       addr_range:
       [
         {
-          size_byte: 0x80000
           base_addr: 0x20000000
+          size_byte: 0x80000
         }
       ]
       xbar: false
@@ -169,16 +169,16 @@
       addr_range:
       [
         {
-          size_byte: 0x21000
           base_addr: 0x40000000
+          size_byte: 0x21000
         }
         {
-          size_byte: 0x1000
           base_addr: 0x40080000
+          size_byte: 0x1000
         }
         {
-          size_byte: 0x1000
           base_addr: 0x40150000
+          size_byte: 0x1000
         }
       ]
     }
@@ -192,8 +192,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40030000
+          size_byte: 0x1000
         }
       ]
       xbar: false
@@ -209,8 +209,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40120000
+          size_byte: 0x1000
         }
       ]
       xbar: false
@@ -226,8 +226,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40110000
+          size_byte: 0x1000
         }
       ]
       xbar: false
@@ -242,8 +242,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40090000
+          size_byte: 0x1000
         }
       ]
       pipeline_byp: "false"
@@ -259,8 +259,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40070000
+          size_byte: 0x1000
         }
       ]
       pipeline_byp: "false"
@@ -276,8 +276,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40130000
+          size_byte: 0x1000
         }
       ]
       xbar: false
@@ -292,8 +292,8 @@
       addr_range:
       [
         {
-          size_byte: 0x1000
           base_addr: 0x40140000
+          size_byte: 0x1000
         }
       ]
       xbar: false

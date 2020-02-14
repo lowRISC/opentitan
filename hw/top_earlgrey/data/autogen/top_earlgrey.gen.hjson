@@ -76,61 +76,61 @@
       available_input_list:
       [
         {
+          name: rx
           width: 1
           type: input
-          name: rx
         }
       ]
       available_output_list:
       [
         {
+          name: tx
           width: 1
           type: output
-          name: tx
         }
       ]
       available_inout_list: []
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: tx_watermark
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_watermark
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: tx_empty
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_overflow
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_frame_err
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_break_err
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_timeout
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_parity_err
+          width: 1
+          type: interrupt
         }
       ]
       alert_list: []
@@ -156,17 +156,17 @@
       available_inout_list:
       [
         {
+          name: gpio
           width: 32
           type: inout
-          name: gpio
         }
       ]
       interrupt_list:
       [
         {
+          name: gpio
           width: 32
           type: interrupt
-          name: gpio
         }
       ]
       alert_list: []
@@ -190,61 +190,61 @@
       available_input_list:
       [
         {
-          width: 1
-          type: input
           name: sck
-        }
-        {
           width: 1
           type: input
+        }
+        {
           name: csb
-        }
-        {
           width: 1
           type: input
+        }
+        {
           name: mosi
+          width: 1
+          type: input
         }
       ]
       available_output_list:
       [
         {
+          name: miso
           width: 1
           type: output
-          name: miso
         }
       ]
       available_inout_list: []
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: rxf
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rxlvl
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: txlvl
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rxerr
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rxoverflow
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: txunderflow
+          width: 1
+          type: interrupt
         }
       ]
       alert_list: []
@@ -271,34 +271,34 @@
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: prog_empty
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: prog_lvl
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rd_full
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rd_lvl
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: op_done
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: op_error
+          width: 1
+          type: interrupt
         }
       ]
       alert_list: []
@@ -306,13 +306,13 @@
       inter_signal_list:
       [
         {
-          inst_name: flash_ctrl
-          top_signame: im0_flash
-          act: requester
           struct: flash
           type: req_rsp
           name: flash
+          act: requester
           package: flash_ctrl_pkg
+          inst_name: flash_ctrl
+          top_signame: flash_ctrl_eflash_flash
         }
       ]
     }
@@ -337,9 +337,9 @@
       interrupt_list:
       [
         {
+          name: timer_expired_0_0
           width: 1
           type: interrupt
-          name: timer_expired_0_0
         }
       ]
       alert_list: []
@@ -388,27 +388,27 @@
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: hmac_done
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: fifo_full
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: hmac_err
+          width: 1
+          type: interrupt
         }
       ]
       alert_list:
       [
         {
+          name: msg_push_sha_disabled
           width: 1
           type: alert
-          name: msg_push_sha_disabled
           async: 0
         }
       ]
@@ -489,24 +489,24 @@
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: classa
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: classb
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: classc
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: classd
+          width: 1
+          type: interrupt
         }
       ]
       alert_list: []
@@ -533,24 +533,24 @@
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: esc0
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: esc1
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: esc2
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: esc3
+          width: 1
+          type: interrupt
         }
       ]
       alert_list: []
@@ -576,113 +576,113 @@
       available_input_list:
       [
         {
+          name: sense
           width: 1
           type: input
-          name: sense
         }
       ]
       available_output_list:
       [
         {
+          name: pullup
           width: 1
           type: output
-          name: pullup
         }
       ]
       available_inout_list:
       [
         {
+          name: dp
           width: 1
           type: inout
-          name: dp
         }
         {
+          name: dn
           width: 1
           type: inout
-          name: dn
         }
       ]
       interrupt_list:
       [
         {
-          width: 1
-          type: interrupt
           name: pkt_received
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: pkt_sent
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: disconnected
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: host_lost
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: link_reset
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: link_suspend
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: link_resume
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: av_empty
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_full
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: av_overflow
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: link_in_err
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_crc_err
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_pid_err
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: rx_bitstuff_err
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: frame
-        }
-        {
           width: 1
           type: interrupt
+        }
+        {
           name: connected
+          width: 1
+          type: interrupt
         }
       ]
       alert_list: []
@@ -740,7 +740,7 @@
           name: flash_ctrl
           act: responder
           inst_name: eflash
-          top_signame: im0_flash
+          top_signame: flash_ctrl_eflash_flash
         }
       ]
     }
@@ -848,8 +848,8 @@
           addr_range:
           [
             {
-              size_byte: 0x2000
               base_addr: 0x00008000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -865,8 +865,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x1A110000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -882,8 +882,8 @@
           addr_range:
           [
             {
-              size_byte: 0x10000
               base_addr: 0x10000000
+              size_byte: 0x10000
             }
           ]
           xbar: false
@@ -899,8 +899,8 @@
           addr_range:
           [
             {
-              size_byte: 0x80000
               base_addr: 0x20000000
+              size_byte: 0x80000
             }
           ]
           xbar: false
@@ -917,24 +917,24 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40000000
+              size_byte: 0x1000
             }
             {
-              size_byte: 0x1000
               base_addr: 0x40010000
+              size_byte: 0x1000
             }
             {
-              size_byte: 0x1000
               base_addr: 0x40020000
+              size_byte: 0x1000
             }
             {
-              size_byte: 0x1000
               base_addr: 0x40080000
+              size_byte: 0x1000
             }
             {
-              size_byte: 0x1000
               base_addr: 0x40150000
+              size_byte: 0x1000
             }
           ]
         }
@@ -948,8 +948,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40030000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -965,8 +965,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40120000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -982,8 +982,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40110000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -998,8 +998,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40090000
+              size_byte: 0x1000
             }
           ]
           pipeline_byp: "false"
@@ -1015,8 +1015,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40070000
+              size_byte: 0x1000
             }
           ]
           pipeline_byp: "false"
@@ -1032,8 +1032,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40130000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1048,8 +1048,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40140000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1102,8 +1102,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40000000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1119,8 +1119,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40010000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1136,8 +1136,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40020000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1153,8 +1153,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40080000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1170,8 +1170,8 @@
           addr_range:
           [
             {
-              size_byte: 0x1000
               base_addr: 0x40150000
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -1195,244 +1195,244 @@
   interrupt:
   [
     {
+      name: gpio_gpio
       width: 32
       type: interrupt
-      name: gpio_gpio
     }
     {
-      width: 1
-      type: interrupt
       name: uart_tx_watermark
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_rx_watermark
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_tx_empty
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_rx_overflow
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_rx_frame_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_rx_break_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_rx_timeout
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: uart_rx_parity_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: spi_device_rxf
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: spi_device_rxlvl
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: spi_device_txlvl
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: spi_device_rxerr
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: spi_device_rxoverflow
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: spi_device_txunderflow
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: flash_ctrl_prog_empty
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: flash_ctrl_prog_lvl
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: flash_ctrl_rd_full
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: flash_ctrl_rd_lvl
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: flash_ctrl_op_done
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: flash_ctrl_op_error
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: hmac_hmac_done
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: hmac_fifo_full
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: hmac_hmac_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: alert_handler_classa
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: alert_handler_classb
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: alert_handler_classc
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: alert_handler_classd
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: nmi_gen_esc0
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: nmi_gen_esc1
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: nmi_gen_esc2
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: nmi_gen_esc3
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_pkt_received
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_pkt_sent
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_disconnected
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_host_lost
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_link_reset
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_link_suspend
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_link_resume
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_av_empty
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_rx_full
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_av_overflow
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_link_in_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_rx_crc_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_rx_pid_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_rx_bitstuff_err
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_frame
-    }
-    {
       width: 1
       type: interrupt
+    }
+    {
       name: usbdev_connected
+      width: 1
+      type: interrupt
     }
   ]
   alert_module:
@@ -1442,9 +1442,9 @@
   alert:
   [
     {
+      name: hmac_msg_push_sha_disabled
       width: 1
       type: alert
-      name: hmac_msg_push_sha_disabled
       async: 0
     }
   ]
@@ -1488,42 +1488,43 @@
     dio:
     [
       {
-        width: 1
-        type: input
-        pad:
-        [
-          {
-            name: ChB
-            index: 0
-          }
-        ]
         name: spi_device_sck
-      }
-      {
         width: 1
         type: input
         pad:
         [
           {
             name: ChB
-            index: 1
+            index: 0
           }
         ]
+      }
+      {
         name: spi_device_csb
-      }
-      {
         width: 1
         type: input
         pad:
         [
           {
             name: ChB
-            index: 2
+            index: 1
           }
         ]
+      }
+      {
         name: spi_device_mosi
+        width: 1
+        type: input
+        pad:
+        [
+          {
+            name: ChB
+            index: 2
+          }
+        ]
       }
       {
+        name: spi_device_miso
         width: 1
         type: output
         pad:
@@ -1533,21 +1534,21 @@
             index: 3
           }
         ]
-        name: spi_device_miso
       }
       {
-        width: 1
-        type: input
-        pad:
-        [
-          {
-            name: ChA
-            index: 0
-          }
-        ]
         name: uart_rx
+        width: 1
+        type: input
+        pad:
+        [
+          {
+            name: ChA
+            index: 0
+          }
+        ]
       }
       {
+        name: uart_tx
         width: 1
         type: output
         pad:
@@ -1557,9 +1558,9 @@
             index: 1
           }
         ]
-        name: uart_tx
       }
       {
+        name: usbdev_sense
         width: 1
         type: input
         pad:
@@ -1569,9 +1570,9 @@
             index: 0
           }
         ]
-        name: usbdev_sense
       }
       {
+        name: usbdev_pullup
         width: 1
         type: output
         pad:
@@ -1581,9 +1582,9 @@
             index: 1
           }
         ]
-        name: usbdev_pullup
       }
       {
+        name: usbdev_dp
         width: 1
         type: inout
         pad:
@@ -1593,9 +1594,9 @@
             index: 2
           }
         ]
-        name: usbdev_dp
       }
       {
+        name: usbdev_dn
         width: 1
         type: inout
         pad:
@@ -1605,7 +1606,6 @@
             index: 3
           }
         ]
-        name: usbdev_dn
       }
     ]
     inputs: []
@@ -1613,9 +1613,9 @@
     inouts:
     [
       {
+        name: gpio_gpio
         width: 32
         type: inout
-        name: gpio_gpio
       }
     ]
   }
@@ -1659,13 +1659,13 @@
     signals:
     [
       {
-        inst_name: flash_ctrl
-        top_signame: im0_flash
-        act: requester
         struct: flash
         type: req_rsp
         name: flash
+        act: requester
         package: flash_ctrl_pkg
+        inst_name: flash_ctrl
+        top_signame: flash_ctrl_eflash_flash
       }
       {
         struct: flash
@@ -1673,16 +1673,16 @@
         name: flash_ctrl
         act: responder
         inst_name: eflash
-        top_signame: im0_flash
+        top_signame: flash_ctrl_eflash_flash
       }
     ]
     definitions:
     [
       {
-        struct: flash
-        type: req_rsp
-        signame: im0_flash
         package: flash_ctrl_pkg
+        struct: flash
+        signame: flash_ctrl_eflash_flash
+        type: req_rsp
       }
     ]
   }

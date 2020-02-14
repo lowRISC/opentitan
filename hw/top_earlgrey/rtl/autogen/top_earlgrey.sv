@@ -423,8 +423,8 @@ module top_earlgrey #(
   );
 
   // define inter-module signals
-  flash_ctrl_pkg::flash_req_t im0_flash_req;
-  flash_ctrl_pkg::flash_rsp_t im0_flash_rsp;
+  flash_ctrl_pkg::flash_req_t flash_ctrl_eflash_flash_req;
+  flash_ctrl_pkg::flash_rsp_t flash_ctrl_eflash_flash_rsp;
 
   // host to flash communication
   logic flash_host_req;
@@ -470,8 +470,8 @@ module top_earlgrey #(
     .host_req_rdy_o  (flash_host_req_rdy),
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
-    .flash_ctrl_i    (im0_flash_req),
-    .flash_ctrl_o    (im0_flash_rsp)
+    .flash_ctrl_i    (flash_ctrl_eflash_flash_req),
+    .flash_ctrl_o    (flash_ctrl_eflash_flash_rsp)
   );
 
 
@@ -558,8 +558,8 @@ module top_earlgrey #(
       .intr_op_error_o   (intr_flash_ctrl_op_error),
 
       // Inter-module signals
-      .flash_o(im0_flash_req),
-      .flash_i(im0_flash_rsp),
+      .flash_o(flash_ctrl_eflash_flash_req),
+      .flash_i(flash_ctrl_eflash_flash_rsp),
 
       .clk_i (main_clk),
       .rst_ni (lc_rst_n)
