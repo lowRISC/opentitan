@@ -408,6 +408,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     csr_excl_item csr_excl = create_and_add_csr_excl("csr_excl");
     uvm_reg     test_csrs[$];
     ral.get_registers(test_csrs);
+    do_clear_all_interrupts = 0; // skip checking interrupts at the end of seq
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
