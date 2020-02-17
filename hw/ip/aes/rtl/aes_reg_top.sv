@@ -87,6 +87,14 @@ module aes_reg_top (
   logic key6_we;
   logic [31:0] key7_wd;
   logic key7_we;
+  logic [31:0] iv0_wd;
+  logic iv0_we;
+  logic [31:0] iv1_wd;
+  logic iv1_we;
+  logic [31:0] iv2_wd;
+  logic iv2_we;
+  logic [31:0] iv3_wd;
+  logic iv3_we;
   logic [31:0] data_in0_wd;
   logic data_in0_we;
   logic [31:0] data_in1_wd;
@@ -107,6 +115,10 @@ module aes_reg_top (
   logic ctrl_operation_wd;
   logic ctrl_operation_we;
   logic ctrl_operation_re;
+  logic [2:0] ctrl_mode_qs;
+  logic [2:0] ctrl_mode_wd;
+  logic ctrl_mode_we;
+  logic ctrl_mode_re;
   logic [2:0] ctrl_key_len_qs;
   logic [2:0] ctrl_key_len_wd;
   logic ctrl_key_len_we;
@@ -119,6 +131,8 @@ module aes_reg_top (
   logic trigger_start_we;
   logic trigger_key_clear_wd;
   logic trigger_key_clear_we;
+  logic trigger_iv_clear_wd;
+  logic trigger_iv_clear_we;
   logic trigger_data_in_clear_wd;
   logic trigger_data_in_clear_we;
   logic trigger_data_out_clear_wd;
@@ -255,6 +269,72 @@ module aes_reg_top (
     .qre    (),
     .qe     (reg2hw.key[7].qe),
     .q      (reg2hw.key[7].q ),
+    .qs     ()
+  );
+
+
+
+  // Subregister 0 of Multireg iv
+  // R[iv0]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_iv0 (
+    .re     (1'b0),
+    .we     (iv0_we),
+    .wd     (iv0_wd),
+    .d      (hw2reg.iv[0].d),
+    .qre    (),
+    .qe     (reg2hw.iv[0].qe),
+    .q      (reg2hw.iv[0].q ),
+    .qs     ()
+  );
+
+  // Subregister 1 of Multireg iv
+  // R[iv1]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_iv1 (
+    .re     (1'b0),
+    .we     (iv1_we),
+    .wd     (iv1_wd),
+    .d      (hw2reg.iv[1].d),
+    .qre    (),
+    .qe     (reg2hw.iv[1].qe),
+    .q      (reg2hw.iv[1].q ),
+    .qs     ()
+  );
+
+  // Subregister 2 of Multireg iv
+  // R[iv2]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_iv2 (
+    .re     (1'b0),
+    .we     (iv2_we),
+    .wd     (iv2_wd),
+    .d      (hw2reg.iv[2].d),
+    .qre    (),
+    .qe     (reg2hw.iv[2].qe),
+    .q      (reg2hw.iv[2].q ),
+    .qs     ()
+  );
+
+  // Subregister 3 of Multireg iv
+  // R[iv3]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_iv3 (
+    .re     (1'b0),
+    .we     (iv3_we),
+    .wd     (iv3_wd),
+    .d      (hw2reg.iv[3].d),
+    .qre    (),
+    .qe     (reg2hw.iv[3].qe),
+    .q      (reg2hw.iv[3].q ),
     .qs     ()
   );
 
@@ -448,7 +528,22 @@ module aes_reg_top (
   );
 
 
-  //   F[key_len]: 3:1
+  //   F[mode]: 3:1
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_ctrl_mode (
+    .re     (ctrl_mode_re),
+    .we     (ctrl_mode_we),
+    .wd     (ctrl_mode_wd),
+    .d      (hw2reg.ctrl.mode.d),
+    .qre    (),
+    .qe     (reg2hw.ctrl.mode.qe),
+    .q      (reg2hw.ctrl.mode.q ),
+    .qs     (ctrl_mode_qs)
+  );
+
+
+  //   F[key_len]: 6:4
   prim_subreg_ext #(
     .DW    (3)
   ) u_ctrl_key_len (
@@ -463,7 +558,7 @@ module aes_reg_top (
   );
 
 
-  //   F[manual_operation]: 4:4
+  //   F[manual_operation]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_manual_operation (
@@ -530,7 +625,32 @@ module aes_reg_top (
   );
 
 
-  //   F[data_in_clear]: 2:2
+  //   F[iv_clear]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h0)
+  ) u_trigger_iv_clear (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (trigger_iv_clear_we),
+    .wd     (trigger_iv_clear_wd),
+
+    // from internal hardware
+    .de     (hw2reg.trigger.iv_clear.de),
+    .d      (hw2reg.trigger.iv_clear.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.trigger.iv_clear.q ),
+
+    .qs     ()
+  );
+
+
+  //   F[data_in_clear]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
@@ -555,7 +675,7 @@ module aes_reg_top (
   );
 
 
-  //   F[data_out_clear]: 3:3
+  //   F[data_out_clear]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
@@ -684,7 +804,7 @@ module aes_reg_top (
 
 
 
-  logic [18:0] addr_hit;
+  logic [22:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == AES_KEY0_OFFSET);
@@ -695,17 +815,21 @@ module aes_reg_top (
     addr_hit[ 5] = (reg_addr == AES_KEY5_OFFSET);
     addr_hit[ 6] = (reg_addr == AES_KEY6_OFFSET);
     addr_hit[ 7] = (reg_addr == AES_KEY7_OFFSET);
-    addr_hit[ 8] = (reg_addr == AES_DATA_IN0_OFFSET);
-    addr_hit[ 9] = (reg_addr == AES_DATA_IN1_OFFSET);
-    addr_hit[10] = (reg_addr == AES_DATA_IN2_OFFSET);
-    addr_hit[11] = (reg_addr == AES_DATA_IN3_OFFSET);
-    addr_hit[12] = (reg_addr == AES_DATA_OUT0_OFFSET);
-    addr_hit[13] = (reg_addr == AES_DATA_OUT1_OFFSET);
-    addr_hit[14] = (reg_addr == AES_DATA_OUT2_OFFSET);
-    addr_hit[15] = (reg_addr == AES_DATA_OUT3_OFFSET);
-    addr_hit[16] = (reg_addr == AES_CTRL_OFFSET);
-    addr_hit[17] = (reg_addr == AES_TRIGGER_OFFSET);
-    addr_hit[18] = (reg_addr == AES_STATUS_OFFSET);
+    addr_hit[ 8] = (reg_addr == AES_IV0_OFFSET);
+    addr_hit[ 9] = (reg_addr == AES_IV1_OFFSET);
+    addr_hit[10] = (reg_addr == AES_IV2_OFFSET);
+    addr_hit[11] = (reg_addr == AES_IV3_OFFSET);
+    addr_hit[12] = (reg_addr == AES_DATA_IN0_OFFSET);
+    addr_hit[13] = (reg_addr == AES_DATA_IN1_OFFSET);
+    addr_hit[14] = (reg_addr == AES_DATA_IN2_OFFSET);
+    addr_hit[15] = (reg_addr == AES_DATA_IN3_OFFSET);
+    addr_hit[16] = (reg_addr == AES_DATA_OUT0_OFFSET);
+    addr_hit[17] = (reg_addr == AES_DATA_OUT1_OFFSET);
+    addr_hit[18] = (reg_addr == AES_DATA_OUT2_OFFSET);
+    addr_hit[19] = (reg_addr == AES_DATA_OUT3_OFFSET);
+    addr_hit[20] = (reg_addr == AES_CTRL_OFFSET);
+    addr_hit[21] = (reg_addr == AES_TRIGGER_OFFSET);
+    addr_hit[22] = (reg_addr == AES_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -732,6 +856,10 @@ module aes_reg_top (
     if (addr_hit[16] && reg_we && (AES_PERMIT[16] != (AES_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[17] && reg_we && (AES_PERMIT[17] != (AES_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[18] && reg_we && (AES_PERMIT[18] != (AES_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (AES_PERMIT[19] != (AES_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (AES_PERMIT[20] != (AES_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[21] && reg_we && (AES_PERMIT[21] != (AES_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (AES_PERMIT[22] != (AES_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign key0_we = addr_hit[0] & reg_we & ~wr_err;
@@ -758,49 +886,68 @@ module aes_reg_top (
   assign key7_we = addr_hit[7] & reg_we & ~wr_err;
   assign key7_wd = reg_wdata[31:0];
 
-  assign data_in0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign iv0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign iv0_wd = reg_wdata[31:0];
+
+  assign iv1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign iv1_wd = reg_wdata[31:0];
+
+  assign iv2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign iv2_wd = reg_wdata[31:0];
+
+  assign iv3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign iv3_wd = reg_wdata[31:0];
+
+  assign data_in0_we = addr_hit[12] & reg_we & ~wr_err;
   assign data_in0_wd = reg_wdata[31:0];
 
-  assign data_in1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign data_in1_we = addr_hit[13] & reg_we & ~wr_err;
   assign data_in1_wd = reg_wdata[31:0];
 
-  assign data_in2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign data_in2_we = addr_hit[14] & reg_we & ~wr_err;
   assign data_in2_wd = reg_wdata[31:0];
 
-  assign data_in3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign data_in3_we = addr_hit[15] & reg_we & ~wr_err;
   assign data_in3_wd = reg_wdata[31:0];
 
-  assign data_out0_re = addr_hit[12] && reg_re;
+  assign data_out0_re = addr_hit[16] && reg_re;
 
-  assign data_out1_re = addr_hit[13] && reg_re;
+  assign data_out1_re = addr_hit[17] && reg_re;
 
-  assign data_out2_re = addr_hit[14] && reg_re;
+  assign data_out2_re = addr_hit[18] && reg_re;
 
-  assign data_out3_re = addr_hit[15] && reg_re;
+  assign data_out3_re = addr_hit[19] && reg_re;
 
-  assign ctrl_operation_we = addr_hit[16] & reg_we & ~wr_err;
+  assign ctrl_operation_we = addr_hit[20] & reg_we & ~wr_err;
   assign ctrl_operation_wd = reg_wdata[0];
-  assign ctrl_operation_re = addr_hit[16] && reg_re;
+  assign ctrl_operation_re = addr_hit[20] && reg_re;
 
-  assign ctrl_key_len_we = addr_hit[16] & reg_we & ~wr_err;
-  assign ctrl_key_len_wd = reg_wdata[3:1];
-  assign ctrl_key_len_re = addr_hit[16] && reg_re;
+  assign ctrl_mode_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_mode_wd = reg_wdata[3:1];
+  assign ctrl_mode_re = addr_hit[20] && reg_re;
 
-  assign ctrl_manual_operation_we = addr_hit[16] & reg_we & ~wr_err;
-  assign ctrl_manual_operation_wd = reg_wdata[4];
-  assign ctrl_manual_operation_re = addr_hit[16] && reg_re;
+  assign ctrl_key_len_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_key_len_wd = reg_wdata[6:4];
+  assign ctrl_key_len_re = addr_hit[20] && reg_re;
 
-  assign trigger_start_we = addr_hit[17] & reg_we & ~wr_err;
+  assign ctrl_manual_operation_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_manual_operation_wd = reg_wdata[7];
+  assign ctrl_manual_operation_re = addr_hit[20] && reg_re;
+
+  assign trigger_start_we = addr_hit[21] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];
 
-  assign trigger_key_clear_we = addr_hit[17] & reg_we & ~wr_err;
+  assign trigger_key_clear_we = addr_hit[21] & reg_we & ~wr_err;
   assign trigger_key_clear_wd = reg_wdata[1];
 
-  assign trigger_data_in_clear_we = addr_hit[17] & reg_we & ~wr_err;
-  assign trigger_data_in_clear_wd = reg_wdata[2];
+  assign trigger_iv_clear_we = addr_hit[21] & reg_we & ~wr_err;
+  assign trigger_iv_clear_wd = reg_wdata[2];
 
-  assign trigger_data_out_clear_we = addr_hit[17] & reg_we & ~wr_err;
-  assign trigger_data_out_clear_wd = reg_wdata[3];
+  assign trigger_data_in_clear_we = addr_hit[21] & reg_we & ~wr_err;
+  assign trigger_data_in_clear_wd = reg_wdata[3];
+
+  assign trigger_data_out_clear_we = addr_hit[21] & reg_we & ~wr_err;
+  assign trigger_data_out_clear_wd = reg_wdata[4];
 
 
 
@@ -859,35 +1006,53 @@ module aes_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[31:0] = data_out0_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[31:0] = data_out1_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[31:0] = data_out2_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[31:0] = data_out3_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[0] = ctrl_operation_qs;
-        reg_rdata_next[3:1] = ctrl_key_len_qs;
-        reg_rdata_next[4] = ctrl_manual_operation_qs;
+        reg_rdata_next[31:0] = data_out0_qs;
       end
 
       addr_hit[17]: begin
+        reg_rdata_next[31:0] = data_out1_qs;
+      end
+
+      addr_hit[18]: begin
+        reg_rdata_next[31:0] = data_out2_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = data_out3_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[0] = ctrl_operation_qs;
+        reg_rdata_next[3:1] = ctrl_mode_qs;
+        reg_rdata_next[6:4] = ctrl_key_len_qs;
+        reg_rdata_next[7] = ctrl_manual_operation_qs;
+      end
+
+      addr_hit[21]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
+        reg_rdata_next[4] = '0;
       end
 
-      addr_hit[18]: begin
+      addr_hit[22]: begin
         reg_rdata_next[0] = status_idle_qs;
         reg_rdata_next[1] = status_stall_qs;
         reg_rdata_next[2] = status_output_valid_qs;

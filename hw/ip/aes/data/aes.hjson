@@ -8,6 +8,8 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
+  # Note: All parameters are local, they are not actually configurable.
+  # Selecting values different from the default values below might cause undefined behavior.
   param_list: [
     { name:    "NumRegsKey",
       type:    "int",
@@ -15,6 +17,12 @@
       desc:    "Number registers for key",
       local:   "true"
     },
+    { name:    "NumRegsIv",
+      type:    "int",
+      default: "4",
+      desc:    "Number registers for initialization vector",
+      local:   "true"
+    }
     { name:    "NumRegsData",
       type:    "int",
       default: "4",
@@ -43,6 +51,31 @@
       hwqe:     "true",
       fields: [
         { bits: "31:0", name: "key", desc: "Initial Key" }
+      ],
+      }
+    },
+##############################################################################
+# initialization vector registers
+    { multireg: {
+      name: "IV",
+      desc: '''
+        Initialization Vector Registers.
+        The initialization vector (IV) or initial counter value must be written to these registers when starting a new message in CBC or CTR mode (see Control Register), respectively.
+        In CBC and CTR modes, the AES unit does not start encryption/decryption with a partially updated IV.
+        Each register has to be written at least once.
+        The order in which the registers are written does not matter.
+        If the AES unit is non-idle, writes to these registers are ignored.
+        Once started, the AES unit automatically updates the contents of these registers.
+        In ECB mode, the IV registers are not used and do not need to be configured.
+      '''
+      count: "NumRegsIv",
+      cname: "IV",
+      swaccess: "wo",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0", name: "iv", desc: "Initialization Vector" }
       ],
       }
     },
@@ -111,6 +144,15 @@
         '''
       }
       { bits: "3:1",
+        name: "MODE",
+        resval: "1",
+        hwaccess: "hrw",
+        desc:  '''
+          3-bit one-hot field to select AES block cipher mode: ECB (3'b001), CBC (3'b010) or CTR (3'b100).
+          Invalid input values, i.e., value with multiple bits set, and value 3'b000 are not supported are mapped to 3'b001.
+        '''
+      }
+      { bits: "6:4",
         name: "KEY_LEN",
         resval: "1",
         hwaccess: "hrw",
@@ -121,7 +163,7 @@
           disabled at compile time) are mapped to 3'b001.
         '''
       }
-      { bits: "4",
+      { bits: "7",
         name: "MANUAL_OPERATION",
         desc:  '''
           Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
@@ -138,7 +180,7 @@
   { name: "TRIGGER",
     desc: '''
       Trigger Register.
-      Each bit is individually cleared to 0 when executing the corresponding trigger.
+      Each bit is individually cleared to zero when executing the corresponding trigger.
     '''
     swaccess: "wo",
     hwaccess: "hrw",
@@ -154,19 +196,25 @@
         name: "KEY_CLEAR",
         desc:  '''
           Keep current values in Initial Key, internal Full Key and Decryption Key registers (0)
-          or clear those registers (1).
+          or clear those registers to zero (1).
         '''
       }
       { bits: "2",
-        name: "DATA_IN_CLEAR",
+        name: "IV_CLEAR",
         desc:  '''
-          Keep current values in input registers (0) or clear those registers (1).
+          Keep current values in IV registers (0) or clear those registers to zero (1).
         '''
       }
       { bits: "3",
+        name: "DATA_IN_CLEAR",
+        desc:  '''
+          Keep current values in input registers (0) or clear those registers to zero (1).
+        '''
+      }
+      { bits: "4",
         name: "DATA_OUT_CLEAR",
         desc:  '''
-          Keep current values in output registers (0) or clear those registers (1).
+          Keep current values in output registers (0) or clear those registers to zero (1).
         '''
       }
     ]

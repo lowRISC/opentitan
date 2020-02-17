@@ -15,13 +15,23 @@
 typedef enum aes_op { kAesEnc = 0, kAesDec = 1 } aes_op_t;
 
 /**
+ * Supported AES block cipher modes: ECB, CBC, CTR. The hardware uses a one-hot
+ * encoding.
+ */
+typedef enum aes_mode {
+  kAesEcb = 1 << 0,
+  kAesCbc = 1 << 1,
+  kAesCtr = 1 << 2
+} aes_mode_t;
+
+/**
  * Supported AES key lengths: 128 bit, 192 bit or 256 bit. The hardware uses a
  * one-hot encoding.
  */
 typedef enum aes_key_len {
-  kAes128 = 0x1,
-  kAes192 = 0x2,
-  kAes256 = 0x4
+  kAes128 = 1 << 0,
+  kAes192 = 1 << 1,
+  kAes256 = 1 << 2
 } aes_key_len_t;
 
 /**
@@ -30,6 +40,8 @@ typedef enum aes_key_len {
 typedef struct aes_cfg {
   /** Operational mode @see aes_op. */
   aes_op_t operation;
+  /** Block cipher mode @see aes_mode. */
+  aes_mode_t mode;
   /** Key length @see aes_key_len. */
   aes_key_len_t key_len;
   /** Set to 1 to i) only start upon getting a trigger signal, and ii) not stall

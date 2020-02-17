@@ -11,6 +11,12 @@ typedef enum logic {
   AES_DEC = 1'b1
 } aes_op_e;
 
+typedef enum logic [2:0] {
+  AES_ECB = 3'b001,
+  AES_CBC = 3'b010,
+  AES_CTR = 3'b100
+} aes_mode_e;
+
 typedef enum logic {
   CIPH_FWD = 1'b0,
   CIPH_INV = 1'b1
@@ -21,6 +27,21 @@ typedef enum logic [2:0] {
   AES_192 = 3'b010,
   AES_256 = 3'b100
 } key_len_e;
+
+typedef enum logic {
+  DIP_DATA_IN,
+  DIP_CLEAR
+} dip_sel_e;
+
+typedef enum logic {
+  SI_ZERO,
+  SI_DATA
+} si_sel_e;
+
+typedef enum logic {
+  ADD_SI_ZERO,
+  ADD_SI_IV
+} add_si_sel_e;
 
 typedef enum logic [1:0] {
   STATE_INIT,
@@ -38,6 +59,14 @@ typedef enum logic {
   KEY_INIT_INPUT,
   KEY_INIT_CLEAR
 } key_init_sel_e;
+
+typedef enum logic [2:0] {
+  IV_INPUT,
+  IV_DATA_OUT,
+  IV_DATA_IN_PREV,
+  IV_CTR,
+  IV_CLEAR
+} iv_sel_e;
 
 typedef enum logic [1:0] {
   KEY_FULL_ENC_INIT,
@@ -62,6 +91,12 @@ typedef enum logic {
   ROUND_KEY_DIRECT,
   ROUND_KEY_MIXED
 } round_key_sel_e;
+
+typedef enum logic [2:0] {
+  ADD_SO_ZERO,
+  ADD_SO_IV,
+  ADD_SO_DIP
+} add_so_sel_e;
 
 // Multiplication by {02} (i.e. x) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)
