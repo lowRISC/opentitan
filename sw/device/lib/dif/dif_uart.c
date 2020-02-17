@@ -338,17 +338,13 @@ bool dif_uart_irqs_disable(const dif_uart_t *uart, uint32_t *state) {
     return false;
   }
 
-  // Get the current interrupts state
-  uint32_t reg =
-      mmio_region_read32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET);
+  // Pass the current interrupt state to the caller
+  if (state != NULL) {
+    *state = mmio_region_read32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET);
+  }
 
   // Disable all UART interrupts
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
-
-  // Pass the previous interrupt state to the caller
-  if (state != NULL) {
-    *state = reg;
-  }
 
   return true;
 }
