@@ -8,6 +8,7 @@ package aes_reg_pkg;
 
   // Param list
   parameter int NumRegsKey = 8;
+  parameter int NumRegsIv = 4;
   parameter int NumRegsData = 4;
 
   ////////////////////////////
@@ -17,6 +18,11 @@ package aes_reg_pkg;
     logic [31:0] q;
     logic        qe;
   } aes_reg2hw_key_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } aes_reg2hw_iv_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -36,6 +42,10 @@ package aes_reg_pkg;
     struct packed {
       logic [2:0]  q;
       logic        qe;
+    } mode;
+    struct packed {
+      logic [2:0]  q;
+      logic        qe;
     } key_len;
     struct packed {
       logic        q;
@@ -52,6 +62,9 @@ package aes_reg_pkg;
     } key_clear;
     struct packed {
       logic        q;
+    } iv_clear;
+    struct packed {
+      logic        q;
     } data_in_clear;
     struct packed {
       logic        q;
@@ -62,6 +75,10 @@ package aes_reg_pkg;
   typedef struct packed {
     logic [31:0] d;
   } aes_hw2reg_key_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } aes_hw2reg_iv_mreg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -76,6 +93,9 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
     } operation;
+    struct packed {
+      logic [2:0]  d;
+    } mode;
     struct packed {
       logic [2:0]  d;
     } key_len;
@@ -93,6 +113,10 @@ package aes_reg_pkg;
       logic        d;
       logic        de;
     } key_clear;
+    struct packed {
+      logic        d;
+      logic        de;
+    } iv_clear;
     struct packed {
       logic        d;
       logic        de;
@@ -127,22 +151,24 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_reg2hw_key_mreg_t [7:0] key; // [539:276]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [275:144]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [143:12]
-    aes_reg2hw_ctrl_reg_t ctrl; // [11:4]
-    aes_reg2hw_trigger_reg_t trigger; // [3:0]
+    aes_reg2hw_key_mreg_t [7:0] key; // [676:413]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [412:281]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [280:149]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [148:17]
+    aes_reg2hw_ctrl_reg_t ctrl; // [16:5]
+    aes_reg2hw_trigger_reg_t trigger; // [4:0]
   } aes_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_mreg_t [7:0] key; // [536:281]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [280:149]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [148:21]
-    aes_hw2reg_ctrl_reg_t ctrl; // [20:13]
-    aes_hw2reg_trigger_reg_t trigger; // [12:9]
+    aes_hw2reg_key_mreg_t [7:0] key; // [669:414]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [413:286]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [285:154]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [153:26]
+    aes_hw2reg_ctrl_reg_t ctrl; // [25:14]
+    aes_hw2reg_trigger_reg_t trigger; // [13:9]
     aes_hw2reg_status_reg_t status; // [8:9]
   } aes_hw2reg_t;
 
@@ -155,17 +181,21 @@ package aes_reg_pkg;
   parameter logic [6:0] AES_KEY5_OFFSET = 7'h 14;
   parameter logic [6:0] AES_KEY6_OFFSET = 7'h 18;
   parameter logic [6:0] AES_KEY7_OFFSET = 7'h 1c;
-  parameter logic [6:0] AES_DATA_IN0_OFFSET = 7'h 20;
-  parameter logic [6:0] AES_DATA_IN1_OFFSET = 7'h 24;
-  parameter logic [6:0] AES_DATA_IN2_OFFSET = 7'h 28;
-  parameter logic [6:0] AES_DATA_IN3_OFFSET = 7'h 2c;
-  parameter logic [6:0] AES_DATA_OUT0_OFFSET = 7'h 30;
-  parameter logic [6:0] AES_DATA_OUT1_OFFSET = 7'h 34;
-  parameter logic [6:0] AES_DATA_OUT2_OFFSET = 7'h 38;
-  parameter logic [6:0] AES_DATA_OUT3_OFFSET = 7'h 3c;
-  parameter logic [6:0] AES_CTRL_OFFSET = 7'h 40;
-  parameter logic [6:0] AES_TRIGGER_OFFSET = 7'h 44;
-  parameter logic [6:0] AES_STATUS_OFFSET = 7'h 48;
+  parameter logic [6:0] AES_IV0_OFFSET = 7'h 20;
+  parameter logic [6:0] AES_IV1_OFFSET = 7'h 24;
+  parameter logic [6:0] AES_IV2_OFFSET = 7'h 28;
+  parameter logic [6:0] AES_IV3_OFFSET = 7'h 2c;
+  parameter logic [6:0] AES_DATA_IN0_OFFSET = 7'h 30;
+  parameter logic [6:0] AES_DATA_IN1_OFFSET = 7'h 34;
+  parameter logic [6:0] AES_DATA_IN2_OFFSET = 7'h 38;
+  parameter logic [6:0] AES_DATA_IN3_OFFSET = 7'h 3c;
+  parameter logic [6:0] AES_DATA_OUT0_OFFSET = 7'h 40;
+  parameter logic [6:0] AES_DATA_OUT1_OFFSET = 7'h 44;
+  parameter logic [6:0] AES_DATA_OUT2_OFFSET = 7'h 48;
+  parameter logic [6:0] AES_DATA_OUT3_OFFSET = 7'h 4c;
+  parameter logic [6:0] AES_CTRL_OFFSET = 7'h 50;
+  parameter logic [6:0] AES_TRIGGER_OFFSET = 7'h 54;
+  parameter logic [6:0] AES_STATUS_OFFSET = 7'h 58;
 
 
   // Register Index
@@ -178,6 +208,10 @@ package aes_reg_pkg;
     AES_KEY5,
     AES_KEY6,
     AES_KEY7,
+    AES_IV0,
+    AES_IV1,
+    AES_IV2,
+    AES_IV3,
     AES_DATA_IN0,
     AES_DATA_IN1,
     AES_DATA_IN2,
@@ -192,7 +226,7 @@ package aes_reg_pkg;
   } aes_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AES_PERMIT [19] = '{
+  parameter logic [3:0] AES_PERMIT [23] = '{
     4'b 1111, // index[ 0] AES_KEY0
     4'b 1111, // index[ 1] AES_KEY1
     4'b 1111, // index[ 2] AES_KEY2
@@ -201,17 +235,21 @@ package aes_reg_pkg;
     4'b 1111, // index[ 5] AES_KEY5
     4'b 1111, // index[ 6] AES_KEY6
     4'b 1111, // index[ 7] AES_KEY7
-    4'b 1111, // index[ 8] AES_DATA_IN0
-    4'b 1111, // index[ 9] AES_DATA_IN1
-    4'b 1111, // index[10] AES_DATA_IN2
-    4'b 1111, // index[11] AES_DATA_IN3
-    4'b 1111, // index[12] AES_DATA_OUT0
-    4'b 1111, // index[13] AES_DATA_OUT1
-    4'b 1111, // index[14] AES_DATA_OUT2
-    4'b 1111, // index[15] AES_DATA_OUT3
-    4'b 0001, // index[16] AES_CTRL
-    4'b 0001, // index[17] AES_TRIGGER
-    4'b 0001  // index[18] AES_STATUS
+    4'b 1111, // index[ 8] AES_IV0
+    4'b 1111, // index[ 9] AES_IV1
+    4'b 1111, // index[10] AES_IV2
+    4'b 1111, // index[11] AES_IV3
+    4'b 1111, // index[12] AES_DATA_IN0
+    4'b 1111, // index[13] AES_DATA_IN1
+    4'b 1111, // index[14] AES_DATA_IN2
+    4'b 1111, // index[15] AES_DATA_IN3
+    4'b 1111, // index[16] AES_DATA_OUT0
+    4'b 1111, // index[17] AES_DATA_OUT1
+    4'b 1111, // index[18] AES_DATA_OUT2
+    4'b 1111, // index[19] AES_DATA_OUT3
+    4'b 0001, // index[20] AES_CTRL
+    4'b 0001, // index[21] AES_TRIGGER
+    4'b 0001  // index[22] AES_STATUS
   };
 endpackage
 

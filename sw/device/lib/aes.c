@@ -8,12 +8,14 @@
 #include "sw/device/lib/common.h"
 
 #define AES0_BASE_ADDR 0x40110000
-#define AES_NUM_REGS_DATA 4
 #define AES_NUM_REGS_KEY 8
+#define AES_NUM_REGS_IV 4
+#define AES_NUM_REGS_DATA 4
 
 void aes_init(aes_cfg_t aes_cfg) {
   REG32(AES_CTRL(0)) =
       (aes_cfg.operation << AES_CTRL_OPERATION) |
+      ((aes_cfg.mode & AES_CTRL_MODE_MASK) << AES_CTRL_MODE_OFFSET) |
       ((aes_cfg.key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET) |
       (aes_cfg.manual_operation << AES_CTRL_MANUAL_OPERATION);
 };
@@ -37,6 +39,13 @@ void aes_key_put(const void *key, aes_key_len_t key_len) {
   // be written).
   for (int i = num_regs_key_used; i < AES_NUM_REGS_KEY; ++i) {
     REG32(AES_KEY0(0) + i * sizeof(uint32_t)) = 0x0;
+  }
+}
+
+void aes_iv_put(const void *iv) {
+  // Write the four initialization vector registers.
+  for (int i = 0; i < AES_NUM_REGS_IV; ++i) {
+    REG32(AES_IV0(0) + i * sizeof(uint32_t)) = ((uint32_t *)iv)[i];
   }
 }
 
@@ -94,6 +103,7 @@ void aes_clear(void) {
 
   // Clear internal key and output registers
   REG32(AES_TRIGGER(0)) = (0x1u << AES_TRIGGER_KEY_CLEAR) |
+                          (0x1u << AES_TRIGGER_IV_CLEAR) |
                           (0x1u << AES_TRIGGER_DATA_IN_CLEAR) |
                           (0x1u << AES_TRIGGER_DATA_OUT_CLEAR);
 
