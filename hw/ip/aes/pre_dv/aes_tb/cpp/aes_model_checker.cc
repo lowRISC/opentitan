@@ -218,24 +218,19 @@ int AESModelChecker::Compare() {
         }
 
         // call OpenSSL/BoringSSL to verify
-        unsigned char crypto_input[32];
-        unsigned char crypto_output[32];
+        unsigned char crypto_input[16];
+        unsigned char crypto_output[16];
         unsigned char iv[16];
-        memset(crypto_input, 0, 32);
-        memset(crypto_output, 0, 32);
         memset(iv, 0, 16);
-        int crypto_len;
         CopyBlock(crypto_input, state_model_.data_in);
-        crypto_len =
-            crypto_encrypt(crypto_output, iv, crypto_input, 16,
-                           state_model_.key_init, state_model_.key_len);
-        if (state_model_.cipher_op) {
-          // TODO: fix crypto_decrypt relying on second block being produced by
-          // previous encrypt
-          memcpy(crypto_input, crypto_output, crypto_len);
-          CopyBlock(crypto_input, state_model_.data_in);
-          crypto_decrypt(crypto_output, iv, crypto_input, crypto_len,
-                         state_model_.key_init, state_model_.key_len);
+        if (!state_model_.cipher_op) {
+          crypto_encrypt(crypto_output, iv, crypto_input, 16,
+                         state_model_.key_init, state_model_.key_len,
+                         kCryptoAesEcb);
+        } else {
+          crypto_decrypt(crypto_output, iv, crypto_input, 16,
+                         state_model_.key_init, state_model_.key_len,
+                         kCryptoAesEcb);
         }
         status = CompareBlock(crypto_output, state_rtl_.data_out, 16);
         if (status) {
