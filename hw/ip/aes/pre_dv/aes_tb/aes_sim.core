@@ -23,6 +23,7 @@ filesets:
       - cpp/aes_tb.cc
       - cpp/aes_tlul_interface.cc
       - cpp/aes_tlul_interface.h: { is_include_file: true }
+      - cpp/aes_tlul_sequence_common.h: { is_include_file: true }
       - cpp/aes_tlul_sequence_0.h: { is_include_file: true }
       - cpp/aes_tlul_sequence_1.h: { is_include_file: true }
       - cpp/aes_tlul_sequence_modes.h: { is_include_file: true }

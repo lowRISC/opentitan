@@ -4,14 +4,8 @@
 
 #define FEED_INPUT_WHILE_BUSY 1
 
-#define AES_KEY0 0x0
-#define AES_IV0 0x20
-#define AES_DATA_IN0 0x20
-#define AES_DATA_OUT0 0x30
-#define AES_CONFIG 0x40
-#define AES_STATUS 0x48
-
 #include "aes_modes.h"
+#include "aes_tlul_sequence_common.h"
 #include "crypto.h"
 
 TLI *tl_i_transactions;
@@ -46,7 +40,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
 
   // write config
   tl_i_transactions[i_trx] = {
-      true, 0,   0, 2, 0, AES_CONFIG, 0xF, (key_len_bits << 1) | (unsigned)op,
+      true, 0,          0,   2,
+      0,    AES_CONFIG, 0xF, (key_len_bits << 4) | (mode << 1) | (unsigned)op,
       0,    true};
   i_trx++;
 
@@ -64,11 +59,11 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
   }
 
   // write iv
-  // for (int i=0; i<4; ++i) {
-  //  tl_i_transactions[i_trx] =
-  //    {true, 0, 0, 2, 0, AES_IV0 + 4*i, 0xF, iv[i], 0, true};
-  //  i_trx++;
-  //}
+  for (int i = 0; i < 4; ++i) {
+    tl_i_transactions[i_trx] = {
+        true, 0, 0, 2, 0, (unsigned)(AES_IV0 + 4 * i), 0xF, iv[i], 0, true};
+    i_trx++;
+  }
 
   if (FEED_INPUT_WHILE_BUSY) {
     // write input data
@@ -137,7 +132,7 @@ int aes_tlul_sequence_modes_gen_all() {
   int num_groups = 6;
 
   // Allocate memory
-  num_transactions_max = (1 + 9 + 16 + 2 + 20) * num_groups;
+  num_transactions_max = (1 + 9 + 4 + 16 + 2 + 20) * num_groups;
   num_responses_max = (2 + 20) * num_groups;
   tl_i_transactions = (TLI *)malloc(num_transactions_max * sizeof(TLI));
   if (tl_i_transactions == NULL) {
