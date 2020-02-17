@@ -8,6 +8,8 @@
 #include "crypto.h"
 
 AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
+  state_model_.op = false;
+  state_model_.mode = kCryptoAesEcb;
   state_model_.cipher_op = false;
   state_model_.key_expand_op = false;
   state_model_.key_len = 16;
@@ -18,6 +20,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_model_.round = 0;
   state_model_.num_rounds = 0;
   state_model_.key_init[32] = {0};
+  state_model_.iv[16] = {0};
   state_model_.data_in[16] = {0};
   state_model_.state_d[16] = {0};
   state_model_.state_q[16] = {0};
@@ -29,6 +32,8 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_model_.round_key[16] = {0};
   state_model_.rcon = 0;
   state_model_.data_out[16] = {0};
+  state_rtl_.op = false;
+  state_rtl_.mode = kCryptoAesEcb;
   state_rtl_.cipher_op = false;
   state_rtl_.key_expand_op = false;
   state_rtl_.key_len = 16;
@@ -37,8 +42,9 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_rtl_.done = false;
   state_rtl_.busy = false;
   state_rtl_.round = 0;
-  state_rtl_.key_init[32] = {0};
   state_rtl_.num_rounds = 0;
+  state_rtl_.key_init[32] = {0};
+  state_rtl_.iv[16] = {0};
   state_rtl_.data_in[16] = {0};
   state_rtl_.state_d[16] = {0};
   state_rtl_.state_q[16] = {0};
@@ -223,14 +229,17 @@ int AESModelChecker::Compare() {
         unsigned char iv[16];
         memset(iv, 0, 16);
         CopyBlock(crypto_input, state_model_.data_in);
+        if (state_model_.mode != kCryptoAesEcb) {
+          CopyBlock(iv, state_model_.iv);
+        }
         if (!state_model_.cipher_op) {
           crypto_encrypt(crypto_output, iv, crypto_input, 16,
                          state_model_.key_init, state_model_.key_len,
-                         kCryptoAesEcb);
+                         state_model_.mode);
         } else {
           crypto_decrypt(crypto_output, iv, crypto_input, 16,
                          state_model_.key_init, state_model_.key_len,
-                         kCryptoAesEcb);
+                         state_model_.mode);
         }
         status = CompareBlock(crypto_output, state_rtl_.data_out, 16);
         if (status) {
@@ -239,8 +248,6 @@ int AESModelChecker::Compare() {
           aes_print_block(&state_rtl_.data_out[0], 16);
           printf("Output OpenSSL/BoringSSL\t");
           aes_print_block(&crypto_output[0], 16);
-          aes_print_block(&state_model_.data_in[0], 16);
-          aes_print_block(&state_model_.key_init[0], 32);
           return status;
         } else {
           printf("SUCCESS: OpenSSL/BoringSSL matches RTL\n");
@@ -255,14 +262,17 @@ int AESModelChecker::Compare() {
 void AESModelChecker::UpdateModel() {
   if (state_rtl_.start) {
     // start
+    state_model_.op = state_rtl_.op;
+    state_model_.mode = state_rtl_.mode;
     state_model_.cipher_op = state_rtl_.cipher_op;
     state_model_.key_expand_op = state_rtl_.key_expand_op;
     state_model_.key_len = state_rtl_.key_len;
     state_model_.round = -1;
     state_model_.num_rounds = aes_get_num_rounds(state_model_.key_len);
     state_model_.rcon = 0;
-    // save data_in for later check of final result
+    // save iv and data_in for later check of final result
     CopyBlock(state_model_.data_in, state_rtl_.data_in);
+    CopyBlock(state_model_.iv, state_rtl_.iv);
   } else if (state_rtl_.busy) {
     // Update model
     if (state_model_.round == -1) {
@@ -326,6 +336,10 @@ void AESModelChecker::UpdateModel() {
         CopyBlock(state_model_.add_round_key_out, state_model_.state_d);
         if (state_model_.round == state_model_.num_rounds - 1) {
           CopyBlock(state_model_.data_out, state_model_.state_d);
+          if (state_model_.mode == kCryptoAesCbc) {
+            // add the iv
+            aes_add_round_key(state_model_.data_out, state_model_.iv);
+          }
         }
       }
     }
@@ -358,6 +372,8 @@ void AESModelChecker::GetInitRoundKey() {
 }
 
 void AESModelChecker::MonitorSignals() {
+  state_rtl_.op = rtl_->aes_sim__DOT__op;
+  state_rtl_.mode = (crypto_mode_t)rtl_->aes_sim__DOT__mode;
   state_rtl_.cipher_op = rtl_->aes_sim__DOT__cipher_op;
   state_rtl_.key_expand_op = rtl_->aes_sim__DOT__key_expand_op;
 
@@ -382,7 +398,7 @@ void AESModelChecker::MonitorSignals() {
 
   // helper variables
   AESState *state = &state_rtl_;
-  int unsigned *rtl_data_in, *rtl_data_out_d, *rtl_key_full_q;
+  int unsigned *rtl_iv, *rtl_data_in, *rtl_data_out_d, *rtl_key_full_q;
 
   // read bytes
   CopyBlock(state->state_d, rtl_->aes_sim__DOT__state_d);
@@ -393,10 +409,15 @@ void AESModelChecker::MonitorSignals() {
   CopyBlock(state->add_round_key_out, rtl_->aes_sim__DOT__add_round_key_out);
   CopyBlock(state->round_key, rtl_->aes_sim__DOT__round_key);
 
-  // read words - convert to bytes for model - data
+  // read words - convert to bytes for model - iv & data
+  rtl_iv = &rtl_->aes_sim__DOT__iv[0];
   rtl_data_in = &rtl_->aes_sim__DOT__data_in[0];
   rtl_data_out_d = &rtl_->aes_sim__DOT__data_out_d[0];
   for (int i = 0; i < 4; i++) {
+    state->iv[4 * i + 0] = (rtl_iv[i] & 0x000000FF) >> 0;
+    state->iv[4 * i + 1] = (rtl_iv[i] & 0x0000FF00) >> 8;
+    state->iv[4 * i + 2] = (rtl_iv[i] & 0x00FF0000) >> 16;
+    state->iv[4 * i + 3] = (rtl_iv[i] & 0xFF000000) >> 24;
     state->data_in[4 * i + 0] = (rtl_data_in[i] & 0x000000FF) >> 0;
     state->data_in[4 * i + 1] = (rtl_data_in[i] & 0x0000FF00) >> 8;
     state->data_in[4 * i + 2] = (rtl_data_in[i] & 0x00FF0000) >> 16;

@@ -45,15 +45,22 @@ module aes_sim #(
 
   // Make internal signals directly accessible
   // control
+  logic        op            /*verilator public_flat*/;
+  logic  [2:0] mode          /*verilator public_flat*/;
   logic        cipher_op     /*verilator public_flat*/;
   logic        key_expand_op /*verilator public_flat*/;
   logic  [2:0] key_len       /*verilator public_flat*/;
   logic  [3:0] round         /*verilator public_flat*/;
 
+  assign op            = {aes.aes_core.aes_op_q};
+  assign mode          = {aes.aes_core.aes_mode_q};
   assign cipher_op     = {aes.aes_core.aes_cipher_core.op_i};
   assign key_expand_op = {aes.aes_core.aes_cipher_core.aes_key_expand.op_i};
   assign key_len       = {aes.aes_core.aes_cipher_core.key_len_i};
   assign round         = aes.aes_core.aes_cipher_core.aes_cipher_control.round_q;
+
+  // iv
+  logic [31:0] iv[4] /*verilator public_flat*/;
 
   // data
   logic [31:0] data_in[4]            /*verilator public_flat*/;
@@ -65,6 +72,7 @@ module aes_sim #(
   logic  [7:0] add_round_key_out[16] /*verilator public_flat*/;
   logic [31:0] data_out_d[4]         /*verilator public_flat*/;
 
+  // key
   logic [31:0] key_full_q[8] /*verilator public_flat*/;
   logic  [7:0] round_key[16] /*verilator public_flat*/;
 
@@ -83,17 +91,23 @@ module aes_sim #(
     end
   end
 
-  // words - data
+  // words - iv + data
   for (genvar i = 0; i<4; i++) begin : gen_access_to_words_data
-    assign data_in[i]           = aes.aes_core.data_in[i];
-    assign data_out_d[i]        = aes.aes_core.data_out_d[i];
+    assign iv[i]         = aes.aes_core.iv_q[i];
+    assign data_in[i]    = aes.aes_core.data_in[i];
+    assign data_out_d[i] = aes.aes_core.data_out_d[i];
   end
 
   // words - key
   for (genvar i = 0; i<8; i++) begin : gen_access_to_words_key
-    assign key_full_q[i]        = aes.aes_core.aes_cipher_core.key_full_q[i];
+    assign key_full_q[i] = aes.aes_core.aes_cipher_core.key_full_q[i];
   end
 
   assign rcon_q = aes.aes_core.aes_cipher_core.aes_key_expand.rcon_q;
+
+  // DPI call here:
+  // IV: word or chars?
+  // Data In/Out: latch upon start to allow CSR reconfiguration
+
 
 endmodule
