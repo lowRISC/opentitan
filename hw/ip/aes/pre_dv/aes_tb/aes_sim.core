@@ -25,6 +25,7 @@ filesets:
       - cpp/aes_tlul_interface.h: { is_include_file: true }
       - cpp/aes_tlul_sequence_0.h: { is_include_file: true }
       - cpp/aes_tlul_sequence_1.h: { is_include_file: true }
+      - cpp/aes_tlul_sequence_modes.h: { is_include_file: true }
       - cpp/aes_model_checker.cc
       - cpp/aes_model_checker.h: { is_include_file: true }
     file_type: cppSource

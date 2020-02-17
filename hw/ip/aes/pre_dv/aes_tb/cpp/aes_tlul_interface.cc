@@ -4,8 +4,15 @@
 
 #include "aes_tlul_interface.h"
 
+#define SEQ 2
+
+#if (SEQ == 2)
+#include "aes_tlul_sequence_modes.h"
+#elif (SEQ == 1)
+#include "aes_tlul_sequence_1.h"
+#else  // SEQ == 0
 #include "aes_tlul_sequence_0.h"
-//#include "aes_tlul_sequence_1.h"
+#endif
 
 AESTLULInterface::AESTLULInterface(Vaes_sim *rtl) : rtl_(rtl) {
   rtl_->tl_i[0] = 0;
@@ -35,6 +42,10 @@ AESTLULInterface::AESTLULInterface(Vaes_sim *rtl) : rtl_(rtl) {
   got_handshake_d_ = false;
   num_transactions_ = -1;
   num_responses_ = 0;
+
+#if (SEQ == 2)
+  aes_tlul_sequence_modes_gen_all();
+#endif
 }
 
 void AESTLULInterface::HandleInterface() {
