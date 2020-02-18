@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #define FEED_INPUT_WHILE_BUSY 1
+#define TEST_STALL 1
 
 #include "aes_modes.h"
 #include "aes_tlul_sequence_common.h"
@@ -104,11 +105,21 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
     i_trx++;
     i_resp++;
 
+    // wait until the cipher core is stalled
+    if (TEST_STALL && j < 3) {
+      tl_i_transactions[i_trx] = {
+          true, 4, 0, 2, 0, AES_STATUS, 0xF, 0, 0, true};
+      tl_o_exp_resp[i_resp] = {0x2, 0x2};
+      i_trx++;
+      i_resp++;
+    }
+
     // read output data
     for (int i = 0; i < 4; ++i) {
       tl_i_transactions[i_trx] = {
           true, 4, 0, 2, 0, (unsigned)(AES_DATA_OUT0 + 4 * i), 0xF, 0, 0, true};
-      tl_o_exp_resp[i_resp] = {0xFFFFFFFF, cipher_text[i]}, i_trx++;
+      tl_o_exp_resp[i_resp] = {0xFFFFFFFF, cipher_text[i]};
+      i_trx++;
       i_resp++;
     }
 
@@ -129,11 +140,11 @@ int aes_tlul_sequence_modes_gen_all() {
   unsigned *plain_text;
   unsigned *cipher_text;
 
-  int num_groups = 6;
+  int num_groups = 18;
 
   // Allocate memory
-  num_transactions_max = (1 + 9 + 4 + 16 + 2 + 20) * num_groups;
-  num_responses_max = (2 + 20) * num_groups;
+  num_transactions_max = (1 + 9 + 4 + 16 + 2 + 20 + 3*TEST_STALL) * num_groups;
+  num_responses_max = (2 + 20 + 3*TEST_STALL) * num_groups;
   tl_i_transactions = (TLI *)malloc(num_transactions_max * sizeof(TLI));
   if (tl_i_transactions == NULL) {
     printf("ERROR: malloc() failed\n");
@@ -202,7 +213,116 @@ int aes_tlul_sequence_modes_gen_all() {
       plain_text = (unsigned *)&aes_modes_cipher_text_ecb_256;
       iv = (unsigned *)&aes_modes_iv_ecb;
       cipher_text = (unsigned *)&aes_modes_plain_text;
+    } else if (i == 6) {
+      // CBC - 128 - encode
+      op = 0;
+      mode = kCryptoAesCbc;
+      key_len = 16;
+      key = (unsigned *)&aes_modes_key_128;
+      plain_text = (unsigned *)&aes_modes_plain_text;
+      iv = (unsigned *)&aes_modes_iv_cbc;
+      cipher_text = (unsigned *)&aes_modes_cipher_text_cbc_128;
+    } else if (i == 7) {
+      // CBC - 128 - decode
+      op = 1;
+      mode = kCryptoAesCbc;
+      key_len = 16;
+      key = (unsigned *)&aes_modes_key_128;
+      plain_text = (unsigned *)&aes_modes_cipher_text_cbc_128;
+      iv = (unsigned *)&aes_modes_iv_cbc;
+      cipher_text = (unsigned *)&aes_modes_plain_text;
+    } else if (i == 8) {
+      // CBC - 192 - encode
+      op = 0;
+      mode = kCryptoAesCbc;
+      key_len = 24;
+      key = (unsigned *)&aes_modes_key_192;
+      plain_text = (unsigned *)&aes_modes_plain_text;
+      iv = (unsigned *)&aes_modes_iv_cbc;
+      cipher_text = (unsigned *)&aes_modes_cipher_text_cbc_192;
+    } else if (i == 9) {
+      // CBC - 192 - decode
+      op = 1;
+      mode = kCryptoAesCbc;
+      key_len = 24;
+      key = (unsigned *)&aes_modes_key_192;
+      plain_text = (unsigned *)&aes_modes_cipher_text_cbc_192;
+      iv = (unsigned *)&aes_modes_iv_cbc;
+      cipher_text = (unsigned *)&aes_modes_plain_text;
+    } else if (i == 10) {
+      // CBC - 256 - encode
+      op = 0;
+      mode = kCryptoAesCbc;
+      key_len = 32;
+      key = (unsigned *)&aes_modes_key_256;
+      plain_text = (unsigned *)&aes_modes_plain_text;
+      iv = (unsigned *)&aes_modes_iv_cbc;
+      cipher_text = (unsigned *)&aes_modes_cipher_text_cbc_256;
+    } else if (i == 11) {
+      // CBC - 256 - decode
+      op = 1;
+      mode = kCryptoAesCbc;
+      key_len = 32;
+      key = (unsigned *)&aes_modes_key_256;
+      plain_text = (unsigned *)&aes_modes_cipher_text_cbc_256;
+      iv = (unsigned *)&aes_modes_iv_cbc;
+      cipher_text = (unsigned *)&aes_modes_plain_text;
+    } else if (i == 12) {
+      // CTR - 128 - encode
+      op = 0;
+      mode = kCryptoAesCtr;
+      key_len = 16;
+      key = (unsigned *)&aes_modes_key_128;
+      plain_text = (unsigned *)&aes_modes_plain_text;
+      iv = (unsigned *)&aes_modes_iv_ctr;
+      cipher_text = (unsigned *)&aes_modes_cipher_text_ctr_128;
+    } else if (i == 13) {
+      // CTR - 128 - decode
+      op = 1;
+      mode = kCryptoAesCtr;
+      key_len = 16;
+      key = (unsigned *)&aes_modes_key_128;
+      plain_text = (unsigned *)&aes_modes_cipher_text_ctr_128;
+      iv = (unsigned *)&aes_modes_iv_ctr;
+      cipher_text = (unsigned *)&aes_modes_plain_text;
+    } else if (i == 14) {
+      // CTR - 192 - encode
+      op = 0;
+      mode = kCryptoAesCtr;
+      key_len = 24;
+      key = (unsigned *)&aes_modes_key_192;
+      plain_text = (unsigned *)&aes_modes_plain_text;
+      iv = (unsigned *)&aes_modes_iv_ctr;
+      cipher_text = (unsigned *)&aes_modes_cipher_text_ctr_192;
+    } else if (i == 15) {
+      // CTR - 192 - decode
+      op = 1;
+      mode = kCryptoAesCtr;
+      key_len = 24;
+      key = (unsigned *)&aes_modes_key_192;
+      plain_text = (unsigned *)&aes_modes_cipher_text_ctr_192;
+      iv = (unsigned *)&aes_modes_iv_ctr;
+      cipher_text = (unsigned *)&aes_modes_plain_text;
+    } else if (i == 16) {
+      // CTR - 256 - encode
+      op = 0;
+      mode = kCryptoAesCtr;
+      key_len = 32;
+      key = (unsigned *)&aes_modes_key_256;
+      plain_text = (unsigned *)&aes_modes_plain_text;
+      iv = (unsigned *)&aes_modes_iv_ctr;
+      cipher_text = (unsigned *)&aes_modes_cipher_text_ctr_256;
+    } else if (i == 17) {
+      // CTR - 256 - decode
+      op = 1;
+      mode = kCryptoAesCtr;
+      key_len = 32;
+      key = (unsigned *)&aes_modes_key_256;
+      plain_text = (unsigned *)&aes_modes_cipher_text_ctr_256;
+      iv = (unsigned *)&aes_modes_iv_ctr;
+      cipher_text = (unsigned *)&aes_modes_plain_text;
     }
+
     aes_tlul_sequence_modes_gen(&i_transaction, &i_exp_resp, op, mode, key_len,
                                 key, iv, plain_text, cipher_text);
   }

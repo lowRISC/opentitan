@@ -17,6 +17,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_model_.init = false;
   state_model_.done = false;
   state_model_.busy = false;
+  state_model_.stall = false;
   state_model_.round = 0;
   state_model_.num_rounds = 0;
   state_model_.key_init[32] = {0};
@@ -41,6 +42,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_rtl_.init = false;
   state_rtl_.done = false;
   state_rtl_.busy = false;
+  state_rtl_.stall = false;
   state_rtl_.round = 0;
   state_rtl_.num_rounds = 0;
   state_rtl_.key_init[32] = {0};
@@ -273,7 +275,7 @@ void AESModelChecker::UpdateModel() {
     // save iv and data_in for later check of final result
     CopyBlock(state_model_.data_in, state_rtl_.data_in);
     CopyBlock(state_model_.iv, state_rtl_.iv);
-  } else if (state_rtl_.busy) {
+  } else if (state_rtl_.busy && !state_rtl_.stall) {
     // Update model
     if (state_model_.round == -1) {
       // init:
@@ -312,6 +314,10 @@ void AESModelChecker::UpdateModel() {
         CopyBlock(state_model_.add_round_key_out, state_model_.state_d);
         if (state_model_.round == state_model_.num_rounds - 1) {
           CopyBlock(state_model_.data_out, state_model_.state_d);
+          if (state_model_.mode == kCryptoAesCtr) {
+            // add the actual data input
+            aes_add_round_key(state_model_.data_out, state_model_.data_in);
+          }
         }
       } else {  // decrypt
         unsigned char mixed_round_key[16];
@@ -393,6 +399,7 @@ void AESModelChecker::MonitorSignals() {
   state_rtl_.init = rtl_->aes_sim__DOT__init;
   state_rtl_.done = rtl_->aes_sim__DOT__done;
   state_rtl_.busy = rtl_->aes_sim__DOT__busy;
+  state_rtl_.stall = rtl_->aes_sim__DOT__stall;
 
   state_rtl_.round = rtl_->aes_sim__DOT__round;
 

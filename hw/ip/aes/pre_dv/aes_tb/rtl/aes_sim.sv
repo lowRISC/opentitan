@@ -34,6 +34,7 @@ module aes_sim #(
   logic        init  /*verilator public_flat*/;
   logic        done  /*verilator public_flat*/;
   logic        busy  /*verilator public_flat*/;
+  logic        stall /*verilator public_flat*/;
 
   assign start = ({aes.aes_core.aes_cipher_core.aes_cipher_control.aes_cipher_ctrl_ns} == 3'b001);  // IDLE -> INIT
   assign init  = ({aes.aes_core.aes_cipher_core.aes_cipher_control.aes_cipher_ctrl_cs} == 3'b001);  // INIT
@@ -42,6 +43,7 @@ module aes_sim #(
   assign busy  = ~aes.aes_core.aes_control.idle_o &
                  ({aes.aes_core.aes_control.aes_ctrl_ns} != 2'b11) & // CLEAR
                  ({aes.aes_core.aes_control.aes_ctrl_cs} != 2'b11);
+  assign stall = aes.u_reg.status_stall_qs;
 
   // Make internal signals directly accessible
   // control
@@ -93,7 +95,7 @@ module aes_sim #(
 
   // words - iv + data
   for (genvar i = 0; i<4; i++) begin : gen_access_to_words_data
-    assign iv[i]         = aes.aes_core.iv_q[i];
+    assign iv[i]         = {aes.aes_core.iv_q[2*i+1], aes.aes_core.iv_q[2*i]};
     assign data_in[i]    = aes.aes_core.data_in[i];
     assign data_out_d[i] = aes.aes_core.data_out_d[i];
   end
@@ -104,10 +106,5 @@ module aes_sim #(
   end
 
   assign rcon_q = aes.aes_core.aes_cipher_core.aes_key_expand.rcon_q;
-
-  // DPI call here:
-  // IV: word or chars?
-  // Data In/Out: latch upon start to allow CSR reconfiguration
-
 
 endmodule
