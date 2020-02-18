@@ -17,9 +17,9 @@ static bool uart_tx_full(const dif_uart_t *uart) {
                                UART_STATUS_TXFULL);
 }
 
-static bool uart_tx_empty(const dif_uart_t *uart) {
+static bool uart_tx_idle(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
-                               UART_STATUS_TXEMPTY);
+                               UART_STATUS_TXIDLE);
 }
 
 static bool uart_rx_empty(const dif_uart_t *uart) {
@@ -280,9 +280,9 @@ bool dif_uart_byte_send_polled(const dif_uart_t *uart, uint8_t byte) {
 
   (void)uart_bytes_send(uart, &byte, 1);
 
-  // Busy wait for the TX FIFO to be drained (the byte has been processed by
-  // the UART hardware).
-  while (!uart_tx_empty(uart)) {
+  // Busy wait for the TX FIFO to be drained and for HW to finish processing
+  // the last byte.
+  while (!uart_tx_idle(uart)) {
   }
 
   return true;
