@@ -20,15 +20,19 @@
     }
     {
       name: esc_accum
-      desc: "Based on the sanity test, this test will randomize the escalation accumulation feature"
+      desc: '''
+            Based on the sanity test, this test will focus on testing the escalation accumulation
+            feature. So all the escalations in the test will be triggered by alert accumulation.'''
       milestone: V2
-      tests: ["alert_handler_esc"]
+      tests: ["alert_handler_esc_alert_accum"]
     }
     {
       name: esc_timeout
-      desc: "Based on the sanity test, this test will randomize the escalation timeout feature"
+      desc: '''
+           Based on the sanity test, this test will focus on testing the escalation timeout
+           feature. So all the escalations in the test will be triggered by interrupt timeout.'''
       milestone: V2
-      tests: ["alert_handler_esc"]
+      tests: ["alert_handler_esc_intr_timeout"]
     }
     {
       name: entropy
@@ -64,14 +68,6 @@
       tests: ["alert_handler_sanity"]
     }
     {
-      name: reg_lock
-      desc: '''
-            This test will randomly write registers when they are locked. Then read the registers
-            to make sure they are not updated'''
-      milestone: V2
-      tests: ["alert_handler_reg_lock"]
-    }
-    {
       name: random_alerts
       desc: "Input random alerts and randomly write phase cycles"
       milestone: V2
@@ -91,10 +87,10 @@
       tests: ["alert_handler_stress_all"]
     }
     {
-      name: stress_all_with_reset
+      name: stress_all_with_rand_reset
       desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
       milestone: V2
-      tests: ["alert_handler_stress_all_with_reset"]
+      tests: ["alert_handler_stress_all_with_rand_reset"]
     }
   ]
 }

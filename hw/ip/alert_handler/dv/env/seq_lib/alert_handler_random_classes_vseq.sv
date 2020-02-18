@@ -10,7 +10,6 @@ class alert_handler_random_classes_vseq extends alert_handler_sanity_vseq;
   `uvm_object_new
 
   function void pre_randomize();
-    this.wr_phases_cyc_c.constraint_mode(0);
     this.enable_classa_only_c.constraint_mode(0);
   endfunction
 

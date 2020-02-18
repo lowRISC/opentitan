@@ -46,7 +46,17 @@ package alert_handler_env_pkg;
     AlertClassCtrlMapE1,
     AlertClassCtrlMapE2,
     AlertClassCtrlMapE3
-  } class_ctrl_e;
+  } alert_class_ctrl_e;
+
+  typedef enum {
+    EscStateIdle,
+    EscStateTimeout,
+    EscStateTerminal,
+    EscStatePhase0,
+    EscStatePhase1,
+    EscStatePhase2,
+    EscStatePhase3
+  } esc_state_e;
 
   typedef struct {
     realtime    start_time;

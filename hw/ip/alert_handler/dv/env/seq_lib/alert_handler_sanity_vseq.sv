@@ -12,15 +12,14 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [alert_pkg::NAlerts-1:0]        alert_trigger;
   rand bit [alert_pkg::NAlerts-1:0]        alert_en;
   rand bit [alert_pkg::NAlerts*2-1:0]      alert_class_map;
-  rand int max_phase_cyc;
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
-  int      max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
+  rand bit do_esc_intr_timeout;
+  rand bit [TL_DW-1:0] max_phase_cyc;
+  rand bit [TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_HANDLER_CLASSES];
+  rand bit [TL_DW-1:0] accum_thresh    [NUM_ALERT_HANDLER_CLASSES];
 
-  constraint wr_phases_cyc_c {
-    do_wr_phases_cyc == 0;
-    max_phase_cyc == 2; // default each phases consume 1 cycle, but esc signal will have 2 cycs
-  }
+  int      max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
 
   constraint enable_one_alert_c {
     $onehot(alert_en);
@@ -32,6 +31,15 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   constraint enable_classa_only_c {
     alert_class_map == 0; // all the alerts assign to classa
+  }
+
+  // constraint to trigger escalation
+  constraint esc_accum_thresh_c {
+    foreach (accum_thresh[i]) {soft accum_thresh[i] inside {[0:1]};}
+  }
+
+  constraint esc_intr_timeout_c {
+    foreach (intr_timeout_cyc[i]) {intr_timeout_cyc[i] inside {[1:1_000]};}
   }
 
   task body();
@@ -54,6 +62,9 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
                                max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
       end
 
+      if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
+      wr_class_accum_threshold(accum_thresh);
+
       drive_alert(alert_trigger);
 
       // read and check interrupt
@@ -65,6 +76,14 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           end
         end
         if ((intr_en & intr_trigger) > '0) begin
+          if (do_esc_intr_timeout) begin
+            int max_intr_timeout_cyc;
+            foreach (intr_timeout_cyc[i]) begin
+              max_intr_timeout_cyc = (max_intr_timeout_cyc > intr_timeout_cyc[i]) ?
+                                      max_intr_timeout_cyc : intr_timeout_cyc[i];
+            end
+            cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
+          end
           wait(cfg.intr_vif.pins[(NUM_ALERT_HANDLER_CLASSES-1):0] == (intr_trigger & intr_en));
           check_interrupts(.interrupts(intr_trigger & intr_en), .check_set(1));
         end
@@ -75,6 +94,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       end
 
       // wait to ensure all escalation phases are done before clearing the esc class
+      // TODO: replace with accurate status and cycle check
       wait_alert_esc_handshake_done(max_wait_phases_cyc);
       read_alert_cause();
       if (do_clr_esc) clear_esc();
