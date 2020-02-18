@@ -43,7 +43,8 @@ static void uart_tx_fifo_write(const dif_uart_t *uart, uint8_t byte) {
  * and INTR_TEST registers have the same bit offsets, so this routine can be
  * reused.
  */
-static ptrdiff_t uart_irq_offset_get(dif_uart_interrupt_t irq_type) {
+static bool uart_irq_offset_get(dif_uart_interrupt_t irq_type,
+                                ptrdiff_t *offset_out) {
   ptrdiff_t offset;
   switch (irq_type) {
     case kDifUartInterruptTxWatermark:
@@ -71,10 +72,12 @@ static ptrdiff_t uart_irq_offset_get(dif_uart_interrupt_t irq_type) {
       offset = UART_INTR_STATE_RX_PARITY_ERR;
       break;
     default:
-      __builtin_unreachable();
+      return false;
   }
 
-  return offset;
+  *offset_out = offset;
+
+  return true;
 }
 
 /**
@@ -306,8 +309,12 @@ bool dif_uart_irq_state_get(const dif_uart_t *uart,
     return false;
   }
 
+  ptrdiff_t offset;
+  if (!uart_irq_offset_get(irq_type, &offset)) {
+    return false;
+  }
+
   // Get the requested interrupt state (enabled/disabled)
-  ptrdiff_t offset = uart_irq_offset_get(irq_type);
   bool enabled = mmio_region_get_bit32(uart->base_addr,
                                        UART_INTR_STATE_REG_OFFSET, offset);
   if (enabled) {
@@ -325,8 +332,12 @@ bool dif_uart_irq_state_clear(const dif_uart_t *uart,
     return false;
   }
 
+  ptrdiff_t offset;
+  if (!uart_irq_offset_get(irq_type, &offset)) {
+    return false;
+  }
+
   // Writing to the register clears the corresponding bits
-  ptrdiff_t offset = uart_irq_offset_get(irq_type);
   mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_STATE_REG_OFFSET,
                                   offset);
 
@@ -370,8 +381,12 @@ bool dif_uart_irq_enable(const dif_uart_t *uart, dif_uart_interrupt_t irq_type,
     return false;
   }
 
+  ptrdiff_t offset;
+  if (!uart_irq_offset_get(irq_type, &offset)) {
+    return false;
+  }
+
   // Enable/disable the requested interrupt
-  ptrdiff_t offset = uart_irq_offset_get(irq_type);
   if (enable == kDifUartEnable) {
     mmio_region_nonatomic_set_bit32(uart->base_addr,
                                     UART_INTR_ENABLE_REG_OFFSET, offset);
@@ -388,8 +403,12 @@ bool dif_uart_irq_force(const dif_uart_t *uart, dif_uart_interrupt_t irq_type) {
     return false;
   }
 
+  ptrdiff_t offset;
+  if (!uart_irq_offset_get(irq_type, &offset)) {
+    return false;
+  }
+
   // Force the requested interrupt
-  ptrdiff_t offset = uart_irq_offset_get(irq_type);
   mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_TEST_REG_OFFSET,
                                   offset);
 
