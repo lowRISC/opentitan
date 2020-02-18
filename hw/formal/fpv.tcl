@@ -48,7 +48,7 @@ if {$env(FPV_TOP) == "rv_dm"} {
   reset -expr {!rst_ni}
 } elseif {$env(FPV_TOP) == "usbuart"} {
   clock clk_i -both_edges
-  clock clk_48mhz_i
+  clock clk_usb_48mhz_i
   reset -expr {!rst_ni}
 } elseif {$env(FPV_TOP) == "usbdev"} {
   clock clk_i -both_edges

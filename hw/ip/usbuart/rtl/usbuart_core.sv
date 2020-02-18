@@ -9,7 +9,7 @@ module usbuart_core (
   input        clk_i,
   input        rst_ni,
   input        clk_usb_48mhz_i,
-  input        rst_usb_ni,
+  input        rst_usb_48mhz_ni,
 
   input        usbuart_reg_pkg::usbuart_reg2hw_t reg2hw,
   output       usbuart_reg_pkg::usbuart_hw2reg_t hw2reg,
@@ -152,7 +152,7 @@ module usbuart_core (
   //////////////
 
   // TODO: This is not a safe way to create a reset signal
-  assign tx_fifo_rst_n = rst_usb_ni & ~uart_fifo_txrst;
+  assign tx_fifo_rst_n = rst_usb_48mhz_ni & ~uart_fifo_txrst;
 
   // Character fifo also crosses to USB clock domain
   //`$dfifo_uart_tx->mname()`
@@ -182,7 +182,7 @@ module usbuart_core (
   logic              usb_rx_oflw;
 
   // TODO: This is not a safe way to create a reset signal
-  assign rx_fifo_rst_n = rst_usb_ni & ~uart_fifo_rxrst;
+  assign rx_fifo_rst_n = rst_usb_48mhz_ni & ~uart_fifo_rxrst;
 
   //`$dfifo_uart_rx->mname()`
   prim_fifo_async #(
@@ -221,8 +221,8 @@ module usbuart_core (
   logic usb_tx_oe;
 
   usbuart_usbif usbuart_usbif (
-    .clk_48mhz_i    (clk_usb_48mhz_i),
-    .rst_ni         (rst_usb_ni & cio_usb_sense_i), // TODO: This is not a safe way to create a reset signal
+    .clk_48mhz_i (clk_usb_48mhz_i),
+    .rst_ni      (rst_usb_48mhz_ni & cio_usb_sense_i), // TODO: This is not a safe way to create a reset signal
 
     .usb_d_i                (usb_rx_d),
     .usb_se0_i              (usb_rx_se0),
@@ -422,7 +422,7 @@ module usbuart_core (
     .clk_i                  ( clk_i                  ),
     .rst_ni                 ( rst_ni                 ),
     .clk_usb_48mhz_i        ( clk_usb_48mhz_i        ),
-    .rst_usb_ni             ( rst_usb_ni             ),
+    .rst_usb_48mhz_ni       ( rst_usb_48mhz_ni       ),
     .rx_differential_mode_i ( 1'b0                   ),
     .tx_differential_mode_i ( 1'b0                   ),
 

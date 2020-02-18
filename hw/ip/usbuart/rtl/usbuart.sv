@@ -8,8 +8,8 @@
 module usbuart (
   input        clk_i,
   input        rst_ni, // Reset synchronized to clk_i
-  input        clk_48mhz_i,
-  input        rst_usb_ni, // Reset synchronized to clk_48mhz_i
+  input        clk_usb_48mhz_i,
+  input        rst_usb_48mhz_ni, // Reset synchronized to clk_usb_48mhz_i
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
@@ -65,8 +65,8 @@ module usbuart (
   usbuart_core usbuart_core (
     .clk_i,
     .rst_ni,
-    .clk_usb_48mhz_i (clk_48mhz_i),
-    .rst_usb_ni      (rst_usb_ni),
+    .clk_usb_48mhz_i  (clk_usb_48mhz_i),
+    .rst_usb_48mhz_ni (rst_usb_48mhz_ni),
     .reg2hw,
     .hw2reg,
 
