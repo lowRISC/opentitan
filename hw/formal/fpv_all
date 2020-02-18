@@ -15,9 +15,9 @@ declare -a blocks=(
   "uart"
   "hmac"
   "flash_ctrl"
-  #"usbuart"
+  "usbuart"
   "usbdev"
-  # "usb_fs_nb_pe" This module doesn't have any assertions yet
+  "usb_fs_nb_pe"
   # TODO: bind files are deleted
   # "tlul_adapter_sram"
   # "tlul_socket_1n"
