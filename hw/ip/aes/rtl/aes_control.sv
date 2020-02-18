@@ -200,10 +200,10 @@ module aes_control (
           end
         end else begin
           // We are ready once the output data registers can be written.
-          stall_o            = !finish;
+          stall_o            = !finish & cipher_out_valid_i;
           stall_we_o         = 1'b1;
           cipher_out_ready_o = finish;
-          if (cipher_out_valid_i) begin
+          if (finish & cipher_out_valid_i) begin
             data_out_we_o    = 1'b1;
             aes_ctrl_ns      = IDLE;
           end
