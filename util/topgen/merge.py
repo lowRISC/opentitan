@@ -5,6 +5,7 @@
 import logging as log
 from copy import deepcopy
 from functools import partial
+from collections import OrderedDict
 
 from .lib import *
 from .intermodule import elab_intermodule
@@ -245,10 +246,10 @@ def xbar_adddevice(top, xbar, device):
                         "clock": xbar['clock'],
                         "reset": xbar['reset'],
                         "inst_type": predefined_modules["debug_mem"],
-                        "addr_range": [{
-                            "base_addr": top["debug_mem_base_addr"],
-                            "size_byte": "0x1000",
-                        }],
+                        "addr_range": [OrderedDict([
+                            ("base_addr", top["debug_mem_base_addr"]),
+                            ("size_byte", "0x1000"),
+                        ])],
                         "xbar": False,
                         "pipeline" : "true",
                         "pipeline_byp" : "true"
@@ -257,12 +258,10 @@ def xbar_adddevice(top, xbar, device):
                     # Update if exists
                     node = nodeobj[0]
                     node["inst_type"] = predefined_modules["debug_mem"]
-                    node["addr_range"] = [{
-                        "base_addr":
-                        top["debug_mem_base_addr"],
-                        "size_byte":
-                        "0x1000"
-                    }]
+                    node["addr_range"] = [
+                        OrderedDict([("base_addr", top["debug_mem_base_addr"]),
+                                     ("size_byte", "0x1000")])
+                    ]
                     node["xbar"] = False
                     process_pipeline_var(node)
             else:
@@ -285,8 +284,8 @@ def xbar_adddevice(top, xbar, device):
             "clock" : deviceobj[0]["clock"],
             "reset" : deviceobj[0]["reset"],
             "inst_type" : deviceobj[0]["type"],
-            "addr_range": [{"base_addr" : deviceobj[0]["base_addr"],
-                            "size_byte": deviceobj[0]["size"]}],
+            "addr_range": [OrderedDict([("base_addr", deviceobj[0]["base_addr"]),
+                            ("size_byte", deviceobj[0]["size"])])],
             "pipeline" : "true",
             "pipeline_byp" : "true",
             "xbar" : True if device in xbar_list else False
@@ -296,10 +295,10 @@ def xbar_adddevice(top, xbar, device):
         # found and exist in the nodes too
         node = nodeobj[0]
         node["inst_type"] = deviceobj[0]["type"]
-        node["addr_range"] = [{
-            "base_addr": deviceobj[0]["base_addr"],
-            "size_byte": deviceobj[0]["size"]
-        }]
+        node["addr_range"] = [
+            OrderedDict([("base_addr", deviceobj[0]["base_addr"]),
+                         ("size_byte", deviceobj[0]["size"])])
+        ]
         node["xbar"] = True if device in xbar_list else False
         process_pipeline_var(node)
 
@@ -580,8 +579,9 @@ def amend_pinmux_io(top):
                 format(e))
 
 
-def merge_top(topcfg, ipobjs, xbarobjs):
-    gencfg = deepcopy(topcfg)
+def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
+              xbarobjs: OrderedDict) -> OrderedDict:
+    gencfg = topcfg
 
     # Combine ip cfg into topcfg
     for ip in ipobjs:

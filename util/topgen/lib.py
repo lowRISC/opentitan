@@ -5,6 +5,7 @@
 import logging as log
 from copy import deepcopy
 from pathlib import Path
+from collections import OrderedDict
 import hjson
 
 import re
@@ -49,7 +50,11 @@ def get_hjsonobj_xbars(xbar_path):
     """
     p = xbar_path.glob('*.hjson')
     try:
-        xbar_objs = [hjson.load(x.open('r'), use_decimal=True) for x in p]
+        xbar_objs = [
+            hjson.load(x.open('r'),
+                       use_decimal=True,
+                       object_pairs_hook=OrderedDict) for x in p
+        ]
     except ValueError:
         raise Systemexit(sys.exc_info()[1])
 
@@ -160,7 +165,7 @@ def get_pad_list(padstr):
     width = first - last + 1
 
     for p in range(first, last + 1):
-        pads.append({"name": pad, "index": p})
+        pads.append(OrderedDict([("name", pad), ("index", p)]))
 
     return pads
 

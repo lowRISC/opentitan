@@ -4,6 +4,7 @@
 
 import logging as log
 from typing import Dict
+from collections import OrderedDict
 
 from .lib import *
 
@@ -39,7 +40,7 @@ def intersignal_format(uid: int, req: Dict, rsp: Dict) -> str:
     return result
 
 
-def elab_intermodule(topcfg):
+def elab_intermodule(topcfg: OrderedDict):
     """Check the connection of inter-module and categorize them
 
     In the top template, it uses updated inter_module fields to create
@@ -51,7 +52,7 @@ def elab_intermodule(topcfg):
     list_of_intersignals = []
 
     if "inter_signal" not in topcfg:
-        topcfg["inter_signal"] = {}
+        topcfg["inter_signal"] = OrderedDict()
 
     # Gather the inter_signal_list
     instances = topcfg["module"] + topcfg["memory"]
@@ -105,12 +106,11 @@ def elab_intermodule(topcfg):
                 assert "package" in rsp_struct, "Either req/rsp shall have 'package' field"
                 package = rsp_struct["package"]
 
-            definitions.append({
-                'package': package,
-                'struct': req_struct["struct"],
-                'signame': sig_name,
-                'type': req_struct["type"]
-            })
+            definitions.append(
+                OrderedDict([('package', package),
+                             ('struct', req_struct["struct"]),
+                             ('signame', sig_name),
+                             ('type', req_struct["type"])]))
 
             if rsp_len != 1:
                 log.warning("{req}[{i}] -> {rsp}".format(req=req, i=i,

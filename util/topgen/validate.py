@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging as log
 from enum import Enum
+from collections import OrderedDict
 
 from reggen.validate import check_keys, val_types
 
@@ -50,7 +51,8 @@ module'],
 top_optional = {
     'interrupt_modules': ['l', 'list of the modules that connects to rv_plic'],
     'interrupt': ['lnw', 'interrupts (generated)'],
-    'alert_modules': ['l', 'list of the modules that connects to alert_handler'],
+    'alert_modules':
+    ['l', 'list of the modules that connects to alert_handler'],
     'alert': ['lnw', 'alerts (generated)'],
     'alert_async': ['l', 'async alerts (generated)'],
     'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
@@ -111,7 +113,7 @@ class Target:
 # If it does, return a dictionary of instance names to index in ip/xbarobjs
 def check_target(top, objs, tgtobj):
     error = 0
-    idxs = {}
+    idxs = OrderedDict()
 
     for i in range(len(objs)):
         log.info("%d Order is %s" % (i, objs[i]['name'].lower()))
@@ -327,7 +329,7 @@ def validate_top(top, ipobjs, xbarobjs):
     if not "pinmux" in top:
         log.warning("Top {} has no 'pinmux' field. Please consider specifying \
                         pinmux and pads configuration")
-        top["pinmux"] = {}
+        top["pinmux"] = OrderedDict()
     # checking pinmux after pads as dio connects to PAD
 
     error += check_pinmux(top, component)

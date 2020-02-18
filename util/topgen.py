@@ -9,6 +9,7 @@ import logging as log
 import sys
 from io import StringIO
 from pathlib import Path
+from collections import OrderedDict
 
 import hjson
 from mako.template import Template
@@ -85,6 +86,7 @@ def generate_xbars(top, out_path):
 
         # generate testbench for xbar
         tlgen.generate_tb(xbar, dv_path)
+
 
 def generate_alert_handler(top, out_path):
     # default values
@@ -231,7 +233,7 @@ def generate_plic(top, out_path):
     # TODO: More secure way to gneerate RTL
     hjson_obj = hjson.loads(out,
                             use_decimal=True,
-                            object_pairs_hook=validate.checking_dict)
+                            object_pairs_hook=OrderedDict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
@@ -465,7 +467,9 @@ def main():
         # load top configuration
         try:
             with open(args.topcfg, 'r') as ftop:
-                topcfg = hjson.load(ftop, use_decimal=True)
+                topcfg = hjson.load(ftop,
+                                    use_decimal=True,
+                                    object_pairs_hook=OrderedDict)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 
@@ -500,7 +504,7 @@ def main():
 
                 obj = hjson.load(x.open('r'),
                                  use_decimal=True,
-                                 object_pairs_hook=validate.checking_dict)
+                                 object_pairs_hook=OrderedDict)
                 if validate.validate(obj) != 0:
                     log.info("Parsing IP %s configuration failed. Skip" % x)
                     continue
@@ -541,7 +545,9 @@ def main():
         # load top.complete configuration
         try:
             with open(args.topcfg, 'r') as ftop:
-                completecfg = hjson.load(ftop, use_decimal=True)
+                completecfg = hjson.load(ftop,
+                                         use_decimal=True,
+                                         object_pairs_hook=OrderedDict)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 
