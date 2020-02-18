@@ -55,6 +55,16 @@
       name: alert_handler_random_classes
       uvm_test_seq: alert_handler_random_classes_vseq
     }
+
+    {
+      name: alert_handler_esc_intr_timeout
+      uvm_test_seq: alert_handler_esc_intr_timeout_vseq
+    }
+
+    {
+      name: alert_handler_esc_alert_accum
+      uvm_test_seq: alert_handler_esc_alert_accum_vseq
+    }
   ]
 
   // List of regressions.

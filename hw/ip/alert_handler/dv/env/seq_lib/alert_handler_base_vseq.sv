@@ -109,6 +109,20 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     `RAND_AND_WR_CLASS_PHASES_CYCLE(d);
   endtask
 
+  virtual task wr_intr_timeout_cycle(bit[TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_HANDLER_CLASSES]);
+    csr_wr(.csr(ral.classa_timeout_cyc), .value(intr_timeout_cyc[0]));
+    csr_wr(.csr(ral.classb_timeout_cyc), .value(intr_timeout_cyc[1]));
+    csr_wr(.csr(ral.classc_timeout_cyc), .value(intr_timeout_cyc[2]));
+    csr_wr(.csr(ral.classd_timeout_cyc), .value(intr_timeout_cyc[3]));
+  endtask
+
+  virtual task wr_class_accum_threshold(bit[TL_DW-1:0] accum_thresh[NUM_ALERT_HANDLER_CLASSES]);
+    csr_wr(.csr(ral.classa_accum_thresh), .value(accum_thresh[0]));
+    csr_wr(.csr(ral.classb_accum_thresh), .value(accum_thresh[1]));
+    csr_wr(.csr(ral.classc_accum_thresh), .value(accum_thresh[2]));
+    csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
+  endtask
+
   virtual task run_esc_rsp_seq_nonblocking();
     foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;

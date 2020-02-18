@@ -22,6 +22,8 @@ filesets:
       - seq_lib/alert_handler_sanity_vseq.sv: {is_include_file: true}
       - seq_lib/alert_handler_random_alerts_vseq.sv: {is_include_file: true}
       - seq_lib/alert_handler_random_classes_vseq.sv: {is_include_file: true}
+      - seq_lib/alert_handler_esc_intr_timeout_vseq.sv: {is_include_file: true}
+      - seq_lib/alert_handler_esc_alert_accum_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
