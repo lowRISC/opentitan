@@ -99,7 +99,8 @@
       fields: [
         { bits: "0",
           name: "fifo_empty",
-          desc: "FIFO empty"
+          desc: "FIFO empty",
+          resval: "1"
         }
         { bits: "1",
           name: "fifo_full",
