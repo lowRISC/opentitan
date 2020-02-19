@@ -102,10 +102,7 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
     for field in reg['fields']:
         fieldlsb = field['bitinfo'][2]
         fname = field['name']
-        if fname == rname:
-            dname = defname
-        else:
-            dname = defname + '_' + as_define(fname)
+        dname = defname + '_' + as_define(fname)
 
         if field['bitinfo'][1] == 1:
             # single bit

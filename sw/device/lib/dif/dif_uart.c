@@ -30,11 +30,11 @@ static bool uart_rx_empty(const dif_uart_t *uart) {
 static uint8_t uart_rx_fifo_read(const dif_uart_t *uart) {
   uint32_t reg = mmio_region_read32(uart->base_addr, UART_RDATA_REG_OFFSET);
 
-  return reg & UART_RDATA_MASK;
+  return reg & UART_RDATA_RDATA_MASK;
 }
 
 static void uart_tx_fifo_write(const dif_uart_t *uart, uint8_t byte) {
-  uint32_t reg = (byte & UART_WDATA_MASK) << UART_WDATA_OFFSET;
+  uint32_t reg = (byte & UART_WDATA_WDATA_MASK) << UART_WDATA_WDATA_OFFSET;
   mmio_region_write32(uart->base_addr, UART_WDATA_REG_OFFSET, reg);
 }
 
