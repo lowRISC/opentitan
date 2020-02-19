@@ -98,7 +98,8 @@ typedef enum dif_plic_peripheral {
   kDifPlicPeripheralHmac,         /**< HMAC */
   kDifPlicPeripheralAlertHandler, /**< Alert handler */
   kDifPlicPeripheralNmiGen,       /**< NMI generator */
-  kDifPlicPeripheralCount,        /**< Number of PLIC peripherals */
+  kDifPlicPeripheralLast =
+      kDifPlicPeripheralNmiGen, /**< \internal Final PLIC peripheral */
 } dif_plic_peripheral_t;
 
 /**
@@ -108,8 +109,8 @@ typedef enum dif_plic_peripheral {
  * access dependent on the target.
  */
 typedef enum dif_plic_target {
-  kDifPlicTargetIbex0 = 0, /* Ibex CPU */
-  kDifPlicTargetCount,
+  kDifPlicTargetIbex0 = 0,                  /**< Ibex CPU */
+  kDifPlicTargetLast = kDifPlicTargetIbex0, /**< \internal Final PLIC target */
 } dif_plic_target_t;
 
 /**
