@@ -8,37 +8,16 @@ description: "Alert Handler"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:prim:all
-    files:
-      - rtl/alert_handler_reg_pkg.sv
-      - rtl/alert_handler_reg_top.sv
-      - rtl/alert_pkg.sv
-      - rtl/alert_handler_reg_wrap.sv
-      - rtl/alert_handler_class.sv
-      - rtl/alert_handler_ping_timer.sv
-      - rtl/alert_handler_esc_timer.sv
-      - rtl/alert_handler_accu.sv
-      - rtl/alert_handler.sv
-    file_type: systemVerilogSource
+      - lowrisc:ip:alert_handler_reg
+      - lowrisc:ip:alert_handler_component
 
   files_verilator_waiver:
     depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
-    files:
-      - lint/alert_handler.vlt
-    file_type: vlt
+      - lowrisc:ip:alert_handler_component
 
   files_ascentlint_waiver:
     depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
-    files:
-      - lint/alert_handler.waiver
-    file_type: waiver
+      - lowrisc:ip:alert_handler_component
 
 
 parameters:

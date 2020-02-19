@@ -8,10 +8,14 @@ filesets:
   files_rtl_generic:
     depend:
       - lowrisc:ip:uart:0.1
+      - lowrisc:top_earlgrey:alert_handler_reg
+      - lowrisc:ip:alert_handler_component
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
-      - lowrisc:ip:rv_plic_component
+      - lowrisc:top_earlgrey:rv_plic
+      - lowrisc:top_earlgrey:pinmux_reg
+      - lowrisc:ip:pinmux_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
@@ -24,26 +28,9 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:ip:nmi_gen
       - lowrisc:ip:usbdev
+      - lowrisc:ip:xbar_main
+      - lowrisc:ip:xbar_peri
     files:
-      - ip/xbar_main/rtl/autogen/tl_main_pkg.sv
-      - ip/xbar_main/rtl/autogen/xbar_main.sv
-      - ip/xbar_peri/rtl/autogen/tl_peri_pkg.sv
-      - ip/xbar_peri/rtl/autogen/xbar_peri.sv
-      - ip/rv_plic/rtl/autogen/rv_plic_reg_pkg.sv
-      - ip/rv_plic/rtl/autogen/rv_plic_reg_top.sv
-      - ip/rv_plic/rtl/autogen/rv_plic.sv
-      - ip/pinmux/rtl/autogen/pinmux_reg_pkg.sv
-      - ip/pinmux/rtl/autogen/pinmux_reg_top.sv
-      - ../ip/pinmux/rtl/pinmux.sv
-      - ip/alert_handler/rtl/autogen/alert_handler_reg_pkg.sv
-      - ip/alert_handler/rtl/autogen/alert_handler_reg_top.sv
-      - ../ip/alert_handler/rtl/alert_pkg.sv
-      - ../ip/alert_handler/rtl/alert_handler_reg_wrap.sv
-      - ../ip/alert_handler/rtl/alert_handler_class.sv
-      - ../ip/alert_handler/rtl/alert_handler_ping_timer.sv
-      - ../ip/alert_handler/rtl/alert_handler_esc_timer.sv
-      - ../ip/alert_handler/rtl/alert_handler_accu.sv
-      - ../ip/alert_handler/rtl/alert_handler.sv
       - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource

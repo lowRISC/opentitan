@@ -8,31 +8,16 @@ description: "Pin Multiplexer"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:prim:all
-    files:
-      - rtl/pinmux_reg_pkg.sv
-      - rtl/pinmux_reg_top.sv
-      - rtl/pinmux.sv
-    file_type: systemVerilogSource
+      - lowrisc:ip:pinmux_reg
+      - lowrisc:ip:pinmux_component
 
   files_verilator_waiver:
     depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
-    files:
-      - lint/pinmux.vlt
-    file_type: vlt
+      - lowrisc:ip:pinmux_component
 
   files_ascentlint_waiver:
     depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
-    files:
-      - lint/pinmux.waiver
-    file_type: waiver
+      - lowrisc:ip:pinmux_component
 
 
 parameters:

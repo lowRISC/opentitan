@@ -42,6 +42,12 @@
   // Additional option to RAL generation for top level.
   gen_ral_pkg_opts: ["--top"]
 
+  // Add default build_opts.
+  build_opts: [// Enable the RISC-V Formal Interface (RVFI) for the ibex tracer.
+               "+define+RVFI=1",
+               // Use generic implementations of prim modules.
+               "+define+PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric"]
+
   // Add run modes.
   run_modes: [
     {

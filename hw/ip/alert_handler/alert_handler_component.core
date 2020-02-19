@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rv_plic_component:0.1"
-description: "RISC-V PLIC component without the CSRs"
+name: "lowrisc:ip:alert_handler_component:0.1"
+description: "Alert Handler component without the CSRs"
 
 filesets:
   files_rtl:
@@ -11,8 +11,13 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
     files:
-      - rtl/rv_plic_gateway.sv
-      - rtl/rv_plic_target.sv
+      - rtl/alert_pkg.sv
+      - rtl/alert_handler_reg_wrap.sv
+      - rtl/alert_handler_class.sv
+      - rtl/alert_handler_ping_timer.sv
+      - rtl/alert_handler_esc_timer.sv
+      - rtl/alert_handler_accu.sv
+      - rtl/alert_handler.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -21,7 +26,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/rv_plic.vlt
+      - lint/alert_handler.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -30,14 +35,13 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/rv_plic.waiver
+      - lint/alert_handler.waiver
     file_type: waiver
 
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
-

@@ -8,8 +8,6 @@ description: "RISC-V PLIC"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:prim:all
       - lowrisc:ip:rv_plic_component
     files:
       - rtl/rv_plic_reg_pkg.sv
@@ -19,19 +17,11 @@ filesets:
 
   files_verilator_waiver:
     depend:
-      # common waivers
-      - lowrisc:lint:common
-      #- lowrisc:lint:comportable
-    files:
-    file_type: vlt
+      - lowrisc:ip:rv_plic_component
 
   files_ascentlint_waiver:
     depend:
-      # common waivers
-      - lowrisc:lint:common
-      #- lowrisc:lint:comportable
-    files:
-    file_type: waiver
+      - lowrisc:ip:rv_plic_component
 
 
 parameters:
