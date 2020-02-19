@@ -29,16 +29,8 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
     key_len = 32;
   }
 
-  // We encrypt/decrypt one 16B block of data
-  int num_elem_ref_out = 16;
-  if (impl_i) {
-    // OpenSSL/BoringSSL require space for one spare block
-    num_elem_ref_out += 16;
-  }
-
   // allocate memory
-  unsigned char *ref_out =
-      (unsigned char *)malloc(num_elem_ref_out * sizeof(unsigned char));
+  unsigned char *ref_out = (unsigned char *)malloc(16 * sizeof(unsigned char));
   if (!ref_out) {
     printf("ERROR: malloc() for aes_crypt_dpi failed");
     return;
@@ -53,33 +45,14 @@ void c_dpi_aes_crypt(const unsigned char impl_i, const unsigned char op_i,
   } else {  // OpenSSL/BoringSSL
     unsigned char iv[16];
     memset(iv, 0, 16);
-
-    // always do an encrypt first as crypto_decrypt() requires
-    // the final spare block produced by crypto_encrypt()
-    int len = crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len);
-
-    if (op_i) {
-      // prepare
-      unsigned char *ref_in_crypto =
-          (unsigned char *)malloc(num_elem_ref_out * sizeof(unsigned char));
-      if (!ref_in_crypto) {
-        printf("ERROR: malloc() for aes_crypt_dpi failed");
-        return;
-      }
-      memcpy((void *)&ref_in_crypto[0], (const void *)&ref_in[0],
-             (size_t)(len - 16));
-      memcpy((void *)&ref_in_crypto[len - 16], (const void *)&ref_out[len - 16],
-             (size_t)16);
-
-      // do the decrypt
-      crypto_decrypt(ref_out, iv, ref_in_crypto, len, key, key_len);
-
-      // cleanup
-      free(ref_in_crypto);
+    if (!op_i) {
+      crypto_encrypt(ref_out, iv, ref_in, 16, key, key_len);
+    } else {
+      crypto_decrypt(ref_out, iv, ref_in, 16, key, key_len);
     }
   }
 
-  // write output data back to simulator
+  // write output data back to simulator, free ref_out
   aes_data_put(data_o, ref_out);
 
   // free memory
