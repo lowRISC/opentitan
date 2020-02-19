@@ -12,8 +12,8 @@ filesets:
       - lowrisc:ip:xbar_peri
       - lowrisc:dv:dv_utils
       - lowrisc:dv:xbar_tb
+      - lowrisc:dv:xbar_peri_bind
     files:
-      - xbar_peri_bind.sv
       - tb__xbar_connect.sv: {is_include_file: true}
       - xbar_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource

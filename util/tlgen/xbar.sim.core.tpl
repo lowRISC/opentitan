@@ -12,11 +12,12 @@ filesets:
       - lowrisc:ip:xbar_${xbar.name}
       - lowrisc:dv:dv_utils
       - lowrisc:dv:xbar_tb
+      - lowrisc:dv:xbar_${xbar.name}_bind
     files:
-      - xbar_${xbar.name}_bind.sv
       - tb__xbar_connect.sv: {is_include_file: true}
       - xbar_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource
+
 
 targets:
   sim:

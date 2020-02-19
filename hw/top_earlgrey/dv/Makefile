@@ -24,6 +24,12 @@ TOPS            := ${TB_TOP} xbar_main_bind
 RAL_PKG_NAME    ?= chip
 RAL_TOOL_OPTS   += --top
 
+# Common build options.
+# Enable the RISC-V Formal Interface (RVFI) for the ibex tracer.
+BUILD_OPTS      += +define+RVFI=1
+# Use generic implementations of prim modules.
+BUILD_OPTS      += +define+PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
+
 ####################################################################################################
 ##                     A D D    I N D I V I D U A L    T E S T S    B E L O W                     ##
 ####################################################################################################
