@@ -83,3 +83,18 @@ sw_lib_dif_i2c = declare_dependency(
     ],
   )
 )
+
+# USBDEV DIF library (dif_usbdev)
+sw_lib_dif_usbdev = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_usbdev',
+    sources: [
+      hw_ip_usbdev_reg_h,
+      'dif_usbdev.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
