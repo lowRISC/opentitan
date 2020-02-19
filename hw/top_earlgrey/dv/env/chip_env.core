@@ -10,12 +10,14 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:uart_agent
       - lowrisc:dv:jtag_agent
+      - lowrisc:dv:spi_agent
       - lowrisc:dv:mem_bkdr_if
       - lowrisc:dv:uart_env
       - lowrisc:dv:gpio_env
       - lowrisc:dv:hmac_env
       - lowrisc:dv:rv_timer_env
       - lowrisc:dv:spi_device_env
+      - lowrisc:dv:usbdev_env
       - lowrisc:dv:sw_msg_monitor_if
       - lowrisc:dv:gen_ral_pkg
     files:

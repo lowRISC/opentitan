@@ -11,6 +11,7 @@ package chip_env_pkg;
   import tl_agent_pkg::*;
   import uart_agent_pkg::*;
   import jtag_agent_pkg::*;
+  import spi_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import chip_ral_pkg::*;
@@ -21,6 +22,7 @@ package chip_env_pkg;
   import hmac_env_pkg::*;
   import rv_timer_env_pkg::*;
   import spi_device_env_pkg::*;
+  import usbdev_env_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

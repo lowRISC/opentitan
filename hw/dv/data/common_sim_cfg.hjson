@@ -52,6 +52,7 @@
   build_opts: [// List multiple tops for the simulation
                "{sim_tops}",
                // Standard UVM defines
+               "+define+UVM",
                "+define+UVM_NO_DEPRECATED",
                "+define+UVM_REGEX_NO_DPI",
                "+define+UVM_REG_ADDR_WIDTH={tl_aw}",

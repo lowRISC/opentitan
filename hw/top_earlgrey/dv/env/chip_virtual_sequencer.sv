@@ -10,6 +10,7 @@ class chip_virtual_sequencer extends dv_base_virtual_sequencer #(
 
   uart_sequencer  uart_sequencer_h;
   jtag_sequencer  jtag_sequencer_h;
+  spi_sequencer   spi_sequencer_h;
   tl_sequencer    cpu_d_tl_sequencer_h;
 
   `uvm_component_new

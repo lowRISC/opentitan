@@ -16,30 +16,42 @@ module tb;
   `include "dv_macros.svh"
   `include "chip_hier_macros.svh"
 
-  wire clk, clk_usb_48mhz, rst_n;
+  wire clk, rst_n;
+  wire usb_clk, usb_rst_n;
+
   wire [NUM_GPIOS-1:0] gpio_pins;
+
   wire jtag_tck;
   wire jtag_tms;
   wire jtag_trst_n;
   wire jtag_tdi;
   wire jtag_tdo;
+
+  wire spi_device_sck;
+  wire spi_device_csb;
+  wire spi_device_miso_o;
+  wire spi_device_mosi_i;
+
+  wire srst_n;
+  wire jtag_spi_n;
+  wire bootstrap;
+  wire [7:0] io_dps;
+
   wire usb_dp0, usb_dn0, usb_sense0, usb_pullup0;
 
   bit stub_cpu;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
+  pins_if #(1) srst_n_if(.pins(srst_n));
+  pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
+  pins_if #(1) bootstrap_if(.pins(bootstrap));
+  spi_if spi_if(.rst_n(rst_n));
   tl_if   cpu_d_tl_if(.clk(clk), .rst_n(rst_n));
   uart_if uart_if();
   jtag_if jtag_if();
-
-  // USB-related signals
-  assign clk_usb_48mhz = clk; // TODO: Generate the 48MHz clock
-  assign usb_dp0 = 1'bz; // TODO: Do something more reasonable, is I/O
-  assign usb_dn0 = 1'bz; // TODO: Do something more reasonable, is I/O
-  assign usb_sense0 = 1'bz; // TODO: Do something more reasonable, is I/O
-  // TODO: Do something reasonable with usb_pullup0
 
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
@@ -50,21 +62,28 @@ module tb;
     // Clock and Reset
     .IO_CLK           (clk),
     .IO_RST_N         (rst_n),
-    .IO_CLK_USB_48MHZ (clk_usb_48mhz),
-    // JTAG interface
-    .IO_JTCK          (jtag_tck),
-    .IO_JTMS          (jtag_tms),
-    .IO_JTRST_N       (jtag_trst_n),
-    .IO_JTDI          (jtag_tdi),
-    .IO_JTDO          (jtag_tdo),
+    .IO_CLK_USB_48MHZ (usb_clk),
+
+    // JTAG / SPI interface
+    .IO_DPS0          (io_dps[0]),
+    .IO_DPS1          (io_dps[1]),
+    .IO_DPS2          (io_dps[2]),
+    .IO_DPS3          (io_dps[3]),
+    .IO_DPS4          (io_dps[4]),
+    .IO_DPS5          (io_dps[5]),
+    .IO_DPS6          (io_dps[6]),
+    .IO_DPS7          (io_dps[7]),
+
     // UART interface
     .IO_URX           (uart_if.uart_rx),
     .IO_UTX           (uart_if.uart_tx),
+
     // USB interface
     .IO_USB_DP0       (usb_dp0),
     .IO_USB_DN0       (usb_dn0),
     .IO_USB_SENSE0    (usb_sense0),
     .IO_USB_PULLUP0   (usb_pullup0),
+
     // GPIO x 16 interface
     .IO_GP0           (gpio_pins[0 ]),
     .IO_GP1           (gpio_pins[1 ]),
@@ -99,6 +118,16 @@ module tb;
                                 (`RAM_MAIN_HIER.addr_i == sw_msg_monitor_sw_msg_addr);
 
   // connect signals
+  assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
+  assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_mosi_i;
+  assign io_dps[3]  = jtag_spi_n ? jtag_tms : spi_device_csb;
+  assign io_dps[4]  = jtag_trst_n;
+  assign io_dps[5]  = srst_n;
+  assign io_dps[6]  = jtag_spi_n;
+  assign io_dps[7]  = bootstrap;
+  assign spi_device_miso_o  = jtag_spi_n ? 1'b0 : io_dps[2];
+  assign jtag_tdo           = jtag_spi_n ? io_dps[2] : 1'b0;
+
   assign jtag_tck         = jtag_if.tck;
   assign jtag_tms         = jtag_if.tms;
   assign jtag_trst_n      = jtag_if.trst_n;
@@ -106,22 +135,50 @@ module tb;
   assign jtag_if.tdo      = jtag_tdo;
   assign cpu_d_tl_if.d2h  = `CPU_HIER.tl_d_i;
 
+  assign spi_device_sck     = spi_if.sck;
+  assign spi_device_csb     = spi_if.csb;
+  assign spi_device_mosi_i  = spi_if.mosi;
+  assign spi_if.miso        = spi_device_miso_o;
+
+  // TODO: USB-related signals, hookup an interface.
+  assign usb_rst_n  = `USBDEV_HIER.rst_usb_48mhz_ni;
+  assign usb_dp0    = 1'b1;
+  assign usb_dn0    = 1'b0;
+  assign usb_sense0 = 1'b0;
+
   initial begin
+    // Set clk_rst_vifs
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
+    usb_clk_rst_if.set_active(.drive_clk_val(1'b1), .drive_rst_n_val(1'b0));
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_cpu_d_tl_agent*", "vif", cpu_d_tl_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
+
+    // IO Interfaces
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
     uvm_config_db#(virtual uart_if)::set(null, "*.env.m_uart_agent*", "vif", uart_if);
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent*", "vif", jtag_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(null, "*.env", "mem_bkdr_vifs[Rom]",
-        `ROM_HIER.rom_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(null, "*.env", "mem_bkdr_vifs[FlashBank0]",
-        `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(null, "*.env", "mem_bkdr_vifs[FlashBank1]",
-        `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
-    uvm_config_db#(virtual sw_msg_monitor_if)::set(null, "*.env", "sw_msg_monitor_vif",
-        sw_msg_monitor_if);
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_cpu_d_tl_agent*", "vif", cpu_d_tl_if);
+
+    // Strap pins
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "srst_n_vif", srst_n_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "jtag_spi_n_vif", jtag_spi_n_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "bootstrap_vif", bootstrap_if);
+
+    // Backdoors
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.rom_mem_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+    uvm_config_db#(virtual sw_msg_monitor_if)::set(
+        null, "*.env", "sw_msg_monitor_vif", sw_msg_monitor_if);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
