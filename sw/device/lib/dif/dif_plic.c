@@ -79,55 +79,53 @@ typedef struct plic_peripheral_range {
 
 // An array of target specific set of register offsets. Every supported PLIC
 // target must have an entry in this array.
-static const plic_target_reg_offset_t
-    plic_target_reg_offsets[kDifPlicTargetCount] = {
-            [kDifPlicTargetIbex0] =
-                {
-                    .ie = RV_PLIC_IE00,
-                    .cc = RV_PLIC_CC0,
-                    .threshold = RV_PLIC_THRESHOLD0,
-                },
+static const plic_target_reg_offset_t plic_target_reg_offsets[] = {
+        [kDifPlicTargetIbex0] =
+            {
+                .ie = RV_PLIC_IE00,
+                .cc = RV_PLIC_CC0,
+                .threshold = RV_PLIC_THRESHOLD0,
+            },
 };
 
 // An array of IRQ source ID ranges per peripheral. Every peripheral supported
 // by the PLIC, must have an entry in this array.
-static const plic_peripheral_range_t
-    plic_peripheral_ranges[kDifPlicPeripheralCount] = {
-            [kDifPlicPeripheralGpio] =
-                {
-                    .first_irq_id = kDifPlicIrqIdGpio0,
-                    .last_irq_id = kDifPlicIrqIdGpio31,
-                },
-            [kDifPlicPeripheralUart] =
-                {
-                    .first_irq_id = kDifPlicIrqIdUartTxWatermark,
-                    .last_irq_id = kDifPlicIrqIdUartRxParityErr,
-                },
-            [kDifPlicPeripheralSpiDevice] =
-                {
-                    .first_irq_id = kDifPlicIrqIdSpiDeviceRxF,
-                    .last_irq_id = kDifPlicIrqIdSpiDeviceTxUnderflow,
-                },
-            [kDifPlicPeripheralFlashCtrl] =
-                {
-                    .first_irq_id = kDifPlicIrqIdFlashCtrlProgEmpty,
-                    .last_irq_id = kDifPlicIrqIdFlashCtrlOpError,
-                },
-            [kDifPlicPeripheralHmac] =
-                {
-                    .first_irq_id = kDifPlicIrqIdHmacDone,
-                    .last_irq_id = kDifPlicIrqIdHmacErr,
-                },
-            [kDifPlicPeripheralAlertHandler] =
-                {
-                    .first_irq_id = kDifPlicIrqIdAlertHandlerClassA,
-                    .last_irq_id = kDifPlicIrqIdAlertHandlerClassD,
-                },
-            [kDifPlicPeripheralNmiGen] =
-                {
-                    .first_irq_id = kDifPlicIrqIdNmiGenEsc0,
-                    .last_irq_id = kDifPlicIrqIdNmiGenEsc3,
-                },
+static const plic_peripheral_range_t plic_peripheral_ranges[] = {
+        [kDifPlicPeripheralGpio] =
+            {
+                .first_irq_id = kDifPlicIrqIdGpio0,
+                .last_irq_id = kDifPlicIrqIdGpio31,
+            },
+        [kDifPlicPeripheralUart] =
+            {
+                .first_irq_id = kDifPlicIrqIdUartTxWatermark,
+                .last_irq_id = kDifPlicIrqIdUartRxParityErr,
+            },
+        [kDifPlicPeripheralSpiDevice] =
+            {
+                .first_irq_id = kDifPlicIrqIdSpiDeviceRxF,
+                .last_irq_id = kDifPlicIrqIdSpiDeviceTxUnderflow,
+            },
+        [kDifPlicPeripheralFlashCtrl] =
+            {
+                .first_irq_id = kDifPlicIrqIdFlashCtrlProgEmpty,
+                .last_irq_id = kDifPlicIrqIdFlashCtrlOpError,
+            },
+        [kDifPlicPeripheralHmac] =
+            {
+                .first_irq_id = kDifPlicIrqIdHmacDone,
+                .last_irq_id = kDifPlicIrqIdHmacErr,
+            },
+        [kDifPlicPeripheralAlertHandler] =
+            {
+                .first_irq_id = kDifPlicIrqIdAlertHandlerClassA,
+                .last_irq_id = kDifPlicIrqIdAlertHandlerClassD,
+            },
+        [kDifPlicPeripheralNmiGen] =
+            {
+                .first_irq_id = kDifPlicIrqIdNmiGenEsc0,
+                .last_irq_id = kDifPlicIrqIdNmiGenEsc3,
+            },
 };
 
 /**
@@ -308,7 +306,7 @@ bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
   // Validate an IRQ source, and determine which peripheral it belongs to.
   dif_plic_irq_id_t irq_src = (dif_plic_irq_id_t)irq_id;
   for (dif_plic_peripheral_t peripheral = kDifPlicPeripheralGpio;
-       peripheral < kDifPlicPeripheralCount; ++peripheral) {
+       peripheral <= kDifPlicPeripheralLast; ++peripheral) {
     if (irq_src < plic_peripheral_ranges[peripheral].first_irq_id ||
         irq_src > plic_peripheral_ranges[peripheral].last_irq_id) {
       continue;
