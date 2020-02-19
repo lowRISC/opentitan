@@ -70,7 +70,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       end else begin
         case (csr_name)
           "cmd": begin
-            if (sha_en) begin
+            if (sha_en && !(hmac_start && item.a_data[0])) begin
               {hmac_process, hmac_start} = item.a_data[1:0];
               if (hmac_process) begin
                 // check if msg all streamed in, could happen during wr msg or trigger process
@@ -82,8 +82,13 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
             end else if (item.a_data[HashStart] == 1) begin
               void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
-              void'(ral.err_code.predict(.value(SwHashStartWhenShaDisabled),
-                                         .kind(UVM_PREDICT_DIRECT)));
+              if (!sha_en) begin
+                void'(ral.err_code.predict(.value(SwHashStartWhenShaDisabled),
+                                           .kind(UVM_PREDICT_DIRECT)));
+              end else begin
+                void'(ral.err_code.predict(.value(SwHashStartWhenActive),
+                                           .kind(UVM_PREDICT_DIRECT)));
+              end
             end
           end
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE

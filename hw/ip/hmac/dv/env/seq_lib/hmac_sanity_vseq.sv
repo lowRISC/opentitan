@@ -20,6 +20,7 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   rand bit [31:0] key[8];
   rand bit [7:0]  msg[];
   rand int        burst_wr_length;
+  rand bit        do_hash_start_when_active;
 
   constraint msg_c {
     msg.size() dist {
@@ -41,6 +42,10 @@ class hmac_sanity_vseq extends hmac_base_vseq;
     intr_fifo_full_en dist {1'b1 := 8, 1'b0 := 2};
     intr_hmac_done_en dist {1'b1 := 8, 1'b0 := 2};
     intr_hmac_err_en  dist {1'b1 := 8, 1'b0 := 2};
+  }
+
+  constraint hash_start_when_active_c {
+    do_hash_start_when_active dist {1'b1 := 1, 1'b0 := 9};
   }
 
   virtual task pre_start();
@@ -87,6 +92,13 @@ class hmac_sanity_vseq extends hmac_base_vseq;
             continue;
           end
         end
+
+        if (do_hash_start_when_active) begin
+          trigger_hash_when_active();
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(msg);
+          wr_msg(msg);
+        end
+
         // msg stream in finished, start hash
         trigger_process();
 

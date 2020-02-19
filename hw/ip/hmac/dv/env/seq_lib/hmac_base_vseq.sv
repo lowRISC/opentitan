@@ -141,6 +141,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_wr(.csr(ral.cmd), .value(1'b1 << HashProcess));
   endtask
 
+  virtual task trigger_hash_when_active();
+    repeat ($urandom_range(1, 10)) trigger_hash();
+    check_error_code();
+  endtask
+
   // read digest value
   virtual task rd_digest();
     logic [TL_DW-1:0] digest[8];

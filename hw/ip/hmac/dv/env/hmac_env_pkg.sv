@@ -60,11 +60,12 @@ package hmac_env_pkg;
     HashProcess
   } hmac_cmd_e;
 
-  typedef enum {
-    NoError,
-    SwPushMsgWhenShaDisabled,
-    SwHashStartWhenShaDisabled,
-    SwUpdateSecretKeyInProcess
+  typedef enum bit [TL_DW-1:0] {
+    NoError                    = 32'h 0000_0000,
+    SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
+    SwHashStartWhenShaDisabled = 32'h 0000_0002,
+    SwUpdateSecretKeyInProcess = 32'h 0000_0003,
+    SwHashStartWhenActive      = 32'h 0000_0004
   } err_code_e;
 
   typedef class hmac_env_cfg;
