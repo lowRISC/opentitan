@@ -8,10 +8,11 @@
 /**
  * Encrypt using BoringSSL/OpenSSL
  *
- * @param  output    Output cipher text, buffer must be at least 32 bytes
+ * @param  output    Output cipher text, must be a multiple of 16 bytes
  * @param  iv        16-byte initialization vector
- * @param  input     Input plain text to encode
- * @param  input_len Length of the input plain text in bytes
+ * @param  input     Input plain text to encode, must be a multiple of 16 bytes
+ * @param  input_len Length of the input plain text in bytes, must be a multiple
+ *                   of 16
  * @param  key       Encryption key
  * @param  key_len   Encryption key length in bytes (16, 24, 32)
  * @return Length of the output cipher text in bytes, -1 in case of error
@@ -23,10 +24,11 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
 /**
  * Decrypt using BoringSSL/OpenSSL
  *
- * @param  output    Output plain text, buffer must be at least 32 bytes
+ * @param  output    Output plain text, must be a multiple of 16 bytes
  * @param  iv        16-byte initialization vector
- * @param  input     Input cipher text to decode
- * @param  input_len Length of the input cipher text in bytes
+ * @param  input     Input cipher text to decode, must be a multiple of 16 bytes
+ * @param  input_len Length of the input cipher text in bytes, must be a
+ *                   multiple of 16
  * @param  key       Encryption key, decryption key is derived internally
  * @param  key_len   Encryption key length in bytes (16, 24, 32)
  * @return Length of the output plain text in bytes, -1 in case of error

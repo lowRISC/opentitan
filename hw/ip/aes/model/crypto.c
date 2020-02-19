@@ -32,6 +32,10 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
+  // Disable padding - It is safe to do so here because we only ever encrypt
+  // multiples of 16 bytes (the block size).
+  EVP_CIPHER_CTX_set_padding(ctx, 0);
+
   // Provide encryption input, get first output bytes
   ret = EVP_EncryptUpdate(ctx, output, &output_len, input, input_len);
   if (ret != 1) {
@@ -79,6 +83,10 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
     printf("ERROR: Initialization of decryption context failed\n");
     return -1;
   }
+
+  // Disable padding - It is safe to do so here because we only ever decrypt
+  // multiples of 16 bytes (the block size).
+  EVP_CIPHER_CTX_set_padding(ctx, 0);
 
   // Provide decryption input, get first output bytes
   ret = EVP_DecryptUpdate(ctx, output, &output_len, input, input_len);
