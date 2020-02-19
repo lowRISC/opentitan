@@ -20,6 +20,8 @@ class chip_base_test extends dv_base_test #(
     super.build_phase(phase);
     // knob to en/dis stubbing cpu (disabled by default)
     void'($value$plusargs("stub_cpu=%0b", cfg.stub_cpu));
+    // Set tl_agent's is_active bit based on the retrieved stub_cpu value.
+    cfg.m_cpu_d_tl_agent_cfg.is_active = cfg.stub_cpu;
   endfunction : build_phase
 
 

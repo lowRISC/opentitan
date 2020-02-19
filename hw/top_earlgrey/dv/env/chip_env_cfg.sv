@@ -7,8 +7,12 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   bit                 stub_cpu;
 
   // chip top interfaces
+  virtual clk_rst_if  usb_clk_rst_vif;
   gpio_vif            gpio_vif;
   mem_bkdr_vif        mem_bkdr_vifs[chip_mem_e];
+  virtual pins_if#(1) srst_n_vif;
+  virtual pins_if#(1) jtag_spi_n_vif;
+  virtual pins_if#(1) bootstrap_vif;
 
   // sw msg monitor related
   sw_msg_monitor_vif  sw_msg_monitor_vif;
@@ -22,14 +26,14 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;
   rand jtag_agent_cfg m_jtag_agent_cfg;
-
-  // tap tl_agent onto cpu data interaface
+  rand spi_agent_cfg  m_spi_agent_cfg;
   rand tl_agent_cfg   m_cpu_d_tl_agent_cfg;
 
   `uvm_object_utils_begin(chip_env_cfg)
     `uvm_field_int   (stub_cpu,             UVM_DEFAULT)
     `uvm_field_object(m_uart_agent_cfg,     UVM_DEFAULT)
     `uvm_field_object(m_jtag_agent_cfg,     UVM_DEFAULT)
+    `uvm_field_object(m_spi_agent_cfg,      UVM_DEFAULT)
     `uvm_field_object(m_cpu_d_tl_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -51,14 +55,24 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     m_uart_agent_cfg.en_rx_monitor = 1'b0;
     // create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+    // create spi agent config obj
+    m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
     // create tl agent config obj
     m_cpu_d_tl_agent_cfg = tl_agent_cfg::type_id::create("m_cpu_d_tl_agent_cfg");
-    m_cpu_d_tl_agent_cfg.is_active = stub_cpu;
-    m_cpu_d_tl_agent_cfg.if_mode   = dv_utils_pkg::Host;
+    m_cpu_d_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
     // initialize the mem_bkdr_if vifs we want for this chip
     foreach(mems[mem]) begin
       mem_bkdr_vifs[mems[mem]] = null;
     end
+  endfunction
+
+  // ral flow is limited in terms of setting correct field access policies and reset values
+  // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
+  protected virtual function void apply_ral_fixes();
+    // Flash ctrl prog_empty interrupt is set to 1 out of reset since it really is empty.
+    ral.flash_ctrl.intr_state.prog_empty.set_reset(1'b1);
+    // Out of reset, the link is in disconnected state.
+    ral.usbdev.intr_state.disconnected.set_reset(1'b1);
   endfunction
 
 endclass

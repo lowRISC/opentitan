@@ -12,6 +12,7 @@ class chip_env extends dv_base_env #(
 
   uart_agent          m_uart_agent;
   jtag_agent          m_jtag_agent;
+  spi_agent           m_spi_agent;
   tl_agent            m_cpu_d_tl_agent;
   chip_tl_reg_adapter m_cpu_d_tl_reg_adapter;
 
@@ -32,8 +33,27 @@ class chip_env extends dv_base_env #(
     end
 
     // get the vifs from config db
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "usb_clk_rst_vif",
+        cfg.usb_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
+    end
+
     if (!uvm_config_db#(gpio_vif)::get(this, "", "gpio_vif", cfg.gpio_vif)) begin
       `uvm_fatal(`gfn, "failed to get gpio_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "srst_n_vif", cfg.srst_n_vif)) begin
+      `uvm_fatal(`gfn, "failed to get srst_n_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "jtag_spi_n_vif",
+        cfg.jtag_spi_n_vif)) begin
+      `uvm_fatal(`gfn, "failed to get jtag_spi_n_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "bootstrap_vif",
+        cfg.bootstrap_vif)) begin
+      `uvm_fatal(`gfn, "failed to get bootstrap_vif from uvm_config_db")
     end
 
     foreach (cfg.mem_bkdr_vifs[mem]) begin
@@ -51,11 +71,17 @@ class chip_env extends dv_base_env #(
     // create components
     m_uart_agent = uart_agent::type_id::create("m_uart_agent", this);
     uvm_config_db#(uart_agent_cfg)::set(this, "m_uart_agent*", "cfg", cfg.m_uart_agent_cfg);
+
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
+
+    m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
+    uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
+
     m_cpu_d_tl_agent = tl_agent::type_id::create("m_cpu_d_tl_agent", this);
-    m_cpu_d_tl_reg_adapter = chip_tl_reg_adapter::type_id::create("m_cpu_d_tl_reg_adapter");
     uvm_config_db#(tl_agent_cfg)::set(this, "m_cpu_d_tl_agent*", "cfg", cfg.m_cpu_d_tl_agent_cfg);
+
+    m_cpu_d_tl_reg_adapter = chip_tl_reg_adapter::type_id::create("m_cpu_d_tl_reg_adapter");
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -73,6 +99,9 @@ class chip_env extends dv_base_env #(
     end
     if (cfg.is_active && cfg.m_jtag_agent_cfg.is_active) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
+    end
+    if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
+      virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
     if (cfg.is_active && cfg.m_cpu_d_tl_agent_cfg.is_active) begin
       virtual_sequencer.cpu_d_tl_sequencer_h = m_cpu_d_tl_agent.sequencer;

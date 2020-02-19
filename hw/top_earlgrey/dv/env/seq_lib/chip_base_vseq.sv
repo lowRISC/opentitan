@@ -44,6 +44,10 @@ class chip_base_vseq extends dv_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
+    cfg.srst_n_vif.drive(1'b1);
+    cfg.jtag_spi_n_vif.drive(1'b0); // Select SPI.
+    cfg.bootstrap_vif.drive(1'b1);
+    cfg.usb_clk_rst_vif.set_freq_mhz(dv_utils_pkg::ClkFreq48Mhz);
     cfg.m_uart_agent_cfg.set_baud_rate(BaudRate1Mbps);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});

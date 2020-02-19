@@ -17,8 +17,13 @@ class chip_common_vseq extends chip_base_vseq;
   }
   `uvm_object_new
 
+  virtual task pre_start();
+    super.pre_start();
+    // keep sck on - needed for csr tests since some csrs are flopped on sck
+    cfg.m_spi_agent_cfg.sck_on = 1'b1;;
+  endtask
+
   virtual task body();
-    `uvm_info(`gfn, $sformatf("%0s", cfg.ral.sprint()), UVM_LOW)
     run_csr_vseq_wrapper(num_trans);
   endtask : body
 
@@ -29,11 +34,12 @@ class chip_common_vseq extends chip_base_vseq;
                                            string           scope = "ral");
 
     // reuse exclusions from IP benches
-    `add_ip_csr_exclusions(uart)
     `add_ip_csr_exclusions(gpio)
     `add_ip_csr_exclusions(hmac)
     `add_ip_csr_exclusions(rv_timer)
     `add_ip_csr_exclusions(spi_device)
+    `add_ip_csr_exclusions(uart)
+    `add_ip_csr_exclusions(usbdev)
 
   endfunction
 
