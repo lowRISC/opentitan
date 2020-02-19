@@ -158,7 +158,7 @@ module hmac
   /////////////////////
   // Control signals //
   /////////////////////
-  assign hash_start = reg_hash_start & sha_en;
+  assign hash_start = reg_hash_start & sha_en & ~cfg_block;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -425,8 +425,10 @@ module hmac
   // HMAC Error Handling //
   /////////////////////////
   logic msg_push_sha_disabled, hash_start_sha_disabled, update_seckey_inprocess;
+  logic hash_start_active;  // `reg_hash_start` set when hash already in active
   assign msg_push_sha_disabled = msg_write & ~sha_en;
   assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
+  assign hash_start_active = reg_hash_start & cfg_block;
 
   always_comb begin
     update_seckey_inprocess = 1'b0;
@@ -447,7 +449,7 @@ module hmac
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
                    ( msg_push_sha_disabled | hash_start_sha_disabled
-                   | update_seckey_inprocess);
+                   | update_seckey_inprocess | hash_start_active);
 
   always_comb begin
     err_code = NoError;
@@ -461,6 +463,10 @@ module hmac
 
       update_seckey_inprocess: begin
         err_code = SwUpdateSecretKeyInProcess;
+      end
+
+      hash_start_active: begin
+        err_code = SwHashStartWhenActive;
       end
 
       default: begin
@@ -526,7 +532,8 @@ module hmac
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
   // `hash_process` shall be toggle and paired with `hash_start`.
-  `ASSERT(ValidHashStartAssert, hash_start |-> !initiated)
+  // Below condition is covered by the design (2020-02-19)
+  //`ASSERT(ValidHashStartAssert, hash_start |-> !initiated)
   `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated)
 
   // between `hash_done` and `hash_start`, message FIFO should be empty

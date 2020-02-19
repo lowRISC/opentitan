@@ -95,7 +95,8 @@ package hmac_pkg;
     NoError                    = 32'h 0000_0000,
     SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
     SwHashStartWhenShaDisabled = 32'h 0000_0002,
-    SwUpdateSecretKeyInProcess = 32'h 0000_0003
+    SwUpdateSecretKeyInProcess = 32'h 0000_0003,
+    SwHashStartWhenActive      = 32'h 0000_0004
   } err_code_e;
 
 endpackage : hmac_pkg
