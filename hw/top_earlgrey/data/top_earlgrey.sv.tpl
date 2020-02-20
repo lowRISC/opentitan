@@ -242,6 +242,7 @@ module top_${top["name"]} #(
     .MHPMCounterWidth    (40),
     .RV32E               (0),
     .RV32M               (1),
+    .DbgTriggerEn        (1),
     .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
     .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
     .PipeLine            (IbexPipeLine)
