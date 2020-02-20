@@ -12,3 +12,4 @@ device_specified = []
 [dependencies]
 opentitan_common = { path = "../opentitan_common" }
 tock_deps = { path = "../../tock_deps" }
+dif = { path = "../../dif" }

@@ -1,0 +1,20 @@
+[package]
+name = "dif"
+version = "0.1.0"
+authors = ["lowRISC contributors <info@lowrisc.org>"]
+build = "build.rs"
+
+[profile.dev]
+panic = "abort"
+lto = false
+opt-level = "z"
+debug = true
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+debug = true
+
+[build-dependencies]
+bindgen = { version = "0.53.1" }
