@@ -38,6 +38,8 @@ tock_raw = custom_target(
     manifest_path,
     '@OUTDIR@',
     toolchain_file,
+    meson.source_root(),
+    meson.build_root(),
     rust_flags,
   ],
   output: target,
