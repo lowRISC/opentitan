@@ -93,8 +93,10 @@ module aes_control (
   // If not set to manually start, we start once we have valid data available.
   assign start = manual_operation_i ? start_i : data_in_new;
 
-  // If not set to overwrite data, we wait for previous output data to be read.
-  assign finish = manual_operation_i ? 1'b1 : ~output_valid_q;
+  // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
+  // synchronously clears output_valid_q, unless new output data is written in the exact same
+  // clock cycle.
+  assign finish = manual_operation_i ? 1'b1 : ~output_valid_q | data_out_read;
 
   // FSM
   always_comb begin : aes_ctrl_fsm
@@ -264,7 +266,9 @@ module aes_control (
   assign data_in_new_d = (data_in_load | data_in_we_o) ? '0 : (data_in_new_q | data_in_qe_i);
   assign data_in_new   = &data_in_new_d;
 
-  assign data_out_read_d = data_out_we_o ? '0 : data_out_read_q | data_out_re_i;
+  // data_out_read is high for one clock cycle only. It clears output_valid_q unless new output
+  // data is written in the exact same cycle.
+  assign data_out_read_d = &data_out_read_q ? '0 : data_out_read_q | data_out_re_i;
   assign data_out_read   = &data_out_read_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_edge_detection
