@@ -14,7 +14,9 @@ MODE="${2}"
 MANIFEST_PATH="${3}"
 TARGET_DIR="${4}"
 TOOLCHAIN_FILE="${5}"
-export RUSTFLAGS="${6}"
+export MESON_SOURCE_ROOT="${6}"
+export MESON_BUILD_ROOT="${7}"
+export RUSTFLAGS="${8}"
 
 if [[ "${MODE}" == "release" ]]; then
 	RELEASE_FLAG="--release"
