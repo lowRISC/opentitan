@@ -132,13 +132,14 @@ def parse_hjson(filename):
         sys.exit(1)
 
 
-def merge_dicts(list1, list2):
+def merge_dicts(list1, list2, use_list1_for_defaults=True):
     '''merge 2 dicts into one
 
     This funciton takes 2 dicts as args list1 and list2. It recursively merges list2 into
     list1 and returns list1. The recursion happens when the the value of a key in both lists
     is a dict. If the values of the same key in both lists (at the same tree level) are of
-    type str (or of dissimilar type) then there is a conflict, and and error is thrown.
+    dissimilar type, then there is a conflict and an error is thrown. If they are of the same
+    scalar type, then the third arg "use_list1_for_defaults" is used to pick the final one.
     '''
     for key in list2.keys():
         if key in list1:
@@ -146,10 +147,15 @@ def merge_dicts(list1, list2):
                 list1[key].extend(list2[key])
             elif type(list1[key]) is dict and type(list2[key]) is dict:
                 list1[key] = merge_dicts(list1[key], list2[key])
+            elif (type(list1[key]) == type(list2[key])):
+                if not use_list1_for_defaults:
+                    list1[key] = list2[key]
             else:
-                print("The type of value of key ", key, "in list1: ", str(type(list1[key])), \
-                      " does not match the type of value in list2: ", str(type(list2[key])), \
-                      " or they are not of type list or dict. The two lists cannot be merged.")
+                print("The type of value of key \"", key, "\" in list1: \"", \
+                      str(type(list1[key])), \
+                      "\" does not match the type of value in list2: \"", \
+                      str(type(list2[key])), \
+                      "\". The two lists cannot be merged.")
                 sys.exit(1)
         else:
             list1[key] = list2[key]
