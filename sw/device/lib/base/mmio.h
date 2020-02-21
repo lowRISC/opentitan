@@ -17,6 +17,9 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * @file
+ * @brief Memory-mapped IO functions, for volatile access.
+ *
  * Memory-mapped IO functions, which either map to volatile accesses, or can be
  * replaced with instrumentation calls at compile time, for use with tests.
  *

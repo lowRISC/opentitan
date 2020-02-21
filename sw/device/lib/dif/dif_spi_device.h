@@ -17,6 +17,12 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * @file
+ * @brief <a href="/hw/ip/spi_device/doc/">SPI Device</a> Device Interface
+ * Functions
+ */
+
+/**
  * Represents a signal edge type.
  */
 typedef enum dif_spi_device_edge {

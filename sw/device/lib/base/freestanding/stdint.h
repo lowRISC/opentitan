@@ -6,6 +6,9 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDINT_H_
 
 /**
+ * @file
+ * @brief C library Integer types (Freestanding)
+ *
  * This header implements the stdint.h standard header, as required by C11 S4p6.
  * This header is specified in detail in S7.20 the same.
  *
@@ -63,75 +66,75 @@ typedef __INTMAX_TYPE__ intmax_t;
 // (-MIN - 1). (MAX + 1) will trigger signed overflow and, as such, Undefined
 // Behavior.
 
-#define INT8_MIN (-__INT8_MAX__ - 1)
-#define INT8_MAX __INT8_MAX__
-#define UINT8_MAX __UINT8_MAX__
-#define INT16_MIN (-__INT16_MAX__ - 1)
-#define INT16_MAX __INT16_MAX__
-#define UINT16_MAX __UINT16_MAX__
-#define INT32_MIN (-__INT32_MAX__ - 1)
-#define INT32_MAX __INT32_MAX__
-#define UINT32_MAX __UINT32_MAX__
-#define INT64_MIN (-__INT64_MAX__ - 1)
-#define INT64_MAX __INT64_MAX__
-#define UINT64_MAX __UINT64_MAX__
+#define INT8_MIN (-__INT8_MAX__ - 1)   /**< @hideinitializer */
+#define INT8_MAX __INT8_MAX__          /**< @hideinitializer */
+#define UINT8_MAX __UINT8_MAX__        /**< @hideinitializer */
+#define INT16_MIN (-__INT16_MAX__ - 1) /**< @hideinitializer */
+#define INT16_MAX __INT16_MAX__        /**< @hideinitializer */
+#define UINT16_MAX __UINT16_MAX__      /**< @hideinitializer */
+#define INT32_MIN (-__INT32_MAX__ - 1) /**< @hideinitializer */
+#define INT32_MAX __INT32_MAX__        /**< @hideinitializer */
+#define UINT32_MAX __UINT32_MAX__      /**< @hideinitializer */
+#define INT64_MIN (-__INT64_MAX__ - 1) /**< @hideinitializer */
+#define INT64_MAX __INT64_MAX__        /**< @hideinitializer */
+#define UINT64_MAX __UINT64_MAX__      /**< @hideinitializer */
 
-#define INT_LEAST8_MIN (-__INT_LEAST8_MAX__ - 1)
-#define INT_LEAST8_MAX __INT_LEAST8_MAX__
-#define UINT_LEAST8_MAX __UINT_LEAST8_MAX__
-#define INT_LEAST16_MIN (-__INT_LEAST16_MAX__ - 1)
-#define INT_LEAST16_MAX __INT_LEAST16_MAX__
-#define UINT_LEAST16_MAX __UINT_LEAST16_MAX__
-#define INT_LEAST32_MIN (-__INT_LEAST32_MAX__ - 1)
-#define INT_LEAST32_MAX __INT_LEAST32_MAX__
-#define UINT_LEAST32_MAX __UINT_LEAST32_MAX__
-#define INT_LEAST64_MIN (-__INT_LEAST64_MAX__ - 1)
-#define INT_LEAST64_MAX __INT_LEAST64_MAX__
-#define UINT_LEAST64_MAX __UINT_LEAST64_MAX__
+#define INT_LEAST8_MIN (-__INT_LEAST8_MAX__ - 1)   /**< @hideinitializer */
+#define INT_LEAST8_MAX __INT_LEAST8_MAX__          /**< @hideinitializer */
+#define UINT_LEAST8_MAX __UINT_LEAST8_MAX__        /**< @hideinitializer */
+#define INT_LEAST16_MIN (-__INT_LEAST16_MAX__ - 1) /**< @hideinitializer */
+#define INT_LEAST16_MAX __INT_LEAST16_MAX__        /**< @hideinitializer */
+#define UINT_LEAST16_MAX __UINT_LEAST16_MAX__      /**< @hideinitializer */
+#define INT_LEAST32_MIN (-__INT_LEAST32_MAX__ - 1) /**< @hideinitializer */
+#define INT_LEAST32_MAX __INT_LEAST32_MAX__        /**< @hideinitializer */
+#define UINT_LEAST32_MAX __UINT_LEAST32_MAX__      /**< @hideinitializer */
+#define INT_LEAST64_MIN (-__INT_LEAST64_MAX__ - 1) /**< @hideinitializer */
+#define INT_LEAST64_MAX __INT_LEAST64_MAX__        /**< @hideinitializer */
+#define UINT_LEAST64_MAX __UINT_LEAST64_MAX__      /**< @hideinitializer */
 
-#define INT_FAST8_MIN (-__INT_FAST8_MAX__ - 1)
-#define INT_FAST8_MAX __INT_FAST8_MAX__
-#define UINT_FAST8_MAX __UINT_FAST8_MAX__
-#define INT_FAST16_MIN (-__INT_FAST16_MAX__ - 1)
-#define INT_FAST16_MAX __INT_FAST16_MAX__
-#define UINT_FAST16_MAX __UINT_FAST16_MAX__
-#define INT_FAST32_MIN (-__INT_FAST32_MAX__ - 1)
-#define INT_FAST32_MAX __INT_FAST32_MAX__
-#define UINT_FAST32_MAX __UINT_FAST32_MAX__
-#define INT_FAST64_MIN (-__INT_FAST64_MAX__ - 1)
-#define INT_FAST64_MAX __INT_FAST64_MAX__
-#define UINT_FAST64_MAX __UINT_FAST64_MAX__
+#define INT_FAST8_MIN (-__INT_FAST8_MAX__ - 1)   /**< @hideinitializer */
+#define INT_FAST8_MAX __INT_FAST8_MAX__          /**< @hideinitializer */
+#define UINT_FAST8_MAX __UINT_FAST8_MAX__        /**< @hideinitializer */
+#define INT_FAST16_MIN (-__INT_FAST16_MAX__ - 1) /**< @hideinitializer */
+#define INT_FAST16_MAX __INT_FAST16_MAX__        /**< @hideinitializer */
+#define UINT_FAST16_MAX __UINT_FAST16_MAX__      /**< @hideinitializer */
+#define INT_FAST32_MIN (-__INT_FAST32_MAX__ - 1) /**< @hideinitializer */
+#define INT_FAST32_MAX __INT_FAST32_MAX__        /**< @hideinitializer */
+#define UINT_FAST32_MAX __UINT_FAST32_MAX__      /**< @hideinitializer */
+#define INT_FAST64_MIN (-__INT_FAST64_MAX__ - 1) /**< @hideinitializer */
+#define INT_FAST64_MAX __INT_FAST64_MAX__        /**< @hideinitializer */
+#define UINT_FAST64_MAX __UINT_FAST64_MAX__      /**< @hideinitializer */
 
-#define INTPTR_MIN (-__INTPTR_MAX__ - 1)
-#define INTPTR_MAX __INTPTR_MAX__
-#define UINTPTR_MAX __UINTPTR_MAX__
+#define INTPTR_MIN (-__INTPTR_MAX__ - 1) /**< @hideinitializer */
+#define INTPTR_MAX __INTPTR_MAX__        /**< @hideinitializer */
+#define UINTPTR_MAX __UINTPTR_MAX__      /**< @hideinitializer */
 
-#define INTMAX_MIN (-__INTMAX_MAX__ - 1)
-#define INTMAX_MAX __INTMAX_MAX__
-#define UINTMAX_MAX __UINTMAX_MAX__
+#define INTMAX_MIN (-__INTMAX_MAX__ - 1) /**< @hideinitializer */
+#define INTMAX_MAX __INTMAX_MAX__        /**< @hideinitializer */
+#define UINTMAX_MAX __UINTMAX_MAX__      /**< @hideinitializer */
 
-#define PTRDIFF_MIN (-__PTRDIFF_MAX__ - 1)
-#define PTRDIFF_MAX __PTRDIFF_MAX__
+#define PTRDIFF_MIN (-__PTRDIFF_MAX__ - 1) /**< @hideinitializer */
+#define PTRDIFF_MAX __PTRDIFF_MAX__        /**< @hideinitializer */
 
-#define SIZE_MAX __SIZE_MAX__
+#define SIZE_MAX __SIZE_MAX__ /**< @hideinitializer */
 
-#define WCHAR_MIN (-__WCHAR_MAX__ - 1)
-#define WCHAR_MAX __WCHAR_MAX__
+#define WCHAR_MIN (-__WCHAR_MAX__ - 1) /**< @hideinitializer */
+#define WCHAR_MAX __WCHAR_MAX__        /**< @hideinitializer */
 
 // NOTE: While GCC and Clang both provide macros for implememting the _C macros,
 // they are inconsistent on which is correct, so we implement them ourselves
 // below.
 
-#define INT8_C(value) (value)
-#define INT16_C(value) (value)
-#define INT32_C(value) (value)
-#define INT64_C(value) (value##LL)
-#define INTMAX_C(value) (value##LL)
+#define INT8_C(value) (value)       /**< @hideinitializer */
+#define INT16_C(value) (value)      /**< @hideinitializer */
+#define INT32_C(value) (value)      /**< @hideinitializer */
+#define INT64_C(value) (value##LL)  /**< @hideinitializer */
+#define INTMAX_C(value) (value##LL) /**< @hideinitializer */
 
-#define UINT8_C(value) (value##U)
-#define UINT16_C(value) (value##U)
-#define UINT32_C(value) (value##U)
-#define UINT64_C(value) (value##ULL)
-#define UINTMAX_C(value) (value##ULL)
+#define UINT8_C(value) (value##U)     /**< @hideinitializer */
+#define UINT16_C(value) (value##U)    /**< @hideinitializer */
+#define UINT32_C(value) (value##U)    /**< @hideinitializer */
+#define UINT64_C(value) (value##ULL)  /**< @hideinitializer */
+#define UINTMAX_C(value) (value##ULL) /**< @hideinitializer */
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDINT_H_

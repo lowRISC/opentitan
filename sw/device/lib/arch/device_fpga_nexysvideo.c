@@ -5,7 +5,8 @@
 #include "sw/device/lib/arch/device.h"
 
 /**
- * Device-specific symbol definitions for the Nexysvideo device.
+ * @file
+ * @brief Device-specific symbol definitions for the Nexysvideo device.
  */
 
 const device_type_t kDeviceType = kDeviceFpgaNexysVideo;

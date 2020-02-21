@@ -6,6 +6,9 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDARG_H_
 
 /**
+ * @file
+ * @brief C library Variable arguments (Freestanding)
+ *
  * This header implements the stdarg.h standard header, as required by C11 S4p6.
  * This header is specified in detail in S7.16.
  *
@@ -14,9 +17,10 @@
  */
 
 typedef __builtin_va_list va_list;
-#define va_start(ap, param) __builtin_va_start(ap, param)
-#define va_end(ap) __builtin_va_end(ap)
-#define va_arg(ap, type) __builtin_va_arg(ap, type)
-#define va_copy(dest, src) __builtin_va_copy(dest, src)
+#define va_start(ap, param) \
+  __builtin_va_start(ap, param)                       /**< @hideinitializer */
+#define va_end(ap) __builtin_va_end(ap)               /**< @hideinitializer */
+#define va_arg(ap, type) __builtin_va_arg(ap, type)   /**< @hideinitializer */
+#define va_copy(dst, src) __builtin_va_copy(dst, src) /**< @hideinitializer */
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDARG_H_
