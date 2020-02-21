@@ -6,6 +6,9 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_ISO646_H_
 
 /**
+ * @file
+ * @brief C library Alternative Spellings (Freestanding)
+ *
  * This header implements the iso646.h standard header, as required by C11 S4p6.
  * See S7.9 of the same for a description.
  *

@@ -5,6 +5,14 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
 
+/**
+ * @file
+ * @brief OpenTitan Device Memory Library
+ *
+ * This library provides memory functions for aligned word accesses, and some
+ * useful functions from the C library's <string.h>.
+ */
+
 #include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>

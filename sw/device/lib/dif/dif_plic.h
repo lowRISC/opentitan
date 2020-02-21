@@ -23,13 +23,18 @@ extern const uint32_t kDifPlicMinPriority;
 extern const uint32_t kDifPlicMaxPriority;
 
 /**
+ * @file
+ * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
+ */
+
+/**
  * PLIC interrupt source identifier.
  *
  * This corresponds to a specific interrupt, and not the device it originates
  * from.
  *
  * This is an unsigned 32-bit value that is at least zero and is less than the
- * `NumSrc` instantiation parameter of the `rv_plic` device.
+ * `NumSrc` instantiation parameterof the `rv_plic` device.
  *
  * The value 0 corresponds to "No Interrupt".
  */

@@ -11,8 +11,9 @@
 #include "sw/device/lib/base/stdasm.h"
 
 /**
- * This header provides functions for controlling the excution of a hart, such
- * as halt-like functionality.
+ * @file
+ * @brief This header provides functions for controlling the excution of a hart,
+ * such as halt-like functionality.
  */
 
 /**
