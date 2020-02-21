@@ -404,7 +404,7 @@ module flash_ctrl (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intr_src_q <= 'h0;
+      intr_src_q <= 4'h8; //prog_fifo is empty by default
     end else begin
       intr_src_q <= intr_src;
     end
