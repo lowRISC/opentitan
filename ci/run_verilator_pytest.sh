@@ -22,17 +22,6 @@ TEST_TARGETS=(
   "tests/rv_timer/rv_timer_test_sim_verilator.elf"
 )
 
-if [[ ! -z ${MAKE_BUILD+x} ]]; then
-  BOOT_ROM_TARGET="sw/device/sim/boot_rom/rom.elf"
-  TEST_TARGETS=(
-    "sw/device/sim/examples/hello_usbdev.elf"
-    "sw/device/sim/tests/aes/sw.elf"
-    "sw/device/sim/tests/flash_ctrl/sw.elf"
-    "sw/device/sim/tests/hmac/sw.elf"
-    "sw/device/sim/tests/rv_timer/sw.elf"
-  )
-fi
-
 FAIL_TARGETS=()
 PASS_TARGETS=()
 for target in "${TEST_TARGETS[@]}"; do
