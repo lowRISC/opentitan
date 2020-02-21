@@ -49,16 +49,17 @@ ifneq (${SW_NAME},)
 	# NOTE: Pass -f, since we're going to be re-building everything every time,
 	# anyways.
 	cd $(PROJ_ROOT) && \
-	BUILD_ROOT=$(SW_BUILD_DIR)/meson $(PROJ_ROOT)/meson_init.sh -f
+	BUILD_ROOT=$(SW_BUILD_DIR) $(PROJ_ROOT)/meson_init.sh -f
 	# NOTE: We're using the fpga platform for now, because there is no
 	# such thing as a DV platform yet (nor does any code do anything
 	# special for DV yet).
-	ninja -C $(SW_BUILD_DIR)/meson/build-out/sw/fpga all
+	ninja -C $(SW_BUILD_DIR)/build-out sw/device/boot_rom/boot_rom_export_$(SW_BUILD_DEVICE)
+	ninja -C $(SW_BUILD_DIR)/build-out sw/device/$(SW_DIR)/$(SW_NAME)_export_$(SW_BUILD_DEVICE)
 
 	mkdir -p $(SW_BUILD_DIR)/sw $(SW_BUILD_DIR)/rom
-	cp $(SW_BUILD_DIR)/meson/build-bin/sw/device/fpga/boot_rom/boot_rom.vmem \
+	cp $(SW_BUILD_DIR)/build-out/sw/device/boot_rom/boot_rom_$(SW_BUILD_DEVICE).vmem \
 		$(SW_BUILD_DIR)/rom/rom.vmem
-	cp $(SW_BUILD_DIR)/meson/build-bin/sw/device/fpga/$(SW_DIR)/$(SW_NAME).vmem \
+	cp $(SW_BUILD_DIR)/build-out/sw/device/$(SW_DIR)/$(SW_NAME)_$(SW_BUILD_DEVICE).vmem \
 		$(SW_BUILD_DIR)/sw/sw.vmem
 endif
 

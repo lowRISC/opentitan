@@ -28,7 +28,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'aes_test_export_' + device_name,
     command: export_embedded_target,
     input: [aes_test_elf, aes_test_embedded],
-    output: 'aes_test_' + device_name,
+    output: 'aes_test_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
   )

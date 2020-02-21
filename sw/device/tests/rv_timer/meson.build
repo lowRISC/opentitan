@@ -31,7 +31,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'rv_timer_test_export_' + device_name,
     command: export_embedded_target,
     input: [rv_timer_test_elf, rv_timer_test_embedded],
-    output: 'rv_timer_test_' + device_name,
+    output: 'rv_timer_test_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
   )

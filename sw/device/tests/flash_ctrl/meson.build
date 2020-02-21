@@ -31,7 +31,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'flash_test_export_' + device_name,
     command: export_embedded_target,
     input: [flash_test_elf, flash_test_embedded],
-    output: 'flash_test_' + device_name,
+    output: 'flash_test_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
   )
