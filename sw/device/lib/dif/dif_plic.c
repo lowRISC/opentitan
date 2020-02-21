@@ -106,6 +106,11 @@ static const plic_peripheral_range_t plic_peripheral_ranges[] = {
                 .first_irq_id = kDifPlicIrqIdNmiGenEsc0,
                 .last_irq_id = kDifPlicIrqIdNmiGenEsc3,
             },
+        [kDifPlicPeripheralUsbDev] =
+            {
+                .first_irq_id = kDifPlicIrqIdUsbDevPktReceived,
+                .last_irq_id = kDifPlicIrqIdUsbDevConnected,
+            },
 };
 
 /**

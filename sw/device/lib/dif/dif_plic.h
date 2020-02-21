@@ -81,7 +81,24 @@ typedef enum dif_plic_irq_id {
   kDifPlicIrqIdNmiGenEsc1 = 61,         /**< NMI Gen escalation interrupt 1. */
   kDifPlicIrqIdNmiGenEsc2 = 62,         /**< NMI Gen escalation interrupt 2. */
   kDifPlicIrqIdNmiGenEsc3 = 63,         /**< NMI Gen escalation interrupt 3. */
-  kDifPlicIrqIdLast = kDifPlicIrqIdNmiGenEsc3, /**< The last valid IRQ ID. */
+  kDifPlicIrqIdUsbDevPktReceived = 64,  /**< USB packet received (OUT/SETUP). */
+  kDifPlicIrqIdUsbDevPktSent = 65,      /**< USB packet sent (IN). */
+  kDifPlicIrqIdUsbDevDisconnected = 66, /**< USB link disconn (VBUS lost). */
+  kDifPlicIrqIdUsbDevHostLost = 67,     /*<< USB frame not received in time. */
+  kDifPlicIrqIdUsbDevLinkReset = 68,    /*<< USB link reset. */
+  kDifPlicIrqIdUsbDevLinkSuspend = 69,  /*<< USB link suspend. */
+  kDifPlicIrqIdUsbDevLinkResume = 70,   /*<< USB link resume. */
+  kDifPlicIrqIdUsbDevAvEmpty = 71, /*<< USB AvBuffer FIFO empty (OUT/SETUP). */
+  kDifPlicIrqIdUsbDevRxFull = 72,  /*<< USB Receive FIFO full (OUT/SETUP). */
+  kDifPlicIrqIdUsbDevAvOverflow = 73,    /*<< USB AvBuffer FIFO overflow. */
+  kDifPlicIrqIdUsbDevLinkInErr = 74,     /*<< USB IN error. */
+  kDifPlicIrqIdUsbDevRxCrcErr = 75,      /*<< USB CRC error. */
+  kDifPlicIrqIdUsbDevRxPidErr = 76,      /*<< USB PID invalid error. */
+  kDifPlicIrqIdUsbDevRxBitstuffErr = 77, /*<< USB bitstuffing invalid error. */
+  kDifPlicIrqIdUsbDevFrame = 78, /*<< USB frame number updated, SOF valid. */
+  kDifPlicIrqIdUsbDevConnected = 79, /*<< USB connected (VBUS applied). */
+  kDifPlicIrqIdLast =
+      kDifPlicIrqIdUsbDevConnected, /**< The last valid IRQ ID. */
 } dif_plic_irq_id_t;
 
 /**
@@ -98,8 +115,9 @@ typedef enum dif_plic_peripheral {
   kDifPlicPeripheralHmac,         /**< HMAC */
   kDifPlicPeripheralAlertHandler, /**< Alert handler */
   kDifPlicPeripheralNmiGen,       /**< NMI generator */
+  kDifPlicPeripheralUsbDev,       /**< USB device */
   kDifPlicPeripheralLast =
-      kDifPlicPeripheralNmiGen, /**< \internal Final PLIC peripheral */
+      kDifPlicPeripheralUsbDev, /**< \internal Final PLIC peripheral */
 } dif_plic_peripheral_t;
 
 /**
