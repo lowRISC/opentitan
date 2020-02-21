@@ -2,19 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: "tlul"
+  // Use the name 'xbar' for this generic testplan. The actual testplan that imports
+  // this file can override the name if needed.
+  name: xbar
   entries: [
     {
       name: sanity
       desc: '''Sequentially test each host to access any device'''
       milestone: V1
-      tests: ["xbar_sanity"]
+      tests: ["{name}_sanity"]
     }
     {
       name: base_random_sequence
       desc: '''Enable all hosts to randomly send transactions to any device'''
       milestone: V2
-      tests: ["xbar_random"]
+      tests: ["{name}_random"]
     }
     {
       name: random_delay
@@ -23,8 +25,8 @@
             - Large delay from 0 ~ 1000 cycles
             - Small delay (0-10 cycles) for a_channel, large delay (0-1000 cycles) for d_channel'''
       milestone: V2
-      tests: ["xbar_sanity_zero_delays", "xbar_sanity_large_delays", "xbar_sanity_slow_rsp",
-              "xbar_random_zero_delays", "xbar_random_large_delays", "xbar_random_slow_rsp"]
+      tests: ["{name}_sanity_zero_delays", "{name}_sanity_large_delays", "{name}_sanity_slow_rsp",
+              "{name}_random_zero_delays", "{name}_random_large_delays", "{name}_random_slow_rsp"]
     }
     {
       name: unmapped_address
@@ -33,7 +35,7 @@
             - Ensure DUT returns d_error=1 if address is unmapped and transaction isn't passed down
               to any device'''
       milestone: V2
-      tests: ["xbar_unmapped_addr", "xbar_error_and_unmapped_addr"]
+      tests: ["{name}_unmapped_addr", "{name}_error_and_unmapped_addr"]
     }
     {
       name: error_cases
@@ -41,7 +43,7 @@
             - Drive any random value on size, mask, opcode in both channels
             - Ensure everything just pass through host to device or device to host'''
       milestone: V2
-      tests: ["xbar_error_random", "xbar_error_and_unmapped_addr"]
+      tests: ["{name}_error_random", "{name}_error_and_unmapped_addr"]
     }
     {
       name: all_access_same_device
@@ -50,13 +52,13 @@
             - If the device isn't accessible for the host, let the host randomly access the other
               devices'''
       milestone: V2
-      tests: ["xbar_access_same_device", "xbar_access_same_device_slow_rsp"]
+      tests: ["{name}_access_same_device", "{name}_access_same_device_slow_rsp"]
     }
     {
       name: all_hosts_use_same_source_id
       desc: '''Test all hosts use same ID at the same same'''
       milestone: V2
-      tests: ["xbar_same_source"]
+      tests: ["{name}_same_source"]
     }
     {
       name: stress_all
@@ -64,16 +66,16 @@
             - Combine all sequences and run in parallel
             - Add random reset between each iteration'''
       milestone: V2
-      tests: ["xbar_stress_all", "xbar_stress_all_with_error"]
+      tests: ["{name}_stress_all", "{name}_stress_all_with_error"]
     }
     {
       name: stress_with_reset
       desc: '''
-            - Inject reset while xbar_stress_all is running, after reset is completed, kill the
+            - Inject reset while stress_all is running, after reset is completed, kill the
               stress seq and then start a new stress seq
             - Run a few iteration to ensure reset doesn't break the design'''
       milestone: V2
-      tests: ["xbar_stress_all_with_rand_reset", "xbar_stress_all_with_reset_error"]
+      tests: ["{name}_stress_all_with_rand_reset", "{name}_stress_all_with_reset_error"]
     }
   ]
 }
