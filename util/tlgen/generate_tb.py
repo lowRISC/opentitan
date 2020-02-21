@@ -16,7 +16,8 @@ def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
     # list all the generate files for TB
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
-        "xbar.bind.sv", "Makefile", "xbar.sim_cfg.hjson", "xbar.testplan.hjson"
+        "xbar.bind.core", "xbar.bind.sv", "Makefile", "xbar.sim_cfg.hjson",
+        "xbar.testplan.hjson"
     ]
 
     for fname in tb_files:
@@ -25,6 +26,8 @@ def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
         # some files need to be renamed
         if fname == "xbar.sim.core":
             fname = "xbar_%s_sim.core" % (xbar.name)
+        elif fname == "xbar.bind.core":
+            fname = "xbar_%s_bind.core" % (xbar.name)
         elif fname == "xbar.bind.sv":
             fname = "xbar_%s_bind.sv" % (xbar.name)
         elif fname == "xbar.sim_cfg.hjson":
@@ -34,7 +37,9 @@ def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
 
         # save testplan at data directory
         if fname == "xbar_%s_testplan.hjson" % (xbar.name):
-            dv_filepath = dv_path / '../../data/autogen' / fname
+            data_filepath = dv_path / '../../data/autogen'
+            data_filepath.mkdir(parents=True, exist_ok=True)
+            dv_filepath = data_filepath / fname
         else:
             dv_filepath = dv_path / fname
 
