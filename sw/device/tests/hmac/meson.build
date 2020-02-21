@@ -30,7 +30,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'sha256_test_export_' + device_name,
     command: export_embedded_target,
     input: [sha256_test_elf, sha256_test_embedded],
-    output: 'sha256_test_' + device_name,
+    output: 'sha256_test_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
   )

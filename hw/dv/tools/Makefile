@@ -32,6 +32,7 @@ RUN_DIR           := ${RUN_PATH}/${RUN_LOC}
 COV_REPORT_DIR    ?= ${SCRATCH_PATH}/cov_report
 SW_BUILD_DIR      ?= ${RUN_DIR}/sw_build
 SW_ROOT_DIR       := ${PRJ_DIR}/sw
+SW_BUILD_DEVICE   ?= fpga_nexysvideo
 
 JOB_OPTS          ?=
 BUILD_JOB_OPTS    ?= $(JOB_OPTS)
