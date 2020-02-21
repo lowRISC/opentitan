@@ -64,7 +64,7 @@ static void handler_uart_isr(const dif_irq_claim_data_t *data) {
         uart_rx_overflow_handled = true;
       }
       break;
-    case kDifPlicIrqIdUartTxOverflow:
+    case kDifPlicIrqIdUartTxEmpty:
       uart_irq = kDifUartInterruptTxEmpty;
 
       // It is an error if this IRQ is asserted more than once.
@@ -162,7 +162,7 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
               "PLIC: RX overflow trigger type set failed!\n");
     return false;
   }
-  if (!dif_plic_irq_trigger_type_set(plic, kDifPlicIrqIdUartTxOverflow,
+  if (!dif_plic_irq_trigger_type_set(plic, kDifPlicIrqIdUartTxEmpty,
                                      kDifPlicDisable)) {
     print_log(uart_print_char_p, "PLIC: TX empty trigger type set failed!\n");
     return false;
@@ -175,7 +175,7 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
               "PLIC: priority set for RX overflow failed!\n");
     return false;
   }
-  if (!dif_plic_irq_priority_set(plic, kDifPlicIrqIdUartTxOverflow,
+  if (!dif_plic_irq_priority_set(plic, kDifPlicIrqIdUartTxEmpty,
                                  PLIC_PRIORITY_MAX)) {
     print_log(uart_print_char_p, "PLIC: priority set for TX empty failed!\n");
     return false;
@@ -194,7 +194,7 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
               "PLIC: interrupt Enable for RX overflow failed!\n");
     return false;
   }
-  if (!dif_plic_irq_enable_set(plic, kDifPlicIrqIdUartTxOverflow, PLIC_TARGET,
+  if (!dif_plic_irq_enable_set(plic, kDifPlicIrqIdUartTxEmpty, PLIC_TARGET,
                                kDifPlicEnable)) {
     print_log(uart_print_char_p,
               "PLIC: interrupt Enable for TX empty failed!\n");

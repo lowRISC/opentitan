@@ -52,7 +52,7 @@ typedef enum dif_plic_irq_id {
   kDifPlicIrqIdGpio31 = 32,          /**< GPIO pin 31. */
   kDifPlicIrqIdUartTxWatermark = 33, /**< UART TX FIFO watermark. */
   kDifPlicIrqIdUartRxWatermark = 34, /**< UART RX FIFO watermark. */
-  kDifPlicIrqIdUartTxOverflow = 35,  /**< UART TX FIFO overflow. */
+  kDifPlicIrqIdUartTxEmpty = 35,     /**< UART TX FIFO empty. */
   kDifPlicIrqIdUartRxOverflow = 36,  /**< UART RX FIFO overflow. */
   kDifPlicIrqIdUartRxFrameErr = 37,  /**< UART RX frame error. */
   kDifPlicIrqIdUartRxBreakErr = 38,  /**< UART RX break error. */
