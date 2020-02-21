@@ -7,16 +7,16 @@ r"""Top Module Generator
 import argparse
 import logging as log
 import sys
+from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
-from collections import OrderedDict
 
 import hjson
-from mako.template import Template
 from mako import exceptions
+from mako.template import Template
 
 import tlgen
-from reggen import gen_rtl, gen_dv, validate
+from reggen import gen_dv, gen_rtl, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
 
 # Filter from IP list but adding generated hjson
@@ -50,6 +50,7 @@ def generate_xbars(top, out_path):
         xbar_path = out_path / 'ip/xbar_{}/data/autogen'.format(obj["name"])
         xbar_path.mkdir(parents=True, exist_ok=True)
         xbar = tlgen.validate(obj)
+        xbar.ip_path = 'hw/top_' + top["name"] + '/ip/{dut}'
 
         # Generate output of crossbar with complete fields
         xbar_hjson_path = xbar_path / "xbar_{}.gen.hjson".format(xbar.name)
