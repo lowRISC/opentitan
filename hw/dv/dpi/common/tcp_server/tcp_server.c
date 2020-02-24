@@ -212,7 +212,7 @@ static int client_tryaccept(struct tcp_server_ctx *ctx) {
  *
  * @param ctx context object
  */
-void stop(struct tcp_server_ctx *ctx) {
+static void stop(struct tcp_server_ctx *ctx) {
   assert(ctx);
   if (!ctx->sfd) {
     return;
@@ -260,7 +260,7 @@ static bool get_byte(struct tcp_server_ctx *ctx, char *cmd) {
  * @param ctx context object
  * @param cmd byte to send
  */
-void put_byte(struct tcp_server_ctx *ctx, char cmd) {
+static void put_byte(struct tcp_server_ctx *ctx, char cmd) {
   while (1) {
     ssize_t num_written = send(ctx->cfd, &cmd, sizeof(cmd), MSG_NOSIGNAL);
     if (num_written == -1) {
@@ -304,7 +304,7 @@ static void ctx_free(struct tcp_server_ctx *ctx) {
  * @param ctx_void context object
  * @return Always returns NULL
  */
-void *server_create(void *ctx_void) {
+static void *server_create(void *ctx_void) {
   // Cast to a server struct
   struct tcp_server_ctx *ctx = (struct tcp_server_ctx *)ctx_void;
   struct timeval timeout;
