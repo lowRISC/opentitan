@@ -1,13 +1,10 @@
-####################################################################################################
-## Copyright lowRISC contributors.                                                                ##
-## Licensed under the Apache License, Version 2.0, see LICENSE for details.                       ##
-## SPDX-License-Identifier: Apache-2.0                                                            ##
-####################################################################################################
-## Makefile option groups that can be enabled by test Makefile / command line.                    ##
-## These are generic set of option groups that apply to all testbenches.                          ##
-## These are meant to be simulator agnostic                                                       ##
-## Please add tool specific options with appropriate ifeq's                                       ##
-####################################################################################################
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+# Makefile option groups that can be enabled by test Makefile / command line.
+# These are generic set of option groups that apply to all testbenches.
+# These are meant to be simulator agnostic
+# Please add tool specific options with appropriate ifeq's
 
 # Distinguish UVM TB and the other environments for Verilator, FPGA etc
 BUILD_OPTS  += +define+UVM
