@@ -373,8 +373,6 @@ err_cleanup_return:
   // Simulation done - clean up
   tcp_server_client_close(ctx);
   stop(ctx);
-  // free all context
-  ctx_free(ctx);
 
   return NULL;
 }
