@@ -15,6 +15,8 @@ use kernel::Platform;
 use kernel::{create_capability, debug, static_init};
 use rv32i::csr;
 
+mod counter_demo;
+
 pub mod io;
 //
 // Actual memory for holding the active process structures. Need an empty list
@@ -41,6 +43,28 @@ static APP_HACK: u8 = 0;
 #[no_mangle]
 #[link_section = ".stack_buffer"]
 pub static mut STACK_MEMORY: [u8; 0x1000] = [0; 0x1000];
+
+static OT_SPASH: &[&str] = &[
+    "######################################################################################################################################################",
+    "######################################################################################################################################################",
+    "######################################################################################################################################################",
+    "############```*###*```###############################################################################################################################",
+    "############```*###*```###############################################################################``*#############################################",
+    "########````````*#*```````*#################################################################*```######``*####```######################################",
+    "########````****##*****```*#################################################################*```############*```*########*################**##########",
+    "#####```````###########```````#########*``******####```****``*#####**```*`*###*```*#**`*##*````````##*```##````````*##*``````````###``````````*#######",
+    "#####***````##```````##````***########`*#######**###``#######`*###`#######``##*`*######`*###*```#####*```###*```*####*```####*```###```**##*```#######",
+    "##############```````#################`########*`####*#######*`##*`*********##*`#######``###*```#####*```####```*#####``######```###```*####```#######",
+    "#####***````##```````##*```***########`*#######*`###`*#######*`##*`###########*`#######``####```#####*```####```*####*``*####*```###```*####```#######",
+    "#####```````##*******##```````#########***###*`*####```*###*``####*`*####*`###*`#######`*####``````*##```####*``````##*``````````###```#####```#######",
+    "#######*````****###****````#*#############***#######`*##***##########***#######################****#############***######***##########################",
+    "########*```````*#*```````*#########################`*################################################################################################",
+    "############```*###*```###############################################################################################################################",
+    "############```*###*```###############################################################################################################################",
+    "######################################################################################################################################################",
+    "######################################################################################################################################################",
+    "######################################################################################################################################################",
+];
 
 /// A structure representing this platform that holds references to all
 /// capsules for this platform. We've included an alarm and console.
@@ -93,13 +117,6 @@ pub unsafe fn reset_handler() {
     );
     DynamicDeferredCall::set_global_instance(dynamic_deferred_caller);
 
-    // Configure kernel debug gpios as early as possible
-    kernel::debug::assign_gpios(
-        Some(&ibex::gpio::PORT[7]), // First LED
-        None,
-        None,
-    );
-
     let chip = static_init!(ibex::chip::Ibex, ibex::chip::Ibex::new());
     CHIP = Some(chip);
 
@@ -118,16 +135,6 @@ pub unsafe fn reset_handler() {
         dynamic_deferred_caller,
     )
     .finalize(());
-
-    // Initialise the three GPIOs which are useful for debugging.
-    hil::gpio::Pin::make_output(&ibex::gpio::PORT[8]);
-    hil::gpio::Pin::set(&ibex::gpio::PORT[8]);
-
-    hil::gpio::Pin::make_output(&ibex::gpio::PORT[9]);
-    hil::gpio::Pin::set(&ibex::gpio::PORT[9]);
-
-    hil::gpio::Pin::make_output(&ibex::gpio::PORT[10]);
-    hil::gpio::Pin::set(&ibex::gpio::PORT[10]);
 
     let alarm = &ibex::timer::TIMER;
     alarm.setup();
@@ -159,6 +166,26 @@ pub unsafe fn reset_handler() {
     // Create the debugger object that handles calls to `debug!()`.
     components::debug_writer::DebugWriterComponent::new(uart_mux).finalize(());
 
+    let counter_demo_mux = static_init!(
+        capsules::virtual_alarm::VirtualMuxAlarm<'static, ibex::timer::RvTimer>,
+        capsules::virtual_alarm::VirtualMuxAlarm::new(mux_alarm)
+    );
+
+    let pins = &[7, 8, 9, 10, 11, 12, 13, 14];
+    for pin in pins {
+        hil::gpio::Pin::make_output(&ibex::gpio::PORT[*pin]);
+    }
+
+    let counter_demo_inst = static_init!(
+        counter_demo::CounterAlarm<'static, capsules::virtual_alarm::VirtualMuxAlarm<ibex::timer::RvTimer>>,
+        counter_demo::CounterAlarm::new(counter_demo_mux, pins)
+    );
+    counter_demo_inst.add_spash_text(OT_SPASH);
+
+    hil::time::Alarm::set_client(counter_demo_mux, counter_demo_inst);
+
+    counter_demo_inst.run(500);
+
     debug!("OpenTitan initialisation complete. Entering main loop");
 
     extern "C" {
@@ -182,9 +209,6 @@ pub unsafe fn reset_handler() {
         FAULT_RESPONSE,
         &process_mgmt_cap,
     );
-
-    // Turn off the fourth GPIO so we know we got here
-    hil::gpio::Pin::clear(&ibex::gpio::PORT[10]);
 
     board_kernel.kernel_loop(&opentitan, chip, None, &main_loop_cap);
 }
