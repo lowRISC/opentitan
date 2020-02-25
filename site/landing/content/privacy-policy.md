@@ -139,8 +139,7 @@ Regulation](http://ico.org.uk/for-organisations/guide-to-the-general-data-protec
 If you would like to exercise any of those rights, please:
 
   * email us at [info@lowrisc.org](mailto:info@lowrisc.org)
-  * write to us at lowRISC, 2nd floor, Betjeman House, 104 Hills Road,
-    Cambridge, CB2 1LQ, UK
+  * write to us at lowRISC, 7 Hills Road, Cambridge, CB2 1GE, UK
   * let us have enough information to identify you (eg when you accessed the
     website and from what location)
 
