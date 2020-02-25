@@ -19,7 +19,7 @@ This is not a specification of the final implementation.
 - Memory contents
   - 512kB emulated eFlash for code and data storage
   - 64kB SRAM for data storage
-  - 8kB ROM for secure boot code storage
+  - 16kB ROM for secure boot code storage
 - Security peripherals
   - Flash controller
   - AES-ECB module
@@ -196,7 +196,7 @@ CoreMark was compiled with GCC 9.2.0 with flags: `-march=rv32imc -mabi=ilp32 -mc
 
 The device contains three memory address spaces for instruction and data.
 
-Instruction ROM (8kB) is the target for the Ibex processor after release of external reset.
+Instruction ROM (16kB) is the target for the Ibex processor after release of external reset.
 The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
 The next stage - a boot loader stored in embedded flash memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
 The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
@@ -437,7 +437,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 
 | Item | base address | bound address |
 | --- | --- | --- |
-| `ROM`        | `0x00008000` | `0x00009fff` |
+| `ROM`        | `0x00008000` | `0x0000bfff` |
 | `SRAM`       | `0x10000000` | `0x1000ffff` |
 | `Flash`      | `0x20000000` | `0x2007ffff` |
 | `uart`       | `0x40000000` | `0x4000ffff` |

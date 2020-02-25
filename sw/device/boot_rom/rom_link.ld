@@ -17,7 +17,7 @@ GROUP(-lgcc)
 __DYNAMIC = 0;
 
 MEMORY {
-  rom(rx)   : ORIGIN = 0x00008000, LENGTH = 0x2000
+  rom(rx)   : ORIGIN = 0x00008000, LENGTH = 0x4000
   ram(w)    : ORIGIN = 0x10000000, LENGTH = 0x10000
   flash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
 }
@@ -51,7 +51,7 @@ _chip_info_start = ORIGIN(rom) + LENGTH(rom) - _chip_info_size;
  */
 SECTIONS {
   /**
-   * Ibex interrupt vector. See irq_vector.S for more information. 
+   * Ibex interrupt vector. See irq_vector.S for more information.
    *
    * This has to be set up at the boot address, so that execution jumps to the
    * reset handler correctly.
@@ -87,17 +87,17 @@ SECTIONS {
   } > rom
 
   /**
-   * "Intitial data" section, the initial values of the mutable data section 
+   * "Intitial data" section, the initial values of the mutable data section
    * initialized at runtime.
-   */ 
+   */
   .idata : ALIGN(4) {
     _data_init_start = .;
   } > rom
 
-  /** 
+  /**
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
-   */ 
+   */
   .data ORIGIN(ram): AT(_data_init_start) ALIGN(4) {
     _data_start = .;
     *(.data)

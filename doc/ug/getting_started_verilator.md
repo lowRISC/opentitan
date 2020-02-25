@@ -25,7 +25,7 @@ There are 3 memory types: ROM, RAM and Flash.
 By default, the system will first execute out of ROM and then jump to flash.
 A program needs to be built for each until ROM functionality for code download is ready.
 
-For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed. 
+For that purpose compile the demo program with "simulation" settings, which adjusts the frequencies to better match the simulation speed.
 For more information on building software targets refer to the [Software Getting Started Guide]({{< relref "getting_started_sw.md" >}}).
 
 ```console
