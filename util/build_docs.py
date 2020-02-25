@@ -207,7 +207,7 @@ def is_hugo_extended():
 
     # Hugo version string example:
     # Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z
-    return bool(re.search("v\d+\.\d+\.\d+-.*/extended", process.stdout))
+    return bool(re.search("v\d+\.\d+\.\d+.*/extended", process.stdout))
 
 
 def install_hugo(install_dir):
