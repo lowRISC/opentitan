@@ -81,7 +81,7 @@
 // It can be called as a module (or interface) body item.
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                        \
-  __name: assert property (@(posedge __clk) disable iff (__rst !== '0) (__prop))         \
+  __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
     else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))                   \
 `endif
 // Note: Above we use (__rst !== '0) in the disable iff statements instead of
@@ -92,7 +92,7 @@
 // Assert a concurrent property NEVER happens
 `define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                              \
-  __name: assert property (@(posedge __clk) disable iff (__rst !== '0) not (__prop))           \
+  __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) not (__prop))         \
     else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))                         \
 `endif
 
@@ -106,7 +106,7 @@
 //  Cover a concurrent property
 `define COVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                       \
-  __name: cover property (@(posedge __clk) disable iff (__rst !== '0) (__prop));        \
+  __name: cover property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop));      \
 `endif
 
 //////////////////////////////
@@ -141,7 +141,7 @@
 // Assume a concurrent property
 `define ASSUME(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                        \
-  __name: assume property (@(posedge __clk) disable iff (__rst !== '0) (__prop))         \
+  __name: assume property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
      else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end        \
 `endif
 
