@@ -38,7 +38,7 @@ $ sudo chown $(id -un) /tools
 
 ### Clone repository
 
-If you intend to contribute back to OpenTitan you will want your own fork of the repository on GitHub and to work using that, see the [notes for using GitHub]({{< relref "github_notes.md" >}}).
+If you intend to contribute back to OpenTitan you will want your own fork of the repository on GitHub and to work using that, see the [notes for using GitHub]({{< relref "doc/ug/github_notes.md" >}}).
 Otherwise make a simple clone of the main OpenTitan repository.
 
 ```console
