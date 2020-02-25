@@ -61,9 +61,13 @@ void base_set_stdout(buffer_sink_t out) {
 size_t base_printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
-  size_t bytes_left = base_vfprintf(base_stdout, format, args);
+  size_t bytes_left = base_vprintf(format, args);
   va_end(args);
   return bytes_left;
+}
+
+size_t base_vprintf(const char *format, va_list args) {
+  return base_vfprintf(base_stdout, format, args);
 }
 
 typedef struct snprintf_captures_t {

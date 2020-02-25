@@ -5,7 +5,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/print.h"
-#include "sw/device/lib/common.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/handler.h"
@@ -44,11 +44,11 @@ static const buffer_sink_t kPolledUartSink = {
     .sink = &polled_uart_sink_func,
 };
 
-static void debug_msg_and_abort(const char *msg) {
-  base_printf(msg);
-  base_printf("FAIL!\r\n");
-  abort();
-}
+#define LOG_FATAL(...) do { \
+  LOG_ERROR(__VA_ARGS__); \
+  base_printf("FAIL!\r\n"); \
+  abort(); \
+} while(false)
 
 /**
  * UART interrupt handler
@@ -82,11 +82,11 @@ static void handler_uart_isr(const dif_irq_claim_data_t *data) {
       }
       break;
     default:
-      debug_msg_and_abort("HANDLER UART: ISR is not implemented!\n");
+      LOG_FATAL("ISR is not implemented!");
   }
 
   if (!dif_uart_irq_state_clear(uart, uart_irq)) {
-    debug_msg_and_abort("HANDLER UART: ISR failed to clear IRQ!\n");
+    LOG_FATAL("ISR failed to clear IRQ!");
   }
 }
 
@@ -102,19 +102,19 @@ void handler_irq_external(void) {
   // Claim the IRQ by reading the Ibex specific CC register.
   dif_irq_claim_data_t claim_data;
   if (!dif_plic_irq_claim(&plic0, PLIC_TARGET, &claim_data)) {
-    debug_msg_and_abort("HANDLER: ISR is not implemented!\n");
+    LOG_FATAL("ISR is not implemented!");
   }
 
   // Check if the interrupted peripheral is UART.
   if (claim_data.peripheral != kDifPlicPeripheralUart) {
-    debug_msg_and_abort("HANDLER: ISR interrupted peripheral is not UART!\n");
+    LOG_FATAL("ISR interrupted peripheral is not UART!");
   }
   handler_uart_isr(&claim_data);
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   if (!dif_plic_irq_complete(&plic0, &claim_data)) {
-    debug_msg_and_abort("HANDLER: unable to complete the IRQ request!\n");
+    LOG_FATAL("Unable to complete the IRQ request!");
   }
 }
 
@@ -134,7 +134,7 @@ static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
 
 static bool plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
   if (!dif_plic_init(base_addr, plic)) {
-    base_printf("PLIC: init failed!\n");
+    LOG_ERROR("Init failed!");
     return false;
   }
 
@@ -147,11 +147,11 @@ static bool plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
 static bool uart_configure_irqs(dif_uart_t *uart) {
   if (!dif_uart_irq_enable(&uart0, kDifUartInterruptRxOverflow,
                            kDifUartEnable)) {
-    base_printf("UART: RX overflow IRQ enable failed!\n");
+    LOG_ERROR("RX overflow IRQ enable failed!");
     return false;
   }
   if (!dif_uart_irq_enable(&uart0, kDifUartInterruptTxEmpty, kDifUartEnable)) {
-    base_printf("UART: TX empty IRQ enable failed!\n");
+    LOG_ERROR("TX empty IRQ enable failed!");
     return false;
   }
 
@@ -165,42 +165,42 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
   // Set IRQ triggers to be level triggered
   if (!dif_plic_irq_trigger_type_set(plic, kDifPlicIrqIdUartRxOverflow,
                                      kDifPlicDisable)) {
-    base_printf("PLIC: RX overflow trigger type set failed!\n");
+    LOG_ERROR("RX overflow trigger type set failed!");
     return false;
   }
   if (!dif_plic_irq_trigger_type_set(plic, kDifPlicIrqIdUartTxEmpty,
                                      kDifPlicDisable)) {
-    base_printf("PLIC: TX empty trigger type set failed!\n");
+    LOG_ERROR("TX empty trigger type set failed!");
     return false;
   }
 
   // Set IRQ priorities to MAX
   if (!dif_plic_irq_priority_set(plic, kDifPlicIrqIdUartRxOverflow,
                                  PLIC_PRIORITY_MAX)) {
-    base_printf("PLIC: priority set for RX overflow failed!\n");
+    LOG_ERROR("priority set for RX overflow failed!");
     return false;
   }
   if (!dif_plic_irq_priority_set(plic, kDifPlicIrqIdUartTxEmpty,
                                  PLIC_PRIORITY_MAX)) {
-    base_printf("PLIC: priority set for TX empty failed!\n");
+    LOG_ERROR("priority set for TX empty failed!");
     return false;
   }
 
   // Set Ibex IRQ priority threshold level
   if (!dif_plic_target_threshold_set(&plic0, PLIC_TARGET, PLIC_PRIORITY_MIN)) {
-    base_printf("PLIC: threshold set failed!\n");
+    LOG_ERROR("threshold set failed!");
     return false;
   }
 
   // Enable IRQs in PLIC
   if (!dif_plic_irq_enable_set(plic, kDifPlicIrqIdUartRxOverflow, PLIC_TARGET,
                                kDifPlicEnable)) {
-    base_printf("PLIC: interrupt Enable for RX overflow failed!\n");
+    LOG_ERROR("interrupt Enable for RX overflow failed!");
     return false;
   }
   if (!dif_plic_irq_enable_set(plic, kDifPlicIrqIdUartTxEmpty, PLIC_TARGET,
                                kDifPlicEnable)) {
-    base_printf("PLIC: interrupt Enable for TX empty failed!\n");
+    LOG_ERROR("interrupt Enable for TX empty failed!");
     return false;
   }
 
@@ -210,7 +210,7 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
 static bool execute_test(dif_uart_t *uart) {
   // Force UART RX overflow interrupt.
   if (!dif_uart_irq_force(uart, kDifUartInterruptRxOverflow)) {
-    base_printf("TEST: failed to force RX overflow IRQ!\n");
+    LOG_ERROR("failed to force RX overflow IRQ!");
     return false;
   }
   // Check if the IRQ has occured and has been handled appropriately.
@@ -218,18 +218,18 @@ static bool execute_test(dif_uart_t *uart) {
     usleep(10);
   }
   if (!uart_rx_overflow_handled) {
-    base_printf("TEST: RX overflow IRQ has not been handled!\n");
+    LOG_ERROR("RX overflow IRQ has not been handled!");
     return false;
   }
   // Check that the IRQ has not been asserted more than once.
   if (uart_handled_more_than_once) {
-    base_printf("TEST: RX overflow IRQ was asserted more than once!\n");
+    LOG_ERROR("RX overflow IRQ was asserted more than once!");
     return false;
   }
 
   // Force UART TX empty interrupt.
   if (!dif_uart_irq_force(uart, kDifUartInterruptTxEmpty)) {
-    base_printf("TEST: failed to force TX empty IRQ!\n");
+    LOG_ERROR("failed to force TX empty IRQ!");
     return false;
   }
   // Check if the IRQ has occured and has been handled appropriately.
@@ -237,12 +237,12 @@ static bool execute_test(dif_uart_t *uart) {
     usleep(10);
   }
   if (!uart_tx_empty_handled) {
-    base_printf("TEST: TX empty IRQ has not been handled!\n");
+    LOG_ERROR("TX empty IRQ has not been handled!");
     return false;
   }
   // Check that the IRQ has not been asserted more than once.
   if (uart_handled_more_than_once) {
-    base_printf("TEST: TX empty IRQ was asserted more than once!\n");
+    LOG_ERROR("TX empty IRQ was asserted more than once!");
     return false;
   }
 

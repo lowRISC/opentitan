@@ -29,6 +29,17 @@ sw_lib_base_print = declare_dependency(
   )
 )
 
+# Generic logging library (sw_lib_base_log)
+sw_lib_base_log = declare_dependency(
+  link_with: static_library(
+    'base_log_ot',
+    sources: ['log.c'],
+    dependencies: [
+      sw_lib_base_print,
+    ],
+  )
+)
+
 test('sw_lib_base_print_test', executable(
   'sw_lib_base_print_test',
   sources: ['print.c', 'print_test.cc'],

@@ -12,6 +12,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       dif_uart,
       dif_plic,
       riscv_crt,
+      sw_lib_base_log,
+      sw_lib_base_print,
       sw_lib_irq_handlers,
       sw_lib_mmio,
       sw_lib_runtime_hart,

@@ -8,13 +8,13 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/log.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
-  LOG_INFO("Watch the LEDs!\n");
+  LOG_INFO("Watch the LEDs!");
 
   // Give a LED pattern as startup indicator for 5 seconds.
   dif_gpio_all_write(gpio, 0xff00);
@@ -46,15 +46,15 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
     bool changed = ((state_delta >> bit_idx) & 0x1) != 0;
     bool is_currently_set = ((gpio_state >> bit_idx) & 0x1) != 0;
     if (changed) {
-      LOG_INFO("GPIO switch #%d changed to %d\n", bit_idx, is_currently_set);
+      LOG_INFO("GPIO switch #%d changed to %d", bit_idx, is_currently_set);
     }
   }
 
   if ((state_delta & kFtdiMask) != 0) {
     if ((gpio_state & kFtdiMask) != 0) {
-      LOG_INFO("FTDI control changed. Enable JTAG.\r\n");
+      LOG_INFO("FTDI control changed. Enable JTAG.");
     } else {
-      LOG_INFO("FTDI control changed. Enable JTAG.\r\n");
+      LOG_INFO("FTDI control changed. Enable JTAG.");
     }
   }
 
@@ -67,7 +67,7 @@ void demo_spi_to_log_echo(void) {
   if (spi_len > 0) {
     uint32_t echo_word = spi_buf[0] ^ 0x01010101;
     spid_send(&echo_word, sizeof(echo_word));
-    LOG_INFO("SPI: %z\r\n", spi_len, spi_buf);
+    LOG_INFO("SPI: %z", spi_len, spi_buf);
   }
 }
 
