@@ -79,6 +79,25 @@ typedef struct buffer_sink {
  */
 size_t base_printf(const char *format, ...);
 
+/**
+ * Prints out a message to stdout, formatted according to the format string
+ * |format|.
+ *
+ * This function is identical to |base_printf|, except in that it takes a
+ * |va_list| instead of having a vararg parameter. This function plays a role
+ * analogous to |base_vfprintf|, for functions that wish to use the currently
+ * set |stdout|.
+ *
+ * This function *does not* take ownership of |args|; callers are responsible
+ * for calling |va_end|.
+ *
+ * See |base_printf()| for the semantics of the format specification.
+ *
+ * @param format the format spec.
+ * @param args values to interpolate in the format spec.
+ */
+size_t base_vprintf(const char *format, va_list args);
+
 /*
  * Prints a message to the buffer |buf|, capped at a given length.
  *

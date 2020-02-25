@@ -4,9 +4,8 @@
 
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/print.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/log.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
@@ -26,15 +25,18 @@ int main(int argc, char **argv) {
   dif_gpio_init(&gpio_config, &gpio);
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
   dif_gpio_output_mode_all_set(&gpio, 0x0ff00);
-
-  LOG_INFO("Hello, World!\n");
-  LOG_INFO("Built at " __DATE__ " " __TIME__ "\n");
+  // Add DATE and TIME because I keep fooling myself with old versions
+  LOG_INFO("Hello World!");
+  LOG_INFO("Built at: " __DATE__ ", " __TIME__);
 
   demo_gpio_startup(&gpio);
 
-  LOG_INFO("Try out the switches on the board,\n");
-  LOG_INFO("or type anything into the UART console window.\n");
-  LOG_INFO("The LEDs show the ASCII code of the last character.\n");
+  // Now have UART <-> Buttons/LEDs demo
+  // all LEDs off
+  dif_gpio_all_write(&gpio, 0x0000);
+  LOG_INFO("Try out the switches on the board");
+  LOG_INFO("or type anything into the console window.");
+  LOG_INFO("The LEDs show the ASCII code of the last character.");
 
   spid_send("SPI!", 4);
 

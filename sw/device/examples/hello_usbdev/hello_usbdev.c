@@ -9,7 +9,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/log.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
@@ -91,8 +91,8 @@ int main(int argc, char **argv) {
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
   dif_gpio_output_mode_all_set(&gpio, 0x0ff00);
 
-  LOG_INFO("Hello, USB!\n");
-  LOG_INFO("Built at " __DATE__ " " __TIME__ "\n");
+  LOG_INFO("Hello, USB!");
+  LOG_INFO("Built at: " __DATE__ ", " __TIME__);
 
   demo_gpio_startup(&gpio);
 
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
       if (rcv_char == '/') {
         uint32_t usb_irq_state = REG32(USBDEV_INTR_STATE());
         uint32_t usb_stat = REG32(USBDEV_USBSTAT());
-        LOG_INFO("I%4x-%8x\r\n", usb_irq_state, usb_stat);
+        LOG_INFO("I%4x-%8x", usb_irq_state, usb_stat);
       } else {
         usb_simpleserial_send_byte(&simple_serial0, rcv_char);
         usb_simpleserial_send_byte(&simple_serial1, rcv_char + 1);
@@ -139,5 +139,5 @@ int main(int argc, char **argv) {
   }
 
   uart_send_str("\r\n");
-  LOG_INFO("USB recieved %d characters.\r\n", usb_chars_recved_total);
+  LOG_INFO("USB recieved %d characters.", usb_chars_recved_total);
 }
