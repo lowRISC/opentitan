@@ -23,7 +23,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 40130000;
   localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 40140000;
 
-  localparam logic [31:0] ADDR_MASK_ROM           = 32'h 00001fff;
+  localparam logic [31:0] ADDR_MASK_ROM           = 32'h 00003fff;
   localparam logic [31:0] ADDR_MASK_DEBUG_MEM     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RAM_MAIN      = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_EFLASH        = 32'h 0007ffff;

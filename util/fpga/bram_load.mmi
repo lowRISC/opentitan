@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MemInfo Version="1" Minor="0">
   <Processor Endianness="Little" InstPath="dummy">
-  <AddressSpace Name="axi_bram_ctrl_0_bram" Begin="0" End="8191">
+  <AddressSpace Name="brom" Begin="0" End="4095">
       <BusBlock>
         <BitLane MemType="RAMB32" Placement="X4Y18">
-          <DataWidth MSB="15" LSB="0"/>
-          <AddressRange Begin="0" End="2047"/>
+          <DataWidth MSB="7" LSB="0"/>
+          <AddressRange Begin="0" End="4095"/>
           <Parity ON="false" NumBits="0"/>
         </BitLane>
         <BitLane MemType="RAMB32" Placement="X4Y19">
-          <DataWidth MSB="31" LSB="16"/>
-          <AddressRange Begin="0" End="2047"/>
+          <DataWidth MSB="15" LSB="8"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+        <BitLane MemType="RAMB32" Placement="X3Y14">
+          <DataWidth MSB="23" LSB="16"/>
+          <AddressRange Begin="0" End="4095"/>
+          <Parity ON="false" NumBits="0"/>
+        </BitLane>
+        <BitLane MemType="RAMB32" Placement="X3Y15">
+          <DataWidth MSB="31" LSB="24"/>
+          <AddressRange Begin="0" End="4095"/>
           <Parity ON="false" NumBits="0"/>
         </BitLane>
       </BusBlock>
