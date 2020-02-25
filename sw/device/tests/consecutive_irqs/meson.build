@@ -13,7 +13,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       dif_plic,
       riscv_crt,
       sw_lib_irq_handlers,
-      sw_lib_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
       sw_lib_uart,
@@ -32,7 +31,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'consecutive_irqs_test_export_' + device_name,
     command: export_embedded_target,
     input: [consecutive_irqs_test_elf, consecutive_irqs_test_embedded],
-    output: 'consecutive_irqs_test' + device_name,
+    output: 'consecutive_irqs_test_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
   )
