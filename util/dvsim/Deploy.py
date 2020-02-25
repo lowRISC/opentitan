@@ -526,7 +526,7 @@ class RunTest(Deploy):
 
     @staticmethod
     def get_seed():
-        if RunTest.seeds == []:
+        if not RunTest.seeds:
             for i in range(1000):
                 seed = random.getrandbits(32)
                 RunTest.seeds.append(seed)
