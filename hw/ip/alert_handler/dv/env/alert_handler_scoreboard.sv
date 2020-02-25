@@ -30,17 +30,21 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // ---   C   -classc_phase0_cyc - classc_phase1_cyc - classc_phase2_cyc - classc_phase3_cyc --
   // ---   D   -classd_phase0_cyc - classd_phase1_cyc - classd_phase2_cyc - classd_phase3_cyc --
   dv_base_reg   reg_esc_phase_cycs_per_class_q[NUM_ALERT_HANDLER_CLASSES][$];
+  dv_base_reg   reg_accum_cnt_per_class_q[NUM_ALERT_HANDLER_CLASSES];
 
   uvm_reg_field alert_cause_fields[$];
   uvm_reg_field intr_state_fields[$];
-  uvm_reg_field alert_cause_field, intr_state_field;
+  uvm_reg_field loc_alert_cause_fields[$];
+  uvm_reg_field alert_cause_field, intr_state_field, loc_alert_cause_field;
   // once escalation triggers, no alerts can trigger another escalation in the same class
   // until the class esc is cleared
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_esc_classes;
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_intr_classes;
   bit [NUM_ALERT_HANDLER_CLASS_MSB:0] esc_class_trigger;
-  int intr_timer_per_class[NUM_ALERT_HANDLER_CLASSES];
-  int alert_cnter_per_class[NUM_ALERT_HANDLER_CLASSES];
+  int      intr_timer_per_class[NUM_ALERT_HANDLER_CLASSES];
+  // For different alert classify in the same class and trigger at the same cycle, design only
+  // count once. So record the alert triggered timing here
+  realtime last_triggered_alert_per_class[NUM_ALERT_HANDLER_CLASSES];
 
   string class_name[] = {"a", "b", "c", "d"};
 
@@ -55,11 +59,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     ral.alert_cause.get_fields(alert_cause_fields);
+    ral.loc_alert_cause.get_fields(loc_alert_cause_fields);
     ral.intr_state.get_fields(intr_state_fields);
     `ASSIGN_CLASS_PHASE_REGS(0, a)
     `ASSIGN_CLASS_PHASE_REGS(1, b)
     `ASSIGN_CLASS_PHASE_REGS(2, c)
     `ASSIGN_CLASS_PHASE_REGS(3, d)
+    reg_accum_cnt_per_class_q = {ral.classa_accum_cnt,
+        ral.classb_accum_cnt, ral.classc_accum_cnt, ral.classd_accum_cnt};
 
     foreach (alert_fifo[i]) alert_fifo[i] = new($sformatf("alert_fifo[%0d]", i), this);
     foreach (esc_fifo[i])   esc_fifo[i]   = new($sformatf("esc_fifo[%0d]", i), this);
@@ -83,13 +90,19 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int index = i;
       fork
         forever begin
+          bit [TL_DW-1:0] alert_en;
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
           // once the alert is received
-          if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
-              act_item.alert_handshake_sta == AlertReceived) begin
-            bit [TL_DW-1:0] alert_en = ral.alert_en.get_mirrored_value();
-            if (alert_en[index]) process_alert_sig(index);
+          alert_en = ral.alert_en.get_mirrored_value();
+          if (alert_en[index]) begin
+            if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
+                act_item.alert_handshake_sta == AlertReceived) begin
+              process_alert_sig(index, 0);
+            end else if (act_item.alert_esc_type == AlertEscIntFail) begin
+              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+              if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
+            end
           end
         end
       join_none
@@ -118,32 +131,58 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
   endtask : process_esc_fifo
 
-  virtual function void process_alert_sig(int alert_i);
-    bit [TL_DW-1:0] alert_class = ral.alert_class.get_mirrored_value();
-    // extract the two bits that indicates which intr class this alert will trigger
-    bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i = (alert_class >> alert_i * 2) & 'b11;
+  // this function process alert signal by checking if intergrity fail, then classify it to the
+  // mapping classes, then check if escalation is triggered by accumulation
+  virtual function void process_alert_sig(int alert_i, bit is_int_err,
+                                          local_alert_type_e local_alert_type = LocalAlertIntFail);
+    bit [TL_DW-1:0] alert_class, intr_en;
+    bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i;
     bit [TL_DW-1:0] class_ctrl;
-    alert_cause_field = alert_cause_fields[alert_i];
+
+    if (!is_int_err) begin
+      alert_class = ral.alert_class.get_mirrored_value();
+      // extract the two bits that indicates which intr class this alert will trigger
+      class_i = (alert_class >> alert_i * 2) & 'b11;
+      alert_cause_field = alert_cause_fields[alert_i];
+      void'(alert_cause_field.predict(1));
+    end else begin
+      alert_class = ral.loc_alert_class.get_mirrored_value();
+      class_i = (alert_class >> local_alert_type * 2) & 'b11;
+      loc_alert_cause_field = loc_alert_cause_fields[local_alert_type];
+      void'(loc_alert_cause_field.predict(1));
+    end
+
     intr_state_field = intr_state_fields[class_i];
-    void'(alert_cause_field.predict(1));
     void'(intr_state_field.predict(1));
-    if (!under_intr_classes[class_i]) under_intr_classes[class_i] = 1;
+    intr_en = ral.intr_enable.get_mirrored_value();
+    if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
     // calculate escalation
     class_ctrl = get_class_ctrl(class_i);
-    // if class escalation is enabled
-    if (class_ctrl[AlertClassCtrlEn] && (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0) &&
-        !under_esc_classes[class_i]) begin
+    `uvm_info(`gfn, $sformatf("class %0d is triggered, class ctrl=%0h, under_esc=%0b",
+                              class_i, class_ctrl, under_esc_classes[class_i]), UVM_DEBUG)
+    // if class escalation is enabled, add alert to accumulation count
+    if (class_ctrl[AlertClassCtrlEn] &&
+        (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
       alert_accum_cal(class_i);
     end
   endfunction
 
-  // calculate alert accumulation count per class, if accumulation exceeds the threshold, predict
-  // escalation
+  // calculate alert accumulation count per class, if accumulation exceeds the threshold,
+  // and if current class not under escalation, then predict escalation
+  // more thatn one alerts triggered on the same clk cycle only counts for one
   virtual function void alert_accum_cal(int class_i);
     bit [TL_DW-1:0] accum_thresh = get_class_accum_thresh(class_i);
-    alert_cnter_per_class[class_i] += 1;
+    int accum_cnt = reg_accum_cnt_per_class_q[class_i].get_mirrored_value();
+    realtime curr_time = $realtime();
+    if (curr_time != last_triggered_alert_per_class[class_i]) begin
+      last_triggered_alert_per_class[class_i] = curr_time;
+      accum_cnt += 1;
+      void'(reg_accum_cnt_per_class_q[class_i].predict(accum_cnt));
+    end
     esc_class_trigger = class_i;
-    if (alert_cnter_per_class[class_i] > accum_thresh) predict_esc(class_i);
+    `uvm_info(`gfn, $sformatf("alert_accum: class=%0d, alert_cnt=%0d, thresh=%0d, under_esc=%0b",
+        class_i, accum_cnt, accum_thresh, under_esc_classes[class_i]), UVM_DEBUG)
+    if (accum_cnt > accum_thresh && !under_esc_classes[class_i]) predict_esc(class_i);
   endfunction
 
   // predict escalation signals by matching which phase should the esc signal will be triggered
@@ -208,7 +247,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-    if (write) begin
+    if (write && channel == AddrChannel) begin
       case (csr.get_name())
         // add individual case item for each csr
         "intr_test": begin
@@ -287,8 +326,9 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     foreach (esc_phase_per_sig_q[i]) esc_phase_per_sig_q[i].delete();
     // clear all the counters and timers for esc
     intr_timer_per_class[class_i] = 0;
-    alert_cnter_per_class[class_i] = 0;
+    last_triggered_alert_per_class[class_i] = 0;
     under_intr_classes[class_i] = 0;
+    void'(reg_accum_cnt_per_class_q[class_i].predict(0));
   endfunction
 
   // get class_ctrl register mirrored value by class

@@ -22,6 +22,7 @@ class alert_monitor extends alert_esc_base_monitor;
       alert_thread(phase);
       ping_thread(phase);
       reset_thread(phase);
+      int_fail_thread(phase);
     join_none
   endtask : run_phase
 
@@ -79,7 +80,7 @@ class alert_monitor extends alert_esc_base_monitor;
     alert_esc_seq_item req;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (!alert_p && cfg.vif.get_alert_p() === 1'b1 && !under_ping_rsp) begin
+      if (!alert_p && cfg.vif.get_alert() === 1'b1 && !under_ping_rsp) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
@@ -115,5 +116,23 @@ class alert_monitor extends alert_esc_base_monitor;
       alert_p = cfg.vif.get_alert_p();
     end
   endtask : alert_thread
+
+  virtual task int_fail_thread(uvm_phase phase);
+    alert_esc_seq_item req;
+    forever @(cfg.vif.monitor_cb) begin
+      // find int error, at each clk cycle, int error counts for one local alert
+      if (cfg.vif.monitor_cb.rst_n &&
+          (cfg.vif.get_alert_p() === cfg.vif.get_alert_n())) begin
+        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
+        req = alert_esc_seq_item::type_id::create("req");
+        req.alert_esc_type = AlertEscIntFail;
+        while (cfg.vif.get_alert_p() === cfg.vif.get_alert_n()) begin
+          alert_esc_port.write(req);
+          @(cfg.vif.monitor_cb);
+        end
+        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
+      end
+    end
+  endtask : int_fail_thread
 
 endclass : alert_monitor
