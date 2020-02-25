@@ -10,7 +10,6 @@ import logging as log
 import pprint
 import random
 import re
-import secrets
 import shlex
 import sys
 import time
@@ -528,10 +527,8 @@ class RunTest(Deploy):
     @staticmethod
     def get_seed():
         if RunTest.seeds == []:
-            # Py lib 'secrets' provides crypto quality strong random numbers.
             for i in range(1000):
-                seed = secrets.token_bytes(4)
-                seed = int.from_bytes(seed, byteorder='little')
+                seed = random.getrandbits(32)
                 RunTest.seeds.append(seed)
         return RunTest.seeds.pop(0)
 
