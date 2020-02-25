@@ -5,7 +5,7 @@
 cargo = find_program('cargo')
 
 target = 'riscv32imc-unknown-none-elf'
-build_type = 'debug'
+build_type = 'release'
 
 manifest_path = meson.source_root() / 'sw/device/tock/boards/opentitan/Cargo.toml'
 toolchain_file = meson.source_root() / 'sw/device/tock/boards/opentitan/rust-toolchain'
@@ -23,6 +23,7 @@ tock_raw = custom_target(
   command: [
     build_tock_cmd,
     target,
+    build_type,
     manifest_path,
     '@OUTDIR@',
     toolchain_file,
@@ -30,7 +31,7 @@ tock_raw = custom_target(
   ],
   output: target,
   build_always_stale: true,
-  build_by_default: true,
+  build_by_default: false,
 )
 
 tock_elf = custom_target(
@@ -39,16 +40,25 @@ tock_elf = custom_target(
   depends: tock_raw,
   input: tock_raw,
   output: 'opentitan.elf',
-  build_by_default: true,
+  build_always_stale: true,
+  build_by_default: false,
 )
 
 tock_bin = custom_target(
   'tock_bin',
-  command: [prog_objcopy, '-O', 'binary', '@INPUT@', '@OUTPUT@'],
+  command: [
+    prog_objcopy,
+    # Remove .apps section to dramatically reduce binary size.
+    '--remove-section', '.apps',
+    '-O', 'binary',
+    '@INPUT@',
+    '@OUTPUT@'
+  ],
   depends: tock_elf,
   input: tock_elf,
   output: 'opentitan.bin',
-  build_by_default: true,
+  build_always_stale: true,
+  build_by_default: false,
 )
 
 custom_target(
@@ -57,6 +67,7 @@ custom_target(
   input: [tock_elf, tock_bin],
   depends: [tock_elf, tock_bin],
   output: 'tock',
-  build_by_default: true,
+  build_always_stale: true,
+  build_by_default: false,
 )
 
