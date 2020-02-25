@@ -8,6 +8,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     sources: ['hello_usbdev.c'],
     name_suffix: 'elf',
     dependencies: [
+    sw_examples_demos,
     sw_lib_runtime_hart,
     sw_lib_pinmux,
     sw_lib_dif_gpio,

@@ -46,38 +46,38 @@ void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
 /* Use them to initialize a uint8_t array for cfg_dscr              */
 
 #define USB_CFG_DSCR_LEN 9
-#define USB_CFG_DSCR_HEAD(total_len, nint)                                    \
-  /* This is the actual configuration descriptor                 */           \
-  USB_CFG_DSCR_LEN,     /* bLength                                   */       \
-      2,                /* bDescriptorType                           */       \
-      (total_len)&0xff, /* wTotalLength[0]                           */       \
-      (total_len) >> 8, /* wTotalLength[1]                           */       \
-      (nint),           /* bNumInterfaces                            */       \
-      1,                /* bConfigurationValu                        */       \
-      0,                /* iConfiguration                            */       \
-      0xC0,             /* bmAttributes: must-be-one, self-powered   */       \
-      50, /* bMaxPower                                 */ /* MUST be followed \
-                                                             by (nint)        \
-                                                             Interface +      \
-                                                             Endpoint         \
-                                                             Descriptors */
+#define USB_CFG_DSCR_HEAD(total_len, nint)                                   \
+  /* This is the actual configuration descriptor                 */          \
+  USB_CFG_DSCR_LEN,     /* bLength                                   */      \
+      2,                /* bDescriptorType                           */      \
+      (total_len)&0xff, /* wTotalLength[0]                           */      \
+      (total_len) >> 8, /* wTotalLength[1]                           */      \
+      (nint),           /* bNumInterfaces                            */      \
+      1,                /* bConfigurationValu                        */      \
+      0,                /* iConfiguration                            */      \
+      0xC0,             /* bmAttributes: must-be-one, self-powered   */      \
+      50 /* bMaxPower                                 */ /* MUST be followed \
+                                                            by (nint)        \
+                                                            Interface +      \
+                                                            Endpoint         \
+                                                            Descriptors */
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 
 #define USB_INTERFACE_DSCR_LEN 9
-#define VEND_INTERFACE_DSCR(inum, nep, subclass, protocol)                \
-  /* interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12 */    \
-  USB_INTERFACE_DSCR_LEN, /* bLength                             */       \
-      4,                  /* bDescriptorType                     */       \
-      (inum),             /* bInterfaceNumber                    */       \
-      0,                  /* bAlternateSetting                   */       \
-      (nep),              /* bNumEndpoints                       */       \
-      0xff,               /* bInterfaceClass (Vendor Specific)   */       \
-      (subclass),         /* bInterfaceSubClass                  */       \
-      (protocol),         /* bInterfaceProtocol                  */       \
-      0, /* iInterface                          */ /* MUST be followed by \
-                                                      (nep) Endpoint      \
-                                                      Descriptors */
+#define VEND_INTERFACE_DSCR(inum, nep, subclass, protocol)               \
+  /* interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12 */   \
+  USB_INTERFACE_DSCR_LEN, /* bLength                             */      \
+      4,                  /* bDescriptorType                     */      \
+      (inum),             /* bInterfaceNumber                    */      \
+      0,                  /* bAlternateSetting                   */      \
+      (nep),              /* bNumEndpoints                       */      \
+      0xff,               /* bInterfaceClass (Vendor Specific)   */      \
+      (subclass),         /* bInterfaceSubClass                  */      \
+      (protocol),         /* bInterfaceProtocol                  */      \
+      0 /* iInterface                          */ /* MUST be followed by \
+                                                     (nep) Endpoint      \
+                                                     Descriptors */
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 
@@ -90,7 +90,7 @@ void usb_controlep_init(usb_controlep_ctx_t *ctctx, usbdev_ctx_t *ctx, int ep,
       0x02,                        /* bmAttributes (0x02=bulk, data)       */ \
       (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
-      (interval),                  /* bInterval                            */
+      (interval)                   /* bInterval                            */
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 
