@@ -16,6 +16,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand bit r_esc_rsp;
   rand bit int_err;
   rand bit timeout;
+  rand alert_sig_int_err_e int_err_scenario;
 
   // for monitor only
   rand alert_esc_trans_type_e alert_esc_type;
@@ -27,12 +28,14 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand int unsigned ack_delay;
   rand int unsigned ack_stable;
   rand int unsigned alert_delay;
+  rand int unsigned int_err_cyc;
 
   constraint delay_c {
     soft ping_delay  dist {0 :/ 5, [1:10] :/ 5};
     soft ack_delay   dist {0 :/ 5, [1:10] :/ 5};
     soft alert_delay dist {0 :/ 5, [1:10] :/ 5};
     soft ack_stable  dist {1 :/ 5, [2:10] :/ 5};
+    soft int_err_cyc dist {1 :/ 5, [2:10] :/ 5};
   }
 
   // if agent is alert mode, cannot send any esc_rsp signal
@@ -42,9 +45,9 @@ class alert_esc_seq_item extends uvm_sequence_item;
     (s_alert_send || r_alert_rsp || r_alert_ping_send || s_alert_ping_rsp) -> !r_esc_rsp;
   }
 
-  // temp constraint
-  constraint disable_int_err_c {
-    int_err == 0;
+  // TODO: temp constraint, will support soon
+  constraint sig_int_fail_c {
+    int_err_scenario == NoAlertBeforeAfterIntFail;
   }
 
   `uvm_object_utils_begin(alert_esc_seq_item)

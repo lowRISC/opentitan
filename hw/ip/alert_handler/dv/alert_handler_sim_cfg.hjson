@@ -68,6 +68,11 @@
       name: alert_handler_esc_alert_accum
       uvm_test_seq: alert_handler_esc_alert_accum_vseq
     }
+
+    {
+      name: alert_handler_sig_int_fail
+      uvm_test_seq: alert_handler_sig_int_fail_vseq
+    }
   ]
 
   // List of regressions.

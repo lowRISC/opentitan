@@ -71,6 +71,16 @@ interface alert_esc_if(input clk, input rst_n);
     sender_cb.alert_tx.alert_n <= 1'b1;
   endtask
 
+  task automatic drive_alerts_high();
+    sender_cb.alert_tx.alert_p <= 1'b1;
+    sender_cb.alert_tx.alert_n <= 1'b1;
+  endtask
+
+  task automatic drive_alerts_low();
+    sender_cb.alert_tx.alert_p <= 1'b0;
+    sender_cb.alert_tx.alert_n <= 1'b0;
+  endtask
+
   task automatic set_ack();
     receiver_cb.alert_rx.ack_p <= 1'b1;
     receiver_cb.alert_rx.ack_n <= 1'b0;
@@ -97,6 +107,14 @@ interface alert_esc_if(input clk, input rst_n);
 
   function automatic bit get_alert_p();
     return monitor_cb.alert_tx.alert_p;
+  endfunction
+
+  function automatic bit get_alert_n();
+    return monitor_cb.alert_tx.alert_n;
+  endfunction
+
+  function automatic bit get_alert();
+    return monitor_cb.alert_tx.alert_p && !monitor_cb.alert_tx.alert_n;
   endfunction
 
   function automatic bit get_ping_p();

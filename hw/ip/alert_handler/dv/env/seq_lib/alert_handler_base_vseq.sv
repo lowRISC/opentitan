@@ -43,13 +43,17 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic alert_handler features
-  // alert_class default 0 -> all alert will trigger interrupt classA
+  // alert_class default 0 -> all alert willtrigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
                                   bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
-                                  bit [TL_DW-1:0]                     alert_class = 'h0);
+                                  bit [TL_DW-1:0]                     alert_class = 'h0,
+                                  bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
+                                  bit [TL_DW-1:0]                     loc_alert_class = 'h0);
     csr_wr(.csr(ral.intr_enable), .value(intr_en));
     csr_wr(.csr(ral.alert_en), .value(alert_en));
     csr_wr(.csr(ral.alert_class), .value(alert_class));
+    csr_wr(.csr(ral.loc_alert_en), .value(loc_alert_en));
+    csr_wr(.csr(ral.loc_alert_class), .value(loc_alert_class));
   endtask
 
   virtual task alert_handle_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en =
@@ -60,7 +64,8 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d)
   endtask
 
-  virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger);
+  virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger,
+                           bit[alert_pkg::NAlerts-1:0] alert_int_err);
     fork
       begin : isolation_fork
         foreach (alert_trigger[i]) begin
@@ -70,7 +75,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
               begin
                 alert_sender_seq alert_seq;
                 `uvm_create_on(alert_seq, p_sequencer.alert_host_seqr_h[index]);
-                `DV_CHECK_RANDOMIZE_FATAL(alert_seq)
+                `DV_CHECK_RANDOMIZE_WITH_FATAL(alert_seq, int_err == alert_int_err[index];)
                 `uvm_send(alert_seq)
               end
             join_none
@@ -92,6 +97,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] alert_cause;
     // checking for this CSR is done in scb
     csr_rd(.ptr(ral.alert_cause), .value(alert_cause));
+    csr_rd(.ptr(ral.loc_alert_cause), .value(alert_cause));
+  endtask
+
+  virtual task read_esc_status();
+    bit [TL_DW-1:0] accum_cnt;
+    csr_rd(.ptr(ral.classa_accum_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classb_accum_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classc_accum_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classd_accum_cnt), .value(accum_cnt));
   endtask
 
   virtual task wait_alert_esc_handshake_done(int wait_clk_cycs_esc);

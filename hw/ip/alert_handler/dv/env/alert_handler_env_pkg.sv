@@ -26,6 +26,7 @@ package alert_handler_env_pkg;
   parameter uint NUM_ESC_PHASES              = 4;
   parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
   parameter uint MIN_CYCLE_PER_PHASE         = 2;
+  parameter uint NUM_LOCAL_ALERT             = 4;
 
   // types
   typedef enum {
@@ -57,6 +58,13 @@ package alert_handler_env_pkg;
     EscStatePhase2,
     EscStatePhase3
   } esc_state_e;
+
+  typedef enum {
+    LocalAlertPingFail,
+    LocalEscPingFail,
+    LocalAlertIntFail,
+    LocalEscIntFail
+  } local_alert_type_e;
 
   typedef struct {
     realtime    start_time;

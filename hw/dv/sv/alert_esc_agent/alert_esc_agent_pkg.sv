@@ -34,6 +34,13 @@ package alert_esc_agent_pkg;
     EscIntFail
   } esc_handshake_e;
 
+  typedef enum bit [1:0] {
+    NoAlertBeforeAfterIntFail  = 'b00,
+    HasAlertBeforeIntFailOnly  = 'b01,
+    HasAlertAfterIntFailOnly   = 'b10,
+    HasAlertBeforeAfterIntFail = 'b11
+  } alert_sig_int_err_e;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
