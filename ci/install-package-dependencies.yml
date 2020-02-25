@@ -24,6 +24,9 @@ steps:
 
       cd "${{ parameters.REPO_TOP }}"
 
+      # Ensure apt package index is up-to-date.
+      sudo apt-get update
+
       # NOTE: We use sed to remove all comments from apt-requirements.txt,
       # since apt-get doesn't actually provide such a feature.
       sed 's/#.*//' apt-requirements.txt \
