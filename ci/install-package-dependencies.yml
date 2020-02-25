@@ -5,20 +5,34 @@
 # Azure template for installing dependencies from various package managers,
 # necessary for building, testing, and packaging OpenTitan.
 #
+# This template can be included from pipelines in other repositories.
+# In this case, set the the REPO_TOP parameter to point to the root of the
+# checked out opentitan repository.
+#
 # This template executes:
 # - apt-get install for all packages listed in apt-requirements.txt
 # - pip install for all packages listed in python-requirements.txt
 
+parameters:
+- name: REPO_TOP
+  type: string
+  default: .
+
 steps:
   - bash: |
       set -e
+
+      cd "${{ parameters.REPO_TOP }}"
+
       # NOTE: We use sed to remove all comments from apt-requirements.txt,
       # since apt-get doesn't actually provide such a feature.
       sed 's/#.*//' apt-requirements.txt \
         | xargs sudo apt-get install -y
+
       # Python requirements are installed to the local user directory so prepend
       # appropriate bin directory to the PATH
       export PATH=$HOME/.local/bin:$PATH
+
       # Explicitly installing six is a workaround for pip dependency resolution:
       # six is already installed as system package with a version below the
       # required one.  Explicitly installing six through pip gets us a supported
@@ -31,7 +45,7 @@ steps:
       # version, which then fails to run.
       pip3 install --user -U setuptools pip six
       pip3 install --user -U -r python-requirements.txt
+
       # Propagate PATH changes to all subsequent steps of the job
       echo "##vso[task.setvariable variable=PATH]$PATH"
     displayName: 'Install package dependencies'
-
