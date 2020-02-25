@@ -95,7 +95,7 @@ bool Updater::Run() {
       // ack marker and CRC.
       // The current implementation will send the previous frame if the current
       // ack doesn't match the expected response.
-      if (current_frame > 1) {
+      if (current_frame >= 1) {
         current_frame--;
       }
       ack_expected_index = (current_frame == 0) ? 0 : current_frame - 1;
