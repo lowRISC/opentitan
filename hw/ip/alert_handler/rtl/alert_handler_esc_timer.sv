@@ -234,12 +234,12 @@ module alert_handler_esc_timer import alert_pkg::*; (
   `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == Timeout && en_i |=>
       state_q == Phase0)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0, state_q == Idle && timeout_en_i && en_i && timeout_cyc_i != 0 |=>
-      state_q == Timeout, clk_i, !rst_ni || accum_trig_i)
-  `ASSERT(CheckTimeout1, state_q == Timeout && timeout_en_i && cnt_q < timeout_cyc_i |=>
-      state_q == Timeout, clk_i, !rst_ni || accum_trig_i)
-  `ASSERT(CheckTimeout2, state_q == Timeout && !timeout_en_i |=>
-      state_q == Idle, clk_i, !rst_ni || accum_trig_i)
+  `ASSERT(CheckTimeout0, state_q == Idle && timeout_en_i && en_i && timeout_cyc_i != 0 &&
+      !accum_trig_i |=> state_q == Timeout)
+  `ASSERT(CheckTimeout1, state_q == Timeout && timeout_en_i && cnt_q < timeout_cyc_i &&
+      !accum_trig_i |=> state_q == Timeout)
+  `ASSERT(CheckTimeout2, state_q == Timeout && !timeout_en_i && !accum_trig_i |=>
+      state_q == Idle)
   // Check if timeout correctly triggers escalation
   `ASSERT(CheckTimeoutTrig, state_q == Timeout && timeout_en_i &&
       cnt_q == timeout_cyc_i |=> state_q == Phase0)
