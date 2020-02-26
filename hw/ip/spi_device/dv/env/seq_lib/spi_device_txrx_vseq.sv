@@ -149,7 +149,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     uint sram_avail_bytes;
     uint tx_write_bytes;
     while (remaining_bytes > 0) begin
-      logic [31:0] device_words_q[$];
+      bit [31:0] device_words_q[$];
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_delay)
       cfg.clk_rst_vif.wait_clks(tx_delay);
 
@@ -188,7 +188,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     uint sram_avail_bytes;
     uint rx_read_bytes;
     while (remaining_bytes > 0) begin
-      logic [31:0] device_words_q[$];
+      bit [31:0] device_words_q[$];
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_delay)
       cfg.clk_rst_vif.wait_clks(rx_delay);
 
@@ -219,7 +219,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     uint sram_avail_bytes;
     uint spi_bytes;
     bit  is_under_over_flow = 0;
-    logic [7:0] device_bytes_q[$];
+    bit [7:0] device_bytes_q[$];
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(spi_delay)
     cfg.clk_rst_vif.wait_clks(spi_delay);

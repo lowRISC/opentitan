@@ -88,9 +88,9 @@ class spi_host_driver extends spi_driver;
 
     // drive data
     for (int i = 0; i < req.data.size(); i++) begin
-      logic [7:0] host_byte;
-      logic [7:0] device_byte;
-      int         which_bit;
+      bit [7:0] host_byte;
+      bit [7:0] device_byte;
+      int       which_bit;
       host_byte = req.data[i];
       for (int j = 0; j < 8; j++) begin
         // drive mosi early so that it is stable at the sampling edge

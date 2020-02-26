@@ -13,17 +13,17 @@ class spi_device_sanity_vseq extends spi_device_base_vseq;
   }
 
   virtual task body();
-    logic [31:0] host_data;
-    logic [31:0] device_data;
-    logic [31:0] device_data_exp;
-    uint         avail_bytes;
+    bit [31:0] host_data;
+    bit [31:0] device_data;
+    bit [31:0] device_data_exp;
+    uint       avail_bytes;
 
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       spi_device_init();
       repeat ($urandom_range(1, 200)) begin
-        logic [31:0] host_data_exp_q[$];
+        bit [31:0] host_data_exp_q[$];
         `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
         `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
         // check if tx sram full and wait for at least a word to become available

@@ -6,7 +6,7 @@ class spi_item extends uvm_sequence_item;
 
   rand spi_trans_type_e item_type;
   // byte of data sent or received
-  rand logic [7:0] data[$];
+  rand bit [7:0] data[$];
 
   rand uint dummy_clk_cnt;
   rand uint dummy_sck_length_ns;
