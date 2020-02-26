@@ -51,6 +51,8 @@ ignoreFiles = [
   "/scratch/",
   "/site/*",
   "Makefile$",
+  "CLA",
+  "COMMITTERS",
 ]
 pygmentsCodeFences = true
 pygmentsStyle = "tango"
