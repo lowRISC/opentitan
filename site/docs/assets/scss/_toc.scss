@@ -3,16 +3,31 @@
   flex-grow: 1;
   flex-shrink: 0;
   padding: $m-s;
-  font-size: 1.125em;
-  border-right: 1px solid $medium-purple;
-  border-right: 1px solid var(--text-second);
+  font-size: 1em;
+  border-left: 1px solid $medium-purple;
+  border-left: 1px solid var(--text-second);
+
+  > nav > ul {
+    font-size: 1em;
+    font-weight: normal;
+  }
+
+  > nav > ul ul {
+    font-weight: bold;
+    font-size: 0.875em;
+    margin-top: 0.75em;
+
+    a {
+      text-transform: none;
+    }
+  }
 
   > nav > ul > li > a {
     text-transform: uppercase;
-    font-size: 1.25em;
-    font-weight: 300;
-    font-family: 'Livvic', sans-serif;
-    margin-top: 1.5em;
+    font-size: 0.875em;
+    font-weight: bold;
+    font-family: 'Ubuntu', sans-serif;
+    margin-top: 1em;
     display: block;
   }
 
@@ -24,10 +39,6 @@
 
   li {
     margin-bottom: 0.75em;
-  }
-
-  > nav > ul {
-    font-weight: bold;
   }
 
   a {
@@ -49,24 +60,6 @@
     }
   }
 
-  > nav > ul ul {
-    //font-weight: normal;
-    margin-top: 0.75em;
-
-    a {
-      text-transform: none;
-    }
-  }
-
-  > nav > ul ul ul {
-    font-weight: normal;
-    font-size: 0.875em;
-
-    a {
-      color: $medium-purple;
-      color: var(--text-second);
-    }
-  }
 }
 
 @media print {

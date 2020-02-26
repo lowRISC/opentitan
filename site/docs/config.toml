@@ -60,5 +60,10 @@ googleAnalytics = "UA-151030466-2"
 [params]
 generatedRoot = "build/docs-generated"
 
-[blackfriday]
-  extensions = ["noEmptyLineBeforeBlock"]
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.tableOfContents]
+    startLevel = 1
+    endLevel = 2
+    ordered = false
