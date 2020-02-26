@@ -188,8 +188,8 @@ module  i2c_core (
   assign fmt_byte               = fmt_fifo_rdata[7:0];
   assign fmt_flag_start_before  = fmt_fifo_rdata[8];
   assign fmt_flag_stop_after    = fmt_fifo_rdata[9];
-  assign fmt_flag_read_continue = fmt_fifo_rdata[10];
-  assign fmt_flag_read_bytes    = fmt_fifo_rdata[11];
+  assign fmt_flag_read_bytes    = fmt_fifo_rdata[10];
+  assign fmt_flag_read_continue = fmt_fifo_rdata[11];
   assign fmt_flag_nak_ok        = fmt_fifo_rdata[12];
 
   // Unused parts of exposed bits
