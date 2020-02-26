@@ -53,9 +53,9 @@ class spi_monitor extends dv_base_monitor#(
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
             forever begin
-              logic [7:0] host_byte;    // from mosi
-              logic [7:0] device_byte;  // from miso
-              int         which_bit;
+              bit [7:0] host_byte;    // from mosi
+              bit [7:0] device_byte;  // from miso
+              int       which_bit;
               for (int i = 0; i < 8; i++) begin
                 // wait for the sampling edge
                 cfg.wait_sck_edge(SamplingEdge);

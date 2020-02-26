@@ -19,7 +19,7 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
   // there may be some data left due to under/overflow, need to flush out all data
   virtual task check_for_tx_rx_idle();
     uint tx_avail_bytes, rx_avail_bytes;
-    logic [31:0] device_words_q[$];
+    bit [31:0] device_words_q[$];
 
     // flush out all remaining tx data in fifo due to overflow
     while (1) begin

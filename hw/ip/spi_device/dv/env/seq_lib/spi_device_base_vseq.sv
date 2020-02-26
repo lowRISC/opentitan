@@ -130,7 +130,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // set a byte of data via host agent, receive a byte of data from spi_device
-  virtual task spi_host_xfer_byte(logic [7:0] host_data, ref logic [7:0] device_data);
+  virtual task spi_host_xfer_byte(bit [7:0] host_data, ref bit [7:0] device_data);
     spi_host_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
@@ -141,7 +141,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // set a word (32 bits) of data via host agent, receive a word of data from spi_device
-  virtual task spi_host_xfer_word(logic [31:0] host_data, ref logic [31:0] device_data);
+  virtual task spi_host_xfer_word(bit [31:0] host_data, ref bit [31:0] device_data);
     spi_host_seq m_spi_host_seq;
     byte data_bytes[SRAM_WORD_SIZE];
     {<<8{data_bytes}} = host_data;
@@ -155,7 +155,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   // set a random chunk of bytes of data via host agent and receive same number of data from device
   virtual task spi_host_xfer_bytes(int num_bytes = $urandom_range(1, 512),
-                                   ref logic [7:0] device_data[$]);
+                                   ref bit [7:0] device_data[$]);
     spi_host_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq, data.size() == num_bytes;)
@@ -164,7 +164,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // write spi device data to send when incoming host traffic arrives
-  virtual task write_device_words_to_send(logic [31:0] device_data[$]);
+  virtual task write_device_words_to_send(bit [31:0] device_data[$]);
     bit [TL_DW-1:0] tx_wptr;
     uint tx_sram_size_bytes = `get_tx_allocated_sram_size_bytes;
 
@@ -194,7 +194,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // read spi host data received from the host
-  virtual task read_host_words_rcvd(uint num_words, ref logic [31:0] host_data[$]);
+  virtual task read_host_words_rcvd(uint num_words, ref bit [31:0] host_data[$]);
     bit [TL_DW-1:0] rx_rptr;
     uint rx_sram_size_bytes = `get_rx_allocated_sram_size_bytes;
 
@@ -202,7 +202,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     rx_rptr = ral.rxf_ptr.rptr.get_mirrored_value();
     repeat (num_words) begin
       bit   [TL_DW-1:0] rx_rptr_addr;
-      logic [TL_DW-1:0] word_data;
+      bit   [TL_DW-1:0] word_data;
       bit   [TL_DW-1:0] rx_base_addr = ral.rxf_addr.base.get_mirrored_value();
       rx_base_addr[1:0] = 0; // ignore lower 2 bits
       rx_rptr_addr = cfg.sram_start_addr + rx_base_addr + rx_rptr[SRAM_MSB:0];
