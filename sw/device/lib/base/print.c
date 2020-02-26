@@ -238,7 +238,7 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
  * @param va_list the list to pull an entry from.
  */
 static void process_specifier(buffer_sink_t out, format_specifier_t spec,
-                              size_t *bytes_written, va_list args) {
+                              size_t *bytes_written, va_list *args) {
   // Switch on the specifier. At this point, we assert that there is
   // an initialized value of correct type in the VA list; if it is
   // missing, the caller has caused UB.
@@ -248,12 +248,12 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       break;
     }
     case kCharacter: {
-      char value = (char)va_arg(args, uint32_t);
+      char value = (char)va_arg(*args, uint32_t);
       *bytes_written += out.sink(out.data, &value, 1);
       break;
     }
     case kString: {
-      char *value = va_arg(args, char *);
+      char *value = va_arg(*args, char *);
       size_t len = 0;
       while (value[len] != '\0') {
         ++len;
@@ -262,14 +262,14 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       break;
     }
     case kSizedStr: {
-      size_t len = va_arg(args, size_t);
-      char *value = va_arg(args, char *);
+      size_t len = va_arg(*args, size_t);
+      char *value = va_arg(*args, char *);
       *bytes_written += out.sink(out.data, value, len);
       break;
     }
     case kSignedDec1:
     case kSignedDec2: {
-      uint32_t value = va_arg(args, uint32_t);
+      uint32_t value = va_arg(*args, uint32_t);
       if (((int32_t)value) < 0) {
         *bytes_written += out.sink(out.data, "-", 1);
         value = -value;
@@ -278,7 +278,7 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       break;
     }
     case kUnsignedOct: {
-      uint32_t value = va_arg(args, uint32_t);
+      uint32_t value = va_arg(*args, uint32_t);
       *bytes_written += write_digits(out, value, spec.width, 8, kDigitsLow);
       break;
     }
@@ -290,29 +290,29 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       // - rv32imc: 0x00000000 (four bytes, eight nybbles).
       // - amd64:   0x0000000000000000 (eight bytes, sixteen nybbles).
       *bytes_written += out.sink(out.data, "0x", 2);
-      uintptr_t value = va_arg(args, uintptr_t);
+      uintptr_t value = va_arg(*args, uintptr_t);
       *bytes_written += write_digits(out, value, sizeof(uintptr_t) * 2, 16, kDigitsLow);
       break;
     }
     case kSvHexLow:
     case kUnsignedHexLow: {
-      uint32_t value = va_arg(args, uint32_t);
+      uint32_t value = va_arg(*args, uint32_t);
       *bytes_written += write_digits(out, value, spec.width, 16, kDigitsLow);
       break;
     }
     case kSvHexHigh:
     case kUnsignedHexHigh: {
-      uint32_t value = va_arg(args, uint32_t);
+      uint32_t value = va_arg(*args, uint32_t);
       *bytes_written += write_digits(out, value, spec.width, 16, kDigitsHigh);
       break;
     }
     case kUnsignedDec: {
-      uint32_t value = va_arg(args, uint32_t);
+      uint32_t value = va_arg(*args, uint32_t);
       *bytes_written += write_digits(out, value, spec.width, 10, kDigitsLow);
       break;
     }
     case kSvBinary: {
-      uint32_t value = va_arg(args, uint32_t);
+      uint32_t value = va_arg(*args, uint32_t);
       *bytes_written += write_digits(out, value, spec.width, 2, kDigitsLow);
       break;
     }
@@ -327,19 +327,26 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args) {
     out.sink = &base_dev_null;
   }
 
+  // NOTE: This copy is necessary on amd64 and other platforms, where
+  // |va_list| is a fixed array type (and, as such, decays to a pointer in
+  // an argument list). On PSABI RV32IMC, however, |va_list| is a |void*|, so
+  // this is a copy of the pointer, not the array.
+  va_list args_copy;
+  va_copy(args_copy, args);
+
   size_t bytes_written = 0;
   while (format[0] != '\0') {
     if (!consume_until_percent(out, &format, &bytes_written)) {
       break;
     }
-
     format_specifier_t spec;
     if (!consume_format_specifier(out, &format, &bytes_written, &spec)) {
       break;
     }
 
-    process_specifier(out, spec, &bytes_written, args);
+    process_specifier(out, spec, &bytes_written, &args_copy);
   }
 
+  va_end(args_copy);
   return bytes_written;
 }
