@@ -169,7 +169,7 @@ static size_t uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
 
 bool dif_uart_init(mmio_region_t base_addr, const dif_uart_config_t *config,
                    dif_uart_t *uart) {
-  if (uart == NULL || config == NULL || base_addr.base == NULL) {
+  if (uart == NULL || config == NULL) {
     return false;
   }
 
