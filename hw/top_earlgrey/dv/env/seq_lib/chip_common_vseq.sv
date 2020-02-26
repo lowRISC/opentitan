@@ -20,6 +20,8 @@ class chip_common_vseq extends chip_base_vseq;
   virtual task pre_start();
     super.pre_start();
     // keep sck on - needed for csr tests since some csrs are flopped on sck
+    // Select SPI interface.
+    cfg.jtag_spi_n_vif.drive(1'b0);
     cfg.m_spi_agent_cfg.sck_on = 1'b1;;
   endtask
 
@@ -40,6 +42,15 @@ class chip_common_vseq extends chip_base_vseq;
     `add_ip_csr_exclusions(spi_device)
     `add_ip_csr_exclusions(uart)
     `add_ip_csr_exclusions(usbdev)
+
+    // The following exclusions are added at the chip level since no IP level bench
+    // exist for these.
+
+    // Random writes to these pinmux CSRs may result in array index going OOB and
+    // assertion errors thrown.
+    csr_excl.add_excl({scope, ".", "pinmux.periph_insel*"}, CsrExclWrite);
+    csr_excl.add_excl({scope, ".", "pinmux.mio_outsel*"}, CsrExclWrite);
+    csr_excl.add_excl({scope, ".", "flash_ctrl.control.start"}, CsrExclWrite);
 
   endfunction
 
