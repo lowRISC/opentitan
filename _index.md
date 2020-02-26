@@ -32,5 +32,7 @@ Unless otherwise noted, everything in the repository is covered by the Apache Li
   * Top-level SoC
   * Ibex processor core
   * Comportable IP blocks
+* [Software]({{< relref "sw" >}})
+  * READMEs of OpenTitan software
 * [Tools]({{< relref "util" >}})
   * READMEs of OpenTitan tools
