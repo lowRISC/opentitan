@@ -19,6 +19,9 @@ package csr_utils_pkg;
   bit        default_csr_blocking        = 1;
   bit        under_reset                 = 0;
 
+  // global paramters for number of csr tests (including memory test)
+  parameter uint NUM_CSR_TESTS = 4;
+
   // csr field struct - hold field specific params
   typedef struct {
     uvm_reg         csr;
@@ -27,8 +30,21 @@ package csr_utils_pkg;
     uint            shift;
   } csr_field_s;
 
+  // csr test types
+  typedef enum bit [NUM_CSR_TESTS-1:0] {
+    CsrInvalidTest    = 4'h0,
+    // elementary test types
+    CsrHwResetTest    = 4'h1,
+    CsrRwTest         = 4'h2,
+    CsrBitBashTest    = 4'h4,
+    CsrAliasingTest   = 4'h8,
+    // combinational test types (combinations of the above), used for exclusion tagging
+    CsrNonInitTests   = 4'he, // all but HwReset test
+    CsrAllTests       = 4'hf  // all tests
+  } csr_test_type_e;
+
   // csr exclusion indications
-  typedef enum bit[2:0] {
+  typedef enum bit [2:0] {
     CsrNoExcl         = 3'b000, // no exclusions
     CsrExclInitCheck  = 3'b001, // exclude csr from init val check
     CsrExclWriteCheck = 3'b010, // exclude csr from write-read check
@@ -534,12 +550,13 @@ package csr_utils_pkg;
   // Fields could be excluded from writes & reads - This function zeros out the excluded fields
   function automatic uvm_reg_data_t get_mask_excl_fields(uvm_reg csr,
                                                          csr_excl_type_e csr_excl_type,
+                                                         csr_test_type_e csr_test_type,
                                                          csr_excl_item m_csr_excl_item);
     uvm_reg_field flds[$];
     csr.get_fields(flds);
     get_mask_excl_fields = '1;
     foreach (flds[i]) begin
-      if (m_csr_excl_item.is_excl(flds[i], csr_excl_type)) begin
+      if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
         csr_field_s fld_params = decode_csr_or_field(flds[i]);
         `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
                                   flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)

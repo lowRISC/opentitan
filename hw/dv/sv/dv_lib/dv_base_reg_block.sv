@@ -6,12 +6,14 @@
 class dv_base_reg_block extends uvm_reg_block;
   `uvm_object_utils(dv_base_reg_block)
 
+  csr_excl_item csr_excl;
+
   function new (string name = "", int has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
   endfunction
 
   // provide build function to supply base addr
-  virtual function void build(uvm_reg_addr_t base_addr);
+  virtual function void build(uvm_reg_addr_t base_addr, csr_utils_pkg::csr_excl_item csr_excl);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endfunction
 

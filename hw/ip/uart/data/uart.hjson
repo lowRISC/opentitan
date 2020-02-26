@@ -154,6 +154,8 @@
       hwaccess: "hrw",
       hwext: "true",
       hwre: "true",
+      tags: [// read wdata when fifo is empty, dut may return unknown data
+             "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "7:0" }
       ]
@@ -163,6 +165,8 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
+      tags: [// don't write to wdata - it affects several other csrs
+             "excl:CsrNonInitTests:CsrExclWrite"],
       fields: [
         { bits: "7:0" }
       ]
@@ -262,7 +266,9 @@
       fields: [
         { bits: "0",
           name: "TXEN",
-          desc: "Enable TX pin override control"
+          desc: "Enable TX pin override control",
+          tags: [// writes to ovrd.txen causes tx output to be forced to ovrd.txval causing protocol violation
+                 "excl:CsrAllTests:CsrExclWrite"]
         }
         { bits: "1",
           name: "TXVAL",
@@ -281,6 +287,8 @@
           desc: '''
                 Last 16 oversampled values of RX. Most recent bit is bit 0, oldest 15.
                 '''
+          tags: [// UART oversampled values are updated by design according to setting and pin RX
+                 "excl:CsrNonInitTests:CsrExclCheck"]
         }
       ]
     }

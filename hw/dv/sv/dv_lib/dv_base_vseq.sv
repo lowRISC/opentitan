@@ -97,14 +97,14 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual function void add_csr_exclusions(string           csr_test_type,
                                            csr_excl_item    csr_excl,
                                            string           scope = "ral");
-    `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
+    `uvm_info(`gfn, "no exclusion item added from this function", UVM_DEBUG)
   endfunction
 
-  virtual function csr_excl_item create_and_add_csr_excl(string csr_test_type);
-    csr_excl_item csr_excl = csr_excl_item::type_id::create("csr_excl");
-    add_csr_exclusions(csr_test_type, csr_excl);
-    csr_excl.print_exclusions();
-    return csr_excl;
+  // TODO: temp support, can delete this once all IPs update their exclusion in hjson
+  virtual function csr_excl_item add_and_return_csr_excl(string csr_test_type);
+    add_csr_exclusions(csr_test_type, ral.csr_excl);
+    ral.csr_excl.print_exclusions();
+    return ral.csr_excl;
   endfunction
 
   // wrapper task around run_csr_vseq - the purpose is to be able to call this directly for actual
@@ -121,7 +121,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     void'($value$plusargs("csr_%0s", csr_test_type));
 
     // create csr exclusions before running the csr seq
-    csr_excl = create_and_add_csr_excl(csr_test_type);
+    csr_excl = add_and_return_csr_excl(csr_test_type);
 
     // run the csr seq
     for (int i = 1; i <= num_times; i++) begin

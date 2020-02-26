@@ -49,12 +49,16 @@
 
                 If this bit is 1, HMAC operates when `hash_start` toggles.
                 ''',
+          tags: [// don't enable hmac and sha data paths - we will do that in functional tests
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         { bits: "1",
           name: "sha_en",
           desc: '''SHA256 enable. If 0, SHA engine won't initiate compression,
-          this is used to stop operation of the SHA engine until configuration
-          has been done. When the SHA engine is disabled the digest is cleared.'''
+                this is used to stop operation of the SHA engine until configuration
+                has been done. When the SHA engine is disabled the digest is cleared.'''
+          tags: [// don't enable hmac and sha data paths - we will do that in functional tests
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         { bits: "2",
           name: "endian_swap",
@@ -74,6 +78,9 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe:  "true",
+      tags: [// design assertion : after hash_start sets, can only wr msg or set hash_process
+             // design assertion : hash_process can be set only after hash_start is set
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "0",
           name: "hash_start",
@@ -120,8 +127,8 @@
         { bits: "31:0",
           name: "err_code",
           desc: '''If error interrupt occurs, this register has information of error cause.
-          Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type.
-          '''
+                Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type.
+                '''
         }
       ]
     }

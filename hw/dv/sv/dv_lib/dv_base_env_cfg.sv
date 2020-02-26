@@ -65,7 +65,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     // build the ral model
     if (has_ral) begin
       ral = RAL_T::type_id::create("ral");
-      ral.build(this.csr_base_addr);
+      ral.build(this.csr_base_addr, null);
       apply_ral_fixes();
     end
   endfunction

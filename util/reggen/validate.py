@@ -385,7 +385,10 @@ reg_optional = {
         "register name should be given here. empty-string for no register " +
         "write protection"
     ],
-    'resval': ['d', "reset value of full register (default 0)"]
+    'resval': ['d', "reset value of full register (default 0)"
+    ],
+    'tags': ['s', "tags for the register, followed by the format 'tag_name:item1:item2...'"]
+
 }
 reg_added = {
     'genresval': ['pi', "reset value generated from resval and fields"],
@@ -482,7 +485,9 @@ field_optional = {
         "x if neither are provided and the field "
         "is wo. Must match if both are provided."
     ],
-    'enum': ['l', "list of permitted enumeration groups"]
+    'enum': ['l', "list of permitted enumeration groups"
+    ],
+    'tags': ['s', "tags for the field, followed by the format 'tag_name:item1:item2...'"]
 }
 field_added = {
     'genrsvdenum': ['pb', "enum did not cover every possible value"],
@@ -619,6 +624,9 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
         if (ck_err != 0):
             error += ck_err
             continue
+
+        if not 'tags' in field:
+          field['tags'] = []
 
         if not 'swaccess' in field:
             if (default_sw == None):
@@ -841,6 +849,9 @@ def validate_reg_defaults(reg, rname):
     if 'regwen' not in reg:
         reg['regwen'] = ''
 
+    if 'tags' not in reg:
+      reg['tags'] = []
+
     if 'resval' in reg:
         full_resval, ierr = check_int(reg['resval'], rname + " resval")
         if ierr:
@@ -948,6 +959,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
 
     if error > 0:
         return (error, 0)
+
     bused = gen[3]
     max_rval = (1 << width) - 1
     cname = mreg['cname']
@@ -966,6 +978,10 @@ def validate_multi(mreg, offset, addrsep, width, top):
             genreg['hwre'] = mreg['hwre']
             genreg['swaccess'] = default_sw
             genreg['hwaccess'] = default_hw
+            if 'tags' in mreg:
+              genreg['tags'] = mreg['tags']
+            else:
+              genreg['tags'] = []
 
             if regwen_incr:
                 genreg['regwen'] = mreg['regwen'] + str(rnum)
@@ -996,6 +1012,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
                     newf['bitinfo'] = (newf['bitinfo'][0] << bpos,
                                        newf['bitinfo'][1],
                                        newf['bitinfo'][2] + bpos)
+                    if 'tags' not in fn:
+                      newf['tags'] = []
                     if 'enum' in newf:
                         del newf['enum']
                 else:
@@ -1050,6 +1068,15 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
     genreg['hwext'] = 'true' if name == 'INTR_TEST' else 'false'
     genreg['hwqe'] = 'true' if name == 'INTR_TEST' else 'false'
     genreg['hwre'] = 'false'
+    # Add tags.
+    if name == 'INTR_TEST':
+        # intr_test csr is WO which - it reads back 0s
+        genreg['tags'] = ["excl:CsrNonInitTests:CsrExclWrite"]
+    elif name == 'INTR_STATE':
+        # intr_state csr is affected by writes to other csrs - skip write-check
+        genreg['tags'] = ["excl:CsrNonInitTests:CsrExclWriteCheck"]
+    else:
+        genreg['tags'] = []
     bits_used = 0
     genfields = []
     cur_bit = 0
@@ -1086,6 +1113,10 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         newf['genhwre'] = False
         newf['genresval'] = 0
         newf['genresvalx'] = False
+        if not 'tags' in bit:
+          newf['tags'] = []
+        else:
+          newf['tags'] = bit['tags']
 
         bits_used = bits_used | ((2**w - 1) << cur_bit)
         cur_bit += 1
