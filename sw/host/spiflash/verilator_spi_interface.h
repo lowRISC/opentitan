@@ -29,9 +29,10 @@ class VerilatorSpiInterface : public SpiInterface {
   // Initialize interface.
   bool Init() final;
 
-  // Transmit bytes from |tx| buffer and read data back onto |rx| buffer. The
-  // number of bytes are defined by |size|.
-  bool TransmitFrame(const uint8_t *tx, uint8_t *rx, size_t size) final;
+  // Transmit bytes from |tx| buffer. The number of bytes are defined by |size|.
+  bool TransmitFrame(const uint8_t *tx, size_t size) final;
+
+  bool CheckHash(const uint8_t *tx, size_t size) final;
 
  private:
   std::string spi_filename_;
