@@ -48,14 +48,14 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.m_i2c_agent_cfg.max_delay_stop = 5;
     cfg.m_i2c_agent_cfg.max_delay_data = 5;
     // program ctrl reg
-    ral.ctrl.enablehost.set(ON);
+    ral.ctrl.enablehost.set(I2C_FLAG_ON);
     csr_update(ral.ctrl);
     // disable override the logic level of output pins
-    ral.ovrd.txovrden.set(OFF);
+    ral.ovrd.txovrden.set(I2C_FLAG_OFF);
     csr_update(ral.ovrd);
     // reset fmt_fifo and rx_fifo
-    ral.fifo_ctrl.rxrst.set(ON);
-    ral.fifo_ctrl.fmtrst.set(ON);
+    ral.fifo_ctrl.rxrst.set(I2C_FLAG_ON);
+    ral.fifo_ctrl.fmtrst.set(I2C_FLAG_ON);
     csr_update(ral.fifo_ctrl);
 
     if (do_interrupt) begin
@@ -107,7 +107,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     if (ral.ctrl.enablehost.get_mirrored_value()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
-      csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0),
+      csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(I2C_FLAG_OFF),
                    .spinwait_delay_ns(dly_to_access_fifo));
     end
     `uvm_info(`gfn, "wait_for_tx_fifo_not_full is done", UVM_HIGH)
@@ -117,7 +117,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task wait_for_rx_fifo_not_full();
     if (ral.ctrl.enablehost.get_mirrored_value()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
-      csr_spinwait(.ptr(ral.status.rxfull), .exp_data(1'b0),
+      csr_spinwait(.ptr(ral.status.rxfull), .exp_data(I2C_FLAG_OFF),
                    .spinwait_delay_ns(dly_to_access_fifo),
                    .timeout_ns(50_000_000)); // use longer timeout as i2c freq is low
     end
