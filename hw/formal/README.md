@@ -211,7 +211,7 @@ There are also powerful repetition operators, see
 
 When design has a set of modules or signals that share same properties,
 symbolic variables can be used to reduce duplicated assertions.
-For example, in the [rv_plic design](../ip/rv_plic/doc/rv_plic.md), the array of
+For example, in the [rv_plic design](../ip/rv_plic/doc/_index.md), the array of
 input `intr_src_i` are signals sharing same properties. Each
 `intr_src_i[index]` will trigger the interrupt pending (`ip`) signal depending
 on the corresponding level indicator (`le`) is set to level triggered or edge
