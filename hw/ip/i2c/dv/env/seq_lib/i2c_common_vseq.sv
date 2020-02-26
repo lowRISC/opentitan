@@ -27,37 +27,14 @@ class i2c_common_vseq extends i2c_base_vseq;
                                            csr_excl_item    csr_excl,
                                            string           scope = "ral");
 
-    // by default, apply all init, write, and write-read check (CsrNoExcl) for all registers
-    if (csr_test_type != "hw_reset") begin   // csr_rw, csr_bit_bash, or csr_aliasing
-      // RO registers - not able to write
-      csr_excl.add_excl({scope, ".", "val"}, CsrExclWriteCheck);
-      // intr_test csr is WO which - it reads back 0s, plus it affects the i2c_state csr
-      csr_excl.add_excl({scope, ".", "intr_test"}, CsrExclWriteCheck);
-      // fdata csr is WO which - it reads back 0s
-      csr_excl.add_excl({scope, ".", "fdata"}, CsrExclWriteCheck);
-      // intr_state csr is affected by writes to other csrs
-      csr_excl.add_excl({scope, ".", "intr_state"}, CsrExclWriteCheck);
-    end
-
-    // aliasing: write to specifc non-RO/non-INIT register (CsrExclWrite) and
-    // read all registers (CsrExclInit/WriteCheck) then check the specifc register
-    // content is updated (matching the mirrored value)
-    if (csr_test_type == "aliasing") begin
-      // RO registers - not able to write
-      csr_excl.add_excl({scope, ".", "status"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "rdata"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "fifo_status"}, CsrExclWrite);
-      csr_excl.add_excl({scope, ".", "val"}, CsrExclWrite);
-    end
-
-    // for csr_rw test
-    // fmtrst and rxrst fields in fifo_ctrl are WO - it read back 0s
-    csr_excl.add_excl({scope, ".", "fifo_ctrl.*rst"}, CsrExclWriteCheck);
-    // read rdata when fifo is empty, dut may return unknown data
-    csr_excl.add_excl({scope, ".", "rdata"}, CsrExclWriteCheck);
-    // status csr is RO - writing is not permitted
-    csr_excl.add_excl({scope, ".", "status"}, CsrExclWrite);
-
+    // intr_state is affected by writes to other csrs
+    csr_excl.add_excl({scope, ".", "intr_state"}, CsrExclCheck);
+    // RO registers - exclude init and write-read check
+    csr_excl.add_excl({scope, ".", "status"}, CsrExclWriteCheck);
+    csr_excl.add_excl({scope, ".", "fifo_status"}, CsrExclWriteCheck);
+    // RO registers - exclude init and write-read check
+    csr_excl.add_excl({scope, ".", "val"}, CsrExclCheck);
+    csr_excl.add_excl({scope, ".", "rdata"}, CsrExclCheck);
   endfunction : add_csr_exclusions
 
   task post_start();
