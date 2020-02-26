@@ -36,7 +36,7 @@ USAGE = """
 """
 
 # Version of hugo extended to be used to build the docs
-HUGO_EXTENDED_VERSION = "0.59.0"
+HUGO_EXTENDED_VERSION = "0.60.0"
 
 # Configurations
 # TODO: Move to config.yaml
