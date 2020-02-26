@@ -1,9 +1,13 @@
 .toc {
   width: 20em;
+  height: 100%;
   flex-grow: 1;
   flex-shrink: 0;
   padding: $m-s;
   font-size: 1em;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
   border-left: 1px solid $medium-purple;
   border-left: 1px solid var(--text-second);
 
