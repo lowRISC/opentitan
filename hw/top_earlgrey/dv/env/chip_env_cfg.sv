@@ -69,8 +69,6 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   // ral flow is limited in terms of setting correct field access policies and reset values
   // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
   protected virtual function void apply_ral_fixes();
-    // Flash ctrl prog_empty interrupt is set to 1 out of reset since it really is empty.
-    ral.flash_ctrl.intr_state.prog_empty.set_reset(1'b1);
     // Out of reset, the link is in disconnected state.
     ral.usbdev.intr_state.disconnected.set_reset(1'b1);
   endfunction

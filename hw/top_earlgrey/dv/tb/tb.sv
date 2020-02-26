@@ -133,7 +133,6 @@ module tb;
   assign jtag_trst_n      = jtag_if.trst_n;
   assign jtag_tdi         = jtag_if.tdi;
   assign jtag_if.tdo      = jtag_tdo;
-  assign cpu_d_tl_if.d2h  = `CPU_HIER.tl_d_i;
 
   assign spi_device_sck     = spi_if.sck;
   assign spi_device_csb     = spi_if.csb;
@@ -191,10 +190,10 @@ module tb;
     if (stub_cpu) begin
       force `CPU_HIER.clk_i = 1'b0;
       force `CPU_HIER.tl_d_o = cpu_d_tl_if.h2d;
-    end
-    else begin
+    end else begin
       force cpu_d_tl_if.h2d = `CPU_HIER.tl_d_o;
     end
   end
+  assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
 endmodule

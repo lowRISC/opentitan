@@ -24,7 +24,18 @@ class chip_base_vseq extends dv_base_vseq #(
   `uvm_object_new
 
   virtual task pre_start();
+    // Do DUT init after some additional settings.
+    do_dut_init = 1'b0;
     super.pre_start();
+
+    // Drive strap signals at the start.
+    cfg.srst_n_vif.drive(1'b1);
+    cfg.jtag_spi_n_vif.drive(1'b1); // Select JTAG.
+    cfg.bootstrap_vif.drive(1'b1);
+
+    // Now safe to do DUT init.
+    dut_init();
+
     cpu_test_state = CpuUnderReset;
     if (cfg.stub_cpu) begin
       do_cpu_init = 1'b0;
@@ -37,20 +48,21 @@ class chip_base_vseq extends dv_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    // finish the other resets before system reset. When system reset is done, SW starts to run
+    // TODO: Cannot assert different types of resets in parallel; due to randomization
+    // resets de-assert at different times. If the main rst_n de-asserts before others,
+    // the CPU starts executing right away which can cause breakages.
     cfg.m_jtag_agent_cfg.do_trst_n();
     super.apply_reset(kind);
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-    cfg.srst_n_vif.drive(1'b1);
-    cfg.jtag_spi_n_vif.drive(1'b0); // Select SPI.
-    cfg.bootstrap_vif.drive(1'b1);
+    // Set default frequencies.
     cfg.usb_clk_rst_vif.set_freq_mhz(dv_utils_pkg::ClkFreq48Mhz);
     cfg.m_uart_agent_cfg.set_baud_rate(BaudRate1Mbps);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
+    // Bring the chip out of reset.
+    super.dut_init(reset_kind);
   endtask
 
   // routine to backdoor load cpu test hex image and bring the cpu out of reset (if required)

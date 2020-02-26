@@ -27,6 +27,7 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
     if (!uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
       `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
     end
+    `uvm_info(`gfn, $sformatf("\n%0s", cfg.sprint()), UVM_HIGH)
 
     // create components
     if (cfg.en_cov) begin
