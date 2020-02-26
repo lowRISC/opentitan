@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  entries: [
+    {
+      name: enable_reg
+      desc: '''
+            The CSR test sequences will read and write accessible CSRs including the enable
+            registers and their locked registers. The RAL model supports predicting the correct
+            value of the locked registers based on their enable registers.
+            '''
+      milestone: V2
+      tests: ["{name}{intf}_csr_rw",
+              "{name}{intf}_csr_bit_bash",
+              "{name}{intf}_csr_aliasing"]
+    }
+  ]
+}
