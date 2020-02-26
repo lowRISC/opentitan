@@ -20,7 +20,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dvsim import Deploy, SimCfg, utils
+import Deploy
+import SimCfg
+import utils
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1

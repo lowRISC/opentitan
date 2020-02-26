@@ -13,7 +13,7 @@ import sys
 
 import hjson
 
-from .utils import *
+from utils import *
 
 
 class Modes():

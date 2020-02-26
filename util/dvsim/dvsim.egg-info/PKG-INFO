@@ -1,0 +1,9 @@
+Metadata-Version: 1.2
+Name: dvsim
+Version: 0.1
+Summary: "dvsim is a command line tool used to run major ASIC toolflows"
+Home-page: UNKNOWN
+License: Apache License, Version 2.0
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=3

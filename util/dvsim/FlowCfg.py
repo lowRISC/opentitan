@@ -11,8 +11,8 @@ import logging as log
 import pprint
 from shutil import which
 
-from .Deploy import *
-from .utils import *
+from Deploy import *
+from utils import *
 
 
 # Interface class for extensions.

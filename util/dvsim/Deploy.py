@@ -17,7 +17,7 @@ import time
 import hjson
 from tabulate import tabulate
 
-from .utils import *
+from utils import *
 
 
 class Deploy():
