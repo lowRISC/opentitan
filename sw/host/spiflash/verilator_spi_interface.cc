@@ -5,12 +5,14 @@
 #include "sw/host/spiflash/verilator_spi_interface.h"
 
 #include <fcntl.h>
+#include <openssl/sha.h>
 #include <termios.h>
 #include <unistd.h>
 
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace opentitan {
 namespace spiflash {
@@ -58,10 +60,10 @@ int OpenDevice(const std::string &filename) {
 
 // Reads |size| bytes into |rx| buffer from |fd|. Returns the number of bytes
 // read.
-int ReadBytes(int fd, uint8_t *rx, size_t size) {
+size_t ReadBytes(int fd, uint8_t *rx, size_t size) {
   size_t bytes_read = 0;
   while (bytes_read != size) {
-    size_t read_size = read(fd, &rx[bytes_read], size - bytes_read);
+    ssize_t read_size = read(fd, &rx[bytes_read], size - bytes_read);
     switch (read_size) {
       case -1:
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -91,8 +93,7 @@ bool VerilatorSpiInterface::Init() {
   return true;
 }
 
-bool VerilatorSpiInterface::TransmitFrame(const uint8_t *tx, uint8_t *rx,
-                                          size_t size) {
+bool VerilatorSpiInterface::TransmitFrame(const uint8_t *tx, size_t size) {
   size_t bytes_written = write(fd_, tx, size);
   if (bytes_written != size) {
     std::cerr << "Failed to write bytes to spi interface. Bytes written: "
@@ -100,12 +101,24 @@ bool VerilatorSpiInterface::TransmitFrame(const uint8_t *tx, uint8_t *rx,
     return false;
   }
   usleep(kWriteReadDelay);
-  size_t bytes_read = ReadBytes(fd_, rx, size);
+  return true;
+}
+
+bool VerilatorSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
+  uint8_t hash[SHA256_DIGEST_LENGTH];
+  SHA256_CTX sha256;
+  SHA256_Init(&sha256);
+  SHA256_Update(&sha256, tx, size);
+  SHA256_Final(hash, &sha256);
+
+  std::vector<uint8_t> rx(size);
+  size_t bytes_read = ReadBytes(fd_, &rx[0], size);
   if (bytes_read < size) {
     std::cerr << "Failed to read bytes from spi interface. Bytes read: "
               << bytes_read << " expected: " << size << std::endl;
   }
-  return true;
+
+  return !std::memcmp(&rx[0], hash, SHA256_DIGEST_LENGTH);
 }
 }  // namespace spiflash
 }  // namespace opentitan
