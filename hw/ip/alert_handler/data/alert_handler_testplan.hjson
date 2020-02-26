@@ -5,6 +5,7 @@
   name: "alert_handler"
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
                      "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/enable_reg_testplan.hjson",
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
