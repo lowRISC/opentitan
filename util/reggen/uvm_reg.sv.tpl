@@ -38,6 +38,7 @@ package ${block.name}_ral_pkg;
 % for r in regs_flat:
 <%
   reg_width = block.width
+  reg_name= r.name
 %>\
   // Class: ${gen_dv.rcname(block, r)}
   class ${gen_dv.rcname(block, r)} extends dv_base_reg;
@@ -54,7 +55,7 @@ package ${block.name}_ral_pkg;
       super.new(name, n_bits, has_coverage);
     endfunction : new
 
-    virtual function void build();
+    virtual function void build(csr_utils_pkg::csr_excl_item csr_excl = null);
       // create fields
 % for f in r.fields:
 <%
@@ -68,6 +69,7 @@ package ${block.name}_ral_pkg;
     field_volatile = 0
   else:
     field_volatile = 1
+  field_tags = f.tags
 %>\
       ${f.name} = dv_base_reg_field::type_id::create("${f.name}");
       ${f.name}.configure(
@@ -81,6 +83,18 @@ package ${block.name}_ral_pkg;
         .is_rand(1),
         .individually_accessible(1));
       ${f.name}.set_original_access("${field_access}");
+% if field_tags:
+      // create field tags
+% for field_tag in field_tags:
+<%
+  tag = field_tag.split(":")
+%>\
+% if tag[0] == "excl":
+      csr_excl.add_excl(${f.name}.get_full_name(), csr_utils_pkg::${tag[2]},
+                        csr_utils_pkg::${tag[1]});
+% endif
+% endfor
+% endif
 % endfor
     endfunction : build
 
@@ -138,12 +152,17 @@ package ${block.name}_ral_pkg;
       super.new(name, has_coverage);
     endfunction : new
 
-    virtual function void build(uvm_reg_addr_t base_addr);
+    virtual function void build(uvm_reg_addr_t base_addr,
+                                csr_utils_pkg::csr_excl_item csr_excl = null);
       // create default map
       this.default_map = create_map(.name("default_map"),
                                     .base_addr(base_addr),
                                     .n_bytes(${block.width//8}),
                                     .endian(UVM_LITTLE_ENDIAN));
+      if (csr_excl == null) begin
+        csr_excl = csr_utils_pkg::csr_excl_item::type_id::create("csr_excl");
+        this.csr_excl = csr_excl;
+      end
 % if block.blocks:
 
       // create sub blocks and add their maps
@@ -151,7 +170,7 @@ package ${block.name}_ral_pkg;
 % for b in block.blocks:
       ${b.name} = ${gen_dv.bcname(b)}::type_id::create("${b.name}");
       ${b.name}.configure(.parent(this));
-      ${b.name}.build(.base_addr(base_addr + ${gen_dv.sv_base_addr(b)}));
+      ${b.name}.build(.base_addr(base_addr + ${gen_dv.sv_base_addr(b)}), .csr_excl(csr_excl));
       default_map.add_submap(.child_map(${b.name}.default_map),
                              .offset(base_addr + ${gen_dv.sv_base_addr(b)}));
 % endfor
@@ -166,15 +185,28 @@ package ${block.name}_ral_pkg;
   reg_width = block.width
   reg_offset =  str(reg_width) + "'h" + "%x" % r.offset
   reg_wen = r.regwen
+  reg_tags = r.tags
 %>\
       ${reg_name} = ${gen_dv.rcname(block, r)}::type_id::create("${reg_name}");
       ${reg_name}.configure(.blk_parent(this));
-      ${reg_name}.build();
+      ${reg_name}.build(csr_excl);
       default_map.add_reg(.rg(${reg_name}),
                           .offset(${reg_offset}),
                           .rights("${reg_right}"));
 % if reg_wen:
       ${reg_wen}.add_locked_reg(${reg_name});
+% endif
+% if reg_tags:
+      // create register tags
+% for reg_tag in reg_tags:
+<%
+  tag = reg_tag.split(":")
+%>\
+% if tag[0] == "excl":
+      csr_excl.add_excl(${reg_name}.get_full_name(), csr_utils_pkg::${tag[2]},
+                        csr_utils_pkg::${tag[1]});
+% endif
+% endfor
 % endif
 % endfor
 % if block.wins:
@@ -188,12 +220,25 @@ package ${block.name}_ral_pkg;
   mem_offset = str(block.width) + "'h" + "%x" % w.base_addr
   mem_n_bits = w.n_bits
   mem_size = int((w.limit_addr - w.base_addr) / (mem_n_bits / 8))
+  mem_tags = w.tags
 %>\
       ${mem_name} = ${gen_dv.mcname(block, w)}::type_id::create("${mem_name}");
       ${mem_name}.configure(.parent(this));
       default_map.add_mem(.mem(${mem_name}),
                           .offset(${mem_offset}),
                           .rights("${mem_right}"));
+% if mem_tags:
+      // create memory tags
+% for mem_tag in mem_tags:
+<%
+  tag = mem_tag.split(":")
+%>\
+% if tag[0] == "excl":
+      csr_excl.add_excl(${mem_name}.get_full_name(), csr_utils_pkg::${tag[2]},
+                        csr_utils_pkg::${tag[1]});
+% endif
+% endfor
+% endif
 % endfor
     endfunction : build
 

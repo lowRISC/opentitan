@@ -33,6 +33,7 @@ class Field():
     hwqe = False
     hwre = False
     hwext = False
+    tags = []
 
     def __init__(self):
         self.name = ""  # required
@@ -46,6 +47,7 @@ class Field():
         self.hwqe = False
         self.hwre = False
         self.hwext = False
+        self.tags = []
 
     def get_n_bits(self, bittype=["q"]):
         n_bits = 0
@@ -80,6 +82,7 @@ class Reg():
     fields = []
     width = 0  # indicate register size
     ishomog = 0
+    tags = []
 
     def __init__(self, name=""):
         self.name = name
@@ -93,6 +96,7 @@ class Reg():
         self.fields = []
         self.width = 0
         self.ishomog = 0
+        self.tags = []
 
     def is_multi_reg(self):
         """Returns true if this is a multireg"""
@@ -194,11 +198,13 @@ class Window():
     base_addr = 0
     limit_addr = 0
     n_bits = 0
+    tags = []
 
     def __init__(self):
         self.base_addr = 0
         self.limit_addr = 0
         self.n_bits = 0
+        self.tags = []
 
 
 class Block():
@@ -210,6 +216,7 @@ class Block():
     wins = []
     blocks = []
     params = []
+    tags = []
 
     def __init__(self):
         self.width = 32
@@ -220,6 +227,7 @@ class Block():
         self.wins = []
         self.blocks = []
         self.params = []
+        self.tags = []
 
     def get_regs_flat(self):
         """Returns flattened register list

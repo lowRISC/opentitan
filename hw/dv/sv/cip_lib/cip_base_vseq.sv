@@ -399,13 +399,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task read_and_check_all_csrs_after_reset();
-    csr_excl_item csr_excl = create_and_add_csr_excl("hw_reset");
+    csr_excl_item csr_excl = add_and_return_csr_excl("hw_reset");
     `uvm_info(`gfn, "running csr hw_reset vseq", UVM_HIGH)
     run_csr_vseq(.csr_test_type("hw_reset"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
   endtask
 
   virtual task run_same_csr_outstanding_vseq(int num_times);
-    csr_excl_item csr_excl = create_and_add_csr_excl("csr_excl");
+    csr_excl_item csr_excl = add_and_return_csr_excl("csr_excl");
+    csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
     uvm_reg     test_csrs[$];
     ral.get_registers(test_csrs);
     do_clear_all_interrupts = 0; // skip checking interrupts at the end of seq
@@ -419,20 +420,22 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         uvm_reg_data_t exp_data = test_csrs[i].get_reset();
         uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
 
-        rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_excl);
-        wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_excl);
+        rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_test_type, csr_excl);
+        wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_test_type, csr_excl);
 
         // reset before every csr to avoid situation of writing one csr affect another's value
         dut_init("HARD");
         repeat ($urandom_range(10, 100)) begin
           // do read, exclude CsrExclWriteCheck, CsrExclCheck
-          if ($urandom_range(0, 1) && !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck)) begin
+          if ($urandom_range(0, 1) &&
+              !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck, csr_test_type)) begin
             tl_access(.addr(test_csrs[i].get_address()), .write(0), .data(rd_data),
                       .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask),
                       .blocking(0));
           end
           // do write, exclude CsrExclWrite
-          if ($urandom_range(0, 1) && !csr_excl.is_excl(test_csrs[i], CsrExclWrite)) begin
+          if ($urandom_range(0, 1) &&
+              !csr_excl.is_excl(test_csrs[i], CsrExclWrite, csr_test_type)) begin
             uvm_reg_field csr_fields[$];
             test_csrs[i].get_fields(csr_fields);
             `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
@@ -448,7 +451,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();
-    foreach(cfg.list_of_alerts[i]) begin
+    foreach (cfg.list_of_alerts[i]) begin
       automatic string seqr_name = cfg.list_of_alerts[i];
       fork
         forever begin

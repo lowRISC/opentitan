@@ -48,6 +48,7 @@ def parse_field(obj, reg, nfields):
     f.hwqe = obj["genhwqe"]
     f.hwre = obj["genhwre"]
     f.hwext = reg.hwext
+    f.tags = obj["tags"]
 
     # resval handling. `genresval` has zero value if `resval` field is defined
     # as unknown 'x'
@@ -90,6 +91,7 @@ def parse_reg(obj):
         reg.dvrights = obj["gendvrights"]
         reg.regwen = obj["regwen"].lower()
         reg.ishomog = len(obj['fields']) == 1
+        reg.tags = (obj['tags'])
 
         # Parsing Fields
         for f in obj["fields"]:
