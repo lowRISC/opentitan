@@ -43,3 +43,15 @@ sw_lib_dif_gpio = declare_dependency(
     ],
   )
 )
+
+# SPI DIF library
+sw_lib_dif_spi_device = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_spi_device',
+    sources: [
+      hw_ip_spi_device_reg_h,
+      'dif_spi_device.c',
+    ],
+    dependencies: [sw_lib_mmio],
+  )
+)
