@@ -92,7 +92,7 @@ module i2c_fsm (
         tClockPulse : tcount_d = t_r_i + thigh_i;
         tHoldBit    : tcount_d = t_f_i + thd_dat_i;
         tSetupStop  : tcount_d = t_r_i + tsu_sto_i;
-        tHoldStop   : tcount_d = t_r_i + t_buf_i;
+        tHoldStop   : tcount_d = t_r_i + t_buf_i - tsu_sta_i;
         tNoDelay    : tcount_d = '0;
         default     : tcount_d = '0;
       endcase
