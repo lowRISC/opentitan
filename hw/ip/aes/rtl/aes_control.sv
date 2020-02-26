@@ -69,7 +69,7 @@ module aes_control (
 
   // Types
   typedef enum logic [1:0] {
-    IDLE, LOAD, WAIT, CLEAR
+    IDLE, LOAD, FINISH, CLEAR
   } aes_ctrl_e;
 
   aes_ctrl_e aes_ctrl_ns, aes_ctrl_cs;
@@ -157,7 +157,7 @@ module aes_control (
 
             aes_ctrl_ns = LOAD;
           end
-         end else if (key_clear_i || data_out_clear_i) begin
+        end else if (key_clear_i || data_out_clear_i) begin
           // To clear the output data registers, we re-use the muxing resources of the cipher core.
           // To clear all key material, some key registers inside the cipher core need to be
           // cleared.
@@ -188,10 +188,10 @@ module aes_control (
         data_in_load = ~cipher_dec_key_gen_i;
         dec_key_gen  =  cipher_dec_key_gen_i;
 
-        aes_ctrl_ns = WAIT;
+        aes_ctrl_ns = FINISH;
       end
 
-      WAIT: begin
+      FINISH: begin
         // Wait for cipher core to finish.
 
         if (cipher_dec_key_gen_i) begin
