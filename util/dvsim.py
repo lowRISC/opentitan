@@ -110,11 +110,11 @@ def main():
         """List the available build_modes / run_modes / tests / regressions for use."""
     )
 
-    parser.add_argument("-s",
-                        "--simulator",
-                        default="vcs",
-                        metavar="vcs|xcelium",
-                        help="simulator to use; the default is vcs")
+    parser.add_argument("-t",
+                        "--tool",
+                        default="",
+                        metavar="vcs|xcelium|ascentlint|...",
+                        help="Override the tool that is set in hjson file")
 
     parser.add_argument(
         "-sr",
@@ -202,6 +202,7 @@ def main():
         help="Assume sim exec is available and proceed to run step")
 
     parser.add_argument(
+        "-s",
         "--seeds",
         nargs="+",
         default=[],
@@ -211,6 +212,7 @@ def main():
            items being run in the order they are passed.""")
 
     parser.add_argument(
+        "-r",
         "--reseed",
         type=int,
         default=-1,
@@ -276,11 +278,10 @@ def main():
                         action='store_true',
                         help="Turn off Xpropagation")
 
-    parser.add_argument(
-        "--job-prefix",
-        default="",
-        metavar="job-prefix",
-        help="Job prefix before deploying the simulator commands.")
+    parser.add_argument("--job-prefix",
+                        default="",
+                        metavar="job-prefix",
+                        help="Job prefix before deploying the tool commands.")
 
     parser.add_argument("--purge",
                         default=False,

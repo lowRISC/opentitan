@@ -410,8 +410,8 @@ class CompileSim(Deploy):
 
         self.mandatory_cmd_attrs = {
             # tool srcs
-            "simulator_srcs": False,
-            "simulator_srcs_dir": False,
+            "tool_srcs": False,
+            "tool_srcs_dir": False,
 
             # RAL gen
             "skip_ral": False,
@@ -613,6 +613,7 @@ class CovReport(Deploy):
         self.target = "cov_report"
         self.pass_patterns = []
         self.fail_patterns = []
+        self.cov_total = ""
         self.cov_results = ""
 
         self.mandatory_cmd_attrs = {
@@ -660,6 +661,8 @@ class CovReport(Deploy):
                             for val in line.split():
                                 val += " %"
                                 values.append(val)
+                            # first row is coverage total
+                            self.cov_total = values[0]
                             results.append(values)
                             colalign = (("center", ) * len(values))
                             self.cov_results = tabulate(results,

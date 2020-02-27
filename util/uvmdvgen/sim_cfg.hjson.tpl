@@ -11,6 +11,9 @@
   // Top level testbench name (sv module).
   tb: tb
 
+  // Simulator used to sign off this block
+  tool: vcs
+
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:${name}_sim:0.1
 

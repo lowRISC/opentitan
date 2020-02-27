@@ -26,7 +26,7 @@ class SimCfg(FlowCfg):
     def __init__(self, flow_cfg_file, proj_root, args):
         super().__init__(flow_cfg_file, proj_root, args)
         # Options set from command line
-        self.simulator = args.simulator
+        self.tool = args.tool
         self.build_opts = []
         self.build_opts.extend(args.build_opts)
         self.en_build_modes = []
@@ -81,7 +81,7 @@ class SimCfg(FlowCfg):
         self.run_modes = []
         self.regressions = []
 
-        # Options from simulators - for building and running tests
+        # Options from tools - for building and running tests
         self.build_cmd = ""
         self.flist_gen_cmd = ""
         self.flist_gen_opts = []
@@ -96,6 +96,7 @@ class SimCfg(FlowCfg):
         self.deploy = []
         self.cov_merge_deploy = None
         self.cov_report_deploy = None
+        self.results_summary = {}
 
         # If is_master_cfg is set, then each cfg will have its own cov_deploy.
         # Maintain an array of those in cov_deploys.
@@ -104,7 +105,6 @@ class SimCfg(FlowCfg):
         # Parse the cfg_file file tree
         self.parse_flow_cfg(flow_cfg_file)
 
-        self.final_total = []
         # Stop here if this is a master cfg list
         if self.is_master_cfg: return
 
@@ -124,6 +124,13 @@ class SimCfg(FlowCfg):
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
                                                       ignored_wildcards)
+
+        # TODO only support VCS coverage now
+        if self.tool != "vcs" and self.cov is True:
+            self.cov = False
+            log.warning(
+                "Coverage collection with tool \"%s\" is not supported yet",
+                self.tool)
 
         # Print info
         log.info("Scratch path for %s: %s", self.name, self.scratch_path)
@@ -378,7 +385,8 @@ class SimCfg(FlowCfg):
         # Also, create cov_deploys
         if self.cov:
             for item in self.cfgs:
-                self.cov_deploys.append(item.cov_merge_deploy)
+                if item.cov:
+                    self.cov_deploys.append(item.cov_merge_deploy)
 
     # deploy additional commands as needed. We do this separated for coverage
     # since that needs to happen at the end.
@@ -452,7 +460,8 @@ class SimCfg(FlowCfg):
         # Add path to testplan.
         testplan = "https://" + self.doc_server + '/' + self.rel_path
         testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
-        results_str += "### [Testplan](" + testplan + ")\n\n"
+        results_str += "### [Testplan](" + testplan + ")\n"
+        results_str += "### Simulator: " + self.tool.upper() + "\n\n"
 
         if regr_results == []:
             results_str += "No results to display.\n"
@@ -464,15 +473,19 @@ class SimCfg(FlowCfg):
                 regr_results=regr_results,
                 map_full_testplan=self.map_full_testplan)
             results_str += "\n"
-            self.final_total = self.testplan.final_total
-            # append link
-            self.final_total.append(self.append_result_link("Link"))
+            self.results_summary = self.testplan.results_summary
 
         # Append coverage results of coverage was enabled.
         if self.cov and self.cov_report_deploy.status == "P":
             results_str += "\n## Coverage Results\n"
             results_str += "\n### [Coverage Dashboard](cov_report/dashboard.html)\n\n"
             results_str += self.cov_report_deploy.cov_results
+            self.results_summary["Coverage"] = self.cov_report_deploy.cov_total
+        else:
+            self.results_summary["Coverage"] = "N.A. %"
+
+        # append link of detail result to block name
+        self.results_summary["Name"] = self.append_result_link(self.results_summary["Name"])
 
         # Append failures for triage
         self.results_md = results_str + fail_msgs
@@ -489,12 +502,17 @@ class SimCfg(FlowCfg):
 
     def gen_results_summary(self):
 
-        # sim summary result has 4 columns provided by Testplan::results_table
-        table = [["Name", "Passing", "Total", "Pass Rate", "Detail"]]
-        colalign = ("center", ) * 5
+        # sim summary result has 5 columns from each SimCfg.results_summary
+        header = ["Name", "Passing", "Total", "Pass Rate", "Coverage"]
+        table = [header]
+        colalign = ("center", ) * len(header)
         for item in self.cfgs:
-            table.append(item.final_total)
+            row = []
+            for title in item.results_summary:
+                row.append(item.results_summary[title])
+            table.append(row)
         self.results_summary_md = "## Simulation Summary Results\n"
+        self.results_summary_md += "### " + self.timestamp_long + "\n"
         self.results_summary_md += tabulate(table,
                                             headers="firstrow",
                                             tablefmt="pipe",

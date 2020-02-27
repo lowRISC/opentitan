@@ -11,6 +11,9 @@
   // Top level testbench name (sv module).
   tb: tb
 
+  // Simulator used to sign off this block
+  tool: xcelium
+
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:aes_sim:0.1
 
@@ -46,7 +49,7 @@
   build_modes: [
     {
       name: default
-      en_build_modes: ["{simulator}_aes_model_build_opts"]
+      en_build_modes: ["{tool}_aes_model_build_opts"]
     }
   ]
 

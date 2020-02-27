@@ -12,12 +12,12 @@
   import_cfgs:      ["{proj_root}/hw/dv/data/common_modes.hjson",
                      "{proj_root}/hw/dv/data/fusesoc.hjson",
                      "{proj_root}/hw/dv/data/gen_ral_pkg.hjson",
-                     "{proj_root}/hw/dv/data/{simulator}/{simulator}.hjson"]
+                     "{proj_root}/hw/dv/data/{tool}/{tool}.hjson"]
 
   // Default directory structure for the output
-  scratch_base_path:  "{scratch_root}/{dut}.{flow}.{simulator}"
+  scratch_base_path:  "{scratch_root}/{dut}.{flow}.{tool}"
   scratch_path:       "{scratch_base_path}/{branch}"
-  simulator_srcs_dir: "{scratch_path}/{simulator}"
+  tool_srcs_dir:      "{scratch_path}/{tool}"
   build_dir:          "{scratch_path}/{build_mode}"
   run_dir_name:       "{index}.{test}"
   run_dir:            "{scratch_path}/{run_dir_name}/out"
@@ -125,8 +125,8 @@
   ]
 
   // Project defaults for VCS
-  vcs_cov_hier: "-cm_hier {simulator_srcs_dir}/cover.cfg"
-  vcs_cov_excl_files: ["{simulator_srcs_dir}/common_cov_excl.el"]
+  vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover.cfg"
+  vcs_cov_excl_files: ["{tool_srcs_dir}/common_cov_excl.el"]
 
   // Results server stuff - indicate what command to use to copy over the results.
   // Workaround for gsutil to fall back to using python2.7.

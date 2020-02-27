@@ -10,22 +10,22 @@
     {
       name: waves
       is_sim_mode: 1
-      en_build_modes: ["{simulator}_waves"]
+      en_build_modes: ["{tool}_waves"]
     }
     {
       name: cov
       is_sim_mode: 1
-      en_build_modes: ["{simulator}_cov"]
+      en_build_modes: ["{tool}_cov"]
     }
     {
       name: profile
       is_sim_mode: 1
-      en_build_modes: ["{simulator}_profile"]
+      en_build_modes: ["{tool}_profile"]
     }
     {
       name: xprop
       is_sim_mode: 1
-      en_build_modes: ["{simulator}_xprop"]
+      en_build_modes: ["{tool}_xprop"]
     }
   ]
 
