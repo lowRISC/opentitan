@@ -33,3 +33,19 @@ test('dif_uart_test', executable(
   c_args: ['-DMOCK_MMIO'], 
   cpp_args: ['-DMOCK_MMIO'],
 ))
+
+test('dif_plic_test', executable(
+  'dif_plic_test',
+  sources: [
+    hw_top_earlgrey_rv_plic_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_plic.c',
+    'dif_plic_test.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'], 
+  cpp_args: ['-DMOCK_MMIO'],
+))
