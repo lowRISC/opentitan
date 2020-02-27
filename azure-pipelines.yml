@@ -115,15 +115,21 @@ jobs:
     displayName: Check commit metadata
   - bash: |
       only_doc_changes=0
+      has_hw_change=0
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
-        # Conservative way of checking for documentation-only changes.
+        # Conservative way of checking for changes in specific file types.
         # Only relevant for pipelines triggered from pull requests
-        echo "Checking for doc-only changes in this pull request"
         fork_origin="$(git merge-base --fork-point origin/master)"
+
+        echo "Checking for doc-only changes in this pull request"
         only_doc_changes="$(git diff --name-only "$fork_origin" | grep -v '\.md$' -q; echo $?)"
+
+        echo "Checking for hardware changes in this pull request"
+        has_hw_change="$(git diff --name-only "$fork_origin" | grep '^hw' -q; echo $?)"
       fi
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
-    displayName: Check if the commit only contains documentation changes
+      echo "##vso[task.setvariable variable=hasHardwareChanges;isOutput=true]${has_hw_change}"
+    displayName: Determine which build steps to run depending on changed files.
     name: DetermineBuildType
 
 - job: sw_build
@@ -244,6 +250,7 @@ jobs:
       make RISCV_ISA=rv32i
     displayName: Execute tests
 
+# NOTE: This step is only run if changes occured in the hw tree.
 - job: top_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
   dependsOn:
@@ -251,6 +258,8 @@ jobs:
     # The bootrom is built into the FPGA image at synthesis time.
     - sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  variables:
+    hasHardwareChanges: $[ dependencies.lint.outputs['DetermineBuildType.hasHardwareChanges'] ]
   pool: Default
   timeoutInMinutes: 120 # 2 hours
   steps:
@@ -265,15 +274,19 @@ jobs:
       BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.vmem"
       test -f "$BOOTROM_VMEM"
 
-      . /opt/xilinx/Vivado/2018.3/settings64.sh
-      fusesoc --cores-root=. \
-        run --target=synth --setup --build \
-        --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_nexysvideo \
-        --ROM_INIT_FILE="$BOOTROM_VMEM"
-
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
+      if [[ $(hasHardwareChanges) ]]; then
+        . /opt/xilinx/Vivado/2018.3/settings64.sh
+        fusesoc --cores-root=. \
+          run --target=synth --setup --build \
+          --build-root="$OBJ_DIR/hw" \
+          lowrisc:systems:top_earlgrey_nexysvideo \
+          --ROM_INIT_FILE="$BOOTROM_VMEM"
+        cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
+      else
+        touch "$BIN_DIR/hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit"
+      fi
+    condition: eq(dependencies.lint.outputs['DetermineBuildType.hasHardwareChanges'], '0')
     displayName: Build bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
     parameters:
