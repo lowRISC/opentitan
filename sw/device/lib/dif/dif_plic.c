@@ -114,6 +114,23 @@ static const plic_peripheral_range_t plic_peripheral_ranges[] = {
 };
 
 /**
+ * Get a number of IE, IP or LE registers (IE00, IE01, ...).
+ *
+ * With more than 32 IRQ sources, there is a multiple of these registers to
+ * accommodate all the bits (1 bit per IRQ source).
+ */
+static size_t plic_num_irq_reg(void) {
+  size_t register_num = kDifPlicIrqIdLast / PLIC_ID_TO_INDEX_REG_SIZE;
+
+  // Determine whether there are remaining IRQ sources that have a register.
+  if ((kDifPlicIrqIdLast % PLIC_ID_TO_INDEX_REG_SIZE) != 0) {
+    ++register_num;
+  }
+
+  return register_num;
+}
+
+/**
  * Get an IE, IP or LE register offset (IE00, IE01, ...) from an IRQ source ID.
  *
  * With more than 32 IRQ sources, there is a multiple of these registers to
@@ -169,6 +186,14 @@ static void plic_irq_pending_reg_info(dif_plic_irq_id_t irq,
 }
 
 /**
+ * Get a total number of priority registers (one for every IRQ source).
+ *
+ * The IRQ source IDs start from 1, so the last IRQ ID variant is also
+ * the number of priority registers (one per IRQ source).
+ */
+static size_t plic_num_priority_reg(void) { return kDifPlicIrqIdLast; }
+
+/**
  * Get a PRIO register offset (PRIO0, PRIO1, ...) from an IRQ source ID.
  *
  * There is one PRIO register per IRQ source, this function calculates the IRQ
@@ -179,12 +204,49 @@ static ptrdiff_t plic_priority_reg_offset(dif_plic_irq_id_t irq) {
   return RV_PLIC_PRIO0_REG_OFFSET + offset;
 }
 
+/**
+ * Reset the requested PLIC peripheral.
+ *
+ * This function resets all the relevant PLIC registers, apart from the CC
+ * register. There is no reliable way of knowing the ID of an IRQ that has
+ * claimed the CC register, so we assume that the previous "owner" of the
+ * resource has cleared/completed the CC access.
+ */
+static void plic_reset(const dif_plic_t *plic) {
+  // Clear all of Interrupt Enable and Level/Edge registers.
+  for (int i = 0; i < plic_num_irq_reg(); ++i) {
+    ptrdiff_t offset = RV_PLIC_IE00_REG_OFFSET + (i * sizeof(uint32_t));
+    mmio_region_write32(plic->base_addr, offset, 0);
+
+    offset = RV_PLIC_LE0_REG_OFFSET + (i * sizeof(uint32_t));
+    mmio_region_write32(plic->base_addr, offset, 0);
+  }
+
+  // Clear all of the priority registers.
+  for (int i = 0; i < plic_num_priority_reg(); ++i) {
+    ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (i * sizeof(uint32_t));
+    mmio_region_write32(plic->base_addr, offset, 0);
+  }
+
+  // Clear all of the target threshold registers.
+  for (dif_plic_target_t target = kDifPlicTargetIbex0;
+       target <= kDifPlicTargetLast; ++target) {
+    ptrdiff_t offset = plic_target_reg_offsets[target].threshold;
+    mmio_region_write32(plic->base_addr, offset, 0);
+  }
+
+  // Clear software interrupt pending register.
+  mmio_region_write32(plic->base_addr, RV_PLIC_MSIP0_REG_OFFSET, 0);
+}
+
 bool dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic) {
   if (plic == NULL) {
     return false;
   }
 
   plic->base_addr = base_addr;
+
+  plic_reset(plic);
 
   return true;
 }
