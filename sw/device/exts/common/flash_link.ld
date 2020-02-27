@@ -124,4 +124,11 @@ SECTIONS {
   .stabstr 0x0 (NOLOAD): {
     *(.stabstr)
   }
+
+  /**
+   * Explicitly discarded sections.
+   */
+  /DISCARD/ : {
+    *(.eh_frame)
+  }
 }

@@ -139,4 +139,14 @@ SECTIONS {
   .stabstr 0x0 (NOLOAD): {
     [.stabstr]
   }
+
+  /**
+   * Explicitly discarded sections.
+   */
+  /DISCARD/ : {
+    /**
+     * OpenTitan does not support unwinding.
+     */
+    *(.eh_frame)
+  }
 }

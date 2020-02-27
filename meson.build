@@ -66,12 +66,16 @@ add_project_arguments(
   '-nostartfiles', '-nostdlib', '-nostdinc',
   '-static', # Only link static files
   optimize_size_args,
+  # Don't emit eh_frame, which we straight up do not use.
+  '-fno-asynchronous-unwind-tables',
   language: 'cpp', native: false)
 add_project_arguments(
   # Do not use standard system startup files or libraries
   '-nostartfiles', '-nostdlib', '-nostdinc',
   '-static', # Only link static files
   optimize_size_args,
+  # Don't emit eh_frame, which we straight up do not use.
+  '-fno-asynchronous-unwind-tables',
   language: 'c', native: false)
 add_project_link_arguments(
   '-nostdlib', # Do not use standard system startup files or libraries
