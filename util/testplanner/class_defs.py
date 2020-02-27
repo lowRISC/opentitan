@@ -162,7 +162,7 @@ class Testplan():
     def __init__(self, name):
         self.name = name
         self.entries = []
-        self.final_total = []
+        self.results_summary = {}
         self.results = ""
 
         if name == "":
@@ -328,10 +328,11 @@ class Testplan():
                 milestone = ""
                 entry_name = ""
                 if entry.milestone == "N.A." and entry.name == "N.A.":
-                    self.final_total = [
-                        self.name.upper(), test["passing"], test["total"],
-                        pass_rate
-                    ]
+                    self.results_summary["Name"] = self.name.upper()
+                    self.results_summary["Passing"] = test["passing"]
+                    self.results_summary["Total"] = test["total"]
+                    self.results_summary["Pass Rate"] = pass_rate
+
         self.results = tabulate(table,
                                 headers="firstrow",
                                 tablefmt="pipe",

@@ -138,7 +138,7 @@ class FlowCfg():
 
                 # Case 1: key value in class and hjson_dict differ - error!
                 if type(hjson_dict_val) != type(self_val):
-                    log.error("Coflicting key types: \"%s\" {\"%s, \"%s\"}",
+                    log.error("Conflicting key types: \"%s\" {\"%s, \"%s\"}",
                               key,
                               type(hjson_dict_val).__name__,
                               type(self_val).__name__)
@@ -154,10 +154,21 @@ class FlowCfg():
                         setattr(self, key, hjson_dict_val)
                         rm_hjson_dict_keys.append(key)
                     elif not self_val in defaults and not hjson_dict_val in defaults:
-                        log.error(
-                            "Coflicting values {\"%s\", \"%s\"} encountered for key \"%s\"",
-                            str(self_val), str(hjson_dict_val), key)
-                        sys.exit(1)
+                        # check if key exists in command line args, use that, or
+                        # throw conflicting error
+                        # TODO, may throw the conflicting error but choose one and proceed rather
+                        # than exit
+                        override_with_args_val = False
+                        if hasattr(self.args, key):
+                            args_val = getattr(self.args, key)
+                            if type(args_val) == str and args_val != "":
+                                setattr(self, key, args_val)
+                                override_with_args_val = True
+                        if not override_with_args_val:
+                            log.error(
+                                "Conflicting values {\"%s\", \"%s\"} encountered for key \"%s\"",
+                                str(self_val), str(hjson_dict_val), key)
+                            sys.exit(1)
 
                 # Case 3: key value in class and hjson_dict are lists - merge'em
                 elif type(hjson_dict_val) is list and type(self_val) is list:

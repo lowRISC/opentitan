@@ -6,9 +6,9 @@
   build_ex:   "{build_dir}/simv"
   run_cmd:    "{job_prefix} {build_ex}"
 
-  // Indicate the simulator specific helper sources - these are copied over to the
-  // {simulator_srcs_dir} before running the simulation.
-  simulator_srcs:  ["{proj_root}/hw/dv/tools/vcs/*"]
+  // Indicate the tool specific helper sources - these are copied over to the
+  // {tool_srcs_dir} before running the simulation.
+  tool_srcs:  ["{proj_root}/hw/dv/tools/vcs/*"]
 
   build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
                "-timescale=1ns/1ps",
@@ -31,7 +31,7 @@
                "-LDFLAGS \"-Wl,--no-as-needed\""]
 
   run_opts:   ["-licqueue",
-               "-ucli -do {simulator_srcs_dir}/vcs_fsdb.tcl",
+               "-ucli -do {tool_srcs_dir}/vcs_fsdb.tcl",
                "+ntb_random_seed={seed}",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
@@ -141,7 +141,7 @@
     {
       name: vcs_xprop
       is_sim_mode: 1
-      build_opts: ["-xprop={simulator_srcs_dir}/xprop.cfg"]
+      build_opts: ["-xprop={tool_srcs_dir}/xprop.cfg"]
     }
     {
       name: vcs_profile
