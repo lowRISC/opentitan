@@ -48,11 +48,6 @@ static uint8_t cfg_dscr[] = {
         2) VEND_INTERFACE_DSCR(0, 2, 0x50, 1) USB_BULK_EP_DSCR(0, 1, 32, 0)
         USB_BULK_EP_DSCR(1, 1, 32, 4) VEND_INTERFACE_DSCR(1, 2, 0x50, 1)
             USB_BULK_EP_DSCR(0, 2, 32, 0) USB_BULK_EP_DSCR(1, 2, 32, 4)};
-// The array above may not end aligned on a 4-byte boundary
-// and is probably at the end of the initialized data section
-// Conversion to srec needs this to be aligned so force it by
-// initializing an int32 (volatile else it is not used and can go away)
-static volatile int32_t sdata_align = 42;
 
 /* context areas */
 static usbdev_ctx_t usbdev_ctx;
