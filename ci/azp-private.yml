@@ -1,0 +1,15 @@
+# Private CI trigger.  Used to run tooling that can't currently be shared
+# publicly.
+
+# The runner used for private CI enforces the use of the template below. All
+# build steps need to be placed into the template.
+resources:
+  repositories:
+  - repository: opentitan-private-ci
+    type: github
+    endpoint: lowRISC
+    name: lowrisc/opentitan-private-ci
+
+extends:
+  template: jobs.yml@opentitan-private-ci
+
