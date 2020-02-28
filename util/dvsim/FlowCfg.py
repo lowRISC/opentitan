@@ -11,6 +11,8 @@ import logging as log
 import pprint
 from shutil import which
 
+import hjson
+
 from .Deploy import *
 from .utils import *
 
@@ -36,6 +38,10 @@ class FlowCfg():
         self.branch = args.branch
         self.job_prefix = args.job_prefix
 
+        # Options set from hjson cfg.
+        self.project = ""
+        self.scratch_path = ""
+
         # Imported cfg files using 'import_cfgs' keyword
         self.imported_cfg_files = []
         self.imported_cfg_files.append(flow_cfg_file)
@@ -55,10 +61,6 @@ class FlowCfg():
         # a special key 'use_cfgs' within the hjson cfg.
         self.is_master_cfg = False
 
-        # Set the partial path to the IP's DV area.
-        self.rel_path = os.path.dirname(flow_cfg_file).replace(
-            self.proj_root + '/', '')
-
         # Timestamp
         self.ts_format_long = args.ts_format_long
         self.timestamp_long = args.timestamp_long
@@ -66,16 +68,21 @@ class FlowCfg():
         self.timestamp = args.timestamp
 
         # Results
+        self.rel_path = ""
         self.results_title = ""
         self.results_server_prefix = ""
         self.results_server_url_prefix = ""
         self.results_server_cmd = ""
+        self.results_server_css_path = ""
         self.results_server_path = ""
         self.results_server_dir = ""
+        self.results_server_html = ""
+        self.results_server_page = ""
+        self.results_summary_server_html = ""
+        self.results_summary_server_page = ""
 
-        # Full results in md text.
+        # Full and summary results in md text.
         self.results_md = ""
-        # Summary results in md text.
         self.results_summary_md = ""
 
     def __post_init__(self):
@@ -117,12 +124,19 @@ class FlowCfg():
         # Resolve the raw hjson dict to build this object
         self.resolve_hjson_raw(hjson_dict)
 
+    def _post_parse_flow_cfg(self):
+        '''Hook to set some defaults not found in the flow cfg hjson files.
+        This function has to be called manually after calling the parse_flow_cfg().
+        '''
+        if self.rel_path == "":
+            self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
+                self.proj_root + '/', '')
+
     def check_if_master_cfg(self, hjson_dict):
         # This is a master cfg only if it has a single key called "use_cfgs"
         # which contains a list of actual flow cfgs.
         hjson_cfg_dict_keys = hjson_dict.keys()
-        return (len(hjson_cfg_dict_keys) == 1 and \
-                "use_cfgs" in hjson_cfg_dict_keys and \
+        return ("use_cfgs" in hjson_cfg_dict_keys and \
                 type(hjson_dict["use_cfgs"]) is list)
 
     def resolve_hjson_raw(self, hjson_dict):
@@ -221,12 +235,74 @@ class FlowCfg():
 
         # Parse master cfg files
         if self.is_master_cfg:
-            for cfg_file in use_cfgs:
-                # Substitute wildcards in cfg_file files since we need to process
-                # them right away.
-                cfg_file = subst_wildcards(cfg_file, self.__dict__)
-                self.cfgs.append(
-                    self.create_instance(cfg_file, self.proj_root, self.args))
+            for entry in use_cfgs:
+                if type(entry) is str:
+                    # Treat this as a file entry
+                    # Substitute wildcards in cfg_file files since we need to process
+                    # them right away.
+                    cfg_file = subst_wildcards(entry,
+                                               self.__dict__,
+                                               ignore_error=True)
+                    self.cfgs.append(
+                        self.create_instance(cfg_file, self.proj_root,
+                                             self.args))
+
+                elif type(entry) is dict:
+                    # Treat this as a cfg expanded in-line
+                    temp_cfg_file = self._conv_inline_cfg_to_hjson(entry)
+                    if not temp_cfg_file: continue
+                    self.cfgs.append(
+                        self.create_instance(temp_cfg_file, self.proj_root,
+                                             self.args))
+
+                    # Delete the temp_cfg_file once the instance is created
+                    try:
+                        log.log(VERBOSE, "Deleting temp cfg file:\n%s",
+                                temp_cfg_file)
+                        os.system("/bin/rm -rf " + temp_cfg_file)
+                    except IOError:
+                        log.error("Failed to remove temp cfg file:\n%s",
+                                  temp_cfg_file)
+
+                else:
+                    log.error(
+                        "Type of entry \"%s\" in the \"use_cfgs\" key is invalid: %s",
+                        entry, str(type(entry)))
+                    sys.exit(1)
+
+    def _conv_inline_cfg_to_hjson(self, idict):
+        '''Dump a temp hjson file in the scratch space from input dict.
+        This method is to be called only by a master cfg'''
+
+        if not self.is_master_cfg:
+            log.fatal("This method can only be called by a master cfg")
+            sys.exit(1)
+
+        name = idict["name"] if "name" in idict.keys() else None
+        if not name:
+            log.error(
+                "In-line entry in use_cfgs list does not contain " + \
+                "a \"name\" key (will be skipped!):\n%s", idict)
+            return None
+
+        # Check if temp cfg file already exists
+        temp_cfg_file = self.scratch_root + "/." + self.branch + "__" + \
+                        name + "_cfg.hjson"
+
+        # Create the file and dump the dict as hjson
+        log.log(VERBOSE, "Dumping inline cfg \"%s\" in hjson to:\n%s", name,
+                temp_cfg_file)
+        try:
+            with open(temp_cfg_file, "w") as f:
+                f.write(hjson.dumps(idict, for_json=True))
+        except Exception as e:
+            log.error(
+                "Failed to hjson-dump temp cfg file\"%s\" for \"%s\"" + \
+                "(will be skipped!) due to:\n%s", temp_cfg_file, name, e)
+            return None
+
+        # Return the temp cfg file created
+        return temp_cfg_file
 
     def _process_overrides(self):
         # Look through the dict and find available overrides.
@@ -256,7 +332,7 @@ class FlowCfg():
                             ov_name, overrides_dict[ov_name], ov_value)
                         sys.exit(1)
                 else:
-                    log.error("\"overrides\" is is a list of dicts with {\"name\": <name>, " \
+                    log.error("\"overrides\" is a list of dicts with {\"name\": <name>, " + \
                               "\"value\": <value>} pairs. Found this instead:\n%s",
                               str(item))
                     sys.exit(1)
@@ -364,47 +440,14 @@ class FlowCfg():
         '''
         return
 
-    def publish_results_summary(self):
-        '''Public facing API for publishing md format results to the opentitan web server.
-        '''
-        results_html_file = 'summary.html'
-        # master cfg doesn't have server info, instead, get it from cfgs[0]
-        path = self.cfgs[0].results_server_prefix + self.cfgs[0].results_server + '/' + \
-               self.rel_path
-        results_page = path + '/' + results_html_file
-        results_page_url = results_page.replace(
-            self.cfgs[0].results_server_prefix,
-            self.cfgs[0].results_server_url_prefix)
-
-        # Assume that a 'style.css' is available at root path
-        css_path = (
-            (len(self.rel_path.split("/")) + 2) * "../") + "css/style.css"
-
-        # Publish the results page.
-        # First, write the results html file temporarily to the scratch area.
-        f = open(results_html_file, 'w')
-        f.write(
-            md_results_to_html(self.results_title, css_path,
-                               self.results_summary_md))
-        f.close()
-        rm_cmd = "rm -rf " + results_html_file + "; "
-
-        log.info("Publishing results summary to %s", results_page_url)
-        cmd = self.cfgs[0].results_server_cmd + " cp " + results_html_file + " " + \
-              results_page + "; " + rm_cmd
-        log.log(VERBOSE, cmd)
-        try:
-            cmd_output = subprocess.run(args=cmd,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
-            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        except Exception as e:
-            log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+    def _get_results_page_link(self, link_text):
+        results_page_url = self.results_server_page.replace(
+            self.results_server_prefix, self.results_server_url_prefix)
+        return "[%s](%s)" % (link_text, results_page_url)
 
     def _publish_results(self):
         '''Publish results to the opentitan web server.
-        Results are uploaded to {results_server}/{rel_path}/latest/results.
+        Results are uploaded to {results_server_path}/latest/results.
         If the 'latest' directory exists, then it is renamed to its 'timestamp' directory.
         If the list of directories in this area is > 14, then the oldest entry is removed.
         Links to the last 7 regression results are appended at the end if the results page.
@@ -416,21 +459,16 @@ class FlowCfg():
             return
 
         # Construct the paths
-        results_fname = 'results.html'
-        results_page = self.results_server_dir + '/' + results_fname
-        results_page_url = results_page.replace(self.results_server_prefix,
-                                                self.results_server_url_prefix)
-
-        # Assume that a 'style.css' is available at root path
-        css_path = (
-            (len(self.rel_path.split("/")) + 1) * "../") + "css/style.css"
+        results_page_url = self.results_server_page.replace(
+            self.results_server_prefix, self.results_server_url_prefix)
 
         # Timeformat for moving the dir
         tf = "%Y.%m.%d_%H.%M.%S"
 
-        # Extract the timestamp of the existing results_page
-        cmd = self.results_server_cmd + " ls -L " + results_page + " | " + \
-              "grep \'Creation time:\'"
+        # Extract the timestamp of the existing self.results_server_page
+        cmd = self.results_server_cmd + " ls -L " + self.results_server_page + \
+            " | grep \'Creation time:\'"
+
         log.log(VERBOSE, cmd)
         cmd_output = subprocess.run(cmd,
                                     shell=True,
@@ -510,7 +548,7 @@ class FlowCfg():
             for i in range(len(rdirs)):
                 if i < 7:
                     rdir_url = self.results_server_path + '/' + rdirs[
-                        i] + "/" + results_fname
+                        i] + "/" + self.results_server_html
                     rdir_url = rdir_url.replace(self.results_server_prefix,
                                                 self.results_server_url_prefix)
                     history_txt += "- [{}]({})\n".format(rdirs[i], rdir_url)
@@ -525,15 +563,17 @@ class FlowCfg():
 
         # Publish the results page.
         # First, write the results html file temporarily to the scratch area.
-        results_html_file = self.results_file + ".html"
+        results_html_file = self.scratch_path + "/results_" + self.timestamp + ".html"
         f = open(results_html_file, 'w')
-        f.write(md_results_to_html(self.results_title, css_path, results_md))
+        f.write(
+            md_results_to_html(self.results_title,
+                               self.results_server_css_path, results_md))
         f.close()
-        rm_cmd += "rm -rf " + results_html_file + "; "
+        rm_cmd += "/bin/rm -rf " + results_html_file + "; "
 
         log.info("Publishing results to %s", results_page_url)
         cmd = self.results_server_cmd + " cp " + results_html_file + " " + \
-              results_page + "; " + rm_cmd
+              self.results_server_page + "; " + rm_cmd
         log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,
@@ -551,3 +591,33 @@ class FlowCfg():
             item._publish_results()
 
         if self.is_master_cfg: self.publish_results_summary()
+
+    def publish_results_summary(self):
+        '''Public facing API for publishing md format results to the opentitan web server.
+        '''
+        results_html_file = "summary_" + self.timestamp + ".html"
+        results_page_url = self.results_summary_server_page.replace(
+            self.results_server_prefix, self.results_server_url_prefix)
+
+        # Publish the results page.
+        # First, write the results html file temporarily to the scratch area.
+        f = open(results_html_file, 'w')
+        f.write(
+            md_results_to_html(self.results_title,
+                               self.results_server_css_path,
+                               self.results_summary_md))
+        f.close()
+        rm_cmd = "/bin/rm -rf " + results_html_file + "; "
+
+        log.info("Publishing results summary to %s", results_page_url)
+        cmd = self.results_server_cmd + " cp " + results_html_file + " " + \
+              self.results_summary_server_page + "; " + rm_cmd
+        log.log(VERBOSE, cmd)
+        try:
+            cmd_output = subprocess.run(args=cmd,
+                                        shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT)
+            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+        except Exception as e:
+            log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))

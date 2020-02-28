@@ -674,13 +674,13 @@ class CovReport(Deploy):
             except Exception as e:
                 ex_msg = "Failed to parse \"{}\":\n{}".format(
                     self.cov_report_dashboard, str(e))
-                log.fail_msg += ex_msg
+                self.fail_msg += ex_msg
                 log.error(ex_msg)
                 self.status = "F"
 
             if self.cov_results == "":
                 nf_msg = "Coverage summary not found in the reports dashboard!"
-                log.fail_msg += nf_msg
+                self.fail_msg += nf_msg
                 log.error(nf_msg)
                 self.status = "F"
 
