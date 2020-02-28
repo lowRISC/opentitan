@@ -86,7 +86,7 @@ def parse_hjson(hjson_file):
     return hjson_cfg_dict
 
 
-def subst_wildcards(var, mdict, ignored_wildcards=[]):
+def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
     '''
     If var has wildcards specified within {..}, find and substitute them.
     '''
@@ -96,7 +96,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
 
     if "{eval_cmd}" in var:
         idx = var.find("{eval_cmd}") + 11
-        subst_var = subst_wildcards(var[idx:], mdict, ignored_wildcards)
+        subst_var = subst_wildcards(var[idx:], mdict, ignored_wildcards,
+                                    ignore_error)
         # If var has wildcards that were ignored, then skip running the command
         # for now, assume that it will be handled later.
         match = re.findall(r"{([A-Za-z0-9\_]+)}", subst_var)
@@ -115,7 +116,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
                             subst_found = []
                             for element in found:
                                 element = subst_wildcards(
-                                    element, mdict, ignored_wildcards)
+                                    element, mdict, ignored_wildcards,
+                                    ignore_error)
                                 subst_found.append(element)
                             # Expand list into a str since list within list is
                             # not supported.
@@ -123,7 +125,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
 
                         elif type(found) is str:
                             found = subst_wildcards(found, mdict,
-                                                    ignored_wildcards)
+                                                    ignored_wildcards,
+                                                    ignore_error)
 
                         elif type(found) is bool:
                             found = int(found)
@@ -132,7 +135,7 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
                         # Check if the wildcard exists as an environment variable
                         env_var = os.environ.get(item)
                         if env_var is not None: subst_list[item] = env_var
-                        else:
+                        elif not ignore_error:
                             log.error(
                                 "Substitution for the wildcard \"%s\" not found",
                                 item)
@@ -142,7 +145,10 @@ def subst_wildcards(var, mdict, ignored_wildcards=[]):
     return var
 
 
-def find_and_substitute_wildcards(sub_dict, full_dict, ignored_wildcards=[]):
+def find_and_substitute_wildcards(sub_dict,
+                                  full_dict,
+                                  ignored_wildcards=[],
+                                  ignore_error=False):
     '''
     Recursively find key values containing wildcards in sub_dict in full_dict
     and return resolved sub_dict.
@@ -151,7 +157,7 @@ def find_and_substitute_wildcards(sub_dict, full_dict, ignored_wildcards=[]):
         if type(sub_dict[key]) in [dict, OrderedDict]:
             # Recursively call this funciton in sub-dicts
             sub_dict[key] = find_and_substitute_wildcards(
-                sub_dict[key], full_dict, ignored_wildcards)
+                sub_dict[key], full_dict, ignored_wildcards, ignore_error)
 
         elif type(sub_dict[key]) is list:
             sub_dict_key_values = list(sub_dict[key])
@@ -162,18 +168,19 @@ def find_and_substitute_wildcards(sub_dict, full_dict, ignored_wildcards=[]):
                     # Recursively call this funciton in sub-dicts
                     sub_dict_key_values[i] = \
                         find_and_substitute_wildcards(sub_dict_key_values[i],
-                                                      full_dict, ignored_wildcards)
+                                                      full_dict, ignored_wildcards, ignore_error)
 
                 elif type(sub_dict_key_values[i]) is str:
                     sub_dict_key_values[i] = subst_wildcards(
-                        sub_dict_key_values[i], full_dict, ignored_wildcards)
+                        sub_dict_key_values[i], full_dict, ignored_wildcards,
+                        ignore_error)
 
             # Set the substituted key values back
             sub_dict[key] = sub_dict_key_values
 
         elif type(sub_dict[key]) is str:
             sub_dict[key] = subst_wildcards(sub_dict[key], full_dict,
-                                            ignored_wildcards)
+                                            ignored_wildcards, ignore_error)
     return sub_dict
 
 
@@ -217,7 +224,7 @@ def htmc_color_pc_cells(text):
         return op
 
     # List of 'not applicable' identifiers.
-    na_list = ['--', 'NA', 'N.A.', 'N.A', 'na', 'n.a.', 'n.a']
+    na_list = ['--', 'NA', 'N.A.', 'N.A', 'N/A', 'na', 'n.a.', 'n.a', 'n/a']
     na_list_patterns = '|'.join(na_list)
 
     # List of floating point patterns: '0', '0.0' & '.0'

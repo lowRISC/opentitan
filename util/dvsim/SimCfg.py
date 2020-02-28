@@ -65,7 +65,6 @@ class SimCfg(FlowCfg):
         self.project = ""
         self.flow = ""
         self.flow_makefile = ""
-        self.scratch_path = ""
         self.build_dir = ""
         self.run_dir = ""
         self.sw_build_dir = ""
@@ -104,9 +103,7 @@ class SimCfg(FlowCfg):
 
         # Parse the cfg_file file tree
         self.parse_flow_cfg(flow_cfg_file)
-
-        # Stop here if this is a master cfg list
-        if self.is_master_cfg: return
+        self._post_parse_flow_cfg()
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
@@ -123,14 +120,11 @@ class SimCfg(FlowCfg):
         ]
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
-                                                      ignored_wildcards)
+                                                      ignored_wildcards,
+                                                      self.is_master_cfg)
 
-        # TODO only support VCS coverage now
-        if self.tool != "vcs" and self.cov is True:
-            self.cov = False
-            log.warning(
-                "Coverage collection with tool \"%s\" is not supported yet",
-                self.tool)
+        # Set the title for simulation results.
+        self.results_title = self.name.upper() + " Simulation Results"
 
         # Print info
         log.info("Scratch path for %s: %s", self.name, self.scratch_path)
@@ -150,8 +144,15 @@ class SimCfg(FlowCfg):
         self._process_exports()
 
         # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-        # tests and regressions
-        self._create_objects()
+        # tests and regressions, only if not a master cfg obj
+        if not self.is_master_cfg:
+            # TODO: hack to prevent coverage collection if tool != vcs
+            if self.cov and self.tool != "vcs":
+                self.cov = False
+                log.warning(
+                    "Coverage collection with tool \"%s\" is not supported yet",
+                    self.tool)
+            self._create_objects()
 
         # Post init checks
         self.__post_init__()
@@ -159,7 +160,6 @@ class SimCfg(FlowCfg):
     def __post_init__(self):
         # Run some post init checks
         super().__post_init__()
-        self.results_title = self.name.upper() + " Simulation Results"
 
     @staticmethod
     def create_instance(flow_cfg_file, proj_root, args):
@@ -298,9 +298,10 @@ class SimCfg(FlowCfg):
 
         # Check if all items has been processed
         if items_list != []:
-            log.error("The items %s added for run were not found in \n%s!" + \
-                      "\nUse the --list switch to see a list of available tests / regressions.", \
-                      items_list, self.flow_cfg_file)
+            log.error(
+                "The items %s added for run were not found in \n%s!\n \
+                Use the --list switch to see a list of available \
+                tests / regressions.", items_list, self.flow_cfg_file)
             sys.exit(1)
 
         # Process reseed override and create the build_list
@@ -400,6 +401,26 @@ class SimCfg(FlowCfg):
         if self.cov:
             Deploy.deploy(self.cov_deploys)
 
+    def _cov_analyze(self):
+        '''Use the last regression coverage data to open up the GUI tool to
+        analyze the coverage.
+        '''
+        cov_analyze_deploy = CovAnalyze(self)
+        try:
+            proc = subprocess.Popen(args=cov_analyze_deploy.cmd,
+                                    shell=True,
+                                    close_fds=True)
+        except Exception as e:
+            log.fatal("Failed to run coverage analysis cmd:\n\"%s\"\n%s",
+                      cov_analyze_deploy.cmd, e)
+            sys.exit(1)
+
+    def cov_analyze(self):
+        '''Public facing API for analyzing coverage.
+        '''
+        for item in self.cfgs:
+            item._cov_analyze()
+
     def _gen_results(self):
         '''
         The function is called after the regression has completed. It collates the
@@ -482,18 +503,19 @@ class SimCfg(FlowCfg):
             results_str += self.cov_report_deploy.cov_results
             self.results_summary["Coverage"] = self.cov_report_deploy.cov_total
         else:
-            self.results_summary["Coverage"] = "N.A. %"
+            self.results_summary["Coverage"] = "-- %"
 
         # append link of detail result to block name
-        self.results_summary["Name"] = self.append_result_link(self.results_summary["Name"])
+        self.results_summary["Name"] = self._get_results_page_link(
+            self.results_summary["Name"])
 
         # Append failures for triage
         self.results_md = results_str + fail_msgs
 
         # Write results to the scratch area
-        self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        log.info("Detailed results are available at %s", self.results_file)
-        f = open(self.results_file, 'w')
+        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
+        log.info("Detailed results are available at %s", results_file)
+        f = open(results_file, 'w')
         f.write(self.results_md)
         f.close()
 
@@ -511,7 +533,7 @@ class SimCfg(FlowCfg):
             for title in item.results_summary:
                 row.append(item.results_summary[title])
             table.append(row)
-        self.results_summary_md = "## Simulation Summary Results\n"
+        self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
         self.results_summary_md += tabulate(table,
                                             headers="firstrow",
@@ -519,32 +541,6 @@ class SimCfg(FlowCfg):
                                             colalign=colalign)
         print(self.results_summary_md)
         return self.results_summary_md
-
-    def append_result_link(self, link_name):
-        results_page = self.results_server_dir + '/' + 'results.html'
-        results_page_url = results_page.replace(self.results_server_prefix,
-                                                self.results_server_url_prefix)
-        return "[%s](%s)" % (link_name, results_page_url)
-
-    def _cov_analyze(self):
-        '''Use the last regression coverage data to open up the GUI tool to
-        analyze the coverage.
-        '''
-        cov_analyze_deploy = CovAnalyze(self)
-        try:
-            proc = subprocess.Popen(args=cov_analyze_deploy.cmd,
-                                    shell=True,
-                                    close_fds=True)
-        except Exception as e:
-            log.fatal("Failed to run coverage analysis cmd:\n\"%s\"\n%s",
-                      cov_analyze_deploy.cmd, e)
-            sys.exit(1)
-
-    def cov_analyze(self):
-        '''Public facing API for analyzing coverage.
-        '''
-        for item in self.cfgs:
-            item._cov_analyze()
 
     def _publish_results(self):
         '''Publish coverage results to the opentitan web server.'''

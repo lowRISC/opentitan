@@ -5,6 +5,11 @@
   // This is the master cfg hjson for DV simulations. It imports ALL individual DV sim
   // cfgs of the IPs and the full chip used in top_earlgrey. This enables the common
   // regression sets to be run in one shot.
+  name: top_earlgrey_set
+
+  import_cfgs: [// Project wide common cfg file
+                "{proj_root}/hw/data/common_project_cfg.hjson"]
+
   use_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
              "{proj_root}/hw/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
