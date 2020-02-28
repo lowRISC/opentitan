@@ -7,6 +7,8 @@
 #include "sw/device/lib/base/mmio.h"
 
 namespace mock_mmio {
+std::random_device MockDevice::rd;
+
 // Definitions for the MOCK_MMIO-mode declarations in |mmio.h|.
 extern "C" {
 uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
