@@ -18,14 +18,25 @@ def run_objdump(objdump, input, basename, outdir):
     filename = basename + '.dis'
     output = os.path.join(outdir, filename)
     f = open(output, "w")
-    cmd = [objdump, '-SDhl', input, ]
+    cmd = [
+        objdump,
+        '--disassemble-all',
+        '--headers',
+        '--line-numbers',
+        '--source',
+        input,
+    ]
     subprocess.run(cmd, stdout=f, check=True)
     return output
 
 def run_objcopy(objcopy, input, basename, outdir):
     filename = basename + '.bin'
     output = os.path.join(outdir, filename)
-    cmd = [objcopy, '-O', 'binary', input, output]
+    cmd = [
+        objcopy, 
+        '--output-target', 'binary',
+        input, output,
+    ]
     subprocess.run(cmd, check=True)
     return output
 
@@ -36,8 +47,16 @@ def run_srec_cat(srec_cat, input, basename, outdir):
     filename = basename + '.vmem'
     output = os.path.join(outdir, filename)
     cmd = [
-        srec_cat, input, '-binary', '-offset', '0x0', '-byte-swap', '4', '-o',
-        output, '-vmem'
+        srec_cat, 
+        # Input is to be interpreted as a pure binary
+        input, '--binary',
+        # Reverse the endianness of every 32-bit word.
+        '--offset', '0x0', '--byte-swap', '4',
+        # Fill the entire range with garbage, to pad it up to a
+        # four-byte alignment.
+        '--fill', '0xff', '-within', input, '-binary', '-range-pad', '4',
+        # Output as a 32-bit VMem file.
+        '--output', output, '--vmem', '32',
     ]
     subprocess.run(cmd, check=True)
 
