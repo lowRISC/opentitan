@@ -25,3 +25,44 @@ void *memset(void *dest, int value, size_t len) {
   return dest;
 }
 
+enum {
+  kMemCmpEq = 0,
+  kMemCmpLt = -42,
+  kMemCmpGt = 42,
+};
+
+int memcmp(const void *lhs, const void *rhs, size_t len) {
+  const uint8_t *lhs8 = (uint8_t *)lhs;
+  const uint8_t *rhs8 = (uint8_t *)rhs;
+  for (size_t i = 0; i < len; ++i) {
+    if (lhs8[i] < rhs8[i]) {
+      return kMemCmpLt;
+    } else if (lhs8[i] > rhs8[i]) {
+      return kMemCmpGt;
+    }
+  }
+  return kMemCmpEq;
+}
+
+void *memchr(const void *ptr, int value, size_t len) {
+  uint8_t *ptr8 = (uint8_t *)ptr;
+  uint8_t value8 = (uint8_t)value;
+  for (size_t i = 0; i < len; ++i) {
+    if (ptr8[i] == value8) {
+      return ptr8 + i;
+    }
+  }
+  return NULL;
+}
+
+void *memrchr(const void *ptr, int value, size_t len) {
+  uint8_t *ptr8 = (uint8_t *)ptr;
+  uint8_t value8 = (uint8_t)value;
+  for (size_t i = 0; i < len; ++i) {
+    size_t idx = len - i - 1;
+    if (ptr8[idx] == value8) {
+      return ptr8 + idx;
+    }
+  }
+  return NULL;
+}

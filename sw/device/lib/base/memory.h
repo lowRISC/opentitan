@@ -6,12 +6,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
 
 #include <stdalign.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdnoreturn.h>
-
-#include "sw/device/lib/base/stdasm.h"
 
 /**
  * Load a word from memory directly, bypassing aliasing rules.
@@ -90,8 +86,51 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t len);
  * @param dest the region to write to.
  * @param value the value, converted to a byte, to write to each byte cell.
  * @param len the number of bytes to write.
- * #return the value of |dest|.
+ * @return the value of |dest|.
  */
 void *memset(void *dest, int value, size_t len);
+
+/**
+ * Compare two (potentially overlapping) regions of memory for byte-wise
+ * lexicographic order.
+ *
+ * This function conforms to the semantics defined in ISO C11 S7.24.4.1.
+ *
+ * @param lhs the left-hand-side of the comparison.
+ * @param rhs the right-hand-side of the comparison.
+ * @param len the length of both regions, in bytes.
+ * @return a zero, positive, or negative integer, corresponding to the
+ * contingencies of |lhs == rhs|, |lhs > rhs|, and |lhs < rhs| (as buffers, not
+ * pointers), respectively.
+ */
+int memcmp(const void *lhs, const void *rhs, size_t len);
+
+/**
+ * Search a region of memory for the first occurence of a particular byte value.
+ *
+ * This function conforms to the semantics defined in ISO C11 S7.24.5.1.
+ *
+ * Since libbase does not provide a |strlen()| function, this function can be
+ * used as an approximation: |memchr(my_str, 0, SIZE_MAX) - my_str|.
+ *
+ * @param ptr the region to search.
+ * @param value the value, converted to a byte, to search for.
+ * @param len the length of the region, in bytes.
+ * @return a pointer to the found value, or NULL.
+ */
+void *memchr(const void *ptr, int value, size_t len);
+
+/**
+ * Search a region of memory for the last occurence of a particular byte value.
+ *
+ * This function is not specified by C11, but is named for a well-known glibc
+ * extension.
+ *
+ * @param ptr the region to search.
+ * @param value the value, converted to a byte, to search for.
+ * @param len the length of the region, in bytes.
+ * @return a pointer to the found value, or NULL.
+ */
+void *memrchr(const void *ptr, int value, size_t len);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
