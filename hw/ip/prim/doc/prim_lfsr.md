@@ -38,7 +38,7 @@ lfsr_en_i            | input  | Lfsr enable
 entropy_i[EntropyDw] | input  | Entropy input
 state_o[StateOutDw]  | output | LFSR state output.
 
-# Theory of Opeations
+# Theory of Operations
 
 ```
              /----------------\

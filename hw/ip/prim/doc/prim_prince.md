@@ -1,0 +1,106 @@
+---
+title: "Primitive Component: PRINCE Scrambler"
+---
+
+# Overview
+
+`prim_prince` is an (unhardened) implementation of the [64bit PRINCE block cipher](https://en.wikipedia.org/wiki/Prince_(cipher)).
+It is a fully unrolled combinational implementation with a configurable number of rounds.
+Due to the mirrored construction of this cipher, the same circuit can be used for encryption and decryption, as described below.
+Further, the primitive supports a 32bit block cipher flavor which is not specified in the original paper.
+
+It should be noted, however, that reduced-round and/or 32bit versions **are not secure** and must not be used in a setting where cryptographic cipher strength is required.
+I.e., this primitive is only intended to be used as a lightweight data scrambling device.
+
+This [paper](https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/documents/papers/session7-maene-paper.pdf) compares several lightweight ciphers, where PRINCE has been found to be the fastest candidate with the lowest circuit complexity among the algorithms compared.
+
+## Parameters
+
+Name         | type   | Description
+-------------|--------|----------------------------------------------------------
+DataWidth    | int    | Block size, can be 32 or 64.
+KeyWidth     | int    | Key size, can be 64 for block size 32, or 128 for block size 64
+NumRounds    | int    | Half the number of the reflected PRINCE rounds. Can range from 1 to 5. The effective number of non-linear layers is 2 + 2 * NumRounds.
+
+## Signal Interfaces
+
+Name         | In/Out | Description
+-------------|--------|---------------------------------
+data_i       | input  | Plaintext input
+key_i        | input  | Key input
+dec_i        | input  | Assert for decryption
+data_o       | output | Output of the ciphertext
+
+# Theory of Operations
+
+```
+             /---------------\
+dec_i        |               |
+------------>|    PRINCE     |
+key_i        |               |
+=====/======>|   DataWidth   |
+ [KeyWidth]  |   KeyWidth    |
+             |   NumRounds   |
+data_i       |               |  data_o
+=====/======>|               |=====/=======>
+ [DataWidth] |               |  [DataWidth]
+             |               |
+             \---------------/
+```
+
+The PRINCE module is fully unrolled and combinational, meaning that it does not have any clock, reset or handshaking inputs.
+The only inputs are the key and the plaintext, and the only output is the ciphertext.
+
+The internal construction follows the the algorithm described in the original [paper](https://eprint.iacr.org/2012/529.pdf).
+The block size is 64bit and the key size is 128bit.
+In its original formulation, this cipher has 11 rounds (but 12 non-linear layers), which are arranged in a mirrored structure, which allows the same circuit to be used for encryption and decryption with a lightweight tweak applied to the key:
+
+```c++
+k0, k0_prime, k1 = key_derivation(key_i, dec_i);
+
+// decryption mode
+if (dec_i) {
+      swap(k0, k0_prime);
+      k1 ^= ALPHA_CONSTANT;
+}
+
+state = data_i ^ k0;
+
+state ^= k1;
+state ^= ROUND_CONSTANT[0];
+
+// forward pass
+for (int i=1; i < 6; i++) {
+      state = sbox4_layer(state);
+      state = mult_layer(state);
+      state = shiftrows_layer(state);
+      state ^= ROUND_CONSTANT[i]
+      state ^= k1;
+}
+
+// middle part
+state = sbox4_layer(state);
+state = mult_layer(state);
+state = sbox4_inverse_layer(state);
+
+// reverse pass
+for (int i=6; i < 11; i++) {
+      state ^= k1;
+      state ^= ROUND_CONSTANT[i]
+      state = shiftrows_inverse_layer(state);
+      state = mult_layer(state);
+      state = sbox4_inverse_layer(state);
+}
+
+state ^= ROUND_CONSTANT[11];
+state ^= k1;
+
+data_o = state ^ k0_prime;
+```
+
+Note that the multiplicative layer is an involution, meaning that it is its own inverse and it can hence be used in the reverse pass without inversion.
+
+The reduced 32bit variant mentioned above and all reduced round variants are non-standard and must only be used for scrambling purposes, since they are not secure.
+The 32bit variant leverages the same crypto primitives and key derivation functions as the 64bit variant, with the difference that the multiplication matrix is only comprised of the first two block diagonal submatrices (^M0 and ^M1 in the paper), and the shiftrows operation does not operate on nibbles but pairs of 2 bits instead.
+
+
