@@ -229,6 +229,17 @@ module prim_esc_sender import prim_pkg::*; (
       (state_q == Idle && resp))
   // unexpected response
   `ASSERT(SigIntCheck3_A, state_q == Idle && resp |-> integ_fail_o)
+  // signal_int_backward_check
+  `ASSERT(SigIntBackCheck_A, integ_fail_o |-> (esc_rx_i.resp_p == esc_rx_i.resp_n) ||
+      (esc_rx_i.resp_p && !(state_q == CheckEscRespHi)) ||
+      (!esc_rx_i.resp_p && !(state_q == CheckEscRespLo)))
+  // state machine CheckEscRespLo and Hi as they are ideal resp signals
+  `ASSERT(StateEscRespHiCheck_A, state_q == CheckEscRespLo && esc_tx_o.esc_p && !integ_fail_o |=>
+      state_q == CheckEscRespHi)
+  `ASSERT(StateEscRespLoCheck_A, state_q == CheckEscRespHi && esc_tx_o.esc_p && !integ_fail_o |=>
+      state_q == CheckEscRespLo)
+  `ASSERT(StateEscRespHiBackCheck_A, state_q == CheckEscRespHi |-> $past(esc_tx_o.esc_p))
+  `ASSERT(StateEscRespLoBackCheck_A, state_q == CheckEscRespLo |-> $past(esc_tx_o.esc_p))
   // check that escalation signal is at least 2 cycles high
   `ASSERT(EscCheck_A, esc_en_i |-> esc_tx_o.esc_p [*2] )
   // escalation / ping collision
