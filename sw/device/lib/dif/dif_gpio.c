@@ -104,6 +104,8 @@ dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio) {
     return kDifGpioBadArg;
   }
 
+  // We don't need to write to `GPIO_MASKED_OE_*` and `GPIO_MASKED_OUT_*`
+  // since we directly reset `GPIO_DIRECT_OE` and `GPIO_DIRECT_OUT` below.
   mmio_region_write32(gpio->base_addr, GPIO_INTR_ENABLE_REG_OFFSET, 0);
   mmio_region_write32(gpio->base_addr, GPIO_DIRECT_OE_REG_OFFSET, 0);
   mmio_region_write32(gpio->base_addr, GPIO_DIRECT_OUT_REG_OFFSET, 0);
