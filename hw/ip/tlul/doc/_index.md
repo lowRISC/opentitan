@@ -616,6 +616,6 @@ TL `typedef` definitions.
 
 ### `tlul_xbar`
 
-For details of the `tlul_xbar`, please refer to the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}.
+For details of the `tlul_xbar`, please refer to the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}).
 In general, tlgen stitches together various components described in the previous sections to create a full blown fabric switch.
 Specifically, it implements the address to `dev_sel` steering logic and ensures the right connections are made from host to device.
