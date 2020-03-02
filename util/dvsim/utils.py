@@ -207,20 +207,27 @@ def md_results_to_html(title, css_path, md_text):
 
 
 def htmc_color_pc_cells(text):
-    '''This function finds cells in a html table that contains a % sign. It then
+    '''This function finds cells in a html table that contains a "%" sign. It then
     uses the number in front if the % sign to color the cell based on the value
     from a shade from red to green. These color styles are encoded in ./style.css
     which is assumed to be accessible by the final webpage.
+
+    This function is now augmented to also take "E" or "W" as identifiers along
+    with "%". For example, '10 W' is indicative of 10 warnings, and will be color
+    coded with yellow. Likewise, "7 E" indicates 7 errors and will be color coded
+    with red. A value of 0 in both cases will be color coded with green.
+
+    Note that a space between the value and the indicators (%, E, W) is mandatory.
     '''
 
     # Replace <td> with <td class="color-class"> based on the fp
     # value. "color-classes" are listed in ./style.css as follows: "cna"
     # for NA value, "c0" to "c10" for fp value falling between 0.00-9.99,
     # 10.00-19.99 ... 90.00-99.99, 100.0 respetively.
-    def color_cell(cell, cclass):
+    def color_cell(cell, cclass, indicator="%"):
         op = cell.replace("<td", "<td class=\"" + cclass + "\"")
-        # Remove '%' sign.
-        op = re.sub(r"\s*%\s*", "", op)
+        # Remove the indicator.
+        op = re.sub(r"\s*" + indicator + "\s*", "", op)
         return op
 
     # List of 'not applicable' identifiers.
@@ -231,7 +238,9 @@ def htmc_color_pc_cells(text):
     fp_patterns = "\d+|\d+\.\d+|\.\d+"
 
     patterns = fp_patterns + '|' + na_list_patterns
-    match = re.findall(r"(<td.*>\s*(" + patterns + ")\s+%\s*</td>)", text)
+    indicators = "%|E|W"
+    match = re.findall(
+        r"(<td.*>\s*(" + patterns + ")\s+(" + indicators + ")\s*</td>)", text)
     if len(match) > 0:
         subst_list = {}
         fp_nums = []
@@ -240,10 +249,11 @@ def htmc_color_pc_cells(text):
             # cell which we want to replace, second is the floating point value.
             cell = item[0]
             fp_num = item[1]
+            indicator = item[2]
             # Skip if fp_num is already processed.
-            if fp_num in fp_nums: continue
-            fp_nums.append(fp_num)
-            if fp_num in na_list: subst = color_cell(cell, "cna")
+            if (fp_num, indicator) in fp_nums: continue
+            fp_nums.append((fp_num, indicator))
+            if fp_num in na_list: subst = color_cell(cell, "cna", indicator)
             else:
                 # Item is a fp num.
                 try:
@@ -252,17 +262,38 @@ def htmc_color_pc_cells(text):
                     log.error("Percentage item \"%s\" in cell \"%s\" is not an " + \
                               "integer or a floating point number", fp_num, cell)
                     continue
-                if fp >= 0.0 and fp < 10.0: subst = color_cell(cell, "c0")
-                elif fp >= 10.0 and fp < 20.0: subst = color_cell(cell, "c1")
-                elif fp >= 20.0 and fp < 30.0: subst = color_cell(cell, "c2")
-                elif fp >= 30.0 and fp < 40.0: subst = color_cell(cell, "c3")
-                elif fp >= 40.0 and fp < 50.0: subst = color_cell(cell, "c4")
-                elif fp >= 50.0 and fp < 60.0: subst = color_cell(cell, "c5")
-                elif fp >= 60.0 and fp < 70.0: subst = color_cell(cell, "c6")
-                elif fp >= 70.0 and fp < 80.0: subst = color_cell(cell, "c7")
-                elif fp >= 80.0 and fp < 90.0: subst = color_cell(cell, "c8")
-                elif fp >= 90.0 and fp < 100.0: subst = color_cell(cell, "c9")
-                elif fp >= 100.0: subst = color_cell(cell, "c10")
+                if indicator == "%":
+                    # Item is a percentage.
+                    if fp >= 0.0 and fp < 10.0: subst = color_cell(cell, "c0")
+                    elif fp >= 10.0 and fp < 20.0:
+                        subst = color_cell(cell, "c1")
+                    elif fp >= 20.0 and fp < 30.0:
+                        subst = color_cell(cell, "c2")
+                    elif fp >= 30.0 and fp < 40.0:
+                        subst = color_cell(cell, "c3")
+                    elif fp >= 40.0 and fp < 50.0:
+                        subst = color_cell(cell, "c4")
+                    elif fp >= 50.0 and fp < 60.0:
+                        subst = color_cell(cell, "c5")
+                    elif fp >= 60.0 and fp < 70.0:
+                        subst = color_cell(cell, "c6")
+                    elif fp >= 70.0 and fp < 80.0:
+                        subst = color_cell(cell, "c7")
+                    elif fp >= 80.0 and fp < 90.0:
+                        subst = color_cell(cell, "c8")
+                    elif fp >= 90.0 and fp < 100.0:
+                        subst = color_cell(cell, "c9")
+                    elif fp >= 100.0:
+                        subst = color_cell(cell, "c10")
+                else:
+                    # Item is a error or a warning num.
+                    # Use "c6" (yellow) for warnings and "c0" (red) for errors.
+                    if fp == 0:
+                        subst = color_cell(cell, "c10", indicator)
+                    elif indicator == "W":
+                        subst = color_cell(cell, "c6", indicator)
+                    elif indicator == "E":
+                        subst = color_cell(cell, "c0", indicator)
             subst_list[cell] = subst
         for item in subst_list:
             text = text.replace(item, subst_list[item])
