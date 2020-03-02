@@ -70,7 +70,7 @@ module prim_esc_sender import prim_pkg::*; (
 
   // ping enable is 1 cycle pulse
   // escalation pulse is always longer than 2 cycles
-  assign esc_tx_o.esc_p = esc_en_i | esc_en_q | ( ping_en_d & ~ping_en_q);
+  assign esc_tx_o.esc_p = esc_en_i | esc_en_q | (ping_en_d & ~ping_en_q);
   assign esc_tx_o.esc_n = ~esc_tx_o.esc_p;
 
   //////////////
@@ -105,7 +105,7 @@ module prim_esc_sender import prim_pkg::*; (
       // check whether response is 0
       CheckEscRespLo: begin
         state_d      = CheckEscRespHi;
-        if (!esc_en_i || resp) begin
+        if (!esc_tx_o.esc_p || resp) begin
           state_d = Idle;
           integ_fail_o = sigint_detected | resp;
         end
@@ -113,7 +113,7 @@ module prim_esc_sender import prim_pkg::*; (
       // check whether response is 1
       CheckEscRespHi: begin
         state_d = CheckEscRespLo;
-        if (!esc_en_i || !resp) begin
+        if (!esc_tx_o.esc_p || !resp) begin
           state_d = Idle;
           integ_fail_o = sigint_detected | ~resp;
         end
