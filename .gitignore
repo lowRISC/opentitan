@@ -46,3 +46,9 @@ ascentlint.rpt
 
 # Foundry library
 hw/foundry/
+
+# Local Tock checkout
+sw/device/tock/tock_local
+sw/device/tock/boards/opentitan/Cargo.toml
+sw/device/tock/boards/opentitan/Cargo.lock
+sw/device/tock/boards/opentitan/Cargo_local.lock

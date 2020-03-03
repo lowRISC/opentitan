@@ -49,3 +49,7 @@ DEV_BIN_DIR="$BIN_DIR/sw/device"
 # compiled programs that should run on a host workstation or server) should be
 # written.
 HOST_BIN_DIR="$BIN_DIR/sw/host"
+
+# $TOCK_SYMLINK is the symlink used when referencing a local checkout of tock to
+# build from.
+TOCK_SYMLINK="$REPO_TOP/sw/device/tock/tock_local"

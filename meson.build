@@ -32,6 +32,7 @@ host_bin_dir = get_option('host_bin_dir')
 if dev_bin_dir == 'undef' or host_bin_dir == 'undef'
   error('dev_bin_dir option not set. Please run meson with a valid binary directory option.')
 endif
+tock_local = get_option('tock_local')
 
 # C Arguments to optimize for size
 optimize_size_args = [
