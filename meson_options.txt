@@ -15,3 +15,9 @@ option(
   type: 'string',
   value: 'undef',
 )
+
+option(
+  'tock_local',
+  type: 'boolean',
+  value: false,
+)

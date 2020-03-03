@@ -7,8 +7,10 @@ cargo = find_program('cargo', required: false)
 target = 'riscv32imc-unknown-none-elf'
 build_type = 'release'
 
-manifest_path = meson.source_root() / 'sw/device/tock/boards/opentitan/Cargo.toml'
-toolchain_file = meson.source_root() / 'sw/device/tock/boards/opentitan/rust-toolchain'
+tock_board_dir = meson.source_root() / 'sw/device/tock/boards/opentitan'
+toolchain_file = tock_board_dir / 'rust-toolchain'
+manifest_path = tock_board_dir / 'Cargo.toml'
+lock_path = tock_board_dir / 'Cargo.lock'
 
 rust_flags = '-C link-arg=-Tlayout.ld ' + \
 '-C linker=rust-lld ' + \
@@ -17,6 +19,15 @@ rust_flags = '-C link-arg=-Tlayout.ld ' + \
 '-C link-arg=-zmax-page-size=512'
 
 build_tock_cmd = meson.source_root() / 'util/build_tock.sh'
+
+if tock_local
+  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_local.toml', manifest_path)
+  run_command('touch', tock_board_dir / 'Cargo_local.lock')
+  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_local.lock', lock_path)
+else
+  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_remote.toml', manifest_path)
+  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_remote.lock', lock_path)
+endif
 
 tock_raw = custom_target(
   'tock_raw',
@@ -30,6 +41,7 @@ tock_raw = custom_target(
     rust_flags,
   ],
   output: target,
+  console: true,
   build_always_stale: true,
   build_by_default: false,
 )
