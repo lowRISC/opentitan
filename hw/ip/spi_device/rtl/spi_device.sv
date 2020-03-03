@@ -189,8 +189,14 @@ module spi_device #(
   );
 
   logic rxf_full_q, txf_empty_q;
-  always_ff @(posedge clk_spi_in)  rxf_full_q  <= ~rxf_wready;
-  always_ff @(posedge clk_spi_out) txf_empty_q <= ~txf_rvalid;
+  always_ff @(posedge clk_spi_in or negedge rst_ni) begin
+    if (!rst_ni) rxf_full_q <= 1'b0;
+    else         rxf_full_q <= ~rxf_wready;
+  end
+  always_ff @(posedge clk_spi_out or negedge rst_ni) begin
+    if (!rst_ni) txf_empty_q <= 1'b1;
+    else         txf_empty_q <= ~txf_rvalid;
+  end
   prim_flop_2sync #(.Width(1)) u_sync_rxf (
     .clk_i,
     .rst_ni,
