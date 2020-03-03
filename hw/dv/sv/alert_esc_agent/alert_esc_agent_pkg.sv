@@ -7,7 +7,8 @@ package alert_esc_agent_pkg;
   import uvm_pkg::*;
   import dv_lib_pkg::*;
   import dv_utils_pkg::*;
-  import prim_pkg::*;
+  import prim_alert_pkg::*;
+  import prim_esc_pkg::*;
 
   typedef class alert_esc_seq_item;
   typedef class alert_esc_agent_cfg;

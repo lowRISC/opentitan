@@ -5,7 +5,10 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_async_fpv import prim_pkg::*; (
+module prim_alert_rxtx_async_fpv
+  import prim_alert_pkg::*;
+  import prim_esc_pkg::*;
+(
   input        clk_i,
   input        rst_ni,
   // for sigint error and skew injection only

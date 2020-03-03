@@ -21,7 +21,9 @@
 
 `include "prim_assert.sv"
 
-module prim_esc_sender import prim_pkg::*; (
+module prim_esc_sender
+  import prim_esc_pkg::*;
+(
   input           clk_i,
   input           rst_ni,
   // this triggers a ping test. keep asserted

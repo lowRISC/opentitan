@@ -27,11 +27,11 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // dut signals
-  prim_pkg::alert_rx_t [alert_pkg::NAlerts-1:0] alert_rx;
-  prim_pkg::alert_tx_t [alert_pkg::NAlerts-1:0] alert_tx;
+  prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0] alert_tx;
 
-  prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
-  prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
+  prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
+  prim_esc_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
 
   alert_esc_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_if

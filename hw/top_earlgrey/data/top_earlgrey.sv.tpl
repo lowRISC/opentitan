@@ -183,11 +183,11 @@ module top_${top["name"]} #(
   assign unused_irq_id = irq_id;
 
   // Alert list
-  prim_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
-  prim_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
+  prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
   // Escalation outputs
-  prim_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
-  prim_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
+  prim_esc_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
+  prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
 
 % if not top["alert"]:
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_tie_off

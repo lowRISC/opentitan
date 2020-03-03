@@ -29,7 +29,9 @@
 
 `include "prim_assert.sv"
 
-module prim_alert_receiver import prim_pkg::*; #(
+module prim_alert_receiver
+  import prim_alert_pkg::*;
+#(
   // enables additional synchronization logic
   parameter bit AsyncOn = 1'b0
 ) (

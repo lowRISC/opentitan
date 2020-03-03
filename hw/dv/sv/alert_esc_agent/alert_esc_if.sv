@@ -6,10 +6,10 @@
 // Alert interface
 // ---------------------------------------------
 interface alert_esc_if(input clk, input rst_n);
-  wire prim_pkg::alert_tx_t alert_tx;
-  wire prim_pkg::alert_rx_t alert_rx;
-  wire prim_pkg::esc_tx_t esc_tx;
-  wire prim_pkg::esc_rx_t esc_rx;
+  wire prim_alert_pkg::alert_tx_t alert_tx;
+  wire prim_alert_pkg::alert_rx_t alert_rx;
+  wire prim_esc_pkg::esc_tx_t esc_tx;
+  wire prim_esc_pkg::esc_rx_t esc_rx;
 
   clocking sender_cb @(posedge clk);
     input  rst_n;

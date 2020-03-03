@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module hmac
-  import prim_pkg::*;
+  import prim_alert_pkg::*;
   import hmac_pkg::*;
   import hmac_reg_pkg::*;
 (
