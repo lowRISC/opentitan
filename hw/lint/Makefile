@@ -71,7 +71,7 @@ $(ips_lint):
 report:
 	$(eval TMPFILE=$(shell mktemp))
 	rm -f ${REPORT_DIR}/lint_summary.rpt
-	./gen_report.sh | tee $(TMPFILE)
+	./util/gen-report.sh | tee $(TMPFILE)
 	cp $(TMPFILE) ${REPORT_DIR}/lint_summary.rpt
 	rm -f $(TMPFILE)
 
