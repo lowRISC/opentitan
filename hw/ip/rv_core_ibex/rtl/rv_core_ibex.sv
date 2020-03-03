@@ -215,7 +215,7 @@ module rv_core_ibex #(
   assign instr_gnt_i    = tl_i_fifo2ibex.a_ready & tl_i_ibex2fifo.a_valid;
   assign instr_rvalid_i = tl_i_fifo2ibex.d_valid;
   assign instr_rdata_i  = tl_i_fifo2ibex.d_data;
-  assign instr_err_i    = tl_i_fifo2ibex.d_error;
+  assign instr_err_i    = tl_i_fifo2ibex.d_valid & tl_i_fifo2ibex.d_error;
 
   tlul_fifo_sync #(
     .ReqPass(FifoPass),
@@ -257,7 +257,7 @@ module rv_core_ibex #(
   assign data_gnt_i    = tl_d_fifo2ibex.a_ready & tl_d_ibex2fifo.a_valid;
   assign data_rvalid_i = tl_d_fifo2ibex.d_valid;
   assign data_rdata_i  = tl_d_fifo2ibex.d_data;
-  assign data_err_i    = tl_d_fifo2ibex.d_error;
+  assign data_err_i    = tl_d_fifo2ibex.d_valid & tl_d_fifo2ibex.d_error;
 
   tlul_fifo_sync #(
     .ReqPass(FifoPass),
