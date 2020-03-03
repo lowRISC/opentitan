@@ -30,6 +30,7 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:ip:xbar_main
       - lowrisc:ip:xbar_peri
+      - lowrisc:tlul:headers
     files:
       - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv
