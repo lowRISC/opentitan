@@ -1015,6 +1015,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
         if closereg:
             genreg['fields'] = genfields
             genreg['genbasebits'] = bused
+            genreg['genresval'] = resval
+            genreg['genresmask'] = resmask
             error += validate_register(genreg, offset + (rnum * addrsep),
                                        width, top)
             if error:
@@ -1085,7 +1087,7 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         newf['genresval'] = 0
         newf['genresvalx'] = False
 
-        bits_used = bits_used | (1 << cur_bit)
+        bits_used = bits_used | ((2**w - 1) << cur_bit)
         cur_bit += 1
         genfields.append(newf)
 
