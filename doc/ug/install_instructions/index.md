@@ -134,7 +134,7 @@ We recommend compiling Verilator from source, as outlined here.
 Then you can fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
 
 ```console
-$ export VERILATOR_VERSION=4.010
+$ export VERILATOR_VERSION=4.028
 
 $ git clone http://git.veripool.org/git/verilator
 $ cd verilator
