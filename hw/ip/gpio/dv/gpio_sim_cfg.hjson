@@ -42,6 +42,15 @@
   uvm_test: gpio_base_test
   uvm_test_seq: gpio_base_vseq
 
+  // Add GPIO specific exclusion files.
+
+  // Add excl files to tool_srcs so that it gets copied over to the scratch area.
+  tool_srcs: ["{proj_root}/hw/ip/gpio/dv/cov/gpio_cov_excl.el"]
+
+  // Refer to the excl file with vcs_cov_excl_files var with the rel path from tool_srcs_dir
+  // so the VCS can find it.
+  vcs_cov_excl_files: ["{tool_srcs_dir}/gpio_cov_excl.el"]
+
   // List of test specifications.
   tests: [
     {

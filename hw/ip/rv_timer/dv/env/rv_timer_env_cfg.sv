@@ -14,6 +14,9 @@ class rv_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_timer_reg_block));
     super.initialize(csr_base_addr);
     // set num_interrupts
     num_interrupts = NUM_HARTS * NUM_TIMERS;
+
+    // only support 1 outstanding TL item
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
 endclass
