@@ -10,7 +10,7 @@
 // 1. This interface will be bound to one of the following modules:
 //    prim_ram_1p, prim_ram_2p, prim_rom
 // 2. The sub hierarchy from within these instances to the memory element will be fixed to
-//    'gen_mem_generic.u_impl_generic.mem'
+//    'gen_generic.u_impl_generic.mem'
 //
 // If these assumptions are met, then the generic interface can be used to bind to any instance with
 // any parameter set and can be set into the uvm_config_db to allow us to manipulate the mem
@@ -27,7 +27,7 @@ interface mem_bkdr_if();
   // out srams with vendor library models. Also, need to address the scenario where not all ram
   // instances are replaced with vendor library models.
 `ifndef mem_array_path_slice
-  `define mem_array_path_slice gen_mem_generic.u_impl_generic.mem
+  `define mem_array_path_slice gen_generic.u_impl_generic.mem
 `endif
 
   // derive memory specifics such as depth, width, addr_msb mem size etc.

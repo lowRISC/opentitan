@@ -4,19 +4,22 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:flash"
-description: "Flash memory primitive"
+description: "Flash memory"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
-      - lowrisc:prim_generic:flash
-      - lowrisc:prim:assert
-      - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:prim:prim_pkg
-    files:
-      - abstract/prim_flash.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: flash
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl

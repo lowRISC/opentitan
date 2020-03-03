@@ -4,14 +4,20 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:prim:prim_pkg:0.1"
 description: "Constants used by the primitives"
-
 filesets:
-  files_rtl:
-    files:
-      - rtl/prim_pkg.sv
-    file_type: systemVerilogSource
+  primgen_dep:
+    depend:
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      action: generate_prim_pkg
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl

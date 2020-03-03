@@ -4,18 +4,22 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:clock_mux2"
-description: "two-input clock multiplexer primitive"
+description: "2-input clock multiplexer"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
-      - lowrisc:prim_generic:clock_mux2
-      - lowrisc:prim_xilinx:clock_mux2
       - lowrisc:prim:prim_pkg
-    files:
-      - abstract/prim_clock_mux2.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: clock_mux2
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl
