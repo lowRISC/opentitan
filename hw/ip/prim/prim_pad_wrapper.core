@@ -4,19 +4,22 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:pad_wrapper"
-description: "prim"
+description: "PAD wrapper"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
-      - lowrisc:prim_generic:pad_wrapper
-      - lowrisc:prim_xilinx:pad_wrapper
-      - lowrisc:prim:assert
       - lowrisc:prim:prim_pkg
-    files:
-      - abstract/prim_pad_wrapper.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: pad_wrapper
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl

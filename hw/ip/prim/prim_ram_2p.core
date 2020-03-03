@@ -4,19 +4,22 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:ram_2p"
-description: "prim"
+description: "2 port random-access memory"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
-      - lowrisc:prim_generic:ram_2p
-      - lowrisc:prim_xilinx:ram_2p
-      - lowrisc:prim:assert
       - lowrisc:prim:prim_pkg
-    files:
-      - abstract/prim_ram_2p.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: ram_2p
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl

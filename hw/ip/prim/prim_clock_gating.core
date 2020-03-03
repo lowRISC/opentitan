@@ -4,18 +4,22 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:clock_gating"
-description: "prim"
+description: "Clock gating primitives"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
-      - lowrisc:prim_generic:clock_gating
-      - lowrisc:prim_xilinx:clock_gating
       - lowrisc:prim:prim_pkg
-    files:
-      - abstract/prim_clock_gating.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: clock_gating
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl

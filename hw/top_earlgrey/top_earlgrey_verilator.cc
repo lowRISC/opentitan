@@ -17,18 +17,17 @@ int main(int argc, char **argv) {
 
   memutil.RegisterMemoryArea(
       "rom",
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom.gen_mem_generic."
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom.gen_generic."
       "u_impl_generic");
   memutil.RegisterMemoryArea(
       "ram",
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main"
-      ".gen_mem_generic.u_impl_generic");
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main."
+      "gen_generic.u_impl_generic");
   memutil.RegisterMemoryArea(
       "flash",
       "TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash."
-      "gen_flash_banks[0].u_flash.gen_flash.u_impl_generic.u_mem.gen_mem_"
-      "generic.u_impl_"
-      "generic");
+      "gen_flash_banks[0].u_flash.gen_generic.u_impl_generic.u_mem.gen_generic."
+      "u_impl_generic");
   simctrl.RegisterExtension(&memutil);
 
   std::cout << "Simulation of OpenTitan Earl Grey" << std::endl

@@ -4,18 +4,22 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:rom"
-description: "prim"
+description: "Read-only memory (ROM)"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
-      - lowrisc:prim_generic:rom
-      - lowrisc:prim_xilinx:rom
       - lowrisc:prim:prim_pkg
-    files:
-      - abstract/prim_rom.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: rom
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl

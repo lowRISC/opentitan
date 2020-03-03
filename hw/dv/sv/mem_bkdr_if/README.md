@@ -9,7 +9,7 @@ The following assumptions are made to ensure the interface works:
 * This interface will be bound to one of the following modules:
   `prim_ram_1p`, `prim_ram_2p`, `prim_rom`
 * The sub hierarchy from within these instances to the memory element will be fixed to
-  `gen_mem_generic.u_impl_generic.mem`
+  `gen_generic.u_impl_generic.mem`
 
 ### Useful methods
 This interface supports basic backdoor methods to access memory. Useful methods are:
