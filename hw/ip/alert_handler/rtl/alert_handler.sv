@@ -10,7 +10,11 @@
 
 `include "prim_assert.sv"
 
-module alert_handler import alert_pkg::*; import prim_pkg::*; (
+module alert_handler
+  import alert_pkg::*;
+  import prim_alert_pkg::*;
+  import prim_esc_pkg::*;
+(
   input                           clk_i,
   input                           rst_ni,
   // Bus Interface (device)

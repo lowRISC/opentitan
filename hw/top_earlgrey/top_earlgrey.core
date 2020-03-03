@@ -31,6 +31,7 @@ filesets:
       - lowrisc:ip:xbar_main
       - lowrisc:ip:xbar_peri
       - lowrisc:tlul:headers
+      - lowrisc:prim:all
     files:
       - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv

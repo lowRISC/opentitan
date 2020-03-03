@@ -6,7 +6,9 @@
 // receivers and converts them into interrupts such that they can be tested in system.
 // See also alert handler documentation for more context.
 
-module nmi_gen import prim_pkg::*; #(
+module nmi_gen
+  import prim_esc_pkg::*;
+#(
   // leave constant
   localparam int unsigned N_ESC_SEV = 4
 ) (

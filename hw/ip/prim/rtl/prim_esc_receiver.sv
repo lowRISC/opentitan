@@ -18,7 +18,9 @@
 
 `include "prim_assert.sv"
 
-module prim_esc_receiver import prim_pkg::*; (
+module prim_esc_receiver
+  import prim_esc_pkg::*;
+(
   input           clk_i,
   input           rst_ni,
   // escalation enable

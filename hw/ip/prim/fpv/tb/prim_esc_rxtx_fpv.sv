@@ -5,7 +5,10 @@
 // Testbench module for escalation sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_esc_rxtx_fpv import prim_pkg::*; (
+module prim_esc_rxtx_fpv
+  import prim_alert_pkg::*;
+  import prim_esc_pkg::*;
+(
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
