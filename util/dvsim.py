@@ -20,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dvsim import Deploy, SimCfg, utils
+from dvsim import Deploy, LintCfg, SimCfg, utils
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
@@ -164,7 +164,7 @@ def main():
         default=[],
         metavar="",
         help="""pass additional run time options over the command line;
-                              these options will be passed on to all tests schedueld to be run"""
+                              these options will be passed on to all tests scheduled to be run"""
     )
 
     parser.add_argument(
@@ -401,7 +401,7 @@ def main():
     log.basicConfig(format=log_format, level=log_level)
 
     if not os.path.exists(args.cfg):
-        log.fatal("Simulation config file %s appears to be invalid.", args.cfg)
+        log.fatal("Path to config file %s appears to be invalid.", args.cfg)
         sys.exit(1)
 
     # If publishing results, then force full testplan mapping of results.
@@ -435,7 +435,10 @@ def main():
     # be deployed.
     # TODO: SimCfg item below implies DV - need to solve this once we add FPV
     # and other ASIC flow targets.
-    cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
+    if args.tool == 'ascentlint':
+        cfg = LintCfg.LintCfg(args.cfg, get_proj_root(), args)
+    else:
+        cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
 
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:

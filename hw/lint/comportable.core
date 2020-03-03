@@ -7,12 +7,12 @@ description: "Waiver files for comportable IPs"
 filesets:
   files_verilator_waiver:
     files:
-      - comportable.vlt
+      - tools/verilator/comportable.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
     files:
-      - comportable.waiver
+      - tools/ascentlint/comportable.waiver
     file_type: waiver
 
 targets:

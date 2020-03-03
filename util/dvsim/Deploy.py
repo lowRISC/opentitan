@@ -329,7 +329,7 @@ class Deploy():
         # Dispatch the given items
         dispatch_items_queue = []
         if len(items) > Deploy.max_parallel:
-            dispatch_items(items[0:Deploy.max_parallel - 1])
+            dispatch_items(items[0:Deploy.max_parallel])
             dispatch_items_queue = items[Deploy.max_parallel:]
         else:
             dispatch_items(items)
@@ -453,6 +453,53 @@ class CompileSim(Deploy):
         if os.path.exists(self.cov_db_dir):
             os.system("rm -rf " + self.cov_db_dir)
         super().dispatch_cmd()
+
+
+class CompileOneShot(Deploy):
+    """
+    Abstraction for building the simulation executable.
+    """
+
+    # Register all builds with the class
+    items = []
+
+    def __init__(self, build_mode, sim_cfg):
+        self.target = "build"
+        self.pass_patterns = []
+        self.fail_patterns = []
+
+        self.mandatory_cmd_attrs = {
+            # tool srcs
+            "tool_srcs": False,
+            "tool_srcs_dir": False,
+
+            # Build
+            "build_dir": False,
+            "build_cmd": False,
+            "build_opts": False,
+
+            # Report processing
+            "report_cmd": False,
+            "report_opts": False
+        }
+
+        self.mandatory_misc_attrs = {}
+
+        # Initialize
+        super().__init__(sim_cfg)
+        super().parse_dict(build_mode.__dict__)
+        # Call this method again with the sim_cfg dict passed as the object,
+        # since it may contain additional mandatory attrs.
+        super().parse_dict(sim_cfg.__dict__)
+        self.build_mode = self.name
+        self.__post_init__()
+
+        # Start fail message construction
+        self.fail_msg = "\n**BUILD:** {}<br>\n".format(self.name)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
+
+        CompileOneShot.items.append(self)
 
 
 class RunTest(Deploy):

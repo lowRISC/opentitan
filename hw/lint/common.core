@@ -7,13 +7,13 @@ description: "Common waivers"
 filesets:
   files_verilator:
     files:
-      - common.vlt
+      - tools/verilator/common.vlt
     file_type: vlt
 
   files_ascentlint:
     files:
-      - common.waiver: {file_type: waiver}
-      - ascentlint-config.tcl: {file_type: tclSource}
+      - tools/ascentlint/common.waiver: {file_type: waiver}
+      - tools/ascentlint/ascentlint-config.tcl: {file_type: tclSource}
 
 targets:
   default: &default_target

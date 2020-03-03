@@ -1,0 +1,140 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the master cfg hjson for RTL linting. It imports ALL individual lint
+  // cfgs of the IPs and the full chip used in top_earlgrey. This enables to run
+  // them all as a regression in one shot.
+  name: top_earlgrey_batch_lint
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"]
+
+  use_cfgs: [{    name: aes
+                  fusesoc_core: lowrisc:ip:aes
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/aes/lint"
+             },
+             {    name: alert_handler
+                  fusesoc_core: lowrisc:ip:alert_handler
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/alert_handler/lint"
+             },
+             {    name: flash_ctrl
+                  fusesoc_core: lowrisc:ip:flash_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/flash_ctrl/lint"
+             },
+             {    name: gpio
+                  fusesoc_core: lowrisc:ip:gpio
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/gpio/lint"
+             },
+             {    name: hmac
+                  fusesoc_core: lowrisc:ip:hmac
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/hmac/lint"
+             },
+             {    name: i2c
+                  fusesoc_core: lowrisc:ip:i2c
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/i2c/lint"
+             },
+             {    name: nmi_gen
+                  fusesoc_core: lowrisc:ip:nmi_gen
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/nmi_gen/lint"
+             },
+             {    name: padctrl
+                  fusesoc_core: lowrisc:ip:padctrl
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/padctrl/lint"
+             },
+             {    name: padring
+                  fusesoc_core: lowrisc:ip:padring
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/padring/lint"
+             },
+             {    name: pinmux
+                  fusesoc_core: lowrisc:ip:pinmux
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/pinmux/lint"
+             },
+             {    name: rv_core_ibex
+                  fusesoc_core: lowrisc:ip:rv_core_ibex
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_core_ibex/lint"
+             },
+             {    name: rv_dm
+                  fusesoc_core: lowrisc:ip:rv_dm
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_dm/lint"
+             },
+             {    name: rv_plic_example
+                  fusesoc_core: lowrisc:ip:rv_plic_example
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_plic_example/lint"
+             },
+             {    name: rv_timer
+                  fusesoc_core: lowrisc:ip:rv_timer
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_timer/lint"
+             },
+             {    name: spi_device
+                  fusesoc_core: lowrisc:ip:spi_device
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/spi_device/lint"
+             },
+             {    name: uart
+                  fusesoc_core: lowrisc:ip:uart
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/uart/lint"
+             },
+             {    name: usbdev
+                  fusesoc_core: lowrisc:ip:usbdev
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/usbdev/lint"
+             },
+             {    name: usb_fs_nb_pe
+                  fusesoc_core: lowrisc:ip:usb_fs_nb_pe
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/usb_fs_nb_pe/lint"
+             },
+             {    name: usbuart
+                  fusesoc_core: lowrisc:ip:usbuart
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/usbuart/lint"
+             },
+             {    name: socket_1n
+                  fusesoc_core: lowrisc:tlul:socket_1n
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/tlul/socket_1n/lint"
+             },
+             {    name: socket_m1
+                  fusesoc_core: lowrisc:tlul:socket_m1
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/tlul/socket_m1/lint"
+             },
+             {    name: adapter_reg
+                  fusesoc_core: lowrisc:tlul:adapter_reg
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/tlul/adapter_reg/lint"
+             },
+             {    name: adapter_sram
+                  fusesoc_core: lowrisc:tlul:adapter_sram
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/tlul/adapter_sram/lint"
+             },
+             {    name: sram2tlul
+                  fusesoc_core: lowrisc:tlul:sram2tlul
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/tlul/sram2tlul/lint"
+             },
+             {    name: top_earlgrey
+                  fusesoc_core: lowrisc:systems:top_earlgrey
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_earlgrey/lint"
+             },
+            ]
+}
