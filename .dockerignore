@@ -1,0 +1,40 @@
+.git/
+*~
+*.bak
+__pycache__
+opentitan-docs
+
+# fusesoc results and build directories with special suffixes
+build*/
+
+# Generated register headers
+hw/ip/*/sw
+
+# JasperGold FPV Result
+jgproject/
+
+# FPGA splice intermediate files
+*.jou
+
+# Simulation Results
+*.log
+vdCovLog/
+INCA_libs/
+*.shm/
+.simvision/
+*.history
+irun.key
+*.svcf
+*.fsdb
+*.rc
+out/
+scratch/
+ucli.key
+novas.conf
+verdiLog/
+ascent_project/
+ascentlint.rpt
+
+# verilator/gtkwave waveforms and wave lists
+*.fst
+*.gtkw
