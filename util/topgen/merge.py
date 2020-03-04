@@ -41,7 +41,7 @@ def amend_ip(top, ip):
     # Size
     if not "size" in ip_module:
         ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
-    elif ip_module["size"] < ip["gensize"]:
+    elif int(ip_module["size"], 0) < ip["gensize"]:
         log.error(
             "given 'size' field in IP %s is smaller than the required space" %
             ip_module["name"])
