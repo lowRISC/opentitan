@@ -10,3 +10,4 @@
 `include "alert_handler_esc_intr_timeout_vseq.sv"
 `include "alert_handler_esc_alert_accum_vseq.sv"
 `include "alert_handler_sig_int_fail_vseq.sv"
+`include "alert_handler_stress_all_vseq.sv"

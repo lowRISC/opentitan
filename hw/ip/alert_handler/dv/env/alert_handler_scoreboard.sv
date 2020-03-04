@@ -30,7 +30,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // ---   C   -classc_phase0_cyc - classc_phase1_cyc - classc_phase2_cyc - classc_phase3_cyc --
   // ---   D   -classd_phase0_cyc - classd_phase1_cyc - classd_phase2_cyc - classd_phase3_cyc --
   dv_base_reg   reg_esc_phase_cycs_per_class_q[NUM_ALERT_HANDLER_CLASSES][$];
-  dv_base_reg   reg_accum_cnt_per_class_q[NUM_ALERT_HANDLER_CLASSES];
+  dv_base_reg   reg_accum_cnts[NUM_ALERT_HANDLER_CLASSES];
 
   uvm_reg_field alert_cause_fields[$];
   uvm_reg_field intr_state_fields[$];
@@ -65,8 +65,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     `ASSIGN_CLASS_PHASE_REGS(1, b)
     `ASSIGN_CLASS_PHASE_REGS(2, c)
     `ASSIGN_CLASS_PHASE_REGS(3, d)
-    reg_accum_cnt_per_class_q = {ral.classa_accum_cnt,
-        ral.classb_accum_cnt, ral.classc_accum_cnt, ral.classd_accum_cnt};
+    reg_accum_cnts = {ral.classa_accum_cnt, ral.classb_accum_cnt, ral.classc_accum_cnt,
+                      ral.classd_accum_cnt};
 
     foreach (alert_fifo[i]) alert_fifo[i] = new($sformatf("alert_fifo[%0d]", i), this);
     foreach (esc_fifo[i])   esc_fifo[i]   = new($sformatf("esc_fifo[%0d]", i), this);
@@ -172,12 +172,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // more thatn one alerts triggered on the same clk cycle only counts for one
   virtual function void alert_accum_cal(int class_i);
     bit [TL_DW-1:0] accum_thresh = get_class_accum_thresh(class_i);
-    int accum_cnt = reg_accum_cnt_per_class_q[class_i].get_mirrored_value();
+    int accum_cnt = reg_accum_cnts[class_i].get_mirrored_value();
     realtime curr_time = $realtime();
     if (curr_time != last_triggered_alert_per_class[class_i]) begin
       last_triggered_alert_per_class[class_i] = curr_time;
       accum_cnt += 1;
-      void'(reg_accum_cnt_per_class_q[class_i].predict(accum_cnt));
+      void'(reg_accum_cnts[class_i].predict(accum_cnt));
     end
     esc_class_trigger = class_i;
     `uvm_info(`gfn, $sformatf("alert_accum: class=%0d, alert_cnt=%0d, thresh=%0d, under_esc=%0b",
@@ -311,6 +311,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) clr_reset_esc_class(i);
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -328,7 +329,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     intr_timer_per_class[class_i] = 0;
     last_triggered_alert_per_class[class_i] = 0;
     under_intr_classes[class_i] = 0;
-    void'(reg_accum_cnt_per_class_q[class_i].predict(0));
+    void'(reg_accum_cnts[class_i].predict(0));
   endfunction
 
   // get class_ctrl register mirrored value by class
