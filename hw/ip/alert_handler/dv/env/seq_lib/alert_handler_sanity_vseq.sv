@@ -65,8 +65,9 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
                          .loc_alert_en(local_alert_en), .loc_alert_class(local_alert_class_map));
 
       // write config settings according to the constraits
+      // always set when phase_cycle for the first seq, in order to pass stress_all test
       alert_handle_rand_wr_class_ctrl();
-      if (do_wr_phases_cyc) begin
+      if (do_wr_phases_cyc || i == 1) begin
         wr_phases_cycle(max_phase_cyc);
         max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
                                max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
