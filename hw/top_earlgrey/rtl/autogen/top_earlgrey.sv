@@ -344,7 +344,7 @@ module top_earlgrey #(
   tlul_adapter_sram #(
     .SramAw(12),
     .SramDw(32),
-    .Outstanding(1),
+    .Outstanding(2),
     .ErrOnWrite(1)
   ) tl_adapter_rom (
     .clk_i   (main_clk),
@@ -388,7 +388,7 @@ module top_earlgrey #(
   tlul_adapter_sram #(
     .SramAw(14),
     .SramDw(32),
-    .Outstanding(1)
+    .Outstanding(2)
   ) tl_adapter_ram_main (
     .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
@@ -437,7 +437,7 @@ module top_earlgrey #(
   tlul_adapter_sram #(
     .SramAw(FLASH_AW),
     .SramDw(FLASH_DW),
-    .Outstanding(1),
+    .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
   ) tl_adapter_eflash (

@@ -330,7 +330,7 @@ module top_${top["name"]} #(
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
-    .Outstanding(1)
+    .Outstanding(2)
   ) tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}_clk),
@@ -390,7 +390,7 @@ module top_${top["name"]} #(
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
-    .Outstanding(1),
+    .Outstanding(2),
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
     % for key in clocks:
@@ -453,7 +453,7 @@ module top_${top["name"]} #(
   tlul_adapter_sram #(
     .SramAw(FLASH_AW),
     .SramDw(FLASH_DW),
-    .Outstanding(1),
+    .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
   ) tl_adapter_${m["name"]} (
