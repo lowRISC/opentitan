@@ -270,7 +270,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
-          bit [TL_DW-1:0] intr_en = item.a_data;
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           intr_exp |= item.a_data;
           if (cfg.en_cov) begin
             foreach (intr_exp[i]) begin

@@ -77,7 +77,7 @@ class tl_monitor extends dv_base_monitor#(
                    agent_name, req.convert2string()), UVM_HIGH)
         a_chan_port.write(req);
         pending_a_req.push_back(req);
-        if (cfg.max_outstanding_req > 0) begin
+        if (cfg.max_outstanding_req > 0 && cfg.vif.rst_n === 1) begin
           if (pending_a_req.size() > cfg.max_outstanding_req) begin
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
                                         pending_a_req.size()))
