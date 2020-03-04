@@ -9,9 +9,9 @@
 //  single-ended signaling. The incomming signals are also muxed and synchronized
 //  to the corresponding clock domain.
 
-import usbdev_reg_pkg::*;
-
-module usbdev_iomux (
+module usbdev_iomux
+  import usbdev_reg_pkg::*;
+(
   input  logic                          clk_i,
   input  logic                          rst_ni,
   input  logic                          clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
