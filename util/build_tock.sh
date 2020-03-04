@@ -10,18 +10,12 @@ set -e
 # RUSTFLAGS environment variable.
 
 TARGET="${1}"
-MODE="${2}"
-MANIFEST_PATH="${3}"
-TARGET_DIR="${4}"
-TOOLCHAIN_FILE="${5}"
-export RUSTFLAGS="${6}"
-
-if [[ "${MODE}" == "release" ]]; then
-	RELEASE_FLAG="--release"
-fi
+MANIFEST_PATH="${2}"
+TARGET_DIR="${3}"
+TOOLCHAIN_FILE="${4}"
+export RUSTFLAGS="${5}"
 
 cargo +"$(cat ${TOOLCHAIN_FILE})" build \
 	--target "${TARGET}" \
 	--manifest-path "${MANIFEST_PATH}" \
-	--target-dir "${TARGET_DIR}" \
-	${RELEASE_FLAG}
+	--target-dir "${TARGET_DIR}"

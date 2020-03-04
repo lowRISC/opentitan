@@ -17,9 +17,9 @@ pub struct CounterAlarm<'a, A: Alarm<'a>> {
     /// The pins to toggle in order
     count_pins: &'a [usize],
     /// Optional text to display over the UART
-    splash_text: &'a [&'a str],
+    spash_text: &'a [&'a str],
     /// A counter for lines of the optional text sent
-    splash_count: Cell<u32>,
+    spash_count: Cell<u32>,
 }
 
 fn ms_to_tick<'a, A: Alarm<'a>>(ms: u32) -> u32 {
@@ -36,13 +36,13 @@ impl<'a, A: Alarm<'a>> CounterAlarm<'a, A> {
             count: Cell::new(0),
             interval: Cell::new(0),
             count_pins: pins,
-            splash_text: &[],
-            splash_count: Cell::new(0),
+            spash_text: &[],
+            spash_count: Cell::new(0),
         }
     }
 
-    pub fn add_splash_text(&mut self, splash: &'a[&'a str]) {
-        self.splash_text = splash;
+    pub fn add_spash_text(&mut self, spash: &'a[&'a str]) {
+        self.spash_text = spash;
     }
 
     pub fn run(&self, interval_ms: u32) {
@@ -68,14 +68,10 @@ impl<'a, A: Alarm<'a>> AlarmClient for CounterAlarm<'a, A> {
             count >>= 1;
         }
 
-        let mut splash_count = self.splash_count.get() as usize;
-        if self.splash_text.len() > 0 {
-            debug!("{}", self.splash_text[splash_count as usize]);
-            splash_count += 1;
-            if splash_count >= self.splash_text.len() {
-                splash_count = 0;
-            }
-            self.splash_count.set(splash_count as u32);
+        // Hijack this timer to display optional text
+        if self.spash_count.get() < self.spash_text.len() as u32 {
+            debug!("{}", self.spash_text[self.spash_count.get() as usize]);
+            self.spash_count.set(self.spash_count.get() + 1);
         }
 
         // Reset the counter if there were any overflow bits
