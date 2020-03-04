@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-cargo = find_program('cargo')
+cargo = find_program('cargo', required: false)
 
 target = 'riscv32imc-unknown-none-elf'
 build_type = 'release'
