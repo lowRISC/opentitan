@@ -4,6 +4,8 @@
 
 {
     name:               "i2c",
+    design_spec:        "hw/ip/i2c/doc",
+    dv_plan:            "hw/ip/i2c/doc/dv_plan",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D0",

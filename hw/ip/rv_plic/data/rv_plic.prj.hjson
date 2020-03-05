@@ -4,6 +4,7 @@
 
 {
     name:               "rv_plic",
+    design_spec:        "hw/ip/rv_plic/doc",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D0",

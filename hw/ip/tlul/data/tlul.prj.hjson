@@ -4,6 +4,9 @@
 
 {
     name:               "tlul",
+    design_spec:        "hw/ip/tlul/doc",
+    dv_plan:            "hw/ip/tlul/doc/dv_plan",
+    checklist:          "hw/top_earlgrey/ip/xbar/doc/checklist",
     revisions: [
       {
         version:            "0.5",
@@ -18,8 +21,7 @@
         life_stage:         "L1",
         design_stage:       "D1",
         verification_stage: "V1",
-        commit_id:          "2366287ed15fd02c09f05ce61c5d9ef2ae280181",
-        notes:              "Rolled back to D1V1 as more features (like multi-clock) are being updated"
+        notes:              ""
       }
     ]
 }

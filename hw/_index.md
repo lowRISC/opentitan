@@ -1,35 +1,43 @@
-# Hardware Specifications
+---
+title: "Hardware Dashboard"
+---
 
-This is the landing spot for all hardware specifications within the OpenTitan project.
-This includes: top level specification(s); processor core(s) specifications; and [Comportable IP]({{< relref "doc/rm/comportability_specification" >}}) specifications.
+This page serves as the landing spot for all hardware development within the OpenTitan project.
 
-## Available Top Level Specifications
+We start off by providing links to the [results of various tool-flows](#toolflows-summary-results) run on all of our [Comportable]({{< relref "doc/rm/comportability_specification" >}}) IPs.
+This includes DV simulations, FPV and lint, all of which are run with the `dvsim` tool which serves as the common frontend.
 
-* [`top_earlgrey` design specification]({{< relref "hw/top_earlgrey/doc" >}})
+The [Comportable IPs](#comportable-ips) following it provides links to their design specifications and DV plans, and tracks their current stage of development.
+See the [Hardware Development Stages]({{< relref "/doc/project/hw_stages.md" >}}) for description of the hardware stages and how they are determined.
 
-## Available Processor Core Specifications
+Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV plans and the DV simulation results.
 
-* [`core_ibex` user manual](https://ibex-core.readthedocs.io/en/latest)
+Finally, we provide the same set of information for all available [top level designs](#top-level-designs). We may eventually also include the synthesis results for those top level designs.
 
-## Available Comportable IP Block Design Specifications and Verification Plans
 
-| Module | Design Spec | DV Plan |
-|--------|-------------|---------|
-| `aes`           | [design spec]({{< relref "hw/ip/aes/doc" >}})           | [DV plan]({{< relref "hw/ip/aes/doc/dv_plan" >}}) |
-| `alert_handler` | [design spec]({{< relref "hw/ip/alert_handler/doc" >}}) | [DV plan]({{< relref "hw/ip/alert_handler/doc/dv_plan" >}}) |
-| `entropy_src`   | [design spec]({{< relref "hw/ip/entropy_src/doc" >}})   | |
-| `flash_ctrl`    | [design spec]({{< relref "hw/ip/flash_ctrl/doc" >}})    | |
-| `gpio`          | [design spec]({{< relref "hw/ip/gpio/doc" >}})          | [DV plan]({{< relref "hw/ip/gpio/doc/dv_plan" >}}) |
-| `hmac`          | [design spec]({{< relref "hw/ip/hmac/doc" >}})          | [DV plan]({{< relref "hw/ip/hmac/doc/dv_plan" >}}) |
-| `i2c`           | [design spec]({{< relref "hw/ip/i2c/doc" >}})           | [DV plan]({{< relref "hw/ip/i2c/doc/dv_plan" >}})  |
-| `nmi_gen`       | [design spec]({{< relref "hw/ip/nmi_gen/doc" >}})       | |
-| `padctrl`       | [design spec]({{< relref "hw/ip/padctrl/doc" >}})       | |
-| `pinmux`        | [design spec]({{< relref "hw/ip/pinmux/doc" >}})        | |
-| `rv_core_ibex`  | [design spec]({{< relref "hw/ip/rv_core_ibex/doc" >}})  | |
-| `rv_dm`         | [design spec]({{< relref "hw/ip/rv_dm/doc" >}})         | |
-| `rv_plic`       | [design spec]({{< relref "hw/ip/rv_plic/doc" >}})       | [DV plan]({{< relref "hw/ip/rv_plic/doc/dv_plan" >}}) |
-| `rv_timer`      | [design spec]({{< relref "hw/ip/rv_timer/doc" >}})      | [DV plan]({{< relref "hw/ip/rv_timer/doc/dv_plan" >}}) |
-| `spi_device`    | [design spec]({{< relref "hw/ip/spi_device/doc" >}})    | [DV plan]({{< relref "hw/ip/spi_device/doc/dv_plan" >}}) |
-| `tlul`          | [design spec]({{< relref "hw/ip/tlul/doc" >}})          | [DV plan]({{< relref "hw/ip/tlul/doc/dv_plan" >}})
-| `uart`          | [design spec]({{< relref "hw/ip/uart/doc" >}})          | [DV plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) |
-| `usbdev`        | [design spec]({{< relref "hw/ip/usbdev/doc" >}})        | [DV plan]({{< relref "hw/ip/usbdev/doc/dv_plan" >}}) |
+## Results of tool-flows
+
+* [DV simulation summary results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/summary.html)
+* FPV summary results (nightly) (TBD)
+* [Lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/summary.html)
+
+## Comportable IPs
+
+{{< dashboard "hw/ip" >}}
+
+## Processor cores
+
+* `core_ibex`
+  * [User manual](https://ibex-core.readthedocs.io/en/latest)
+  * [DV plan](https://ibex-core.readthedocs.io/en/latest/verification.html)
+  * DV simulation results, with coverage (nightly) (TBD)
+
+## Top level designs
+
+* `top_earlgrey`
+  * [Design specification]({{< relref "hw/top_earlgrey/doc" >}})
+  * DV plan (TBD)
+  * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/results.html)
+  * FPV results (nightly) (TBD)
+  * [Lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/latest/results.html)
+  * Synthesis results (nightly) (TBD)

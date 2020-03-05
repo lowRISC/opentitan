@@ -4,6 +4,9 @@
 
 {
     name:               "alert_handler",
+    design_spec:        "hw/ip/alert_handler/doc",
+    dv_plan:            "hw/ip/alert_handler/doc/dv_plan",
+    checklist:          "hw/ip/alert_handler/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

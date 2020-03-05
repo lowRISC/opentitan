@@ -104,7 +104,7 @@ Review        | [REVIEW_SW_ERRATA][]    | Not Started |
 
 ## Verification Checklist
 
-### Checklists for milestone V1
+### V1
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Waived      | Plan created, but does not conform to other templates
@@ -146,7 +146,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std-test-categories-planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2-checklist-scoped" >}}
 
-### Checklists for milestone V2
+### V2
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
@@ -180,7 +180,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v2" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3-checklist-scoped" >}}
 
-### Checklists for milestone V3
+### V3
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |

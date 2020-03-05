@@ -4,6 +4,7 @@
 
 {
     name:               "nmi_gen",
+    design_spec:        "hw/ip/nmi_gen/doc",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D0",

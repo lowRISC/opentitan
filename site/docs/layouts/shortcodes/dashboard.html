@@ -1,16 +1,17 @@
 <table class="hw-project-dashboard">
-	<thead>
-		<tr>
-			<th>Module</th>
-			<th>Version</th>
-			<th>Life Stage</th>
-			<th>Design Stage</th>
-			<th>Verification Stage</th>
-			<th>Commit ID</th>
-			<th>Notes</th>
-		</tr>
-	</thead>
-	<tbody>
+  <thead>
+    <tr>
+      <th>Design Spec</th>
+      <th>DV Plan</th>
+      <!-- The relative links below assume that the Hardware development
+      dashboard page that references this shortcode is at two levels above
+      the proj_root. It currently resides at hw[/_index.md].-->
+      <th><a href="../doc/project/hw_stages#versioning">Version</a></th>
+      <th><a href="../doc/project/hw_stages#life-stages">Development Stage</a></th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
 {{ readFile (path.Join .Site.Params.generatedRoot (.Get 0) "dashboard") | safeHTML }}
-	</tbody>
+  </tbody>
 </table>
