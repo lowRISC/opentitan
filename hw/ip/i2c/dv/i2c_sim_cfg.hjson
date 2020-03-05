@@ -53,6 +53,7 @@
 
   // List of regressions.
   regressions: [
+    // TODO: Add i2c_sanity test to the sanity suite once it is passing.
     // {
     //   name: sanity
     //   tests: ["i2c_sanity"]
