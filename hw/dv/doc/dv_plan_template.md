@@ -19,9 +19,9 @@ applicable. Once done, remove this comment before making a PR. -->
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
+* [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
-* DV regression results dashboard (link TBD)
+* [Simulation results](https://reports.opentitan.org/hw/ip/foo/dv/latest/results.html)
 
 ## Design features
 <!-- TODO: uncomment link to the spec below -->

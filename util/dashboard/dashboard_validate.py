@@ -33,6 +33,10 @@ field_required = {
     'life_stage': ['s', "life stage of module"]
 }
 field_optional = {
+    'design_spec':
+    ['s', "path to the design specification, relative to repo root"],
+    'dv_plan': ['s', "path to the DV plan, relative to repo root"],
+    'checklist': ['s', "path to the checklist, relative to repo root"],
     'design_stage': ['s', "design stage of module"],
     'verification_stage': ['s', "verification stage of module"],
     'notes': ['s', "random notes"],

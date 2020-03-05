@@ -4,6 +4,8 @@
 
 {
     name:               "pinmux",
+    design_spec:        "hw/ip/pinmux/doc",
+    checklist:          "hw/ip/pinmux/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

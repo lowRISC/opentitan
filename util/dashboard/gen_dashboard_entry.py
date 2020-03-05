@@ -5,14 +5,16 @@
 Generate HTML documentation from validated dashboard Hjson tree
 """
 
-import sys
-import hjson
 import html
-import re
-import dashboard.dashboard_validate as dashboard_validate
 import logging as log
 import os.path
+import re
+import sys
+
+import hjson
 import mistletoe as mk
+
+import dashboard.dashboard_validate as dashboard_validate
 
 
 def genout(outfile, msg):
@@ -33,9 +35,105 @@ STAGE_STRINGS = {
     'V3': 'Verification Complete'
 }
 
+# TODO: This is relative to the dashboard, which is currently located at
+# hw/_index.md.
+docs_server = "../.."
+
 
 def convert_stage(stagestr):
     return STAGE_STRINGS.get(stagestr, "UNKNOWN")
+
+
+# Link module name with its design spec doc.
+def get_linked_design_spec(obj):
+    result = ""
+    if 'design_spec' in obj.keys():
+        url = docs_server + "/" + html.escape(obj['design_spec'])
+        result = "<span title='Design Spec'><a href='{}'>".format(url)
+        result += "<code>{}</code></a></span>".format(html.escape(obj['name']))
+    else:
+        result = html.escape(obj['name'])
+
+    return result
+
+
+# Provide the link to the DV plan.
+def get_linked_dv_plan(obj):
+    if 'dv_plan' in obj.keys():
+        url = docs_server + "/" + html.escape(obj['dv_plan'])
+        return "<span title='DV Plan'><a href=\"{}\">DV</a></span>".format(url)
+    else:
+        return ""
+
+
+# Link D/V stages with the checklist table.
+def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
+    if not stage or stage not in rev: return ""
+
+    url = ""
+    in_page_ref = ""
+    if rev[stage] not in ["D0", "V0"]:
+        # if in D0 or V0 stage, there is no in-page reference.
+        in_page_ref = "#{}".format(html.escape(rev[stage]).lower())
+
+    # If the checklist is available, the commit id is available, and it is not
+    # the latest revision, link to the committed version of the checklist.
+    # Else, if checklist is available, then link to the current version of the
+    # checklist html.
+    # Else, link to the template.
+    if 'checklist' in obj and 'commit_id' in rev and not is_latest_rev:
+        url = "https://github.com/lowrisc/opentitan/blob/{}/{}.md{}".format(
+            rev['commit_id'], obj['checklist'], in_page_ref)
+    elif 'checklist' in obj:
+        url = "{}/{}{}".format(docs_server, html.escape(obj['checklist']),
+                               in_page_ref)
+    else:
+        # There is no checklist available, so point to the template.
+        url = "https://github.com/lowrisc/opentitan/blob/master/"
+        url += "doc/project/ip_checklist.md.tpl"
+
+    return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
+
+
+# Link development stages in "L# : D# : V#" format.
+# Hover text over each L, D, V indicates the stage mapping.
+# D and V stages link to actual checklist items.
+def get_development_stage(obj, rev, is_latest_rev=True):
+    if "life_stage" not in rev: return "&nbsp;"
+
+    life_stage = rev['life_stage']
+    life_stage_mapping = convert_stage(life_stage)
+    separator = " : "
+
+    if life_stage != 'L0' and 'design_stage' in rev:
+        design_stage = rev['design_stage']
+        design_stage_mapping = convert_stage(design_stage)
+    else:
+        design_stage = None
+
+    if life_stage != 'L0' and 'verification_stage' in rev:
+        verification_stage = rev['verification_stage']
+        verification_stage_mapping = convert_stage(verification_stage)
+    else:
+        verification_stage = None
+
+    result = "<span title='{}'>{}</span>".format(
+        html.escape(life_stage_mapping), html.escape(life_stage))
+
+    if design_stage:
+        result += separator
+        result += "<span title='{}'>{}</span>".format(
+            html.escape(design_stage_mapping),
+            get_linked_checklist(obj, rev, 'design_stage', is_latest_rev))
+
+    if verification_stage:
+        result += separator
+        result += "<span title='{}'>{}</span>".format(
+            html.escape(verification_stage_mapping),
+            get_linked_checklist(obj, rev, 'verification_stage',
+                                 is_latest_rev))
+
+    return result
 
 
 # Create dashboard of hardware IP development status
@@ -67,34 +165,15 @@ def print_version1_format(obj, outfile):
 
     # yapf: disable
     genout(outfile, "      <tr>\n")
+    name = html.escape(obj['name'])
     genout(outfile, "        <td class=\"fixleft\">" +
-                    html.escape(obj['name']) + "</td>\n")
+                    get_linked_design_spec(obj) + "</td>\n")
+    genout(outfile, "        <td class=\"hw-stage\">" +
+                    get_linked_dv_plan(obj) + "</td>\n")
     genout(outfile, "        <td class=\"hw-stage\">" +
                     html.escape(obj['version']) + "</td>\n")
-    genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
-                    html.escape(life_stage_mapping) + "'>" +
-                    html.escape(life_stage) + "</span></td>\n")
-    if life_stage != 'L0' and 'design_stage' in obj:
-        design_stage_mapping = convert_stage(obj['design_stage'])
-        genout(outfile,
-                    "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
-                    html.escape(design_stage_mapping) + "'>" +
-                    html.escape(obj['design_stage']) + "</span></td>\n")
-    else:
-        genout(outfile,
-                    "        <td>&nbsp;</td>\n")
-    if life_stage != 'L0' and 'verification_stage' in obj:
-        verification_stage_mapping = convert_stage(obj['verification_stage'])
-        genout(outfile,
-                    "        <td class=\"hw-stage\"><span class='hw-stage' title='" +
-                    html.escape(verification_stage_mapping) + "'>" +
-                    html.escape(obj['verification_stage']) + "</span></td>\n")
-    else:
-        genout(outfile,
-                    "        <td>&nbsp;</td>\n")
-
-    # Empty commit ID
-    genout(outfile, "        <td>&nbsp;</td>\n")
+    genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage'>" +
+                    get_development_stage(obj, obj) + "</span></td>\n")
 
     if 'notes' in obj:
         genout(outfile,
@@ -110,6 +189,7 @@ def print_multiversion_format(obj, outfile):
     # Sort the revision list based on the version field.
     # TODO: If minor version goes up gte than 10?
     revisions = sorted(obj["revisions"], key=lambda x: x["version"])
+    latest_rev = len(revisions) - 1
     outstr = ""
     for i, rev in enumerate(revisions):
         outstr += "      <tr>\n"
@@ -117,50 +197,28 @@ def print_multiversion_format(obj, outfile):
         # If only one entry in `revisions`, no need of `rowspan`.
         if len(revisions) == 1:
             outstr += "        <td class='fixleft'>"
-            outstr += html.escape(obj['name']) + "</td>\n"
+            outstr += get_linked_design_spec(obj) + "</td>\n"
+            outstr += "        <td class='hw-stage'>"
+            outstr += get_linked_dv_plan(obj) + "</td>\n"
         # Print out the module name in the first entry only
         elif i == 0:
             outstr += "        <td class='fixleft' rowspan='{}'>".format(
                 len(revisions))
-            outstr += html.escape(obj['name']) + "</td>\n"
+            outstr += get_linked_design_spec(obj) + "</td>\n"
+            outstr += "        <td class='hw-stage' rowspan='{}'>".format(
+                len(revisions))
+            outstr += get_linked_dv_plan(obj) + "</td>\n"
 
         # Version
         outstr += "        <td class=\"hw-stage\">"
         outstr += html.escape(rev['version']) + "</td>\n"
 
-        # Life Stage
-        life_stage = rev['life_stage']
-        life_stage_mapping = convert_stage(rev['life_stage'])
+        # Development Stage
+        outstr += "        <td class=\"hw-stage\"><span class='hw-stage'>"
+        outstr += get_development_stage(obj, rev, (i == latest_rev))
+        outstr += "</span></td>\n"
 
-        outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
-        outstr += html.escape(life_stage_mapping) + "'>"
-        outstr += html.escape(life_stage) + "</span></td>\n"
-
-        if life_stage != 'L0' and 'design_stage' in rev:
-            design_stage_mapping = convert_stage(rev['design_stage'])
-            outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
-            outstr += html.escape(design_stage_mapping) + "'>"
-            outstr += html.escape(rev['design_stage']) + "</span></td>\n"
-        else:
-            outstr += "        <td>&nbsp;</td>\n"
-
-        if life_stage != 'L0' and 'verification_stage' in rev:
-            verification_stage_mapping = convert_stage(
-                rev['verification_stage'])
-            outstr += "        <td class=\"hw-stage\"><span class='hw-stage' title='"
-            outstr += html.escape(verification_stage_mapping) + "'>"
-            outstr += html.escape(rev['verification_stage']) + "</span></td>\n"
-        else:
-            outstr += "        <td>&nbsp;</td>\n"
-
-        if 'commit_id' in rev:
-            outstr += "        <td class=\"hw-stage\">"
-            outstr += "<a href='https://github.com/lowrisc/opentitan/tree/{}'>{}</a>".format(
-                rev['commit_id'], rev['commit_id'][0:7])
-            outstr += "</td>\n"
-        else:
-            outstr += "        <td>&nbsp;</td>\n"
-
+        # Notes
         if 'notes' in rev and rev['notes'] != '':
             outstr += "        <td>" + mk.markdown(
                 rev['notes']).rstrip() + "</td>\n"

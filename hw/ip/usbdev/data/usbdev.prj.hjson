@@ -4,6 +4,8 @@
 
 {
     name:               "usbdev",
+    design_spec:        "hw/ip/usbdev/doc",
+    dv_plan:            "hw/ip/usbdev/doc/dv_plan",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D0",

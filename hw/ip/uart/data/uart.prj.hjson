@@ -4,6 +4,9 @@
 
 {
     name:               "uart",
+    design_spec:        "hw/ip/uart/doc",
+    dv_plan:            "hw/ip/uart/doc/dv_plan",
+    checklist:          "hw/ip/uart/doc/checklist",
     revisions: [
       {
         version:            "1.0",
@@ -18,8 +21,7 @@
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
-        commit_id:          "f3039d7006ca8ebd45ae0b52b22864983876175d",
-        notes:              "Rolled back to D2 as the register module is updated",
+        notes:              "Rolled back to D2 as the register module is updated"
       }
     ]
 }

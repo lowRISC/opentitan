@@ -4,6 +4,7 @@
 
 {
     name:               "rv_dm",
+    design_spec:        "hw/ip/rv_dm/doc",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D0",

@@ -2,7 +2,11 @@
 
 * [Project]({{< relref "doc/project" >}})
   * How the OpenTitan project is organized
-  * Progress tracking
+  * Hardware development stages
+  * Hardware signoff checklist
+  * Governance
+  * RFC process
+  * Committers
 * [User Guides]({{< relref "doc/ug" >}})
   * How to get started with the repo
   * How to emulate on an FPGA

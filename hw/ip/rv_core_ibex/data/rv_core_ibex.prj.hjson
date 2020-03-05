@@ -4,6 +4,8 @@
 
 {
     name:               "rv_core_ibex",
+    design_spec:        "hw/ip/rv_core_ibex/doc",
+    checklist:          "hw/ip/rv_core_ibex/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D2",

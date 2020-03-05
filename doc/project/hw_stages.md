@@ -6,7 +6,7 @@ This document describes development stages for hardware within the OpenTitan pro
 This includes design and verification stages meant to give a high-level view of the status of a design.
 OpenTitan being an open-source program aimed at a high quality silicon release, the intent is to find a balance between the rigor of a heavy tapeout process and the more fluid workings of an open source development.
 
-This document also serves as a guide to the [hardware design dashboard]({{< relref "doc/project/hw_dashboard" >}}), which gives the status of all of the designs in the OpenTitan repository.
+This document also serves as a guide to the [Hardware Dashboard]({{< relref "hw" >}}), which gives the status of all of the designs in the OpenTitan repository.
 
 This document aims to mostly give a more defined structure to the process that is already followed.
 Proper versioning of RTL designs is a complex topic.
@@ -150,12 +150,12 @@ For example, `file: gpio.prj.hjson`:
 
 ```hjson
 {
-    name: "gpio",
-    version: 1.0,
-    life_stage: "L1",
-    design_stage: "D2",
-    verification_stage: "V1",
-    notes: "information shown on the dashboard"
+    name:               "gpio"
+    version:            1.0
+    life_stage:         "L1"
+    design_stage:       "D2"
+    verification_stage: "V1"
+    notes:              "information shown on the dashboard"
 }
 ```
 
@@ -167,13 +167,27 @@ The commit ID has its own entry in the project Hjson file, as shown below.
 
 ```hjson
 {
-    name: "gpio",
-    version: 1.0,
-    life_stage: "L1",
-    design_stage: "D2",
-    verification_stage: "V1",
-    commit_id: "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
-    notes: "information shown on the dashboard"
+    name:               "gpio"
+    version:            1.0
+    life_stage:         "L1"
+    design_stage:       "D2"
+    verification_stage: "V1"
+    commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8"
+    notes:              "information shown on the dashboard"
+}
+```
+
+### Other optional fields
+
+Additionally, the tool that generates the dashboard accepts the following optional fields: the design specification, the DV plan and the checklist.
+They are set as partial paths (reference relative to the top of the repository) to the respective documents as shown below.
+They are converted to complete URLs in the generated dashboard.
+
+```hjson
+{
+    design_spec:  "hw/ip/gpio/doc"
+    dv_plan:      "hw/ip/gpio/doc/dv_plan"
+    checklist:    "hw/ip/gpio/doc/checklist"
 }
 ```
 
@@ -240,4 +254,4 @@ The subject will be revisited as we get closer to locking down the design to tak
 
 The stages are reported externally via a script-generated table exposed on the external website.
 This status is a summary of all `prj.hjson` files of all designs in the system, with multiple lines where there are multiple versions.
-The link to that table is [here]({{< relref "doc/project/hw_dashboard" >}}).
+The link to that table is [here]({{< relref "hw" >}}).
