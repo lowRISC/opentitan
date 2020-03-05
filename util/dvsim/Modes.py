@@ -272,6 +272,7 @@ class RunModes(Modes):
         self.en_run_modes = []
         self.sw_dir = ""
         self.sw_name = ""
+        self.sw_build_device = ""
 
         super().__init__(rdict)
         self.en_run_modes = list(set(self.en_run_modes))
@@ -295,7 +296,10 @@ class Tests(RunModes):
         "reseed": -1,
         "uvm_test": "",
         "uvm_test_seq": "",
-        "build_mode": ""
+        "build_mode": "",
+        "sw_dir": "",
+        "sw_name": "",
+        "sw_build_device": "",
     }
 
     def __init__(self, tdict):
@@ -366,13 +370,6 @@ class Tests(RunModes):
 
                     if global_val is not None and global_val != default_val:
                         setattr(test_obj, attr, global_val)
-
-                    else:
-                        # TODO: should we even enforce this?
-                        log.error(
-                            "Required value \"%s\" for the test \"%s\" is missing",
-                            attr, test_obj.name)
-                        sys, exit(1)
 
             # Unpack the build mode for this test
             build_mode_objs = Modes.find_and_merge_modes(test_obj,

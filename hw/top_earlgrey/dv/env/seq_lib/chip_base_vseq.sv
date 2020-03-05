@@ -31,7 +31,7 @@ class chip_base_vseq extends dv_base_vseq #(
     // Drive strap signals at the start.
     cfg.srst_n_vif.drive(1'b1);
     cfg.jtag_spi_n_vif.drive(1'b1); // Select JTAG.
-    cfg.bootstrap_vif.drive(1'b1);
+    cfg.bootstrap_vif.drive(1'b0);
 
     // Now safe to do DUT init.
     dut_init();

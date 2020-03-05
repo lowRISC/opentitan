@@ -21,7 +21,6 @@
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
-             "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson"]
-             // TODO: #1467 chip DV is WIP - uncomment when sims are passing.
-             // "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
+             "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
 }
