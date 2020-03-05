@@ -472,6 +472,7 @@ class SimCfg(FlowCfg):
         # Add title if there are indeed failures
         if fail_msgs != "":
             fail_msgs = "\n## List of Failures\n" + fail_msgs
+            self.errors_seen = True
 
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n"
@@ -501,8 +502,6 @@ class SimCfg(FlowCfg):
             results_str += "\n### [Coverage Dashboard](cov_report/dashboard.html)\n\n"
             results_str += self.cov_report_deploy.cov_results
             self.results_summary["Coverage"] = self.cov_report_deploy.cov_total
-        else:
-            self.results_summary["Coverage"] = "-- %"
 
         # append link of detail result to block name
         self.results_summary["Name"] = self._get_results_page_link(
@@ -510,6 +509,7 @@ class SimCfg(FlowCfg):
 
         # Append failures for triage
         self.results_md = results_str + fail_msgs
+        results_str += fail_msgs
 
         # Write results to the scratch area
         results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
@@ -524,7 +524,8 @@ class SimCfg(FlowCfg):
     def gen_results_summary(self):
 
         # sim summary result has 5 columns from each SimCfg.results_summary
-        header = ["Name", "Passing", "Total", "Pass Rate", "Coverage"]
+        header = ["Name", "Passing", "Total", "Pass Rate"]
+        if self.cov: header.append('Coverage')
         table = [header]
         colalign = ("center", ) * len(header)
         for item in self.cfgs:
