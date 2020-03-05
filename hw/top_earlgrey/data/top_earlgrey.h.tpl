@@ -6,7 +6,6 @@
 #define _TOP_EARLGREY_H_
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
-#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 2
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1
@@ -24,6 +23,11 @@
 <% offset += sig["width"] %>\
   % endif
 % endfor
+
+#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
+
+// PERIPH_OUTSEL ranges from 0 to NUM_MIO + 3 -1}
+// 0, 1 and 2 are tied to value 0, 1 and high-impedance
 
 ## offset starts from 3 as 0, 1, 2 are prefixed value
 <% offset = 3 %>\
