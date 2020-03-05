@@ -63,17 +63,19 @@ class tl_host_driver extends tl_base_driver;
     end
     // wait until no outstanding transaction with same source id
     while (is_source_in_pending_req(req.a_source) & !reset_asserted) @(cfg.vif.host_cb);
-    cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
-    cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
-    cfg.vif.host_cb.h2d_int.a_size    <= req.a_size;
-    cfg.vif.host_cb.h2d_int.a_param   <= req.a_param;
-    cfg.vif.host_cb.h2d_int.a_data    <= req.a_data;
-    cfg.vif.host_cb.h2d_int.a_mask    <= req.a_mask;
-    cfg.vif.host_cb.h2d_int.a_user    <= '0;
-    cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
-    cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
-    // bypass delay in case of reset
-    if (!reset_asserted) @(cfg.vif.host_cb);
+    if (!reset_asserted) begin
+      cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
+      cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
+      cfg.vif.host_cb.h2d_int.a_size    <= req.a_size;
+      cfg.vif.host_cb.h2d_int.a_param   <= req.a_param;
+      cfg.vif.host_cb.h2d_int.a_data    <= req.a_data;
+      cfg.vif.host_cb.h2d_int.a_mask    <= req.a_mask;
+      cfg.vif.host_cb.h2d_int.a_user    <= '0;
+      cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
+      cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
+      // bypass delay in case of reset
+      @(cfg.vif.host_cb);
+    end
     while(!cfg.vif.host_cb.d2h.a_ready && !reset_asserted) @(cfg.vif.host_cb);
     invalidate_a_channel();
     seq_item_port.item_done();
