@@ -14,8 +14,7 @@
              "{proj_root}/hw/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
-             // TODO: #1467 I2C DV is WIP - uncomment when sims are passing.
-             // "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
+             "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
