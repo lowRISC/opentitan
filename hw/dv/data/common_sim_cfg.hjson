@@ -19,7 +19,8 @@
   build_dir:          "{scratch_path}/{build_mode}"
   run_dir_name:       "{index}.{test}"
   run_dir:            "{scratch_path}/{run_dir_name}/out"
-  sw_build_dir:       "{run_dir}/sw_build"
+  sw_build_dir:       "{scratch_path}/sw"
+  sw_root_dir:        "{proj_root}/sw"
 
   // pass and fail patterns
   pass_patterns:    ["^TEST PASSED (UVM_)?CHECKS$"]

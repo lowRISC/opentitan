@@ -472,11 +472,14 @@ class RunTest(Deploy):
         self.fail_patterns = []
 
         self.mandatory_cmd_attrs = {
+            "proj_root": False,
             "uvm_test": False,
             "uvm_test_seq": False,
             "run_opts": False,
             "sw_dir": False,
             "sw_name": False,
+            "sw_build_device":False,
+            "sw_build_dir":False,
             "run_dir": False,
             "run_cmd": False,
             "run_opts": False
