@@ -67,6 +67,7 @@ class FlowCfg():
         self.timestamp = args.timestamp
 
         # Results
+        self.errors_seen = False
         self.rel_path = ""
         self.results_title = ""
         self.results_server_prefix = ""
@@ -431,6 +432,7 @@ class FlowCfg():
             result = item._gen_results()
             print(result)
             results.append(result)
+            self.errors_seen |= item.errors_seen
 
         if self.is_master_cfg: self.gen_results_summary()
 
@@ -440,6 +442,7 @@ class FlowCfg():
         return
 
     def _get_results_page_link(self, link_text):
+        if not self.args.publish: return link_text
         results_page_url = self.results_server_page.replace(
             self.results_server_prefix, self.results_server_url_prefix)
         return "[%s](%s)" % (link_text, results_page_url)
@@ -620,3 +623,6 @@ class FlowCfg():
             log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+
+    def has_errors(self):
+        return self.errors_seen

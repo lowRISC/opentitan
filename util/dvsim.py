@@ -470,6 +470,11 @@ def main():
     else:
         log.info("No items specified to be run.")
 
+    # Exit with non-zero status if there were errors or failures.
+    if cfg.has_errors():
+        log.error("Errors were encountered in this run.")
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
