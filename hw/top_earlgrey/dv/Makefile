@@ -26,7 +26,7 @@ RAL_TOOL_OPTS   += --top
 
 # Common build options.
 # Enable the RISC-V Formal Interface (RVFI) for the ibex tracer.
-ifeq (${TRACE},1)
+ifeq (${EN_IBEX_TRACE},1)
   BUILD_OPTS      += +define+RVFI=1
 endif
 # Use generic implementations of prim modules.
