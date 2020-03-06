@@ -4,7 +4,10 @@
 
 class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
 
+  // Testbench settings
   bit                 stub_cpu;
+  bit                 en_uart_logger = 1'b1;
+  bit                 use_gpio_for_sw_test_status;
 
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
@@ -37,6 +40,12 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     `uvm_field_object(m_cpu_d_tl_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
 
+  // TODO: Fixing core clk freq to 50MHz for now.
+  // Need to find a way to pass this to the SW test.
+  constraint clk_freq_mhz_c {
+    clk_freq_mhz == dv_utils_pkg::ClkFreq50Mhz;
+  }
+
   `uvm_object_new
 
   // TODO review value for csr_base_addr, csr_addr_map_size
@@ -51,8 +60,6 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     super.initialize(csr_base_addr);
     // create uart agent config obj
     m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
-    m_uart_agent_cfg.en_tx_monitor = 1'b0;
-    m_uart_agent_cfg.en_rx_monitor = 1'b0;
     // create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
     // create spi agent config obj

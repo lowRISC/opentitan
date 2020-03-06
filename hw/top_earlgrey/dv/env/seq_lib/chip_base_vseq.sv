@@ -58,7 +58,10 @@ class chip_base_vseq extends dv_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     // Set default frequencies.
     cfg.usb_clk_rst_vif.set_freq_mhz(dv_utils_pkg::ClkFreq48Mhz);
-    cfg.m_uart_agent_cfg.set_baud_rate(BaudRate1Mbps);
+    // Set 'default' UART baud rate of 2Mbps - this is also programmed by the C test.
+    // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
+    cfg.m_uart_agent_cfg.set_parity(1'b0, 1'b0);
+    cfg.m_uart_agent_cfg.set_baud_rate(BaudRate2Mbps);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
     // Bring the chip out of reset.

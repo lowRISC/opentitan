@@ -22,7 +22,11 @@ class chip_base_test extends dv_base_test #(
     void'($value$plusargs("stub_cpu=%0b", cfg.stub_cpu));
     // Set tl_agent's is_active bit based on the retrieved stub_cpu value.
     cfg.m_cpu_d_tl_agent_cfg.is_active = cfg.stub_cpu;
-  endfunction : build_phase
 
+    // knob to enable logging via uart
+    void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
+    cfg.m_uart_agent_cfg.en_logger = cfg.en_uart_logger;
+    cfg.m_uart_agent_cfg.logger_msg_id  = "SW_LOGS";
+  endfunction : build_phase
 
 endclass : chip_base_test
