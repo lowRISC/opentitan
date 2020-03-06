@@ -15,4 +15,4 @@ The memory is separated into a instruction and data section.
 The instructions memory is initialized at synthesis time by reading the output from the software build.
 The software writes to the data section the complementary lower for bits of a word every second resulting in blinking LEDs.
 
-Find the description of how to build and program the Arty board in ``examples/fpga/artya7-100/README.md``.
+Find the description of how to build and program the Arty board in ``examples/fpga/artya7/README.md``.

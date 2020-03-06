@@ -6,6 +6,7 @@ Ibex User Manual
    :caption: Contents:
 
    introduction
+   system_requirements
    getting_started
    integration
    pipeline_details

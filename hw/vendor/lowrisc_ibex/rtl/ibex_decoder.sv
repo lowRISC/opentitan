@@ -809,5 +809,5 @@ module ibex_decoder #(
 
   // Selectors must be known/valid.
   `ASSERT(IbexRegImmAluOpKnown, (opcode == OPCODE_OP_IMM) |->
-      !$isunknown(instr[14:12]), clk_i, !rst_ni)
+      !$isunknown(instr[14:12]))
 endmodule // controller

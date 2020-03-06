@@ -39,8 +39,11 @@ class riscv_load_store_base_instr_stream extends riscv_mem_access_stream;
 
   `uvm_object_utils(riscv_load_store_base_instr_stream)
 
-  constraint sp_c {
+  constraint sp_rnd_order_c {
     solve use_sp_as_rs1 before rs1_reg;
+  }
+  
+  constraint sp_c {
     use_sp_as_rs1 dist {1 := 1, 0 := 2};
     if (use_sp_as_rs1) {
       rs1_reg == SP;
@@ -97,6 +100,7 @@ class riscv_load_store_base_instr_stream extends riscv_mem_access_stream;
     if (SP inside {cfg.reserved_regs, reserved_rd}) begin
       use_sp_as_rs1 = 0;
       use_sp_as_rs1.rand_mode(0);
+      sp_rnd_order_c.constraint_mode(0);
     end
   endfunction
 

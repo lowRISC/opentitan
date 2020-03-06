@@ -90,7 +90,10 @@ Parameters
 | ``BranchTargetALU``          | bit         | 0          | *EXPERIMENTAL* - Enables branch target ALU removing a stall     |
 |                              |             |            | cycle from taken branches                                       |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
-| ``MultiplierImplementation`` | string      | "fast"     | Multiplicator type, "slow", or "fast"                           |
+| ``MultiplierImplementation`` | string      | "fast"     | Multiplicator type:                                             |
+|                              |             |            | "slow": multi-cycle slow,                                       |
+|                              |             |            | "fast": multi-cycle fast,                                       |
+|                              |             |            | "single-cycle": single-cycle                                    |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``DbgTriggerEn``             | bit         | 0          | Enable debug trigger support (one trigger only)                 |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+

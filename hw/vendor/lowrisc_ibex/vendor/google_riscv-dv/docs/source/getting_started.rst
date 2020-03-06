@@ -64,7 +64,7 @@ Currently three ISS are supported, the default ISS is spike. You can install any
 one of below to run ISS simulation.
 
 1.  - `spike`_ setup
-    - Follow the `spike steps`_ to build spike
+    - Follow the instructions to build spike
     - Build spike with "--enable-commitlog"
     - Set environment variable SPIKE_PATH to the directory of the spike binary
 2.  - `riscv-ovpsim`_ setup
@@ -76,8 +76,7 @@ one of below to run ISS simulation.
     - Follow the `sail-riscv steps`_ to install sail-riscv
     - Set environment variable SAIL_RISCV to the path of sail-riscv binary
 
-.. _spike: https://github.com/riscv/riscv-isa-sim#
-.. _spike steps: https://github.com/riscv/riscv-isa-sim#build-steps
+.. _spike: https://github.com/riscv/riscv-isa-sim
 .. _riscv-ovpsim: https://github.com/riscv/riscv-ovpsim
 .. _whisper: https://github.com/westerndigitalcorporation/swerv-ISS
 .. _sail-riscv: https://github.com/rems-project/sail-riscv
@@ -180,7 +179,7 @@ real RISC-V processor::
     run --test=riscv_rand_instr_test --iss=spike,sail
 
 Run directed assembly/C tests
----------------------------
+-----------------------------
 
 Sometimes it might be useful to run some hand-coded assembly/C tests to hit some
 corner cases::

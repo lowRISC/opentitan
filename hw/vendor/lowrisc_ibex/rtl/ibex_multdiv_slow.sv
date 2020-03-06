@@ -173,7 +173,7 @@ module ibex_multdiv_slow (
               accum_window_d = {       ~(op_a_ext[32]   &     op_b_i[0]),
                                          op_a_ext[31:0] & {32{op_b_i[0]}}  };
               op_b_shift_d   = op_b_ext >> 1;
-              md_state_d     = MD_COMP;
+              md_state_d     = !(op_b_ext >> 1) ? MD_LAST : MD_COMP;
             end
             MD_OP_MULH: begin
               op_a_shift_d   = op_a_ext;
@@ -221,19 +221,20 @@ module ibex_multdiv_slow (
               accum_window_d = res_adder_l;
               op_a_shift_d   = op_a_shift_q << 1;
               op_b_shift_d   = op_b_shift_q >> 1;
+              md_state_d     = !(op_b_shift_q >> 1) ? MD_LAST : MD_COMP;
             end
             MD_OP_MULH: begin
               accum_window_d = res_adder_h;
               op_a_shift_d   = op_a_shift_q;
               op_b_shift_d   = op_b_shift_q >> 1;
+              md_state_d     = (multdiv_state_q == 5'd1) ? MD_LAST : MD_COMP;
             end
             default: begin
               accum_window_d = {next_reminder[31:0], op_numerator_q[multdiv_state_m1]};
               op_a_shift_d   = next_quotient;
+              md_state_d     = (multdiv_state_q == 5'd1) ? MD_LAST : MD_COMP;
             end
           endcase
-
-          md_state_d = (multdiv_state_q == 5'd1) ? MD_LAST : MD_COMP;
         end
 
         MD_LAST: begin

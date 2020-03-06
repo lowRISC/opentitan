@@ -105,18 +105,18 @@ module ibex_cs_registers #(
   // misa
   localparam logic [1:0] MXL = 2'd1; // M-XLEN: XLEN in M-Mode for RV32
   localparam logic [31:0] MISA_VALUE =
-      (0          <<  0)  // A - Atomic Instructions extension
-    | (1          <<  2)  // C - Compressed extension
-    | (0          <<  3)  // D - Double precision floating-point extension
-    | (32'(RV32E) <<  4)  // E - RV32E base ISA
-    | (0          <<  5)  // F - Single precision floating-point extension
-    | (1          <<  8)  // I - RV32I/64I/128I base ISA
-    | (32'(RV32M) << 12)  // M - Integer Multiply/Divide extension
-    | (0          << 13)  // N - User level interrupts supported
-    | (0          << 18)  // S - Supervisor mode implemented
-    | (1          << 20)  // U - User mode implemented
-    | (0          << 23)  // X - Non-standard extensions present
-    | (32'(MXL)   << 30); // M-XLEN
+      (0           <<  0)  // A - Atomic Instructions extension
+    | (1           <<  2)  // C - Compressed extension
+    | (0           <<  3)  // D - Double precision floating-point extension
+    | (32'(RV32E)  <<  4)  // E - RV32E base ISA
+    | (0           <<  5)  // F - Single precision floating-point extension
+    | (32'(!RV32E) <<  8)  // I - RV32I/64I/128I base ISA
+    | (32'(RV32M)  << 12)  // M - Integer Multiply/Divide extension
+    | (0           << 13)  // N - User level interrupts supported
+    | (0           << 18)  // S - Supervisor mode implemented
+    | (1           << 20)  // U - User mode implemented
+    | (0           << 23)  // X - Non-standard extensions present
+    | (32'(MXL)    << 30); // M-XLEN
 
   typedef struct packed {
     logic      mie;
@@ -183,7 +183,6 @@ module ibex_cs_registers #(
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
   logic                        mcountinhibit_we;
 
-  logic [63:0] mhpmcounter_d [32];
   // mhpmcounter flops are elaborated below providing only the precise number that is required based
   // on MHPMCounterNum/MHPMCounterWidth. This signal connects to the Q output of these flops
   // where they exist and is otherwise 0.
@@ -877,55 +876,51 @@ module ibex_cs_registers #(
     end
   end
 
-  // update
-  always_comb begin : mhpmcounter_update
-    mhpmcounter_d = mhpmcounter;
+  // mcycle and minstret
+  ibex_counters #(
+    .MaxNumCounters(1),
+    .NumCounters(1),
+    .CounterWidth(64)
+  ) mcycle_counter_i (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .counter_inc_i(mhpmcounter_incr[0] & ~mcountinhibit[0]),
+    .counterh_we_i(mhpmcounterh_we[0]),
+    .counter_we_i(mhpmcounter_we[0]),
+    .counter_val_i(csr_wdata_int),
+    .counter_val_o(mhpmcounter[0:0])
+  );
 
-    for (int i=0; i<32; i++) begin : gen_mhpmcounter_update
+  ibex_counters #(
+    .MaxNumCounters(1),
+    .NumCounters(1),
+    .CounterWidth(64)
+  ) minstret_counter_i (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .counter_inc_i(mhpmcounter_incr[2] & ~mcountinhibit[2]),
+    .counterh_we_i(mhpmcounterh_we[2]),
+    .counter_we_i(mhpmcounter_we[2]),
+    .counter_val_i(csr_wdata_int),
+    .counter_val_o(mhpmcounter[2:2])
+  );
 
-      // increment
-      if (mhpmcounter_incr[i] & ~mcountinhibit[i]) begin
-        mhpmcounter_d[i] = mhpmcounter[i] + 64'h1;
-      end
+  // reserved:
+  assign mhpmcounter[1] = '0;
 
-      // write
-      if (mhpmcounter_we[i]) begin
-        mhpmcounter_d[i][31: 0] = csr_wdata_int;
-      end else if (mhpmcounterh_we[i]) begin
-        mhpmcounter_d[i][63:32] = csr_wdata_int;
-      end
-    end
-  end
-
-  // Performance monitor registers
-  // Only elaborate flops that are needed from the given MHPMCounterWidth and MHPMCounterNum
-  // parameters
-  for (genvar i = 0; i < 32; i++) begin : g_mhpmcounter
-    // First 3 counters (cycle, time, instret) must always be elaborated
-    if (i < 3 + MHPMCounterNum) begin : g_mhpmcounter_exists
-      // First 3 counters must be 64-bit the rest have parameterisable width
-      localparam int unsigned IMHPMCounterWidth = i < 3 ? 64 : MHPMCounterWidth;
-
-      logic [IMHPMCounterWidth-1:0] mhpmcounter_q;
-
-      always @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-          mhpmcounter_q <= '0;
-        end else begin
-          mhpmcounter_q <= mhpmcounter_d[i][IMHPMCounterWidth-1:0];
-        end
-      end
-
-      if (IMHPMCounterWidth < 64) begin : g_mhpmcounter_narrow
-        assign mhpmcounter[i][IMHPMCounterWidth-1:0] = mhpmcounter_q;
-        assign mhpmcounter[i][63:IMHPMCounterWidth]  = '0;
-      end else begin : g_mhpmcounter_full
-        assign mhpmcounter[i] = mhpmcounter_q;
-      end
-    end else begin : g_no_mhpmcounter
-      assign mhpmcounter[i] = '0;
-    end
-  end
+  ibex_counters #(
+    .MaxNumCounters(29),
+    .NumCounters(MHPMCounterNum),
+    .CounterWidth(MHPMCounterWidth)
+  ) mcounters_variable_i (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .counter_inc_i(mhpmcounter_incr[31:3] & ~mcountinhibit[31:3]),
+    .counterh_we_i(mhpmcounterh_we[31:3]),
+    .counter_we_i(mhpmcounter_we[31:3]),
+    .counter_val_i(csr_wdata_int),
+    .counter_val_o(mhpmcounter[3:31])
+  );
 
   if(MHPMCounterNum < 29) begin : g_mcountinhibit_reduced
     assign mcountinhibit = {{29-MHPMCounterNum{1'b1}}, mcountinhibit_q};
@@ -1025,7 +1020,7 @@ module ibex_cs_registers #(
       CSR_OP_WRITE,
       CSR_OP_SET,
       CSR_OP_CLEAR
-      }, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IbexCsrWdataIntKnown, csr_wdata_int, clk_i, !rst_ni)
+      })
+  `ASSERT_KNOWN(IbexCsrWdataIntKnown, csr_wdata_int)
 
 endmodule

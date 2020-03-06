@@ -84,7 +84,7 @@ class ibex_mem_intf_slave_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
     end
   endtask : body
 
-  virtual function inject_error();
+  virtual function void inject_error();
     this.enable_error = 1'b1;
   endfunction
 

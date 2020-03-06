@@ -26,6 +26,9 @@ parameter int VLEN = 512;
 parameter int ELEN = 64;
 parameter int SLEN = 64;
 
+// Number of harts
+parameter int NUM_HARTS = 1;
+
 // Parameter for SATP mode, set to BARE if address translation is not supported
 parameter satp_mode_t SATP_MODE = BARE;
 
@@ -50,6 +53,9 @@ mtvec_mode_t supported_interrupt_mode[$] = {VECTORED};
 // supported
 int max_interrupt_vector_num = 32;
 
+// Physical memory protection support
+bit support_pmp = 1;
+
 // Debug mode support
 bit support_debug_mode = 1;
 
@@ -64,7 +70,7 @@ bit support_sfence = 0;
 //-----------------------------------------------------------------------------
 
 // Number of kernel data pages
-int num_of_kernel_data_pages = 2;
+int num_of_kernel_data_pages = 0;
 
 // Byte size of kernel data pages
 int kernel_data_page_size = 4096;

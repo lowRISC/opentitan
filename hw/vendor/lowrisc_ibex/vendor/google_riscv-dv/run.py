@@ -135,7 +135,7 @@ def get_iss_cmd(base_cmd, elf, log):
 
 
 def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir,
-               cmp_opts, output_dir, debug_cmd):
+               cmp_opts, output_dir, debug_cmd, lsf_cmd):
   """Compile the instruction generator
 
   Args:
@@ -147,6 +147,7 @@ def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir,
     cmd_opts            : Compile options for the generator
     output_dir          : Output directory of the ELF files
     debug_cmd           : Produce the debug cmd log without running
+    lsf_cmd             : LSF command used to run the instruction generator
   """
   if (not((len(test_list) == 1) and (test_list[0]['test'] == 'riscv_csr_test'))):
     logging.info("Building RISC-V instruction generator")
@@ -159,9 +160,12 @@ def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir,
         cmd = re.sub("<user_extension>", ext_dir, cmd)
       cmd = re.sub("<cwd>", cwd, cmd)
       cmd = re.sub("<cmp_opts>", cmp_opts, cmd)
-
-      logging.debug("Compile command: %s" % cmd)
-      run_cmd(cmd, debug_cmd = debug_cmd)
+      if lsf_cmd:
+        cmd = lsf_cmd + " " + cmd
+        run_parallel_cmd([cmd], debug_cmd = debug_cmd)
+      else:
+        logging.debug("Compile command: %s" % cmd)
+        run_cmd(cmd, debug_cmd = debug_cmd)
 
 
 def run_csr_test(cmd_list, cwd, csr_file, isa, iterations, lsf_cmd,
@@ -296,7 +300,7 @@ def gen(test_list, cfg, output_dir, cwd):
   # Compile the instruction generator
   if not argv.so:
     do_compile(compile_cmd, test_list, argv.core_setting_dir, cwd, argv.user_extension_dir,
-               argv.cmp_opts, output_dir, argv.debug)
+               argv.cmp_opts, output_dir, argv.debug, argv.lsf_cmd)
   # Run the instruction generator
   if not argv.co:
     do_simulate(sim_cmd, test_list, cwd, argv.sim_opts, argv.seed_yaml, argv.seed, argv.csr_yaml,
@@ -534,8 +538,8 @@ def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     logging.error("No c test(*.c) found under %s" % c_test_dir)
 
 
-def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa,
-            setting_dir, timeout_s, debug_cmd):
+def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
+            isa, setting_dir, timeout_s, debug_cmd):
   """Run ISS simulation with the generated test program
 
   Args:
@@ -543,6 +547,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa,
     output_dir  : Output directory of the ELF files
     iss_list    : List of instruction set simulators
     iss_yaml    : ISS configuration file in YAML format
+    iss_opts    : ISS command line options
     isa         : ISA variant passed to the ISS
     setting_dir : Generator setting directory
     timeout_s   : Timeout limit in seconds
@@ -562,6 +567,9 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, isa,
           elf = prefix + ".o"
           log = ("%s/%s.%d.log" % (log_dir, test['test'], i))
           cmd = get_iss_cmd(base_cmd, elf, log)
+          if 'iss_opts' in test:
+            cmd += ' '
+            cmd += test['iss_opts']
           logging.info("Running %s sim: %s" % (iss, elf))
           if iss == "ovpsim":
             run_cmd(cmd, timeout_s, check_return_code=False, debug_cmd = debug_cmd)
@@ -687,6 +695,8 @@ def setup_parser():
                       help="Generator timeout limit in seconds")
   parser.add_argument("--end_signature_addr", type=str, default="0",
                       help="Address that privileged CSR test writes to at EOT")
+  parser.add_argument("--iss_opts", type=str, default="",
+                      help="Any ISS command line arguments")
   parser.add_argument("--iss_timeout", type=int, default=10,
                       help="ISS sim timeout limit in seconds")
   parser.add_argument("--iss_yaml", type=str, default="",
@@ -759,6 +769,9 @@ def load_config(args, cwd):
     if args.target == "rv32imc":
       args.mabi = "ilp32"
       args.isa  = "rv32imc"
+    elif args.target == "multi_harts":
+      args.mabi = "ilp32"
+      args.isa  = "rv32gc"
     elif args.target == "rv32i":
       args.mabi = "ilp32"
       args.isa  = "rv32i"
@@ -924,7 +937,7 @@ def main():
 
       # Run ISS simulation
       if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
-        iss_sim(matched_list, output_dir, args.iss, args.iss_yaml,
+        iss_sim(matched_list, output_dir, args.iss, args.iss_yaml, args.iss_opts,
                 args.isa, args.core_setting_dir, args.iss_timeout, args.debug)
 
       # Compare ISS simulation result

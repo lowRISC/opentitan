@@ -88,7 +88,7 @@ module ibex_tracer (
   localparam MEM = (1 << 3);
   logic [3:0] data_accessed;
 
-  function void printbuffer_dumpline();
+  function automatic void printbuffer_dumpline();
     string rvfi_insn_str;
 
     if (file_handle == 32'h0) begin
@@ -136,7 +136,7 @@ module ibex_tracer (
 
 
   // Format register address with "x" prefix, left-aligned to a fixed width of 3 characters.
-  function string reg_addr_to_str(input logic [4:0] addr);
+  function automatic string reg_addr_to_str(input logic [4:0] addr);
     if (addr < 10) begin
       return $sformatf(" x%0d", addr);
     end else begin
@@ -145,7 +145,7 @@ module ibex_tracer (
   endfunction
 
   // Get a CSR name for a CSR address.
-  function string get_csr_name(input logic [11:0] csr_addr);
+  function automatic string get_csr_name(input logic [11:0] csr_addr);
     unique case (csr_addr)
       12'd0: return "ustatus";
       12'd4: return "uie";
@@ -391,22 +391,22 @@ module ibex_tracer (
     endcase
   endfunction
 
-  function void decode_mnemonic(input string mnemonic);
+  function automatic void decode_mnemonic(input string mnemonic);
     decoded_str = mnemonic;
   endfunction
 
-  function void decode_r_insn(input string mnemonic);
+  function automatic void decode_r_insn(input string mnemonic);
     data_accessed = RS1 | RS2 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, rvfi_rs2_addr);
   endfunction
 
-  function void decode_i_insn(input string mnemonic);
+  function automatic void decode_i_insn(input string mnemonic);
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
                     $signed({{20 {rvfi_insn[31]}}, rvfi_insn[31:20]}));
   endfunction
 
-  function void decode_i_shift_insn(input string mnemonic);
+  function automatic void decode_i_shift_insn(input string mnemonic);
     // SLLI, SRLI, SRAI
     logic [4:0] shamt;
     shamt = {rvfi_insn[24:20]};
@@ -414,25 +414,25 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, shamt);
   endfunction
 
-  function void decode_i_jalr_insn(input string mnemonic);
+  function automatic void decode_i_jalr_insn(input string mnemonic);
     // JALR
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rd_addr,
         $signed({{20 {rvfi_insn[31]}}, rvfi_insn[31:20]}), rvfi_rs1_addr);
   endfunction
 
-  function void decode_u_insn(input string mnemonic);
+  function automatic void decode_u_insn(input string mnemonic);
     data_accessed = RD;
     decoded_str = $sformatf("%s\tx%0d,0x%0x", mnemonic, rvfi_rd_addr, {rvfi_insn[31:12]});
   endfunction
 
-  function void decode_j_insn(input string mnemonic);
+  function automatic void decode_j_insn(input string mnemonic);
     // JAL
     data_accessed = RD;
     decoded_str = $sformatf("%s\tx%0d,%0x", mnemonic, rvfi_rd_addr, rvfi_pc_wdata);
   endfunction
 
-  function void decode_b_insn(input string mnemonic);
+  function automatic void decode_b_insn(input string mnemonic);
     logic [31:0] branch_target;
     logic [31:0] imm;
 
@@ -445,7 +445,7 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,x%0d,%0x", mnemonic, rvfi_rs1_addr, rvfi_rs2_addr, branch_target);
   endfunction
 
-  function void decode_csr_insn(input string mnemonic);
+  function automatic void decode_csr_insn(input string mnemonic);
     logic [11:0] csr;
     string csr_name;
     csr = rvfi_insn[31:20];
@@ -461,7 +461,7 @@ module ibex_tracer (
     end
   endfunction
 
-  function void decode_cr_insn(input string mnemonic);
+  function automatic void decode_cr_insn(input string mnemonic);
     if (rvfi_rs2_addr == 5'b0) begin
       if (rvfi_insn[12] == 1'b1) begin
         // C.JALR
@@ -477,42 +477,42 @@ module ibex_tracer (
     end
   endfunction
 
-  function void decode_ci_cli_insn(input string mnemonic);
+  function automatic void decode_ci_cli_insn(input string mnemonic);
     logic [5:0] imm;
     imm = {rvfi_insn[12], rvfi_insn[6:2]};
     data_accessed = RD;
     decoded_str = $sformatf("%s\tx%0d,%0d", mnemonic, rvfi_rd_addr, $signed(imm));
   endfunction
 
-  function void decode_ci_caddi_insn(input string mnemonic);
+  function automatic void decode_ci_caddi_insn(input string mnemonic);
     logic [5:0] nzimm;
     nzimm = {rvfi_insn[12], rvfi_insn[6:2]};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,%0d", mnemonic, rvfi_rd_addr, $signed(nzimm));
   endfunction
 
-  function void decode_ci_caddi16sp_insn(input string mnemonic);
+  function automatic void decode_ci_caddi16sp_insn(input string mnemonic);
     logic [9:0] nzimm;
     nzimm = {rvfi_insn[12], rvfi_insn[4:3], rvfi_insn[5], rvfi_insn[2], rvfi_insn[6], 4'b0};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,%0d", mnemonic, rvfi_rd_addr, $signed(nzimm));
   endfunction
 
-  function void decode_ci_clui_insn(input string mnemonic);
+  function automatic void decode_ci_clui_insn(input string mnemonic);
     logic [5:0] nzimm;
     nzimm = {rvfi_insn[12], rvfi_insn[6:2]};
     data_accessed = RD;
     decoded_str = $sformatf("%s\tx%0d,0x%0x", mnemonic, rvfi_rd_addr, 20'($signed(nzimm)));
   endfunction
 
-  function void decode_ci_cslli_insn(input string mnemonic);
+  function automatic void decode_ci_cslli_insn(input string mnemonic);
     logic [5:0] shamt;
     shamt = {rvfi_insn[12], rvfi_insn[6:2]};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,0x%0x", mnemonic, rvfi_rd_addr, shamt);
   endfunction
 
-  function void decode_ciw_insn(input string mnemonic);
+  function automatic void decode_ciw_insn(input string mnemonic);
     // C.ADDI4SPN
     logic [9:0] nzuimm;
     nzuimm = {rvfi_insn[10:7], rvfi_insn[12:11], rvfi_insn[5], rvfi_insn[6], 2'b00};
@@ -520,14 +520,14 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,x2,%0d", mnemonic, rvfi_rd_addr, nzuimm);
   endfunction
 
-  function void decode_cb_sr_insn(input string mnemonic);
+  function automatic void decode_cb_sr_insn(input string mnemonic);
     logic [5:0] shamt;
     shamt = {rvfi_insn[12], rvfi_insn[6:2]};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,0x%0x", mnemonic, rvfi_rs1_addr, shamt);
   endfunction
 
-  function void decode_cb_insn(input string mnemonic);
+  function automatic void decode_cb_insn(input string mnemonic);
     logic [7:0] imm;
     logic [31:0] jump_target;
     if (rvfi_insn[15:13] == 3'b110 || rvfi_insn[15:13] == 3'b111) begin
@@ -549,12 +549,12 @@ module ibex_tracer (
     end
   endfunction
 
-  function void decode_cs_insn(input string mnemonic);
+  function automatic void decode_cs_insn(input string mnemonic);
     data_accessed = RS1 | RS2 | RD; // RS1 == RD
     decoded_str = $sformatf("%s\tx%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs2_addr);
   endfunction
 
-  function void decode_cj_insn(input string mnemonic);
+  function automatic void decode_cj_insn(input string mnemonic);
     if (rvfi_insn[15:13] == 3'b001) begin
       // C.JAL
       data_accessed = RD;
@@ -562,7 +562,7 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\t%0x", mnemonic, rvfi_pc_wdata);
   endfunction
 
-  function void decode_compressed_load_insn(input string mnemonic);
+  function automatic void decode_compressed_load_insn(input string mnemonic);
     logic [7:0] imm;
 
     if (rvfi_insn[1:0] == OPCODE_C0) begin
@@ -576,7 +576,7 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rd_addr, imm, rvfi_rs1_addr);
   endfunction
 
-  function void decode_compressed_store_insn(input string mnemonic);
+  function automatic void decode_compressed_store_insn(input string mnemonic);
     logic [7:0] imm;
     if (rvfi_insn[1:0] == OPCODE_C0) begin
       // C.SW
@@ -589,7 +589,7 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rs2_addr, imm, rvfi_rs1_addr);
   endfunction
 
-  function void decode_load_insn();
+  function automatic void decode_load_insn();
     string      mnemonic;
 
     /*
@@ -632,7 +632,7 @@ module ibex_tracer (
                     $signed({{20 {rvfi_insn[31]}}, rvfi_insn[31:20]}), rvfi_rs1_addr);
   endfunction
 
-  function void decode_store_insn();
+  function automatic void decode_store_insn();
     string    mnemonic;
 
     unique case (rvfi_insn[13:12])
@@ -655,7 +655,7 @@ module ibex_tracer (
     end
   endfunction
 
-  function string get_fence_description(logic [3:0] bits);
+  function automatic string get_fence_description(logic [3:0] bits);
     string desc = "";
     if (bits[3]) begin
       desc = {desc, "i"};
@@ -672,7 +672,7 @@ module ibex_tracer (
     return desc;
   endfunction
 
-  function void decode_fence();
+  function automatic void decode_fence();
     string predecessor;
     string successor;
     predecessor = get_fence_description(rvfi_insn[27:24]);

@@ -27,7 +27,8 @@ module core_ibex_tb_top;
   core_ibex_csr_if csr_if(.clk(clk));
 
   ibex_core_tracing #(.DmHaltAddr(`BOOT_ADDR + 'h0),
-                      .DmExceptionAddr(`BOOT_ADDR + 'h4)) dut (
+                      .DmExceptionAddr(`BOOT_ADDR + 'h4),
+                      .PMPEnable(1'b1)) dut (
     .clk_i(clk),
     .rst_ni(rst_n),
     .test_en_i(1'b1),
@@ -40,32 +41,33 @@ module core_ibex_tb_top;
     .irq_nm_i(irq_vif.irq_nm),
     .fetch_enable_i(dut_if.fetch_enable),
     .debug_req_i(dut_if.debug_req),
+    .data_req_o(data_mem_vif.request),
     .data_gnt_i(data_mem_vif.grant),
     .data_rvalid_i(data_mem_vif.rvalid),
+    .data_addr_o(data_mem_vif.addr),
+    .data_we_o(data_mem_vif.we),
+    .data_be_o(data_mem_vif.be),
     .data_rdata_i(data_mem_vif.rdata),
+    .data_wdata_o(data_mem_vif.wdata),
     .data_err_i(data_mem_vif.error),
+    .instr_req_o(instr_mem_vif.request),
     .instr_gnt_i(instr_mem_vif.grant),
     .instr_rvalid_i(instr_mem_vif.rvalid),
+    .instr_addr_o(instr_mem_vif.addr),
     .instr_rdata_i(instr_mem_vif.rdata),
-    .instr_err_i(instr_mem_vif.error)
+    .instr_err_i(instr_mem_vif.error),
+    .core_sleep_o(dut_if.core_sleep)
   );
 
   // Data load/store vif connection
   assign data_mem_vif.clock     = clk;
   assign data_mem_vif.reset     = ~rst_n;
-  assign data_mem_vif.request   = dut.data_req_o;
-  assign data_mem_vif.we        = dut.data_we_o;
-  assign data_mem_vif.be        = dut.data_be_o;
-  assign data_mem_vif.addr      = dut.data_addr_o;
-  assign data_mem_vif.wdata     = dut.data_wdata_o;
   // Instruction fetch vif connnection
   assign instr_mem_vif.clock    = clk;
   assign instr_mem_vif.reset    = ~rst_n;
-  assign instr_mem_vif.request  = dut.instr_req_o;
   assign instr_mem_vif.we       = 0;
   assign instr_mem_vif.be       = 0;
   assign instr_mem_vif.wdata    = 0;
-  assign instr_mem_vif.addr     = dut.instr_addr_o;
   // RVFI interface connections
   assign rvfi_if.valid          = dut.rvfi_valid;
   assign rvfi_if.order          = dut.rvfi_order;
@@ -95,7 +97,6 @@ module core_ibex_tb_top;
   assign dut_if.illegal_instr   = dut.u_ibex_core.id_stage_i.illegal_insn_dec;
   assign dut_if.dret            = dut.u_ibex_core.id_stage_i.dret_insn_dec;
   assign dut_if.mret            = dut.u_ibex_core.id_stage_i.mret_insn_dec;
-  assign dut_if.core_sleep      = dut.u_ibex_core.core_sleep_o;
   assign dut_if.reset           = ~rst_n;
   assign dut_if.priv_mode       = dut.u_ibex_core.priv_mode_id;
   // CSR interface connections

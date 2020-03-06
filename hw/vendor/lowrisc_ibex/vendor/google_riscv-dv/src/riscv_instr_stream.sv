@@ -28,6 +28,7 @@ class riscv_instr_stream extends uvm_object;
   // Some additional reserved registers that should not be used as rd register
   // by this instruction stream
   riscv_reg_t           reserved_rd[];
+  int                   hart;
 
   `uvm_object_utils(riscv_instr_stream)
   `uvm_object_new

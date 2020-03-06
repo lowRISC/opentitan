@@ -4,6 +4,7 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_core:0.1"
 description: "CPU core with 2 stage pipeline implementing the RV32IMC_Zicsr ISA"
+
 filesets:
   files_rtl:
     depend:
@@ -14,6 +15,7 @@ filesets:
       - rtl/ibex_compressed_decoder.sv
       - rtl/ibex_controller.sv
       - rtl/ibex_cs_registers.sv
+      - rtl/ibex_counters.sv
       - rtl/ibex_decoder.sv
       - rtl/ibex_ex_block.sv
       - rtl/ibex_fetch_fifo.sv
@@ -39,6 +41,10 @@ filesets:
   files_lint_verilator:
     files:
       - lint/verilator_waiver.vlt: {file_type: vlt}
+
+  files_check_tool_requirements:
+    depend:
+     - lowrisc:ibex:check_tool_requirements
 
 parameters:
   RVFI:
@@ -72,13 +78,15 @@ parameters:
 targets:
   default:
     filesets:
+      - tool_verilator ? (files_lint_verilator)
       - files_rtl
-
+      - files_check_tool_requirements
   lint:
     filesets:
       - tool_verilator ? (files_lint_verilator)
       - files_rtl
       - files_lint
+      - files_check_tool_requirements
     parameters:
       - SYNTHESIS=true
       - RVFI=true

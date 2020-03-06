@@ -116,7 +116,8 @@ module ibex_controller (
   logic illegal_dret;
   logic illegal_umode;
   logic exc_req_lsu;
-  logic special_req;
+  logic special_req_all;
+  logic special_req_branch;
   logic enter_debug_mode;
   logic ebreak_into_debug;
   logic handle_irq;
@@ -187,9 +188,28 @@ module ibex_controller (
   // LSU exception requests
   assign exc_req_lsu = store_err_i | load_err_i;
 
+
   // special requests: special instructions, pipeline flushes, exceptions...
-  assign special_req = mret_insn | dret_insn | wfi_insn | csr_pipe_flush |
+
+  // To avoid creating a path from data_err_i -> instr_req_o and to help timing the below
+  // special_req_all has a version that only applies to branches. For a branch the controller needs
+  // to set pc_set_o but only if there is no special request. If the generic special_req_all signal
+  // is used then a variety of signals that will never cause a special request during a branch
+  // instruction end up factored into pc_set_o. The special_req_branch only considers the special
+  // request reasons that are relevant to a branch.
+
+  // generic special request signal, applies to all instructions
+  assign special_req_all = mret_insn | dret_insn | wfi_insn | csr_pipe_flush |
       exc_req_d | exc_req_lsu;
+
+  // special request that can specifically occur during branch instructions
+  assign special_req_branch = (illegal_insn_d | instr_fetch_err) & (ctrl_fsm_cs != FLUSH);
+
+  `ASSERT(SpecialReqBranchGivesSpecialReqAll,
+    special_req_branch |-> special_req_all)
+
+  `ASSERT(SpecialReqAllGivesSpecialReqBranchIfBranchInst,
+    special_req_all && (branch_set_i || jump_set_i) |-> special_req_branch)
 
   ////////////////
   // Interrupts //
@@ -363,14 +383,15 @@ module ibex_controller (
         if (instr_valid_i) begin
 
           // get ready for special instructions, exceptions, pipeline flushes
-          if (special_req) begin
+          if (special_req_all) begin
             // Halt IF but don't flush ID. This leaves a valid instruction in
             // ID so controller can determine appropriate action in the
             // FLUSH state.
             ctrl_fsm_ns = FLUSH;
             halt_if     = 1'b1;
-          // set PC in IF stage to branch or jump target
-          end else if (branch_set_i || jump_set_i) begin
+          end
+
+          if ((branch_set_i || jump_set_i) && ~special_req_branch) begin
             pc_set_o       = 1'b1;
 
             perf_tbranch_o = branch_set_i;
@@ -385,7 +406,7 @@ module ibex_controller (
           end
         end // instr_valid_i
 
-        if (!stall && !special_req) begin
+        if (!stall && !special_req_all) begin
           if (enter_debug_mode) begin
             // enter debug mode
             ctrl_fsm_ns = DBG_TAKEN_IF;
@@ -660,7 +681,6 @@ module ibex_controller (
   // Selectors must be known/valid.
   `ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {
       RESET, BOOT_SET, WAIT_SLEEP, SLEEP, FIRST_FETCH, DECODE, FLUSH,
-      IRQ_TAKEN, DBG_TAKEN_IF, DBG_TAKEN_ID
-      }, clk_i, !rst_ni)
+      IRQ_TAKEN, DBG_TAKEN_IF, DBG_TAKEN_ID})
 
 endmodule

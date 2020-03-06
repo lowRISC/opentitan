@@ -73,7 +73,8 @@ class riscv_instr_cov_item extends riscv_instr;
       mem_addr = rs1_value + imm;
       unaligned_mem_access = is_unaligned_mem_access();
       if (unaligned_mem_access) begin
-        `uvm_info(`gfn, $sformatf("Unaligned: %0s, mem_addr:%0x", instr_name.name(), mem_addr), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Unaligned: %0s, mem_addr:%0x", instr_name.name(), mem_addr),
+                  UVM_HIGH)
       end
     end
     if (category == LOGICAL) begin

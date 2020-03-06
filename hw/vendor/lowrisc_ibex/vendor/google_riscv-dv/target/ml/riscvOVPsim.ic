@@ -17,3 +17,6 @@
 --override riscvOVPsim/cpu/time_undefined=T
 --override riscvOVPsim/cpu/reset_address=0x80000000
 --override riscvOVPsim/cpu/simulateexceptions=T
+--override riscvOVPsim/cpu/defaultsemihost=F
+--override riscvOVPsim/cpu/wfi_is_nop=T
+--exitonsymbol _exit

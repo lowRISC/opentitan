@@ -18,6 +18,11 @@ filesets:
       - rtl/riscv_testutil.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    files:
+      - lint/verilator_waiver.vlt: {file_type: vlt}
+
+
 parameters:
   RV32M:
     datatype: int
@@ -39,6 +44,7 @@ targets:
   sim:
     default_tool: verilator
     filesets:
+      - tool_verilator ? (files_verilator_waiver)
       - files_sim_verilator
     parameters:
       - RV32M

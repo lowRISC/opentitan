@@ -23,7 +23,7 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, "../../vendor/google_riscv-dv/scripts")
+sys.path.insert(0, "../../../vendor/google_riscv-dv/scripts")
 sys.path.insert(0, "./riscv_dv_extension")
 
 from lib import *
@@ -93,12 +93,11 @@ def get_simulator_cmd(simulator, simulator_yaml, en_cov, en_wave):
   sys.exit(1)
 
 
-def rtl_compile(compile_cmd, test_list, output_dir, lsf_cmd, opts):
+def rtl_compile(compile_cmd, output_dir, lsf_cmd, opts):
   """Run the instruction generator
 
   Args:
     compile_cmd : Compile command
-    test_list   : List of assembly programs to be compiled
     output_dir  : Output directory of the ELF files
     lsf_cmd     : LSF command to run compilation
     opts        : Compile options for the generator
@@ -267,26 +266,36 @@ output_dir = ("%s/rtl_sim" % args.o)
 bin_dir = ("%s/instr_gen/asm_tests" % args.o)
 subprocess.run(["mkdir", "-p", output_dir])
 
-# Process regression test list
-matched_list = []
-process_regression_list(args.testlist, args.test, args.iterations,
-                        matched_list, args.riscv_dv_root)
-if len(matched_list) == 0:
-  sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
+steps = {
+  'compile': args.steps == "all" or re.match("compile", args.steps),
+  'sim': args.steps == "all" or re.match("sim", args.steps),
+  'compare': args.steps == "all" or re.match("compare", args.steps)
+}
 
 compile_cmd = []
 sim_cmd = ""
-compile_cmd, sim_cmd = get_simulator_cmd(args.simulator, args.simulator_yaml,
-                                         args.en_cov, args.en_wave)
+matched_list = []
+if steps['compile'] or steps['sim']:
+  compile_cmd, sim_cmd = get_simulator_cmd(args.simulator, args.simulator_yaml,
+                                           args.en_cov, args.en_wave)
+if steps['sim'] or steps['compare']:
+  process_regression_list(args.testlist, args.test, args.iterations,
+                          matched_list, args.riscv_dv_root)
+  if not matched_list:
+    sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
+
+
 # Compile TB
-if args.steps == "all" or re.match("compile", args.steps):
-  rtl_compile(compile_cmd, matched_list, output_dir, args.lsf_cmd, args.cmp_opts)
+if steps['compile']:
+  rtl_compile(compile_cmd, output_dir, args.lsf_cmd, args.cmp_opts)
+
 
 # Run RTL simulation
-if args.steps == "all" or re.match("sim", args.steps):
+if steps['sim']:
   rtl_sim(sim_cmd, args.simulator, matched_list, output_dir, bin_dir,
           args.lsf_cmd, args.seed, args.sim_opts)
 
+
 # Compare RTL & ISS simulation result.;
-if args.steps == "all" or re.match("compare", args.steps):
+if steps['compare']:
   compare(matched_list, args.iss, args.o, args.verbose)

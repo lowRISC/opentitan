@@ -567,7 +567,10 @@ module ibex_core #(
       .load_err_o            ( lsu_load_err        ),
       .store_err_o           ( lsu_store_err       ),
 
-      .busy_o                ( lsu_busy            )
+      .busy_o                ( lsu_busy            ),
+
+      .illegal_insn_id_i     ( illegal_insn_id     ),
+      .instr_valid_id_i      ( instr_valid_id      )
   );
 
 

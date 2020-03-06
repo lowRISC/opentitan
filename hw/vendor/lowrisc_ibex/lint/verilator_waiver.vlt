@@ -10,58 +10,124 @@
 // Otherwise, only global waivers are applied, but not file-specific waivers.
 
 `verilator_config
-lint_off -msg PINCONNECTEMPTY
+lint_off -rule PINCONNECTEMPTY
 
 // Filename 'ibex_register_file_ff' does not match MODULE name: ibex_register_file
 // ibex_register_file_ff and ibex_register_file_latch provide two
 // implementation choices for the same module.
-lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
-lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
-lint_off -msg DECLFILENAME -file "*/rtl/ibex_register_file_fpga.sv"
+lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
+lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
+lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_fpga.sv"
 
 // Bits of signal are not used: fetch_addr_n[0]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_if_stage.sv" -lines 85
+lint_off -rule UNUSED -file "*/rtl/ibex_if_stage.sv" -match "*'fetch_addr_n'[0]*"
 
 // Bits of signal are not used: shift_right_result_ext[32]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_alu.sv" -lines 104
+lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_right_result_ext'[32]*"
 
 // Bits of signal are not used: alu_adder_ext_i[0]
 // Bottom bit is round, not needed
-lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 26
+lint_off -rule UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -match "*'alu_adder_ext_i'[0]*"
 
 // Bits of signal are not used: mac_res_ext[34]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 51
+lint_off -rule UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -match "*mac_res_ext*"
 
 // Bits of signal are not used: res_adder_h[32]
 // cleaner to write all bits even if not all are used
-lint_off -msg UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -lines 71
+lint_off -rule UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -match "*'res_adder_h'[32]*"
+
+// Bits of signal are not used: be_i[3:1]
+// Bits of signal are not used: addr_i[31:10,1:0]
+// Bits of signal are not used: wdata_i[31:8]
+//
+// simulator_ctrl exposes a 32-bit write-only interface to its control
+// registers, but actually only looks at the bottom byte and rounds addresses
+// down to be 4-byte aligned.
+//
+lint_off -rule UNUSED -file "*/rtl/sim/simulator_ctrl.sv" -match "*'be_i'[3:1]*"
+lint_off -rule UNUSED -file "*/rtl/sim/simulator_ctrl.sv" -match "*'addr_i'[31:10,1:0]*"
+lint_off -rule UNUSED -file "*/rtl/sim/simulator_ctrl.sv" -match "*'wdata_i'[31:8]*"
+
+// Bits of signal are not used: timer_addr_i[31:10]
+//
+// The upper bits of this address are used to select whether the timer is
+// addressed at all (encoded in the timer_req_i input). However, we pass the
+// entire 32-bit address around to make the code a bit cleaner.
+lint_off -rule UNUSED -file "*/rtl/timer.sv" -match "*'timer_addr_i'[31:10]*"
+
+// Bits of signal are not used for MHPMCounterNum < 29: mhpmcounter_we[31:MHPMCounterNum+3]
+// cleaner to write all bits even if not all are used
+lint_off -rule UNUSED -file "*/rtl/ibex_cs_registers.sv" -match "*'mhpmcounter_we'[31:MHPMCounterNum+3]*"
+
+// Bits of signal are not used: mhpmcounter_we[1]
+// Bits of signal are not used: mhpmcounterh_we[1]
+// Bits of signal are not used: mhpmcounter_incr[1]
+//
+// cleaner to write all bits even if not all are used
+//
+lint_off -rule UNUSED -file "*/rtl/ibex_cs_registers.sv" -match "*'mhpmcounter_we'[1]*"
+lint_off -rule UNUSED -file "*/rtl/ibex_cs_registers.sv" -match "*'mhpmcounterh_we'[1]*"
+lint_off -rule UNUSED -file "*/rtl/ibex_cs_registers.sv" -match "*'mhpmcounter_incr'[1]*"
+
+// Signals are unused if MHPMCounterNum == 0: clk_i, rst_ni
+// Signal is unused if MHPMCounterNum == 0: counter_val_i[31:0]
+//
+// If no counters are implemented, no flops are elaborated. No clock, reset or
+// next-state logic is used.
+//
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'clk_i'"
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'rst_ni'"
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'counter_val_i'"
+
+// Bits of signal are not used for MHPMCounterNum < 29: counter_inc_i[28:MHPMCounterNum]
+// Bits of signal are not used for MHPMCounterNum < 29: counterh_we_i[28:MHPMCounterNum]
+// Bits of signal are not used for MHPMCounterNum < 29: counter_we_i[28:MHPMCounterNum]
+//
+// cleaner to write all bits even if not all are used
+//
+// lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'counter_inc_i'[28:*]*"
+// lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'counterh_we_i'[28:*]*"
+// lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'counter_we_i'[28:*]*"
+
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*counter_inc_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*counterh_we_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*counter_we_i*"
+
+// Bits of signal are not used for MHPMCounterWidth < 64: counter_upd[63:MHPMCounterWidth]
+// Bits of signal are not used for MHPMCounterWidth < 64: counter_load[63:MHPMCounterWidth]
+//
+// cleaner to write all bits even if not all are used
+//
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'counter_upd'[63:*]*"
+lint_off -rule UNUSED -file "*/rtl/ibex_counters.sv" -match "*'counter_load'[63:*]*"
 
 // Signal is not used: test_en_i
 // testability signal
-lint_off -msg UNUSED -file "*/rtl/ibex_register_file_ff.sv" -lines 21
-lint_off -msg UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -lines 22
+lint_off -rule UNUSED -file "*/rtl/ibex_register_file_ff.sv" -match "*test_en_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -match "*test_en_i*"
 
 // Signal is not used: clk_i
 // leaving clk and reset connected in-case we want to add assertions
-lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 17
-lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 25
+lint_off -rule UNUSED -file "*/rtl/ibex_pmp.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*clk_i*"
 
 // Signal is not used: rst_ni
 // leaving clk and reset connected in-case we want to add assertions
-lint_off -msg UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -lines 18
-lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 26
-lint_off -msg UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -lines 20
-
-// Signal unoptimizable: Feedback to clock or circular logic:
-// ibex_core.cs_registers_i.mie_q
-// Issue lowrisc/ibex#212
-lint_off -msg UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -lines 158
+lint_off -rule UNUSED -file "*/rtl/ibex_pmp.sv" -match "*rst_ni*"
+lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*rst_ni*"
+lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*rst_ni*"
 
 // Bits of signal are not used: instr_alu[24:15,11:7]
 // instr flops are duplicated to reduce fan-out, neater to just leave unused
 // bits in fully duplicated instr for synthesiser to optimise out rather than
 // explicitly flopping only the bits we want.
-lint_off -msg UNUSED -file "*/rtl/ibex_decoder.sv" -lines 106
+lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*instr_alu*"
+
+// Signal unoptimizable: Feedback to clock or circular logic:
+// ibex_core.cs_registers_i.mie_q
+// Issue lowrisc/ibex#212
+lint_off -rule UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -match "*ibex_core.cs_registers_i.mie_q*"

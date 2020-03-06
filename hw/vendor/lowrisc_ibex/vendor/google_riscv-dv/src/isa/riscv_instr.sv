@@ -554,13 +554,13 @@ class riscv_instr extends uvm_object;
         else if(instr_name == ECALL)
           binary = $sformatf("%8h", {get_func7(), 18'b0, get_opcode()});
         else if(instr_name inside {URET, SRET, MRET})
-          binary = $sformatf("%8h", {get_func7(), 5'b10, 13'b0, get_opcode()});
+          binary = $sformatf("%8h", {get_func7(), 5'b00010, 13'b0, get_opcode()});
         else if(instr_name inside {DRET})
           binary = $sformatf("%8h", {get_func7(), 5'b10010, 13'b0, get_opcode()});
         else if(instr_name == EBREAK)
-          binary = $sformatf("%8h", {get_func7(), 5'b01, 13'b0, get_opcode()});
+          binary = $sformatf("%8h", {get_func7(), 5'd1, 13'b0, get_opcode()});
         else if(instr_name == WFI)
-          binary = $sformatf("%8h", {get_func7(), 5'b101, 13'b0, get_opcode()});
+          binary = $sformatf("%8h", {get_func7(), 5'b00101, 13'b0, get_opcode()});
         else
           binary = $sformatf("%8h", {imm[11:0], rs1, get_func3(), rd, get_opcode()});
       end

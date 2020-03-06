@@ -261,7 +261,7 @@ class riscv_compressed_instr extends riscv_instr;
         binary = $sformatf("%4h", {get_func3(), imm[11], imm[4], imm[9:8],
                                    imm[10], imm[6], imm[7], imm[3:1], imm[5], get_c_opcode()});
       C_ADDI16SP:
-        binary = $sformatf("%4h", {get_func3(), imm[9], 5'b10,
+        binary = $sformatf("%4h", {get_func3(), imm[9], 5'b00010,
                                    imm[4], imm[6], imm[8:7], imm[5], get_c_opcode()});
       C_LUI:
         binary = $sformatf("%4h", {get_func3(), imm[5], rd, imm[4:0], get_c_opcode()});

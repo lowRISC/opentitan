@@ -27,11 +27,11 @@
 
 class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
 
-  localparam PTE_SIZE   = XLEN / 8;
-  localparam PTE_CNT    = 4096 / PTE_SIZE;
-  localparam PAGE_LEVEL = (MODE == SV32) ? 2 : ((MODE == SV39) ? 3 : 4);
-  localparam LINK_PTE_PER_TABLE = 2;
-  localparam SUPER_LEAF_PTE_PER_TABLE = 2;
+  localparam int PteSize   = XLEN / 8;
+  localparam int PteCnt    = 4096 / PteSize;
+  localparam int PageLevel = (MODE == SV32) ? 2 : ((MODE == SV39) ? 3 : 4);
+  localparam int LinkPtePerTable = 2;
+  localparam int SuperLeafPtePerTable = 2;
 
   satp_mode_t mode = MODE;
 
@@ -92,7 +92,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     exception_cfg = riscv_page_table_exception_cfg::type_id::create("exception_cfg");
     valid_leaf_pte = riscv_page_table_entry#(MODE)::type_id::create("valid_leaf_pte");
     valid_link_pte = riscv_page_table_entry#(MODE)::type_id::create("valid_link_pte");
-    valid_data_leaf_pte = riscv_page_table_entry#(MODE)::type_id::create("valid_link_pte");
+    valid_data_leaf_pte = riscv_page_table_entry#(MODE)::type_id::create("valid_data_leaf_pte");
     illegal_pte = riscv_page_table_entry#(MODE)::type_id::create("illegal_pte");
   endfunction
 
@@ -101,8 +101,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   // higher level page table, only PTE[0] and PTE[1] is non-leaf PTE, all other PTEs are leaf
   // PTE. All leaf PTE should have PPN map to the real physical address of the instruction
   // or data. For non-leaf PTE, the PPN should map to the physical address of the next PTE.
-  // Take SV39 for example: (PTE_SIZE = 8B)
-  // Table size is 4KB, PTE_SIZE=8B, entry count = 4K/8 = 512
+  // Take SV39 for example: (PteSize = 8B)
+  // Table size is 4KB, PteSize=8B, entry count = 4K/8 = 512
   // Level 2: Root table, 2 entries, PTE[0] and PTE[1] is non-leaf PTE, PTE[2] is leaf PTE, all
   //          other PTEs are invalid, totalling 1 page table with 3 PTEs at this level.
   // Level 1: Two page tables, map to PTE[0] and PTE[1] of the root table.
@@ -130,10 +130,10 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
       foreach(page_table[i].pte[j]) begin
         if(page_table[i].level > 0) begin
           // Superpage
-          if (j < LINK_PTE_PER_TABLE) begin
+          if (j < LinkPtePerTable) begin
             // First few super pages are link PTE to the next level
             $cast(page_table[i].pte[j], valid_link_pte.clone());
-          end else if (j < SUPER_LEAF_PTE_PER_TABLE + LINK_PTE_PER_TABLE) begin
+          end else if (j < SuperLeafPtePerTable + LinkPtePerTable) begin
             // Non-link superpage table entry
             $cast(page_table[i].pte[j], valid_leaf_pte.clone());
           end else begin
@@ -354,7 +354,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     // Fix kernel leaf PTE
     instr.push_back("fix_kernel_leaf_pte:");
     // - Load the starting virtual address of the kernel space
-    instr.push_back($sformatf("la x%0d, _kernel_instr_start", tmp_reg));
+    instr.push_back($sformatf("la x%0d, kernel_instr_start", tmp_reg));
     // TODO: Fix kernel instruction/data pages separatedly
     instr.push_back($sformatf("slli x%0d, x%0d, %0d", tmp_reg, tmp_reg,
                     XLEN - MAX_USED_VADDR_BITS));
@@ -405,9 +405,9 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   endfunction
 
   virtual function void default_page_table_setting();
-    num_of_page_table = new[PAGE_LEVEL];
+    num_of_page_table = new[PageLevel];
     foreach(num_of_page_table[i]) begin
-      num_of_page_table[i] = LINK_PTE_PER_TABLE ** (PAGE_LEVEL - i - 1);
+      num_of_page_table[i] = LinkPtePerTable ** (PageLevel - i - 1);
     end
   endfunction
 
@@ -415,7 +415,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     page_table = new[num_of_page_table.sum()];
     foreach(page_table[i]) begin
       page_table[i] = riscv_page_table#(MODE)::type_id::create($sformatf("page_table_%0d",i));
-      page_table[i].init_page_table(PTE_CNT);
+      page_table[i].init_page_table(PteCnt);
       page_table[i].table_id = i;
       page_table[i].level = get_level(i);
     end
@@ -441,8 +441,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
       instr = {instr, $sformatf("la x%0d, page_table_%0d+2048 # Process PT_%0d",
                                 cfg.gpr[1], i, i)};
       foreach(page_table[i].pte[j]) begin
-        if(j >= SUPER_LEAF_PTE_PER_TABLE) continue;
-        pte_addr_offset = (j * PTE_SIZE) - 2048;
+        if(j >= SuperLeafPtePerTable) continue;
+        pte_addr_offset = (j * PteSize) - 2048;
         `uvm_info(`gfn, $sformatf("Processing PT_%0d_PTE_%0d, v = %0d, level = %0d",
                         i, j, page_table[i].pte[j].v, page_table[i].level), UVM_LOW)
         if(page_table[i].pte[j].xwr == NEXT_LEVEL_PAGE) begin
@@ -471,8 +471,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     if (cfg.support_supervisor_mode) begin
       instr = {instr,
                // Process kernel instruction pages
-               $sformatf("la x%0d, _kernel_instr_start", cfg.gpr[0]),
-               $sformatf("la x%0d, _kernel_instr_end", cfg.gpr[1]),
+               $sformatf("la x%0d, kernel_instr_start", cfg.gpr[0]),
+               $sformatf("la x%0d, kernel_instr_end", cfg.gpr[1]),
                // Get the VPN of the physical address
                $sformatf("slli x%0d, x%0d, %0d",
                          cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS),
@@ -501,7 +501,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                // If not the end of the kernel space, process the next PTE
                $sformatf("ble x%0d, x%0d, 1b", cfg.gpr[0], cfg.gpr[1]),
                // Process kernel data pages
-               $sformatf("la x%0d, _kernel_data_start", cfg.gpr[0]),
+               $sformatf("la x%0d, kernel_data_start", cfg.gpr[0]),
                // Get the VPN of the physical address
                $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0],
                          XLEN - MAX_USED_VADDR_BITS),
@@ -531,14 +531,14 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   // If you want to create custom page table topology, override the below tasks to specify the
   // level and parent of each table.
   virtual function int get_level(int table_id);
-    for(int level = PAGE_LEVEL - 1; level >= 0; level--) begin
+    for(int level = PageLevel - 1; level >= 0; level--) begin
       if(table_id < num_of_page_table[level]) return level;
       table_id -= num_of_page_table[level];
     end
   endfunction
 
   virtual function int get_child_table_id(int table_id, int pte_id);
-    return table_id * LINK_PTE_PER_TABLE + pte_id + 1;
+    return table_id * LinkPtePerTable + pte_id + 1;
   endfunction
 
 endclass
