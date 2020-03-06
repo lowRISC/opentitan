@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
       "generic."
       "u_impl_generic");
   simctrl.RegisterExtension(&memutil);
+  simctrl.SetInitialResetDelay(100);
 
   std::cout << "Simulation of OpenTitan Earl Grey" << std::endl
             << "=================================" << std::endl

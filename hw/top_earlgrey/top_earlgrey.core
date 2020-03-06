@@ -30,6 +30,7 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:ip:xbar_main
       - lowrisc:ip:xbar_peri
+      - lowrisc:ip:rstmgr
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
