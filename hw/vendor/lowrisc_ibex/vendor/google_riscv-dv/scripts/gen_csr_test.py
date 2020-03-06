@@ -225,7 +225,7 @@ def gen_csr_test_fail(test_file, end_addr):
   test_file.write(f"\tli x1, {TEST_FAIL}\n")
   test_file.write(f"\tslli x1, x1, 8\n")
   test_file.write(f"\taddi x1, x1, {TEST_RESULT}\n")
-  test_file.write(f"\tli x2, {end_addr}\n")
+  test_file.write(f"\tli x2, 0x{end_addr}\n")
   test_file.write(f"\tsw x1, 0(x2)\n")
   test_file.write(f"\tj csr_fail\n")
 
@@ -244,7 +244,7 @@ def gen_csr_test_pass(test_file, end_addr):
   test_file.write(f"\tli x1, {TEST_PASS}\n")
   test_file.write(f"\tslli x1, x1, 8\n")
   test_file.write(f"\taddi x1, x1, {TEST_RESULT}\n")
-  test_file.write(f"\tli x2, {end_addr}\n")
+  test_file.write(f"\tli x2, 0x{end_addr}\n")
   test_file.write(f"\tsw x1, 0(x2)\n")
   test_file.write(f"\tj csr_pass\n")
 
@@ -318,28 +318,42 @@ def gen_csr_instr(original_csr_map, csr_instructions, xlen,
       gen_csr_test_fail(csr_test_file, end_signature_addr)
 
 
-"""
-Define command line arguments.
-"""
-parser = argparse.ArgumentParser()
-parser.add_argument("--csr_file", type=str, default="yaml/csr_template.yaml",
-        help="The YAML file contating descriptions of all processor supported CSRs")
-parser.add_argument("--xlen", type=int, default=32,
-        help="Specify the ISA width, e.g. 32 or 64 or 128")
-parser.add_argument("--iterations", type=int, default=1,
-        help="Specify how many tests to be generated")
-parser.add_argument("--out", type=str, default="./",
-        help="Specify output directory")
-parser.add_argument("--end_signature_addr", type=str, default="0",
-        help="Address that should be written to at end of this test")
-args = parser.parse_args()
+def main():
+  """Main entry point of CSR test generation script.
+     Will set up a list of all supported CSR instructions,
+     and seed the RNG."""
+
+  # define command line arguments
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--csr_file", type=str, default="yaml/csr_template.yaml",
+          help="The YAML file contating descriptions of all processor supported CSRs")
+  parser.add_argument("--xlen", type=int, default=32,
+          help="Specify the ISA width, e.g. 32 or 64 or 128")
+  parser.add_argument("--iterations", type=int, default=1,
+          help="Specify how many tests to be generated")
+  parser.add_argument("--out", type=str, default="./",
+          help="Specify output directory")
+  parser.add_argument("--end_signature_addr", type=str, default="0",
+          help="Address that should be written to at end of this test")
+  parser.add_argument("--seed", type=int, default=None,
+          help="""Value used to seed the random number generator. If no value is passed in,
+                  the RNG will be seeded from an internal source of randomness.""")
+  args = parser.parse_args()
+
+  """All supported CSR operations"""
+  csr_ops = ['csrrw', 'csrrs', 'csrrc', 'csrrwi', 'csrrsi', 'csrrci']
+
+  """
+  Seed the RNG.
+  If args.seed is None, seed will be drawn from some internal random source.
+  If args.seed is defined, this will be used to seed the RNG for user reproducibility.
+  """
+  random.seed(args.seed)
+
+  gen_csr_instr(get_csr_map(args.csr_file, args.xlen),
+                csr_ops, args.xlen, args.iterations, args.out,
+                args.end_signature_addr)
 
 
-"""
-A list containing all supported CSR instructions.
-"""
-csr_ops = ['csrrw', 'csrrs', 'csrrc', 'csrrwi', 'csrrsi', 'csrrci']
-
-gen_csr_instr(get_csr_map(args.csr_file, args.xlen),
-              csr_ops, args.xlen, args.iterations, args.out,
-              args.end_signature_addr)
+if __name__ == "__main__":
+  main()

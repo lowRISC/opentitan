@@ -91,6 +91,9 @@ class riscv_instr_gen_config extends uvm_object;
   // Vector extension setting
   rand riscv_vector_cfg  vector_cfg;
 
+  // PMP configuration settings
+  rand riscv_pmp_cfg pmp_cfg;
+
   //-----------------------------------------------------------------------------
   //  User space memory region and stack setting
   //-----------------------------------------------------------------------------
@@ -101,6 +104,11 @@ class riscv_instr_gen_config extends uvm_object;
     '{name:"region_2", size_in_bytes: 4096 * 2,  xwr: 3'b111},
     '{name:"region_3", size_in_bytes: 512,       xwr: 3'b111},
     '{name:"region_4", size_in_bytes: 4096,      xwr: 3'b111}
+  };
+
+  // Dedicated shared memory region for multi-harts atomic operations
+  mem_region_t amo_region[$] = '{
+    '{name:"amo_0",    size_in_bytes: 64,        xwr: 3'b111}
   };
 
   // Stack section word length
@@ -145,6 +153,12 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_unaligned_load_store;
   int                    illegal_instr_ratio;
   int                    hint_instr_ratio;
+  // Number of harts to be simulated, must be <= NUM_HARTS
+  int                    num_of_harts = NUM_HARTS;
+  // Use SP as stack pointer
+  bit                    fix_sp;
+  // Use push/pop section for data pages
+  bit                    use_push_data_section = 0;
   // Directed boot privileged mode, u, m, s
   string                 boot_mode_opts;
   int                    enable_page_table_exception;
@@ -225,7 +239,6 @@ class riscv_instr_gen_config extends uvm_object;
   int                    dist_control_mode;
   int unsigned           category_dist[riscv_instr_category_t];
 
-  uvm_cmdline_processor  inst;
 
   constraint default_c {
     sub_program_instr_cnt.size() == num_of_sub_program;
@@ -241,8 +254,8 @@ class riscv_instr_gen_config extends uvm_object;
       enable_sfence == 1'b1;
       (init_privileged_mode != SUPERVISOR_MODE) || (mstatus_tvm == 1'b1);
     } else {
-      (init_privileged_mode != SUPERVISOR_MODE || !riscv_instr_pkg::support_sfence || mstatus_tvm || no_fence)
-                                                     -> (enable_sfence == 1'b0);
+      (init_privileged_mode != SUPERVISOR_MODE || !riscv_instr_pkg::support_sfence || mstatus_tvm
+          || no_fence) -> (enable_sfence == 1'b0);
     }
   }
 
@@ -299,6 +312,11 @@ class riscv_instr_gen_config extends uvm_object;
     // This is default disabled at setup phase. It can be enabled in the exception and interrupt
     // handling routine
     mstatus_mprv == 1'b0;
+    if (SATP_MODE == BARE) {
+      mstatus_mxr == 0;
+      mstatus_sum == 0;
+      mstatus_tvm == 0;
+    }
   }
 
   // Exception delegation setting
@@ -354,6 +372,9 @@ class riscv_instr_gen_config extends uvm_object;
   }
 
   constraint sp_tp_c {
+    if (fix_sp) {
+      sp == SP;
+    }
     sp != tp;
     !(sp inside {GP, RA, ZERO});
     !(tp inside {GP, RA, ZERO});
@@ -372,8 +393,11 @@ class riscv_instr_gen_config extends uvm_object;
     unique {gpr};
   }
 
-  constraint addr_translaction_c {
+  constraint addr_translaction_rnd_order_c {
     solve init_privileged_mode before virtual_addr_translation_on;
+  }
+  
+  constraint addr_translaction_c {
     if ((init_privileged_mode != MACHINE_MODE) && (SATP_MODE != BARE)) {
       virtual_addr_translation_on == 1'b1;
     } else {
@@ -415,6 +439,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(no_dret, UVM_DEFAULT)
     `uvm_field_int(no_fence, UVM_DEFAULT)
     `uvm_field_int(no_wfi, UVM_DEFAULT)
+    `uvm_field_int(fix_sp, UVM_DEFAULT)
     `uvm_field_int(enable_unaligned_load_store, UVM_DEFAULT)
     `uvm_field_int(illegal_instr_ratio, UVM_DEFAULT)
     `uvm_field_int(hint_instr_ratio, UVM_DEFAULT)
@@ -436,6 +461,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(support_supervisor_mode, UVM_DEFAULT)
     `uvm_field_int(disable_compressed_instr, UVM_DEFAULT)
     `uvm_field_int(signature_addr, UVM_DEFAULT)
+    `uvm_field_int(num_of_harts, UVM_DEFAULT)
     `uvm_field_int(require_signature_addr, UVM_DEFAULT)
     `uvm_field_int(gen_debug_section, UVM_DEFAULT)
     `uvm_field_int(enable_ebreak_in_debug_rom, UVM_DEFAULT)
@@ -448,6 +474,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(max_directed_instr_stream_seq, UVM_DEFAULT)
     `uvm_field_int(enable_floating_point, UVM_DEFAULT)
     `uvm_field_int(enable_vector_extension, UVM_DEFAULT)
+    `uvm_field_int(use_push_data_section, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new (string name = "");
@@ -468,6 +495,8 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+no_branch_jump=", no_branch_jump);
     get_bool_arg_value("+no_load_store=", no_load_store);
     get_bool_arg_value("+no_csr_instr=", no_csr_instr);
+    get_bool_arg_value("+fix_sp=", fix_sp);
+    get_bool_arg_value("+use_push_data_section=", use_push_data_section);
     get_bool_arg_value("+enable_illegal_csr_instruction=", enable_illegal_csr_instruction);
     get_bool_arg_value("+enable_access_invalid_csr_level=", enable_access_invalid_csr_level);
     get_bool_arg_value("+enable_misaligned_instr=", enable_misaligned_instr);
@@ -479,6 +508,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+no_delegation=", no_delegation);
     get_int_arg_value("+illegal_instr_ratio=", illegal_instr_ratio);
     get_int_arg_value("+hint_instr_ratio=", hint_instr_ratio);
+    get_int_arg_value("+num_of_harts=", num_of_harts);
     get_bool_arg_value("+enable_unaligned_load_store=", enable_unaligned_load_store);
     get_bool_arg_value("+force_m_delegation=", force_m_delegation);
     get_bool_arg_value("+force_s_delegation=", force_s_delegation);
@@ -508,6 +538,7 @@ class riscv_instr_gen_config extends uvm_object;
                   $sformatf("Illegal boot mode option - %0s", boot_mode_opts))
       endcase
       init_privileged_mode.rand_mode(0);
+      addr_translaction_rnd_order_c.constraint_mode(0);
     end
     `uvm_info(`gfn, $sformatf("riscv_instr_pkg::supported_privileged_mode = %0d",
                    riscv_instr_pkg::supported_privileged_mode.size()), UVM_LOW)
@@ -533,6 +564,8 @@ class riscv_instr_gen_config extends uvm_object;
       disable_compressed_instr = 1;
     end
     vector_cfg = riscv_vector_cfg::type_id::create("vector_cfg");
+    pmp_cfg = riscv_pmp_cfg::type_id::create("pmp_cfg");
+    pmp_cfg.rand_mode(pmp_cfg.pmp_randomize);
     setup_instr_distribution();
     get_invalid_priv_lvl_csr();
   endfunction
@@ -629,7 +662,8 @@ class riscv_instr_gen_config extends uvm_object;
     end
   endfunction
 
-  // Populate invalid_priv_mode_csrs with the main implemented CSRs for each supported privilege mode
+  // Populate invalid_priv_mode_csrs with the main implemented CSRs for each supported privilege
+  // mode
   // TODO(udi) - include performance/pmp/trigger CSRs?
   virtual function void get_invalid_priv_lvl_csr();
     string invalid_lvl[$];
@@ -657,30 +691,6 @@ class riscv_instr_gen_config extends uvm_object;
       if (csr_name[0] inside {invalid_lvl}) begin
         invalid_priv_mode_csrs.push_back(implemented_csr[i]);
       end
-    end
-  endfunction
-
-  // Get an integer argument from comand line
-  function void get_int_arg_value(string cmdline_str, ref int val);
-    string s;
-    if(inst.get_arg_value(cmdline_str, s)) begin
-      val = s.atoi();
-    end
-  endfunction
-
-  // Get a bool argument from comand line
-  function void get_bool_arg_value(string cmdline_str, ref bit val);
-    string s;
-    if(inst.get_arg_value(cmdline_str, s)) begin
-      val = s.atobin();
-    end
-  endfunction
-
-  // Get a hex argument from command line
-  function void get_hex_arg_value(string cmdline_str, ref int val);
-    string s;
-    if(inst.get_arg_value(cmdline_str, s)) begin
-      val = s.atohex();
     end
   endfunction
 

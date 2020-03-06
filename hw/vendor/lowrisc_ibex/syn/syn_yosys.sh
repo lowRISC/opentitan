@@ -31,7 +31,7 @@ for file in ../rtl/*.sv; do
   sv2v \
     --define=SYNTHESIS \
     ../rtl/*_pkg.sv \
-    ../shared/rtl/prim_assert.sv \
+    -I../shared/rtl \
     $file \
     > $LR_SYNTH_OUT_DIR/generated/${module}.v
 
@@ -48,9 +48,10 @@ rm -f $LR_SYNTH_OUT_DIR/generated/*_pkg.v
 # remove tracer (not needed for synthesis)
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_tracer.v
 
-# remove the latch-based register file (because we will use the
+# remove the FPGA & latch-based register file (because we will use the
 # flop-based one instead)
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_latch.v
+rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_fpga.v
 
 yosys -c ./tcl/yosys_run_synth.tcl | tee ./$LR_SYNTH_OUT_DIR/log/syn.log
 

@@ -18,6 +18,7 @@
 class riscv_privileged_common_seq extends uvm_sequence;
 
   riscv_instr_gen_config  cfg;
+  int                     hart;
   riscv_privil_reg        mstatus;
   riscv_privil_reg        mie;
   riscv_privil_reg        sstatus;
@@ -33,7 +34,8 @@ class riscv_privileged_common_seq extends uvm_sequence;
 
   virtual function void enter_privileged_mode(input privileged_mode_t mode,
                                               output string instrs[$]);
-    string label = format_string({"init_", mode.name(), ":"}, LABEL_STR_LEN);
+    string label = format_string({$sformatf("%0sinit_%0s:",
+                                 hart_prefix(hart), mode.name())}, LABEL_STR_LEN);
     string ret_instr[] = {"mret"};
     riscv_privil_reg regs[$];
     label = label.tolower();
@@ -69,9 +71,15 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("TW", cfg.set_mstatus_tw);
     mstatus.set_field("FS", cfg.mstatus_fs);
     mstatus.set_field("VS", cfg.mstatus_vs);
-    if(XLEN==64) begin
-      mstatus.set_field("UXL", 2'b10);
+    if (!(SUPERVISOR_MODE inside {supported_privileged_mode}) && (XLEN != 32)) begin
+      mstatus.set_field("SXL", 2'b00);
+    end else if (XLEN == 64) begin
       mstatus.set_field("SXL", 2'b10);
+    end
+    if (!(USER_MODE inside {supported_privileged_mode}) && (XLEN != 32)) begin
+      mstatus.set_field("UXL", 2'b00);
+    end else if (XLEN == 64) begin
+      mstatus.set_field("UXL", 2'b10);
     end
     mstatus.set_field("XS", 0);
     mstatus.set_field("SD", 0);

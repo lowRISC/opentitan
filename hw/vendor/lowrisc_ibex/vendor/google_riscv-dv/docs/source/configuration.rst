@@ -110,63 +110,108 @@ Test list in `YAML format`_
 
 .. _YAML format: https://github.com/google/riscv-dv/blob/master/yaml/base_testlist.yaml
 
-.. note:: To automatically generate CSR tests without having to explicitly run the
-    script, include `riscv_csr_test` in the testlist as shown in the example YAML
-    file above.
+You can also add directed assembly/C test in the testlist
+
+.. code-block:: yaml
+
+    - test: riscv_single_c_test
+      description: >
+         single c test entry
+      iterations: 1
+      c_test: sample_c.c
+
+    - test: riscv_c_regression_test
+      description: >
+        Run all c tests under the given directory
+      iterations: 1
+      c_test: c_test_directory
+      gcc_opts:
+         # Some custom gcc options
+
+    - test: riscv_single_asm_test
+      description: >
+         single assembly test entry
+      iterations: 1
+      asm_test: sample_asm.S
+
+    - test: riscv_asm_regression_test
+      description: >
+        Run all assembly tests under the given directory
+      iterations: 1
+      asm_test: assembly_test_directory
+      gcc_opts:
+         # Some custom gcc options
+
 
 Runtime options of the generator
 --------------------------------
-+-----------------------------+---------------------------------------------------+---------+
-| Option                      | Description                                       | Default |
-+=============================+===================================================+=========+
-| num_of_tests                | Number of assembly tests to be generated          | 1       |
-+-----------------------------+---------------------------------------------------+---------+
-| num_of_sub_program          | Number of sub-program in one test                 | 5       |
-+-----------------------------+---------------------------------------------------+---------+
-| instr_cnt                   | Instruction count per test                        | 200     |
-+-----------------------------+---------------------------------------------------+---------+
-| enable_page_table_exception | Enable page table exception                       | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| enable_unaligned_load_store | Enable unaligned memory operations                | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_ebreak                   | Disable ebreak instruction                        | 1       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_wfi                      | Disable WFI instruction                           | 1       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_dret                     | Disable dret instruction                          | 1       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_branch_jump              | Disable branch/jump instruction                   | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_load_store               | Disable load/store instruction                    | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_csr_instr                | Disable CSR instruction                           | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_fence                    | Disable fence instruction                         | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| illegal_instr_ratio         | Number of illegal instructions every 1000 instr   | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| hint_instr_ratio            | Number of HINT instructions every 1000 instr      | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| boot_mode                   | m:Machine mode, s:Supervisor mode, u:User mode    | m       |
-+-----------------------------+---------------------------------------------------+---------+
-| no_directed_instr           | Disable directed instruction stream               | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| require_signature_addr      | Set to 1 if test needs to talk to testbench       | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| signature_addr              | Write to this addr to send data to testbench      | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| enable_interrupt            | Enable MStatus.MIE, used in interrupt test        | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| gen_debug_section           | Disables randomized debug_rom section             | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| num_debug_sub_program       | Number of debug sub-programs in test              | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| enable_ebreak_in_debug_rom  | Generate ebreak instructions inside debug ROM     | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| set_dcsr_ebreak             | Randomly enable dcsr.ebreak(m/s/u)                | 0       |
-+-----------------------------+---------------------------------------------------+---------+
-| randomize_csr               | Fully randomize main CSRs (xSTATUS, xIE)          | 0       |
-+-----------------------------+---------------------------------------------------+---------+
++---------------------------------+---------------------------------------------------+---------+
+| Option                          | Description                                       | Default |
++=================================+===================================================+=========+
+| num_of_tests                    | Number of assembly tests to be generated          | 1       |
++---------------------------------+---------------------------------------------------+---------+
+| num_of_sub_program              | Number of sub-program in one test                 | 5       |
++---------------------------------+---------------------------------------------------+---------+
+| instr_cnt                       | Instruction count per test                        | 200     |
++---------------------------------+---------------------------------------------------+---------+
+| enable_page_table_exception     | Enable page table exception                       | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_unaligned_load_store     | Enable unaligned memory operations                | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| no_ebreak                       | Disable ebreak instruction                        | 1       |
++---------------------------------+---------------------------------------------------+---------+
+| no_wfi                          | Disable WFI instruction                           | 1       |
++---------------------------------+---------------------------------------------------+---------+
+| set_mstatus_tw                  | Enable WFI to be treated as illegal instruction   | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| no_dret                         | Disable dret instruction                          | 1       |
++---------------------------------+---------------------------------------------------+---------+
+| no_branch_jump                  | Disable branch/jump instruction                   | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| no_csr_instr                    | Disable CSR instruction                           | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_illegal_csr_instruction  | Enable illegal CSR instructions                   | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_access_invalid_csr_level | Enable accesses to higher privileged CSRs         | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_dummy_csr_write          | Enable some dummy CSR writes in setup routine     | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_misaligned_instr         | Enable jumps to misaligned instruction addresses  | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| no_fence                        | Disable fence instruction                         | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| no_data_page                    | Disable data page generation                      | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| disable_compressed_instr        | Disable compressed instruction generation         | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| illegal_instr_ratio             | Number of illegal instructions every 1000 instr   | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| hint_instr_ratio                | Number of HINT instructions every 1000 instr      | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| boot_mode                       | m:Machine mode, s:Supervisor mode, u:User mode    | m       |
++---------------------------------+---------------------------------------------------+---------+
+| no_directed_instr               | Disable directed instruction stream               | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| require_signature_addr          | Set to 1 if test needs to talk to testbench       | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| signature_addr                  | Write to this addr to send data to testbench      | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_interrupt                | Enable MStatus.MIE, used in interrupt test        | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_timer_irq                | Enable xIE.xTIE, used to enable timer interrupts  | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| gen_debug_section               | Enables randomized debug_rom section              | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| num_debug_sub_program           | Number of debug sub-programs in test              | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_ebreak_in_debug_rom      | Generate ebreak instructions inside debug ROM     | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| set_dcsr_ebreak                 | Randomly enable dcsr.ebreak(m/s/u)                | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| enable_debug_single_step        | Enable debug single stepping functionality        | 0       |
++---------------------------------+---------------------------------------------------+---------+
+| randomize_csr                   | Fully randomize main CSRs (xSTATUS, xIE)          | 0       |
++---------------------------------+---------------------------------------------------+---------+
 
 Setup Privileged CSR description (optional)
 -------------------------------------------

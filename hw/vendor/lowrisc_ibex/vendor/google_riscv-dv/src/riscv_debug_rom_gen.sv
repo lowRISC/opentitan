@@ -27,6 +27,7 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   string debug_end[$];
   string str[$];
   string dret;
+  int hart;
 
   `uvm_object_utils(riscv_debug_rom_gen)
 
@@ -45,7 +46,7 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
       // If the debug section should not be generated, we just populate it
       // with a dret instruction.
       debug_main = {dret};
-      gen_section("debug_rom", debug_main);
+      gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
     end else begin
       if (cfg.enable_ebreak_in_debug_rom) begin
         gen_ebreak_header();
@@ -80,21 +81,21 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
         gen_increment_ebreak_counter();
       end
       format_section(debug_main);
-      gen_sub_program(sub_program, sub_program_name,
+      gen_sub_program(hart, sub_program[hart], sub_program_name,
                       cfg.num_debug_sub_program, 1'b1, "debug_sub");
-      main_program = riscv_instr_sequence::type_id::create("debug_program");
-      main_program.instr_cnt = cfg.debug_program_instr_cnt;
-      main_program.is_debug_program = 1;
-      main_program.cfg = cfg;
-      `DV_CHECK_RANDOMIZE_FATAL(main_program)
-      main_program.gen_instr(.is_main_program(1'b1), .no_branch(cfg.no_branch_jump));
-      gen_callstack(main_program, sub_program, sub_program_name,
+      main_program[hart] = riscv_instr_sequence::type_id::create("debug_program");
+      main_program[hart].instr_cnt = cfg.debug_program_instr_cnt;
+      main_program[hart].is_debug_program = 1;
+      main_program[hart].cfg = cfg;
+      `DV_CHECK_RANDOMIZE_FATAL(main_program[hart])
+      main_program[hart].gen_instr(.is_main_program(1'b1), .no_branch(cfg.no_branch_jump));
+      gen_callstack(main_program[hart], sub_program[hart], sub_program_name,
                     cfg.num_debug_sub_program);
-      main_program.post_process_instr();
-      main_program.generate_instr_stream(.no_label(1'b1));
-      insert_sub_program(sub_program, debug_main);
-      debug_main = {debug_main, main_program.instr_string_list};
-      gen_section("debug_rom", debug_main);
+      main_program[hart].post_process_instr();
+      main_program[hart].generate_instr_stream(.no_label(1'b1));
+      insert_sub_program(sub_program[hart], debug_main);
+      debug_main = {debug_main, main_program[hart].instr_string_list};
+      gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
       if (cfg.enable_ebreak_in_debug_rom) begin
         gen_ebreak_footer();
       end
@@ -105,7 +106,7 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
       end
       //format_section(debug_end);
       debug_end = {debug_end, dret};
-      gen_section("debug_end", debug_end);
+      gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);
     end
     gen_debug_exception_handler();
   endfunction
@@ -114,7 +115,7 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   // TODO(udinator) - remains empty for now, only a DRET
   virtual function void gen_debug_exception_handler();
     str = {"dret"};
-    gen_section("debug_exception", str);
+    gen_section($sformatf("%0sdebug_exception", hart_prefix(hart)), str);
   endfunction
 
   //-------------------------------------------------------------------------------------
@@ -130,7 +131,7 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
     str = {$sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
            $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
            $sformatf("beq x%0d, x0, 1f", cfg.scratch_reg),
-           $sformatf("j debug_end"),
+           $sformatf("j %0sdebug_end", hart_prefix(hart)),
            $sformatf("1: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)};
     debug_main = {debug_main, str};
   endfunction

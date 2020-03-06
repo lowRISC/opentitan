@@ -80,10 +80,43 @@ Getting Started
 Prerequisites & Environment Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- VCS RTL simulator (needed to support UVM 1.2)
-- RISCV-DV Prerequisites - https://github.com/google/riscv-dv#prerequisites
-- GCC setup - https://github.com/google/riscv-dv#compile-generated-programs-with-gcc
-- ISS setup - https://github.com/google/riscv-dv#run-iss-instruction-set-simulator-simulation - note that commit log must be enabled in spike by passing ``--enable-commitlog`` to the configure script.
+In order to run the co-simulation flow, you'll need:
+
+  - A SystemVerilog simulator that supports UVM. The flow is currently
+    tested with VCS.
+
+  - A RISC-V instruction set simulator. For example, Spike_ or
+    OVPsim_. Note that Spike must be configured with
+    ``--enable-commitlog`` and ``--enable-misaligned``. The commit log
+    is needed to track the instructions that were executed and
+    ``--enable-misaligned`` tells Spike to simulate a core that
+    handles misaligned accesses in hardware (rather than jumping to a
+    trap handler).
+
+  - A working RISC-V toolchain (to compile / assemble the generated
+    programs before simulating them). Either download and build the
+    `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_ or
+    (quicker) download a `pre-built toolchain
+    <riscv-toolchain-releases_>`_.
+
+Once these are installed, you need to set some environment variables
+to tell the RISCV-DV code where to find them:
+
+::
+
+    export RISCV_TOOLCHAIN=/path/to/riscv
+    export RISCV_GCC="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-gcc"
+    export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-objcopy"
+    export SPIKE_PATH=/path/to/spike/bin
+    export OVPSIM_PATH=/path/to/ovpsim/bin
+
+(Obviously, you only need to set ``SPIKE_PATH`` or ``OVPSIM_PATH`` if
+you have installed the corresponding instruction set simulator)
+
+.. _Spike: https://github.com/riscv/riscv-isa-sim
+.. _OVPsim: https://github.com/riscv/riscv-ovpsim
+.. _riscv-toolchain-source: https://github.com/riscv/riscv-gnu-toolchain
+.. _riscv-toolchain-releases: https://github.com/lowRISC/lowrisc-toolchains/releases
 
 End-to-end RTL/ISS co-simulation flow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

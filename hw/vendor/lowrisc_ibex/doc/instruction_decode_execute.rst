@@ -71,19 +71,33 @@ Multiplier/Divider Block (MULT/DIV)
 Source Files: :file:`rtl/ibex_multdiv_slow.sv` :file:`rtl/ibex_multdiv_fast.sv`
 
 The Multiplier/Divider (MULT/DIV) is a state machine driven block to perform multiplication and division.
-The fast and slow versions differ in multiplier only, both implement the same form of long division algorithm.
-The ALU block is used by the long division algorithm in both the fast and slow blocks.
+The fast and slow versions differ in multiplier only. All versions implement the same form of long division algorithm. The ALU block is used by the long division algorithm in all versions.
 
-Fast Multiplier
-  - Completes multiply in 3-4 cycles using a MAC (multiply accumulate) which is capable of a 17-bit x 17-bit multiplication with a 34-bit accumulator.
-  - A MUL instruction takes 3 cycles, MULH takes 4.
-  - This MAC is internal to the mult/div block (no external ALU use).
-  - Beware it is simply implemented with the ``*`` and ``+`` operators so results heavily depend upon the synthesis tool used.
-  - In some cases it may be desirable to replace this with a specific implementation (such as a hard macro in an FPGA or an explicit gate level implementation).
+Multiplier
+  The multiplier can be implemented in three variants controlled via the parameter ``MultiplierImplementation``.
 
-Slow Multiplier
-  - Completes multiply in 33 cycles using a Baugh-Wooley multiplier (for both MUL and MULH).
-  - The ALU block is used to compute additions.
+  Single-Cycle Multiplier
+    This implementation is chosen by setting the ``MultiplierImplementation`` parameter to "single-cycle". The single-cycle multiplier makes use of three parallel multiplier units, designed to be mapped to hardware multiplier primitives on FPGAs. It is therefore the **first choice for FPGA synthesis**.
+
+    - Using three parallel 17-bit x 17-bit multiplication units and a 34-bit accumulator, it completes a MUL instruction in 1 cycle. MULH is completed in 2 cycles.
+    - This MAC is internal to the mult/div block (no external ALU use).
+    - Beware it is simply implemented with the ``*`` and ``+`` operators so results heavily depend upon the synthesis tool used.
+    - ASIC synthesis has not yet been tested but is expected to consume 3-4x the area of the fast multiplier for ASIC.
+
+  Fast Multi-Cycle Multiplier
+    This implementation is chosen by setting the ``MultiplierImplementation`` parameter to "fast". The fast multi-cycle multiplier provides a reasonable trade-off between area and performance. It is the **first choice for ASIC synthesis**.
+
+    - Completes multiply in 3-4 cycles using a MAC (multiply accumulate) which is capable of a 17-bit x 17-bit multiplication with a 34-bit accumulator.
+    - A MUL instruction takes 3 cycles, MULH takes 4.
+    - This MAC is internal to the mult/div block (no external ALU use).
+    - Beware it is simply implemented with the ``*`` and ``+`` operators so results heavily depend upon the synthesis tool used.
+    - In some cases it may be desirable to replace this with a specific implementation such as an explicit gate level implementation.
+
+  Slow Multi-Cycle Multiplier
+    To select the slow multi-cycle multiplier, set the ``MultiplierImplementation`` parameter to "slow".
+
+    - Completes multiply in clog2(``op_b``) + 1 cycles (for MUL) or 33 cycles (for MULH) using a Baugh-Wooley multiplier.
+    - The ALU block is used to compute additions.
 
 Divider
   Both the fast and slow blocks use the same long division algorithm, it takes 37 cycles to compute (though only requires 2 cycles when there is a divide by 0) and proceeds as follows:

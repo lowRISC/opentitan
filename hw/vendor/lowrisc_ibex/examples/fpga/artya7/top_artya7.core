@@ -31,6 +31,12 @@ parameters:
     default: "../../../../../examples/sw/led/led.vmem"
     paramtype: vlogdefine
 
+  FPGA_XILINX:
+    datatype: str
+    description: Identifies Xilinx FPGA targets to set DSP pragmas for performance counters.
+    default: 1
+    paramtype: vlogdefine
+
 targets:
   synth:
     default_tool: vivado
@@ -40,6 +46,7 @@ targets:
     toplevel: top_artya7
     parameters:
       - SRAM_INIT_FILE
+      - FPGA_XILINX
     tools:
       vivado:
         part: "xc7a100tcsg324-1"  # Default to Arty A7-100

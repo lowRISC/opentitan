@@ -53,3 +53,14 @@
     +hint_instr_ratio=5
   rtl_test: core_base_test
 
+- test: riscv_pmp_test
+  description: >
+    Provide some PMP configuration parameters, and setup PMP CSRs appropriately
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +pmp_randomize=0
+    +pmp_num_regions=1
+    +pmp_granularity=1
+    +pmp_region_0=L:0,A:TOR,X:1,W:1,R:1,ADDR:FFFFFFFF
+  rtl_test: core_base_test

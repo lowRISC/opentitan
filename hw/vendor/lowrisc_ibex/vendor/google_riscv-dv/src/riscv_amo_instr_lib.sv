@@ -50,6 +50,21 @@ class riscv_amo_base_instr_stream extends riscv_mem_access_stream;
     super.new(name);
   endfunction
 
+  function void pre_randomize();
+    data_page = cfg.amo_region;
+    max_data_page_id = data_page.size();
+  endfunction
+
+  // Use "la" instruction to initialize the base regiseter
+  virtual function void add_rs1_init_la_instr(riscv_reg_t gpr, int id, int base = 0);
+    riscv_pseudo_instr la_instr;
+    la_instr = riscv_pseudo_instr::type_id::create("la_instr");
+    la_instr.pseudo_instr_name = LA;
+    la_instr.rd = gpr;
+    la_instr.imm_str = $sformatf("%0s+%0d", cfg.amo_region[id].name, base);
+    instr_list.push_front(la_instr);
+  endfunction
+
   function void post_randomize();
     gen_amo_instr();
     // rs1 cannot be modified by other instructions
@@ -85,8 +100,18 @@ class riscv_lr_sc_instr_stream extends riscv_amo_base_instr_stream;
   endfunction
 
   virtual function void gen_amo_instr();
-    lr_instr = riscv_instr::get_rand_instr(.include_instr({LR_W, LR_D}));
-    sc_instr = riscv_instr::get_rand_instr(.include_instr({SC_W, SC_D}));
+    riscv_instr_name_t allowed_lr_instr[];
+    riscv_instr_name_t allowed_sc_instr[];
+    if (RV32A inside {supported_isa}) begin
+      allowed_lr_instr = {LR_W};
+      allowed_sc_instr = {SC_W};
+    end
+    if (RV64A inside {supported_isa}) begin
+      allowed_lr_instr = {allowed_lr_instr, LR_D};
+      allowed_sc_instr = {allowed_sc_instr, SC_D};
+    end
+    lr_instr = riscv_instr::get_rand_instr(.include_instr({allowed_lr_instr}));
+    sc_instr = riscv_instr::get_rand_instr(.include_instr({allowed_sc_instr}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(lr_instr,
       rs1 == rs1_reg;
       if (reserved_rd.size() > 0) {

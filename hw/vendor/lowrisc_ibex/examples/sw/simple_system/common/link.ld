@@ -16,12 +16,27 @@ _min_stack      = 0x2000;   /* 8K - minimum stack space to reserve */
 _stack_len     = LENGTH(stack);
 _stack_start   = ORIGIN(stack) + LENGTH(stack);
 
+_entry_point = _vectors_start + 0x80;
+ENTRY(_entry_point)
+
+/* The tohost address is used by Spike for a magic "stop me now" message. This
+   is set to equal SIM_CTRL_CTRL (see simple_system_regs.h), which has that
+   effect in simple_system simulations. Note that it must be 8-byte aligned.
+
+   We don't read data back from Spike, so fromhost is set to some dummy value:
+   we place it just above the top of the stack.
+ */
+tohost   = 0x20008;
+fromhost = _stack_start + 0x10;
+
 SECTIONS
 {
     .vectors :
     {
         . = ALIGN(4);
+		_vectors_start = .;
         KEEP(*(.vectors))
+		_vectors_end = .;
     } > ram
 
     .text : {

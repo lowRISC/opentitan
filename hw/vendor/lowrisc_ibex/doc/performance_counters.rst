@@ -122,3 +122,17 @@ The remaining event selector CSRs are tied to 0, i.e., no events are counted by 
 +----------------------+-------------+-------------+--------------+
 | ``mhpmevent10(h)``   | 0x32A       | 0x0000_0400 |           10 |
 +----------------------+-------------+-------------+--------------+
+
+FPGA Targets
+------------
+
+For FPGA targets the performance counters constitute a particularily large structure.
+Implementing the maximum 29 event counters 32, 48 and 64 bit wide results in relative logic utilizations of the core of 100%, 111% and 129% respectively.
+The relative numbers of flip-flops are 100%, 125% and 150%.
+It is recommended to implement event counters of 32 bit width where possible.
+
+For Xilinx FPGA devices featuring the `DSP48E1` DSP slice or similar, counter logic can be absorbed into the DSP slice for widths up to 48 bits.
+The resulting relative logic utilizations with respect to the non-DSP 32 bit counter implementation are 83% and 89% respectively for 32 and 48 bit DSP counters.
+This comes at the expense of 1 DSP slice per counter.
+For 32 bit counters only, the corresponding flip-flops can be incorporated into the DSP's output pipeline register, resulting in a reduction of the number of flip-flops to 50%.
+In order to infer DSP slices for performance counters, define the preprocessor variable ``FPGA_XILINX``.

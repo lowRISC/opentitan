@@ -178,7 +178,6 @@ module ibex_if_stage #(
 
     fetch_ready      = 1'b0;
     branch_req       = 1'b0;
-    have_instr       = 1'b0;
 
     if (offset_in_init_q) begin
       // no valid instruction data for ID stage, assume aligned
@@ -189,8 +188,6 @@ module ibex_if_stage #(
     end else begin
       // an instruction is ready for ID stage
       if (fetch_valid) begin
-        have_instr = 1'b1;
-
         if (req_i && if_id_pipe_reg_we) begin
           fetch_ready      = 1'b1;
           offset_in_init_d = 1'b0;
@@ -200,13 +197,13 @@ module ibex_if_stage #(
 
     // take care of jumps and branches
     if (pc_set_i) begin
-      have_instr       = 1'b0;
-
       // switch to new PC from ID stage
       branch_req       = 1'b1;
       offset_in_init_d = 1'b0;
     end
   end
+
+  assign have_instr = fetch_valid & ~ (offset_in_init_q | pc_set_i);
 
   assign pc_if_o      = fetch_addr;
   assign if_busy_o    = prefetch_busy;
@@ -268,25 +265,24 @@ module ibex_if_stage #(
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT_KNOWN(IbexExcPcMuxKnown, exc_pc_mux_i, clk_i, !rst_ni)
+  `ASSERT_KNOWN(IbexExcPcMuxKnown, exc_pc_mux_i)
   `ASSERT(IbexPcMuxValid, pc_mux_i inside {
       PC_BOOT,
       PC_JUMP,
       PC_EXC,
       PC_ERET,
-      PC_DRET
-      }, clk_i, !rst_ni)
+      PC_DRET})
 
   // Boot address must be aligned to 256 bytes.
-  `ASSERT(IbexBootAddrUnaligned, boot_addr_i[7:0] == 8'h00, clk_i, !rst_ni)
+  `ASSERT(IbexBootAddrUnaligned, boot_addr_i[7:0] == 8'h00)
 
   // Errors must only be sent together with rvalid.
-  `ASSERT(IbexInstrErrWithoutRvalid, instr_err_i |-> instr_rvalid_i, clk_i, !rst_ni)
+  `ASSERT(IbexInstrErrWithoutRvalid, instr_err_i |-> instr_rvalid_i)
 
   // Address must not contain X when request is sent.
-  `ASSERT(IbexInstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o), clk_i, !rst_ni)
+  `ASSERT(IbexInstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o))
 
   // Address must be word aligned when request is sent.
-  `ASSERT(IbexInstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00), clk_i, !rst_ni)
+  `ASSERT(IbexInstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00))
 
 endmodule

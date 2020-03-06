@@ -6,9 +6,10 @@
 # Documentation at https://aka.ms/yaml
 
 variables:
-  VERILATOR_VERSION: 4.016
+  VERILATOR_VERSION: 4.028
   VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
   RISCV_TOOLCHAIN_TAR_VERSION: 20190807-1
+  RISCV_COMPLIANCE_GIT_VERSION: 844c6660ef3f0d9b96957991109dfd80cc4938e2
 
 trigger:
   batch: true
@@ -31,6 +32,12 @@ jobs:
   # Installing six is a workaround for pip dependency resolution: six is already
   # installed as system package with a version below the required one.
   # Explicitly installing six through pip gets us a supported version.
+  #
+  # Updating pip and setuptools is required to have these tools properly parse
+  # Python-version metadata, which some packages uses to specify that an older
+  # version of a package must be used for a certain Python version. If that
+  # information is not read, pip installs the latest version, which then fails
+  # to run.
   - bash: |
       sudo apt-get install -y \
           python3 \
@@ -47,7 +54,8 @@ jobs:
           curl \
           libelf-dev \
           clang-format \
-        && sudo pip3 install -U six fusesoc
+        && sudo pip3 install -U setuptools pip six \
+        && sudo pip3 install -U fusesoc
     displayName: Install dependencies
 
   - bash: |
@@ -118,6 +126,8 @@ jobs:
   - bash: |
       cd build
       git clone https://github.com/riscv/riscv-compliance.git
+      cd riscv-compliance
+      git checkout "$(RISCV_COMPLIANCE_GIT_VERSION)"
     displayName: Get RISC-V Compliance test suite
 
   - bash: |

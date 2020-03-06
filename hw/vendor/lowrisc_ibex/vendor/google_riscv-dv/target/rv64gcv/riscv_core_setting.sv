@@ -39,6 +39,9 @@ mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 // supported
 int max_interrupt_vector_num = 16;
 
+// Physical memory protection support
+bit support_pmp = 0;
+
 // Debug mode support
 bit support_debug_mode = 0;
 
@@ -57,6 +60,8 @@ parameter int VLEN = 512;
 parameter int ELEN = 64;
 parameter int SLEN = 64;
 
+// Number of harts
+parameter int NUM_HARTS = 1;
 // ----------------------------------------------------------------------------
 // Previleged CSR implementation
 // ----------------------------------------------------------------------------

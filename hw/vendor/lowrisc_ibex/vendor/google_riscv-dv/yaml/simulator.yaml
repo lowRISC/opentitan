@@ -20,6 +20,7 @@
               +incdir+<user_extension>
              -f <cwd>/files.f -full64
              -l <out>/compile.log
+             -LDFLAGS '-Wl,--no-as-needed'
              -Mdir=<out>/vcs_simv.csrc
              -o <out>/vcs_simv <cmp_opts> <cov_opts> "
     cov_opts: >
@@ -42,7 +43,7 @@
               -l <out>/compile.log <cmp_opts>"
   sim:
     cmd: >
-      irun -R <sim_opts> -svseed <seed>
+      irun -R <sim_opts> -svseed <seed> -svrnc rand_struct
 
 - tool: questa
   compile:
@@ -78,6 +79,7 @@
                 +incdir+$UVM_HOME/src
                 $UVM_HOME/src/uvm_pkg.sv
                 +define+DSIM
+                -suppress EnumMustBePositive
                 +incdir+<setting>
                 +incdir+<user_extension>
                 -f <cwd>/files.f

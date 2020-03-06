@@ -19,6 +19,7 @@
          -l <out>/compile.log
          -sverilog -ntb_opts uvm-1.2
          +define+UVM_REGEX_NO_DPI -timescale=1ns/10ps -licqueue
+         -LDFLAGS '-Wl,--no-as-needed'
          -Mdir=<out>/vcs_simv.csrc
          -o <out>/vcs_simv
          -debug_access+pp

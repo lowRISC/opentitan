@@ -50,5 +50,5 @@ in parallel::
     # Split the run to process 5 CSV at a time, and run with LSF
     cov --dir out/spike_sim --lsf_cmd "bsub ....." -bz 5
 
-.. _riscv_core_setting.sv: https://github.com/google/riscv-dv/blob/master/setting/riscv_core_setting.sv
+.. _riscv_core_setting.sv: https://github.com/google/riscv-dv/blob/master/target/rv32imc/riscv_core_setting.sv
 

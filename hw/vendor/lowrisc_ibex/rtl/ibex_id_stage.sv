@@ -659,37 +659,35 @@ module ibex_id_stage #(
       IMM_B_U,
       IMM_B_J,
       IMM_B_INCR_PC,
-      IMM_B_INCR_ADDR
-      }, clk_i, !rst_ni)
+      IMM_B_INCR_ADDR})
   `ASSERT(IbexRegfileWdataSelValid, regfile_wdata_sel inside {
       RF_WD_LSU,
       RF_WD_EX,
-      RF_WD_CSR
-      }, clk_i, !rst_ni)
-  `ASSERT_KNOWN(IbexWbStateKnown, id_wb_fsm_cs, clk_i, !rst_ni)
+      RF_WD_CSR})
+  `ASSERT_KNOWN(IbexWbStateKnown, id_wb_fsm_cs)
 
   // Branch decision must be valid when jumping.
-  `ASSERT(IbexBranchDecisionValid, branch_in_dec |-> !$isunknown(branch_decision_i), clk_i, !rst_ni)
+  `ASSERT(IbexBranchDecisionValid, branch_in_dec |-> !$isunknown(branch_decision_i))
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT(IbexIdInstrKnown,
-      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_i),
-      clk_i, !rst_ni)
+      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_i))
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT(IbexIdInstrALUKnown,
-      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_alu_i),
-      clk_i, !rst_ni)
+      (instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i)) |-> !$isunknown(instr_rdata_alu_i))
 
   // Multicycle enable signals must be unique.
   `ASSERT(IbexMulticycleEnableUnique,
-      $onehot0({data_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}), clk_i, !rst_ni)
+      $onehot0({data_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))
 
   // Duplicated instruction flops must match
-  `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i == instr_rdata_alu_i, clk_i, !rst_ni);
+  // === as DV environment can produce instructions with Xs in, so must use precise match that
+  // includes Xs
+  `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
 
   `ifdef CHECK_MISALIGNED
-  `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i, clk_i, !rst_ni)
+  `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
   `endif
 
 endmodule

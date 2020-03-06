@@ -23,7 +23,6 @@
     <path_var>/riscvOVPsim.exe
     --controlfile <cfg_path>/riscvOVPsim.ic
     --objfilenoentry <elf>
-    --override riscvOVPsim/cpu/PMP_registers=0
     --override riscvOVPsim/cpu/simulateexceptions=T
     --trace --tracechange --traceshowicount --tracemode --traceregs
     --finishafter 1000000

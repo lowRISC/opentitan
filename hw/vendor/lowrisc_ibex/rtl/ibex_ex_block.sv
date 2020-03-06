@@ -9,9 +9,9 @@
  * Execution block: Hosts ALU and MUL/DIV unit
  */
 module ibex_ex_block #(
-    parameter bit    RV32M                    = 1,
-    parameter bit    BranchTargetALU          = 0,
-    parameter        MultiplierImplementation = "fast"
+    parameter bit RV32M                    = 1,
+    parameter bit BranchTargetALU          = 0,
+    parameter     MultiplierImplementation = "fast"
 ) (
     input  logic                  clk_i,
     input  logic                  rst_ni,
@@ -131,7 +131,29 @@ module ibex_ex_block #(
         .multdiv_result_o   ( multdiv_result        )
     );
   end else if (MultiplierImplementation == "fast") begin : gen_multdiv_fast
-    ibex_multdiv_fast multdiv_i (
+    ibex_multdiv_fast #(
+        .SingleCycleMultiply(0)
+    ) multdiv_i (
+        .clk_i              ( clk_i                 ),
+        .rst_ni             ( rst_ni                ),
+        .mult_en_i          ( mult_en_i             ),
+        .div_en_i           ( div_en_i              ),
+        .operator_i         ( multdiv_operator_i    ),
+        .signed_mode_i      ( multdiv_signed_mode_i ),
+        .op_a_i             ( multdiv_operand_a_i   ),
+        .op_b_i             ( multdiv_operand_b_i   ),
+        .alu_operand_a_o    ( multdiv_alu_operand_a ),
+        .alu_operand_b_o    ( multdiv_alu_operand_b ),
+        .alu_adder_ext_i    ( alu_adder_result_ext  ),
+        .alu_adder_i        ( alu_adder_result_ex_o ),
+        .equal_to_zero      ( alu_is_equal_result   ),
+        .valid_o            ( multdiv_valid         ),
+        .multdiv_result_o   ( multdiv_result        )
+    );
+  end else if (MultiplierImplementation == "single-cycle") begin: gen_multdiv_single_cycle
+    ibex_multdiv_fast #(
+        .SingleCycleMultiply(1)
+    ) multdiv_i (
         .clk_i              ( clk_i                 ),
         .rst_ni             ( rst_ni                ),
         .mult_en_i          ( mult_en_i             ),

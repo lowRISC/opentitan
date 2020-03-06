@@ -10,7 +10,13 @@
  *
  * * 0x0 - CHAR_OUT_ADDR - [7:0] of write data output via output_char DPI call
  * and SimOutputManager (see dv/common/cpp/sim_output_manager.cc)
- * * 0x4 - SIM_CTRL_ADDR - Write 1 to bit 0 to halt sim
+ *
+ * * 0x8 - SIM_CTRL_ADDR - Write 1 to bit 0 to halt sim
+ *
+ * The slightly odd spacing is because we also use SIM_CTRL_ADDR when
+ * simulating simple_system code with Spike, which requires the address to be
+ * 64-bit aligned.
+ *
  */
 
 module simulator_ctrl #(
@@ -33,7 +39,7 @@ module simulator_ctrl #(
 );
 
   localparam CHAR_OUT_ADDR = 0;
-  localparam SIM_CTRL_ADDR = 1;
+  localparam SIM_CTRL_ADDR = 2;
 
   logic [7:0] ctrl_addr;
   logic [2:0] sim_finish = 3'b000;

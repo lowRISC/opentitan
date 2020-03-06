@@ -61,9 +61,10 @@ file built as described above. Use
 `./examples/sw/simple_system/hello_test/hello_test.elf` to run the `hello_test`
 binary.
 
-Pass `-t` to get an FST trace of execution that be viewed with [GTKWave](http://gtkwave.sourceforge.net/)
-If using the `hello_test` binary the simulator will halt itself, outputting some
-simulation statistics:
+Pass `-t` to get an FST trace of execution that can be viewed with
+[GTKWave](http://gtkwave.sourceforge.net/). If using the `hello_test`
+binary the simulator will halt itself, outputting some simulation
+statistics:
 
 ```
 Simulation statistics
@@ -130,7 +131,7 @@ binary.
 | Address             | Description                                                                                            |
 |---------------------|--------------------------------------------------------------------------------------------------------|
 | 0x20000             | ASCII Out, write ASCII characters here that will get output to the log file                            |
-| 0x20004             | Simulator Halt, write 1 here to halt the simulation                                                    |
+| 0x20008             | Simulator Halt, write 1 here to halt the simulation                                                    |
 | 0x30000             | RISC-V timer `mtime` register                                                                          |
 | 0x30004             | RISC-V timer `mtimeh` register                                                                         |
 | 0x30008             | RISC-V timer `mtimecmp` register                                                                       |

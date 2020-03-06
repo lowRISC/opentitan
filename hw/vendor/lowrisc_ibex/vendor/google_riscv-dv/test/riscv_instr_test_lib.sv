@@ -52,7 +52,9 @@ class riscv_ml_test extends riscv_instr_base_test;
     cfg.init_privileged_mode = MACHINE_MODE;
     cfg.init_privileged_mode.rand_mode(0);
     cfg.enable_unaligned_load_store = 1'b1;
+    cfg.addr_translaction_rnd_order_c.constraint_mode(0);
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
+	cfg.addr_translaction_rnd_order_c.constraint_mode(1);
     `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s",
                     cfg.sprint()), UVM_LOW)
   endfunction

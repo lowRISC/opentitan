@@ -23,16 +23,16 @@
 class riscv_page_table_entry#(satp_mode_t MODE = SV39) extends uvm_object;
 
   // Note that only SV32, SV39, SV48 are supported
-  parameter PPN0_WIDTH  = (MODE == SV32) ? 10 : 9;
-  parameter PPN1_WIDTH  = (MODE == SV32) ? 12 : 9;
-  parameter PPN2_WIDTH  = (MODE == SV39) ? 26 : ((MODE == SV48) ? 9 : 1);
-  parameter PPN3_WIDTH  = (MODE == SV48) ? 9  : 1;
-  parameter RSVD_WIDTH  = (MODE == SV32) ? 1  : 10;
-  parameter VPN_WIDTH   = (MODE == SV32) ? 10 : 9;
+  parameter int PPN0_WIDTH  = (MODE == SV32) ? 10 : 9;
+  parameter int PPN1_WIDTH  = (MODE == SV32) ? 12 : 9;
+  parameter int PPN2_WIDTH  = (MODE == SV39) ? 26 : ((MODE == SV48) ? 9 : 1);
+  parameter int PPN3_WIDTH  = (MODE == SV48) ? 9  : 1;
+  parameter int RSVD_WIDTH  = (MODE == SV32) ? 1  : 10;
+  parameter int VPN_WIDTH   = (MODE == SV32) ? 10 : 9;
   // Spare bits in virtual address = XLEN - used virtual address bits
-  parameter VADDR_SPARE = (MODE == SV32) ? 0  : (MODE == SV39) ? 25 : 16;
+  parameter int VADDR_SPARE = (MODE == SV32) ? 0  : (MODE == SV39) ? 25 : 16;
   // Virtual address bit width
-  parameter VADDR_WIDTH = (MODE == SV32) ? 31 : (MODE == SV39) ? 38 : 48;
+  parameter int VADDR_WIDTH = (MODE == SV32) ? 31 : (MODE == SV39) ? 38 : 48;
 
   rand bit                    v;     // PTE is valid
   rand pte_permission_t       xwr;   // PTE execute-write-read permission
