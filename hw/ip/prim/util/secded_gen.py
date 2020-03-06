@@ -8,6 +8,8 @@ Current version doesn't optimize Fan-In. It uses Hsiao code (modified version
 of Hamming code + parity). Please refer https://arxiv.org/pdf/0803.1217.pdf
 """
 
+# TODO: Add FPV assertions in the encoder/decoder module
+
 import argparse
 import itertools
 import logging as log
@@ -51,23 +53,60 @@ def ideal_fanin(k, m):
     return fanin
 
 
-def print_comb(n, k, m, cur_m, codes, start_cnt):
+def calc_fanin(width, codes):
+    """Sum the ones in a column"""
+    fanins = [0] * width
+    log.info("Calc Code: {}".format(codes))
+    for i in codes:
+        for e in i:
+            fanins[e] += 1
+
+    return fanins
+
+
+def print_comb(n,
+               k,
+               m,
+               cur_m,
+               codes,
+               start_cnt,
+               max_width=100,
+               prefix="",
+               first_indent=0):
+    """Print XOR comb.
+
+    @param[max_width]    Maximum Width of str
+    @param[prefix]       The prepend string at the first line
+    @param[first_indent] The number of character that indented at the first line
+        e.g. first_indent := 2
+            {prefix}in[nn] ...
+                  ^ in[nn] ^ in[nn]
+
+    result:
+        {prefix}in[nn] ^ ... in[nn]
+                ^ in[nn] ^ ... in[nn];
+    """
     outstr = ""
+    line = prefix
+    prepend_len = len(prefix)
     cnt = start_cnt
     first = True
     for j in range(k):
-        if cnt == 7:
-            cnt = 0
-            outstr += "\n"
-            outstr += "                 "
-
+        temp_str = ""
         if cur_m in codes[j]:
             if not first:
-                outstr += " ^"
+                temp_str += " ^"
             if first:
                 first = False
-            cnt += 1
-            outstr += " in[%d]" % (j)
+            temp_str += " in[%d]" % (j)
+            temp_len = len(temp_str)
+
+            if len(line) + temp_len > max_width:
+                outstr += line + "\n"
+                line = ' ' * (prepend_len - first_indent) + temp_str
+            else:
+                line += temp_str
+    outstr += line + ";\n"
     return outstr
 
 
@@ -78,9 +117,8 @@ def print_enc(n, k, m, codes):
 
     for i in range(m):
         # Print parity computation
-        outstr += "  assign out[%d] =" % (i + k)
-        outstr += print_comb(n, k, m, i, codes, 0)
-        outstr += " ;\n"
+        outstr += print_comb(n, k, m, i, codes, 0, 100,
+                             "  assign out[%d] =" % (i + k), 2)
     return outstr
 
 
@@ -94,11 +132,10 @@ def print_dec(n, k, m, codes):
     outstr += "\n"
     outstr += "  // Syndrome calculation\n"
     for i in range(m):
-        outstr += "  assign syndrome_o[%d] = in[%d] ^ " % (i, k + i)
-
         # Print combination
-        outstr += print_comb(n, k, m, i, codes, 1)
-        outstr += " ;\n"
+        outstr += print_comb(n, k, m, i, codes, 1, 100,
+                             "  assign syndrome_o[%d] = in[%d] ^" % (i, k + i),
+                             len(" in[%d] ^" % (k + i)) + 2)
 
     outstr += "\n"
     outstr += "  // Corrected output calculation\n"
@@ -177,28 +214,72 @@ def main():
     fanin_ideal = ideal_fanin(k, m)
     log.info("Ideal Fan-In value: %d" % fanin_ideal)
 
+    # Each entry represents a row in below parity matrix
+    # Entry is tuple and the value inside is the position of ones
+    # e.g. (0,1,2) in m:=7
+    # row -> [1 1 1 0 0 0 0]
     codes = []
+
+    ## Find code matrix =======================================================
+    # This is main part to find the parity matrix.
+    # For example, find SECDED for 4bit message is to find 3x4 matrix as below
+    # | 1 0 0 0 x x x |
+    # | 0 1 0 0 x x x |
+    # | 0 0 1 0 x x x |
+    # | 0 0 0 1 x x x |
+    # Then message _k_ X matrix_code ==> original message with parity
+    #
+    # Make a row to have even number of 1 including the I matrix.
+    # This helps to calculate the syndrom at the decoding stage.
+    # To reduce the max fan-in, Starting with smallest number 3.
+    # the number means the number of one in a row.
+    # Small number of ones means smaller fan-in overall.
 
     for step in range(3, m + 1, 2):
         # starting from 3 as I matrix represents data
         # Increased by 2 as number of 1 should be even in a row (odd excluding I)
 
-        # get the list of combinations
+        # get the list of combinations [0, .., m-1] with `step`
+        # e.g. step := 3 ==> [(0,1,2), (0,1,3), ... ]
         candidate = list(itertools.combinations(range(m), step))
-
-        # Let's shuffle
-        random.shuffle(candidate)
 
         if len(candidate) <= required_row:
             # we need more round use all of them
             codes.extend(candidate)
             required_row -= len(candidate)
         else:
-            # we can completed in this round
-            # but search lowest fan-in codes
-            # at this time, just pick lowest
-            codes.extend(candidate[0:required_row])
-            required_row = 0
+            ## Find optimized fan-in ==========================================
+
+            # Calculate each row fan-in with current
+            fanins = calc_fanin(m, codes)
+            while required_row != 0:
+                # Let's shuffle
+                # Shuffling makes the sequence randomized --> it reduces the
+                # fanin as the code takes randomly at the end of the round
+
+                # TODO: There should be a clever way to find the subset without
+                # random retrying.
+                # Suggested this algorithm
+                #    https://en.wikipedia.org/wiki/Assignment_problem
+                random.shuffle(candidate)
+
+                # Take a subset
+                subset = candidate[0:required_row]
+
+                subset_fanins = calc_fanin(m, subset)
+                # Check if it exceeds Ideal Fan-In
+                ideal = True
+                for i in range(m):
+                    if fanins[i] + subset_fanins[i] > fanin_ideal:
+                        # Exceeded. Retry
+                        ideal = False
+                        break
+
+                if ideal:
+                    required_row = 0
+
+            # Append to the code matrix
+            codes.extend(subset)
 
         if required_row == 0:
             # Found everything!
