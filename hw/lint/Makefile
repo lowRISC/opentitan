@@ -34,6 +34,7 @@ IPS ?=  ip-aes                 \
         ip-usbdev              \
         ip-usb_fs_nb_pe        \
         ip-usbuart             \
+        ip-rstmgr              \
         tlul-socket_1n         \
         tlul-socket_m1         \
         tlul-adapter_reg       \

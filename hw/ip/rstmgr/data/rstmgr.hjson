@@ -1,0 +1,159 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// TODO: This module is only a draft implementation that covers most of the rstmgr
+// functoinality but is incomplete
+
+# RSTMGR register template
+#
+{
+  name: "RSTMGR",
+  clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_main_i",
+    "clk_fixed_i",
+    "clk_usb_i"
+  ],
+  bus_device: "tlul",
+  regwidth: "32",
+  param_list: [
+  ],
+
+  // Define rstmgr struct package
+  inter_signal_list: [
+    { struct:  "pwr_rst",    // rstmgr_req_t, rstmgr_rsp_t
+      type:    "req_rsp",
+      name:    "pwr",        // resets_o (req), resets_i (rsp)
+      act:     "responder",
+      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+    },
+
+    { struct:  "rstmgr_out",
+      type:    "broadcast",
+      name:    "rstmgr",
+      act:     "requester",
+      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+    },
+
+    { struct:  "rstmgr_ast",
+      type:    "broadcast",
+      name:    "ast",
+      act:     "receiver",
+      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+    },
+
+    { struct:  "rstmgr_cpu",
+      type:    "broadcast",
+      name:    "cpu",
+      act:     "receiver",
+      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+    },
+
+    { struct:  "rstmgr_peri",
+      type:    "broadcast",
+      name:    "peri",
+      act:     "receiver",
+      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+    }
+  ],
+
+  registers: [
+    { name: "RESET_INFO",
+      desc: '''
+            Device reset reason.
+            ''',
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+            bits: "4:0",
+            name: "CAUSE",
+            resval: 1,
+            desc: '''Indicates reset cause.  The bits below are not mutually exclusive, and multiple
+            bits can be set at the same time.'''
+            enum: [
+             {value: "0x1",  name: "por",              desc: "Indicates when a device has reset due to power up"},
+             {value: "0x2",  name: "low_power_exit",   desc: "Indicates when a device has reset due low power exit"},
+             {value: "0x4",  name: "watchdog",         desc: "Indicates when a device has reset due to watchdog"},
+             {value: "0x8",  name: "escalation",       desc: "Indicates when a device has reset due to security gescalation"},
+             {value: "0x10", name: "Non-debug-module", desc: "Indicates when a device has reset due to non-debug-module request"},
+            ]
+        }
+      ]
+    },
+
+    ########################
+    # These registers below should be templatized and generated
+    ########################
+
+    { name: "SPI_DEVICE_REGEN",
+      desc: '''
+            Register write enable for spi_device reset.
+            ''',
+      swaccess: "rw1c",
+      hwaccess: "none",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When 1, rst_spi_device_n is software programmable.
+            '''
+            resval: 1,
+        },
+      ]
+    },
+
+    { name: "USB_REGEN",
+      desc: '''
+            Register write enable for usb reset.
+            ''',
+      swaccess: "rw1c",
+      hwaccess: "none",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When 1, rst_usb_n is software programmable.
+            '''
+            resval: 1,
+        },
+      ]
+    },
+
+    { name: "RST_SPI_DEVICE_N",
+      regwen:  "SPI_DEVICE_REGEN",
+      desc: '''
+            Software reset control for spi device
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When set to 0, spi_device is held in reset.  This bit can only be
+            programmed when spi_device_regen is 1.
+            '''
+            resval: 1,
+        },
+      ]
+    },
+
+    { name: "RST_USB_N",
+      regwen:  "USB_REGEN",
+      desc: '''
+            Software reset control for usb
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When set to 0, usb is held in reset. This bit can only be
+            programmed when usb_regen is 1.
+            '''
+            resval: 1,
+        },
+      ]
+    }
+  ]
+}
