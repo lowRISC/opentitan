@@ -19,10 +19,8 @@ class chip_common_vseq extends chip_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    // keep sck on - needed for csr tests since some csrs are flopped on sck
     // Select SPI interface.
     cfg.jtag_spi_n_vif.drive(1'b0);
-    cfg.m_spi_agent_cfg.sck_on = 1'b1;;
   endtask
 
   virtual task body();

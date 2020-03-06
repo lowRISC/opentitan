@@ -10,12 +10,6 @@ class spi_device_common_vseq extends spi_device_base_vseq;
     num_trans inside {[1:3]};
   }
 
-  virtual task pre_start();
-    super.pre_start();
-    // keep sck on - needed for csr tests since some csrs are flopped on sck
-    cfg.m_spi_agent_cfg.sck_on = 1'b1;;
-  endtask
-
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
