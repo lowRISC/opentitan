@@ -183,7 +183,8 @@ module i2c_fsm (
         ClockLow, SetupBit, ClockPulse, HoldBit,
         ClockLowAck, SetupDevAck, ClockPulseAck, HoldDevAck,
         ReadClockLow, ReadSetupBit, ReadClockPulse, ReadHoldBit,
-        HostClockLowAck, HostSetupBitAck, HostClockPulseAck, HostHoldBitAck
+        HostClockLowAck, HostSetupBitAck, HostClockPulseAck, HostHoldBitAck,
+        PopFmtFifoCont
   } state_e;
 
   state_e state_q, state_d;
@@ -365,7 +366,13 @@ module i2c_fsm (
         scl_temp = 1'b1;
         if (sda_i == 0) event_sda_interference_o = 1'b1;
       end
-      // PopFmtFifo: populates fmt_fifo
+      // PopFmtFifoCont: populates fmt_fifo and continues
+      PopFmtFifoCont : begin
+        host_idle_o = 1'b0;
+        scl_temp = 1'b0;
+        fmt_fifo_rready_o = 1'b1;
+      end
+      // PopFmtFifo: populates fmt_fifo and goes to idle
       PopFmtFifo : begin
         host_idle_o = 1'b0;
         fmt_fifo_rready_o = 1'b1;
@@ -508,7 +515,7 @@ module i2c_fsm (
             load_tcount = 1'b1;
             tcount_sel = tSetupStop;
           end else begin
-            state_d = PopFmtFifo;
+            state_d = PopFmtFifoCont;
             load_tcount = 1'b1;
             tcount_sel = tNoDelay;
           end
@@ -589,7 +596,7 @@ module i2c_fsm (
               load_tcount = 1'b1;
               tcount_sel = tSetupStop;
             end else begin
-              state_d = PopFmtFifo;
+              state_d = PopFmtFifoCont;
               load_tcount = 1'b1;
               tcount_sel = tNoDelay;
             end
@@ -619,7 +626,33 @@ module i2c_fsm (
         end
       end
 
-      // PopFmtFifo: populates fmt_fifo
+      // PopFmtFifoCont: populates fmt_fifo and continues
+      PopFmtFifoCont : begin
+        if (!host_enable_i) begin
+          state_d = Idle;
+          load_tcount = 1'b1;
+          tcount_sel = tNoDelay;
+        end else if (!fmt_fifo_rvalid_i) begin
+          state_d = Idle;
+          load_tcount = 1'b1;
+          tcount_sel = tNoDelay;
+        end else if (fmt_flag_read_bytes_i) begin
+          byte_clr = 1'b1;
+          state_d = ReadClockLow;
+          load_tcount = 1'b1;
+          tcount_sel = tClockLow;
+        end else if (fmt_flag_start_before_i) begin
+          state_d = SetupStart;
+          load_tcount = 1'b1;
+          tcount_sel = tSetupStart;
+        end else begin
+          state_d = ClockLow;
+          load_tcount = 1'b1;
+          tcount_sel = tClockLow;
+        end
+      end
+
+      // PopFmtFifo: populates fmt_fifo and goes to idle
       PopFmtFifo : begin
         state_d = Idle;
         load_tcount = 1'b1;
