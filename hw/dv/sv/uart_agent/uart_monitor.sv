@@ -192,4 +192,5 @@ class uart_monitor extends dv_base_monitor#(
       obj_raised[dir] = 1'b0;
     end
   endfunction
+
 endclass

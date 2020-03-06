@@ -24,6 +24,10 @@
  */
 typedef enum device_type {
   /**
+   * Represents "DV", i.e. running th test in a DV simulation testbench.
+   */
+  kDeviceSimDV,
+  /**
    * Represents the "Verilator" device, i.e., a synthesis of the OpenTitan
    * design by Verilator into C++.
    */

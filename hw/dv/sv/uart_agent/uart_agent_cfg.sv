@@ -16,6 +16,11 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   bit en_parity;
   bit odd_parity;
 
+  // Logger settings.
+  bit en_logger         = 1'b0; // enable logger on tx
+  bit use_rx_for_logger = 1'b0; // use rx instead of tx
+  string logger_msg_id  = "UART_LOGGER";
+
   // reset is controlled at upper seq-level as no reset pin on uart interface
   bit under_reset;
 
@@ -23,10 +28,15 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   virtual uart_if vif;
 
   `uvm_object_utils_begin(uart_agent_cfg)
-    `uvm_field_int(is_active,    UVM_DEFAULT)
-    `uvm_field_int(en_cov,       UVM_DEFAULT)
-    `uvm_field_int(en_rx_checks, UVM_DEFAULT)
-    `uvm_field_int(en_tx_checks, UVM_DEFAULT)
+    `uvm_field_int(is_active,     UVM_DEFAULT)
+    `uvm_field_int(en_cov,        UVM_DEFAULT)
+    `uvm_field_int(en_rx_checks,  UVM_DEFAULT)
+    `uvm_field_int(en_tx_checks,  UVM_DEFAULT)
+    `uvm_field_int(en_tx_monitor, UVM_DEFAULT)
+    `uvm_field_int(en_rx_monitor, UVM_DEFAULT)
+    `uvm_field_int(en_parity,     UVM_DEFAULT)
+    `uvm_field_int(odd_parity,    UVM_DEFAULT)
+    `uvm_field_enum(baud_rate_e, baud_rate, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -55,4 +65,5 @@ class uart_agent_cfg extends dv_base_agent_cfg;
       en_tx_monitor = 1;
     end
   endfunction
+
 endclass

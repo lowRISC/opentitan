@@ -53,7 +53,7 @@ sw_build: pre_run
 ifneq (${sw_name},)
 	# Initialize meson build system.
 	cd ${proj_root} && \
-		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh
+		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh -f
 	# Compile boot rom code and generate the image.
 	ninja -C ${sw_build_dir}/build-out \
 		sw/device/boot_rom/boot_rom_export_${sw_build_device}

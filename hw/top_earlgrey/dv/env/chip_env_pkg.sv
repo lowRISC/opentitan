@@ -64,4 +64,5 @@ package chip_env_pkg;
   `include "chip_scoreboard.sv"
   `include "chip_env.sv"
   `include "chip_vseq_list.sv"
+
 endpackage

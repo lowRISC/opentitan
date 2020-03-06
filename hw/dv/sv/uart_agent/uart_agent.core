@@ -18,6 +18,7 @@ filesets:
       - uart_driver.sv: {is_include_file: true}
       - uart_monitor.sv: {is_include_file: true}
       - uart_sequencer.sv: {is_include_file: true}
+      - uart_logger.sv: {is_include_file: true}
       - uart_agent.sv: {is_include_file: true}
       - seq_lib/uart_seq_list.sv: {is_include_file: true}
       - seq_lib/uart_base_seq.sv: {is_include_file: true}
