@@ -22,21 +22,6 @@ class i2c_common_vseq extends i2c_base_vseq;
     run_common_vseq_wrapper(num_trans); // inherit from cip_base_vseq.sv
   endtask : body
 
-  // function to add csr exclusions of the given type using the csr_excl_item item
-  virtual function void add_csr_exclusions(string           csr_test_type,
-                                           csr_excl_item    csr_excl,
-                                           string           scope = "ral");
-
-    // intr_state is affected by writes to other csrs
-    csr_excl.add_excl({scope, ".", "intr_state"}, CsrExclCheck);
-    // RO registers - exclude init and write-read check
-    csr_excl.add_excl({scope, ".", "status"}, CsrExclWriteCheck);
-    csr_excl.add_excl({scope, ".", "fifo_status"}, CsrExclWriteCheck);
-    // RO registers - exclude init and write-read check
-    csr_excl.add_excl({scope, ".", "val"}, CsrExclCheck);
-    csr_excl.add_excl({scope, ".", "rdata"}, CsrExclCheck);
-  endfunction : add_csr_exclusions
-
   task post_start();
     `uvm_info(`gfn, "stop simulation", UVM_DEBUG)
   endtask : post_start
