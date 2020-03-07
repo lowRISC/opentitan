@@ -25,10 +25,14 @@ class Deploy():
     Abstraction for deploying builds and runs.
     """
 
+    # Timer.
+    num_secs = 0
+
     # Maintain a list of dispatched items.
     dispatch_counter = 0
 
     # Misc common deploy settings.
+    print_legend = True
     print_interval = 5
     max_parallel = 16
     max_odirs = 5
@@ -52,6 +56,7 @@ class Deploy():
         self.sim_cfg = sim_cfg
 
         # Common vars
+        self.identifier = ""
         self.cmd = ""
         self.odir = ""
         self.log = ""
@@ -123,6 +128,9 @@ class Deploy():
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__)
 
+        # Set identifier.
+        self.identifier = self.sim_cfg.name + ":" + self.name
+
         # Set the command, output dir and log
         self.odir = getattr(self, self.target + "_dir")
         # Set the output dir link name to the basename of odir (by default)
@@ -170,7 +178,7 @@ class Deploy():
                                             stderr=f,
                                             env=self.exports)
             self.log_fd = f
-            self.status = "."
+            self.status = "D"
             Deploy.dispatch_counter += 1
         except IOError:
             log.error('IO Error: See %s', self.log)
@@ -279,7 +287,7 @@ class Deploy():
                 log.error("Cmd \"%s\" could not be run", cmd)
 
     def get_status(self):
-        if self.status != ".": return
+        if self.status != "D": return
         if self.process.poll() is not None:
             self.log_fd.close()
             if self.process.returncode != 0:
@@ -295,8 +303,8 @@ class Deploy():
             else:
                 self.set_status()
 
-            log.log(VERBOSE, "Item %s has completed execution: %s", self.name,
-                    self.status)
+            log.debug("Item %s has completed execution: %s", self.name,
+                      self.status)
             Deploy.dispatch_counter -= 1
             self.link_odir()
             del self.process
@@ -304,95 +312,116 @@ class Deploy():
     @staticmethod
     def deploy(items):
         dispatched_items = []
+        queued_items = items
+
+        if Deploy.print_legend:
+            # Print legend once at the start of the run.
+            log.info("[legend]: [Q: queued, D: dispatched, " + \
+                     "P: passed, F: failed, K: killed, T: total]")
+            Deploy.print_legend = False
+
+        def get_etime():
+            # Convert num_secs to hh:mm:ss
+            hh = Deploy.num_secs // (3600)
+            ss = Deploy.num_secs % (3600)
+            mm = ss // 60
+            ss %= 60
+            return "%02i:%02i:%02i" % (hh, mm, ss)
 
         def dispatch_items(items):
             item_names = {}
             for item in items:
                 if item.target not in item_names.keys():
-                    item_names[item.target] = "["
+                    item_names[item.target] = ""
                 if item.status is None:
-                    item_names[item.target] += "  "
-                    if log.getLogger().isEnabledFor(VERBOSE):
-                        item_names[
-                            item.target] += item.name + ":" + item.log + ",\n"
-                    else:
-                        item_names[item.target] += item.odir_ln + ", "
+                    item_names[item.target] += item.identifier + ", "
                     item.dispatch_cmd()
-                    dispatched_items.append(item)
 
             for target in item_names.keys():
-                if item_names[target] != "[":
-                    item_names[target] = " [" + item_names[target][3:]
-                    item_names[target] = item_names[target][:-2] + "]"
-                    log.info("[dvsim]: %s:\n%s", target, item_names[target])
+                if item_names[target] != "":
+                    item_names[target] = "  [" + item_names[target][:-2] + "]"
+                    log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s",
+                            get_etime(), target, item_names[target])
 
-        # Dispatch the given items
-        dispatch_items_queue = []
-        if len(items) > Deploy.max_parallel:
-            dispatch_items(items[0:Deploy.max_parallel])
-            dispatch_items_queue = items[Deploy.max_parallel:]
-        else:
-            dispatch_items(items)
+        def track_progress(status, print_status):
+            all_done = True
+            for target in status.keys():
+                if "target_done" in status[target].keys(): continue
+                stats = {}
+                stats["Q"] = 0
+                stats["D"] = 0
+                stats["P"] = 0
+                stats["F"] = 0
+                stats["K"] = 0
+                stats["T"] = 0
+                target_done = False
+                for item in status[target].keys():
+                    stats[status[target][item]] += 1
+                    stats["T"] += 1
+                if stats["Q"] == 0 and stats["D"] == 0:
+                    target_done = True
+                all_done &= target_done
+
+                if print_status:
+                    width = "0{}d".format(len(str(stats["T"])))
+                    msg = "["
+                    for s in stats.keys():
+                        msg += s + ": {:{}}, ".format(stats[s], width)
+                    msg = msg[:-2] + "]"
+                    log.info("[%s]: [%s]: %s", get_etime(), target, msg)
+                    if target_done: status[target]["target_done"] = True
+            return all_done
 
         all_done = False
-        num_secs = 0
         status = {}
-        status_str = {}
-        status_str_prev = {}
+
+        # Queue all items
+        for item in queued_items:
+            if item.target not in status.keys():
+                status[item.target] = {}
+            status[item.target][item] = "Q"
 
         while not all_done:
-            time.sleep(1)
-            num_secs += 1
-            trig_print = ((num_secs % Deploy.print_interval) == 0)
-            for item in dispatched_items:
-                if item.target not in status.keys():
-                    status[item.target] = {}
-                if item not in status[item.target].keys():
-                    status[item.target][item] = ""
-
-                if item.status == ".": item.get_status()
-                if item.status != status[
-                        item.target][item] and item.status != ".":
-                    trig_print = True
-                    if item.status != "P":
-                        # Kill sub items
-                        item.set_sub_status("K")
-                    dispatch_items_queue.extend(item.sub)
-                status[item.target][item] = item.status
-
-            # Dispatch more from the queue
-            if len(dispatch_items_queue) == 0:
-                all_done = True
-            else:
+            # Dispatch items from the queue as slots free up.
+            if len(queued_items) != 0:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
                 if num_slots > 0:
-                    if len(dispatch_items_queue) > num_slots:
-                        dispatch_items(dispatch_items_queue[0:num_slots])
-                        dispatch_items_queue = dispatch_items_queue[num_slots:]
+                    if len(queued_items) > num_slots:
+                        dispatch_items(queued_items[0:num_slots])
+                        dispatched_items.extend(queued_items[0:num_slots])
+                        queued_items = queued_items[num_slots:]
                     else:
-                        dispatch_items(dispatch_items_queue)
-                        dispatch_items_queue = []
+                        dispatch_items(queued_items)
+                        dispatched_items.extend(queued_items)
+                        queued_items = []
 
-            status_str_prev = status_str.copy()
-            status_str = {}
-            for target in status.keys():
-                if target not in status_str.keys(): status_str[target] = "["
-                for item in status[target].keys():
-                    if status[target][item] is not None:
-                        status_str[target] += status[target][item]
-                        if status[target][item] == ".":
-                            all_done = False
-                status_str[target] += "]"
+            # Advance time by 1s.
+            time.sleep(1)
+            Deploy.num_secs += 1
+            print_status = ((Deploy.num_secs % Deploy.print_interval) == 0)
 
-            # Print the status string periodically
-            if trig_print:
-                for target in status_str.keys():
-                    if (target in status_str_prev.keys()) and \
-                       (status_str[target] == status_str_prev[target]) and \
-                       (status_str[target].find(".") == -1):
-                        continue
-                    log.info("[dvsim]: [%06ds] [%s]: %s", num_secs, target,
-                             status_str[target])
+            # Get status of dispatched items.
+            for item in dispatched_items:
+                if item.status == "D": item.get_status()
+                if item.status != status[item.target][item]:
+                    print_status = True
+                    if item.status != "D":
+                        if item.status != "P":
+                            # Kill its sub items if item did not pass.
+                            item.set_sub_status("K")
+                        log.log(VERBOSE, "[%s]: [%s]: [status]\n  [%s: %s]",
+                                get_etime(), item.target, item.identifier,
+                                item.status)
+                        # Queue items' sub-items if it is done.
+                        queued_items.extend(item.sub)
+                        for sub_item in item.sub:
+                            if sub_item.target not in status.keys():
+                                status[sub_item.target] = {}
+                            status[sub_item.target][sub_item] = "Q"
+                status[item.target][item] = item.status
+
+            # Check if we are done and print the status periodically.
+            all_done = track_progress(status, print_status)
 
 
 class CompileSim(Deploy):
@@ -525,8 +554,8 @@ class RunTest(Deploy):
             "run_opts": False,
             "sw_dir": False,
             "sw_name": False,
-            "sw_build_device":False,
-            "sw_build_dir":False,
+            "sw_build_device": False,
+            "sw_build_dir": False,
             "run_dir": False,
             "run_cmd": False,
             "run_opts": False
@@ -558,16 +587,21 @@ class RunTest(Deploy):
         # Start fail message construction
         self.fail_msg = "\n**TEST:** {}, ".format(self.name)
         self.fail_msg += "**SEED:** {}<br>\n".format(self.seed)
-        log_sub_path = self.log.replace(self.sim_cfg.scratch_root + '/', '')
-        self.fail_msg += "**LOG:** {}<br>\n".format(log_sub_path)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
 
         RunTest.items.append(self)
+
+    def __post_init__(self):
+        super().__post_init__()
+        # Set identifier.
+        self.identifier = self.sim_cfg.name + ":" + self.run_dir_name
 
     def get_status(self):
         '''Override base class get_status implementation for additional post-status
         actions.'''
         super().get_status()
-        if self.status not in [".", "P"]:
+        if self.status not in ["D", "P"]:
             # Delete the coverage data if available.
             if os.path.exists(self.cov_db_test_dir):
                 log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
