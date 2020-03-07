@@ -85,6 +85,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
                                   max_intr_timeout_cyc : intr_timeout_cyc[i];
         end
         cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
+        read_esc_status();
       end
 
       // read and check interrupt

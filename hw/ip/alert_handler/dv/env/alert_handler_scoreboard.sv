@@ -241,41 +241,62 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+        // process the csr req
+        // for write, update local variable and fifo at address phase
+        case (csr.get_name())
+          // add individual case item for each csr
+          "intr_test": begin
+             bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
+             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
+          end
+          "intr_state": begin
+            foreach (under_intr_classes[i]) begin
+              if (item.a_data[i]) under_intr_classes[i] = 0;
+            end
+          end
+          "classa_clr": clr_reset_esc_class(0);
+          "classb_clr": clr_reset_esc_class(1);
+          "classc_clr": clr_reset_esc_class(2);
+          "classd_clr": clr_reset_esc_class(3);
+          default: begin
+           //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+          end
+        endcase
       end
     end
 
     // process the csr req
-    // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-    if (write && channel == AddrChannel) begin
-      case (csr.get_name())
-        // add individual case item for each csr
-        "intr_test": begin
-           bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
-           void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
-        end
-        "intr_state": begin
-          foreach (under_intr_classes[i]) begin
-            if (item.a_data[i]) under_intr_classes[i] = 0;
-          end
-        end
-        "classa_clr": clr_reset_esc_class(0);
-        "classb_clr": clr_reset_esc_class(1);
-        "classc_clr": clr_reset_esc_class(2);
-        "classd_clr": clr_reset_esc_class(3);
-        default: begin
-         //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-        end
-      endcase
-    end
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (!write && channel == DataChannel) begin
-      if (do_read_check) begin
+    if (!write && do_read_check) begin
+      // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+      if (channel == DataChannel) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      end else begin
+        case (csr.get_name())
+          "classa_esc_cnt": begin
+            void'(ral.classa_esc_cnt.predict(.value(intr_timer_per_class[0]),
+                  .kind(UVM_PREDICT_READ)));
+          end
+          "classb_esc_cnt": begin
+            void'(ral.classb_esc_cnt.predict(.value(intr_timer_per_class[1]),
+                  .kind(UVM_PREDICT_READ)));
+          end
+          "classc_esc_cnt": begin
+            void'(ral.classc_esc_cnt.predict(.value(intr_timer_per_class[2]),
+                  .kind(UVM_PREDICT_READ)));
+          end
+          "classd_esc_cnt": begin
+            void'(ral.classd_esc_cnt.predict(.value(intr_timer_per_class[3]),
+                  .kind(UVM_PREDICT_READ)));
+          end
+          default: begin
+           //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+          end
+        endcase
       end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
 
@@ -286,24 +307,46 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int             class_i = i;
       automatic bit [TL_DW-1:0] timeout_cyc, class_ctrl;
       fork
-        forever @(under_intr_classes[class_i] && !under_esc_classes[class_i]) begin
-          // wait a clk for esc signal to go high, TODO: check if correct by read out status
-          @(cfg.clk_rst_vif.cb);
-          class_ctrl = get_class_ctrl(class_i);
-          if (class_ctrl[AlertClassCtrlEn] &&
-              (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
-            while (under_intr_classes[class_i] != 0) begin
+        begin : intr_sig_counter
+          forever @(under_intr_classes[class_i] && !under_esc_classes[class_i]) begin
+            // wait a clk for esc signal to go high
+            cfg.clk_rst_vif.wait_clks(1);
+            class_ctrl = get_class_ctrl(class_i);
+            if (class_ctrl[AlertClassCtrlEn] &&
+                (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
+              intr_timer_per_class[class_i] = 0;
+              // counter continues to increment if:
+              // interrupt is not cleared, and class is not under escalation by accum_alerts
+              while (under_intr_classes[class_i] != 0 && !under_esc_classes[class_i]) begin
+                @(cfg.clk_rst_vif.cb);
+                intr_timer_per_class[class_i] += 1;
+                timeout_cyc = get_class_timeout_cyc(class_i);
+                if (timeout_cyc != 0 && intr_timer_per_class[class_i] >= timeout_cyc &&
+                    !under_esc_classes[class_i]) begin
+                  predict_esc(class_i);
+                end
+              end
+              intr_timer_per_class[class_i] = 0;
+            end
+          end //end forever
+        end
+        begin : esc_phases_counter
+          forever @(under_esc_classes[class_i]) begin
+            for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
+              int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
+                                .get_mirrored_value();
               @(cfg.clk_rst_vif.cb);
-              intr_timer_per_class[class_i] += 1;
-              timeout_cyc = get_class_timeout_cyc(class_i);
-              if (timeout_cyc != 0 && intr_timer_per_class[class_i] > timeout_cyc &&
-                  !under_esc_classes[class_i]) begin
-                predict_esc(class_i);
+              intr_timer_per_class[class_i] = 1;
+              while (under_esc_classes[class_i] != 0 &&
+                     intr_timer_per_class[class_i] < phase_thresh) begin
+                @(cfg.clk_rst_vif.cb);
+                intr_timer_per_class[class_i] += 1;
               end
             end
+            @(cfg.clk_rst_vif.cb);
             intr_timer_per_class[class_i] = 0;
-          end
-        end // end forever
+          end // end forever
+        end
       join_none
     end
   endtask
@@ -329,6 +372,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     intr_timer_per_class[class_i] = 0;
     last_triggered_alert_per_class[class_i] = 0;
     under_intr_classes[class_i] = 0;
+    intr_timer_per_class[class_i] = 0;
     void'(reg_accum_cnts[class_i].predict(0));
   endfunction
 

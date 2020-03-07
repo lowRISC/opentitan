@@ -106,6 +106,11 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.classb_accum_cnt), .value(accum_cnt));
     csr_rd(.ptr(ral.classc_accum_cnt), .value(accum_cnt));
     csr_rd(.ptr(ral.classd_accum_cnt), .value(accum_cnt));
+
+    csr_rd(.ptr(ral.classa_esc_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classb_esc_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classc_esc_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classd_esc_cnt), .value(accum_cnt));
   endtask
 
   virtual task wait_alert_esc_handshake_done(int wait_clk_cycs_esc);
