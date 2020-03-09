@@ -53,7 +53,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         if (!sha_en) begin
           void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
           void'(ral.err_code.predict(.value(SwPushMsgWhenShaDisabled), .kind(UVM_PREDICT_DIRECT)));
-        end else if (hmac_start) begin
+        end else if (hmac_start && !under_reset) begin
           bit [7:0] bytes[4];
           bit [7:0] msg[];
           {<<byte{bytes}} = item.a_data;
