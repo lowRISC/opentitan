@@ -15,10 +15,13 @@ filesets:
       - common.waiver: {file_type: waiver}
       - ascentlint-config.tcl: {file_type: tclSource}
 
+  files_check_tool_requirements:
+    depend:
+     - lowrisc:tool:check_tool_requirements
+
 targets:
   default: &default_target
     filesets:
       - tool_verilator  ? (files_verilator)
       - tool_ascentlint ? (files_ascentlint)
-
-
+      - files_check_tool_requirements

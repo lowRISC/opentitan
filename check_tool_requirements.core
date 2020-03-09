@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tool:check_tool_requirements:0.1"
+description: "Check tool requirements"
+
+filesets:
+  files_check_tool_requirements:
+    files:
+      - ./util/check_tool_requirements.py : { copyto: util/check_tool_requirements.py }
+      - ./tool_requirements.py : { copyto: tool_requirements.py }
+
+scripts:
+  check_tool_requirements:
+    cmd:
+      - python3
+      - util/check_tool_requirements.py
+    # TODO: Use this syntax once https://github.com/olofk/fusesoc/issues/353 is
+    # fixed. Remove the filesets from the default target, and also remove the
+    # copyto.
+    #filesets:
+    #  - files_check_tool_requirements
+
+targets:
+  default:
+    filesets:
+      - files_check_tool_requirements
+    hooks:
+      pre_build:
+        - tool_verilator ? (check_tool_requirements)
