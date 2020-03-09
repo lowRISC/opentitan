@@ -49,9 +49,19 @@ ifneq (${sw_name},)
 	# Compile boot rom code and generate the image.
 	ninja -C ${sw_build_dir}/build-out \
 		sw/device/boot_rom/boot_rom_export_${sw_build_device}
+	# Extract the rom logs.
+	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
+		-e "${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.elf" \
+		-f .logs.fields -r .rodata .logs.strings .chip_info \
+		-n "rom" -o "${run_dir}"
 	# Compile the test sw code and generate the image.
 	ninja -C ${sw_build_dir}/build-out \
 		sw/device/${sw_dir}/${sw_name}_export_${sw_build_device}
+	# Extract the sw logs.
+	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
+		-e "${sw_build_dir}/build-out/sw/device/${sw_dir}/${sw_name}_${sw_build_device}.elf" \
+		-f .logs.fields -r .rodata .logs.strings \
+		-n "sw" -o "${run_dir}"
 	# Copy over the images to the run_dir.
 	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.vmem \
 		${run_dir}/rom.vmem

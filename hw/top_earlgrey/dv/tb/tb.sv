@@ -103,19 +103,30 @@ module tb;
     .IO_GP15          (gpio_pins[15])
   );
 
-  // connect sw_msg_monitor
-  bit                 sw_msg_monitor_valid;
-  bit [TL_AW-1:0]     sw_msg_monitor_sw_msg_addr;
+  // connect sw_logger_if
+  parameter string SwTypes[] = '{"rom", "sw"};
+  generate
+    for (genvar i = 0; i < 2; i++) begin: sw_logger_if_i
+      bit             sw_log_valid;
+      bit [TL_AW-1:0] sw_log_addr;
 
-  sw_msg_monitor_if sw_msg_monitor_if (
-    .clk              (`RAM_MAIN_HIER.clk_i),
-    .rst_n            (`RAM_MAIN_HIER.rst_ni),
-    .valid            (sw_msg_monitor_valid),
-    .addr_data        (`RAM_MAIN_HIER.wdata_i),
-    .sw_msg_addr      (sw_msg_monitor_sw_msg_addr)
-  );
-  assign sw_msg_monitor_valid = `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
-                                (`RAM_MAIN_HIER.addr_i == sw_msg_monitor_sw_msg_addr);
+      sw_logger_if sw_logger_if (
+        .clk          (`RAM_MAIN_HIER.clk_i),
+        .rst_n        (`RAM_MAIN_HIER.rst_ni),
+        .valid        (sw_log_valid),
+        .addr_data    (`RAM_MAIN_HIER.wdata_i),
+        .sw_log_addr  (sw_log_addr)
+      );
+      // TODO: RAM only looks at addr[15:2] - need to find a better way to capture it.
+      assign sw_log_valid = `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+                            (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
+
+      initial begin
+        uvm_config_db#(virtual sw_logger_if)::set(
+            null, "*.env", $sformatf("sw_logger_vif[%0s]", SwTypes[i]), sw_logger_if);
+      end
+    end
+  endgenerate
 
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
@@ -175,8 +186,6 @@ module tb;
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
-    uvm_config_db#(virtual sw_msg_monitor_if)::set(
-        null, "*.env", "sw_msg_monitor_vif", sw_msg_monitor_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:jtag_agent
       - lowrisc:dv:spi_agent
       - lowrisc:dv:mem_bkdr_if
-      - lowrisc:dv:sw_msg_monitor_if
+      - lowrisc:dv:sw_logger_if
     files:
       - chip_env_pkg.sv
       - chip_tl_seq_item.sv: {is_include_file: true}

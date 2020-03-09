@@ -17,14 +17,11 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   virtual pins_if#(1) jtag_spi_n_vif;
   virtual pins_if#(1) bootstrap_vif;
 
-  // sw msg monitor related
-  sw_msg_monitor_vif  sw_msg_monitor_vif;
-  // below values are constants, but made variables in case some test has different requirements
-  string              rom_image         = "rom.vmem";
-  string              rom_msg_data_file = "msg_data.txt";
-  string              sw_image          = "sw.vmem";
-  string              sw_msg_data_file  = "msg_data.txt";
-  bit [TL_AW-1:0]     sw_msg_addr       = 32'h1000fff4;
+  // sw logger related
+  string sw_types[]   = '{"rom", "sw"};
+  sw_logger_vif       sw_logger_vif[string];
+  string              sw_images[string];
+  string              sw_log_files[string];
 
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;
@@ -68,8 +65,14 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     m_cpu_d_tl_agent_cfg = tl_agent_cfg::type_id::create("m_cpu_d_tl_agent_cfg");
     m_cpu_d_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
     // initialize the mem_bkdr_if vifs we want for this chip
-    foreach(mems[mem]) begin
+    foreach (mems[mem]) begin
       mem_bkdr_vifs[mems[mem]] = null;
+    end
+
+    // initialize the sw_image names and log file names
+    foreach (sw_types[i]) begin
+      sw_images[sw_types[i]] = {sw_types[i], ".vmem"};
+      sw_log_files[sw_types[i]] = {sw_types[i], "_logs.txt"};
     end
   endfunction
 

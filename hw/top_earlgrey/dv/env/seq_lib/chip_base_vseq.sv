@@ -73,19 +73,20 @@ class chip_base_vseq extends dv_base_vseq #(
     cfg.m_uart_agent_cfg.set_baud_rate(BaudRate2Mbps);
 
     // Backdoor load memories.
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.rom_image);
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.sw_images["rom"]);
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
-
     // TODO: the location of the main execution image should be randomized for either bank in future
-    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_image);
+    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_images["sw"]);
     cpu_test_state = CpuTestRunning;
 
     // initialize the sw msg monitor
-    cfg.sw_msg_monitor_vif.sw_msg_addr = cfg.sw_msg_addr;
-    cfg.sw_msg_monitor_vif.add_sw_msg_data_files("rom", cfg.rom_msg_data_file);
-    cfg.sw_msg_monitor_vif.add_sw_msg_data_files("sw", cfg.sw_msg_data_file);
-    cfg.sw_msg_monitor_vif.ready();
+    foreach (cfg.sw_types[i]) begin
+      cfg.sw_logger_vif[cfg.sw_types[i]].sw_log_addr = SW_LOG_DV_ADDR;
+      cfg.sw_logger_vif[cfg.sw_types[i]].set_sw_log_file(cfg.sw_types[i],
+                                                         cfg.sw_log_files[cfg.sw_types[i]]);
+      cfg.sw_logger_vif[cfg.sw_types[i]].ready();
+    end
   endtask
 
   virtual task dut_shutdown();

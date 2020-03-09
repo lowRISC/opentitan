@@ -21,11 +21,15 @@ package chip_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
-  parameter         NUM_GPIOS   = 16;
+  parameter NUM_GPIOS = 16;
+
+  // SW constants
+  parameter bit [TL_AW-1:0] SW_LOG_DV_ADDR = 32'h1000fffc;
+  parameter bit [TL_AW-1:0] SW_TEST_STATUS_ADDR = 32'h1000fff8;
 
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual mem_bkdr_if           mem_bkdr_vif;
-  typedef virtual sw_msg_monitor_if     sw_msg_monitor_vif;
+  typedef virtual sw_logger_if          sw_logger_vif;
 
   // enum to indicate cpu test pass / fail status
   typedef enum bit [15:0] {
