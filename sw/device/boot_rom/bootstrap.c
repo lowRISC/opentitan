@@ -5,6 +5,7 @@
 #include "sw/device/boot_rom/bootstrap.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/flash_ctrl.h"
@@ -70,17 +71,12 @@ static int bootstrap_flash(void) {
   for (;;) {
     if (spid_bytes_available() >= sizeof(f)) {
       spid_read_nb(&f, sizeof(f));
-      uart_send_str("Processing frame no: ");
-      uart_send_uint(f.hdr.frame_num, 32);
-      uart_send_str(" exp no: ");
-      uart_send_uint(expected_frame_no, 32);
-      uart_send_str("\r\n");
+      LOG_INFO("Processing frame no: %d exp no: %d", f.hdr.frame_num,
+               expected_frame_no);
 
       if (FRAME_NO(f.hdr.frame_num) == expected_frame_no) {
         if (check_frame_hash(&f)) {
-          uart_send_str("Error: detected hash mismatch on frame: ");
-          uart_send_uint(f.hdr.frame_num, 32);
-          uart_send_str("\r\n");
+          LOG_ERROR("Detected hash mismatch on frame: %d", f.hdr.frame_num);
           spid_send(ack, sizeof(ack));
           continue;
         }
@@ -110,7 +106,7 @@ static int bootstrap_flash(void) {
       }
     }
   }
-  uart_send_str("bootstrap: DONE!\r\n");
+  LOG_INFO("bootstrap: DONE!");
   return 0;
 }
 
@@ -119,11 +115,11 @@ int bootstrap(void) {
     return 0;
   }
   // SPI device is only initialized in bootstrap mode.
-  uart_send_str("Bootstrap requested, initialising HW...\n");
+  LOG_INFO("Bootstrap requested, initialising HW...");
   spid_init();
   flash_init_block();
 
-  uart_send_str("HW initialisation completed, waiting for SPI input...\n");
+  LOG_INFO("HW initialisation completed, waiting for SPI input...");
   int rv = bootstrap_flash();
   if (rv) {
     rv |= erase_flash();

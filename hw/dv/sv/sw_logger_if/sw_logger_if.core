@@ -2,13 +2,13 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:sw_msg_monitor_if"
+name: "lowrisc:dv:sw_logger_if"
 description: "SW msg monitor interface (convert SW msg prints into SV)"
 
 filesets:
   files_dv:
     files:
-      - sw_msg_monitor_if.sv
+      - sw_logger_if.sv
     file_type: systemVerilogSource
 
 targets:

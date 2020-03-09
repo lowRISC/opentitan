@@ -21,22 +21,25 @@ MEMORY {
   flash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
 }
 
+/* Reserving 32 bytes at the top of the RAM for test utils. */
+_test_reserved_size = 0x20;
+
 /**
- * The stack starts at the end of RAM and grows down. It is zeroed out so a size
- * must be provided.
+ * The stack starts at the end of RAM right after the 32 reserved bytes and grows down.
+ * It is zeroed out so a size must be provided.
  */
-_stack_size = 0x2000; /* 8kb stack */
-_stack_start = ORIGIN(ram) + LENGTH(ram);
+_stack_size = 0x2000 - _test_reserved_size; /* ~8kb stack */
+_stack_start = ORIGIN(ram) + LENGTH(ram) - _test_reserved_size;
 _stack_end = _stack_start - _stack_size;
 
 SECTIONS {
   /**
-   * The flash header. This will eventually contain other stuff, like a 
+   * The flash header. This will eventually contain other stuff, like a
    * signature, but for now it's just the entry point at offset zero.
    */
   .flash_header ORIGIN(flash): ALIGN(4) {
-    /** 
-     * NOTE:ld scripts do not provide a mechanism to refer to ENTRY, 
+    /**
+     * NOTE:ld scripts do not provide a mechanism to refer to ENTRY,
      * so we just harcode the _start symbol.
      */
     LONG(_start)
@@ -86,17 +89,17 @@ SECTIONS {
   } > flash
 
   /**
-   * "Intitial data" section, the initial values of the mutable data section 
+   * "Intitial data" section, the initial values of the mutable data section
    * initialized at runtime.
-   */ 
+   */
   .idata : ALIGN(4) {
     _data_init_start = .;
   } > flash
 
-  /** 
+  /**
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
-   */ 
+   */
   .data ORIGIN(ram): AT(_data_init_start) ALIGN(4) {
     _data_start = .;
     __global_pointer$ = . + 2048;
@@ -142,5 +145,34 @@ SECTIONS {
    */
   .stabstr 0x0 (NOLOAD): {
     *(.stabstr)
+  }
+
+  /**
+   * The following sections are used by DV to implement logging in an
+   * alternate way, which enables simulation speed up by completely avoiding
+   * any string format processing or even the actual transmission of log data
+   * to a real peripheral.
+   *
+   * These sections are marked as dummy so that they can still be extracted
+   * using readelf or similar utilities. As such, the content in these sections
+   * is not relevant for the actual SW code and can be safely discarded.
+   */
+
+  /**
+   * The following section contains strings. Examples include file names where
+   * the log is invoked (using the __FILE__ preprocessor macro). To prevent
+   * address collisions, this must not coincide with the rodata section.
+   */
+  .logs.strings 0x80000000 (DSECT): {
+    *(.logs.strings)
+  }
+
+  /**
+   * The following section contains log fields constructed from the logs using
+   * the log_fields_t struct defined in sw/device/lib/base/log.h. The size of
+   * each log field is fixed - 20 bytes, which is used as the delimiter.
+   */
+  .logs.fields 0x10000 (DSECT): {
+    *(.logs.fields)
   }
 }

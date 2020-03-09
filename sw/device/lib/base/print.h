@@ -74,6 +74,11 @@ typedef struct buffer_sink {
  * Of course, providing arguments for formatting which are incompatible with a
  * given format specifier is Undefined Behavior.
  *
+ * Note that for logging in DV, the following script updates the format
+ * specifiers supported in C above and changes them to match the SystemVerilog
+ * language semantics: util/device_sw_utils/extract_sw_logs.py
+ * It also makes fixes as needed for custom speficiers such as %z.
+ *
  * @param format the format spec.
  * @param ... values to interpolate in the format spec.
  */

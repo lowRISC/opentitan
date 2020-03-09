@@ -30,7 +30,7 @@ void _boot_start(void) {
   uart_init(kUartBaudrate);
   base_set_stdout(uart_stdout);
 
-  base_printf(chip_info);
+  LOG_INFO("%s", chip_info);
 
   int bootstrap_err = bootstrap();
   if (bootstrap_err != 0) {

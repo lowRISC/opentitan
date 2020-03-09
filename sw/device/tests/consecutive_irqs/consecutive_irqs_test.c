@@ -43,11 +43,10 @@ static const buffer_sink_t kPolledUartSink = {
     .data = NULL, .sink = &polled_uart_sink_func,
 };
 
-#define LOG_FATAL(...)        \
-  do {                        \
-    LOG_ERROR(__VA_ARGS__);   \
-    base_printf("FAIL!\r\n"); \
-    abort();                  \
+#define LOG_FATAL_AND_ABORT(...) \
+  do {                           \
+    LOG_FATAL(__VA_ARGS__);      \
+    abort();                     \
   } while (false)
 
 /**
@@ -82,11 +81,11 @@ static void handler_uart_isr(const dif_irq_claim_data_t *data) {
       }
       break;
     default:
-      LOG_FATAL("ISR is not implemented!");
+      LOG_FATAL_AND_ABORT("ISR is not implemented!");
   }
 
   if (!dif_uart_irq_state_clear(uart, uart_irq)) {
-    LOG_FATAL("ISR failed to clear IRQ!");
+    LOG_FATAL_AND_ABORT("ISR failed to clear IRQ!");
   }
 }
 
@@ -102,19 +101,19 @@ void handler_irq_external(void) {
   // Claim the IRQ by reading the Ibex specific CC register.
   dif_irq_claim_data_t claim_data;
   if (!dif_plic_irq_claim(&plic0, PLIC_TARGET, &claim_data)) {
-    LOG_FATAL("ISR is not implemented!");
+    LOG_FATAL_AND_ABORT("ISR is not implemented!");
   }
 
   // Check if the interrupted peripheral is UART.
   if (claim_data.peripheral != kDifPlicPeripheralUart) {
-    LOG_FATAL("ISR interrupted peripheral is not UART!");
+    LOG_FATAL_AND_ABORT("ISR interrupted peripheral is not UART!");
   }
   handler_uart_isr(&claim_data);
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   if (!dif_plic_irq_complete(&plic0, &claim_data)) {
-    LOG_FATAL("Unable to complete the IRQ request!");
+    LOG_FATAL_AND_ABORT("Unable to complete the IRQ request!");
   }
 }
 
