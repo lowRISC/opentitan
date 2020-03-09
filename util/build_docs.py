@@ -196,6 +196,23 @@ def generate_apt_reqs():
     with open(str(apt_cmd_path), mode='w') as fout:
         fout.write(apt_cmd)
 
+def generate_tool_versions():
+    """Generate an tool version number requirement from tool_requirements.py
+
+    The version number per tool will be saved in outdir-generated/version_$TOOL_NAME.txt
+    """
+
+    # Populate __TOOL_REQUIREMENTS__
+    requirements_file = str(SRCTREE_TOP.joinpath("tool_requirements.py"))
+    exec(open(requirements_file).read(), globals())
+
+    # And then write a version file for every tool.
+    for tool in __TOOL_REQUIREMENTS__:
+        version_path = config["outdir-generated"].joinpath('version_' + tool + '.txt')
+        version_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(str(version_path), mode='w') as fout:
+            fout.write(__TOOL_REQUIREMENTS__[tool])
+
 
 def is_hugo_extended():
     args = ["hugo", "version"]
@@ -285,6 +302,7 @@ def main():
     generate_testplans()
     generate_selfdocs()
     generate_apt_reqs()
+    generate_tool_versions()
 
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)

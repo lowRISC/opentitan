@@ -1,0 +1,7 @@
+{{- $tool := .Get 0 -}}
+{{- $file := (print "version_" $tool ".txt") -}}
+{{- $path := path.Join .Site.Params.generatedRoot $file -}}
+{{- if not (fileExists $path) -}}
+  {{- errorf (print $file " has not been generated") -}}
+{{- end -}}
+{{- readFile $path | plainify -}}
