@@ -398,9 +398,9 @@ int uart_rx_empty() {
           (0 << UART_FIFO_STATUS_RXLVL_LSB)) ? 1 : 0;
 }
 
-char uart_rcv_char() {
+int uart_rcv_char() {
   if(uart_rx_empty())
-    return 0xff;
+    return -1;
   return *UART_RDATA_REG;
 }
 ```
