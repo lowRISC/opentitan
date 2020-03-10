@@ -172,6 +172,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
         end else if (cnt_ge) begin
           state_d = Terminal;
           cnt_clr = 1'b1;
+          cnt_en  = 1'b0;
         end
       end
       // final, terminal state after escalation.
