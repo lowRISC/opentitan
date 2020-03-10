@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Keep sorted.
-fusesoc
 gitpython
 hjson
 isort
@@ -28,3 +27,6 @@ git+https://github.com/olofk/ipyxact.git@master
 
 # Development version of edalize until all our changes are upstream
 git+https://github.com/lowRISC/edalize.git@ot
+
+# Development version with OT-specific changes
+git+https://github.com/lowRISC/fusesoc.git@ot
