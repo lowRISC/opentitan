@@ -79,9 +79,9 @@ class alert_sender_driver extends alert_esc_base_driver;
       reset_alert_pins(ack_delay);
     // alert signals integrity fail
     end else begin
-      if (req.int_err_scenario & HasAlertBeforeIntFailOnly) set_alert_pins(alert_delay);
+      if (req.alert_int_err_type & HasAlertBeforeIntFailOnly) set_alert_pins(alert_delay);
       random_drive_int_fail(req.int_err_cyc);
-      if (req.int_err_scenario & HasAlertAfterIntFailOnly) begin
+      if (req.alert_int_err_type & HasAlertAfterIntFailOnly) begin
         set_alert_pins(alert_delay);
       end else begin
         cfg.vif.reset_alert();

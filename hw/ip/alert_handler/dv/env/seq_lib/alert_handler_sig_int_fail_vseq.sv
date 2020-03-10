@@ -14,12 +14,13 @@ class alert_handler_sig_int_fail_vseq extends alert_handler_sanity_vseq;
   }
 
   constraint enable_alert_int_fail_only_c {
-    local_alert_en == (1 << LocalAlertIntFail); // TODO: temp constraint, take off once scb support esc int fail
+    local_alert_en inside {1 << LocalAlertIntFail, 1 << LocalEscIntFail};
+    // TODO: temp constraint, take off once scb support ping response fail
   }
 
   function void pre_randomize();
     this.enable_one_alert_c.constraint_mode(0);
-    this.enable_classa_only_c.constraint_mode(0);
+    // TODO: add support this.enable_classa_only_c.constraint_mode(0);
   endfunction
 
 endclass : alert_handler_sig_int_fail_vseq

@@ -1,7 +1,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
 
 // ---------------------------------------------
 // Alert_handler receiver driver
@@ -27,25 +26,48 @@ class esc_receiver_driver extends alert_esc_base_driver;
       alert_esc_seq_item req, rsp;
       wait(r_esc_rsp_q.size() > 0);
       req = r_esc_rsp_q.pop_front();
-      $cast(rsp, req.clone());
-      rsp.set_id_info(req);
-      `uvm_info(`gfn,
-          $sformatf("starting to send receiver item, esc_rsp=%0b, int_fail=%0b",
-          req.r_esc_rsp, req.int_err), UVM_HIGH)
+      fork
+        begin
+          $cast(rsp, req.clone());
+          rsp.set_id_info(req);
+          `uvm_info(`gfn,
+              $sformatf("starting to send receiver item, esc_rsp=%0b, int_fail=%0b",
+              req.r_esc_rsp, req.int_err), UVM_HIGH)
 
-      cfg.vif.wait_esc();
-      @(cfg.vif.receiver_cb);
-      while (cfg.vif.receiver_cb.esc_tx.esc_p === 1'b1) begin
-        cfg.vif.set_resp();
-        @(cfg.vif.receiver_cb);
-        cfg.vif.reset_resp();
-        @(cfg.vif.receiver_cb);
-      end
-
-      `uvm_info(`gfn,
-          $sformatf("finished sending receiver item, esc_rsp=%0b, int_fail=%0b",
-          req.r_esc_rsp, req.int_err), UVM_HIGH)
-      seq_item_port.put_response(rsp);
-    end
+          // toggle resp signals only when esc signals are not set
+          if (req.int_err && req.resp_int_err_type == RandResponse) begin
+            cfg.vif.wait_esc_complete();
+            repeat (req.int_err_cyc) begin
+              if (cfg.vif.get_esc() === 1'b0) begin
+                randcase
+                  1: cfg.vif.set_resp();
+                  1: cfg.vif.reset_resp();
+                endcase
+              end else begin
+                break;
+              end
+              @(cfg.vif.receiver_cb);
+            end
+            if (cfg.vif.get_esc() === 1'b0) cfg.vif.reset_resp();
+          end else begin
+            cfg.vif.wait_esc();
+            @(cfg.vif.receiver_cb);
+            while (cfg.vif.get_esc() === 1'b1) toggle_resp_signal();
+          end
+          `uvm_info(`gfn,
+              $sformatf("finished sending receiver item, esc_rsp=%0b, int_fail=%0b",
+              req.r_esc_rsp, req.int_err), UVM_HIGH)
+          seq_item_port.put_response(rsp);
+        end
+      join_none
+    end // end forever
   endtask : rsp_escalator
+
+  task toggle_resp_signal();
+    cfg.vif.set_resp();
+    @(cfg.vif.receiver_cb);
+    cfg.vif.reset_resp();
+    @(cfg.vif.receiver_cb);
+  endtask : toggle_resp_signal
+
 endclass : esc_receiver_driver

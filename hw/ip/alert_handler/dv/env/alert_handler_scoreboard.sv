@@ -126,6 +126,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               act_item.esc_handshake_sta == EscRespComplete) begin
             check_esc_phase(phase_info);
           end
+          if (act_item.alert_esc_type == AlertEscIntFail) begin
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+            if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
+          end
         end
       join_none
     end
@@ -335,12 +339,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
               int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
                                 .get_mirrored_value();
-              @(cfg.clk_rst_vif.cb);
-              intr_timer_per_class[class_i] = 1;
-              while (under_esc_classes[class_i] != 0 &&
-                     intr_timer_per_class[class_i] < phase_thresh) begin
+              if (!under_reset && under_esc_classes[class_i]) begin
                 @(cfg.clk_rst_vif.cb);
-                intr_timer_per_class[class_i] += 1;
+                intr_timer_per_class[class_i] = 1;
+                while (under_esc_classes[class_i] != 0 &&
+                       intr_timer_per_class[class_i] < phase_thresh) begin
+                  @(cfg.clk_rst_vif.cb);
+                  intr_timer_per_class[class_i] += 1;
+                end
               end
             end
             @(cfg.clk_rst_vif.cb);

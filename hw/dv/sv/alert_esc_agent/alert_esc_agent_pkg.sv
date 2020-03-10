@@ -42,6 +42,12 @@ package alert_esc_agent_pkg;
     HasAlertBeforeAfterIntFail = 'b11
   } alert_sig_int_err_e;
 
+  typedef enum {
+    NoResponse,
+    RandResponse,
+    SigPNIntErr
+  } resp_sig_int_err_e;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"

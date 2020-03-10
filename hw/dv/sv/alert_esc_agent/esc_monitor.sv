@@ -19,6 +19,7 @@ class esc_monitor extends alert_esc_base_monitor;
     fork
       esc_thread(phase);
       reset_thread(phase);
+      int_fail_thread(phase);
     join_none
   endtask : run_phase
 
@@ -34,7 +35,7 @@ class esc_monitor extends alert_esc_base_monitor;
     alert_esc_seq_item req;
     bit                esc_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (!esc_p && cfg.vif.get_esc_p() === 1'b1) begin
+      if (!esc_p && cfg.vif.get_esc() === 1'b1) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
@@ -52,7 +53,7 @@ class esc_monitor extends alert_esc_base_monitor;
               begin : wait_esc_handshake
                 @(cfg.vif.monitor_cb);
                 check_esc_resp_toggle(req);
-                while (cfg.vif.get_esc_p() === 1) check_esc_resp_toggle(req);
+                while (cfg.vif.get_esc() === 1) check_esc_resp_toggle(req);
                 if (req.esc_handshake_sta != EscIntFail) begin
                   req.esc_handshake_sta = EscRespComplete;
                 end
@@ -66,9 +67,23 @@ class esc_monitor extends alert_esc_base_monitor;
         alert_esc_port.write(req);
         phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       end
-      esc_p = cfg.vif.get_esc_p();
+      esc_p = cfg.vif.get_esc();
     end
   endtask : esc_thread
+
+  virtual task int_fail_thread(uvm_phase phase);
+    alert_esc_seq_item req;
+    forever @(cfg.vif.monitor_cb) begin
+      while (cfg.vif.get_esc() === 1'b0) begin
+        @(cfg.vif.monitor_cb);
+        if (cfg.vif.get_resp_p() === 1'b1 && cfg.vif.get_resp_n() == 1'b0) begin
+          req = alert_esc_seq_item::type_id::create("req");
+          req.alert_esc_type = AlertEscIntFail;
+          alert_esc_port.write(req);
+        end
+      end
+    end
+  endtask : int_fail_thread
 
   virtual task check_esc_resp_toggle(alert_esc_seq_item req);
     if (cfg.vif.get_resp_p() != 1) req.esc_handshake_sta = EscIntFail;
