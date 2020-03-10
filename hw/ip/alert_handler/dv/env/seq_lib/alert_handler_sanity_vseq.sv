@@ -15,6 +15,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [alert_pkg::NAlerts*2-1:0]      alert_class_map;
   rand bit [NUM_LOCAL_ALERT-1:0]           local_alert_en;
   rand bit [NUM_LOCAL_ALERT*2-1:0]         local_alert_class_map;
+  rand bit [alert_pkg::N_ESC_SEV-1:0]      esc_int_err;
 
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
@@ -49,6 +50,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   constraint sig_int_c {
     alert_int_err == 0;
+    esc_int_err   == 0;
   }
 
   task body();
@@ -75,6 +77,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
       wr_class_accum_threshold(accum_thresh);
 
+      if (esc_int_err) drive_esc_resp(esc_int_err);
       // drive alert
       drive_alert(alert_trigger, alert_int_err);
 

@@ -12,12 +12,15 @@ class esc_receiver_esc_rsp_seq extends dv_base_seq #(
   `uvm_object_utils(esc_receiver_esc_rsp_seq)
   `uvm_object_new
 
+  rand bit int_err;
+
   virtual task body();
     `uvm_info(`gfn, $sformatf("starting escalator receiver transfer"), UVM_HIGH)
     req = alert_esc_seq_item::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
         r_esc_rsp == 1;
+        int_err   == local::int_err;
     )
     `uvm_info(`gfn, $sformatf("seq_item: esc_rsp, int_err=%0b", req.int_err), UVM_HIGH)
     finish_item(req);

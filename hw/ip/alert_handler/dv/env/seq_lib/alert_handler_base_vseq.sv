@@ -86,6 +86,27 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     join
   endtask
 
+  virtual task drive_esc_resp(bit[alert_pkg::N_ESC_SEV-1:0] esc_int_err);
+    fork
+      begin : isolation_fork
+        foreach (esc_int_err[i]) begin
+          if (esc_int_err[i]) begin
+            automatic int index = i;
+            fork
+              begin
+                esc_receiver_esc_rsp_seq esc_seq;
+                `uvm_create_on(esc_seq, p_sequencer.esc_device_seqr_h[index]);
+                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1;)
+                `uvm_send(esc_seq)
+              end
+            join_none
+          end
+        end
+        wait fork;
+      end
+    join
+  endtask
+
   virtual task clear_esc();
     csr_wr(.csr(ral.classa_clr), .value(1));
     csr_wr(.csr(ral.classb_clr), .value(1));
@@ -149,7 +170,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
         forever begin
           esc_receiver_esc_rsp_seq esc_seq =
               esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-          `DV_CHECK_RANDOMIZE_FATAL(esc_seq);
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 0;);
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
         end
       join_none

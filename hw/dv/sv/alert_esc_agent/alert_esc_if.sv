@@ -124,11 +124,11 @@ interface alert_esc_if(input clk, input rst_n);
   // tasks for escalator sender/receiver pairs
 
   task automatic wait_esc();
-    while (esc_tx.esc_p !== 1'b1) @(monitor_cb);
+    while (esc_tx.esc_p === 1'b0 && esc_tx.esc_n === 1'b1) @(monitor_cb);
   endtask : wait_esc
 
   task automatic wait_esc_complete();
-    while (esc_tx.esc_p !== 1'b0) @(monitor_cb);
+    while (esc_tx.esc_p === 1'b1 && esc_tx.esc_n === 1'b0) @(monitor_cb);
   endtask : wait_esc_complete
 
   task automatic reset_esc();
@@ -146,12 +146,15 @@ interface alert_esc_if(input clk, input rst_n);
     receiver_cb.esc_rx.resp_n <= 1'b1;
   endtask
 
-  function automatic bit get_esc_p();
-    return monitor_cb.esc_tx.esc_p;
+  function automatic bit get_esc();
+    return monitor_cb.esc_tx.esc_p && !monitor_cb.esc_tx.esc_n;
   endfunction
 
   function automatic bit get_resp_p();
     return monitor_cb.esc_rx.resp_p;
   endfunction
 
+  function automatic bit get_resp_n();
+    return monitor_cb.esc_rx.resp_n;
+  endfunction
 endinterface: alert_esc_if
