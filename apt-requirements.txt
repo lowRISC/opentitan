@@ -16,7 +16,7 @@ libelf-dev
 libftdi1-2
 libftdi1-dev
 libssl-dev
-libusb-1.0
+libusb-1.0-0
 make
 ninja-build
 pkgconf
