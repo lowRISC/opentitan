@@ -16,54 +16,92 @@
     {
       name: wake_up
       desc: '''
-            Basic hello world,  encrypt a plain text read it back - decrypt and compare to input'''
+           Basic hello world,  encrypt a plain text read it back - decrypt and compare to input.'''
       milestone: V1
       tests: ["aes_wake_up"]
     }
     {
       name: sanity
       desc: '''
-            Encrypt a plain text read it back - decrypt and compare to input but use reference model
-            to compare after both encryption and decryption'''
+           Encrypt a plain text read it back - decrypt and compare to input but use reference model to compare after both encryption and decryption.'''
       milestone: V1
       tests: ["aes_sanity"]
     }
     {
       name: algorithm
       desc: '''
-            Compare cypher text from AES module with the output of a C model using same key and data'''
-      milestone: V2
+           Compare cypher text from DUT with the output of a C model using same key and data.'''
+           milestone: V2
       tests: ["aes_sanity"]
     }
     {
-      name: key_size
+      name: key_length
       desc: '''
-           Randomly select key size to verify all supported key sizes are working'''
+           Randomly select key length to verify all supported key lengths are working.'''
+           milestone: V2
+      tests: []
+    }    {
+      name: back2back
+      desc: '''
+           Randomly select the spacing between consecutive messages and blocks from 0 - n clock cycles.
+           The distribution will be weighted toward no and small gaps (0-10 cycles) but will also cover larger gaps.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: backpressure
+      desc: '''
+        Try to write data to registers without offloading the DUT output to verify Stall functionality.'''
+        milestone: V2
+      tests: []
+    }
+    {
+      name: multi_message
+      desc: '''
+        Run multiple messages in a random mix of encryption / decryption.
+        Each message should select its mode randomly.'''
       milestone: V2
       tests: []
     }
     {
       name: failure_test
       desc: '''
-            - Tests what happens if a register is written a the wrong time?,
-              if a key does not match the key setting etc. will module ignore or fail gracefully
-            - enter a 256bit key but set AES to use 128 for encryption.
-              then enter the 128bit of the key and use for decryption.
-              will result match plain text and vice verca'''
+            - Tests what happens if a register is written a the wrong time?
+              If a key does not match the key setting etc.
+              Will the DUT ignore or fail gracefully.
+            - Enter a 256bit key but set DUT to use 128bit for encryption.
+              Then enter the 128bit of the key and use for decryption.
+              Will result match plain text and vice.
+            - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: performance
+      desc: '''
+            Verify that the DUT performs as specified for each key length in terms of latency and throughput.
+            This testpoint will use automode (this will feed input data and offload output data as fast as the DUT can support it.)'''
       milestone: V2
       tests: []
     }
     {
       name: reset_recovery
       desc: '''
-            Pull reset at random times make sure AES recover/resets correctly'''
+            Pull reset at random times, make sure DUT recover/resets correctly and there is no residual data left in the registers.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress
+      desc: '''
+            This will combine the other individual testpoints to ensure we stress test everything across the board.'''
       milestone: V2
       tests: []
     }
     {
       name: deinitialization
       desc: '''
-            Make sure that there is no residual data from latest operation '''
+            Make sure that there is no residual data from latest operation. '''
       milestone: V2
       tests: []
     }
