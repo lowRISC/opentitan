@@ -53,6 +53,8 @@
             CONTROL register and ADDR have been programmed
             '''
           resval: "0"
+          tags: [// Dont enable flash - it causes several side-effects.
+                 "excl:CsrAllTests:CsrExclWrite"],
         },
         { bits: "5:4",
           name: "OP",

@@ -124,6 +124,8 @@
           desc: '''
                Set to enable the USB interface and assert the FS pullup.
           '''
+          tags: [// Prevent usb from being enabled to avoid other unforeseen side effects.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         {
           bits: "22:16",
@@ -135,6 +137,8 @@
 
                 This will be zeroed by the hardware when the link resets.
           '''
+          tags: [// This field is reset to 0 if usb is not enabled.
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
     }
@@ -247,6 +251,8 @@
                 '''
         }
       ]
+      tags: [// Writing this CSR affects the ral.usbstat.av_depth field.
+             "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { name: "rxfifo",
       desc: "Received packet FIFO",
@@ -515,6 +521,8 @@
           bits: "3",
           name: "override_pwr_sense_en",
           desc: "Override the USB Power sense value with override_pwr_sense_val."
+          tags: [// Overriding pwr sense will cause the usbdev to think the link is powered up.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         {
           bits: "4",

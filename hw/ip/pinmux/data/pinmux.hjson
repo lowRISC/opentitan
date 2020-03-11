@@ -66,7 +66,9 @@
                       0: tie constantly to zero, 1: tie constantly to 1.
                       >=2: MIO pads (i.e., add 2 to the native MIO pad index).
                       '''
-                      resval: 0
+                      resval: 0,
+                      tags: [// Random writes to this field may result in array index going OOB.
+                             "excl:CsrNonInitTests:CsrExclWriteCheck"]
                     }
                   ]
                 }
@@ -86,7 +88,9 @@
                       0: tie constantly to zero, 1: tie constantly to 1. 2: high-Z
                       >=3: peripheral outputs (i.e., add 3 to the native peripheral pad index).
                       '''
-                      resval: 2
+                      resval: 2,
+                      tags: [// Random writes to this field may result in array index going OOB.
+                             "excl:CsrNonInitTests:CsrExclWriteCheck"]
                     }
                   ]
                 }

@@ -87,7 +87,9 @@
       hwre:     "true",
       fields: [
         { bits: "31:0", name: "data_out", desc: "Output Data" }
-      ],
+      ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
     },
 ##############################################################################
@@ -130,6 +132,8 @@
         '''
       }
     ]
+    tags: [// Updated by hw. Exclude from write-checks.
+           "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   { name: "TRIGGER",
     desc: '''
@@ -166,6 +170,8 @@
         '''
       }
     ]
+    tags: [// Updated by hw. Exclude from write-checks.
+           "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   { name: "STATUS",
     desc: "Status Register",
@@ -203,6 +209,8 @@
         '''
       }
     ]
+    tags: [// Updated by hw. Exclude from write-checks.
+           "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   ],
 }

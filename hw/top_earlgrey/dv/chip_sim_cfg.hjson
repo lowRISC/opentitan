@@ -144,5 +144,12 @@
       name: sanity
       tests: ["chip_sanity"]
     }
+    {
+      name: sw_access
+      tests: ["chip_csr_hw_reset",
+              "chip_csr_rw",
+              "chip_csr_bit_bash",
+              "chip_csr_aliasing"]
+    }
   ]
 }
