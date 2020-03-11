@@ -66,53 +66,81 @@ synchronized across the clock domain boundary. A dual-port
 asynchronous buffer SRAM is used for data transfers between the bus
 clock and USB clock domains.
 
+
 ## USB Interface Pins
 
-The interface pin table summarizes the external pins.
+Full-Speed USB uses a bidirectional serial interface as shown in Figure 7-24 of the [USB 2.0 Full-Speed specification](https://www.usb.org/document-library/usb-20-specification).
+For reasons of flexibility, this IP block features both differential and single-ended transmit and receive paths.
 
+For better receive sensitivity, lower transmit jitter and to be standard compliant, a dedicated, differential USB transceiver such as the [USB1T11A](https://www.mouser.com/datasheet/2/149/fairchild%20semiconductor_usb1t11a-320893.pdf) or the [USB1T20](https://www.onsemi.com/pub/Collateral/USB1T20-D.pdf) must be used (see Section 7.1.4.1 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)).
+Depending on the selected USB transceiver, either the differential or the single-ended transmit and receive paths or a combination of the two can be used to interface the IP block with the transceiver.
 
-|External Pin|Internal Signal|Notes|
-|------------|---------------|-----|
-|USB D+, USB D-|usb_d_i, usb_dp_i, usb_dn_i, usb_d_o, usb_se0_o|Interface to a differential USB transceiver. This interface can be selected by writing 1 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}. In differential mode, the single-ended signals usb_dp_i and usb_dn_i are used to detect the SE0 state.|
-|USB D+, USB D-|usb_dp_i, usb_dn_i, usb_dp_o, usb_dn_o|Single-ended interface to regular IO cells. This interface can be used for prototyping on an FPGA, but will probably not be USB compliant. This interface can be selected by writing 0 to {{< regref "phy_config.rx_differential_mode" >}} and {{< regref "phy_config.tx_differential_mode" >}}.|
-||usb_oe_o|Enable driving the external pins.|
-|[usb_pullup]|usb_pullup_o|When the usb_pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin. A permanently connected resistor can also be used.|
-|[TX Mode]|tx_mode_se_o|Indicates the selected TX mode. 1 corresponds to single-ended operation.|
-|usb_sense|usb_sense_i|The sense pin indicates the presence of VBUS from the host.|
-
-The USB 2.0 Full Speed specification uses a bidirectional serial interface that can be implemented with pseudo-differential 3.3V GPIO pins and an oversampling receiver for recovery of the bitstream and clock alignment.
-The IP interface for the D+ and D- pins is presented using a pair of transmit signals, a pair of receive signals and a transmit enable.
-External to the IP these should be combined to drive the pins when transmit is enabled and receive when transmit is not enabled.
-Using standard 3.3V I/O pads allows use on most FPGAs although the drive strength and series termination resistors may need to be adjusted to meet the USB signal eye.
+When prototyping on FPGAs (here the interface can be implemented with pseudo-differential 3.3V GPIO pins and an oversampling receiver for recovery of the bitstream and clock alignment), the single-ended signal pairs can be used.
+External to the IP, these should be combined to drive the actual pins when transmit is enabled and receive otherwise.
+Using standard 3.3V IO pads allows use on most FPGAs although the drive strength and series termination resistors may need to be adjusted to meet the USB signal eye.
 On a Xilinx Artix-7 (and less well tested Spartan-7) part, setting the driver to the 8mA, FAST setting seems to work well with a 22R series termination (and with a 0R series termination).
 
-Alternatively, a dedicated USB transceiver can be used. 
-This is required for USB compliance. 
-Examples for such a transceiver are the USB1T11A or USB1T20. 
-In this case differential signaling should be used for better receive sensitivity and lower transmit jitter.
+The following sections describe how the various input/output signals relate to the USB interface pins for the different receive and transmit configurations.
 
-A Full-Speed device identifies itself by providing a 1.5k pullup
-resistor (to 3.3V) on the D+ line. The IP block produces a signal
-usb_pullup that is asserted when this resistor should be
-presented. This signal will be asserted whenever the interface is
-enabled. In an FPGA implementation this signal can drive a 3.3V output
-pin that is driven high when the signal is asserted and set high
-impedance when the signal is deasserted, and the output pin used to
-drive a 1.5k resistor connected on the board to the D+
-line. Alternatively, it can be used to enable an internal 1.5k pullup
-on the D+ pin.
 
-The USB Host will identify itself to the device by enabling the 5V
-VBUS power. It may do a hard reset of a port by removing and
-reasserting VBUS (the Linux driver will do this when it finds a port
-in an inconsistent state or a port that generates errors during
-enumeration). The IP detects VBUS through the usb_sense pin. This pin
-is always an input and should be externally connected to detect the
-state of the VBUS. Note that this may require a resistor divider or
-(for USB-C where VBUS can be up to 20V) active level translation to an
-acceptable voltage for the input pin.
+### Data Transmit
+
+The IP block supports both differential and single-ended transmission (TX).
+The TX mode can be selected by setting the `tx_differential_mode` bit in {{< regref "phy_config" >}} to either 1 (differential) or 0 (single ended).
+
+The following table summarizes how the different output signals relate to the USB interface pins.
+
+|  External Pins | Internal Signals | Notes |
+|----------------|------------------|-------|
+| D+, D-         | d_o              | Data output for interfacing with a differential USB transceiver. |
+| \"             | se0_o            | Signal Single-Ended Zero (SE0) link state to a differential USB transceiver. |
+| \"             | dp_o, dn_o       | Single-ended data output signals. These can be used to interface to regular IO cells for prototyping on an FPGA, but such an interface will probably not be USB compliant. |
+|   [TX Mode]    | tx_mode_se_o     | Indicates the selected TX mode: single-ended (1) or differential (0) operation. |
+
+Note that according to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}), every output signal `name_o` has a dedicated output enable `name_en_o`.
+For TX data, these separate signals `d_en_o`, `dp_en_o` and `dn_en_o` all correspond to the same TX or output enable signal (`OE` in the USB spec).
+
+
+### Data Receive
+
+The IP block supports both differential and single-ended reception (RX).
+The RX mode can be selected by setting the `rx_differential_mode` bit in {{< regref "phy_config" >}} to either 1 (differential) or 0 (single ended).
+
+The following table summarizes how the different input signals relate to the USB interface pins.
+
+|  External Pins | Internal Signals | Notes |
+|----------------|------------------|-------|
+| D+, D-         | d_i              | Data input for interfacing with a differential USB transceiver. Used in differential RX mode only. |
+| \"             | dp_i, dn_i       | Single-ended data input signals. These signals are used to detect the SE0 link state in differential RX mode. They can further be used to interface to regular IO cells for prototyping on an FPGA, but such an interface will probably not be USB compliant. |
+
+
+### Non-Data Pins
+
+The USB device features the following non-data pins.
+
+|  External Pins | Internal Signals | Notes |
+|----------------|------------------|-------|
+| sense (VBUS)   | sense_i          | The sense pin indicates the presence of VBUS from the USB host. |
+| [pullup]       | pullup_o         | When the pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin. A permanently connected resistor can also be used. |
+| [suspend]      | suspend_o        | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspended state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
+
+The USB host will identify itself to the device by enabling the 5V VBUS power.
+It may do a hard reset of a port by removing and reasserting VBUS (the Linux driver will do this when it finds a port in an inconsistent state or a port that generates errors during enumeration).
+The IP block detects VBUS through the sense pin.
+This pin is always an input and should be externally connected to detect the state of the VBUS.
+Note that this may require a resistor divider or (for USB-C where VBUS can be up to 20V) active level translation to an acceptable voltage for the input pin.
+
+A Full-Speed device identifies itself by providing a 1.5k pullup resistor (to 3.3V) on the D+ line.
+The IP block produces a signal `pullup_o` that is asserted when this resistor should be presented.
+This signal will be asserted whenever the interface is enabled.
+In an FPGA implementation, this signal can drive a 3.3V output pin that is driven high when the signal is asserted and set high impedance when the signal is deasserted, and the output pin used to drive a 1.5k resistor connected on the board to the D+ line.
+Alternatively, it can be used to enable an internal 1.5k pullup on the D+ pin.
+
+
+## Hardware Interfaces
 
 {{< hwcfg "hw/ip/usbdev/data/usbdev.hjson" >}}
+
 
 ## USB Link State
 

@@ -543,42 +543,21 @@ else:
       .tl_h_o (tl_${m["name"]}_h_h2d),
       .tl_h_i (tl_${m["name"]}_h_d2h),
     % endif
-    % if m["type"] == "usbdev":
-
-      // Differential data - Currently not used.
-      .cio_d_i          (1'b0),
-      .cio_d_o          (),
-      .cio_se0_o        (),
-
-      // Single-ended data
-      .cio_dp_i         (cio_usbdev_dp_p2d),
-      .cio_dn_i         (cio_usbdev_dn_p2d),
-      .cio_dp_o         (cio_usbdev_dp_d2p),
-      .cio_dn_o         (cio_usbdev_dn_d2p),
-
-      // Non-data I/O
-      .cio_sense_i      (cio_usbdev_sense_p2d),
-      .cio_oe_o         (cio_usbdev_dp_en_d2p),
-      .cio_tx_mode_se_o (),
-      .cio_pullup_en_o  (cio_usbdev_pullup_en_d2p),
-      .cio_suspend_o    (),
-    % else:
-      % for p_in in m["available_input_list"] + m["available_inout_list"]:
-        % if loop.first:
+    % for p_in in m["available_input_list"] + m["available_inout_list"]:
+      % if loop.first:
 
       // Input
-        % endif
+      % endif
       .${lib.ljust("cio_"+p_in["name"]+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in["name"]}_p2d),
-      % endfor
-      % for p_out in m["available_output_list"] + m["available_inout_list"]:
-        % if loop.first:
+    % endfor
+    % for p_out in m["available_output_list"] + m["available_inout_list"]:
+      % if loop.first:
 
       // Output
-        % endif
+      % endif
       .${lib.ljust("cio_"+p_out["name"]+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_d2p),
       .${lib.ljust("cio_"+p_out["name"]+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_en_d2p),
-      % endfor
-    % endif
+    % endfor
     % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
       % if loop.first:
 
@@ -662,10 +641,6 @@ else:
   );
 
 % endfor
-  // USB assignments
-  assign cio_usbdev_dn_en_d2p = cio_usbdev_dp_en_d2p; // have a single output enable only
-  assign cio_usbdev_pullup_d2p = 1'b1;
-
   // interrupt assignments
   assign intr_vector = {
   % for intr in top["interrupt"][::-1]:

@@ -355,7 +355,7 @@ package usbdev_reg_pkg;
     } link_state;
     struct packed {
       logic        d;
-    } usb_sense;
+    } sense;
     struct packed {
       logic [2:0]  d;
     } av_depth;

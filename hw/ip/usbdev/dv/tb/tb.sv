@@ -54,23 +54,27 @@ module tb;
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),
 
-
     // USB Interface
     // TOOD: need to hook up an interface
+    .cio_sense_i          (1'b0),
     .cio_d_i              (1'b0),
     .cio_dp_i             (1'b1),
     .cio_dn_i             (1'b0),
 
-    .cio_d_o              (),
     .cio_se0_o            (),
-    .cio_dp_o             (),
-    .cio_dn_o             (),
-    .cio_oe_o             (),
-
-    .cio_tx_mode_se_o     (),
-    .cio_sense_i          (1'b0),
+    .cio_se0_en_o         (),
+    .cio_pullup_o         (),
     .cio_pullup_en_o      (),
+    .cio_tx_mode_se_o     (),
+    .cio_tx_mode_se_en_o  (),
     .cio_suspend_o        (),
+    .cio_suspend_en_o     (),
+    .cio_d_o              (),
+    .cio_d_en_o           (),
+    .cio_dp_o             (),
+    .cio_dp_en_o          (),
+    .cio_dn_o             (),
+    .cio_dn_en_o          (),
 
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),
