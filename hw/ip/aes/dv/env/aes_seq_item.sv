@@ -65,11 +65,11 @@ class aes_seq_item extends uvm_sequence_item;
       data_in_queue.size() ==  data_len >> 2 + 1;
     }
     if(data_len[1:0] == 2'b01) {
-      data_in_queue[$][31:8]   == 0;
+      data_in_queue[data_in_queue.size()-1][31:8]   == 0;
     } else if (data_len[1:0] == 2'b10) {
-      data_in_queue[$][31:16]  == 0;
+      data_in_queue[data_in_queue.size()-1][31:16]  == 0;
     } else {
-      data_in_queue[$][31:24]  == 0;
+      data_in_queue[data_in_queue.size()-1][31:24]  == 0;
     }
   }
 
