@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -12,14 +14,13 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/uart.h"
 
-#define CHECK(cond)                                 \
-  do {                                              \
-    if (!(cond)) {                                  \
-      uart_send_str("Assertion failed at line 0x"); \
-      uart_send_uint(__LINE__, 32);                 \
-      uart_send_str("\r\nFAIL!\r\n");               \
-      abort();                                      \
-    }                                               \
+#define CHECK(cond)                   \
+  do {                                \
+    if (!(cond)) {                    \
+      LOG_ERROR("Assertion failed!"); \
+      uart_send_str("FAIL!\r\n");     \
+      abort();                        \
+    }                                 \
   } while (false)
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \
@@ -143,6 +144,8 @@ static void test_memory_protection(void) {
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
+  base_set_stdout(uart_stdout);
+
   flash_init_block();
 
   flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/true);

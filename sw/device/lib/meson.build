@@ -104,7 +104,7 @@ sw_lib_irq_handlers = declare_dependency(
     dependencies: [
       sw_lib_irq,
       sw_lib_runtime_ibex,
-      sw_lib_uart,
+      sw_lib_base_log,
     ],
   )
 )

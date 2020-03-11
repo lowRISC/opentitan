@@ -11,6 +11,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_aes,
       sw_lib_uart,
       sw_lib_mem,
+      sw_lib_base_print,
+      sw_lib_base_log,
       riscv_crt,
       device_lib,
     ],

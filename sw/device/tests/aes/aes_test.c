@@ -5,6 +5,8 @@
 #include "sw/device/lib/aes.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/uart.h"
 
@@ -35,7 +37,8 @@ int main(int argc, char **argv) {
   uint8_t buffer[16];
 
   uart_init(kUartBaudrate);
-  uart_send_str("Running AES test\r\n");
+  base_set_stdout(uart_stdout);
+  LOG_INFO("Running AES test");
 
   // Setup AES config
   aes_cfg_t aes_cfg = {

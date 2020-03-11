@@ -7,9 +7,10 @@
 
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
@@ -82,6 +83,8 @@ static dif_gpio_t gpio;
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
+  base_set_stdout(uart_stdout);
+
   pinmux_init();
   spid_init();
 

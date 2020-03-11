@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/hw_sha256.h"
@@ -21,7 +23,8 @@ static const uint32_t kExpectedDigest[8] = {0xdc96c23d, 0xaf36e268, 0xcb68ff71,
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
-  uart_send_str("Running SHA256 test\r\n");
+  base_set_stdout(uart_stdout);
+  LOG_INFO("Running SHA256 test");
 
   uint32_t digest[8];
   hw_SHA256_hash(kData, kDataLen, (uint8_t *)digest);

@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/handler.h"
 
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/uart.h"
@@ -15,21 +16,6 @@ static uint32_t get_mtval(void) {
   uint32_t mtval;
   asm volatile("csrr %0, mtval" : "=r"(mtval) : :);
   return mtval;
-}
-
-/**
- * Default Error Handling
- * @param error message supplied by caller
- * TODO - this will be soon by a real print formatting
- */
-static void print_exc_msg(const char *msg) {
-  const uint32_t mtval = get_mtval();
-  uart_send_str((char *)msg);
-  uart_send_str("MTVAL value is ");
-  uart_send_uint(mtval, 32);
-  uart_send_str("\n");
-  while (1) {
-  };
 }
 
 // Below functions are default weak exception handlers meant to be overriden
@@ -69,48 +55,41 @@ __attribute__((weak)) void handler_exception(void) {
 }
 
 __attribute__((weak)) void handler_irq_software(void) {
-  uart_send_str("Software IRQ triggered!\n");
+  LOG_INFO("Software IRQ triggered!");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_irq_timer(void) {
-  uart_send_str("Timer IRQ triggered!\n");
+  LOG_INFO("Timer IRQ triggered!");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_irq_external(void) {
-  uart_send_str("External IRQ triggered!\n");
+  LOG_INFO("External IRQ triggered!");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_instr_acc_fault(void) {
-  const char fault_msg[] =
-      "Instruction access fault, mtval shows fault address\n";
-  print_exc_msg(fault_msg);
+  LOG_ERROR("Instruction access fault at address %p", get_mtval());
 }
 
 __attribute__((weak)) void handler_instr_ill_fault(void) {
-  const char fault_msg[] =
-      "Illegal Instruction fault, mtval shows instruction content\n";
-  print_exc_msg(fault_msg);
+  LOG_ERROR("Illegal instruction fault at address %p", get_mtval());
 }
 
 __attribute__((weak)) void handler_bkpt(void) {
-  const char exc_msg[] =
-      "Breakpoint triggerd, mtval shows the breakpoint address\n";
-  print_exc_msg(exc_msg);
+  LOG_INFO("Breakpoint triggered at address %p", get_mtval());
 }
 
 __attribute__((weak)) void handler_lsu_fault(void) {
-  const char exc_msg[] = "Load/Store fault, mtval shows the fault address\n";
-  print_exc_msg(exc_msg);
+  LOG_ERROR("Load/store unit fault at address %p", get_mtval());
 }
 
 __attribute__((weak)) void handler_ecall(void) {
-  uart_send_str("Environment call encountered\n");
+  LOG_INFO("Environment call encountered");
   while (1) {
   }
 }

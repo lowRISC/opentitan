@@ -5,6 +5,8 @@
 #include "sw/device/lib/rv_timer.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/irq.h"
@@ -21,6 +23,7 @@ int main(int argc, char **argv) {
   const uint64_t cmp = 0x000000000000000F;
 
   uart_init(kUartBaudrate);
+  base_set_stdout(uart_stdout);
 
   pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
@@ -51,7 +54,7 @@ int main(int argc, char **argv) {
 
 // Override weak default function
 void handler_irq_timer(void) {
-  uart_send_str("In Interrupt handler!\r\n");
+  LOG_INFO("In Interrupt handler!");
   rv_timer_ctrl(hart, false);
   rv_timer_clr_all_intrs();
   intr_handling_success = 1;
