@@ -9,7 +9,7 @@
   bus_device: "tlul",
   bus_host: "none",
   available_inout_list: [
-    #{ name: "d", desc: "USB data differential" }
+    { name: "d", desc: "USB data differential" }
     { name: "dp", desc: "USB data D+" }
     { name: "dn", desc: "USB data D-" }
   ],
@@ -17,7 +17,10 @@
     {  name: "sense", desc: "USB host VBUS sense" }
   ],
   available_output_list: [
-    { name: "pullup", desc: "USB Full Speed pullup control" }
+    { name: "se0", desc: "USB single-ended zero link state" }
+    { name: "pullup", desc: "USB pullup control" }
+    { name: "tx_mode_se", desc: "USB single-ended transmit mode control" }
+    { name: "suspend", desc: "USB link suspend state" }
   ],
   param_list: [
     { name:    "NEndpoints",
@@ -189,9 +192,9 @@
         }
         {
           bits: "15",
-          name: "usb_sense",
+          name: "sense",
           desc: '''
-                Refelects the state of the usb_sense pin. 1 indicates that
+                Refelects the state of the sense pin. 1 indicates that
                 the host is providing VBUS.
                 '''
         }

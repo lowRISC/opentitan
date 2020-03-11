@@ -17,21 +17,29 @@ module usbdev (
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // USB Interface
-  input  logic       cio_d_i,
-  input  logic       cio_dp_i,
-  input  logic       cio_dn_i,
+  // Data inputs
+  input  logic       cio_d_i, // differential
+  input  logic       cio_dp_i, // single-ended, can be used in differential mode to detect SE0
+  input  logic       cio_dn_i, // single-ended, can be used in differential mode to detect SE0
 
+  // Data outputs
   output logic       cio_d_o,
-  output logic       cio_se0_o,
+  output logic       cio_d_en_o,
   output logic       cio_dp_o,
+  output logic       cio_dp_en_o,
   output logic       cio_dn_o,
-  output logic       cio_oe_o,
+  output logic       cio_dn_en_o,
 
-  output logic       cio_tx_mode_se_o,
+  // Non-data I/O
   input  logic       cio_sense_i,
+  output logic       cio_se0_o,
+  output logic       cio_se0_en_o,
+  output logic       cio_pullup_o,
   output logic       cio_pullup_en_o,
   output logic       cio_suspend_o,
+  output logic       cio_suspend_en_o,
+  output logic       cio_tx_mode_se_o,
+  output logic       cio_tx_mode_se_en_o,
 
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
@@ -858,7 +866,7 @@ module usbdev (
     .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode),
     .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode),
     .sys_reg2hw_config_i    (reg2hw.phy_config),
-    .sys_usb_sense_o        (hw2reg.usbstat.usb_sense.d),
+    .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
     // Chip IO
     .cio_usb_d_i            (cio_d_i),
@@ -868,7 +876,7 @@ module usbdev (
     .cio_usb_se0_o          (cio_se0_o),
     .cio_usb_dp_o           (cio_dp_o),
     .cio_usb_dn_o           (cio_dn_o),
-    .cio_usb_oe_o           (cio_oe_o),
+    .cio_usb_oe_o           (cio_oe),
     .cio_usb_tx_mode_se_o   (cio_tx_mode_se_o),
     .cio_usb_sense_i        (cio_sense_i),
     .cio_usb_pullup_en_o    (cio_pullup_en_o),
@@ -884,5 +892,23 @@ module usbdev (
     .usb_pullup_en_i        (usb_pullup_en),
     .usb_suspend_i          (usb_event_link_suspend)
   );
+
+  ////////////////////////
+  // USB Output Enables //
+  ////////////////////////
+  logic cio_oe;
+
+  // Data outputs
+  assign cio_d_en_o  = cio_oe;
+  assign cio_dp_en_o = cio_oe;
+  assign cio_dn_en_o = cio_oe;
+
+  // Non-data outputs - always enabled.
+  assign cio_se0_en_o        = 1'b1;
+  assign cio_suspend_en_o    = 1'b1;
+  assign cio_tx_mode_se_en_o = 1'b1;
+
+  // Pullup
+  assign cio_pullup_o        = 1'b1;
 
 endmodule

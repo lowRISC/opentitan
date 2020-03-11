@@ -18,7 +18,12 @@ module top_earlgrey_verilator (
   logic cio_spi_device_mosi_p2d;
   logic cio_spi_device_miso_d2p, cio_spi_device_miso_en_d2p;
 
-  logic cio_usbdev_sense_p2d, cio_usbdev_pullup_d2p, cio_usbdev_pullup_en_d2p;
+  logic cio_usbdev_sense_p2d;
+  logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
+  logic cio_usbdev_pullup_d2p, cio_usbdev_pullup_en_d2p;
+  logic cio_usbdev_tx_mode_se_d2p, cio_usbdev_tx_mode_se_en_d2p;
+  logic cio_usbdev_supsend_d2p, cio_usbdev_supsend_en_d2p;
+  logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
@@ -26,44 +31,53 @@ module top_earlgrey_verilator (
 
   // Top-level design
   top_earlgrey top_earlgrey (
-    .clk_i                    (clk_i),
-    .rst_ni                   (rst_ni),
+    .clk_i                      (clk_i),
+    .rst_ni                     (rst_ni),
 
-    .clk_usb_48mhz_i          (clk_i),
+    .clk_usb_48mhz_i            (clk_i),
 
-    .jtag_tck_i               (cio_jtag_tck),
-    .jtag_tms_i               (cio_jtag_tms),
-    .jtag_trst_ni             (cio_jtag_trst_n),
-    .jtag_td_i                (cio_jtag_tdi),
-    .jtag_td_o                (cio_jtag_tdo),
+    .jtag_tck_i                 (cio_jtag_tck),
+    .jtag_tms_i                 (cio_jtag_tms),
+    .jtag_trst_ni               (cio_jtag_trst_n),
+    .jtag_td_i                  (cio_jtag_tdi),
+    .jtag_td_o                  (cio_jtag_tdo),
 
     // Multiplexed I/O
-    .mio_in_i                 (cio_gpio_p2d),
-    .mio_out_o                (cio_gpio_d2p),
-    .mio_oe_o                 (cio_gpio_en_d2p),
+    .mio_in_i                   (cio_gpio_p2d),
+    .mio_out_o                  (cio_gpio_d2p),
+    .mio_oe_o                   (cio_gpio_en_d2p),
 
     // Dedicated I/O
-    .dio_uart_rx_i            (cio_uart_rx_p2d),
-    .dio_uart_tx_o            (cio_uart_tx_d2p),
-    .dio_uart_tx_en_o         (cio_uart_tx_en_d2p),
+    .dio_uart_rx_i              (cio_uart_rx_p2d),
+    .dio_uart_tx_o              (cio_uart_tx_d2p),
+    .dio_uart_tx_en_o           (cio_uart_tx_en_d2p),
 
-    .dio_spi_device_sck_i     (cio_spi_device_sck_p2d),
-    .dio_spi_device_csb_i     (cio_spi_device_csb_p2d),
-    .dio_spi_device_mosi_i    (cio_spi_device_mosi_p2d),
-    .dio_spi_device_miso_o    (cio_spi_device_miso_d2p),
-    .dio_spi_device_miso_en_o (cio_spi_device_miso_en_d2p),
+    .dio_spi_device_sck_i       (cio_spi_device_sck_p2d),
+    .dio_spi_device_csb_i       (cio_spi_device_csb_p2d),
+    .dio_spi_device_mosi_i      (cio_spi_device_mosi_p2d),
+    .dio_spi_device_miso_o      (cio_spi_device_miso_d2p),
+    .dio_spi_device_miso_en_o   (cio_spi_device_miso_en_d2p),
 
-    .dio_usbdev_sense_i       (cio_usbdev_sense_p2d),
-    .dio_usbdev_pullup_o      (cio_usbdev_pullup_d2p),
-    .dio_usbdev_pullup_en_o   (cio_usbdev_pullup_en_d2p),
-    .dio_usbdev_dp_i          (cio_usbdev_dp_p2d),
-    .dio_usbdev_dp_o          (cio_usbdev_dp_d2p),
-    .dio_usbdev_dp_en_o       (cio_usbdev_dp_en_d2p),
-    .dio_usbdev_dn_i          (cio_usbdev_dn_p2d),
-    .dio_usbdev_dn_o          (cio_usbdev_dn_d2p),
-    .dio_usbdev_dn_en_o       (cio_usbdev_dn_en_d2p),
+    .dio_usbdev_sense_i         (cio_usbdev_sense_p2d),
+    .dio_usbdev_se0_o           (cio_usbdev_se0_d2p),
+    .dio_usbdev_se0_en_o        (cio_usbdev_se0_en_d2p),
+    .dio_usbdev_pullup_o        (cio_usbdev_pullup_d2p),
+    .dio_usbdev_pullup_en_o     (cio_usbdev_pullup_en_d2p),
+    .dio_usbdev_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
+    .dio_usbdev_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
+    .dio_usbdev_suspend_o       (cio_usbdev_suspend_d2p),
+    .dio_usbdev_suspend_en_o    (cio_usbdev_suspend_en_d2p),
+    .dio_usbdev_d_i             (cio_usbdev_d_p2d),
+    .dio_usbdev_d_o             (cio_usbdev_d_d2p),
+    .dio_usbdev_d_en_o          (cio_usbdev_d_en_d2p),
+    .dio_usbdev_dp_i            (cio_usbdev_dp_p2d),
+    .dio_usbdev_dp_o            (cio_usbdev_dp_d2p),
+    .dio_usbdev_dp_en_o         (cio_usbdev_dp_en_d2p),
+    .dio_usbdev_dn_i            (cio_usbdev_dn_p2d),
+    .dio_usbdev_dn_o            (cio_usbdev_dn_d2p),
+    .dio_usbdev_dn_en_o         (cio_usbdev_dn_en_d2p),
 
-    .scanmode_i               (1'b0)
+    .scanmode_i                 (1'b0)
   );
 
   // GPIO DPI
@@ -147,6 +161,21 @@ module top_earlgrey_verilator (
     .dn_d2p        (cio_usbdev_dn_d2p),
     .dn_en_d2p     (cio_usbdev_dn_en_d2p)
   );
+
+  // Tie off unused signals.
+  logic unused_cio_usbdev_se0_d2p, unused_cio_usbdev_se0_en_d2p;
+  logic unused_cio_usbdev_tx_mode_se_d2p, unused_cio_usbdev_tx_mode_se_en_d2p;
+  logic unused_cio_usbdev_supsend_d2p, unused_cio_usbdev_supsend_en_d2p;
+  logic unused_cio_usbdev_d_d2p, unused_cio_usbdev_d_en_d2p;
+  assign unused_cio_usbdev_se0_d2p = cio_usbdev_se0_d2p;
+  assign unused_cio_usbdev_se0_en_d2p = cio_usbdev_se0_en_d2p;
+  assign unused_cio_usbdev_tx_mode_se_d2p = cio_usbdev_tx_mode_se_d2p;
+  assign unused_cio_usbdev_tx_mode_se_en_d2p = cio_usbdev_tx_mode_se_en_d2p;
+  assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;
+  assign unused_cio_usbdev_suspend_en_d2p = cio_usbdev_suspend_en_d2p;
+  assign cio_usbdev_d_p2d = 1'b0;
+  assign unused_cio_usbdev_d_d2p = cio_usbdev_d_d2p;
+  assign unused_cio_usbdev_d_en_d2p = cio_usbdev_d_en_d2p;
 
   // monitor for termination
 `ifndef END_MON_PATH

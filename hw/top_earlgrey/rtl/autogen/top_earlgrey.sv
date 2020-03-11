@@ -34,8 +34,17 @@ module top_earlgrey #(
   output logic        dio_uart_tx_o,
   output logic        dio_uart_tx_en_o,
   input               dio_usbdev_sense_i,
+  output logic        dio_usbdev_se0_o,
+  output logic        dio_usbdev_se0_en_o,
   output logic        dio_usbdev_pullup_o,
   output logic        dio_usbdev_pullup_en_o,
+  output logic        dio_usbdev_tx_mode_se_o,
+  output logic        dio_usbdev_tx_mode_se_en_o,
+  output logic        dio_usbdev_suspend_o,
+  output logic        dio_usbdev_suspend_en_o,
+  input               dio_usbdev_d_i,
+  output logic        dio_usbdev_d_o,
+  output logic        dio_usbdev_d_en_o,
   input               dio_usbdev_dp_i,
   output logic        dio_usbdev_dp_o,
   output logic        dio_usbdev_dp_en_o,
@@ -154,10 +163,19 @@ module top_earlgrey #(
   // nmi_gen
   // usbdev
   logic        cio_usbdev_sense_p2d;
+  logic        cio_usbdev_d_p2d;
   logic        cio_usbdev_dp_p2d;
   logic        cio_usbdev_dn_p2d;
+  logic        cio_usbdev_se0_d2p;
+  logic        cio_usbdev_se0_en_d2p;
   logic        cio_usbdev_pullup_d2p;
   logic        cio_usbdev_pullup_en_d2p;
+  logic        cio_usbdev_tx_mode_se_d2p;
+  logic        cio_usbdev_tx_mode_se_en_d2p;
+  logic        cio_usbdev_suspend_d2p;
+  logic        cio_usbdev_suspend_en_d2p;
+  logic        cio_usbdev_d_d2p;
+  logic        cio_usbdev_d_en_d2p;
   logic        cio_usbdev_dp_d2p;
   logic        cio_usbdev_dp_en_d2p;
   logic        cio_usbdev_dn_d2p;
@@ -676,23 +694,27 @@ module top_earlgrey #(
       .tl_i (tl_usbdev_d_h2d),
       .tl_o (tl_usbdev_d_d2h),
 
-      // Differential data - Currently not used.
-      .cio_d_i          (1'b0),
-      .cio_d_o          (),
-      .cio_se0_o        (),
+      // Input
+      .cio_sense_i         (cio_usbdev_sense_p2d),
+      .cio_d_i             (cio_usbdev_d_p2d),
+      .cio_dp_i            (cio_usbdev_dp_p2d),
+      .cio_dn_i            (cio_usbdev_dn_p2d),
 
-      // Single-ended data
-      .cio_dp_i         (cio_usbdev_dp_p2d),
-      .cio_dn_i         (cio_usbdev_dn_p2d),
-      .cio_dp_o         (cio_usbdev_dp_d2p),
-      .cio_dn_o         (cio_usbdev_dn_d2p),
-
-      // Non-data I/O
-      .cio_sense_i      (cio_usbdev_sense_p2d),
-      .cio_oe_o         (cio_usbdev_dp_en_d2p),
-      .cio_tx_mode_se_o (),
-      .cio_pullup_en_o  (cio_usbdev_pullup_en_d2p),
-      .cio_suspend_o    (),
+      // Output
+      .cio_se0_o           (cio_usbdev_se0_d2p),
+      .cio_se0_en_o        (cio_usbdev_se0_en_d2p),
+      .cio_pullup_o        (cio_usbdev_pullup_d2p),
+      .cio_pullup_en_o     (cio_usbdev_pullup_en_d2p),
+      .cio_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
+      .cio_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
+      .cio_suspend_o       (cio_usbdev_suspend_d2p),
+      .cio_suspend_en_o    (cio_usbdev_suspend_en_d2p),
+      .cio_d_o             (cio_usbdev_d_d2p),
+      .cio_d_en_o          (cio_usbdev_d_en_d2p),
+      .cio_dp_o            (cio_usbdev_dp_d2p),
+      .cio_dp_en_o         (cio_usbdev_dp_en_d2p),
+      .cio_dn_o            (cio_usbdev_dn_d2p),
+      .cio_dn_en_o         (cio_usbdev_dn_en_d2p),
 
       // Interrupt
       .intr_pkt_received_o    (intr_usbdev_pkt_received),
@@ -717,10 +739,6 @@ module top_earlgrey #(
       .rst_ni (sys_fixed_rst_n),
       .rst_usb_48mhz_ni (usb_rst_n)
   );
-
-  // USB assignments
-  assign cio_usbdev_dn_en_d2p = cio_usbdev_dp_en_d2p; // have a single output enable only
-  assign cio_usbdev_pullup_d2p = 1'b1;
 
   // interrupt assignments
   assign intr_vector = {
@@ -843,23 +861,32 @@ module top_earlgrey #(
     cio_gpio_gpio_p2d
   } = m2p;
 
-  assign cio_spi_device_sck_p2d   = dio_spi_device_sck_i;
-  assign cio_spi_device_csb_p2d   = dio_spi_device_csb_i;
-  assign cio_spi_device_mosi_p2d  = dio_spi_device_mosi_i;
-  assign dio_spi_device_miso_o    = cio_spi_device_miso_d2p;
-  assign dio_spi_device_miso_en_o = cio_spi_device_miso_en_d2p;
-  assign cio_uart_rx_p2d          = dio_uart_rx_i;
-  assign dio_uart_tx_o            = cio_uart_tx_d2p;
-  assign dio_uart_tx_en_o         = cio_uart_tx_en_d2p;
-  assign cio_usbdev_sense_p2d     = dio_usbdev_sense_i;
-  assign dio_usbdev_pullup_o      = cio_usbdev_pullup_d2p;
-  assign dio_usbdev_pullup_en_o   = cio_usbdev_pullup_en_d2p;
-  assign cio_usbdev_dp_p2d        = dio_usbdev_dp_i;
-  assign dio_usbdev_dp_o          = cio_usbdev_dp_d2p;
-  assign dio_usbdev_dp_en_o       = cio_usbdev_dp_en_d2p;
-  assign cio_usbdev_dn_p2d        = dio_usbdev_dn_i;
-  assign dio_usbdev_dn_o          = cio_usbdev_dn_d2p;
-  assign dio_usbdev_dn_en_o       = cio_usbdev_dn_en_d2p;
+  assign cio_spi_device_sck_p2d     = dio_spi_device_sck_i;
+  assign cio_spi_device_csb_p2d     = dio_spi_device_csb_i;
+  assign cio_spi_device_mosi_p2d    = dio_spi_device_mosi_i;
+  assign dio_spi_device_miso_o      = cio_spi_device_miso_d2p;
+  assign dio_spi_device_miso_en_o   = cio_spi_device_miso_en_d2p;
+  assign cio_uart_rx_p2d            = dio_uart_rx_i;
+  assign dio_uart_tx_o              = cio_uart_tx_d2p;
+  assign dio_uart_tx_en_o           = cio_uart_tx_en_d2p;
+  assign cio_usbdev_sense_p2d       = dio_usbdev_sense_i;
+  assign dio_usbdev_se0_o           = cio_usbdev_se0_d2p;
+  assign dio_usbdev_se0_en_o        = cio_usbdev_se0_en_d2p;
+  assign dio_usbdev_pullup_o        = cio_usbdev_pullup_d2p;
+  assign dio_usbdev_pullup_en_o     = cio_usbdev_pullup_en_d2p;
+  assign dio_usbdev_tx_mode_se_o    = cio_usbdev_tx_mode_se_d2p;
+  assign dio_usbdev_tx_mode_se_en_o = cio_usbdev_tx_mode_se_en_d2p;
+  assign dio_usbdev_suspend_o       = cio_usbdev_suspend_d2p;
+  assign dio_usbdev_suspend_en_o    = cio_usbdev_suspend_en_d2p;
+  assign cio_usbdev_d_p2d           = dio_usbdev_d_i;
+  assign dio_usbdev_d_o             = cio_usbdev_d_d2p;
+  assign dio_usbdev_d_en_o          = cio_usbdev_d_en_d2p;
+  assign cio_usbdev_dp_p2d          = dio_usbdev_dp_i;
+  assign dio_usbdev_dp_o            = cio_usbdev_dp_d2p;
+  assign dio_usbdev_dp_en_o         = cio_usbdev_dp_en_d2p;
+  assign cio_usbdev_dn_p2d          = dio_usbdev_dn_i;
+  assign dio_usbdev_dn_o            = cio_usbdev_dn_d2p;
+  assign dio_usbdev_dn_en_o         = cio_usbdev_dn_en_d2p;
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)

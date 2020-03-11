@@ -33,8 +33,17 @@ module padctl (
   inout   IO_GP15,
   // USB device side
   output cio_usbdev_sense_p2d,
+  input  cio_usbdev_se0_d2p,
+  input  cio_usbdev_se0_en_d2p,
   input  cio_usbdev_pullup_d2p,
   input  cio_usbdev_pullup_en_d2p,
+  input  cio_usbdev_tx_mode_se_d2p,
+  input  cio_usbdev_tx_mode_se_en_d2p,
+  input  cio_usbdev_suspend_d2p,
+  input  cio_usbdev_suspend_en_d2p,
+  output cio_usbdev_d_p2d,
+  input  cio_usbdev_d_d2p,
+  input  cio_usbdev_d_en_d2p,
   output cio_usbdev_dp_p2d,
   input  cio_usbdev_dp_d2p,
   input  cio_usbdev_dp_en_d2p,
@@ -83,6 +92,21 @@ module padctl (
   // clock you are regenerating, rather than just holding the phase.
   assign cio_usbdev_dp_p2d = cio_usbdev_dp_en_d2p ? 1'b1 : IO_USB_DP0;
   assign cio_usbdev_dn_p2d = cio_usbdev_dn_en_d2p ? 1'b0 : IO_USB_DN0;
+
+  // Tie off unused signals.
+  logic unused_cio_usbdev_se0_d2p, unused_cio_usbdev_se0_en_d2p;
+  logic unused_cio_usbdev_tx_mode_se_d2p, unused_cio_usbdev_tx_mode_se_en_d2p;
+  logic unused_cio_usbdev_supsend_d2p, unused_cio_usbdev_supsend_en_d2p;
+  logic unused_cio_usbdev_d_d2p, unused_cio_usbdev_d_en_d2p;
+  assign unused_cio_usbdev_se0_d2p = cio_usbdev_se0_d2p;
+  assign unused_cio_usbdev_se0_en_d2p = cio_usbdev_se0_en_d2p;
+  assign unused_cio_usbdev_tx_mode_se_d2p = cio_usbdev_tx_mode_se_d2p;
+  assign unused_cio_usbdev_tx_mode_se_en_d2p = cio_usbdev_tx_mode_se_en_d2p;
+  assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;
+  assign unused_cio_usbdev_suspend_en_d2p = cio_usbdev_suspend_en_d2p;
+  assign cio_usbdev_d_p2d = 1'b0;
+  assign unused_cio_usbdev_d_d2p = cio_usbdev_d_d2p;
+  assign unused_cio_usbdev_d_en_d2p = cio_usbdev_d_en_d2p;
 
   // JTAG or SPI mux to the FTDI MSEE pins DPS0-DPS6
   logic    jtag_spi_n, dps2, dps2_en;
