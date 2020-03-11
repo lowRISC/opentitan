@@ -154,22 +154,22 @@
       hwaccess: "hrw",
       hwext: "true",
       hwre: "true",
-      tags: [// read wdata when fifo is empty, dut may return unknown data
-             "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "7:0" }
       ]
+      tags: [// read wdata when fifo is empty, dut may return unknown data
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "WDATA",
       desc: "UART write data",
       swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
-      tags: [// don't write to wdata - it affects several other csrs
-             "excl:CsrNonInitTests:CsrExclWrite"],
       fields: [
         { bits: "7:0" }
       ]
+      tags: [// don't write to wdata - it affects several other csrs
+             "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { name: "FIFO_CTRL",
       desc: "UART FIFO control register",
@@ -267,7 +267,8 @@
         { bits: "0",
           name: "TXEN",
           desc: "Enable TX pin override control",
-          tags: [// writes to ovrd.txen causes tx output to be forced to ovrd.txval causing protocol violation
+          tags: [// writes to ovrd.txen causes tx output to be forced to ovrd.txval
+                 // causing protocol violation
                  "excl:CsrAllTests:CsrExclWrite"]
         }
         { bits: "1",

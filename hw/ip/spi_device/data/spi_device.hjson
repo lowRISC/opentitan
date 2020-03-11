@@ -157,6 +157,8 @@
             but no clock from the host is given, the data stuck at this async fifo waiting
             host toggles SCK. This value represents the number of bytes.
             '''
+          tags: [// HW modifies async_fifo_level.txlvl when txf_ptr.wptr is updated.
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
         },
         { bits: "7:0",
           name: "rxlvl",
@@ -181,6 +183,8 @@
         { bits: "4", name: "abort_done", desc: "Abort process is completed", resval: "1" },
         { bits: "5", name: "csb",        desc: "Direct input of CSb signal", resval: "1" },
       ]
+      tags: [// Status reads back unexpected values due to writes to other CSRs.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name: "RXF_PTR",
       desc: "Receiver FIFO (SRAM) pointers",
@@ -214,6 +218,8 @@
           swaccess: "ro",
           hwaccess: "hwo",
           resval: "0",
+          tags: [// HW modifies rptr for the txfifo in unexpected way.
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
         },
         { bits: "31:16",
           name: "WPTR",

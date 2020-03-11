@@ -100,6 +100,8 @@
           resval: "1"
         }
       ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "RDATA"
       desc: "I2C read data"
@@ -110,6 +112,8 @@
       fields: [
         {bits: "7:0"}
       ]
+      tags: [// Updated by the hw. Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "FDATA"
       desc: "I2C Format Data"
@@ -228,6 +232,8 @@
           desc: "Current fill level of RX fifo"
         }
       ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "OVRD"
       desc: "I2C override control register"
@@ -267,6 +273,8 @@
                 '''
         }
       ]
+      tags: [// Affected by IO pins - exclude from init and write checks.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
 
     { name: "TIMING0"

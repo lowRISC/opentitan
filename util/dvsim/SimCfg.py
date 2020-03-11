@@ -267,10 +267,11 @@ class SimCfg(FlowCfg):
                 overlapping_tests = get_overlapping_tests(
                     regression.tests, run_list_names)
                 if overlapping_tests != []:
-                    log.error("Regression \"%s\" added for run contains tests that overlap with " + \
-                              "other regressions added. This can result in conflicting " + \
-                              "build / run_opts to be set causing unexpected results.",
-                              regression.name)
+                    log.error(
+                        "Regression \"%s\" added for run contains tests that overlap with "
+                        "other regressions added. This can result in conflicting "
+                        "build / run_opts to be set causing unexpected results.",
+                        regression.name)
                     sys.exit(1)
 
                 self.run_list.extend(regression.tests)
@@ -295,13 +296,12 @@ class SimCfg(FlowCfg):
         # Merge the global build and run opts
         Tests.merge_global_opts(self.run_list, self.build_opts, self.run_opts)
 
-        # Check if all items has been processed
+        # Check if all items have been processed
         if items_list != []:
             log.error(
-                "The items %s added for run were not found in \n%s!\n \
-                Use the --list switch to see a list of available \
-                tests / regressions.", items_list, self.flow_cfg_file)
-            sys.exit(1)
+                "The items %s added for run were not found in \n%s!\n "
+                "Use the --list switch to see a list of available "
+                "tests / regressions.", items_list, self.flow_cfg_file)
 
         # Process reseed override and create the build_list
         build_list_names = []
@@ -496,16 +496,17 @@ class SimCfg(FlowCfg):
             results_str += "\n"
             self.results_summary = self.testplan.results_summary
 
-        # Append coverage results of coverage was enabled.
-        if self.cov and self.cov_report_deploy.status == "P":
-            results_str += "\n## Coverage Results\n"
-            results_str += "\n### [Coverage Dashboard](cov_report/dashboard.html)\n\n"
-            results_str += self.cov_report_deploy.cov_results
-            self.results_summary["Coverage"] = self.cov_report_deploy.cov_total
+            # Append coverage results of coverage was enabled.
+            if self.cov and self.cov_report_deploy.status == "P":
+                results_str += "\n## Coverage Results\n"
+                results_str += "\n### [Coverage Dashboard](cov_report/dashboard.html)\n\n"
+                results_str += self.cov_report_deploy.cov_results
+                self.results_summary[
+                    "Coverage"] = self.cov_report_deploy.cov_total
 
-        # append link of detail result to block name
-        self.results_summary["Name"] = self._get_results_page_link(
-            self.results_summary["Name"])
+            # append link of detail result to block name
+            self.results_summary["Name"] = self._get_results_page_link(
+                self.results_summary["Name"])
 
         # Append failures for triage
         self.results_md = results_str + fail_msgs
@@ -532,7 +533,7 @@ class SimCfg(FlowCfg):
             row = []
             for title in item.results_summary:
                 row.append(item.results_summary[title])
-            table.append(row)
+            if len(row) == len(header): table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
         self.results_summary_md += tabulate(table,
