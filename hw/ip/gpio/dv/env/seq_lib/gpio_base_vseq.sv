@@ -11,6 +11,7 @@ class gpio_base_vseq extends cip_base_vseq #(
 
   // Delay between consecutive transactions
   rand uint delay;
+  bit  do_init_reset = 1;
 
   constraint delay_c {
     delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
@@ -23,15 +24,24 @@ class gpio_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
-    // Check for weak pullup or weak pulldown requirement
-    if (cfg.pullup_en) begin
-      cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b1}});
-      `uvm_info(`gfn, "weak pullup applied to gpio's", UVM_HIGH)
-    end else if (cfg.pulldown_en) begin
-      cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
-      `uvm_info(`gfn, "weak pulldown applied to gpio's", UVM_HIGH)
+    if (do_init_reset) begin
+      // Check for weak pullup or weak pulldown requirement
+      if (cfg.pullup_en) begin
+        cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b1}});
+        //cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b0}});
+        `uvm_info(`gfn, "weak pullup applied to gpio's", UVM_LOW)
+      end else if (cfg.pulldown_en) begin
+        //cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b0}});
+        cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
+        `uvm_info(`gfn, "weak pulldown applied to gpio's", UVM_LOW)
+      end
+      super.dut_init(reset_kind);
+    end else begin
+      // since stress_all_with_rand_reset test have to turn off the reset here,
+      // this step makes sure that we reset out and oe pins to avoid drive x in gpio_in
+      drive_gpio_out('0);
+      drive_gpio_oe('0);
     end
-    super.dut_init(reset_kind);
   endtask : dut_init
 
   // Function: set_gpio_pulls

@@ -123,7 +123,17 @@
     }
 
     {
+      name: gpio_stress_all_with_rand_reset
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
       name: gpio_csr_rw
+      run_opts: ["+do_clear_all_interrupts=0"]
+    }
+
+    {
+      name: gpio_same_csr_outstanding
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 

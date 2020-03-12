@@ -2,6 +2,7 @@
   name: "gpio"
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
                      "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
@@ -97,7 +98,7 @@
             3. Drives each  GPIO pin with the mix of both synchronous and asynchronous driving,
                and each pin is driven independently of others'''
       milestone: V2
-      tests: ["gpio_filter_stress_test"]
+      tests: ["gpio_filter_stress"]
     }
     {
       name: regs_long_reads_and_writes
@@ -126,6 +127,13 @@
             - Apply hard reset'''
       milestone: V2
       tests: ["gpio_full_random"]
+    }
+    {
+      name: stress_all
+      desc: '''Stress_all test is a random mix of all the test above except csr tests, gpio full
+            random, intr_test and other gpio test that disabled scoreboard'''
+      milestone: V2
+      tests: ["gpio_stress_all"]
     }
   ]
 }

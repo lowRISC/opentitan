@@ -12,7 +12,8 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
 
   task body();
     string seq_names[] = {"gpio_sanity_vseq",
-                          "gpio_common_vseq", // for intr_test
+                          // "gpio_common_vseq",
+                          // does not support intr_test as plus_arg disable do_clear_all_interrupts
                           "gpio_random_dout_din_vseq",
                           "gpio_dout_din_regs_random_rw_vseq",
                           "gpio_intr_rand_pgm_vseq",
@@ -26,17 +27,12 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(gpio_vseq, seq)
 
-      // dut_init (reset) can be skipped
-      if (do_dut_init) gpio_vseq.do_dut_init = $urandom_range(0, 1);
-      else gpio_vseq.do_dut_init = 0;
+      // hard_reset in dut_init can be skipped
+      if (do_dut_init) gpio_vseq.do_init_reset = $urandom_range(0, 1);
+      else gpio_vseq.do_init_reset = 0;
 
       gpio_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(gpio_vseq)
-      if (seq_names[seq_idx] == "gpio_common_vseq") begin
-        gpio_common_vseq common_vseq;
-        `downcast(common_vseq, gpio_vseq);
-        common_vseq.common_seq_type = "intr_test";
-      end
       `uvm_info(`gfn, $sformatf("seq_idx = %0d, sequence is %0s", seq_idx, gpio_vseq.get_name()),
                 UVM_HIGH)
 
@@ -45,5 +41,4 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
           seq_idx), UVM_HIGH)
     end
   endtask : body
-
 endclass
