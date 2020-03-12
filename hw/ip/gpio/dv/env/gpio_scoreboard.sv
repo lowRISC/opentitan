@@ -229,6 +229,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       `uvm_info(`gfn, $sformatf("cfg.gpio_vif.pins = %0h, under_reset = %0b",
                                 cfg.gpio_vif.pins, under_reset), UVM_HIGH)
       if (under_reset == 1'b0) begin
+        // wait 1 ps to allow reset() function reset the values first
+        #1ps;
         // Coverage Sampling: gpio pin values' coverage
         if (cfg.en_cov) begin
           foreach (cov.gpio_pin_values_cov_obj[each_pin]) begin
@@ -784,8 +786,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     last_intr_update_except_clearing = '0;
     last_intr_test_event = '0;
     cleared_intr_bits = '0;
-    // call again to predict 'data_in_update_queue' to ensure data_in ral is updated
-    gpio_predict_and_compare();
   endfunction
 
   // Function: check_phase
