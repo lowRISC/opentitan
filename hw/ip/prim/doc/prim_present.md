@@ -66,5 +66,5 @@ for (int i=1; i < 32; i++) {
 data_o = state ^ round_keys[32];
 ```
 
-The reduced 32bit block-size variant implemented is non-standard and should only be used for scrambling purposes, since it is not secure.
+The reduced 32bit block-size variant implemented is non-standard and should only be used for scrambling purposes, since it **is not secure**.
 It leverages the same crypto primitives and key derivation functions as the 64bit variant, with the difference that the permutation layer is formulated for 32 instead of 64 elements.

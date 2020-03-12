@@ -17,8 +17,11 @@
 // References: - https://en.wikipedia.org/wiki/PRESENT
 //             - https://en.wikipedia.org/wiki/Prince_(cipher)
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
-//             - https://eprint.iacr.org/2012/529.pdf
 //             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/documents/papers/session7-maene-paper.pdf
+//             - https://eprint.iacr.org/2012/529.pdf
+//             - https://eprint.iacr.org/2015/372.pdf
+//             - https://eprint.iacr.org/2014/656.pdf
+
 
 // TODO: this module has not been verified yet, and has only been used in
 // synthesis experiments.
@@ -27,7 +30,10 @@ module prim_prince #(
   parameter int DataWidth     = 64,
   parameter int KeyWidth      = 128,
   // The construction is reflective. Total number of rounds is 2*NumRoundsHalf + 2
-  parameter int NumRoundsHalf = 5
+  parameter int NumRoundsHalf = 5,
+  // This primitive uses the new key schedule proposed in https://eprint.iacr.org/2014/656.pdf
+  // Setting this parameter to 1 falls back to the original key schedule.
+  parameter bit UseOldKeySched = 1'b0
 ) (
   input        [DataWidth-1:0] data_i,
   input        [KeyWidth-1:0]  key_i,
@@ -168,7 +174,15 @@ module prim_prince #(
   //////////////
 
   logic [DataWidth-1:0] data_state;
-  logic [DataWidth-1:0] k0, k0_prime, k1;
+  logic [DataWidth-1:0] k0, k0_prime, k1, k0_new;
+
+  if (UseOldKeySched) begin : gen_legacy_keyschedule
+    assign k0_new = k1;
+  end else begin : gen_new_keyschedule
+    // improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
+    assign k0_new = k0;
+  end
+
   always_comb begin : p_prince
     // key expansion
     k0       = key_i[DataWidth-1:0];
@@ -193,7 +207,8 @@ module prim_prince #(
       data_state = mult_prime_layer(data_state);
       data_state = shiftrows_layer(data_state);
       data_state ^= RoundConst[k][DataWidth-1:0];
-      data_state ^= k1;
+      // improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
+      data_state ^= (1'(k) & 1'b1) ? k0_new : k1;
     end
 
     // middle part
@@ -204,7 +219,8 @@ module prim_prince #(
     // reverse pass
     // the construction is reflective, hence the subtraction with NumRoundsHalf
     for (int k = 11-NumRoundsHalf; k <= 10; k++) begin
-      data_state ^= k1;
+      // improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
+      data_state ^= (1'(k) & 1'b1) ? k1 : k0_new;
       data_state ^= RoundConst[k][DataWidth-1:0];
       data_state = shiftrows_inv_layer(data_state);
       data_state = mult_prime_layer(data_state);
