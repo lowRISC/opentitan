@@ -222,11 +222,11 @@ def main():
 
     ## Find code matrix =======================================================
     # This is main part to find the parity matrix.
-    # For example, find SECDED for 4bit message is to find 3x4 matrix as below
-    # | 1 0 0 0 x x x |
-    # | 0 1 0 0 x x x |
-    # | 0 0 1 0 x x x |
-    # | 0 0 0 1 x x x |
+    # For example, find SECDED for 4bit message is to find 4x4 matrix as below
+    # | 1 0 0 0 x x x x |
+    # | 0 1 0 0 x x x x |
+    # | 0 0 1 0 x x x x |
+    # | 0 0 0 1 x x x x |
     # Then message _k_ X matrix_code ==> original message with parity
     #
     # Make a row to have even number of 1 including the I matrix.
