@@ -53,6 +53,7 @@ module tlul_adapter_sram #(
   typedef struct packed {
     req_op_e                    op ;
     logic                       error ;
+    logic [top_pkg::TL_DW-1:0]  mask ;
     logic [top_pkg::TL_SZW-1:0] size ;
     logic [top_pkg::TL_AIW-1:0] source ;
   } req_t ;
@@ -151,14 +152,16 @@ module tlul_adapter_sram #(
   `ASSERT_INIT(TlUlEqualsToSramDw, top_pkg::TL_DW == SramDw)
 
   // Convert byte mask to SRAM bit mask.
+  logic [top_pkg::TL_DW-1:0] rmask;
   always_comb begin
     for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
       wmask_o[8*i+:8] = (tl_i.a_valid) ? {8{tl_i.a_mask[i]}} : '0;
       // only forward valid data here.
       wdata_o[8*i+:8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
+      // mask for read data
+      rmask[8*i+:8] = {8{reqfifo_rdata.mask[i]}};
     end
   end
-
 
   // Begin: Request Error Detection
 
@@ -194,6 +197,7 @@ module tlul_adapter_sram #(
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{
     op:     (tl_i.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
+    mask:   tl_i.a_mask,
     error:  error_internal,
     size:   tl_i.a_size,
     source: tl_i.a_source
@@ -202,7 +206,7 @@ module tlul_adapter_sram #(
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
   assign rspfifo_wdata  = '{
-    data:  rdata_i,
+    data:  rdata_i & rmask, // make sure only requested bytes are forwarded
     error: rerror_i[1]  // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
