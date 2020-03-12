@@ -252,8 +252,9 @@ can be used to add coverpoints to your design, where the cover
 property uses the same SVA syntax, operators, and system functions as the the
 assert properties.
 
-## How To Run JasperGold
+## How To Run FPV on OpenTitan
 
+### Cadence JapserGold
 If you have access to JasperGold from Cadence, you can formally verify your
 assertions. For example, to run formal property verification (FPV) using
 JasperGold on module `gpio`, type:
@@ -298,6 +299,31 @@ my_module1
 my_module3
 ERROR (ENL024): Combinational loop found within the cone of
 influence for "u_sha2.u_pad.shaf_ren".
+...
+```
+
+## How To Run VC Formal
+
+If you have access to VC Formal from Synopsys, you can formally verify your
+assertions. For example, to run formal property verification (FPV) using
+VC Formal on module `gpio`, type:
+```
+  cd hw/formal
+  fpv gpio
+```
+VC Formal will then report which assertions have been proven or disproven,
+and whether or not there are any unreachable assertions or coverpoints.
+
+To run formal property verification for all modules, type:
+```
+  cd hw/formal
+  fpv_all
+```
+This script generates a report of all FPV runs. The report is printed at the end of the run,
+which lists the total number of assertions and the number of proven, vacuous, 
+covered and failing assertions for each block. CRASH identifies modules that
+fail to run VC Formal.
+
 ...
 ```
 
