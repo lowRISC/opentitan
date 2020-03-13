@@ -81,7 +81,16 @@ def resolve_branch(arg_branch):
 
 # Get the project root directory path - this is used to construct the full paths
 def get_proj_root():
-    return os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/..")
+    result = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proj_root = result.stdout.decode("utf-8").strip()
+    if proj_root == "":
+        log.error(
+            "Attempted to find the root of this GitHub repository by running:" \
+            "\n..\nBut this command has failed:\n%s" %
+                result.stderr.decode("utf-8"))
+        sys.exit(1)
+    return (proj_root)
 
 
 def main():
@@ -125,6 +134,16 @@ def main():
                       directory if it doesn't already exist; under {scratch_path}, there will be
                       {compile_set} set of directories where all the build outputs go and
                       {test_name} set of directories where the test outputs go"""
+    )
+
+    parser.add_argument(
+        "-pr",
+        "--proj-root",
+        metavar="path",
+        help="""Specify the root directory of the project.
+                If this option is not passed, the tool will assume that this is
+                a local GitHub repository and will attempt to automatically find
+                the root directory."""
     )
 
     parser.add_argument(
@@ -443,12 +462,22 @@ def main():
 
     # Build infrastructure from hjson file and create the list of items to
     # be deployed.
+
+    # Sets the project root directory: either specified from the command line
+    # or set by automatically assuming we are in a GitHub repository and
+    # automatically finding the root of this repository.
+    if args.proj_root:
+        proj_root = args.proj_root
+    else:
+        proj_root = get_proj_root()
+
     # TODO: SimCfg item below implies DV - need to solve this once we add FPV
     # and other ASIC flow targets.
     if args.tool == 'ascentlint':
         cfg = LintCfg.LintCfg(args.cfg, get_proj_root(), args)
     else:
         cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
+
 
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:
