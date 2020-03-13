@@ -24,6 +24,9 @@ python3
 python3-pip
 python3-setuptools
 python3-wheel
+# The pip-installed version does not come with LibYAML support by default,
+# which significantly speeds up the parsing/dumping of YAML files in fusesoc.
+python3-yaml
 srecord
 tree
 zlib1g-dev
