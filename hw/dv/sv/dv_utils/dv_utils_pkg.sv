@@ -76,6 +76,16 @@ package dv_utils_pkg;
 
   string msg_id = "dv_utils_pkg";
 
+  // return the smaller value of 2 inputs
+  function automatic int min2(int a, int b);
+      return (a < b) ? a : b;
+  endfunction
+
+  // return the bigger value of 2 inputs
+  function automatic int max2(int a, int b);
+    return (a > b) ? a : b;
+  endfunction
+
   // Simple function to set max errors before quitting sim
   function automatic void set_max_quit_count(int n);
     uvm_report_server report_server = uvm_report_server::get_server();

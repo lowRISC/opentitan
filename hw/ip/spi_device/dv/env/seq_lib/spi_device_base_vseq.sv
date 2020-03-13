@@ -24,6 +24,14 @@ class spi_device_base_vseq extends cip_base_vseq #(
   rand uint sram_host_limit_addr;
   rand uint sram_device_base_addr;
   rand uint sram_device_limit_addr;
+  // helper variables
+  rand uint num_host_sram_words;
+  rand uint num_device_sram_words;
+  rand uint sram_host_byte_size;
+  rand uint sram_device_byte_size;
+
+  rand uint tx_watermark_lvl;
+  rand uint rx_watermark_lvl;
 
   // core clk freq / spi clk freq is from 1/4 to 8. use below 2 var to represent the ratio
   // if spi_freq_faster,  core_spi_freq_ratio = spi clk freq / core clk freq (1:4)
@@ -38,6 +46,31 @@ class spi_device_base_vseq extends cip_base_vseq #(
     sram_host_limit_addr == 32'h1ff; // 512 bytes
     sram_device_base_addr == 32'h200;
     sram_device_limit_addr == 32'h3ff; // 512 bytes
+  }
+
+  constraint sram_size_c {
+    solve num_host_sram_words before sram_host_byte_size;
+    solve num_device_sram_words before sram_device_byte_size;
+    num_host_sram_words   == sram_host_limit_addr[31:2] - sram_host_base_addr[31:2] + 1;
+    num_device_sram_words == sram_device_limit_addr[31:2] - sram_device_base_addr[31:2] + 1;
+    sram_host_byte_size   == num_host_sram_words << 2;
+    sram_device_byte_size == num_device_sram_words << 2;
+  }
+
+  constraint tx_watermark_lvl_c {
+    tx_watermark_lvl dist {
+      [0 : SRAM_WORD_SIZE]                                       :/ 1, // first 2 words
+      [SRAM_WORD_SIZE+1 : sram_host_byte_size-1-SRAM_WORD_SIZE]  :/ 7,
+      [sram_host_byte_size-SRAM_WORD_SIZE : sram_host_byte_size] :/ 1, // max 2 words
+      [sram_host_byte_size+1 : SRAM_SIZE]                        :/ 1};// over the max size
+  }
+
+  constraint rx_watermark_lvl_c {
+    rx_watermark_lvl dist {
+      [0 : SRAM_WORD_SIZE]                                           :/ 1, // first 2 words
+      [SRAM_WORD_SIZE+1 : sram_device_byte_size-1-SRAM_WORD_SIZE]    :/ 7,
+      [sram_device_byte_size-SRAM_WORD_SIZE : sram_device_byte_size] :/ 1, // max 2 words
+      [sram_device_byte_size+1 : SRAM_SIZE]                          :/ 1};// over the max size
   }
 
   // core clk freq / spi clk freq is from 1/4 to 8
@@ -97,11 +130,25 @@ class spi_device_base_vseq extends cip_base_vseq #(
     ral.cfg.rx_order.set(host_bit_dir);
     //ral.cfg.timer_v.set(rx_timer); TODO do it later
     csr_update(.csr(ral.cfg));
+
+    // watermark
+    ral.fifo_level.txlvl.set(tx_watermark_lvl);
+    ral.fifo_level.rxlvl.set(rx_watermark_lvl);
+    csr_update(.csr(ral.fifo_level));
+
+    // intr_enable
+    `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
+    csr_update(.csr(ral.intr_enable));
+
     if (do_spi_device_mem_cfg) begin
       set_sram_host_addr_range(sram_host_base_addr, sram_host_limit_addr);
       set_sram_device_addr_range(sram_device_base_addr, sram_device_limit_addr);
       // only configure sram once
       do_spi_device_mem_cfg = 0;
+      sram_host_base_addr.rand_mode(0);
+      sram_host_limit_addr.rand_mode(0);
+      sram_device_base_addr.rand_mode(0);
+      sram_device_limit_addr.rand_mode(0);
     end
   endtask
 

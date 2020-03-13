@@ -67,7 +67,7 @@ module tb;
   assign spi_if.miso  = miso_en ? miso_o : 1'bz;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
-  assign interrupts[RxFifoGtLevel]   = intr_rxlvl;
+  assign interrupts[RxFifoGeLevel]   = intr_rxlvl;
   assign interrupts[TxFifoLtLevel]   = intr_txlvl;
   assign interrupts[RxFwModeErr]     = intr_rxerr;
   assign interrupts[RxFifoOverflow]  = intr_rxoverflow;

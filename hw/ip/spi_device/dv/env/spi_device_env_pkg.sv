@@ -22,11 +22,12 @@ package spi_device_env_pkg;
   // local parameters and types
   typedef enum {
     RxFifoFull,
-    RxFifoGtLevel,
+    RxFifoGeLevel,
     TxFifoLtLevel,
     RxFwModeErr,
     RxFifoOverflow,
-    TxFifoUnderflow
+    TxFifoUnderflow,
+    NumSpiDevIntr
   } spi_device_intr_e;
 
   typedef enum bit {
