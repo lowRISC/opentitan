@@ -4,7 +4,7 @@
 {
   // Additional build-time options for enabling the compilation of the C sources
   // with DV simulators such as VCS and Xcelium.
-  aes_mode_core: "lowrisc:model:aes:0.5"
+  aes_mode_core: "lowrisc:model:aes:0.6"
   aes_mode_src_dir: "{eval_cmd} echo \"{aes_mode_core}\" | tr ':' '_'"
 
   build_modes: [

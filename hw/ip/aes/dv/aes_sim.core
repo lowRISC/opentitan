@@ -7,7 +7,7 @@ description: "AES DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:aes:0.5
+      - lowrisc:ip:aes:0.6
     files:
       - tb/aes_bind.sv
     file_type: systemVerilogSource
