@@ -537,6 +537,7 @@ class RunTest(Deploy):
 
     # Initial seed values when running tests (if available).
     seeds = []
+    fixed_seed = None
 
     # Register all runs with the class
     items = []
@@ -609,7 +610,11 @@ class RunTest(Deploy):
 
     @staticmethod
     def get_seed():
+        # If --seeds option is passed, then those custom seeds are consumed
+        # first. If --fixed-seed <val> is also passed, the subsequent tests
+        # (once the custom seeds are consumed) will be run with the fixed seed.
         if not RunTest.seeds:
+            if RunTest.fixed_seed: return RunTest.fixed_seed
             for i in range(1000):
                 seed = random.getrandbits(32)
                 RunTest.seeds.append(seed)
