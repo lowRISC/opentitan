@@ -4,8 +4,10 @@
 
 % if is_cip:
 class ${name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${name}_reg_block));
-% else:
+% elif has_ral:
 class ${name}_env_cfg extends dv_base_env_cfg #(.RAL_T(${name}_reg_block));
+% else:
+class ${name}_env_cfg extends dv_base_env_cfg;
 % endif
 
   // ext component cfgs
@@ -27,7 +29,7 @@ class ${name}_env_cfg extends dv_base_env_cfg #(.RAL_T(${name}_reg_block));
   endfunction : initialize_csr_addr_map_size
 % endif
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  virtual function void initialize(bit [31:0] csr_base_addr = '1);
 % if has_ral:
     super.initialize(csr_base_addr);
 % endif

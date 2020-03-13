@@ -7,7 +7,9 @@ class ${name}_base_vseq extends cip_base_vseq #(
 % else:
 class ${name}_base_vseq extends dv_base_vseq #(
 % endif
+% if has_ral:
     .RAL_T               (${name}_reg_block),
+% endif
     .CFG_T               (${name}_env_cfg),
     .COV_T               (${name}_env_cov),
     .VIRTUAL_SEQUENCER_T (${name}_virtual_sequencer)
