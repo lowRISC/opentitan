@@ -20,10 +20,6 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   rand uint rx_delay;
   rand uint spi_delay;
 
-  // helper variables for sram randomization
-  rand uint host_sram_word_size;
-  rand uint device_sram_word_size;
-
   rand bit  en_dummy_host_xfer;
   rand bit  en_extra_dly;
 
@@ -76,7 +72,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   }
 
   // lower 2 bits are ignored, use word granularity to contrain the sram setting
-  constraint sram_constraints_c {
+  constraint sram_addr_c {
     // if limit is 0, it means 1 word
     sram_host_limit_addr[31:2]   < (SRAM_SIZE/SRAM_WORD_SIZE);
     sram_device_limit_addr[31:2] < (SRAM_SIZE/SRAM_WORD_SIZE);
@@ -91,16 +87,14 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       sram_device_limit_addr[31:2] < sram_host_base_addr[31:2];
       sram_host_limit_addr < SRAM_SIZE;
     }
-    host_sram_word_size   == sram_host_limit_addr[31:2] - sram_host_base_addr[31:2] + 1;
-    device_sram_word_size == sram_device_limit_addr[31:2] - sram_device_base_addr[31:2] + 1;
   }
 
   // size from 25 to SRAM_SIZE/SRAM_WORD_SIZE-25
   // override it if test extreme cases
   constraint sram_size_constraints_c {
-    host_sram_word_size   inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
-    device_sram_word_size inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
-    host_sram_word_size == device_sram_word_size dist {
+    num_host_sram_words   inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
+    num_device_sram_words inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
+    num_host_sram_words == num_device_sram_words dist {
       1 :/ 2,
       0 :/ 1
     };
@@ -121,11 +115,11 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       spi_device_init();
       fork
         begin
-          process_tx_write();
+          process_tx_write(tx_total_bytes);
           done_tx_write = 1;
         end
         begin
-          process_rx_read();
+          process_rx_read(rx_total_bytes);
           done_rx_read = 1;
         end
         begin
@@ -144,11 +138,10 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     end // for
   endtask : body
 
-  virtual task process_tx_write();
-    uint remaining_bytes = tx_total_bytes;
+  virtual task process_tx_write(uint xfer_bytes);
     uint sram_avail_bytes;
     uint tx_write_bytes;
-    while (remaining_bytes > 0) begin
+    while (xfer_bytes > 0) begin
       bit [31:0] device_words_q[$];
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_delay)
       cfg.clk_rst_vif.wait_clks(tx_delay);
@@ -156,7 +149,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       wait_for_tx_avail_bytes(SRAM_WORD_SIZE, SramSpaceAvail, sram_avail_bytes);
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tx_write_bytes,
                                          tx_write_bytes <= sram_avail_bytes;
-                                         tx_write_bytes <= remaining_bytes;
+                                         tx_write_bytes <= xfer_bytes;
                                          tx_write_bytes[1:0] == 0;
                                          tx_write_bytes dist {
                                              [1:SRAM_WORD_SIZE]    :/ 1,
@@ -165,8 +158,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
                                              SRAM_SIZE             :/ 1};)
       repeat (tx_write_bytes / SRAM_WORD_SIZE) device_words_q.push_back($urandom);
       `uvm_info(`gfn, $sformatf("tx_write_bytes = %0d, sram_avail_bytes = %0d,\
-                                remaining_bytes = %0d",
-                                tx_write_bytes, sram_avail_bytes, remaining_bytes), UVM_MEDIUM)
+                                xfer_bytes = %0d",
+                                tx_write_bytes, sram_avail_bytes, xfer_bytes), UVM_MEDIUM)
 
       // make sure ptr isn't being updated while fifo underflow is happening
       if (allow_underflow_overflow) tx_ptr_sema.get();
@@ -178,16 +171,15 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
         tx_ptr_sema.put();
       end
 
-      remaining_bytes -= tx_write_bytes;
+      xfer_bytes -= tx_write_bytes;
     end
     `uvm_info(`gfn, "done process_tx_write", UVM_MEDIUM)
   endtask : process_tx_write
 
-  virtual task process_rx_read();
-    int  remaining_bytes = rx_total_bytes;
+  virtual task process_rx_read(uint xfer_bytes);
     uint sram_avail_bytes;
     uint rx_read_bytes;
-    while (remaining_bytes > 0) begin
+    while (xfer_bytes > 0) begin
       bit [31:0] device_words_q[$];
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_delay)
       cfg.clk_rst_vif.wait_clks(rx_delay);
@@ -195,22 +187,22 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       wait_for_rx_avail_bytes(SRAM_WORD_SIZE, SramDataAvail, sram_avail_bytes);
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rx_read_bytes,
                                          rx_read_bytes <= sram_avail_bytes;
-                                         rx_read_bytes <= remaining_bytes;
+                                         rx_read_bytes <= xfer_bytes;
                                          rx_read_bytes[1:0] == 0;
                                          rx_read_bytes dist {
                                              [1:SRAM_WORD_SIZE]    :/ 1,
                                              [SRAM_WORD_SIZE+1:20] :/ 3,
                                              [21:SRAM_SIZE-1]      :/ 1,
                                              SRAM_SIZE             :/ 1};)
-      `uvm_info(`gfn, $sformatf("rx_read_bytes = %0d, sram_avail_bytes = %0d, remaining_bytes =%0d",
-                                rx_read_bytes, sram_avail_bytes, remaining_bytes), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("rx_read_bytes = %0d, sram_avail_bytes = %0d, xfer_bytes =%0d",
+                                rx_read_bytes, sram_avail_bytes, xfer_bytes), UVM_MEDIUM)
 
       // make sure ptr isn't being updated while fifo overflow is happening
       if (allow_underflow_overflow) rx_ptr_sema.get();
       read_host_words_rcvd(rx_read_bytes / SRAM_WORD_SIZE, device_words_q);
       if (allow_underflow_overflow) rx_ptr_sema.put();
 
-      remaining_bytes -= rx_read_bytes;
+      xfer_bytes -= rx_read_bytes;
     end
     `uvm_info(`gfn, "done process_rx_read", UVM_MEDIUM)
   endtask : process_rx_read

@@ -213,30 +213,28 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                                 int indices[$] = {},
                                 uvm_reg_block scope = null,
                                 bit [TL_DW-1:0] clear = '1);
-    uvm_reg         csr;
+    uvm_reg         csr_intr_state, csr_intr_enable;
     bit [TL_DW-1:0] act_pins;
     bit [TL_DW-1:0] exp_pins;
     bit [TL_DW-1:0] exp_intr_state;
 
+    if (cfg.under_reset) return;
+
     act_pins = cfg.intr_vif.sample() & interrupts;
     if (check_set) begin
-      exp_pins = interrupts;
+      csr_intr_enable = get_interrupt_csr("intr_enable", "", indices, scope);
+      exp_pins = interrupts & csr_intr_enable.get_mirrored_value();
       exp_intr_state = interrupts;
     end else begin
       exp_pins = '0;
       exp_intr_state = ~interrupts;
     end
-    // if reset, pin should be reset to 0
-    if (!cfg.clk_rst_vif.rst_n) begin
-      exp_pins = '0;
-      exp_intr_state = '0;
-      `uvm_info(`gfn, "interrupt pin expect value set to 0 due to reset", UVM_LOW)
-    end
-    if (!cfg.under_reset) `DV_CHECK_EQ(act_pins, exp_pins)
-    csr = get_interrupt_csr("intr_state", "", indices, scope);
-    csr_rd_check(.ptr(csr), .compare_value(exp_intr_state), .compare_mask(interrupts));
+    `DV_CHECK_EQ(act_pins, exp_pins)
+    csr_intr_state = get_interrupt_csr("intr_state", "", indices, scope);
+    csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
+
     if (check_set && |(interrupts & clear)) begin
-      csr_wr(.csr(csr), .value(interrupts & clear));
+      csr_wr(.csr(csr_intr_state), .value(interrupts & clear));
     end
   endtask
 

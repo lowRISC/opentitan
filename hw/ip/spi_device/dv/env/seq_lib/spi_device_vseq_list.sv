@@ -10,3 +10,4 @@
 `include "spi_device_fifo_underflow_overflow_vseq.sv"
 `include "spi_device_extreme_fifo_size_vseq.sv"
 `include "spi_device_dummy_item_extra_dly_vseq.sv"
+`include "spi_device_intr_vseq.sv"

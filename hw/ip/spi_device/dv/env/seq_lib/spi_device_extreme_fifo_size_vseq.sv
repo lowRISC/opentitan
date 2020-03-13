@@ -8,13 +8,13 @@ class spi_device_extreme_fifo_size_vseq extends spi_device_txrx_vseq;
   `uvm_object_new
 
   constraint sram_size_constraints_c {
-    host_sram_word_size dist {
+    num_host_sram_words dist {
       1 :/ 1,                     // 1 word
       SRAM_SIZE[31:2]/2     :/ 1, // half of the total mem
       SRAM_SIZE[31:2]-1     :/ 1, // max size
       [2:SRAM_SIZE[31:2]-2] :/ 1
     };
-    device_sram_word_size dist {
+    num_device_sram_words dist {
       1 :/ 1,                     // 1 word
       SRAM_SIZE[31:2]/2     :/ 1, // half of the total mem
       SRAM_SIZE[31:2]-1     :/ 1, // max size
