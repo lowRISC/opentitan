@@ -212,6 +212,13 @@ def main():
            items being run in the order they are passed.""")
 
     parser.add_argument(
+        "--fixed-seed",
+        type=int,
+        default=None,
+        help="""Run all items with a fixed seed value. This option enforces
+           --reseed 1.""")
+
+    parser.add_argument(
         "-r",
         "--reseed",
         type=int,
@@ -425,6 +432,9 @@ def main():
 
     # Register the seeds from command line with RunTest class.
     Deploy.RunTest.seeds = args.seeds
+    # If we are fixing a seed value, no point in tests having multiple reseeds.
+    if args.fixed_seed: args.reseed = 1
+    Deploy.RunTest.fixed_seed = args.fixed_seed
 
     # Register the common deploy settings.
     Deploy.Deploy.print_interval = args.print_interval
