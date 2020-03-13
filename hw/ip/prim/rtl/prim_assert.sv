@@ -34,13 +34,13 @@
 // Converts an arbitrary block of code into a Verilog string
 `define PRIM_STRINGIFY(__x) `"__x`"
 
-  // ASSERT_RPT is available to change the reporting mechanism when an assert fails
-`define ASSERT_RPT(__name, __msg)                                         \
-`ifdef UVM                                                                \
-  assert_rpt_pkg::assert_rpt($sformatf("[%m] %s: %s (%s:%0d)",            \
-                             __name, __msg, `__FILE__, `__LINE__));       \
-`else                                                                     \
-  $error("[ASSERT FAILED] [%m] %s: %s", __name, __msg);                   \
+// ASSERT_RPT is available to change the reporting mechanism when an assert fails
+`define ASSERT_RPT(__name)                                                  \
+`ifdef UVM                                                                  \
+  assert_rpt_pkg::assert_rpt($sformatf("[%m] %s (%s:%0d)",                  \
+                             __name, `__FILE__, `__LINE__));                \
+`else                                                                       \
+  $error("[ASSERT FAILED] [%m] %s (%s:%0d)", __name, `__FILE__, `__LINE__); \
 `endif
 
 ///////////////////////////////////////
@@ -53,18 +53,18 @@
 
 // Immediate assertion
 // Note that immediate assertions are sensitive to simulation glitches.
-`define ASSERT_I(__name, __prop)                                       \
-`ifdef INC_ASSERT                                                      \
-  __name: assert (__prop)                                              \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) \
+`define ASSERT_I(__name, __prop)              \
+`ifdef INC_ASSERT                             \
+  __name: assert (__prop)                     \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
 `endif
 
 // Assertion in initial block. Can be used for things like parameter checking.
-`define ASSERT_INIT(__name, __prop)                                      \
-`ifdef INC_ASSERT                                                        \
-  initial                                                                \
-    __name: assert (__prop)                                              \
-      else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) \
+`define ASSERT_INIT(__name, __prop)             \
+`ifdef INC_ASSERT                               \
+  initial                                       \
+    __name: assert (__prop)                     \
+      else `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
 `endif
 
 // Assertion in final block. Can be used for things like queues being empty
@@ -74,7 +74,7 @@
 `ifdef INC_ASSERT                                                            \
   final                                                                      \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
-      else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))     \
+      else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                              \
 `endif
 
 // Assert a concurrent property directly.
@@ -82,7 +82,7 @@
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                        \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))                   \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                            \
 `endif
 // Note: Above we use (__rst !== '0) in the disable iff statements instead of
 // (__rst == '1).  This properly disables the assertion in cases when reset is X at
@@ -93,7 +93,7 @@
 `define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                              \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) not (__prop))         \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop))                         \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                                  \
 `endif
 
 // Assert that signal has a known value (each bit is either '0' or '1') after reset.
@@ -142,14 +142,14 @@
 `define ASSUME(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                        \
   __name: assume property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
-     else begin `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) end        \
+     else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                           \
 `endif
 
 // Assume an immediate property
-`define ASSUME_I(__name, __prop)                                       \
-`ifdef INC_ASSERT                                                      \
-  __name: assume (__prop)                                              \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name), `PRIM_STRINGIFY(__prop)) \
+`define ASSUME_I(__name, __prop)              \
+`ifdef INC_ASSERT                             \
+  __name: assume (__prop)                     \
+    else `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
 `endif
 
 //////////////////////////////////
