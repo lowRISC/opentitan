@@ -70,8 +70,6 @@
       swaccess: "ro"
       hwaccess: "hwo"
       hwext:    "true"
-      tags: [// ro registers - exclude init and write-read check
-             "excl:CsrAllTests:CsrExclWriteCheck"]
       fields: [
         { bits: "0"
           name: "FMTFULL"
@@ -109,8 +107,6 @@
       hwaccess: "hrw"
       hwext: "true"
       hwre: "true"
-      tags: [// ro registers - exclude init and write-read check
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         {bits: "7:0"}
       ]
@@ -222,8 +218,6 @@
       swaccess: "ro"
       hwaccess: "hwo"
       hwext: "true"
-      tags: [// ro registers - exclude init and write-read check
-             "excl:CsrAllTests:CsrExclWriteCheck"]
       fields: [
         { bits: "5:0"
           name: "FMTLVL"
@@ -259,8 +253,6 @@
       swaccess: "ro"
       hwaccess: "hwo"
       hwext:    "true"
-      tags: [// ro registers - exclude init and write-read check
-             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0"
           name: "SCL_RX"
