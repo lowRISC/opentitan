@@ -31,6 +31,9 @@ package ${name}_env_pkg;
 % endif
 
   // types
+% if not has_ral:
+  typedef dv_base_reg_block ${name}_reg_block;
+% endif
 
   // functions
 
