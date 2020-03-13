@@ -7,7 +7,7 @@ description: "AES DV UVM environment"
 filesets:
   files_rtl:
     depend:
-        - lowrisc:ip:aes:0.5
+        - lowrisc:ip:aes:0.6
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
