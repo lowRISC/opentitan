@@ -4,40 +4,57 @@
 
 #include "sw/device/lib/pinmux.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/common.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/runtime/hart.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-#include "pinmux_regs.h"  // Generated.
-
-#define PINMUX0_BASE_ADDR TOP_EARLGREY_PINMUX_BASE_ADDR
-
-static void init_pinmux_reg(uint32_t reg, uint32_t size, uint32_t num_fields,
-                            uint32_t mask, uint32_t start_v) {
-  uint32_t reg_value = 0;
-  uint32_t reg_offset = 0;
-
-  for (uint32_t i = 0; i < NUM_MIO; ++i) {
-    reg_value |= ((i + start_v) & mask) << (size * (i % num_fields));
-    if ((i % num_fields) == (num_fields - 1)) {
-      REG32(reg + reg_offset) = reg_value;
-      reg_value = 0;
-      reg_offset += 4;
-    }
-  }
-
-  REG32(reg + reg_offset) = reg_value;
-}
+static dif_pinmux_t pinmux;
 
 void pinmux_init(void) {
-  // input: assign MIO0..MIO31 to GPIO0..GPIO31
-  init_pinmux_reg(PINMUX_PERIPH_INSEL0(0), PINMUX_PERIPH_INSEL0_IN1_OFFSET,
-                  32 / PINMUX_PERIPH_INSEL0_IN1_OFFSET,
-                  PINMUX_PERIPH_INSEL0_IN0_MASK,
-                  PINMUX_PERIPH_INSEL_IDX_OFFSET);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
+  if (dif_pinmux_init(base_addr, &pinmux) != kDifPinmuxInitOk) {
+    LOG_FATAL("Pinmux failed to initialise");
+    abort();
+  }
 
-  // output: assign GPIO0..GPIO31 to MIO0..MIO31
-  init_pinmux_reg(PINMUX_MIO_OUTSEL0(0), PINMUX_MIO_OUTSEL0_OUT1_OFFSET,
-                  32 / PINMUX_MIO_OUTSEL0_OUT1_OFFSET,
-                  PINMUX_MIO_OUTSEL0_OUT0_MASK,
-                  PINMUX_PERIPH_OUTSEL_IDX_OFFSET);
+  // Assign peripheral inputs to MIO Padring inputs (1:1, don't assign if
+  // peripheral input doesn't have a pair). Try to assign consecutively
+  // peripheral input 0,1,2... to MIO Padring input 0,1,2... .
+  dif_pinmux_peripheral_in_t peripheral_in = 0;
+  dif_pinmux_insel_t mio_in_select = kDifPinmuxInselFirstIn;
+  while (peripheral_in <= kDifPinmuxPeripheralInLast &&
+         mio_in_select <= kDifPinmuxInselLast) {
+    dif_pinmux_result_t result =
+        dif_pinmux_insel_set(&pinmux, peripheral_in, mio_in_select);
+    if (result != kDifPinmuxOk) {
+      LOG_FATAL("Failed to set connection: periph in (%d) and mio in (%d)",
+                peripheral_in, mio_in_select);
+      abort();
+    }
+
+    ++peripheral_in;
+    ++mio_in_select;
+  }
+
+  // Assign peripheral outputs to MIO Padring outputs (1:1, don't assign if
+  // peripheral output doesn't have a pair). Try to assign consecutively
+  // peripheral output 0,1,2... to MIO Padring output 0,1,2... .
+  dif_pinmux_mio_out_t mio_out = 0;
+  dif_pinmux_outsel_t peripheral_out_select = kDifPinmuxOutselFirstOut;
+  while (mio_out <= kDifPinmuxMioOutLast &&
+         peripheral_out_select <= kDifPinmuxOutselLast) {
+    dif_pinmux_result_t result =
+        dif_pinmux_outsel_set(&pinmux, mio_out, peripheral_out_select);
+    if (result != kDifPinmuxOk) {
+      LOG_FATAL("Failed to set connection: mio out (%d) and periph out (%d)",
+                mio_out, peripheral_out_select);
+      abort();
+    }
+
+    ++mio_out;
+    ++peripheral_out_select;
+  }
 }

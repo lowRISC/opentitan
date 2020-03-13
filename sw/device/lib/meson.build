@@ -41,12 +41,13 @@ sw_lib_pinmux = declare_dependency(
   link_with: static_library(
     'pinmux_ot',
     sources: [
-      hw_top_earlgrey_pinmux_reg_h,
       'pinmux.c',
     ],
     dependencies: [
-      top_earlgrey,
-    ]
+      dif_pinmux,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+    ],
   )
 )
 
