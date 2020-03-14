@@ -35,12 +35,7 @@ module flash_ctrl (
   localparam int NumBanks = top_pkg::FLASH_BANKS;
   localparam int PagesPerBank = top_pkg::FLASH_PAGES_PER_BANK;
   localparam int WordsPerPage = top_pkg::FLASH_WORDS_PER_PAGE;
-  localparam int BankW = top_pkg::FLASH_BKW;
-  localparam int PageW = top_pkg::FLASH_PGW;
-  localparam int WordW = top_pkg::FLASH_WDW;
   localparam int AllPagesW = BankW + PageW;
-  localparam int AddrW = top_pkg::FLASH_AW;
-  localparam int DataWidth = top_pkg::FLASH_DW;
   localparam int DataBitWidth = $clog2(DataWidth/8);
   localparam int EraseBitWidth = $bits(flash_erase_op_e);
   localparam int FifoDepth = 16;
@@ -464,7 +459,6 @@ module flash_ctrl (
   assign unused_higher_addr_bits = reg2hw.addr.q[31:AddrW];
   assign unused_scratch = reg2hw.scratch;
 
-
   // Assertions
 
   `ASSERT_KNOWN(TlDValidKnownO_A,       tl_o.d_valid     )
@@ -479,5 +473,43 @@ module flash_ctrl (
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
   `ASSERT_KNOWN(IntrOpErrorKnownO_A,    intr_op_error_o  )
+
+
+  logic [DataWidth-1:0] op_b;
+  logic [DataWidth-1:0] prod0, prod1;
+  logic start;
+  logic done;
+  logic equiv;
+  logic compare;
+
+  assign compare = start & done;
+  assign equiv = compare ? (prod0 == prod1) : 1'b0;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      op_b <= 32'h5A5A5A5A;
+      start <= 1'b0;
+    end else if (!start) begin
+      start <= 1'b1;
+    end else if (start && done) begin
+      start <= 1'b1;
+      op_b <= op_b >> 1;
+    end
+  end
+
+  flash_xex_mult #(
+    .Width(DataWidth)
+  ) u_mult (
+    .clk_i,
+    .rst_ni,
+    .a_i(32'hA5A5A5A5),
+    .b_i(op_b),
+    .start_i(start),
+    .done_o(done),
+    .prod0_o(prod0),
+    .prod1_o(prod1)
+  );
+
+
 
 endmodule

@@ -9,6 +9,11 @@ package flash_ctrl_pkg;
 
   localparam int FlashTotalPages = top_pkg::FLASH_BANKS * top_pkg::FLASH_PAGES_PER_BANK;
   localparam int AllPagesW = $clog2(FlashTotalPages);
+  localparam int BankW = top_pkg::FLASH_BKW;
+  localparam int PageW = top_pkg::FLASH_PGW;
+  localparam int WordW = top_pkg::FLASH_WDW;
+  localparam int AddrW = top_pkg::FLASH_AW;
+  localparam int DataWidth = top_pkg::FLASH_DW;
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
@@ -68,5 +73,20 @@ package flash_ctrl_pkg;
     rd_data:    '0,
     init_busy:  1'b0
   };
+
+  // Galois matrix multiply step
+  function automatic logic [DataWidth-1:0] mult(
+    input logic [DataWidth-1:0][DataWidth-1:0] matrix,
+    input logic [DataWidth-1:0] operand
+  );
+    logic [DataWidth-1:0] mult_out;
+    logic [DataWidth-1:0] add_vector;
+    mult_out = '0;
+    for (int i=0; i<DataWidth; i++) begin
+      add_vector = operand[i] ? matrix[i] : '0;
+      mult_out = mult_out ^ add_vector;
+    end
+    return mult_out;
+  endfunction
 
 endpackage : flash_ctrl_pkg
