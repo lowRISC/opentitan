@@ -193,7 +193,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
             string intr_test_str = $sformatf("intr_test%0d", i);
             if (csr_name == intr_test_str) begin
               uint intr_test_val = item.a_data;
-              foreach (intr_test_val[j]) begin
+              for (int j = 0 ; j < NUM_TIMERS; j++) begin
                 int intr_pin_idx = i * NUM_TIMERS + j;
                 if (intr_test_val[j]) intr_status_exp[i][j] = intr_test_val[j];
                 //Sample intr_test coverage for each bit of test reg

@@ -281,7 +281,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       test_index.shuffle();
       foreach (test_index[i]) begin
         bit [TL_DW-1:0] wr_data;
-        wr_data = $urandom_range(1, ((1 << intr_test_csrs[test_index[i]].get_n_used_bits()) - 1));
+        wr_data = $urandom_range(0, ((1 << intr_test_csrs[test_index[i]].get_n_used_bits()) - 1));
         // Add wr_data to expected state queue
         exp_intr_state[test_index[i]] |= wr_data;
         csr_wr(.csr(intr_test_csrs[test_index[i]]), .value(wr_data));
