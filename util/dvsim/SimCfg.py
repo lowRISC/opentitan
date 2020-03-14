@@ -48,7 +48,6 @@ class SimCfg(FlowCfg):
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
         self.verbosity = "{" + args.verbosity + "}"
-        self.email = args.email
         self.verbose = args.verbose
         self.dry_run = args.dry_run
         self.map_full_testplan = args.map_full_testplan
