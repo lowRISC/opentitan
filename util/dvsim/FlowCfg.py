@@ -461,6 +461,7 @@ class FlowCfg():
             self.errors_seen |= item.errors_seen
 
         if self.is_master_cfg: self.gen_results_summary()
+        self.gen_email_html_summary()
 
     def gen_results_summary(self):
         '''Public facing API to generate summary results for each IP/cfg file
@@ -472,6 +473,19 @@ class FlowCfg():
         results_page_url = self.results_server_page.replace(
             self.results_server_prefix, self.results_server_url_prefix)
         return "[%s](%s)" % (link_text, results_page_url)
+
+    def gen_email_html_summary(self):
+        if self.is_master_cfg:
+            gen_results = self.results_summary_md
+        else:
+            gen_results = self.results_md
+        results_html = md_results_to_html(self.results_title, self.results_server_css_path,
+                                          gen_results)
+        results_html_file = self.scratch_root + "/email.html"
+        f = open(results_html_file, 'w')
+        f.write(results_html)
+        f.close()
+        log.info("[results summary]: %s [%s]", "generated for email purpose", results_html_file)
 
     def _publish_results(self):
         '''Publish results to the opentitan web server.

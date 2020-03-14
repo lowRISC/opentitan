@@ -84,7 +84,6 @@ def resolve_branch(arg_branch):
             arg_branch = "default"
     return (arg_branch)
 
-
 # Get the project root directory path - this is used to construct the full paths
 def get_proj_root():
     cmd = ["git", "rev-parse", "--show-toplevel"]
@@ -362,12 +361,6 @@ def main():
                         help="""Set verbosity to none/low/medium/high/debug;
                                 This will override any setting added to any of the hjson files
                                 used for config""")
-
-    parser.add_argument("--email",
-                        nargs="+",
-                        default=[],
-                        metavar="",
-                        help="""email the report to specified addresses""")
 
     parser.add_argument(
         "--verbose",
