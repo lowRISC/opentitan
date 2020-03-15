@@ -1,6 +1,19 @@
 # Private CI trigger.  Used to run tooling that can't currently be shared
 # publicly.
 
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - "*"
+pr:
+  branches:
+    include:
+    - '*'
+
 # The runner used for private CI enforces the use of the template below. All
 # build steps need to be placed into the template.
 resources:
@@ -12,4 +25,3 @@ resources:
 
 extends:
   template: jobs.yml@opentitan-private-ci
-

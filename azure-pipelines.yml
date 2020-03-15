@@ -11,14 +11,17 @@ variables:
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
 
 trigger:
-  tags:
-    include:
-    - "*"
-  # Combine builds on master as long as another build is running
   batch: true
   branches:
     include:
-    - master
+    - '*'
+  tags:
+    include:
+    - "*"
+pr:
+  branches:
+    include:
+    - '*'
 
 jobs:
 - job: lint
