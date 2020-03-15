@@ -53,18 +53,23 @@
 
 // Immediate assertion
 // Note that immediate assertions are sensitive to simulation glitches.
-`define ASSERT_I(__name, __prop)              \
-`ifdef INC_ASSERT                             \
-  __name: assert (__prop)                     \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+`define ASSERT_I(__name, __prop)           \
+`ifdef INC_ASSERT                          \
+  __name: assert (__prop)                  \
+    else begin                             \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+    end                                    \
 `endif
 
 // Assertion in initial block. Can be used for things like parameter checking.
-`define ASSERT_INIT(__name, __prop)             \
-`ifdef INC_ASSERT                               \
-  initial                                       \
-    __name: assert (__prop)                     \
-      else `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+`define ASSERT_INIT(__name, __prop)          \
+`ifdef INC_ASSERT                            \
+  initial begin                              \
+    __name: assert (__prop)                  \
+      else begin                             \
+        `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+      end                                    \
+  end                                        \
 `endif
 
 // Assertion in final block. Can be used for things like queues being empty
@@ -72,9 +77,12 @@
 // at end of sim.
 `define ASSERT_FINAL(__name, __prop)                                         \
 `ifdef INC_ASSERT                                                            \
-  final                                                                      \
+  final begin                                                                \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
-      else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                              \
+      else begin                                                             \
+        `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                 \
+      end                                                                    \
+  end                                                                        \
 `endif
 
 // Assert a concurrent property directly.
@@ -82,7 +90,9 @@
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                        \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                            \
+    else begin                                                                           \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
+    end                                                                                  \
 `endif
 // Note: Above we use (__rst !== '0) in the disable iff statements instead of
 // (__rst == '1).  This properly disables the assertion in cases when reset is X at
@@ -93,7 +103,9 @@
 `define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                              \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) not (__prop))         \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                                  \
+    else begin                                                                                 \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                                     \
+    end                                                                                        \
 `endif
 
 // Assert that signal has a known value (each bit is either '0' or '1') after reset.
@@ -142,14 +154,18 @@
 `define ASSUME(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
 `ifdef INC_ASSERT                                                                        \
   __name: assume property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
-     else `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                           \
+    else begin                                                                           \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
+    end                                                                                  \
 `endif
 
 // Assume an immediate property
-`define ASSUME_I(__name, __prop)              \
-`ifdef INC_ASSERT                             \
-  __name: assume (__prop)                     \
-    else `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+`define ASSUME_I(__name, __prop)           \
+`ifdef INC_ASSERT                          \
+  __name: assume (__prop)                  \
+    else begin                             \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+    end                                    \
 `endif
 
 //////////////////////////////////
@@ -168,9 +184,9 @@
 
 // ASSUME_I_FPV
 // Assume a concurrent property during formal verification only.
-`define ASSUME_I_FPV(__name, __prop)             \
-`ifdef FPV_ON                                    \
-   `ASSUME_I(__name, __prop)                     \
+`define ASSUME_I_FPV(__name, __prop) \
+`ifdef FPV_ON                        \
+   `ASSUME_I(__name, __prop)         \
 `endif
 
 // COVER_FPV
