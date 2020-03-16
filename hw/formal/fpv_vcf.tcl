@@ -11,7 +11,6 @@
 
 analyze -format sverilog      \
   -vcs "+define+FPV_ON -assert svaext \
-        +define+INC_ASSERT  \
         -f [glob *.scr]"
 
 elaborate -sva $env(FPV_TOP)
