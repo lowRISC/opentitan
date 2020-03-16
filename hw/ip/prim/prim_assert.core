@@ -9,6 +9,9 @@ filesets:
   files_rtl:
     files:
       - rtl/prim_assert.sv : {is_include_file : true}
+      - rtl/prim_assert_dummy_macros.svh : {is_include_file : true}
+      - rtl/prim_assert_yosys_macros.svh : {is_include_file : true}
+      - rtl/prim_assert_standard_macros.svh : {is_include_file : true}
     file_type: systemVerilogSource
 
 targets:
