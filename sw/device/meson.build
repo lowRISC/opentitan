@@ -31,6 +31,7 @@ export_embedded_target = [
 ]
 
 subdir('boot_rom')
+subdir('boot_rom2')
 subdir('examples')
 subdir('tests')
 subdir('benchmarks')
