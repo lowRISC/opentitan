@@ -30,6 +30,18 @@ dif_plic = declare_dependency(
   )
 )
 
+# Pinmux DIF library (dif_pinmux)
+dif_pinmux = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_pinmux',
+    sources: [
+      'dif_pinmux.c',
+      hw_top_earlgrey_pinmux_reg_h,
+    ],
+    dependencies: [sw_lib_mmio]
+  )
+)
+
 # GPIO DIF library
 sw_lib_dif_gpio = declare_dependency(
   link_with: static_library(
