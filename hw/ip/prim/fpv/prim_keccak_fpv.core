@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:prim_keccak_fpv:0.1"
+description: "Keccak_f FPV target"
+filesets:
+  files_fpv:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - tb/prim_keccak_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_fpv
+    toplevel:
+      - prim_keccak_fpv
