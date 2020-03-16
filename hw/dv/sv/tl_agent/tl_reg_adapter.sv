@@ -16,17 +16,18 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   endfunction : new
 
   function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);
+    uvm_reg_item item = get_item();
     ITEM_T bus_item_loc;
     bus_item_loc = ITEM_T::type_id::create("bus_item_loc");
 
     // TODO: add a knob to contrl the randomization in case TLUL implementation changes and does
     // not support partial read/write
     // randomize CSR partial or full read
-    // for partial read DUT always return the entire 4 bytes bus data
-    // if CSR full read (all bytes are enabled), randomly select full or partial read
+    // for partial read DUT (except memory) always return the entire 4 bytes bus data
+    // if CSR full read (all bytes are enabled) & !MEM, randomly select full or partial read
     // if CSR field read, will do a partial read if protocal allows by setting a_mask to byte_en
     if (rw.kind == UVM_READ) begin
-      if (rw.byte_en == '1) begin // csr full read
+      if (rw.byte_en == '1 && item.element_kind == UVM_REG) begin // csr full read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_item_loc,
             a_opcode            == tlul_pkg::Get;
             a_addr[TL_AW-1:2]   == rw.addr[TL_AW-1:2];
@@ -43,7 +44,6 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
       // In that case, the transaction size in bytes and partial write mask need to be at least as
       // wide as the CSR to be a valid transaction. Otherwise, the DUT can return an error response
       int msb;
-      uvm_reg_item item = get_item();
 
       // Check if csr addr or mem addr; accordingly, get the msb bit.
       if (item.element_kind == UVM_REG) begin
