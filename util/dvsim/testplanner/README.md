@@ -92,7 +92,7 @@ made a part of a 'shared' testplan that each DUT testplan can simply import. An
 example of this is running the automated UVM RAL CSR tests, which applies to
 almost all DUTs. This can be done using the `import_testplans` key:
 ```hjson
-  import_testplans: ["util/testplanner/examples/common_testplan.hjson",
+  import_testplans: ["util/dvsim/testplanner/examples/common_testplan.hjson",
                      "hw/dv/tools/csr_testplan.hjson"]
 ```
 
@@ -162,7 +162,7 @@ This will resolve to the following 6 tests:
 
 ### Example sources
 
-The following examples provided within `util/testplanner/examples` can be used as
+The following examples provided within `util/dvsim/testplanner/examples` can be used as
 a starting point.
 * **`foo_testplan.hjson`**: DUT testplan
 * **`common_testplan.hjson`**: shared testplan imported within the DUT testplan
@@ -188,22 +188,22 @@ The following limitations currently hold:
 
 Generate the testplan table in HTML to stdout:
 ```console
-$ util/testplanner.py testplanner/examples/foo_testplan.hjson
+$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson
 ```
 
 Generate the testplan table in HTML to a file:
 ```console
-$ util/testplanner.py testplanner/examples/foo_testplan.hjson -o /tmp/foo_testplan_table.html
+$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson -o /tmp/foo_testplan_table.html
 ```
 
 Generate regression results table in HTML to stdout:
 ```console
-$ util/testplanner.py testplanner/examples/foo_testplan.hjson -r testplanner/examples/foo_regr_results.hjson
+$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson -r testplanner/examples/foo_regr_results.hjson
 ```
 
 Generate regression results table in HTML to a file:
 ```console
-$ util/testplanner.py testplanner/examples/foo_testplan.hjson \
+$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson \
     -r testplanner/examples/foo_regr_results.hjson -o /tmp/foo_regr_results.html
 ```
 

@@ -61,7 +61,7 @@ The complete testplan is parsed into a data structure that serves the following 
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
-The [testplanner]({{< relref "util/testplanner/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
+The [testplanner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
 The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV plan as a table.
 
 ### DV Plan

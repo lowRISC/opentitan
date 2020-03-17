@@ -12,8 +12,8 @@ from shutil import which
 
 import hjson
 
-from .Deploy import *
-from .utils import *
+from Deploy import *
+from utils import *
 
 
 # Interface class for extensions.
