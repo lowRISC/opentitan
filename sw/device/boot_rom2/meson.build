@@ -26,6 +26,19 @@ sw_br2_log = declare_dependency(
   ),
 )
 
+sw_br2_final_jump = declare_dependency(
+  link_with: static_library(
+    'sw_br2_final_jump',
+    sources: [
+      'final_jump.c',
+      'final_jump.S',
+    ],
+    dependencies: [
+      sw_lib_mem,
+    ],
+  ),
+)
+
 foreach device_name, device_lib : sw_lib_arch_core_devices
   sw_br2_elf = executable(
     'br2_' + device_name,
@@ -39,6 +52,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       chip_info_h,
       device_lib,
+      sw_br2_final_jump,
       sw_br2_log,
       sw_lib_base_log,
 
