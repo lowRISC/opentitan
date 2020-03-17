@@ -40,7 +40,8 @@
            Randomly select key length to verify all supported key lengths are working.'''
            milestone: V2
       tests: []
-    }    {
+    }
+    {
       name: back2back
       desc: '''
            Randomly select the spacing between consecutive messages and blocks from 0 - n clock cycles.
@@ -73,6 +74,21 @@
               Then enter the 128bit of the key and use for decryption.
               Will result match plain text and vice.
             - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: trigger_clear_test
+      desc: '''
+            Exercise trigger and clear registers at random times to make sure we handle the different cornercases correctly.
+            Example of a cornercases clearing data input or data output before the data is consumed or the DUT finishes an operation.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: nist_test_vectors
+      desc: '''
+            Verify that the DUT handles the NIST test vectors correctly.'''
       milestone: V2
       tests: []
     }
