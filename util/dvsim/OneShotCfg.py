@@ -8,10 +8,10 @@ Class describing a one-shot build configuration object
 import logging as log
 import sys
 
-from .Deploy import *
-from .FlowCfg import FlowCfg
-from .Modes import *
-from .utils import *
+from Deploy import *
+from FlowCfg import FlowCfg
+from Modes import *
+from utils import *
 
 
 class OneShotCfg(FlowCfg):

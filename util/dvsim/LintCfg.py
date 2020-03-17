@@ -11,10 +11,10 @@ from pathlib import Path
 
 from tabulate import tabulate
 
-from .Deploy import *
-from .Modes import *
-from .OneShotCfg import OneShotCfg
-from .utils import *
+from Deploy import *
+from Modes import *
+from OneShotCfg import OneShotCfg
+from utils import *
 
 
 # helper function for printing messages

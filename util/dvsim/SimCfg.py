@@ -10,10 +10,10 @@ import sys
 
 from testplanner import class_defs, testplan_utils
 
-from .Deploy import *
-from .FlowCfg import FlowCfg
-from .Modes import *
-from .utils import *
+from Deploy import *
+from FlowCfg import FlowCfg
+from Modes import *
+from utils import *
 
 
 class SimCfg(FlowCfg):
