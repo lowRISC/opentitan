@@ -225,12 +225,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     logic [NUM_GPIOS-1:0] prev_gpio_i = cfg.gpio_vif.pins;
 
     forever begin : monitor_pins_if
-      @(cfg.gpio_vif.pins or under_reset);
+      @(cfg.gpio_vif.pins or cfg.under_reset);
       `uvm_info(`gfn, $sformatf("cfg.gpio_vif.pins = %0h, under_reset = %0b",
-                                cfg.gpio_vif.pins, under_reset), UVM_HIGH)
-      if (under_reset == 1'b0) begin
-        // wait 1 ps to allow reset() function reset the values first
-        #1ps;
+                                cfg.gpio_vif.pins, cfg.under_reset), UVM_HIGH)
+      if (cfg.under_reset == 1'b0) begin
         // Coverage Sampling: gpio pin values' coverage
         if (cfg.en_cov) begin
           foreach (cov.gpio_pin_values_cov_obj[each_pin]) begin
@@ -329,8 +327,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // Task: monitor_gpio_interrupt_pins
   virtual task monitor_gpio_interrupt_pins();
     forever begin : monitor_gpio_intr
-      @(cfg.intr_vif.pins or under_reset) begin
-        if (under_reset == 0) begin
+      @(cfg.intr_vif.pins or cfg.under_reset) begin
+        if (cfg.under_reset == 0) begin
           if (cfg.en_cov) begin
             // Coverage Sampling: gpio interrupt pin values and transitions
             for (uint each_pin = 0; each_pin < NUM_GPIOS; each_pin++) begin

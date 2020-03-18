@@ -34,8 +34,8 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
         `uvm_info(`gfn, "reset occurred", UVM_HIGH)
         cfg.reset_asserted();
         @(posedge cfg.clk_rst_vif.rst_n);
-        cfg.reset_deasserted();
         reset();
+        cfg.reset_deasserted();
         `uvm_info(`gfn, "out of reset", UVM_HIGH)
       end
       else begin

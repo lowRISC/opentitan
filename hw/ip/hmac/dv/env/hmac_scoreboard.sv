@@ -53,7 +53,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         if (!sha_en) begin
           void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
           void'(ral.err_code.predict(.value(SwPushMsgWhenShaDisabled), .kind(UVM_PREDICT_DIRECT)));
-        end else if (hmac_start && !under_reset) begin
+        end else if (hmac_start && !cfg.under_reset) begin
           bit [7:0] bytes[4];
           bit [7:0] msg[];
           {<<byte{bytes}} = item.a_data;
@@ -241,7 +241,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : insolation_fork_process_fifo_wr
         forever begin
-          wait(!under_reset);
+          wait(!cfg.under_reset);
           fork
             begin : increase_wr_cnt
               wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 ||
@@ -259,7 +259,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
             end
             begin : reset_increase_wr_cnt
-              wait(under_reset);
+              wait(cfg.under_reset);
             end
           join_any
           disable fork;
@@ -291,7 +291,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : process_hmac_key_pad
         forever begin
-          wait(!under_reset);
+          wait(!cfg.under_reset);
           // delay 1ps to make sure all variables are being reset, before moving to the next
           // forever loop
           #1ps;
@@ -310,7 +310,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
             end
             begin : reset_key_padding
-              wait(under_reset);
+              wait(cfg.under_reset);
             end
           join_any
           disable fork;
@@ -320,7 +320,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
       begin : process_internal_fifo_rd
         forever begin
-          wait(!under_reset);
+          wait(!cfg.under_reset);
           // delay 1ps to make sure all variables are being reset, before moving to the next
           // forever loop
           #1ps;
@@ -339,7 +339,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
             end
             begin : reset_hmac_fifo_rd
-              wait(under_reset);
+              wait(cfg.under_reset);
             end
           join_any
           disable fork;
