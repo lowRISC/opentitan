@@ -13,6 +13,18 @@ sw_br2_crt_files = [
   '../boot_rom/irq_vector.S',
 ]
 
+sw_br2_ext_format = declare_dependency(
+  link_with: static_library(
+    'sw_br2_ext_format',
+    sources: ['ext_format.c'],
+    dependencies: [
+      sw_lib_mem,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+
 sw_br2_log = declare_dependency(
   link_with: static_library(
     'sw_br2_log',
