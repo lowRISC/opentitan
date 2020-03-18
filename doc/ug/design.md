@@ -69,15 +69,21 @@ Capturing fast and efficient feedback on syntactic and semantic (as well as styl
 Running lint is especially useful with SystemVerilog, a weakly-typed language, unlike more modern hardware description languages.
 Running lint is faster than running a simulation.
 
-Currently, due to the proprietary nature of tool collateral, all linting activity is done offline and reported back to designers.
-The project will standardize on a particular linting tool, and results will be shared in some form through continuous integration build results, published tool outputs, pre-submit checks, and/or linting summaries of tool output (TODO: publication details).
-For developers of design IP, the recommendation is to run their code through whatever linting tool they have available at their disposal before creating a design Pull Request, then work with the maintainers of the linting sign-off methodology to close linting errors.
-(TODO: decide on available pre-submit linting options).
-Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
+We have standardized on the [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/) tool from RealIntent for this task due to its fast run-times and comprehensive set of rules that provide concise error and warning messages.
 
-Due to the proprietary nature of this particular linting tool, content towards running the tool can not be checked in in this open source repository.
-In the current state of the project, all lint scripts, policy files, and waivers are **not** provided, but are being kept privately until we can suggest a workable open source solution.
-When this methodology is finalized the details will be given here. (TODO)
+The lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
+The lint flow run scripts and waiver files are available in the GitHub repository of this project, but due to the proprietary nature of the lint rules and their configuration, the _"lowRISC Lint Rules"_ lint policy file can not be publicly provided.
+However, the _"Low Risc Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
+This enables designers that have access to this tool to run the lint flow provided locally on their premises.
+
+For developers of design IP, the recommendation is to set up the AscentLint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}), and use the flow locally to close the errors and warnings.
+Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
+These waivers have to be reviewed as part of the Pull Request review process.
+
+For other developers that do not have access to this tool, the recommendation is to run their code through whatever linting tool they have available at their disposal before creating a design Pull Request (e.g. the open source Verilator tool).
+Once the Pull Request has been merged, these developers can then work with the maintainers to enable sign-off linting on their design.
+
+Note that all designs with enabled AscentLint targets will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://docs.opentitan.org/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
 Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/hw_stages" >}}) document.
 

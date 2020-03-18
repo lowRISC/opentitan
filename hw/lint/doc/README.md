@@ -1,18 +1,96 @@
 # RTL Linting
 
-Linting is a productivity tool for designers to quickly find typos and
-bugs at the time when the RTL is written. Running lint is important
-when using SystemVerilog, a weakly-typed language, unlike other hardware
-description languages. We consider linting to be critical for conformance
-to our goals of high quality designs.
+Linting is a productivity tool for designers to quickly find typos and bugs at the time when the RTL is written.
+Running lint is important when using SystemVerilog, a weakly-typed language, unlike other hardware description languages.
+We consider linting to be critical for conformance to our goals of high quality designs.
 
-Currently, due to the proprietary nature of tool collateral, all linting
-activity is done offline and reported back to designers.  The project will
-standardize on a particular linting tool, and results will be shared in
-some form through continuous integration build results, published tool
-outputs, pre-submit checks, and/or linting summaries of tool output
-(TODO: publication details).  At that time this README will be updated
-with setup and run instructions.
+We have standardized on the [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/) tool from RealIntent for this task due to its fast run-times and comprehensive set of rules that provide concise error and warning messages.
+
+The lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
+The lint flow run scripts and waiver files are available in the GitHub repository of this project, but due to the proprietary nature of the lint rules and their configuration, the _"lowRISC Lint Rules"_ lint policy file can not be publicly provided.
+However, the _"Low Risc Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
+This enables designers that have access to this tool to run the lint flow provided locally on their premises.
+
+Our linting flow leverages FuseSoC to resolve dependencies, build file lists and call the linting tools. See [here](https://github.com/olofk/fusesoc) for an introduction to this opensource package manager and [here](https://docs.opentitan.org/doc/ug/install_instructions/) for installation instructions.
+
+In order to run lint on a [comportable IP](https://docs.opentitan.org/doc/rm/comportability_specification/) block, the corresponding FuseSoC core file must have a lint target and include (optional) waiver files as shown in the following example taken from the FuseSoC core of the AES comportable IP:
+```
+filesets:
+
+  [...]
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/aes.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/aes.waiver
+    file_type: waiver
+
+  [...]
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: aes
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+```
+Note that the setup shown above also supports Verilator lint as a fall-back option that is open source.
+The same lint target is reused however for both AscentLint and Verilator (we override the tool selection when invoking FuseSoC).
+Lint waivers can be added to the flow by placing them in the corresponding waiver file.
+In this example this would be `lint/aes.waiver` for AscentLint and `lint/aes.vlt` for Verilator.
+
+In order to manually run lint on a specific block, make sure AscentLint is properly installed and step into the `hw/lint` folder.
+The makefile in that folder contains all targets that can be manually invoked.
+For example, to run lint on AES, do:
+```
+make ip-aes_lint
+```
+This run will exit with PASSED status on the command line if there are no lint errors or warnings.
+Otherwise it will exit with ERROR status, in which case you can get more information by running
+```
+make clean
+make ip-aes_lint
+make report
+```
+In order to build all lint targets and produce a summary report, the `make all` target can be invoked.
+For more detailed information on a particular lint run you can inspect the tool output inside the build folder that is created by FuseSoC.
+
+Note that all AscentLint targets have a Verilator counterpart that is suffixed with `_vlint` instead of `_lint`.
+This enables designers without access to AscentLint to iterate with an open-source tool before making their first Pull Request.
+
+For batch regressions we have integrated this flow into the `dvsim` tool, which can be invoked as follows from the root of the project repository:
+```
+util/dvsim.py hw/top_earlgrey/lint/ascentlint/top_earlgrey_lint_cfgs.hjson --tool "ascentlint" --purge -mp 1
+```
+where the `top_earlgrey_lint_cfgs.hjson` file contains all the lint targets to be run in that regression (currently all available comportable IPs and the top-level are run).
+The `purge` option ensures that the scratch directory is fully erased before starting the build, and `mp 1` sets the number of parallel workers to one (should be set depending on your licensing situation).
+
+The batch regression is regularly run on the master branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
+The dashboard can be found by following the appropriate link on the [hardware IP overview page](https://docs.opentitan.org/hw).
 
 # CDC Linting
 
