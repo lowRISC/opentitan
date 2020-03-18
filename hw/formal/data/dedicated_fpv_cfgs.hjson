@@ -1,0 +1,74 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// This hjson file list all the IPs that are fully verified by FPV
+{
+  use_cfgs: [
+             {
+               name: prim_arbiter_ppc_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: prim_arbiter_tree_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_tree_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: prim_lfsr_fpv
+               fusesoc_core: lowrisc:fpv:prim_lfsr_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: prim_fifo_sync_fpv
+               fusesoc_core: lowrisc:fpv:prim_fifo_sync_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: prim_alert_rxtx_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: prim_alert_rxtx_async_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: prim_esc_rxtx_fpv
+               fusesoc_core: lowrisc:fpv:prim_esc_rxtx_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv"
+             }
+             {
+               name: padctrl_fpv
+               fusesoc_core: lowrisc:fpv:padctrl_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/padctrl/fpv"
+             }
+             {
+               name: pinmux_fpv
+               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pinmux_fpv/fpv"
+             }
+             {
+               name: rv_plic_fpv
+               fusesoc_core: lowrisc:fpv:rv_plic_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip/rv_plic/fpv"
+             }
+             {
+               name: rv_plic_generic_fpv
+               fusesoc_core: lowrisc:fpv:rv_plic_generic_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_plic/fpv"
+             }
+            ]
+}

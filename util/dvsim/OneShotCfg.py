@@ -73,7 +73,9 @@ class OneShotCfg(FlowCfg):
         self.links = {}
         self.build_list = []
         self.deploy = []
-
+        self.cov = 0
+        if args.cov:
+            self.cov = 1
         # Parse the cfg_file file tree
         self.parse_flow_cfg(flow_cfg_file)
         self._post_parse_flow_cfg()

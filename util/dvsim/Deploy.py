@@ -620,7 +620,12 @@ class CompileOneShot(Deploy):
 
             # Report processing
             "report_cmd": False,
-            "report_opts": False
+            "report_opts": False,
+
+            # Flist gen
+            "sv_flist_gen_cmd": False,
+            "sv_flist_gen_dir": False,
+            "sv_flist_gen_opts": False
         }
 
         self.mandatory_misc_attrs = {}

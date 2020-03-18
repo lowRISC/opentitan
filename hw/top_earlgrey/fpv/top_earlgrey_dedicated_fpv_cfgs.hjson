@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the master cfg hjson for FPV. It imports ALL individual FPV
+  // dedicated cfgs of the IPs. This enables to run them all as a regression in one shot.
+  name: top_earlgrey_dedicated_ip_batch_fpv
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/data/common_project_cfg.hjson"
+                "{proj_root}/hw/formal/data/dedicated_fpv_cfgs.hjson"]
+  // TODO: has to include this because imported `dedicated_fpv_cfgs.hjson`, try to take it away
+  use_cfgs:    []
+}

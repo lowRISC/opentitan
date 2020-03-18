@@ -1,0 +1,39 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  flow:             fpv
+  flow_makefile:    "{proj_root}/hw/formal/data/fpv.mk"
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson",
+                     "{proj_root}/hw/formal/tools/{tool}/{tool}.hjson"]
+
+  // Default directory structure for the output
+  dut:              "{name}"
+  build_dir:        "{scratch_path}/{build_mode}"
+
+  // we rely on Fusesoc to generate the filelist for fpv
+  sv_flist_gen_cmd:  fusesoc
+  fusesoc_core_:     "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
+  sv_flist_gen_opts: ["--cores-root {proj_root}",
+                      "run",
+                      "--tool=icarus",
+                      "--target=formal",
+                      "--build-root={build_dir}",
+                      "--setup {fusesoc_core}"]
+  sv_flist_gen_dir:  "{build_dir}/formal-icarus"
+
+  // Indicate the tool specific helper sources
+  tool_srcs: ["{proj_root}/hw/formal/tools/{tool}/fpv.tcl"]
+
+  // Vars that need to exported to the env
+  exports: [
+    FPV_TOP: {dut}
+    COV:     {cov}
+  ]
+  report_cmd:  "python {proj_root}/hw/formal/tools/{tool}/parse-fpv-report.py"
+  report_opts: ["--repdir={build_dir}",
+                "--outdir={build_dir}"]
+}
+

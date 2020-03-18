@@ -1,0 +1,107 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the master cfg hjson for FPV. It imports ALL individual FPV
+  // cfgs of the IPs and the full chip used in top_earlgrey. This enables to run
+  // them all as a regression in one shot.
+  name: top_earlgrey_batch_fpv
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/data/common_project_cfg.hjson"
+                "{proj_root}/hw/formal/data/dedicated_fpv_cfgs.hjson"]
+
+  use_cfgs: [
+             {
+               name: aes
+               fusesoc_core: lowrisc:ip:aes
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/aes"
+             }
+             {
+               name: alert_handler
+               fusesoc_core: lowrisc:ip:alert_handler
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/alert_handler"
+             }
+             {
+               name: flash_ctrl
+               fusesoc_core: lowrisc:ip:flash_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/flash_ctrl"
+             }
+             {
+               name: gpio
+               fusesoc_core: lowrisc:ip:gpio
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/gpio"
+             }
+             {
+               name: hmac
+               fusesoc_core: lowrisc:ip:hmac
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/hmac"
+             }
+             {
+               name: i2c
+               fusesoc_core: lowrisc:ip:i2c
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/i2c"
+             }
+             {
+               name: otp_ctrl
+               fusesoc_core: lowrisc:ip:otp_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otp_ctrl"
+             }
+             {
+               name: pwrmgr
+               fusesoc_core: lowrisc:ip:pwrmgr
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pwrmgr"
+             }
+             {
+               name: rv_core_ibex
+               fusesoc_core: lowrisc:ip:rv_core_ibex
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_core_ibex"
+             }
+             {
+               name: rv_dm
+               fusesoc_core: lowrisc:ip:rv_dm
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_dm"
+             }
+             {
+               name: rv_timer
+               fusesoc_core: lowrisc:ip:rv_timer
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rv_timer"
+             }
+             {
+               name: spi_device
+               fusesoc_core: lowrisc:ip:spi_device
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/spi_device"
+             }
+             {
+               name: uart
+               fusesoc_core: lowrisc:ip:uart
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/uart"
+             }
+             {
+               name: usbdev
+               fusesoc_core: lowrisc:ip:usbdev
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/usbdev"
+             }
+             {
+               name: usbuart
+               fusesoc_core: lowrisc:ip:usbuart
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/usbuart"
+             }
+            ]
+}
