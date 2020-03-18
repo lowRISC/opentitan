@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd: "{job_prefix} jg"
+  build_opts: ["-batch fpv.tcl",
+               "-proj jgproject",
+               "-allow_unsupported_OS",
+               "-command exit"]
+}
