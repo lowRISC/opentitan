@@ -111,10 +111,12 @@ if {$env(FPV_TOP) == "top_earlgrey"} {
 }
 
 # run once to check if assumptions have any conflict
-if {$env(CHECK) == 1} {
-  check_assumptions -conflict
-  check_assumptions -live
-  check_assumptions -dead_end
+if {[info exists ::env(CHECK)]} {
+  if {$env(CHECK)} {
+    check_assumptions -conflict
+    check_assumptions -live
+    check_assumptions -dead_end
+  }
 }
 
 #-------------------------------------------------------------------------

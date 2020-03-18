@@ -1,0 +1,148 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the master cfg hjson for FPV. It imports ALL individual FPV
+  // cfgs of the IPs and the full chip used in top_earlgrey. This enables to run
+  // them all as a regression in one shot.
+  name: top_earlgrey_batch_fpv
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/data/common_project_cfg.hjson"]
+
+  use_cfgs: [// TODO: implement some switch to only select "_fpv" testbenches
+             // TODO: if we default "_fpv" cov to be on, and the rest of the tbs cov off, need a
+             // command-line switch to disable cov.
+             {
+               name: prim_arbiter_ppc_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: prim_arbiter_tree_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_tree_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: prim_lfsr_fpv
+               fusesoc_core: lowrisc:fpv:prim_lfsr_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: prim_fifo_sync_fpv
+               fusesoc_core: lowrisc:fpv:prim_fifo_sync_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: prim_alert_rxtx_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: prim_alert_rxtx_async_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: prim_esc_rxtx_fpv
+               fusesoc_core: lowrisc:fpv:prim_esc_rxtx_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: padctrl_fpv
+               fusesoc_core: lowrisc:fpv:padctrl_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: pinmux_fpv
+               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: rv_plic_fpv
+               fusesoc_core: lowrisc:fpv:rv_plic_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: rv_plic_generic_fpv
+               fusesoc_core: lowrisc:fpv:rv_plic_generic_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: aes
+               fusesoc_core: lowrisc:ip:aes
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: alert_handler
+               fusesoc_core: lowrisc:ip:alert_handler
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: flash_ctrl
+               fusesoc_core: lowrisc:ip:flash_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: gpio
+               fusesoc_core: lowrisc:ip:gpio
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: hmac
+               fusesoc_core: lowrisc:ip:hmac
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: i2c
+               fusesoc_core: lowrisc:ip:i2c
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: otp_ctrl
+               fusesoc_core: lowrisc:ip:otp_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: pwrmgr
+               fusesoc_core: lowrisc:ip:pwrmgr
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: rv_core_ibex
+               fusesoc_core: lowrisc:ip:rv_core_ibex
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: rv_dm
+               fusesoc_core: lowrisc:ip:rv_dm
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: rv_timer
+               fusesoc_core: lowrisc:ip:rv_timer
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: spi_device
+               fusesoc_core: lowrisc:ip:spi_device
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: uart
+               fusesoc_core: lowrisc:ip:uart
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: usbdev
+               fusesoc_core: lowrisc:ip:usbdev
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
+               name: usbuart
+               fusesoc_core: lowrisc:ip:usbuart
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+            ]
+}
