@@ -2,6 +2,7 @@
   name: "rv_timer"
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
                      "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
