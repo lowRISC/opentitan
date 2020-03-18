@@ -295,7 +295,7 @@ module top_earlgrey #(
     .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
     .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
     .PipeLine            (IbexPipeLine)
-  ) core (
+  ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (main_clk),
     .rst_ni               (sys_rst_n),
@@ -364,7 +364,7 @@ module top_earlgrey #(
     .SramDw(32),
     .Outstanding(2),
     .ErrOnWrite(1)
-  ) tl_adapter_rom (
+  ) u_tl_adapter_rom (
     .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
 
@@ -407,7 +407,7 @@ module top_earlgrey #(
     .SramAw(14),
     .SramDw(32),
     .Outstanding(2)
-  ) tl_adapter_ram_main (
+  ) u_tl_adapter_ram_main (
     .clk_i   (main_clk),
     .rst_ni   (sys_rst_n),
     .tl_i     (tl_ram_main_d_h2d),
@@ -458,7 +458,7 @@ module top_earlgrey #(
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
-  ) tl_adapter_eflash (
+  ) u_tl_adapter_eflash (
     .clk_i   (main_clk),
     .rst_ni   (lc_rst_n),
 
@@ -495,7 +495,7 @@ module top_earlgrey #(
 
 
 
-  uart uart (
+  uart u_uart (
       .tl_i (tl_uart_d_h2d),
       .tl_o (tl_uart_d_d2h),
 
@@ -520,7 +520,7 @@ module top_earlgrey #(
       .rst_ni (sys_fixed_rst_n)
   );
 
-  gpio gpio (
+  gpio u_gpio (
       .tl_i (tl_gpio_d_h2d),
       .tl_o (tl_gpio_d_d2h),
 
@@ -538,7 +538,7 @@ module top_earlgrey #(
       .rst_ni (sys_fixed_rst_n)
   );
 
-  spi_device spi_device (
+  spi_device u_spi_device (
       .tl_i (tl_spi_device_d_h2d),
       .tl_o (tl_spi_device_d_d2h),
 
@@ -564,7 +564,7 @@ module top_earlgrey #(
       .rst_ni (spi_device_rst_n)
   );
 
-  flash_ctrl flash_ctrl (
+  flash_ctrl u_flash_ctrl (
       .tl_i (tl_flash_ctrl_d_h2d),
       .tl_o (tl_flash_ctrl_d_d2h),
 
@@ -584,7 +584,7 @@ module top_earlgrey #(
       .rst_ni (lc_rst_n)
   );
 
-  rv_timer rv_timer (
+  rv_timer u_rv_timer (
       .tl_i (tl_rv_timer_d_h2d),
       .tl_o (tl_rv_timer_d_d2h),
 
@@ -595,7 +595,7 @@ module top_earlgrey #(
       .rst_ni (sys_fixed_rst_n)
   );
 
-  aes aes (
+  aes u_aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
 
@@ -603,7 +603,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  hmac hmac (
+  hmac u_hmac (
       .tl_i (tl_hmac_d_h2d),
       .tl_o (tl_hmac_d_d2h),
 
@@ -620,7 +620,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  rv_plic rv_plic (
+  rv_plic u_rv_plic (
       .tl_i (tl_rv_plic_d_h2d),
       .tl_o (tl_rv_plic_d_d2h),
 
@@ -633,7 +633,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  pinmux pinmux (
+  pinmux u_pinmux (
       .tl_i (tl_pinmux_d_h2d),
       .tl_o (tl_pinmux_d_d2h),
 
@@ -649,7 +649,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  alert_handler alert_handler (
+  alert_handler u_alert_handler (
       .tl_i (tl_alert_handler_d_h2d),
       .tl_o (tl_alert_handler_d_d2h),
 
@@ -673,7 +673,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  nmi_gen nmi_gen (
+  nmi_gen u_nmi_gen (
       .tl_i (tl_nmi_gen_d_h2d),
       .tl_o (tl_nmi_gen_d_d2h),
 
@@ -690,7 +690,7 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
-  usbdev usbdev (
+  usbdev u_usbdev (
       .tl_i (tl_usbdev_d_h2d),
       .tl_o (tl_usbdev_d_d2h),
 

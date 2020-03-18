@@ -246,7 +246,7 @@ module top_${top["name"]} #(
     .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
     .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
     .PipeLine            (IbexPipeLine)
-  ) core (
+  ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (main_clk),
     .rst_ni               (sys_rst_n),
@@ -331,7 +331,7 @@ module top_${top["name"]} #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
     .Outstanding(2)
-  ) tl_adapter_${m["name"]} (
+  ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}_clk),
     % endfor
@@ -392,7 +392,7 @@ module top_${top["name"]} #(
     .SramDw(${data_width}),
     .Outstanding(2),
     .ErrOnWrite(1)
-  ) tl_adapter_${m["name"]} (
+  ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}_clk),
     % endfor
@@ -456,7 +456,7 @@ module top_${top["name"]} #(
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
-  ) tl_adapter_${m["name"]} (
+  ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}_clk),
     % endfor
@@ -530,9 +530,9 @@ else:
     .${k}(${v | lib.parameterize}),
         % endif
     % endfor
-  ) ${m["name"]} (
+  ) u_${m["name"]} (
   % else:
-  ${m["type"]} ${m["name"]} (
+  ${m["type"]} u_${m["name"]} (
   % endif
     % if not "bus_host" in m or m["bus_host"] in ["none", ""]:
       .tl_i (tl_${m["name"]}_d_h2d),

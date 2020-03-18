@@ -857,12 +857,13 @@ module usbdev (
   /////////////////////////////////
   // USB IO Muxing               //
   /////////////////////////////////
+  logic cio_oe;
 
   usbdev_iomux i_usbdev_iomux (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .clk_usb_48mhz_i        (clk_usb_48mhz_i),
-    .rst_usb_48mhz_ni             (rst_usb_48mhz_ni),
+    .rst_usb_48mhz_ni       (rst_usb_48mhz_ni),
     .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode),
     .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode),
     .sys_reg2hw_config_i    (reg2hw.phy_config),
@@ -896,7 +897,6 @@ module usbdev (
   ////////////////////////
   // USB Output Enables //
   ////////////////////////
-  logic cio_oe;
 
   // Data outputs
   assign cio_d_en_o  = cio_oe;
