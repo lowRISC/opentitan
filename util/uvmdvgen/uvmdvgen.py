@@ -8,7 +8,8 @@ import argparse
 import os
 import sys
 
-from uvmdvgen import gen_agent, gen_env
+import gen_agent
+import gen_env
 
 
 def main():
