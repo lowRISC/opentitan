@@ -195,30 +195,32 @@ bool dif_uart_watermark_rx_set(const dif_uart_t *uart,
 
   // Check if the requested watermark is valid, and get a corresponding
   // register definition to be written
-  uint32_t rxi_level;
+  bitfield_field32_t field = {
+      .mask = UART_FIFO_CTRL_RXILVL_MASK, .index = UART_FIFO_CTRL_RXILVL_OFFSET,
+  };
   switch (watermark) {
     case kDifUartWatermarkByte1:
-      rxi_level = UART_FIFO_CTRL_RXILVL_RXLVL1;
+      field.value = UART_FIFO_CTRL_RXILVL_RXLVL1;
       break;
     case kDifUartWatermarkByte4:
-      rxi_level = UART_FIFO_CTRL_RXILVL_RXLVL4;
+      field.value = UART_FIFO_CTRL_RXILVL_RXLVL4;
       break;
     case kDifUartWatermarkByte8:
-      rxi_level = UART_FIFO_CTRL_RXILVL_RXLVL8;
+      field.value = UART_FIFO_CTRL_RXILVL_RXLVL8;
       break;
     case kDifUartWatermarkByte16:
-      rxi_level = UART_FIFO_CTRL_RXILVL_RXLVL16;
+      field.value = UART_FIFO_CTRL_RXILVL_RXLVL16;
       break;
     case kDifUartWatermarkByte30:
-      rxi_level = UART_FIFO_CTRL_RXILVL_RXLVL30;
+      field.value = UART_FIFO_CTRL_RXILVL_RXLVL30;
       break;
     default:
       return false;
   }
 
   // Set watermark level
-  mmio_region_nonatomic_set_mask32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
-                                   rxi_level, UART_FIFO_CTRL_RXILVL_OFFSET);
+  mmio_region_nonatomic_set_field32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
+                                    field);
 
   return true;
 }
@@ -231,19 +233,21 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
 
   // Check if the requested watermark is valid, and get a corresponding
   // register definition to be written.
-  uint32_t txi_level;
+  bitfield_field32_t field = {
+      .mask = UART_FIFO_CTRL_RXILVL_MASK, .index = UART_FIFO_CTRL_RXILVL_OFFSET,
+  };
   switch (watermark) {
     case kDifUartWatermarkByte1:
-      txi_level = UART_FIFO_CTRL_TXILVL_TXLVL1;
+      field.value = UART_FIFO_CTRL_TXILVL_TXLVL1;
       break;
     case kDifUartWatermarkByte4:
-      txi_level = UART_FIFO_CTRL_TXILVL_TXLVL4;
+      field.value = UART_FIFO_CTRL_TXILVL_TXLVL4;
       break;
     case kDifUartWatermarkByte8:
-      txi_level = UART_FIFO_CTRL_TXILVL_TXLVL8;
+      field.value = UART_FIFO_CTRL_TXILVL_TXLVL8;
       break;
     case kDifUartWatermarkByte16:
-      txi_level = UART_FIFO_CTRL_TXILVL_TXLVL16;
+      field.value = UART_FIFO_CTRL_TXILVL_TXLVL16;
       break;
     default:
       // The minimal TX watermark is 1 byte, maximal 16 bytes
@@ -251,8 +255,8 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
   }
 
   // Set watermark level
-  mmio_region_nonatomic_set_mask32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
-                                   txi_level, UART_FIFO_CTRL_TXILVL_OFFSET);
+  mmio_region_nonatomic_set_field32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
+                                    field);
 
   return true;
 }
