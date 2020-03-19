@@ -16,7 +16,7 @@ from mako import exceptions
 from mako.template import Template
 
 import tlgen
-from reggen import gen_dv, gen_rtl, validate
+from reggen import gen_dv, gen_rtl, gen_fpv, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
 
 # Filter from IP list but adding generated hjson
@@ -200,6 +200,8 @@ def generate_plic(top, out_path):
     #   data: rv_plic.hjson
     rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
     rtl_path.mkdir(parents=True, exist_ok=True)
+    fpv_path = out_path / 'ip/rv_plic/fpv/autogen'
+    fpv_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/rv_plic/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
     hjson_path = out_path / 'ip/rv_plic/data/autogen'
@@ -211,6 +213,7 @@ def generate_plic(top, out_path):
     tpl_path = out_path / '../ip/rv_plic/data'
     hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
     rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
+    fpv_tpl_names = ['rv_plic_bind_fpv.sv', 'rv_plic_fpv.sv', 'rv_plic_fpv.core']
 
     # Generate Register Package and RTLs
     out = StringIO()
@@ -240,6 +243,7 @@ def generate_plic(top, out_path):
                             object_pairs_hook=OrderedDict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_fpv.gen_fpv(hjson_obj, str(fpv_path))
 
     # Generate RV_PLIC Top Module
     with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
@@ -258,6 +262,24 @@ def generate_plic(top, out_path):
     with rtl_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
+    # Generate RV_PLIC FPV testbench
+    for file_name in fpv_tpl_names:
+        tpl_name = file_name + ".tpl"
+        path = tpl_path / tpl_name
+        with path.open(mode='r', encoding='UTF-8') as fin:
+            fpv_tpl = Template(fin.read())
+            try:
+                out = fpv_tpl.render(src=src, target=target, prio=prio)
+            except:
+                log.error(exceptions.text_error_template().render())
+            log.info("RV_PLIC FPV: %s" % out)
+        if out == "":
+            log.error("Cannot generate rv_plic FPV testbench")
+            return
+
+        fpv_gen_path = fpv_path / file_name
+        with fpv_gen_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(out)
 
 def generate_pinmux(top, out_path):
     # MIO Pads
