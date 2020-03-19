@@ -16,14 +16,6 @@ package chip_env_pkg;
   import cip_base_pkg::*;
   import chip_ral_pkg::*;
 
-  // import individual env IP env pkgs
-  import uart_env_pkg::*;
-  import gpio_env_pkg::*;
-  import hmac_env_pkg::*;
-  import rv_timer_env_pkg::*;
-  import spi_device_env_pkg::*;
-  import usbdev_env_pkg::*;
-
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
