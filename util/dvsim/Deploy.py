@@ -311,7 +311,7 @@ class Deploy():
     @staticmethod
     def deploy(items):
         dispatched_items = []
-        queued_items = items
+        queued_items = []
 
         if Deploy.print_legend:
             # Print legend once at the start of the run.
@@ -342,7 +342,7 @@ class Deploy():
                     log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s",
                             get_etime(), target, item_names[target])
 
-        def track_progress(status, print_status):
+        def track_progress(status, print_status_flag):
             all_done = True
             for target in status.keys():
                 if "target_done" in status[target].keys(): continue
@@ -361,7 +361,7 @@ class Deploy():
                     target_done = True
                 all_done &= target_done
 
-                if print_status:
+                if print_status_flag:
                     width = "0{}d".format(len(str(stats["T"])))
                     msg = "["
                     for s in stats.keys():
@@ -373,16 +373,43 @@ class Deploy():
 
         all_done = False
         status = {}
+        print_status_flag = True
 
         # Queue all items
+        queued_items.extend(items)
         for item in queued_items:
             if item.target not in status.keys():
                 status[item.target] = {}
             status[item.target][item] = "Q"
 
         while not all_done:
+            # Get status of dispatched items.
+            for item in dispatched_items:
+                if item.status == "D": item.get_status()
+                if item.status != status[item.target][item]:
+                    print_status_flag = True
+                    if item.status != "D":
+                        if item.status != "P":
+                            # Kill its sub items if item did not pass.
+                            item.set_sub_status("K")
+                            log.error("[%s]: [%s]: [status] [%s: %s]",
+                                      get_etime(), item.target,
+                                      item.identifier, item.status)
+                        else:
+                            log.log(VERBOSE, "[%s]: [%s]: [status] [%s: %s]",
+                                    get_etime(), item.target, item.identifier,
+                                    item.status)
+                        # Queue items' sub-items if it is done.
+                        queued_items.extend(item.sub)
+                        for sub_item in item.sub:
+                            if sub_item.target not in status.keys():
+                                status[sub_item.target] = {}
+                            status[sub_item.target][sub_item] = "Q"
+                status[item.target][item] = item.status
+
             # Dispatch items from the queue as slots free up.
-            if len(queued_items) != 0:
+            all_done = (len(queued_items) == 0)
+            if not all_done:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
                 if num_slots > 0:
                     if len(queued_items) > num_slots:
@@ -394,33 +421,15 @@ class Deploy():
                         dispatched_items.extend(queued_items)
                         queued_items = []
 
-            # Advance time by 1s.
-            time.sleep(1)
-            Deploy.num_secs += 1
-            print_status = ((Deploy.num_secs % Deploy.print_interval) == 0)
-
-            # Get status of dispatched items.
-            for item in dispatched_items:
-                if item.status == "D": item.get_status()
-                if item.status != status[item.target][item]:
-                    print_status = True
-                    if item.status != "D":
-                        if item.status != "P":
-                            # Kill its sub items if item did not pass.
-                            item.set_sub_status("K")
-                        log.log(VERBOSE, "[%s]: [%s]: [status]\n  [%s: %s]",
-                                get_etime(), item.target, item.identifier,
-                                item.status)
-                        # Queue items' sub-items if it is done.
-                        queued_items.extend(item.sub)
-                        for sub_item in item.sub:
-                            if sub_item.target not in status.keys():
-                                status[sub_item.target] = {}
-                            status[sub_item.target][sub_item] = "Q"
-                status[item.target][item] = item.status
-
             # Check if we are done and print the status periodically.
-            all_done = track_progress(status, print_status)
+            all_done &= track_progress(status, print_status_flag)
+
+            # Advance time by 1s if there is more work to do.
+            if not all_done:
+                time.sleep(1)
+                Deploy.num_secs += 1
+                print_status_flag = ((Deploy.num_secs %
+                                      Deploy.print_interval) == 0)
 
 
 class CompileSim(Deploy):

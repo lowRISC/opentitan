@@ -41,7 +41,6 @@ class LintCfg(OneShotCfg):
         # Set the title for lint results.
         self.results_title = self.name.upper() + " Lint Results"
 
-
     @staticmethod
     def create_instance(flow_cfg_file, proj_root, args):
         '''Create a new instance of this class as with given parameters.
@@ -124,7 +123,6 @@ class LintCfg(OneShotCfg):
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
         results_str += "### Lint Tool: " + self.tool.upper() + "\n\n"
-
 
         header = [
             "Build Mode", "Tool Warnings", "Tool Errors", "Lint Warnings",
@@ -213,8 +211,8 @@ class LintCfg(OneShotCfg):
 
         # Write results to the scratch area
         self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        log.info("Detailed results are available at %s", self.results_file)
         with open(self.results_file, 'w') as f:
             f.write(self.results_md)
 
+        log.info("[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md

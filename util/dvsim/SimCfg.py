@@ -125,26 +125,27 @@ class SimCfg(FlowCfg):
         # Set the title for simulation results.
         self.results_title = self.name.upper() + " Simulation Results"
 
-        # Print info
-        log.info("Scratch path for %s: %s", self.name, self.scratch_path)
-
-        # Set directories with links for ease of debug / triage.
-        self.links = {
-            "D": self.scratch_path + "/" + "dispatched",
-            "P": self.scratch_path + "/" + "passed",
-            "F": self.scratch_path + "/" + "failed",
-            "K": self.scratch_path + "/" + "killed"
-        }
-
-        # Use the default build mode for tests that do not specify it
-        if not hasattr(self, "build_mode"):
-            setattr(self, "build_mode", "default")
-
-        self._process_exports()
-
-        # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-        # tests and regressions, only if not a master cfg obj
+        # Stuff below only pertains to individual cfg (not master cfg).
         if not self.is_master_cfg:
+            # Print info
+            log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
+
+            # Set directories with links for ease of debug / triage.
+            self.links = {
+                "D": self.scratch_path + "/" + "dispatched",
+                "P": self.scratch_path + "/" + "passed",
+                "F": self.scratch_path + "/" + "failed",
+                "K": self.scratch_path + "/" + "killed"
+            }
+
+            # Use the default build mode for tests that do not specify it
+            if not hasattr(self, "build_mode"):
+                setattr(self, "build_mode", "default")
+
+            self._process_exports()
+
+            # Create objects from raw dicts - build_modes, sim_modes, run_modes,
+            # tests and regressions, only if not a master cfg obj
             # TODO: hack to prevent coverage collection if tool != vcs
             if self.cov and self.tool != "vcs":
                 self.cov = False
@@ -514,12 +515,12 @@ class SimCfg(FlowCfg):
 
         # Write results to the scratch area
         results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        log.info("Detailed results are available at %s", results_file)
         f = open(results_file, 'w')
         f.write(self.results_md)
         f.close()
 
         # Return only the tables
+        log.info("[results page]: [%s] [%s]", self.name, results_file)
         return results_str
 
     def gen_results_summary(self):
@@ -533,7 +534,7 @@ class SimCfg(FlowCfg):
             row = []
             for title in item.results_summary:
                 row.append(item.results_summary[title])
-            if len(row) == len(header): table.append(row)
+            if row != []: table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
         self.results_summary_md += tabulate(table,

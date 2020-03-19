@@ -430,7 +430,7 @@ class FlowCfg():
         results = []
         for item in self.cfgs:
             result = item._gen_results()
-            print(result)
+            log.info("[results]: [%s]:\n%s\n\n", item.name, result)
             results.append(result)
             self.errors_seen |= item.errors_seen
 
