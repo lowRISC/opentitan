@@ -2,22 +2,20 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:rv_plic_fpv:0.1"
-description: "RISC-V PLIC"
+name: "lowrisc:fpv:rv_plic_generic_fpv:0.1"
+description: "FPV genenric testbench for RISC-V PLIC example"
 
 filesets:
   files_formal:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:prim:all
+      - lowrisc:fpv:rv_plic_component_fpv
       # note: this is an example config which may differ
       # from a particular top-level config
       - lowrisc:ip:rv_plic_example
     files:
-      - vip/rv_plic_assert_fpv.sv
       - vip/rv_plic_csr_assert_fpv.sv
       - tb/rv_plic_bind_fpv.sv
-      - tb/rv_plic_fpv.sv
+      - tb/rv_plic_generic_fpv.sv
     file_type: systemVerilogSource
 
 targets:
@@ -27,7 +25,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: rv_plic_fpv
+    toplevel: rv_plic_generic_fpv
 
   formal:
     <<: *default_target

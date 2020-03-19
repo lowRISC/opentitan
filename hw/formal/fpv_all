@@ -47,6 +47,7 @@ declare -a blocks=(
   "pinmux_fpv"
   "padctrl_fpv"
   "rv_plic_fpv"
+  "rv_plic_generic_fpv"
 )
 
 #-------------------------------------------------------------------------
