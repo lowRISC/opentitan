@@ -235,6 +235,49 @@ inline void mmio_region_nonatomic_set_mask32(mmio_region_t base,
 }
 
 /**
+ * Masked Register field for use in 32-bit bitfields.
+ *
+ * `index` represents a shift in bits starting from the 0 bit of a given 32-bit
+ * bitfield. It is used to zero the memory inside this bitfield by applying an
+ * inverted `mask` at the `index` offset. `value` is then capped by applying
+ * `mask` and is shifted to the `index` bits of the bitfield.
+ *
+ * Example:
+ * ```
+ * 32-bit bitfield = 0b11111111'11111111'11111111'11111111
+ * set_field32( mask = 0b11111111, index = 16, value = 0b01111110 (126) )
+ * result 32-bit bitfield = 0b11111111'01111110'11111111'11111111
+ * ```
+ */
+typedef struct mmio_region_field32 {
+  uint32_t mask;  /**< The field mask. */
+  uint32_t index; /**< The field position within a register. */
+  uint32_t value; /**< The field value to be written. */
+} mmio_region_field32_t;
+
+/**
+ * Sets the @p field from the MMIO region @p base at the given @p offset.
+ *
+ * This function performs a non-atomic read-write-modify operation on a
+ * MMIO region. The information of which portion of the register to set, is
+ * stored in the @p field. The semantics of this operation are similar to the
+ * @p mmio_region_nonatomic_set_mask32, however the appropriate portion of the
+ * register is zeroed before it is written to.
+ *
+ * @param base the region to set the field in.
+ * @param offset the offset to set the field at, in bytes.
+ * @param field field within selected register field to be set.
+ */
+inline void mmio_region_nonatomic_set_field32(mmio_region_t base,
+                                              ptrdiff_t offset,
+                                              mmio_region_field32_t field) {
+  uint32_t register_value = mmio_region_read32(base, offset);
+  register_value &= ~(field.mask << field.index);
+  register_value |= (field.value & field.mask) << field.index;
+  mmio_region_write32(base, offset, register_value);
+}
+
+/**
  * Clears the `bit_index`th bit in the MMIO region `base` at the given offset.
  *
  * This function has the same guarantees as
