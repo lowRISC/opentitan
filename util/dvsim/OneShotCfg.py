@@ -84,30 +84,31 @@ class OneShotCfg(FlowCfg):
                                                       self.__dict__,
                                                       ignored_wildcards)
 
-        # Print info
-        log.info("Scratch path for %s: %s", self.name, self.scratch_path)
-
-        # Set directories with links for ease of debug / triage.
-        self.links = {
-            "D": self.scratch_path + "/" + "dispatched",
-            "P": self.scratch_path + "/" + "passed",
-            "F": self.scratch_path + "/" + "failed",
-            "K": self.scratch_path + "/" + "killed"
-        }
-
-        # Use the default build mode for tests that do not specify it
-        if not hasattr(self, "build_mode"):
-            setattr(self, "build_mode", "default")
-
-        self._process_exports()
-
-        # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-        # tests and regressions, only if not a master cfg obj
+        # Stuff below only pertains to individual cfg (not master cfg).
         if not self.is_master_cfg:
+            # Print info
+            log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
+
+            # Set directories with links for ease of debug / triage.
+            self.links = {
+                "D": self.scratch_path + "/" + "dispatched",
+                "P": self.scratch_path + "/" + "passed",
+                "F": self.scratch_path + "/" + "failed",
+                "K": self.scratch_path + "/" + "killed"
+            }
+
+            # Use the default build mode for tests that do not specify it
+            if not hasattr(self, "build_mode"):
+                setattr(self, "build_mode", "default")
+
+            self._process_exports()
+
+            # Create objects from raw dicts - build_modes, sim_modes, run_modes,
+            # tests and regressions, only if not a master cfg obj
             self._create_objects()
 
-        # Post init checks
-        self.__post_init__()
+            # Post init checks
+            self.__post_init__()
 
     def __post_init__(self):
         # Run some post init checks
