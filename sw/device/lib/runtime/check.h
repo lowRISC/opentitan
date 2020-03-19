@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/log.h"
-#include "sw/device/lib/runtime/abort.h"
+#include "sw/device/lib/runtime/hart.h"
 
 /**
  * Runtime assertion macros with log.h integration.
@@ -37,6 +37,6 @@
  * @param ... arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
-#define CHECKZ(value, ...) CHECK((value) == 0, ...)
+#define CHECKZ(value, ...) CHECK((value) == 0, ##__VA_ARGS__)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
