@@ -69,10 +69,9 @@ TL host interface into FOO device.
 [Describe here or add link to its README]
 
 ### UVM RAL Model
-The FOO RAL model is created with the `hw/dv/tools/gen_ral_pkg.py` wrapper script at the start of the simulation automatically and is placed in the build area, along with a corresponding `fusesoc` core file.
-The wrapper script invokes the [regtool.py]({{< relref "util/reggen/README.md" >}}) script from within to generate the RAL model.
+The FOO RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by running `make ral` command from the `dv` area.
+It can be created manually (separately) by running `make` in the the `hw/` area.
 
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]

@@ -42,9 +42,6 @@
   uvm_test_seq: chip_base_vseq
   sw_build_device: sim_dv
 
-  // Additional option to RAL generation for top level.
-  gen_ral_pkg_opts: ["--top"]
-
   // Add default build_opts.
   build_opts: [// Use generic implementations of prim modules.
                "+define+PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric"]

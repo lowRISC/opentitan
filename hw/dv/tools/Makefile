@@ -78,9 +78,6 @@ SIMULATOR ?= vcs
 # common tests/seqs
 include ${MAKE_ROOT}/common_tests.mk
 
-# tool to generate ral
-include ${MAKE_ROOT}/ral_gen.mk
-
 # tool to generate file list
 include ${MAKE_ROOT}/fusesoc.mk
 

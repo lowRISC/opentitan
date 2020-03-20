@@ -6,15 +6,6 @@
 
 all: build run
 
-########################
-## RAL target         ##
-########################
-ral:
-ifneq (${SKIP_RAL_GEN},1)
-	mkdir -p ${RAL_MODEL_DIR} && \
-	${RAL_TOOL} ${RAL_TOOL_OPTS}
-endif
-
 ###############################
 ## sim build and run targets ##
 ###############################
@@ -24,7 +15,7 @@ pre_compile:
 	mkdir -p ${BUILD_DIR} && \
 	env > ${BUILD_DIR}/env_vars
 
-gen_sv_flist: pre_compile ral
+gen_sv_flist: pre_compile
 	cd ${BUILD_DIR} && ${SV_FLIST_GEN_TOOL} ${SV_FLIST_GEN_OPTS}
 
 compile: gen_sv_flist

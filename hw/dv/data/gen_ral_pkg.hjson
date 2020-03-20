@@ -1,9 +1,0 @@
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-{
-  gen_ral_pkg:      "{name}"
-  gen_ral_pkg_dir:  "{build_dir}/gen_ral_pkg"
-  gen_ral_pkg_cmd:  "{proj_root}/hw/dv/tools/gen_ral_pkg.py"
-  gen_ral_pkg_opts: ["{gen_ral_pkg} {ral_spec} -o {gen_ral_pkg_dir}"]
-}

@@ -54,10 +54,9 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into HMAC device.
 
 ### UVM RAL Model
-The HMAC RAL model is created with the `hw/dv/tools/gen_ral_pkg.py` wrapper script at the start of the simulation automatically and is placed in the build area, along with a corresponding `fusesoc` core file.
-The wrapper script invokes the [regtool.py]({{< relref "util/reggen/README.md" >}}) script from within to generate the RAL model.
+The HMAC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by running `make ral` command from the `dv` area.
+It can be created manually (separately) by running `make` in the the `hw/` area.
 
 ### Reference models
 To check the correctness of the output for SHA256 and HMAC, the testbench uses

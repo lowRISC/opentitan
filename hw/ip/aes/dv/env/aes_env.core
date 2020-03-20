@@ -10,9 +10,9 @@ filesets:
         - lowrisc:ip:aes:0.6
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:csr_utils
-      - lowrisc:dv:gen_ral_pkg
       - lowrisc:dv:aes_model_dpi
     files:
       - aes_env_pkg.sv
@@ -29,8 +29,17 @@ filesets:
       - seq_lib/aes_sanity_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: aes
+      ip_hjson: ../../data/aes.hjson
+
 targets:
   default:
     filesets:
       - files_rtl
       - files_dv
+    generate:
+      - ral

@@ -493,12 +493,6 @@ class CompileSim(Deploy):
             "tool_srcs": False,
             "tool_srcs_dir": False,
 
-            # RAL gen
-            "skip_ral": False,
-            "gen_ral_pkg_cmd": False,
-            "gen_ral_pkg_dir": False,
-            "gen_ral_pkg_opts": False,
-
             # Flist gen
             "sv_flist_gen_cmd": False,
             "sv_flist_gen_dir": False,

@@ -7,10 +7,10 @@ description: "hmac DV UVM environmnt"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:cryptoc_dpi:0.1
       - lowrisc:dv:test_vectors
-      - lowrisc:dv:gen_ral_pkg
     files:
       - hmac_env_pkg.sv
       - hmac_env_cfg.sv: {is_include_file: true}
@@ -30,7 +30,16 @@ filesets:
       - seq_lib/hmac_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: hmac
+      ip_hjson: ../../data/hmac.hjson
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

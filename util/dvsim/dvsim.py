@@ -335,11 +335,6 @@ def main():
         """By default, failing tests will be automatically be rerun with waves;
                 this option will prevent the rerun from being triggered""")
 
-    parser.add_argument("--skip-ral",
-                        default=False,
-                        action='store_true',
-                        help="""Skip the ral generation step.""")
-
     parser.add_argument("-v",
                         "--verbosity",
                         default="l",

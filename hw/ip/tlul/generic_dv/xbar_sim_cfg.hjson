@@ -23,11 +23,6 @@
   // Add xbar specific exclusion files.
   vcs_cov_excl_files: ["{tool_srcs_dir}/xbar_cov_excl.el"]
 
-  // no reg in xbar. This is a make variable in hw/dv/data/sim.mk. Set it to skip make target (RAL)
-  exports: [
-    skip_gen_ral_pkg: 1
-  ]
-
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/data/common_sim_cfg.hjson"]

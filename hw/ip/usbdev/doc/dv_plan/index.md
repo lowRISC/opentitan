@@ -57,8 +57,9 @@ The [usb20_agent]({{< relref "hw/dv/sv/usb20_agent/README.md" >}}) is currently 
 It does not offer any functionality yet.
 
 ### UVM RAL Model
-The USBDEV RAL model is created with the `hw/dv/tools/gen_ral_pkg.py` wrapper script at the start of the simulation automatically and is placed in the build area, along with a corresponding `fusesoc` core file.
-The wrapper script invokes the [regtool.py]({{< relref "util/reggen/README.md" >}}) script from within to generate the RAL model.
+The USBDEV RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+
+It can be created manually (separately) by running `make` in the the `hw/` area.
 
 ### Reference models
 There are no reference models in use currently.
