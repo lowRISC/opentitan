@@ -38,7 +38,7 @@ package hmac_env_pkg;
 
   typedef enum {
     HmacDone,
-    HmacMsgFifoFull,
+    HmacMsgFifoEmpty,
     HmacErr
   } hmac_intr_e;
 

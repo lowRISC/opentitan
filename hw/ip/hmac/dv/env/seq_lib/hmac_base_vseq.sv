@@ -52,7 +52,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                          bit hmac_en = 1'b1,
                          bit endian_swap = 1'b1,
                          bit digest_swap = 1'b1,
-                         bit intr_fifo_full_en = 1'b1,
+                         bit intr_fifo_empty_en = 1'b1,
                          bit intr_hmac_done_en = 1'b1,
                          bit intr_hmac_err_en  = 1'b1);
     bit [TL_DW-1:0] interrupts;
@@ -65,7 +65,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
     // enable interrupts
     interrupts = (intr_hmac_err_en << HmacErr) | (intr_hmac_done_en << HmacDone) |
-                 (intr_fifo_full_en << HmacMsgFifoFull);
+                 (intr_fifo_empty_en << HmacMsgFifoEmpty);
     cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
   endtask
 
@@ -192,8 +192,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                 .blocking($urandom_range(0, 1)));
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
-        if (!do_back_pressure) check_status_intr_fifo_full();
-        else clear_intr_fifo_full();
+        //if (!do_back_pressure) check_status_intr_fifo_full();
+        //else clear_intr_fifo_full();
         // randomly change key, config regs during msg wr, should trigger error or be discarded
         write_discard_config_and_key($urandom_range(0, 20) == 0, $urandom_range(0, 20) == 0);
       end else begin
@@ -226,7 +226,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                     .blocking($urandom_range(0, 1)));
         end
         if (ral.cfg.sha_en.get_mirrored_value()) begin
-          clear_intr_fifo_full();
+          //clear_intr_fifo_full();
         end else begin
           check_error_code();
         end
@@ -248,33 +248,33 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // read status FIFO FULL and check intr FIFO FULL
   // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
-  virtual task check_status_intr_fifo_full();
-    bit msg_fifo_full;
-    csr_utils_pkg::wait_no_outstanding_access();
-    csr_rd(ral.status.fifo_full, msg_fifo_full);
-    if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
-      check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(msg_fifo_full));
-    end else begin
-      csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
-                   .compare_mask(1 << HmacMsgFifoFull));
-      csr_wr(.csr(ral.intr_state), .value(1 << HmacMsgFifoFull));
-    end
-  endtask
+  //virtual task check_status_intr_fifo_full();
+  //  bit msg_fifo_full;
+  //  csr_utils_pkg::wait_no_outstanding_access();
+  //  csr_rd(ral.status.fifo_full, msg_fifo_full);
+  //  if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
+  //    check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(msg_fifo_full));
+  //  end else begin
+  //    csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
+  //                 .compare_mask(1 << HmacMsgFifoFull));
+  //    csr_wr(.csr(ral.intr_state), .value(1 << HmacMsgFifoFull));
+  //  end
+  //endtask
 
   // when msg fifo full interrupt is set, this task clears the interrupt
   // checking the correctness of the fifo full interrupt is done in scb
-  virtual task clear_intr_fifo_full();
-    csr_utils_pkg::wait_no_outstanding_access();
-    if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
-      if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
-        check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(1'b1));
-      end
-    end else begin
-      bit msg_fifo_full;
-      csr_rd(ral.intr_state.fifo_full, msg_fifo_full);
-      if (msg_fifo_full) csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacMsgFifoFull));
-    end
-  endtask
+  //virtual task clear_intr_fifo_full();
+  //  csr_utils_pkg::wait_no_outstanding_access();
+  //  if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
+  //    if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
+  //      check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(1'b1));
+  //    end
+  //  end else begin
+  //    bit msg_fifo_full;
+  //    csr_rd(ral.intr_state.fifo_full, msg_fifo_full);
+  //    if (msg_fifo_full) csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacMsgFifoFull));
+  //  end
+  //endtask
 
   // this task is called when sha_en=0 and sequence set hash_start, or streamed in msg
   // it will check intr_pin, intr_state, and error_code register

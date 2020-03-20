@@ -8,7 +8,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit             sha_en, fifo_full;
+  bit             sha_en, fifo_full, fifo_empty;
   bit [7:0]       msg_q[$];
   bit             hmac_start, hmac_process;
   int             hmac_wr_cnt, hmac_rd_cnt;
@@ -22,7 +22,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      hmac_process_fifo_full();
+      hmac_process_fifo_status();
       hmac_process_fifo_wr();
       hmac_process_fifo_rd();
     join_none
@@ -95,6 +95,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
             intr_test = item.a_data;
           end
+          "intr_state": begin
+            if (item.a_data[HmacMsgFifoEmpty]) fifo_empty = 0;
+          end
           "cfg": begin
             if (hmac_start) return; // won't update configs if hash start
             if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
@@ -141,6 +144,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                                              (hmac_fifo_full  << HmacStaMsgFifoFull) |
                                              (hmac_fifo_depth << HmacStaMsgFifoDepth);
           void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
+        end else if (csr_name == "intr_state") begin
+          if (fifo_empty && ral.intr_state.fifo_empty.get_mirrored_value() != 1) begin
+            void'(ral.intr_state.fifo_empty.predict(.value(1), .kind(UVM_PREDICT_READ)));
+            `uvm_info(`gfn, "predict again", UVM_HIGH)
+          end
         end
       return;
     end
@@ -223,6 +231,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     hmac_rd_cnt = 0;
     intr_test   = 0;
     key         = '{default:0};
+    fifo_empty  = 0;
   endfunction
 
   // clear variables after expected digest is calculated
@@ -265,15 +274,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     join
   endtask
 
-  virtual task hmac_process_fifo_full();
+  virtual task hmac_process_fifo_status();
     forever @(hmac_wr_cnt, hmac_rd_cnt) begin
       // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait 1ps to guarantee
       // get both update
       #1ps;
-      if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
-        void'(ral.intr_state.fifo_full.predict(.value(1)));
-        `uvm_info(`gfn, "predict interrupt fifo full is set", UVM_HIGH)
-        fifo_full = 1;
+      if ((hmac_wr_cnt == hmac_rd_cnt) && (hmac_wr_cnt != 0)) begin
+        // after the rd wr pointers are equal, wait one clk cycle for the fifo_empty register
+        // update, wait another clk cycle for the register value to reflect
+        if (!fifo_empty) begin
+          cfg.clk_rst_vif.wait_clks(2);
+          `uvm_info(`gfn, "predict interrupt fifo empty is set", UVM_HIGH)
+          fifo_empty = 1;
+        end
       end
     end
   endtask
@@ -347,7 +360,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    `DV_CHECK_EQ(cfg.intr_vif.pins[HmacMsgFifoFull], 1'b0)
+    `DV_CHECK_EQ(cfg.intr_vif.pins[HmacMsgFifoEmpty], 1'b0)
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacDone], 1'b0)
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacErr], 1'b0)
   endfunction

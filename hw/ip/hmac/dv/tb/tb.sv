@@ -20,7 +20,7 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0]  interrupts;
 
   wire intr_hmac_done;
-  wire intr_fifo_full;
+  wire intr_fifo_empty;
   wire intr_hmac_err;
 
   // parameters
@@ -42,16 +42,16 @@ module tb;
     .tl_o               ( tl_if.d2h      ),
 
     .intr_hmac_done_o   ( intr_hmac_done ),
-    .intr_fifo_full_o   ( intr_fifo_full ),
+    .intr_fifo_empty_o  ( intr_fifo_empty ),
     .intr_hmac_err_o    ( intr_hmac_err  ),
 
     .alert_rx_i         ( alert_if_msg_push_sha_disabled.alert_rx ),
     .alert_tx_o         ( alert_if_msg_push_sha_disabled.alert_tx )
   );
 
-  assign interrupts[HmacDone]        = intr_hmac_done;
-  assign interrupts[HmacMsgFifoFull] = intr_fifo_full;
-  assign interrupts[HmacErr]         = intr_hmac_err;
+  assign interrupts[HmacDone]         = intr_hmac_done;
+  assign interrupts[HmacMsgFifoEmpty] = intr_fifo_empty;
+  assign interrupts[HmacErr]          = intr_hmac_err;
 
   initial begin
     // drive clk and rst_n from clk_if

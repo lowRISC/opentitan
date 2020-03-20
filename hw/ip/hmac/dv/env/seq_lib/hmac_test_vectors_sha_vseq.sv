@@ -49,7 +49,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         // example: current fifo_depth=(14 words + 2 bytes), then wr last 4 bytes, design will
         // process the 15th word then trigger intr_fifo_full
         cfg.clk_rst_vif.wait_clks(2);
-        clear_intr_fifo_full();
+        //clear_intr_fifo_full();
 
         wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
         check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
