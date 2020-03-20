@@ -50,8 +50,10 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into AES device.
 
 
-### RAL
-The AES RAL model is constructed using the [regtool.py script]({{< relref "util/reggen/README.md" >}}) and it is placed at `env/aes_reg_block.sv`.
+### UVM RAL model
+The AES RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+
+It can be created manually (separately) by running `make` in the the `hw/` area.
 
 ### Stimulus strategy
 #### Test sequences

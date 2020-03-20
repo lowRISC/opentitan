@@ -12,7 +12,6 @@
   import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
                      "{proj_root}/hw/dv/data/common_modes.hjson",
                      "{proj_root}/hw/dv/data/fusesoc.hjson",
-                     "{proj_root}/hw/dv/data/gen_ral_pkg.hjson",
                      "{proj_root}/hw/dv/data/{tool}/{tool}.hjson"]
 
   // Default directory structure for the output

@@ -7,8 +7,8 @@ description: "GPIO DV UVM environmnt"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:gen_ral_pkg
     files:
       - gpio_env_pkg.sv
       - gpio_env_cfg.sv: {is_include_file: true}
@@ -30,7 +30,16 @@ filesets:
       - seq_lib/gpio_intr_with_filter_rand_intr_event_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: gpio
+      ip_hjson: ../../data/gpio.hjson
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

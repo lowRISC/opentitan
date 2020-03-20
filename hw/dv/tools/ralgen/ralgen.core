@@ -1,0 +1,11 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:ralgen"
+description: "Generator for UVM RAL package used in DV testbenches."
+generators:
+  ralgen:
+    interpreter: python3
+    command: ralgen.py

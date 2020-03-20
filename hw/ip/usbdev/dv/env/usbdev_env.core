@@ -7,9 +7,9 @@ description: "USBDEV DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:usb20_agent
-      - lowrisc:dv:gen_ral_pkg
     files:
       - usbdev_env_pkg.sv
       - usbdev_env_cfg.sv: {is_include_file: true}
@@ -23,7 +23,16 @@ filesets:
       - seq_lib/usbdev_sanity_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: usbdev
+      ip_hjson: ../../data/usbdev.hjson
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

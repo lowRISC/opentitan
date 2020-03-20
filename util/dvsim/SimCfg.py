@@ -51,7 +51,6 @@ class SimCfg(FlowCfg):
         self.email = args.email
         self.verbose = args.verbose
         self.dry_run = args.dry_run
-        self.skip_ral = args.skip_ral
         self.map_full_testplan = args.map_full_testplan
 
         # Set default sim modes for unpacking
@@ -498,13 +497,14 @@ class SimCfg(FlowCfg):
             self.results_summary = self.testplan.results_summary
 
             # Append coverage results of coverage was enabled.
-            if self.cov and self.cov_report_deploy.status == "P":
-                results_str += "\n## Coverage Results\n"
-                results_str += "\n### [Coverage Dashboard](cov_report/dashboard.html)\n\n"
-                results_str += self.cov_report_deploy.cov_results
-                self.results_summary[
-                    "Coverage"] = self.cov_report_deploy.cov_total
-            elif self.cov:
+            if self.cov:
+                if self.cov_report_deploy.status == "P":
+                    results_str += "\n## Coverage Results\n"
+                    results_str += "\n### [Coverage Dashboard]"
+                    results_str += "(cov_report/dashboard.html)\n\n"
+                    results_str += self.cov_report_deploy.cov_results
+                    self.results_summary[
+                        "Coverage"] = self.cov_report_deploy.cov_total
                 self.results_summary["Coverage"] = "--"
 
             # append link of detail result to block name

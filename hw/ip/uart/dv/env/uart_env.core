@@ -7,9 +7,9 @@ description: "UART DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:uart_agent
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:gen_ral_pkg
     files:
       - uart_env_pkg.sv
       - uart_env_cfg.sv: {is_include_file: true}
@@ -36,7 +36,16 @@ filesets:
       - seq_lib/uart_tx_ovrd_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: uart
+      ip_hjson: ../../data/uart.hjson
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

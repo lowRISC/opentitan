@@ -7,13 +7,13 @@ description: "CHIP DV UVM environmnt"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:uart_agent
       - lowrisc:dv:jtag_agent
       - lowrisc:dv:spi_agent
       - lowrisc:dv:mem_bkdr_if
       - lowrisc:dv:sw_msg_monitor_if
-      - lowrisc:dv:gen_ral_pkg
     files:
       - chip_env_pkg.sv
       - chip_tl_seq_item.sv: {is_include_file: true}
@@ -28,8 +28,16 @@ filesets:
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: chip
+      top_hjson: ../../data/top_earlgrey.hjson
 
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

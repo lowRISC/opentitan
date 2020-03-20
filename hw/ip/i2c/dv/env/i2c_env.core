@@ -7,9 +7,9 @@ description: "I2C DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:i2c_agent
-      - lowrisc:dv:gen_ral_pkg
       - lowrisc:ip:i2c
     files:
       - i2c_env_pkg.sv
@@ -23,7 +23,16 @@ filesets:
       - seq_lib/i2c_common_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: i2c
+      ip_hjson: ../../data/i2c.hjson
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral
