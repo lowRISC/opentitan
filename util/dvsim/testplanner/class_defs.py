@@ -6,6 +6,7 @@ r"""TestplanEntry and Testplan classes for maintaining testplan entries
 
 import re
 import sys
+from collections import OrderedDict
 
 import mistletoe
 from tabulate import tabulate
@@ -161,7 +162,7 @@ class Testplan():
     def __init__(self, name):
         self.name = name
         self.entries = []
-        self.results_summary = {}
+        self.results_summary = OrderedDict()
         self.results = ""
 
         if name == "":
