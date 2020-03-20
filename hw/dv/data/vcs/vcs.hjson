@@ -31,7 +31,7 @@
                "-LDFLAGS \"-Wl,--no-as-needed\""]
 
   run_opts:   ["-licqueue",
-               "-ucli -do {tool_srcs_dir}/vcs_fsdb.tcl",
+               "-ucli -do {tool_srcs_dir}/vcs_{dump}.tcl",
                "+ntb_random_seed={seed}",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
