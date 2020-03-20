@@ -12,6 +12,7 @@ import re
 import shlex
 import sys
 import time
+from collections import OrderedDict
 
 import hjson
 from tabulate import tabulate
@@ -231,7 +232,7 @@ class Deploy():
                                       " | awk '{print $2}'")
                     rm_dirs = rm_dirs.replace('\n', ' ')
                     dirs = dirs.replace(rm_dirs, "")
-                    os.system("/usr/bin/rm -rf " + rm_dirs)
+                    os.system("/bin/rm -rf " + rm_dirs)
         except IOError:
             log.error("Failed to delete old run directories!")
         return dirs
@@ -328,7 +329,7 @@ class Deploy():
             return "%02i:%02i:%02i" % (hh, mm, ss)
 
         def dispatch_items(items):
-            item_names = {}
+            item_names = OrderedDict()
             for item in items:
                 if item.target not in item_names.keys():
                     item_names[item.target] = ""
@@ -346,7 +347,7 @@ class Deploy():
             all_done = True
             for target in status.keys():
                 if "target_done" in status[target].keys(): continue
-                stats = {}
+                stats = OrderedDict()
                 stats["Q"] = 0
                 stats["D"] = 0
                 stats["P"] = 0
@@ -372,14 +373,14 @@ class Deploy():
             return all_done
 
         all_done = False
-        status = {}
+        status = OrderedDict()
         print_status_flag = True
 
         # Queue all items
         queued_items.extend(items)
         for item in queued_items:
             if item.target not in status.keys():
-                status[item.target] = {}
+                status[item.target] = OrderedDict()
             status[item.target][item] = "Q"
 
         while not all_done:
@@ -403,7 +404,7 @@ class Deploy():
                         queued_items.extend(item.sub)
                         for sub_item in item.sub:
                             if sub_item.target not in status.keys():
-                                status[sub_item.target] = {}
+                                status[sub_item.target] = OrderedDict()
                             status[sub_item.target][sub_item] = "Q"
                 status[item.target][item] = item.status
 
@@ -615,7 +616,7 @@ class RunTest(Deploy):
             if os.path.exists(self.cov_db_test_dir):
                 log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
                         self.cov_db_test_dir)
-                os.system("/usr/bin/rm -rf " + self.cov_db_test_dir)
+                os.system("/bin/rm -rf " + self.cov_db_test_dir)
 
     @staticmethod
     def get_seed():

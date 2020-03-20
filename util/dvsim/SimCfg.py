@@ -7,6 +7,7 @@ Class describing simulation configuration object
 
 import logging as log
 import sys
+from collections import OrderedDict
 
 from testplanner import class_defs, testplan_utils
 
@@ -94,7 +95,7 @@ class SimCfg(FlowCfg):
         self.deploy = []
         self.cov_merge_deploy = None
         self.cov_report_deploy = None
-        self.results_summary = {}
+        self.results_summary = OrderedDict()
 
         # If is_master_cfg is set, then each cfg will have its own cov_deploy.
         # Maintain an array of those in cov_deploys.
@@ -504,6 +505,8 @@ class SimCfg(FlowCfg):
                 results_str += self.cov_report_deploy.cov_results
                 self.results_summary[
                     "Coverage"] = self.cov_report_deploy.cov_total
+            else:
+                self.results_summary["Coverage"] = "--"
 
             # append link of detail result to block name
             self.results_summary["Name"] = self._get_results_page_link(
@@ -534,7 +537,8 @@ class SimCfg(FlowCfg):
             row = []
             for title in item.results_summary:
                 row.append(item.results_summary[title])
-            if row != []: table.append(row)
+            if row == []: continue
+            table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
         self.results_summary_md += tabulate(table,

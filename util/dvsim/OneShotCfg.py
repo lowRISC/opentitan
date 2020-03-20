@@ -7,6 +7,7 @@ Class describing a one-shot build configuration object
 
 import logging as log
 import sys
+from collections import OrderedDict
 
 from Deploy import *
 from FlowCfg import FlowCfg
@@ -52,8 +53,8 @@ class OneShotCfg(FlowCfg):
         self.regressions = []
 
         # Flow results
-        self.result = {}
-        self.result_summary = {}
+        self.result = OrderedDict()
+        self.result_summary = OrderedDict()
 
         self.dry_run = args.dry_run
 
