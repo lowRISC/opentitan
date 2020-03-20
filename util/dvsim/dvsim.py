@@ -18,6 +18,8 @@ import logging as log
 import os
 import subprocess
 import sys
+from pathlib import Path
+from signal import SIGINT, signal
 
 import Deploy
 import LintCfg
@@ -98,6 +100,14 @@ def get_proj_root():
             "{}".format(' '.join(cmd), result.stderr.decode("utf-8")))
         sys.exit(1)
     return (proj_root)
+
+
+def sigint_handler(signal_received, frame):
+    # Kill processes and background jobs.
+    log.debug('SIGINT or CTRL-C detected. Exiting gracefully')
+    cfg.kill()
+    log.info('Exit due to SIGINT or CTRL-C ')
+    exit(1)
 
 
 def main():
@@ -481,6 +491,7 @@ def main():
     else:
         proj_root = get_proj_root()
 
+    global cfg
     # TODO: SimCfg item below implies DV - need to solve this once we add FPV
     # and other ASIC flow targets.
     if args.tool in ['ascentlint', 'veriblelint']:
@@ -489,6 +500,8 @@ def main():
         cfg = SynCfg.SynCfg(args.cfg, proj_root, args)
     else:
         cfg = SimCfg.SimCfg(args.cfg, proj_root, args)
+    # Handle Ctrl-C exit.
+    signal(SIGINT, sigint_handler)
 
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:

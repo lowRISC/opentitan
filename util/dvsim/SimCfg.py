@@ -93,7 +93,6 @@ class SimCfg(FlowCfg):
         self.links = {}
         self.build_list = []
         self.run_list = []
-        self.deploy = []
         self.cov_merge_deploy = None
         self.cov_report_deploy = None
         self.results_summary = OrderedDict()
@@ -164,6 +163,13 @@ class SimCfg(FlowCfg):
         '''Create a new instance of this class as with given parameters.
         '''
         return SimCfg(flow_cfg_file, proj_root, args)
+
+    def kill(self):
+        '''kill running processes and jobs gracefully
+        '''
+        super().kill()
+        for item in self.cov_deploys:
+            item.kill()
 
     # Purge the output directories. This operates on self.
     def _purge(self):

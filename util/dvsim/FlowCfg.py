@@ -62,6 +62,10 @@ class FlowCfg():
         # a special key 'use_cfgs' within the hjson cfg.
         self.is_master_cfg = False
 
+        # For a master cfg, it is the aggregated list of all deploy objects under self.cfgs.
+        # For a non-master cfg, it is the list of items slated for dispatch.
+        self.deploy = []
+
         # Timestamp
         self.ts_format_long = args.ts_format_long
         self.timestamp_long = args.timestamp_long
@@ -100,6 +104,12 @@ class FlowCfg():
         '''Create a new instance of this class as with given parameters.
         '''
         return FlowCfg(flow_cfg_file, proj_root, args)
+
+    def kill(self):
+        '''kill running processes and jobs gracefully
+        '''
+        for item in self.deploy:
+            item.kill()
 
     def parse_flow_cfg(self, flow_cfg_file, is_entry_point=True):
         '''

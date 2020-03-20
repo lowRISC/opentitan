@@ -322,6 +322,38 @@ class Deploy():
             self.link_odir()
             del self.process
 
+    def kill(self):
+        '''Kill running processes.
+        '''
+        if self.status == "D" and self.process.poll() is None:
+            self.kill_remote_job()
+            self.process.kill()
+            if self.log_fd: self.log_fd.close()
+            self.status = "K"
+        # recurisvely kill sub target
+        elif len(self.sub):
+            for item in self.sub:
+                item.kill()
+
+    def kill_remote_job(self):
+        '''
+        If jobs are run in remote server, need to use another command to kill them.
+        '''
+        #TODO: Currently only support lsf, may need to add support for GCP later.
+
+        # If use lsf, kill it by job ID.
+        if re.match("^bsub", self.sim_cfg.job_prefix):
+            # get job id from below string
+            # Job <xxxxxx> is submitted to default queue
+            grep_cmd = "grep -m 1 -E \'" + "^Job <" + "\' " + self.log
+            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+            if rslt != "":
+                job_id = rslt.split('Job <')[1].split('>')[0]
+                try:
+                    p = subprocess.run(["bkill", job_id], check=True)
+                except Exception as e:
+                    log.error("%s: Failed to run bkill\n", e)
+
     @staticmethod
     def increment_timer():
         # sub function that increments with overflow = 60
