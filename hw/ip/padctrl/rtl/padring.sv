@@ -9,13 +9,7 @@
 
 `include "prim_assert.sv"
 
-`ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-
-module padring #(
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL // this determines the pad implementation
-) (
+module padring (
   // pad input
   input wire                                   clk_pad_i,
   input wire                                   rst_pad_ni,
@@ -54,7 +48,6 @@ module padring #(
   assign rst_n = rst_pad_ni;
 
   prim_pad_wrapper #(
-    .Impl(Impl),
     .AttrDw(padctrl_reg_pkg::AttrDw)
   ) i_clk_pad (
     .inout_io ( clk   ),
@@ -65,7 +58,6 @@ module padring #(
   );
 
   prim_pad_wrapper #(
-    .Impl(Impl),
     .AttrDw(padctrl_reg_pkg::AttrDw)
   ) i_rst_pad (
     .inout_io ( rst_n  ),
@@ -81,7 +73,6 @@ module padring #(
 
   for (genvar k = 0; k < padctrl_reg_pkg::NMioPads; k++) begin : gen_mio_pads
     prim_pad_wrapper #(
-      .Impl(Impl),
       .AttrDw(padctrl_reg_pkg::AttrDw)
     ) i_mio_pad (
       .inout_io ( mio_pad_io[k] ),
@@ -98,7 +89,6 @@ module padring #(
 
   for (genvar k = 0; k < padctrl_reg_pkg::NDioPads; k++) begin : gen_dio_pads
     prim_pad_wrapper #(
-      .Impl(Impl),
       .AttrDw(padctrl_reg_pkg::AttrDw)
     ) i_dio_pad (
       .inout_io ( dio_pad_io[k] ),
