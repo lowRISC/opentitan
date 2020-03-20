@@ -5,7 +5,7 @@ CAPI=2:
 name: "lowrisc:fpv:${dut.name}_fpv:0.1"
 description: "${dut.name} FPV target"
 filesets:
-  files_fpv:
+  files_formal:
     depend:
 % for dep in dut.deps:
       - ${dep}
@@ -21,10 +21,13 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
     default_tool: icarus
     filesets:
-      - files_fpv
+      - files_formal
     toplevel: ${dut.name}_fpv
+
+  formal:
+    <<: *default_target

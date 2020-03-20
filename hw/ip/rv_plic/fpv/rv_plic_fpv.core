@@ -6,7 +6,7 @@ name: "lowrisc:fpv:rv_plic_fpv:0.1"
 description: "RISC-V PLIC"
 
 filesets:
-  files_fpv:
+  files_formal:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
@@ -21,10 +21,13 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
     default_tool: icarus
     filesets:
-      - files_fpv
+      - files_formal
     toplevel: rv_plic_fpv
+
+  formal:
+    <<: *default_target
