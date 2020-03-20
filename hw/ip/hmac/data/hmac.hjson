@@ -9,8 +9,8 @@
     { name: "hmac_done",
       desc: "HMAC-256 completes a message with key"
     }
-    { name: "fifo_full",
-      desc: "Message FIFO full condition"
+    { name: "fifo_empty",
+      desc: "Message FIFO empty condition"
     }
     { name: "hmac_err",
       desc: "HMAC error occurred. ERR_CODE register shows which error occurred"

@@ -18,7 +18,7 @@ package hmac_reg_pkg;
     } hmac_done;
     struct packed {
       logic        q;
-    } fifo_full;
+    } fifo_empty;
     struct packed {
       logic        q;
     } hmac_err;
@@ -30,7 +30,7 @@ package hmac_reg_pkg;
     } hmac_done;
     struct packed {
       logic        q;
-    } fifo_full;
+    } fifo_empty;
     struct packed {
       logic        q;
     } hmac_err;
@@ -44,7 +44,7 @@ package hmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fifo_full;
+    } fifo_empty;
     struct packed {
       logic        q;
       logic        qe;
@@ -100,7 +100,7 @@ package hmac_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fifo_full;
+    } fifo_empty;
     struct packed {
       logic        d;
       logic        de;

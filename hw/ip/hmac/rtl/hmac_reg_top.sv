@@ -120,25 +120,25 @@ module hmac_reg_top (
   logic intr_state_hmac_done_qs;
   logic intr_state_hmac_done_wd;
   logic intr_state_hmac_done_we;
-  logic intr_state_fifo_full_qs;
-  logic intr_state_fifo_full_wd;
-  logic intr_state_fifo_full_we;
+  logic intr_state_fifo_empty_qs;
+  logic intr_state_fifo_empty_wd;
+  logic intr_state_fifo_empty_we;
   logic intr_state_hmac_err_qs;
   logic intr_state_hmac_err_wd;
   logic intr_state_hmac_err_we;
   logic intr_enable_hmac_done_qs;
   logic intr_enable_hmac_done_wd;
   logic intr_enable_hmac_done_we;
-  logic intr_enable_fifo_full_qs;
-  logic intr_enable_fifo_full_wd;
-  logic intr_enable_fifo_full_we;
+  logic intr_enable_fifo_empty_qs;
+  logic intr_enable_fifo_empty_wd;
+  logic intr_enable_fifo_empty_we;
   logic intr_enable_hmac_err_qs;
   logic intr_enable_hmac_err_wd;
   logic intr_enable_hmac_err_we;
   logic intr_test_hmac_done_wd;
   logic intr_test_hmac_done_we;
-  logic intr_test_fifo_full_wd;
-  logic intr_test_fifo_full_we;
+  logic intr_test_fifo_empty_wd;
+  logic intr_test_fifo_empty_we;
   logic intr_test_hmac_err_wd;
   logic intr_test_hmac_err_we;
   logic cfg_hmac_en_qs;
@@ -234,29 +234,29 @@ module hmac_reg_top (
   );
 
 
-  //   F[fifo_full]: 1:1
+  //   F[fifo_empty]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_fifo_full (
+  ) u_intr_state_fifo_empty (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_fifo_full_we),
-    .wd     (intr_state_fifo_full_wd),
+    .we     (intr_state_fifo_empty_we),
+    .wd     (intr_state_fifo_empty_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.fifo_full.de),
-    .d      (hw2reg.intr_state.fifo_full.d ),
+    .de     (hw2reg.intr_state.fifo_empty.de),
+    .d      (hw2reg.intr_state.fifo_empty.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.fifo_full.q ),
+    .q      (reg2hw.intr_state.fifo_empty.q ),
 
     // to register interface (read)
-    .qs     (intr_state_fifo_full_qs)
+    .qs     (intr_state_fifo_empty_qs)
   );
 
 
@@ -314,18 +314,18 @@ module hmac_reg_top (
   );
 
 
-  //   F[fifo_full]: 1:1
+  //   F[fifo_empty]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_fifo_full (
+  ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_fifo_full_we),
-    .wd     (intr_enable_fifo_full_wd),
+    .we     (intr_enable_fifo_empty_we),
+    .wd     (intr_enable_fifo_empty_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -333,10 +333,10 @@ module hmac_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.fifo_full.q ),
+    .q      (reg2hw.intr_enable.fifo_empty.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_fifo_full_qs)
+    .qs     (intr_enable_fifo_empty_qs)
   );
 
 
@@ -383,17 +383,17 @@ module hmac_reg_top (
   );
 
 
-  //   F[fifo_full]: 1:1
+  //   F[fifo_empty]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_fifo_full (
+  ) u_intr_test_fifo_empty (
     .re     (1'b0),
-    .we     (intr_test_fifo_full_we),
-    .wd     (intr_test_fifo_full_wd),
+    .we     (intr_test_fifo_empty_we),
+    .wd     (intr_test_fifo_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.fifo_full.qe),
-    .q      (reg2hw.intr_test.fifo_full.q ),
+    .qe     (reg2hw.intr_test.fifo_empty.qe),
+    .q      (reg2hw.intr_test.fifo_empty.q ),
     .qs     ()
   );
 
@@ -977,8 +977,8 @@ module hmac_reg_top (
   assign intr_state_hmac_done_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_hmac_done_wd = reg_wdata[0];
 
-  assign intr_state_fifo_full_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_fifo_full_wd = reg_wdata[1];
+  assign intr_state_fifo_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_fifo_empty_wd = reg_wdata[1];
 
   assign intr_state_hmac_err_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_hmac_err_wd = reg_wdata[2];
@@ -986,8 +986,8 @@ module hmac_reg_top (
   assign intr_enable_hmac_done_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_hmac_done_wd = reg_wdata[0];
 
-  assign intr_enable_fifo_full_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_fifo_full_wd = reg_wdata[1];
+  assign intr_enable_fifo_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_fifo_empty_wd = reg_wdata[1];
 
   assign intr_enable_hmac_err_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_hmac_err_wd = reg_wdata[2];
@@ -995,8 +995,8 @@ module hmac_reg_top (
   assign intr_test_hmac_done_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_hmac_done_wd = reg_wdata[0];
 
-  assign intr_test_fifo_full_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_fifo_full_wd = reg_wdata[1];
+  assign intr_test_fifo_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_fifo_empty_wd = reg_wdata[1];
 
   assign intr_test_hmac_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_hmac_err_wd = reg_wdata[2];
@@ -1081,13 +1081,13 @@ module hmac_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_hmac_done_qs;
-        reg_rdata_next[1] = intr_state_fifo_full_qs;
+        reg_rdata_next[1] = intr_state_fifo_empty_qs;
         reg_rdata_next[2] = intr_state_hmac_err_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_hmac_done_qs;
-        reg_rdata_next[1] = intr_enable_fifo_full_qs;
+        reg_rdata_next[1] = intr_enable_fifo_empty_qs;
         reg_rdata_next[2] = intr_enable_hmac_err_qs;
       end
 

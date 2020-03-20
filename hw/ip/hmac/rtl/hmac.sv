@@ -18,7 +18,7 @@ module hmac
   output tlul_pkg::tl_d2h_t tl_o,
 
   output logic intr_hmac_done_o,
-  output logic intr_fifo_full_o,
+  output logic intr_fifo_empty_o,
   output logic intr_hmac_err_o,
 
   // alerts
@@ -192,17 +192,18 @@ module hmac
   ////////////////
   // Interrupts //
   ////////////////
-  logic fifo_full_q;
+  logic fifo_empty_q, fifo_empty_event;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) fifo_full_q <= 1'b0;
-    else fifo_full_q <= fifo_full;
+    if (!rst_ni) begin
+      fifo_empty_q <= '1; // By default, it is empty
+    end else if (!hmac_fifo_wsel) begin
+      fifo_empty_q <= fifo_empty;
+    end
   end
-
-  logic fifo_full_event;
-  assign fifo_full_event = fifo_full & !fifo_full_q;
+  assign fifo_empty_event = fifo_empty & ~fifo_empty_q;
 
   logic [2:0] event_intr;
-  assign event_intr = {err_valid, fifo_full_event, reg_hash_done};
+  assign event_intr = {err_valid, fifo_empty_event, reg_hash_done};
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
@@ -215,15 +216,15 @@ module hmac
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.hmac_done.d),
     .intr_o                 (intr_hmac_done_o)
   );
-  prim_intr_hw #(.Width(1)) intr_hw_fifo_full (
+  prim_intr_hw #(.Width(1)) intr_hw_fifo_empty (
     .event_intr_i           (event_intr[1]),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_full.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_full.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fifo_full.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.fifo_full.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.fifo_full.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.fifo_full.d),
-    .intr_o                 (intr_fifo_full_o)
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fifo_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.fifo_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.fifo_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.fifo_empty.d),
+    .intr_o                 (intr_fifo_empty_o)
   );
   prim_intr_hw #(.Width(1)) intr_hw_hmac_err (
     .event_intr_i           (event_intr[2]),
@@ -565,7 +566,7 @@ module hmac
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
-  `ASSERT_KNOWN(IntrFifoFullOKnown, intr_fifo_full_o)
+  `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
 

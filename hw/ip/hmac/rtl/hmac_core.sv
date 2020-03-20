@@ -227,6 +227,7 @@ module hmac_core import hmac_pkg::*; (
 
       StMsg: begin
         sel_rdata = SelFifo;
+        fifo_wsel = (round_q == Outer);
 
         if ( (((round_q == Inner) && reg_hash_process_flag) || (round_q == Outer))
             && (txcount >= sha_message_length)) begin
@@ -276,6 +277,7 @@ module hmac_core import hmac_pkg::*; (
 
       StOPad: begin
         sel_rdata = SelOPad;
+        fifo_wsel = 1'b1; // Remained HMAC select to indicate HMAC is in second stage
 
         if (txcnt_eq_blksz) begin
           st_d = StMsg;

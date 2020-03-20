@@ -207,7 +207,7 @@ module top_earlgrey #(
   logic intr_flash_ctrl_op_error;
   logic intr_rv_timer_timer_expired_0_0;
   logic intr_hmac_hmac_done;
-  logic intr_hmac_fifo_full;
+  logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
   logic intr_alert_handler_classa;
   logic intr_alert_handler_classb;
@@ -608,9 +608,9 @@ module top_earlgrey #(
       .tl_o (tl_hmac_d_d2h),
 
       // Interrupt
-      .intr_hmac_done_o (intr_hmac_hmac_done),
-      .intr_fifo_full_o (intr_hmac_fifo_full),
-      .intr_hmac_err_o  (intr_hmac_hmac_err),
+      .intr_hmac_done_o  (intr_hmac_hmac_done),
+      .intr_fifo_empty_o (intr_hmac_fifo_empty),
+      .intr_hmac_err_o   (intr_hmac_hmac_err),
       
       // [0]: msg_push_sha_disabled 
       .alert_tx_o  ( alert_tx[0:0] ),
@@ -767,7 +767,7 @@ module top_earlgrey #(
       intr_alert_handler_classb,
       intr_alert_handler_classa,
       intr_hmac_hmac_err,
-      intr_hmac_fifo_full,
+      intr_hmac_fifo_empty,
       intr_hmac_hmac_done,
       intr_flash_ctrl_op_error,
       intr_flash_ctrl_op_done,
