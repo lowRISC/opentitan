@@ -5,7 +5,7 @@ CAPI=2:
 name: "lowrisc:fpv:prim_esc_rxtx_fpv:0.1"
 description: "ALERT_HANDLER FPV target"
 filesets:
-  files_fpv:
+  files_formal:
     depend:
       - lowrisc:prim:all
     files:
@@ -15,11 +15,14 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
-    default_tool: icarus
+    formal: icarus
     filesets:
-      - files_fpv
+      - files_formal
     toplevel:
       - prim_esc_rxtx_fpv
+
+  formal:
+    <<: *default_target

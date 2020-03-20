@@ -33,6 +33,10 @@ filesets:
       - lint/gpio.waiver
     file_type: waiver
 
+  files_formal:
+    files:
+      - dv/tb/gpio_bind.sv
+    file_type: systemVerilogSource
 
 parameters:
   SYNTHESIS:
@@ -45,7 +49,14 @@ targets:
     filesets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
+      - target_formal   ? (files_formal)
       - files_rtl
+    toplevel: gpio
+
+  formal:
+    filesets:
+      - files_rtl
+      - files_formal
     toplevel: gpio
 
   lint:

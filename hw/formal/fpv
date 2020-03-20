@@ -66,18 +66,18 @@ if [ "${CORE_PATH}" == "" ]; then
   if [[ $FPV_TOP == *"_fpv" ]]; then
     CORE_PATH="fpv:${FPV_TOP}"
   else
-    CORE_PATH="ip:${FPV_TOP}:0.1"
+    CORE_PATH="ip:${FPV_TOP}"
   fi
 fi
 echo "core_file path: lowrisc:${CORE_PATH}"
 
-fusesoc --cores-root ../.. run --tool=icarus --setup "lowrisc:${CORE_PATH}"
+fusesoc --cores-root ../.. run --tool=icarus --target=formal --setup "lowrisc:${CORE_PATH}"
 
 echo "-------------------------------------------------------------------------"
 echo "-- Run JasperGold"
 echo "-------------------------------------------------------------------------"
 
-cd build/*${FPV_TOP}*/default-icarus
+cd build/*${FPV_TOP}*/formal-icarus
 
 if [ "${gui}" == "1" ]; then
   jg ../../../fpv.tcl \

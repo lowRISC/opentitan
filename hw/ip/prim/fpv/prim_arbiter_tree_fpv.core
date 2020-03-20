@@ -5,7 +5,7 @@ CAPI=2:
 name: "lowrisc:fpv:prim_arbiter_tree_fpv:0.1"
 description: "prim_arbiter_tree FPV target"
 filesets:
-  files_fpv:
+  files_formal:
     depend:
       - lowrisc:prim:all
       # TODO: add more dependencies here if needed
@@ -16,10 +16,13 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
     default_tool: icarus
     filesets:
-      - files_fpv
+      - files_formal
     toplevel: prim_arbiter_tree_fpv
+
+  formal:
+    <<: *default_target

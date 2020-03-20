@@ -18,10 +18,11 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
-    # note, this setting is just used
-    # to generate a file list for jg
+  default: &default_target
     default_tool: icarus
     filesets:
       - files_fpv
     toplevel: pinmux_fpv
+
+  formal:
+    <<: *default_target
