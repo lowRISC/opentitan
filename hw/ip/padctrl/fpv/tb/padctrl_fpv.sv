@@ -41,9 +41,7 @@ module padctrl_fpv #(
     .dio_attr_o(dio_attr)
   );
 
-  padring #(
-    .Impl(Impl)
-  ) i_padring (
+  padring i_padring (
     .clk_pad_i(clk_i),
     .rst_pad_ni(rst_ni),
     .clk_o     ,
