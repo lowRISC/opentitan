@@ -39,6 +39,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   uart_item tx_processing_item_q[$];
   uart_item rx_q[$];
 
+  // it takes 3 cycles to move item from fifo to process, which delays reg status change
+  // and it also takes 3 cycles to trigger tx matermark interrupt
+  parameter uint NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK = 3;
+
   bit obj_raised = 1'b0;
 
   `uvm_component_new
@@ -142,9 +146,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
     uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value(),
                                                   UartRx);
-    intr_exp[RxWatermark] = get_non_sticky_interrupt(.cur_intr(intr_exp[RxWatermark]),
-                                                     .new_intr(rx_q_size >= watermark && rx_enabled),
-                                                     .triggered(rx_watermark_triggered));
+    intr_exp[RxWatermark] = get_non_sticky_interrupt(
+        .cur_intr(intr_exp[RxWatermark]),
+        .new_intr(rx_q_size >= watermark && rx_enabled),
+        .triggered(rx_watermark_triggered));
   endfunction
 
   // we don't model uart cycle-acurrately, ignore checking when item is just/almost finished
@@ -195,7 +200,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           if ((tx_q.size > 0 || tx_processing_item_q.size > 0) && tx_enabled) begin
             if (tx_q.size > 0 && tx_processing_item_q.size == 0) begin
               tx_processing_item_q.push_back(tx_q.pop_front());
-              predict_tx_watermark_intr();
+              fork begin
+                cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
+                predict_tx_watermark_intr();
+              end join_none
             end
             process_objections(1'b1);
           end
@@ -204,7 +212,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       "wdata": begin
         // if tx is enabled, push exp tx data to q
         if (write && channel == AddrChannel) begin
-          uart_item tx_item = uart_item::type_id::create("tx_item");;
+          uart_item tx_item = uart_item::type_id::create("tx_item");
 
           tx_item.data = item.a_data;
           if (tx_q.size() < UART_FIFO_DEPTH) begin
@@ -215,10 +223,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                 "Drop tx item: %0h, tx_q size: %0d, uart_tx_clk_pulses: %0d",
                 csr.get_mirrored_value(), tx_q.size(), uart_tx_clk_pulses), UVM_MEDIUM)
           end
-          // it takes 3 cycles to move item from fifo to process, which delays reg status change
-          // and it also takes 3 cycles to trigger tx matermark interrupt
           fork begin
-            cfg.clk_rst_vif.wait_n_clks(3); // use negedge to avoid race condition
+            // use negedge to avoid race condition
+            cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
               // if sys loopback is on, tx item isn't sent to uart pin but rx fifo
               uart_item tx_item = tx_q.pop_front();
