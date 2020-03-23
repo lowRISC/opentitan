@@ -92,9 +92,19 @@ SECTIONS {
    */ 
   .data ORIGIN(ram): AT(_data_init_start) ALIGN(4) {
     _data_start = .;
+    __global_pointer$ = . + 2048;
+
+    /* Small data should come before larger data. This helps to ensure small
+     * globals are within 2048 bytes of the value of `gp`, making their accesses
+     * hopefully only take one instruction. */
+    *(.sdata)
+    *(.sdata.*)
+
+    /* Other data will likely need multiple instructions to load, so we're less
+     * concerned about address materialisation taking more than one instruction.
+     */
     *(.data)
     *(.data.*)
-    *(.sdata)
     _data_end = .;
   } > ram
 
@@ -103,10 +113,12 @@ SECTIONS {
    */
   .bss : ALIGN(4) {
     _bss_start = .;
-    *(.bss)
-    *(.bss.*)
+    /* Small BSS comes before regular BSS for the same reasons as in the data
+     * section */
     *(.sbss)
     *(.sbss.*)
+    *(.bss)
+    *(.bss.*)
     *(COMMON)
     _bss_end = .;
   } > ram
