@@ -33,8 +33,7 @@ These set of requirements are of high priority and should be met by default. Con
 1. AV Rule 9 Only characters described in [Doc. No. 2RDU00001 Rev C, 4.42, AV Rule 9](http://www.stroustrup.com/JSF-AV-rules.pdf) of the JSF standard. This essentially equates to only ASCII characters.
 
 [comment]: <> (gcc_flags:-Wnormalized=nfc,-Werror=normalized)
-2. AV Rule 10 Values of character types will be restricted to a defined and documented subset of ISO
-10646-1.
+2. AV Rule 10 Values of character types will be restricted to a defined and documented subset of ISO 10646-1.
 
 
 [comment]: <> (gcc_flags:-Wtrigraphs,-Werror=trigraphs)

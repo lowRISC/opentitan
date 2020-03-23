@@ -20,27 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def gcc_device_config(toolchain_target_prefix, cpu, fpu, float_abi, endian):
-    if type(cpu) is not "string":
+def device_config(cpu, fpu, float_abi, endian):
+    if type(cpu) != "string":
         fail("Should be of type string", "cpu")
-    if type(fpu) is not "string":
+    if type(fpu) != "string":
         fail("Should be of type string", "fpu")
-    if type(float_abi) is not "string":
+    if type(float_abi) != "string":
         fail("Should be of type string", "float_abi")
-    if type(float_abi) is not "string":
+    if type(float_abi) != "string":
         fail("Should be of type string", "endian")
-    if type(toolchain_target_prefix) is not "Label":
-        fail("Should be of type label", "toolchain_target")
 
     return struct(
-        toolchain_target_prefix = toolchain_target_prefix,
         cpu = cpu,
         fpu = fpu,
         float_abi = float_abi,
         endian = endian,
-    )
-
-def device_config(gcc_device_config):
-    return struct(
-        gcc_device_config = gcc_device_config,
     )

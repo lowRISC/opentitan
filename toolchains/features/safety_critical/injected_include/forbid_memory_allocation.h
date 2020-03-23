@@ -1,0 +1,1 @@
+#pragma GCC poison malloc alloc realloc aligned_alloc new delete free

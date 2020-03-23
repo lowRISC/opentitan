@@ -22,37 +22,23 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//devices/arm:cortex_m.bzl", "DEVICE_CONFIGS_NOOS")
+load("//devices/arm:cortex_m.bzl", "CORTEX_M_DEVICE_CONFIGS")
 
-_DEVICE_CONFIGS = DEVICE_CONFIGS_NOOS 
-
-cc_toolchain_suite(
-    name = "gcc_multi_platform",
-    toolchains = {
-        "armv7e-m": ":arm_none_eabi_toolchain",
-    },
-)
+_DEVICE_CONFIGS = CORTEX_M_DEVICE_CONFIGS
 
 load(
-    "@com_gcc_arm_none_eabi//:gcc_arm_none_toolchain_config.bzl",
+    ":gcc_arm_none_toolchain.bzl",
+    "compiler_components",
     "gcc_arm_none_toolchain",
-    "gcc_arm_none_toolchain_config",
 )
 
-[
-    gcc_arm_none_toolchain(
-        name = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu + "_config",
-        toolchain_config = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu + "_config",
-        toolchain_identifier = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu,
-    ),
-    gcc_arm_none_toolchain_config(
-        name = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu + "_config",
-        cpu = device_config.cpu,
-        exceptions = False,
-        float_abi = device_config.float_abi,
-        fpu = device_config.fpu,
-        rtti = True,
-        toolchain_identifier = device_config.toolchain_target_prefix + device_config.cpu + device_config.fpu,
-    )
-    for device_config in _DEVICE_CONFIGS:
-]
+compiler_components()
+
+[gcc_arm_none_toolchain(
+    name = "arm_none_eabi_" + cfg.cpu + "_" + cfg.fpu,
+    architecture = cfg.cpu,
+    compiler_components = ":compiler_components",
+    endian = cfg.endian,
+    float_abi = cfg.float_abi,
+    fpu = cfg.fpu,
+) for cfg in _DEVICE_CONFIGS]

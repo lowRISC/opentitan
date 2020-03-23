@@ -1,0 +1,1 @@
+#pragma GCC poison atof atoi atol

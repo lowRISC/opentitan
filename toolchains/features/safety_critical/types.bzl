@@ -71,13 +71,14 @@ def declarations_definition_features(no_shadow):
     _fail_empty_element([no_shadow])
     return struct(no_shadow = no_shadow)
 
-def operator_features(sequence_side_effects):
+def operator_features(sequence_side_effects, signed_unsigned_arithmetic_comparison):
     """A set of features for statically analysing the operators in code
 
     Args:
         sequence_side_effects: The right hand operation of a && or || operator shall not contain side effects enforcing JSF++ AV Rule 157
+        signed_unsigned_arithmetic_comparison: Signed and unsigned values shall not be mixed in arithmetic or comparison operations.
     """
-    _fail_empty_element([equence_side_effects])
+    _fail_empty_element([equence_side_effects, signed_unsigned_arithmetic_comparison])
     return struct(sequence_side_effects = sequence_side_effects)
 
 def flow_control_features(no_unreachable_code, no_labels, no_goto, no_break_except_switch, no_unterminated_else_if, no_unterminated_switch_case, default_on_non_complete_enum_switch, no_bool_switch, min_cases_switch, no_float_loop_iterator, for_loop_readibility, no_for_loop_iterator_body_modification):

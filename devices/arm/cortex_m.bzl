@@ -20,50 +20,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("//devices/arm:device_config.bzl", "device_config", "gcc_device_config")
+load("//devices:device_config.bzl", "device_config")
 
 GCC_TOOLCHAIN_TARGET_PREFIX = "com_arm_none_eabi_toolchain_"
 
 CORTEX_M0_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        toolchain_target_prefix = GCC_TOOLCHAIN_TARGET_PREFIX,
-        cpu = "armv6-m",
-        endian = "little",
-        float_abi = "soft",
-        fpu = "none",
-    ),
+    cpu = "armv6-m",
+    endian = "little",
+    float_abi = "soft",
+    fpu = "none",
 )
 
-CORTEX_M1_DEVICE_CONFIG = _CORTEX_M0_DEVICE_CONFIG
-
 CORTEX_M3_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        toolchain_target_prefix = GCC_TOOLCHAIN_TARGET_PREFIX,
-        cpu = "armv7-m",
-        endian = "little",
-        float_abi = "soft",
-        fpu = "none",
-    ),
+    cpu = "armv7-m",
+    endian = "little",
+    float_abi = "soft",
+    fpu = "none",
 )
 
 CORTEX_M4_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        toolchain_target_prefix = GCC_TOOLCHAIN_TARGET_PREFIX,
-        cpu = "armv7e-m",
-        endian = "little",
-        float_abi = "hard",
-        fpu = "fpv4-sp-d16",
-    ),
+    cpu = "armv7e-m",
+    endian = "little",
+    float_abi = "hard",
+    fpu = "fpv4-sp-d16",
 )
 
 CORTEX_M7_DEVICE_CONFIG = device_config(
-    gcc_device_config(
-        toolchain_target_prefix = GCC_TOOLCHAIN_TARGET_PREFIX,
-        cpu = "armv7e-m",
-        endian = "little",
-        float_abi = "hard",
-        fpu = "fpv5-d16",
-    ),
+    cpu = "armv7e-m",
+    endian = "little",
+    float_abi = "hard",
+    fpu = "fpv5-d16",
 )
 
-CORTEX_M_DEVICE_CONFIGS = [CORTEX_M0_DEVICE_CONFIG, CORTEX_M1_DEVICE_CONFIG, CORTEX_M3_DEVICE_CONFIG, CORTEX_M4_DEVICE_CONFIG, CORTEX_M7_DEVICE_CONFIG]
+CORTEX_M_DEVICE_CONFIGS = [CORTEX_M0_DEVICE_CONFIG, CORTEX_M3_DEVICE_CONFIG, CORTEX_M4_DEVICE_CONFIG, CORTEX_M7_DEVICE_CONFIG]

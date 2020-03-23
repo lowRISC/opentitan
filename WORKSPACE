@@ -20,15 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-local_repository(
-    name = "com_gcc_arm_none_eabi",
-    path = "toolchains/gcc_arm_none_eabi",
-)
-
-load("@com_gcc_arm_none_eabi//:gcc_arm_none_repository.bzl", "gcc_arm_none_repository_preconfigured")
-
-gcc_arm_none_repository_preconfigured()
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -43,3 +34,11 @@ http_archive(
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
+
+load("//toolchains/compilers/gcc_arm_none_eabi:gcc_arm_none_repository.bzl", "gcc_arm_none_repository_compiler")
+
+gcc_arm_none_repository_compiler()
+
+register_execution_platforms("//platforms:all")
+
+register_toolchains("//toolchains/gcc_arm_none_eabi:all")

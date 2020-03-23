@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("//private:gcc_arm_none_versions.bzl", "GetRemoteToolchainInfo", "TOOLCHAIN_VERSIONS")
+load("//toolchains/compilers/gcc_arm_none_eabi/impl:gcc_arm_none_versions.bzl", "GetRemoteToolchainInfo", "TOOLCHAIN_VERSIONS")
+load("//toolchains/tools/include_tools:include_tools.bzl", "include_tools")
 
 def _com_gcc_arm_none_repository_impl(repository_ctx):
     version = repository_ctx.attr.version
@@ -30,6 +31,14 @@ def _com_gcc_arm_none_repository_impl(repository_ctx):
         sha256 = remote_toolchain_info.linux_remote_compiler.sha256,
         stripPrefix = remote_toolchain_info.linux_remote_compiler.strip_prefix,
     )
+    response = repository_ctx.execute(include_tools.ShellCommand("bin/arm-none-eabi-cpp"))
+    include_flags = include_tools.ProccessResponse(response.stderr)
+    include_bazel_template_input = include_tools.CommandLineToTemplateString(include_flags)
+    repository_ctx.file(
+        "defs.bzl",
+        "SYSTEM_INCLUDE_COMMAND_LINE = " + include_bazel_template_input,
+    )
+
     repository_ctx.file(
         "BUILD",
         """
@@ -55,7 +64,7 @@ gcc_arm_none_repository = repository_rule(
     },
 )
 
-def gcc_arm_none_repository_preconfigured():
+def gcc_arm_none_repository_compiler():
     gcc_arm_none_repository(
         name = "com_gcc_arm_none_eabi_compiler",
     )
