@@ -54,6 +54,13 @@ _reset_start:
   // Set up the stack.
   la  sp, _stack_start
 
+  // Set up the global pointer. This requires that we disable linker relaxations
+  // (or it will be relaxed to `mv gp, gp`).
+  .option push
+  .option norelax
+  la  gp, __global_pointer$
+  .option pop
+
   // Explicit fall-through to |_start|.
 
 /**

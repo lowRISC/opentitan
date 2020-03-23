@@ -25,6 +25,13 @@ _start:
   // jumps here will have the correct stack start linked in.
   la sp, _stack_start
 
+  // Set up the global pointer. This requires that we disable linker relaxations
+  // (or it will be relaxed to `mv gp, gp`).
+  .option push
+  .option norelax
+  la gp, __global_pointer$
+  .option pop
+
   // Set up the new interrupt vector.
   la   t0, _vectors_start
   csrw mtvec, t0
