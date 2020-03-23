@@ -82,6 +82,10 @@ SECTIONS {
    * strings.
    */
   .rodata : ALIGN(4) {
+    /* Small read-only data comes before regular read-only data for the same
+     * reasons as in the data section */
+    *(.srodata)
+    *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
   } > rom
