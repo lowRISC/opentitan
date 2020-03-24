@@ -2,20 +2,23 @@
 **Caution:** This is alpha quality software at the moment and has not be tested in depth.
 bazel-embedded is a set of tools that enable embedded development using bazel. 
 
+At this point it is relatively easy to add support for new architectures, that have gcc based compilers. In future we will be adding clang support, so that we can make use of clangs static-analyzers. If you would like an architecture added to this repository let us know.
+
 Current support is limited to Arm Cortex-M Devices:
 - Cortex M0
 - Cortex M1
 - Cortex M3
-- Cortex M4
-- Cortex M7
+- Cortex M4 (with/out fpu)
+- Cortex M7 (with/out fpu)
 
 ## What is included
-Currently only toolchains are included in this repository. The end goal is to have this package come "batteries included" and with;
-- Static analysers 
-- A collection of BUILD file templates for common embedded libraries
-- Utilities for programming targets
-- Utilities for debugging targets
-- Parralell execution for a test "farm" of embedded test devices
+List of support;
+- [x] Toolchains
+- [ ] Static analysers 
+- [ ] A collection of BUILD file templates for common embedded libraries
+- [x] Utilities for programming targets
+- [x] Utilities for debugging targets
+- [ ] Parralell execution for a test "farm" of embedded test devices
 
 ## Getting started
 Add the following to your WORKSPACE file
