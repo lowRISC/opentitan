@@ -477,10 +477,9 @@ def main():
     # TODO: SimCfg item below implies DV - need to solve this once we add FPV
     # and other ASIC flow targets.
     if args.tool == 'ascentlint':
-        cfg = LintCfg.LintCfg(args.cfg, get_proj_root(), args)
+        cfg = LintCfg.LintCfg(args.cfg, proj_root, args)
     else:
-        cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
-
+        cfg = SimCfg.SimCfg(args.cfg, proj_root, args)
 
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:
