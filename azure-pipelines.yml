@@ -38,14 +38,15 @@ jobs:
       yapf --version
       isort --version
       clang-format -version
+      flake8 --version
       echo "PATH=$PATH"
     displayName: Display tool versions
   - bash: |
-      find util -iname '*.py' -print0 \
-        | xargs -0 -n1 $PWD/util/lintpy.py -f
-    # XXX: Python lint checks are disabled until Issue #313 is resolved
-    condition: False
+      fork_origin="$(git merge-base --fork-point origin/master)"
+      git diff --name-only "$fork_origin" "*.py" \
+        | xargs -r util/lintpy.py --tools flake8 -f
     displayName: Run Python lint
+    continueOnError: true
   - bash: |
       make -C hw regs && git diff --exit-code
       if [[ $? != 0 ]]; then
