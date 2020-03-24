@@ -271,4 +271,4 @@ def gcc_arm_none_toolchain(name, compiler_components, architecture, float_abi, e
     )
 
 def register_gcc_arm_none_toolchain():
-    native.register_toolchain("@bazel_embedded//toolchains/gcc_arm_none_eabi:all")
+    native.register_toolchains("@bazel_embedded//toolchains/gcc_arm_none_eabi:all")

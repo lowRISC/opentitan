@@ -22,7 +22,18 @@
 
 workspace(name = "bazel_embedded")
 
+load("//:bazel_embedded_deps.bzl", "bazel_embedded_deps")
+
+bazel_embedded_deps()
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "rules_cc",
+    commit = "a636005ba28c0344da5110bd8532184c74b6ffdf",
+    remote = "https://github.com/bazelbuild/rules_cc.git",
+)
 
 http_archive(
     name = "bazel_skylib",
@@ -41,6 +52,10 @@ load("//toolchains/compilers/gcc_arm_none_eabi:gcc_arm_none_repository.bzl", "gc
 
 gcc_arm_none_compiler()
 
-register_execution_platforms("//platforms:all")
+load("//platforms:execution_platforms.bzl", "register_platforms")
 
-register_toolchains("//toolchains/gcc_arm_none_eabi:all")
+register_platforms()
+
+load("//toolchains/gcc_arm_none_eabi:gcc_arm_none_toolchain.bzl", "register_gcc_arm_none_toolchain")
+
+register_gcc_arm_none_toolchain()

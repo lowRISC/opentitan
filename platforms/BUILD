@@ -3,7 +3,7 @@ platform(
     constraint_values = [
         "@platforms//os:none",
         "//constraints/fpu:none",
-        "//constraints/cpu:armv6-m",
+        "@platforms//cpu:armv6-m",
     ],
 )
 
@@ -20,13 +20,16 @@ platform(
 platform(
     name = "cortex_m3",
     constraint_values = [
-        "//constraints/cpu:armv7-m",
+        "@platforms//cpu:armv7-m",
     ],
     parents = [":cortex_m"],
 )
 
 platform(
     name = "cortex_m4",
+    constraint_values = [
+        "@platforms//cpu:armv7e-m",
+    ],
     parents = [":cortex_m3"],
 )
 
@@ -41,7 +44,7 @@ platform(
 platform(
     name = "cortex_m7",
     constraint_values = [
-        "//constraints/cpu:armv7e-m",
+        "@platforms//cpu:armv7e-m",
     ],
     parents = [":cortex_m"],
 )
