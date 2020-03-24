@@ -85,7 +85,8 @@ def resolve_branch(arg_branch):
 # Get the project root directory path - this is used to construct the full paths
 def get_proj_root():
     result = subprocess.run(["git", "rev-parse", "--show-toplevel"],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     proj_root = result.stdout.decode("utf-8").strip()
     if proj_root == "":
         log.error(
@@ -139,15 +140,13 @@ def main():
                       {test_name} set of directories where the test outputs go"""
     )
 
-    parser.add_argument(
-        "-pr",
-        "--proj-root",
-        metavar="path",
-        help="""Specify the root directory of the project.
+    parser.add_argument("-pr",
+                        "--proj-root",
+                        metavar="path",
+                        help="""Specify the root directory of the project.
                 If this option is not passed, the tool will assume that this is
                 a local GitHub repository and will attempt to automatically find
-                the root directory."""
-    )
+                the root directory.""")
 
     parser.add_argument(
         "-br",
