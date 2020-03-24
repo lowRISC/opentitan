@@ -13,9 +13,12 @@ dependencies and provide us with a filelist that will be consumed by the sim too
 """
 
 import argparse
+import cProfile
 import datetime
+import io
 import logging as log
 import os
+import pstats
 import subprocess
 import sys
 from pathlib import Path
@@ -57,13 +60,7 @@ def resolve_scratch_root(arg_scratch_root):
     else:
         arg_scratch_root = os.path.realpath(arg_scratch_root)
 
-    try:
-        os.system("mkdir -p " + arg_scratch_root)
-    except:
-        log.fatal(
-            "Invalid --scratch-root=\"%s\" switch - failed to create directory!",
-            arg_scratch_root)
-        sys.exit(1)
+    subprocess.run(["mkdir", "-p", arg_scratch_root], check=True)
     return (arg_scratch_root)
 
 
@@ -85,7 +82,8 @@ def resolve_branch(arg_branch):
 # Get the project root directory path - this is used to construct the full paths
 def get_proj_root():
     result = subprocess.run(["git", "rev-parse", "--show-toplevel"],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     proj_root = result.stdout.decode("utf-8").strip()
     if proj_root == "":
         log.error(
@@ -139,15 +137,13 @@ def main():
                       {test_name} set of directories where the test outputs go"""
     )
 
-    parser.add_argument(
-        "-pr",
-        "--proj-root",
-        metavar="path",
-        help="""Specify the root directory of the project.
+    parser.add_argument("-pr",
+                        "--proj-root",
+                        metavar="path",
+                        help="""Specify the root directory of the project.
                 If this option is not passed, the tool will assume that this is
                 a local GitHub repository and will attempt to automatically find
-                the root directory."""
-    )
+                the root directory.""")
 
     parser.add_argument(
         "-br",
@@ -301,6 +297,11 @@ def main():
                         default="none",
                         metavar="time|mem",
                         help="Turn on simulation profiling")
+
+    parser.add_argument("--dvsim-profile",
+                        default=False,
+                        action='store_true',
+                        help="Profile the performance of this tool.")
 
     parser.add_argument("--xprop-off",
                         default=False,
@@ -481,7 +482,6 @@ def main():
     else:
         cfg = SimCfg.SimCfg(args.cfg, get_proj_root(), args)
 
-
     # List items available for run if --list switch is passed, and exit.
     if args.list != []:
         cfg.print_list()
@@ -497,6 +497,11 @@ def main():
     if args.purge:
         cfg.purge()
 
+    # Start the profiler
+    if args.dvsim_profile:
+        prof = cProfile.Profile()
+        prof.enable()
+
     # Deploy the builds and runs
     if args.items != []:
         # Create deploy objects.
@@ -511,6 +516,19 @@ def main():
 
     else:
         log.info("No items specified to be run.")
+
+    # Collect profiling stats.
+    if args.dvsim_profile:
+        prof.disable()
+        try:
+            prof_output = args.scratch_root + "/dvsim." + args.branch + ".prof"
+            with open(prof_output, "w") as f:
+                prof_stats = pstats.Stats(prof, stream=f).sort_stats(
+                    pstats.SortKey.CUMULATIVE)
+                prof_stats.print_stats()
+            log.info("[dvsim_profile]: [%s]", prof_output)
+        except Exception as e:
+            log.error("Failed to write dvsim profile data to %s", prof_output)
 
     # Exit with non-zero status if there were errors or failures.
     if cfg.has_errors():

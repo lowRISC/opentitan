@@ -166,9 +166,9 @@ class Deploy():
         try:
             # If renew_odir flag is True - then move it.
             if self.renew_odir: self.odir_limiter(odir=self.odir)
-            os.system("mkdir -p " + self.odir)
-            os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
-                      '/' + self.odir_ln)
+            subprocess.run(["mkdir", "-p", self.odir], check=True)
+            subprocess.run(["ln", "-s", self.odir, self.sim_cfg.links['D'] + \
+                            '/' + self.odir_ln], check=True)
             f = open(self.log, "w")
             self.process = subprocess.Popen(args,
                                             bufsize=4096,
@@ -179,8 +179,8 @@ class Deploy():
             self.log_fd = f
             self.status = "D"
             Deploy.dispatch_counter += 1
-        except IOError:
-            log.error('IO Error: See %s', self.log)
+        except Exception as e:
+            log.error('IO Error: See %s.\n%s', self.log, e)
             if self.log_fd: self.log_fd.close()
             self.status = "K"
 
@@ -201,39 +201,42 @@ class Deploy():
             if os.path.exists(odir):
                 ts = run_cmd("date '+" + self.sim_cfg.ts_format + "' -d \"" +
                              "$(stat -c '%y' " + odir + ")\"")
-                os.system('mv ' + odir + " " + odir + "_" + ts)
-        except IOError:
-            log.error('Failed to back up existing output directory %s', odir)
+                subprocess.run(["mv", odir, odir + "_" + ts], check=True)
+        except Exception as e:
+            log.error('Failed to back up existing output directory %s\n%s',
+                      odir, e)
 
         dirs = ""
         # Delete older directories.
-        try:
-            pdir = os.path.realpath(odir + "/..")
-            # Fatal out if pdir got set to root.
-            if pdir == "/":
-                log.fatal(
-                    "Something went wrong while processing \"%s\": odir = \"%s\"",
-                    self.name, odir)
-                sys.exit(1)
+        pdir = os.path.realpath(odir + "/..")
+        # Fatal out if pdir got set to root.
+        if pdir == "/":
+            log.fatal(
+                "Something went wrong while processing \"%s\": odir = \"%s\"",
+                self.name, odir)
+            sys.exit(1)
 
-            if os.path.exists(pdir):
-                find_cmd = "find " + pdir + " -mindepth 1 -maxdepth 1 -type d "
-                dirs = run_cmd(find_cmd)
-                dirs = dirs.replace('\n', ' ')
-                list_dirs = dirs.split()
-                num_dirs = len(list_dirs)
-                if max_odirs == -1: max_odirs = self.max_odirs
-                num_rm_dirs = num_dirs - max_odirs
-                if num_rm_dirs > -1:
-                    rm_dirs = run_cmd(find_cmd +
-                                      "-printf '%T+ %p\n' | sort | head -n " +
-                                      str(num_rm_dirs + 1) +
-                                      " | awk '{print $2}'")
-                    rm_dirs = rm_dirs.replace('\n', ' ')
-                    dirs = dirs.replace(rm_dirs, "")
-                    os.system("/usr/bin/rm -rf " + rm_dirs)
-        except IOError:
-            log.error("Failed to delete old run directories!")
+        rm_dirs = None
+        if os.path.exists(pdir):
+            find_cmd = "find " + pdir + " -mindepth 1 -maxdepth 1 -type d "
+            dirs = run_cmd(find_cmd)
+            dirs = dirs.replace('\n', ' ')
+            list_dirs = dirs.split()
+            num_dirs = len(list_dirs)
+            if max_odirs == -1: max_odirs = self.max_odirs
+            num_rm_dirs = num_dirs - max_odirs
+            if num_rm_dirs > -1:
+                rm_dirs = run_cmd(find_cmd +
+                                  "-printf '%T+ %p\n' | sort | head -n " +
+                                  str(num_rm_dirs + 1) + " | awk '{print $2}'")
+                rm_dirs = rm_dirs.replace('\n', ' ')
+                dirs = dirs.replace(rm_dirs, "")
+
+        if rm_dirs:
+            try:
+                subprocess.run(["/bin/rm", "-rf", rm_dirs], check=True)
+            except subprocess.CalledProcessError:
+                log.error("Failed to delete old run directories!")
         return dirs
 
     def set_status(self):
@@ -278,12 +281,8 @@ class Deploy():
         else:
             old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
             new_link = self.sim_cfg.links[self.status] + "/" + self.odir_ln
-            cmd = "ln -s " + self.odir + " " + new_link + "; "
-            cmd += "rm " + old_link
-            try:
-                os.system(cmd)
-            except Exception as e:
-                log.error("Cmd \"%s\" could not be run", cmd)
+            subprocess.run(["ln", "-s", self.odir, new_link])
+            subprocess.run(["/bin/rm", "-rf", old_link])
 
     def get_status(self):
         if self.status != "D": return
@@ -488,7 +487,7 @@ class CompileSim(Deploy):
     def dispatch_cmd(self):
         # Delete previous cov_db_dir if it exists before dispatching new build.
         if os.path.exists(self.cov_db_dir):
-            os.system("rm -rf " + self.cov_db_dir)
+            subprocess.run(["/bin/rm", "-rf", self.cov_db_dir])
         super().dispatch_cmd()
 
 
@@ -615,7 +614,7 @@ class RunTest(Deploy):
             if os.path.exists(self.cov_db_test_dir):
                 log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
                         self.cov_db_test_dir)
-                os.system("/usr/bin/rm -rf " + self.cov_db_test_dir)
+                subprocess.run(["/bin/rm", "-rf", self.cov_db_test_dir])
 
     @staticmethod
     def get_seed():
@@ -783,7 +782,7 @@ class CovReport(Deploy):
 
         if self.status == "P":
             # Delete the cov report - not needed.
-            os.system("rm -rf " + self.log)
+            subprocess.run(["/bin/rm", "-rf", self.log])
 
 
 class CovAnalyze(Deploy):

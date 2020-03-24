@@ -88,7 +88,6 @@ class SimCfg(FlowCfg):
         self.dump_file = ""
 
         # Generated data structures
-        self.links = {}
         self.build_list = []
         self.run_list = []
         self.deploy = []
@@ -130,14 +129,6 @@ class SimCfg(FlowCfg):
             # Print info
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
-            # Set directories with links for ease of debug / triage.
-            self.links = {
-                "D": self.scratch_path + "/" + "dispatched",
-                "P": self.scratch_path + "/" + "passed",
-                "F": self.scratch_path + "/" + "failed",
-                "K": self.scratch_path + "/" + "killed"
-            }
-
             # Use the default build mode for tests that do not specify it
             if not hasattr(self, "build_mode"):
                 setattr(self, "build_mode", "default")
@@ -166,16 +157,6 @@ class SimCfg(FlowCfg):
         '''Create a new instance of this class as with given parameters.
         '''
         return SimCfg(flow_cfg_file, proj_root, args)
-
-    # Purge the output directories. This operates on self.
-    def _purge(self):
-        if self.scratch_path is not "":
-            try:
-                log.info("Purging scratch path %s", self.scratch_path)
-                os.system("/bin/rm -rf " + self.scratch_path)
-            except IOError:
-                log.error('Failed to purge scratch directory %s',
-                          self.scratch_path)
 
     def _create_objects(self):
         # Create build and run modes objects
@@ -318,25 +299,6 @@ class SimCfg(FlowCfg):
             if test.build_mode.name not in build_list_names:
                 self.build_list.append(test.build_mode)
                 build_list_names.append(test.build_mode.name)
-
-    def _create_dirs(self):
-        '''Create initial set of directories
-        '''
-        # Invoking system calls has a performance penalty.
-        # Construct a single command line chained with '&&' to invoke
-        # the system call only once, rather than multiple times.
-        create_link_dirs_cmd = ""
-        for link in self.links.keys():
-            create_link_dirs_cmd += "/bin/rm -rf " + self.links[link] + " && "
-            create_link_dirs_cmd += "mkdir -p " + self.links[link] + " && "
-        create_link_dirs_cmd += " true"
-
-        try:
-            os.system(create_link_dirs_cmd)
-        except IOError:
-            log.error("Error running when running the cmd \"%s\"",
-                      create_link_dirs_cmd)
-            sys.exit(1)
 
     def _create_deploy_objects(self):
         '''Create deploy objects from the build and run lists.

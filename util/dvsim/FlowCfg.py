@@ -67,6 +67,7 @@ class FlowCfg():
         self.timestamp = args.timestamp
 
         # Results
+        self.links = {}
         self.errors_seen = False
         self.rel_path = ""
         self.results_title = ""
@@ -88,6 +89,14 @@ class FlowCfg():
     def __post_init__(self):
         # Run some post init checks
         if not self.is_master_cfg:
+            # Set directories with links for ease of debug / triage.
+            self.links = {
+                "D": self.scratch_path + "/" + "dispatched",
+                "P": self.scratch_path + "/" + "passed",
+                "F": self.scratch_path + "/" + "failed",
+                "K": self.scratch_path + "/" + "killed"
+            }
+
             # Check if self.cfgs is a list of exactly 1 item (self)
             if not (len(self.cfgs) == 1 and self.cfgs[0].name == self.name):
                 log.error("Parse error!\n%s", self.cfgs)
@@ -256,11 +265,12 @@ class FlowCfg():
                                              self.args))
 
                     # Delete the temp_cfg_file once the instance is created
+                    log.log(VERBOSE, "Deleting temp cfg file:\n%s",
+                            temp_cfg_file)
                     try:
-                        log.log(VERBOSE, "Deleting temp cfg file:\n%s",
-                                temp_cfg_file)
-                        os.system("/bin/rm -rf " + temp_cfg_file)
-                    except IOError:
+                        subprocess.run(["/bin/rm", "-rf", temp_cfg_file],
+                                       check=True)
+                    except subprocess.CalledProcessError:
                         log.error("Failed to remove temp cfg file:\n%s",
                                   temp_cfg_file)
 
@@ -373,7 +383,10 @@ class FlowCfg():
 
     def _purge(self):
         '''Purge the existing scratch areas in preperation for the new run.'''
-        return
+        if self.scratch_path is not "":
+            log.info("[scratch_dir]: [%s]: [purging: %s]", self.name,
+                     self.scratch_path)
+            subprocess.run(["/bin/rm", "-rf", self.scratch_path])
 
     def purge(self):
         '''Public facing API for _purge().
@@ -391,6 +404,13 @@ class FlowCfg():
         '''
         for item in self.cfgs:
             item._print_list()
+
+    def _create_dirs(self):
+        '''Create initial set of directories
+        '''
+        for link in self.links.keys():
+            subprocess.run(["/bin/rm", "-rf", self.links[link]])
+            subprocess.run(["mkdir", "-p", self.links[link]])
 
     def _create_deploy_objects(self):
         '''Create deploy objects from items that were passed on for being run.
