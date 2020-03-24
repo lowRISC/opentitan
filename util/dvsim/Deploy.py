@@ -25,8 +25,10 @@ class Deploy():
     Abstraction for deploying builds and runs.
     """
 
-    # Timer.
-    num_secs = 0
+    # Timer in hours, minutes and seconds.
+    hh = 0
+    mm = 0
+    ss = 0
 
     # Maintain a list of dispatched items.
     dispatch_counter = 0
@@ -310,23 +312,35 @@ class Deploy():
             del self.process
 
     @staticmethod
+    def increment_timer():
+        # sub function that increments with overflow = 60
+        def _incr_ovf_60(val):
+            if val >= 59:
+                val = 0
+                return val, True
+            else:
+                val += 1
+                return val, False
+
+        incr_hh = False
+        Deploy.ss, incr_mm = _incr_ovf_60(Deploy.ss)
+        if incr_mm: Deploy.mm, incr_hh = _incr_ovf_60(Deploy.mm)
+        if incr_hh: Deploy.hh += 1
+
+    @staticmethod
     def deploy(items):
         dispatched_items = []
         queued_items = []
 
-        if Deploy.print_legend:
-            # Print legend once at the start of the run.
-            log.info("[legend]: [Q: queued, D: dispatched, " + \
-                     "P: passed, F: failed, K: killed, T: total]")
-            Deploy.print_legend = False
+        # Print timer val in hh:mm:ss.
+        def get_timer_val():
+            return "%02i:%02i:%02i" % (Deploy.hh, Deploy.mm, Deploy.ss)
 
-        def get_etime():
-            # Convert num_secs to hh:mm:ss
-            hh = Deploy.num_secs // (3600)
-            ss = Deploy.num_secs % (3600)
-            mm = ss // 60
-            ss %= 60
-            return "%02i:%02i:%02i" % (hh, mm, ss)
+        # Check if elapsed time has reached the next print interval.
+        def has_print_interval_reached():
+            # Deploy.print_interval is expected to be < 1 hour.
+            return (((Deploy.mm * 60 + Deploy.ss) %
+                     Deploy.print_interval) == 0)
 
         def dispatch_items(items):
             item_names = OrderedDict()
@@ -341,48 +355,75 @@ class Deploy():
                 if item_names[target] != "":
                     item_names[target] = "  [" + item_names[target][:-2] + "]"
                     log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s",
-                            get_etime(), target, item_names[target])
+                            get_timer_val(), target, item_names[target])
 
-        def track_progress(status, print_status_flag):
+        # Initialize status for a target, add '_stats_' for the said target
+        # and initialize counters for queued, dispatched, passed, failed,
+        # killed and total to 0. Also adds a boolean key to indicate if all
+        # items in a given target are done.
+        def init_status_target_stats(status, target):
+            status[target] = OrderedDict()
+            status[target]['_stats_'] = OrderedDict()
+            status[target]['_stats_']['Q'] = 0
+            status[target]['_stats_']['D'] = 0
+            status[target]['_stats_']['P'] = 0
+            status[target]['_stats_']['F'] = 0
+            status[target]['_stats_']['K'] = 0
+            status[target]['_stats_']['T'] = 0
+            status[target]['_done_'] = False
+
+        # Update status counter for a newly queued item.
+        def add_status_target_queued(status, item):
+            if item.target not in status.keys():
+                init_status_target_stats(status, item.target)
+            status[item.target][item] = "Q"
+            status[item.target]['_stats_']['Q'] += 1
+            status[item.target]['_stats_']['T'] += 1
+
+        # Update status counters for a target.
+        def update_status_target_stats(status, item):
+            old_status = status[item.target][item]
+            status[item.target]['_stats_'][old_status] -= 1
+            status[item.target]['_stats_'][item.status] += 1
+            status[item.target][item] = item.status
+
+        def check_if_done_and_print_status(status, print_status_flag):
             all_done = True
             for target in status.keys():
-                if "target_done" in status[target].keys(): continue
-                stats = OrderedDict()
-                stats["Q"] = 0
-                stats["D"] = 0
-                stats["P"] = 0
-                stats["F"] = 0
-                stats["K"] = 0
-                stats["T"] = 0
-                target_done = False
-                for item in status[target].keys():
-                    stats[status[target][item]] += 1
-                    stats["T"] += 1
-                if stats["Q"] == 0 and stats["D"] == 0:
-                    target_done = True
-                all_done &= target_done
+                target_done_prev = status[target]['_done_']
+                target_done_curr = ((status[target]['_stats_']["Q"] == 0) and
+                                    (status[target]['_stats_']["D"] == 0))
+                status[target]['_done_'] = target_done_curr
+                all_done &= target_done_curr
 
-                if print_status_flag:
+                # Print if flag is set and target_done is not True for two
+                # consecutive times.
+                if not (target_done_prev and
+                        target_done_curr) and print_status_flag:
+                    stats = status[target]['_stats_']
                     width = "0{}d".format(len(str(stats["T"])))
                     msg = "["
                     for s in stats.keys():
                         msg += s + ": {:{}}, ".format(stats[s], width)
                     msg = msg[:-2] + "]"
-                    log.info("[%s]: [%s]: %s", get_etime(), target, msg)
-                    if target_done: status[target]["target_done"] = True
+                    log.info("[%s]: [%s]: %s", get_timer_val(), target, msg)
             return all_done
 
-        all_done = False
+        # Print legend once at the start of the run.
+        if Deploy.print_legend:
+            log.info("[legend]: [Q: queued, D: dispatched, "
+                     "P: passed, F: failed, K: killed, T: total]")
+            Deploy.print_legend = False
+
         status = OrderedDict()
         print_status_flag = True
 
         # Queue all items
-        queued_items.extend(items)
+        queued_items = items
         for item in queued_items:
-            if item.target not in status.keys():
-                status[item.target] = OrderedDict()
-            status[item.target][item] = "Q"
+            add_status_target_queued(status, item)
 
+        all_done = False
         while not all_done:
             # Get status of dispatched items.
             for item in dispatched_items:
@@ -394,19 +435,17 @@ class Deploy():
                             # Kill its sub items if item did not pass.
                             item.set_sub_status("K")
                             log.error("[%s]: [%s]: [status] [%s: %s]",
-                                      get_etime(), item.target,
+                                      get_timer_val(), item.target,
                                       item.identifier, item.status)
                         else:
                             log.log(VERBOSE, "[%s]: [%s]: [status] [%s: %s]",
-                                    get_etime(), item.target, item.identifier,
-                                    item.status)
+                                    get_timer_val(), item.target,
+                                    item.identifier, item.status)
                         # Queue items' sub-items if it is done.
                         queued_items.extend(item.sub)
                         for sub_item in item.sub:
-                            if sub_item.target not in status.keys():
-                                status[sub_item.target] = OrderedDict()
-                            status[sub_item.target][sub_item] = "Q"
-                status[item.target][item] = item.status
+                            add_status_target_queued(status, sub_item)
+                    update_status_target_stats(status, item)
 
             # Dispatch items from the queue as slots free up.
             all_done = (len(queued_items) == 0)
@@ -420,17 +459,17 @@ class Deploy():
                     else:
                         dispatch_items(queued_items)
                         dispatched_items.extend(queued_items)
-                        queued_items = []
+                        del queued_items[:]
 
             # Check if we are done and print the status periodically.
-            all_done &= track_progress(status, print_status_flag)
+            all_done &= check_if_done_and_print_status(status,
+                                                       print_status_flag)
 
             # Advance time by 1s if there is more work to do.
             if not all_done:
                 time.sleep(1)
-                Deploy.num_secs += 1
-                print_status_flag = ((Deploy.num_secs %
-                                      Deploy.print_interval) == 0)
+                Deploy.increment_timer()
+                print_status_flag = has_print_interval_reached()
 
 
 class CompileSim(Deploy):
