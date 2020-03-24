@@ -108,8 +108,8 @@ class OneShotCfg(FlowCfg):
             # tests and regressions, only if not a master cfg obj
             self._create_objects()
 
-            # Post init checks
-            self.__post_init__()
+        # Post init checks
+        self.__post_init__()
 
     def __post_init__(self):
         # Run some post init checks
