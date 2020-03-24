@@ -11,83 +11,145 @@ import sys
 
 import pkg_resources
 
+# A map from tool name to the tuple (check, fix). These are two commands which
+# should be run to check for and fix errors, respectively. If the tool doesn't
+# support fixing in place, the "fix" command can be None.
+_KNOWN_TOOLS = {
+    'yapf': (['yapf', '-d'], ['yapf', '-i']),
+    'isort': (['isort', '-c', '-w79'], ['isort', '-w79']),
+    'flake8': (['flake8'], None)
+}
+
 
 # include here because in hook case don't want to import reggen
 def show_and_exit(clitool, packages):
     util_path = os.path.dirname(os.path.realpath(clitool))
     os.chdir(util_path)
-    ver = subprocess.run(
+    ver = subprocess.check_output(
         ["git", "describe", "--always", "--dirty", "--broken"],
-        stdout=subprocess.PIPE).stdout.strip().decode('ascii')
-    if (ver == ''):
+        universal_newlines=True).strip()
+    if not ver:
         ver = 'not found (not in Git repository?)'
     sys.stderr.write(clitool + " Git version " + ver + '\n')
     for p in packages:
         sys.stderr.write(p + ' ' + pkg_resources.require(p)[0].version + '\n')
-    exit(0)
+    sys.exit(0)
 
 
-def check_linter(cmd, cmdfix, dofix, verbose, files, **kwargs):
-    if not files:
-        return
+def run_linter(tool, dofix, verbose, files):
+    '''Run the given lint tool on a nonempty list of files
+
+    Returns (bad, stop) where bad is true if the lint tool spotted any errors.
+    stop is true if the tool fails and either dofix is false or the tool
+    doesn't have a fix command.
+
+    '''
+    assert files
+    assert tool in _KNOWN_TOOLS
+    check, fix = _KNOWN_TOOLS[tool]
+
     if verbose:
-        print('Running %s' % cmd[0])
+        print('Running {}'.format(' '.join(check)))
+
+    check_cmd = check + files
     try:
-        subprocess.check_output(
-            cmd + files, stderr=subprocess.STDOUT, **kwargs)
-        return 0
+        assert check
+        subprocess.check_output(check_cmd, stderr=subprocess.STDOUT)
+        return (False, False)
     except FileNotFoundError:
-        print('%s not found: do you need to install it?' % cmd[0])
-        return 1
+        print('{} not found: do you need to install it?'.format(check[0]))
+        return (True, True)
     except subprocess.CalledProcessError as exc:
-        print('Lint failed:', file=sys.stderr)
-        print(' '.join(exc.cmd), file=sys.stderr)
+        sys.stderr.write('Lint failed:\n  {}\n'.format(' '.join(check_cmd)))
+        if not dofix or fix is None:
+            return (True, True)
+
         if exc.output:
             output = exc.output.decode(sys.getfilesystemencoding())
-            print(
-                '\t',
-                '\n\t'.join(output.splitlines()),
-                sep='',
-                file=sys.stderr)
-        if dofix:
-            print("Fixing...", file=sys.stderr)
-            subprocess.check_output(
-                cmdfix + files, stderr=subprocess.STDOUT, **kwargs)
-        return 1
+            print('\t',
+                  '\n\t'.join(output.splitlines()),
+                  sep='',
+                  file=sys.stderr)
+
+    print("Fixing...", file=sys.stderr)
+    subprocess.check_call(fix + files,
+                          stderr=subprocess.STDOUT,
+                          stdout=subprocess.DEVNULL)
+    return (True, False)
 
 
-def filter_ext(extension, files, exclude=None):
-    files = [f for f in files if f.endswith(extension)]
-    if exclude is not None:
-        files = [i for i in files if exclude not in i]
-    return files
+def lint_files(tools, input_files, dofix, verbose):
+    '''Run each tool on each file in input_files.'''
+    something_bad = False
 
-
-def lint_files(changed_files, dofix, verbose):
-    err = 0
-    if not isinstance(changed_files, list):
-        changed_files = [
-            i.strip() for i in changed_files.splitlines()
-            if '/external/' not in i
-        ]
-
-    changed_extensions = {
-        ext
-        for root, ext in map(os.path.splitext, changed_files)
-    }
     if verbose:
-        print('Changed files: ' + str(changed_files))
-        print('Changed extensions: ' + str(changed_extensions))
+        print('Changed files: ' + ', '.join(input_files))
 
-    if '.py' in changed_extensions:
-        py_files = filter_ext('.py', changed_files)
-        err += check_linter(['yapf', '-d'], ['yapf', '-i'], dofix, verbose,
-                            py_files)
-        err += check_linter(['isort', '-c', '-w79'], ['isort', '-w79'], dofix,
-                            verbose, py_files)
+    for tool in tools:
+        bad, stop = run_linter(tool, dofix, verbose, input_files)
+        if bad:
+            something_bad = True
+        if stop:
+            break
 
-    # could do similar checks for other file types
-    return err
+    return 1 if something_bad else 0
+
+
+def get_files_from_git(show_cached):
+    '''Return a list of paths to work on
+
+    Use git diff to find the list of Python files that have changed. If
+    show_cached is True, this operates on the staging tree, rather than the
+    work tree.
+
+    '''
+    # This git diff command will return all the paths that have changed and end
+    # in .py
+    cmd = (['git', 'diff', '--name-only', '--diff-filter=ACM'] +
+           (['--cached'] if show_cached else []) + ['*.py'])
+
+    lines = subprocess.check_output(cmd, universal_newlines=True).split('\n')
+    paths = []
+    for line in lines:
+        path = line.strip()
+        if path:
+            paths.append(path)
+
+    return paths
+
+
+def parse_tool_list(as_string):
+    '''Parse a list of tools (as passed to the --tools argument)
+
+    Returns a nonempty list of strings, one for each tool included.'''
+    tools = []
+    for name in as_string.split(','):
+        name = name.strip()
+        if name not in _KNOWN_TOOLS:
+            raise argparse.ArgumentTypeError('Unknown tool: {}.'.format(name))
+        tools.append(name)
+
+    assert tools
+    return tools
+
+
+def install_commit_hook():
+    '''Install this script as a pre-commit hook in this repository'''
+    git_dir = subprocess.check_output(['git', 'rev-parse', '--git-dir'],
+                                      universal_newlines=True).strip()
+    hooks_dir = os.path.join(git_dir, 'hooks')
+    os.makedirs(hooks_dir, exist_ok=True)
+
+    hook_path = os.path.join(hooks_dir, 'pre-commit')
+    if os.path.exists(hook_path):
+        raise RuntimeError('There is already a hook at {}.'.format(hook_path))
+
+    # Find a relative path from hooks_dir to __file__ (so we can move the whole
+    # repo in the future without breaking anything).
+    rel_path = os.path.relpath(__file__, hooks_dir)
+
+    print('Installing hook at {}, pointing at {}.'.format(hook_path, rel_path))
+    os.symlink(rel_path, hook_path)
 
 
 def main():
@@ -105,66 +167,56 @@ def main():
         '-c',
         '--commit',
         action='store_true',
-        help='Only check files staged for commit rather than' \
-             'all modified files (forced when run as git hook)')
-    parser.add_argument(
-        '--fix', action='store_true', help='Fix files detected with problems')
-    parser.add_argument(
-        '--hook',
-        action='store_true',
-        help='Install as ../.git/hooks/pre-commit and exit')
-    parser.add_argument(
-        '-f',
-        '--file',
-        metavar='file',
-        nargs='+',
-        default=[],
-        help='File(s) to check instead of deriving from git')
+        help=('Only check files staged for commit rather than'
+              'all modified files (forced when run as git hook)'))
+    parser.add_argument('--fix',
+                        action='store_true',
+                        help='Fix files detected with problems')
+    parser.add_argument('--hook',
+                        action='store_true',
+                        help='Install as ../.git/hooks/pre-commit and exit')
+    parser.add_argument('-f',
+                        '--file',
+                        metavar='file',
+                        nargs='+',
+                        default=[],
+                        help='File(s) to check instead of deriving from git')
+    parser.add_argument('--tools',
+                        type=parse_tool_list,
+                        default=['yapf', 'isort'],
+                        help='Comma separated list of linting tools to use')
 
     args = parser.parse_args()
     if args.version:
-        show_and_exit(__file__, ['yapf', 'isort'])
+        show_and_exit(__file__, ['yapf', 'isort', 'flake8'])
 
-    util_path = os.path.dirname(os.path.realpath(__file__))
-    repo_root = os.path.abspath(os.path.join(util_path, os.pardir))
-    # check for running as a hook out of $(TOP)/.git/hooks
-    # (symlink will already have this correct)
-    if repo_root.endswith('.git'):
-        repo_root = os.path.abspath(os.path.join(repo_root, os.pardir))
     running_hook = sys.argv[0].endswith('hooks/pre-commit')
+    if running_hook and args.verbose:
+        print('argv[0] is ' + sys.argv[0] + ' so running_hook is True')
 
-    if args.verbose:
-        print('argv[0] is ' + sys.argv[0] + ' so running_hook is ' +
-              str(running_hook))
-        print('util_path is ' + util_path)
-        print('repo_root is ' + repo_root)
+    if args.hook:
+        if args.file:
+            raise RuntimeError('Cannot specify both --hook and a file list.')
+        install_commit_hook()
+        return 0
 
-    if len(args.file) > 0:
-        changed_files = args.file
+    if args.file:
+        input_files = args.file
+        if args.commit:
+            raise RuntimeError('Cannot specify both --commit and a file list.')
     else:
+        input_files = get_files_from_git(running_hook or args.commit)
 
-        os.chdir(repo_root)
-        if not os.path.isdir(os.path.join(repo_root, '.git')):
-            print(
-                "Script not in expected location in a git repo",
-                file=sys.stderr)
-            sys.exit(1)
+    if not input_files:
+        print('No input files. Exiting.')
+        return 0
 
-        if args.hook:
-            subprocess.run(
-                'ln -s ../../util/lintpy.py .git/hooks/pre-commit'.split())
-            sys.exit(0)
-
-        if running_hook or args.commit:
-            diff_cmd = 'git diff --cached --name-only --diff-filter=ACM'
-        else:
-            diff_cmd = 'git diff --name-only --diff-filter=ACM'
-
-        changed_files = subprocess.check_output(diff_cmd.split())
-        changed_files = changed_files.decode(sys.getfilesystemencoding())
-
-    sys.exit(lint_files(changed_files, args.fix, args.verbose))
+    return lint_files(args.tools, input_files, args.fix, args.verbose)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except RuntimeError as err:
+        sys.stderr.write('Error: {}\n'.format(err))
+        sys.exit(1)

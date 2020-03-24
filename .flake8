@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 100
+
+ignore =
+  # This rule is supposed to check that you don't put spaces around
+  # the '=' sign in keyword arguments. Unfortunately, yapf inserts
+  # them when there's a long argument (help text, for example).
+  E251,
+  # Don't complain about line breaks after operators
+  W504
