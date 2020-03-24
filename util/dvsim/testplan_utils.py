@@ -14,13 +14,13 @@ import hjson
 import mistletoe
 from tabulate import tabulate
 
-from .class_defs import *
+from class_defs import *
 
 
 def parse_testplan(filename):
     '''Parse testplan Hjson file into a datastructure'''
     self_path = os.path.dirname(os.path.realpath(__file__))
-    repo_root = os.path.abspath(os.path.join(self_path, os.pardir, os.pardir, os.pardir))
+    repo_root = os.path.abspath(os.path.join(self_path, os.pardir, os.pardir))
 
     name = ""
     imported_testplans = []

@@ -22,7 +22,7 @@ See discussion below on tracking progress.
 
 For professional tooling, the team has chosen [Synopsys' VCS](https://www.synopsys.com/verification/simulation/vcs.html) as the simulator of choice with respect to the tracking of verification completeness and [JasperGold](https://www.cadence.com/content/cadence-www/global/en_US/home/tools/system-design-and-verification/formal-and-static-verification/jasper-gold-verification-platform.html) for FPV.
 Wherever possible we attempt to remain tool-agnostic, but we must choose a simulator as our ground truth for our own confidence of signoff-level assurances.
-Likewise, for FPV, [Synopsys VC Formal](https://www.synopsys.com/verification/static-and-formal-verification/vc-formal.html) is also supported within the same flow, and can be used by those with access to VC Formal licenses. 
+Likewise, for FPV, [Synopsys VC Formal](https://www.synopsys.com/verification/static-and-formal-verification/vc-formal.html) is also supported within the same flow, and can be used by those with access to VC Formal licenses.
 At this time there is also some support for Cadence's Xcelium, for those organizations which have few Synopsys VCS licenses.
 However support is not as mature as for VCS, which remains the tool for signoff.
 Furthermore, as a project we promote other open source verification methodologies - Verilator, Yosys, cocoTB, etc - and work towards a future where these are signoff-grade.
@@ -62,7 +62,7 @@ The complete testplan is parsed into a data structure that serves the following 
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
-The [testplanner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
+The [testplanner]({{< relref "util/dvsim/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
 The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV plan as a table.
 
 ### DV Plan

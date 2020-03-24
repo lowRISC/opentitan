@@ -13,7 +13,7 @@ from pathlib import PurePath
 
 import hjson
 
-from testplanner import testplan_utils
+import testplan_utils
 
 
 def main():

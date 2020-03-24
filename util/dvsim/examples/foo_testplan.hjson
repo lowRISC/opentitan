@@ -10,7 +10,7 @@
   // paths are relative to repository top
   // all key_value pairs in this file other than 'import_testplans' and 'entries'
   // can be used for wildcard substitutions in imported testplans
-  import_testplans: ["util/dvsim/testplanner/examples/common_testplan.hjson"]
+  import_testplans: ["util/dvsim/examples/common_testplan.hjson"]
   entries: [
     {
       // name of the testplan entry - should be unique

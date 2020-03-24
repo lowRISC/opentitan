@@ -8,7 +8,8 @@ Class describing simulation configuration object
 import logging as log
 import sys
 
-from testplanner import class_defs, testplan_utils
+import class_defs
+import testplan_utils
 
 from Deploy import *
 from FlowCfg import FlowCfg

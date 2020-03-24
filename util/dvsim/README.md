@@ -221,7 +221,8 @@ $ util/docgen.py -c testplanner/examples/foo_dv_plan.md -o /tmp/foo_dv_plan.html
 ```
 See following snippet of code for the APIs in use:
 ```python
-from testplanner import class_defs, testplan_utils
+import class_defs
+import testplan_utils
 
   # hjson_testplan_path: a string pointing to the path to Hjson testplan
   # outbuf: file buffer opened for writing

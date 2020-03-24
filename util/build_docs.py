@@ -28,7 +28,7 @@ import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
 import reggen.validate as validate
 import reggen.gen_selfdoc as reggen_selfdoc
-import dvsim.testplanner.testplan_utils as testplan_utils
+import dvsim.testplan_utils as testplan_utils
 import tlgen
 
 USAGE = """
@@ -85,7 +85,7 @@ config = {
         "hw/ip/usbdev/data/usbdev_testplan.hjson",
         "hw/ip/tlul/data/tlul_testplan.hjson",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
-        "util/dvsim/testplanner/examples/foo_testplan.hjson",
+        "util/dvsim/examples/foo_testplan.hjson",
     ],
 
     # Pre-generated utility selfdoc
