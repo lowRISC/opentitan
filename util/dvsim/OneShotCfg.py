@@ -122,7 +122,7 @@ class OneShotCfg(FlowCfg):
 
     # Purge the output directories. This operates on self.
     def _purge(self):
-        if self.scratch_path is not "":
+        if self.scratch_path:
             try:
                 log.info("Purging scratch path %s", self.scratch_path)
                 os.system("/bin/rm -rf " + self.scratch_path)
