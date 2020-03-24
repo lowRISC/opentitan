@@ -10,5 +10,5 @@ def bazel_embedded_deps():
     git_repository(
         name = "platforms",
         remote = "https://github.com/curtin-space/platforms.git",
-        commit = "a9fb73e46ab4a7558d53d65ed8e608724f07d4cc",
+        commit = "4a41e08ff6ed2a3e830e44889b505880ab52ab64",
     )
