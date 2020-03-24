@@ -99,6 +99,10 @@
   vcs_cov_assert_hier:  ""
   vcs_cov_excl_files:   []
 
+  // pass and fail patterns
+  build_fail_patterns: ["^Error-.*$"]
+  run_fail_patterns:   ["^Error-.*$"] // Null pointer error
+
   build_modes: [
     {
       name: vcs_waves

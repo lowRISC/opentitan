@@ -61,6 +61,10 @@
   cov_analyze_cmd:  ""
   cov_analyze_opts: []
 
+  // pass and fail patterns
+  build_fail_patterns: ["\\*E.*$"]
+  run_fail_patterns:   ["\\*E.*$"] // Null pointer error
+
   build_modes: [
     {
       name: xcelium_waves
