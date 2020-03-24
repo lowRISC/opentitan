@@ -243,15 +243,29 @@ class Deploy():
         self.status = 'P'
         if self.dry_run is False:
             for fail_pattern in self.fail_patterns:
-                grep_cmd = "grep -m 1 -E \'" + fail_pattern + "\' " + self.log
-                (status, rslt) = subprocess.getstatusoutput(grep_cmd + " -c")
-                if rslt != "0":
-                    (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+                # Return error messege with the following 4 lines.
+                grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
+                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+                if rslt:
                     msg = "```\n{}\n```\n".format(rslt)
                     self.fail_msg += msg
                     log.log(VERBOSE, msg)
                     self.status = 'F'
                     break
+
+            # If fail patterns were not encountered, but the job returned with non-zero exit code
+            # for whatever reason, then show the last 10 lines of the log as the failure message,
+            # which might help with the debug.
+            if self.process.returncode != 0 and not self.fail_msg:
+                msg = "Last 10 lines of the log:<br>\n"
+                self.fail_msg += msg
+                log.log(VERBOSE, msg)
+                get_fail_msg_cmd = "tail -n 10 " + self.log
+                msg = run_cmd(get_fail_msg_cmd)
+                msg = "```\n{}\n```\n".format(msg)
+                self.fail_msg += msg
+                log.log(VERBOSE, msg)
+                self.status = "F"
 
             # Return if status is fail - no need to look for pass patterns.
             if self.status == 'F': return
@@ -292,18 +306,7 @@ class Deploy():
         if self.status != "D": return
         if self.process.poll() is not None:
             self.log_fd.close()
-            if self.process.returncode != 0:
-                msg = "Last 10 lines of the log:<br>\n"
-                self.fail_msg += msg
-                log.log(VERBOSE, msg)
-                get_fail_msg_cmd = "tail -n 10 " + self.log
-                msg = run_cmd(get_fail_msg_cmd)
-                msg = "```\n{}\n```\n".format(msg)
-                self.fail_msg += msg
-                log.log(VERBOSE, msg)
-                self.status = "F"
-            else:
-                self.set_status()
+            self.set_status()
 
             log.debug("Item %s has completed execution: %s", self.name,
                       self.status)
@@ -507,7 +510,11 @@ class CompileSim(Deploy):
             "build_opts": False
         }
 
-        self.mandatory_misc_attrs = {"cov_db_dir": False}
+        self.mandatory_misc_attrs = {
+            "cov_db_dir": False,
+            "build_pass_patterns": False,
+            "build_fail_patterns": False
+        }
 
         # Initialize
         super().__init__(sim_cfg)
@@ -516,6 +523,8 @@ class CompileSim(Deploy):
         # since it may contain additional mandatory attrs.
         super().parse_dict(sim_cfg.__dict__)
         self.build_mode = self.name
+        self.pass_patterns = self.build_pass_patterns
+        self.fail_patterns = self.build_fail_patterns
         self.__post_init__()
 
         # Start fail message construction
@@ -613,8 +622,8 @@ class RunTest(Deploy):
         self.mandatory_misc_attrs = {
             "run_dir_name": False,
             "cov_db_test_dir": False,
-            "pass_patterns": False,
-            "fail_patterns": False
+            "run_pass_patterns": False,
+            "run_fail_patterns": False
         }
 
         self.index = index
@@ -629,6 +638,8 @@ class RunTest(Deploy):
         self.test = self.name
         self.renew_odir = True
         self.build_mode = test.build_mode.name
+        self.pass_patterns = self.run_pass_patterns
+        self.fail_patterns = self.run_fail_patterns
         self.__post_init__()
         # For output dir link, use run_dir_name instead.
         self.odir_ln = self.run_dir_name

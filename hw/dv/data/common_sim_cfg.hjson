@@ -23,12 +23,14 @@
   sw_root_dir:        "{proj_root}/sw"
 
   // pass and fail patterns
-  pass_patterns:    ["^TEST PASSED (UVM_)?CHECKS$"]
-  fail_patterns:    ["^UVM_ERROR\\s[^:].*$",
-                     "^UVM_FATAL\\s[^:].*$",
-                     "^Assert failed: ",
-                     "^\\s*Offending '.*'",
-                     "^TEST FAILED (UVM_)?CHECKS$"]
+  build_pass_patterns: []
+  build_fail_patterns: []
+  run_pass_patterns:   ["^TEST PASSED (UVM_)?CHECKS$"]
+  run_fail_patterns:   ["^UVM_ERROR\\s[^:].*$",
+                        "^UVM_FATAL\\s[^:].*$",
+                        "^Assert failed: ",
+                        "^\\s*Offending '.*'",
+                        "^TEST FAILED (UVM_)?CHECKS$"]
 
   // Default TileLink widths
   tl_aw: 32

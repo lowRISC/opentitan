@@ -9,11 +9,10 @@ import logging as log
 import sys
 from collections import OrderedDict
 
-from testplanner import class_defs, testplan_utils
-
 from Deploy import *
 from FlowCfg import FlowCfg
 from Modes import *
+from testplanner import class_defs, testplan_utils
 from utils import *
 
 
