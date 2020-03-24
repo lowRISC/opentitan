@@ -27,7 +27,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "bazel_embedded",
     commit = "d0d4bfacb47bd2db67f558adc69149b4d5a915ab",
-    remote = "git@github.com:silvergasp/bazel-embedded.git",
+    remote = "https://github.com/silvergasp/bazel-embedded.git",
     shallow_since = "1585022166 +0800",
 )
 
