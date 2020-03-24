@@ -1,16 +1,10 @@
-"""
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "bazel_embedded",
-    commit = "fd165b8e40cbe2a09b978a0f8c89d0a58ae7561b",
+    commit = "d0d4bfacb47bd2db67f558adc69149b4d5a915ab",
     remote = "git@github.com:silvergasp/bazel-embedded.git",
-)
-"""
-
-local_repository(
-    name = "bazel_embedded",
-    path = "../../",
+    shallow_since = "1585022166 +0800",
 )
 
 load("@bazel_embedded//:bazel_embedded_deps.bzl", "bazel_embedded_deps")
