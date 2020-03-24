@@ -57,7 +57,7 @@ class SimCfg(FlowCfg):
         # Set default sim modes for unpacking
         if self.waves is True: self.en_build_modes.append("waves")
         if self.cov is True: self.en_build_modes.append("cov")
-        if self.profile is not 'none': self.en_build_modes.append("profile")
+        if self.profile != 'none': self.en_build_modes.append("profile")
         if self.xprop_off is not True: self.en_build_modes.append("xprop")
 
         # Options built from cfg_file files
@@ -169,7 +169,7 @@ class SimCfg(FlowCfg):
 
     # Purge the output directories. This operates on self.
     def _purge(self):
-        if self.scratch_path is not "":
+        if self.scratch_path:
             try:
                 log.info("Purging scratch path %s", self.scratch_path)
                 os.system("/bin/rm -rf " + self.scratch_path)
