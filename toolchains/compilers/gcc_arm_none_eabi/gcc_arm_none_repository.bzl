@@ -64,7 +64,7 @@ gcc_arm_none_repository = repository_rule(
     },
 )
 
-def gcc_arm_none_repository_compiler():
+def gcc_arm_none_compiler():
     gcc_arm_none_repository(
         name = "com_gcc_arm_none_eabi_compiler",
     )
