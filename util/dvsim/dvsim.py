@@ -18,7 +18,6 @@ import logging as log
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 import Deploy
 import LintCfg
@@ -36,8 +35,8 @@ version = 0.1
 # Try to create the directory if it does not already exist.
 def resolve_scratch_root(arg_scratch_root):
     scratch_root = os.environ.get('SCRATCH_ROOT')
-    if arg_scratch_root == None or arg_scratch_root == "":
-        if scratch_root == None:
+    if not arg_scratch_root:
+        if scratch_root is None:
             arg_scratch_root = os.getcwd() + "/scratch"
         else:
             # Scratch space could be mounted in a filesystem (such as NFS) on a network drive.
@@ -52,14 +51,15 @@ def resolve_scratch_root(arg_scratch_root):
             else:
                 arg_scratch_root = os.getcwd() + "/scratch"
                 log.warning(
-                    "Env variable $SCRATCH_ROOT=\"%s\" is not accessible.\n" +
-                    "Using \"%s\" instead.", scratch_root, arg_scratch_root)
+                    "Env variable $SCRATCH_ROOT=\"{}\" is not accessible.\n"
+                    "Using \"{}\" instead.".format(scratch_root,
+                                                   arg_scratch_root))
     else:
         arg_scratch_root = os.path.realpath(arg_scratch_root)
 
     try:
         os.system("mkdir -p " + arg_scratch_root)
-    except:
+    except OSError:
         log.fatal(
             "Invalid --scratch-root=\"%s\" switch - failed to create directory!",
             arg_scratch_root)
@@ -84,15 +84,17 @@ def resolve_branch(arg_branch):
 
 # Get the project root directory path - this is used to construct the full paths
 def get_proj_root():
-    result = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+    cmd = ["git", "rev-parse", "--show-toplevel"]
+    result = subprocess.run(cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     proj_root = result.stdout.decode("utf-8").strip()
-    if proj_root == "":
+    if not proj_root:
         log.error(
-            "Attempted to find the root of this GitHub repository by running:" \
-            "\n..\nBut this command has failed:\n%s" %
-                result.stderr.decode("utf-8"))
+            "Attempted to find the root of this GitHub repository by running:\n"
+            "{}\n"
+            "But this command has failed:\n"
+            "{}".format(' '.join(cmd), result.stderr.decode("utf-8")))
         sys.exit(1)
     return (proj_root)
 
@@ -164,10 +166,9 @@ def main():
         nargs="+",
         default=[],
         metavar="",
-        help="""pass additional build options over the command line;
-                              note that if there are multiple compile sets identified to be built,
-                              these options will be passed on to all of them"""
-    )
+        help="""Pass additional build options over the command line;
+                note that if there are multiple compile sets identified to be built,
+                these options will be passed on to all of them""")
 
     parser.add_argument(
         "-bm",
@@ -176,7 +177,7 @@ def main():
         default=[],
         metavar="",
         help="""Set build modes on the command line for all tests run as a part
-                              of the regression.""")
+                of the regression.""")
 
     parser.add_argument(
         "-ro",
@@ -184,8 +185,8 @@ def main():
         nargs="+",
         default=[],
         metavar="",
-        help="""pass additional run time options over the command line;
-                              these options will be passed on to all tests scheduled to be run"""
+        help="""Pass additional run time options over the command line;
+                these options will be passed on to all tests scheduled to be run"""
     )
 
     parser.add_argument(
@@ -195,7 +196,7 @@ def main():
         default=[],
         metavar="",
         help="""Set run modes on the command line for all tests run as a part
-                              of the regression.""")
+                of the regression.""")
 
     parser.add_argument(
         "-bu",
@@ -204,11 +205,11 @@ def main():
         action='store_true',
         help=
         """By default, under the {scratch} directory, there is a {compile_set}
-                              directory created where the build output goes; this can be
-                              uniquified by appending the current timestamp. This is suitable
-                              for the case when a test / regression already running and you want
-                              to run something else from a different terminal without affecting
-                              the previous one""")
+                directory created where the build output goes; this can be
+                uniquified by appending the current timestamp. This is suitable
+                for the case when a test / regression already running and you want
+                to run something else from a different terminal without affecting
+                the previous one""")
 
     parser.add_argument(
         "--build-only",
@@ -230,14 +231,15 @@ def main():
         metavar="seed0 seed1 ...",
         help=
         """Run tests with a specific seeds. Note that these specific seeds are applied to
-           items being run in the order they are passed.""")
+                items being run in the order they are passed.""")
 
     parser.add_argument(
         "--fixed-seed",
         type=int,
         default=None,
-        help="""Run all items with a fixed seed value. This option enforces
-           --reseed 1.""")
+        help=
+        """Run all items with a fixed seed value. This option enforces --reseed 1."""
+    )
 
     parser.add_argument(
         "-r",
@@ -271,8 +273,8 @@ def main():
                         type=int,
                         default=5,
                         metavar="N",
-                        help="""enable dumpling of waves for at most N tests;
-                              this includes tests scheduled for run AND automatic rerun"""
+                        help="""Enable dumpling of waves for at most N tests;
+                                this includes tests scheduled for run AND automatic rerun"""
                         )
 
     parser.add_argument("-c",
@@ -286,8 +288,8 @@ def main():
         default=False,
         action='store_true',
         help="""Applicable when --cov switch is enabled. If a previous cov
-                        database directory exists, this switch will cause it to be merged with
-                        the current cov database.""")
+                database directory exists, this switch will cause it to be merged with
+                the current cov database.""")
 
     parser.add_argument(
         "--cov-analyze",
@@ -323,17 +325,15 @@ def main():
         default=5,
         metavar="N",
         help="""When tests are run, the older runs are backed up. This switch
-                              limits the number of backup directories being maintained."""
-    )
+                limits the number of backup directories being maintained.""")
 
     parser.add_argument(
         "--no-rerun",
         default=False,
         action='store_true',
         help=
-        """by default, failing tests will be automatically be rerun with waves;
-                              this option will prevent the rerun from being triggered"""
-    )
+        """By default, failing tests will be automatically be rerun with waves;
+                this option will prevent the rerun from being triggered""")
 
     parser.add_argument("--skip-ral",
                         default=False,
@@ -344,9 +344,9 @@ def main():
                         "--verbosity",
                         default="l",
                         metavar="n|l|m|h|d",
-                        help="""set verbosity to none/low/medium/high/debug;
-                              This will override any setting added to any of the hjson files
-                              used for config""")
+                        help="""Set verbosity to none/low/medium/high/debug;
+                                This will override any setting added to any of the hjson files
+                                used for config""")
 
     parser.add_argument("--email",
                         nargs="+",
@@ -411,7 +411,7 @@ def main():
         action='store_true',
         help=
         """Deploy builds and runs on the local workstation instead of the compute farm.
-        Support for this has not been added yet.""")
+                Support for this has not been added yet.""")
 
     args = parser.parse_args()
 
@@ -424,8 +424,10 @@ def main():
 
     log_format = '%(levelname)s: [%(module)s] %(message)s'
     log_level = log.INFO
-    if args.verbose == "default": log_level = utils.VERBOSE
-    elif args.verbose == "debug": log_level = log.DEBUG
+    if args.verbose == "default":
+        log_level = utils.VERBOSE
+    elif args.verbose == "debug":
+        log_level = log.DEBUG
     log.basicConfig(format=log_format, level=log_level)
 
     if not os.path.exists(args.cfg):
@@ -433,7 +435,8 @@ def main():
         sys.exit(1)
 
     # If publishing results, then force full testplan mapping of results.
-    if args.publish: args.map_full_testplan = True
+    if args.publish:
+        args.map_full_testplan = True
 
     args.scratch_root = resolve_scratch_root(args.scratch_root)
     args.branch = resolve_branch(args.branch)
@@ -454,7 +457,8 @@ def main():
     # Register the seeds from command line with RunTest class.
     Deploy.RunTest.seeds = args.seeds
     # If we are fixing a seed value, no point in tests having multiple reseeds.
-    if args.fixed_seed: args.reseed = 1
+    if args.fixed_seed:
+        args.reseed = 1
     Deploy.RunTest.fixed_seed = args.fixed_seed
 
     # Register the common deploy settings.
@@ -505,7 +509,8 @@ def main():
         cfg.gen_results()
 
         # Publish results
-        if args.publish: cfg.publish_results()
+        if args.publish:
+            cfg.publish_results()
 
     else:
         log.info("No items specified to be run.")
