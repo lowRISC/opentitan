@@ -63,3 +63,31 @@ bazel build //:your_target --platforms=@bazel_embedded//platforms:cortex_m7
 bazel build //:your_target --platforms=@bazel_embedded//platforms:cortex_m4_fpu
 bazel build //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu
 ```
+
+Explore the examples for more in depth details...
+
+## Caveats
+If your repository contains platform independant you will not be able to automatically exclude platform dependant code. For example;
+package/BUILD
+```py
+cc_library(
+    name = "can_run_on_microcontroller_only"
+    ...
+)
+cc_library(
+    name = "can_run_on_anything"
+    ...
+)
+```
+You may compile for your host;
+```sh
+bazel build //package:can_run_on_anything
+```
+You may cross compile for your microcontroller
+```sh
+bazel build //package/... --platforms=@bazel_embedded//platforms:cortex_m7_fpu
+```
+But automated skipping of targets based on compatibility is not supported. So bazel will happily attempt to compile the //package:can_run_on_microcontroller_only using your host compiler, which in almost all cases will fail.
+```sh
+bazel build //package/... 
+```
