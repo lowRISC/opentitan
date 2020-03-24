@@ -10,6 +10,7 @@ import logging as log
 import re
 import sys
 import textwrap
+import warnings
 
 
 def genout(outfile, msg):
@@ -149,6 +150,44 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
         genout(outstr, gen_define(defname + '_MASK ', [], hex(mask), existing_defines))
 
 
+def gen_cdefines_module_param(outstr, param, module_name, existing_defines):
+    param_type = param['type']
+
+    # Presently there is only one type (int), however if the new types are
+    # added, they potentially need to be handled differently.
+    known_types = ["int"]
+    if param_type not in known_types:
+        warnings.warn(
+            "Cannot generate a module define of type {}".format(param_type))
+        return
+
+    genout(outstr, format_comment(first_line(param['desc'])))
+    define_name = as_define(module_name + '_PARAM_' + param['name'])
+    if param_type == "int":
+        define = gen_define(define_name, [], param['default'],
+                            existing_defines)
+
+    genout(outstr, define)
+    genout(outstr, '\n')
+
+
+def gen_cdefines_module_params(outstr, module_data, module_name,
+                               register_width, existing_defines):
+    module_params = set()
+
+    if 'param_list' in module_data:
+        module_params = module_data['param_list']
+
+    for param in module_params:
+        gen_cdefines_module_param(outstr, param, module_name, existing_defines)
+
+    genout(outstr, format_comment(first_line("Register width")))
+    define_name = as_define(module_name + '_PARAM_REG_WIDTH')
+    define = gen_define(define_name, [], str(register_width), existing_defines)
+    genout(outstr, define)
+    genout(outstr, '\n')
+
+
 # Must have called validate, so should have no errors
 
 
@@ -167,6 +206,8 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
     else:
         regwidth = 32
 
+    gen_cdefines_module_params(outstr, regs, component, regwidth,
+                               existing_defines)
     for x in registers:
         if 'reserved' in x:
             continue
