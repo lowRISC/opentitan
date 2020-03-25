@@ -459,7 +459,7 @@ class Deploy():
                     else:
                         dispatch_items(queued_items)
                         dispatched_items.extend(queued_items)
-                        del queued_items[:]
+                        queued_items = []
 
             # Check if we are done and print the status periodically.
             all_done &= check_if_done_and_print_status(status,
