@@ -9,7 +9,8 @@
   // {tool_srcs_dir} before running the simulation.
   tool_srcs:  ["{proj_root}/hw/dv/tools/xcelium/*"]
 
-  build_opts: [" -elaborate -64bit -access +r -sv",
+  build_opts: ["-elaborate -64bit -access +r -sv",
+               "-licqueue",
                "-messages -errormax 50",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
@@ -17,10 +18,19 @@
                "-xmlibdirname {build_dir}/xcelium.d"]
 
   run_opts:   ["-input {tool_srcs_dir}/xcelium_{dump}.tcl",
+               "-licqueue",
                "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
                "+SVSEED={seed}",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  // Vars that need to exported to the env.
+  exports: [
+    // Poll for an available license in all servers.
+    CDS_LIC_QUEUE_POLL: 1
+    // Poll for an available license every 1 min.
+    CDS_LIC_QUEUE_POLL_INT: 60
+  ]
 
   // Coverage related.
   // TODO: These options have to be filled in.
