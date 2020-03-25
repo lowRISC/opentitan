@@ -28,7 +28,7 @@ platform(
 platform(
     name = "cortex_m4",
     constraint_values = [
-        "@platforms//cpu:armv7e-m",
+        "@platforms//cpu:armv7-m",
     ],
     parents = [":cortex_m3"],
 )
