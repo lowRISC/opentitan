@@ -132,6 +132,14 @@ def main():
                         metavar="vcs|xcelium|ascentlint|dc|...",
                         help="Override the tool that is set in hjson file")
 
+    parser.add_argument("-select_cfgs",
+                        nargs="*",
+                        default=[],
+                        metavar="cfg1, cfg2, cfg3, ...",
+                        help="""Specifies which cfg(s) of the master cfg shall be processed.
+                If this switch is not specified, dvsim will process all cfgs specified in
+                the master cfg list.""")
+
     parser.add_argument(
         "-sr",
         "--scratch-root",
