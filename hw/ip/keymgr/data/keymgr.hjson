@@ -1,0 +1,659 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "KEYMGR",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  interrupt_list: [
+    { name: "op_done",   desc: "Operation complete" },
+  ],
+
+  // Define keymgr <-> kmac / aes / hmac struct packages
+  inter_signal_list: [
+    { struct:  "hw_key",      // aes_key_req_t
+      type:    "uni",
+      name:    "aes_key",     // aes_key_o (req)
+      act:     "req",
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "hw_key",      // hmac_key_req_t
+      type:    "uni",
+      name:    "hmac_key",    // hmac_key_o (req)
+      act:     "req",
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "hw_key",      // kmac_key_req_t
+      type:    "uni",
+      name:    "kmac_key",    // kmac_key_o (req)
+      act:     "req",
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "kmac_data",   // kmac_data_req_t, kmac_data_rsp_t
+      type:    "req_rsp",
+      name:    "kmac_data",   // kmac_data_o (req), kmac_data_i (rsp)
+      act:     "req",
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "lc_data",
+      type:    "uni",
+      name:    "lc",
+      act:     "rcv",
+      package: "keymgr_pkg",
+    },
+    { struct:  "otp_data",
+      type:    "uni",
+      name:    "otp",
+      act:     "rcv",
+      package: "keymgr_pkg",
+    },
+    { struct:  "flash_key",
+      type:    "uni",
+      name:    "flash",
+      act:     "rcv",
+      package: "keymgr_pkg",
+    },
+  ],
+
+  param_list: [
+    { name: "NumRomExtReg",
+      desc: "Number of Registers for ROM_ext descriptor",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "NumInReg",
+      desc: "Number of Registers for SW inputs (SW binding / keyID / Salt)",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "NumOutReg",
+      desc: "Number of Registers for SW outputs",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumKeyVersion",
+      desc: "Number of Registers for key version",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "CFGEN",
+      desc: "Key manager configuration enable",
+      swaccess: "ro",  // this particular lock is meant to be fully HW managed
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            key manager configuration enable.
+            When key manager operation is started (see CONTROL), registers protected by this EN are no longer
+            modifiable until the operation completes.
+
+            TBD
+            This should be enhanced to support multi-bit values in the future. Should be another script change.
+          '''
+        },
+      ]
+    },
+
+    { name: "CONTROL",
+      desc: "Key manager operation controls",
+      regwen: "CFGEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          hwaccess: "hrw",
+          name: "INIT",
+          desc: "Init key manager",
+          resval: "0"
+          enum: [
+            { value: "1",
+              name: "Valid state",
+              desc: '''
+                Requests key manager initialization.
+                This is not automated by hardware as software may want to initialize entropy sources
+                prior to calling key manager initlialization
+                '''
+            },
+          ]
+        },
+
+        { bits: "4",
+          hwaccess: "hrw",
+          name: "START",
+          desc: "Start key manager operations",
+          resval: "0"
+          enum: [
+            { value: "1",
+              name: "Valid state",
+              desc: '''
+                To trigger a start, this value must be programmed.  All other values are considered no operation start.
+                '''
+            },
+          ]
+        },
+
+        { bits: "10:8",
+          name: "OPERATION",
+          desc: "Key manager operation selection. All values not enumerated below behave the same as disable",
+          resval: "1"
+          enum: [
+            { value: "0",
+              name: "Advance",
+              desc: '''
+                Advance key manager state.
+
+                Advances key manager to the next stage.
+                If key manager is already at last functional state, the advance operation is equivalent to the
+                disable operation.
+                '''
+            },
+            { value: "1",
+              name: "Generate ID",
+              desc: '''
+                Generates an identity seed from the current state.
+                '''
+            },
+            { value: "2",
+              name: "Generate SW Output",
+              desc: '''
+                Generates a key manager output that is visible to software from the current state.
+                '''
+            },
+            { value: "3",
+              name: "Generate HW Output",
+              desc: '''
+                Generates a key manager output that is visible only to hardware crypto blocks.
+                '''
+            },
+            { value: "4",
+              name: "Disable",
+              desc: '''
+                Disables key manager operation and moves it to the disabled state.
+
+                Note the disabled state is terminal and cannot be recovered without a reset.
+                '''
+            },
+          ]
+        },
+
+        { bits: "13:12",
+          name: "DEST_SEL",
+          desc: '''
+            When the OPERATION field is programmed to generate HW output, this field selects
+            the appropriate crypto cipher target.
+          ''',
+          resval: "0"
+          enum: [
+            { value: "0",
+              name: "None",
+              desc: '''
+                No target selected
+                '''
+            },
+            { value: "1",
+              name: "AES",
+              desc: '''
+                AES selected
+                '''
+            },
+            { value: "2",
+              name: "HMAC",
+              desc: '''
+                HMAC selected
+                '''
+            },
+            { value: "3",
+              name: "KMAC",
+              desc: '''
+                KMAC selected
+                '''
+            },
+          ]
+        },
+      ],
+    },
+
+    { name: "ROM_EXT_DESC_EN",
+      desc: "Register write enable for ROM_EXT_DESC",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "1:0",
+          name: "EN",
+          resval: "2"
+          desc: '''
+            ROM_ext descriptor configure enable.
+            All values except for 2 are interpreted as configuration disable.
+          '''
+        },
+      ]
+    },
+    { multireg: {
+        cname: "KEYMGR",
+        name: "ROM_EXT_DESC",
+        desc: '''
+          ROM_ext descriptor.
+          This value must be representative of the current ROM_ext contents.
+          For example, this could be a truncated hash of the ROM_ext
+        ''',
+        count: "NumRomExtReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software binding value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    // The following can potentially be replaced by a RAM if it gets too large
+    // Currently there are 32b * NumInReg * 3 bits for inputs
+    //                     32b * NumOutReg * 2 (if key shares desired) for outputs
+    //                     32b * NumOutReg * NumCryptos * 2 (if key shares desired) for hidden key bus
+    // This totals to over 2kb of storage
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SOFTWARE_BINDING",
+        regwen: "CFGEN",
+        desc: '''
+          Software binding input to key manager.
+          This register is non-lockable and shared between various software stages.
+          This binding value is not considered secret.
+        ''',
+        count: "NumInReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software binding value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "KEY_ID",
+        regwen: "CFGEN",
+        desc: '''
+          Key ID value used as part of output generation
+        ''',
+        count: "NumInReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Key ID value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "Salt",
+        regwen: "CFGEN",
+        desc: '''
+          Salt value used as part of output generation
+        ''',
+        count: "NumInReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Salt value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "KEY_VERSION",
+        regwen: "CFGEN",
+        desc: '''
+          Version used as part of output generation
+        ''',
+        count: "NumKeyVersion",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Salt value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    // since there is not a good way to define a separate enable register per multireg
+    // the following version registers are manually separated
+    // further, it should be possible to reduce the number of max_versions held
+    // as long as clearly specify the boot sequence relative to when keys are generated.
+    // should check with the security team.
+    //
+    // The following storage is also huge, should consider switching to RAMs after examining
+    // the security implications
+
+    { name: "MAX_CREATOR_KEY_VER_EN",
+      desc: "Register write enable for MAX_CREATOR_KEY_VERSION",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            MAX_CREATOR_KEY_VERSION configure enable.
+            All values except for 2 are interpreted as configuration disable.
+          '''
+        },
+      ]
+    },
+
+    { name: "MAX_CREATOR_KEY_VER",
+      desc: "Max creator key version",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "MAX_CREATOR_KEY_VER_EN",
+      fields: [
+        { bits: "31:0",
+          name: "VAL",
+          resval: "0x0"
+          desc: '''
+            Max key version.
+
+            Any key version up to the value specificed in this register is value.
+          '''
+        },
+      ]
+    },
+
+    { name: "MAX_OWNER_INT_KEY_VER_EN",
+      desc: "Register write enable for MAX_OWNER_INT_KEY_VERSION",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            MAX_OWNER_INTERMEDIATE_KEY configure enable.
+            All values except for 2 are interpreted as configuration disable.
+          '''
+        },
+      ]
+    },
+
+    { name: "MAX_OWNER_INT_KEY_VER",
+      desc: "Max owner intermediate key version",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "MAX_OWNER_INT_KEY_VER_EN",
+      fields: [
+        { bits: "31:0",
+          name: "VAL",
+          resval: "1"
+          desc: '''
+            Max key version.
+
+            Any key version up to the value specificed in this register is valid.
+          '''
+        },
+      ]
+    },
+
+    { name: "MAX_OWNER_KEY_VER_EN",
+      desc: "Register write enable for MAX_OWNER_KEY_VERSION",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            MAX_OWNER_KEY configure enable.
+            All values except for 2 are interpreted as configuration disable.
+          '''
+        },
+      ]
+    },
+
+    { name: "MAX_OWNER_KEY_VER",
+      desc: "Max owner key version",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "MAX_OWNER_KEY_VER_EN",
+      fields: [
+        { bits: "31:0",
+          name: "VAL",
+          resval: "0x0"
+          desc: '''
+            Max key version.
+
+            Any key version up to the value specificed in this register is valid.
+          '''
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SW_SHARE0_OUTPUT",
+        desc: '''
+          Key manager software output.
+
+          When a software output operation is selected, the results of the operation are placed
+          here.
+        ''',
+        count: "NumOutReg",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software output value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SW_SHARE1_OUTPUT",
+        desc: '''
+          Key manager software output.
+
+          When a software output operation is selected, the results of the operation are placed
+          here.
+        ''',
+        count: "NumOutReg",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software output value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "WORKING_STATE",
+      desc: '''
+        Key manager working state.
+
+        This is a readout of the current key manager working state
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "2:0",
+          name: "STATE",
+          resval: "0x0"
+          desc: "Key manager control state",
+          enum: [
+            { value: "0",
+              name: "Reset",
+              desc: '''
+                Key manager control is still in reset.  Please wait for initialization complete
+                before issuing operations
+              '''
+            },
+            { value: "1",
+              name: "Init_wip",
+              desc: '''
+                Key manager iniitalization in progress.  Please wait for initialization complete
+                before issuing operations
+              '''
+            },
+            { value: "2",
+              name: "Init_done",
+              desc: '''
+                Key manager control has finished initialization and will now accept
+                software commands.
+              '''
+            },
+            { value: "3",
+              name: "Creator Root Key",
+              desc: '''
+                Key manager control currently contains the creator root key.
+              '''
+            },
+            { value: "4",
+              name: "Owner Intermediate Key",
+              desc: '''
+                Key manager control currently contains the owner intermediate key.
+              '''
+            },
+            { value: "5",
+              name: "Owner Key",
+              desc: '''
+                Key manager control currently contains the owner key.
+              '''
+            },
+            { value: "6",
+              name: "Disabled",
+              desc: '''
+                Key manager currently disabled. Please reset the key manager.
+              '''
+            },
+          ]
+        }
+      ]
+    },
+
+    { name: "OP_STATUS",
+      desc: '''
+        Key manager status.
+
+        Hardware sets the status based on software initiated operations.
+        When software reads the status, it is self cleared.
+      ''',
+      swaccess: "rc",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "1:0",
+          name: "STATUS",
+          resval: "0x0"
+          desc: "Operation status.",
+          enum: [
+            { value: "0",
+              name: "Idle",
+              desc: '''
+                Key manager is idle
+                '''
+            },
+            { value: "1",
+              name: "WIP",
+              desc: '''
+                Work in progress.
+                A key manager operation has been started and is ongoing
+                '''
+            },
+            { value: "2",
+              name: "DONE_SUCCESS",
+              desc: '''
+                Operation finished without errors
+                '''
+            },
+            { value: "3",
+              name: "DONE_ERROR",
+              desc: '''
+                Operation finished with errors
+                '''
+            },
+          ]
+        },
+        { bits: "7:4",
+          name: "ERROR",
+          resval: "0x0"
+          desc: "Error status. Each bit encodes 1 error, there can be multiple",
+          enum: [
+            { value: "0",
+              name: "NO_ERROR",
+              desc: '''
+                No errors.
+              '''
+            },
+            { value: "1",
+              name: "INVALID_OP",
+              desc: '''
+                Operation selected is invalid for the current working state.
+              '''
+            },
+            { value: "2",
+              name: "INVALID_INPUT",
+              desc: '''
+                Inputs to key manager operation are invalid.
+              '''
+            },
+            { value: "4",
+              name: "INVALID_OUTPUT",
+              desc: '''
+                key manager output generation results are invalid.
+              '''
+            },
+          ],
+        },
+      ]
+    },
+  ],
+ }
