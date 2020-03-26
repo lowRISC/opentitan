@@ -127,9 +127,11 @@ class SimCfg(FlowCfg):
         # Set the title for simulation results.
         self.results_title = self.name.upper() + " Simulation Results"
 
-        # Stuff below only pertains to individual cfg (not master cfg).
-        if not self.is_master_cfg:
-            # Print info
+        # Stuff below only pertains to individual cfg (not master cfg)
+        # or individual selected cfgs (if select_cfgs is configured via command line)
+        # TODO: find a better way to support select_cfgs
+        if not self.is_master_cfg and (not self.select_cfgs or self.name in self.select_cfgs):
+            # Print info:
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
             # Set directories with links for ease of debug / triage.

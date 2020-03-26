@@ -30,6 +30,8 @@ class FlowCfg():
         self.items.extend(args.items)
         self.list_items = []
         self.list_items.extend(args.list)
+        self.select_cfgs = []
+        self.select_cfgs.extend(args.select_cfgs)
         self.flow_cfg_file = flow_cfg_file
         self.proj_root = proj_root
         self.args = args
@@ -392,6 +394,19 @@ class FlowCfg():
         for item in self.cfgs:
             item._print_list()
 
+    # function to prune only selected cfgs to build and run
+    # it will return if the object is not a master_cfg or -select_cfgs is empty
+    def prune_selected_cfgs(self):
+        if not self.is_master_cfg or not self.select_cfgs:
+            return
+        else:
+            remove_cfgs = []
+            for item in self.cfgs:
+                if item.name not in self.select_cfgs:
+                    remove_cfgs.append(item)
+            for remove_cfg in remove_cfgs:
+                self.cfgs.remove(remove_cfg)
+
     def _create_deploy_objects(self):
         '''Create deploy objects from items that were passed on for being run.
         The deploy objects for build and run are created from the objects that were
@@ -402,6 +417,7 @@ class FlowCfg():
     def create_deploy_objects(self):
         '''Public facing API for _create_deploy_objects().
         '''
+        self.prune_selected_cfgs()
         if self.is_master_cfg:
             self.deploy = []
             for item in self.cfgs:
