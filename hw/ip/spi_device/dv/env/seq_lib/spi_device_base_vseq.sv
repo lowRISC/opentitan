@@ -30,8 +30,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
   rand uint sram_host_byte_size;
   rand uint sram_device_byte_size;
 
-  rand uint tx_watermark_lvl;
-  rand uint rx_watermark_lvl;
+  rand bit [15:0] tx_watermark_lvl;
+  rand bit [15:0] rx_watermark_lvl;
 
   // core clk freq / spi clk freq is from 1/4 to 8. use below 2 var to represent the ratio
   // if spi_freq_faster,  core_spi_freq_ratio = spi clk freq / core clk freq (1:4)

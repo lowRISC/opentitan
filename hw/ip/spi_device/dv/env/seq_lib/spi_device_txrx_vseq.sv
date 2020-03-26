@@ -167,7 +167,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
 
       // when fifo is empty, need to wait until fifo fetch data from sram before release semaphore
       if (allow_underflow_overflow) begin
-        cfg.clk_rst_vif.wait_clks(3);
+        // it takes 4 cycles to fetch data to async fifo
+        cfg.clk_rst_vif.wait_clks(4);
         tx_ptr_sema.put();
       end
 
