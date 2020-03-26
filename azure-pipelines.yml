@@ -6,7 +6,7 @@ variables:
   VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
-  TOOLCHAIN_VERSION: 20191010-1
+  TOOLCHAIN_VERSION: 20200326-1-rc1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
 
