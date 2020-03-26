@@ -383,7 +383,8 @@ def _get_action_from_gapi(gapi, default_action):
 
 def main():
     gapi_filepath = sys.argv[1]
-    gapi = yaml.load(open(gapi_filepath), Loader=YamlLoader)
+    with open(gapi_filepath) as f:
+        gapi = yaml.load(f, Loader=YamlLoader)
 
     if not _check_gapi(gapi):
         sys.exit(1)
