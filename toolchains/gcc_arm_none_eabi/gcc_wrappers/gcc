@@ -24,5 +24,5 @@
 
 set -euo pipefail
 # Workaround to replace all system includes with user includes
-external/com_gcc_arm_none_eabi_compiler/bin/arm-none-eabi-gcc "${@}"
+external/com_gcc_arm_none_eabi_compiler/bin/arm-none-eabi-gcc "${@}" -fdiagnostics-color=always
 #external/arm-none-eabi-compiler/bin/arm-none-eabi-gcc "$@"

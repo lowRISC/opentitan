@@ -24,10 +24,12 @@ def ProccessResponse(shell_command_result):
             start_of_includes_found = True
         line = line.replace(" ", "")
         if start_of_includes_found and line.startswith("/"):
-            filtered_lines.append(paths.normalize(line))
+            normalised_path = paths.normalize(line)
+            path = normalised_path.rpartition("external")
+            filtered_lines.append(path[1] + path[2])
     result = []
     for path in filtered_lines:
-        result.append("-I" + path)
+        result.append("-isystem" + path)
     return result
 
 def CommandLineToTemplateString(command_line):
