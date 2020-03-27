@@ -107,8 +107,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
 
     // wait until the cipher core is stalled
     if (TEST_STALL && j < 3) {
-      tl_i_transactions[i_trx] = {
-          true, 4, 0, 2, 0, AES_STATUS, 0xF, 0, 0, true};
+      tl_i_transactions[i_trx] = {true,       4,   0, 2, 0,
+                                  AES_STATUS, 0xF, 0, 0, true};
       tl_o_exp_resp[i_resp] = {0x2, 0x2};
       i_trx++;
       i_resp++;
@@ -143,8 +143,9 @@ int aes_tlul_sequence_modes_gen_all() {
   int num_groups = 18;
 
   // Allocate memory
-  num_transactions_max = (1 + 9 + 4 + 16 + 2 + 20 + 3*TEST_STALL) * num_groups;
-  num_responses_max = (2 + 20 + 3*TEST_STALL) * num_groups;
+  num_transactions_max =
+      (1 + 9 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
+  num_responses_max = (2 + 20 + 3 * TEST_STALL) * num_groups;
   tl_i_transactions = (TLI *)malloc(num_transactions_max * sizeof(TLI));
   if (tl_i_transactions == NULL) {
     printf("ERROR: malloc() failed\n");

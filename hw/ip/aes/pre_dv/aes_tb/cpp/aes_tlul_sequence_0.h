@@ -10,8 +10,9 @@
 
 // Example 0 - Encode/Decode all key lenghts
 
-static const int num_transactions_max = 57 + 24 + 6 + 2;
+static const int num_transactions_max = 1 + 57 + 24 + 6 + 2;
 static const TLI tl_i_transactions[num_transactions_max] = {
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     // AES-128
     {true, 0, 0, 2, 0, AES_CONFIG, 0xF,
      (0x0 << 7) | (0x1 << 4) | (kCryptoAesEcb << 1) | 0x1, 0,
@@ -135,8 +136,9 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 4, 0, 2, 0, AES_DATA_OUT0 + 0xC, 0xF, 0x0, 0, true},
 };
 
-static const int num_responses_max = 18 + 18 + 5;
+static const int num_responses_max = 1 + 18 + 18 + 5;
 static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
+    {0x1, 0x1},  // status shows idle
     {0x4, 0x4},  // status shows output valid
     {0x0, 0x0},  // don't care
     {0x0, 0x0},  // don't care
@@ -179,11 +181,11 @@ static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
     {0xFFFFFFFF, 0x94C4AE37},
     {0x4, 0x0},  // status shows output valid no longer valid
 
-    {0x1E, 0x00},       // trigger cleared
-    {0xFFFFFFFF, 0x0},  // data_out0 cleared
-    {0xFFFFFFFF, 0x0},  // data_out1 cleared
-    {0xFFFFFFFF, 0x0},  // data_out2 cleared
-    {0xFFFFFFFF, 0x0},  // data_out3 cleared
+    {0x1E, 0x00},  // trigger cleared
+    {0x0, 0x0},    // data_out0 cleared to random value
+    {0x0, 0x0},    // data_out1 cleared to random value
+    {0x0, 0x0},    // data_out2 cleared to random value
+    {0x0, 0x0},    // data_out3 cleared to random value
 };
 
 #endif  // OPENTITAN_HW_IP_AES_PRE_DV_AES_TB_CPP_AES_TLUL_SEQUENCE_0_H_

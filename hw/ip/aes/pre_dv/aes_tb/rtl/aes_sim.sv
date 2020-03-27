@@ -40,9 +40,10 @@ module aes_sim #(
   assign init  = ({aes.aes_core.aes_cipher_core.aes_cipher_control.aes_cipher_ctrl_cs} == 3'b001);  // INIT
   assign done  = ({aes.aes_core.aes_cipher_core.aes_cipher_control.aes_cipher_ctrl_ns} == 3'b000) & // FINISH -> IDLE
                  ({aes.aes_core.aes_cipher_core.aes_cipher_control.aes_cipher_ctrl_cs} == 3'b011);
-  assign busy  = ~aes.aes_core.aes_control.idle_o &
-                 ({aes.aes_core.aes_control.aes_ctrl_ns} != 2'b11) & // CLEAR
-                 ({aes.aes_core.aes_control.aes_ctrl_cs} != 2'b11);
+  assign busy  = aes.aes_core.aes_control.cipher_crypt_i |
+                 aes.aes_core.aes_control.cipher_crypt_o |
+                 aes.aes_core.aes_control.cipher_dec_key_gen_i |
+                 aes.aes_core.aes_control.cipher_dec_key_gen_o;
   assign stall = aes.u_reg.status_stall_qs;
 
   // Make internal signals directly accessible
