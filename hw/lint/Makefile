@@ -20,6 +20,7 @@ IPS ?=  ip-aes                 \
         ip-flash_ctrl          \
         ip-gpio                \
         ip-hmac                \
+        ip-kmac                \
         ip-i2c                 \
         ip-otp_ctrl            \
         ip-keymgr              \

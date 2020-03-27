@@ -12,6 +12,7 @@ IPS ?= aes           \
        flash_ctrl    \
        gpio          \
        hmac          \
+       kmac          \
        i2c           \
        keymgr        \
        csrng         \
