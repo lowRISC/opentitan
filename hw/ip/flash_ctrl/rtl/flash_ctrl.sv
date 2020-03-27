@@ -471,8 +471,8 @@ module flash_ctrl (
   `ASSERT_KNOWN(TlAReadyKnownO_A,       tl_o.a_ready     )
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,
                                          flash_o.bk_erase})
-  `ASSERT_VALID_DATA(FlashAddrKnown_A,  flash_o.req, flash_o.addr)
-  `ASSERT_VALID_DATA(FlashProgKnown_A,  flash_o.prog & flash_o.req, flash_o.prog_data)
+  `ASSERT_KNOWN_IF(FlashAddrKnown_A,    flash_o.addr, flash_o.req)
+  `ASSERT_KNOWN_IF(FlashProgKnown_A,    flash_o.prog_data, flash_o.prog & flash_o.req)
   `ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o)
   `ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o  )
   `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )

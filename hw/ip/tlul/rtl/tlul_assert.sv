@@ -272,12 +272,12 @@ module tlul_assert #(
 
   // a_* should be known when a_valid == 1 (a_opcode and a_param are already covered above)
   // This also covers ASSERT_KNOWN of a_valid
-  `ASSERT_VALID_DATA(aKnown_A, h2d.a_valid, {h2d.a_size, h2d.a_source, h2d.a_address,
-      h2d.a_mask, h2d.a_user})
+  `ASSERT_KNOWN_IF(aKnown_A, {h2d.a_size, h2d.a_source, h2d.a_address, h2d.a_mask, h2d.a_user},
+    h2d.a_valid)
 
   // d_* should be known when d_valid == 1 (d_opcode, d_param, d_size already covered above)
   // This also covers ASSERT_KNOWN of d_valid
-  `ASSERT_VALID_DATA(dKnown_A, d2h.d_valid, {d2h.d_source, d2h.d_sink, d2h.d_error, d2h.d_user})
+  `ASSERT_KNOWN_IF(dKnown_A, {d2h.d_source, d2h.d_sink, d2h.d_error, d2h.d_user}, d2h.d_valid)
 
   //  make sure ready is not X after reset
   `ASSERT_KNOWN(aReadyKnown_A, d2h.a_ready)

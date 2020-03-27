@@ -131,19 +131,19 @@
   `ASSERT(__name, $rose(__sig) |=> !(__sig), __clk, __rst)                                    \
 `endif
 
-// Assert that valid is known after reset and data is known when valid == 1
-`define ASSERT_VALID_DATA(__name, __valid, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-`ifdef INC_ASSERT                                                                                           \
-  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                                  \
-  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                            \
+// Assert that a property is true only when an enable signal is set.  It can be called as a module
+// (or interface) body item.
+`define ASSERT_IF(__name, __prop, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                                     \
+  `ASSERT(__name, (__enable) |-> (__prop), __clk, __rst)                                              \
 `endif
 
-// Same as ASSERT_VALID_DATA, but also assert that ready is known after reset
-`define ASSERT_VALID_READY_DATA(__name, __valid, __ready, __dat, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-`ifdef INC_ASSERT                                                                                                          \
-  `ASSERT_KNOWN(__name``KnownValid, __valid, __clk, __rst)                                                                 \
-  `ASSERT_KNOWN(__name``KnownReady, __ready, __clk, __rst)                                                                 \
-  `ASSERT_NEVER(__name``KnownData, (__valid) && $isunknown(__dat), __clk, __rst)                                           \
+// Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is
+// set.  It can be called as a module (or interface) body item.
+`define ASSERT_KNOWN_IF(__name, __sig, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                                          \
+  `ASSERT_KNOWN(__name``KnownEnable, __enable, __clk, __rst)                                               \
+  `ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst)                                           \
 `endif
 
 ///////////////////////
