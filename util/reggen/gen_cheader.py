@@ -205,6 +205,46 @@ def gen_cdefines_module_params(outstr, module_data, module_name,
     genout(outstr, '\n')
 
 
+def gen_multireg_field_defines(outstr, regname, field, subreg_num, regwidth,
+                               existing_defines):
+    field_width = field['bitinfo'][1]
+    fields_per_reg = regwidth // field_width
+
+    define_name = regname + '_' + as_define(field['name'] + "_FIELD_WIDTH")
+    define = gen_define(define_name, [], str(field_width), existing_defines)
+    genout(outstr, define)
+
+    define_name = regname + '_' + as_define(field['name'] + "_FIELDS_PER_REG")
+    define = gen_define(define_name, [], str(fields_per_reg), existing_defines)
+    genout(outstr, define)
+
+    define_name = regname + "_MULTIREG_COUNT"
+    define = gen_define(define_name, [], str(subreg_num), existing_defines)
+    genout(outstr, define)
+
+    genout(outstr, '\n')
+
+
+def gen_cdefine_multireg(outstr, register, component, regwidth, rnames,
+                         existing_defines):
+    multireg = register['multireg']
+    subregs = multireg['genregs']
+
+    comment = multireg['desc'] + " (common parameters)"
+    genout(outstr, format_comment(first_line(comment)))
+    if len(multireg['fields']) == 1:
+        regname = as_define(component + '_' + multireg['name'])
+        gen_multireg_field_defines(outstr, regname, multireg['fields'][0],
+                                   len(subregs), regwidth, existing_defines)
+    else:
+        log.warn("Non-homogeneous multireg " + multireg['name'] +
+                 " skip multireg specific data generation.")
+
+    for subreg in subregs:
+        gen_cdefine_register(outstr, subreg, component, regwidth, rnames,
+                             existing_defines)
+
+
 # Must have called validate, so should have no errors
 
 
@@ -244,9 +284,8 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
             continue
 
         if 'multireg' in x:
-            for reg in x['multireg']['genregs']:
-                gen_cdefine_register(outstr, reg, component, regwidth, rnames,
-                                     existing_defines)
+            gen_cdefine_multireg(outstr, x, component, regwidth, rnames,
+                                 existing_defines)
             continue
 
         gen_cdefine_register(outstr, x, component, regwidth, rnames,
