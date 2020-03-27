@@ -97,8 +97,11 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
         outstr,
         gen_define(
             defname, ['id'],
-            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')', existing_defines))
-    genout(outstr, gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
+            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')',
+            existing_defines))
+    genout(
+        outstr,
+        gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
 
     for field in reg['fields']:
         fieldlsb = field['bitinfo'][2]
@@ -107,14 +110,20 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
 
         if field['bitinfo'][1] == 1:
             # single bit
-            genout(outstr, gen_define(dname, [], str(fieldlsb), existing_defines))
+            genout(outstr,
+                   gen_define(dname, [], str(fieldlsb), existing_defines))
         else:
             # multiple bits (unless it is the whole register)
             if field['bitinfo'][1] != width:
                 mask = field['bitinfo'][0] >> fieldlsb
-                genout(outstr, gen_define(dname + '_MASK', [], hex(mask), existing_defines))
-                genout(outstr, gen_define(dname + '_OFFSET', [],
-                                          str(fieldlsb), existing_defines))
+                genout(
+                    outstr,
+                    gen_define(dname + '_MASK', [], hex(mask),
+                               existing_defines))
+                genout(
+                    outstr,
+                    gen_define(dname + '_OFFSET', [], str(fieldlsb),
+                               existing_defines))
             if 'enum' in field:
                 for enum in field['enum']:
                     ename = as_define(enum['name'])
@@ -137,17 +146,25 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
         outstr,
         gen_define(
             defname, ['id'],
-            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')', existing_defines))
-    genout(outstr, gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
+            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')',
+            existing_defines))
+    genout(
+        outstr,
+        gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
     items = int(win['items'])
-    genout(outstr, gen_define(defname + '_SIZE_WORDS', [], str(items), existing_defines))
+    genout(
+        outstr,
+        gen_define(defname + '_SIZE_WORDS', [], str(items), existing_defines))
     items = items * (regwidth // 8)
-    genout(outstr, gen_define(defname + '_SIZE_BYTES', [], str(items), existing_defines))
+    genout(
+        outstr,
+        gen_define(defname + '_SIZE_BYTES', [], str(items), existing_defines))
 
     wid = win['genvalidbits']
     if (wid != regwidth):
         mask = (1 << wid) - 1
-        genout(outstr, gen_define(defname + '_MASK ', [], hex(mask), existing_defines))
+        genout(outstr,
+               gen_define(defname + '_MASK ', [], hex(mask), existing_defines))
 
 
 def gen_cdefines_module_param(outstr, param, module_name, existing_defines):
@@ -228,10 +245,12 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
 
         if 'multireg' in x:
             for reg in x['multireg']['genregs']:
-                gen_cdefine_register(outstr, reg, component, regwidth, rnames, existing_defines)
+                gen_cdefine_register(outstr, reg, component, regwidth, rnames,
+                                     existing_defines)
             continue
 
-        gen_cdefine_register(outstr, x, component, regwidth, rnames, existing_defines)
+        gen_cdefine_register(outstr, x, component, regwidth, rnames,
+                             existing_defines)
 
     generated = outstr.getvalue()
     outstr.close()
@@ -259,25 +278,25 @@ def test_gen_define():
     assert gen_define('MACRO_NAME', [], 'body', set()) == basic_oneline
 
     basic_oneline_with_args = '#define MACRO_NAME(arg1, arg2) arg1 + arg2\n'
-    assert (gen_define('MACRO_NAME', ['arg1', 'arg2'],
-                       'arg1 + arg2', set()) == basic_oneline_with_args)
+    assert (gen_define('MACRO_NAME', ['arg1', 'arg2'], 'arg1 + arg2',
+                       set()) == basic_oneline_with_args)
 
     long_macro_name = 'A_VERY_VERY_VERY_VERY_VERY_VERY_VERY_VERY_VERY_VERY_VERY_LONG_MACRO_NAME'
 
     multiline = ('#define ' + long_macro_name + ' \\\n' +
                  '  a_fairly_long_body + something_else + 10\n')
 
-    assert (gen_define(
-        long_macro_name, [],
-        'a_fairly_long_body + something_else + 10', set()) == multiline)
+    assert (gen_define(long_macro_name, [],
+                       'a_fairly_long_body + something_else + 10',
+                       set()) == multiline)
 
     multiline_with_args = ('#define ' + long_macro_name +
                            '(arg1, arg2, arg3) \\\n' +
                            '  a_fairly_long_body + arg1 + arg2 + arg3\n')
 
-    assert (gen_define(
-        long_macro_name, ['arg1', 'arg2', 'arg3'],
-        'a_fairly_long_body + arg1 + arg2 + arg3', set()) == multiline_with_args)
+    assert (gen_define(long_macro_name, ['arg1', 'arg2', 'arg3'],
+                       'a_fairly_long_body + arg1 + arg2 + arg3',
+                       set()) == multiline_with_args)
 
     multiline_with_args_big_indent = (
         '#define ' + long_macro_name + '(arg1, arg2, arg3) \\\n' +
@@ -285,4 +304,5 @@ def test_gen_define():
 
     assert (gen_define(long_macro_name, ['arg1', 'arg2', 'arg3'],
                        'a_fairly_long_body + arg1 + arg2 + arg3',
-                       set(), indent='    ') == multiline_with_args_big_indent)
+                       set(),
+                       indent='    ') == multiline_with_args_big_indent)
