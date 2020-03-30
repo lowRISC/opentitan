@@ -20,6 +20,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // user can set the name of common seq to run directly without using $value$plusargs
   string common_seq_type;
 
+  // typedef the address type for using in associative array
+  typedef bit[TL_AW-1:0] tl_addr_t;
+
   rand uint delay_to_reset;
   constraint delay_to_reset_c {
     delay_to_reset dist {
@@ -55,7 +58,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit              write,
                          inout bit [TL_DW-1:0]  data,
                          input bit [TL_DBW-1:0] mask = '1,
-                         input bit [TL_SZW-1:0] size = 2,
                          input bit              check_rsp = 1'b1,
                          input bit              exp_err_rsp = 1'b0,
                          input bit [TL_DW-1:0]  exp_data = 0,
@@ -63,11 +65,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [TL_DW-1:0]  compare_mask = '1,
                          input bit              blocking = csr_utils_pkg::default_csr_blocking);
     if (blocking) begin
-      tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp, exp_data,
+      tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
                     compare_mask, check_exp_data);
     end else begin
       fork
-        tl_access_sub(addr, write, data, mask, size, check_rsp, exp_err_rsp, exp_data,
+        tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
                       compare_mask, check_exp_data);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -79,7 +81,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit              write,
                              inout bit [TL_DW-1:0]  data,
                              input bit [TL_DBW-1:0] mask = '1,
-                             input bit [TL_SZW-1:0] size = 2,
                              input bit              check_rsp = 1'b1,
                              input bit              exp_err_rsp = 1'b0,
                              input bit [TL_DW-1:0]  exp_data = 0,
@@ -90,21 +91,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         tl_host_single_seq  tl_seq;
         `uvm_create_on(tl_seq, p_sequencer.tl_sequencer_h)
         if (cfg.zero_delays) begin
-        tl_seq.min_req_delay = 0;
-        tl_seq.max_req_delay = 0;
+          tl_seq.min_req_delay = 0;
+          tl_seq.max_req_delay = 0;
         end
         csr_utils_pkg::increment_outstanding_access();
         `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
-            addr      == local::addr;
-            size      == local::size;
-            mask      == local::mask;
-              if (write) {
-                if ($countones(mask) < (1 << size)) opcode == tlul_pkg::PutPartialData;
-                else opcode inside {tlul_pkg::PutPartialData, tlul_pkg::PutFullData};
-                data    == local::data;
-                } else {
-                  opcode  == tlul_pkg::Get;
-                })
+            addr  == local::addr;
+            write == local::write;
+            mask  == local::mask;
+            data  == local::data;)
         `uvm_send_pri(tl_seq, 100)
         if (!write) begin
           data = tl_seq.rsp.d_data;
@@ -249,6 +244,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "tl_errors":                  run_tl_errors_vseq(num_times);
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
       "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
+      "mem_partial_read":           run_mem_partial_read_vseq(num_times);
       default:                      run_csr_vseq_wrapper(num_times);
     endcase
   endtask
@@ -447,6 +443,54 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         csr_utils_pkg::wait_no_outstanding_access();
       end
     end
+  endtask
+
+  // test partial mem read with non-blocking random read/write
+  virtual task run_mem_partial_read_vseq(num_times);
+      bit [TL_DW-1:0]     exp_mem[tl_addr_t];
+      tl_addr_t           addr_q[$];
+      int                 num_words;
+      bit [TL_AW-1:0]     addr;
+      bit [TL_DW-1:0]     data;
+
+      foreach (cfg.mem_ranges[i]) begin
+        num_words += cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr;
+      end
+      num_words = num_words >> 2;
+
+      repeat (num_words * num_times * 10) begin
+        randcase
+          1: begin // write
+            int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
+
+            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+                addr inside {[cfg.mem_ranges[mem_idx].start_addr :
+                              cfg.mem_ranges[mem_idx].end_addr]};)
+            data = $urandom;
+            tl_access(.addr(addr), .write(1), .data(data), .blocking(0));
+            addr[1:0] = 0;
+            exp_mem[addr] = data;
+            addr_q.push_back(addr);
+          end
+          // Randomly pick a previously written address for partial read.
+          exp_mem.size > 0: begin // read
+            bit [TL_DBW-1:0] mask;
+            bit [TL_SZW-1:0] size;
+            bit [TL_DW-1:0]  compare_mask;
+            // get all the programmed addresses and randomly pick one
+            addr = addr_q[$urandom_range(0, addr_q.size - 1)];
+
+            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
+                // mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
+                $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;)
+            // calculate compare_mask which is data width wide
+            foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
+            tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .compare_mask(compare_mask),
+                      .check_exp_data(1), .exp_data(exp_mem[addr]), .blocking(0));
+          end
+        endcase
+      end
+
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();

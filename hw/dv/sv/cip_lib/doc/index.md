@@ -201,6 +201,12 @@ Some examples:
   To ensure the reset functionality works correctly, user will have to disable
   any internal reset from the stress_all sequence. Below is an example of
   disabling internal reset in `hmac_stress_all_vseq.sv`:
+* **task run_same_csr_outstanding_vseq**: This task tests the same CSR with
+  non-blocking accesses as the regular CSR sequences don't cover that due to
+  limitation of uvm_reg.
+* **task run_mem_partial_read_vseq**: This task tests the partial read to the
+  memories by randomizing mask, size, and the 2 LSB bits of the address. It also runs
+  with non-blocking access enabled.
   ```
   // randomly trigger internal dut_init reset sequence
   // disable any internal reset if used in stress_all_with_rand_reset vseq
