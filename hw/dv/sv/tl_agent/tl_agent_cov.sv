@@ -23,15 +23,15 @@ covergroup max_outstanding_cg(string name, int max_outstanding) with function
 endgroup : max_outstanding_cg
 
 class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
-  pending_req_on_rst_cg pending_req_on_rst_cg;
-  max_outstanding_cg    max_outstanding_cg;
+  pending_req_on_rst_cg m_pending_req_on_rst_cg;
+  max_outstanding_cg    m_max_outstanding_cg;
 
   `uvm_component_utils(tl_agent_cov)
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    pending_req_on_rst_cg = new(`gfn);
-    max_outstanding_cg    = new(`gfn, cfg.max_outstanding_req);
+    m_pending_req_on_rst_cg = new("m_pending_req_on_rst_cg");
+    m_max_outstanding_cg    = new("m_max_outstanding_cg", cfg.max_outstanding_req);
   endfunction : build_phase
 endclass

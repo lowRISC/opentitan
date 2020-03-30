@@ -43,6 +43,11 @@
   h: UVM_HIGH
   d: UVM_DEBUG
 
+  // Path to the dut instance (this is used in a couple of places such as coverage cfg
+  // file, xprop cfg file etc. If this is different for your block, then override it with
+  // the 'overrides' directive.
+  dut_instance: "{tb}.dut"
+
   // Default waves dump settings
   dump_file:  waves.{dump}
 
@@ -69,6 +74,7 @@
     WAVES: {waves}
     DUT_TOP: {dut}
     TB_TOP: {tb}
+    dut_instance: {dut_instance}
   ]
 
   // Build modes are collection of build_opts and run_opts
@@ -128,4 +134,8 @@
   // Project defaults for VCS
   vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover.cfg"
   vcs_cov_excl_files: ["{tool_srcs_dir}/common_cov_excl.el"]
+
+  // Project defaults for Xcelium
+  // xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover.ccf"
+  // xcelium_cov_refine_file: ["{tool_srcs_dir}/common_cov.vRefine"]
 }
