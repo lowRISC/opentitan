@@ -19,17 +19,21 @@ module aes_ctr(
 );
 
   // Reverse byte order
-  function automatic logic [15:0][7:0] aes_rev_order_byte(input logic [15:0][7:0] in);
+  function automatic logic [15:0][7:0] aes_rev_order_byte(logic [15:0][7:0] in);
+    logic [15:0][7:0] out;
     for (int i=0; i<16; i++) begin
-      aes_rev_order_byte[i] = in[15-i];
+      out[i] = in[15-i];
     end
+    return out;
   endfunction
 
   // Reverse bit order
-  function automatic logic [7:0] aes_rev_order_bit(input logic [7:0] in);
+  function automatic logic [7:0] aes_rev_order_bit(logic [7:0] in);
+    logic [7:0] out;
     for (int i=0; i<8; i++) begin
-      aes_rev_order_bit[i] = in[7-i];
+      out[i] = in[7-i];
     end
+    return out;
   endfunction
 
   // Types

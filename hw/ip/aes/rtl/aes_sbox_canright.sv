@@ -21,7 +21,7 @@ module aes_sbox_canright (
 
   // Multiplication in GF(2^2), using normal basis [Omega^2, Omega]
   // (see Figure 14 in the technical report)
-  function automatic logic [1:0] aes_mul_gf2p2(input logic [1:0] g, input logic [1:0] d);
+  function automatic logic [1:0] aes_mul_gf2p2(logic [1:0] g, logic [1:0] d);
     logic [1:0] f;
     logic       a, b, c;
     a    = g[1] & d[1];
@@ -34,7 +34,7 @@ module aes_sbox_canright (
 
   // Scale by Omega^2 = N in GF(2^2), using normal basis [Omega^2, Omega]
   // (see Figure 16 in the technical report)
-  function automatic logic [1:0] aes_scale_omega2_gf2p2(input logic [1:0] g);
+  function automatic logic [1:0] aes_scale_omega2_gf2p2(logic [1:0] g);
     logic [1:0] d;
     d[1] = g[0];
     d[0] = g[1] ^ g[0];
@@ -43,7 +43,7 @@ module aes_sbox_canright (
 
   // Scale by Omega = N^2 in GF(2^2), using normal basis [Omega^2, Omega]
   // (see Figure 15 in the technical report)
-  function automatic logic [1:0] aes_scale_omega_gf2p2(input logic [1:0] g);
+  function automatic logic [1:0] aes_scale_omega_gf2p2(logic [1:0] g);
     logic [1:0] d;
     d[1] = g[1] ^ g[0];
     d[0] = g[1];
@@ -52,7 +52,7 @@ module aes_sbox_canright (
 
   // Square in GF(2^2), using normal basis [Omega^2, Omega]
   // (see Figures 8 and 10 in the technical report)
-  function automatic logic [1:0] aes_square_gf2p2(input logic [1:0] g);
+  function automatic logic [1:0] aes_square_gf2p2(logic [1:0] g);
     logic [1:0] d;
     d[1] = g[0];
     d[0] = g[1];
@@ -61,7 +61,7 @@ module aes_sbox_canright (
 
   // Multiplication in GF(2^4), using normal basis [alpha^8, alpha^2]
   // (see Figure 13 in the technical report)
-  function automatic logic [3:0] aes_mul_gf2p4(input logic [3:0] gamma, input logic [3:0] delta);
+  function automatic logic [3:0] aes_mul_gf2p4(logic [3:0] gamma, logic [3:0] delta);
     logic [3:0] theta;
     logic [1:0] a, b, c;
     a          = aes_mul_gf2p2(gamma[3:2], delta[3:2]);
@@ -74,7 +74,7 @@ module aes_sbox_canright (
 
   // Square and scale by nu in GF(2^4)/GF(2^2), using normal basis [alpha^8, alpha^2]
   // (see Figure 19 as well as Appendix A of the technical report)
-  function automatic logic [3:0] aes_square_scale_gf2p4_gf2p2(input logic [3:0] gamma);
+  function automatic logic [3:0] aes_square_scale_gf2p4_gf2p2(logic [3:0] gamma);
     logic [3:0] delta;
     logic [1:0] a, b;
     a          = gamma[3:2] ^ gamma[1:0];
@@ -86,7 +86,7 @@ module aes_sbox_canright (
 
   // Inverse in GF(2^4), using normal basis [alpha^8, alpha^2]
   // (see Figure 12 in the technical report)
-  function automatic logic [3:0] aes_inverse_gf2p4(input logic [3:0] gamma);
+  function automatic logic [3:0] aes_inverse_gf2p4(logic [3:0] gamma);
     logic [3:0] delta;
     logic [1:0] a, b, c, d;
     a          = gamma[3:2] ^ gamma[1:0];
@@ -100,7 +100,7 @@ module aes_sbox_canright (
 
   // Inverse in GF(2^8), using normal basis [d^16, d]
   // (see Figure 11 in the technical report)
-  function automatic logic [7:0] aes_inverse_gf2p8(input logic [7:0] gamma);
+  function automatic logic [7:0] aes_inverse_gf2p8(logic [7:0] gamma);
     logic [7:0] delta;
     logic [3:0] a, b, c, d;
     a          = gamma[7:4] ^ gamma[3:0];

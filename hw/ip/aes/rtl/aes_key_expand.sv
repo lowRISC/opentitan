@@ -161,7 +161,7 @@ module aes_key_expand #(
   end
 
   // RotWord: cyclic byte shift
-  assign rot_word_out = aes_circ_byte_shift(rot_word_in, 3);
+  assign rot_word_out = aes_circ_byte_shift(rot_word_in, 2'h3);
 
   // Mux input for SubWord
   assign sub_word_in = use_rot_word ? rot_word_out : rot_word_in;
