@@ -504,7 +504,7 @@ class SimCfg(FlowCfg):
                 results_str += self.cov_report_deploy.cov_results
                 self.results_summary[
                     "Coverage"] = self.cov_report_deploy.cov_total
-            else:
+            elif self.cov:
                 self.results_summary["Coverage"] = "--"
 
             # append link of detail result to block name
