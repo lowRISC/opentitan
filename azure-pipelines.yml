@@ -39,6 +39,8 @@ jobs:
       isort --version
       clang-format -version
       flake8 --version
+      ninja --version
+      meson --version
       echo "PATH=$PATH"
     displayName: Display tool versions
   - bash: |
