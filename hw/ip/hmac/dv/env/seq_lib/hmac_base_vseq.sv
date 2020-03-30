@@ -13,27 +13,10 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   bit do_back_pressure = 1'b0;
   bit do_burst_wr      = 1'b0;
   rand bit [TL_AW-1:0]  wr_addr;
-  rand bit [TL_SZW-1:0] wr_size;
   rand bit [TL_DBW-1:0] wr_mask;
-
-  //TODO: temp constraints here, eventually should move to TL_ACCESS
-  constraint wr_size_c {
-    wr_size inside {[0:2]}; // 0 is 2**0 byte size
-  }
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
-    wr_addr << (TL_AW - wr_size) == 0;
-  }
-
-  constraint wr_mask_align_with_addr_c {
-    if (wr_addr[1:0] == 1) {
-      wr_mask[0] == 0;
-    } else if (wr_addr[1:0] == 2) {
-      wr_mask[1:0] == 0;
-    } else if (wr_addr[1:0] == 3) {
-      wr_mask[2:0] == 0;
-    }
   }
 
   constraint wr_mask_c {
@@ -43,18 +26,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     };
   }
 
-  constraint wr_mask_size_c {
-    $countones(wr_mask) <= ('b1 << wr_size);
-  }
-
-  constraint wr_mask_conintuous_c {
+  constraint wr_mask_contiguous_c {
     $countones(wr_mask ^ {wr_mask[TL_DBW-2:0], 1'b0}) <= 2; // mask must have continues ones
-  }
-
-  // mask must be within enabled lanes
-  // prevent cases: addr: 0h, size: 1, mask: 'b1100; addr: 0h, size: 0, mask: 'b1000
-  constraint mask_in_enabled_lanes_c {
-    ((wr_mask >> wr_addr[1:0]) >> (1 << wr_size)) == 0;
   }
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -205,21 +178,17 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
         if (msg_fifo_full) csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
       end
 
-      if (msg_q.size() < 4) begin
-        `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask)
-                        with {1 << wr_size <= msg_q.size();})
-      end else begin
-        `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask));
-      end
+      `DV_CHECK_FATAL(randomize(wr_addr, wr_mask)
+                      with {$countones(wr_mask) <= msg_q.size();})
       foreach (wr_mask[i]) begin
         // wr_mask is a packed array, word_unpacked is unpack, has different index
         if (wr_mask[i]) word_unpack[3 - i] = msg_q.pop_front();
         else word_unpack[3 - i] = $urandom();
       end
       word = {>>byte{word_unpack}};
-      `uvm_info(`gfn, $sformatf("wr_size = %0h, wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
-                                wr_size, wr_addr, wr_mask, word), UVM_HIGH)
-      tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size),
+      `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
+                                wr_addr, wr_mask, word), UVM_HIGH)
+      tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask),
                 .blocking($urandom_range(0, 1)));
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
@@ -250,10 +219,10 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
         repeat (burst_wr_length) begin
           for (int i = 0; i < 4; i++) word_unpack[i] = msg_q.pop_front();
           word = {>>byte{word_unpack}};
-          `uvm_info(`gfn, $sformatf("wr_size = %0h, wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
-                                    wr_size, wr_addr, wr_mask, word), UVM_HIGH)
-          `DV_CHECK_FATAL(randomize(wr_size, wr_addr, wr_mask) with {wr_size == 2;})
-          tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask), .size(wr_size),
+          `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
+                                    wr_addr, wr_mask, word), UVM_HIGH)
+          `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {wr_mask == '1;})
+          tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask),
                     .blocking($urandom_range(0, 1)));
         end
         if (ral.cfg.sha_en.get_mirrored_value()) begin
