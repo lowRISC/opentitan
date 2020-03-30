@@ -5,7 +5,7 @@
 if {[info exists ::env(WAVES)]} {
   if {$::env(WAVES) == 1} {
     database -open -default -shm $::env(DUMP_FILE)
-    probe -all -depth all -shm
+    probe $::env(TB_TOP) -all -depth all -shm
   }
 }
 
