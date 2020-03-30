@@ -183,7 +183,7 @@ The AES unit operates as follows (phrases in italics apply to peculiarities of d
     Since the counter value is used in the first round only, and since the encryption/decryption of a single block takes 12/14/16 cycles, the iterative counter implementation does not affect the throughput of the AES unit._
 1. Finally, the AES cipher core performs the final encryption/decryption round in which the MixColumns operation is skipped.
    The output is forwarded to the output register in the CSRs but not stored back into the State register.
-   The internal State register is cleared to zero.
+   The internal State register is cleared with pseudo-random data.
 
    _Depending on the cipher mode, the output of the final round is potentially XORed with either the value in the IV registers (CBC decryption) or the value stored in the previous input data register (CTR mode), before being forwarded to the output register in the CSRs.
    If running in CBC mode, the IV registers are updated with the output data (encryption) or the value stored in the previous input data register (decryption)._
@@ -411,7 +411,7 @@ It is recommended that software discards the padding bits after reading the outp
 
 After finishing operation, software must:
 1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
-1. Clear all key registers, IV registers as well as the Input Data and the Output Data registers by setting the KEY_CLEAR, IV_CLEAR, DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
+1. Clear all key registers with pseudo-random data, IV registers as well as the Input Data and the Output Data registers by setting the KEY_CLEAR, IV_CLEAR, DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
 The code snippet below shows how to perform this task.
 
