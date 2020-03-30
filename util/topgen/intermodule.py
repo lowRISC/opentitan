@@ -123,6 +123,17 @@ def elab_intermodule(topcfg: OrderedDict):
 
     # TODO: Check unconnected port
 
+    for sig in topcfg["inter_signal"]["signals"]:
+        # Check if it exist in definitions
+        if "top_signame" in sig:
+            continue
+
+        # Handle the unconnected port rule
+
+        # Option #1: tied the default value
+
+        # Option #2: External port (TBD)
+
     if "definitions" not in topcfg["inter_signal"]:
         topcfg["inter_signal"]["definitions"] = definitions
 

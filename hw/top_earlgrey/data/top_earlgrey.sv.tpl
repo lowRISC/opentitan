@@ -440,6 +440,8 @@ module top_${top["name"]} #(
     % if sig["type"] == "req_rsp":
   ${sig["package"]}::${sig["struct"]}_req_t ${sig["signame"]}_req;
   ${sig["package"]}::${sig["struct"]}_rsp_t ${sig["signame"]}_rsp;
+    % elif sig["type"] == "broadcast":
+  ${sig["package"]}::${sig["struct"]}_t ${sig["signame"]};
     % endif
   % endfor
 
@@ -581,16 +583,40 @@ else:
 
       // Inter-module signals
       % for sig in m["inter_signal_list"]:
-        % if sig["type"] == "req_rsp":
-          % if sig["act"] == "requester":
+        ## TODO: handle below condition in lib.py
+        % if "top_signame" in sig:
+          % if sig["type"] == "req_rsp":
+            % if sig["act"] == "requester":
       .${sig["name"]}_o(${sig["top_signame"]}_req),
       .${sig["name"]}_i(${sig["top_signame"]}_rsp),
           % elif sig["act"] == "responder":
       .${sig["name"]}_i(${sig["top_signame"]}_req),
       .${sig["name"]}_o(${sig["top_signame"]}_rsp),
+            % endif # sig["act"] == requester
+          % elif sig["type"] == "broadcast":
+            ## TODO: Broadcast type
+            % if sig["act"] == "requester":
+      .${sig["name"]}_o(${sig["top_signame"]}),
+            % elif sig["act"] == "receiver":
+      .${sig["name"]}_i(${sig["top_signame"]}),
+            % endif
           % endif
-        % elif sig["type"] == "broadcast":
-          ## TODO: Broadcast type
+        % else: # no top_signame in sig
+          % if sig["type"] == "req_rsp":
+            % if sig["act"] == "requester":
+      .${sig["name"]}_o(),
+      .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_RSP_DEFAULT),
+            % elif sig["act"] == "responder":
+      .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_REQ_DEFAULT),
+      .${sig["name"]}_o(),
+            % endif
+          % elif sig["type"] == "broadcast":
+            % if sig["act"] == "requester":
+      .${sig["name"]}_o(),
+            % elif sig["act"] == "receiver":
+      .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_DEFAULT),
+            % endif
+          % endif
         % endif
       % endfor
     % endif
