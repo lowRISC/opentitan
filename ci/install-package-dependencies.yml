@@ -10,8 +10,10 @@
 # checked out opentitan repository.
 #
 # This template executes:
-# - apt-get install for all packages listed in apt-requirements.txt
+# - apt-get (*) install for all packages listed in apt-requirements.txt
 # - pip install for all packages listed in python-requirements.txt
+#
+# * As an optimization, apt-fast is used instead of apt-get if it is available.
 
 parameters:
 - name: REPO_TOP
@@ -22,15 +24,22 @@ steps:
   - bash: |
       set -e
 
+      # Use apt-fast if available for faster installation.
+      if command -v apt-fast >/dev/null; then
+        APT_CMD=apt-fast
+      else
+        APT_CMD=apt-get
+      fi
+
       cd "${{ parameters.REPO_TOP }}"
 
       # Ensure apt package index is up-to-date.
-      sudo apt-get update
+      sudo $APT_CMD update
 
       # NOTE: We use sed to remove all comments from apt-requirements.txt,
-      # since apt-get doesn't actually provide such a feature.
+      # since apt-get/apt-fast doesn't actually provide such a feature.
       sed 's/#.*//' apt-requirements.txt \
-        | xargs sudo apt-get install -y
+        | xargs sudo $APT_CMD install -y
 
       # Python requirements are installed to the local user directory so prepend
       # appropriate bin directory to the PATH
