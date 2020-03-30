@@ -60,13 +60,17 @@ if (foo) {
 
 ***Comments should be `// C99-style` for consistency with C++.***
 
-***Variables mentioned in comments should be delimited with pipe (`|`) characters.***
+<!-- To render a backtick in inline code in markdown, you need to double the surrounding backticks.
+https://daringfireball.net/projects/markdown/syntax#code -->
+***Variables mentioned in comments should be delimited with backtick (`` ` ``) characters.***
 
 Example:
 
 ```c
-// |ptr| can never be NULL for reasons.
+// `ptr` can never be NULL for reasons.
 ```
+
+Note also [Public function (API) documentation](#public-function-api-documentation) below.
 
 ### TODO Comments
 ***TODO comments should be in the format `TODO: message`.***
@@ -113,6 +117,9 @@ The above rules also do not apply to system includes, which should be included b
 
 The first line of the comment is the summary, followed by a new line, and an optional longer description.
 Input arguments and return arguments can be documented with `@param` and `@return` if they are not self-explanatory from the name.
+
+The `@p` modifier can be used to format the following word as monospaced text in the final output.
+The documentation tool will also render markdown within descriptions.
 
 Example:
 
