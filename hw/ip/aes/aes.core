@@ -14,6 +14,7 @@ filesets:
       - rtl/aes_reg_pkg.sv
       - rtl/aes_reg_top.sv
       - rtl/aes_core.sv
+      - rtl/aes_prng.sv
       - rtl/aes_ctr.sv
       - rtl/aes_control.sv
       - rtl/aes_cipher_core.sv

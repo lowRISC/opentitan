@@ -137,6 +137,8 @@ module aes_reg_top (
   logic trigger_data_in_clear_we;
   logic trigger_data_out_clear_wd;
   logic trigger_data_out_clear_we;
+  logic trigger_prng_reseed_wd;
+  logic trigger_prng_reseed_we;
   logic status_idle_qs;
   logic status_stall_qs;
   logic status_output_valid_qs;
@@ -604,7 +606,7 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_trigger_key_clear (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -629,7 +631,7 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_trigger_iv_clear (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -654,7 +656,7 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_trigger_data_in_clear (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -679,7 +681,7 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_trigger_data_out_clear (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -695,6 +697,31 @@ module aes_reg_top (
     // to internal hardware
     .qe     (),
     .q      (reg2hw.trigger.data_out_clear.q ),
+
+    .qs     ()
+  );
+
+
+  //   F[prng_reseed]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("WO"),
+    .RESVAL  (1'h1)
+  ) u_trigger_prng_reseed (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (trigger_prng_reseed_we),
+    .wd     (trigger_prng_reseed_wd),
+
+    // from internal hardware
+    .de     (hw2reg.trigger.prng_reseed.de),
+    .d      (hw2reg.trigger.prng_reseed.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.trigger.prng_reseed.q ),
 
     .qs     ()
   );
@@ -949,6 +976,9 @@ module aes_reg_top (
   assign trigger_data_out_clear_we = addr_hit[21] & reg_we & ~wr_err;
   assign trigger_data_out_clear_wd = reg_wdata[4];
 
+  assign trigger_prng_reseed_we = addr_hit[21] & reg_we & ~wr_err;
+  assign trigger_prng_reseed_wd = reg_wdata[5];
+
 
 
 
@@ -1050,6 +1080,7 @@ module aes_reg_top (
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
         reg_rdata_next[4] = '0;
+        reg_rdata_next[5] = '0;
       end
 
       addr_hit[22]: begin

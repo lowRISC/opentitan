@@ -27,13 +27,17 @@ module aes_cipher_core #(
   // Control and sync signals
   input  aes_pkg::ciph_op_e    op_i,
   input  aes_pkg::key_len_e    key_len_i,
-  input  logic                 start_i,
+  input  logic                 crypt_i,
+  output logic                 crypt_o,
   input  logic                 dec_key_gen_i,
   output logic                 dec_key_gen_o,
   input  logic                 key_clear_i,
   output logic                 key_clear_o,
   input  logic                 data_out_clear_i, // Re-use the cipher core muxes.
   output logic                 data_out_clear_o,
+
+  // Pseudo-random data
+  input  logic          [63:0] prng_data_i,
 
   // I/O data & initial key
   input  logic [3:0][3:0][7:0] state_init_i,
@@ -85,15 +89,13 @@ module aes_cipher_core #(
     unique case (state_sel)
       STATE_INIT:  state_d = state_init_i;
       STATE_ROUND: state_d = add_round_key_out;
-      STATE_CLEAR: state_d = '0;
-      default:     state_d = '0;
+      STATE_CLEAR: state_d = {prng_data_i, prng_data_i};
+      default:     state_d = {prng_data_i, prng_data_i};
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : state_reg
-    if (!rst_ni) begin
-      state_q <= '0;
-    end else if (state_we) begin
+  always_ff @(posedge clk_i) begin : state_reg
+    if (state_we) begin
       state_q <= state_d;
     end
   end
@@ -140,15 +142,13 @@ module aes_cipher_core #(
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d = '0;
-      default:           key_full_d = '0;
+      KEY_FULL_CLEAR:    key_full_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      default:           key_full_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : key_full_reg
-    if (!rst_ni) begin
-      key_full_q <= '0;
-    end else if (key_full_we) begin
+  always_ff @(posedge clk_i) begin : key_full_reg
+    if (key_full_we) begin
       key_full_q <= key_full_d;
     end
   end
@@ -157,15 +157,13 @@ module aes_cipher_core #(
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = '0;
-      default:        key_dec_d = '0;
+      KEY_DEC_CLEAR:  key_dec_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      default:        key_dec_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : key_dec_reg
-    if (!rst_ni) begin
-      key_dec_q <= '0;
-    end else if (key_dec_we) begin
+  always_ff @(posedge clk_i) begin : key_dec_reg
+    if (key_dec_we) begin
       key_dec_q <= key_dec_d;
     end
   end
@@ -228,7 +226,8 @@ module aes_cipher_core #(
     .out_ready_i            ( out_ready_i          ),
     .op_i                   ( op_i                 ),
     .key_len_i              ( key_len_i            ),
-    .start_i                ( start_i              ),
+    .crypt_i                ( crypt_i              ),
+    .crypt_o                ( crypt_o              ),
     .dec_key_gen_i          ( dec_key_gen_i        ),
     .dec_key_gen_o          ( dec_key_gen_o        ),
     .key_clear_i            ( key_clear_i          ),

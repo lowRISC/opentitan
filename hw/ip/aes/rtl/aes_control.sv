@@ -22,6 +22,7 @@ module aes_control (
   input  logic                    iv_clear_i,
   input  logic                    data_in_clear_i,
   input  logic                    data_out_clear_i,
+  input  logic                    prng_reseed_i,
 
   // I/O register read/write enables
   input  logic [7:0]              key_init_qe_i,
@@ -50,7 +51,8 @@ module aes_control (
   input  logic                    cipher_in_ready_i,
   input  logic                    cipher_out_valid_i,
   output logic                    cipher_out_ready_o,
-  output logic                    cipher_start_o,
+  output logic                    cipher_crypt_o,
+  input  logic                    cipher_crypt_i,
   output logic                    cipher_dec_key_gen_o,
   input  logic                    cipher_dec_key_gen_i,
   output logic                    cipher_key_clear_o,
@@ -66,6 +68,12 @@ module aes_control (
   output aes_pkg::iv_sel_e        iv_sel_o,
   output logic [7:0]              iv_we_o,
 
+  // Pseudo-random number generator interface
+  output logic                    prng_data_req_o,
+  input  logic                    prng_data_ack_i,
+  output logic                    prng_reseed_req_o,
+  input  logic                    prng_reseed_ack_i,
+
   // Trigger register
   output logic                    start_o,
   output logic                    start_we_o,
@@ -77,6 +85,8 @@ module aes_control (
   output logic                    data_in_clear_we_o,
   output logic                    data_out_clear_o,
   output logic                    data_out_clear_we_o,
+  output logic                    prng_reseed_o,
+  output logic                    prng_reseed_we_o,
 
   // Status register
   output logic                    output_valid_o,
@@ -92,8 +102,8 @@ module aes_control (
   import aes_pkg::*;
 
   // Types
-  typedef enum logic [1:0] {
-    IDLE, LOAD, FINISH, CLEAR
+  typedef enum logic [2:0] {
+    IDLE, LOAD, UPDATE_PRNG, FINISH, CLEAR
   } aes_ctrl_e;
 
   aes_ctrl_e aes_ctrl_ns, aes_ctrl_cs;
@@ -121,6 +131,8 @@ module aes_control (
   logic       output_valid_q;
 
   logic       start, finish;
+  logic       doing_cbc_enc, doing_cbc_dec;
+  logic       doing_ctr;
 
   // Software updates IV in chunks of 32 bits, the counter updates 16 bits at a time.
   // Convert word write enable to internal half-word write enable.
@@ -140,6 +152,11 @@ module aes_control (
   // clock cycle.
   assign finish = manual_operation_i ? 1'b1 : ~output_valid_q | data_out_read;
 
+  // Helper signals for FSM
+  assign doing_cbc_enc = (cipher_crypt_o | cipher_crypt_i) & (mode_i == AES_CBC) & (op_i == AES_ENC);
+  assign doing_cbc_dec = (cipher_crypt_o | cipher_crypt_i) & (mode_i == AES_CBC) & (op_i == AES_DEC);  
+  assign doing_ctr     = (cipher_crypt_o | cipher_crypt_i) & (mode_i == AES_CTR);
+
   // FSM
   always_comb begin : aes_ctrl_fsm
 
@@ -158,7 +175,7 @@ module aes_control (
     // Cipher core control
     cipher_in_valid_o       = 1'b0;
     cipher_out_ready_o      = 1'b0;
-    cipher_start_o          = 1'b0;
+    cipher_crypt_o          = 1'b0;
     cipher_dec_key_gen_o    = 1'b0;
     cipher_key_clear_o      = 1'b0;
     cipher_data_out_clear_o = 1'b0;
@@ -172,12 +189,17 @@ module aes_control (
     iv_we_o     = 8'h00;
     iv_load     = 1'b0;
 
+    // Pseudo-random number generator control
+    prng_data_req_o   = 1'b0;
+    prng_reseed_req_o = 1'b0;
+
     // Trigger register control
     start_we_o          = 1'b0;
     key_clear_we_o      = 1'b0;
     iv_clear_we_o       = 1'b0;
     data_in_clear_we_o  = 1'b0;
     data_out_clear_we_o = 1'b0;
+    prng_reseed_we_o    = 1'b0;
 
     // Status register
     idle_o     = 1'b0;
@@ -202,33 +224,45 @@ module aes_control (
 
       IDLE: begin
         idle_o    = (start || key_clear_i || iv_clear_i ||
-                    data_in_clear_i || data_out_clear_i) ? 1'b0 : 1'b1;
+                    data_in_clear_i || data_out_clear_i || prng_reseed_i) ? 1'b0 : 1'b1;
         idle_we_o = 1'b1;
 
         // Initial key and IV updates are ignored if we are not idle.
         key_init_we_o = idle_o ? key_init_qe_i : 8'h00;
         iv_we_o       = idle_o ? iv_qe         : 8'h00;
 
-        if (start) begin
+        if (prng_reseed_i) begin
+          // Request a reseed of the PRNG, perform handshake.
+          prng_reseed_req_o = 1'b1;
+          if (prng_reseed_ack_i) begin
+            // Clear the trigger.
+            prng_reseed_we_o = 1'b1;
+          end
+
+        end else if (key_clear_i || data_out_clear_i || iv_clear_i || data_in_clear_i) begin
+          // To clear registers, we must first request fresh pseudo-random data.
+          aes_ctrl_ns = UPDATE_PRNG;
+
+        end else if (start) begin
           // Signal that we want to start encryption/decryption.
-          cipher_start_o = 1'b1;
+          cipher_crypt_o = 1'b1;
 
           // We got a new initial key, but want to do decryption. The cipher core must first
           // generate the start key for decryption.
           cipher_dec_key_gen_o = key_init_new & (cipher_op_i == CIPH_INV);
 
           // Previous input data register control
-          data_in_prev_sel_o = (mode_i == AES_CBC && op_i == AES_DEC) ? DIP_DATA_IN :
-                               (mode_i == AES_CTR)                    ? DIP_DATA_IN : DIP_CLEAR;
-          data_in_prev_we_o  = (mode_i == AES_CBC && op_i == AES_DEC) ? 1'b1 :
-                               (mode_i == AES_CTR)                    ? 1'b1 : 1'b0;
+          data_in_prev_sel_o = doing_cbc_dec ? DIP_DATA_IN :
+                               doing_ctr     ? DIP_DATA_IN : DIP_CLEAR;
+          data_in_prev_we_o  = doing_cbc_dec ? 1'b1 :
+                               doing_ctr     ? 1'b1 : 1'b0;
 
           // State input mux control
-          state_in_sel_o     = (mode_i == AES_CTR) ? SI_ZERO : SI_DATA;
+          state_in_sel_o     = doing_ctr     ? SI_ZERO : SI_DATA;
 
           // State input additon mux control
-          add_state_in_sel_o = (mode_i == AES_CBC && op_i == AES_ENC) ? ADD_SI_IV :
-                               (mode_i == AES_CTR)                    ? ADD_SI_IV : ADD_SI_ZERO;
+          add_state_in_sel_o = doing_cbc_enc ? ADD_SI_IV :
+                               doing_ctr     ? ADD_SI_IV : ADD_SI_ZERO;
 
           // We have work for the cipher core, perform handshake.
           cipher_in_valid_o = 1'b1;
@@ -238,21 +272,6 @@ module aes_control (
             start_we_o  = ~cipher_dec_key_gen_o;
             aes_ctrl_ns = LOAD;
           end
-        end else if (key_clear_i || data_out_clear_i) begin
-          // To clear the output data registers, we re-use the muxing resources of the cipher core.
-          // To clear all key material, some key registers inside the cipher core need to be
-          // cleared.
-          cipher_key_clear_o      = key_clear_i;
-          cipher_data_out_clear_o = data_out_clear_i;
-
-          // We have work for the cipher core, perform handshake.
-          cipher_in_valid_o = 1'b1;
-          if (cipher_in_ready_i) begin
-            aes_ctrl_ns = CLEAR;
-          end
-        end else if (iv_clear_i || data_in_clear_i) begin
-          // To clear the IV or input data registers, no handshake with the cipher core is needed.
-          aes_ctrl_ns = CLEAR;
         end
       end
 
@@ -263,9 +282,49 @@ module aes_control (
         data_in_load = ~cipher_dec_key_gen_i;
 
         // Trigger counter increment.
-        ctr_incr_o   = (mode_i == AES_CTR) ? 1'b1 : 1'b0;
+        ctr_incr_o   = doing_ctr ? 1'b1 : 1'b0;
 
-        aes_ctrl_ns  = FINISH;
+        // Unless we are just generating the start key for decryption, we must update the PRNG.
+        aes_ctrl_ns  = ~cipher_dec_key_gen_i ? UPDATE_PRNG : FINISH;
+      end
+
+      UPDATE_PRNG: begin
+        // Fresh pseudo-random data is used to:
+        // - clear the state in the final cipher round,
+        // - clear any other registers in the CLEAR state.
+
+        // IV control in case of ongoing encryption/decryption
+        // - CTR: IV registers are updated by counter during cipher operation
+        iv_sel_o = doing_ctr ? IV_CTR   : IV_INPUT;
+        iv_we_o  = doing_ctr ? ctr_we_i : 8'h00;
+
+        // Request fresh pseudo-random data, perform handshake.
+        prng_data_req_o = 1'b1;
+        if (prng_data_ack_i) begin
+
+          // Ongoing encryption/decryption operations have the highest priority. The clear triggers
+          // might have become asserted after the handshake with the cipher core.
+          if (cipher_crypt_i) begin
+            aes_ctrl_ns = FINISH;
+
+          end else if (key_clear_i || data_out_clear_i) begin
+            // To clear the output data registers, we re-use the muxing resources of the cipher
+            // core. To clear all key material, some key registers inside the cipher core need to
+            // be cleared.
+            cipher_key_clear_o      = key_clear_i;
+            cipher_data_out_clear_o = data_out_clear_i;
+
+            // We have work for the cipher core, perform handshake.
+            cipher_in_valid_o = 1'b1;
+            if (cipher_in_ready_i) begin
+              aes_ctrl_ns = CLEAR;
+            end
+          end else begin // (iv_clear_i || data_in_clear_i)
+            // To clear the IV or input data registers, no handshake with the cipher core is
+            // needed.
+            aes_ctrl_ns = CLEAR;
+          end
+        end
       end
 
       FINISH: begin
@@ -283,17 +342,17 @@ module aes_control (
           stall_we_o = 1'b1;
 
           // State out addition mux control
-          add_state_out_sel_o = (mode_i == AES_CBC && op_i == AES_DEC) ? ADD_SO_IV  :
-                                (mode_i == AES_CTR)                    ? ADD_SO_DIP : ADD_SO_ZERO;
+          add_state_out_sel_o = doing_cbc_dec ? ADD_SO_IV  :
+                                doing_ctr     ? ADD_SO_DIP : ADD_SO_ZERO;
 
           // IV control
           // - CBC: IV registers can only be updated when cipher finishes
           // - CTR: IV registers are updated by counter during cipher operation
-          iv_sel_o = (mode_i == AES_CBC && op_i == AES_ENC) ? IV_DATA_OUT     :
-                     (mode_i == AES_CBC && op_i == AES_DEC) ? IV_DATA_IN_PREV :
-                     (mode_i == AES_CTR)                    ? IV_CTR          : IV_INPUT;
-          iv_we_o  = (mode_i == AES_CBC) ? {8{finish & cipher_out_valid_i}} :
-                     (mode_i == AES_CTR) ? ctr_we_i                         : 8'h00;
+          iv_sel_o =  doing_cbc_enc                   ? IV_DATA_OUT     :
+                      doing_cbc_dec                   ? IV_DATA_IN_PREV :
+                      doing_ctr                       ? IV_CTR          : IV_INPUT;
+          iv_we_o  = (doing_cbc_enc || doing_cbc_dec) ? {8{finish & cipher_out_valid_i}} :
+                      doing_ctr                       ? ctr_we_i                         : 8'h00;
 
           // We are ready once the output data registers can be written.
           cipher_out_ready_o = finish;
@@ -425,6 +484,7 @@ module aes_control (
   assign iv_clear_o       = 1'b0;
   assign data_in_clear_o  = 1'b0;
   assign data_out_clear_o = 1'b0;
+  assign prng_reseed_o    = 1'b0;
 
   // Selectors must be known/valid
   `ASSERT(AesModeValid, mode_i inside {

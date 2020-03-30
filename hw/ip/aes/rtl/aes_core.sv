@@ -10,8 +10,16 @@ module aes_core #(
   parameter bit AES192Enable = 1,
   parameter     SBoxImpl     = "lut"
 ) (
-  input logic                      clk_i,
-  input logic                      rst_ni,
+  input  logic                     clk_i,
+  input  logic                     rst_ni,
+
+  // PRNG Interface
+  output logic                     prng_data_req_o,
+  input  logic                     prng_data_ack_i,
+  input  logic [63:0]              prng_data_i,
+
+  output logic                     prng_reseed_req_o,
+  input  logic                     prng_reseed_ack_i,
 
   // Bus Interface
   input  aes_reg_pkg::aes_reg2hw_t reg2hw,
@@ -80,7 +88,8 @@ module aes_core #(
   logic                 cipher_in_ready;
   logic                 cipher_out_valid;
   logic                 cipher_out_ready;
-  logic                 cipher_start;
+  logic                 cipher_crypt;
+  logic                 cipher_crypt_busy;
   logic                 cipher_dec_key_gen;
   logic                 cipher_dec_key_gen_busy;
   logic                 cipher_key_clear;
@@ -157,19 +166,15 @@ module aes_core #(
   always_comb begin : key_init_mux
     unique case (key_init_sel)
       KEY_INIT_INPUT: key_init_d = key_init;
-      KEY_INIT_CLEAR: key_init_d = '0;
-      default:        key_init_d = '0;
+      KEY_INIT_CLEAR: key_init_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      default:        key_init_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : key_init_reg
-    if (!rst_ni) begin
-      key_init_q <= '0;
-    end else begin
-      for (int i=0; i<8; i++) begin
-        if (key_init_we[i]) begin
-          key_init_q[i] <= key_init_d[i];
-        end
+  always_ff @(posedge clk_i) begin : key_init_reg
+    for (int i=0; i<8; i++) begin
+      if (key_init_we[i]) begin
+        key_init_q[i] <= key_init_d[i];
       end
     end
   end
@@ -181,19 +186,15 @@ module aes_core #(
       IV_DATA_OUT:     iv_d = data_out_d;
       IV_DATA_IN_PREV: iv_d = data_in_prev_q;
       IV_CTR:          iv_d = ctr;
-      IV_CLEAR:        iv_d = '0;
-      default:         iv_d = '0;
+      IV_CLEAR:        iv_d = {prng_data_i, prng_data_i};
+      default:         iv_d = {prng_data_i, prng_data_i};
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : iv_reg
-    if (!rst_ni) begin
-      iv_q <= '0;
-    end else begin
-      for (int i=0; i<8; i++) begin
-        if (iv_we[i]) begin
-          iv_q[i] <= iv_d[i];
-        end
+  always_ff @(posedge clk_i) begin : iv_reg
+    for (int i=0; i<8; i++) begin
+      if (iv_we[i]) begin
+        iv_q[i] <= iv_d[i];
       end
     end
   end
@@ -202,18 +203,14 @@ module aes_core #(
   always_comb begin : data_in_prev_mux
     unique case (data_in_prev_sel)
       DIP_DATA_IN: data_in_prev_d = data_in;
-      DIP_CLEAR:   data_in_prev_d = '0;
-      default:     data_in_prev_d = '0;
+      DIP_CLEAR:   data_in_prev_d = {prng_data_i, prng_data_i};
+      default:     data_in_prev_d = {prng_data_i, prng_data_i};
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : data_in_prev_reg
-    if (!rst_ni) begin
-      data_in_prev_q <= '0;
-    end else begin
-      if (data_in_prev_we) begin
-        data_in_prev_q <= data_in_prev_d;
-      end
+  always_ff @(posedge clk_i) begin : data_in_prev_reg
+    if (data_in_prev_we) begin
+      data_in_prev_q <= data_in_prev_d;
     end
   end
 
@@ -279,13 +276,16 @@ module aes_core #(
     .out_ready_i      ( cipher_out_ready           ),
     .op_i             ( cipher_op                  ),
     .key_len_i        ( key_len_q                  ),
-    .start_i          ( cipher_start               ),
+    .crypt_i          ( cipher_crypt               ),
+    .crypt_o          ( cipher_crypt_busy          ),
     .dec_key_gen_i    ( cipher_dec_key_gen         ),
     .dec_key_gen_o    ( cipher_dec_key_gen_busy    ),
     .key_clear_i      ( cipher_key_clear           ),
     .key_clear_o      ( cipher_key_clear_busy      ),
     .data_out_clear_i ( cipher_data_out_clear      ),
     .data_out_clear_o ( cipher_data_out_clear_busy ),
+
+    .prng_data_i      ( prng_data_i                ),
 
     .state_init_i     ( state_init                 ),
     .key_init_i       ( key_init_q                 ),
@@ -323,6 +323,7 @@ module aes_core #(
     .iv_clear_i              ( reg2hw.trigger.iv_clear.q        ),
     .data_in_clear_i         ( reg2hw.trigger.data_in_clear.q   ),
     .data_out_clear_i        ( reg2hw.trigger.data_out_clear.q  ),
+    .prng_reseed_i           ( reg2hw.trigger.prng_reseed.q     ),
 
     .key_init_qe_i           ( key_init_qe                      ),
     .iv_qe_i                 ( iv_qe                            ),
@@ -346,7 +347,8 @@ module aes_core #(
     .cipher_in_ready_i       ( cipher_in_ready                  ),
     .cipher_out_valid_i      ( cipher_out_valid                 ),
     .cipher_out_ready_o      ( cipher_out_ready                 ),
-    .cipher_start_o          ( cipher_start                     ),
+    .cipher_crypt_o          ( cipher_crypt                     ),
+    .cipher_crypt_i          ( cipher_crypt_busy                ),
     .cipher_dec_key_gen_o    ( cipher_dec_key_gen               ),
     .cipher_dec_key_gen_i    ( cipher_dec_key_gen_busy          ),
     .cipher_key_clear_o      ( cipher_key_clear                 ),
@@ -359,6 +361,11 @@ module aes_core #(
     .iv_sel_o                ( iv_sel                           ),
     .iv_we_o                 ( iv_we                            ),
 
+    .prng_data_req_o         ( prng_data_req_o                  ),
+    .prng_data_ack_i         ( prng_data_ack_i                  ),
+    .prng_reseed_req_o       ( prng_reseed_req_o                ),
+    .prng_reseed_ack_i       ( prng_reseed_ack_i                ),
+
     .start_o                 ( hw2reg.trigger.start.d           ),
     .start_we_o              ( hw2reg.trigger.start.de          ),
     .key_clear_o             ( hw2reg.trigger.key_clear.d       ),
@@ -369,6 +376,8 @@ module aes_core #(
     .data_in_clear_we_o      ( hw2reg.trigger.data_in_clear.de  ),
     .data_out_clear_o        ( hw2reg.trigger.data_out_clear.d  ),
     .data_out_clear_we_o     ( hw2reg.trigger.data_out_clear.de ),
+    .prng_reseed_o           ( hw2reg.trigger.prng_reseed.d     ),
+    .prng_reseed_we_o        ( hw2reg.trigger.prng_reseed.de    ),
 
     .output_valid_o          ( hw2reg.status.output_valid.d     ),
     .output_valid_we_o       ( hw2reg.status.output_valid.de    ),
@@ -409,10 +418,8 @@ module aes_core #(
   // Outputs //
   /////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
-    if (!rst_ni) begin
-      data_out_q <= '0;
-    end else if (data_out_we) begin
+  always_ff @(posedge clk_i) begin : data_out_reg
+    if (data_out_we) begin
       data_out_q <= data_out_d;
     end
   end

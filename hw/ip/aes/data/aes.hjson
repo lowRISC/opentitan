@@ -121,8 +121,10 @@
       fields: [
         { bits: "31:0", name: "data_out", desc: "Output Data" }
       ]
-      tags: [// Updated by the hw. Exclude from write-checks.
-             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+      tags: [// Updated by the HW.
+             // No reset but sync clear with random data.
+             // Exclude from init and write checks.
+             "excl:CsrAllTests:CsrExclCheck"]
       }
     },
 ##############################################################################
@@ -181,6 +183,7 @@
     desc: '''
       Trigger Register.
       Each bit is individually cleared to zero when executing the corresponding trigger.
+
     '''
     swaccess: "wo",
     hwaccess: "hrw",
@@ -194,32 +197,45 @@
       }
       { bits: "1",
         name: "KEY_CLEAR",
+        resval: "1"
         desc:  '''
           Keep current values in Initial Key, internal Full Key and Decryption Key registers (0)
-          or clear those registers to zero (1).
+          or clear those registers with pseudo-random data (1).
         '''
       }
       { bits: "2",
         name: "IV_CLEAR",
+        resval: "1"
         desc:  '''
-          Keep current values in IV registers (0) or clear those registers to zero (1).
+          Keep current values in IV registers (0) or clear those registers with pseudo-random data (1).
         '''
       }
       { bits: "3",
         name: "DATA_IN_CLEAR",
+        resval: "1"
         desc:  '''
-          Keep current values in input registers (0) or clear those registers to zero (1).
+          Keep current values in input registers (0) or clear those registers with pseudo-random data (1).
         '''
       }
       { bits: "4",
         name: "DATA_OUT_CLEAR",
+        resval: "1"
         desc:  '''
-          Keep current values in output registers (0) or clear those registers to zero (1).
+          Keep current values in output registers (0) or clear those registers with pseudo-random data (1).
+        '''
+      }
+      { bits: "5",
+        name: "PRNG_RESEED",
+        resval: "1"
+        desc:  '''
+          Keep continuing with the current internal state of the internal pseudo-random number generator (0) or perform a reseed of the internal state from the connected entropy source (1).
         '''
       }
     ]
-    tags: [// Updated by hw. Exclude from write-checks.
-           "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    tags: [// Updated by the HW.
+           // Reset value cleared to zero.
+           // Exclude from init and write checks.
+           "excl:CsrAllTests:CsrExclCheck"]
   },
   { name: "STATUS",
     desc: "Status Register",

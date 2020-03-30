@@ -69,6 +69,9 @@ package aes_reg_pkg;
     struct packed {
       logic        q;
     } data_out_clear;
+    struct packed {
+      logic        q;
+    } prng_reseed;
   } aes_reg2hw_trigger_reg_t;
 
 
@@ -125,6 +128,10 @@ package aes_reg_pkg;
       logic        d;
       logic        de;
     } data_out_clear;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prng_reseed;
   } aes_hw2reg_trigger_reg_t;
 
   typedef struct packed {
@@ -151,25 +158,25 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_reg2hw_key_mreg_t [7:0] key; // [676:413]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [412:281]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [280:149]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [148:17]
-    aes_reg2hw_ctrl_reg_t ctrl; // [16:5]
-    aes_reg2hw_trigger_reg_t trigger; // [4:0]
+    aes_reg2hw_key_mreg_t [7:0] key; // [677:414]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [413:282]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [281:150]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [149:18]
+    aes_reg2hw_ctrl_reg_t ctrl; // [17:6]
+    aes_reg2hw_trigger_reg_t trigger; // [5:0]
   } aes_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_mreg_t [7:0] key; // [669:414]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [413:286]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [285:154]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [153:26]
-    aes_hw2reg_ctrl_reg_t ctrl; // [25:14]
-    aes_hw2reg_trigger_reg_t trigger; // [13:9]
-    aes_hw2reg_status_reg_t status; // [8:9]
+    aes_hw2reg_key_mreg_t [7:0] key; // [671:416]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [415:288]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [287:156]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [155:28]
+    aes_hw2reg_ctrl_reg_t ctrl; // [27:16]
+    aes_hw2reg_trigger_reg_t trigger; // [15:10]
+    aes_hw2reg_status_reg_t status; // [9:10]
   } aes_hw2reg_t;
 
   // Register Address
