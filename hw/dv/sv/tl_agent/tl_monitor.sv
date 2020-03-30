@@ -51,7 +51,7 @@ class tl_monitor extends dv_base_monitor#(
     forever begin
       @(negedge cfg.vif.rst_n);
       // on reset asserted sample pending request is present or not
-      if (cfg.en_cov) cov.pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
+      if (cfg.en_cov) cov.m_pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
       @(posedge cfg.vif.rst_n);
       pending_a_req.delete();
       if (objection_raised) begin
@@ -82,7 +82,7 @@ class tl_monitor extends dv_base_monitor#(
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
                                         pending_a_req.size()))
           end
-          if (cfg.en_cov) cov.max_outstanding_cg.sample(pending_a_req.size());
+          if (cfg.en_cov) cov.m_max_outstanding_cg.sample(pending_a_req.size());
         end
         if (!objection_raised) begin
           run_phase_h.raise_objection(this, $sformatf("%s objection raised", `gfn));

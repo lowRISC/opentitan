@@ -53,6 +53,9 @@ class SimCfg(FlowCfg):
         self.dry_run = args.dry_run
         self.map_full_testplan = args.map_full_testplan
 
+        # Disable cov if --build-only is passed.
+        if self.build_only: self.cov = False
+
         # Set default sim modes for unpacking
         if self.waves is True: self.en_build_modes.append("waves")
         if self.cov is True: self.en_build_modes.append("cov")
@@ -145,12 +148,6 @@ class SimCfg(FlowCfg):
 
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
             # tests and regressions, only if not a master cfg obj
-            # TODO: hack to prevent coverage collection if tool != vcs
-            if self.cov and self.tool != "vcs":
-                self.cov = False
-                log.warning(
-                    "Coverage collection with tool \"%s\" is not supported yet",
-                    self.tool)
             self._create_objects()
 
         # Post init checks
@@ -405,14 +402,7 @@ class SimCfg(FlowCfg):
         analyze the coverage.
         '''
         cov_analyze_deploy = CovAnalyze(self)
-        try:
-            proc = subprocess.Popen(args=cov_analyze_deploy.cmd,
-                                    shell=True,
-                                    close_fds=True)
-        except Exception as e:
-            log.fatal("Failed to run coverage analysis cmd:\n\"%s\"\n%s",
-                      cov_analyze_deploy.cmd, e)
-            sys.exit(1)
+        self.deploy = [cov_analyze_deploy]
 
     def cov_analyze(self):
         '''Public facing API for analyzing coverage.
@@ -500,12 +490,17 @@ class SimCfg(FlowCfg):
             if self.cov:
                 if self.cov_report_deploy.status == "P":
                     results_str += "\n## Coverage Results\n"
-                    results_str += "\n### [Coverage Dashboard]"
-                    results_str += "(cov_report/dashboard.html)\n\n"
+                    # Link the dashboard page using "cov_report_page" value.
+                    # TODO: hack to only link VCS generated results.
+                    if self.tool == "vcs" and hasattr(self, "cov_report_page"):
+                        results_str += "\n### [Coverage Dashboard]"
+                        results_str += "({})\n\n".format(
+                            getattr(self, "cov_report_page"))
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Coverage"] = self.cov_report_deploy.cov_total
-                self.results_summary["Coverage"] = "--"
+                else:
+                    self.results_summary["Coverage"] = "--"
 
             # append link of detail result to block name
             self.results_summary["Name"] = self._get_results_page_link(
@@ -552,6 +547,8 @@ class SimCfg(FlowCfg):
         super()._publish_results()
 
         if self.cov:
+            # TODO: hack to only allow VCS coverage data to be uploaded.
+            if self.tool != "vcs": return
             results_server_dir_url = self.results_server_dir.replace(
                 self.results_server_prefix, self.results_server_url_prefix)
 

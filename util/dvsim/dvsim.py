@@ -491,6 +491,7 @@ def main():
     # tool.
     if args.cov_analyze:
         cfg.cov_analyze()
+        cfg.deploy_objects()
         sys.exit(0)
 
     # Purge the scratch path if --purge option is set.

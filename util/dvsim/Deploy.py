@@ -17,6 +17,7 @@ from collections import OrderedDict
 import hjson
 from tabulate import tabulate
 
+from sim_utils import *
 from utils import *
 
 
@@ -170,6 +171,11 @@ class Deploy():
             # If renew_odir flag is True - then move it.
             if self.renew_odir: self.odir_limiter(odir=self.odir)
             os.system("mkdir -p " + self.odir)
+            # Dump all env variables for ease of debug.
+            with open(self.odir + "/env_vars", "w") as f:
+                for var in sorted(self.exports.keys()):
+                    f.write("{}={}\n".format(var, self.exports[var]))
+                f.close()
             os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
                       '/' + self.odir_ln)
             f = open(self.log, "w")
@@ -744,6 +750,9 @@ class CovMerge(Deploy):
         if self.sim_cfg.cov_merge_previous:
             self.cov_db_dirs += prev_cov_db_dirs
 
+        # Append cov_db_dirs to the list of exports.
+        self.exports["cov_db_dirs"] = "\"{}\"".format(self.cov_db_dirs)
+
         # Call base class __post_init__ to do checks and substitutions
         super().__post_init__()
 
@@ -772,7 +781,7 @@ class CovReport(Deploy):
         self.mandatory_misc_attrs = {
             "cov_report_dir": False,
             "cov_merge_db_dir": False,
-            "cov_report_dashboard": False
+            "cov_report_txt": False
         }
 
         # Initialize
@@ -791,45 +800,19 @@ class CovReport(Deploy):
         super().get_status()
         # Once passed, extract the cov results summary from the dashboard.
         if self.status == "P":
-            try:
-                with open(self.cov_report_dashboard, 'r') as f:
-                    for line in f:
-                        match = re.match("total coverage summary", line,
-                                         re.IGNORECASE)
-                        if match:
-                            results = []
-                            # Metrics on the next line.
-                            line = f.readline().strip()
-                            results.append(line.split())
-                            # Values on the next.
-                            line = f.readline().strip()
-                            # Pretty up the values - add % sign for ease of post
-                            # processing.
-                            values = []
-                            for val in line.split():
-                                val += " %"
-                                values.append(val)
-                            # first row is coverage total
-                            self.cov_total = values[0]
-                            results.append(values)
-                            colalign = (("center", ) * len(values))
-                            self.cov_results = tabulate(results,
-                                                        headers="firstrow",
-                                                        tablefmt="pipe",
-                                                        colalign=colalign)
-                            break
+            results, self.cov_total, ex_msg = get_cov_summary_table(
+                self.cov_report_txt, self.sim_cfg.tool)
 
-            except Exception as e:
-                ex_msg = "Failed to parse \"{}\":\n{}".format(
-                    self.cov_report_dashboard, str(e))
+            if not ex_msg:
+                # Succeeded in obtaining the coverage data.
+                colalign = (("center", ) * len(results[0]))
+                self.cov_results = tabulate(results,
+                                            headers="firstrow",
+                                            tablefmt="pipe",
+                                            colalign=colalign)
+            else:
                 self.fail_msg += ex_msg
                 log.error(ex_msg)
-                self.status = "F"
-
-            if self.cov_results == "":
-                nf_msg = "Coverage summary not found in the reports dashboard!"
-                self.fail_msg += nf_msg
-                log.error(nf_msg)
                 self.status = "F"
 
         if self.status == "P":
@@ -851,6 +834,9 @@ class CovAnalyze(Deploy):
         self.fail_patterns = []
 
         self.mandatory_cmd_attrs = {
+            # tool srcs
+            "tool_srcs": False,
+            "tool_srcs_dir": False,
             "cov_analyze_cmd": False,
             "cov_analyze_opts": False
         }
