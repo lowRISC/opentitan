@@ -16,14 +16,14 @@ module aes_shift_rows (
   assign data_o[0] = data_i[0];
 
   // Row 2 does not depend on op_i
-  assign data_o[2] = aes_circ_byte_shift(data_i[2], 2);
+  assign data_o[2] = aes_circ_byte_shift(data_i[2], 2'h2);
 
   // Row 1
-  assign data_o[1] = (op_i == CIPH_FWD) ? aes_circ_byte_shift(data_i[1], -1)
-                                        : aes_circ_byte_shift(data_i[1],  1);
+  assign data_o[1] = (op_i == CIPH_FWD) ? aes_circ_byte_shift(data_i[1], 2'h3)
+                                        : aes_circ_byte_shift(data_i[1], 2'h1);
 
   // Row 3
-  assign data_o[3] = (op_i == CIPH_FWD) ? aes_circ_byte_shift(data_i[3],  1)
-                                        : aes_circ_byte_shift(data_i[3], -1);
+  assign data_o[3] = (op_i == CIPH_FWD) ? aes_circ_byte_shift(data_i[3], 2'h1)
+                                        : aes_circ_byte_shift(data_i[3], 2'h3);
 
 endmodule
