@@ -7,9 +7,7 @@ def _openocd_flash_impl(ctx):
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
     script_template = """
-
-ln -sf {firmware} {firmware_short_path}.{format}
-{openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program {firmware}.{format} verify reset exit {flash_offset}"
+{openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program {firmware} verify reset exit {flash_offset}"
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
 
@@ -17,12 +15,10 @@ ln -sf {firmware} {firmware_short_path}.{format}
         openocd = ctx.file._openocd.short_path,
         interface_config_string = interface_config_string,
         chip_config_string = chip_config_string,
-        firmware = ctx.file.image.path,
-        firmware_short_path = ctx.file.image.short_path,
+        firmware = ctx.file.image.short_path,
         flash_offset = ctx.attr.flash_offset,
         programmer_frequency = ctx.attr.programmer_frequency,
         transport = ctx.attr.transport,
-        format = ctx.attr.format,
     )
     ctx.actions.write(script, script_content, is_executable = True)
     runfiles = ctx.runfiles(files = [ctx.file._openocd, ctx.file.image])
@@ -51,12 +47,6 @@ Example:
             doc = "Binary image to flash",
             mandatory = True,
             allow_single_file = True,
-        ),
-        "format": attr.string(
-            doc = "The image format",
-            mandatory = False,
-            default = "elf",
-            values = ["elf", "bin", "ihex", "s19"],
         ),
         "interface_configs": attr.string_list(
             doc = "openocd config path for interface, note that user defined configs are not supported at this time",
