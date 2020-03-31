@@ -5,6 +5,7 @@
 {
     name:               "padctrl",
     design_spec:        "hw/ip/padctrl/doc",
+    dv_plan:            "hw/ip/padctrl/doc/dv_plan",
     hw_checklist:       "hw/ip/padctrl/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
