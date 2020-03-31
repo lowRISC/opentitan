@@ -52,7 +52,8 @@ platform(
 platform(
     name = "cortex_m7_fpu",
     constraint_values = [
+        "@platforms//cpu:armv7e-m",
         "//constraints/fpu:fpv5-d16",
     ],
-    parents = [":cortex_m7"],
+    parents = [":cortex_m"],
 )
