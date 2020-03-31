@@ -34,8 +34,8 @@ module padring_assert_fpv (
   // Check main connectivity of infrastructure signals //
   ///////////////////////////////////////////////////////
 
-  `ASSERT(Clk_A, clk_pad_i === clk_o, clk_pad_i, !rst_pad_ni)
-  `ASSERT(Rstpad_A, rst_pad_ni === rst_no, clk_pad_i, !rst_pad_ni)
+  `ASSERT(ClkConn_A, clk_pad_i === clk_o, clk_pad_i, !rst_pad_ni)
+  `ASSERT(RstConn_A, rst_pad_ni === rst_no, clk_pad_i, !rst_pad_ni)
 
   /////////////////////////
   // Check muxed IO pads //
