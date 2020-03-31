@@ -59,11 +59,9 @@ module flash_gfmult #(
 
   localparam int Loops = Width / StagesPerCycle;
   localparam int CntWidth = $clog2(Loops);
-  localparam int OpWidth = $clog2(Width);
 
-  // hardcoded arrays for slices of operand used during each loop
-  logic [Loops-1:0][OpWidth-1:0] op_i_slice_lsbs;
-  logic [OpWidth-1:0] current_slice_lsb;
+  // reformat operand_b_i
+  logic [Loops-1:0][StagesPerCycle-1:0] reformat_data;
 
   // this slice of operand bits used during each loop
   logic [StagesPerCycle-1:0] op_i_slice;
@@ -84,14 +82,9 @@ module flash_gfmult #(
   // intermediate prod held between loops
   logic [Width-1:0] prod_q, prod_d;
 
-  // hardcode the lsbs of each slice
-  for (genvar i = 0; i < Loops; i++) begin : gen_slice_lsbs
-    assign op_i_slice_lsbs[i] = i*StagesPerCycle;
-  end
-
   // select current slice
-  assign current_slice_lsb = op_i_slice_lsbs[cnt];
-  assign op_i_slice = operand_b_i[current_slice_lsb +: StagesPerCycle];
+  assign reformat_data = operand_b_i;
+  assign op_i_slice = reformat_data[cnt];
 
   // multiply is done
   assign done_o = cnt == (Loops - 1);
@@ -126,7 +119,6 @@ module flash_gfmult #(
       vector <= matrix[StagesPerCycle-1];
     end
   end
-
 
   // GF(2^Width) * x
   function automatic logic [Width-1:0] gf_mult2(
