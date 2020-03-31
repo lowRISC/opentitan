@@ -26,7 +26,7 @@ class alert_sender_base_seq extends dv_base_seq #(
         int_err          == local::int_err;
     )
     `uvm_info(`gfn, $sformatf("seq_item: send_alert=%0b, ping_rsp=%0b, int_err=%0b",
-        req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_LOW)
+        req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_MEDIUM)
     finish_item(req);
     get_response(rsp);
     `uvm_info(`gfn, "alert sender transfer done", UVM_HIGH)

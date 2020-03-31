@@ -157,7 +157,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
 
     intr_state_field = intr_state_fields[class_i];
-    void'(intr_state_field.predict(1));
+    void'(intr_state_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
     intr_en = ral.intr_enable.get_mirrored_value();
     if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
     // calculate escalation

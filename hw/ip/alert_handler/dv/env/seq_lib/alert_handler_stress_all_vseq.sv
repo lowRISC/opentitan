@@ -16,6 +16,7 @@ class alert_handler_stress_all_vseq extends alert_handler_base_vseq;
                           "alert_handler_random_classes_vseq",
                           "alert_handler_esc_intr_timeout_vseq",
                           "alert_handler_esc_alert_accum_vseq",
+                          "alert_handler_entropy_vseq",
                           "alert_handler_sig_int_fail_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence            seq;

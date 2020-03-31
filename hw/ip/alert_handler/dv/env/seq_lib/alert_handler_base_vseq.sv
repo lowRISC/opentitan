@@ -163,6 +163,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
   endtask
 
+  // This sequence will automatically response to all escalation ping and esc responses
   virtual task run_esc_rsp_seq_nonblocking();
     foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;
@@ -177,19 +178,20 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task run_ping_rsp_seq_nonblocking();
+  // This task will response to all alert_ping
+  virtual task run_alert_ping_rsp_seq_nonblocking();
     foreach (cfg.alert_host_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
           alert_sender_ping_rsp_seq ping_seq =
               alert_sender_ping_rsp_seq::type_id::create("ping_seq");
-          `DV_CHECK_RANDOMIZE_FATAL(ping_seq);
-          ping_seq.start(p_sequencer.alert_host_seqr_h[i]);
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0;);
+          ping_seq.start(p_sequencer.alert_host_seqr_h[index]);
         end
       join_none
     end
-  endtask
+  endtask : run_alert_ping_rsp_seq_nonblocking
 
 endclass : alert_handler_base_vseq
 
