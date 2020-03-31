@@ -8,7 +8,7 @@ def _openocd_flash_impl(ctx):
         chip_config_string = chip_config_string + " -f " + config
     script_template = """
 
-ln -sf {firmware} {firmware}.{format}
+ln -sf {firmware} {firmware_short_path}.{format}
 {openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program {firmware}.{format} verify reset exit {flash_offset}"
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
@@ -17,7 +17,8 @@ ln -sf {firmware} {firmware}.{format}
         openocd = ctx.file._openocd.short_path,
         interface_config_string = interface_config_string,
         chip_config_string = chip_config_string,
-        firmware = ctx.file.image.short_path,
+        firmware = ctx.file.image.path,
+        firmware_short_path = ctx.file.image.short_path,
         flash_offset = ctx.attr.flash_offset,
         programmer_frequency = ctx.attr.programmer_frequency,
         transport = ctx.attr.transport,
