@@ -35,19 +35,24 @@ module padring_assert_fpv (
   ///////////////////////////////////////////////////////
 
   `ASSERT(Clk_A, clk_pad_i === clk_o, clk_pad_i, !rst_pad_ni)
-  `ASSERT(Rstpad__A, rst_pad_ni === rst_no, clk_pad_i, !rst_pad_ni)
+  `ASSERT(Rstpad_A, rst_pad_ni === rst_no, clk_pad_i, !rst_pad_ni)
 
   /////////////////////////
   // Check muxed IO pads //
   /////////////////////////
 
   `ASSUME(NMioRange_M, mio_sel < padctrl_reg_pkg::NMioPads, clk_pad_i, !rst_pad_ni)
+  `ASSUME(NMioStable_M, ##1 $stable(mio_sel), clk_pad_i, !rst_pad_ni)
 
   // attribute 0 is the input/output inversion bit
   logic mio_output_value;
   assign mio_output_value = mio_out_i[mio_sel] ^ mio_attr_i[mio_sel][0];
 
-  `ASSERT(MioIn_A,  mio_in_o[mio_sel] == mio_pad_io[mio_sel] ^ mio_attr_i[mio_sel][0],
+  `ASSERT(MioIn_A, mio_in_o[mio_sel] == mio_pad_io[mio_sel] ^ mio_attr_i[mio_sel][0],
+      clk_pad_i, !rst_pad_ni)
+
+  `ASSERT(MioInBackwardCheck_A, ##1 !$stable(mio_in_o[mio_sel]) |->
+      !$stable(mio_pad_io[mio_sel]) || !$stable(mio_attr_i[mio_sel][0]),
       clk_pad_i, !rst_pad_ni)
 
   `ASSERT(MioOutNormal_A, mio_oe_i[mio_sel] && !mio_attr_i[mio_sel][1] |->
@@ -75,12 +80,17 @@ module padring_assert_fpv (
   /////////////////////////////
 
   `ASSUME(NDioRange_M, dio_sel < padctrl_reg_pkg::NDioPads, clk_pad_i, !rst_pad_ni)
+  `ASSUME(NDioStable_M, ##1 $stable(dio_sel), clk_pad_i, !rst_pad_ni)
 
   // attribute 0 is the input/output inversion bit
   logic dio_output_value;
   assign dio_output_value = dio_out_i[dio_sel] ^ dio_attr_i[dio_sel][0];
 
   `ASSERT(DioIn_A,  dio_in_o[dio_sel] == dio_pad_io[dio_sel] ^ dio_attr_i[dio_sel][0],
+      clk_pad_i, !rst_pad_ni)
+
+  `ASSERT(DioInBackwardCheck_A, ##1 !$stable(dio_in_o[dio_sel]) |->
+      !$stable(dio_pad_io[dio_sel]) || !$stable(dio_attr_i[dio_sel][0]),
       clk_pad_i, !rst_pad_ni)
 
   `ASSERT(DioOutNormal_A, dio_oe_i[dio_sel] && !dio_attr_i[dio_sel][1] |->
