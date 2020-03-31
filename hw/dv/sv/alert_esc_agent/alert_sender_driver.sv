@@ -58,6 +58,8 @@ class alert_sender_driver extends alert_esc_base_driver;
           req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_HIGH)
 
       cfg.vif.wait_ping();
+
+      // TODO: solve this: if alert and ping all this task together
       drive_alert_pins(req);
 
       `uvm_info(`gfn,

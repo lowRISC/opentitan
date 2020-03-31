@@ -45,11 +45,12 @@ interface alert_esc_if(input clk, input rst_n);
     while (alert_tx.alert_p !== 1'b0) @(monitor_cb);
   endtask : wait_alert_complete
 
+  // alert_ping triggers upon level change
   task automatic wait_ping();
-    logic ping_p_value = 0;
+    logic ping_p_value = alert_rx.ping_p;
     while (alert_rx.ping_p === ping_p_value) begin
-      @(monitor_cb);
       ping_p_value = alert_rx.ping_p;
+      @(monitor_cb);
     end
   endtask : wait_ping
 

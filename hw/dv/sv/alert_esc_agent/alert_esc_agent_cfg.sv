@@ -9,7 +9,8 @@
 class alert_esc_agent_cfg extends dv_base_agent_cfg;
   virtual alert_esc_if vif;
 
-  bit     is_alert = 1;
+  bit is_alert = 1;
+
   // sender mode
   bit use_seq_item_alert_delay;
   int unsigned alert_delay_min = 0;

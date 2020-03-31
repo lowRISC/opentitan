@@ -8,7 +8,7 @@
 // ---------------------------------------------
 class alert_esc_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg);
   alert_esc_seq_item r_alert_ping_send_q[$], r_alert_rsp_q[$], r_esc_rsp_q[$],
-                 s_alert_send_q[$], s_alert_ping_rsp_q[$];
+                     s_alert_send_q[$], s_alert_ping_rsp_q[$];
 
   `uvm_component_utils(alert_esc_base_driver)
 

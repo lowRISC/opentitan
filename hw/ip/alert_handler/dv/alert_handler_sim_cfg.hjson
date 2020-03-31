@@ -73,6 +73,12 @@
       name: alert_handler_sig_int_fail
       uvm_test_seq: alert_handler_sig_int_fail_vseq
     }
+
+    {
+      name: alert_handler_entropy
+      uvm_test_seq: alert_handler_entropy_vseq
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
   ]
 
   // List of regressions.
