@@ -42,7 +42,7 @@
  * of C specifier syntax supported.
  *
  * The precise mechanism for logging is dependent on the target device. On core
- * devices, like Verilator, logs are printed using whatever |stdout| is set to
+ * devices, like Verilator, logs are printed using whatever `stdout` is set to
  * in print.h. DV testbenches may use an alternative, more efficient mechanism.
  * In DV mode, some format specifiers may be unsupported, such as %s.
  */
@@ -75,22 +75,22 @@ void base_log_internal_dv(log_severity_t severity, const char *format, ...);
  *
  * Prefer to use a LOG function with a specified severity, instead.
  *
- * @param severity a severity of type |log_severity_t|.
+ * @param severity a severity of type `log_severity_t`.
  * @param format a format string, as described in print.h. This must be a string
  * literal.
  * @param ... format parameters matching the format string.
  */
 // Currently, this simply prints directly to printf. In the future, when
-// we begin supporting DV testbenches, we can include an |if| statement here
-// that detects that using |device.h| and switches to the cheaper "dump args
+// we begin supporting DV testbenches, we can include an `if` statement here
+// that detects that using `device.h` and switches to the cheaper "dump args
 // for post process formatting" function.
 //
 // NOTE: the ##__VA_ARGS__ syntax below is a GCC/Clang extension, while
 // "" foo "" is a common C idiom to assert that a macro parameter is a string.
 #define LOG(severity, format, ...)                                       \
   do {                                                                   \
-    /* The |false| below will eventually be replaced with a device.h     \
-       function |device_is_dv()| or similar, which determines if the     \
+    /* The `false` below will eventually be replaced with a device.h     \
+       function `device_is_dv()` or similar, which determines if the     \
        current device is a DV testbench. */                              \
     if (false) {                                                         \
       base_log_internal_dv(severity, "" format "", ##__VA_ARGS__);       \
@@ -103,7 +103,7 @@ void base_log_internal_dv(log_severity_t severity, const char *format, ...);
 /**
  * Log an informational message.
  *
- * @param severity a severity of type |log_severity_t|.
+ * @param severity a severity of type `log_severity_t`.
  * @param format a format string, as described in print.h. This must be a string
  * literal.
  * @param ... format parameters matching the format string.
@@ -113,7 +113,7 @@ void base_log_internal_dv(log_severity_t severity, const char *format, ...);
 /**
  * Log a warning
  *
- * @param severity a severity of type |log_severity_t|.
+ * @param severity a severity of type `log_severity_t`.
  * @param format a format string, as described in print.h. This must be a string
  * literal.
  * @param ... format parameters matching the format string.
@@ -123,7 +123,7 @@ void base_log_internal_dv(log_severity_t severity, const char *format, ...);
 /**
  * Log a non-fatal error.
  *
- * @param severity a severity of type |log_severity_t|.
+ * @param severity a severity of type `log_severity_t`.
  * @param format a format string, as described in print.h. This must be a string
  * literal.
  * @param ... format parameters matching the format string.

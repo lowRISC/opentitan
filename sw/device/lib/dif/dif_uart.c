@@ -140,7 +140,7 @@ static bool uart_configure(const dif_uart_t *uart,
 }
 
 /**
- * Write up to |bytes_requested| number of bytes to the TX FIFO.
+ * Write up to `bytes_requested` number of bytes to the TX FIFO.
  */
 static size_t uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
                               size_t bytes_requested) {
@@ -154,7 +154,7 @@ static size_t uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
 }
 
 /**
- * Read up to |bytes_requested| number of bytes from the RX FIFO.
+ * Read up to `bytes_requested` number of bytes from the RX FIFO.
  */
 static size_t uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
                                  uint8_t *data) {
@@ -263,7 +263,7 @@ bool dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
     return false;
   }
 
-  // |bytes_written| is an optional parameter
+  // `bytes_written` is an optional parameter
   size_t res = uart_bytes_send(uart, data, bytes_requested);
   if (bytes_written != NULL) {
     *bytes_written = res;
@@ -278,7 +278,7 @@ bool dif_uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
     return false;
   }
 
-  // |bytes_read| is an optional parameter
+  // `bytes_read` is an optional parameter
   size_t res = uart_bytes_receive(uart, bytes_requested, data);
   if (bytes_read != NULL) {
     *bytes_read = res;

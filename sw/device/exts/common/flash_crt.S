@@ -15,7 +15,7 @@
 /**
  * Callable entry point for flash.
  *
- * This sets up the stack, zeroes |.bss|, and sets up |.data|.
+ * This sets up the stack, zeroes `.bss`, and sets up `.data`.
  * It then jumps into main.
  */
 _start:
@@ -36,10 +36,10 @@ _start:
   la   t0, _vectors_start
   csrw mtvec, t0
 
-  // Zero out the |.bss| segment.
+  // Zero out the `.bss` segment.
   //
-  // We use |t0| and |t1| to represent the start and end pointers
-  // of |.bss|.
+  // We use `t0` and `t1` to represent the start and end pointers
+  // of `.bss`.
   la  t0, _bss_start
   la  t1, _bss_end
   bge t0, t1, bss_zero_loop_end
@@ -49,11 +49,11 @@ bss_zero_loop:
   ble   t0, t1, bss_zero_loop
 bss_zero_loop_end:
 
-  // Initialize the |.data| segment from the |.idata| segment.
+  // Initialize the `.data` segment from the `.idata` segment.
   //
-  // We use |t0| and |t1| to represent the start and end pointers
-  // of |.data|, |t2| to represent the start pointer of |.idata|
-  // (which has the same length as |.data|) and |t3| is a scratch
+  // We use `t0` and `t1` to represent the start and end pointers
+  // of `.data`, `t2` to represent the start pointer of `.idata`
+  // (which has the same length as `.data`) and `t3` is a scratch
   // register for the copy.
   la  t0, _data_start
   la  t1, _data_end
@@ -68,7 +68,7 @@ data_copy_loop:
 data_copy_loop_end:
 
   // Jump into the C program entry point. This is your standard
-  // C |main()|, so we need to pass dummy values for |argc| and |argv|.
+  // C `main()`, so we need to pass dummy values for `argc` and `argv`.
   li   a0, 0x0  // argc = 0
   li   a1, 0x0  // argv = NULL
   call main

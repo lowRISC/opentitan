@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 
-// |extern| declarations to give the inline functions in the
+// `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 extern uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
 extern uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset);

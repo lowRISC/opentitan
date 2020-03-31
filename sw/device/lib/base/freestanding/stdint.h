@@ -10,10 +10,10 @@
  * This header is specified in detail in S7.20 the same.
  *
  * Actual limit values below are defined as:
- * - Unsigned MAXs are defined as the |0xff..ffU| all-ones representation.
- * - Signed MINs are defined as |0x80..00| all-zeroes-but-the-last
+ * - Unsigned MAXs are defined as the `0xff..ffU` all-ones representation.
+ * - Signed MINs are defined as `0x80..00` all-zeroes-but-the-last
  *   representation.
- * - Unsigned MAXs are defined as |0x7f..ff| all-ones-but-the-last
+ * - Unsigned MAXs are defined as `0x7f..ff` all-ones-but-the-last
  *   representation.
  * These shorthands are correct for two's complement and the ones least likely
  * to get a mistake in.

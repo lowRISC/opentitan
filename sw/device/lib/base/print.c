@@ -35,7 +35,7 @@ enum {
 };
 
 // NOTE: all of the lengths of the strings below are given so that the NUL
-// terminator is left off; that way, |sizeof(kConst)| does not include it.
+// terminator is left off; that way, `sizeof(kConst)` does not include it.
 static const char kDigitsLow[16] = "0123456789abcdef";
 static const char kDigitsHigh[16] = "0123456789ABCDEF";
 
@@ -116,12 +116,12 @@ size_t base_fprintf(buffer_sink_t out, const char *format, ...) {
 }
 
 /**
- * Consumes characters from |format| until a '%' or NUL is reached. All
- * characters seen before that are then sinked into |out|.
+ * Consumes characters from `format` until a '%' or NUL is reached. All
+ * characters seen before that are then sinked into `out`.
  *
  * @param out the sink to write bytes to.
  * @param format a pointer to the format string to consume a prefix of.
- * @param bytes_written out param for the number of bytes writen to |out|.
+ * @param bytes_written out param for the number of bytes writen to `out`.
  * @return true if an unprocessed '%' was found.
  */
 static bool consume_until_percent(buffer_sink_t out, const char **format,
@@ -149,8 +149,8 @@ typedef struct format_specifier {
 } format_specifier_t;
 
 /**
- * Consumes characters from |format| until a complete format specifier is
- * parsed. See the documentation in |print.h| for full syntax.
+ * Consumes characters from `format` until a complete format specifier is
+ * parsed. See the documentation in `print.h` for full syntax.
  *
  * @param out the sink to write bytes to.
  * @param format a pointer to the format string to consume a prefix of.
@@ -196,15 +196,15 @@ static bool consume_format_specifier(buffer_sink_t out, const char **format,
 }
 
 /**
- * Write the digits of |value| onto |out|.
+ * Write the digits of `value` onto `out`.
  *
  * @param out the sink to write bytes to.
  * @param value the value to "stringify".
  * @param width the minimum width to print; going below will result in writing
  *        out zeroes.
- * @param base the base to express |value| in.
+ * @param base the base to express `value` in.
  * @param glyphs an array of characters to use as the digits of a number, which
- *        should be at least ast long as |base|.
+ *        should be at least ast long as `base`.
  * @return the number of bytes written.
  */
 static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
@@ -231,14 +231,14 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
 }
 
 /**
- * Prints out the next entry in |args| according to |spec|.
+ * Prints out the next entry in `args` according to `spec`.
  *
- * This function assumes that |spec| accurately describes the next entry in
- * |args|.
+ * This function assumes that `spec` accurately describes the next entry in
+ * `args`.
  *
  * @param out the sink to write bytes to.
  * @param spec the specifier to use for stringifying.
- * @param bytes_written out param for the number of bytes writen to |out|.
+ * @param bytes_written out param for the number of bytes writen to `out`.
  * @param va_list the list to pull an entry from.
  */
 static void process_specifier(buffer_sink_t out, format_specifier_t spec,
@@ -332,8 +332,8 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args) {
   }
 
   // NOTE: This copy is necessary on amd64 and other platforms, where
-  // |va_list| is a fixed array type (and, as such, decays to a pointer in
-  // an argument list). On PSABI RV32IMC, however, |va_list| is a |void*|, so
+  // `va_list` is a fixed array type (and, as such, decays to a pointer in
+  // an argument list). On PSABI RV32IMC, however, `va_list` is a `void*`, so
   // this is a copy of the pointer, not the array.
   va_list args_copy;
   va_copy(args_copy, args);

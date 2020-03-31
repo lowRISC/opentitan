@@ -18,7 +18,7 @@
 
 // GCC's built-in defines do not include a type with the maximum alignment, but
 // does include a define with the maximum alignment value. Since the only
-// requirement of |max_align_t| is that it be some type such that its alignment
+// requirement of `max_align_t` is that it be some type such that its alignment
 // is maximal, we simply use a one-byte struct whose alignment is forced to be
 // the maximum.
 typedef struct { alignas(__BIGGEST_ALIGNMENT__) uint8_t __nonce; } max_align_t;

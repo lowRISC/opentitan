@@ -25,7 +25,7 @@ namespace spiflash {
 struct Frame {
   // Frame header definition.
   struct {
-    // SHA2 of the entire frame_t message starting at the |frame_num| offset.
+    // SHA2 of the entire frame_t message starting at the `frame_num` offset.
     uint8_t hash[32];
 
     // Frame number. Starting at 0.
@@ -54,7 +54,7 @@ class Updater {
     std::string code;
   };
 
-  // Constructs updater instance with given configuration |options| and |spi|
+  // Constructs updater instance with given configuration `options` and `spi`
   // interface.
   Updater(Options options, std::unique_ptr<SpiInterface> spi)
       : options_(options), spi_(std::move(spi)) {}
@@ -68,7 +68,7 @@ class Updater {
   bool Run();
 
  private:
-  // Generates |frames| for |code| image.
+  // Generates `frames` for `code` image.
   bool GenerateFrames(const std::string &code, std::vector<Frame> *frames);
 
   Options options_;

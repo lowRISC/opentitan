@@ -50,7 +50,7 @@ void flash_init_block(void);
 int flash_check_empty(void);
 
 /**
- * Erase flash bank |bank_idx|. Blocks until erase is complete.
+ * Erase flash bank `bank_idx`. Blocks until erase is complete.
  *
  * @param idx Flash bank index.
  * @return Non zero on failure.
@@ -59,17 +59,17 @@ int flash_bank_erase(bank_index_t idx);
 int flash_page_erase(uint32_t addr);
 
 /**
- * Write |data| at |addr| offset with |size| in 4B words
+ * Write `data` at `addr` offset with `size` in 4B words
  *
  * @param addr Flash address 32bit aligned.
  * @param data Data to write.
- * @param size Number of 4B words to write from |data| buffer.
+ * @param size Number of 4B words to write from `data` buffer.
  * @return Non zero on failure.
  */
 int flash_write(uint32_t addr, const uint32_t *data, uint32_t size);
 
 /**
- * Read |size| 4B words and write result to |data|.
+ * Read `size` 4B words and write result to `data`.
  *
  * @param addr Read start address.
  * @param size Number of 4B words to read.

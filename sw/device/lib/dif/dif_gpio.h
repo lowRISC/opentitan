@@ -18,7 +18,7 @@ typedef struct dif_gpio_config { mmio_region_t base_addr; } dif_gpio_config_t;
 /**
  * Internal state of a GPIO device.
  *
- * Instances of this struct must be initialized by |dif_gpio_init()| before
+ * Instances of this struct must be initialized by `dif_gpio_init()` before
  * being passed to other functions.
  */
 typedef struct dif_gpio { mmio_region_t base_addr; } dif_gpio_t;
@@ -26,9 +26,9 @@ typedef struct dif_gpio { mmio_region_t base_addr; } dif_gpio_t;
 /**
  * Generic return codes for the functions in this library.
  *
- * |kDifGpioResultInvalidArgument| signals that there is a problem with the
+ * `kDifGpioResultInvalidArgument` signals that there is a problem with the
  * argument(s) but the function did not have any side effects.
- * |kDifGpioResultGeneralError| covers other error cases.
+ * `kDifGpioResultGeneralError` covers other error cases.
  */
 typedef enum dif_gpio_result {
   kDifGpioResultOK,
@@ -50,7 +50,7 @@ typedef enum dif_gpio_irq {
 } dif_gpio_irq_t;
 
 /**
- * Initialize a GPIO device using |config| and return its internal state.
+ * Initialize a GPIO device using `config` and return its internal state.
  *
  * A particular GPIO device must first be initialized by this function
  * before calling other functions of this library.
@@ -58,8 +58,8 @@ typedef enum dif_gpio_irq {
  * @param config Configuration for initializing a GPIO device.
  * @param gpio GPIO instance that will store the internal state of the
  * initialized GPIO device.
- * @return |kDifGpioResultInvalidArgument| if |config| or |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `config` or `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
                                 dif_gpio_t *gpio);
@@ -71,8 +71,8 @@ dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
  * reset values. Disables interrupts, output, and input filter.
  *
  * @param gpio GPIO instance
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
 
@@ -85,8 +85,8 @@ dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
  *
  * @param gpio GPIO instance.
  * @param pin_values Pin values.
- * @return |kDifGpioResultInvalidArgument| if |gpio| or |pin_values| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` or `pin_values` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
                                     uint32_t *pin_values);
@@ -101,8 +101,8 @@ dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
  * @param gpio GPIO instance.
  * @param index Zero-based index of the pin to read from.
  * @param pin_value Pin value.
- * @return |kDifGpioResultInvalidArgument| if |gpio| or |pin_values| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` or `pin_values` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_pin_read(const dif_gpio_t *gpio, uint32_t index,
                                     bool *pin_value);
@@ -114,8 +114,8 @@ dif_gpio_result_t dif_gpio_pin_read(const dif_gpio_t *gpio, uint32_t index,
  *
  * @param gpio GPIO instance.
  * @param val Value to write.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_all_write(const dif_gpio_t *gpio, uint32_t val);
 
@@ -127,8 +127,8 @@ dif_gpio_result_t dif_gpio_all_write(const dif_gpio_t *gpio, uint32_t val);
  * @param gpio GPIO instance.
  * @param index Zero-based index of the pin to write to.
  * @param val Value to write.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_pin_write(const dif_gpio_t *gpio, uint32_t index,
                                      bool val);
@@ -141,8 +141,8 @@ dif_gpio_result_t dif_gpio_pin_write(const dif_gpio_t *gpio, uint32_t index,
  * @param gpio GPIO instance
  * @param mask Mask that identifies the pins to write to.
  * @param val Value to write.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_masked_write(const dif_gpio_t *gpio, uint32_t mask,
                                         uint32_t val);
@@ -150,12 +150,12 @@ dif_gpio_result_t dif_gpio_masked_write(const dif_gpio_t *gpio, uint32_t mask,
 /**
  * Set output modes of all pins.
  *
- * Setting |val[i]| to 1 enables output mode for pin |i|.
+ * Setting `val[i]` to 1 enables output mode for pin `i`.
  *
  * @param gpio GPIO instance.
  * @param val Output modes of the pins.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_output_mode_all_set(const dif_gpio_t *gpio,
                                                uint32_t val);
@@ -163,13 +163,13 @@ dif_gpio_result_t dif_gpio_output_mode_all_set(const dif_gpio_t *gpio,
 /**
  * Set output mode of a pin.
  *
- * Setting |val| to |true| enables output mode for the pin.
+ * Setting `val` to `true` enables output mode for the pin.
  *
  * @param gpio GPIO instance
  * @param index Zero-based index of the pin.
  * @param val Output mode of the pin.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_output_mode_pin_set(const dif_gpio_t *gpio,
                                                uint32_t index, bool val);
@@ -177,13 +177,13 @@ dif_gpio_result_t dif_gpio_output_mode_pin_set(const dif_gpio_t *gpio,
 /**
  * Set the output modes of the pins identified by a mask.
  *
- * Setting |val[i]| to 1 enables output mode for pin |i|.
+ * Setting `val[i]` to 1 enables output mode for pin `i`.
  *
  * @param gpio GPIO instance
  * @param mask Mask that identifies the pins whose output modes will be set.
  * @param val Output modes of the pins.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_output_mode_masked_set(const dif_gpio_t *gpio,
                                                   uint32_t mask, uint32_t val);
@@ -197,8 +197,8 @@ dif_gpio_result_t dif_gpio_output_mode_masked_set(const dif_gpio_t *gpio,
  *
  * @param gpio GPIO instance.
  * @param index Zero-based index of the pin.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio, uint32_t index);
 
@@ -207,8 +207,8 @@ dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio, uint32_t index);
  *
  * @param gpio GPIO instance.
  * @param interrupt_states Interrupt states of all pins.
- * @return |kDifGpioResultInvalidArgument| if |gpio| or |interrupt_states| is
- * |NULL|, |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` or `interrupt_states` is
+ * `NULL`, `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
                                         uint32_t *interrupt_states);
@@ -220,8 +220,8 @@ dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
  * @param index Zero-based index of the pin.
  * @param interrupt_state Interrupt state of the pin. True if there is a pending
  * interrupt, false otherwise.
- * @return |kDifGpioResultInvalidArgument| if |gpio| or |interrupt_state| is
- * |NULL|, |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` or `interrupt_state` is
+ * `NULL`, `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_pin_read(const dif_gpio_t *gpio, uint32_t index,
                                         bool *interrupt_state);
@@ -231,8 +231,8 @@ dif_gpio_result_t dif_gpio_irq_pin_read(const dif_gpio_t *gpio, uint32_t index,
  *
  * @param gpio GPIO instance.
  * @param index Zero-based index of the pin.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_pin_clear(const dif_gpio_t *gpio,
                                          uint32_t index);
@@ -240,14 +240,14 @@ dif_gpio_result_t dif_gpio_irq_pin_clear(const dif_gpio_t *gpio,
 /**
  * Enable noise filter for GPIO inputs.
  *
- * Setting |mask[i]| to 1 enables input noise filter for pin |i|. If enabled,
+ * Setting `mask[i]` to 1 enables input noise filter for pin `i`. If enabled,
  * changes in the pin value will be ignored unless stable for 16 cycles.
  *
  * @param gpio GPIO instance.
  * @param mask Mask that identifies the pins for which input noise filter will
  * be enabled.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_input_noise_filter_masked_enable(
     const dif_gpio_t *gpio, uint32_t mask);
@@ -255,13 +255,13 @@ dif_gpio_result_t dif_gpio_input_noise_filter_masked_enable(
 /**
  * Disable noise filter for GPIO inputs.
  *
- * Setting |mask[i]| to 1 disables input noise filter for pin |i|.
+ * Setting `mask[i]` to 1 disables input noise filter for pin `i`.
  *
  * @param gpio GPIO instance.
  * @param mask Mask that identifies the pins for which input noise filter will
  * be disabled.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
     const dif_gpio_t *gpio, uint32_t mask);
@@ -269,7 +269,7 @@ dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
 /**
  * Enable interrupts for GPIO inputs.
  *
- * Setting |mask[i]| to 1 enables detection of interrupt events for pin |i|.
+ * Setting `mask[i]` to 1 enables detection of interrupt events for pin `i`.
  * There are four types of interrupts per pin: rising-edge, falling-edge,
  * high-level, and low-level. At least one of them must be enabled to generate
  * interrupts.
@@ -277,8 +277,8 @@ dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
  * @param gpio GPIO instance.
  * @param mask Mask that identifies the pins for which interrupts will be
  * enabled.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_masked_enable(const dif_gpio_t *gpio,
                                              uint32_t mask);
@@ -286,13 +286,13 @@ dif_gpio_result_t dif_gpio_irq_masked_enable(const dif_gpio_t *gpio,
 /**
  * Disable interrupts for GPIO inputs.
  *
- * Setting |mask[i]| to 1 disables detection of interrupt events for pin |i|.
+ * Setting `mask[i]` to 1 disables detection of interrupt events for pin `i`.
  *
  * @param gpio GPIO instance.
  * @param mask Mask that identifies the pins for which interrupts will be
  * disabled.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_masked_disable(const dif_gpio_t *gpio,
                                               uint32_t mask);
@@ -306,8 +306,8 @@ dif_gpio_result_t dif_gpio_irq_masked_disable(const dif_gpio_t *gpio,
  * @param gpio GPIO instance.
  * @param mask Mask that identifies the pins whose interrupt triggers will be
  * disabled.
- * @return |kDifGpioResultInvalidArgument| if |gpio| is |NULL|,
- * |kDifGpioResultOK| otherwise.
+ * @return `kDifGpioResultInvalidArgument` if `gpio` is `NULL`,
+ * `kDifGpioResultOK` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
                                                       uint32_t mask);
@@ -323,8 +323,8 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
  * @param mask Mask that identifies the pins whose interrupt triggers will be
  * configured.
  * @param config New configuration of interrupt triggers.
- * @return |kDifGpioResultOK| if the function is successful,
- * |kDifGpioResultInvalidArgument| otherwise.
+ * @return `kDifGpioResultOK` if the function is successful,
+ * `kDifGpioResultInvalidArgument` otherwise.
  */
 dif_gpio_result_t dif_gpio_irq_trigger_masked_config(
     const dif_gpio_t *gpio, uint32_t mask, dif_gpio_irq_t config);

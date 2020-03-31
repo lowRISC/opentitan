@@ -11,7 +11,7 @@
 #define FRAME_NO(k) ((k)&0xffffff)
 
 typedef struct {
-  /* SHA2 of the entire frame_t message starting at the |frame_num| offset. */
+  /* SHA2 of the entire frame_t message starting at the `frame_num` offset. */
   uint32_t hash[8];
 
   /* Frame number starting at 0. The last frame should be ord with

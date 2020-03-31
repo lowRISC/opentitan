@@ -19,8 +19,8 @@ extern "C" {
  * Memory-mapped IO functions, which either map to volatile accesses, or can be
  * replaced with instrumentation calls at compile time, for use with tests.
  *
- * Compiling translation units that pull in this header with |-DMOCK_MMIO| will
- * disable the definitions of |mmio_region_read| and |mmio_region_write|. These
+ * Compiling translation units that pull in this header with `-DMOCK_MMIO` will
+ * disable the definitions of `mmio_region_read` and `mmio_region_write`. These
  * symbols can then be defined by a test harness to allow for instrumentation of
  * MMIO accesses.
  */
@@ -33,10 +33,10 @@ extern "C" {
 typedef struct mmio_region { volatile void *base; } mmio_region_t;
 
 /**
- * Create a new |mmio_region_t| from the given address.
+ * Create a new `mmio_region_t` from the given address.
  *
  * @param address an address to an MMIO region.
- * @return a |mmio_region_t| value representing that region.
+ * @return a `mmio_region_t` value representing that region.
  */
 inline mmio_region_t mmio_region_from_addr(uintptr_t address) {
   return (mmio_region_t){
@@ -45,7 +45,7 @@ inline mmio_region_t mmio_region_from_addr(uintptr_t address) {
 }
 
 /**
- * Reads an aligned uint8_t from the MMIO region |base| at the given byte
+ * Reads an aligned uint8_t from the MMIO region `base` at the given byte
  * offset.
  *
  * This function is guaranteed to commit a read to memory, and will not be
@@ -60,7 +60,7 @@ inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
 }
 
 /**
- * Reads an aligned uint16_t from the MMIO region |base| at the given byte
+ * Reads an aligned uint16_t from the MMIO region `base` at the given byte
  * offset.
  *
  * This function is guaranteed to commit a read to memory, and will not be
@@ -75,7 +75,7 @@ inline uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset) {
 }
 
 /**
- * Reads an aligned uint32_t from the MMIO region |base| at the given byte
+ * Reads an aligned uint32_t from the MMIO region `base` at the given byte
  * offset.
  *
  * This function is guaranteed to commit a read to memory, and will not be
@@ -90,7 +90,7 @@ inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
 }
 
 /**
- * Writes an aligned uint8_t to the MMIO region |base| at the given byte
+ * Writes an aligned uint8_t to the MMIO region `base` at the given byte
  * offset.
  *
  * This function is guaranteed to commit a write to memory, and will not be
@@ -106,7 +106,7 @@ inline void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
 }
 
 /**
- * Writes an aligned uint16_t to the MMIO region |base| at the given byte
+ * Writes an aligned uint16_t to the MMIO region `base` at the given byte
  * offset.
  *
  * This function is guaranteed to commit a write to memory, and will not be
@@ -122,7 +122,7 @@ inline void mmio_region_write16(mmio_region_t base, ptrdiff_t offset,
 }
 
 /**
- * Writes an aligned uint32_t to the MMIO region |base| at the given byte
+ * Writes an aligned uint32_t to the MMIO region `base` at the given byte
  * offset.
  *
  * This function is guaranteed to commit a write to memory, and will not be
@@ -140,9 +140,9 @@ inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
 /**
  * "Instrumented" mmio_region_t.
  *
- * Instead of containing a volatile pointer, mmio_region_t becomes a |void *|
- * when |-DMOCK_MMIO| is enabled. This makes it incompatible with the non-mock
- * version of |mmio_region_t|, which prevents users from being able to access
+ * Instead of containing a volatile pointer, mmio_region_t becomes a `void *`
+ * when `-DMOCK_MMIO` is enabled. This makes it incompatible with the non-mock
+ * version of `mmio_region_t`, which prevents users from being able to access
  * the pointer inside.
  */
 typedef struct mmio_region { void *mock; } mmio_region_t;
@@ -160,10 +160,10 @@ void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value);
 #endif  // MOCK_MMIO
 
 /**
- * Reads the bits in |mask| from the MMIO region |base| at the given offset.
+ * Reads the bits in `mask` from the MMIO region `base` at the given offset.
  *
- * This function has the same guarantees as |mmio_region_read32()| and
- * |mmio_region_write32()|.
+ * This function has the same guarantees as `mmio_region_read32()` and
+ * `mmio_region_write32()`.
  *
  * @param base the region to mask.
  * @param offset the offset to apply the mask at, in bytes.
@@ -179,11 +179,11 @@ inline uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
 }
 
 /**
- * Checks whether the |bit_index|th bit is set in the MMIO region |base| at
+ * Checks whether the `bit_index`th bit is set in the MMIO region `base` at
  * the given offset.
  *
- * This function has the same guarantees as |mmio_region_read32()| and
- * |mmio_region_write32()|.
+ * This function has the same guarantees as `mmio_region_read32()` and
+ * `mmio_region_write32()`.
  *
  * @param base the region to mask.
  * @param offset the offset to apply the mask at.
@@ -196,7 +196,7 @@ inline bool mmio_region_get_bit32(mmio_region_t base, ptrdiff_t offset,
 }
 
 /**
- * Clears the bits in |mask| from the MMIO region |base| at the given offset.
+ * Clears the bits in `mask` from the MMIO region `base` at the given offset.
  *
  * This function performs a non-atomic read-write-modify operation on a
  * MMIO region.
@@ -216,7 +216,7 @@ inline void mmio_region_nonatomic_clear_mask32(mmio_region_t base,
 }
 
 /**
- * Sets the bits in |mask| from the MMIO region |base| at the given offset.
+ * Sets the bits in `mask` from the MMIO region `base` at the given offset.
  *
  * This function performs a non-atomic read-write-modify operation on a
  * MMIO region.
@@ -235,10 +235,10 @@ inline void mmio_region_nonatomic_set_mask32(mmio_region_t base,
 }
 
 /**
- * Clears the |bit_index|th bit in the MMIO region |base| at the given offset.
+ * Clears the `bit_index`th bit in the MMIO region `base` at the given offset.
  *
  * This function has the same guarantees as
- * |mmio_region_nonatomic_clear_mask()|.
+ * `mmio_region_nonatomic_clear_mask()`.
  *
  * @param base the region to mask.
  * @param offset the offset to apply the mask at.
@@ -251,9 +251,9 @@ inline void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
 }
 
 /**
- * Sets the |bit_index|th bit in the MMIO region |base| at the given offset.
+ * Sets the `bit_index`th bit in the MMIO region `base` at the given offset.
  *
- * This function has the same guarantees as |mmio_region_nonatomic_set_mask()|.
+ * This function has the same guarantees as `mmio_region_nonatomic_set_mask()`.
  *
  * @param base the region to mask.
  * @param offset the offset to apply the mask at.

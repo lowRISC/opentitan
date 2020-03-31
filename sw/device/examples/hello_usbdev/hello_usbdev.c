@@ -46,7 +46,7 @@ static usb_ss_ctx_t simple_serial0;
 static usb_ss_ctx_t simple_serial1;
 
 /**
- * Makes |c| into a printable character, replacing it with |replacement|
+ * Makes `c` into a printable character, replacing it with `replacement`
  * as necessary.
  */
 static char make_printable(char c, char replacement) {
@@ -96,9 +96,9 @@ int main(int argc, char **argv) {
 
   demo_gpio_startup(&gpio);
 
-  // Call |usbdev_init| here so that DPI will not start until the
+  // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
-  // if |--trace| was passed in.
+  // if `--trace` was passed in.
   usbdev_init(&usbdev);
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));

@@ -42,7 +42,7 @@ struct BitField {
 
 /**
  * Represents a single bit field in an integer, similar to BitField. It can be
- * used in most places that need a BitField, as well as in |EXPECT_MASK| macros.
+ * used in most places that need a BitField, as well as in `EXPECT_MASK` macros.
  *
  * Like with BitFields, we can express the integer 0b0000'0000'1100'0101 as a
  * list of BitFieldMasks:
@@ -65,21 +65,21 @@ struct MaskedBitField {
 
 namespace internal {
 /**
- * Implicit conversion guard around |char *|. See |LeInt()|.
+ * Implicit conversion guard around `char *`. See `LeInt()`.
  */
 struct LittleEndianBytes {
   const char *bytes;
 };
 
 /**
- * Converts the argument into an unsigned integer of type |Int|.
+ * Converts the argument into an unsigned integer of type `Int`.
  *
  * This overload is simply the identity on integers, and allows integers to be
  * converted into themselves. This enables the basic EXPECT_* macros:
  *   EXPECT_READ32(offset, 0xcafecafe);
  *
  * @param val an integer.
- * @return the value |val|.
+ * @return the value `val`.
  */
 template <typename Int>
 Int ToInt(Int val) {
@@ -87,16 +87,16 @@ Int ToInt(Int val) {
 }
 
 /**
- * Converts the argument into an unsinged integer of type |Int|.
+ * Converts the argument into an unsinged integer of type `Int`.
  *
- * This overload assumes that |str| is a valid pointer to a buffer of at least
- * |sizeof(Int)| bytes, which are memcpy'd out as an |Int|. This enables
+ * This overload assumes that `str` is a valid pointer to a buffer of at least
+ * `sizeof(Int)` bytes, which are memcpy'd out as an `Int`. This enables
  * memcpy-like EXPECT_* macros:
  *   EXPECT_READ32(offset, LeInt("rv32"));
  *   EXPECT_READ32(offset, LeInt("imc\0"));
  *
- * @param str a pointer to a valid buffer of length at least |sizeof(Int)|.
- * @return a value of type |Int| memcpy'd out of |str|.
+ * @param str a pointer to a valid buffer of length at least `sizeof(Int)`.
+ * @return a value of type `Int` memcpy'd out of `str`.
  */
 template <typename Int>
 Int ToInt(LittleEndianBytes str) {
@@ -106,15 +106,15 @@ Int ToInt(LittleEndianBytes str) {
 }
 
 /**
- * Converts the argument into an unsigned integer of type |Int|.
+ * Converts the argument into an unsigned integer of type `Int`.
  *
- * This overload performs the shifts and ors described by |fields|. See
- * |BitField|'s documentation for details one what this means. This overload
+ * This overload performs the shifts and ors described by `fields`. See
+ * `BitField`'s documentation for details one what this means. This overload
  * enables bitfield EXPECT_* macros:
  *   EXPECT_READ32(offset, {{A_OFFSET, 0x55}, {B_OFFSET, 0xaa}});
  *
  * @param fields a list of bit field entries.
- * @return a value of type |Int| built out of |fields|.
+ * @return a value of type `Int` built out of `fields`.
  */
 template <typename Int>
 Int ToInt(std::initializer_list<BitField> fields) {
@@ -131,7 +131,7 @@ Int ToInt(std::initializer_list<BitField> fields) {
 }  // namespace internal
 
 /**
- * Reads a little-endian integer from |bytes|. This function is lazy, and will
+ * Reads a little-endian integer from `bytes`. This function is lazy, and will
  * only perform the converion when used with an EXPECT_* macro. For example:
  *   EXPECT_READ32(offset, LeInt("abcd"));
  *
@@ -146,16 +146,16 @@ inline internal::LittleEndianBytes LeInt(const char *bytes) { return {bytes}; }
  *
  * MockDevice provides two mockable member functions, representing a read and a
  * write at a particular offset from the base address. This class can be
- * converted into a |mmio_region_t| value, which, when used in |mmio.h|
- * functions like |read32()|, will map to the appropriate mock member function
+ * converted into a `mmio_region_t` value, which, when used in `mmio.h`
+ * functions like `read32()`, will map to the appropriate mock member function
  * calls.
  *
- * To maintain sequencing, |ReadN()| and |WriteN()| should not be
- * |EXPECT_CALL|'ed directly; instead, |EXPECT_READN| and |EXPECT_WRITEN| should
+ * To maintain sequencing, `ReadN()` and `WriteN()` should not be
+ * `EXPECT_CALL`'ed directly; instead, `EXPECT_READN` and `EXPECT_WRITEN` should
  * be used, instead.
  *
- * To use this class, |-DMOCK_MMIO| must be enabled in all translation units
- * using |mmio.h|.
+ * To use this class, `-DMOCK_MMIO` must be enabled in all translation units
+ * using `mmio.h`.
  */
 class MockDevice {
  public:
@@ -168,7 +168,7 @@ class MockDevice {
 
   /**
    * Converts this MockDevice into a mmio_region_t opaque object,
-   * which is compatible with |mmio.h| functions.
+   * which is compatible with `mmio.h` functions.
    */
   mmio_region_t region() { return {this}; }
 
@@ -197,12 +197,12 @@ class MockDevice {
 /**
  * Conveninence fixture for creating device tests.
  *
- * This class should be derived by a test fixture (along with |testing::Test|)
- * and used in a |TEST_F| block. Doing so will make the |EXPECT_READN| and
- * |EXPECT_WRITEN| conveinence macros useable.
+ * This class should be derived by a test fixture (along with `testing::Test`)
+ * and used in a `TEST_F` block. Doing so will make the `EXPECT_READN` and
+ * `EXPECT_WRITEN` conveinence macros useable.
  *
- * The device being mocked can be accessed in the test body with |this->dev()|.
- * |this->| is required in this case, since the name |dev| is not immediately
+ * The device being mocked can be accessed in the test body with `this->dev()`.
+ * `this->` is required in this case, since the name `dev` is not immediately
  * visible.
  */
 class MmioTest {
@@ -216,13 +216,13 @@ class MmioTest {
 }  // namespace mock_mmio
 
 /**
- * Expect a read to the device |dev| at the given offset, returning the given
+ * Expect a read to the device `dev` at the given offset, returning the given
  * 8-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_READ8_AT(dev, offset, ...) \
@@ -231,13 +231,13 @@ class MmioTest {
           testing::Return(mock_mmio::internal::ToInt<uint8_t>(__VA_ARGS__)))
 
 /**
- * Expect a read to the device |dev| at the given offset, returning the given
+ * Expect a read to the device `dev` at the given offset, returning the given
  * 16-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_READ16_AT(dev, offset, ...) \
@@ -246,13 +246,13 @@ class MmioTest {
           testing::Return(mock_mmio::internal::ToInt<uint16_t>(__VA_ARGS__)))
 
 /**
- * Expect a read to the device |dev| at the given offset, returning the given
+ * Expect a read to the device `dev` at the given offset, returning the given
  * 32-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_READ32_AT(dev, offset, ...) \
@@ -261,13 +261,13 @@ class MmioTest {
           testing::Return(mock_mmio::internal::ToInt<uint32_t>(__VA_ARGS__)))
 
 /**
- * Expect a write to the device |dev| at the given offset with the given 8-bit
+ * Expect a write to the device `dev` at the given offset with the given 8-bit
  * value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_WRITE8_AT(dev, offset, ...) \
@@ -275,13 +275,13 @@ class MmioTest {
       dev, Write8(offset, mock_mmio::internal::ToInt<uint8_t>(__VA_ARGS__)))
 
 /**
- * Expect a write to the device |dev| at the given offset with the given 16-bit
+ * Expect a write to the device `dev` at the given offset with the given 16-bit
  * value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_WRITE16_AT(dev, offset, ...) \
@@ -289,13 +289,13 @@ class MmioTest {
       dev, Write16(offset, mock_mmio::internal::ToInt<uint16_t>(__VA_ARGS__)))
 
 /**
- * Expect a write to the device |dev| at the given offset with the given 32-bit
+ * Expect a write to the device `dev` at the given offset with the given 32-bit
  * value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_WRITE32_AT(dev, offset, ...) \
@@ -306,12 +306,12 @@ class MmioTest {
  * Expect a read at the given offset, returning the given 8-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_READ8(offset, ...) \
@@ -321,12 +321,12 @@ class MmioTest {
  * Expect a read at the given offset, returning the given 16-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_READ16(offset, ...) \
@@ -336,12 +336,12 @@ class MmioTest {
  * Expect a read at the given offset, returning the given 32-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_READ32(offset, ...) \
@@ -351,12 +351,12 @@ class MmioTest {
  * Expect a write to the given offset with the given 8-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_WRITE8(offset, ...) \
@@ -366,12 +366,12 @@ class MmioTest {
  * Expect a write to the given offset with the given 16-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_WRITE16(offset, ...) \
@@ -381,12 +381,12 @@ class MmioTest {
  * Expect a write to the given offset with the given 32-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
- * or a |std::initializer_list<BitField>|.
+ * or a `std::initializer_list<BitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_WRITE32(offset, ...) \
@@ -413,39 +413,39 @@ class MmioTest {
   } while (false)
 
 /**
- * Expect an unspecified 8-bit read to the device |dev| at the given offset,
+ * Expect an unspecified 8-bit read to the device `dev` at the given offset,
  * followed by a write to the same location, with the same value but with some
  * bits changed; the remaining bits must be untouched.
  *
- * The changed bits are specified by a |std::initializer_list<MaskedBitField>|.
+ * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_MASK8_AT(dev, offset, ...) \
   EXPECT_MASK_INTERAL_(8, dev, offset, __VA_ARGS__)
 
 /**
- * Expect an unspecified 16-bit read to the device |dev| at the given offset,
+ * Expect an unspecified 16-bit read to the device `dev` at the given offset,
  * followed by a write to the same location, with the same value but with some
  * bits changed; the remaining bits must be untouched.
  *
- * The changed bits are specified by a |std::initializer_list<MaskedBitField>|.
+ * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_MASK16_AT(dev, offset, ...) \
   EXPECT_MASK_INTERAL_(16, dev, offset, __VA_ARGS__)
 
 /**
- * Expect an unspecified 32-bit read to the device |dev| at the given offset,
+ * Expect an unspecified 32-bit read to the device `dev` at the given offset,
  * followed by a write to the same location, with the same value but with some
  * bits changed; the remaining bits must be untouched.
  *
- * The changed bits are specified by a |std::initializer_list<MaskedBitField>|.
+ * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_MASK32_AT(dev, offset, ...) \
@@ -456,12 +456,12 @@ class MmioTest {
  * the same location, with the same value but with some bits changed; the
  * remaining bits must be untouched.
  *
- * The changed bits are specified by a |std::initializer_list<MaskedBitField>|.
+ * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_MASK8(offset, ...) \
@@ -472,12 +472,12 @@ class MmioTest {
  * the same location, with the same value but with some bits changed; the
  * remaining bits must be untouched.
  *
- * The changed bits are specified by a |std::initializer_list<MaskedBitField>|.
+ * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_MASK16(offset, ...) \
@@ -488,12 +488,12 @@ class MmioTest {
  * the same location, with the same value but with some bits changed; the
  * remaining bits must be untouched.
  *
- * The changed bits are specified by a |std::initializer_list<MaskedBitField>|.
+ * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
  *
  * This function is only available in tests using a fixture that derives
- * |MmioTest|.
+ * `MmioTest`.
  *
- * This expectation is sequenced with all other |EXPECT_READ| and |EXPECT_WRITE|
+ * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
  * calls.
  */
 #define EXPECT_MASK32(offset, ...) \

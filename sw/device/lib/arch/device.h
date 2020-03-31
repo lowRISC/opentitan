@@ -19,7 +19,7 @@
  */
 
 /**
- * A |device_type_t| represents a particular device type for which
+ * A `device_type_t` represents a particular device type for which
  * device-specific symbols are available.
  */
 typedef enum device_type {
