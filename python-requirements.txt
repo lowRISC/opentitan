@@ -5,6 +5,7 @@
 # Keep sorted.
 gitpython
 hjson
+ipyxact >= 0.2.4
 isort
 livereload
 mako
@@ -20,10 +21,6 @@ pytest-timeout
 pyyaml
 tabulate
 yapf
-
-# Develpment version to get around YAML parser warning triggered by fusesoc
-# Upstream tracking: https://github.com/olofk/ipyxact/issues/19
-git+https://github.com/olofk/ipyxact.git@master
 
 # Development version of edalize until all our changes are upstream
 git+https://github.com/lowRISC/edalize.git@ot
