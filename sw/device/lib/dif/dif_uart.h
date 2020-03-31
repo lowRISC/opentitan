@@ -80,7 +80,7 @@ typedef struct dif_uart_config {
 /**
  * UART instance state
  *
- * UART persistent data that is required by all UART API. |base_address| must
+ * UART persistent data that is required by all UART API. `base_address` must
  * be initialised by the caller, before passing into the UART DIF init routine.
  */
 typedef struct dif_uart {

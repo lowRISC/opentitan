@@ -35,7 +35,7 @@ typedef struct hmac_cfg {
 void hmac_init(hmac_cfg_t hmac_cfg);
 
 /**
- * Write |size_in_bytes| bytes of |data| to HMAC input buffer
+ * Write `size_in_bytes` bytes of `data` to HMAC input buffer
  *
  * @param data pointer to input buffer.
  * @param size_in_bytes number of bytes to write.

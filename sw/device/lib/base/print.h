@@ -14,7 +14,7 @@
  *
  * We avoid using libc names here, since we do not support the full suite of
  * format specifier syntax, and use a different character sink type instead of
- * the traditional |FILE *|.
+ * the traditional `FILE *`.
  *
  * All functions in this file should be machine word size agnostic, that is, the
  * same code should work correctly on both 32-bit and 64-bit machines, though
@@ -39,13 +39,13 @@ typedef struct buffer_sink {
 
 /**
  * Prints out a message to stdout, formatted according to the format string
- * |format|.
+ * `format`.
  *
  * The definition of "stdout" is not provided by this library; rather, it must
- * be initialized using |base_set_stdout()|.
+ * be initialized using `base_set_stdout()`.
  *
  * This function supports a subset of the format specifiers provided by standard
- * C |printf|. Those are, namely:
+ * C `printf`. Those are, namely:
  * - %%, which prints a percent sign.
  * - %c, which prints the lowest byte of a uint32_t as a character.
  * - %s, which prints a NUL-terminated string.
@@ -68,7 +68,7 @@ typedef struct buffer_sink {
  * garbage, and are, as such, unsupported.
  *
  * This function furthermore supports width modifiers for integer specifiers,
- * such as |%10d|. It does not support dynamic widths like |%*d|, and will also
+ * such as `%10d`. It does not support dynamic widths like `%*d`, and will also
  * always pad with zeroes, rather than spaces.
  *
  * Of course, providing arguments for formatting which are incompatible with a
@@ -81,17 +81,17 @@ size_t base_printf(const char *format, ...);
 
 /**
  * Prints out a message to stdout, formatted according to the format string
- * |format|.
+ * `format`.
  *
- * This function is identical to |base_printf|, except in that it takes a
- * |va_list| instead of having a vararg parameter. This function plays a role
- * analogous to |base_vfprintf|, for functions that wish to use the currently
- * set |stdout|.
+ * This function is identical to `base_printf`, except in that it takes a
+ * `va_list` instead of having a vararg parameter. This function plays a role
+ * analogous to `base_vfprintf`, for functions that wish to use the currently
+ * set `stdout`.
  *
- * This function *does not* take ownership of |args|; callers are responsible
- * for calling |va_end|.
+ * This function *does not* take ownership of `args`; callers are responsible
+ * for calling `va_end`.
  *
- * See |base_printf()| for the semantics of the format specification.
+ * See `base_printf()` for the semantics of the format specification.
  *
  * @param format the format spec.
  * @param args values to interpolate in the format spec.
@@ -99,12 +99,12 @@ size_t base_printf(const char *format, ...);
 size_t base_vprintf(const char *format, va_list args);
 
 /*
- * Prints a message to the buffer |buf|, capped at a given length.
+ * Prints a message to the buffer `buf`, capped at a given length.
  *
  * It goes without saying that the caller must ensure the given buffer is large
  * enough; failure to do so is Undefined Behavior.
  *
- * See |base_printf()| for the semantics of the format specification.
+ * See `base_printf()` for the semantics of the format specification.
  *
  * @param buf a buffer to print to.
  * @param format the format spec.
@@ -113,13 +113,13 @@ size_t base_vprintf(const char *format, va_list args);
 size_t base_snprintf(char *buf, size_t len, const char *format, ...);
 
 /**
- * Prints a message to the sink |out|.
+ * Prints a message to the sink `out`.
  *
- * If |out.sink| is |NULL|, writes are treated as-if they were written to a
+ * If `out.sink` is `NULL`, writes are treated as-if they were written to a
  * UNIX-like /dev/null: writes succeed, but the actual bytes are not printed
  * anywhere.
  *
- * See |base_printf()| for the semantics of the format specification.
+ * See `base_printf()` for the semantics of the format specification.
  *
  * @param out a sink to print to.
  * @param format the format spec.
@@ -128,22 +128,22 @@ size_t base_snprintf(char *buf, size_t len, const char *format, ...);
 size_t base_fprintf(buffer_sink_t out, const char *format, ...);
 
 /**
- * Prints a message to the sink |out|.
+ * Prints a message to the sink `out`.
  *
- * This function is identical to |base_fprintf|, except in that it takes a
- * |va_list| instead of having a vararg parameter. This function is provided
+ * This function is identical to `base_fprintf`, except in that it takes a
+ * `va_list` instead of having a vararg parameter. This function is provided
  * not for calling directly, but rather for being called by functions that
  * already take a variable number of arguments, and wish to make use of
  * formatting facilities.
  *
- * This function *does not* take ownership of |args|; callers are responsible
- * for calling |va_end|.
+ * This function *does not* take ownership of `args`; callers are responsible
+ * for calling `va_end`.
  *
- * If |out.sink| is |NULL|, writes are treated as-if they were written to a
+ * If `out.sink` is `NULL`, writes are treated as-if they were written to a
  * UNIX-like /dev/null: writes succeed, but the actual bytes are not printed
  * anywhere.
  *
- * See |base_printf()| for the semantics of the format specification.
+ * See `base_printf()` for the semantics of the format specification.
  *
  * @param out a sink to print to.
  * @param format the format spec.
@@ -152,7 +152,7 @@ size_t base_fprintf(buffer_sink_t out, const char *format, ...);
 size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args);
 
 /**
- * Sets what the "stdout" sink is, which is used by |base_printf()|.
+ * Sets what the "stdout" sink is, which is used by `base_printf()`.
  *
  * The default sink behaves like /dev/null on a standard UNIX system: writes
  * are treated as successful, but the contents of buffers are ignored.
@@ -160,7 +160,7 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args);
  * As such, this function must be called for printed messages to wind up
  * somewhere.
  *
- * Passing in |NULL| instead of a real function pointer will reset stdout to
+ * Passing in `NULL` instead of a real function pointer will reset stdout to
  * the default /dev/null behavior.
  *
  * @param out the sink to use for "default" printing.

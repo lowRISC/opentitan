@@ -118,8 +118,8 @@ The above rules also do not apply to system includes, which should be included b
 The first line of the comment is the summary, followed by a new line, and an optional longer description.
 Input arguments and return arguments can be documented with `@param` and `@return` if they are not self-explanatory from the name.
 
-The `@p` modifier can be used to format the following word as monospaced text in the final output.
-The documentation tool will also render markdown within descriptions.
+The documentation tool will also render markdown within descriptions, so backticks should be used to get monospaced text.
+It can also generate references to other named declarations using `#other_function` (for C-style declarations), or `ns::foo` (for C++ declarations).
 
 Example:
 
@@ -127,8 +127,10 @@ Example:
 /**
  * Do something amazing
  *
- * Create a rainbow and place a unicorn at the bottom of it. @p pots_of_gold
+ * Create a rainbow and place a unicorn at the bottom of it. `pots_of_gold`
  * pots of gold will be positioned on the east end of the rainbow.
+ *
+ * Can be recycled with #recycle_rainbow.
  *
  * @param pots_of_gold Number of gold pots to place next to the rainbow
  * @param unicorns Number of unicorns to position on the rainbow

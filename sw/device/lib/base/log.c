@@ -24,12 +24,12 @@ static const char *stringify_severity(log_severity_t severity) {
 }
 
 /**
- * Logs |format| and the values that following to stdout.
+ * Logs `format` and the values that following to stdout.
  *
  * @param severity the log severity.
  * @param file_name a constant string referring to the file in which the log
  * occured.
- * @param line a line number from |file_name|.
+ * @param line a line number from `file_name`.
  * @param format a format string, as described in print.h. This must be a string
  * literal.
  * @param ... format parameters matching the format string.
@@ -61,7 +61,7 @@ void base_log_internal_core(log_severity_t severity, const char *file_name,
 }
 
 /**
- * Logs |format| and the values that following in an efficient, DV-testbench
+ * Logs `format` and the values that following in an efficient, DV-testbench
  * specific way.
  *
  * @param severity the log severity.

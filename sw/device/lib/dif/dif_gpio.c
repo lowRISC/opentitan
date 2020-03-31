@@ -20,7 +20,7 @@ static uint32_t index_to_mask(uint32_t index) { return 1u << index; }
  * The GPIO device provides masked bit-level atomic writes to its DIRECT_OUT
  * and DIRECT_OE registers. This allows software to modify half of the bits
  * at a time without requiring a read-modify-write. Note that depending on the
- * value of the |mask|, this function may perform two writes.
+ * value of the `mask`, this function may perform two writes.
  *
  * For instance, DIRECT_OUT's lower and upper halves can be modified by
  * MASKED_OUT_LOWER and MASKED_OUT_UPPER, respectively. Upper half of
@@ -61,7 +61,7 @@ static void gpio_masked_write(const dif_gpio_t *gpio, uint32_t reg_lower_offset,
  * to perform only one write since it never needs to access both halves of a
  * register.
  *
- * See also |gpio_masked_write()|.
+ * See also `gpio_masked_write()`.
  *
  * @param gpio GPIO instance.
  * @param reg_lower_offset Offset of the masked access register that corresponds to
@@ -90,9 +90,9 @@ dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
     return kDifGpioResultInvalidArgument;
   }
 
-  // Save internal state in the given |dif_gpio_t| instance.
+  // Save internal state in the given `dif_gpio_t` instance.
   gpio->base_addr = config->base_addr;
-  // Reset the GPIO device at the given |base_addr|.
+  // Reset the GPIO device at the given `base_addr`.
   dif_gpio_reset(gpio);
 
   return kDifGpioResultOK;

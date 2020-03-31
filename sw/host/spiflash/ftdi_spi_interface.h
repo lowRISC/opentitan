@@ -29,7 +29,7 @@ class FtdiSpiInterface : public SpiInterface {
   // Initialize interface.
   bool Init() final;
 
-  // Transmit bytes from |tx| buffer. The number of bytes are defined by |size|.
+  // Transmit bytes from `tx` buffer. The number of bytes are defined by `size`.
   bool TransmitFrame(const uint8_t *tx, size_t size) final;
 
   bool CheckHash(const uint8_t *tx, size_t size) final;

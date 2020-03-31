@@ -19,7 +19,7 @@ namespace spiflash {
 // This class is not thread safe.
 class VerilatorSpiInterface : public SpiInterface {
  public:
-  // Constructs instance pointing to the |spi_filename| file path.
+  // Constructs instance pointing to the `spi_filename` file path.
   explicit VerilatorSpiInterface(std::string spi_filename)
       : spi_filename_(spi_filename), fd_(-1) {}
 
@@ -29,7 +29,7 @@ class VerilatorSpiInterface : public SpiInterface {
   // Initialize interface.
   bool Init() final;
 
-  // Transmit bytes from |tx| buffer. The number of bytes are defined by |size|.
+  // Transmit bytes from `tx` buffer. The number of bytes are defined by `size`.
   bool TransmitFrame(const uint8_t *tx, size_t size) final;
 
   bool CheckHash(const uint8_t *tx, size_t size) final;
