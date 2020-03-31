@@ -3,18 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 { name: "i2c"
-  clock_primary: "clk_fixed"
+  clock_primary: "clk_i"
   bus_device: "tlul"
   bus_host: "none"
   // INPUT pins
-  available_input_list: [
-    { name: "sda_rx", desc: "Serial input data bit" }
-    { name: "scl_rx", desc: "Serial input clock bit" }
-  ]
-  // OUTPUT pins
-  available_output_list: [
-    { name: "sda_tx", desc: "Serial output data bit" }
-    { name: "scl_tx", desc: "Serial output clock bit" }
+  available_inout_list: [
+    { name: "sda", desc: "Serial input data bit" }
+    { name: "scl", desc: "Serial input clock bit" }
   ]
   // INTERRUPT pins
   interrupt_list: [
