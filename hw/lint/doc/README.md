@@ -8,7 +8,7 @@ We have standardized on the [AscentLint](https://www.realintent.com/rtl-linting-
 
 The lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 The lint flow run scripts and waiver files are available in the GitHub repository of this project, but due to the proprietary nature of the lint rules and their configuration, the _"lowRISC Lint Rules"_ lint policy file can not be publicly provided.
-However, the _"Low Risc Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
+However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
 This enables designers that have access to this tool to run the lint flow provided locally on their premises.
 
 Our linting flow leverages FuseSoC to resolve dependencies, build file lists and call the linting tools. See [here](https://github.com/olofk/fusesoc) for an introduction to this opensource package manager and [here](https://docs.opentitan.org/doc/ug/install_instructions/) for installation instructions.
