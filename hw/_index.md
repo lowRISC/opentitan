@@ -23,7 +23,7 @@ This includes: top level specification(s); processor core(s) specifications; and
 | `hmac`          | [design spec]({{< relref "hw/ip/hmac/doc" >}})          | [DV plan]({{< relref "hw/ip/hmac/doc/dv_plan" >}}) |
 | `i2c`           | [design spec]({{< relref "hw/ip/i2c/doc" >}})           | [DV plan]({{< relref "hw/ip/i2c/doc/dv_plan" >}})  |
 | `nmi_gen`       | [design spec]({{< relref "hw/ip/nmi_gen/doc" >}})       | |
-| `padctrl`       | [design spec]({{< relref "hw/ip/padctrl/doc" >}})       | |
+| `padctrl`       | [design spec]({{< relref "hw/ip/padctrl/doc" >}})       | [DV plan]({{< relref "hw/ip/padtrl/doc/dv_plan" >}})
 | `pinmux`        | [design spec]({{< relref "hw/ip/pinmux/doc" >}})        | |
 | `rv_core_ibex`  | [design spec]({{< relref "hw/ip/rv_core_ibex/doc" >}})  | |
 | `rv_dm`         | [design spec]({{< relref "hw/ip/rv_dm/doc" >}})         | |
