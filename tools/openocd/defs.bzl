@@ -90,7 +90,8 @@ def _openocd_debug_server_impl(ctx):
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
     script_template = """
-{openocd} {interface_config_string} -c "transport select {transport}; "adapter_khz {programmer_frequency}" {chip_config_string}; 
+{openocd} {interface_config_string} -c "transport select {transport}; "adapter_khz {programmer_frequency}" {chip_config_string}
+ 
 """
 
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
