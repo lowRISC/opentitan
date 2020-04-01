@@ -1,0 +1,548 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+r"""Parses lint report and dump filtered messages in hjson format.
+"""
+import argparse
+import datetime
+import re
+import sys
+from pathlib import Path
+
+import hjson
+import mistletoe
+import numpy as np
+
+# this allows both scientific and fixed point numbers
+FP_NUMBER = r"[-+]?\d+\.\d+[Ee]?[-+]?\d*"
+# fp relative error threshold for report checksums
+CROSSCHECK_REL_TOL = 0.001
+
+
+def _match_strings(full_file, master_key, patterns, results):
+    """
+    This searches for string patterns in the full_file buffer.
+    The argument patterns needs to be a list of tuples with
+    (<error_severity>, <pattern_to_match_for>).
+    """
+    for severity, pattern in patterns:
+        results[master_key][severity] += re.findall(pattern,
+                                                    full_file,
+                                                    flags=re.MULTILINE)
+    return results
+
+
+def _match_fp_number(full_file, master_key, patterns, results):
+    """
+    This extracts numbers from the sting buffer full_file.
+    The argument patterns needs to be a list of tuples with
+    (<key>, <pattern_to_match_for>).
+    """
+    for key, pattern in patterns:
+        match = re.findall(pattern, full_file, flags=re.MULTILINE)
+        if len(match) == 1:
+            try:
+                results[master_key][key] = float(match[0])
+            except ValueError as err:
+                results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+        elif len(match) > 0:
+            for item in match:
+                try:
+                    results[master_key][key] += [float(item)]
+                except ValueError as err:
+                    results["messages"]["flow_errors"] += [
+                        "ValueError: %s" % err
+                    ]
+        else:
+            results["messages"]["flow_errors"] += [
+                "Pattern %s not found" % pattern
+            ]
+
+    return results
+
+
+def _extract_messages(full_file, results, key):
+    """
+    This extracts error and warning messages from the sting buffer full_file.
+    """
+    err_warn_patterns = [("%s_errors" % key, r"^Error: .*"),
+                         ("%s_warnings" % key, r"^Warning: .*")]
+    _match_strings(full_file, "messages", err_warn_patterns, results)
+
+    return results
+
+
+def _extract_gate_equiv(full_file, results, key):
+    """
+    This reads out the unit gate-equivalent.
+    """
+    try:
+        results[key]["ge"] = float(full_file.strip())
+    except ValueError as err:
+        results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+
+    return results
+
+
+def _rel_err(val, ref):
+    """
+    Calculate relative error with respect to reference
+    """
+    return abs(val - ref) / ref
+
+
+def _extract_area(full_file, results, key):
+    """
+    This extracts detailed area information from the report.
+    Area will be reported in gate equivalents.
+    """
+    # TODO: covert to gate equivalents
+    patterns = [("comb", r"^Combinational area: \s* (\d+\.\d+)"),
+                ("buf", r"^Buf/Inv area: \s* (\d+\.\d+)"),
+                ("reg", r"^Noncombinational area: \s* (\d+\.\d+)"),
+                ("macro", r"^Macro/Black Box area: \s* (\d+\.\d+)"),
+                ("total", r"^Total cell area: \s* (\d+\.\d+)")]
+
+    results = _match_fp_number(full_file, key, patterns, results)
+    # aggregate one level of sub-modules
+    pattern = r"^([\.0-9A-Za-z_\[\]]+){1}(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+    for k in range(5):
+        pattern += r"\s+(" + FP_NUMBER + r")"
+    matches = re.findall(pattern, full_file, flags=re.MULTILINE)
+
+    # checksums
+    comb_check = 0.0
+    reg_check = 0.0
+    macro_check = 0.0
+    try:
+        for item in matches:
+            if item[0] not in results[key]["instances"]:
+                results[key]["instances"].update(
+                    {item[0]: {
+                         "comb": 0.0,
+                         "reg": 0.0,
+                         "buf": np.nan, # currently not available
+                         "macro": 0.0,
+                         "total": 0.0,
+                     }})
+            results[key]["instances"][item[0]]["comb"]  += float(item[3])
+            results[key]["instances"][item[0]]["reg"]   += float(item[4])
+            results[key]["instances"][item[0]]["macro"] += float(item[5])
+            results[key]["instances"][item[0]]["total"] += float(item[3]) + \
+                                                           float(item[4]) + \
+                                                           float(item[5])
+            comb_check += float(item[3])
+            reg_check += float(item[4])
+            macro_check += float(item[5])
+
+    except ValueError as err:
+        results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+
+    # cross check whether the above accounting is correct
+    if _rel_err(comb_check, results["area"]["comb"]) > CROSSCHECK_REL_TOL:
+        results["messages"]["flow_errors"] += [
+            "Reporting error: comb_check (%e) != (%e)" %
+            (comb_check, results["area"]["comb"])
+        ]
+    if _rel_err(reg_check, results["area"]["reg"]) > CROSSCHECK_REL_TOL:
+        results["messages"]["flow_errors"] += [
+            "Reporting error: reg_check (%e) != (%e)" %
+            (reg_check, results["area"]["reg"])
+        ]
+    if _rel_err(macro_check, results["area"]["macro"]) > CROSSCHECK_REL_TOL:
+        results["messages"]["flow_errors"] += [
+            "Reporting error: macro_check (%e) != (%e)" %
+            (macro_check, results["area"]["macro"])
+        ]
+
+    return results
+
+
+def _extract_clocks(full_file, results, key):
+    """
+    Parse out the clocks and their period
+    """
+    clocks = re.findall(r"^(.+)\s+(\d+\.?\d*)\s+\{\d+.?\d* \d+.?\d*\}\s+",
+                        full_file,
+                        flags=re.MULTILINE)
+    try:
+        # get TNS and WNS in that group
+        for k, c in enumerate(clocks):
+            if c[0].strip() not in results[key]:
+                results[key].update({
+                    c[0].strip(): {
+                        "tns": 0.0,
+                        "wns": 0.0,
+                        "period": float(c[1])
+                    }
+                })
+    except ValueError as err:
+        results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+
+    return results
+
+
+def _extract_timing(full_file, results, key):
+    """
+    This extracts the TNS and WNS for all defined clocks.
+    """
+    groups = re.findall(r"^  Path Group:\s(.+)\s",
+                        full_file,
+                        flags=re.MULTILINE)
+
+    slack = re.findall(r"^  slack \(.+\) \s*(" + FP_NUMBER + ")",
+                       full_file,
+                       flags=re.MULTILINE)
+    try:
+        # get TNS and WNS in that group
+        for k, g in enumerate(groups):
+            if g.strip() not in results[key]:
+                results[key].update(
+                    {g.strip(): {
+                         "tns": 0.0,
+                         "wns": 0.0,
+                         "period": np.nan
+                     }})
+            value = float(slack[k]) if float(slack[k]) < 0.0 else 0.0
+            results[key][g]["wns"] = min(results[key][g]["wns"], value)
+            results[key][g]["tns"] += value
+    except ValueError as err:
+        results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+
+    return results
+
+
+def _match_units(full_file, patterns, key, results):
+    """
+    Compares the match to the units given and stores the corresponding
+    order of magnitude as a floating point value.
+    """
+    for subkey, pattern, units in patterns:
+        match = re.findall(pattern, full_file, flags=re.MULTILINE)
+        try:
+            if match:
+                if len(match[0]) == 2:
+                    if match[0][1].strip() in units:
+                        results[key][subkey] = float(match[0][0]) * \
+                            units[match[0][1].strip()]
+        except ValueError as err:
+            results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+
+    return results
+
+
+def _extract_units(full_file, results, key):
+    """
+    Get the SI units configuration of this run
+    """
+    patterns = [
+        ("voltage", r"^    Voltage Units = (\d+\.?\d*)(nV|uV|mV|V)", {
+            "nV": 1E-9,
+            "uV": 1E-6,
+            "mV": 1E-3,
+            "V": 1E0
+        }),
+        ("capacitance", r"^    Capacitance Units = (\d+\.?\d*)(ff|pf|nf|uf)", {
+            "ff": 1E-15,
+            "pf": 1E-12,
+            "nf": 1E-9,
+            "uf": 1E-6
+        }),
+        ("time", r"^    Time Units = (\d+\.?\d*)(ps|ns|us|ms)", {
+            "ps": 1E-12,
+            "ns": 1E-9,
+            "us": 1E-6,
+            "ms": 1E-3
+        }),
+        ("dynamic", r"^    Dynamic Power Units = (\d+\.?\d*)(pW|nW|uW|mW|W)", {
+            "pW": 1E-12,
+            "nW": 1E-9,
+            "uW": 1E-6,
+            "mW": 1E-3,
+            "W": 1E0
+        }),
+        ("static", r"^    Leakage Power Units = (\d+\.?\d*)(pW|nW|uW|mW|W)", {
+            "pW": 1E-12,
+            "nW": 1E-9,
+            "uW": 1E-6,
+            "mW": 1E-3,
+            "W": 1E0
+        })
+    ]
+
+    _match_units(full_file, patterns, key, results)
+
+    return results
+
+
+def _extract_power(full_file, results, key):
+    """
+    This extracts power estimates for the top module from the report.
+    """
+
+    # extract first 3 columns on that line
+    patterns = [("net", r"^" + results["top"] + r"\s*(" + FP_NUMBER + r")\s*" +
+                 FP_NUMBER + r" \s*" + FP_NUMBER),
+                ("int", r"^" + results["top"] + r"\s* " + FP_NUMBER +
+                 r" \s*(" + FP_NUMBER + r")\s* " + FP_NUMBER),
+                ("leak", r"^" + results["top"] + r"\s* " + FP_NUMBER +
+                 r" \s* " + FP_NUMBER + r" \s*(" + FP_NUMBER + ")")]
+
+    results = _match_fp_number(full_file, key, patterns, results)
+
+    return results
+
+
+def _parse_file(path, name, results, handler, key):
+    """
+    Attempts to open and aprse a given report file with the handler provided.
+    """
+    try:
+        with Path(path).joinpath(name).open() as f:
+            full_file = f.read()
+            results = handler(full_file, results, key)
+    except IOError as err:
+        results["messages"]["flow_errors"] += ["IOError: %s" % err]
+    return results
+
+
+def get_results(logpath, reppath, dut):
+    """
+    Parse report and corresponding logfiles and extract error, warning
+    and info messages for each IP present in the result folder
+    """
+
+    results = {
+        "tool": "dc",
+        "top": "",
+        "messages": {
+            "flow_errors": [],
+            "flow_warnings": [],
+            "analyze_errors": [],
+            "analyze_warnings": [],
+            "elab_errors": [],
+            "elab_warnings": [],
+            "compile_errors": [],
+            "compile_warnings": [],
+        },
+        "timing": {
+            # field for each timing group with tns, wns
+            # and the period if this is a clock
+        },
+        "area": {
+            # gate equivalent of a NAND2 gate
+            "ge": np.nan,
+            # summary, in GE
+            "comb": np.nan,
+            "buf": np.nan,
+            "reg": np.nan,
+            "macro": np.nan,
+            "total": np.nan,
+            # hierchical report with "comb", "buf", "reg", "macro", "total"
+            "instances": {},
+        },
+        "power": {
+            "net": np.nan,
+            "int": np.nan,
+            "leak": np.nan,
+        },
+        "units": {
+            "voltage": np.nan,
+            "capacitance": np.nan,
+            "time": np.nan,
+            "dynamic": np.nan,
+            "static": np.nan,
+        }
+    }
+
+    results["top"] = dut
+
+    # flow messages
+    results = _parse_file(logpath, 'synthesis.log',
+                          results, _extract_messages, "flow")
+
+    # messages
+    for rep_type in ["analyze", "elab", "compile"]:
+        results = _parse_file(reppath, '%s.rpt' % rep_type,
+                              results, _extract_messages, rep_type)
+
+    # get gate equivalents
+    results = _parse_file(reppath, 'gate_equiv.rpt',
+                          results, _extract_gate_equiv, "area")
+    # area
+    results = _parse_file(reppath, 'area.rpt',
+                          results, _extract_area, "area")
+    # clocks. this complements the timing report later below
+    results = _parse_file(reppath, 'clocks.rpt',
+                          results, _extract_clocks, "timing")
+    # timing
+    results = _parse_file(reppath, 'timing.rpt',
+                          results, _extract_timing, "timing")
+    # power
+    results = _parse_file(reppath, 'power.rpt',
+                          results, _extract_power, "power")
+    # units
+    results = _parse_file(reppath, 'power.rpt',
+                          results, _extract_units, "units")
+
+    return results
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="""This script parses DC log and report files from
+        a synthesis run, filters the messages and creates an aggregated result
+        .hjson file with the following fields:
+
+        results = {
+            "tool": "dc",
+            "top" : <name of toplevel>,
+
+            "messages": {
+                "flow_errors"      : [],
+                "flow_warnings"    : [],
+                "analyze_errors"   : [],
+                "analyze_warnings" : [],
+                "elab_errors"      : [],
+                "elab_warnings"    : [],
+                "compile_errors"   : [],
+                "compile_warnings" : [],
+            },
+
+            "timing": {
+                # per timing group (ususally a clock domain)
+                # in nano seconds
+                <group>  : {
+                    "tns"    : <value>,
+                    "wns"    : <value>,
+                    "period" : <value>,
+                ...
+                }
+            },
+
+            "area": {
+                # gate equivalent of a NAND2 gate
+                "ge"     : <value>,
+
+                # summary report, in GE
+                "comb"   : <value>,
+                "buf"    : <value>,
+                "reg"    : <value>,
+                "macro"  : <value>,
+                "total"  : <value>,
+
+                # hierchical report of first submodule level
+                "instances" : {
+                    <name> : {
+                        "comb"  : <value>,
+                        "buf"   : <value>,
+                        "reg"   : <value>,
+                        "macro" : <value>,
+                        "total" : <value>,
+                    },
+                    ...
+                },
+            },
+
+            "power": {
+                "net"  : <value>,
+                "int"  : <value>,
+                "leak" : <value>,
+            },
+
+            "units": {
+                "voltage"     : <value>,
+                "capacitance" : <value>,
+                "time"        : <value>,
+                "dynamic"     : <value>,
+                "static"      : <value>,
+            }
+        }
+
+        The script returns nonzero status if any errors are present.
+        """)
+
+    parser.add_argument(
+        '--dut',
+        type=str,
+        help="""Name of the DUT. This is needed to parse the reports.""")
+
+    parser.add_argument(
+        '--logpath',
+        type=str,
+        help="""Path to log files for the flow.
+                This script expects the following log files to be present:
+
+                            - <logpath>/synthesis.log : output of synopsys shell
+
+                        """)
+
+    parser.add_argument(
+        '--reppath',
+        type=str,
+        help="""Path to report files of the flow.
+                This script expects the following report files to be present:
+
+                            - <reppath>/analyze.rpt : output of analyze command
+                            - <reppath>/elab.rpt    : output of elab command
+                            - <reppath>/compile.rpt : output of compile_ultra
+                            - <reppath>/area.rpt    : output of report_area
+                            - <reppath>/timing.rpt  : output of report_timing
+                            - <reppath>/power.rpt   : output of report_power
+
+                        """)
+
+
+    parser.add_argument('--outdir',
+                        type=str,
+                        default="./",
+                        help="""Output directory for the 'results.hjson' file.
+                        Defaults to './'""")
+
+    args = parser.parse_args()
+    results = get_results(args.logpath, args.reppath, args.dut)
+
+    with Path(args.outdir).joinpath("results.hjson").open("w") as results_file:
+        hjson.dump(results,
+                   results_file,
+                   ensure_ascii=False,
+                   for_json=True,
+                   use_decimal=True)
+
+    # return nonzero status if any warnings or errors are present
+    # lint infos do not count as failures
+    nr_errors = len(results["messages"]["flow_errors"])     + \
+                len(results["messages"]["analyze_errors"])  + \
+                len(results["messages"]["elab_errors"])     + \
+                len(results["messages"]["compile_errors"])
+
+    print("""------------- Summary -------------
+Flow Warnings:      %s
+Flow Errors:        %s
+Analyze Warnings:   %s
+Analyze Errors:     %s
+Elab Warnings:      %s
+Elab Errors:        %s
+Compile Warnings:   %s
+Compile Errors:     %s
+-----------------------------------""" %
+          (len(results["messages"]["flow_warnings"]),
+           len(results["messages"]["flow_errors"]),
+           len(results["messages"]["analyze_warnings"]),
+           len(results["messages"]["analyze_errors"]),
+           len(results["messages"]["elab_warnings"]),
+           len(results["messages"]["elab_errors"]),
+           len(results["messages"]["compile_warnings"]),
+           len(results["messages"]["compile_errors"])))
+
+    if nr_errors > 0:
+        print("Synthesis not successful.")
+        sys.exit(1)
+
+    print("Synthesis successful.")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

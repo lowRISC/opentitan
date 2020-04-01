@@ -26,8 +26,13 @@ class OneShotCfg(FlowCfg):
         self.tool = args.tool
         self.email = args.email
         self.verbose = args.verbose
+        self.flist_gen_cmd = ""
+        self.flist_gen_opts = []
+        self.sv_flist_gen_dir = ""
+        self.flist_file = ""
         self.build_cmd = ""
         self.build_opts = []
+        self.build_log = ""
         self.report_cmd = ""
         self.report_opts = []
         self.build_opts.extend(args.build_opts)

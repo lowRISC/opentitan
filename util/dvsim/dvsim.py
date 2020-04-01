@@ -22,6 +22,7 @@ import sys
 import Deploy
 import LintCfg
 import SimCfg
+import SynCfg
 import utils
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
@@ -128,7 +129,7 @@ def main():
     parser.add_argument("-t",
                         "--tool",
                         default="",
-                        metavar="vcs|xcelium|ascentlint|...",
+                        metavar="vcs|xcelium|ascentlint|dc|...",
                         help="Override the tool that is set in hjson file")
 
     parser.add_argument(
@@ -476,6 +477,8 @@ def main():
     # and other ASIC flow targets.
     if args.tool == 'ascentlint':
         cfg = LintCfg.LintCfg(args.cfg, proj_root, args)
+    elif args.tool == 'dc':
+        cfg = SynCfg.SynCfg(args.cfg, proj_root, args)
     else:
         cfg = SimCfg.SimCfg(args.cfg, proj_root, args)
 
