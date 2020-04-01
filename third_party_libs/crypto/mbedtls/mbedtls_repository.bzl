@@ -1,7 +1,7 @@
 VERSIONS = {
     "mbedtls-2.16.5": {
         "commit": "0fce215851cc069c5b5def12fcc18725055fa6cf",
-        "sha256": "65b4c6cec83e048fd1c675e9a29a394ea30ad0371d37b5742453f74084e7b04d",
+        "sha256": "4e43a01d4a6198bfb7de9f7daf52957a422379b53dab15b6aa928e9a8f58cae9",
     },
 }
 
@@ -15,7 +15,7 @@ def _mbedtls_repository_impl(rctx):
         stripPrefix = REPOSITORY_NAME + "-" + version_info["commit"],
         sha256 = version_info["sha256"],
     )
-    rctx.symlink(Label("//third_party_libs/crypto/mbed_tls:mbedtls_defs.bzl"), "mbedtls_defs.bzl")
+    rctx.symlink(Label("//third_party_libs/crypto/mbedtls:mbedtls_defs.bzl"), "mbedtls_defs.bzl")
     target_template = """
 mbedtls_project(
     name = "{name}",
@@ -27,10 +27,10 @@ mbedtls_project(
     rctx.file("BUILD", """
 package(default_visibility = ["//visibility:public"])
 load(":mbedtls_defs.bzl","mbedtls_project")
-""" + targets_str + startup_targets_str)
+""" + targets_str)
 
 mbedtls_repository_simple = repository_rule(
-    implementation = _stm32h7xx_repository_impl,
+    implementation = _mbedtls_repository_impl,
     attrs = {
         "version": attr.string(
             doc = "Release version of repository",
