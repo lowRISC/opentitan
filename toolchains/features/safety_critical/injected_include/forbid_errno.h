@@ -1,1 +1,0 @@
-#pragma GCC errno strerror
