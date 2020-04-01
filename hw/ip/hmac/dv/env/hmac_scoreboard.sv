@@ -50,9 +50,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     if (write && channel == AddrChannel) begin
       // push the msg into msg_fifo
       if (item.a_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]}) begin
-        if (!sha_en) begin
-          void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
-          void'(ral.err_code.predict(.value(SwPushMsgWhenShaDisabled), .kind(UVM_PREDICT_DIRECT)));
+        if (!hmac_start) begin
+          update_err_intr_code(SwPushMsgWhenIdle);
+        end else if (!sha_en) begin
+          update_err_intr_code(SwPushMsgWhenShaDisabled);
         end else if (hmac_start && !cfg.under_reset) begin
           bit [7:0] bytes[4];
           bit [7:0] msg[];
@@ -70,24 +71,22 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       end else begin
         case (csr_name)
           "cmd": begin
-            if (sha_en && !(hmac_start && item.a_data[0])) begin
-              {hmac_process, hmac_start} = item.a_data[1:0];
-              if (hmac_process) begin
+            if (sha_en && !(hmac_start && item.a_data[HashStart])) begin
+              if (item.a_data[HashProcess] && hmac_start) begin
+                {hmac_process, hmac_start} = item.a_data[1:0];
                 // check if msg all streamed in, could happen during wr msg or trigger process
                 predict_digest(msg_q);
                 msg_q.delete();
-              end else if (hmac_start) begin
+              end else if (item.a_data[HashStart]) begin
+                {hmac_process, hmac_start} = item.a_data[1:0];
                 msg_q.delete(); // make sure did not include previous msg
                 update_wr_msg_length(msg_q.size());
               end
             end else if (item.a_data[HashStart] == 1) begin
-              void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
               if (!sha_en) begin
-                void'(ral.err_code.predict(.value(SwHashStartWhenShaDisabled),
-                                           .kind(UVM_PREDICT_DIRECT)));
+                update_err_intr_code(SwHashStartWhenShaDisabled);
               end else begin
-                void'(ral.err_code.predict(.value(SwHashStartWhenActive),
-                                           .kind(UVM_PREDICT_DIRECT)));
+                update_err_intr_code(SwHashStartWhenActive);
               end
             end
           end
@@ -109,9 +108,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7": begin
             string str_index;
             if (hmac_start) begin
-              void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
-              void'(ral.err_code.predict(.value(SwUpdateSecretKeyInProcess),
-                                         .kind(UVM_PREDICT_DIRECT)));
+              update_err_intr_code(SwUpdateSecretKeyInProcess);
               return;
             end
             str_index = csr_name.substr(3,3);
@@ -389,4 +386,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     void'(ral.msg_length_lower.predict(size_bits[TL_DW-1:0]));
   endfunction
 
+  virtual function void update_err_intr_code(err_code_e err_code_val);
+    if (!ral.intr_state.hmac_err.get_mirrored_value()) begin
+      void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+      void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
+    end
+  endfunction
 endclass

@@ -73,7 +73,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     if (do_wr_config) write_discard_config();
     if (do_wr_key) begin
       write_discard_key();
-      check_error_code();
+      check_error_code(0);
     end
   endtask
 
@@ -116,7 +116,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task trigger_hash_when_active();
     repeat ($urandom_range(1, 10)) trigger_hash();
-    check_error_code();
+    check_error_code(0);
   endtask
 
   // read digest value
@@ -257,7 +257,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end else begin
       csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
                    .compare_mask(1 << HmacMsgFifoFull));
-      csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacMsgFifoFull));
+      csr_wr(.csr(ral.intr_state), .value(1 << HmacMsgFifoFull));
     end
   endtask
 
@@ -278,14 +278,21 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // this task is called when sha_en=0 and sequence set hash_start, or streamed in msg
   // it will check intr_pin, intr_state, and error_code register
-  virtual task check_error_code();
+  // default check_err is 1, if set to 0, means user is not sure if it is error case or not,
+  // will leave the checking to scoreboard
+  virtual task check_error_code(bit check_err = 1);
     bit [TL_DW-1:0] error_code;
     csr_utils_pkg::wait_no_outstanding_access();
-    if (ral.intr_enable.hmac_err.get_mirrored_value()) begin
-      check_interrupts(.interrupts((1 << HmacErr)), .check_set(1'b1));
+    if (check_err) begin
+      if (ral.intr_enable.hmac_err.get_mirrored_value()) begin
+        check_interrupts(.interrupts((1 << HmacErr)), .check_set(1'b1));
+      end else begin
+        csr_rd_check(.ptr(ral.intr_state), .compare_value(1 << HmacErr));
+        csr_wr(.csr(ral.intr_state), .value(1 << HmacErr));
+      end
     end else begin
-      csr_rd_check(.ptr(ral.intr_state), .compare_value(1 << HmacErr));
-      csr_wr(.csr(ral.intr_state), .value(1 << HmacErr));
+      csr_rd(.ptr(ral.intr_state), .value(error_code));
+      csr_wr(.csr(ral.intr_state), .value(error_code));
     end
     csr_rd(ral.err_code, error_code);
   endtask
