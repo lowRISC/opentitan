@@ -41,13 +41,13 @@ End of search list.
 # 1 "<stdin>" 2
 """
     expect = [
-        "-I/usr/include/c++/7.4.0",
-        "-I/usr/include/x86_64-linux-gnu/c++/7.4.0",
-        "-I/usr/include/c++/7.4.0/backward",
-        "-I/usr/include/clang/6.0.0/include",
-        "-I/usr/local/include",
-        "-I/usr/include/x86_64-linux-gnu",
-        "-I/usr/include",
+        "-isystem/usr/include/c++/7.4.0",
+        "-isystem/usr/include/x86_64-linux-gnu/c++/7.4.0",
+        "-isystem/usr/include/c++/7.4.0/backward",
+        "-isystem/usr/include/clang/6.0.0/include",
+        "-isystem/usr/local/include",
+        "-isystem/usr/include/x86_64-linux-gnu",
+        "-isystem/usr/include",
     ]
     env = unittest.begin(ctx)
     asserts.equals(env, expect, ProccessResponse(response))

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-workspace(name = "minimal_stm32h7_cubemx")
+workspace(name = "bazel_embedded")
 
 load("//:bazel_embedded_deps.bzl", "bazel_embedded_deps")
 
