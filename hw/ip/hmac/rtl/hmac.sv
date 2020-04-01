@@ -101,6 +101,7 @@ module hmac
 
   hmac_reg2hw_cfg_reg_t cfg_reg;
   logic                 cfg_block;  // Prevent changing config
+  logic                 msg_allowed; // MSG_FIFO from software is allowed
 
   ///////////////////////
   // Connect registers //
@@ -175,6 +176,17 @@ module hmac
       cfg_reg <= '{endian_swap: '{q: 1'b1, qe: 1'b0}, default:'0};
     end else if (!cfg_block && reg2hw.cfg.hmac_en.qe) begin
       cfg_reg <= reg2hw.cfg ;
+    end
+  end
+
+  // Open up the MSG_FIFO from the TL-UL port when it is ready
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      msg_allowed <= '0;
+    end else if (hash_start) begin
+      msg_allowed <= 1'b 1;
+    end else if (packer_flush_done) begin
+      msg_allowed <= 1'b 0;
     end
   end
   ////////////////
@@ -291,7 +303,7 @@ module hmac
   // TL-UL to MSG_FIFO byte write handling
   logic msg_write;
 
-  assign msg_write = msg_fifo_req & msg_fifo_we & ~hmac_fifo_wsel;
+  assign msg_write = msg_fifo_req & msg_fifo_we & ~hmac_fifo_wsel & msg_allowed;
 
   logic [$clog2(32+1)-1:0] wmask_ones;
 
@@ -426,9 +438,11 @@ module hmac
   /////////////////////////
   logic msg_push_sha_disabled, hash_start_sha_disabled, update_seckey_inprocess;
   logic hash_start_active;  // `reg_hash_start` set when hash already in active
+  logic msg_push_not_allowed; // Message is received when `hash_start` isn't set
   assign msg_push_sha_disabled = msg_write & ~sha_en;
   assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
   assign hash_start_active = reg_hash_start & cfg_block;
+  assign msg_push_not_allowed = msg_fifo_req & ~msg_allowed;
 
   always_comb begin
     update_seckey_inprocess = 1'b0;
@@ -449,7 +463,8 @@ module hmac
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
                    ( msg_push_sha_disabled | hash_start_sha_disabled
-                   | update_seckey_inprocess | hash_start_active);
+                   | update_seckey_inprocess | hash_start_active
+                   | msg_push_not_allowed );
 
   always_comb begin
     err_code = NoError;
@@ -467,6 +482,10 @@ module hmac
 
       hash_start_active: begin
         err_code = SwHashStartWhenActive;
+      end
+
+      msg_push_not_allowed: begin
+        err_code = SwPushMsgWhenDisallowed;
       end
 
       default: begin
