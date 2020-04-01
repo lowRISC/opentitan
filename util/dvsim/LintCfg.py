@@ -52,8 +52,7 @@ class LintCfg(OneShotCfg):
         Gathers the aggregated results from all sub configs
         '''
 
-        # Generate results table for runs. Note that we build a simple md and
-        # a marked up md version here in parallel.
+        # Generate results table for runs.
         log.info("Create summary of lint results")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
@@ -118,8 +117,6 @@ class LintCfg(OneShotCfg):
         # '''
 
         # Generate results table for runs.
-        # Note that we build a simple md and a marked up md version
-        # here in parallel.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
         results_str += "### Lint Tool: " + self.tool.upper() + "\n\n"
