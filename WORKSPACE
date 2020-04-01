@@ -69,9 +69,3 @@ git_repository(
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
-
-load("@bazel_embedded//devices/arm/st_microelectronics/stm32h7cube:stm32h7_repository.bzl", "stm32h7_repository")
-
-stm32h7_repository(
-    project_configs = {"minimal": "@minimal_stm32h7_cubemx//devices/arm/st_microelectronics/stm32h7cube/minimal-cubemx-test:minimal_cubemx_project_config"},
-)
