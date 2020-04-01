@@ -21,11 +21,10 @@ def extract_messages(full_file, patterns, results):
     (<error_severity>, <pattern_to_match_for>).
     """
     for severity, pattern in patterns:
-        results[severity] += re.findall(pattern,
-                                        full_file,
-                                        flags=re.MULTILINE)
+        results[severity] += re.findall(pattern, full_file, flags=re.MULTILINE)
 
     return results
+
 
 def get_results(resdir):
     """
@@ -112,14 +111,16 @@ def main():
 
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    exit_code = 0
     nr_errors = len(results["errors"]) + len(results["lint_errors"])
     nr_warnings = len(results["warnings"]) + len(results["lint_warnings"])
-    print("Lint not successful, got %d warnings and %d errors." %
-          (nr_warnings, nr_errors))
     if nr_errors > 0 and nr_warnings > 0:
-        exit_code = 1
-    sys.exit(exit_code)
+        print("Lint not successful, got %d warnings and %d errors." %
+              (nr_warnings, nr_errors))
+        sys.exit(1)
+
+    print("Lint successful, got %d warnings and %d errors." %
+          (nr_warnings, nr_errors))
+    sys.exit(0)
 
 
 if __name__ == "__main__":

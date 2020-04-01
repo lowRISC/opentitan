@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  project:          opentitan
-  doc_server:       docs.opentitan.org
-  results_server:   reports.opentitan.org
-
   flow:             lint
   flow_makefile:    "{proj_root}/hw/lint/data/lint.mk"
 
@@ -16,12 +12,19 @@
   dut:              "{name}"
   build_dir:        "{scratch_path}/{build_mode}"
 
-  // we rely on fusesoc to run lint for us
+  // We rely on fusesoc to run lint for us
   build_cmd:  "fusesoc "
   build_opts: ["--cores-root {proj_root}",
-               "run --target=lint --tool={tool} --build-root={build_dir}",
+               "run --target={flow} --tool={tool} --build-root={build_dir}",
                " {fusesoc_core} "]
+  build_log: "{build_dir}/{dut}_flow.log"
+
   report_cmd: "{proj_root}/hw/lint/tools/{tool}/parse-lint-report.py "
   report_opts: ["--repdir={build_dir}/lint-{tool} --outdir={build_dir}"]
   tool_srcs: []
+
+  // these are not needed currently, but have to be defined
+  sv_flist_gen_cmd:   ""
+  sv_flist_gen_opts:  []
+  sv_flist_gen_dir:   ""
 }
