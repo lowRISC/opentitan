@@ -21,6 +21,13 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   rand bit [7:0]  msg[];
   rand int        burst_wr_length;
   rand bit        do_hash_start_when_active;
+  rand bit        do_hash_start;
+
+  constraint legal_seq_c {
+    do_hash_start == 1;
+    sha_en == 1;
+    do_hash_start_when_active == 0;
+  }
 
   constraint msg_c {
     msg.size() dist {
@@ -28,10 +35,6 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         [1 :60] :/ 8,
         [61:64] :/ 1
     }; // upto 64 bytes (16 words, 512 bits)
-  }
-
-  constraint sha_en_c {
-    sha_en dist {1'b1 := 9, 1'b0 := 1};
   }
 
   constraint burst_wr_c {
@@ -42,10 +45,6 @@ class hmac_sanity_vseq extends hmac_base_vseq;
     intr_fifo_full_en dist {1'b1 := 8, 1'b0 := 2};
     intr_hmac_done_en dist {1'b1 := 8, 1'b0 := 2};
     intr_hmac_err_en  dist {1'b1 := 8, 1'b0 := 2};
-  }
-
-  constraint hash_start_when_active_c {
-    do_hash_start_when_active dist {1'b1 := 1, 1'b0 := 9};
   }
 
   virtual task pre_start();
@@ -79,28 +78,28 @@ class hmac_sanity_vseq extends hmac_base_vseq;
 
       if (sha_en || $urandom_range(0, 1)) begin
         // start stream in msg
-        trigger_hash();
+        if (do_hash_start) trigger_hash();
 
         if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
         else wr_msg(msg);
         if (!sha_en) begin
           if ($urandom_range(0, 1)) begin // restream in the message
             sha_enable();
-            trigger_hash();
+            if (do_hash_start) trigger_hash();
             wr_msg(msg);
           end else begin // discard current transaction
             continue;
           end
         end
 
-        if (do_hash_start_when_active) begin
+        if (do_hash_start_when_active && do_hash_start) begin
           trigger_hash_when_active();
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(msg);
           wr_msg(msg);
         end
 
         // msg stream in finished, start hash
-        trigger_process();
+        if (do_hash_start) trigger_process();
 
         // fifo_full intr can be triggered at the latest two cycle after process
         // example: current fifo_depth=(14 words + 2 bytes), then wr last 4 bytes, design will
@@ -108,16 +107,17 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         cfg.clk_rst_vif.wait_clks(2);
         clear_intr_fifo_full();
 
-        // wait for interrupt to assert, check status and clear it
-        if (intr_hmac_done_en) begin
-          wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-          check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
-        end else begin
-          csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-          csr_wr(.csr(ral.intr_state), .value(1 << HmacDone));
+        if (do_hash_start) begin
+          // wait for interrupt to assert, check status and clear it
+          if (intr_hmac_done_en) begin
+            wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
+            check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
+          end else begin
+            csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+            csr_wr(.csr(ral.intr_state), .value(1 << HmacDone));
+          end
         end
       end
-
 
       // if disable sha, digest should be cleared
       // read msg fifo length

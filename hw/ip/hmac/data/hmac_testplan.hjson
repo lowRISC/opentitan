@@ -60,6 +60,17 @@
       tests: ["hmac_datapath_stress"]
     }
     {
+      name: error
+      desc: '''This error case runs sequences that will cause interrupt bit hmac_err to set.
+            This sequence includes:
+            - Write msg_fifo or set hash_start when sha is disabled
+            - Update secret key when hash is in process
+            - Set hash_start when hash is active
+            - Write msg before hash_start is set'''
+      milestone: V2
+      tests: ["hmac_error"]
+    }
+    {
       name: stress_all
       desc: "Stress_all test is a random mix of all the test above except csr tests."
       milestone: V2

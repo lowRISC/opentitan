@@ -65,7 +65,8 @@ package hmac_env_pkg;
     SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
     SwHashStartWhenShaDisabled = 32'h 0000_0002,
     SwUpdateSecretKeyInProcess = 32'h 0000_0003,
-    SwHashStartWhenActive      = 32'h 0000_0004
+    SwHashStartWhenActive      = 32'h 0000_0004,
+    SwPushMsgWhenIdle          = 32'h 0000_0005
   } err_code_e;
 
   typedef class hmac_env_cfg;
