@@ -1,0 +1,22 @@
+workspace(name = "minimal_mbedtls")
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "bazel_embedded",
+    commit = "c72c4fa0de5ce3ddc826ad23f3770e4134165ca3",
+    remote = "git@github.com:silvergasp/bazel-embedded.git",
+    shallow_since = "1585022166 +0800",
+)
+
+load("@bazel_embedded//:bazel_embedded_deps.bzl", "bazel_embedded_deps")
+
+bazel_embedded_deps()
+
+load("@bazel_embedded//third_party_libs/crypto/mbedtls:mbedtls_repository.bzl", "mbedtls_repository")
+
+mbedtls_repository(
+    project_configs = {
+        "minimal": "@minimal_mbedtls//:minimal_mbedtls_conf",
+    },
+)
