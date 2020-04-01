@@ -1,0 +1,26 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // The tool sources include the technology setup file,
+  // the main synthesis run script and the constraints file
+  tool_srcs: ["{proj_root}/hw/foundry/syn/{tool}/setup.tcl"
+              "{proj_root}/hw/syn/tools/{tool}/run-syn.tcl"
+              "{proj_root}/hw/syn/tools/{tool}/constraints.sdc"]
+
+  // Environment variables that are needed in the synthesis script
+  exports: [{"DUT"       : "{dut}"},
+            {"BUILD_DIR" : "{build_dir}"},
+            {"SV_FLIST"  : "{sv_flist}"}]
+
+  // Tool invocation
+  build_cmd:  "dc_shell-xg-t "
+  build_opts: ["-f run-syn.tcl"]
+
+  // DC-specific results parsing script that is called after running synthesis
+  report_cmd: "{proj_root}/hw/syn/tools/{tool}/parse-syn-report.py "
+  report_opts: ["--dut {dut}",
+                "--logpath {build_dir} ",
+                "--reppath {build_dir}/REPORTS/ ",
+                "--outdir {build_dir}"]
+}

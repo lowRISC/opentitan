@@ -9,7 +9,7 @@
 set SETUP_CLOCK_UNCERTAINTY 0.5
 
 # TODO: consider splitting this into per-IP .sdc files
-if {$TOP_ENTITY == "top_earlgrey"} {
+if {$DUT == "top_earlgrey"} {
 
 puts "Applying constraints for top level"
 
@@ -158,4 +158,4 @@ set_load [load_of ${load_lib}/${load_cell}/A] [all_outputs]
 
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report
-set_critical_range 0.5 ${TOP_ENTITY}
+set_critical_range 0.5 ${DUT}

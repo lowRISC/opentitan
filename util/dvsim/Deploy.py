@@ -553,10 +553,16 @@ class CompileOneShot(Deploy):
             "tool_srcs": False,
             "tool_srcs_dir": False,
 
+            # Flist gen
+            "sv_flist_gen_cmd": False,
+            "sv_flist_gen_dir": False,
+            "sv_flist_gen_opts": False,
+
             # Build
             "build_dir": False,
             "build_cmd": False,
             "build_opts": False,
+            "build_log": False,
 
             # Report processing
             "report_cmd": False,

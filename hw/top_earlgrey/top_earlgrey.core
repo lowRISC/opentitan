@@ -99,7 +99,7 @@ targets:
 
   syn:
     <<: *default_target
-    # set default to DC once
+    # TODO: set default to DC once
     # this option is available
     # olofk/edalize#89
     default_tool: icarus
