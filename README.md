@@ -1,4 +1,7 @@
 # bazel-embedded
+
+![CI](https://github.com/silvergasp/bazel-embedded/workflows/CI/badge.svg)
+
 **Caution:** This is alpha quality software at the moment and has not be tested in depth.
 bazel-embedded is a set of tools that enable embedded development using bazel. 
 
