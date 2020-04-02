@@ -204,7 +204,7 @@ Some examples:
 * **task run_same_csr_outstanding_vseq**: This task tests the same CSR with
   non-blocking accesses as the regular CSR sequences don't cover that due to
   limitation of uvm_reg.
-* **task run_mem_partial_read_vseq**: This task tests the partial read to the
+* **task run_mem_partial_access_vseq**: This task tests the partial access to the
   memories by randomizing mask, size, and the 2 LSB bits of the address. It also runs
   with non-blocking access enabled.
   ```

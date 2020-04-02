@@ -20,10 +20,10 @@
             Verify partial-accessibility of all memories in the design.
             - Do partial reads and writes into the memories and verify the outcome for
               correctness.
+            - Also test outstanding access on memories
             '''
       milestone: V1
-      // mem_walk does partial writes, so we can reuse that test here
-      tests: ["{name}{intf}_mem_walk"]
+      tests: ["{name}{intf}_mem_partial_access"]
     }
     // TODO: add mem access with reset
   ]
