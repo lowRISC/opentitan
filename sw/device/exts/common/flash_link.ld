@@ -22,9 +22,12 @@ MEMORY {
 }
 
 /**
- * The stack starts at the end of RAM and grows down.
+ * The stack starts at the end of RAM and grows down. It is zeroed out so a size
+ * must be provided.
  */
+_stack_size = 0x2000; /* 8kb stack */
 _stack_start = ORIGIN(ram) + LENGTH(ram);
+_stack_end = _stack_start - _stack_size;
 
 SECTIONS {
   /**
