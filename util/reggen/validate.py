@@ -994,13 +994,21 @@ def validate_multi(mreg, offset, addrsep, width, top):
             genfields = []
 
         while bpos < width:
-            trypos = bused << bpos
-            if trypos > max_rval:
+            # bused is a bit mask of how many bits the fields need
+            # bpos is the current LSB of the bits allocated for the fields
+            trypos = bused << bpos;
+
+            # if register can no longer contain another homogenous field
+            # if the field is not homogenous and has been allocated
+            # Currently we only compact if field is homogenous
+            if (trypos > max_rval) or (bpos != 0 and len(mreg['fields']) > 1) :
                 bpos = width
                 break
+            # if bits have not been used, break and allocate
             if (trypos & bits_used) == 0:
                 break
             bpos += 1
+
         if bpos < width:
             # found a spot
             for fn in mreg['fields']:
