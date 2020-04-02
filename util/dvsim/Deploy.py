@@ -39,6 +39,8 @@ class Deploy():
     print_interval = 5
     max_parallel = 16
     max_odirs = 5
+    # Max jobs dispatched in one go.
+    slot_limit = 20
 
     def __self_str__(self):
         if log.getLogger().isEnabledFor(VERBOSE):
@@ -460,6 +462,8 @@ class Deploy():
             all_done = (len(queued_items) == 0)
             if not all_done:
                 num_slots = Deploy.max_parallel - Deploy.dispatch_counter
+                if num_slots > Deploy.slot_limit:
+                    num_slots = Deploy.slot_limit
                 if num_slots > 0:
                     if len(queued_items) > num_slots:
                         dispatch_items(queued_items[0:num_slots])
