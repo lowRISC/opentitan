@@ -13,6 +13,8 @@ package aes_env_pkg;
   import cip_base_pkg::*;
   import aes_reg_pkg::*;
   import aes_ral_pkg::*;
+  import aes_pkg::*;
+
 
   // macro includes
   `include "uvm_macros.svh"
@@ -20,17 +22,16 @@ package aes_env_pkg;
 
   // parameters
 
-   parameter uint AES_ADDR_MAP_SIZE      = 128;
-  // types
-  // forward declare classes to allow typedefs below
-  typedef class aes_env_cfg;
-  typedef class aes_env_cov;
+  parameter uint AES_ADDR_MAP_SIZE      = 128;
+
+  typedef enum int { AES_CFG=0, AES_DATA=1, AES_ERR_INJ=2 } aes_item_type_e;
 
   // functions
 
   // package sources
  `include "aes_env_cfg.sv"
  `include "aes_seq_item.sv"
+ `include "aes_message_item.sv"
  `include "aes_env_cov.sv"
  `include "aes_virtual_sequencer.sv"
  `include "aes_scoreboard.sv"

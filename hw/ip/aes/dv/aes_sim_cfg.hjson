@@ -57,13 +57,20 @@
   tests: [
     {
       name: aes_wake_up
+      uvm_test: aes_wake_up_test
       uvm_test_seq: aes_wake_up_vseq
       reseed: 1
     }
 
     {
       name: aes_sanity
-      uvm_test_seq: aes_sanity_vseq
+      uvm_test: aes_sanity_test
+      uvm_test_seq: aes_stress_vseq
+    }
+    {
+      name: aes_stress
+      uvm_test: aes_stress_test
+      uvm_test_seq: aes_stress_vseq
     }
   ]
 
@@ -72,6 +79,10 @@
     {
       name: sanity
       tests: ["aes_sanity"]
+    }
+     {
+      name: stress
+      tests: ["aes_stress"]
     }
   ]
 }

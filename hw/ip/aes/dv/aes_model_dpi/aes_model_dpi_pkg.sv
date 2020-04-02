@@ -74,6 +74,5 @@ package aes_model_dpi_pkg;
     c_dpi_aes_crypt_block(impl_i, op_i, mode_i, iv_in, key_len_i, key_i, data_in, data_out);
     data_o  = aes_transpose(data_out);
     return;
-  endfunction
-
+  endfunction // sv_dpi_aes_crypt_block
 endpackage

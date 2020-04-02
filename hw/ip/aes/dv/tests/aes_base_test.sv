@@ -9,14 +9,27 @@ class aes_base_test extends cip_base_test #(
   `uvm_component_utils(aes_base_test)
   `uvm_component_new
 
-  // the base class dv_base_test creates the following instances:
-  // aes_env_cfg: cfg
-  // aes_env:     env
+   virtual function void build_phase(uvm_phase phase);
+     super.build_phase(phase);
+     configure_env();
+   endfunction // build_phase
 
-  // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
-  // the run_phase; as such, nothing more needs to be done
 
-//    function configure_knobs()
-//      endfunction // configure_knobs
+  virtual function void configure_env();
+    // cfg.ref_model          = OpenSSL;
+    // env related knobs
+
+    cfg.errors_en          = 0;
+    cfg.num_messages_min   = 3;
+    cfg.num_messages_max   = 3;
+    // message related knobs
+    cfg.ecb_weight         = 100;
+    cfg.cbc_weight         = 0;
+    cfg.ctr_weight         = 0;
+    cfg.message_len_min    = 1;   // bytes
+    cfg.message_len_max    = 599; // bytes
+    `DV_CHECK_RANDOMIZE_FATAL(cfg)
+  endfunction
+
 
 endclass : aes_base_test
