@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
       - lowrisc:ip:tlul
+      - lowrisc:tlul:adapter_host
     files:
       - rtl/rv_core_ibex.sv
     file_type: systemVerilogSource
