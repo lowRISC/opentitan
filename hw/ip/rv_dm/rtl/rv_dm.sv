@@ -163,6 +163,7 @@ module rv_dm #(
   logic                   master_gnt;
   logic                   master_r_valid;
   logic   [BusWidth-1:0]  master_r_rdata;
+  logic                   master_r_err;
 
   dm_sba #(
     .BusWidth(BusWidth)
@@ -196,8 +197,7 @@ module rv_dm #(
   );
 
   tlul_adapter_host #(
-    .AW(BusWidth),
-    .DW(BusWidth)
+    .MAX_REQS(1)
   ) tl_adapter_host_sba (
     .clk_i,
     .rst_ni,
@@ -207,12 +207,15 @@ module rv_dm #(
     .we_i         (master_we),
     .wdata_i      (master_wdata),
     .be_i         (master_be),
-    .size_i       (sbaccess[1:0]),
     .valid_o      (master_r_valid),
     .rdata_o      (master_r_rdata),
+    .err_o        (master_r_err),
     .tl_o         (tl_h_o),
     .tl_i         (tl_h_i)
   );
+
+  // DBG doesn't handle error responses so raise assertion if we see one
+  `ASSERT(dbgNoErrorResponse, master_r_valid |-> !master_r_err)
 
   localparam int unsigned AddressWidthWords = BusWidth - $clog2(BusWidth/8);
 

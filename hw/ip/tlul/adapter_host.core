@@ -2,49 +2,37 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rv_dm:0.1"
-description: "RISC-V debug module"
+name: "lowrisc:tlul:adapter_host:0.1"
+description: "Req/Grant/RValid to TL-UL adapter (host)"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:tlul:adapter_host
-      - pulp-platform:riscv-dbg:0.1
+      - lowrisc:tlul:common
+      - lowrisc:constants:top_pkg
     files:
-      - rtl/rv_dm.sv
+      - rtl/tlul_adapter_host.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-      #- lowrisc:lint:comportable
     files:
-      - lint/rv_dm.vlt
+      - lint/tlul_adapter_host.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-      #- lowrisc:lint:comportable
     files:
-      - lint/rv_dm.waiver
+      - lint/tlul_adapter_host.waiver
     file_type: waiver
 
-  files_formal:
-    files:
-      - dv/tb/rv_dm_bind.sv
-    file_type: systemVerilogSource
 
 parameters:
-  NrHarts:
-    datatype: int
-    paramtype: vlogparam
-    description: Number of harts
-
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
@@ -55,15 +43,8 @@ targets:
     filesets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
-      - target_formal   ? (files_formal)
       - files_rtl
-    toplevel: rv_dm
-
-  formal:
-    filesets:
-      - files_rtl
-      - files_formal
-    toplevel: rv_dm
+    toplevel: tlul_adapter_host
 
   lint:
     <<: *default_target
@@ -75,5 +56,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-
