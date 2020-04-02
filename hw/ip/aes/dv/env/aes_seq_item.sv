@@ -2,51 +2,68 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+
 class aes_seq_item extends uvm_sequence_item;
 
-  // Knobs //
-  // min number of data bytes
-  int    data_len_max;
-  // Max number of data bytes
-  int    data_len_min;
+  `uvm_object_utils(aes_seq_item)
 
+  aes_item_type_e  item_type;
 
-  // randomized values //
-  rand bit                                 operation; // TODO implement this as enum
-  // 0: auto start, 1: wait for start
-  rand bit                                 man_trigger;
+  aes_op_e operation;
+
+  ///////////////////////////////////////
+  //  control Knobs                    //
+  ///////////////////////////////////////
+
+  // 0: auto mode 1: manual start
+  bit             manual_op;
   // 0: output data cannot be overwritten
   // 1: new output will overwrite old output even if not read.
-  rand bit                                 allow_data_ovrwrt;
-  // lenth of plaintext / cypher
-  rand bit                   [31:0]        data_len;
+  bit             allow_data_ovrwrt;
+  // lenth of plaintext / cypher (max is 128b/16b per block)
+  // used to mask bits that are not part of the data vector
+  bit [3:0]       data_len            = 0;
   // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
-  rand bit                   [2:0]         key_size;
+  bit [2:0]       key_len;
   // 256 bit key (8x32 bit)
-  rand bit              [7:0][31:0]        key;
-  // data queue to hold the randomized data
-  rand bit                   [31:0]        data_in_queue[$];
+  bit [7:0][31:0] key;
+  // which fields of the key is valid
+  bit [7:0]       key_vld             = 8'b0;
   // randomized data to add to queue
+  bit [3:0][31:0] iv;
+  // indicate if the initialization vector is valid
+  bit [3:0]       iv_vld;
+  aes_mode_e      mode;
 
 
+  ///////////////////////////////////////
+  // FIXED variables                   //
+  ///////////////////////////////////////
+
+  // indicate which words has data
+  bit [3:0]       data_in_vld         = 4'b0;
+  // indicate which words has data
+  bit [3:0]       data_out_vld        = 4'b0;
 
 
-  // fixed variables //
-  // indicated which words has data
-  bit [3:0] data_in_vld  = 4'b0;
-  // indicated which words has data
-  bit                         [3:0]       data_out_vld = 4'b0;
   // used by the checker
-  bit                   [3:0][31:0]       data_in;
-  // used by the checker
-  bit                   [3:0][31:0]       data_out;
-  // used to store output data
-  bit                        [31:0]       data_out_queue[$];
+  bit [3:0][31:0] data_out;
+  // used byt the scoreboard to rebuild plaintext messages
+  //   bit [31:0]      data_in_queue[$];
+  //used by the scoreboard to build the processed message
+  //   bit [31:0]      data_out_queue[$];
   // set if data should be fixed and not randomized
-  bit                                     fixed_data = 0;
+  bit             fixed_data          = 0;
   // if set unused key bytes will be forced to 0 - controlled from test
-  bit                                     key_mask=0;
+  bit             key_mask            = 0;
 
+
+  ///////////////////////////////////////
+  // Randomizable variables            //
+  ///////////////////////////////////////
+
+  // used by the checker
+  rand  bit [3:0][31:0] data_in;
 
 
   function new( string name="aes_sequence_item");
@@ -54,34 +71,10 @@ class aes_seq_item extends uvm_sequence_item;
   endfunction
 
 
-  // contraints //
-  constraint c_data {
-    solve data_len before data_in_queue;
-    data_len inside { [data_len_min: data_len_max] };
-
-    if(data_len[1:0] == 2'b00) {
-      data_in_queue.size() == data_len >> 2;
-    } else {
-      data_in_queue.size() ==  data_len >> 2 + 1;
-    }
-    if(data_len[1:0] == 2'b01) {
-      data_in_queue[data_in_queue.size()-1][31:8]   == 0;
-    } else if (data_len[1:0] == 2'b10) {
-      data_in_queue[data_in_queue.size()-1][31:16]  == 0;
-    } else {
-      data_in_queue[data_in_queue.size()-1][31:24]  == 0;
-    }
-  }
-
-  constraint c_key_size {key_size inside {3'b001, 3'b010, 3'b100 };
-             // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
-  }
-
-  constraint c_operation_reg {operation == 0; man_trigger == 0; allow_data_ovrwrt == 0; }
-
   function void post_randomize();
+    bit [3:0]           index;
     if(key_mask) begin
-      case (key_size)
+      case (key_len)
         3'b001: begin
           key[7:4] = 32'h00000000;
         end
@@ -92,77 +85,153 @@ class aes_seq_item extends uvm_sequence_item;
         end
       endcase
     end
+
+    // mask unused data bits
+    if(data_len != 0) begin
+      for(int i=data_len; i<16; i++) begin
+        data_in[i[3:2]][i[1:0]*8+7 -:8] = 8'd0;
+      end
+    end
+  endfunction // post_randomize
+
+  // function to detect if all datafields
+  // have been updated.
+  function bit data_in_valid();
+    `uvm_info(`gfn, $sformatf("\n\t ----| Checking if ALL data is updated %4b", data_in_vld)
+              , UVM_FULL)
+
+    return &data_in_vld;
+  endfunction // data_in_valid
+
+  // function to detect if all datafields
+  // have been updated.
+  function bit data_out_valid();
+    `uvm_info(`gfn, $sformatf("\n\t ----| Checking if ALL data is valid  %4b", data_out_vld)
+      , UVM_FULL)
+
+    return &data_out_vld;
+  endfunction // data_in_valid
+
+  // if ret_clean = 0
+  // return 1 only of all registers have been written
+  // if ret_celan = 1
+  // return 1 if all or none of the registers have been written
+  function bit key_clean(bit ret_clean);
+    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b", key_vld), UVM_LOW)
+    if(ret_clean) begin
+      return ( (&key_vld) || ~(|key_vld));
+    end else begin
+      return &key_vld;
+    end
+  endfunction // key_clean
+
+  // if ret_clean = 0
+  // return 1 only of all registers have been written
+  // if ret_celan = 1
+  // return 1 if all or none of the registers have been written
+  function bit iv_clean(bit ret_clean);
+    if(ret_clean) begin
+      return  ( (&iv_vld) || ~(|iv_vld));
+    end else begin
+      return &iv_vld;
+    end
   endfunction
 
+  // bases on the AES mode
+  // function will return 1 if this is the start of a new message
+  function bit message_start();
+    case(mode)
+      AES_ECB: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b",key_vld, &key_vld), UVM_LOW)
+        return (&key_vld);
+      end
+      AES_CBC: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_LOW)
+        return (&key_vld && &iv_vld);
+      end
+      AES_CTR: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_LOW)
+        return (&key_vld && &iv_vld);
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
+      end
+    endcase // case (mode)
+  endfunction // message_start
 
-  function bit add2output( logic [31:0] data );
-    data_out_queue.push_back(data);
-    return 1;
-  endfunction
+
+  function void clean();
+    data_in_vld = '0;
+    iv_vld      = '0;
+    key_vld     = '0;
+    data_out_vld= '0;
+  endfunction // clean
 
 
   virtual function void do_copy(uvm_object rhs);
     aes_seq_item rhs_;
 
-    if(!$cast(rhs_,rhs) ) begin
-      uvm_report_error("do_copy:", "acst failed");
-      return;
-    end
+    `downcast(rhs_,rhs)
     super.do_copy(rhs);
-    operation = rhs_.operation;
-    data_in   = rhs_.data_in;
-    key       = rhs_.key;
-    key_size  = rhs_.key_size;
-    data_out  = rhs_.data_out;
+    item_type    = rhs_.item_type;
+    operation    = rhs_.operation;
+    mode         = rhs_.mode;
+    data_in      = rhs_.data_in;
+    key          = rhs_.key;
+    key_len      = rhs_.key_len;
+    key_vld      = rhs_.key_vld;
+    iv           = rhs_.iv;
+    iv_vld       = rhs_.iv_vld;
+    data_out     = rhs_.data_out;
+    data_len     = rhs_.data_len;
   endfunction // copy
 
 
-// do compare //
-virtual function bit do_compare(uvm_object rhs, uvm_comparer comparer);
+  // do compare //
+  virtual function bit do_compare(uvm_object rhs, uvm_comparer comparer);
 
-  aes_seq_item rhs_;
+    aes_seq_item rhs_;
 
-  if(!$cast(rhs_,rhs))begin
-    return 0; // compare failed because object is not of sequence item type
-  end
-
-return(super.do_compare(rhs,comparer) &&
-  (operation == rhs_.operation) &&
-  (data_in   == rhs_.data_in) &&
-  (key       == rhs_.key) &&
-  (data_out  == rhs_.data_out) );
-endfunction // compare
+    `downcast(rhs_,rhs)
+    return(super.do_compare(rhs,comparer) &&
+           (operation == rhs_.operation) &&
+           (mode      == rhs_.mode) &&
+           (data_in   == rhs_.data_in) &&
+           (key       == rhs_.key) &&
+           (data_out  == rhs_.data_out) );
+  endfunction // compare
 
 
-// convert to string //
-virtual function string convert2string();
- string str;
-  str = super.convert2string();
-  str = {str,  $psprintf("\n\t ----| AES SEQUENCE ITEM                                  |----\t ")
-        };
-  str = {str,  $psprintf("\n\t ----| Mode:    \t %s                          |----\t ",
-        (operation==1'b0) ? "ENCRYPT" : "DECRYPT" ) };
-  str = {str,  $psprintf("\n\t ----| Key size:    \t %s                             |----\t ",
-         (key_size==3'b001) ? "128b" : (key_size == 3'b010) ? "192b" : "256b") };
-  str = {str,  $psprintf("\n\t ----| Key:         \t ") };
-  for(int i=0; i <8; i++) begin
-    str = {str, $psprintf("%h ",key[i])};
-  end
-  str = {str,  $psprintf("\n\t ----| Input data:  \t %h |----\t ", data_in) };
-  str = {str,  $psprintf("\n\t ----| Output data: \t %h |----\t ", data_out) };
-  str = {str,  $psprintf("\n\t") };
+  // convert to string //
+  virtual function string convert2string();
+    string str;
+    str = super.convert2string();
+    str = {str,  $psprintf("\n\t ----| AES SEQUENCE ITEM                                  |----\t ")
+           };
+    str = {str,  $psprintf("\n\t ----| Item Type:    \t %s                          |----\t ",item_type.name()) };
+    str = {str,  $psprintf("\n\t ----| AES Mode:    \t %s                          |----\t ",mode.name()) };
+    str = {str,  $psprintf("\n\t ----| Operation:    \t %s                          |----\t ", operation.name() ) };
+    str = {str,  $psprintf("\n\t ----| Key len:    \t %s                             |----\t ",
+                           (key_len==3'b001) ? "128b" : (key_len == 3'b010) ? "192b" : "256b") };
+    str = {str,  $psprintf("\n\t ----| Key:         \t ") };
+    for(int i=0; i <8; i++) begin
+      str = {str, $psprintf("%h ",key[i])};
+    end
+    str = {str,  $psprintf("\n\t ----| Data Length: \t %d |----\t  \t", data_len) };
+    str = {str,  $psprintf("\n\t ----| Input data:  \t %h |----\t ", data_in) };
+    str = {str,  $psprintf("\n\t ----| Output data: \t %h |----\t ", data_out) };
+    str = {str,  $psprintf("\n\t") };
 
-  return str;
+    return str;
   endfunction // conver2string
 
   virtual function string bytes2string();
     string str="\n\t ----| data_out: ";
     for(int i=0; i<4; i++) begin
-        str = {str, $psprintf("%h", data_out[i][31:0])};
+      str = {str, $psprintf("%h", data_out[i][31:0])};
     end
     return str;
   endfunction
-
-`uvm_object_utils(aes_seq_item)
-
 endclass
