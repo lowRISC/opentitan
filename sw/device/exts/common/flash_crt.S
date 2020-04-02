@@ -49,6 +49,20 @@ bss_zero_loop:
   ble   t0, t1, bss_zero_loop
 bss_zero_loop_end:
 
+  // Zero out the stack
+  //
+  // We use `t0` and `t1` to represent the start and end pointers of the stack.
+  // As the stack grows downwards and we zero going forwards the start pointer
+  // starts as _stack_end and the end pointer at _stack_start - 4
+  la  t0, _stack_end
+  la  t1, (_stack_start - 4)
+  bge t0, t1, stack_zero_loop_end
+stack_zero_loop:
+  sw    zero, 0(t0)
+  addi  t0, t0, 0x4
+  ble   t0, t1, stack_zero_loop
+stack_zero_loop_end:
+
   // Initialize the `.data` segment from the `.idata` segment.
   //
   // We use `t0` and `t1` to represent the start and end pointers

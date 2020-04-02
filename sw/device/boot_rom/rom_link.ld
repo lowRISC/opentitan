@@ -31,6 +31,7 @@ _boot_address = ORIGIN(rom);
 _heap_size = 0xe000;
 _stack_size = 0x2000;
 _stack_start = ORIGIN(ram) + _heap_size + _stack_size;
+_stack_end   = ORIGIN(ram) + _heap_size;
 _flash_start = ORIGIN(flash);
 
 /**
