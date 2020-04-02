@@ -43,7 +43,7 @@ Feature requests towards a signed-off design requires review and approval by the
 Once accepted, it results in creating a new version and return a design to the appropriate life stage, based upon the size of the change.
 See the _Versioning_ section of the document for more discussion.
 Signed off fully-functioning (read: not buggy) designs stay in the Signoff stage as an available complete IP, with an associated revision ID.
-[Here](https://github.com/lowRISC/opentitan/blob/master/doc/project/ip_checklist.md.tpl) is a template that can be used as a checklist item.
+[Here](https://github.com/lowRISC/opentitan/blob/master/doc/project/hw_checklist.md.tpl) is a template that can be used as a checklist item.
 
 
 | **Stage** | **Name** | **Definition** |

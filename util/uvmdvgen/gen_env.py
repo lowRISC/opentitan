@@ -33,7 +33,8 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
                 ('dv/cov',          '',         '',                   ''),
                 ('dv',              '',         'Makefile',           ''),
                 ('dv',              name + '_', 'sim_cfg',            '.hjson'),
-                ('doc',             name + '_', 'dv_plan',            '.md'),
+                ('doc/dv_plan',     '',         'index',              '.md'),
+                ('doc',             '',         'checklist',          '.md'),
                 ('data',            name + '_', 'testplan',           '.hjson'),
                 ('dv',              name + '_', 'sim',                '.core')]
     # yapf: enable
@@ -48,16 +49,20 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
         if src == 'Makefile' and not add_makefile: continue
 
         ftpl = src + src_suffix + '.tpl'
-        fname = src_prefix + src + src_suffix
+        file_name = src_prefix + src + src_suffix
 
         if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
-        if fname == "": continue
+        if file_name == "": continue
+
+        # Skip the checklist if it already exists.
+        file_path = os.path.join(path_dir, file_name)
+        if src == 'checklist' and os.path.exists(file_path): continue
 
         # read template
         tpl = Template(filename=resource_filename('uvmdvgen', ftpl))
 
         # create rendered file
-        with open(path_dir + "/" + fname, 'w') as fout:
+        with open(file_path, 'w') as fout:
             try:
                 fout.write(
                     tpl.render(name=name,

@@ -57,18 +57,17 @@ All common types and methods defined at the package level can be found in
 [list a few parameters, types & methods; no need to mention all]
 ```
 % if is_cip:
-
 ${'###'} TL_agent
 ${name.upper()} testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ${name.upper()} device.
-% endif
 
+% endif
 % for agent in env_agents:
 ${'### '} ${agent.upper()} Agent
 [Describe here or add link to its README]
-% endfor
 
+% endfor
 ${'###'} UVC/agent 1
 [Describe here or add link to its README]
 
@@ -81,6 +80,7 @@ The ${name.upper()} RAL model is created with the [`ralgen`]({{< relref "hw/dv/t
 
 It can be created manually (separately) by running `make` in the the `hw/` area.
 
+% endif
 ${'###'} Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
 
