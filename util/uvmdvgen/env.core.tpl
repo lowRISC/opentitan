@@ -39,7 +39,7 @@ generate:
     generator: ralgen
     parameters:
       name: ${name}
-      ral_spec: ../../data/${name}.hjson
+      ip_hjson: ../../data/${name}.hjson
 % endif
 
 targets:

@@ -87,7 +87,6 @@ def main():
     parser.add_argument(
         "-ao",
         "--agent_outdir",
-        default="name",
         metavar="[hw/dv/sv]",
         help="""Path to place the agent code. A directory called <name>_agent is
                               created at this location. (default set to './<name>')"""
@@ -96,7 +95,6 @@ def main():
     parser.add_argument(
         "-eo",
         "--env_outdir",
-        default="name",
         metavar="[hw/ip/<ip>]",
         help=
         """Path to place the full tetsbench code. It creates 3 directories - dv, data and doc.
@@ -118,14 +116,16 @@ def main():
     )
 
     args = parser.parse_args()
-    if args.agent_outdir == "name": args.agent_outdir = args.name
-    if args.env_outdir == "name": args.env_outdir = args.name
+    if not args.agent_outdir: args.agent_outdir = args.name
+    if not args.env_outdir: args.env_outdir = args.name
 
-    """ The has_ral option must be set if either is_cip or has_interrupts is set,
-        as both require use of a RAL model. As such, it is disallowed to not have
-        has_ral set if one of these options is set."""
-    if not args.has_ral:
-        args.has_ral = args.is_cip or args.has_interrupts
+    # The has_ral option must be set if either is_cip or has_interrupts is set,
+    # as both require use of a RAL model. As such, it is disallowed to not have
+    # has_ral set if one of these options is set.
+    if not args.has_ral and (args.is_cip or args.has_interrupts):
+        args.has_ral = True
+        print("NOTE: --has_ral switch is enabled since either "
+              "--is_cip or --has_interrupts is set.")
 
     if args.gen_agent:
         gen_agent.gen_agent(args.name, \
