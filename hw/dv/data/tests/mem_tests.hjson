@@ -15,9 +15,9 @@
     }
 
     {
-      name: "{name}_mem_partial_read"
+      name: "{name}_mem_partial_access"
       en_run_modes: ["mem_tests_mode"]
-      run_opts: ["+run_mem_partial_read"]
+      run_opts: ["+run_mem_partial_access"]
     }
   ]
 
@@ -25,7 +25,7 @@
     {
       name: sw_access
       tests: ["{name}_mem_walk",
-              "{name}_mem_partial_read"]
+              "{name}_mem_partial_access"]
     }
   ]
 }

@@ -242,7 +242,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "tl_errors":                  run_tl_errors_vseq(num_times);
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
       "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
-      "mem_partial_read":           run_mem_partial_read_vseq(num_times);
+      "mem_partial_access":         run_mem_partial_access_vseq(num_times);
       default:                      run_csr_vseq_wrapper(num_times);
     endcase
   endtask
@@ -444,12 +444,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // test partial mem read with non-blocking random read/write
-  virtual task run_mem_partial_read_vseq(num_times);
+  virtual task run_mem_partial_access_vseq(num_times);
       bit [TL_DW-1:0]     exp_mem[tl_addr_t];
       tl_addr_t           addr_q[$];
       int                 num_words;
       bit [TL_AW-1:0]     addr;
       bit [TL_DW-1:0]     data;
+      bit [TL_DBW-1:0]    mask;
 
       foreach (cfg.mem_ranges[i]) begin
         num_words += cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr;
@@ -465,22 +466,22 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 addr inside {[cfg.mem_ranges[mem_idx].start_addr :
                               cfg.mem_ranges[mem_idx].end_addr]};)
             data = $urandom;
-            tl_access(.addr(addr), .write(1), .data(data), .blocking(0));
+            if (cfg.en_mem_byte_write) mask = get_rand_contiguous_mask();
+            else                       mask = '1;
+            tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(0));
+
             addr[1:0] = 0;
             exp_mem[addr] = data;
             addr_q.push_back(addr);
           end
           // Randomly pick a previously written address for partial read.
           exp_mem.size > 0: begin // read
-            bit [TL_DBW-1:0] mask;
             bit [TL_SZW-1:0] size;
             bit [TL_DW-1:0]  compare_mask;
             // get all the programmed addresses and randomly pick one
             addr = addr_q[$urandom_range(0, addr_q.size - 1)];
+            mask = get_rand_contiguous_mask();
 
-            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
-                // mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
-                $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;)
             // calculate compare_mask which is data width wide
             foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
             tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .compare_mask(compare_mask),
@@ -488,7 +489,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end
         endcase
       end
-
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();
@@ -504,4 +504,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       join_none
     end
   endtask
+
+  // TLUL mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
+  virtual function bit[TL_DBW-1:0] get_rand_contiguous_mask();
+    bit [TL_DBW-1:0] mask;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
+                                       $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;)
+    return mask;
+  endfunction
 endclass
