@@ -6,4 +6,5 @@
 
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
-extern void bitfield_set_field32(uint32_t bitfield, bitfield_field32_t field);
+extern uint32_t bitfield_set_field32(uint32_t bitfield,
+                                     bitfield_field32_t field);

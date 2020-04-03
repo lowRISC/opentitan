@@ -37,10 +37,13 @@ typedef struct bitfield_field32 {
  *
  * @param bitfield Bitfield to set the field in.
  * @param field field within selected register field to be set.
+ * @return The 32-bit resulting bitfield.
  */
-inline void bitfield_set_field32(uint32_t bitfield, bitfield_field32_t field) {
+inline uint32_t bitfield_set_field32(uint32_t bitfield,
+                                     bitfield_field32_t field) {
   bitfield &= ~(field.mask << field.index);
   bitfield |= (field.value & field.mask) << field.index;
+  return bitfield;
 }
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_BITFIELD_H_
