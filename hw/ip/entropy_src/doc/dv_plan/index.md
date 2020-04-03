@@ -2,15 +2,6 @@
 title: "ENTROPY_SRC DV Plan"
 ---
 
-<!-- Copy this file to hw/ip/entropy_src/doc/entropy_src_dv_plan.md and make changes as needed.
-For convenience 'entropy_src' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your entropy_src testbench and save it
-to hw/ip/entropy_src/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ## Goals
 * **DV**
   * Verify all ENTROPY_SRC IP features by running dynamic simulations with a SV/UVM based testbench
@@ -42,6 +33,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
+* [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
@@ -72,28 +64,25 @@ The `entropy_src_base_vseq` virtual sequence is extended from `cip_base_vseq` an
 All test sequences are extended from `entropy_src_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* entropy_src_init:     Initialize the ENTROPY_SRC module from the randomized environment variables in the config.
+* TODO, add more
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
+* TODO, add more
 
 ### Self-checking strategy
 #### Scoreboard
 The `entropy_src_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
+* TODO, maybe entropy/noise
 
 #### Assertions
 * TLUL assertions: The `tb/entropy_src_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
@@ -105,5 +94,5 @@ $ make TEST_NAME=entropy_src_sanity
 ```
 
 ## Testplan
-<!-- TODO: uncomment the line below after adding the testplan -->
-{{</* testplan "hw/ip/entropy_src/data/entropy_src_testplan.hjson" */>}}
+<!-- TODO: uncomment the line below after adding the testplan
+{{</* testplan "hw/ip/entropy_src/data/entropy_src_testplan.hjson" */>}} -->
