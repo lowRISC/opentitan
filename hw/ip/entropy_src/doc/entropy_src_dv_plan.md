@@ -19,7 +19,7 @@ applicable. Once done, remove this comment before making a PR. -->
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "doc/project/hw_dashboard" >}})
+* [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/hw_stages" >}})
 * [Simulation results](https://reports.opentitan.org/hw/ip/entropy_src/dv/latest/results.html)
 

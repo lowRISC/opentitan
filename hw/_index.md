@@ -4,7 +4,7 @@ title: "Hardware Dashboard"
 
 This page serves as the landing spot for all hardware development within the OpenTitan project.
 
-We start off by providing links to the [results of various tool-flows](#toolflows-summary-results) run on all of our [Comportable]({{< relref "doc/rm/comportability_specification" >}}) IPs.
+We start off by providing links to the [results of various tool-flows](#results-of-toolflows) run on all of our [Comportable]({{< relref "doc/rm/comportability_specification" >}}) IPs.
 This includes DV simulations, FPV and lint, all of which are run with the `dvsim` tool which serves as the common frontend.
 
 The [Comportable IPs](#comportable-ips) following it provides links to their design specifications and DV plans, and tracks their current stage of development.

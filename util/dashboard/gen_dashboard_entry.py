@@ -66,6 +66,15 @@ def get_linked_dv_plan(obj):
         return ""
 
 
+# Link the version to the commit id (if available).
+def get_linked_version(rev):
+    version = html.escape(rev['version'])
+    tree = rev['commit_id'] if 'commit_id' in rev else 'master'
+    url = "https://github.com/lowrisc/opentitan/tree/{}".format(tree)
+    return "<span title='{}'><a href=\"{}\">{}</a></span>".format(
+        tree, url, version)
+
+
 # Link D/V stages with the checklist table.
 def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
     if not stage or stage not in rev: return ""
@@ -81,15 +90,15 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
     # Else, if checklist is available, then link to the current version of the
     # checklist html.
     # Else, link to the template.
-    if 'checklist' in obj and 'commit_id' in rev and not is_latest_rev:
-        url = "https://github.com/lowrisc/opentitan/blob/{}/{}.md{}".format(
-            rev['commit_id'], obj['checklist'], in_page_ref)
-    elif 'checklist' in obj:
-        url = "{}/{}{}".format(docs_server, html.escape(obj['checklist']),
+    if 'hw_checklist' in obj and 'commit_id' in rev and not is_latest_rev:
+        url = "https://github.com/lowrisc/opentitan/tree/{}/{}.md{}".format(
+            rev['commit_id'], obj['hw_checklist'], in_page_ref)
+    elif 'hw_checklist' in obj:
+        url = "{}/{}{}".format(docs_server, html.escape(obj['hw_checklist']),
                                in_page_ref)
     else:
         # There is no checklist available, so point to the template.
-        url = "https://github.com/lowrisc/opentitan/blob/master/"
+        url = "https://github.com/lowrisc/opentitan/tree/master/"
         url += "doc/project/ip_checklist.md.tpl"
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
@@ -171,7 +180,7 @@ def print_version1_format(obj, outfile):
     genout(outfile, "        <td class=\"hw-stage\">" +
                     get_linked_dv_plan(obj) + "</td>\n")
     genout(outfile, "        <td class=\"hw-stage\">" +
-                    html.escape(obj['version']) + "</td>\n")
+                    get_linked_version(obj) + "</td>\n")
     genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage'>" +
                     get_development_stage(obj, obj) + "</span></td>\n")
 
@@ -211,7 +220,7 @@ def print_multiversion_format(obj, outfile):
 
         # Version
         outstr += "        <td class=\"hw-stage\">"
-        outstr += html.escape(rev['version']) + "</td>\n"
+        outstr += get_linked_version(rev) + "</td>\n"
 
         # Development Stage
         outstr += "        <td class=\"hw-stage\"><span class='hw-stage'>"

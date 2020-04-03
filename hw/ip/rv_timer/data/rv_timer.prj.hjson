@@ -6,7 +6,7 @@
     name:               "rv_timer",
     design_spec:        "hw/ip/rv_timer/doc",
     dv_plan:            "hw/ip/rv_timer/doc/dv_plan",
-    checklist:          "hw/ip/rv_timer/doc/checklist",
+    hw_checklist:       "hw/ip/rv_timer/doc/checklist",
     revisions: [
       {
         version:            "0.5",

@@ -6,7 +6,7 @@
     name:               "aes",
     design_spec:        "hw/ip/aes/doc",
     dv_plan:            "hw/ip/aes/doc/dv_plan",
-    checklist:          "hw/ip/aes/doc/checklist",
+    hw_checklist:       "hw/ip/aes/doc/checklist",
     version:            "0.6",
     life_stage:         "L1",
     design_stage:       "D2",
