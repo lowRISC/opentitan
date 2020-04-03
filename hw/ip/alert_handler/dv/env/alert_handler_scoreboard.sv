@@ -250,8 +250,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         case (csr.get_name())
           // add individual case item for each csr
           "intr_test": begin
-             bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
-             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
+            bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
+            if (cfg.en_cov) begin
+              bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+              for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+                cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_state_exp[i]);
+              end
+            end
+            void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
           end
           "intr_state": begin
             foreach (under_intr_classes[i]) begin
@@ -272,11 +278,20 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for read, update predication at address phase and compare at data phase
 
-    if (!write && do_read_check) begin
+    if (!write) begin
       // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
       if (channel == DataChannel) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
+        if (csr.get_name() == "intr_state" && cfg.en_cov) begin
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+            cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+            cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+          end
+        end
+        if (do_read_check) begin
+          `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
+        end
         void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       end else begin
         case (csr.get_name())
