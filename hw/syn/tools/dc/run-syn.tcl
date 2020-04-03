@@ -53,6 +53,7 @@ sh rm -rf $WORKLIB/*
 analyze -vcs "-sverilog +define+${DEFINE} -f ${SV_FLIST}" > "${REPDIR}/analyze.rpt"
 elaborate  ${DUT} -parameters ${PARAMS}                   > "${REPDIR}/elab.rpt"
 link                                                      > "${REPDIR}/link.rpt"
+check_design                                              > "${REPDIR}/check.rpt"
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
