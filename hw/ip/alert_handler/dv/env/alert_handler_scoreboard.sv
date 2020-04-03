@@ -336,13 +336,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               intr_timer_per_class[class_i] = 0;
               // counter continues to increment if:
               // interrupt is not cleared, and class is not under escalation by accum_alerts
-              while (under_intr_classes[class_i] != 0 && !under_esc_classes[class_i]) begin
-                @(cfg.clk_rst_vif.cb);
-                intr_timer_per_class[class_i] += 1;
-                timeout_cyc = get_class_timeout_cyc(class_i);
-                if (timeout_cyc != 0 && intr_timer_per_class[class_i] >= timeout_cyc &&
-                    !under_esc_classes[class_i]) begin
-                  predict_esc(class_i);
+              timeout_cyc = get_class_timeout_cyc(class_i);
+              if (timeout_cyc > 0) begin
+                while (under_intr_classes[class_i] != 0 && !under_esc_classes[class_i]) begin
+                  if (intr_timer_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
+                  @(cfg.clk_rst_vif.cb);
+                  intr_timer_per_class[class_i] += 1;
                 end
               end
               intr_timer_per_class[class_i] = 0;
