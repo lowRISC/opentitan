@@ -29,10 +29,10 @@ typedef struct bitfield_field32 {
 } bitfield_field32_t;
 
 /**
- * Sets @p field in the @p bitfield.
+ * Sets `field` in the `bitfield`.
  *
- * This function uses the bitfield_field32 type @p field to set a value
- * at a given offset in @p bitfield. The relevant portion of @p bitfield
+ * This function uses the bitfield_field32 type `field` to set a value
+ * at a given offset in `bitfield`. The relevant portion of `bitfield`
  * is zeroed before the value is set.
  *
  * @param bitfield Bitfield to set the field in.

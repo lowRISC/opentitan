@@ -4,6 +4,6 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-// |extern| declarations to give the inline functions in the
+// `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 extern void bitfield_set_field32(uint32_t bitfield, bitfield_field32_t field);
