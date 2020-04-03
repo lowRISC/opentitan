@@ -60,23 +60,23 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       // add individual case item for each csr
       "es_conf": begin
          if (write) begin
-           `uvm_info(`gfn, $sformatf("Write to ES_CONF register"), UVM_NONE)
+           `uvm_info(`gfn, $sformatf("Write to ES_CONF register"), UVM_DEBUG)
 	 end
          else begin
-           `uvm_info(`gfn, $sformatf("Read from ES_CONF register"), UVM_NONE)
+           `uvm_info(`gfn, $sformatf("Read from ES_CONF register"), UVM_DEBUG)
 	 end
       end
       "es_rev": begin
          if (!write) begin
-           `uvm_info(`gfn, $sformatf("Read from ES_REV register"), UVM_NONE)
+           `uvm_info(`gfn, $sformatf("Read from ES_REV register"), UVM_DEBUG)
 	 end
       end
       "intr_state": begin
          if (write) begin
-           `uvm_info(`gfn, $sformatf("Write to INTR_STATE register"), UVM_NONE)
+           `uvm_info(`gfn, $sformatf("Write to INTR_STATE register"), UVM_DEBUG)
 	 end
          else begin
-           `uvm_info(`gfn, $sformatf("Read from INTR_STATE register"), UVM_NONE)
+           `uvm_info(`gfn, $sformatf("Read from INTR_STATE register"), UVM_DEBUG)
 	 end
       end
       default: begin
