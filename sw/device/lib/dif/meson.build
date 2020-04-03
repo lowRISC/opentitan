@@ -4,7 +4,6 @@
 
 # UART DIF library (dif_uart)
 dif_uart = declare_dependency(
-  sources: [hw_ip_uart_reg_h],
   link_with: static_library(
     'uart_ot',
     sources: [
@@ -19,7 +18,6 @@ dif_uart = declare_dependency(
 
 # PLIC DIF library (dif_plic)
 dif_plic = declare_dependency(
-  sources: [hw_top_earlgrey_rv_plic_h],
   link_with: static_library(
     'dif_plic_ot',
     sources: [
