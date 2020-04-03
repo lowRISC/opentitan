@@ -273,7 +273,7 @@
 //                ...
 //              end)
 `ifndef DV_SPINWAIT
-`define DV_SPINWAIT(WAIT_, MSG_ = "", TIMEOUT_NS_ = default_timeout_ns, ID_ =`gfn) \
+`define DV_SPINWAIT(WAIT_, MSG_ = "", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
   fork begin \
     fork \
       begin \
