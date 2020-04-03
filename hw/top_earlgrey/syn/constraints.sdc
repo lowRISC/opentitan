@@ -3,13 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Generic constraints file for simple testsynthesis flow
-# This held very simple for now and needs to be refined
 
 # note that we do not fix hold timing in this flow
 set SETUP_CLOCK_UNCERTAINTY 0.5
-
-# TODO: consider splitting this into per-IP .sdc files
-if {$DUT == "top_earlgrey"} {
 
 puts "Applying constraints for top level"
 
@@ -120,36 +116,8 @@ set_clock_groups -name group1 -async -group ${MAIN_CLK_PIN} \
 # loopback path can be considered to be a false path
 set_false_path -from dio_uart_rx_i -to dio_uart_tx_o
 
-} else {
-
 #####################
-# main clock        #
-#####################
-set MAIN_CLK_PIN clk_i
-set MAIN_RST_PIN rst_ni
-# set main clock to 125 MHz
-set MAIN_TCK  8.0
-set_ideal_network ${MAIN_CLK_PIN}
-set_ideal_network ${MAIN_RST_PIN}
-set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} ${MAIN_CLK_PIN}
-
-# other timing constraint in ns
-set IN_DEL    1.0
-set OUT_DEL   1.0
-set DELAY     ${MAIN_TCK}
-
-create_clock ${MAIN_CLK_PIN} -period ${MAIN_TCK}
-
-# in to out
-set_max_delay ${DELAY} -from [all_inputs] -to [all_outputs]
-# in to reg / reg to out
-set_input_delay ${IN_DEL} [remove_from_collection [all_inputs] {${MAIN_CLK_PIN}}] -clock ${MAIN_CLK_PIN}
-set_output_delay ${OUT_DEL}  [all_outputs] -clock ${MAIN_CLK_PIN}
-
-}
-
-#####################
-# Common            #
+# I/O drive/load    #
 #####################
 
 # attach load and drivers to IOs to get a more realistic estimate
