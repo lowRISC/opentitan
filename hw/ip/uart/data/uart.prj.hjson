@@ -6,14 +6,14 @@
     name:               "uart",
     design_spec:        "hw/ip/uart/doc",
     dv_plan:            "hw/ip/uart/doc/dv_plan",
-    checklist:          "hw/ip/uart/doc/checklist",
+    hw_checklist:       "hw/ip/uart/doc/checklist",
     revisions: [
       {
         version:            "1.0",
         life_stage:         "L2",
         design_stage:       "D3",
         verification_stage: "V3",
-        commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
+        commit_id:          "4166794b902cc72b4cfdfacca0869ffc56e6b42a",
         notes:              ""
       }
       {

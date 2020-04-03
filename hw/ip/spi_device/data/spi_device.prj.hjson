@@ -6,7 +6,7 @@
     name:               "spi_device",
     design_spec:        "hw/ip/spi_device/doc",
     dv_plan:            "hw/ip/spi_device/doc/dv_plan",
-    checklist:          "hw/ip/spi_device/doc/checklist",
+    hw_checklist:       "hw/ip/spi_device/doc/checklist",
     revisions: [
       {
         version:            "0.5",

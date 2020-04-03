@@ -187,7 +187,7 @@ They are converted to complete URLs in the generated dashboard.
 {
     design_spec:  "hw/ip/gpio/doc"
     dv_plan:      "hw/ip/gpio/doc/dv_plan"
-    checklist:    "hw/ip/gpio/doc/checklist"
+    hw_checklist: "hw/ip/gpio/doc/checklist"
 }
 ```
 
