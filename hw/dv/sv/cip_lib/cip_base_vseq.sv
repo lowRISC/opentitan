@@ -366,7 +366,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   dv_vseq.start(p_sequencer);
                 end
               join
-              wait (ongoing_reset == 0);
+              wait(ongoing_reset == 0);
               `uvm_info(`gfn, $sformatf("Finished run %0d/%0d w/o reset", i, num_trans), UVM_LOW)
             end
             begin : issue_rand_reset
@@ -451,6 +451,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       bit [TL_AW-1:0]     addr;
       bit [TL_DW-1:0]     data;
       bit [TL_DBW-1:0]    mask;
+      uint                max_nonblocking_items;
+
+      // timeout may happen if we issue too many non-blocking accesses at the beginning
+      // limit the nonblocking items to be up to 2 times of max outstanding that TLUL supports
+      max_nonblocking_items = 1 << (TL_AIW + 1);
 
       foreach (cfg.mem_ranges[i]) begin
         num_words += cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr;
@@ -488,6 +493,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       .check_exp_data(1), .exp_data(exp_mem[addr]), .blocking(0));
           end
         endcase
+        wait(csr_utils_pkg::outstanding_accesses <= max_nonblocking_items);
       end
   endtask
 
