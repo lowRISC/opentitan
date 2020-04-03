@@ -27,7 +27,7 @@ sw_lib_flash_ctrl = declare_dependency(
   link_with: static_library(
     'flash_ctrl_ot',
     sources: [
-      hw_ip_flash_ctrl_regs_h,
+      hw_ip_flash_ctrl_reg_h,
       'flash_ctrl.c',
     ]
   )
@@ -39,7 +39,7 @@ sw_lib_pinmux = declare_dependency(
   link_with: static_library(
     'pinmux_ot',
     sources: [
-      hw_top_earlgrey_pinmux_h,
+      hw_top_earlgrey_pinmux_reg_h,
       'pinmux.c',
     ]
   )

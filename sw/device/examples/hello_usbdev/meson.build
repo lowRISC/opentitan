@@ -5,7 +5,9 @@
 foreach device_name, device_lib : sw_lib_arch_core_devices
   hello_usbdev_elf = executable(
     'hello_usbdev_' + device_name,
-    sources: ['hello_usbdev.c'],
+    sources: [
+      'hello_usbdev.c',
+    ],
     name_suffix: 'elf',
     dependencies: [
       sw_examples_demos,
