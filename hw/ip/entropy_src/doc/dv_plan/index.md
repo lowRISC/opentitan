@@ -30,7 +30,7 @@ For detailed information on ENTROPY_SRC design features, please see the [ENTROPY
 ENTROPY_SRC testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](entropy_src_tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/entropy_src/dv/tb/tb.sv`. It instantiates the ENTROPY_SRC DUT module `hw/ip/entropy_src/rtl/entropy_src.sv`.
@@ -39,8 +39,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ENTROPY_SRC IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -62,20 +60,10 @@ ENTROPY_SRC testbench instantiates (already handled in CIP base env) [tl_agent](
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ENTROPY_SRC device.
 
-
-### UVC/agent 1
-[Describe here or add link to its README]
-
-### UVC/agent 2
-[Describe here or add link to its README]
-
 ### UVM RAL Model
 The ENTROPY_SRC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually (separately) by running `make` in the `hw/` area.
-
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
 #### Test sequences
