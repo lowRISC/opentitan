@@ -13,7 +13,7 @@ dif_uart = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
-    ]
+    ],
   )
 )
 
@@ -23,10 +23,12 @@ dif_plic = declare_dependency(
   link_with: static_library(
     'dif_plic_ot',
     sources: [
-      hw_top_earlgrey_rv_plic_h,
+      hw_top_earlgrey_rv_plic_reg_h,
       'dif_plic.c',
     ],
-    dependencies: [sw_lib_mmio]
+    dependencies: [
+      sw_lib_mmio,
+    ],
   )
 )
 
