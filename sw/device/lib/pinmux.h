@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include "pinmux_regs.h"  // Generated.
-
 /**
  * PINMUX default initialization.
  */

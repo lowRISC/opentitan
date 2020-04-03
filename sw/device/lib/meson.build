@@ -23,7 +23,6 @@ sw_lib_uart = declare_dependency(
 
 # Flash controller library (sw_lib_flash_ctrl)
 sw_lib_flash_ctrl = declare_dependency(
-  sources: [hw_ip_flash_ctrl_regs_h],
   link_with: static_library(
     'flash_ctrl_ot',
     sources: [
@@ -35,7 +34,6 @@ sw_lib_flash_ctrl = declare_dependency(
 
 # PINMUX library (sw_lib_pinmux)
 sw_lib_pinmux = declare_dependency(
-  sources: [hw_top_earlgrey_pinmux_h],
   link_with: static_library(
     'pinmux_ot',
     sources: [
@@ -47,7 +45,6 @@ sw_lib_pinmux = declare_dependency(
 
 # AES library (sw_lib_aes)
 sw_lib_aes = declare_dependency(
-  sources: [hw_ip_aes_reg_h],
   link_with: static_library(
     'aes_ot',
     sources: [
@@ -59,7 +56,6 @@ sw_lib_aes = declare_dependency(
 
 # HMAC library (sw_lib_hmac)
 sw_lib_hmac = declare_dependency(
-  sources: [hw_ip_hmac_reg_h],
   link_with: static_library(
     'hmac_ot',
     sources: [
@@ -111,7 +107,6 @@ sw_lib_irq_handlers = declare_dependency(
 
 # RV_TIMER library (sw_lib_rv_timer)
 sw_lib_rv_timer = declare_dependency(
-  sources: [hw_ip_rv_timer_reg_h],
   link_with: static_library(
     'rv_timer_ot',
     sources: [
@@ -135,7 +130,6 @@ sw_lib_spi_device = declare_dependency(
 
 # USB DEV library (sw_lib_usb)
 sw_lib_usb = declare_dependency(
-  sources: [hw_ip_usbdev_reg_h],
   link_with: static_library(
     'usb_ot',
     sources: [

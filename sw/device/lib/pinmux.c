@@ -9,6 +9,8 @@
 
 #define PINMUX0_BASE_ADDR 0x40070000
 
+#include "pinmux_regs.h"  // Generated.
+
 static void init_pinmux_reg(uint32_t reg, uint32_t size, uint32_t num_fields,
                             uint32_t mask, uint32_t start_v) {
   uint32_t reg_value = 0;
