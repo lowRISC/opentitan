@@ -5,14 +5,11 @@
 r"""Parses lint report and dump filtered messages in hjson format.
 """
 import argparse
-import datetime
 import re
 import sys
 from pathlib import Path
 
 import hjson
-import mistletoe
-import numpy as np
 
 # this allows both scientific and fixed point numbers
 FP_NUMBER = r"[-+]?\d+\.\d+[Ee]?[-+]?\d*"
@@ -56,7 +53,7 @@ def _match_fp_number(full_file, master_key, patterns, results):
                     ]
         else:
             results["messages"]["flow_errors"] += [
-                "Pattern %s not found" % pattern
+                "Pattern '%s' of key '%s' not found" % (pattern, key)
             ]
 
     return results
@@ -89,7 +86,10 @@ def _rel_err(val, ref):
     """
     Calculate relative error with respect to reference
     """
-    return abs(val - ref) / ref
+    if ref == 0.0:
+        return float("nan")
+    else:
+        return abs(val - ref) / ref
 
 
 def _extract_area(full_file, results, key):
@@ -118,16 +118,17 @@ def _extract_area(full_file, results, key):
     try:
         for item in matches:
             if item[0] not in results[key]["instances"]:
-                results[key]["instances"].update(
-                    {item[0]: {
-                         "comb": 0.0,
-                         "reg": 0.0,
-                         "buf": np.nan, # currently not available
-                         "macro": 0.0,
-                         "total": 0.0,
-                     }})
-            results[key]["instances"][item[0]]["comb"]  += float(item[3])
-            results[key]["instances"][item[0]]["reg"]   += float(item[4])
+                results[key]["instances"].update({
+                    item[0]: {
+                        "comb": 0.0,
+                        "reg": 0.0,
+                        "buf": float("nan"),  # not available here
+                        "macro": 0.0,
+                        "total": 0.0,
+                    }
+                })
+            results[key]["instances"][item[0]]["comb"] += float(item[3])
+            results[key]["instances"][item[0]]["reg"] += float(item[4])
             results[key]["instances"][item[0]]["macro"] += float(item[5])
             results[key]["instances"][item[0]]["total"] += float(item[3]) + \
                                                            float(item[4]) + \
@@ -167,7 +168,7 @@ def _extract_clocks(full_file, results, key):
                         full_file,
                         flags=re.MULTILINE)
     try:
-        # get TNS and WNS in that group
+        # get clock period
         for k, c in enumerate(clocks):
             if c[0].strip() not in results[key]:
                 results[key].update({
@@ -202,7 +203,7 @@ def _extract_timing(full_file, results, key):
                     {g.strip(): {
                          "tns": 0.0,
                          "wns": 0.0,
-                         "period": np.nan
+                         "period": float("nan")
                      }})
             value = float(slack[k]) if float(slack[k]) < 0.0 else 0.0
             results[key][g]["wns"] = min(results[key][g]["wns"], value)
@@ -283,11 +284,11 @@ def _extract_power(full_file, results, key):
 
     # extract first 3 columns on that line
     patterns = [("net", r"^" + results["top"] + r"\s*(" + FP_NUMBER + r")\s*" +
-                 FP_NUMBER + r" \s*" + FP_NUMBER),
-                ("int", r"^" + results["top"] + r"\s* " + FP_NUMBER +
-                 r" \s*(" + FP_NUMBER + r")\s* " + FP_NUMBER),
-                ("leak", r"^" + results["top"] + r"\s* " + FP_NUMBER +
-                 r" \s* " + FP_NUMBER + r" \s*(" + FP_NUMBER + ")")]
+                 FP_NUMBER + r"\s*" + FP_NUMBER),
+                ("int", r"^" + results["top"] + r"\s*" + FP_NUMBER + r"\s*(" +
+                 FP_NUMBER + r")\s*" + FP_NUMBER),
+                ("leak", r"^" + results["top"] + r"\s*" + FP_NUMBER + r" \s*" +
+                 FP_NUMBER + r"\s*(" + FP_NUMBER + r")")]
 
     results = _match_fp_number(full_file, key, patterns, results)
 
@@ -332,59 +333,58 @@ def get_results(logpath, reppath, dut):
         },
         "area": {
             # gate equivalent of a NAND2 gate
-            "ge": np.nan,
+            "ge": float("nan"),
             # summary, in GE
-            "comb": np.nan,
-            "buf": np.nan,
-            "reg": np.nan,
-            "macro": np.nan,
-            "total": np.nan,
+            "comb": float("nan"),
+            "buf": float("nan"),
+            "reg": float("nan"),
+            "macro": float("nan"),
+            "total": float("nan"),
             # hierchical report with "comb", "buf", "reg", "macro", "total"
             "instances": {},
         },
         "power": {
-            "net": np.nan,
-            "int": np.nan,
-            "leak": np.nan,
+            "net": float("nan"),
+            "int": float("nan"),
+            "leak": float("nan"),
         },
         "units": {
-            "voltage": np.nan,
-            "capacitance": np.nan,
-            "time": np.nan,
-            "dynamic": np.nan,
-            "static": np.nan,
+            "voltage": float("nan"),
+            "capacitance": float("nan"),
+            "time": float("nan"),
+            "dynamic": float("nan"),
+            "static": float("nan"),
         }
     }
 
     results["top"] = dut
 
     # flow messages
-    results = _parse_file(logpath, 'synthesis.log',
-                          results, _extract_messages, "flow")
+    results = _parse_file(logpath, 'synthesis.log', results, _extract_messages,
+                          "flow")
 
     # messages
     for rep_type in ["analyze", "elab", "compile"]:
-        results = _parse_file(reppath, '%s.rpt' % rep_type,
-                              results, _extract_messages, rep_type)
+        results = _parse_file(reppath, '%s.rpt' % rep_type, results,
+                              _extract_messages, rep_type)
 
     # get gate equivalents
-    results = _parse_file(reppath, 'gate_equiv.rpt',
-                          results, _extract_gate_equiv, "area")
+    results = _parse_file(reppath, 'gate_equiv.rpt', results,
+                          _extract_gate_equiv, "area")
     # area
-    results = _parse_file(reppath, 'area.rpt',
-                          results, _extract_area, "area")
+    results = _parse_file(reppath, 'area.rpt', results, _extract_area, "area")
     # clocks. this complements the timing report later below
-    results = _parse_file(reppath, 'clocks.rpt',
-                          results, _extract_clocks, "timing")
+    results = _parse_file(reppath, 'clocks.rpt', results, _extract_clocks,
+                          "timing")
     # timing
-    results = _parse_file(reppath, 'timing.rpt',
-                          results, _extract_timing, "timing")
+    results = _parse_file(reppath, 'timing.rpt', results, _extract_timing,
+                          "timing")
     # power
-    results = _parse_file(reppath, 'power.rpt',
-                          results, _extract_power, "power")
+    results = _parse_file(reppath, 'power.rpt', results, _extract_power,
+                          "power")
     # units
-    results = _parse_file(reppath, 'power.rpt',
-                          results, _extract_units, "units")
+    results = _parse_file(reppath, 'power.rpt', results, _extract_units,
+                          "units")
 
     return results
 
@@ -468,20 +468,18 @@ def main():
         type=str,
         help="""Name of the DUT. This is needed to parse the reports.""")
 
-    parser.add_argument(
-        '--logpath',
-        type=str,
-        help="""Path to log files for the flow.
+    parser.add_argument('--logpath',
+                        type=str,
+                        help="""Path to log files for the flow.
                 This script expects the following log files to be present:
 
                             - <logpath>/synthesis.log : output of synopsys shell
 
                         """)
 
-    parser.add_argument(
-        '--reppath',
-        type=str,
-        help="""Path to report files of the flow.
+    parser.add_argument('--reppath',
+                        type=str,
+                        help="""Path to report files of the flow.
                 This script expects the following report files to be present:
 
                             - <reppath>/analyze.rpt : output of analyze command
@@ -492,7 +490,6 @@ def main():
                             - <reppath>/power.rpt   : output of report_power
 
                         """)
-
 
     parser.add_argument('--outdir',
                         type=str,

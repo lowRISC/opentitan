@@ -5,13 +5,11 @@
 r"""Parses lint report and dump filtered messages in hjson format.
 """
 import argparse
-import datetime
 import re
 import sys
 from pathlib import Path
 
 import hjson
-import mistletoe
 
 
 def extract_messages(full_file, patterns, results):
