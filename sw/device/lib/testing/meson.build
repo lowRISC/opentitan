@@ -7,6 +7,7 @@ sw_lib_testing_mock_mmio = declare_dependency(
     'mock_mmio',
     sources: [
       meson.source_root() / 'sw/device/lib/base/mmio.c',
+      meson.source_root() / 'sw/device/lib/base/bitfield.c',
       'mock_mmio.cc',
     ],
     dependencies: [sw_vendor_gtest],
