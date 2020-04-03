@@ -268,9 +268,9 @@ module top_earlgrey #(
 
   // processor core
   rv_core_ibex #(
-    .PMPEnable                (0),
-    .PMPGranularity           (0),
-    .PMPNumRegions            (4),
+    .PMPEnable                (1),
+    .PMPGranularity           (0), // 2^(PMPGranularity+2) == 4 byte granularity
+    .PMPNumRegions            (16),
     .MHPMCounterNum           (8),
     .MHPMCounterWidth         (40),
     .RV32E                    (0),
