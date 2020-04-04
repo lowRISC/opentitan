@@ -11,6 +11,7 @@ filesets:
       - lowrisc:constants:top_pkg
     files:
       - rtl/flash_ctrl_pkg.sv
+      - rtl/flash_phy_pkg.sv
     file_type: systemVerilogSource
 
 targets:
