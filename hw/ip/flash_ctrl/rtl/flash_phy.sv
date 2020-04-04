@@ -5,10 +5,10 @@
 // Flash Phy Module
 //
 //
-// This module is an early attempt to model what a custom phy module might look like
-// Long term, it is expected this module will split into its own entity under hw/ip
-// with its own set of register that support technology / node specific flash settings
-// More of those details will be worked out with future partner engagement
+// Flash phy represents the top level open source wrapper for a proprietary flash
+// module.
+// The top level flash_phy is only responsible for dispatching transactions and
+// correctly collecting the responses in order.
 
 module flash_phy #(
   parameter int NumBanks = 2,
@@ -94,7 +94,7 @@ module flash_phy #(
       .Width  (BankW),
       .Pass   (0),
       .Depth  (SeqFifoDepth)
-    ) bank_sequence_fifo (
+    ) i_bank_sequence_fifo (
       .clk_i,
       .rst_ni,
       .clr_i  (1'b0),
@@ -116,7 +116,7 @@ module flash_phy #(
       .Width  (DataWidth),
       .Pass   (1'b1),
       .Depth  (FlashMacroOustanding)
-    ) host_rsp_fifo (
+    ) i_host_rsp_fifo (
       .clk_i,
       .rst_ni,
       .clr_i  (1'b0),
@@ -129,15 +129,15 @@ module flash_phy #(
       .rdata  (host_rsp_data[bank])
     );
 
-    prim_flash #(
+    flash_phy_core #(
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),
       .DataWidth(DataWidth)
-    ) u_flash (
+    ) i_core (
       .clk_i,
       .rst_ni,
       .req_i(flash_ctrl_i.req & (ctrl_bank_sel == bank)),
-      .host_req_i(host_req_i & host_req_rdy_o & (host_bank_sel == bank)),
+      .host_req_i(host_req_i & (host_bank_sel == bank)),
       .host_addr_i(host_addr_i[0 +: PageW + WordW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),

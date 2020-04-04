@@ -4,14 +4,22 @@ title: "Flash Controller HWIP Technical Specification"
 
 # Overview
 
-This document specifies flash hardware IP functionality.
-As the final feature set will largely depend on how similar flash IPs are, it is at the moment unclear where the open-source / proprietary boundaries should lie.
-This document thus makes a best effort estimate as to what that boundary should be and breaks the functionality down accordingly.
+This document describes the flash hardware functionality.
+The flash hardware is broken down into 3 major components
+* Open source flash controllers
+* Closed source vendor flash wrapper
+* Closed source vendor flash module
 
-This document assumes flash functionality shall be divided into two partitions.
+A breakdown of the 3 can be seen below
+![Flash High Level Boundaries](flash_boundaries.svg)
+
+
+This open source flash controller is further divided into two partitions.
 
 * Flash protocol controller
 * Flash physical controller
+
+The remaining document focuses primarily on the function of these blocks.
 
 This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
 See that document for integration overview within the broader top level system.
@@ -87,16 +95,17 @@ Depending on need, it may be necessary to add controller logic to perform the fo
 
 ### Flash Protocol Controller
 
-The Flash Protocol Controller sits between the host software interface and the physical flash.
+The Flash Protocol Controller sits between the host software interface and the flash physical controller, which contains the physical flash.
 Its primary function is to translate software requests into a high level protocol for the actual flash block.
-Importantly, the flash protocol controller shall not be responsible for the detailed timing and waveform control of the flash.
-Instead, it shall maintain FIFOs / interrupts for the software to process data.
+Importantly, the flash protocol controller is not responsible for the detailed timing and waveform control of the flash.
+Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls.
 
 ### Flash Physical Controller
 
-The Flash Physical Controller is the wrapper module that contains the actual flash memory instantiation.
-It is responsible for converting high level protocol commands (such as read, program, erase) into low level signaling and timing specific to a particular flash IP.
-It is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash memory.
+The Flash Physical Controller is the wrapper module that contains the actual vendor flash memory instantiation.
+It is responsible for arbitrating high level protocol commands (such as read, program, erase) as well as any additional security and reliability features.
+The contained vendor wrapper module is then responsible for converting high level commands into low level signaling and timing specific to a particular flash vendor.
+The vendor wrapper module is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash.
 
 The diagram below summarizes the high level breakdown.
 

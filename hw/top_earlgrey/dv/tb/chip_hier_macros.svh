@@ -12,5 +12,5 @@
 `define ROM_HIER        `CHIP_HIER.u_rom_rom
 `define FLASH_HIER      `CHIP_HIER.u_flash_eflash
 `define USBDEV_HIER     `CHIP_HIER.u_usbdev
-`define FLASH0_MEM_HIER `FLASH_HIER.gen_flash_banks[0].u_flash.gen_generic.u_impl_generic.u_mem
-`define FLASH1_MEM_HIER `FLASH_HIER.gen_flash_banks[1].u_flash.gen_generic.u_impl_generic.u_mem
+`define FLASH0_MEM_HIER `FLASH_HIER.gen_flash_banks[0].i_core.i_flash.gen_generic.u_impl_generic.u_mem
+`define FLASH1_MEM_HIER `FLASH_HIER.gen_flash_banks[1].i_core.i_flash.gen_generic.u_impl_generic.u_mem

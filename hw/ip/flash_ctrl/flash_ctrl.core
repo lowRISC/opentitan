@@ -20,6 +20,7 @@ filesets:
       - rtl/flash_rd_ctrl.sv
       - rtl/flash_mp.sv
       - rtl/flash_phy.sv
+      - rtl/flash_phy_core.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -76,4 +77,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
