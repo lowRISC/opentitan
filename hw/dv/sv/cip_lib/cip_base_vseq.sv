@@ -7,8 +7,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       type COV_T               = cip_base_env_cov,
                       type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer)
                       extends dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T);
-  `uvm_object_param_utils(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
-
   `uvm_object_new
   // knobs to disable post_start clear interrupt routine
   bit  do_clear_all_interrupts = 1'b1;
@@ -20,8 +18,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // user can set the name of common seq to run directly without using $value$plusargs
   string common_seq_type;
 
-  // typedef the address type for using in associative array
-  typedef bit[TL_AW-1:0] tl_addr_t;
+  bit [TL_DW-1:0]  exp_mem[int];
+  int              mem_exist_addr_q[$];
 
   rand uint delay_to_reset;
   constraint delay_to_reset_c {
@@ -32,6 +30,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         [1_000_001 :5_000_000]  :/ 1
     };
   }
+  `uvm_object_param_utils_begin(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
+    `uvm_field_string(common_seq_type, UVM_DEFAULT)
+    `uvm_field_aa_int_int(exp_mem, UVM_DEFAULT)
+    `uvm_field_queue_int(mem_exist_addr_q, UVM_DEFAULT)
+  `uvm_object_utils_end
 
   `include "cip_base_vseq__tl_errors.svh"
 
@@ -243,6 +246,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
       "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
       "mem_partial_access":         run_mem_partial_access_vseq(num_times);
+      "csr_mem_rw_with_rand_reset": run_csr_mem_rw_with_rand_reset_vseq(num_times);
+      "csr_mem_rw":                 run_csr_mem_rw_vseq(num_times);
       default:                      run_csr_vseq_wrapper(num_times);
     endcase
   endtask
@@ -335,15 +340,19 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // task to insert random reset within the input vseqs list, then check all CSR values
-  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1, bit do_tl_err = 1);
+  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1, bit do_tl_err = 1,
+                                                   uvm_sequence seq = null);
     string stress_seq_name;
     void'($value$plusargs("stress_seq=%0s", stress_seq_name));
 
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
       bit do_read_and_check_all_csrs;
-      // use weight arbitration to lower the priority of tl_error seq
-      if (do_tl_err) p_sequencer.tl_sequencer_h.set_arbitration(UVM_SEQ_ARB_WEIGHTED);
+      `uvm_info(`gfn, $sformatf("running run_stress_all_with_rand_reset_vseq iteration %0d/%0d",
+                                i, num_times), UVM_LOW)
+      // Arbitration: requests at highest priority granted in FIFO order, so that we can predict
+      // results for many non-blocking accesses
+      if (do_tl_err) p_sequencer.tl_sequencer_h.set_arbitration(UVM_SEQ_ARB_STRICT_FIFO);
       fork
         begin: isolation_fork
           fork : run_test_seqs
@@ -354,12 +363,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                     run_tl_errors_vseq(.num_times($urandom_range(10, 1000)), .do_wait_clk(1'b1));
                   end
                 end
-                begin : stress_seq
-                  uvm_sequence seq;
+                begin : run_stress_seq
                   dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) dv_vseq;
-
-                  seq = create_seq_by_name(stress_seq_name);
-                  `downcast(dv_vseq, seq)
+                  if (seq == null) begin
+                    `downcast(dv_vseq, create_seq_by_name(stress_seq_name))
+                  end else begin
+                    `downcast(dv_vseq, seq.clone())
+                  end
                   dv_vseq.do_dut_init = 0;
                   dv_vseq.set_sequencer(p_sequencer);
                   `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
@@ -444,14 +454,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // test partial mem read with non-blocking random read/write
-  virtual task run_mem_partial_access_vseq(num_times);
-      bit [TL_DW-1:0]     exp_mem[tl_addr_t];
-      tl_addr_t           addr_q[$];
-      int                 num_words;
-      bit [TL_AW-1:0]     addr;
-      bit [TL_DW-1:0]     data;
-      bit [TL_DBW-1:0]    mask;
-      uint                max_nonblocking_items;
+  virtual task run_mem_partial_access_vseq(int num_times);
+      int  num_words;
+      uint max_nonblocking_items;
 
       // timeout may happen if we issue too many non-blocking accesses at the beginning
       // limit the nonblocking items to be up to 2 times of max outstanding that TLUL supports
@@ -463,38 +468,74 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       num_words = num_words >> 2;
 
       repeat (num_words * num_times * 10) begin
-        randcase
-          1: begin // write
-            int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
+        fork
+          begin
+            bit [TL_AW-1:0]  addr;
+            bit [TL_DW-1:0]  data;
+            bit [TL_DBW-1:0] mask;
+            randcase
+              1: begin // write
+                int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
 
-            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                addr inside {[cfg.mem_ranges[mem_idx].start_addr :
-                              cfg.mem_ranges[mem_idx].end_addr]};)
-            data = $urandom;
-            if (cfg.en_mem_byte_write) mask = get_rand_contiguous_mask();
-            else                       mask = '1;
-            tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(0));
+                `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+                    addr inside {[cfg.mem_ranges[mem_idx].start_addr :
+                                  cfg.mem_ranges[mem_idx].end_addr]};)
+                data = $urandom;
+                if (cfg.en_mem_byte_write) mask = get_rand_contiguous_mask();
+                else                       mask = '1;
+                tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
 
-            addr[1:0] = 0;
-            exp_mem[addr] = data;
-            addr_q.push_back(addr);
+                if (!cfg.under_reset) begin
+                  addr[1:0] = 0;
+                  exp_mem[addr] = data;
+                  mem_exist_addr_q.push_back(addr);
+                end
+              end
+              // Randomly pick a previously written address for partial read.
+              exp_mem.size > 0: begin // read
+                // get all the programmed addresses and randomly pick one
+                addr = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
+                mask = get_rand_contiguous_mask();
+                tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
+
+                if (!cfg.under_reset) begin
+                  bit [TL_DW-1:0]  compare_mask;
+                  bit [TL_DW-1:0]  act_data, exp_data;
+                  // calculate compare_mask which is data width wide
+                  foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
+                  act_data = data & compare_mask;
+                  exp_data = exp_mem[addr] & compare_mask;
+                  `DV_CHECK_EQ(act_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+                end
+              end
+            endcase
           end
-          // Randomly pick a previously written address for partial read.
-          exp_mem.size > 0: begin // read
-            bit [TL_SZW-1:0] size;
-            bit [TL_DW-1:0]  compare_mask;
-            // get all the programmed addresses and randomly pick one
-            addr = addr_q[$urandom_range(0, addr_q.size - 1)];
-            mask = get_rand_contiguous_mask();
-
-            // calculate compare_mask which is data width wide
-            foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
-            tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .compare_mask(compare_mask),
-                      .check_exp_data(1), .exp_data(exp_mem[addr]), .blocking(0));
-          end
-        endcase
+        join_none
+        #0; // for outstanding_accesses to be updated
         wait(csr_utils_pkg::outstanding_accesses <= max_nonblocking_items);
       end
+  endtask
+
+  // This task runs random csr and mem accesses in parallel, which can be used to cross with
+  // tl_errors and random reset
+  virtual task run_csr_mem_rw_vseq(int num_times);
+    fork
+      begin
+        csr_excl_item csr_excl = add_and_return_csr_excl("rw");
+        `uvm_info(`gfn, "running csr rw vseq", UVM_HIGH)
+        run_csr_vseq(.csr_test_type("rw"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
+      end
+      if (cfg.mem_ranges.size > 0) run_mem_partial_access_vseq(num_times);
+    join
+  endtask
+
+  virtual task run_csr_mem_rw_with_rand_reset_vseq(int num_times);
+    cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) cip_seq;
+    `downcast(cip_seq, this.clone())
+    cip_seq.common_seq_type = "csr_mem_rw";
+    `uvm_info(`gfn, "Running run_csr_mem_rw_with_rand_reset_vseq", UVM_HIGH)
+    run_stress_all_with_rand_reset_vseq(.num_times(num_times), .do_tl_err(1),
+                                        .seq(cip_seq));
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();
