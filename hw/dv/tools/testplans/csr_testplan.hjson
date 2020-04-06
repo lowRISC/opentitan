@@ -64,7 +64,21 @@
             - Shuffle the list of CSRs first to remove the effect of ordering.
             '''
       milestone: V1
-      tests: ["{name}{intf}_csr_aliasing",]
+      tests: ["{name}{intf}_csr_aliasing"]
+    }
+    {
+      name: csr_mem_rw_with_rand_reset
+      desc: '''
+            Verify random reset during CSR/memory access.
+            - Run csr_rw sequence to randomly access CSRs
+            - If memory exists, run mem_partial_access in parallel with csr_rw
+            - Randomly issue reset and then use hw_reset sequence to check all CSRs
+              are reset to default value
+            - It is mandatory to run this test for all available interfaces the
+              CSRs are accessible from.
+            '''
+      milestone: V1
+      tests: ["{name}{intf}_csr_mem_rw_with_rand_reset"]
     }
   ]
 }

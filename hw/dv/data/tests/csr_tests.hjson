@@ -37,6 +37,13 @@
       run_opts: ["+run_same_csr_outstanding"]
       en_run_modes: ["csr_tests_mode"]
     }
+
+    {
+      name: "{name}_csr_mem_rw_with_rand_reset"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_csr_mem_rw_with_rand_reset"]
+      en_run_modes: ["csr_tests_mode"]
+    }
   ]
 
   regressions: [
