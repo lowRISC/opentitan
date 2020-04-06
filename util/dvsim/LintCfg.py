@@ -34,12 +34,24 @@ class LintCfg(OneShotCfg):
     """Derivative class for linting purposes.
     """
     def __init__(self, flow_cfg_file, proj_root, args):
+        # This is a lint-specific attribute
+        self.is_style_lint = ""
         super().__init__(flow_cfg_file, proj_root, args)
 
     def __post_init__(self):
         super().__post_init__()
+
+        # Convert to boolean
+        if self.is_style_lint == "True":
+            self.is_style_lint = True
+        else:
+            self.is_style_lint = False
+
         # Set the title for lint results.
-        self.results_title = self.name.upper() + " Lint Results"
+        if self.is_style_lint:
+            self.results_title = self.name.upper() + " Style Lint Results"
+        else:
+            self.results_title = self.name.upper() + " Lint Results"
 
     @staticmethod
     def create_instance(flow_cfg_file, proj_root, args):

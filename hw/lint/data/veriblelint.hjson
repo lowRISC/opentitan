@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // TODO(#1342): switch over to native structured tool output, once supported by Verible
+    // Verible lint-specific results parsing script that is called after running lint
+    report_cmd: "{proj_root}/hw/lint/tools/{tool}/parse-lint-report.py "
+    report_opts: ["--repdir={build_dir}",
+                  "--outdir={build_dir}"]
+
+    // This customizes the report format for style lint
+    is_style_lint: True
+}
