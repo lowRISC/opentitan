@@ -23,6 +23,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand alert_esc_trans_type_e alert_esc_type;
   rand alert_handshake_e      alert_handshake_sta;
   rand esc_handshake_e        esc_handshake_sta;
+  rand int                    sig_cycle_cnt;
 
   // delays
   rand int unsigned ping_delay;
@@ -65,6 +66,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
     `uvm_field_int (ack_stable,        UVM_DEFAULT)
     `uvm_field_int (alert_delay,       UVM_DEFAULT)
     `uvm_field_int (int_err_cyc,       UVM_DEFAULT)
+    `uvm_field_int (sig_cycle_cnt,     UVM_DEFAULT)
     `uvm_field_enum(alert_sig_int_err_e,    alert_int_err_type,  UVM_DEFAULT)
     `uvm_field_enum(resp_sig_int_err_e,     resp_int_err_type,   UVM_DEFAULT)
     `uvm_field_enum(alert_esc_trans_type_e, alert_esc_type,      UVM_DEFAULT)

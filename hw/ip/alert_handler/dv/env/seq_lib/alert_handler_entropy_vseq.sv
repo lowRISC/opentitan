@@ -17,6 +17,12 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
     num_trans inside {[4000:8000]};
   }
 
+  function void pre_randomize();
+    this.enable_one_alert_c.constraint_mode(0);
+    this.enable_classa_only_c.constraint_mode(0);
+    this.sig_int_c.constraint_mode(0);
+  endfunction
+
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
                                   bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
                                   bit [TL_DW-1:0]                     alert_class = 'h0,
