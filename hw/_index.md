@@ -12,7 +12,7 @@ See the [Hardware Development Stages]({{< relref "/doc/project/hw_stages.md" >}}
 
 Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV plans and the DV simulation results.
 
-Finally, we provide the same set of information for all available [top level designs](#top-level-designs). We may eventually also include the synthesis results for those top level designs.
+Finally, we provide the same set of information for all available [top level designs](#top-level-designs), including an additional dashboard with preliminary synthesis results for some of these designs.
 
 
 ## Results of tool-flows
@@ -40,4 +40,4 @@ Finally, we provide the same set of information for all available [top level des
   * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/results.html)
   * FPV results (nightly) (TBD)
   * [Lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/latest/results.html)
-  * Synthesis results (nightly) (TBD)
+  * [Synthesis results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html)
