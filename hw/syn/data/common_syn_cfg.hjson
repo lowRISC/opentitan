@@ -18,13 +18,17 @@
   build_log:        "{build_dir}/synthesis.log"
 
   // We rely on Fusesoc to generate the file list for us
-  sv_flist_gen_cmd:   fusesoc
+  sv_flist_gen_cmd:   "fusesoc"
   fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
 
   // TODO: switch the tool to dc once the corresponding edalize backend is available
-  sv_flist_gen_opts:  ["--cores-root {proj_root} ",
-                       "run --target={flow} --tool icarus --build-root={build_dir}",
-                       "--setup {fusesoc_core}"]
+  sv_flist_gen_opts:  ["--cores-root {proj_root}",
+                       "run"
+                       "--target={flow}",
+                       "--tool icarus",
+                       "--build-root={build_dir}",
+                       "--setup",
+                       "{fusesoc_core}"]
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
 }

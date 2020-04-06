@@ -129,7 +129,7 @@ def main():
     parser.add_argument("-t",
                         "--tool",
                         default="",
-                        metavar="vcs|xcelium|ascentlint|dc|...",
+                        metavar="vcs|xcelium|ascentlint|veriblelint|dc|...",
                         help="Override the tool that is set in hjson file")
 
     parser.add_argument("-select_cfgs",
@@ -483,7 +483,7 @@ def main():
 
     # TODO: SimCfg item below implies DV - need to solve this once we add FPV
     # and other ASIC flow targets.
-    if args.tool == 'ascentlint':
+    if args.tool in ['ascentlint', 'veriblelint']:
         cfg = LintCfg.LintCfg(args.cfg, proj_root, args)
     elif args.tool == 'dc':
         cfg = SynCfg.SynCfg(args.cfg, proj_root, args)
