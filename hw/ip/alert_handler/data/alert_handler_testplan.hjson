@@ -6,6 +6,7 @@
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
                      "hw/dv/tools/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/testplans/enable_reg_testplan.hjson",
+                     "hw/dv/tools/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
@@ -76,22 +77,15 @@
     }
     {
       name: random_classes
-      desc: "Randomly enable classes and randomly write phase cycles"
+      desc: "Based on random_alerts test, this test will also randomly enable interrupt classes"
       milestone: V2
       tests: ["alert_handler_random_classes"]
     }
     {
       name: stress_all
-      desc: '''
-            - Combine above sequences in one test to run sequentially, except csr sequence'''
+      desc: "Combine above sequences in one test to run sequentially, except csr sequence"
       milestone: V2
       tests: ["alert_handler_stress_all"]
-    }
-    {
-      name: stress_all_with_rand_reset
-      desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
-      milestone: V2
-      tests: ["alert_handler_stress_all_with_rand_reset"]
     }
   ]
 }

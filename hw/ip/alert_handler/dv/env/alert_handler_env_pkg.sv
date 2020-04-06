@@ -66,11 +66,6 @@ package alert_handler_env_pkg;
     LocalEscIntFail
   } local_alert_type_e;
 
-  typedef struct {
-    realtime    start_time;
-    esc_phase_e phase;
-  } esc_phase_t;
-
   // forward declare classes to allow typedefs below
   typedef virtual pins_if #(NUM_MAX_ESC_SEV) esc_en_vif;
   typedef virtual pins_if #(1) entropy_vif;

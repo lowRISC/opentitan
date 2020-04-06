@@ -7,21 +7,16 @@
       {ral.class``i``_phase0_cyc, ral.class``i``_phase1_cyc, \
        ral.class``i``_phase2_cyc, ral.class``i``_phase3_cyc};
 
+`define WAIT_CLK_AND_CHECK_RESET \
+  @(cfg.clk_rst_vif.cb); \
+  if (cfg.under_reset) break;
+
 class alert_handler_scoreboard extends cip_base_scoreboard #(
     .CFG_T(alert_handler_env_cfg),
     .RAL_T(alert_handler_reg_block),
     .COV_T(alert_handler_env_cov)
   );
   `uvm_component_utils(alert_handler_scoreboard)
-
-  // local variables
-  // esc_phase_per_sig_q: each escalation signal corresponse to one phase (from the class_ctrl reg)
-  // --- signal --- phase  ---
-  // ---    0   --- MAP_E0 ---
-  // ---    1   --- MAP_E1 ---
-  // ---    2   --- MAP_E2 ---
-  // ---    3   --- MAP_E3 ---
-  esc_phase_e   esc_phase_per_sig_q[NUM_ESC_SIGNALS][$];
 
   // esc_phase_cyc_per_class_q: each class has four phase cycles, stores each cycle length
   // --- class --- phase0_cyc    ---    phase1_cyc   ---    phase2_cyc   ---     phase3_cyc  ---
@@ -40,8 +35,9 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // until the class esc is cleared
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_esc_classes;
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_intr_classes;
-  bit [NUM_ALERT_HANDLER_CLASS_MSB:0] esc_class_trigger;
-  int      intr_timer_per_class[NUM_ALERT_HANDLER_CLASSES];
+  int intr_cnter_per_class[NUM_ALERT_HANDLER_CLASSES];
+  int esc_cnter_per_signal[NUM_ESC_SIGNALS];
+  int esc_sig_class[NUM_ESC_SIGNALS]; // only one class can increment one esc signal at a time
   // For different alert classify in the same class and trigger at the same cycle, design only
   // count once. So record the alert triggered timing here
   realtime last_triggered_alert_per_class[NUM_ALERT_HANDLER_CLASSES];
@@ -82,6 +78,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       process_alert_fifo();
       process_esc_fifo();
       check_intr_timeout_trigger_esc();
+      esc_phase_signal_cnter();
     join_none
   endtask
 
@@ -112,19 +109,18 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual task process_esc_fifo();
     foreach (esc_fifo[i]) begin
       automatic int index = i;
-      automatic esc_phase_t phase_info;
       fork
         forever begin
           alert_esc_seq_item act_item;
           esc_fifo[index].get(act_item);
           // once esc signal is received
           if (act_item.alert_esc_type == AlertEscSigTrans &&
-              act_item.esc_handshake_sta == EscReceived) begin
-            process_esc_sig(esc_phase_per_sig_q[index], index, phase_info);
+              act_item.esc_handshake_sta == EscIntFail) begin
+            `uvm_error(`gfn, "should not have int fail here")
           end
           if (act_item.alert_esc_type == AlertEscSigTrans &&
               act_item.esc_handshake_sta == EscRespComplete) begin
-            check_esc_phase(phase_info);
+            check_esc_signal(act_item.sig_cycle_cnt, index);
           end
           if (act_item.alert_esc_type == AlertEscIntFail) begin
             bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
@@ -183,7 +179,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       accum_cnt += 1;
       void'(reg_accum_cnts[class_i].predict(accum_cnt));
     end
-    esc_class_trigger = class_i;
     `uvm_info(`gfn, $sformatf("alert_accum: class=%0d, alert_cnt=%0d, thresh=%0d, under_esc=%0b",
         class_i, accum_cnt, accum_thresh, under_esc_classes[class_i]), UVM_DEBUG)
     if (accum_cnt > accum_thresh && !under_esc_classes[class_i]) predict_esc(class_i);
@@ -193,35 +188,19 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void predict_esc(int class_i);
     bit [TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
     under_esc_classes[class_i] = 1;
-    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
-      if (class_ctrl[i + AlertClassCtrlEnE0]) begin
-        esc_phase_per_sig_q[i].push_back((class_ctrl >> i*2+6) & 'b11);
-        `DV_CHECK_LT_FATAL(esc_phase_per_sig_q[i].size(), 2, "esc signal should only match 1 phase")
-      end
-    end
   endfunction
 
-  virtual function void process_esc_sig(ref esc_phase_e esc_phase_q[$], int esc_sig_i,
-                                        ref esc_phase_t phase_info);
-    if (esc_phase_q.size() == 0) begin
-      `uvm_error(`gfn, $sformatf("found unexpected esc signal %0d", esc_sig_i))
-    end
-    phase_info.phase = esc_phase_q.pop_front();
-    phase_info.start_time = $realtime;
-    `uvm_info(`gfn, $sformatf("esc signal_%0d triggered at %s", esc_sig_i, phase_info.phase.name),
+  // check if escalation signal's duration length is correct
+  virtual function void check_esc_signal(int cycle_cnt, int esc_sig_i);
+    `uvm_info(`gfn, $sformatf("esc signal_%0d triggered, cycle cnt is %0d", esc_sig_i, cycle_cnt),
               UVM_LOW)
-  endfunction
-
-  virtual function void check_esc_phase(ref esc_phase_t phase_info);
-    realtime end_time = $realtime;
-    int      cal_cycle, act_cycle;
-    if (under_esc_classes == 0) `uvm_error(`gfn, "please check if esc signal goes high")
-    cal_cycle = (end_time - phase_info.start_time) * 1000 / cfg.clk_rst_vif.clk_period_ps;
-    act_cycle =
-        reg_esc_phase_cycs_per_class_q[esc_class_trigger][phase_info.phase].get_mirrored_value();
-
-    if (act_cycle < 2) act_cycle = 2;
-    `DV_CHECK_EQ(act_cycle, cal_cycle)
+    if (ral.regen.get_mirrored_value()) begin
+      // if ping response enabled, will not check cycle count if esc ping is enabled
+      `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
+                   $sformatf("check signal_%0d", esc_sig_i))
+    end
+    esc_cnter_per_signal[esc_sig_i] = 0;
+    esc_sig_class[esc_sig_i] = 0;
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
@@ -296,19 +275,19 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       end else begin
         case (csr.get_name())
           "classa_esc_cnt": begin
-            void'(ral.classa_esc_cnt.predict(.value(intr_timer_per_class[0]),
+            void'(ral.classa_esc_cnt.predict(.value(intr_cnter_per_class[0]),
                   .kind(UVM_PREDICT_READ)));
           end
           "classb_esc_cnt": begin
-            void'(ral.classb_esc_cnt.predict(.value(intr_timer_per_class[1]),
+            void'(ral.classb_esc_cnt.predict(.value(intr_cnter_per_class[1]),
                   .kind(UVM_PREDICT_READ)));
           end
           "classc_esc_cnt": begin
-            void'(ral.classc_esc_cnt.predict(.value(intr_timer_per_class[2]),
+            void'(ral.classc_esc_cnt.predict(.value(intr_cnter_per_class[2]),
                   .kind(UVM_PREDICT_READ)));
           end
           "classd_esc_cnt": begin
-            void'(ral.classd_esc_cnt.predict(.value(intr_timer_per_class[3]),
+            void'(ral.classd_esc_cnt.predict(.value(intr_cnter_per_class[3]),
                   .kind(UVM_PREDICT_READ)));
           end
           default: begin
@@ -319,80 +298,128 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // a counter to count how long each interrupt pins stay high until it is being reset.
-  // check if escalation will be triggered if the interrupt counter is larger than the threshold
+  // a counter to count how long each interrupt pins stay high until it is being reset
+  // if counter exceeds threshold, call predict_esc() function to calculate related esc
   virtual task check_intr_timeout_trigger_esc();
-    for (int i=0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
       automatic int             class_i = i;
-      automatic bit [TL_DW-1:0] timeout_cyc, class_ctrl;
       fork
         begin : intr_sig_counter
           forever @(under_intr_classes[class_i] && !under_esc_classes[class_i]) begin
+            bit [TL_DW-1:0] timeout_cyc, class_ctrl;
             // wait a clk for esc signal to go high
             cfg.clk_rst_vif.wait_clks(1);
             class_ctrl = get_class_ctrl(class_i);
-            if (class_ctrl[AlertClassCtrlEn] &&
+            if (!under_esc_classes[class_i] && class_ctrl[AlertClassCtrlEn] &&
                 (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
-              intr_timer_per_class[class_i] = 0;
+              intr_cnter_per_class[class_i] = 0;
               // counter continues to increment if:
               // interrupt is not cleared, and class is not under escalation by accum_alerts
               timeout_cyc = get_class_timeout_cyc(class_i);
               if (timeout_cyc > 0) begin
                 while (under_intr_classes[class_i] != 0 && !under_esc_classes[class_i]) begin
-                  if (intr_timer_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
+                  if (intr_cnter_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
                   @(cfg.clk_rst_vif.cb);
-                  intr_timer_per_class[class_i] += 1;
+                  intr_cnter_per_class[class_i] += 1;
                 end
               end
-              intr_timer_per_class[class_i] = 0;
+              if (!under_esc_classes[class_i]) intr_cnter_per_class[class_i] = 0;
             end
-          end //end forever
-        end
-        begin : esc_phases_counter
-          forever @(under_esc_classes[class_i]) begin
-            for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
-              int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
-                                .get_mirrored_value();
-              if (!under_reset && under_esc_classes[class_i]) begin
-                @(cfg.clk_rst_vif.cb);
-                intr_timer_per_class[class_i] = 1;
-                while (under_esc_classes[class_i] != 0 &&
-                       intr_timer_per_class[class_i] < phase_thresh) begin
-                  @(cfg.clk_rst_vif.cb);
-                  intr_timer_per_class[class_i] += 1;
-                end
-              end
-            end
-            @(cfg.clk_rst_vif.cb);
-            intr_timer_per_class[class_i] = 0;
           end // end forever
         end
       join_none
     end
   endtask
 
+  // two counters for phases cycle length and esc signals cycle length
+  // phase cycle cnter: "intr_cnter_per_class" is used to check "esc_cnt" registers
+  // esc signal cnter: "esc_cnter_per_signal" is used to check escalation esc_p/n cycle length
+  // escalation signal is always one cycle longer than phase length, and the esc_p/n signal is an
+  // "OR" result of different classes
+  virtual task esc_phase_signal_cnter();
+    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+      fork
+        automatic int class_i = i;
+        begin : esc_phases_counter
+          forever @(under_esc_classes[class_i]) begin
+            for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
+              int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
+                                .get_mirrored_value();
+              bit[TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
+              int enabled_sig_q[$];
+              for (int sig_i = 0; sig_i < NUM_ESC_SIGNALS; sig_i++) begin
+                if (class_ctrl[sig_i*2+7 -: 2] == phase_i && class_ctrl[sig_i+2]) begin
+                  enabled_sig_q.push_back(sig_i);
+                end
+              end
+              if (under_esc_classes[class_i]) begin
+                `WAIT_CLK_AND_CHECK_RESET
+                intr_cnter_per_class[class_i] = 1;
+                incr_esc_sig_cnt(enabled_sig_q, class_i);
+                while (under_esc_classes[class_i] != 0 &&
+                       intr_cnter_per_class[class_i] < phase_thresh) begin
+                  `WAIT_CLK_AND_CHECK_RESET
+                  incr_esc_sig_cnt(enabled_sig_q, class_i);
+                  intr_cnter_per_class[class_i]++;
+                end
+                incr_esc_sig_cnt(enabled_sig_q, class_i);
+                foreach (enabled_sig_q[i]) begin
+                  int index = enabled_sig_q[i];
+                  if (esc_sig_class[index] == (class_i + 1)) release_esc_signal(index);
+                end
+             end
+            end
+            @(cfg.clk_rst_vif.cb);
+            intr_cnter_per_class[class_i] = 0;
+          end // end forever
+        end
+      join_none
+    end
+  endtask
+
+  // release escalation signal after one clock cycle, to ensure happens at the end of the clock
+  // cycle, waited 2 negedge clks here
+  virtual task release_esc_signal(int sig_i);
+    fork
+      begin
+        cfg.clk_rst_vif.wait_n_clks(2);
+        esc_sig_class[sig_i] = 0;
+      end
+    join_none
+  endtask
+
+  // increase signal count only when current signal is not incremented by other class already
+  // so use esc_sig_class to gate only one class access the counter at a time
+  virtual function void incr_esc_sig_cnt(const ref int sig_q[$], int class_i);
+    foreach (sig_q[i]) begin
+      int index = sig_q[i];
+      if (esc_sig_class[index] == 0) esc_sig_class[index] = class_i + 1;
+      if (esc_sig_class[index] == (class_i + 1)) begin
+        esc_cnter_per_signal[index]++;
+        `uvm_info(`gfn, $sformatf("class_%0d signal_%0d, esc_cnt=%0d", class_i, index,
+                                  esc_cnter_per_signal[index]), UVM_DEBUG)
+      end
+    end
+  endfunction
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
     for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) clr_reset_esc_class(i);
+    esc_cnter_per_signal = '{default:0};
+    esc_sig_class = '{default:0};
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
-    foreach (esc_phase_per_sig_q[i]) begin
-      `DV_CHECK_EQ(esc_phase_per_sig_q[i].size(), 0, $sformatf("failed esc_phase %0d", i))
-    end
   endfunction
 
   function void clr_reset_esc_class(int class_i);
     under_esc_classes[class_i] = 0;
-    foreach (esc_phase_per_sig_q[i]) esc_phase_per_sig_q[i].delete();
     // clear all the counters and timers for esc
-    intr_timer_per_class[class_i] = 0;
+    intr_cnter_per_class[class_i] = 0;
     last_triggered_alert_per_class[class_i] = 0;
     under_intr_classes[class_i] = 0;
-    intr_timer_per_class[class_i] = 0;
     void'(reg_accum_cnts[class_i].predict(0));
   endfunction
 
@@ -423,3 +450,4 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 endclass
 
 `undef ASSIGN_CLASS_PHASE_REGS
+`undef WAIT_CLK_AND_CHECK_RESET
