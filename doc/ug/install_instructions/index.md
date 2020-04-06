@@ -230,7 +230,7 @@ To get started faster we use the web installer in the following.
 
    ![Vivado installation step 6](img/install_vivado/step6.png)
 
-10. Double-check the installation summary and click on "Next" to start the installation process.
+10. Double-check the installation summary and click on "Install" to start the installation process.
 
    ![Vivado installation step 7](img/install_vivado/step7.png)
 
