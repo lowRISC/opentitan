@@ -56,11 +56,11 @@ The environment variables that must be set in `syn_setup.sh` are
 # Running the synthesis flow
 
 Once `syn_setup.sh` has been created the `syn_yosys.sh` will run the entire
-flow. All outputs are placed in a directory with the prefix `syn_out_` with the
-current date/time forming the rest of the name, e.g.
-`syn_out_06_01_2020_11_19_15`
+flow. All outputs are placed under the `syn/syn_out` directory with the prefix
+`ibex_` with the current date/time forming the rest of the name, e.g.
+`syn/syn_out/ibex_06_01_2020_11_19_15`
 
-- `syn_out_dir`
+- `syn/syn_out/ibex_date`
   - `reports` - All of the generated reports
     - area.rpt - Total area used and per cell instance counts
     - `timing`
@@ -76,6 +76,9 @@ current date/time forming the rest of the name, e.g.
       - ibex_core_netlist.sta.v - Post-synthesis netlist usable by OpenSTA
       - ibex_core.[library-name].out.sdc - Generated .sdc timing constraints
         file
+
+If you wish to change the results directory naming or location edit
+`syn_setup.sh` appropriately.
 
 # Timing constraints
 

@@ -217,6 +217,7 @@ class riscv_compressed_instr extends riscv_instr;
           end
         CJ_FORMAT:
           asm_str = $sformatf("%0s%0s", asm_str, get_imm());
+        default: `uvm_info(`gfn, $sformatf("Unsupported format %0s", format.name()), UVM_LOW)
       endcase
     end else begin
       // For EBREAK,C.EBREAK, making sure pc+4 is a valid instruction boundary

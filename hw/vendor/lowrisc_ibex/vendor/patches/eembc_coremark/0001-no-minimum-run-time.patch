@@ -1,0 +1,25 @@
+diff --git a/core_main.c b/core_main.c
+index 6161974..cca596c 100644
+--- a/core_main.c
++++ b/core_main.c
+@@ -295,10 +295,16 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
+ 	if (time_in_secs(total_time) > 0)
+ 		ee_printf("Iterations/Sec   : %d\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
+ #endif
+-	if (time_in_secs(total_time) < 10) {
+-		ee_printf("ERROR! Must execute for at least 10 secs for a valid result!\n");
+-		total_errors++;
+-	}
++  // Remove error report if execution time low.
++  // On Ibex a few loops suffices to get an accurate result. With this check in
++  // the verilator simulation of coremark will report failure (unless left running
++  // for a significant number of iterations greatly increasing simulation time).
++  // The other error checking is useful to determine if the benchmark has been
++  // broken in some way which is masked if this check is left in.
++	//if (time_in_secs(total_time) < 10) {
++	//	ee_printf("ERROR! Must execute for at least 10 secs for a valid result!\n");
++	//	total_errors++;
++	//}
+ 
+ 	ee_printf("Iterations       : %lu\n", (long unsigned) default_num_contexts*results[0].iterations);
+ 	ee_printf("Compiler version : %s\n",COMPILER_VERSION);

@@ -56,8 +56,10 @@ void RegisterDriver::CaptureTransaction(unsigned char rst_n,
 }
 
 void RegisterDriver::DriveOutputs(unsigned char *access, uint32_t *op,
-                                  uint32_t *addr, uint32_t *wdata) {
+                                  unsigned char *csr_op_en, uint32_t *addr,
+                                  uint32_t *wdata) {
   *access = reg_access_;
+  *csr_op_en = reg_access_;
   *op = next_transaction_.csr_op;
   *addr = next_transaction_.csr_addr;
   *wdata = next_transaction_.csr_wdata;

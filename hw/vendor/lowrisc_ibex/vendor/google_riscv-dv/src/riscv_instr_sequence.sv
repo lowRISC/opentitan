@@ -305,6 +305,7 @@ class riscv_instr_sequence extends uvm_sequence;
       C_JALR : str = {prefix, $sformatf("c.jalr x%0d", ra)};
       C_JR   : str = {prefix, $sformatf("c.jr x%0d", ra)};
       JALR   : str = {prefix, $sformatf("jalr x%0d, x%0d, 0", ra, ra)};
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported jump_instr %0s", jump_instr[i]))
     endcase
     instr_string_list.push_back(str);
   endfunction

@@ -54,16 +54,28 @@
   rtl_test: core_base_test
 
 
+- test: riscv_load_store_shared_mem_test
+  description: >
+    Multi-harts load/store from shared memory regions
+  iterations: 2
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_shared_mem_stream,10
+  rtl_test: core_base_test
+
+
 - test: riscv_amo_test
   description: >
     RISC-V atomic instruction extension test
   iterations: 2
   gen_test: riscv_rand_instr_test
   gen_opts: >
-    +instr_cnt=5000
-    +num_of_sub_program=5
-    +directed_instr_0=riscv_lr_sc_instr_stream,10
-    +directed_instr_1=riscv_amo_instr_stream,10
+    +instr_cnt=2000
+    +num_of_sub_program=2
+    +directed_instr_0=riscv_lr_sc_instr_stream,50
+    +directed_instr_1=riscv_amo_instr_stream,50
   rtl_test: core_base_test
 
 

@@ -23,6 +23,12 @@ Not all instructions can complete in the ID/EX stage in one cycle so will stall 
 This means the maximum IPC (Instructions per Cycle) Ibex can achieve is 1 when multi-cycle instructions aren't used.
 See Multi- and Single-Cycle Instructions below for the details.
 
+Third Pipeline Stage
+--------------------
+Ibex can be configured to have a third pipeline stage (Writeback) which has major effects on performance and instruction behaviour.
+This feature is *EXPERIMENTAL* and the details of its impact are not yet documented here.
+All of the information presented below applies only to the two stage pipeline provided in the default configurations.
+
 Multi- and Single-Cycle Instructions
 ------------------------------------
 

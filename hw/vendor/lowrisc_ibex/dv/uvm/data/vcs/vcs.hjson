@@ -1,0 +1,156 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd:  "{job_prefix} vcs"
+  build_ex:   "{build_dir}/simv"
+  run_cmd:    "{job_prefix} {build_ex}"
+
+  // Indicate the tool specific helper sources - these are copied over to the
+  // {tool_srcs_dir} before running the simulation.
+  tool_srcs:  ["{proj_root}/dv/uvm/data/vcs/*"]
+
+  build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
+               "-timescale=1ns/1ps",
+               "-Mdir={build_ex}.csrc",
+               "-o {build_ex}",
+               "-f {sv_flist}",
+               "+incdir+{build_dir}",
+               // Turn on warnings for non-void functions called with return values ignored
+               "+warn=SV-NFIVC",
+               "+warn=noUII-L",
+               // Below option required for $error/$fatal system calls
+               "-assert svaext",
+               // Force DPI-C compilation in C99 mode
+               "-CFLAGS \"--std=c99\"",
+               // Without this magic LDFLAGS argument below, we get compile time errors with
+               // VCS on Google Linux machines that look like this:
+               // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
+               // .../libvcsnew.so: undefined reference to `snpsCheckStrdupFunc'
+               // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
+               "-LDFLAGS \"-Wl,--no-as-needed\""]
+
+  run_opts:   ["-licqueue",
+               "-ucli -do {tool_srcs_dir}/vcs_fsdb.tcl",
+               "+ntb_random_seed={seed}",
+               "+UVM_TESTNAME={uvm_test}",
+               "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  // Coverage related.
+  cov_db_dir: "{build_dir}/cov.vdb"
+
+  // Individual test specific coverage data - this will be deleted if the test fails
+  // so that coverage from failiing tests is not included in the final report.
+  cov_db_test_dir_name: "{run_dir_name}.{seed}"
+  cov_db_test_dir: "{cov_db_dir}/snps/coverage/db/testdata/{cov_db_test_dir_name}"
+
+  // Merging coverage.
+  // "cov_db_dirs" is a special variable that appends all build directories in use.
+  // It is constructed by the tool itself.
+  cov_merge_dir:    "{scratch_base_path}/cov_merge"
+  cov_merge_db_dir: "{cov_merge_dir}/merged.vdb"
+  cov_merge_cmd:    "{job_prefix} urg"
+  cov_merge_opts:   ["-full64",
+                     "+urg+lic+wait",
+                     "-nocheck",
+                     "-noreport",
+                     "-flex_merge drop",
+                     "-group merge_across_scopes",
+                     "-parallel",
+                     "-parallel_split 20",
+                     // Use cov_db_dirs var for dir args; append -dir in front of each
+                     '''{eval_cmd} dirs=`echo {cov_db_dirs}`; dir_args=; \
+                     for d in $dirs; do dir_args="$dir_args -dir $d"; done; \
+                     echo $dir_args
+                     ''',
+                     "-dbname {cov_merge_db_dir}"]
+
+  // Generate coverage reports in text as well as html.
+  cov_report_dir:       "{scratch_base_path}/cov_report"
+  cov_report_cmd:       "{job_prefix} urg"
+  cov_report_opts:      ["-full64",
+                        "+urg+lic+wait",
+                        "-dir {cov_merge_db_dir}",
+                        "-group instcov_for_score",
+                        "-line nocasedef",
+                        "-format both",
+                        "-report {cov_report_dir}"]
+  cov_report_dashboard: "{cov_report_dir}/dashboard.txt"
+
+  // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
+  // GUI for visual analysis.
+  cov_analyze_dir:  "{scratch_base_path}/cov_analyze"
+  cov_analyze_cmd:  "{job_prefix} verdi"
+  cov_analyze_opts: ["-cov",
+                     "-covdir {cov_merge_db_dir}",
+                     "-line nocasedef"
+                     "-elfile {vcs_cov_excl_files}"]
+
+  // Vars that need to exported to the env.
+  exports: [
+    VCS_ARCH_OVERRIDE: linux
+    VCS_LIC_EXPIRE_WARNING: 1
+  ]
+
+  // Defaults for VCS
+  cov_metrics:          "line+cond+fsm+tgl+branch+assert"
+  vcs_cov_hier:         ""
+  vcs_cov_assert_hier:  ""
+  vcs_cov_excl_files:   []
+
+  // pass and fail patterns
+  build_fail_patterns: ["^Error-.*$"]
+  run_fail_patterns:   ["^Error-.*$"] // Null pointer error
+
+  build_modes: [
+    {
+      name: vcs_waves
+      is_sim_mode: 1
+      build_opts: ["-debug_access+all"]
+    }
+    {
+      name: vcs_cov
+      is_sim_mode: 1
+      build_opts: [// Enable the required cov metrics
+                   "-cm {cov_metrics}",
+                   // Set the coverage hierarchy
+                   "{vcs_cov_hier}",
+                   // Cover all continuous assignments
+                   "-cm_line contassign",
+                   // Dump toggle coverage on mdas, array of structs and on ports only
+                   "-cm_tgl mda+structarr+portsonly",
+                   // Ignore initial blocks for coverage
+                   "-cm_report noinitial",
+                   // Filter unreachable/statically constant blocks
+                   "-cm_noconst",
+                   // Don't count coverage that's coming from zero-time glitches
+                   "-cm_glitch 0",
+                   // Ignore warnings about not applying cm_glitch to path and FSM
+                   "+warn=noVCM-OPTIGN",
+                   // Coverage database output location
+                   "-cm_dir {cov_db_dir}"]
+
+      run_opts:   [// Enable the required cov metrics
+                   "-cm {cov_metrics}",
+                   // Same directory as build
+                   "-cm_dir {build_dir}/cov.vdb",
+                   // Don't output cm.log which can be quite large
+                   "-cm_log /dev/null",
+                   // Provide a name to the coverage collected for this test
+                   "-cm_name {cov_db_test_dir_name}",
+                   // Don't dump all the coverage assertion attempts at the end of simulation
+                   "-assert nopostproc"]
+    }
+    {
+      name: vcs_xprop
+      is_sim_mode: 1
+      build_opts: ["-xprop={tool_srcs_dir}/xprop.cfg"]
+    }
+    {
+      name: vcs_profile
+      is_sim_mode: 1
+      build_opts: ["-simprofile"]
+      run_opts:   ["-simprofile {profile}"]
+    }
+  ]
+}

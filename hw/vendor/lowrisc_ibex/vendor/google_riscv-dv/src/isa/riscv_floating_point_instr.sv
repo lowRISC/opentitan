@@ -138,6 +138,7 @@ class riscv_floating_point_instr extends riscv_instr;
         has_fs1 = 1'b0;
         has_fd = 1'b0;
       end
+      default: `uvm_info(`gfn, $sformatf("Unsupported format %0s", format.name()), UVM_LOW)
     endcase
   endfunction
 

@@ -17,5 +17,6 @@
 --override riscvOVPsim/cpu/time_undefined=F
 --override riscvOVPsim/cpu/reset_address=0x80000080
 --override riscvOVPsim/cpu/simulateexceptions=T
+--override riscvOVPsim/cpu/defaultsemihost=F
 --override riscvOVPsim/cpu/wfi_is_nop=T
 --override riscvOVPsim/cpu/tval_ii_code=T

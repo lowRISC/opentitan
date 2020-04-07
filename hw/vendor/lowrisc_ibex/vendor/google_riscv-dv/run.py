@@ -250,6 +250,7 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
           if verbose:
             cmd += "+UVM_VERBOSITY=UVM_HIGH "
           cmd = re.sub("<seed>", str(rand_seed), cmd)
+          cmd = re.sub("<test_id>", test_id, cmd)
           sim_seed[test_id] = str(rand_seed)
           if "gen_opts" in test:
             cmd += test['gen_opts']
@@ -730,6 +731,8 @@ def setup_parser():
                       help="Stop on detecting first error")
   parser.add_argument("--noclean", action="store_true", default=True,
                       help="Do not clean the output of the previous runs")
+  parser.add_argument("--verilog_style_check", action="store_true", default=False,
+                      help="Run verilog style check")
   parser.add_argument("-d", "--debug", type=str, default="",
                       help="Generate debug command log file")
   return parser
@@ -772,6 +775,9 @@ def load_config(args, cwd):
     elif args.target == "multi_harts":
       args.mabi = "ilp32"
       args.isa  = "rv32gc"
+    elif args.target == "rv32imcb":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imcb"
     elif args.target == "rv32i":
       args.mabi = "ilp32"
       args.isa  = "rv32i"
@@ -812,6 +818,11 @@ def main():
     cfg = load_config(args, cwd)
     # Create output directory
     output_dir = create_output(args.o, args.noclean)
+
+    if args.verilog_style_check:
+      logging.debug("Run style check")
+      style_err = run_cmd("verilog_style/run.sh")
+      if style_err: logging.info("Found style error: \nERROR: " + style_err)
 
     # Run any handcoded/directed assembly tests specified by args.asm_tests
     if args.asm_tests != "":

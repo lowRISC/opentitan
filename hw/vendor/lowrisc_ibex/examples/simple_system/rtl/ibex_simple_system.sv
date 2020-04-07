@@ -13,14 +13,18 @@
  * simulators, a small amount of work may be required to support the
  * simulator_ctrl module.
  */
+
 module ibex_simple_system (
   input IO_CLK,
   input IO_RST_N
 );
 
-  parameter bit RV32E           = 1'b0;
-  parameter bit RV32M           = 1'b1;
-  parameter bit BranchTargetALU = 1'b0;
+  parameter bit RV32E                    = 1'b0;
+  parameter bit RV32M                    = 1'b1;
+  parameter bit RV32B                    = 1'b0;
+  parameter bit BranchTargetALU          = 1'b0;
+  parameter bit WritebackStage           = 1'b0;
+  parameter     MultiplierImplementation = "fast";
 
   logic clk_sys = 1'b0, rst_sys_n;
 
@@ -102,10 +106,10 @@ module ibex_simple_system (
   assign device_err[SimCtrl] = 1'b0;
 
   bus #(
-    .NrDevices   (NrDevices),
-    .NrHosts     (NrHosts  ),
-    .DataWidth   (32       ),
-    .AddressWidth(32       )
+    .NrDevices    ( NrDevices ),
+    .NrHosts      ( NrHosts   ),
+    .DataWidth    ( 32        ),
+    .AddressWidth ( 32        )
   ) u_bus (
     .clk_i               (clk_sys),
     .rst_ni              (rst_sys_n),
@@ -134,12 +138,15 @@ module ibex_simple_system (
   );
 
   ibex_core_tracing #(
-      .MHPMCounterNum(29),
-      .DmHaltAddr(32'h00100000),
-      .DmExceptionAddr(32'h00100000),
-      .RV32E(RV32E),
-      .RV32M(RV32M),
-      .BranchTargetALU(BranchTargetALU)
+      .MHPMCounterNum           ( 29                       ),
+      .DmHaltAddr               ( 32'h00100000             ),
+      .DmExceptionAddr          ( 32'h00100000             ),
+      .RV32E                    ( RV32E                    ),
+      .RV32M                    ( RV32M                    ),
+      .RV32B                    ( RV32B                    ),
+      .BranchTargetALU          ( BranchTargetALU          ),
+      .WritebackStage           ( WritebackStage           ),
+      .MultiplierImplementation ( MultiplierImplementation )
     ) u_core (
       .clk_i                 (clk_sys),
       .rst_ni                (rst_sys_n),

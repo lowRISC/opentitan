@@ -12,7 +12,8 @@ class core_ibex_base_test extends uvm_test;
   mem_model_pkg::mem_model                        mem;
   core_ibex_vseq                                  vseq;
   bit                                             enable_irq_seq;
-  int unsigned                                    timeout_in_cycles = 10000000;
+  int unsigned                                    timeout_in_cycles = 100000000;
+  int unsigned                                    max_quit_count  = 1;
   // If no signature_addr handshake functionality is desired between the testbench and the generated
   // code, the test will wait for the specifield number of cycles before starting stimulus
   // sequences (irq and debug)
@@ -75,6 +76,12 @@ class core_ibex_base_test extends uvm_test;
     wait_for_test_done();
     phase.drop_objection(this);
   endtask
+
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    void'($value$plusargs("max_quit_count=%0d", max_quit_count));
+    uvm_report_server::get_server().set_max_quit_count(max_quit_count);
+  endfunction
 
   virtual function void report_phase(uvm_phase phase);
     super.report_phase(phase);

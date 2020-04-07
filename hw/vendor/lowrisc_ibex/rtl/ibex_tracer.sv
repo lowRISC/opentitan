@@ -71,7 +71,6 @@ module ibex_tracer (
   logic        unused_rvfi_intr = rvfi_intr;
   logic [ 1:0] unused_rvfi_mode = rvfi_mode;
 
-  import ibex_pkg::*;
   import ibex_tracer_pkg::*;
 
   int          file_handle;
@@ -400,6 +399,11 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, rvfi_rs2_addr);
   endfunction
 
+  function automatic void decode_r1_insn(input string mnemonic);
+    data_accessed = RS1 | RD;
+    decoded_str = $sformatf("%s\tx%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr);
+  endfunction
+
   function automatic void decode_i_insn(input string mnemonic);
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
@@ -407,7 +411,7 @@ module ibex_tracer (
   endfunction
 
   function automatic void decode_i_shift_insn(input string mnemonic);
-    // SLLI, SRLI, SRAI
+    // SLLI, SRLI, SRAI, SROI, SLOI, RORI
     logic [4:0] shamt;
     shamt = {rvfi_insn[24:20]};
     data_accessed = RS1 | RD;
@@ -843,6 +847,31 @@ module ibex_tracer (
         // MISC-MEM
         INSN_FENCE:      decode_fence();
         INSN_FENCEI:     decode_mnemonic("fence.i");
+        // RV32B
+        INSN_SLOI:       decode_i_shift_insn("sloi");
+        INSN_SROI:       decode_i_shift_insn("sroi");
+        INSN_RORI:       decode_i_shift_insn("rori");
+        INSN_SLO:        decode_r_insn("slo");
+        INSN_SRO:        decode_r_insn("sro");
+        INSN_ROL:        decode_r_insn("rol");
+        INSN_ROR:        decode_r_insn("ror");
+        INSN_MIN:        decode_r_insn("min");
+        INSN_MAX:        decode_r_insn("max");
+        INSN_MINU:       decode_r_insn("minu");
+        INSN_MAXU:       decode_r_insn("maxu");
+        INSN_XNOR:       decode_r_insn("xnor");
+        INSN_ORN:        decode_r_insn("orn");
+        INSN_ANDN:       decode_r_insn("andn");
+        INSN_PACK:       decode_r_insn("pack");
+        INSN_PACKH:      decode_r_insn("packh");
+        INSN_PACKU:      decode_r_insn("packu");
+        INSN_ORCB:       decode_r_insn("orcb");
+        INSN_CLZ:        decode_r1_insn("clz");
+        INSN_CTZ:        decode_r1_insn("ctz");
+        INSN_PCNT:       decode_r1_insn("pcnt");
+        INSN_REV:        decode_r1_insn("rev");
+        INSN_REV8:       decode_r1_insn("rev8");
+
         default:         decode_mnemonic("INVALID");
       endcase
     end

@@ -3,14 +3,15 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_core:0.1"
-description: "CPU core with 2 stage pipeline implementing the RV32IMC_Zicsr ISA"
+description: "CPU core with 2 stage pipeline implementing the RV32IMC_Zicsr_Zifencei ISA"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:ibex:ibex_pkg
+      - lowrisc:ibex:ibex_icache
     files:
-      - rtl/ibex_pkg.sv
       - rtl/ibex_alu.sv
       - rtl/ibex_compressed_decoder.sv
       - rtl/ibex_controller.sv
@@ -26,6 +27,7 @@ filesets:
       - rtl/ibex_multdiv_slow.sv
       - rtl/ibex_prefetch_buffer.sv
       - rtl/ibex_pmp.sv
+      - rtl/ibex_wb_stage.sv
       # XXX: Figure out the best way to switch these two implementations
       # dynamically on the target.
 #      - rtl/ibex_register_file_latch.sv # ASIC
@@ -63,17 +65,40 @@ parameters:
     datatype: bool
     paramtype: vlogparam
 
+  RV32B:
+    datatype: bool
+    default: false
+    paramtype: vlogparam
+
   MultiplierImplementation:
     datatype: str
     paramtype: vlogparam
     description: "Multiplier implementation. Valid values: fast, slow"
     default: fast
 
-  BranchTargetALU:
-    datatype: int
+  ICache:
+    datatype: bool
     paramtype: vlogparam
-    default: 0
-    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
+    description: "Enable instruction cache"
+    default: false
+
+  ICacheECC:
+    datatype: bool
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+    default: false
+
+  BranchTargetALU:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)"
+
+  WritebackStage:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: "Enables third pipeline stage (EXPERIMENTAL)"
 
 targets:
   default:
@@ -97,3 +122,22 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
+      veriblelint:
+        ruleset: default
+        rules:
+          - "-parameter-name-style"
+  format:
+    filesets:
+      - files_rtl
+    parameters:
+      - SYNTHESIS=true
+      - RVFI=true
+    default_tool: veribleformat
+    toplevel: ibex_core
+    tools:
+      veribleformat:
+        verible_format_args:
+          - "--inplace"

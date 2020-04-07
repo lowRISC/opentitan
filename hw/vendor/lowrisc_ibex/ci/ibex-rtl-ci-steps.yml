@@ -1,0 +1,55 @@
+parameters:
+  ibex_configs: []
+
+steps:
+  - ${{ each config in parameters.ibex_configs }}:
+    # ibex_config.py will exit with error code 1 on any error which will cause
+    # the CI to fail if there's an issue with the configuration file or an
+    # incorrect configuration name being used
+    - bash: |
+        ./util/ibex_config.py ${{ config }} fusesoc_opts
+      displayName: Display fusesoc config for ${{ config }}
+
+    - bash: |
+        fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing $(./util/ibex_config.py ${{ parameters.ibex_config }} fusesoc_opts)
+        if [ $? != 0 ]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Verilog lint failed. Run 'fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing' to check and fix all errors."
+          exit 1
+        fi
+      displayName: Lint Verilog source files with Verilator for ${{ config }}
+
+    - bash: |
+        # Build simulation model of Ibex
+        fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_riscv_compliance $(./util/ibex_config.py ${{ parameters.ibex_config }} fusesoc_opts)
+        if [ $? != 0 ]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Unable to build Verilator model of Ibex for compliance testing."
+          exit 1
+        fi
+
+        # Run compliance test suite
+        export TARGET_SIM=$PWD/build/lowrisc_ibex_ibex_riscv_compliance_0.1/sim-verilator/Vibex_riscv_compliance
+        export RISCV_PREFIX=riscv32-unknown-elf-
+        export RISCV_TARGET=ibex
+        export RISCV_DEVICE=rv32imc
+        fail=0
+        for isa in rv32i rv32im rv32imc rv32Zicsr rv32Zifencei; do
+          make -C build/riscv-compliance RISCV_ISA=$isa 2>&1 | tee run.log
+          if [ ${PIPESTATUS[0]} != 0 ]; then
+            echo -n "##vso[task.logissue type=error]"
+            echo "The RISC-V compliance test suite failed for $isa"
+
+            # There's no easy way to get the test results in machine-readable
+            # form to properly exclude known-failing tests. Going with an
+            # approximate solution for now.
+            if [ $isa == rv32i ] && grep -q 'FAIL: 4/48' run.log; then
+              echo -n "##vso[task.logissue type=error]"
+              echo "Expected failure for rv32i, see lowrisc/ibex#100 more more information."
+            else
+              fail=1
+            fi
+          fi
+        done
+        exit $fail
+      displayName: Run RISC-V Compliance test for Ibex RV32IMC for ${{ config }}

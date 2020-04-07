@@ -29,7 +29,7 @@
     cmd: >
       <out>/vcs_simv +vcs+lic+wait <sim_opts> +ntb_random_seed=<seed> <cov_opts>
     cov_opts: >
-      -cm_dir <out>/test.vdb -cm_log /dev/null -cm_name test_<seed>
+      -cm_dir <out>/test.vdb -cm_log /dev/null -cm_name test_<seed>_<test_id>
 
 - tool: ius
   compile:

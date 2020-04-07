@@ -1,0 +1,30 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "ibex_icache"
+
+  entries: [
+    {
+      name: sanity
+      desc: '''**Goal**: Basic sanity test acessing a major datapath in IBEX_ICACHE.
+
+            **Stimulus**: Describe the stimulus procedure.
+
+            **Checks**": Describe the self-check procedure.
+            - add bullets as needed
+            - second bullet<br>
+              describe second bullet
+
+            Start a new paragraph.'''
+      milestone: V1
+      tests: ["ibex_icache_sanity"]
+    }
+    {
+      name: feature1
+      desc: '''Add more test entries here like above.'''
+      milestone: V1
+      tests: []
+    }
+  ]
+}

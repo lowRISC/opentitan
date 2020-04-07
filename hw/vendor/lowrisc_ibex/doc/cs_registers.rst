@@ -66,6 +66,8 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7B3  | ``dscratch1``      | RW     | Debug Scratch Register 1                      |
 +---------+--------------------+--------+-----------------------------------------------+
+|  0x7C0  | ``cpuctrl``        | RW     | CPU Control Register (Custom CSR)             |
++---------+--------------------+--------+-----------------------------------------------+
 |  0xB00  | ``mcycle``         | RW     | Machine Cycle Counter                         |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0xB02  | ``minstret``       | RW     | Machine Instructions-Retired Counter          |
@@ -482,6 +484,26 @@ Reset Value: ``0x0000_0000``
 
 Scratch register to be used by the debug module.
 Accessible in Debug Mode only.
+
+CPU Control Register (cpuctrl)
+------------------------------
+
+CSR Address: ``0x7C0``
+
+Reset Value: ``0x0000_0000``
+
+Custom CSR to control runtime configuration of CPU components.
+Accessible in Machine Mode only.
+Ibex implements the following bit fields.
+Other bit fields read as zero.
+
++-------+------+------------------------------------------------------------------+
+| Bit#  | R/W  | Description                                                      |
++-------+------+------------------------------------------------------------------+
+| 0     | WARL | **icache_enable:** Enable (1) or disable (0) the instruction     |
+|       |      | cache. If the instruction cache has not been configured (ICache  |
+|       |      | parameter == 0), this field will always read as zero.            |
++-------+------+------------------------------------------------------------------+
 
 Time Registers (time(h))
 ------------------------

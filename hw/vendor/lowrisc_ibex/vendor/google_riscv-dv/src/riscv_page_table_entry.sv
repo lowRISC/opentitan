@@ -146,6 +146,7 @@ class riscv_page_table_entry#(satp_mode_t MODE = SV39) extends uvm_object;
       1 : return PPN0_WIDTH;
       2 : return PPN0_WIDTH + PPN1_WIDTH;
       3 : return PPN0_WIDTH + PPN1_WIDTH + PPN2_WIDTH;
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported page_level %0x", page_level))
     endcase
   endfunction
 

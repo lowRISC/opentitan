@@ -84,6 +84,7 @@ Contents
  * :ref:`pipeline-details` described the overal pipeline structure.
  * :ref:`instruction-decode-execute` describes how the Instruction Decode and Execute stage works.
  * The instruction and data interfaces of Ibex are explained in :ref:`instruction-fetch` and :ref:`load-store-unit`, respectively.
+ * :ref:`icache` describes the optional Instruction Cache.
  * The two register-file flavors are described in :ref:`register-file`.
  * The control and status registers are explained in :ref:`cs-registers`.
  * :ref:`performance-counters` gives an overview of the performance monitors and event counters available in Ibex.

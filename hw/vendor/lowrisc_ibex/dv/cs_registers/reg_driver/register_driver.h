@@ -26,8 +26,8 @@ class RegisterDriver {
   void CaptureTransaction(unsigned char rst_n, unsigned char illegal_csr,
                           uint32_t op, uint32_t addr, uint32_t rdata,
                           uint32_t wdata);
-  void DriveOutputs(unsigned char *access, uint32_t *op, uint32_t *addr,
-                    uint32_t *wdata);
+  void DriveOutputs(unsigned char *access, uint32_t *op, unsigned char *op_en,
+                    uint32_t *addr, uint32_t *wdata);
 
  private:
   void Randomize();

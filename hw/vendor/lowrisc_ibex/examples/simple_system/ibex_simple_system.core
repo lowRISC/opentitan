@@ -24,24 +24,39 @@ filesets:
 
 parameters:
   RV32M:
-    datatype: int
+    datatype: bool
     paramtype: vlogparam
-    default: 1
+    default: true
     description: Enable the M ISA extension (hardware multiply/divide) [0/1]
   RV32E:
-    datatype: int
+    datatype: bool
     paramtype: vlogparam
-    default: 0
+    default: false
     description: Enable the E ISA extension (reduced register set) [0/1]
+  RV32B:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: Enable the B ISA extension (bit manipulation EXPERIMENTAL) [0/1]
   SRAM_INIT_FILE:
     datatype: str
     paramtype: vlogdefine
     description: Path to a vmem file to initialize the RAM with
-  BranchTargetALU:
-    datatype: int
+  MultiplierImplementation:
+    datatype: str
     paramtype: vlogparam
-    default: 0
-    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]
+    description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
+    default: "fast"
+  BranchTargetALU:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)
+  WritebackStage:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: Enables third pipeline stage (EXPERIMENTAL)
 
 targets:
   sim:
@@ -52,7 +67,9 @@ targets:
     parameters:
       - RV32M
       - RV32E
+      - MultiplierImplementation
       - BranchTargetALU
+      - WritebackStage
       - SRAM_INIT_FILE
     toplevel: ibex_simple_system
     tools:
@@ -81,4 +98,7 @@ targets:
           # XXX: Cleanup all warnings and remove this option
           # (or make it more fine-grained at least)
           - "-Wno-fatal"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
 

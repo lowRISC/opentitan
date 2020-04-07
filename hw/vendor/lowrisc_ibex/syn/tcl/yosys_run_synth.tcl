@@ -31,7 +31,7 @@ yosys "opt"
 set yosys_abc_clk_period [expr $lr_synth_clk_period - $lr_synth_abc_clk_uprate]
 
 if { $lr_synth_timing_run } {
-  yosys "abc -liberty $lr_synth_cell_library_path -constr $lr_synth_sdc_file_out -D $yosys_abc_clk_period"
+  yosys "abc -liberty $lr_synth_cell_library_path -constr $lr_synth_abc_sdc_file_in -D $yosys_abc_clk_period"
 } else {
   yosys "abc -liberty $lr_synth_cell_library_path"
 }
@@ -43,7 +43,7 @@ if { $lr_synth_timing_run } {
   # Produce netlist that OpenSTA can use
   yosys "setundef -zero"
   yosys "splitnets"
-
+  yosys "clean"
   yosys "write_verilog -noattr -noexpr -nohex -nodec $lr_synth_sta_netlist_out"
 }
 

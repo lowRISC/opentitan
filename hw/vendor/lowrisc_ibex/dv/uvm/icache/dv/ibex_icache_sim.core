@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:ibex_icache_sim:0.1"
+description: "IBEX_ICACHE DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_icache:0.1
+
+  files_dv:
+    depend:
+      - lowrisc:dv:ibex_icache_test
+    files:
+      - tb/tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    filesets:
+      - files_rtl
+      - files_dv
+    toplevel: tb
+    default_tool: vcs

@@ -32,7 +32,7 @@ typedef enum logic [6:0] {
 // ALU operations //
 ////////////////////
 
-typedef enum logic [4:0] {
+typedef enum logic [5:0] {
   // Arithmetics
   ALU_ADD,
   ALU_SUB,
@@ -41,11 +41,23 @@ typedef enum logic [4:0] {
   ALU_XOR,
   ALU_OR,
   ALU_AND,
+  // RV32B
+  ALU_XNOR,
+  ALU_ORN,
+  ALU_ANDN,
 
   // Shifts
   ALU_SRA,
   ALU_SRL,
   ALU_SLL,
+  // RV32B
+  ALU_SRO,
+  ALU_SLO,
+  ALU_ROR,
+  ALU_ROL,
+  ALU_REV,
+  ALU_REV8,
+  ALU_ORCB,
 
   // Comparisons
   ALU_LT,
@@ -54,6 +66,23 @@ typedef enum logic [4:0] {
   ALU_GEU,
   ALU_EQ,
   ALU_NE,
+  // RV32B
+  ALU_MIN,
+  ALU_MINU,
+  ALU_MAX,
+  ALU_MAXU,
+
+  // Pack
+  // RV32B
+  ALU_PACK,
+  ALU_PACKU,
+  ALU_PACKH,
+
+  // Bitcounting
+  // RV32B
+  ALU_CLZ,
+  ALU_CTZ,
+  ALU_PCNT,
 
   // Set lower than
   ALU_SLT,
@@ -96,6 +125,16 @@ typedef enum logic[3:0] {
    XDEBUGVER_NONSTD = 4'd15 // debug not conforming to RISC-V debug spec
 } x_debug_ver_e;
 
+//////////////
+// WB stage //
+//////////////
+
+// Type of instruction present in writeback stage
+typedef enum logic[1:0] {
+  WB_INSTR_LOAD,  // Instruction is awaiting load data
+  WB_INSTR_STORE, // Instruction is awaiting store response
+  WB_INSTR_OTHER  // Instruction doesn't fit into above categories
+} wb_instr_type_e;
 
 //////////////
 // ID stage //
@@ -132,15 +171,8 @@ typedef enum logic [2:0] {
   IMM_B_INCR_ADDR
 } imm_b_sel_e;
 
-// Only used when BranchTargetALU == 1
-typedef enum logic {
-  JT_ALU,   // Jump target from main ALU
-  JT_BT_ALU // Jump target from specialised branch ALU
-} jt_mux_sel_e;
-
 // Regfile write data selection
-typedef enum logic [1:0] {
-  RF_WD_LSU,
+typedef enum logic {
   RF_WD_EX,
   RF_WD_CSR
 } rf_wd_sel_e;
@@ -380,7 +412,8 @@ typedef enum logic[11:0] {
   CSR_MHPMCOUNTER28H = 12'hB9C,
   CSR_MHPMCOUNTER29H = 12'hB9D,
   CSR_MHPMCOUNTER30H = 12'hB9E,
-  CSR_MHPMCOUNTER31H = 12'hB9F
+  CSR_MHPMCOUNTER31H = 12'hB9F,
+  CSR_CPUCTRL        = 12'h7C0
 } csr_num_e;
 
 // CSR pmp-related offsets
