@@ -74,7 +74,7 @@ jobs:
       #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
       fork_origin="$(git merge-base --fork-point origin/master)"
       changed_files="$(git diff --name-only "$fork_origin" | grep -v /vendor/ | grep -E '\.(cpp|cc|c|h)$')"
-      if [[ -z "$changed_files" ]]; then
+      if [[ -n "$changed_files" ]]; then
         xargs git diff -U0 "$fork_origin" <<< "$changed_files" \
           | clang-format-diff -p1 \
           | tee clang-format-output
@@ -91,7 +91,7 @@ jobs:
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
       changed_files="$(git diff --name-only "$fork_origin")"
-      if [[ -z "$changed_files" ]]; then
+      if [[ -n "$changed_files" ]]; then
         xargs util/fix_include_guard.py --dry-run <<< "$changed_files" | tee fix-include-guard-output
         if [[ -s fix-include-guard-output ]]; then
           echo -n "##vso[task.logissue type=error]"
