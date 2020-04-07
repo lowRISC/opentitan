@@ -204,12 +204,12 @@ module  i2c_core (
   assign fmt_fifo_wdata[11]  = reg2hw.fdata.rcont.q;
   assign fmt_fifo_wdata[12]  = reg2hw.fdata.nakok.q;
 
-  assign fmt_byte               = fmt_fifo_rdata[7:0];
-  assign fmt_flag_start_before  = fmt_fifo_rdata[8];
-  assign fmt_flag_stop_after    = fmt_fifo_rdata[9];
-  assign fmt_flag_read_bytes    = fmt_fifo_rdata[10];
-  assign fmt_flag_read_continue = fmt_fifo_rdata[11];
-  assign fmt_flag_nak_ok        = fmt_fifo_rdata[12];
+  assign fmt_byte               = fmt_fifo_rvalid ? fmt_fifo_rdata[7:0] : '0;
+  assign fmt_flag_start_before  = fmt_fifo_rvalid ? fmt_fifo_rdata[8] : '0;
+  assign fmt_flag_stop_after    = fmt_fifo_rvalid ? fmt_fifo_rdata[9] : '0;
+  assign fmt_flag_read_bytes    = fmt_fifo_rvalid ? fmt_fifo_rdata[10] : '0;
+  assign fmt_flag_read_continue = fmt_fifo_rvalid ? fmt_fifo_rdata[11] : '0;
+  assign fmt_flag_nak_ok        = fmt_fifo_rvalid ? fmt_fifo_rdata[12] : '0;
 
   // Unused parts of exposed bits
   assign unused_fifo_ctrl_rxilvl_qe  = reg2hw.fifo_ctrl.rxilvl.qe;
