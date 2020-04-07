@@ -10,6 +10,7 @@
  */
 module ibex_ex_block #(
     parameter bit RV32M                    = 1,
+    parameter bit RV32B                    = 0,
     parameter bit BranchTargetALU          = 0,
     parameter     MultiplierImplementation = "fast"
 ) (
@@ -23,9 +24,8 @@ module ibex_ex_block #(
 
     // Branch Target ALU
     // All of these signals are unusued when BranchTargetALU == 0
-    input  ibex_pkg::jt_mux_sel_e jt_mux_sel_i,
-    input  logic [11:0]           bt_operand_imm_i,
-    input  logic [31:0]           pc_id_i,
+    input  logic [31:0]           bt_a_operand_i,
+    input  logic [31:0]           bt_b_operand_i,
 
     // Multiplier/Divider
     input  ibex_pkg::md_op_e      multdiv_operator_i,
@@ -35,11 +35,12 @@ module ibex_ex_block #(
     input  logic  [1:0]           multdiv_signed_mode_i,
     input  logic [31:0]           multdiv_operand_a_i,
     input  logic [31:0]           multdiv_operand_b_i,
+    input  logic                  multdiv_ready_id_i,
 
     // Outputs
     output logic [31:0]           alu_adder_result_ex_o, // to LSU
-    output logic [31:0]           regfile_wdata_ex_o,
-    output logic [31:0]           jump_target_o,         // to IF
+    output logic [31:0]           result_ex_o,
+    output logic [31:0]           branch_target_o,       // to IF
     output logic                  branch_decision_o,     // to ID
 
     output logic                  ex_valid_o             // EX has valid output
@@ -66,35 +67,36 @@ module ibex_ex_block #(
     assign multdiv_en     = 1'b0;
   end
 
-  assign regfile_wdata_ex_o = multdiv_en ? multdiv_result : alu_result;
+  assign result_ex_o = multdiv_en ? multdiv_result : alu_result;
 
   // branch handling
   assign branch_decision_o  = alu_cmp_result;
 
   if (BranchTargetALU) begin : g_branch_target_alu
     logic [32:0] bt_alu_result;
+    logic        unused_bt_carry;
 
-    assign bt_alu_result = {{19{bt_operand_imm_i[11]}}, bt_operand_imm_i, 1'b0} + pc_id_i;
+    assign bt_alu_result   = bt_a_operand_i + bt_b_operand_i;
 
-    assign jump_target_o = (jt_mux_sel_i == JT_ALU) ? alu_adder_result_ex_o : bt_alu_result[31:0];
+    assign unused_bt_carry = bt_alu_result[32];
+    assign branch_target_o = bt_alu_result[31:0];
   end else begin : g_no_branch_target_alu
-    // Unused jt_mux_sel_i/bt_operand_imm_i/pc_id_i signals causes lint errors, this avoids them
-    ibex_pkg::jt_mux_sel_e unused_jt_mux_sel;
-    logic [11:0]           unused_bt_operand_imm;
-    logic [31:0]           unused_pc_id;
+    // Unused bt_operand signals cause lint errors, this avoids them
+    logic [31:0] unused_bt_a_operand, unused_bt_b_operand;
 
-    assign unused_jt_mux_sel     = jt_mux_sel_i;
-    assign unused_bt_operand_imm = bt_operand_imm_i;
-    assign unused_pc_id          = pc_id_i;
+    assign unused_bt_a_operand = bt_a_operand_i;
+    assign unused_bt_b_operand = bt_b_operand_i;
 
-    assign jump_target_o = alu_adder_result_ex_o;
+    assign branch_target_o = alu_adder_result_ex_o;
   end
 
   /////////
   // ALU //
   /////////
 
-  ibex_alu alu_i (
+  ibex_alu #(
+    .RV32B( RV32B )
+  ) alu_i (
       .operator_i          ( alu_operator_i            ),
       .operand_a_i         ( alu_operand_a_i           ),
       .operand_b_i         ( alu_operand_b_i           ),
@@ -128,6 +130,7 @@ module ibex_ex_block #(
         .valid_o            ( multdiv_valid         ),
         .alu_operand_a_o    ( multdiv_alu_operand_a ),
         .alu_operand_b_o    ( multdiv_alu_operand_b ),
+        .multdiv_ready_id_i ( multdiv_ready_id_i    ),
         .multdiv_result_o   ( multdiv_result        )
     );
   end else if (MultiplierImplementation == "fast") begin : gen_multdiv_fast
@@ -147,6 +150,7 @@ module ibex_ex_block #(
         .alu_adder_ext_i    ( alu_adder_result_ext  ),
         .alu_adder_i        ( alu_adder_result_ex_o ),
         .equal_to_zero      ( alu_is_equal_result   ),
+        .multdiv_ready_id_i ( multdiv_ready_id_i    ),
         .valid_o            ( multdiv_valid         ),
         .multdiv_result_o   ( multdiv_result        )
     );
@@ -167,6 +171,7 @@ module ibex_ex_block #(
         .alu_adder_ext_i    ( alu_adder_result_ext  ),
         .alu_adder_i        ( alu_adder_result_ex_o ),
         .equal_to_zero      ( alu_is_equal_result   ),
+        .multdiv_ready_id_i ( multdiv_ready_id_i    ),
         .valid_o            ( multdiv_valid         ),
         .multdiv_result_o   ( multdiv_result        )
     );

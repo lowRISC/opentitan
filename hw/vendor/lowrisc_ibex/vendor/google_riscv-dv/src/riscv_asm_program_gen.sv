@@ -106,7 +106,8 @@ class riscv_asm_program_gen extends uvm_object;
       `DV_CHECK_RANDOMIZE_FATAL(main_program[hart])
       main_program[hart].gen_instr(.is_main_program(1), .no_branch(cfg.no_branch_jump));
       // Setup jump instruction among main program and sub programs
-      gen_callstack(main_program[hart], sub_program[hart], sub_program_name, cfg.num_of_sub_program);
+      gen_callstack(main_program[hart], sub_program[hart], sub_program_name,
+                    cfg.num_of_sub_program);
       `uvm_info(`gfn, "Generating callstack...done", UVM_LOW)
       main_program[hart].post_process_instr();
       `uvm_info(`gfn, "Post-processing main program...done", UVM_LOW)
@@ -128,8 +129,10 @@ class riscv_asm_program_gen extends uvm_object;
       // Program end
       gen_program_end(hart);
       if (!cfg.bare_program_mode) begin
-        // Privileged mode switch routine
-        gen_privileged_mode_switch_routine(hart);
+        if (!riscv_instr_pkg::support_pmp) begin
+          // Privileged mode switch routine
+          gen_privileged_mode_switch_routine(hart);
+        end
         // Generate debug rom section
         if (riscv_instr_pkg::support_debug_mode) begin
           gen_debug_rom(hart);
@@ -165,7 +168,12 @@ class riscv_asm_program_gen extends uvm_object;
   // Generate kernel program/data/stack sections
   //---------------------------------------------------------------------------------------
   virtual function void gen_kernel_sections(int hart);
-    instr_stream.push_back(get_label("kernel_instr_start: .align 12", hart));
+    if (SATP_MODE != BARE) begin
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back(".align 2");
+    end
+    instr_stream.push_back(get_label("kernel_instr_start:", hart));
     instr_stream.push_back(".text");
     // Kernel programs
     if (cfg.virtual_addr_translation_on) begin
@@ -189,8 +197,13 @@ class riscv_asm_program_gen extends uvm_object;
     // User stack and data pages may not be accessible when executing trap handling programs in
     // machine/supervisor mode. Generate separate kernel data/stack sections to solve it.
     if (cfg.virtual_addr_translation_on) begin
+      if (SATP_MODE != BARE) begin
+        instr_stream.push_back(".align 12");
+      end else begin
+        instr_stream.push_back(".align 2");
+      end
       // Kernel data pages
-      instr_stream.push_back(get_label("kernel_data_start: .align 12", hart));
+      instr_stream.push_back(get_label("kernel_data_start:", hart));
       if(!cfg.no_data_page) begin
         // Data section
         gen_data_page(hart, 1'b1);
@@ -347,8 +360,15 @@ class riscv_asm_program_gen extends uvm_object;
     if (cfg.use_push_data_section) begin
       instr_stream.push_back($sformatf(".pushsection .%0suser_stack,\"aw\",@progbits;",
                              hart_prefix(hart)));
+    end else begin
+      instr_stream.push_back($sformatf(".section .%0suser_stack,\"aw\",@progbits;",
+                             hart_prefix(hart)));
     end
-    instr_stream.push_back(".align 12");
+    if (SATP_MODE != BARE) begin
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back(".align 2");
+    end
     instr_stream.push_back(get_label("user_stack_start:", hart));
     instr_stream.push_back($sformatf(".rept %0d", cfg.stack_len - 1));
     instr_stream.push_back($sformatf(".%0dbyte 0x0", XLEN/8));
@@ -365,8 +385,15 @@ class riscv_asm_program_gen extends uvm_object;
     if (cfg.use_push_data_section) begin
       instr_stream.push_back($sformatf(".pushsection .%0skernel_stack,\"aw\",@progbits;",
                              hart_prefix(hart)));
+    end else begin
+      instr_stream.push_back($sformatf(".section .%0skernel_stack,\"aw\",@progbits;",
+                             hart_prefix(hart)));
     end
-    instr_stream.push_back(".align 12");
+    if (SATP_MODE != BARE) begin
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back(".align 2");
+    end
     instr_stream.push_back(get_label("kernel_stack_start:", hart));
     instr_stream.push_back($sformatf(".rept %0d", cfg.kernel_stack_len - 1));
     instr_stream.push_back($sformatf(".%0dbyte 0x0", XLEN/8));
@@ -386,10 +413,6 @@ class riscv_asm_program_gen extends uvm_object;
     // Init stack pointer to point to the end of the user stack
     str = {indent, $sformatf("la x%0d, %0suser_stack_end", cfg.sp, hart_prefix(hart))};
     instr_stream.push_back(str);
-    if (support_pmp) begin
-      str = {indent, "j main"};
-      instr_stream.push_back(str);
-    end
     if (cfg.enable_floating_point) begin
       init_floating_point_gpr();
     end
@@ -398,6 +421,10 @@ class riscv_asm_program_gen extends uvm_object;
     end
     core_is_initialized();
     gen_dummy_csr_write(); // TODO add a way to disable xStatus read
+    if (support_pmp) begin
+      str = {indent, "j main"};
+      instr_stream.push_back(str);
+    end
   endfunction
 
   // Setup MISA based on supported extensions
@@ -414,6 +441,7 @@ class riscv_asm_program_gen extends uvm_object;
         RV32I, RV64I, RV128I : misa[MISA_EXT_I] = 1'b1;
         RV32M, RV64M         : misa[MISA_EXT_M] = 1'b1;
         RV32A, RV64A         : misa[MISA_EXT_A] = 1'b1;
+        RV32B, RV64B         : misa[MISA_EXT_B] = 1'b1;
         RV32F, RV64F, RV32FC : misa[MISA_EXT_F] = 1'b1;
         RV32D, RV64D, RV32DC : misa[MISA_EXT_D] = 1'b1;
         RV32V, RV64V         : misa[MISA_EXT_V] = 1'b1;
@@ -591,6 +619,12 @@ class riscv_asm_program_gen extends uvm_object;
     end
     // Setup mepc register, jump to init entry
     setup_epc(hart);
+    // Move privileged mode support to the "safe" section of the program
+    // if PMP is supported
+    if (riscv_instr_pkg::support_pmp) begin
+      // Privileged mode switch routine
+      gen_privileged_mode_switch_routine(hart);
+    end
   endfunction
 
   virtual function void gen_privileged_mode_switch_routine(int hart);
@@ -623,6 +657,8 @@ class riscv_asm_program_gen extends uvm_object;
                                     .csr(USTATUS));
             gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(UIE));
           end
+          default: `uvm_info(`gfn, $sformatf("Unsupported privileged_mode %0s",
+                                   riscv_instr_pkg::supported_privileged_mode[i]), UVM_LOW)
         endcase
         // Write M-mode CSRs to testbench by default, as these should be implemented
         gen_signature_handshake(.instr(csr_handshake), .signature_type(WRITE_CSR), .csr(MSTATUS));
@@ -636,7 +672,7 @@ class riscv_asm_program_gen extends uvm_object;
 
   // Setup EPC before entering target privileged mode
   virtual function void setup_epc(int hart);
-    string instr[];
+    string instr[$];
     string mode_name;
     instr = {$sformatf("la x%0d, %0sinit", cfg.gpr[0], hart_prefix(hart))};
     if(cfg.virtual_addr_translation_on) begin
@@ -648,10 +684,10 @@ class riscv_asm_program_gen extends uvm_object;
                $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12)};
     end
     mode_name = cfg.init_privileged_mode.name();
-    instr = {instr,
-             $sformatf("csrw mepc, x%0d", cfg.gpr[0]),
-             $sformatf("j %0sinit_%0s", hart_prefix(hart), mode_name.tolower())
-            };
+    instr.push_back($sformatf("csrw mepc, x%0d", cfg.gpr[0]));
+    if (!riscv_instr_pkg::support_pmp) begin
+      instr.push_back($sformatf("j %0sinit_%0s", hart_prefix(hart), mode_name.tolower()));
+    end
     gen_section(get_label("mepc_setup", hart), instr);
   endfunction
 
@@ -723,6 +759,8 @@ class riscv_asm_program_gen extends uvm_object;
         MACHINE_MODE:    trap_vec_reg = MTVEC;
         SUPERVISOR_MODE: trap_vec_reg = STVEC;
         USER_MODE:       trap_vec_reg = UTVEC;
+        default: `uvm_info(`gfn, $sformatf("Unsupported privileged_mode %0s",
+                           riscv_instr_pkg::supported_privileged_mode[i]), UVM_LOW)
       endcase
       // Skip utvec init if trap delegation to u_mode is not supported
       if ((riscv_instr_pkg::supported_privileged_mode[i] == USER_MODE) &&
@@ -796,6 +834,8 @@ class riscv_asm_program_gen extends uvm_object;
             gen_trap_handler_section(hart, "u", UCAUSE, UTVEC, UTVAL,
                                      UEPC, USCRATCH, USTATUS, UIE, UIP);
           end
+        default: `uvm_fatal(`gfn, $sformatf("Unsupported privileged_mode %0s",
+                            riscv_instr_pkg::supported_privileged_mode[i]))
       endcase
     end
   endfunction
@@ -834,7 +874,11 @@ class riscv_asm_program_gen extends uvm_object;
     end
     // The trap handler will occupy one 4KB page, it will be allocated one entry in the page table
     // with a specific privileged mode.
-    instr_stream.push_back(".align 12");
+    if (SATP_MODE != BARE) begin
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back($sformatf(".align %d", cfg.tvec_alignment));
+    end
     tvec_name = tvec.name();
     gen_section(get_label($sformatf("%0s_handler", tvec_name.tolower()), hart), instr);
     // Exception handler
@@ -1059,6 +1103,9 @@ class riscv_asm_program_gen extends uvm_object;
       if (cfg.use_push_data_section) begin
         instr_stream.push_back($sformatf(".pushsection .%0spage_table,\"aw\",@progbits;",
                                          hart_prefix(hart)));
+      end else begin
+        instr_stream.push_back($sformatf(".section .%0spage_table,\"aw\",@progbits;",
+                                         hart_prefix(hart)));
       end
       foreach(page_table_list.page_table[i]) begin
         page_table_list.page_table[i].gen_page_table_section(page_table_section);
@@ -1129,6 +1176,7 @@ class riscv_asm_program_gen extends uvm_object;
           USTATUS: begin
             interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
           end
+          default: `uvm_fatal(`gfn, $sformatf("Unsupported status %0s", status))
         endcase
         interrupt_handler_instr.push_back($sformatf("1: csrwi 0x%0x,0", scratch));
       end
@@ -1150,8 +1198,12 @@ class riscv_asm_program_gen extends uvm_object;
     interrupt_handler_instr = {interrupt_handler_instr,
                                $sformatf("%0sret;", mode_prefix)
     };
-    // The interrupt handler will use one 4KB page
-    instr_stream.push_back(".align 12");
+    if (SATP_MODE != BARE) begin
+      // The interrupt handler will use one 4KB page
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back(".align 2");
+    end
     gen_section(get_label($sformatf("%0smode_intr_handler", mode_prefix), hart),
                 interrupt_handler_instr);
   endfunction

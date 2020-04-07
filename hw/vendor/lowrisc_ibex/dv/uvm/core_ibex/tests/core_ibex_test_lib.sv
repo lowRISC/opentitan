@@ -192,7 +192,7 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
     init_operating_mode = priv_lvl_e'(core_init_mstatus[12:11]);
     wait_for_csr_write(CSR_MIE, 5000);
     core_init_mie = signature_data;
-    check_next_core_status(INITIALIZED, "Core initialization handshake failure", 500);
+    check_next_core_status(INITIALIZED, "Core initialization handshake failure", 5000);
   endtask
 
   virtual task send_irq_stimulus_start(input bit no_nmi,
@@ -316,7 +316,7 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
         forever begin
           wait_for_core_status(IN_DEBUG_MODE);
           check_priv_mode(PRIV_LVL_M);
-          wait_ret("dret", 20000);
+          wait_ret("dret", 100000);
         end
       end
     join_none
@@ -521,7 +521,7 @@ class core_ibex_irq_in_debug_test extends core_ibex_directed_test;
       wait_for_csr_write(CSR_DCSR, 500);
       check_dcsr_prv(operating_mode);
       check_dcsr_cause(DBG_CAUSE_HALTREQ);
-      clk_vif.wait_clks($urandom_range(50, 100));
+      clk_vif.wait_clks($urandom_range(25, 50));
       // Raise interrupts while the core is in debug mode
       vseq.start_irq_raise_seq();
       fork
@@ -530,7 +530,7 @@ class core_ibex_irq_in_debug_test extends core_ibex_directed_test;
           `uvm_fatal(`gfn, "Core is handling interrupt detected in debug mode")
         end
         begin
-          clk_vif.wait_clks(500);
+          clk_vif.wait_clks(100);
           disable wait_irq;
         end
       join
@@ -739,6 +739,7 @@ class core_ibex_debug_single_step_test extends core_ibex_directed_test;
     bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] counter = 0;
     bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] next_counter = 0;
     forever begin
+      clk_vif.wait_clks(2000);
       vseq.start_debug_single_seq();
       check_next_core_status(IN_DEBUG_MODE,
                              "Core did not enter debug mode after debug stimulus", 1000);
@@ -779,7 +780,6 @@ class core_ibex_debug_single_step_test extends core_ibex_directed_test;
         wait_ret("dret", 5000);
         if (counter === 0) break;
       end
-      clk_vif.wait_clks(2000);
     end
   endtask
 

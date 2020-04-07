@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:ibex:ibex_pkg
     files:
       - rtl/ibex_tracer_pkg.sv
       - rtl/ibex_tracer.sv

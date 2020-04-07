@@ -44,13 +44,16 @@ endclass
 class riscv_mem_access_stream extends riscv_directed_instr_stream;
 
   int             max_data_page_id;
+  bit             load_store_shared_memory;
   mem_region_t    data_page[$];
 
   `uvm_object_utils(riscv_mem_access_stream)
   `uvm_object_new
 
   function void pre_randomize();
-    if(kernel_mode) begin
+    if (load_store_shared_memory) begin
+      data_page = cfg.amo_region;
+    end else if(kernel_mode) begin
       data_page = cfg.s_mem_region;
     end else begin
       data_page = cfg.mem_region;
@@ -64,11 +67,14 @@ class riscv_mem_access_stream extends riscv_directed_instr_stream;
     la_instr = riscv_pseudo_instr::type_id::create("la_instr");
     la_instr.pseudo_instr_name = LA;
     la_instr.rd = gpr;
-    if(kernel_mode) begin
-      la_instr.imm_str = $sformatf("%0s%s+%0d",
+    if (load_store_shared_memory) begin
+      la_instr.imm_str = $sformatf("%0s+%0d", cfg.amo_region[id].name, base);
+
+    end else if(kernel_mode) begin
+      la_instr.imm_str = $sformatf("%0s%0s+%0d",
                                    hart_prefix(hart), cfg.s_mem_region[id].name, base);
     end else begin
-      la_instr.imm_str = $sformatf("%0s%s+%0d",
+      la_instr.imm_str = $sformatf("%0s%0s+%0d",
                                    hart_prefix(hart), cfg.mem_region[id].name, base);
     end
     instr_list.push_front(la_instr);
@@ -187,8 +193,7 @@ class riscv_jump_instr extends riscv_directed_instr_stream;
     end
     jump.has_label = 1'b1;
     jump.label = "1";
-    jump.comment = $sformatf("%s jump %0s -> %0s",
-                             hart_prefix(hart), label, target_program_label);
+    jump.comment = $sformatf("jump %0s -> %0s", label, target_program_label);
     branch.imm_str = "1f";
     branch.comment = "branch to jump instr";
     branch.branch_assigned = 1'b1;

@@ -21,6 +21,11 @@ A localparam ``DEPTH`` gives a configurable depth which is set to 3 by default.
 The top-level of the instruction fetch controls the prefetch buffer (in particular flushing it on branches/jumps/exception and beginning prefetching from the appropriate new PC) and supplies new instructions to the ID/EX stage along with their PC.
 Compressed instructions are expanded by the IF stage so the decoder can always deal with uncompressed instructions (the ID stage still receives the compressed instruction for placing into ``mtval`` on an illegal instruction exception).
 
+If Ibex has been configured with an instruction cache (parameter ICache == 1), then the prefetch buffer is replaced by the icache module (:ref:`icache`).
+The interfaces of the icache module are the same as the prefetch buffer with two additions.
+Firstly, a signal to enable the cache which is driven from a custom CSR.
+Secondly a signal to the flush the cache which is set every time a ``fence.i`` instruction is executed.
+
 Instruction-Side Memory Interface
 ---------------------------------
 

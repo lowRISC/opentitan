@@ -165,6 +165,14 @@ class riscv_illegal_instr extends uvm_object;
     c_op != 2'b11;
   }
 
+  // Avoid generating illegal func3/func7 errors for opcode used by B-extension
+  constraint b_extension_c {
+    if (RV32B inside {supported_isa}) {
+      if (exception inside {kIllegalFunc3, kIllegalFunc7}) {
+        !(opcode inside {7'b0011011, 7'b0010011, 7'b0111011});
+      }
+    }
+  }
 
   constraint illegal_compressed_op_c {
     if (exception == kIllegalCompressedOpcode) {

@@ -34,25 +34,48 @@ parameters:
 
   RV32E:
     datatype: bool
+    default: false
     paramtype: vlogparam
 
   RV32M:
     datatype: bool
+    default: true
+    paramtype: vlogparam
+
+  RV32B:
+    datatype: bool
+    default: false
     paramtype: vlogparam
 
   MultiplierImplementation:
     datatype: str
     paramtype: vlogparam
-    description: "Multiplier implementation. Valid values: fast, slow"
-    default: fast
+    description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
+    default: "fast"
+
+  ICache:
+    datatype: bool
+    paramtype: vlogparam
+    description: "Enable instruction cache"
+    default: false
+
+  ICacheECC:
+    datatype: bool
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+    default: false
 
   BranchTargetALU:
-    datatype: int
+    datatype: bool
     paramtype: vlogparam
-    default: 0
+    default: false
     description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
 
-
+  WritebackStage:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: "Enables third pipeline stage (EXPERIMENTAL) [0/1]"
 
 targets:
   default:
@@ -72,6 +95,11 @@ targets:
     parameters:
       - RVFI=true
       - SYNTHESIS=true
+      - RV32M
+      - RV32E
+      - BranchTargetALU
+      - WritebackStage
+      - MultiplierImplementation
     default_tool: verilator
     toplevel: ibex_core_tracing
     tools:
@@ -79,3 +107,22 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
+      veriblelint:
+        ruleset: default
+        rules:
+          - "-parameter-name-style"
+  format:
+    filesets:
+      - files_rtl
+    parameters:
+      - SYNTHESIS=true
+      - RVFI=true
+    default_tool: veribleformat
+    toplevel: ibex_core
+    tools:
+      veribleformat:
+        verible_format_args:
+          - "--inplace"

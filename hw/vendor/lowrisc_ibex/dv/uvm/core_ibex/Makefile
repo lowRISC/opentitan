@@ -2,9 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-DV_DIR              := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-GEN_DIR             := $(realpath ${DV_DIR}/../../../vendor/google_riscv-dv)
+GEN_DIR             := $(realpath ../../../vendor/google_riscv-dv)
 TOOLCHAIN           := ${RISCV_TOOLCHAIN}
+
+# Explicitly ask for the bash shell
+SHELL                := bash
 
 # Seed for instruction generator and RTL simulation
 #
@@ -18,7 +20,7 @@ SEED                := $(shell echo $$RANDOM)
 # This is the top-level output directory. Everything we generate goes in
 # here. Most generated stuff actually goes in $(OUT)/seed-$(SEED), which allows
 # us to run multiple times without deleting existing results.
-OUT                 := ${DV_DIR}/out
+OUT                 := out
 OUT-SEED            := $(OUT)/seed-$(SEED)
 
 # Run time options for the instruction generator
@@ -41,7 +43,7 @@ ISS_OPTS            :=
 ISA                 := rv32imc
 # Test name (default: full regression)
 TEST                := all
-TESTLIST            := ${DV_DIR}/riscv_dv_extension/testlist.yaml
+TESTLIST            := riscv_dv_extension/testlist.yaml
 # Verbose logging
 VERBOSE             :=
 # Number of iterations for each test, assign a non-zero value to override the
@@ -52,7 +54,7 @@ LSF_CMD             :=
 # Generator timeout limit in seconds
 TIMEOUT             := 1800
 # Privileged CSR YAML description file
-CSR_FILE            := ${DV_DIR}/riscv_dv_extension/csr_description.yaml
+CSR_FILE            := riscv_dv_extension/csr_description.yaml
 # Pass/fail signature address at the end of test
 SIGNATURE_ADDR      := 8ffffffc
 
@@ -76,18 +78,21 @@ ifeq (${SIMULATOR},vcs)
 else ifeq (${SIMULATOR},ius)
 	COMPILE_OPTS += -defparam core_ibex_tb_top.dut.PMPNumRegions=${PMP_REGIONS}
 	COMPILE_OPTS += -defparam core_ibex_tb_top.dut.PMPGranularity=${PMP_GRANULARITY}
-# TODO(udinator) - support dsim and riviera
+else ifeq (&{SIMULATOR},riviera)
+	SIM_OPTS +=-g/core_ibex_tb_top/dut/PMPNumRegions=${PMP_REGIONS}
+	SIM_OPTS +=-g/core_ibex_tb_top/dut/PMPGranularity=${PMP_GRANULARITY}
+# TODO(udinator) - support dsim
 endif
 
 SHELL=/bin/bash
 
-export PRJ_DIR:= $(realpath ${DV_DIR}/../../../..)
+export PRJ_DIR:= $(realpath ../../../..)
 
 all: sim
 
 instr: iss_sim
 
-sim: post_compare
+sim: post_compare cov
 
 .PHONY: clean
 clean:
@@ -99,7 +104,7 @@ COMMON_OPTS := $(if $(call equal,$(VERBOSE),1),--verbose,)
 # Options for all targets that depend on the tests we're running.
 TEST_OPTS := $(COMMON_OPTS) \
              --seed=${SEED} \
-             --test"=${TEST}" \
+             --test="${TEST}" \
              --testlist=${TESTLIST} \
              --iterations=${ITERATIONS}
 
@@ -108,7 +113,7 @@ CSR_OPTS=--csr_yaml=${CSR_FILE} \
          --isa="${ISA}" \
          --end_signature_addr=${SIGNATURE_ADDR}
 
-RISCV_DV_OPTS=--custom_target=${DV_DIR}/riscv_dv_extension \
+RISCV_DV_OPTS=--custom_target=riscv_dv_extension \
               --isa="${ISA}" \
               --mabi=ilp32 \
 
@@ -219,7 +224,7 @@ risc-dv-files := $(shell find $(GEN_DIR) -type f)
 # the (phony) FORCE target if any variables have changed. If the rule actually
 # runs, it starts by deleting any existing contents of $(OUT-SEED)/instr_gen.
 $(metadata)/instr_gen.gen.stamp: \
-  $(gen-vars-prereq) $(risc-dv-files) | $(metadata)
+  $(gen-vars-prereq) $(risc-dv-files) $(TESTLIST) | $(metadata)
 	@rm -rf $(OUT-SEED)/instr_gen
 	@python3 ${GEN_DIR}/run.py \
      --output=$(OUT-SEED)/instr_gen ${GEN_OPTS} \
@@ -232,7 +237,7 @@ $(metadata)/instr_gen.gen.stamp: \
      ${CSR_OPTS} \
      --sim_opts="+uvm_set_inst_override=riscv_asm_program_gen,ibex_asm_program_gen,"uvm_test_top.asm_gen" \
                  +signature_addr=${SIGNATURE_ADDR} +pmp_num_regions=${PMP_REGIONS} \
-                 +pmp_granularity=${PMP_GRANULARITY}"
+                 +pmp_granularity=${PMP_GRANULARITY} +tvec_alignment=8"
 	$(call dump-vars,$(metadata)/gen-vars.mk,gen,$(gen-var-deps))
 	@touch $@
 
@@ -244,7 +249,8 @@ gen: $(metadata)/instr_gen.gen.stamp
 #
 # We don't explicitly track dependencies on the RISCV toolchain, so this
 # doesn't depend on anything more than the instr_gen stage did.
-$(metadata)/instr_gen.compile.stamp: $(metadata)/instr_gen.gen.stamp
+$(metadata)/instr_gen.compile.stamp: \
+  $(metadata)/instr_gen.gen.stamp $(TESTLIST)
 	@python3 ${GEN_DIR}/run.py \
      --o=$(OUT-SEED)/instr_gen ${GEN_OPTS} \
      --steps=gcc_compile \
@@ -268,7 +274,7 @@ iss-var-deps := ISS ISS_OPTS
 iss-vars-prereq = $(call vars-prereq,iss,running ISS,$(iss-var-deps))
 
 $(metadata)/instr_gen.iss.stamp: \
-  $(iss-vars-prereq) $(metadata)/instr_gen.compile.stamp
+  $(iss-vars-prereq) $(TESTLIST) $(metadata)/instr_gen.compile.stamp
 	@python3 ${GEN_DIR}/run.py \
      --o=$(OUT-SEED)/instr_gen ${GEN_OPTS} \
      --steps=iss_sim \
@@ -311,17 +317,20 @@ compile-vars-prereq = $(call vars-prereq,comp,compiling TB,$(compile-var-deps))
 
 $(call dump-vars-match,$(compile-var-deps),comp)
 
+cov-arg := $(if $(call equal,$(COV),1),--en_cov,)
+wave-arg := $(if $(call equal,$(WAVES),1),--en_wave,)
+lsf-arg := $(if $(LSF_CMD),--lsf_cmd="$(LSF_CMD)",)
+
 $(OUT)/rtl_sim/.compile.stamp: \
-  $(compile-vars-prereq) $(all-verilog) $(risc-dv-files) | $(OUT)/rtl_sim
-	@python3 ./sim.py \
-     --o=${OUT} \
-     --riscv_dv_root=${GEN_DIR} \
-     --steps=compile \
-     ${COMMON_OPTS} \
-     --simulator="${SIMULATOR}" \
-     --en_cov=${COV} \
-     --en_wave=${WAVES} \
-     --cmp_opts="${COMPILE_OPTS}"
+  $(compile-vars-prereq) $(all-verilog) $(risc-dv-files) \
+  sim.py yaml/rtl_simulation.yaml \
+  | $(OUT)/rtl_sim
+	@./sim.py \
+	 --o=${OUT} \
+	 --steps=compile \
+	 ${COMMON_OPTS} \
+	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
+	 $(cov-arg) $(wave-arg) --cmp_opts="${COMPILE_OPTS}"
 	$(call dump-vars,$(OUT)/rtl_sim/.compile-vars.mk,comp,$(compile-var-deps))
 	@touch $@
 
@@ -348,18 +357,16 @@ $(metadata)/rtl_sim.compile.stamp: \
 # This rule actually runs the simulation. It depends on the copied-in testbench
 # and also on us having already compiled the test programs.
 $(metadata)/rtl_sim.run.stamp: \
-  $(metadata)/rtl_sim.compile.stamp $(metadata)/instr_gen.compile.stamp
-	@python3 ./sim.py \
-     --o=$(OUT-SEED) \
-     --riscv_dv_root=${GEN_DIR} \
-     --steps=sim \
-     ${TEST_OPTS} \
-     --simulator="${SIMULATOR}" \
-     --en_cov ${COV} \
-     --en_wave ${WAVES} \
-     --lsf_cmd="${LSF_CMD}" \
-     --sim_opts="+signature_addr=${SIGNATURE_ADDR}" \
-     ${SIM_OPTS}
+  $(metadata)/rtl_sim.compile.stamp \
+  $(metadata)/instr_gen.compile.stamp $(TESTLIST) \
+  sim.py yaml/rtl_simulation.yaml
+	@./sim.py \
+	 --o=$(OUT-SEED) \
+	 --steps=sim \
+	 ${TEST_OPTS} \
+	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
+	 $(cov-arg) $(wave-arg) $(lsf-arg) \
+	 --sim_opts="+signature_addr=${SIGNATURE_ADDR} ${SIM_OPTS}"
 	@touch $@
 
 .PHONY: rtl_sim
@@ -369,9 +376,9 @@ rtl_sim: $(metadata)/rtl_sim.run.stamp
 # Compare ISS and RTL sim results
 $(OUT-SEED)/regr.log: \
   $(metadata)/instr_gen.iss.stamp \
-  $(metadata)/rtl_sim.run.stamp
+  $(metadata)/rtl_sim.run.stamp $(TESTLIST)
 	@rm -f $@
-	@python3 ./sim.py \
+	@./sim.py \
      --o=$(OUT-SEED) \
      --steps=compare \
      ${TEST_OPTS} \
@@ -382,21 +389,24 @@ $(OUT-SEED)/regr.log: \
 post_compare: $(OUT-SEED)/regr.log
 
 ###############################################################################
-# Generate functional coverage
+# Generate RISCV-DV functional coverage
 fcov:
 	python3 ${GEN_DIR}/cov.py \
           --core ibex \
           --dir ${OUT}/rtl_sim \
           -o ${OUT}/fcov \
           --isa rv32imc \
-          --custom_target ${DV_DIR}/riscv_dv_extension \
+          --custom_target riscv_dv_extension
 
-# Load verdi to review coverage
-cov_vcs:
-	cd ${OUT}/rtl_sim; verdi -cov -covdir test.vdb &
-
-cov_ius:
-	if [ ! -d "${OUT}/rtl_sim/cov_work/scope/merged_cov" ]; \
-	  then imc -execcmd "merge -out ${OUT}/rtl_sim/cov_work/scope/merged_cov ${OUT}/rtl_sim/cov_work/scope/test_*"; \
-    fi
-	imc -load ${OUT}/rtl_sim/cov_work/scope/merged_cov &
+# Merge all output coverage directories into the <out>/rtl_sim directory
+cov:
+	@rm -rf ${OUT}/rtl_sim/test.vdb
+	@./sim.py \
+		--steps=cov \
+		${TEST_OPTS} \
+		--simulator="${SIMULATOR}" \
+		--o="${OUT}" \
+		--lsf_cmd="${LSF_CMD}";
+	@if [ -d "test.vdb" ]; then \
+		mv -f test.vdb ${OUT}/rtl_sim/; \
+	fi

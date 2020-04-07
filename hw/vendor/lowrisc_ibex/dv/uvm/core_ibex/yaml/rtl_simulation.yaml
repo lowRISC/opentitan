@@ -18,6 +18,7 @@
       - "vcs -f ibex_dv.f  -full64
          -l <out>/compile.log
          -sverilog -ntb_opts uvm-1.2
+         +define+UVM
          +define+UVM_REGEX_NO_DPI -timescale=1ns/10ps -licqueue
          -LDFLAGS '-Wl,--no-as-needed'
          -Mdir=<out>/vcs_simv.csrc
@@ -36,14 +37,17 @@
       -debug_access+all -ucli -do vcs.tcl
   sim:
     cmd: >
-      <out>/vcs_simv +vcs+lic+wait <sim_opts> <wave_opts> <cov_opts>
-        +ntb_random_seed=<seed>
+      env SIM_DIR=<sim_dir>
+        <out>/vcs_simv +vcs+lic+wait <sim_opts> <wave_opts> <cov_opts>
+          +ntb_random_seed=<seed> +UVM_TESTNAME=<rtl_test> +bin=<binary>
+          +ibex_tracer_file_base=<sim_dir>/trace_core
+          -l <sim_dir>/sim.log
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
       -cm_dir <out>/test.vdb
       -cm_log /dev/null
       -assert nopostproc
-      -cm_name test_<seed>
+      -cm_name test_<test_name>_<iteration>
     wave_opts: >
       -ucli -do <cwd>/vcs.tcl
 
@@ -56,13 +60,15 @@
                 -genimage image
                 +incdir+$UVM_HOME/src
                 $UVM_HOME/src/uvm_pkg.sv
+                +define+UVM
                 +define+DSIM
                 +acc+rwb
                 -f ibex_dv.f
-                -l <out>/dsim/compile.log"
+                -l <out>/dsim/compile.log
+                -suppress EnumMustBePositive"
   sim:
     cmd: >
-      <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim <wave_opts>
+      <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim <wave_opts> +UVM_TESTNAME=<rtl_test> +bin=<binary> +ibex_tracer_file_base=<sim_dir>/trace_core -l <sim_dir>/sim.log
     wave_opts: >
       -waves waves.vcd
 
@@ -74,6 +80,7 @@
               -access +rwc
               -nclibdirpath <out>/ius
               -sv -uvm -uvmhome CDNS-1.2
+              +define+UVM
               -f ibex_dv.f
               -elaborate -licqueue
               -l <out>/ius/compile.log <cov_opts>"
@@ -97,11 +104,30 @@
       - "vlib <out>/work"
       - "vlog -work <out>/work
         +incdir+<ALDEC_PATH>/vlib/uvm-1.2/src
+        +define+UVM
         -l uvm_1_2
         -f ibex_dv.f"
 
   sim:
     cmd: >
-      vsim -c <sim_opts> <cov_opts> -lib <out>/work +access +r+w -l <out>/logfile.log -do "run -all; endsim; quit -force" +ibex_tracer_file_base="trace_core"
+      vsim -c <sim_opts> <cov_opts> -sv_seed <seed> -lib <out>/work +access +r+w -l <out>/logfile.log -do "run -all; endsim; quit -force" +ibex_tracer_file_base="trace_core"
     cov_opts: >
       -acdb_file <out>/cov.acdb
+
+- tool: qrun
+  compile:
+    cmd:
+      - "qrun -f ibex_dv.f -uvmhome uvm-1.2
+              +define+UVM
+              -svinputport=net
+              -access=rw+/. -optimize
+              -suppress 2583
+              -mfcu -cuname design_cuname
+              -sv -o design_opt
+              -l <out>/qrun_compile_optimize.log
+              -outdir <out>/qrun.out"
+  sim:
+    cmd: >
+      qrun -simulate -snapshot design_opt <cov_opts> <sim_opts> -sv_seed <seed> -outdir <out>/qrun.out
+    cov_opts: >
+      -coverage -ucdb <out>/cov.ucdb

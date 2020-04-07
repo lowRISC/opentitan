@@ -25,8 +25,11 @@ class riscv_pmp_cfg extends uvm_object;
   // pmp CSR configurations
   rand pmp_cfg_reg_t pmp_cfg[];
   // PMP maximum address - used to set defaults
-  // TODO(udinator) - make this address configurable?
   bit [XLEN - 1 : 0] pmp_max_address = {XLEN{1'b1}};
+  // PMP "minimum" address - the address written to pmpaddr0
+  // to create a "safe region", which contains important setup code,
+  // and cannot throw a PMP fault
+  bit [XLEN - 1 : 0] pmp_min_address = 0;
 
   // used to parse addr_mode configuration from cmdline
   typedef uvm_enum_wrapper#(pmp_addr_mode_t) addr_mode_wrapper;
@@ -64,11 +67,27 @@ class riscv_pmp_cfg extends uvm_object;
     get_bool_arg_value("+pmp_randomize=", pmp_randomize);
     get_int_arg_value("+pmp_granularity=", pmp_granularity);
     get_int_arg_value("+pmp_num_regions=", pmp_num_regions);
+    get_hex_arg_value("+pmp_max_address=", pmp_max_address);
     pmp_cfg = new[pmp_num_regions];
     // As per privileged spec, the top 10 bits of a rv64 PMP address are all 0.
     if (XLEN == 64) begin
       pmp_max_address[XLEN - 1 : XLEN - 11] = 10'b0;
     end
+    if (!pmp_randomize) begin
+      set_defaults();
+      setup_pmp();
+    end
+  endfunction
+
+  function void initialize(bit require_signature_addr);
+    // We want to set the "minimum" pmp address to just after the location of the <main>
+    // section of the program to allow all initialization routines to not be interrupted
+    // by PMP faults.
+    // The location of <main> itself will change depending on whether the handshaking
+    // mechanism is enabled or disabled, so we check if it is enabled and then
+    // round up the address of <main>.
+    pmp_min_address = (require_signature_addr) ? 'h80002910 : 'h80001580;
+
     if (!pmp_randomize) begin
       set_defaults();
       setup_pmp();
@@ -88,13 +107,16 @@ class riscv_pmp_cfg extends uvm_object;
       pmp_cfg[i].x    = 1'b1;
       pmp_cfg[i].w    = 1'b1;
       pmp_cfg[i].r    = 1'b1;
-      pmp_cfg[i].addr = assign_default_addr(pmp_num_regions, i + 1);
+      pmp_cfg[i].addr = (i == 0) ? pmp_min_address : assign_default_addr(pmp_num_regions, i);
     end
   endfunction
 
   // Helper function to break down
   function bit [XLEN - 1 : 0] assign_default_addr(int num_regions, int index);
-    return pmp_max_address / num_regions * index;
+    bit [XLEN - 1 : 0] total_addr_space, offset;
+    total_addr_space = pmp_max_address - pmp_min_address;
+    offset = total_addr_space / (num_regions - 1) * index;
+    return pmp_min_address + offset;
   endfunction
 
   function void setup_pmp();
@@ -163,6 +185,7 @@ class riscv_pmp_cfg extends uvm_object;
       64: begin
         return {10'b0, shifted_addr[XLEN - 11 : 0]};
       end
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported XLEN %0s", XLEN))
     endcase
   endfunction
 
@@ -177,7 +200,7 @@ class riscv_pmp_cfg extends uvm_object;
   // CSR, this function waits until it has reached this maximum to write to the physical CSR to
   // save some extraneous instructions from being performed.
   function void gen_pmp_instr(ref string instr[$], riscv_reg_t scratch_reg);
-    int cfg_per_csr = XLEN / 4;
+    int cfg_per_csr = XLEN / 8;
     bit [XLEN - 1 : 0] pmp_word;
     bit [XLEN - 1 : 0] cfg_bitmask;
     bit [7 : 0] cfg_byte;
@@ -195,7 +218,7 @@ class riscv_pmp_cfg extends uvm_object;
       pmp_word = pmp_word | cfg_bitmask;
       `uvm_info(`gfn, $sformatf("pmp_word: 0x%0x", pmp_word), UVM_DEBUG)
       cfg_bitmask = 0;
-      `uvm_info(`gfn, $sformatf("pmp_addr: 0x%0x", pmp_cfg[i].addr), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("pmp_addr_%d: 0x%0x", i, pmp_cfg[i].addr), UVM_DEBUG)
       instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg, pmp_cfg[i].addr));
       instr.push_back($sformatf("csrw 0x%0x, x%0d", base_pmp_addr + i, scratch_reg));
       // short circuit if end of list

@@ -63,6 +63,11 @@ class riscv_instr_gen_config extends uvm_object;
   rand bit [1:0]         mstatus_vs;
   rand mtvec_mode_t      mtvec_mode;
 
+  // TVEC alignment
+  // This value is the log_2 of the byte-alignment of TVEC.BASE field
+  // As per RISC-V privileged spec, default will be set to 2 (4-byte aligned)
+  int tvec_alignment = 2;
+
   // Floating point rounding mode
   rand f_rounding_mode_t fcsr_rm;
 
@@ -197,7 +202,7 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    disable_compressed_instr;
   // "Memory mapped" address that when written to will indicate some event to
   // the testbench - testbench will take action based on the value written
-  int                    signature_addr = 32'hdead_beef;
+  bit [XLEN - 1 : 0]     signature_addr = 32'hdead_beef;
   bit                    require_signature_addr = 1'b0;
   // Enable a full or empty debug_rom section.
   // Full debug_rom will contain random instruction streams.
@@ -232,6 +237,8 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_floating_point;
   // Vector extension support
   bit                    enable_vector_extension;
+  // Bit manipulation extension support
+  bit                    enable_b_extension;
 
   //-----------------------------------------------------------------------------
   // Command line options for instruction distribution control
@@ -396,7 +403,7 @@ class riscv_instr_gen_config extends uvm_object;
   constraint addr_translaction_rnd_order_c {
     solve init_privileged_mode before virtual_addr_translation_on;
   }
-  
+
   constraint addr_translaction_c {
     if ((init_privileged_mode != MACHINE_MODE) && (SATP_MODE != BARE)) {
       virtual_addr_translation_on == 1'b1;
@@ -431,6 +438,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_enum(riscv_reg_t, ra, UVM_DEFAULT)
     `uvm_field_enum(riscv_reg_t, sp, UVM_DEFAULT)
     `uvm_field_enum(riscv_reg_t, tp, UVM_DEFAULT)
+    `uvm_field_int(tvec_alignment, UVM_DEFAULT)
     `uvm_field_int(no_data_page, UVM_DEFAULT)
     `uvm_field_int(no_branch_jump, UVM_DEFAULT)
     `uvm_field_int(no_load_store, UVM_DEFAULT)
@@ -474,6 +482,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(max_directed_instr_stream_seq, UVM_DEFAULT)
     `uvm_field_int(enable_floating_point, UVM_DEFAULT)
     `uvm_field_int(enable_vector_extension, UVM_DEFAULT)
+    `uvm_field_int(enable_b_extension, UVM_DEFAULT)
     `uvm_field_int(use_push_data_section, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -489,6 +498,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_timer_irq=", enable_timer_irq);
     get_int_arg_value("+num_of_sub_program=", num_of_sub_program);
     get_int_arg_value("+instr_cnt=", instr_cnt);
+    get_int_arg_value("+tvec_alignment=", tvec_alignment);
     get_bool_arg_value("+no_ebreak=", no_ebreak);
     get_bool_arg_value("+no_dret=", no_dret);
     get_bool_arg_value("+no_wfi=", no_wfi);
@@ -527,6 +537,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+set_mstatus_tw=", set_mstatus_tw);
     get_bool_arg_value("+enable_floating_point=", enable_floating_point);
     get_bool_arg_value("+enable_vector_extension=", enable_vector_extension);
+    get_bool_arg_value("+enable_b_extension=", enable_b_extension);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
       `uvm_info(get_full_name(), $sformatf(
                 "Got boot mode option - %0s", boot_mode_opts), UVM_LOW)
@@ -566,6 +577,7 @@ class riscv_instr_gen_config extends uvm_object;
     vector_cfg = riscv_vector_cfg::type_id::create("vector_cfg");
     pmp_cfg = riscv_pmp_cfg::type_id::create("pmp_cfg");
     pmp_cfg.rand_mode(pmp_cfg.pmp_randomize);
+    pmp_cfg.initialize(require_signature_addr);
     setup_instr_distribution();
     get_invalid_priv_lvl_csr();
   endfunction
@@ -642,7 +654,8 @@ class riscv_instr_gen_config extends uvm_object;
     bit support_64b;
     bit support_128b;
     foreach (riscv_instr_pkg::supported_isa[i]) begin
-      if (riscv_instr_pkg::supported_isa[i] inside {RV64I, RV64M, RV64A, RV64F, RV64D, RV64C}) begin
+      if (riscv_instr_pkg::supported_isa[i] inside {RV64I, RV64M, RV64A, RV64F, RV64D, RV64C,
+                                                    RV64B}) begin
         support_64b = 1'b1;
       end else if (riscv_instr_pkg::supported_isa[i] inside {RV128I, RV128C}) begin
         support_128b = 1'b1;

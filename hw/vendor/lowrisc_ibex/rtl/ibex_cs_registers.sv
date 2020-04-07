@@ -14,7 +14,8 @@
 
 module ibex_cs_registers #(
     parameter bit          DbgTriggerEn     = 0,
-    parameter int unsigned MHPMCounterNum   = 8,
+    parameter bit          ICache           = 1'b0,
+    parameter int unsigned MHPMCounterNum   = 10,
     parameter int unsigned MHPMCounterWidth = 40,
     parameter bit          PMPEnable        = 0,
     parameter int unsigned PMPGranularity   = 0,
@@ -45,6 +46,7 @@ module ibex_cs_registers #(
     input  ibex_pkg::csr_num_e   csr_addr_i,
     input  logic [31:0]          csr_wdata_i,
     input  ibex_pkg::csr_op_e    csr_op_i,
+    input                        csr_op_en_i,
     output logic [31:0]          csr_rdata_o,
 
     // interrupts
@@ -74,9 +76,15 @@ module ibex_cs_registers #(
 
     input  logic [31:0]          pc_if_i,
     input  logic [31:0]          pc_id_i,
+    input  logic [31:0]          pc_wb_i,
 
+    // CPU control bits
+    output logic                 icache_enable_o,
+
+    // Exception save/restore
     input  logic                 csr_save_if_i,
     input  logic                 csr_save_id_i,
+    input  logic                 csr_save_wb_i,
     input  logic                 csr_restore_mret_i,
     input  logic                 csr_restore_dret_i,
     input  logic                 csr_save_cause_i,
@@ -85,19 +93,18 @@ module ibex_cs_registers #(
     output logic                 illegal_csr_insn_o,     // access to non-existent CSR,
                                                          // with wrong priviledge level, or
                                                          // missing write permissions
-    input  logic                 instr_new_id_i,         // ID stage sees a new instr
-
     // Performance Counters
     input  logic                 instr_ret_i,            // instr retired in ID/EX stage
     input  logic                 instr_ret_compressed_i, // compressed instr retired
-    input  logic                 imiss_i,                // instr fetch
-    input  logic                 pc_set_i,               // PC was set to a new value
+    input  logic                 iside_wait_i,           // core waiting for the iside
     input  logic                 jump_i,                 // jump instr seen (j, jr, jal, jalr)
     input  logic                 branch_i,               // branch instr seen (bf, bnf)
     input  logic                 branch_taken_i,         // branch was taken
     input  logic                 mem_load_i,             // load from memory in this cycle
     input  logic                 mem_store_i,            // store to memory in this cycle
-    input  logic                 lsu_busy_i
+    input  logic                 dside_wait_i,           // core waiting for the dside
+    input  logic                 mul_wait_i,             // core waiting for multiply
+    input  logic                 div_wait_i              // core waiting for divide
 );
 
   import ibex_pkg::*;
@@ -149,6 +156,12 @@ module ibex_cs_registers #(
       priv_lvl_e    prv;
   } Dcsr_t;
 
+  // CPU control register fields
+  typedef struct packed {
+    logic [30:0] unused_ctrl;
+    logic        icache_enable;
+  } CpuCtrl_t;
+
   // Interrupt and exception control signals
   logic [31:0] exception_pc;
 
@@ -197,6 +210,9 @@ module ibex_cs_registers #(
   logic [31:0] tselect_rdata;
   logic [31:0] tmatch_control_rdata;
   logic [31:0] tmatch_value_rdata;
+
+  // CPU control bits
+  CpuCtrl_t    cpuctrl_rdata, cpuctrl_wdata;
 
   // CSR update logic
   logic [31:0] csr_wdata_int;
@@ -396,6 +412,11 @@ module ibex_cs_registers #(
         illegal_csr   = ~DbgTriggerEn;
       end
 
+      // Custom CSR for controlling CPU features
+      CSR_CPUCTRL: begin
+        csr_rdata_int = {cpuctrl_rdata};
+      end
+
       default: begin
         illegal_csr = 1'b1;
       end
@@ -538,6 +559,9 @@ module ibex_cs_registers #(
           csr_save_id_i: begin
             exception_pc = pc_id_i;
           end
+          csr_save_wb_i: begin
+            exception_pc = pc_wb_i;
+          end
           default:;
         endcase
 
@@ -596,25 +620,22 @@ module ibex_cs_registers #(
 
   // CSR operation logic
   always_comb begin
-    csr_wreq = 1'b1;
-
     unique case (csr_op_i)
       CSR_OP_WRITE: csr_wdata_int =  csr_wdata_i;
       CSR_OP_SET:   csr_wdata_int =  csr_wdata_i | csr_rdata_o;
       CSR_OP_CLEAR: csr_wdata_int = ~csr_wdata_i & csr_rdata_o;
-      CSR_OP_READ: begin
-        csr_wdata_int = csr_wdata_i;
-        csr_wreq      = 1'b0;
-      end
-      default: begin
-        csr_wdata_int = csr_wdata_i;
-        csr_wreq      = 1'b0;
-      end
+      CSR_OP_READ:  csr_wdata_int = csr_wdata_i;
+      default:      csr_wdata_int = csr_wdata_i;
     endcase
   end
 
+  assign csr_wreq = csr_op_en_i &
+    (csr_op_i inside {CSR_OP_WRITE,
+                      CSR_OP_SET,
+                      CSR_OP_CLEAR});
+
   // only write CSRs during one clock cycle
-  assign csr_we_int  = csr_wreq & ~illegal_csr_insn_o & instr_new_id_i;
+  assign csr_we_int  = csr_wreq & ~illegal_csr_insn_o;
 
   assign csr_rdata_o = csr_rdata_int;
 
@@ -844,15 +865,16 @@ module ibex_cs_registers #(
     mhpmcounter_incr[0]  = 1'b1;                   // mcycle
     mhpmcounter_incr[1]  = 1'b0;                   // reserved
     mhpmcounter_incr[2]  = instr_ret_i;            // minstret
-    mhpmcounter_incr[3]  = lsu_busy_i;             // cycles waiting for data memory
-    mhpmcounter_incr[4]  = imiss_i & ~pc_set_i;    // cycles waiting for instr fetches
-                                                   // excl. jump and branch set cycles
+    mhpmcounter_incr[3]  = dside_wait_i;           // cycles waiting for data memory
+    mhpmcounter_incr[4]  = iside_wait_i;           // cycles waiting for instr fetches
     mhpmcounter_incr[5]  = mem_load_i;             // num of loads
     mhpmcounter_incr[6]  = mem_store_i;            // num of stores
     mhpmcounter_incr[7]  = jump_i;                 // num of jumps (unconditional)
     mhpmcounter_incr[8]  = branch_i;               // num of branches (conditional)
     mhpmcounter_incr[9]  = branch_taken_i;         // num of taken branches (conditional)
     mhpmcounter_incr[10] = instr_ret_compressed_i; // num of compressed instr
+    mhpmcounter_incr[11] = mul_wait_i;             // cycles waiting for multiply
+    mhpmcounter_incr[12] = div_wait_i;             // cycles waiting for divide
 
     // inactive counters
     for (int unsigned i=3+MHPMCounterNum; i<32; i++) begin : gen_mhpmcounter_incr_inactive
@@ -1010,17 +1032,48 @@ module ibex_cs_registers #(
     assign trigger_match_o      = 'b0;
   end
 
+  // CPU control fields
+  assign cpuctrl_rdata.unused_ctrl = '0;
+  // Cast register write data
+  assign cpuctrl_wdata = CpuCtrl_t'(csr_wdata_int);
+
+  // Generate icache enable bit
+  if (ICache) begin : gen_icache_enable
+    logic icache_enable_d, icache_enable_q;
+
+    // Update the value when cpuctrl register is written
+    assign icache_enable_d = (csr_we_int & (csr_addr == CSR_CPUCTRL)) ?
+        cpuctrl_wdata.icache_enable : icache_enable_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        icache_enable_q <= 1'b0; // disabled on reset
+      end else begin
+        icache_enable_q <= icache_enable_d;
+      end
+    end
+
+    assign cpuctrl_rdata.icache_enable = icache_enable_q;
+
+  end else begin : gen_no_icache
+    // tieoff for the unused icen bit
+    logic unused_icen;
+    assign unused_icen = cpuctrl_wdata.icache_enable;
+
+    // icen field will always read as zero if ICache not configured
+    assign cpuctrl_rdata.icache_enable = 1'b0;
+  end
+
+  // tieoff for the currently unused bits of cpuctrl
+  logic [31:1] unused_cpuctrl;
+  assign unused_cpuctrl = {cpuctrl_wdata[31:1]};
+
+  assign icache_enable_o = cpuctrl_rdata.icache_enable;
+
   ////////////////
   // Assertions //
   ////////////////
 
-  // Selectors must be known/valid.
-  `ASSERT(IbexCsrOpValid, csr_op_i inside {
-      CSR_OP_READ,
-      CSR_OP_WRITE,
-      CSR_OP_SET,
-      CSR_OP_CLEAR
-      })
-  `ASSERT_KNOWN(IbexCsrWdataIntKnown, csr_wdata_int)
+  `ASSERT(IbexCsrOpEnRequiresAccess, csr_op_en_i |-> csr_access_i)
 
 endmodule

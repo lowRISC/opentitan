@@ -1,10 +1,20 @@
 # TCL file invoked from VCS's simv at run-time using this: -ucli -do <this file>
 
+# Since we don't necessarily run each test in a different directory,
+# we have to tell VCS where to put the waves. We do this with a
+# SIM_DIR environment variable, which we prepend to the wave name. If
+# SIM_DIR is not set, we just dump to the current directory.
+if { [info exists ::env(SIM_DIR)] } {
+    set sim_dir $::env(SIM_DIR)
+} else {
+    set sim_dir "."
+}
+
 if { [info exists ::env(VERDI_HOME)] } {
 	# Use FSDB for dumping data, but only if we have Verdi set up.
 
 	# Syntax: fsdbDumpfile FSDB_Name [Limit_Size]
-	fsdbDumpfile "waves.fsdb"
+	fsdbDumpfile "${sim_dir}/waves.fsdb"
 
 	# Syntax: fsdbDumpvars [depth] [instance] [option]*
 	##############################################################################
@@ -28,7 +38,7 @@ if { [info exists ::env(VERDI_HOME)] } {
 	fsdbDumpSVA 0 core_ibex_tb_top.dut
 } else {
 	# We don't have VERDI set up, so use VCS's standard dumping format.
-	dump -file "waves.vpd"
+	dump -file "${sim_dir}/waves.vpd"
 	dump -add { core_ibex_tb_top } -depth 0 -aggregates -scope "."
 }
 

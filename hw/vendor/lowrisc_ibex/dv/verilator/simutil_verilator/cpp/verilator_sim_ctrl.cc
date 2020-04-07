@@ -283,10 +283,10 @@ void VerilatorSimCtrl::Run() {
   UnsetReset();
   Trace();
   while (1) {
-    if (time_ >= initial_reset_delay_cycles_ * 2) {
+    if (time_ / 2 >= initial_reset_delay_cycles_) {
       SetReset();
     }
-    if (time_ >= reset_duration_cycles_ * 2 + initial_reset_delay_cycles_ * 2) {
+    if (time_ / 2 >= reset_duration_cycles_ + initial_reset_delay_cycles_) {
       UnsetReset();
     }
 
@@ -315,7 +315,7 @@ void VerilatorSimCtrl::Run() {
                 << std::endl;
       break;
     }
-    if (term_after_cycles_ && time_ > term_after_cycles_) {
+    if (term_after_cycles_ && (time_ / 2 >= term_after_cycles_)) {
       std::cout << "Simulation timeout of " << term_after_cycles_
                 << " cycles reached, shutting down simulation." << std::endl;
       break;

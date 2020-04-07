@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERIBLE_VERSION=03c7102ab8ed63037159f479ce17b3487401f082
+VERIBLE_VERSION=751d4d8e57741ab22806f91982f59c71ecf37d9d
 INSTALL_DIR=/tools/verible
 
 # this requires the bazel build system and GCC7

@@ -216,6 +216,47 @@
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_imm_sign : coverpoint instr.imm_sign;
 
+// TODO, will handle special value later
+// single-precision floating point special values coverpoint
+`define FP_SPECIAL_VALUES_CP(VAR, NAME) \
+    cp_fp_special_values_on_``NAME`` : coverpoint VAR { \
+      bins infinity[] = {32'h7f80_0000, 32'hff80_0000}; \
+      bins largest[]  = {32'h7f7f_ffff, 32'hff7f_ffff}; \
+      bins zeros[]    = {32'h0000_0000, 32'h1000_0000}; \
+      bins NaN[]      = {32'h7fc0_0000, 32'h7f80_0000}; \
+    }
+
+`define FP_R_INSTR_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_fs1         : coverpoint instr.fs1; \
+    cp_fs2         : coverpoint instr.fs2; \
+    cp_fd          : coverpoint instr.fd;  \
+    cp_fs1_sign    : coverpoint instr.fs1_sign; \
+    cp_fs2_sign    : coverpoint instr.fs2_sign; \
+    cp_fd_sign     : coverpoint instr.fd_sign; \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
+`define FP_R4_INSTR_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_fs1         : coverpoint instr.fs1; \
+    cp_fs2         : coverpoint instr.fs2; \
+    cp_fs3         : coverpoint instr.fs3; \
+    cp_fd          : coverpoint instr.fd;  \
+    cp_fs1_sign    : coverpoint instr.fs1_sign; \
+    cp_fs2_sign    : coverpoint instr.fs2_sign; \
+    cp_fs3_sign    : coverpoint instr.fs3_sign; \
+    cp_fd_sign     : coverpoint instr.fd_sign; \
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fs3_sign, cp_fd_sign; \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
+`define FSQRT_INSTR_CG_BEGIN(INSTR_NAME) \
+  `INSTR_CG_BEGIN(INSTR_NAME) \
+    cp_fs1         : coverpoint instr.fs1; \
+    cp_fd          : coverpoint instr.fd;  \
+    cp_fs1_sign    : coverpoint instr.fs1_sign; \
+    cp_fd_sign     : coverpoint instr.fd_sign; \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
 `define CG_END endgroup
 
 `define CG_SELECTOR_BEGIN(CG_ISA) \
@@ -444,6 +485,73 @@ class riscv_instr_cover_group;
     cp_rs1_align : coverpoint instr.rs1_value[1:0];
     cp_align : cross cp_imm_align, cp_rs1_align;
     cp_ras : cross cp_rs1_link, cp_rd_link;
+  `CG_END
+
+  // floating instructions
+  `INSTR_CG_BEGIN(flw)
+    cp_rs1         : coverpoint instr.rs1 {
+      `DV(ignore_bins zero = {ZERO};)
+    }
+    cp_fd          : coverpoint instr.fd;
+    cp_imm_sign    : coverpoint instr.imm_sign;
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard;)
+    `DV(cp_lsu_hazard  : coverpoint instr.lsu_hazard {
+      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
+    })
+  `CG_END
+
+  `INSTR_CG_BEGIN(fsw)
+    cp_rs1         : coverpoint instr.rs1 {
+        `DV(ignore_bins zero = {ZERO};)
+    }
+    cp_fs2         : coverpoint instr.fs2;
+    cp_imm_sign    : coverpoint instr.imm_sign;
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard {
+      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
+    })
+    `DV(cp_lsu_hazard  : coverpoint instr.lsu_hazard {
+      bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD};
+    })
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fadd_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fd_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsub_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fd_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fmul_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fdiv_s)
+    cp_div_result: coverpoint instr.div_result;
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
+  `FSQRT_INSTR_CG_BEGIN(fsqrt_s)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fmin_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fmax_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
+  `FP_R4_INSTR_CG_BEGIN(fmadd_s)
+  `CG_END
+
+  `FP_R4_INSTR_CG_BEGIN(fnmadd_s)
+  `CG_END
+
+  `FP_R4_INSTR_CG_BEGIN(fmsub_s)
+  `CG_END
+
+  `FP_R4_INSTR_CG_BEGIN(fnmsub_s)
   `CG_END
 
   // CSR instructions
@@ -901,6 +1009,13 @@ class riscv_instr_cover_group;
     cp_mpp  : coverpoint val[12:11];
   endgroup
 
+  covergroup fcsr_cg with function sample(bit [XLEN-1:0] val);
+    cp_fflags : coverpoint val[4:0];
+    cp_frm    : coverpoint val[7:5] {
+      ignore_bins invalid = {3'b101, 3'b110};
+    }
+  endgroup
+
   `VECTOR_INCLUDE("riscv_instr_cover_group_inc_cg_add.sv")
 
   function new(riscv_instr_gen_config cfg);
@@ -1089,6 +1204,22 @@ class riscv_instr_cover_group;
       c_addw_cg = new();
     `CG_SELECTOR_END
 
+    `CG_SELECTOR_BEGIN(RV32F)
+      flw_cg      = new();
+      fsw_cg      = new();
+      fadd_s_cg   = new();
+      fsub_s_cg   = new();
+      fmul_s_cg   = new();
+      fdiv_s_cg   = new();
+      fsqrt_s_cg  = new();
+      fmin_s_cg   = new();
+      fmax_s_cg   = new();
+      fmadd_s_cg  = new();
+      fnmadd_s_cg = new();
+      fmsub_s_cg  = new();
+      fnmsub_s_cg = new();
+    `CG_SELECTOR_END
+
     // Ignore the exception which cannot be covered when running with ISS
     if (iss_mode) begin
       int i;
@@ -1111,6 +1242,7 @@ class riscv_instr_cover_group;
         mcause_exception_cg = new();
         mcause_interrupt_cg = new();
         mstatus_m_cg = new();
+        fcsr_cg = new();
       end
       if (!cfg.disable_compressed_instr) begin
         mepc_alignment_cg = new();
@@ -1242,6 +1374,19 @@ class riscv_instr_cover_group;
       C_SUBW     : `SAMPLE(c_subw_cg, instr)
       C_ADDW     : `SAMPLE(c_addw_cg, instr)
       C_ADDIW    : `SAMPLE(c_addiw_cg, instr)
+      FLW        : `SAMPLE(flw_cg, instr)
+      FSW        : `SAMPLE(fsw_cg, instr)
+      FADD_S     : `SAMPLE(fadd_s_cg, instr)
+      FSUB_S     : `SAMPLE(fsub_s_cg, instr)
+      FMUL_S     : `SAMPLE(fmul_s_cg, instr)
+      FDIV_S     : `SAMPLE(fdiv_s_cg, instr)
+      FSQRT_S    : `SAMPLE(fsqrt_s_cg, instr)
+      FMIN_S     : `SAMPLE(fmin_s_cg, instr)
+      FMAX_S     : `SAMPLE(fmax_s_cg, instr)
+      FMADD_S    : `SAMPLE(fmadd_s_cg, instr)
+      FNMADD_S   : `SAMPLE(fnmadd_s_cg, instr)
+      FMSUB_S    : `SAMPLE(fmsub_s_cg, instr)
+      FNMSUB_S   : `SAMPLE(fnmsub_s_cg, instr)
       `VECTOR_INCLUDE("riscv_instr_cover_group_inc_cg_sample.sv")
       default: begin
         if (instr.group == RV32I) begin
@@ -1279,6 +1424,9 @@ class riscv_instr_cover_group;
         end
         MSTATUS: begin
           `SAMPLE(mstatus_m_cg, instr.rd_value);
+        end
+        FCSR: begin
+          `SAMPLE(fcsr_cg, instr.rd_value);
         end
       endcase
     end

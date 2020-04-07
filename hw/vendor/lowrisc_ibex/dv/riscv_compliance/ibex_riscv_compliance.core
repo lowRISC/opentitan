@@ -25,20 +25,35 @@ filesets:
 
 parameters:
   RV32M:
-    datatype: int
+    datatype: bool
     paramtype: vlogparam
-    default: 1
-    description: Enable the M ISA extension (hardware multiply/divide) [0/1]
+    default: true
+    description: Enable the M ISA extension (hardware multiply/divide)
   RV32E:
-    datatype: int
+    datatype: bool
     paramtype: vlogparam
-    default: 0
-    description: Enable the E ISA extension (reduced register set) [0/1]
+    default: false
+    description: Enable the E ISA extension (reduced register set)
+  RV32B:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: Enable the B ISA extension (bit manipulation EXPERIMENTAL)
+  MultiplierImplementation:
+    datatype: str
+    paramtype: vlogparam
+    description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
+    default: "fast"
   BranchTargetALU:
-    datatype: int
+    datatype: bool
     paramtype: vlogparam
-    default: 0
-    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]
+    default: false
+    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)
+  WritebackStage:
+    datatype: bool
+    paramtype: vlogparam
+    default: false
+    description: Enables third pipeline stage (EXPERIMENTAL)
 
 targets:
   sim:
@@ -49,7 +64,9 @@ targets:
     parameters:
       - RV32M
       - RV32E
+      - MultiplierImplementation
       - BranchTargetALU
+      - WritebackStage
     toplevel: ibex_riscv_compliance
     tools:
       verilator:

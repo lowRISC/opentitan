@@ -42,7 +42,7 @@ class riscv_load_store_base_instr_stream extends riscv_mem_access_stream;
   constraint sp_rnd_order_c {
     solve use_sp_as_rs1 before rs1_reg;
   }
-  
+
   constraint sp_c {
     use_sp_as_rs1 dist {1 := 1, 0 := 2};
     if (use_sp_as_rs1) {
@@ -245,6 +245,20 @@ class riscv_load_store_stress_instr_stream extends riscv_load_store_base_instr_s
 
 endclass
 
+
+// Back to back load/store instructions
+class riscv_load_store_shared_mem_stream extends riscv_load_store_stress_instr_stream;
+
+  `uvm_object_utils(riscv_load_store_shared_mem_stream)
+  `uvm_object_new
+
+  function void pre_randomize();
+    load_store_shared_memory = 1;
+    super.pre_randomize();
+  endfunction
+
+endclass
+
 // Random load/store sequence
 // A random mix of load/store instructions and other instructions
 class riscv_load_store_rand_instr_stream extends riscv_load_store_base_instr_stream;
@@ -374,6 +388,7 @@ class riscv_multi_page_load_store_instr_stream extends riscv_mem_access_stream;
       load_store_instr_stream[i].min_instr_cnt = 5;
       load_store_instr_stream[i].max_instr_cnt = 10;
       load_store_instr_stream[i].cfg = cfg;
+      load_store_instr_stream[i].hart = hart;
       load_store_instr_stream[i].sp_c.constraint_mode(0);
       // Make sure each load/store sequence doesn't override the rs1 of other sequences.
       foreach(rs1_reg[j]) begin

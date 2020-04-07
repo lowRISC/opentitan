@@ -32,6 +32,8 @@ module ibex_multdiv_fast #(
     output logic [32:0]      alu_operand_a_o,
     output logic [32:0]      alu_operand_b_o,
 
+    input  logic             multdiv_ready_id_i,
+
     output logic [31:0]      multdiv_result_o,
     output logic             valid_o
 );
@@ -70,11 +72,20 @@ module ibex_multdiv_fast #(
   logic        div_valid;
   logic [ 4:0] div_counter_q, div_counter_d;
   logic        multdiv_en;
+  logic        mult_hold;
+  logic        div_hold;
+
+  logic        mult_en_internal;
+  logic        div_en_internal;
 
   typedef enum logic [2:0] {
     MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
   } md_fsm_e;
   md_fsm_e md_state_q, md_state_d;
+
+
+  assign mult_en_internal = mult_en_i & ~mult_hold;
+  assign div_en_internal  = div_en_i & ~div_hold;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -83,7 +94,7 @@ module ibex_multdiv_fast #(
       op_denominator_q   <= '0;
       op_numerator_q     <= '0;
       op_quotient_q      <= '0;
-    end else if (div_en_i) begin
+    end else if (div_en_internal) begin
       div_counter_q    <= div_counter_d;
       op_denominator_q <= op_denominator_d;
       op_numerator_q   <= op_numerator_d;
@@ -100,7 +111,11 @@ module ibex_multdiv_fast #(
     end
   end
 
-  assign multdiv_en = mult_en_i | div_en_i;
+  `ASSERT_KNOWN(DivEnKnown, div_en_internal);
+  `ASSERT_KNOWN(MultEnKnown, mult_en_internal);
+  `ASSERT_KNOWN(MultDivEnKnown, multdiv_en);
+
+  assign multdiv_en = mult_en_internal | div_en_internal;
 
   assign intermediate_val_d = div_en_i ? op_remainder_d : mac_res_d;
 
@@ -172,6 +187,8 @@ module ibex_multdiv_fast #(
       mult_valid = mult_en_i;
       mult_state_d = MULL;
 
+      mult_hold = 1'b0;
+
       unique case (mult_state_q)
 
         MULL: begin
@@ -179,6 +196,8 @@ module ibex_multdiv_fast #(
             mac_res_d = mac_res;
             mult_valid = 1'b0;
             mult_state_d = MULH;
+          end else begin
+            mult_hold = ~multdiv_ready_id_i;
           end
         end
 
@@ -196,6 +215,8 @@ module ibex_multdiv_fast #(
 
           mult_state_d = MULL;
           mult_valid = 1'b1;
+
+          mult_hold = ~multdiv_ready_id_i;
         end
 
         default: begin
@@ -247,6 +268,7 @@ module ibex_multdiv_fast #(
       mac_res_d    = mac_res;
       mult_state_d = mult_state_q;
       mult_valid   = 1'b0;
+      mult_hold    = 1'b0;
 
       unique case (mult_state_q)
 
@@ -288,7 +310,10 @@ module ibex_multdiv_fast #(
             accum        = {18'b0, intermediate_val_q[31:16]};
             mac_res_d    = {2'b0, mac_res[15:0], intermediate_val_q[15:0]};
             mult_valid   = 1'b1;
+
+            // Note no state transition will occur if mult_hold is set
             mult_state_d = ALBL;
+            mult_hold    = ~multdiv_ready_id_i;
           end else begin
             accum        = intermediate_val_q;
             mac_res_d    = mac_res;
@@ -307,8 +332,11 @@ module ibex_multdiv_fast #(
           accum[33:18]  = {16{signed_mult & intermediate_val_q[33]}};
           // result of AH*BL is not signed only if signed_mode_i == 2'b00
           mac_res_d    = mac_res;
-          mult_state_d = ALBL;
           mult_valid   = 1'b1;
+
+          // Note no state transition will occur if mult_hold is set
+          mult_state_d = ALBL;
+          mult_hold    = ~multdiv_ready_id_i;
         end
         default: begin
           mult_state_d = ALBL;
@@ -320,7 +348,7 @@ module ibex_multdiv_fast #(
       if (!rst_ni) begin
         mult_state_q <= ALBL;
       end else begin
-        if (mult_en_i) begin
+        if (mult_en_internal) begin
           mult_state_q <= mult_state_d;
         end
       end
@@ -367,6 +395,7 @@ module ibex_multdiv_fast #(
     alu_operand_a_o  = {32'h0  , 1'b1};
     alu_operand_b_o  = {~op_b_i, 1'b1};
     div_valid        = 1'b0;
+    div_hold         = 1'b0;
 
     unique case(md_state_q)
       MD_IDLE: begin
@@ -449,7 +478,10 @@ module ibex_multdiv_fast #(
       end
 
       MD_FINISH: begin
+        // Hold result until ID stage is ready to accept it
+        // Note no state transition will occur if div_hold is set
         md_state_d = MD_IDLE;
+        div_hold   = ~multdiv_ready_id_i;
         div_valid   = 1'b1;
       end
 

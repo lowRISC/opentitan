@@ -19,60 +19,72 @@ class riscv_amo_base_instr_stream extends riscv_mem_access_stream;
 
   rand int unsigned  num_amo;
   rand int unsigned  num_mixed_instr;
-  rand int           base;
-  rand riscv_reg_t   rs1_reg;
-  rand int unsigned  data_page_id;
-  rand int           max_load_store_offset;
+  rand int           offset[];
+  rand riscv_reg_t   rs1_reg[];
+  rand int           num_of_rs1_reg;
+  int unsigned       data_page_id;
+  int unsigned       max_offset;
 
   // User can specify a small group of available registers to generate various hazard condition
   rand riscv_reg_t   avail_regs[];
 
-  `uvm_object_utils(riscv_amo_base_instr_stream)
+  constraint num_of_rs1_reg_c {
+    num_of_rs1_reg == 1;
+  }
 
   constraint rs1_c {
-    !(rs1_reg inside {cfg.reserved_regs, reserved_rd, ZERO});
+    solve num_of_rs1_reg before rs1_reg;
+    rs1_reg.size() == num_of_rs1_reg;
+    offset.size() == num_of_rs1_reg;
+    foreach (rs1_reg[i]) {
+      !(rs1_reg[i] inside {cfg.reserved_regs, reserved_rd, ZERO});
+    }
+    unique {rs1_reg};
   }
 
   constraint addr_range_c {
-    data_page_id < max_data_page_id;
-    base inside {[0 : max_load_store_offset-1]};
-  }
-
-  constraint aligned_amo_c {
-    if (XLEN == 32) {
-      base % 4 == 0;
-    } else {
-      base % 8 == 0;
+    foreach (offset[i]) {
+      offset[i] inside {[0 : max_offset - 1]};
     }
   }
 
-  function new(string name = "");
-    super.new(name);
-  endfunction
+  constraint aligned_amo_c {
+    foreach (offset[i]) {
+      if (XLEN == 32) {
+        offset[i] % 4 == 0;
+      } else {
+        offset[i] % 8 == 0;
+      }
+    }
+  }
+
+  `uvm_object_utils(riscv_amo_base_instr_stream)
+  `uvm_object_new
 
   function void pre_randomize();
     data_page = cfg.amo_region;
     max_data_page_id = data_page.size();
+    data_page_id = $urandom_range(0, max_data_page_id - 1);
+    max_offset = data_page[data_page_id].size_in_bytes;
   endfunction
 
-  // Use "la" instruction to initialize the base regiseter
-  virtual function void add_rs1_init_la_instr(riscv_reg_t gpr, int id, int base = 0);
-    riscv_pseudo_instr la_instr;
-    la_instr = riscv_pseudo_instr::type_id::create("la_instr");
-    la_instr.pseudo_instr_name = LA;
-    la_instr.rd = gpr;
-    la_instr.imm_str = $sformatf("%0s+%0d", cfg.amo_region[id].name, base);
-    instr_list.push_front(la_instr);
+  // Use "la" instruction to initialize the offset regiseter
+  virtual function void init_offset_reg();
+    foreach (rs1_reg[i]) begin
+      riscv_pseudo_instr la_instr;
+      la_instr = riscv_pseudo_instr::type_id::create("la_instr");
+      la_instr.pseudo_instr_name = LA;
+      la_instr.rd = rs1_reg[i];
+      la_instr.imm_str = $sformatf("%0s+%0d", cfg.amo_region[data_page_id].name, offset[i]);
+      instr_list.push_front(la_instr);
+    end
   endfunction
 
   function void post_randomize();
     gen_amo_instr();
-    // rs1 cannot be modified by other instructions
-    if(!(rs1_reg inside {reserved_rd})) begin
-      reserved_rd = {reserved_rd, rs1_reg};
-    end
+    reserved_rd = {reserved_rd, rs1_reg};
     add_mixed_instr(num_mixed_instr);
-    add_rs1_init_la_instr(rs1_reg, data_page_id);
+    init_offset_reg();
     super.post_randomize();
   endfunction
 
@@ -113,24 +125,24 @@ class riscv_lr_sc_instr_stream extends riscv_amo_base_instr_stream;
     lr_instr = riscv_instr::get_rand_instr(.include_instr({allowed_lr_instr}));
     sc_instr = riscv_instr::get_rand_instr(.include_instr({allowed_sc_instr}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(lr_instr,
-      rs1 == rs1_reg;
+      rs1 == rs1_reg[0];
       if (reserved_rd.size() > 0) {
         !(rd inside {reserved_rd});
       }
       if (cfg.reserved_regs.size() > 0) {
         !(rd inside {cfg.reserved_regs});
       }
-      rd != rs1_reg;
+      rd != rs1_reg[0];
     )
     `DV_CHECK_RANDOMIZE_WITH_FATAL(sc_instr,
-      rs1 == rs1_reg;
+      rs1 == rs1_reg[0];
       if (reserved_rd.size() > 0) {
         !(rd inside {reserved_rd});
       }
       if (cfg.reserved_regs.size() > 0) {
         !(rd inside {cfg.reserved_regs});
       }
-      rd != rs1_reg;
+      rd != rs1_reg[0];
     )
     instr_list.push_back(lr_instr);
     instr_list.push_back(sc_instr);
@@ -144,8 +156,14 @@ class riscv_amo_instr_stream extends riscv_amo_base_instr_stream;
 
   constraint reasonable_c {
     solve num_amo before num_mixed_instr;
-    num_amo inside {[1:10]};
-    num_mixed_instr inside {[0:2*num_amo]};
+    num_amo inside {[1 : 10]};
+    num_mixed_instr inside {[0 : num_amo]};
+  }
+
+  constraint num_of_rs1_reg_c {
+    solve num_amo before num_of_rs1_reg;
+    num_of_rs1_reg inside {[1 : num_amo]};
+    num_of_rs1_reg < 5;
   }
 
   `uvm_object_utils(riscv_amo_instr_stream)
@@ -162,8 +180,8 @@ class riscv_amo_instr_stream extends riscv_amo_base_instr_stream;
         if (cfg.reserved_regs.size() > 0) {
           !(rd inside {cfg.reserved_regs});
         }
-        rs1 == rs1_reg;
-        rd != rs1_reg;
+        rs1 inside {rs1_reg};
+        !(rd inside {rs1_reg});
       )
       instr_list.push_front(amo_instr[i]);
     end

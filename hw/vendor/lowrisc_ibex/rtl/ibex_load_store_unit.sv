@@ -3,6 +3,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+
 /**
  * Load Store Unit
  *
@@ -12,7 +13,8 @@
 
 `include "prim_assert.sv"
 
-module ibex_load_store_unit (
+module ibex_load_store_unit
+(
     input  logic         clk_i,
     input  logic         rst_ni,
 
@@ -30,13 +32,14 @@ module ibex_load_store_unit (
     input  logic [31:0]  data_rdata_i,
 
     // signals to/from ID/EX stage
-    input  logic         data_we_ex_i,         // write enable                     -> from ID/EX
-    input  logic [1:0]   data_type_ex_i,       // data type: word, half word, byte -> from ID/EX
-    input  logic [31:0]  data_wdata_ex_i,      // data to write to memory          -> from ID/EX
-    input  logic         data_sign_ext_ex_i,   // sign extension                   -> from ID/EX
+    input  logic         lsu_we_i,             // write enable                     -> from ID/EX
+    input  logic [1:0]   lsu_type_i,           // data type: word, half word, byte -> from ID/EX
+    input  logic [31:0]  lsu_wdata_i,          // data to write to memory          -> from ID/EX
+    input  logic         lsu_sign_ext_i,       // sign extension                   -> from ID/EX
 
-    output logic [31:0]  data_rdata_ex_o,      // requested data                   -> to ID/EX
-    input  logic         data_req_ex_i,        // data request                     -> from ID/EX
+    output logic [31:0]  lsu_rdata_o,          // requested data                   -> to ID/EX
+    output logic         lsu_rdata_valid_o,
+    input  logic         lsu_req_i,            // data request                     -> from ID/EX
 
     input  logic [31:0]  adder_result_ex_i,    // address computed in ALU          -> from ID/EX
 
@@ -45,13 +48,22 @@ module ibex_load_store_unit (
     output logic [31:0]  addr_last_o,          // address of last transaction      -> to controller
                                                // -> mtval
                                                // -> AGU for misaligned accesses
-    output logic         data_valid_o,         // LSU has completed transaction    -> to ID/EX
+
+    output logic         lsu_req_done_o,       // Signals that data request is complete
+                                               // (only need to await final data
+                                               // response)                        -> to ID/EX
+
+    output logic         lsu_resp_valid_o,     // LSU has response from transaction -> to ID/EX
 
     // exception signals
     output logic         load_err_o,
     output logic         store_err_o,
 
+    output logic         load_o,
     output logic         busy_o,
+
+    output logic         perf_load_o,
+    output logic         perf_store_o,
 
     // used for assertions only
     input  logic         illegal_insn_id_i,    // illegal instruciton -> from ID/EX
@@ -90,8 +102,8 @@ module ibex_load_store_unit (
   logic         data_or_pmp_err;
 
   typedef enum logic [2:0]  {
-    IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT, WAIT_RVALID,
-    WAIT_RVALID_DONE
+    IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
+    WAIT_RVALID_MIS_GNTS_DONE
   } ls_fsm_e;
 
   ls_fsm_e ls_fsm_cs, ls_fsm_ns;
@@ -104,7 +116,7 @@ module ibex_load_store_unit (
   ///////////////////
 
   always_comb begin
-    unique case (data_type_ex_i) // Data type 00 Word, 01 Half word, 11,10 byte
+    unique case (lsu_type_i) // Data type 00 Word, 01 Half word, 11,10 byte
       2'b00: begin // Writing a word
         if (!handle_misaligned_q) begin // first part of potentially misaligned transaction
           unique case (data_offset)
@@ -151,7 +163,7 @@ module ibex_load_store_unit (
       end
 
       default:     data_be = 4'b1111;
-    endcase // case (data_type_ex_i)
+    endcase // case (lsu_type_i)
   end
 
   /////////////////////
@@ -162,11 +174,11 @@ module ibex_load_store_unit (
   // we handle misaligned accesses, half word and byte accesses here
   always_comb begin
     unique case (data_offset)
-      2'b00:   data_wdata =  data_wdata_ex_i[31:0];
-      2'b01:   data_wdata = {data_wdata_ex_i[23:0], data_wdata_ex_i[31:24]};
-      2'b10:   data_wdata = {data_wdata_ex_i[15:0], data_wdata_ex_i[31:16]};
-      2'b11:   data_wdata = {data_wdata_ex_i[ 7:0], data_wdata_ex_i[31: 8]};
-      default: data_wdata =  data_wdata_ex_i[31:0];
+      2'b00:   data_wdata =  lsu_wdata_i[31:0];
+      2'b01:   data_wdata = {lsu_wdata_i[23:0], lsu_wdata_i[31:24]};
+      2'b10:   data_wdata = {lsu_wdata_i[15:0], lsu_wdata_i[31:16]};
+      2'b11:   data_wdata = {lsu_wdata_i[ 7:0], lsu_wdata_i[31: 8]};
+      default: data_wdata =  lsu_wdata_i[31:0];
     endcase // case (data_offset)
   end
 
@@ -192,9 +204,9 @@ module ibex_load_store_unit (
       data_we_q       <= 1'b0;
     end else if (ctrl_update) begin
       rdata_offset_q  <= data_offset;
-      data_type_q     <= data_type_ex_i;
-      data_sign_ext_q <= data_sign_ext_ex_i;
-      data_we_q       <= data_we_ex_i;
+      data_type_q     <= lsu_type_i;
+      data_sign_ext_q <= lsu_sign_ext_i;
+      data_we_q       <= lsu_we_i;
     end
   end
 
@@ -317,18 +329,16 @@ module ibex_load_store_unit (
 
   // check for misaligned accesses that need to be split into two word-aligned accesses
   assign split_misaligned_access =
-      ((data_type_ex_i == 2'b00) && (data_offset != 2'b00)) || // misaligned word access
-      ((data_type_ex_i == 2'b01) && (data_offset == 2'b11));   // misaligned half-word access
+      ((lsu_type_i == 2'b00) && (data_offset != 2'b00)) || // misaligned word access
+      ((lsu_type_i == 2'b01) && (data_offset == 2'b11));   // misaligned half-word access
 
   // FSM
   always_comb begin
     ls_fsm_ns       = ls_fsm_cs;
 
     data_req_o          = 1'b0;
-    data_valid_o        = 1'b0;
     addr_incr_req_o     = 1'b0;
     handle_misaligned_d = handle_misaligned_q;
-    data_or_pmp_err     = 1'b0;
     pmp_err_d           = pmp_err_q;
     lsu_err_d           = lsu_err_q;
 
@@ -336,18 +346,24 @@ module ibex_load_store_unit (
     ctrl_update         = 1'b0;
     rdata_update        = 1'b0;
 
+    perf_load_o         = 1'b0;
+    perf_store_o        = 1'b0;
+
     unique case (ls_fsm_cs)
 
       IDLE: begin
-        if (data_req_ex_i) begin
-          data_req_o = 1'b1;
-          pmp_err_d  = data_pmp_err_i;
-          lsu_err_d  = 1'b0;
+        if (lsu_req_i) begin
+          data_req_o   = 1'b1;
+          pmp_err_d    = data_pmp_err_i;
+          lsu_err_d    = 1'b0;
+          perf_load_o  = ~lsu_we_i;
+          perf_store_o = lsu_we_i;
+
           if (data_gnt_i) begin
             ctrl_update         = 1'b1;
             addr_update         = 1'b1;
             handle_misaligned_d = split_misaligned_access;
-            ls_fsm_ns           = split_misaligned_access ? WAIT_RVALID_MIS : WAIT_RVALID;
+            ls_fsm_ns           = split_misaligned_access ? WAIT_RVALID_MIS : IDLE;
           end else begin
             ls_fsm_ns           = split_misaligned_access ? WAIT_GNT_MIS    : WAIT_GNT;
           end
@@ -383,15 +399,17 @@ module ibex_load_store_unit (
           // Capture the first rdata for loads
           rdata_update = ~data_we_q;
           // If already granted, wait for second rvalid
-          ls_fsm_ns = data_gnt_i ? WAIT_RVALID : WAIT_GNT;
+          ls_fsm_ns = data_gnt_i ? IDLE : WAIT_GNT;
           // Update the address for the second part, if no error
           addr_update = data_gnt_i & ~(data_err_i | pmp_err_q);
-
+          // clear handle_misaligned if second request is granted
+          handle_misaligned_d = ~data_gnt_i;
         end else begin
           // first part rvalid is NOT received
           if (data_gnt_i) begin
             // second grant is received
-            ls_fsm_ns = WAIT_RVALID_DONE;
+            ls_fsm_ns = WAIT_RVALID_MIS_GNTS_DONE;
+            handle_misaligned_d = 1'b0;
           end
         end
       end
@@ -401,26 +419,15 @@ module ibex_load_store_unit (
         addr_incr_req_o = handle_misaligned_q;
         data_req_o      = 1'b1;
         if (data_gnt_i || pmp_err_q) begin
-          ctrl_update = 1'b1;
+          ctrl_update         = 1'b1;
           // Update the address, unless there was an error
-          addr_update = ~lsu_err_q;
-          ls_fsm_ns   = WAIT_RVALID;
-        end
-      end
-
-      WAIT_RVALID: begin
-        if (data_rvalid_i || pmp_err_q) begin
-          data_valid_o        = 1'b1;
-          // Data error from either part
-          data_or_pmp_err     = lsu_err_q | data_err_i | pmp_err_q;
-          handle_misaligned_d = 1'b0;
+          addr_update         = ~lsu_err_q;
           ls_fsm_ns           = IDLE;
-        end else begin
-          ls_fsm_ns           = WAIT_RVALID;
+          handle_misaligned_d = 1'b0;
         end
       end
 
-      WAIT_RVALID_DONE: begin
+      WAIT_RVALID_MIS_GNTS_DONE: begin
         // tell ID/EX stage to update the address (to make sure the
         // second address can be captured correctly for mtval and PMP checking)
         addr_incr_req_o = 1'b1;
@@ -435,7 +442,7 @@ module ibex_load_store_unit (
           // Capture the first rdata for loads
           rdata_update = ~data_we_q;
           // Wait for second rvalid
-          ls_fsm_ns = WAIT_RVALID;
+          ls_fsm_ns = IDLE;
         end
       end
 
@@ -444,6 +451,8 @@ module ibex_load_store_unit (
       end
     endcase
   end
+
+  assign lsu_req_done_o = (lsu_req_i | (ls_fsm_cs != IDLE)) & (ls_fsm_ns == IDLE);
 
   // registers for FSM
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -464,8 +473,12 @@ module ibex_load_store_unit (
   // Outputs //
   /////////////
 
+  assign data_or_pmp_err    = lsu_err_q | data_err_i | pmp_err_q;
+  assign lsu_resp_valid_o   = (data_rvalid_i | pmp_err_q) & (ls_fsm_cs == IDLE);
+  assign lsu_rdata_valid_o  = lsu_resp_valid_o & ~data_we_q;
+
   // output to register file
-  assign data_rdata_ex_o = data_rdata_ext;
+  assign lsu_rdata_o = data_rdata_ext;
 
   // output data address must be word aligned
   assign data_addr_w_aligned = {data_addr[31:2], 2'b00};
@@ -473,17 +486,18 @@ module ibex_load_store_unit (
   // output to data interface
   assign data_addr_o   = data_addr_w_aligned;
   assign data_wdata_o  = data_wdata;
-  assign data_we_o     = data_we_ex_i;
+  assign data_we_o     = lsu_we_i;
   assign data_be_o     = data_be;
 
   // output to ID stage: mtval + AGU for misaligned transactions
   assign addr_last_o   = addr_last_q;
 
   // Signal a load or store error depending on the transaction type outstanding
-  assign load_err_o    = data_or_pmp_err & ~data_we_q;
-  assign store_err_o   = data_or_pmp_err &  data_we_q;
+  assign load_err_o    = data_or_pmp_err & ~data_we_q & lsu_resp_valid_o;
+  assign store_err_o   = data_or_pmp_err &  data_we_q & lsu_resp_valid_o;
 
   assign busy_o = (ls_fsm_cs != IDLE);
+  assign load_o = ~data_we_q;
 
   ////////////////
   // Assertions //
@@ -497,19 +511,13 @@ module ibex_load_store_unit (
   assign unused_illegal_insn_id = illegal_insn_id_i;
 
   // Selectors must be known/valid.
-  `ASSERT(IbexDataTypeKnown, (instr_valid_id_i & ~illegal_insn_id_i) |-> !$isunknown(data_type_ex_i))
+  `ASSERT(IbexDataTypeKnown, (instr_valid_id_i & ~illegal_insn_id_i) |-> !$isunknown(lsu_type_i))
   `ASSERT(IbexDataOffsetKnown, (instr_valid_id_i & ~illegal_insn_id_i) |-> !$isunknown(data_offset))
   `ASSERT_KNOWN(IbexRDataOffsetQKnown, rdata_offset_q)
   `ASSERT_KNOWN(IbexDataTypeQKnown, data_type_q)
   `ASSERT(IbexLsuStateValid, ls_fsm_cs inside {
-      IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT, WAIT_RVALID,
-      WAIT_RVALID_DONE})
-
-  // There must not be an rvalid unless the FSM is handlling it.
-  `ASSERT(IbexRvalidNotHandled, data_rvalid_i |-> (
-      (ls_fsm_cs == WAIT_RVALID) ||
-      (ls_fsm_cs == WAIT_RVALID_MIS) ||
-      (ls_fsm_cs == WAIT_RVALID_DONE)))
+      IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
+      WAIT_RVALID_MIS_GNTS_DONE})
 
   // Errors must only be sent together with rvalid.
   `ASSERT(IbexDataErrWithoutRvalid, data_err_i |-> data_rvalid_i)

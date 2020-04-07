@@ -21,6 +21,7 @@ if { $lr_synth_timing_run } {
   set_flow_var cell_library_name "nangate" "Name of cell library"
   #set_flow_var sdc_file "${top_module}.sdc" "SDC file"
   set_flow_var sdc_file_in "${lr_synth_top_module}.${lr_synth_cell_library_name}.sdc" "Input SDC file"
+  set_flow_var abc_sdc_file_in "${lr_synth_top_module}_abc.${lr_synth_cell_library_name}.sdc" "Input SDC file for ABC"
   set flop_in_pin_default "*/D"
   set flop_out_pin_default "*/Q"
 

@@ -1,0 +1,6 @@
+f837f8c5c5c6c0f5ef33bb1badc5ebef  core_list_join.c
+3c7e2aeca881577ae02d628ad56a584a  core_main.c
+6fef286af62d28486aa6e6c61fb11841  core_matrix.c
+640f7d70fab3ce61da49d0f9eef04f7f  core_state.c
+85a5a29a1c55be49787bc1e1e7082f80  core_util.c
+9233fff3d437a831187153be4da64d23  coremark.h

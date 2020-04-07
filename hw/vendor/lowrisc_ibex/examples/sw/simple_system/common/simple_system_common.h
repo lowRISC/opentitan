@@ -10,6 +10,7 @@
 
 #define DEV_WRITE(addr, val) (*((volatile uint32_t *)(addr)) = val)
 #define DEV_READ(addr, val) (*((volatile uint32_t *)(addr)))
+#define PCOUNT_READ(name, dst) asm volatile("csrr %0, " #name ";" : "=r"(dst))
 
 /**
  * Writes character to simulator out log. Signature matches c stdlib function

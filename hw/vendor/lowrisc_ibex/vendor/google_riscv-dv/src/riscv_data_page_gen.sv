@@ -75,11 +75,17 @@ class riscv_data_page_gen extends uvm_object;
         if (cfg.use_push_data_section) begin
           data_page_str.push_back($sformatf(".pushsection .%0s,\"aw\",@progbits;",
                                             mem_region_setting[i].name));
+        end else begin
+          data_page_str.push_back($sformatf(".section .%0s,\"aw\",@progbits;",
+                                            mem_region_setting[i].name));
         end
         data_page_str.push_back($sformatf("%0s:", mem_region_setting[i].name));
       end else begin
         if (cfg.use_push_data_section) begin
           data_page_str.push_back($sformatf(".pushsection .%0s,\"aw\",@progbits;",
+                                            {hart_prefix(hart_id), mem_region_setting[i].name}));
+        end else begin
+          data_page_str.push_back($sformatf(".section .%0s,\"aw\",@progbits;",
                                             {hart_prefix(hart_id), mem_region_setting[i].name}));
         end
         data_page_str.push_back($sformatf("%0s:",

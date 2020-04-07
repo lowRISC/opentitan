@@ -103,6 +103,7 @@ class riscv_vector_instr extends riscv_floating_point_instr;
             VV: asm_str = $sformatf("vmv.v.v %s,%s", vd.name(), vs1.name());
             VX: asm_str = $sformatf("vmv.v.x %s,%s", vd.name(), rs1.name());
             VI: asm_str = $sformatf("vmv.v.i %s,%s", vd.name(), imm_str);
+            default: `uvm_info(`gfn, $sformatf("Unsupported va_variant %0s", va_variant), UVM_LOW)
           endcase
         end else if (instr_name == VFMV) begin
           asm_str = $sformatf("vfmv.v.f %s,%s", vd.name(), fs1.name());
@@ -156,6 +157,7 @@ class riscv_vector_instr extends riscv_floating_point_instr;
           end
         end
       end
+      default: `uvm_info(`gfn, $sformatf("Unsupported format %0s", format.name()), UVM_LOW)
     endcase
     if(comment != "") begin
       asm_str = {asm_str, " #",comment};

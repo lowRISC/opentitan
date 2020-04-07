@@ -1,0 +1,40 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Ibex configurations files, holds the parameter sets that are tested under CI.
+# Each configuration must specify the same set of parameters
+
+# Two-stage pipeline without additional branch target ALU and 3 cycle multiplier
+# (4 cycles for mulh), resulting in 2 stall cycles for mul (3 for mulh)
+small-3cmult:
+  RV32E                    : False
+  RV32M                    : True
+  RV32B                    : False
+  BranchTargetALU          : False
+  WritebackStage           : False
+  MultiplierImplementation : "fast"
+
+# ===============================
+# * EXPERIMENTAL CONFIGURATIONS *
+# ===============================
+
+# Three-stage pipeline with additional branch traget ALU and 1 cycle multiplier
+# (2 cycles for mulh) so mul does not stall (mulh stall 1 cycles). This is the
+# maximum performance configuration.
+experimental-maxperf-1cmult:
+  RV32E                    : False
+  RV32M                    : True
+  RV32B                    : False
+  BranchTargetALU          : True
+  WritebackStage           : True
+  MultiplierImplementation : "single-cycle"
+
+# maxpref-1cmult config above with bitmanip extension
+experimental-maxperf-bm-1cmult:
+  RV32E                    : False
+  RV32M                    : True
+  RV32B                    : True
+  BranchTargetALU          : True
+  WritebackStage           : True
+  MultiplierImplementation : "single-cycle"

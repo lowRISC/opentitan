@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`include "ibex_mem_intf.sv"
-
 package ibex_mem_intf_agent_pkg;
 
   import uvm_pkg::*;

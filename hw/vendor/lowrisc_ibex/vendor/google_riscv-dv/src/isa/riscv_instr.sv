@@ -123,7 +123,9 @@ class riscv_instr extends uvm_object;
           !(cfg.disable_compressed_instr &&
             (instr_inst.group inside {RV32C, RV64C, RV32DC, RV32FC, RV128C})) &&
           !(!cfg.enable_floating_point &&
-            (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D}))) begin
+            (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D})) &&
+          !(!cfg.enable_b_extension &&
+            (instr_inst.group inside {RV32B, RV64B}))) begin
         instr_category[instr_inst.category].push_back(instr_name);
         instr_group[instr_inst.group].push_back(instr_name);
         instr_names.push_back(instr_name);
@@ -374,6 +376,8 @@ class riscv_instr extends uvm_object;
           end else begin
             asm_str = $sformatf("%0s%0s, %0s, %0s", asm_str, rd.name(), rs1.name(), rs2.name());
           end
+        default: `uvm_fatal(`gfn, $sformatf("Unsupported format %0s [%0s]",
+                                            format.name(), instr_name.name()))
       endcase
     end else begin
       // For EBREAK,C.EBREAK, making sure pc+4 is a valid instruction boundary
@@ -580,6 +584,7 @@ class riscv_instr extends uvm_object;
         else
           binary = $sformatf("%8h", {get_func7(), rs2, rs1, get_func3(), rd, get_opcode()});
       end
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported format %0s", format.name()))
     endcase
     return {prefix, binary};
   endfunction
