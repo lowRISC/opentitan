@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Makefile with ascentlint and verilator-lint targets for OpenTitan
+# Makefile with ascentlint, verilator-lint and verible style lint
+# targets for OpenTitan
 #
 # TODO: currently we cannot support parallel builds since some fusesoc cores
 # define filesets with files outside the current folder (e.g. using relative
@@ -41,6 +42,7 @@ IPS ?=  ip-aes                 \
 
 ips_lint  = $(addsuffix _lint, $(IPS))
 ips_vlint = $(addsuffix _vlint, $(IPS))
+ips_slint = $(addsuffix _slint, $(IPS))
 
 ######################
 # ascentlint targets #
@@ -79,7 +81,6 @@ report:
 # verilator targets #
 #####################
 
-# lint all discovered targets and make a report
 vall: vlint
 	$(MAKE) vreport
 
@@ -92,11 +93,30 @@ $(ips_vlint):
 	rm -rf build
 	mkdir -p ${REPORT_DIR}
 	-fusesoc --cores-root ${CORE_ROOT} run --target=lint lowrisc:$(subst -,:,$(patsubst %_vlint,%,$@))
-#	cp build/lowrisc_*$(patsubst %_vlint,%,$@)*/vlint-verilator/verilator-lint.rpt ${REPORT_DIR}/$@.rpt
 
-# TODO: add a verilator summary report function
-# add a summary report option for verilator
+# TODO: add summary reporting
 vreport:
+
+##############################
+# verible style lint targets #
+##############################
+
+sall: slint
+	$(MAKE) sreport
+
+slint: clean
+	@echo Discovered vlint targets:
+	@echo -e "\n $(patsubst %,%\\n,$(strip $(ips_vlint)))"
+	$(MAKE) $(ips_vlint)
+
+# TODO(#1727): pass Verible config file to FuseSoC, once supported by Verible
+$(ips_slint):
+	rm -rf build
+	mkdir -p ${REPORT_DIR}
+	-fusesoc --cores-root ${CORE_ROOT} run --target=lint --tool=veriblelint lowrisc:$(subst -,:,$(patsubst %_slint,%,$@))
+
+# TODO: add summary reporting
+sreport:
 
 ##################
 # common targets #
@@ -106,4 +126,5 @@ clean:
 	rm -rf build
 	rm -rf ${REPORT_DIR}/*
 
-.PHONY: all lint $(ips_lint) report vall vlint $(ips_vlint) clean
+.PHONY: all lint $(ips_lint) report vall vlint $(ips_vlint) \
+        vreport sall slint $(ips_slint) clean sreport
