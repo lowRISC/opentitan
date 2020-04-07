@@ -118,14 +118,21 @@ def elab_intermodule(topcfg: OrderedDict):
             # Add to definitions
             if "package" in req_struct:
                 package = req_struct["package"]
-            else:
-                assert "package" in rsp_struct, "Either req/rsp shall have 'package' field"
+            elif "package" in rsp_struct:
                 package = rsp_struct["package"]
+            else:
+                package = ""
 
+            # Assume it is logic
+            # req_rsp doesn't allow logic
+            if req_struct["struct"] is "logic":
+                assert req_struct[
+                    "type"] is not "req_rsp", "logic signal cannot have req_rsp type"
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"]),
                              ('signame', sig_name),
+                             ('width', req_struct["width"]),
                              ('type', req_struct["type"])]))
 
             if rsp_len != 1:
@@ -168,7 +175,7 @@ def filter_index(signame: str) -> Tuple[str, str, int]:
         # Cannot match the pattern
         return "", "", -1
 
-    if m.groups(3):
+    if m.group(3):
         # array index is not None
         return m.group(1), m.group(2), m.group(4)
 
@@ -280,12 +287,19 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                     # convert to int value
                     rsp_struct["width"] = width
 
-            if rsp_i != -1 and req_struct["width"] != 1:
-                # If rsp has index, req should be width 1
-                log.error(
-                    "If rsp {rsp} has an array index, only one-to-one map is allowed."
-                    .format(rsp=rsp))
-                error += 1
+            if req_struct["width"] != 1:
+                if width not in [1, req_struct["width"]]:
+                    log.error(
+                        "If req {req} is an array, rsp {rsp} shall be non-array or array with same width"
+                        .format(req=req, rsp=rsp))
+                    error += 1
+
+                elif rsp_i != -1:
+                    # If rsp has index, req should be width 1
+                    log.error(
+                        "If rsp {rsp} has an array index, only one-to-one map is allowed."
+                        .format(rsp=rsp))
+                    error += 1
 
         # All rsps are checked, check the total width to req width
         # If req is array, it is not allowed to have partial connections.

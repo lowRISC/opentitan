@@ -441,7 +441,11 @@ module top_${top["name"]} #(
   ${sig["package"]}::${sig["struct"]}_req_t ${sig["signame"]}_req;
   ${sig["package"]}::${sig["struct"]}_rsp_t ${sig["signame"]}_rsp;
     % elif sig["type"] == "broadcast":
+      % if sig["struct"] == "logic":
+  logic ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
+      % else:
   ${sig["package"]}::${sig["struct"]}_t ${sig["signame"]};
+      % endif
     % endif
   % endfor
 
@@ -614,6 +618,7 @@ else:
             % if sig["act"] == "requester":
       .${sig["name"]}_o(),
             % elif sig["act"] == "receiver":
+              ## TODO: Add logic struct default value
       .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_DEFAULT),
             % endif
           % endif
