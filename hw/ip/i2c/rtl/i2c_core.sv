@@ -264,6 +264,8 @@ module  i2c_core (
     .host_enable_i           (host_enable),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
+    .fmt_fifo_wvalid_i       (fmt_fifo_wvalid),
+    .fmt_fifo_depth_i        (fmt_fifo_depth),
     .fmt_fifo_rready_o       (fmt_fifo_rready),
 
     .fmt_byte_i              (fmt_byte),
