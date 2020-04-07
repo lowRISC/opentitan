@@ -312,6 +312,7 @@
           act: requester
           package: flash_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
           top_signame: flash_ctrl_eflash_flash
         }
       ]
@@ -760,6 +761,7 @@
           name: flash_ctrl
           act: responder
           inst_name: eflash
+          width: 1
           top_signame: flash_ctrl_eflash_flash
         }
       ]
@@ -1733,6 +1735,7 @@
         act: requester
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
         top_signame: flash_ctrl_eflash_flash
       }
       {
@@ -1741,6 +1744,7 @@
         name: flash_ctrl
         act: responder
         inst_name: eflash
+        width: 1
         top_signame: flash_ctrl_eflash_flash
       }
     ]

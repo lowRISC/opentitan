@@ -58,6 +58,7 @@ top_optional = {
     'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
     'padctrl':
     ['g', 'PADS instantiation, if doesn\'t exist, tool creates direct output'],
+    'inter_module': ['g', 'define the signal connections between the modules'],
 }
 
 top_added = {}
