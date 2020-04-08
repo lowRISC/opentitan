@@ -23,6 +23,7 @@ IPS ?=  ip-aes                 \
         ip-padctrl             \
         ip-padring             \
         ip-pinmux              \
+        ip-pwrmgr              \
         ip-rv_core_ibex        \
         ip-rv_dm               \
         ip-rv_plic_example     \
