@@ -23,6 +23,7 @@ from pathlib import Path
 import hjson
 
 import dashboard.gen_dashboard_entry as gen_dashboard_entry
+import difgen.gen_dif_listing as gen_dif_listing
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
 import reggen.validate as validate
@@ -94,6 +95,9 @@ config = {
 
     # Pre-generated utility selfdoc
     "selfdoc_tools": ["tlgen", "reggen"],
+
+    # DIF Docs
+    "difs-directory": "sw/device/lib/dif",
 
     # Output directory for documents
     "outdir":
@@ -219,6 +223,67 @@ def generate_tool_versions():
         with open(str(version_path), mode='w') as fout:
             fout.write(__TOOL_REQUIREMENTS__[tool])  # noqa: F821
 
+def generate_dif_docs():
+    """Generate doxygen documentation and DIF listings from DIF source comments.
+
+    This invokes Doxygen, and a few other things. Be careful of changing any
+    paths here, some correspond to paths in other configuration files.
+    """
+
+    logging.info("Generating Software API Documentation (Doxygen)...")
+
+    doxygen_out_path = config["outdir-generated"].joinpath("sw")
+
+    # The next two paths correspond to relative paths specified in the Doxyfile
+    doxygen_xml_path = doxygen_out_path.joinpath("api-xml")
+
+    # We need to prepare this path because doxygen won't `mkdir -p`
+    doxygen_sw_path = doxygen_out_path.joinpath("public-api/sw/apis")
+    doxygen_sw_path.mkdir(parents=True, exist_ok=True)
+
+    doxygen_args = [
+        "doxygen",
+        str(SRCTREE_TOP.joinpath("util/doxygen/Doxyfile")),
+    ]
+
+    doxygen_results = subprocess.run(doxygen_args, check=True,
+        cwd=str(SRCTREE_TOP), stdout=subprocess.PIPE,
+        env=dict(os.environ,
+            SRCTREE_TOP=str(SRCTREE_TOP),
+            DOXYGEN_OUT=str(doxygen_out_path),
+        ))
+
+    logging.info("Generated Software API Documentation (Doxygen)")
+
+    combined_xml = gen_dif_listing.get_combined_xml(doxygen_xml_path)
+
+    dif_paths = []
+    dif_paths.extend(sorted(SRCTREE_TOP.joinpath(config["difs-directory"]).glob("dif_*.h")))
+
+    dif_listings_root_path = config["outdir-generated"].joinpath("sw/difs_listings")
+    difrefs_root_path = config["outdir-generated"].joinpath("sw/difref")
+
+    for dif_header_path in dif_paths:
+        dif_header = str(dif_header_path.relative_to(SRCTREE_TOP))
+
+        dif_listings_filename = dif_listings_root_path.joinpath(dif_header + ".html")
+        dif_listings_filename.parent.mkdir(parents=True, exist_ok=True)
+
+        dif_listings_html = open(str(dif_listings_filename), mode='w')
+        gen_dif_listing.gen_listing_html(combined_xml, dif_header, dif_listings_html)
+        dif_listings_html.close()
+
+        difref_functions = gen_dif_listing.get_difref_info(combined_xml, dif_header)
+        for function in difref_functions:
+            difref_filename = difrefs_root_path.joinpath(function["name"] + '.html')
+            difref_filename.parent.mkdir(parents=True, exist_ok=True)
+
+            difref_html = open(str(difref_filename), mode='w')
+            gen_dif_listing.gen_difref_html(function, difref_html)
+            difref_html.close()
+
+        logging.info("Generated DIF Listing for {}".format(dif_header))
+
 
 def hugo_match_version(hugo_bin_path, version):
     logging.info("Hugo binary path: %s", hugo_bin_path)
@@ -326,6 +391,7 @@ def main():
     generate_selfdocs()
     generate_apt_reqs()
     generate_tool_versions()
+    generate_dif_docs()
 
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)

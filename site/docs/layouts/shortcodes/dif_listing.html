@@ -1,0 +1,6 @@
+{{ $baseName := .Get 0 }}
+{{ $path := path.Join .Site.Params.generatedRoot (printf "sw/difs_listings/%s.html" $baseName) }}
+{{ if not (fileExists $path) }}
+  {{ errorf "DIF listings have not been generated for %s" $baseName }}
+{{ end }}
+{{ readFile $path | safeHTML }}
