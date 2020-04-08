@@ -20,7 +20,7 @@ from reggen import gen_dv, gen_rtl, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
 
 # Filter from IP list but adding generated hjson
-filter_list = ['rv_plic', 'pinmux']
+filter_list = ['rv_plic', 'pinmux', 'alert_handler']
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -491,6 +491,9 @@ def main():
 
         pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
         ips.append(pinmux_hjson)
+
+        alert_handler_hjson = hjson_dir.parent / 'ip/alert_handler/data/autogen/alert_handler.hjson'
+        ips.append(alert_handler_hjson)
 
         # load Hjson and pass validate from reggen
         try:
