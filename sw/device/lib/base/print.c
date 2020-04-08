@@ -47,8 +47,7 @@ static size_t base_dev_null(void *data, const char *buf, size_t len) {
   return len;
 }
 static buffer_sink_t base_stdout = {
-    .data = NULL,
-    .sink = &base_dev_null,
+    .data = NULL, .sink = &base_dev_null,
 };
 
 void base_set_stdout(buffer_sink_t out) {
@@ -95,12 +94,10 @@ size_t base_snprintf(char *buf, size_t len, const char *format, ...) {
   va_start(args, format);
 
   snprintf_captures_t data = {
-      .buf = buf,
-      .bytes_left = len,
+      .buf = buf, .bytes_left = len,
   };
   buffer_sink_t out = {
-      .data = &data,
-      .sink = &snprintf_sink,
+      .data = &data, .sink = &snprintf_sink,
   };
   size_t bytes_left = base_vfprintf(out, format, args);
   va_end(args);
@@ -158,8 +155,8 @@ typedef struct format_specifier {
  * @return whether the parse succeeded.
  */
 static bool consume_format_specifier(buffer_sink_t out, const char **format,
-                                   size_t *bytes_written,
-                                   format_specifier_t *spec) {
+                                     size_t *bytes_written,
+                                     format_specifier_t *spec) {
   *spec = (format_specifier_t){0};
 
   // Consume the percent sign.
@@ -295,7 +292,8 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       // - amd64:   0x0000000000000000 (eight bytes, sixteen nybbles).
       *bytes_written += out.sink(out.data, "0x", 2);
       uintptr_t value = va_arg(*args, uintptr_t);
-      *bytes_written += write_digits(out, value, sizeof(uintptr_t) * 2, 16, kDigitsLow);
+      *bytes_written +=
+          write_digits(out, value, sizeof(uintptr_t) * 2, 16, kDigitsLow);
       break;
     }
     case kSvHexLow:

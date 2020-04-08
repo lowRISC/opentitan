@@ -7,8 +7,8 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/base/log.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"

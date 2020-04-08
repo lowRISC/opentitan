@@ -15,4 +15,4 @@ const device_type_t kDeviceType = kDeviceSimDV;
 
 const uint64_t kClockFreqHz = 50 * 1000 * 1000;  // 50MHz
 
-const uint64_t kUartBaudrate = 2 * (1 << 20); // 2Mib/s
+const uint64_t kUartBaudrate = 2 * (1 << 20);  // 2Mib/s

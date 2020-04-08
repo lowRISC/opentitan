@@ -36,20 +36,22 @@ static const char *stringify_severity(log_severity_t severity) {
  */
 void base_log_internal_core(log_severity_t severity, const char *file_name,
                             uint32_t line, const char *format, ...) {
-  size_t file_name_len = ((char *)memchr(file_name, '\0', PTRDIFF_MAX)) - file_name;
+  size_t file_name_len =
+      ((char *)memchr(file_name, '\0', PTRDIFF_MAX)) - file_name;
   const char *base_name = memrchr(file_name, '/', file_name_len);
   if (base_name == NULL) {
     base_name = file_name;
-  } else { 
+  } else {
     ++base_name;  // Remove the final '/'.
   }
 
-  // A small global counter that increments with each log line. This can be useful for
-  // seeing how many times this function has been called, even if nothing was printed
-  // for some time.
+  // A small global counter that increments with each log line. This can be
+  // useful for seeing how many times this function has been called, even if
+  // nothing was printed for some time.
   static uint16_t global_log_counter = 0;
 
-  base_printf("%s%5d %s:%d] ", stringify_severity(severity), global_log_counter, base_name, line);
+  base_printf("%s%5d %s:%d] ", stringify_severity(severity), global_log_counter,
+              base_name, line);
   ++global_log_counter;
 
   va_list args;

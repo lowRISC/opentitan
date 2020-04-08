@@ -16,7 +16,7 @@ static dif_gpio_t gpio;
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
   base_set_stdout(uart_stdout);
-  
+
   pinmux_init();
   spid_init();
 

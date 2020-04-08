@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/print.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/handler.h"
@@ -40,15 +40,15 @@ static size_t polled_uart_sink_func(void *data, const char *buf, size_t len) {
 }
 
 static const buffer_sink_t kPolledUartSink = {
-    .data = NULL,
-    .sink = &polled_uart_sink_func,
+    .data = NULL, .sink = &polled_uart_sink_func,
 };
 
-#define LOG_FATAL(...) do { \
-  LOG_ERROR(__VA_ARGS__); \
-  base_printf("FAIL!\r\n"); \
-  abort(); \
-} while(false)
+#define LOG_FATAL(...)        \
+  do {                        \
+    LOG_ERROR(__VA_ARGS__);   \
+    base_printf("FAIL!\r\n"); \
+    abort();                  \
+  } while (false)
 
 /**
  * UART interrupt handler

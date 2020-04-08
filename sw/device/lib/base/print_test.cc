@@ -153,7 +153,7 @@ TEST_F(PrintfTest, Pointer) {
   auto *ptr = reinterpret_cast<uint32_t *>(0x1234);
   base_printf("Hello, %p!\n", ptr);
   switch (sizeof(uintptr_t)) {
-    case 4: 
+    case 4:
       EXPECT_EQ(buf_, "Hello, 0x00001234!\n");
       break;
     case 8:
@@ -165,7 +165,7 @@ TEST_F(PrintfTest, Pointer) {
 TEST_F(PrintfTest, NullPtr) {
   base_printf("Hello, %p!\n", nullptr);
   switch (sizeof(uintptr_t)) {
-    case 4: 
+    case 4:
       EXPECT_EQ(buf_, "Hello, 0x00000000!\n");
       break;
     case 8:
@@ -224,14 +224,18 @@ TEST(SnprintfTest, SimpleWrite) {
 
 TEST(SnprintfTest, ComplexFormating) {
   std::string buf(128, '\0');
-  auto len = base_snprintf(&buf[0], buf.size(), "%d + %d == %d, also spelled 0x%x", 2, 8, 2 + 8, 2 + 8);
+  auto len =
+      base_snprintf(&buf[0], buf.size(), "%d + %d == %d, also spelled 0x%x", 2,
+                    8, 2 + 8, 2 + 8);
   buf.resize(len);
   EXPECT_EQ(buf, "2 + 8 == 10, also spelled 0xa");
 }
 
 TEST(SnprintfTest, PartialWrite) {
   std::string buf(16, '\0');
-  auto len = base_snprintf(&buf[0], buf.size(), "%d + %d == %d, also spelled 0x%x", 2, 8, 2 + 8, 2 + 8);
+  auto len =
+      base_snprintf(&buf[0], buf.size(), "%d + %d == %d, also spelled 0x%x", 2,
+                    8, 2 + 8, 2 + 8);
   buf.resize(len);
   EXPECT_EQ(len, 16);
   EXPECT_EQ(buf, "2 + 8 == 10, als");

@@ -120,8 +120,10 @@ template <typename Int>
 Int ToInt(std::initializer_list<BitField> fields) {
   Int val = 0;
   for (auto field : fields) {
-    // Due to the way that gtest ASSERT_* works, and the fact that this must be a
-    // function (since we use function overloading), these cannot be ASSERTs, and
+    // Due to the way that gtest ASSERT_* works, and the fact that this must be
+    // a
+    // function (since we use function overloading), these cannot be ASSERTs,
+    // and
     // must be EXPECTs.
     EXPECT_LE(field.offset, sizeof(Int) * 8);
     val |= static_cast<Int>(field.value << field.offset);

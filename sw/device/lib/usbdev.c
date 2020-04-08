@@ -134,14 +134,15 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
     // Clear the interupt
     REG32(USBDEV_INTR_STATE()) = (1 << USBDEV_INTR_STATE_PKT_RECEIVED);
   }
-  if (istate & ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
-                 (1 << USBDEV_INTR_STATE_PKT_SENT))) {
+  if (istate &
+      ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
+        (1 << USBDEV_INTR_STATE_PKT_SENT))) {
     TRC_C('I');
     TRC_I(istate, 12);
     TRC_C(' ');
-    REG32(USBDEV_INTR_STATE()) =
-        istate & ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
-                   (1 << USBDEV_INTR_STATE_PKT_SENT));
+    REG32(USBDEV_INTR_STATE()) = istate &
+                                 ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
+                                   (1 << USBDEV_INTR_STATE_PKT_SENT));
     if (istate & (1 << USBDEV_INTR_ENABLE_LINK_RESET)) {
       // Link reset
       for (int ep = 0; ep < NUM_ENDPOINTS; ep++) {
