@@ -90,9 +90,9 @@ typedef struct dif_uart {
 /**
  * Initialise an instance of UART.
  *
- * Initialise UART instance using the configuration data in @p config.
+ * Initialise UART instance using the configuration data in `config`.
  * Information that must be retained, and is required to program UART must be
- * stored in @p uart.
+ * stored in `uart`.
  * @param base_addr Base address of an instance of UART IP block.
  * @param config UART configuration data.
  * @param uart UART state data.
@@ -104,7 +104,7 @@ bool dif_uart_init(mmio_region_t base_addr, const dif_uart_config_t *config,
 /**
  * Configure an instance of UART.
  *
- * Configure UART using the configuration data in @p config. This operation
+ * Configure UART using the configuration data in `config`. This operation
  * performs fundamental configuration.
  *
  * @param uart UART state data.
@@ -145,9 +145,9 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
  * UART send bytes.
  *
  * Non-blocking UART send bytes routine. Can be used from inside an UART ISR.
- * This function attempts to write @p bytes_requested number of bytes to the
- * UART TX FIFO from @p bytes_requested, and passes @p bytes_written back to
- * the caller. @p bytes_written is optional, NULL should be passed in if the
+ * This function attempts to write `bytes_requested` number of bytes to the
+ * UART TX FIFO from `bytes_requested`, and passes `bytes_written` back to
+ * the caller. `bytes_written` is optional, NULL should be passed in if the
  * value is not needed.
  *
  * @param uart UART state data.
@@ -163,9 +163,9 @@ bool dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
  * UART receive bytes.
  *
  * Non-blocking UART receive bytes routine. Can be used from inside an UART ISR.
- * This function attempts to read @p bytes_requested number of bytes from the
- * UART RX FIFO into @p data, and passes @p bytes_read back to the caller.
- * @p bytes_read is optional, NULL should be passed in if the value is not
+ * This function attempts to read `bytes_requested` number of bytes from the
+ * UART RX FIFO into `data`, and passes `bytes_read` back to the caller.
+ * `bytes_read` is optional, NULL should be passed in if the value is not
  * needed.
  *
  * @param uart UART state data.
@@ -180,7 +180,7 @@ bool dif_uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
 /**
  * Transmit a single UART byte (polled).
  *
- * Transmit a single UART byte @p byte. This operation is polled, and will busy
+ * Transmit a single UART byte `byte`. This operation is polled, and will busy
  * wait until a byte has been sent. Must not be used inside an ISR.
  *
  * @param uart UART state data.
@@ -192,7 +192,7 @@ bool dif_uart_byte_send_polled(const dif_uart_t *uart, uint8_t byte);
 /**
  * Receive a single UART byte (polled).
  *
- * Receive a single UART byte and store it in @p byte. This operation is polled,
+ * Receive a single UART byte and store it in `byte`. This operation is polled,
  * and will busy wait until a byte has been read. Must not be used inside an
  * ISR.
  *
@@ -205,7 +205,7 @@ bool dif_uart_byte_receive_polled(const dif_uart_t *uart, uint8_t *byte);
 /**
  * UART get requested IRQ state.
  *
- * Get the state of the requested IRQ in @p irq_type.
+ * Get the state of the requested IRQ in `irq_type`.
  *
  * @param uart UART state data.
  * @param irq_type IRQ to get the state of.
@@ -218,7 +218,7 @@ bool dif_uart_irq_state_get(const dif_uart_t *uart,
 /**
  * UART clear requested IRQ state.
  *
- * Clear the state of the requested IRQ in @p irq_type. Primary use of this
+ * Clear the state of the requested IRQ in `irq_type`. Primary use of this
  * function is to de-assert the interrupt after it has been serviced.
  *
  * @param uart UART state data.
@@ -232,7 +232,7 @@ bool dif_uart_irq_state_clear(const dif_uart_t *uart,
  * UART disable interrupts.
  *
  * Disable generation of all UART interrupts, and pass previous interrupt state
- * in @p state back to the caller. Parameter @p state is ignored if NULL.
+ * in `state` back to the caller. Parameter `state` is ignored if NULL.
  *
  * @param uart UART state data.
  * @param state IRQ state passed back to the caller.
@@ -244,7 +244,7 @@ bool dif_uart_irqs_disable(const dif_uart_t *uart, uint32_t *state);
  * UART restore IRQ state.
  *
  * Restore previous UART IRQ state. This function is used to restore the
- * UART interrupt state prior to dif_uart_irqs_disable function call.
+ * UART interrupt state prior to `dif_uart_irqs_disable` function call.
  *
  * @param uart UART state data.
  * @param state IRQ state to restore.
@@ -255,7 +255,7 @@ bool dif_uart_irqs_restore(const dif_uart_t *uart, uint32_t state);
 /**
  * UART interrupt control.
  *
- * Enable/disable an UART interrupt specified in @p enable.
+ * Enable/disable an UART interrupt specified in `enable`.
  *
  * @param uart UART state data.
  * @param irq_type UART interrupt type.
@@ -268,7 +268,7 @@ bool dif_uart_irq_enable(const dif_uart_t *uart, dif_uart_interrupt_t irq_type,
 /**
  * UART interrupt force.
  *
- * Force interrupt specified in @p irq_type.
+ * Force interrupt specified in `irq_type`.
  *
  * @param uart UART state data.
  * @param irq_type UART interrupt type to be forced.
