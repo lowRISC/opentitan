@@ -62,6 +62,14 @@ jobs:
     displayName: Ensure all generated files are clean and up-to-date
   - bash: |
       util/build_docs.py
+      # Upload Doxygen Warnings if Present
+      if [[ -f "build/docs-generated/sw/doxygen_warnings.log" ]]; then
+        echo -n "##vso[task.uploadfile]"
+        echo "${PWD}/build/docs-generated/sw/doxygen_warnings.log"
+        # Doxygen currently generates lots of warnings.
+        # echo -n "##vso[task.issue type=warning]"
+        # echo "Doxygen generated warnings. Use 'util/build_docs.py' to generate warning logfile."
+      fi
     condition: always()
     displayName: Render documentation
   - bash: |

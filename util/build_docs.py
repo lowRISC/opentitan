@@ -241,6 +241,11 @@ def generate_dif_docs():
     doxygen_sw_path = doxygen_out_path.joinpath("public-api/sw/apis")
     doxygen_sw_path.mkdir(parents=True, exist_ok=True)
 
+    # This is where warnings will be generated
+    doxygen_warnings_path = doxygen_out_path.joinpath("doxygen_warnings.log")
+    if doxygen_warnings_path.exists():
+        doxygen_warnings_path.unlink()
+
     doxygen_args = [
         "doxygen",
         str(SRCTREE_TOP.joinpath("util/doxygen/Doxyfile")),
@@ -254,6 +259,9 @@ def generate_dif_docs():
         ))
 
     logging.info("Generated Software API Documentation (Doxygen)")
+
+    if doxygen_warnings_path.exists():
+        logging.warning("Doxygen Generated Warnings (saved in {})".format(str(doxygen_warnings_path)))
 
     combined_xml = gen_dif_listing.get_combined_xml(doxygen_xml_path)
 
