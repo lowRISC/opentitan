@@ -65,6 +65,19 @@ typedef struct dif_plic {
 } dif_plic_t;
 
 /**
+ * PLIC generic status codes.
+ *
+ * These error codes can be used by any function. However if a function
+ * requires additional status codes, it must define a set of status codes to
+ * be used exclusicvely by such function.
+ */
+typedef enum dif_plic_result {
+  kDifPlicOk = 0, /**< Success. */
+  kDifPlicError,  /**< General error. */
+  kDifPlicBadArg, /**< Input parameter is not valid. */
+} dif_plic_result_t;
+
+/**
  * Initialises an instance of PLIC.
  *
  * Information that must be retained, and is required to program PLIC, shall
@@ -72,9 +85,9 @@ typedef struct dif_plic {
  *
  * @param base_addr Base address of an instance of the PLIC IP block
  * @param plic PLIC state data
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
+dif_plic_result_t dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
 
 /**
  * Enables/disables handling of IRQ source in PLIC.
@@ -85,11 +98,12 @@ bool dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
  * @param irq Interrupt Source ID
  * @param target Target to enable the IRQ for
  * @param enable Enable/disable the IRQ handling
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_irq_enable_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
-                             dif_plic_target_t target,
-                             dif_plic_enable_t enable);
+dif_plic_result_t dif_plic_irq_enable_set(const dif_plic_t *plic,
+                                          dif_plic_irq_id_t irq,
+                                          dif_plic_target_t target,
+                                          dif_plic_enable_t enable);
 
 /**
  * Sets the IRQ trigger type (edge/level).
@@ -99,11 +113,11 @@ bool dif_plic_irq_enable_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
  * @param plic PLIC state data
  * @param irq Interrupt source ID
  * @param enable Enable for the edge triggered, disable for level triggered IRQs
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`
  */
-bool dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
-                                   dif_plic_irq_id_t irq,
-                                   dif_plic_enable_t enable);
+dif_plic_result_t dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
+                                                dif_plic_irq_id_t irq,
+                                                dif_plic_enable_t enable);
 
 /**
  * Sets IRQ source priority (0-3).
@@ -114,10 +128,11 @@ bool dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
  * @param plic PLIC state data
  * @param irq Interrupt source ID
  * @param priority Priority to be set
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_irq_priority_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
-                               uint32_t priority);
+dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
+                                            dif_plic_irq_id_t irq,
+                                            uint32_t priority);
 
 /**
  * Sets the target priority threshold.
@@ -128,11 +143,11 @@ bool dif_plic_irq_priority_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
  * @param plic PLIC state data
  * @param target Target to set the IRQ priority threshold for
  * @param threshold IRQ priority threshold to be set
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_target_threshold_set(const dif_plic_t *plic,
-                                   dif_plic_target_t target,
-                                   uint32_t threshold);
+dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
+                                                dif_plic_target_t target,
+                                                uint32_t threshold);
 
 /**
  * Checks the Interrupt Pending bit.
@@ -142,11 +157,11 @@ bool dif_plic_target_threshold_set(const dif_plic_t *plic,
  * @param plic PLIC state data
  * @param irq Interrupt source ID
  * @param status Flag indicating whether the IRQ pending bit is set in PLIC
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_irq_pending_status_get(const dif_plic_t *plic,
-                                     dif_plic_irq_id_t irq,
-                                     dif_plic_flag_t *status);
+dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
+                                                  dif_plic_irq_id_t irq,
+                                                  dif_plic_flag_t *status);
 
 /**
  * Claims an IRQ and gets the information about the source.
@@ -158,10 +173,11 @@ bool dif_plic_irq_pending_status_get(const dif_plic_t *plic,
  * @param plic PLIC state data
  * @param target Target that claimed the IRQ
  * @param claim_data Data that describes the origin of the IRQ.
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
-                        dif_plic_irq_id_t *claim_data);
+dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
+                                     dif_plic_target_t target,
+                                     dif_plic_irq_id_t *claim_data);
 
 /**
  * Completes the claimed IRQ.
@@ -174,9 +190,10 @@ bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
  * @param target Target that claimed the IRQ
  * @param complete_data Previously claimed IRQ data that is used to signal PLIC
  *                      of the IRQ servicing completion.
- * @return true if the function was successful, false otherwise
+ * @return `dif_plic_result_t`.
  */
-bool dif_plic_irq_complete(const dif_plic_t *plic, dif_plic_target_t target,
-                           const dif_plic_irq_id_t *complete_data);
+dif_plic_result_t dif_plic_irq_complete(const dif_plic_t *plic,
+                                        dif_plic_target_t target,
+                                        const dif_plic_irq_id_t *complete_data);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PLIC_H_
