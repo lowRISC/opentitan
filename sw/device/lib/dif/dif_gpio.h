@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SW_DEVICE_LIB_DIF_GPIO_H
-#define SW_DEVICE_LIB_DIF_GPIO_H
+#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
+#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -330,4 +330,4 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
                                                      uint32_t mask,
                                                      dif_gpio_irq_t config);
 
-#endif  // SW_DEVICE_LIB_DIF_GPIO_H
+#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
