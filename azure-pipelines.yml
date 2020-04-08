@@ -42,6 +42,7 @@ jobs:
       flake8 --version
       ninja --version
       meson --version
+      doxygen --version
       echo "PATH=$PATH"
     displayName: Display tool versions
   - bash: |

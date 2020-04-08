@@ -412,6 +412,10 @@ instance, if FW sets RXFIFO depth to 128 (default value), it should not update
 the read pointer outside the range 0x000 -  0x1FF (128*4 = 512Bytes ignoring
 the phase bit, bit 11).
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_spi_device.h" >}}
+
 ## Register Table
 
 {{< registers "hw/ip/spi_device/data/spi_device.hjson" >}}
