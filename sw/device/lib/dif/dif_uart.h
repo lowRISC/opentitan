@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _SW_DEVICE_LIB_DIF_UART_H_
-#define _SW_DEVICE_LIB_DIF_UART_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
+#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -300,4 +300,4 @@ bool dif_uart_rx_bytes_available(const dif_uart_t *uart, size_t *num_bytes);
  */
 bool dif_uart_tx_bytes_available(const dif_uart_t *uart, size_t *num_bytes);
 
-#endif
+#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
