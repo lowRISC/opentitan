@@ -6,6 +6,8 @@
 //
 // This module uses a 16-bit counter to iteratively increment the 128-bit counter value.
 
+`include "prim_assert.sv"
+
 module aes_ctr(
   input  logic             clk_i,
   input  logic             rst_ni,
