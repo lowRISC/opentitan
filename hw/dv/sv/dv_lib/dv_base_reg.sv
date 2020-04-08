@@ -62,8 +62,21 @@ class dv_base_reg extends uvm_reg;
   endfunction
 
   // post_write callback to handle reg enables
+  // TODO: create an `enable_field_access_policy` variable and set the template code during
+  // automation.
   virtual task post_write(uvm_reg_item rw);
-    if (is_enable_reg() && (rw.value[0] & 1)) set_locked_regs_access("RO");
+    dv_base_reg_field fields[$];
+    string field_access;
+    if (is_enable_reg()) begin
+      get_dv_base_reg_fields(fields);
+      field_access = fields[0].get_access();
+      case (field_access)
+        // rw.value is a dynamic array
+        "W1C": if (rw.value[0][0] == 1'b1) set_locked_regs_access("RO");
+        "W0C": if (rw.value[0][0] == 1'b0) set_locked_regs_access("RO");
+        default:`uvm_fatal(`gtn, $sformatf("enable register invalid access %s", field_access))
+      endcase
+    end
   endtask
 
 endclass

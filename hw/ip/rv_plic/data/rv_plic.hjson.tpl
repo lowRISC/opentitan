@@ -40,6 +40,8 @@
         fields: [
           { bits: "0", name: "P", desc: "Interrupt Pending of Source" }
         ],
+        tags: [// IP is driven by intr_src, cannot auto-predict
+               "excl:CsrNonInitTests:CsrExclCheck"],
       }
     },
     { multireg: {
@@ -97,6 +99,8 @@
       fields: [
         { bits: "${(src).bit_length()-1}:0" }
       ],
+      tags: [// CC register value is related to IP
+             "excl:CsrNonInitTests:CsrExclCheck"],
     }
     { name: "MSIP${i}",
       desc: '''msip for Hart ${i}.
