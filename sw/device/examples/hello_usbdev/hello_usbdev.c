@@ -7,9 +7,9 @@
 
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
@@ -26,15 +26,12 @@
  * Configuration values for USB.
  */
 static uint8_t config_descriptors[] = {
-    USB_CFG_DSCR_HEAD(USB_CFG_DSCR_LEN +
-                          2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
-                      2),
-    VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 1, 32, 0),
-    USB_BULK_EP_DSCR(1, 1, 32, 4),
-    VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 2, 32, 0),
-    USB_BULK_EP_DSCR(1, 2, 32, 4),
+    USB_CFG_DSCR_HEAD(
+        USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
+        2),
+    VEND_INTERFACE_DSCR(0, 2, 0x50, 1), USB_BULK_EP_DSCR(0, 1, 32, 0),
+    USB_BULK_EP_DSCR(1, 1, 32, 4), VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 2, 32, 0), USB_BULK_EP_DSCR(1, 2, 32, 4),
 };
 
 /**

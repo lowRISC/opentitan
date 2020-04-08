@@ -326,7 +326,8 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
  * @return `kDifGpioResultOK` if the function is successful,
  * `kDifGpioResultInvalidArgument` otherwise.
  */
-dif_gpio_result_t dif_gpio_irq_trigger_masked_config(
-    const dif_gpio_t *gpio, uint32_t mask, dif_gpio_irq_t config);
+dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
+                                                     uint32_t mask,
+                                                     dif_gpio_irq_t config);
 
 #endif  // SW_DEVICE_LIB_DIF_GPIO_H

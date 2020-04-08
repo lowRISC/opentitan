@@ -23,9 +23,7 @@
  * by the flash binary: see sw/device/exts/common/flash_link.ld
  * for that.
  */
-extern struct {
-  void (*entry)(void);
-} _flash_header;
+extern struct { void (*entry)(void); } _flash_header;
 
 void _boot_start(void) {
   pinmux_init();

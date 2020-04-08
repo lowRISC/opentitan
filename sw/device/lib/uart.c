@@ -42,8 +42,7 @@ size_t uart_send_buf(void *data, const char *buf, size_t len) {
 }
 
 const buffer_sink_t uart_stdout = {
-    .data = NULL,
-    .sink = &uart_send_buf,
+    .data = NULL, .sink = &uart_send_buf,
 };
 
 #define hexchar(i) (((i & 0xf) > 9) ? (i & 0xf) - 10 + 'A' : (i & 0xf) + '0')

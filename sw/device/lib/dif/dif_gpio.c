@@ -30,10 +30,10 @@ static uint32_t index_to_mask(uint32_t index) { return 1u << index; }
  * upper half of DIRECT_OUT.
  *
  * @param gpio GPIO instance.
- * @param reg_lower_offset Offset of the masked access register that corresponds to
- * the lower half of the actual register.
- * @param reg_upper_offset Offset of the masked access register that corresponds to
- * the upper half of the actual register.
+ * @param reg_lower_offset Offset of the masked access register that corresponds
+ * to the lower half of the actual register.
+ * @param reg_upper_offset Offset of the masked access register that corresponds
+ * to the upper half of the actual register.
  * @param mask Mask that identifies the bits to write to.
  * @param val Value to write.
  */
@@ -64,14 +64,15 @@ static void gpio_masked_write(const dif_gpio_t *gpio, uint32_t reg_lower_offset,
  * See also `gpio_masked_write()`.
  *
  * @param gpio GPIO instance.
- * @param reg_lower_offset Offset of the masked access register that corresponds to
- * the lower half of the actual register.
- * @param reg_upper_offset Offset of the masked access register that corresponds to
- * the upper half of the actual register.
+ * @param reg_lower_offset Offset of the masked access register that corresponds
+ * to the lower half of the actual register.
+ * @param reg_upper_offset Offset of the masked access register that corresponds
+ * to the upper half of the actual register.
  * @param index Zero-based index of the bit to write to.
  * @param val Value to write.
  */
-static void gpio_masked_bit_write(const dif_gpio_t *gpio, uint32_t reg_lower_offset,
+static void gpio_masked_bit_write(const dif_gpio_t *gpio,
+                                  uint32_t reg_lower_offset,
                                   uint32_t reg_upper_offset, uint32_t index,
                                   bool val) {
   // Write to reg_lower_offset if the bit is in the lower half, write to
@@ -324,8 +325,9 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
   return kDifGpioResultOK;
 }
 
-dif_gpio_result_t dif_gpio_irq_trigger_masked_config(
-    const dif_gpio_t *gpio, uint32_t mask, dif_gpio_irq_t config) {
+dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
+                                                     uint32_t mask,
+                                                     dif_gpio_irq_t config) {
   if (gpio == NULL) {
     return kDifGpioResultInvalidArgument;
   }
