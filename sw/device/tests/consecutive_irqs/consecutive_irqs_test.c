@@ -31,7 +31,7 @@ static bool uart_handled_more_than_once = false;
 
 static size_t polled_uart_sink_func(void *data, const char *buf, size_t len) {
   for (int i = 0; i < len; ++i) {
-    if (!dif_uart_byte_send_polled(&uart0, (uint8_t)buf[i])) {
+    if (dif_uart_byte_send_polled(&uart0, (uint8_t)buf[i]) != kDifUartOk) {
       abort();
     }
   }
@@ -83,8 +83,8 @@ static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
       LOG_FATAL_AND_ABORT("ISR is not implemented!");
   }
 
-  if (!dif_uart_irq_state_clear(uart, uart_irq)) {
-    LOG_FATAL_AND_ABORT("ISR failed to clear IRQ!");
+  if (dif_uart_irq_state_clear(uart, uart_irq) != kDifUartOk) {
+    LOG_FATAL("ISR failed to clear IRQ!");
   }
 }
 
@@ -127,7 +127,7 @@ static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
   };
 
   // No debug output in case of UART initialisation failure.
-  if (!dif_uart_init(base_addr, &config, uart)) {
+  if (dif_uart_init(base_addr, &config, uart) != kDifUartConfigOk) {
     abort();
   }
 }
@@ -145,12 +145,13 @@ static bool plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
  * Configures all the relevant interrupts in UART.
  */
 static bool uart_configure_irqs(dif_uart_t *uart) {
-  if (!dif_uart_irq_enable(&uart0, kDifUartInterruptRxOverflow,
-                           kDifUartEnable)) {
+  if (dif_uart_irq_enable(&uart0, kDifUartInterruptRxOverflow,
+                          kDifUartEnable) != kDifUartOk) {
     LOG_ERROR("RX overflow IRQ enable failed!");
     return false;
   }
-  if (!dif_uart_irq_enable(&uart0, kDifUartInterruptTxEmpty, kDifUartEnable)) {
+  if (dif_uart_irq_enable(&uart0, kDifUartInterruptTxEmpty, kDifUartEnable) !=
+      kDifUartOk) {
     LOG_ERROR("TX empty IRQ enable failed!");
     return false;
   }
@@ -209,7 +210,7 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
 
 static bool execute_test(dif_uart_t *uart) {
   // Force UART RX overflow interrupt.
-  if (!dif_uart_irq_force(uart, kDifUartInterruptRxOverflow)) {
+  if (dif_uart_irq_force(uart, kDifUartInterruptRxOverflow) != kDifUartOk) {
     LOG_ERROR("failed to force RX overflow IRQ!");
     return false;
   }
@@ -228,7 +229,7 @@ static bool execute_test(dif_uart_t *uart) {
   }
 
   // Force UART TX empty interrupt.
-  if (!dif_uart_irq_force(uart, kDifUartInterruptTxEmpty)) {
+  if (dif_uart_irq_force(uart, kDifUartInterruptTxEmpty) != kDifUartOk) {
     LOG_ERROR("failed to force TX empty IRQ!");
     return false;
   }

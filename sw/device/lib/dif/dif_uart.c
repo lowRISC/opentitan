@@ -97,10 +97,10 @@ static void uart_reset(const dif_uart_t *uart) {
 /**
  * Performs fundamental UART configuration.
  */
-static bool uart_configure(const dif_uart_t *uart,
-                           const dif_uart_config_t *config) {
+static dif_uart_config_result_t uart_configure(
+    const dif_uart_t *uart, const dif_uart_config_t *config) {
   if (config->baudrate == 0 || config->clk_freq_hz == 0) {
-    return false;
+    return kDifUartConfigBadConfig;
   }
 
   // Calculation formula: NCO = 2^20 * baud / fclk.
@@ -109,7 +109,7 @@ static bool uart_configure(const dif_uart_t *uart,
 
   // Requested baudrate is too high for the given clock frequency.
   if (nco != nco_masked) {
-    return false;
+    return kDifUartConfigBadNco;
   }
 
   // Must be called before the first write to any of the UART registers.
@@ -135,7 +135,7 @@ static bool uart_configure(const dif_uart_t *uart,
   // Disable interrupts.
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
 
-  return true;
+  return kDifUartConfigOk;
 }
 
 /**
@@ -166,10 +166,11 @@ static size_t uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
   return bytes_read;
 }
 
-bool dif_uart_init(mmio_region_t base_addr, const dif_uart_config_t *config,
-                   dif_uart_t *uart) {
+dif_uart_config_result_t dif_uart_init(mmio_region_t base_addr,
+                                       const dif_uart_config_t *config,
+                                       dif_uart_t *uart) {
   if (uart == NULL || config == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   uart->base_addr = base_addr;
@@ -177,19 +178,19 @@ bool dif_uart_init(mmio_region_t base_addr, const dif_uart_config_t *config,
   return uart_configure(uart, config);
 }
 
-bool dif_uart_configure(const dif_uart_t *uart,
-                        const dif_uart_config_t *config) {
+dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
+                                            const dif_uart_config_t *config) {
   if ((uart == NULL) || (config == NULL)) {
-    return false;
+    return kDifUartBadArg;
   }
 
   return uart_configure(uart, config);
 }
 
-bool dif_uart_watermark_rx_set(const dif_uart_t *uart,
-                               dif_uart_watermark_t watermark) {
+dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
+                                            dif_uart_watermark_t watermark) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // Check if the requested watermark is valid, and get a corresponding
@@ -214,20 +215,20 @@ bool dif_uart_watermark_rx_set(const dif_uart_t *uart,
       field.value = UART_FIFO_CTRL_RXILVL_RXLVL30;
       break;
     default:
-      return false;
+      return kDifUartError;
   }
 
   // Set watermark level.
   mmio_region_nonatomic_set_field32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
                                     field);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
-                               dif_uart_watermark_t watermark) {
+dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
+                                            dif_uart_watermark_t watermark) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // Check if the requested watermark is valid, and get a corresponding
@@ -250,20 +251,22 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
       break;
     default:
       // The minimal TX watermark is 1 byte, maximal 16 bytes.
-      return false;
+      return kDifUartError;
   }
 
   // Set watermark level.
   mmio_region_nonatomic_set_field32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
                                     field);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
-                         size_t bytes_requested, size_t *bytes_written) {
+dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
+                                      const uint8_t *data,
+                                      size_t bytes_requested,
+                                      size_t *bytes_written) {
   if (uart == NULL || data == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // `bytes_written` is an optional parameter.
@@ -272,13 +275,14 @@ bool dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
     *bytes_written = res;
   }
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
-                            uint8_t *data, size_t *bytes_read) {
+dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
+                                         size_t bytes_requested, uint8_t *data,
+                                         size_t *bytes_read) {
   if (uart == NULL || data == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // `bytes_read` is an optional parameter.
@@ -287,12 +291,13 @@ bool dif_uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
     *bytes_read = res;
   }
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_byte_send_polled(const dif_uart_t *uart, uint8_t byte) {
+dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
+                                            uint8_t byte) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // Busy wait for the TX FIFO to free up.
@@ -306,12 +311,13 @@ bool dif_uart_byte_send_polled(const dif_uart_t *uart, uint8_t byte) {
   while (!uart_tx_idle(uart)) {
   }
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_byte_receive_polled(const dif_uart_t *uart, uint8_t *byte) {
+dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
+                                               uint8_t *byte) {
   if (uart == NULL || byte == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // Busy wait for the RX message in the FIFO.
@@ -320,19 +326,19 @@ bool dif_uart_byte_receive_polled(const dif_uart_t *uart, uint8_t *byte) {
 
   (void)uart_bytes_receive(uart, 1, byte);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_irq_state_get(const dif_uart_t *uart,
-                            dif_uart_interrupt_t irq_type,
-                            dif_uart_enable_t *state) {
+dif_uart_result_t dif_uart_irq_state_get(const dif_uart_t *uart,
+                                         dif_uart_interrupt_t irq_type,
+                                         dif_uart_enable_t *state) {
   if (uart == NULL || state == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   ptrdiff_t offset;
   if (!uart_irq_offset_get(irq_type, &offset)) {
-    return false;
+    return kDifUartError;
   }
 
   // Get the requested interrupt state (enabled/disabled).
@@ -344,30 +350,31 @@ bool dif_uart_irq_state_get(const dif_uart_t *uart,
     *state = kDifUartDisable;
   }
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_irq_state_clear(const dif_uart_t *uart,
-                              dif_uart_interrupt_t irq_type) {
+dif_uart_result_t dif_uart_irq_state_clear(const dif_uart_t *uart,
+                                           dif_uart_interrupt_t irq_type) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   ptrdiff_t offset;
   if (!uart_irq_offset_get(irq_type, &offset)) {
-    return false;
+    return kDifUartError;
   }
 
   // Writing to the register clears the corresponding bits.
   mmio_region_write_only_set_bit32(uart->base_addr, UART_INTR_STATE_REG_OFFSET,
                                    offset);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_irqs_disable(const dif_uart_t *uart, uint32_t *state) {
+dif_uart_result_t dif_uart_irqs_disable(const dif_uart_t *uart,
+                                        uint32_t *state) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // Pass the current interrupt state to the caller.
@@ -378,29 +385,31 @@ bool dif_uart_irqs_disable(const dif_uart_t *uart, uint32_t *state) {
   // Disable all UART interrupts.
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_irqs_restore(const dif_uart_t *uart, uint32_t state) {
+dif_uart_result_t dif_uart_irqs_restore(const dif_uart_t *uart,
+                                        uint32_t state) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // Restore the interrupt state.
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, state);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_irq_enable(const dif_uart_t *uart, dif_uart_interrupt_t irq_type,
-                         dif_uart_enable_t enable) {
+dif_uart_result_t dif_uart_irq_enable(const dif_uart_t *uart,
+                                      dif_uart_interrupt_t irq_type,
+                                      dif_uart_enable_t enable) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   ptrdiff_t offset;
   if (!uart_irq_offset_get(irq_type, &offset)) {
-    return false;
+    return kDifUartError;
   }
 
   // Enable/disable the requested interrupt.
@@ -412,29 +421,31 @@ bool dif_uart_irq_enable(const dif_uart_t *uart, dif_uart_interrupt_t irq_type,
                                       UART_INTR_ENABLE_REG_OFFSET, offset);
   }
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_irq_force(const dif_uart_t *uart, dif_uart_interrupt_t irq_type) {
+dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
+                                     dif_uart_interrupt_t irq_type) {
   if (uart == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   ptrdiff_t offset;
   if (!uart_irq_offset_get(irq_type, &offset)) {
-    return false;
+    return kDifUartError;
   }
 
   // Force the requested interrupt.
   mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_TEST_REG_OFFSET,
                                   offset);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_rx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
+dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
+                                              size_t *num_bytes) {
   if (uart == NULL || num_bytes == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // RX FIFO fill level (in bytes).
@@ -442,12 +453,13 @@ bool dif_uart_rx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
       uart->base_addr, UART_FIFO_STATUS_REG_OFFSET, UART_FIFO_STATUS_RXLVL_MASK,
       UART_FIFO_STATUS_RXLVL_OFFSET);
 
-  return true;
+  return kDifUartOk;
 }
 
-bool dif_uart_tx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
+dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
+                                              size_t *num_bytes) {
   if (uart == NULL || num_bytes == NULL) {
-    return false;
+    return kDifUartBadArg;
   }
 
   // TX FIFO fill level (in bytes).
@@ -457,5 +469,5 @@ bool dif_uart_tx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
 
   *num_bytes = kDifUartFifoSizeBytes - fill_bytes;
 
-  return true;
+  return kDifUartOk;
 }
