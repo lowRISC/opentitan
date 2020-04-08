@@ -16,6 +16,7 @@ IPS ?= aes           \
        nmi_gen       \
        padctrl       \
        pinmux        \
+       pwrmgr        \
        rv_plic       \
        rv_timer      \
        spi_device    \

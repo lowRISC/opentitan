@@ -1,0 +1,77 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:pwrmgr:0.1"
+description: "Power Manager"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:ip:pwrmgr_pkg
+    files:
+      - rtl/pwrmgr_reg_pkg.sv
+      - rtl/pwrmgr_reg_top.sv
+      - rtl/pwrmgr.sv
+      - rtl/pwrmgr_cdc_pulse.sv
+      - rtl/pwrmgr_slow_fsm.sv
+      - rtl/pwrmgr_fsm.sv
+      - rtl/pwrmgr_wake_info.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pwrmgr.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pwrmgr.waiver
+    file_type: waiver
+
+  files_formal:
+    files:
+      - dv/tb/pwrmgr_bind.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - target_formal   ? (files_formal)
+      - files_rtl
+    toplevel: pwrmgr
+
+  formal:
+    filesets:
+      - files_rtl
+      - files_formal
+    toplevel: pwrmgr
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
