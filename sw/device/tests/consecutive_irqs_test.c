@@ -88,7 +88,7 @@ static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
 void handler_irq_external(void) {
   // Claim the IRQ by reading the Ibex specific CC register.
   dif_plic_irq_id_t interrupt_id;
-  if (!dif_plic_irq_claim(&plic0, PLIC_TARGET, &interrupt_id)) {
+  if (dif_plic_irq_claim(&plic0, PLIC_TARGET, &interrupt_id) != kDifPlicOk) {
     LOG_FATAL_AND_ABORT("ISR is not implemented!");
   }
 
@@ -102,7 +102,7 @@ void handler_irq_external(void) {
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
-  if (!dif_plic_irq_complete(&plic0, PLIC_TARGET, &interrupt_id)) {
+  if (dif_plic_irq_complete(&plic0, PLIC_TARGET, &interrupt_id) != kDifPlicOk) {
     LOG_FATAL_AND_ABORT("Unable to complete the IRQ request!");
   }
 }
@@ -122,7 +122,7 @@ static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
 }
 
 static void plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
-  if (!dif_plic_init(base_addr, plic)) {
+  if (dif_plic_init(base_addr, plic) != kDifPlicOk) {
     LOG_FATAL_AND_ABORT("PLIC init failed!");
   }
 }
@@ -150,43 +150,45 @@ static bool uart_configure_irqs(dif_uart_t *uart) {
  */
 static bool plic_configure_irqs(dif_plic_t *plic) {
   // Set IRQ triggers to be level triggered
-  if (!dif_plic_irq_trigger_type_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
-                                     kDifPlicDisable)) {
+  if (dif_plic_irq_trigger_type_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+                                    kDifPlicDisable) != kDifPlicOk) {
     LOG_ERROR("RX overflow trigger type set failed!");
     return false;
   }
-  if (!dif_plic_irq_trigger_type_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
-                                     kDifPlicDisable)) {
+  if (dif_plic_irq_trigger_type_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+                                    kDifPlicDisable) != kDifPlicOk) {
     LOG_ERROR("TX empty trigger type set failed!");
     return false;
   }
 
   // Set IRQ priorities to MAX
-  if (!dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
-                                 PLIC_PRIORITY_MAX)) {
+  if (dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+                                PLIC_PRIORITY_MAX) != kDifPlicOk) {
     LOG_ERROR("priority set for RX overflow failed!");
     return false;
   }
-  if (!dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
-                                 PLIC_PRIORITY_MAX)) {
+
+  if (dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+                                PLIC_PRIORITY_MAX) != kDifPlicOk) {
     LOG_ERROR("priority set for TX empty failed!");
     return false;
   }
 
   // Set Ibex IRQ priority threshold level
-  if (!dif_plic_target_threshold_set(&plic0, PLIC_TARGET, PLIC_PRIORITY_MIN)) {
+  if (dif_plic_target_threshold_set(&plic0, PLIC_TARGET, PLIC_PRIORITY_MIN) !=
+      kDifPlicOk) {
     LOG_ERROR("threshold set failed!");
     return false;
   }
 
   // Enable IRQs in PLIC
-  if (!dif_plic_irq_enable_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
-                               PLIC_TARGET, kDifPlicEnable)) {
+  if (dif_plic_irq_enable_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+                              PLIC_TARGET, kDifPlicEnable) != kDifPlicOk) {
     LOG_ERROR("interrupt Enable for RX overflow failed!");
     return false;
   }
-  if (!dif_plic_irq_enable_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
-                               PLIC_TARGET, kDifPlicEnable)) {
+  if (dif_plic_irq_enable_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+                              PLIC_TARGET, kDifPlicEnable) != kDifPlicOk) {
     LOG_ERROR("interrupt Enable for TX empty failed!");
     return false;
   }

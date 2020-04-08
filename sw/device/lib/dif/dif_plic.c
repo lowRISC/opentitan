@@ -193,24 +193,25 @@ static void plic_reset(const dif_plic_t *plic) {
   mmio_region_write32(plic->base_addr, RV_PLIC_MSIP0_REG_OFFSET, 0);
 }
 
-bool dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic) {
+dif_plic_result_t dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic) {
   if (plic == NULL) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   plic->base_addr = base_addr;
 
   plic_reset(plic);
 
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_irq_enable_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
-                             dif_plic_target_t target,
-                             dif_plic_enable_t enable) {
+dif_plic_result_t dif_plic_irq_enable_set(const dif_plic_t *plic,
+                                          dif_plic_irq_id_t irq,
+                                          dif_plic_target_t target,
+                                          dif_plic_enable_t enable) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
       target >= RV_PLIC_PARAM_NUMTARGET) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   // Get a target and an IRQ source specific Interrupt Enable register info.
@@ -225,14 +226,14 @@ bool dif_plic_irq_enable_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
                                       reg_info.bit_index);
   }
 
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
-                                   dif_plic_irq_id_t irq,
-                                   dif_plic_enable_t enable) {
+dif_plic_result_t dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
+                                                dif_plic_irq_id_t irq,
+                                                dif_plic_enable_t enable) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   // Get an IRQ source specific Level/Edge register info.
@@ -247,41 +248,42 @@ bool dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
                                       reg_info.bit_index);
   }
 
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_irq_priority_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
-                               uint32_t priority) {
+dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
+                                            dif_plic_irq_id_t irq,
+                                            uint32_t priority) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
       priority > RV_PLIC_MAX_PRIORITY) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   ptrdiff_t offset = plic_priority_reg_offset(irq);
   mmio_region_write32(plic->base_addr, offset, priority);
 
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_target_threshold_set(const dif_plic_t *plic,
-                                   dif_plic_target_t target,
-                                   uint32_t threshold) {
+dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
+                                                dif_plic_target_t target,
+                                                uint32_t threshold) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
       threshold > RV_PLIC_MAX_PRIORITY) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   ptrdiff_t threshold_offset = plic_target_reg_offsets[target].threshold;
   mmio_region_write32(plic->base_addr, threshold_offset, threshold);
 
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_irq_pending_status_get(const dif_plic_t *plic,
-                                     dif_plic_irq_id_t irq,
-                                     dif_plic_flag_t *status) {
+dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
+                                                  dif_plic_irq_id_t irq,
+                                                  dif_plic_flag_t *status) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC || status == NULL) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   plic_reg_info_t reg_info;
@@ -294,13 +296,14 @@ bool dif_plic_irq_pending_status_get(const dif_plic_t *plic,
     *status = kDifPlicUnset;
   }
 
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
-                        dif_plic_irq_id_t *claim_data) {
+dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
+                                     dif_plic_target_t target,
+                                     dif_plic_irq_id_t *claim_data) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET || claim_data == NULL) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   // Get an IRQ ID from the target specific CC register.
@@ -309,14 +312,15 @@ bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
 
   // Return the IRQ ID directly.
   *claim_data = irq_id;
-  return true;
+  return kDifPlicOk;
 }
 
-bool dif_plic_irq_complete(const dif_plic_t *plic, dif_plic_target_t target,
-                           const dif_plic_irq_id_t *complete_data) {
+dif_plic_result_t dif_plic_irq_complete(
+    const dif_plic_t *plic, dif_plic_target_t target,
+    const dif_plic_irq_id_t *complete_data) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
       complete_data == NULL) {
-    return false;
+    return kDifPlicBadArg;
   }
 
   // Write back the claimed IRQ ID to the target specific CC register,
@@ -324,5 +328,5 @@ bool dif_plic_irq_complete(const dif_plic_t *plic, dif_plic_target_t target,
   ptrdiff_t cc_offset = plic_target_reg_offsets[target].cc;
   mmio_region_write32(plic->base_addr, cc_offset, (uint32_t)*complete_data);
 
-  return true;
+  return kDifPlicOk;
 }
