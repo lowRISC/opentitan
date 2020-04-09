@@ -8,5 +8,7 @@
     dv_plan:            "hw/ip/entropy_src/doc/dv_plan",
     hw_checklist:       "hw/ip/entropy_src/doc/checklist",
     version:            "0.5",
-    life_stage:         "L0",
+    life_stage:         "L1",
+    design_stage:       "D0",
+    verification_stage: "V0",
 }
