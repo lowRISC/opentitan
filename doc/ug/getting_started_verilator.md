@@ -108,10 +108,6 @@ $ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf
 ```
 
-Note that debug support is not yet mature (see https://github.com/lowRISC/opentitan/issues/574).
-In particular GDB cannot set breakpoints as it can't write to the (emulated) flash memory.
-HW breakpoint support is planned for Ibex to allow breakpointing code in flash.
-
 You can also run the debug compliance test suite built into OpenOCD.
 
 ```console
