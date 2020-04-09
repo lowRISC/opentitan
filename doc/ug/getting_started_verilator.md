@@ -105,7 +105,7 @@ To connect GDB use the following command (noting it needs to be altered to point
 
 ```console
 $ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf
+  build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
 ```
 
 You can also run the debug compliance test suite built into OpenOCD.
@@ -162,8 +162,8 @@ Tracing slows down the simulation by roughly factor of 1000.
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/sim-verilator/boot_rom/boot_rom.elf \
-  --meminit=flash,build-bin/sw/device/sim-verilator/examples/hello_world/hello_world.elf \
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
   --trace
 $ gtkwave sim.fst
 ```
