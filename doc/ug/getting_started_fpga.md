@@ -209,10 +209,6 @@ $ cd $REPO_TOP
 $ /tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/boot_rom/rom.elf
 ```
 
-Note that debug support is not yet mature (see https://github.com/lowRISC/opentitan/issues/574).
-In particular GDB cannot set breakpoints as it can't write to the (emulated) flash memory.
-HW breakpoint support is planned for Ibex to allow breakpointing code in flash.
-
 #### Common operations with GDB
 
 Examine 16 memory words in the hex format starting at 0x200005c0
