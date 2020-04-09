@@ -55,3 +55,17 @@ sw_lib_dif_spi_device = declare_dependency(
     dependencies: [sw_lib_mmio],
   )
 )
+
+# I2C DIF library
+sw_lib_dif_i2c = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_i2c',
+    sources: [
+      hw_ip_i2c_reg_h,
+      'dif_i2c.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)

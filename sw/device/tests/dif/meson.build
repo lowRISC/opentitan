@@ -30,7 +30,7 @@ test('dif_uart_unittest', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
@@ -46,7 +46,23 @@ test('dif_plic_unittest', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
+test('dif_i2c_unittest', executable(
+  'dif_i2c_unittest',
+  sources: [
+    hw_ip_i2c_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_i2c.c',
+    'dif_i2c_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
