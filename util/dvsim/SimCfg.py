@@ -129,7 +129,8 @@ class SimCfg(FlowCfg):
         # Stuff below only pertains to individual cfg (not master cfg)
         # or individual selected cfgs (if select_cfgs is configured via command line)
         # TODO: find a better way to support select_cfgs
-        if not self.is_master_cfg and (not self.select_cfgs or self.name in self.select_cfgs):
+        if not self.is_master_cfg and (not self.select_cfgs or
+                                       self.name in self.select_cfgs):
             # Print info:
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
@@ -477,8 +478,13 @@ class SimCfg(FlowCfg):
         results_str += "### " + self.timestamp_long + "\n"
 
         # Add path to testplan.
-        testplan = "https://" + self.doc_server + '/' + self.rel_path
-        testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
+        if hasattr(self, "testplan_doc_path"):
+            testplan = "https://" + self.doc_server + '/' + getattr(
+                self, "testplan_doc_path")
+        else:
+            testplan = "https://" + self.doc_server + '/' + self.rel_path
+            testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
+
         results_str += "### [Testplan](" + testplan + ")\n"
         results_str += "### Simulator: " + self.tool.upper() + "\n\n"
 
