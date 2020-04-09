@@ -142,11 +142,12 @@ def main():
                         metavar="vcs|xcelium|ascentlint|veriblelint|dc|...",
                         help="Override the tool that is set in hjson file")
 
-    parser.add_argument("-select_cfgs",
-                        nargs="*",
-                        default=[],
-                        metavar="cfg1, cfg2, cfg3, ...",
-                        help="""Specifies which cfg(s) of the master cfg shall be processed.
+    parser.add_argument(
+        "-select_cfgs",
+        nargs="*",
+        default=[],
+        metavar="cfg1, cfg2, cfg3, ...",
+        help="""Specifies which cfg(s) of the master cfg shall be processed.
                 If this switch is not specified, dvsim will process all cfgs specified in
                 the master cfg list.""")
 
@@ -458,9 +459,9 @@ def main():
 
     # Add timestamp to args that all downstream objects can use.
     # Static variables - indicate timestamp.
-    ts_format_long = "%A %B %d %Y %I:%M:%S%p %Z"
+    ts_format_long = "%A %B %d %Y %I:%M:%S%p UTC"
     ts_format = "%a.%m.%d.%y__%I.%M.%S%p"
-    curr_ts = datetime.datetime.now()
+    curr_ts = datetime.datetime.utcnow()
     timestamp_long = curr_ts.strftime(ts_format_long)
     timestamp = curr_ts.strftime(ts_format)
     setattr(args, "ts_format_long", ts_format_long)
