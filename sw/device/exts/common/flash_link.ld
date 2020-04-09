@@ -159,15 +159,6 @@ SECTIONS {
    */
 
   /**
-   * The following section contains strings. Examples include file names where
-   * the log is invoked (using the __FILE__ preprocessor macro). To prevent
-   * address collisions, this must not coincide with the rodata section.
-   */
-  .logs.strings 0x80000000 (DSECT): {
-    *(.logs.strings)
-  }
-
-  /**
    * The following section contains log fields constructed from the logs using
    * the log_fields_t struct defined in sw/device/lib/base/log.h. The size of
    * each log field is fixed - 20 bytes, which is used as the delimiter.
