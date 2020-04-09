@@ -16,35 +16,24 @@
  *
  * The logging APIs below take a format string with a variable number of
  * arguments for the type specifiers. The APIs are designed to provide a way
- * for attaching the message type, verbosity, file name and the line number
+ * for attaching the log severity, file name, and line number
  * information along with the message to provide an easier path to debug.
- * These parameters form the message header which is prepended to the actual
+ * These parameters form a log prefix, which is prepended to the actual
  * message being printed. The following is a brief description of these:
  *
- *  log_type:     Severity of the message:
- *                info, warning, error or fatal
- *                This is indicated using LOG_TYPE_* set of macros which are
- *                set to empty strings by default.
- *
- *  verbosity:    Verbosity of the message (applicable only to info messages):
- *                none, low, medium, high, full and debug.
- *                Based on the desired verbosity, the visibility of certain
- *                messages can be turned off. This is expected to be done
- *                externally (for example, if the messages go to a log,
- *                the desired verbosity messages can be searched and filtered
- *                out). This is indicated using the LOG_VERB_* set of macros
- *                which are set to empty strings by default.
+ *  log_type:     Severity of the message: info, warning, error or fatal
  *
  *  file name:    Name of the file using __FILE__
  *
  *  line number:  Line where the print originated using __LINE__
  *
- * Log macros support formatting specifiers; see print.h for details the subset
- * of C specifier syntax supported.
+ * Log macros support OpenTitan formatting specifiers; see print.h for
+ * details the subset of C specifier syntax supported.
  *
  * The precise mechanism for logging is dependent on the target device. On core
  * devices, like Verilator, logs are printed using whatever `stdout` is set to
  * in print.h. DV testbenches may use an alternative, more efficient mechanism.
+ *
  * In DV mode, some format specifiers may be unsupported, such as %s.
  */
 
@@ -61,8 +50,7 @@ typedef enum log_severity {
 } log_severity_t;
 
 /**
- * Provides additional information (metadata) pertaining to the log to aid
- * debug.
+ * Represents log metadata used to format a log line.
  *
  * Any modification to this struct must be made with caution due to external
  * assumptions. A post-processing script parses the ELF file and extracts the
@@ -73,24 +61,27 @@ typedef enum log_severity {
  */
 typedef struct log_fields {
   /**
-   * Indicates the severity of the log.
+   * Indicates the severity of the LOG.
    */
   log_severity_t severity;
   /**
-   * Pointer to the file name that is invoking the LOG_* methods.
+   * Name of the file at which a LOG line occurs, e.g. `__FILE__`. There
+   * are no requirements for this string, other than that it be some kind of
+   * UNIX-like pathname.
    */
   const char *file_name;
   /**
-   * Indicates the line number of the log.
+   * Indicates the line number at which the LOG line occurs, e.g., `__LINE__`.
    */
   uint32_t line;
   /**
-   * Indicates the number of arguments passed to the format string. This is
-   * used only in the SW logging method for DV.
+   * Indicates the number of arguments passed to the format string.
+   *
+   * This value used only in DV mode, and is ignored by non-DV logging.
    */
   uint32_t nargs;
   /**
-   * Indicates the format string.
+   * The actual format string.
    */
   const char *format;
 } log_fields_t;
@@ -100,53 +91,51 @@ typedef struct log_fields {
 /**
  * Implementation detail.
  */
-void base_log_internal_core(log_severity_t severity, const char *file_name,
-                            uint32_t line, const char *format, ...);
+void base_log_internal_core(log_fields_t log, ...);
 /**
  * Implementation detail.
  */
-void base_log_internal_dv(const log_fields_t *log, int nargs, ...);
+void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
 
 /**
  * Basic logging macro that all other logging macros delegate to.
  *
  * Prefer to use a LOG function with a specified severity, instead.
  *
- * @param _severity a severity of type `log_severity_t`.
- * @param _format a format string, as described in print.h. This must be a
- * string literal.
+ * @param severity a severity of type `log_severity_t`.
+ * @param format a format string, as described in print.h. This must be a
+ *               string literal.
  * @param ... format parameters matching the format string.
  */
-// Currently, this simply prints directly to printf. In the future, when
-// we begin supporting DV testbenches, we can include an `if` statement here
-// that detects that using `device.h` and switches to the cheaper "dump args
-// for post process formatting" function.
-//
-// NOTE: the ##__VA_ARGS__ syntax below is a GCC/Clang extension, while
-// "" foo "" is a common C idiom to assert that a macro parameter is a string.
-#define LOG(_severity, _format, ...)                                          \
-  do {                                                                        \
-    if (kDeviceType == kDeviceSimDV) {                                        \
-      /* Put the file name in the throw away .logs.strings section. */        \
-      __attribute__(                                                          \
-          (section(".logs.strings"))) static const char kFileNameStr[] =      \
-          "" __FILE__ "";                                                     \
-      /* Construct the log fields in the throw away .logs.fields section. */  \
-      __attribute__(                                                          \
-          (section(".logs.fields"))) static const log_fields_t kLogFields = { \
-          .severity = _severity,                                              \
-          .file_name = kFileNameStr,                                          \
-          .line = __LINE__,                                                   \
-          .nargs = GET_NUM_VARIABLE_ARGS(_format, ##__VA_ARGS__),             \
-          .format = "" _format ""};                                           \
-      base_log_internal_dv(&kLogFields,                                       \
-                           GET_NUM_VARIABLE_ARGS(_format, ##__VA_ARGS__),     \
-                           ##__VA_ARGS__);                                    \
-    } else {                                                                  \
-      base_log_internal_core(_severity, __FILE__, __LINE__, "" _format "",    \
-                             _format, ##__VA_ARGS__);                         \
-    }                                                                         \
+#define LOG(severity, format, ...)                               \
+  do {                                                           \
+    if (kDeviceType == kDeviceSimDV) {                           \
+      /* clang-format off */                                     \
+      /* Put DV-only log constants in .logs.* sections, which
+       * the linker will dutifully discard.
+       * Unfortunately, clang-format really mangles these
+       * declarations, so we format them manually. */            \
+      __attribute__((section(".logs.fields")))                   \
+      static const log_fields_t kLogFields =                     \
+          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
+      base_log_internal_dv(&kLogFields,                          \
+                           GET_NUM_VARIABLE_ARGS(__VA_ARGS__),   \
+                           ##__VA_ARGS__); /* clang-format on */ \
+    } else {                                                     \
+      log_fields_t log_fields =                                  \
+          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
+      base_log_internal_core(log_fields, ##__VA_ARGS__);         \
+    }                                                            \
   } while (false)
+
+/**
+ * Implementation detail of `LOG`.
+ */
+#define LOG_MAKE_FIELDS_(_severity, _format, ...)                         \
+  {                                                                       \
+    .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__, \
+    .nargs = GET_NUM_VARIABLE_ARGS(__VA_ARGS__), .format = "" _format "", \
+  }
 
 /**
  * Log an informational message.

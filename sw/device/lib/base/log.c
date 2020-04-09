@@ -37,23 +37,17 @@ static const char *stringify_severity(log_severity_t severity) {
 }
 
 /**
- * Logs `format` and the values that following to stdout.
+ * Logs `log` and the values that follow to stdout.
  *
- * @param severity the log severity.
- * @param file_name a constant string referring to the file in which the log
- * occured.
- * @param line a line number from `file_name`.
- * @param format a format string, as described in print.h. This must be a string
- * literal.
+ * @param log the log data to log.
  * @param ... format parameters matching the format string.
  */
-void base_log_internal_core(log_severity_t severity, const char *file_name,
-                            uint32_t line, const char *format, ...) {
+void base_log_internal_core(log_fields_t log, ...) {
   size_t file_name_len =
-      ((char *)memchr(file_name, '\0', PTRDIFF_MAX)) - file_name;
-  const char *base_name = memrchr(file_name, '/', file_name_len);
+      ((char *)memchr(log.file_name, '\0', PTRDIFF_MAX)) - log.file_name;
+  const char *base_name = memrchr(log.file_name, '/', file_name_len);
   if (base_name == NULL) {
-    base_name = file_name;
+    base_name = log.file_name;
   } else {
     ++base_name;  // Remove the final '/'.
   }
@@ -63,26 +57,17 @@ void base_log_internal_core(log_severity_t severity, const char *file_name,
   // nothing was printed for some time.
   static uint16_t global_log_counter = 0;
 
-  base_printf("%s%5d %s:%d] ", stringify_severity(severity), global_log_counter,
-              base_name, line);
+  base_printf("%s%5d %s:%d] ", stringify_severity(log.severity),
+              global_log_counter, base_name, log.line);
   ++global_log_counter;
 
   va_list args;
-  va_start(args, format);
-  base_vprintf(format, args);
+  va_start(args, log);
+  base_vprintf(log.format, args);
   va_end(args);
 
   base_printf("\r\n");
 }
-
-/**
- * Logs `format` and the values that following in an efficient, DV-testbench
- * specific way.
- *
- * @param log the log_fields_t struct that holds the log fields.
- * @param nargs the number of arguments passed to the format string.
- * @param ... format parameters matching the format string.
- */
 
 /**
  * Indicates the fixed location in RAM for SW logging for DV.
@@ -90,15 +75,24 @@ void base_log_internal_core(log_severity_t severity, const char *file_name,
  */
 static const uintptr_t kSwLogDvAddr = 0x1000fffc;
 
-void base_log_internal_dv(const log_fields_t *log, int nargs, ...) {
-  mmio_region_t sw_log_dv_addr = mmio_region_from_addr(kSwLogDvAddr);
-  mmio_region_write32(sw_log_dv_addr, 0x0, (uintptr_t)log);
+/**
+ * Logs `log and the values that follow in an efficient, DV-testbench
+ * specific way.
+ *
+ * @param log a pointer to log data to log. Note that this pointer is likely to
+ *        be invalid at runtime, since the pointed-to data will have been
+ *        stripped from the binary.
+ * @param nargs the number of arguments passed to the format string.
+ * @param ... format parameters matching the format string.
+ */
+void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...) {
+  mmio_region_t log_device = mmio_region_from_addr(kSwLogDvAddr);
+  mmio_region_write32(log_device, 0x0, (uintptr_t)log);
 
   va_list args;
   va_start(args, nargs);
   for (int i = 0; i < nargs; ++i) {
-    uint32_t value = va_arg(args, uint32_t);
-    mmio_region_write32(sw_log_dv_addr, 0x0, value);
+    mmio_region_write32(log_device, 0x0, va_arg(args, uint32_t));
   }
   va_end(args);
 }
