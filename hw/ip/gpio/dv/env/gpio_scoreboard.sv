@@ -179,7 +179,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
               // Coverage Sampling: Cross coverage on mask and data within masked_* registers
               if (!uvm_re_match("masked*", csr.get_name())) begin
                 bit [(NUM_GPIOS/2) - 1:0] mask, data;
-                {mask, data} = item.d_data;
+                {mask, data} = item.a_data;
                 for (uint each_pin = 0; each_pin < NUM_GPIOS/2; each_pin++) begin
                   cov.out_oe_mask_data_cov_objs[each_pin][csr.get_name()].var1_var2_cg.sample(
                       mask[each_pin], data[each_pin]);
