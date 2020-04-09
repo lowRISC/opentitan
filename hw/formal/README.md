@@ -302,14 +302,14 @@ influence for "u_sha2.u_pad.shaf_ren".
 ...
 ```
 
-## How To Run VC Formal
+### Synopsys VC Formal
 
 If you have access to VC Formal from Synopsys, you can formally verify your
 assertions. For example, to run formal property verification (FPV) using
 VC Formal on module `gpio`, type:
 ```
   cd hw/formal
-  fpv gpio
+  fpv -t vcf gpio
 ```
 VC Formal will then report which assertions have been proven or disproven,
 and whether or not there are any unreachable assertions or coverpoints.
@@ -317,10 +317,10 @@ and whether or not there are any unreachable assertions or coverpoints.
 To run formal property verification for all modules, type:
 ```
   cd hw/formal
-  fpv_all
+  fpv_all -t vcf
 ```
 This script generates a report of all FPV runs. The report is printed at the end of the run,
-which lists the total number of assertions and the number of proven, vacuous, 
+which lists the total number of assertions and the number of proven, vacuous,
 covered and failing assertions for each block. CRASH identifies modules that
 fail to run VC Formal.
 

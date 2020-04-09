@@ -18,9 +18,11 @@
 # -gui: run JasperGold GUI
 # -cov: run coverage
 # -chk: run checks for assumptions: deadlock, conflict, live chks
+# -t: choose which formal tool to use, default using jaspergold, also support
+# vcf(VC Formal)
 #
 # Example:
-#   fpv pinmux_fpv -p vip:pinmux_fpv -gui -cov
+#   fpv pinmux_fpv -p vip:pinmux_fpv -gui -cov -t jg
 #
 # Note that the module to be tested needs to have an _fpv testbench
 # and a corresponding core file for this to work.
@@ -28,6 +30,7 @@
 export FPV_TOP=$1
 shift
 gui=0
+tool="jg"
 export COV=0
 export CHECK=0
 
@@ -48,6 +51,11 @@ while [ "$1" != "" ]; do
     "-chk")
       CHECK=1
       echo "enable assumption checks"
+      ;;
+    "-t")
+      shift
+      tool=$1
+      echo "running in tool: $tool"
       ;;
   esac
   shift
@@ -79,20 +87,23 @@ echo "-------------------------------------------------------------------------"
 
 cd build/*${FPV_TOP}*/formal-icarus
 
-if [ "${gui}" == "1" ]; then
-  jg ../../../fpv.tcl \
-     -proj ../../../jgproject \
-     -allow_unsupported_OS \
-     | tee ../../../fpv.log
-else
-  jg -batch \
-    ../../../fpv.tcl \
-    -proj ../../../jgproject \
-    -allow_unsupported_OS \
-    -command exit \
-    | tee ../../../fpv.log
+if [ "${tool}" == "jg" ]; then
+  if [ "${gui}" == "1" ]; then
+    jg ../../../fpv.tcl \
+       -proj ../../../jgproject \
+       -allow_unsupported_OS \
+       | tee ../../../fpv.log
+  else
+    jg -batch \
+      ../../../fpv.tcl \
+      -proj ../../../jgproject \
+      -allow_unsupported_OS \
+      -command exit \
+      | tee ../../../fpv.log
+  fi
+elif [ "${tool}" == "vcf" ]; then
+  vcf -f fpv_vcf.tcl
 fi
-
 cd -
 
 echo "-------------------------------------------------------------------------"

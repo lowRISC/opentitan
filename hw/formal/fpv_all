@@ -3,6 +3,17 @@
 # to run JasperGold FPV on all modules, type
 #   fpv_all
 
+tool="jg"
+while [ "$1" != "" ]; do
+  case "$1" in
+    "-t")
+      shift
+      tool=$1
+      ;;
+  esac
+  shift
+done
+
 #-------------------------------------------------------------------------
 # list all blocks
 #-------------------------------------------------------------------------
@@ -56,7 +67,7 @@ echo "-----------------------------------------------------------------"
 
 for block in "${blocks[@]}" ; do
 
-  ./fpv $block > /dev/null 2>&1
+  ./fpv $block -t ${tool} > /dev/null 2>&1
   cp fpv.log fpv_${block}.log
 
   # summarize results
