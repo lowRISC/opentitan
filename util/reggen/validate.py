@@ -583,8 +583,35 @@ keywords_verilog = [
 ]
 
 
+# if not int, check in param_list
+def resolve_value (entry, param_list):
+    val, not_int = check_int(entry, "")
+
+    if not_int:
+        param, err = search_param(param_list, entry)
+        val = param['default']
+
+    return int(val)
+
+# only supports subtractions right now
+def resolve_bitfield (entry, param_list):
+    lead_term = True
+    val = 0
+    terms = entry.replace(" ", "").split('-')
+
+    for i in terms:
+        if lead_term:
+            lead_term = False
+            val = resolve_value(i, param_list)
+        else:
+            val -= resolve_value(i, param_list)
+
+    # convert back to string
+    return str(val)
+
+
 def validate_fields(fields, rname, default_sw, default_hw, full_resval,
-                    reg_hwqe, reg_hwre, width):
+                    reg_hwqe, reg_hwre, width, top):
     error = 0
     bits_used = 0
     gen_resval = 0
@@ -668,9 +695,18 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
         field['genhwqe'] = reg_hwqe
         field['genhwre'] = reg_hwre
 
+
         # allow an int but make a string for all downstream users
         if isinstance(field['bits'], int):
             field['bits'] = str(field['bits'])
+
+        # Resolve parameters if they are present
+        if ':' in field['bits']:
+            msb_range, sep, lsb_range = field['bits'].partition(':')
+            msb_range = resolve_bitfield(msb_range, top['param_list'])
+            lsb_range = resolve_bitfield(lsb_range, top['param_list'])
+            field['bits'] = msb_range + ':' + lsb_range
+
         field_bits = bitmask(field['bits'])
         if (field_bits[0] == 0):
             error += 1
@@ -895,7 +931,7 @@ def validate_register(reg, offset, width, top):
 
     gen = validate_fields(reg['fields'], rname, default_sw, default_hw,
                           full_resval, reg['hwqe'] == "true",
-                          reg['hwre'] == "true", width)
+                          reg['hwre'] == "true", width, top)
     error = error + gen[0]
     # ensure the fields are in order (except if error which could be bad bits)
     if error == 0:
@@ -947,7 +983,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
 
     gen = validate_fields(mreg['fields'], mrname, default_sw, default_hw,
                           full_resval, mreg['hwqe'] == "true",
-                          mreg['hwre'] == "true", width)
+                          mreg['hwre'] == "true", width, top)
 
     error += gen[0]
 
@@ -1310,6 +1346,9 @@ def validate(regs, **kwargs):
         log.error("Component has no name. Aborting.")
         return 1
     component = regs['name']
+
+    if not 'param_list' in regs:
+        regs['param_list'] = []
 
     error = check_keys(regs, top_required, top_optional, top_added, component)
     if (error > 0):
