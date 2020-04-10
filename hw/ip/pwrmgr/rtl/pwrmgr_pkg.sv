@@ -41,8 +41,9 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [PowerDomains-1:0] lc_rst_req;
     logic [PowerDomains-1:0] sys_rst_req;
-    logic record_hw_rsts;
-    logic allow_ndm_req;
+    logic ndm_req_en;
+    logic low_power_rst;
+    logic hw_rst;
   } pwr_rst_req_t;
 
   // rstmgr to pwrmgr
@@ -114,7 +115,7 @@ package pwrmgr_pkg;
 
   // default value (for dangling ports)
   parameter pwr_peri_rsp_t PWR_PERIS_RSP_DEFAULT = '{
-    wakeups: '0,
+    wakeups: WakeUpPeris'(1'b1),
     rstreqs: '0
   };
 
@@ -125,7 +126,7 @@ package pwrmgr_pkg;
     Reset = 2'h2
   } pwrup_cause_e;
 
-  // power-up causes
+  // low power hints
   typedef enum logic {
     None     = 1'b0,
     LowPower = 1'b1
