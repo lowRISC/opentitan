@@ -116,7 +116,7 @@ package ${block.name}_ral_pkg;
     function new(string           name = "${gen_dv.mcname(block, w)}",
                  longint unsigned size = ${mem_size},
                  int unsigned     n_bits = ${mem_n_bits},
-                 string           access = "RW"/* TODO:"${mem_right}"*/,
+                 string           access = "${mem_right}",
                  int              has_coverage = UVM_NO_COVERAGE);
       super.new(name, size, n_bits, access, has_coverage);
     endfunction : new
