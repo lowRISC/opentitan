@@ -65,7 +65,7 @@ def check_count(top, mreg, err_prefix):
 # validating version of int(x, 0)
 # returns int value, error flag
 # if error flag is True value will be zero
-def check_int(x, err_prefix, suppress_err_msg = False):
+def check_int(x, err_prefix, suppress_err_msg=False):
     if isinstance(x, int):
         return x, False
     if x[0] == '0' and len(x) > 2:
@@ -590,7 +590,7 @@ keywords_verilog = [
 
 
 # if not int, check in param_list
-def resolve_value (entry, param_list):
+def resolve_value(entry, param_list):
     val, not_int = check_int(entry, "", True)
     err = 0
 
@@ -598,7 +598,9 @@ def resolve_value (entry, param_list):
         param, err = search_param(param_list, entry)
         val = param['default']
         if param['local'] != "true":
-            log.warning("It is recommended to define {} as localparam, since it should not be changed in the design".format(entry))
+            log.warning(
+                "It is recommended to define {} as localparam, since it should not be changed in the design"
+                .format(entry))
 
     return int(val), err
 
