@@ -98,8 +98,9 @@ module pwrmgr import pwrmgr_pkg::*;
 
   logic low_power_hint;
   logic low_power_entry;
-  logic dev_active_pulse;  // fsm transitioned back to ACTIVE
+  logic wkup;
   logic lowpwr_cfg_regwen;
+  logic clr_cfg_lock;
 
   pwrmgr_reg_top i_reg (
     .clk_i,
@@ -118,7 +119,7 @@ module pwrmgr import pwrmgr_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       lowpwr_cfg_regwen <= 1'b1;
-    end else if (!lowpwr_cfg_regwen && dev_active_pulse) begin
+    end else if (!lowpwr_cfg_regwen && (clr_cfg_lock || wkup)) begin
       lowpwr_cfg_regwen <= 1'b1;
     end else if (low_power_hint) begin
       lowpwr_cfg_regwen <= 1'b0;
@@ -302,9 +303,13 @@ module pwrmgr import pwrmgr_pkg::*;
     .low_power_entry_i (core_sleeping_i & low_power_hint),
     .reset_req_i       (|ext_reqs_masked.rstreqs),
 
+    // cfg
+    .main_pdb_i        (reg2hw.control.main_pdb.q),
+
     // consumed in pwrmgr
-    .capture_wkups_o   (capture_en_pulse),
-    .dev_active_o      (dev_active_pulse),
+    .wkup_record_o     (capture_en_pulse),
+    .wkup_o            (wkup),
+    .clr_cfg_lock_o    (clr_cfg_lock),
     .fall_through_o    (low_power_fall_through),
     .abort_o           (low_power_abort),
 
@@ -365,7 +370,7 @@ module pwrmgr import pwrmgr_pkg::*;
   // into active state. Meaning this interrupt will also set during
   // POR.
   prim_intr_hw #(.Width(1)) intr_wakeup (
-    .event_intr_i           (dev_active_pulse),
+    .event_intr_i           (wkup),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.qe),
@@ -374,6 +379,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
     .intr_o                 (intr_wakeup_o)
   );
+
 
   ////////////////////////////
   ///  Assertions
