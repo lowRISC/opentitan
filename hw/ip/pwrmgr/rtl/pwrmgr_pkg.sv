@@ -108,6 +108,10 @@ package pwrmgr_pkg;
   };
 
   // peripherals to pwrmgr
+  // TODO, switch this to two logic arrays once the option to support
+  // logic during intermodule.py is in.
+  // Structs are used for now since these happen to support dangling port
+  // defaults.
   typedef struct packed {
     logic [WakeUpPeris-1:0] wakeups;
     logic [HwRstReqs-1:0] rstreqs;

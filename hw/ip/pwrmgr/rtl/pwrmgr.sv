@@ -112,7 +112,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .devmode_i  (1'b1)
   );
 
-  // whenever low power entry begins, clearn the hint
+  // whenever low power entry begins, wipe the hint
   assign hw2reg.control.low_power_hint.d = 1'b0;
   assign hw2reg.control.low_power_hint.de = low_power_entry;
 
@@ -212,7 +212,7 @@ module pwrmgr import pwrmgr_pkg::*;
   // clock domains see it.  This creates redundant syncing but keeps the time
   // scale approximately the same across all domains.
   //
-  // This also implies that these signals must be AT least 1 clk_slow pulse long
+  // This also implies that these signals must be at least 1 clk_slow pulse long
 
   prim_flop_2sync # (
     .Width(HwRstReqs + WakeUpPeris)
