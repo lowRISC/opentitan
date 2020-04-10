@@ -65,7 +65,7 @@ def check_count(top, mreg, err_prefix):
 # validating version of int(x, 0)
 # returns int value, error flag
 # if error flag is True value will be zero
-def check_int(x, err_prefix):
+def check_int(x, err_prefix, suppress_err_msg = False):
     if isinstance(x, int):
         return x, False
     if x[0] == '0' and len(x) > 2:
@@ -76,17 +76,20 @@ def check_int(x, err_prefix):
         elif x[1] in 'xX':
             validch = '0123456789abcdefABCDEF'
         else:
-            log.error(err_prefix +
-                      ": int must start digit, 0b, 0B, 0o, 0O, 0x or 0X")
+            if not suppress_err_msg:
+                log.error(err_prefix +
+                          ": int must start digit, 0b, 0B, 0o, 0O, 0x or 0X")
             return 0, True
         for c in x[2:]:
             if not c in validch:
-                log.error(err_prefix + ": Bad character " + c + " in " + x)
+                if not suppress_err_msg:
+                    log.error(err_prefix + ": Bad character " + c + " in " + x)
                 return 0, True
     else:
         if not x.isdecimal():
-            log.error(err_prefix + ": Number not valid int " + x)
-            return 0, 1
+            if not suppress_err_msg:
+                log.error(err_prefix + ": Number not valid int " + x)
+            return 0, True
     return int(x, 0), False
 
 
@@ -587,31 +590,36 @@ keywords_verilog = [
 
 
 # if not int, check in param_list
-def resolve_value(entry, param_list):
-    val, not_int = check_int(entry, "")
+def resolve_value (entry, param_list):
+    val, not_int = check_int(entry, "", True)
+    err = 0
 
     if not_int:
         param, err = search_param(param_list, entry)
         val = param['default']
+        if param['local'] != "true":
+            log.warning("It is recommended to define {} as localparam, since it should not be changed in the design".format(entry))
 
-    return int(val)
+    return int(val), err
 
 
 # only supports subtractions right now
 def resolve_bitfield(entry, param_list):
     lead_term = True
     val = 0
+    error = 0
     terms = entry.replace(" ", "").split('-')
 
     for i in terms:
         if lead_term:
             lead_term = False
-            val = resolve_value(i, param_list)
+            val, err = resolve_value(i, param_list)
         else:
-            val -= resolve_value(i, param_list)
-
+            tmp, err = resolve_value(i, param_list)
+            val -= tmp
+        error += err
     # convert back to string
-    return str(val)
+    return str(val), error
 
 
 def validate_fields(fields, rname, default_sw, default_hw, full_resval,
@@ -706,8 +714,10 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
         # Resolve parameters if they are present
         if ':' in field['bits']:
             msb_range, sep, lsb_range = field['bits'].partition(':')
-            msb_range = resolve_bitfield(msb_range, top['param_list'])
-            lsb_range = resolve_bitfield(lsb_range, top['param_list'])
+            msb_range, err = resolve_bitfield(msb_range, top['param_list'])
+            error += err
+            lsb_range, err = resolve_bitfield(lsb_range, top['param_list'])
+            error += err
             field['bits'] = msb_range + ':' + lsb_range
 
         field_bits = bitmask(field['bits'])
@@ -1243,10 +1253,17 @@ def validate_window(win, offset, regwidth, top):
     else:
         win['genvalidbits'] = regwidth
 
-    winitems, err = check_int(win['items'], name + " items")
+    param, err = resolve_value(win['items'], top['param_list'])
+    error += err
+
+    winitems, err = check_int(param, name + " items")
+
     if err:
         error += err
         winitems = 4
+
+    win['items'] = str(winitems)
+
     # convert items to bytes
     winsize = winitems * (regwidth // 8)
     # if size is not a power of two, po2_size is next po2 larger
