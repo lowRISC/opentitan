@@ -1754,6 +1754,7 @@
         package: flash_ctrl_pkg
         struct: flash
         signame: flash_ctrl_eflash_flash
+        width: 1
         type: req_rsp
       }
     ]
