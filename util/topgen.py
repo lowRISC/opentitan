@@ -371,8 +371,10 @@ def generate_top_ral(top, ip_objs, out_path):
             mem.name = item["name"]
             mem.base_addr = int(item["base_addr"], 0)
             mem.limit_addr = int(item["base_addr"], 0) + int(item["size"], 0)
-            # TODO: need to add mem access info for memories in topcfg
-            mem.dvrights = "RW"
+            if "swaccess" in item.keys():
+                mem.dvrights = item["swaccess"]
+            else:
+                mem.dvrights = "RW"
             mem.n_bits = top_block.width
             top_block.wins.append(mem)
 

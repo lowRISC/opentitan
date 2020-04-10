@@ -157,6 +157,7 @@
       reset_connections: {rst_ni: "sys"},
       type: "rom",
       base_addr: "0x00008000",
+      swaccess: "ro",
       size: "0x4000"
     },
     { name: "ram_main",
@@ -170,6 +171,7 @@
       reset_connections: {rst_ni: "lc"},
       type: "eflash",
       base_addr: "0x20000000",
+      swaccess: "ro",
       size: "0x80000",
       inter_signal_list: [
         { struct: "flash",    // flash_req_t, flash_rsp_t
