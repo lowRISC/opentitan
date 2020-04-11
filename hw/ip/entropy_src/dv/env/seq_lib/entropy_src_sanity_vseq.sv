@@ -18,7 +18,7 @@ class entropy_src_sanity_vseq extends entropy_src_base_vseq;
     csr_wr(.csr(ral.es_conf), .value(1'b1));
 
     // Wait for entropy_rdy
-    csr_spinwait(.ptr(ral.es_status.entropy_rdy), .exp_data(1));
+    //mwb: removed for now: csr_spinwait(.ptr(ral.es_status.entropy_rdy), .exp_data(1));
 
     // Wait for entropy_valid interrupt
     csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1));

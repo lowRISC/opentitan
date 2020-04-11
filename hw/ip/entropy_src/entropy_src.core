@@ -11,8 +11,10 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
     files:
+      - rtl/entropy_src_pkg.sv
       - rtl/entropy_src_reg_pkg.sv
       - rtl/entropy_src_reg_top.sv
+      - rtl/entropy_src_shtests.sv
       - rtl/entropy_src_core.sv
       - rtl/entropy_src.sv
     file_type: systemVerilogSource
@@ -35,11 +37,6 @@ filesets:
       - lint/entropy_src.waiver
     file_type: waiver
 
-  files_veriblelint_waiver:
-    depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
 
 parameters:
   SYNTHESIS:
@@ -50,9 +47,8 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
-      - tool_ascentlint  ? (files_ascentlint_waiver)
-      - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
     toplevel: entropy_src
 

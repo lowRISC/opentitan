@@ -16,9 +16,40 @@
   interrupt_list: [
     { name: "es_entropy_valid"
       desc: "Asserted when entropy source bits are available."}
-    { name: "es_entropy_fifo_err"
+    { name: "es_rct_failed"
+      desc: "Asserted when the repetitive count test fails."}
+    { name: "es_apt_failed"
+      desc: "Asserted when the adaptive proportion test fails."}
+    { name: "es_fifo_err"
       desc: "Asserted when a FIFO error occurs."}
   ],
+  inter_signal_list: [
+    { struct:  "entropy_src_hw_if_req",
+      type:    "req_rsp",
+      name:    "entropy_src_hw_if_req",
+      act:     "requester",
+      package: "entropy_src_pkg",
+    }
+    { struct:  "entropy_src_hw_if_rsp",
+      type:    "req_rsp",
+      name:    "entropy_src_hw_if_rsp",
+      act:     "responder",
+      package: "entropy_src_pkg",
+    }
+    { struct:  "entropy_src_rng_req",
+      type:    "req_rsp",
+      name:    "entropy_src_rng_req",
+      act:     "requester",
+      package: "entropy_src_pkg",
+    }
+    { struct:  "entropy_src_rng_rsp",
+      type:    "req_rsp",
+      name:    "entropy_src_rng_rsp",
+      act:     "responder",
+      package: "entropy_src_pkg",
+    }
+  ],
+
   regwidth: "32",
   registers: [
     { name: "ES_REGEN",
@@ -28,30 +59,18 @@
       fields: [
         {
             bits:   "0",
-            desc: ''' When true, the ES_CONF, ES_CTRL, and ES_SEED registers can be modified.
+            desc: ''' When true, the ES_CONF, ES_RCT_HEALTH, ES_APT_HEALTH and ES_SEED registers can be modified.
             When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
             cleared after initial configuration at boot in order to lock in the listed register settings.
             '''
-            resval: 1 
+            resval: 1
         },
-      ]
-    },
-    { name: "ES_CONF",
-      desc: "ENTROPY_SRC configuration register",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen:   "ES_REGEN",
-      fields: [
-        { bits: "0",
-          name: "ENABLE",
-          desc: "Master enable for the ENTROPY_SRC entropy generation function."
-        }
       ]
     },
     { name: "ES_REV",
       desc: "ENTROPY_SRC revision register",
       swaccess: "ro",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         { bits: "23:16",
           name: "CHIP_TYPE",
@@ -61,12 +80,91 @@
         { bits: "15:8",
           name: "HW_REVISION",
           desc: "Read of this register shows the revision of this block.",
-          resval: "0x2"
+          resval: "0x1"
        }
         { bits: "7:0",
           name: "ABI_REVISION",
           desc: "Read of this register shows the ABI of this block.",
           resval: "0x1"
+        }
+      ]
+    },
+    { name: "ES_CONF",
+      desc: "ENTROPY_SRC configuration register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "ES_REGEN",
+      fields: [
+        { bits: "1:0",
+          name: "ENABLE",
+          desc: '''Master enable for the ENTROPY_SRC entropy generation function.
+                This two bit field determines what source will be used for health 
+                check processing:
+                0b00: Disabled
+                0b01: LFSR mode enabled
+                0b10: RNG mode enabled
+                0b11: Reserved
+                '''
+        }
+        { bits: "4",
+          name: "RNG_SRC_EN",
+          desc: "Setting this bit enables the RNG entropy source."
+        }
+        { bits: "5",
+          name: "RCT_EN",
+          desc: "Setting this bit enables the health test called Repetition Count Test."
+        }
+        { bits: "6",
+          name: "APT_EN",
+          desc: "Setting this bit enables the health test called Adaptive Proportion Test."
+        }
+        { bits: "8",
+          name: "RNG_BIT_EN",
+          desc: "Setting this bit enables the single RNG bit mode, where only one bit is sampled."
+        }
+        { bits: "10:9",
+          name: "RNG_BIT_SEL",
+          desc: '''When the above bit iset, this field selects which bit from the RNG bus will
+                be processed when in single RNG bit mode.
+                This two bit field selects the RNG bit stream:
+                0b00: RNG bit 0
+                0b01: RNG bit 1
+                0b10: RNG bit 2
+                0b11: RNG bit 3
+                '''
+        }
+      ]
+      tags: [// Updated by hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    },
+    { name: "ES_RCT_HEALTH",
+      desc: "ENTROPY_SRC RCT health test register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "ES_REGEN",
+      fields: [
+        { bits: "15:0",
+          name: "RCT_MAX",
+          desc: "This is the cutoff value for failures of the RCT health test."
+          resval: "0x0b"
+        }
+      ]
+    },
+    { name: "ES_APT_HEALTH",
+      desc: "ENTROPY_SRC APT health test register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "ES_REGEN",
+      fields: [
+        { bits: "15:0",
+          name: "APT_MAX",
+          desc: "This is the cutoff value for failures of the APT health test."
+          resval: "0x0298"
+        }
+        { bits: "31:16",
+          name: "APT_WIN",
+          desc: "This is the window value for testing of the APT health test."
+          resval: "0x0400"
         }
       ]
     },
@@ -82,60 +180,55 @@
         }
       ]
     },
-    { name: "ES_CTRL",
-      desc: "ENTROPY_SRC control register",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen:   "ES_REGEN",
-      fields: [
-        { bits: "0",
-          name: "INIT_ENT_SRC",
-          desc: "Setting this bit will initialize the entropy source function."
-        }
-      ]
-    },
-    { name:     "ES_STATUS",
-      desc:     "ENTROPY_SRC status register",
+    { name:     "ES_FIFO_STATUS",
+      desc:     "ENTROPY_SRC fifo depth status register",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "0",
-          name: "ENTROPY_RDY",
-          desc: '''This is set when the entropy source FIFO has met or exceeded the ES_THRESH value. This status bit will
-                automatically clear once the FIFO depth drops below the threshold value. This bit will not set unless the
-                block is enabled.
-                '''
+        { bits: "2:0",
+          name: "DIG_SRC_DEPTH",
+          desc: "This is the depth of the digital source FIFO."
+        }
+        { bits: "6:4",
+          name: "HWIF_DEPTH",
+          desc: "This is the depth of the hardware interface FIFO."
+        }
+        { bits: "16:12",
+          name: "ES_DEPTH",
+          desc: "This is the depth of the ES FIFO."
+        }
+        { bits: "31",
+          name: "DIAG",
+          desc: "This bit is for internal debug only."
         }
       ]
     },
     { name:     "ES_FDEPTHST",
       desc:     "ENTROPY_SRC FIFO depth status register",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "6:0",
+        { bits: "2:0",
           name: "ENTROPY_FIFO_DEPTH",
-          desc: "This register will reflect the current depth of the entropy FIFO."
+          desc: "This register will reflect the current depth of the software entropy delivery or TLUL FIFO."
         }
       ]
     },
     { name: "ES_THRESH",
       desc: "ENTROPY_SRC threshold register",
       swaccess: "rw",
-      hwqe: "true",
       fields: [
-        { bits: "6:0",
+        { bits: "2:0",
           name: "FIFO_THRESHOLD",
-          desc: "The entropy FIFO depth will be compared against this register value when setting the ENTROPY_RDY bit and es_entropy_valid interrupt signal."
+          desc: "The entropy FIFO depth will be compared against this register value when setting the es_entropy_valid interrupt signal."
        }
       ]
     }
     { name: "ES_RATE",
       desc: "ENTROPY_SRC entropy rate register",
       swaccess: "rw",
-      hwqe: "true",
       fields: [
         { bits: "15:0",
           name: "ENTROPY_RATE",
@@ -144,20 +237,19 @@
                 the rate by 1/8th. The precise equation for entropy delivery is one clock cycle of entropy is generated
                 every 1/(ENTROPY_RATE) equal to one. A value of 0 disables all entropy generation.
                 '''
-          resval: "0x00000001"
+          resval: "0x00000004"
       }
       ]
     }
     { name: "ES_SEED",
       desc: "ENTROPY_SRC seed register",
       swaccess: "rw",
-      hwqe: "true",
       regwen:   "ES_REGEN",
       fields: [
-        { bits: "31:0",
+        { bits: "3:0",
           name: "LFSR_SEED",
           desc: "Seed used to load into the LFSR for the initial state. This field will not update if the ES_REGEN bit 0 is cleared.",
-          resval: "0x12345678"
+          resval: "0xb"
        }
       ]
     }
