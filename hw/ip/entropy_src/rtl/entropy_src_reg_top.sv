@@ -74,45 +74,92 @@ module entropy_src_reg_top (
   logic intr_state_es_entropy_valid_qs;
   logic intr_state_es_entropy_valid_wd;
   logic intr_state_es_entropy_valid_we;
-  logic intr_state_es_entropy_fifo_err_qs;
-  logic intr_state_es_entropy_fifo_err_wd;
-  logic intr_state_es_entropy_fifo_err_we;
+  logic intr_state_es_ana_src_ok_qs;
+  logic intr_state_es_ana_src_ok_wd;
+  logic intr_state_es_ana_src_ok_we;
+  logic intr_state_es_ana_bits_err_qs;
+  logic intr_state_es_ana_bits_err_wd;
+  logic intr_state_es_ana_bits_err_we;
+  logic intr_state_es_ana_fifo_err_qs;
+  logic intr_state_es_ana_fifo_err_wd;
+  logic intr_state_es_ana_fifo_err_we;
+  logic intr_state_es_fifo_err_qs;
+  logic intr_state_es_fifo_err_wd;
+  logic intr_state_es_fifo_err_we;
   logic intr_enable_es_entropy_valid_qs;
   logic intr_enable_es_entropy_valid_wd;
   logic intr_enable_es_entropy_valid_we;
-  logic intr_enable_es_entropy_fifo_err_qs;
-  logic intr_enable_es_entropy_fifo_err_wd;
-  logic intr_enable_es_entropy_fifo_err_we;
+  logic intr_enable_es_ana_src_ok_qs;
+  logic intr_enable_es_ana_src_ok_wd;
+  logic intr_enable_es_ana_src_ok_we;
+  logic intr_enable_es_ana_bits_err_qs;
+  logic intr_enable_es_ana_bits_err_wd;
+  logic intr_enable_es_ana_bits_err_we;
+  logic intr_enable_es_ana_fifo_err_qs;
+  logic intr_enable_es_ana_fifo_err_wd;
+  logic intr_enable_es_ana_fifo_err_we;
+  logic intr_enable_es_fifo_err_qs;
+  logic intr_enable_es_fifo_err_wd;
+  logic intr_enable_es_fifo_err_we;
   logic intr_test_es_entropy_valid_wd;
   logic intr_test_es_entropy_valid_we;
-  logic intr_test_es_entropy_fifo_err_wd;
-  logic intr_test_es_entropy_fifo_err_we;
+  logic intr_test_es_ana_src_ok_wd;
+  logic intr_test_es_ana_src_ok_we;
+  logic intr_test_es_ana_bits_err_wd;
+  logic intr_test_es_ana_bits_err_we;
+  logic intr_test_es_ana_fifo_err_wd;
+  logic intr_test_es_ana_fifo_err_we;
+  logic intr_test_es_fifo_err_wd;
+  logic intr_test_es_fifo_err_we;
   logic es_regen_qs;
   logic es_regen_wd;
   logic es_regen_we;
-  logic es_conf_qs;
-  logic es_conf_wd;
-  logic es_conf_we;
   logic [7:0] es_rev_abi_revision_qs;
   logic [7:0] es_rev_hw_revision_qs;
   logic [7:0] es_rev_chip_type_qs;
+  logic [1:0] es_conf_enable_qs;
+  logic [1:0] es_conf_enable_wd;
+  logic es_conf_enable_we;
+  logic es_conf_ana_src_en_qs;
+  logic es_conf_ana_src_en_wd;
+  logic es_conf_ana_src_en_we;
+  logic es_conf_rct_en_qs;
+  logic es_conf_rct_en_wd;
+  logic es_conf_rct_en_we;
+  logic es_conf_apt_en_qs;
+  logic es_conf_apt_en_wd;
+  logic es_conf_apt_en_we;
+  logic [15:0] es_rct_health_qs;
+  logic [15:0] es_rct_health_wd;
+  logic es_rct_health_we;
+  logic [15:0] es_apt_health_apt_max_qs;
+  logic [15:0] es_apt_health_apt_max_wd;
+  logic es_apt_health_apt_max_we;
+  logic [15:0] es_apt_health_apt_win_qs;
+  logic [15:0] es_apt_health_apt_win_wd;
+  logic es_apt_health_apt_win_we;
   logic [31:0] es_entropy_qs;
   logic es_entropy_re;
-  logic es_ctrl_qs;
-  logic es_ctrl_wd;
-  logic es_ctrl_we;
-  logic es_status_qs;
-  logic es_status_re;
-  logic [6:0] es_fdepthst_qs;
+  logic [2:0] es_status_fifo0_depth_qs;
+  logic es_status_fifo0_depth_re;
+  logic [2:0] es_status_fifo1_depth_qs;
+  logic es_status_fifo1_depth_re;
+  logic [2:0] es_status_fifo2_depth_qs;
+  logic es_status_fifo2_depth_re;
+  logic [2:0] es_status_fifo3_depth_qs;
+  logic es_status_fifo3_depth_re;
+  logic es_status_diag_qs;
+  logic es_status_diag_re;
+  logic [2:0] es_fdepthst_qs;
   logic es_fdepthst_re;
-  logic [6:0] es_thresh_qs;
-  logic [6:0] es_thresh_wd;
+  logic [2:0] es_thresh_qs;
+  logic [2:0] es_thresh_wd;
   logic es_thresh_we;
   logic [15:0] es_rate_qs;
   logic [15:0] es_rate_wd;
   logic es_rate_we;
-  logic [31:0] es_seed_qs;
-  logic [31:0] es_seed_wd;
+  logic [7:0] es_seed_qs;
+  logic [7:0] es_seed_wd;
   logic es_seed_we;
 
   // Register instances
@@ -144,29 +191,107 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[es_entropy_fifo_err]: 1:1
+  //   F[es_ana_src_ok]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_es_entropy_fifo_err (
+  ) u_intr_state_es_ana_src_ok (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_es_entropy_fifo_err_we),
-    .wd     (intr_state_es_entropy_fifo_err_wd),
+    .we     (intr_state_es_ana_src_ok_we),
+    .wd     (intr_state_es_ana_src_ok_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.es_entropy_fifo_err.de),
-    .d      (hw2reg.intr_state.es_entropy_fifo_err.d ),
+    .de     (hw2reg.intr_state.es_ana_src_ok.de),
+    .d      (hw2reg.intr_state.es_ana_src_ok.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.es_entropy_fifo_err.q ),
+    .q      (reg2hw.intr_state.es_ana_src_ok.q ),
 
     // to register interface (read)
-    .qs     (intr_state_es_entropy_fifo_err_qs)
+    .qs     (intr_state_es_ana_src_ok_qs)
+  );
+
+
+  //   F[es_ana_bits_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_es_ana_bits_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_es_ana_bits_err_we),
+    .wd     (intr_state_es_ana_bits_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.es_ana_bits_err.de),
+    .d      (hw2reg.intr_state.es_ana_bits_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.es_ana_bits_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_es_ana_bits_err_qs)
+  );
+
+
+  //   F[es_ana_fifo_err]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_es_ana_fifo_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_es_ana_fifo_err_we),
+    .wd     (intr_state_es_ana_fifo_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.es_ana_fifo_err.de),
+    .d      (hw2reg.intr_state.es_ana_fifo_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.es_ana_fifo_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_es_ana_fifo_err_qs)
+  );
+
+
+  //   F[es_fifo_err]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_es_fifo_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_es_fifo_err_we),
+    .wd     (intr_state_es_fifo_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.es_fifo_err.de),
+    .d      (hw2reg.intr_state.es_fifo_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.es_fifo_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_es_fifo_err_qs)
   );
 
 
@@ -198,18 +323,18 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[es_entropy_fifo_err]: 1:1
+  //   F[es_ana_src_ok]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_es_entropy_fifo_err (
+  ) u_intr_enable_es_ana_src_ok (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_es_entropy_fifo_err_we),
-    .wd     (intr_enable_es_entropy_fifo_err_wd),
+    .we     (intr_enable_es_ana_src_ok_we),
+    .wd     (intr_enable_es_ana_src_ok_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -217,10 +342,88 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.es_entropy_fifo_err.q ),
+    .q      (reg2hw.intr_enable.es_ana_src_ok.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_es_entropy_fifo_err_qs)
+    .qs     (intr_enable_es_ana_src_ok_qs)
+  );
+
+
+  //   F[es_ana_bits_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_es_ana_bits_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_es_ana_bits_err_we),
+    .wd     (intr_enable_es_ana_bits_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.es_ana_bits_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_es_ana_bits_err_qs)
+  );
+
+
+  //   F[es_ana_fifo_err]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_es_ana_fifo_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_es_ana_fifo_err_we),
+    .wd     (intr_enable_es_ana_fifo_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.es_ana_fifo_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_es_ana_fifo_err_qs)
+  );
+
+
+  //   F[es_fifo_err]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_es_fifo_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_es_fifo_err_we),
+    .wd     (intr_enable_es_fifo_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.es_fifo_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_es_fifo_err_qs)
   );
 
 
@@ -241,17 +444,62 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[es_entropy_fifo_err]: 1:1
+  //   F[es_ana_src_ok]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_es_entropy_fifo_err (
+  ) u_intr_test_es_ana_src_ok (
     .re     (1'b0),
-    .we     (intr_test_es_entropy_fifo_err_we),
-    .wd     (intr_test_es_entropy_fifo_err_wd),
+    .we     (intr_test_es_ana_src_ok_we),
+    .wd     (intr_test_es_ana_src_ok_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.es_entropy_fifo_err.qe),
-    .q      (reg2hw.intr_test.es_entropy_fifo_err.q ),
+    .qe     (reg2hw.intr_test.es_ana_src_ok.qe),
+    .q      (reg2hw.intr_test.es_ana_src_ok.q ),
+    .qs     ()
+  );
+
+
+  //   F[es_ana_bits_err]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_es_ana_bits_err (
+    .re     (1'b0),
+    .we     (intr_test_es_ana_bits_err_we),
+    .wd     (intr_test_es_ana_bits_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.es_ana_bits_err.qe),
+    .q      (reg2hw.intr_test.es_ana_bits_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[es_ana_fifo_err]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_es_ana_fifo_err (
+    .re     (1'b0),
+    .we     (intr_test_es_ana_fifo_err_we),
+    .wd     (intr_test_es_ana_fifo_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.es_ana_fifo_err.qe),
+    .q      (reg2hw.intr_test.es_ana_fifo_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[es_fifo_err]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_es_fifo_err (
+    .re     (1'b0),
+    .we     (intr_test_es_fifo_err_we),
+    .wd     (intr_test_es_fifo_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.es_fifo_err.qe),
+    .q      (reg2hw.intr_test.es_fifo_err.q ),
     .qs     ()
   );
 
@@ -283,19 +531,37 @@ module entropy_src_reg_top (
   );
 
 
+  // R[es_rev]: V(False)
+
+  //   F[abi_revision]: 7:0
+  // constant-only read
+  assign es_rev_abi_revision_qs = 8'h1;
+
+
+  //   F[hw_revision]: 15:8
+  // constant-only read
+  assign es_rev_hw_revision_qs = 8'h1;
+
+
+  //   F[chip_type]: 23:16
+  // constant-only read
+  assign es_rev_chip_type_qs = 8'h1;
+
+
   // R[es_conf]: V(False)
 
+  //   F[enable]: 1:0
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_es_conf (
+    .RESVAL  (2'h0)
+  ) u_es_conf_enable (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (es_conf_we & es_regen_qs),
-    .wd     (es_conf_wd),
+    .we     (es_conf_enable_we & es_regen_qs),
+    .wd     (es_conf_enable_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -303,26 +569,25 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.es_conf.q ),
+    .q      (reg2hw.es_conf.enable.q ),
 
     // to register interface (read)
-    .qs     (es_conf_qs)
+    .qs     (es_conf_enable_qs)
   );
 
 
-  // R[es_rev]: V(False)
-
-  //   F[abi_revision]: 7:0
+  //   F[ana_src_en]: 4:4
   prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RO"),
-    .RESVAL  (8'h1)
-  ) u_es_rev_abi_revision (
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_es_conf_ana_src_en (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    .we     (1'b0),
-    .wd     ('0  ),
+    // from register interface (qualified with register enable)
+    .we     (es_conf_ana_src_en_we & es_regen_qs),
+    .wd     (es_conf_ana_src_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -330,24 +595,25 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.es_rev.abi_revision.q ),
+    .q      (reg2hw.es_conf.ana_src_en.q ),
 
     // to register interface (read)
-    .qs     (es_rev_abi_revision_qs)
+    .qs     (es_conf_ana_src_en_qs)
   );
 
 
-  //   F[hw_revision]: 15:8
+  //   F[rct_en]: 5:5
   prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RO"),
-    .RESVAL  (8'h2)
-  ) u_es_rev_hw_revision (
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_es_conf_rct_en (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    .we     (1'b0),
-    .wd     ('0  ),
+    // from register interface (qualified with register enable)
+    .we     (es_conf_rct_en_we & es_regen_qs),
+    .wd     (es_conf_rct_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -355,24 +621,25 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.es_rev.hw_revision.q ),
+    .q      (reg2hw.es_conf.rct_en.q ),
 
     // to register interface (read)
-    .qs     (es_rev_hw_revision_qs)
+    .qs     (es_conf_rct_en_qs)
   );
 
 
-  //   F[chip_type]: 23:16
+  //   F[apt_en]: 6:6
   prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RO"),
-    .RESVAL  (8'h1)
-  ) u_es_rev_chip_type (
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_es_conf_apt_en (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    .we     (1'b0),
-    .wd     ('0  ),
+    // from register interface (qualified with register enable)
+    .we     (es_conf_apt_en_we & es_regen_qs),
+    .wd     (es_conf_apt_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -380,10 +647,91 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.es_rev.chip_type.q ),
+    .q      (reg2hw.es_conf.apt_en.q ),
 
     // to register interface (read)
-    .qs     (es_rev_chip_type_qs)
+    .qs     (es_conf_apt_en_qs)
+  );
+
+
+  // R[es_rct_health]: V(False)
+
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'h6)
+  ) u_es_rct_health (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (es_rct_health_we),
+    .wd     (es_rct_health_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.es_rct_health.q ),
+
+    // to register interface (read)
+    .qs     (es_rct_health_qs)
+  );
+
+
+  // R[es_apt_health]: V(False)
+
+  //   F[apt_max]: 15:0
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'h6)
+  ) u_es_apt_health_apt_max (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (es_apt_health_apt_max_we),
+    .wd     (es_apt_health_apt_max_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.es_apt_health.apt_max.q ),
+
+    // to register interface (read)
+    .qs     (es_apt_health_apt_max_qs)
+  );
+
+
+  //   F[apt_win]: 31:16
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'h40)
+  ) u_es_apt_health_apt_win (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (es_apt_health_apt_win_we),
+    .wd     (es_apt_health_apt_win_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.es_apt_health.apt_win.q ),
+
+    // to register interface (read)
+    .qs     (es_apt_health_apt_win_qs)
   );
 
 
@@ -403,53 +751,87 @@ module entropy_src_reg_top (
   );
 
 
-  // R[es_ctrl]: V(False)
+  // R[es_status]: V(True)
 
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_es_ctrl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (es_ctrl_we & es_regen_qs),
-    .wd     (es_ctrl_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+  //   F[fifo0_depth]: 2:0
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_es_status_fifo0_depth (
+    .re     (es_status_fifo0_depth_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.es_status.fifo0_depth.d),
+    .qre    (),
     .qe     (),
-    .q      (reg2hw.es_ctrl.q ),
-
-    // to register interface (read)
-    .qs     (es_ctrl_qs)
+    .q      (),
+    .qs     (es_status_fifo0_depth_qs)
   );
 
 
-  // R[es_status]: V(True)
-
+  //   F[fifo1_depth]: 6:4
   prim_subreg_ext #(
-    .DW    (1)
-  ) u_es_status (
-    .re     (es_status_re),
+    .DW    (3)
+  ) u_es_status_fifo1_depth (
+    .re     (es_status_fifo1_depth_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.es_status.d),
+    .d      (hw2reg.es_status.fifo1_depth.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.es_status.q ),
-    .qs     (es_status_qs)
+    .q      (),
+    .qs     (es_status_fifo1_depth_qs)
+  );
+
+
+  //   F[fifo2_depth]: 10:8
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_es_status_fifo2_depth (
+    .re     (es_status_fifo2_depth_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.es_status.fifo2_depth.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (es_status_fifo2_depth_qs)
+  );
+
+
+  //   F[fifo3_depth]: 14:12
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_es_status_fifo3_depth (
+    .re     (es_status_fifo3_depth_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.es_status.fifo3_depth.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (es_status_fifo3_depth_qs)
+  );
+
+
+  //   F[diag]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_es_status_diag (
+    .re     (es_status_diag_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.es_status.diag.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (es_status_diag_qs)
   );
 
 
   // R[es_fdepthst]: V(True)
 
   prim_subreg_ext #(
-    .DW    (7)
+    .DW    (3)
   ) u_es_fdepthst (
     .re     (es_fdepthst_re),
     .we     (1'b0),
@@ -457,7 +839,7 @@ module entropy_src_reg_top (
     .d      (hw2reg.es_fdepthst.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.es_fdepthst.q ),
+    .q      (),
     .qs     (es_fdepthst_qs)
   );
 
@@ -465,9 +847,9 @@ module entropy_src_reg_top (
   // R[es_thresh]: V(False)
 
   prim_subreg #(
-    .DW      (7),
+    .DW      (3),
     .SWACCESS("RW"),
-    .RESVAL  (7'h0)
+    .RESVAL  (3'h0)
   ) u_es_thresh (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -481,7 +863,7 @@ module entropy_src_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.es_thresh.qe),
+    .qe     (),
     .q      (reg2hw.es_thresh.q ),
 
     // to register interface (read)
@@ -494,7 +876,7 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (16'h1)
+    .RESVAL  (16'h4)
   ) u_es_rate (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -508,7 +890,7 @@ module entropy_src_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.es_rate.qe),
+    .qe     (),
     .q      (reg2hw.es_rate.q ),
 
     // to register interface (read)
@@ -519,9 +901,9 @@ module entropy_src_reg_top (
   // R[es_seed]: V(False)
 
   prim_subreg #(
-    .DW      (32),
+    .DW      (8),
     .SWACCESS("RW"),
-    .RESVAL  (32'h12345678)
+    .RESVAL  (8'hab)
   ) u_es_seed (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -535,7 +917,7 @@ module entropy_src_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.es_seed.qe),
+    .qe     (),
     .q      (reg2hw.es_seed.q ),
 
     // to register interface (read)
@@ -545,22 +927,23 @@ module entropy_src_reg_top (
 
 
 
-  logic [12:0] addr_hit;
+  logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == ENTROPY_SRC_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == ENTROPY_SRC_INTR_TEST_OFFSET);
     addr_hit[ 3] = (reg_addr == ENTROPY_SRC_ES_REGEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == ENTROPY_SRC_ES_CONF_OFFSET);
-    addr_hit[ 5] = (reg_addr == ENTROPY_SRC_ES_REV_OFFSET);
-    addr_hit[ 6] = (reg_addr == ENTROPY_SRC_ES_ENTROPY_OFFSET);
-    addr_hit[ 7] = (reg_addr == ENTROPY_SRC_ES_CTRL_OFFSET);
-    addr_hit[ 8] = (reg_addr == ENTROPY_SRC_ES_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == ENTROPY_SRC_ES_FDEPTHST_OFFSET);
-    addr_hit[10] = (reg_addr == ENTROPY_SRC_ES_THRESH_OFFSET);
-    addr_hit[11] = (reg_addr == ENTROPY_SRC_ES_RATE_OFFSET);
-    addr_hit[12] = (reg_addr == ENTROPY_SRC_ES_SEED_OFFSET);
+    addr_hit[ 4] = (reg_addr == ENTROPY_SRC_ES_REV_OFFSET);
+    addr_hit[ 5] = (reg_addr == ENTROPY_SRC_ES_CONF_OFFSET);
+    addr_hit[ 6] = (reg_addr == ENTROPY_SRC_ES_RCT_HEALTH_OFFSET);
+    addr_hit[ 7] = (reg_addr == ENTROPY_SRC_ES_APT_HEALTH_OFFSET);
+    addr_hit[ 8] = (reg_addr == ENTROPY_SRC_ES_ENTROPY_OFFSET);
+    addr_hit[ 9] = (reg_addr == ENTROPY_SRC_ES_STATUS_OFFSET);
+    addr_hit[10] = (reg_addr == ENTROPY_SRC_ES_FDEPTHST_OFFSET);
+    addr_hit[11] = (reg_addr == ENTROPY_SRC_ES_THRESH_OFFSET);
+    addr_hit[12] = (reg_addr == ENTROPY_SRC_ES_RATE_OFFSET);
+    addr_hit[13] = (reg_addr == ENTROPY_SRC_ES_SEED_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -581,52 +964,103 @@ module entropy_src_reg_top (
     if (addr_hit[10] && reg_we && (ENTROPY_SRC_PERMIT[10] != (ENTROPY_SRC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[11] && reg_we && (ENTROPY_SRC_PERMIT[11] != (ENTROPY_SRC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[12] && reg_we && (ENTROPY_SRC_PERMIT[12] != (ENTROPY_SRC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (ENTROPY_SRC_PERMIT[13] != (ENTROPY_SRC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_es_entropy_valid_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_es_entropy_valid_wd = reg_wdata[0];
 
-  assign intr_state_es_entropy_fifo_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_es_entropy_fifo_err_wd = reg_wdata[1];
+  assign intr_state_es_ana_src_ok_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_ana_src_ok_wd = reg_wdata[1];
+
+  assign intr_state_es_ana_bits_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_ana_bits_err_wd = reg_wdata[2];
+
+  assign intr_state_es_ana_fifo_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_ana_fifo_err_wd = reg_wdata[3];
+
+  assign intr_state_es_fifo_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_fifo_err_wd = reg_wdata[4];
 
   assign intr_enable_es_entropy_valid_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_es_entropy_valid_wd = reg_wdata[0];
 
-  assign intr_enable_es_entropy_fifo_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_es_entropy_fifo_err_wd = reg_wdata[1];
+  assign intr_enable_es_ana_src_ok_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_ana_src_ok_wd = reg_wdata[1];
+
+  assign intr_enable_es_ana_bits_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_ana_bits_err_wd = reg_wdata[2];
+
+  assign intr_enable_es_ana_fifo_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_ana_fifo_err_wd = reg_wdata[3];
+
+  assign intr_enable_es_fifo_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_fifo_err_wd = reg_wdata[4];
 
   assign intr_test_es_entropy_valid_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_es_entropy_valid_wd = reg_wdata[0];
 
-  assign intr_test_es_entropy_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_es_entropy_fifo_err_wd = reg_wdata[1];
+  assign intr_test_es_ana_src_ok_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_ana_src_ok_wd = reg_wdata[1];
+
+  assign intr_test_es_ana_bits_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_ana_bits_err_wd = reg_wdata[2];
+
+  assign intr_test_es_ana_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_ana_fifo_err_wd = reg_wdata[3];
+
+  assign intr_test_es_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_fifo_err_wd = reg_wdata[4];
 
   assign es_regen_we = addr_hit[3] & reg_we & ~wr_err;
   assign es_regen_wd = reg_wdata[0];
 
-  assign es_conf_we = addr_hit[4] & reg_we & ~wr_err;
-  assign es_conf_wd = reg_wdata[0];
 
 
 
+  assign es_conf_enable_we = addr_hit[5] & reg_we & ~wr_err;
+  assign es_conf_enable_wd = reg_wdata[1:0];
 
-  assign es_entropy_re = addr_hit[6] && reg_re;
+  assign es_conf_ana_src_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign es_conf_ana_src_en_wd = reg_wdata[4];
 
-  assign es_ctrl_we = addr_hit[7] & reg_we & ~wr_err;
-  assign es_ctrl_wd = reg_wdata[0];
+  assign es_conf_rct_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign es_conf_rct_en_wd = reg_wdata[5];
 
-  assign es_status_re = addr_hit[8] && reg_re;
+  assign es_conf_apt_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign es_conf_apt_en_wd = reg_wdata[6];
 
-  assign es_fdepthst_re = addr_hit[9] && reg_re;
+  assign es_rct_health_we = addr_hit[6] & reg_we & ~wr_err;
+  assign es_rct_health_wd = reg_wdata[15:0];
 
-  assign es_thresh_we = addr_hit[10] & reg_we & ~wr_err;
-  assign es_thresh_wd = reg_wdata[6:0];
+  assign es_apt_health_apt_max_we = addr_hit[7] & reg_we & ~wr_err;
+  assign es_apt_health_apt_max_wd = reg_wdata[15:0];
 
-  assign es_rate_we = addr_hit[11] & reg_we & ~wr_err;
+  assign es_apt_health_apt_win_we = addr_hit[7] & reg_we & ~wr_err;
+  assign es_apt_health_apt_win_wd = reg_wdata[31:16];
+
+  assign es_entropy_re = addr_hit[8] && reg_re;
+
+  assign es_status_fifo0_depth_re = addr_hit[9] && reg_re;
+
+  assign es_status_fifo1_depth_re = addr_hit[9] && reg_re;
+
+  assign es_status_fifo2_depth_re = addr_hit[9] && reg_re;
+
+  assign es_status_fifo3_depth_re = addr_hit[9] && reg_re;
+
+  assign es_status_diag_re = addr_hit[9] && reg_re;
+
+  assign es_fdepthst_re = addr_hit[10] && reg_re;
+
+  assign es_thresh_we = addr_hit[11] & reg_we & ~wr_err;
+  assign es_thresh_wd = reg_wdata[2:0];
+
+  assign es_rate_we = addr_hit[12] & reg_we & ~wr_err;
   assign es_rate_wd = reg_wdata[15:0];
 
-  assign es_seed_we = addr_hit[12] & reg_we & ~wr_err;
-  assign es_seed_wd = reg_wdata[31:0];
+  assign es_seed_we = addr_hit[13] & reg_we & ~wr_err;
+  assign es_seed_wd = reg_wdata[7:0];
 
   // Read data return
   always_comb begin
@@ -634,17 +1068,26 @@ module entropy_src_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_es_entropy_valid_qs;
-        reg_rdata_next[1] = intr_state_es_entropy_fifo_err_qs;
+        reg_rdata_next[1] = intr_state_es_ana_src_ok_qs;
+        reg_rdata_next[2] = intr_state_es_ana_bits_err_qs;
+        reg_rdata_next[3] = intr_state_es_ana_fifo_err_qs;
+        reg_rdata_next[4] = intr_state_es_fifo_err_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_es_entropy_valid_qs;
-        reg_rdata_next[1] = intr_enable_es_entropy_fifo_err_qs;
+        reg_rdata_next[1] = intr_enable_es_ana_src_ok_qs;
+        reg_rdata_next[2] = intr_enable_es_ana_bits_err_qs;
+        reg_rdata_next[3] = intr_enable_es_ana_fifo_err_qs;
+        reg_rdata_next[4] = intr_enable_es_fifo_err_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
+        reg_rdata_next[3] = '0;
+        reg_rdata_next[4] = '0;
       end
 
       addr_hit[3]: begin
@@ -652,41 +1095,53 @@ module entropy_src_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = es_conf_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[7:0] = es_rev_abi_revision_qs;
         reg_rdata_next[15:8] = es_rev_hw_revision_qs;
         reg_rdata_next[23:16] = es_rev_chip_type_qs;
       end
 
+      addr_hit[5]: begin
+        reg_rdata_next[1:0] = es_conf_enable_qs;
+        reg_rdata_next[4] = es_conf_ana_src_en_qs;
+        reg_rdata_next[5] = es_conf_rct_en_qs;
+        reg_rdata_next[6] = es_conf_apt_en_qs;
+      end
+
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = es_entropy_qs;
+        reg_rdata_next[15:0] = es_rct_health_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = es_ctrl_qs;
+        reg_rdata_next[15:0] = es_apt_health_apt_max_qs;
+        reg_rdata_next[31:16] = es_apt_health_apt_win_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = es_status_qs;
+        reg_rdata_next[31:0] = es_entropy_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[6:0] = es_fdepthst_qs;
+        reg_rdata_next[2:0] = es_status_fifo0_depth_qs;
+        reg_rdata_next[6:4] = es_status_fifo1_depth_qs;
+        reg_rdata_next[10:8] = es_status_fifo2_depth_qs;
+        reg_rdata_next[14:12] = es_status_fifo3_depth_qs;
+        reg_rdata_next[31] = es_status_diag_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[6:0] = es_thresh_qs;
+        reg_rdata_next[2:0] = es_fdepthst_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[15:0] = es_rate_qs;
+        reg_rdata_next[2:0] = es_thresh_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[31:0] = es_seed_qs;
+        reg_rdata_next[15:0] = es_rate_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[7:0] = es_seed_qs;
       end
 
       default: begin
