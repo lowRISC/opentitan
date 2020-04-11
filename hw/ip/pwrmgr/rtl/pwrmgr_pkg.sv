@@ -37,6 +37,13 @@ package pwrmgr_pkg;
     main_pok: 1'b1
   };
 
+  parameter pwr_ast_rsp_t PWR_AST_RSP_SYNC_DEFAULT = '{
+    slow_clk_val: 2'b01,
+    core_clk_val: 2'b01,
+    io_clk_val: 2'b10,
+    main_pok: 1'b0
+  };
+
   // pwrmgr to rstmgr
   typedef struct packed {
     logic [PowerDomains-1:0] lc_rst_req;

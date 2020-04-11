@@ -60,7 +60,7 @@ module pwrmgr import pwrmgr_pkg::*;
   pwrmgr_reg2hw_t reg2hw;
   pwrmgr_hw2reg_t hw2reg;
 
-  pwr_peri_rsp_t ext_reqs, ext_reqs_masked;
+  pwr_peri_rsp_t ext_reqs_masked;
   logic req_pwrup;
   logic ack_pwrup;
   logic req_pwrdn;
@@ -80,10 +80,11 @@ module pwrmgr import pwrmgr_pkg::*;
   pwrmgr_reg2hw_wakeup_en_reg_t slow_wakeup_en;
   pwrmgr_reg2hw_reset_en_reg_t slow_reset_en;
 
-  pwr_ast_rsp_t slow_ast_q;
+  pwr_ast_rsp_t slow_ast;
   pwr_peri_rsp_t slow_ext_reqs, slow_ext_reqs_masked;
 
   pwrup_cause_e slow_pwrup_cause;
+  logic slow_pwrup_cause_toggle;
   logic slow_req_pwrup;
   logic slow_ack_pwrup;
   logic slow_req_pwrdn;
@@ -129,78 +130,54 @@ module pwrmgr import pwrmgr_pkg::*;
   assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_regwen;
 
   ////////////////////////////
-  ///  cdc handling - clk_i
+  ///  cdc handling
   ////////////////////////////
 
-  // finds a clk_slow edge in clk domain to know when it is safe to sync over
-  // this signal is only safe to use within the pwrmgr module when the source
-  // and destination clock domains are both clear
-  logic cdc_safe;
-
-  // pwrup is synced directly as it acts as a start signal to the pulse module
-  prim_flop_2sync # (
-    .Width(1)
-  ) i_pwrup_sync (
+  pwrmgr_cdc i_cdc (
     .clk_i,
     .rst_ni,
-    .d(slow_req_pwrup),
-    .q(req_pwrup)
-  );
-
-  pwrmgr_cdc_pulse i_cdc_pulse (
     .clk_slow_i,
-    .clk_i,
-    .rst_ni,
-    .start_i(req_pwrup),
-    .stop_i(req_pwrdn),
-    .pulse_o(cdc_safe)
+    .rst_slow_ni,
+
+    // slow domain signals
+    .slow_req_pwrup_i(slow_req_pwrup),
+    .slow_ack_pwrdn_i(slow_ack_pwrdn),
+    .slow_pwrup_cause_toggle_i(slow_pwrup_cause_toggle),
+    .slow_pwrup_cause_i(slow_pwrup_cause),
+    .slow_wakeup_en_o(slow_wakeup_en),
+    .slow_reset_en_o(slow_reset_en),
+    .slow_main_pdb_o(slow_main_pdb),
+    .slow_io_clk_en_o(slow_io_clk_en),
+    .slow_core_clk_en_o(slow_core_clk_en),
+    .slow_req_pwrdn_o(slow_req_pwrdn),
+    .slow_ack_pwrup_o(slow_ack_pwrup),
+    .slow_ast_o(slow_ast),
+    .slow_ext_reqs_o(slow_ext_reqs),
+    .slow_ext_reqs_masked_i(slow_ext_reqs_masked),
+
+    // fast domain signals
+    .req_pwrdn_i(req_pwrdn),
+    .ack_pwrup_i(ack_pwrup),
+    .cfg_cdc_sync_i(reg2hw.cfg_cdc_sync.qe & reg2hw.cfg_cdc_sync.q),
+    .cdc_sync_done_o(hw2reg.cfg_cdc_sync.de),
+    .wakeup_en_i(reg2hw.wakeup_en.q),
+    .reset_en_i(reg2hw.reset_en.q),
+    .main_pdb_i(reg2hw.control.main_pdb.q),
+    .io_clk_en_i(reg2hw.control.io_clk_en.q),
+    .core_clk_en_i(reg2hw.control.core_clk_en.q),
+    .ack_pwrdn_o(ack_pwrdn),
+    .req_pwrup_o(req_pwrup),
+    .pwrup_cause_o(pwrup_cause),
+    .ext_reqs_o(ext_reqs_masked),
+
+    // AST signals
+    .ast_i(pwr_ast_i),
+
+    // peripheral signals
+    .peri_i(pwr_peri_i)
   );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_pwrdn   <= '0;
-      pwrup_cause <= Por;
-    end else if (cdc_safe) begin
-      ack_pwrdn   <= slow_ack_pwrdn;
-      pwrup_cause <= slow_pwrup_cause;
-    end
-  end
-
-  ////////////////////////////
-  ///  cdc handling - clk_slow_i
-  ////////////////////////////
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      slow_wakeup_en <= '0;
-      slow_reset_en  <= '0;
-      slow_main_pdb  <= '0;
-      slow_io_clk_en <= '0;
-      slow_core_clk_en <= '0;
-      slow_ack_pwrup <= '0;
-      slow_req_pwrdn <= '0;
-    end else if (cdc_safe) begin
-      slow_wakeup_en <= reg2hw.wakeup_en.q;
-      slow_reset_en  <= reg2hw.reset_en.q;
-      slow_main_pdb  <= reg2hw.control.main_pdb.q;
-      slow_io_clk_en <= reg2hw.control.io_clk_en.q;
-      slow_core_clk_en <= reg2hw.control.core_clk_en.q;
-      slow_ack_pwrup <= ack_pwrup;
-      slow_req_pwrdn <= req_pwrdn;
-    end
-  end
-
-  // TODO
-  // Need to vote on the differential signals to ensure they are stable
-  prim_flop_2sync # (
-    .Width($bits(pwr_ast_rsp_t))
-  ) i_pok_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d      (pwr_ast_i),
-    .q      (slow_ast_q)
-  );
-
+  assign hw2reg.cfg_cdc_sync.d = 1'b0;
 
   ////////////////////////////
   ///  Wakup and reset capture
@@ -213,28 +190,7 @@ module pwrmgr import pwrmgr_pkg::*;
   // scale approximately the same across all domains.
   //
   // This also implies that these signals must be at least 1 clk_slow pulse long
-
-  prim_flop_2sync # (
-    .Width(HwRstReqs + WakeUpPeris)
-  ) i_slow_ext_req_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d      (pwr_peri_i),
-    .q      (slow_ext_reqs)
-  );
-
-  assign slow_ext_reqs_masked.wakeups = slow_ext_reqs.wakeups & slow_wakeup_en;
-  assign slow_ext_reqs_masked.rstreqs = slow_ext_reqs.rstreqs & slow_reset_en;
-
-  prim_flop_2sync # (
-    .Width(HwRstReqs + WakeUpPeris)
-  ) i_ext_req_sync (
-    .clk_i,
-    .rst_ni,
-    .d (slow_ext_reqs),
-    .q (ext_reqs)
-  );
-
+  //
   // Since resets are not latched inside pwrmgr, there exists a corner case where
   // non-always-on reset requests may get wiped out by a graceful low power entry
   // It's not clear if this is really an issue at the moment, but something to keep
@@ -244,38 +200,37 @@ module pwrmgr import pwrmgr_pkg::*;
   // should clear it and when that should happen. If the clearing does not work
   // correctly, it is possible for the device to end up in a permanent reset loop,
   // and that would be very undesirable.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ext_reqs_masked <= '0;
-    end else if (cdc_safe) begin
-      ext_reqs_masked.wakeups <= ext_reqs.wakeups & reg2hw.wakeup_en;
-      ext_reqs_masked.rstreqs <= ext_reqs.rstreqs & reg2hw.reset_en;
-    end
-  end
+
+  assign slow_ext_reqs_masked.wakeups = slow_ext_reqs.wakeups & slow_wakeup_en;
+  assign slow_ext_reqs_masked.rstreqs = slow_ext_reqs.rstreqs & slow_reset_en;
+
+
+
 
   ////////////////////////////
   ///  clk_slow FSM
   ////////////////////////////
 
   pwrmgr_slow_fsm i_slow_fsm (
-    .clk_i           (clk_slow_i),
-    .rst_ni          (rst_slow_ni),
-    .wakeup_i        (|slow_ext_reqs_masked.wakeups),
-    .reset_req_i     (|slow_ext_reqs_masked.rstreqs),
-    .ast_i           (slow_ast_q),
-    .req_pwrup_o     (slow_req_pwrup),
-    .pwrup_cause_o   (slow_pwrup_cause),
-    .ack_pwrup_i     (slow_ack_pwrup),
-    .req_pwrdn_i     (slow_req_pwrdn),
-    .ack_pwrdn_o     (slow_ack_pwrdn),
+    .clk_i                (clk_slow_i),
+    .rst_ni               (rst_slow_ni),
+    .wakeup_i             (|slow_ext_reqs_masked.wakeups),
+    .reset_req_i          (|slow_ext_reqs_masked.rstreqs),
+    .ast_i                (slow_ast),
+    .req_pwrup_o          (slow_req_pwrup),
+    .pwrup_cause_o        (slow_pwrup_cause),
+    .pwrup_cause_toggle_o (slow_pwrup_cause_toggle),
+    .ack_pwrup_i          (slow_ack_pwrup),
+    .req_pwrdn_i          (slow_req_pwrdn),
+    .ack_pwrdn_o          (slow_ack_pwrdn),
 
-    .main_pdb_i      (slow_main_pdb),
-    .io_clk_en_i     (slow_io_clk_en),
-    .core_clk_en_i   (slow_core_clk_en),
+    .main_pdb_i           (slow_main_pdb),
+    .io_clk_en_i          (slow_io_clk_en),
+    .core_clk_en_i        (slow_core_clk_en),
 
     // outputs to AST - These are on the slow clock domain
     // TBD - need to check this with partners
-    .ast_o           (pwr_ast_o)
+    .ast_o                (pwr_ast_o)
   );
 
 

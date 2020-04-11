@@ -17,6 +17,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // interface with fast fsm
   output logic req_pwrup_o,
+  output logic pwrup_cause_toggle_o,
   output pwrup_cause_e pwrup_cause_o,
   input ack_pwrup_i,
   input req_pwrdn_i,
@@ -47,12 +48,14 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   state_e state_q, state_d;
   pwrup_cause_e cause_q, cause_d;
+  logic cause_toggle_q, cause_toggle_d;
 
   // All power signals and signals going to analog logic are flopped to avoid transitioanl glitches
   logic pdb_q, pdb_d;
   logic pwr_clamp_q, pwr_clamp_d;
   logic core_clk_en_q, core_clk_en_d;
   logic io_clk_en_q, io_clk_en_d;
+
 
   logic all_clks_valid;
   logic all_clks_invalid;
@@ -65,32 +68,35 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q       <= StReset;
-      cause_q       <= Por;
-      pdb_q         <= 1'b0;
-      pwr_clamp_q   <= 1'b1;
-      core_clk_en_q <= 1'b0;
-      io_clk_en_q   <= 1'b0;
+      state_q        <= StReset;
+      cause_q        <= Por;
+      cause_toggle_q <= 1'b0;
+      pdb_q          <= 1'b0;
+      pwr_clamp_q    <= 1'b1;
+      core_clk_en_q  <= 1'b0;
+      io_clk_en_q    <= 1'b0;
     end else begin
-      state_q       <= state_d;
-      cause_q       <= cause_d;
-      pdb_q         <= pdb_d;
-      pwr_clamp_q   <= pwr_clamp_d;
-      core_clk_en_q <= core_clk_en_d;
-      io_clk_en_q   <= io_clk_en_d;
+      state_q        <= state_d;
+      cause_q        <= cause_d;
+      cause_toggle_q <= cause_toggle_d;
+      pdb_q          <= pdb_d;
+      pwr_clamp_q    <= pwr_clamp_d;
+      core_clk_en_q  <= core_clk_en_d;
+      io_clk_en_q    <= io_clk_en_d;
     end
   end
 
   always_comb begin
-    state_d       = state_q;
-    cause_d       = cause_q;
-    pdb_d         = pdb_q;
-    pwr_clamp_d   = pwr_clamp_q;
-    core_clk_en_d = core_clk_en_q;
-    io_clk_en_d   = io_clk_en_q;
+    state_d        = state_q;
+    cause_d        = cause_q;
+    pdb_d          = pdb_q;
+    cause_toggle_d = cause_toggle_q;
+    pwr_clamp_d    = pwr_clamp_q;
+    core_clk_en_d  = core_clk_en_q;
+    io_clk_en_d    = io_clk_en_q;
 
-    req_pwrup_o   = 1'b0;
-    ack_pwrdn_o   = 1'b0;
+    req_pwrup_o    = 1'b0;
+    ack_pwrdn_o    = 1'b0;
 
     unique case(state_q)
 
@@ -104,6 +110,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         // different
         if (wakeup_i || reset_req_i) begin
           state_d = StMainPowerOn;
+          cause_toggle_d = ~cause_toggle_q;
           cause_d = reset_req_i ? Reset : Wake;
         end
       end
@@ -183,6 +190,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
 
   assign pwrup_cause_o = cause_q;
+  assign pwrup_cause_toggle_o = cause_toggle_q;
 
   assign ast_o.core_clk_en = core_clk_en_q;
   assign ast_o.io_clk_en = io_clk_en_q;
