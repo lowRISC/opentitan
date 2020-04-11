@@ -41,7 +41,7 @@ module pwrmgr_cdc_pulse (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       valid <= 1'b0;
-    end else if (valid & stop_i) begin
+    end else if (valid && stop_i) begin
       valid <= 1'b0;
     end else if (!valid && toggle && start_i) begin
       valid <= 1'b1;

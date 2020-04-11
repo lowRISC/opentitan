@@ -15,7 +15,7 @@ filesets:
       - rtl/pwrmgr_reg_pkg.sv
       - rtl/pwrmgr_reg_top.sv
       - rtl/pwrmgr.sv
-      - rtl/pwrmgr_cdc_pulse.sv
+      - rtl/pwrmgr_cdc.sv
       - rtl/pwrmgr_slow_fsm.sv
       - rtl/pwrmgr_fsm.sv
       - rtl/pwrmgr_wake_info.sv

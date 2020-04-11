@@ -8,45 +8,45 @@
 `include "prim_assert.sv"
 
 module pwrmgr_fsm import pwrmgr_pkg::*; (
-    input clk_i,
-    input rst_ni,
+  input clk_i,
+  input rst_ni,
 
-    // interface with slow_fsm
-    input req_pwrup_i,
-    input pwrup_cause_e pwrup_cause_i,
-    output logic ack_pwrup_o,
-    output logic req_pwrdn_o,
-    input ack_pwrdn_i,
-    input low_power_entry_i,
-    input main_pdb_i,
-    input reset_req_i,
+  // interface with slow_fsm
+  input req_pwrup_i,
+  input pwrup_cause_e pwrup_cause_i,
+  output logic ack_pwrup_o,
+  output logic req_pwrdn_o,
+  input ack_pwrdn_i,
+  input low_power_entry_i,
+  input main_pdb_i,
+  input reset_req_i,
 
-    // consumed in pwrmgr
-    output logic wkup_o,        // generate wake interrupt
-    output logic wkup_record_o, // enable wakeup recording
-    output logic fall_through_o,
-    output logic abort_o,
-    output logic clr_cfg_lock_o,
+  // consumed in pwrmgr
+  output logic wkup_o,        // generate wake interrupt
+  output logic wkup_record_o, // enable wakeup recording
+  output logic fall_through_o,
+  output logic abort_o,
+  output logic clr_cfg_lock_o,
 
-    // rstmgr
-    output pwr_rst_req_t pwr_rst_o,
-    input pwr_rst_rsp_t pwr_rst_i,
+  // rstmgr
+  output pwr_rst_req_t pwr_rst_o,
+  input pwr_rst_rsp_t pwr_rst_i,
 
-    // clkmgr
-    output logic ips_clk_en_o,
+  // clkmgr
+  output logic ips_clk_en_o,
 
-    // otp
-    output logic otp_init_o,
-    input otp_done_i,
-    input otp_idle_i,
+  // otp
+  output logic otp_init_o,
+  input otp_done_i,
+  input otp_idle_i,
 
-    // lc
-    output logic lc_init_o,
-    input lc_done_i,
-    input lc_idle_i,
+  // lc
+  output logic lc_init_o,
+  input lc_done_i,
+  input lc_idle_i,
 
-    // flash
-    input flash_idle_i
+  // flash
+  input flash_idle_i
 );
 
   // state enum
@@ -97,7 +97,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   logic otp_init;
   logic lc_init;
 
-  assign pdb_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &&
+  assign pdb_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
                              pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
 
   assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &&

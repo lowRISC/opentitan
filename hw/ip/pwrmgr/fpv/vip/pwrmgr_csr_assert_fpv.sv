@@ -87,45 +87,49 @@ module pwrmgr_csr_assert_fpv import tlul_pkg::*; (
   // read/write assertions for register: intr_test
   `ASSERT(intr_test_wr_A, wr_ext_P(0, 6'h8, i_pwrmgr.reg2hw.intr_test.q, 0))
 
+  // read/write assertions for register: cfg_cdc_sync
+  `ASSERT(cfg_cdc_sync_wr_A, wr_P(0, 6'hc, i_pwrmgr.reg2hw.cfg_cdc_sync.q, 0))
+  `ASSERT(cfg_cdc_sync_rd_A, rd_P(0, 6'hc, i_pwrmgr.hw2reg.cfg_cdc_sync.d))
+
   // read/write assertions for register: ctrl_cfg_regwen
-  `ASSERT(ctrl_cfg_regwen_wr_A, wr_ext_P(0, 6'hc, i_pwrmgr.reg2hw.ctrl_cfg_regwen.q, 0))
-  `ASSERT(ctrl_cfg_regwen_rd_A, rd_ext_P(0, 6'hc, i_pwrmgr.hw2reg.ctrl_cfg_regwen.d))
+  `ASSERT(ctrl_cfg_regwen_wr_A, wr_ext_P(0, 6'h10, i_pwrmgr.reg2hw.ctrl_cfg_regwen.q, 0))
+  `ASSERT(ctrl_cfg_regwen_rd_A, rd_ext_P(0, 6'h10, i_pwrmgr.hw2reg.ctrl_cfg_regwen.d))
 
   // read/write assertions for register: control
-  `ASSERT(control_wr_A, wr_P(6, 6'h10, i_pwrmgr.reg2hw.control.q, i_pwrmgr.i_reg_top.ctrl_cfg_regwen_qs))
+  `ASSERT(control_wr_A, wr_P(6, 6'h14, i_pwrmgr.reg2hw.control.q, i_pwrmgr.i_reg_top.ctrl_cfg_regwen_qs))
   `ASSERT(control_stable_A, wr_regen_stable_P(i_pwrmgr.i_reg_top.ctrl_cfg_regwen_qs, i_pwrmgr.reg2hw.control.q))
-  `ASSERT(control_rd_A, rd_P(6, 6'h10, i_pwrmgr.hw2reg.control.d))
+  `ASSERT(control_rd_A, rd_P(6, 6'h14, i_pwrmgr.hw2reg.control.d))
 
   // read/write assertions for register: wakeup_en_regwen
-  `ASSERT(wakeup_en_regwen_wr_A, wr_P(0, 6'h14, i_pwrmgr.i_reg_top.wakeup_en_regwen_we, 0))
-  `ASSERT(wakeup_en_regwen_rd_A, rd_P(0, 6'h14, i_pwrmgr.i_reg_top.wakeup_en_regwen_qs))
+  `ASSERT(wakeup_en_regwen_wr_A, wr_P(0, 6'h18, i_pwrmgr.i_reg_top.wakeup_en_regwen_we, 0))
+  `ASSERT(wakeup_en_regwen_rd_A, rd_P(0, 6'h18, i_pwrmgr.i_reg_top.wakeup_en_regwen_qs))
 
   // read/write assertions for register: wakeup_en
-  `ASSERT(wakeup_en_wr_A, wr_P(15, 6'h18, i_pwrmgr.reg2hw.wakeup_en.q, i_pwrmgr.i_reg_top.wakeup_en_regwen_qs))
+  `ASSERT(wakeup_en_wr_A, wr_P(15, 6'h1c, i_pwrmgr.reg2hw.wakeup_en.q, i_pwrmgr.i_reg_top.wakeup_en_regwen_qs))
   `ASSERT(wakeup_en_stable_A, wr_regen_stable_P(i_pwrmgr.i_reg_top.wakeup_en_regwen_qs, i_pwrmgr.reg2hw.wakeup_en.q))
-  `ASSERT(wakeup_en_rd_A, rd_P(15, 6'h18, i_pwrmgr.reg2hw.wakeup_en.q))
+  `ASSERT(wakeup_en_rd_A, rd_P(15, 6'h1c, i_pwrmgr.reg2hw.wakeup_en.q))
 
   // read/write assertions for register: wake_status
-  `ASSERT(wake_status_rd_A, rd_P(15, 6'h1c, i_pwrmgr.i_reg_top.wake_status_qs))
+  `ASSERT(wake_status_rd_A, rd_P(15, 6'h20, i_pwrmgr.i_reg_top.wake_status_qs))
 
   // read/write assertions for register: reset_en_regwen
-  `ASSERT(reset_en_regwen_wr_A, wr_P(0, 6'h20, i_pwrmgr.i_reg_top.reset_en_regwen_we, 0))
-  `ASSERT(reset_en_regwen_rd_A, rd_P(0, 6'h20, i_pwrmgr.i_reg_top.reset_en_regwen_qs))
+  `ASSERT(reset_en_regwen_wr_A, wr_P(0, 6'h24, i_pwrmgr.i_reg_top.reset_en_regwen_we, 0))
+  `ASSERT(reset_en_regwen_rd_A, rd_P(0, 6'h24, i_pwrmgr.i_reg_top.reset_en_regwen_qs))
 
   // read/write assertions for register: reset_en
-  `ASSERT(reset_en_wr_A, wr_P(1, 6'h24, i_pwrmgr.reg2hw.reset_en.q, i_pwrmgr.i_reg_top.reset_en_regwen_qs))
+  `ASSERT(reset_en_wr_A, wr_P(1, 6'h28, i_pwrmgr.reg2hw.reset_en.q, i_pwrmgr.i_reg_top.reset_en_regwen_qs))
   `ASSERT(reset_en_stable_A, wr_regen_stable_P(i_pwrmgr.i_reg_top.reset_en_regwen_qs, i_pwrmgr.reg2hw.reset_en.q))
-  `ASSERT(reset_en_rd_A, rd_P(1, 6'h24, i_pwrmgr.reg2hw.reset_en.q))
+  `ASSERT(reset_en_rd_A, rd_P(1, 6'h28, i_pwrmgr.reg2hw.reset_en.q))
 
   // read/write assertions for register: reset_status
-  `ASSERT(reset_status_rd_A, rd_P(1, 6'h28, i_pwrmgr.i_reg_top.reset_status_qs))
+  `ASSERT(reset_status_rd_A, rd_P(1, 6'h2c, i_pwrmgr.i_reg_top.reset_status_qs))
 
   // read/write assertions for register: wake_info_capture_dis
-  `ASSERT(wake_info_capture_dis_wr_A, wr_P(0, 6'h2c, i_pwrmgr.reg2hw.wake_info_capture_dis.q, 0))
-  `ASSERT(wake_info_capture_dis_rd_A, rd_P(0, 6'h2c, i_pwrmgr.reg2hw.wake_info_capture_dis.q))
+  `ASSERT(wake_info_capture_dis_wr_A, wr_P(0, 6'h30, i_pwrmgr.reg2hw.wake_info_capture_dis.q, 0))
+  `ASSERT(wake_info_capture_dis_rd_A, rd_P(0, 6'h30, i_pwrmgr.reg2hw.wake_info_capture_dis.q))
 
   // read/write assertions for register: wake_info
-  `ASSERT(wake_info_wr_A, wr_ext_P(17, 6'h30, i_pwrmgr.reg2hw.wake_info.q, 0))
-  `ASSERT(wake_info_rd_A, rd_ext_P(17, 6'h30, i_pwrmgr.hw2reg.wake_info.d))
+  `ASSERT(wake_info_wr_A, wr_ext_P(17, 6'h34, i_pwrmgr.reg2hw.wake_info.q, 0))
+  `ASSERT(wake_info_rd_A, rd_ext_P(17, 6'h34, i_pwrmgr.hw2reg.wake_info.d))
 
 endmodule

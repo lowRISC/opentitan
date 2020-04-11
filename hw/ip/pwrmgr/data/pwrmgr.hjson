@@ -70,6 +70,34 @@
   regwidth: "32",
   registers: [
 
+    { name: "CFG_CDC_SYNC",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      desc: '''
+      The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the
+      fast clock domain but used in the slow clock domain.
+
+      The configuration are not propogated across the clock boundary until this
+      register is triggered and read.  See fields below for more details
+      ''',
+
+      fields: [
+        { bits: "0",
+          swaccess: "wo",
+          name: "SYNC",
+          desc: '''
+            Configuration sync.  When this bit is written to 1, a sync pulse is generated.  When
+            the sync completes, this bit then self clears.
+
+            Software should write this bit to 1, wait for it to clear, before assuming the slow clock
+            domain has assumed the programmaed values.
+          ''',
+          resval: "0",
+        },
+      ]
+    },
+
     { name: "CTRL_CFG_REGWEN",
       swaccess: "rw0c",
       hwaccess: "hwo",
