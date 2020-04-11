@@ -7,7 +7,7 @@
 // This module uses an LFSR connected to a PRINCE S-Box to provide pseudo-random data to the AES
 // module primarily for clearing registers. The LFSR can be reseeded using an external interface.
 
-module aes_prng(
+module aes_prng (
   input  logic        clk_i,
   input  logic        rst_ni,
 
@@ -25,22 +25,6 @@ module aes_prng(
 );
 
   localparam int unsigned DATA_WIDTH = 64;
-
-  // The S-Box of the PRINCE cipher is used to "scramble" the LFSR output.
-  localparam logic[15:0][3:0] PRINCE_SBOX_FWD = {4'h4, 4'hD, 4'h5, 4'hE,
-                                                 4'h0, 4'h8, 4'h7, 4'h6,
-                                                 4'h1, 4'h9, 4'hC, 4'hA,
-                                                 4'h2, 4'h3, 4'hF, 4'hB};
-
-  // "Scramble" with PRINCE cipher S-Box.
-  function automatic logic [63:0] aes_prng_scramble(logic [63:0] in);
-    logic [63:0] out;
-    // The PRINCE cipher S-Box operates on 4-bit nibbles.
-    for (int i=0; i<16; i++) begin
-      out[i*4 +: 4] = PRINCE_SBOX_FWD[in[i*4 +: 4]];
-    end
-    return out;
-  endfunction
 
   logic [DATA_WIDTH-1:0] lfsr_state;
   logic                  lfsr_en;
@@ -73,6 +57,6 @@ module aes_prng(
   );
 
   // "Scramble" the LFSR state.
-  assign data_o = aes_prng_scramble(lfsr_state);
+  assign data_o = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
 
 endmodule

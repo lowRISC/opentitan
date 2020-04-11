@@ -9,9 +9,10 @@
 // them with registers, resulting in a split of around 50/50 between logic and
 // sequential cells.
 //
-// This generator has been tested with 32bit wide data, and it is accurate to
-// within around 250 GE. Do not use for fever than 500 GE.
+// This generator has been tested with 32bit wide data, and produces
+// the following results:
 //
+// if valid_i constantly set to 1'b1:
 // -------------+-----------+----------
 // requested GE | actual GE | GE error
 // -------------+-----------+----------
@@ -26,6 +27,24 @@
 // 25000        |   25228   |   228
 // 50000        |   50485   |   485
 //
+// otherwise, with clock gating enabled:
+// -------------+-----------+----------
+// requested GE | actual GE | GE error
+// -------------+-----------+----------
+// 500          |   696     |   196
+// 1000         |   1043    |   43
+// 1500         |   1737    |   237
+// 2500         |   2779    |   279
+// 5000         |   5340    |   340
+// 7500         |   7634    |   134
+// 10000        |   10284   |   284
+// 15000        |   15585   |   585
+// 25000        |   25855   |   855
+// 50000        |   51732   |   1732
+//
+// Note that the generator is not very accurate for smaller gate counts due
+// to the generate loop granularity. Hence, do not use for fever than 500 GE.
+
 
 module prim_gate_gen #(
   parameter int DataWidth = 32,
@@ -34,8 +53,10 @@ module prim_gate_gen #(
   input                        clk_i,
   input                        rst_ni,
 
+  input                        valid_i,
   input        [DataWidth-1:0] data_i,
-  output logic [DataWidth-1:0] data_o
+  output logic [DataWidth-1:0] data_o,
+  output                       valid_o
 );
 
   /////////////////////////////////////
@@ -54,43 +75,29 @@ module prim_gate_gen #(
   `ASSERT(DataMustBeMultipleOfFour_A, DataWidth % 4 == 0)
 
   /////////////////////
-  // Helper Function //
-  /////////////////////
-
-  // this is the sbox from the prince cipher
-  localparam logic[15:0][3:0] SBox4 = {4'h4, 4'hD, 4'h5, 4'hE,
-                                       4'h0, 4'h8, 4'h7, 4'h6,
-                                       4'h1, 4'h9, 4'hC, 4'hA,
-                                       4'h2, 4'h3, 4'hF, 4'hB};
-
-  function automatic logic [DataWidth-1:0] sbox4_layer(logic [DataWidth-1:0] state_in);
-    logic [DataWidth-1:0] state_out;
-    // note that if simulation performance becomes an issue, this loop can be unrolled
-    for (int k = 0; k < DataWidth/4; k++) begin
-      state_out[k*4  +: 4] = SBox4[state_in[k*4  +: 4]];
-    end
-    return state_out;
-  endfunction : sbox4_layer
-
-  /////////////////////
   // Generator Loops //
   /////////////////////
 
-  (* preserve *) logic [NumOuterRounds-1:0][DataWidth-1:0] regs_d, regs_q;
+  logic [NumOuterRounds-1:0][DataWidth-1:0] regs_d, regs_q;
+  logic [NumOuterRounds-1:0] valid_d, valid_q;
 
   for (genvar k = 0; k < NumOuterRounds; k++) begin : gen_outer_round
 
-    (* preserve *) logic [NumInnerRounds:0][DataWidth-1:0] inner_data;
+    logic [NumInnerRounds:0][DataWidth-1:0] inner_data;
 
     if (k==0) begin : gen_first
       assign inner_data[0] = data_i;
+      assign valid_d[0]    = valid_i;
     end else begin : gen_others
       assign inner_data[0] = regs_q[k-1];
+      assign valid_d[k]    = valid_q[k-1];
     end
 
     for (genvar l = 0; l < NumInnerRounds; l++) begin : gen_inner
       // 2bit rotation + sbox layer
-      assign inner_data[l+1] = sbox4_layer({inner_data[l][1:0], inner_data[l][DataWidth-1:2]});
+      assign inner_data[l+1] = prim_cipher_pkg::sbox4_32bit({inner_data[l][1:0],
+                                                             inner_data[l][DataWidth-1:2]},
+                                                             prim_cipher_pkg::PRINCE_SBOX4);
     end
 
     assign regs_d[k] = inner_data[NumInnerRounds];
@@ -99,11 +106,18 @@ module prim_gate_gen #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       regs_q <= '0;
+      valid_q <= '0;
     end else begin
-      regs_q <= regs_d;
+      valid_q <= valid_d;
+      for (int k = 0; k < NumOuterRounds; k++) begin
+        if (valid_d[k]) begin
+          regs_q[k] <= regs_d[k];
+        end
+      end
     end
   end
 
   assign data_o = regs_q[NumOuterRounds-1];
+  assign valid_o = valid_q[NumOuterRounds-1];
 
 endmodule : prim_gate_gen

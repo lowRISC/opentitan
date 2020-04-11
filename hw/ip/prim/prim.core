@@ -29,12 +29,13 @@ filesets:
       - rtl/prim_fifo_async.sv
       - rtl/prim_fifo_sync.sv
       - rtl/prim_flop_2sync.sv
-      - rtl/prim_gate_gen.sv
       - rtl/prim_keccak.sv
       - rtl/prim_lfsr.sv
       - rtl/prim_packer.sv
+      - rtl/prim_cipher_pkg.sv
       - rtl/prim_present.sv
       - rtl/prim_prince.sv
+      - rtl/prim_gate_gen.sv
       - rtl/prim_pulse_sync.sv
       - rtl/prim_filter.sv
       - rtl/prim_filter_ctr.sv
