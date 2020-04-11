@@ -12,7 +12,7 @@
 // 32bit variant is only intended to be used as a lightweight data scrambling
 // device.
 //
-// See also: prim_prince
+// See also: prim_prince, prim_cipher_pkg
 //
 // References: - https://en.wikipedia.org/wiki/PRESENT
 //             - https://en.wikipedia.org/wiki/Prince_(cipher)
@@ -24,117 +24,109 @@
 // synthesis experiments.
 
 module prim_present #(
-  parameter int DataWidth = 64, // {32, 64}
-  parameter int KeyWidth  = 80, // {64, 80, 128}
-  parameter int NumRounds = 31  // > 0
+  parameter int DataWidth = 64,  // {32, 64}
+  parameter int KeyWidth  = 128, // {64, 80, 128}
+  parameter int NumRounds = 31,  // > 0
+  // Note that the decryption pass needs a modified key,
+  // to be calculated by performing NumRounds key updates
+  parameter bit Decrypt   = 0    // 0: encrypt, 1: decrypt
 ) (
   input        [DataWidth-1:0] data_i,
   input        [KeyWidth-1:0]  key_i,
-  output logic [DataWidth-1:0] data_o
+  output logic [DataWidth-1:0] data_o,
+  output logic [KeyWidth-1:0]  key_o
 );
-
-  //////////////////////////////////
-  // helper functions / constants //
-  //////////////////////////////////
-
-  // this is the sbox from the present cipher
-  localparam logic[15:0][3:0] SBox4 = {4'h2, 4'h1, 4'h7, 4'h4,
-                                       4'h8, 4'hF, 4'hE, 4'h3,
-                                       4'hD, 4'hA, 4'h0, 4'h9,
-                                       4'hB, 4'h6, 4'h5, 4'hC};
-
-  // these are modified permutation indices for a 32bit version that
-  // follow the same pattern as for the 64bit version
-  localparam logic[31:0][4:0] Perm32 = {5'd31, 5'd23, 5'd15, 5'd7,
-                                        5'd30, 5'd22, 5'd14, 5'd6,
-                                        5'd29, 5'd21, 5'd13, 5'd5,
-                                        5'd28, 5'd20, 5'd12, 5'd4,
-                                        5'd27, 5'd19, 5'd11, 5'd3,
-                                        5'd26, 5'd18, 5'd10, 5'd2,
-                                        5'd25, 5'd17, 5'd9,  5'd1,
-                                        5'd24, 5'd16, 5'd8,  5'd0};
-
-  // these are the permutation indices of the present cipher
-  localparam logic[63:0][5:0] Perm64 = {6'd63, 6'd47, 6'd31, 6'd15,
-                                        6'd62, 6'd46, 6'd30, 6'd14,
-                                        6'd61, 6'd45, 6'd29, 6'd13,
-                                        6'd60, 6'd44, 6'd28, 6'd12,
-                                        6'd59, 6'd43, 6'd27, 6'd11,
-                                        6'd58, 6'd42, 6'd26, 6'd10,
-                                        6'd57, 6'd41, 6'd25, 6'd09,
-                                        6'd56, 6'd40, 6'd24, 6'd08,
-                                        6'd55, 6'd39, 6'd23, 6'd07,
-                                        6'd54, 6'd38, 6'd22, 6'd06,
-                                        6'd53, 6'd37, 6'd21, 6'd05,
-                                        6'd52, 6'd36, 6'd20, 6'd04,
-                                        6'd51, 6'd35, 6'd19, 6'd03,
-                                        6'd50, 6'd34, 6'd18, 6'd02,
-                                        6'd49, 6'd33, 6'd17, 6'd01,
-                                        6'd48, 6'd32, 6'd16, 6'd00};
-
-  function automatic logic [DataWidth-1:0] sbox4_layer(logic [DataWidth-1:0] state_in);
-    logic [63:0] state_out;
-    // note that if simulation performance becomes an issue, this loop can be unrolled
-    for (int k = 0; k < DataWidth/4; k++) begin
-      state_out[k*4  +: 4] = SBox4[state_in[k*4  +: 4]];
-    end
-    return state_out;
-  endfunction : sbox4_layer
-
-  function automatic logic [DataWidth-1:0] perm_layer(logic [DataWidth-1:0] state_in);
-    logic [DataWidth-1:0] state_out;
-    if (DataWidth == 64) begin
-      // note that if simulation performance becomes an issue, this loop can be unrolled
-      for (int k = 0; k < DataWidth; k++) begin
-        state_out[k] = state_in[Perm64[k]];
-      end
-    end else begin
-      // note that if simulation performance becomes an issue, this loop can be unrolled
-      for (int k = 0; k < DataWidth; k++) begin
-        state_out[k] = state_in[Perm32[k]];
-      end
-    end
-    return state_out;
-  endfunction : perm_layer
-
-  function automatic logic [KeyWidth-1:0] update_key(logic [KeyWidth-1:0] key_in,
-                                                     logic [4:0] round_cnt);
-    logic [KeyWidth-1:0] key_out;
-    // rotate by 61 to the left
-    key_out = KeyWidth'(key_in << 61) | KeyWidth'(key_in >> (KeyWidth-61));
-    // sbox on uppermost 4 bits
-    key_out[KeyWidth-1 -: 4] = SBox4[key_out[KeyWidth-1 -: 4]];
-    // xor in round counter on bits 19 to 15
-    key_out[19:15] ^= round_cnt;
-    return key_out;
-  endfunction : update_key
 
   //////////////
   // datapath //
   //////////////
 
-  logic [DataWidth-1:0] data_state;
-  logic [KeyWidth-1:0]  round_key;
-  always_comb begin : p_present
-    data_state = data_i;
-    round_key  = key_i;
-    for (int k = 0; k < NumRounds; k++) begin
-      // cipher layers
-      data_state = data_state ^ round_key[KeyWidth-1 : KeyWidth-DataWidth];
-      data_state = sbox4_layer(data_state);
-      data_state = perm_layer(data_state);
+  logic [NumRounds:0][DataWidth-1:0] data_state;
+  logic [NumRounds:0][KeyWidth-1:0]  round_key;
+
+  // initialize
+  assign data_state[0] = data_i;
+  assign round_key[0]  = key_i;
+
+  for (genvar k = 0; k < NumRounds; k++) begin : gen_round
+    logic [DataWidth-1:0] data_state_xor, data_state_sbox;
+    // cipher layers
+    assign data_state_xor  = data_state[k] ^ round_key[k][KeyWidth-1 : KeyWidth-DataWidth];
+
+    ////////////////////////////////
+    // decryption pass, performs inverse permutation, sbox and keyschedule
+    if (Decrypt) begin : gen_dec
+      // original 64bit variant
+      if (DataWidth == 64) begin : gen_d64
+        assign data_state_sbox = prim_cipher_pkg::perm_64bit(data_state_xor,
+                                                             prim_cipher_pkg::PRESENT_PERM64_INV);
+        assign data_state[k+1] = prim_cipher_pkg::sbox4_64bit(data_state_sbox,
+                                                              prim_cipher_pkg::PRESENT_SBOX4_INV);
+      // reduced 32bit variant
+      end else begin : gen_d32
+        assign data_state_sbox = prim_cipher_pkg::perm_32bit(data_state_xor,
+                                                             prim_cipher_pkg::PRESENT_PERM32_INV);
+        assign data_state[k+1] = prim_cipher_pkg::sbox4_32bit(data_state_sbox,
+                                                              prim_cipher_pkg::PRESENT_SBOX4_INV);
+      end
       // update round key, count goes from 1 to 31 (max)
-      round_key  = update_key(round_key, 5'(k + 1));
-    end
-    data_o = data_state ^ round_key;
-  end
+      // original 128bit key variant
+      if (KeyWidth == 128) begin : gen_k128
+        assign round_key[k+1]  = prim_cipher_pkg::present_inv_update_key128(round_key[k],
+                                                                            5'(k + 1),
+                                                                            5'(NumRounds));
+      // original 80bit key variant
+      end else if (KeyWidth == 80) begin : gen_k80
+        assign round_key[k+1]  = prim_cipher_pkg::present_inv_update_key80(round_key[k],
+                                                                           5'(k + 1),
+                                                                           5'(NumRounds));
+      // reduced 64bit key variant
+      end else begin : gen_k64
+        assign round_key[k+1]  = prim_cipher_pkg::present_inv_update_key64(round_key[k],
+                                                                           5'(k + 1),
+                                                                           5'(NumRounds));
+      end
+    ////////////////////////////////
+    // encryption pass
+    end else begin : gen_enc
+      // original 64bit variant
+      if (DataWidth == 64) begin : gen_d64
+        assign data_state_sbox = prim_cipher_pkg::sbox4_64bit(data_state_xor,
+                                                              prim_cipher_pkg::PRESENT_SBOX4);
+        assign data_state[k+1] = prim_cipher_pkg::perm_64bit(data_state_sbox,
+                                                             prim_cipher_pkg::PRESENT_PERM64);
+      // reduced 32bit variant
+      end else begin : gen_d32
+        assign data_state_sbox = prim_cipher_pkg::sbox4_32bit(data_state_xor,
+                                                              prim_cipher_pkg::PRESENT_SBOX4);
+        assign data_state[k+1] = prim_cipher_pkg::perm_32bit(data_state_sbox,
+                                                             prim_cipher_pkg::PRESENT_PERM32);
+      end
+      // update round key, count goes from 1 to 31 (max)
+      // original 128bit key variant
+      if (KeyWidth == 128) begin : gen_k128
+        assign round_key[k+1]  = prim_cipher_pkg::present_update_key128(round_key[k], 5'(k + 1));
+      // original 80bit key variant
+      end else if (KeyWidth == 80) begin : gen_k80
+        assign round_key[k+1]  = prim_cipher_pkg::present_update_key80(round_key[k], 5'(k + 1));
+      // reduced 64bit key variant
+      end else begin : gen_k64
+        assign round_key[k+1]  = prim_cipher_pkg::present_update_key64(round_key[k], 5'(k + 1));
+      end
+    end // gen_enc
+    ////////////////////////////////
+  end // gen_round
+
+  // finalize
+  assign data_o = data_state[NumRounds] ^ round_key[NumRounds][KeyWidth-1 : KeyWidth-DataWidth];
+  assign key_o  = round_key[NumRounds];
 
   ////////////////
   // assertions //
   ////////////////
 
-  `ASSERT_INIT(SupportedDataWidth_A, DataWidth inside {32, 64})
-  `ASSERT_INIT(SupportedKeyWidth_A, KeyWidth inside {64, 80, 128})
-  `ASSERT_INIT(SupportedNumRounds_A, NumRounds > 0)
+  `ASSERT_INIT(SupportedWidths_A, (DataWidth == 64 && KeyWidth inside {80, 128}) ||
+                                  (DataWidth == 32 && KeyWidth == 64))
+  `ASSERT_INIT(SupportedNumRounds_A, NumRounds > 0 && NumRounds <= 31)
 
 endmodule : prim_present
