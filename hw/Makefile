@@ -14,6 +14,7 @@ IPS ?= aes           \
        hmac          \
        i2c           \
        nmi_gen       \
+       otp_ctrl      \
        padctrl       \
        pinmux        \
        rv_plic       \
