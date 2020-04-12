@@ -1,0 +1,38 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_generic:otp"
+description: "Technology-independent One-Time Programmable (OTP) memory emulation"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - rtl/prim_generic_otp.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_generic_otp.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_generic_otp.waiver
+    file_type: waiver
+
+
+targets:
+  default:
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
