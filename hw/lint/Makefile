@@ -19,6 +19,7 @@ IPS ?=  ip-aes                 \
         ip-gpio                \
         ip-hmac                \
         ip-i2c                 \
+        ip-otp_ctrl            \
         ip-nmi_gen             \
         ip-padctrl             \
         ip-padring             \
