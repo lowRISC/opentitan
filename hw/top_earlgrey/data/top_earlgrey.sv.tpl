@@ -453,12 +453,12 @@ module top_${top["name"]} #(
   logic flash_host_req;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
-  logic [FLASH_DW-1:0] flash_host_rdata;
-  logic [FLASH_AW-1:0] flash_host_addr;
+  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
+  logic [flash_ctrl_pkg::AddrW-1:0] flash_host_addr;
 
   tlul_adapter_sram #(
-    .SramAw(FLASH_AW),
-    .SramDw(FLASH_DW),
+    .SramAw(flash_ctrl_pkg::AddrW),
+    .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
@@ -484,12 +484,7 @@ module top_${top["name"]} #(
     .rerror_i (2'b00)
   );
 
-  flash_phy #(
-    .NumBanks(FLASH_BANKS),
-    .PagesPerBank(FLASH_PAGES_PER_BANK),
-    .WordsPerPage(FLASH_WORDS_PER_PAGE),
-    .DataWidth(${data_width})
-  ) u_flash_${m["name"]} (
+  flash_phy u_flash_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}_clk),
     % endfor

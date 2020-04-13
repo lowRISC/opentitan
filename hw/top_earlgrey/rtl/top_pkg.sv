@@ -16,10 +16,5 @@ localparam FLASH_BANKS=2;
 localparam FLASH_PAGES_PER_BANK=256;
 localparam FLASH_WORDS_PER_PAGE=256;
 localparam FLASH_BYTES_PER_WORD=4;
-localparam FLASH_BKW = $clog2(FLASH_BANKS);
-localparam FLASH_PGW = $clog2(FLASH_PAGES_PER_BANK);
-localparam FLASH_WDW = $clog2(FLASH_WORDS_PER_PAGE);
-localparam FLASH_AW = FLASH_BKW + FLASH_PGW + FLASH_WDW;
-localparam FLASH_DW = FLASH_BYTES_PER_WORD * 8;
 
 endpackage

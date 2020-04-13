@@ -9,34 +9,26 @@
 // scramble, ECC, security and arbitration logic.
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
-module flash_phy_core #(
-  parameter int PagesPerBank = 256, // pages per bank
-  parameter int WordsPerPage = 256, // words per page
-  parameter int DataWidth   = 32,   // bits per word
-  parameter bit SkipInit = 1,       // this is an option to reset flash to all F's at reset
-
-  // Derived parameters
-  localparam int PageW = $clog2(PagesPerBank),
-  localparam int WordW = $clog2(WordsPerPage),
-  localparam int AddrW = PageW + WordW
+module flash_phy_core import flash_ctrl_pkg::*; #(
+  parameter bit SkipInit     = 1   // this is an option to reset flash to all F's at reset
 ) (
   input                        clk_i,
   input                        rst_ni,
   input                        host_req_i, // host request - read only
-  input [AddrW-1:0]            host_addr_i,
+  input [BankAddrW-1:0]        host_addr_i,
   input                        req_i,      // controller request
   input                        rd_i,
   input                        prog_i,
   input                        pg_erase_i,
   input                        bk_erase_i,
-  input [AddrW-1:0]            addr_i,
-  input [DataWidth-1:0]        prog_data_i,
+  input [BankAddrW-1:0]        addr_i,
+  input [BusWidth-1:0]         prog_data_i,
   output logic                 host_req_rdy_o,
   output logic                 host_req_done_o,
   output logic                 rd_done_o,
   output logic                 prog_done_o,
   output logic                 erase_done_o,
-  output logic [DataWidth-1:0] rd_data_o,
+  output logic [BusWidth-1:0]  rd_data_o,
   output logic                 init_busy_o
 );
 
@@ -56,7 +48,7 @@ module flash_phy_core #(
   logic ack;
 
   // interface with flash macro
-  logic [AddrW-1:0] muxed_addr;
+  logic [BankAddrW-1:0] muxed_addr;
 
   // valid request conditions
   logic op_clr_cond;

@@ -7,8 +7,30 @@
 
 package flash_ctrl_pkg;
 
-  localparam int FlashTotalPages = top_pkg::FLASH_BANKS * top_pkg::FLASH_PAGES_PER_BANK;
-  localparam int AllPagesW = $clog2(FlashTotalPages);
+  // parameters for flash macro properties
+  localparam int NumBanks        = top_pkg::FLASH_BANKS;
+  localparam int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK;
+  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE;
+  localparam int BytesPerWord    = top_pkg::FLASH_BYTES_PER_WORD;
+  localparam int BankW           = $clog2(NumBanks);
+  localparam int PageW           = $clog2(PagesPerBank);
+  localparam int WordW           = $clog2(WordsPerPage);
+  localparam int AddrW           = BankW + PageW + WordW; // all flash range
+  localparam int BankAddrW       = PageW + WordW;         // 1 bank of flash range
+  localparam int DataWidth       = BytesPerWord * 8;
+  localparam int FlashTotalPages = NumBanks * PagesPerBank;
+  localparam int AllPagesW       = BankW + PageW;
+
+  // bus interface
+  localparam int BusWidth        = top_pkg::TL_DW;
+
+  // flash controller protection regions
+  localparam int MpRegions       = 8;
+
+  // fifo parameters
+  localparam int FifoDepth       = 16;
+  localparam int FifoDepthW      = $clog2(FifoDepth+1);
+
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
@@ -31,13 +53,13 @@ package flash_ctrl_pkg;
 
   // Flash controller to memory
   typedef struct packed {
-    logic                         req;
-    logic                         rd;
-    logic                         prog;
-    logic                         pg_erase;
-    logic                         bk_erase;
-    logic [top_pkg::FLASH_AW-1:0] addr;
-    logic [top_pkg::FLASH_DW-1:0] prog_data;
+    logic                req;
+    logic                rd;
+    logic                prog;
+    logic                pg_erase;
+    logic                bk_erase;
+    logic [AddrW-1:0]    addr;
+    logic [BusWidth-1:0] prog_data;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -53,11 +75,11 @@ package flash_ctrl_pkg;
 
   // memory to flash controller
   typedef struct packed {
-    logic                         rd_done;
-    logic                         prog_done;
-    logic                         erase_done;
-    logic [top_pkg::FLASH_DW-1:0] rd_data;
-    logic                         init_busy;
+    logic                rd_done;
+    logic                prog_done;
+    logic                erase_done;
+    logic [BusWidth-1:0] rd_data;
+    logic                init_busy;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)

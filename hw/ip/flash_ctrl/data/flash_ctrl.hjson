@@ -24,7 +24,7 @@
   ],
 
   param_list: [
-    { name: "NumBanks",
+    { name: "NBanks",
       desc: "Number of flash banks",
       type: "int",
       default: "2",
@@ -320,7 +320,7 @@
         cname: "FLASH_CTRL",
         name: "MP_BANK_CFG",
         desc: "Memory protect bank configuration",
-        count: "NumBanks",
+        count: "NBanks",
         swaccess: "rw",
         hwaccess: "hro",
         regwen: "BANK_CFG_REGWEN"
