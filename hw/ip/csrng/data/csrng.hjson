@@ -1,0 +1,165 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "csrng",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  param_list: [
+    { name: "NHwApps",
+      type: "int",
+      default: "4",
+      desc: "Number of CSRNG hardware applications",
+      local: "true"
+    } 
+  ],
+  interrupt_list: [
+    { name: "cs_cmd_req_done"
+      desc: "Asserted when a command request is completed."}
+    { name: "cs_fifo_err"
+      desc: "Asserted when a FIFO error occurs."}
+  ],
+  inter_signal_list: [
+    { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
+      type:    "req_rsp",
+      name:    "csrng",
+      act:     "req",
+      width:   "3",
+      package: "csrng_pkg",
+    }
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "CS_REGEN",
+      desc: "Register write enable for all control registers",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: '''
+                  When true, the CS_CMD_REQ register can be modified.
+                  When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
+                  cleared after initial configuration at boot in order to lock in the listed register settings.
+                  '''
+            resval: 1 
+        },
+      ]
+    },
+    { name: "CS_CTRL",
+      desc: "CSRNG control registers",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits: "0",
+            name: "CS_ENABLE",
+            desc: '''
+                  Setting this bit will enable the CSRNG module. Register-based CSRNG interfaces
+                  will be enabled only if the respective efuse input is enabled. Additionally, entropy requests
+                  will be made from the entropy_src module until the request FIFO fills up.
+                  '''
+        },
+        {
+            bits: "19:16",
+            name: "FIFO_DEPTH_STS_SEL",
+            desc: "This field will select which FIFO depth will be read out for diagnostic purposes."
+        },
+      ]
+    },
+    {
+      name: "CS_SUM_STS",
+      desc: "CSRNG summary status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "23:0",
+          name: "FIFO_DEPTH_STS",
+          desc: "These bits show the current status of the CRSNG FIFO depths."
+        }
+        { bits: "31",
+          name: "DIAG",
+          desc: "This this an internal generic diagnostic bit."
+        }
+      ]
+    },
+    {
+      name: "CS_CMD_REQ",
+      desc: "CSRNG command request register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe: "true",
+      regwen: "CS_REGEN",
+      fields: [
+        { bits: "31:0",
+          name: "CMD_REQ",
+          desc: '''
+                Writing this request with defined CSRNG commands will initiate all
+                possible CSRNG actions. The application interface must wait for the
+                "ack" to return before issuing new commands.
+                '''
+        }
+      ]
+    },
+    { 
+      name: "CS_CMD_STS",
+      desc: "CSRNG command status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "CMD_RDY",
+          desc: '''This bit indicates when the command interface is ready to accept commands.
+                '''
+        }
+        { bits: "1",
+          name: "CMD_ACK",
+          desc: '''This bit is set when the command request has completed. This bit must
+                   be cleared before a new request is made.
+                '''
+        }
+        { bits: "5:4",
+          name: "CMD_STS",
+          desc: ''' 
+                This two bit field is the status code return with the instantiation ack bit.
+                0b00: Request is pending TODO: update this
+                0b01: Request is completed ok
+                0b10: Request end with an error
+                0b11: Request end with a severe error
+                '''
+        }
+      ]
+    },
+    {
+      name: "CS_GENBITS_VLD",
+      desc: "CSRNG generate bits returned valid register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "GENBITS_VLD",
+          desc: "This bit is set when rnd output is available on this application interface."
+        }
+      ]
+    },
+    { 
+      name: "CS_GENBITS",
+      desc: "CSRNG generate bits returned register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "31:0",
+          name: "GENBITS",
+          desc: '''
+                Reading this register will get the generated bits that were requested with
+                the generate request.
+                '''
+        }
+      ]
+    },
+  ]
+}
+

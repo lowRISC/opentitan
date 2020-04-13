@@ -2,20 +2,23 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:entropy_src:0.1"
-description: "entropy_src"
+name: "lowrisc:ip:csrng:0.1"
+description: "csrng"
 filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:ip:entropy_src:entropy_src_pkg
     files:
-      - rtl/entropy_src_pkg.sv
-      - rtl/entropy_src_reg_pkg.sv
-      - rtl/entropy_src_reg_top.sv
-      - rtl/entropy_src_core.sv
-      - rtl/entropy_src.sv
+      - rtl/csrng_pkg.sv
+      - rtl/csrng_reg_pkg.sv
+      - rtl/csrng_reg_top.sv
+      - rtl/csrng_cmd_stage.sv
+      - rtl/csrng_main_sm.sv
+      - rtl/csrng_core.sv
+      - rtl/csrng.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -24,7 +27,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/entropy_src.vlt
+      - lint/csrng.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -33,7 +36,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/entropy_src.waiver
+      - lint/csrng.waiver
     file_type: waiver
 
 
@@ -49,7 +52,7 @@ targets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
-    toplevel: entropy_src
+    toplevel: csrng
 
   lint:
     <<: *default_target
