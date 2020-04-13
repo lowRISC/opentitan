@@ -313,7 +313,8 @@
           package: flash_ctrl_pkg
           inst_name: flash_ctrl
           width: 1
-          top_signame: flash_ctrl_eflash_flash
+          top_signame: flash_ctrl_flash
+          index: -1
         }
       ]
     }
@@ -762,7 +763,8 @@
           act: responder
           inst_name: eflash
           width: 1
-          top_signame: flash_ctrl_eflash_flash
+          top_signame: flash_ctrl_flash
+          index: -1
         }
       ]
     }
@@ -1736,7 +1738,8 @@
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
         width: 1
-        top_signame: flash_ctrl_eflash_flash
+        top_signame: flash_ctrl_flash
+        index: -1
       }
       {
         struct: flash
@@ -1745,7 +1748,8 @@
         act: responder
         inst_name: eflash
         width: 1
-        top_signame: flash_ctrl_eflash_flash
+        top_signame: flash_ctrl_flash
+        index: -1
       }
     ]
     definitions:
@@ -1753,7 +1757,7 @@
       {
         package: flash_ctrl_pkg
         struct: flash
-        signame: flash_ctrl_eflash_flash
+        signame: flash_ctrl_flash
         width: 1
         type: req_rsp
       }

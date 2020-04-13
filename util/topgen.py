@@ -37,7 +37,7 @@ def generate_top(top, tpl_filename):
 
     try:
         out_rtl = top_rtl_tpl.render(top=top)
-    except:
+    except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
     return out_rtl
 
@@ -62,7 +62,7 @@ def generate_xbars(top, out_path):
 
         try:
             out_rtl, out_pkg, out_core = tlgen.generate(xbar)
-        except:
+        except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
 
         rtl_path = out_path / 'ip/xbar_{}/rtl/autogen'.format(obj["name"])
@@ -160,7 +160,7 @@ def generate_alert_handler(top, out_path):
                                    lfsr_seed=lfsr_seed,
                                    async_on=async_on,
                                    n_classes=n_classes)
-        except:
+        except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("alert_handler hjson: %s" % out)
 
@@ -218,7 +218,7 @@ def generate_plic(top, out_path):
         hjson_tpl = Template(fin.read())
         try:
             out = hjson_tpl.render(src=src, target=target, prio=prio)
-        except:
+        except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("RV_PLIC hjson: %s" % out)
 
@@ -246,7 +246,7 @@ def generate_plic(top, out_path):
         rtl_tpl = Template(fin.read())
         try:
             out = rtl_tpl.render(src=src, target=target, prio=prio)
-        except:
+        except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("RV_PLIC RTL: %s" % out)
 
@@ -303,7 +303,7 @@ def generate_pinmux(top, out_path):
             out = hjson_tpl.render(n_periph_in=n_periph_in,
                                    n_periph_out=n_periph_out,
                                    n_mio_pads=num_mio)
-        except:
+        except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PINMUX HJSON: %s" % out)
 
@@ -374,7 +374,7 @@ def main():
         '-o',
         help='''Target TOP directory.
              Module is created under rtl/. (default: dir(topcfg)/..)
-             ''') # yapf: disable
+             ''')  # yapf: disable
     parser.add_argument('--verbose', '-v', action='store_true', help="Verbose")
 
     # Generator options: 'no' series. cannot combined with 'only' series
@@ -403,7 +403,7 @@ def main():
     parser.add_argument(
         '--top-only',
         action='store_true',
-        help="If defined, the tool generates top RTL only") # yapf:disable
+        help="If defined, the tool generates top RTL only")  # yapf:disable
     parser.add_argument(
         '--xbar-only',
         action='store_true',
@@ -503,7 +503,7 @@ def main():
             ip_objs = []
             for x in ips:
                 # Skip if it is not in the module list
-                if not x.stem in [ip["type"] for ip in topcfg["module"]]:
+                if x.stem not in [ip["type"] for ip in topcfg["module"]]:
                     log.info(
                         "Skip module %s as it isn't in the top module list" %
                         x.stem)
@@ -559,7 +559,7 @@ def main():
             raise SystemExit(sys.exc_info()[1])
 
     # Generate PLIC
-    if not args.no_plic            and \
+    if not args.no_plic and \
        not args.alert_handler_only and \
        not args.xbar_only:
         generate_plic(completecfg, out_path)

@@ -443,8 +443,8 @@ module top_${top["name"]} #(
   % endif
   % for sig in top["inter_signal"]["definitions"]:
     % if sig["type"] == "req_rsp":
-  ${sig["package"]}::${sig["struct"]}_req_t ${sig["signame"]}_req;
-  ${sig["package"]}::${sig["struct"]}_rsp_t ${sig["signame"]}_rsp;
+  ${sig["package"]}::${sig["struct"]}_req_t ${lib.bitarray(sig["width"],1)} ${sig["signame"]}_req;
+  ${sig["package"]}::${sig["struct"]}_rsp_t ${lib.bitarray(sig["width"],1)} ${sig["signame"]}_rsp;
     % elif sig["type"] == "broadcast":
       % if sig["struct"] == "logic":
   logic ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
@@ -596,18 +596,18 @@ else:
         % if "top_signame" in sig:
           % if sig["type"] == "req_rsp":
             % if sig["act"] == "requester":
-      .${sig["name"]}_o(${sig["top_signame"]}_req),
-      .${sig["name"]}_i(${sig["top_signame"]}_rsp),
+      .${sig["name"]}_o(${sig["top_signame"]}_req${lib.index(sig["index"])}),
+      .${sig["name"]}_i(${sig["top_signame"]}_rsp${lib.index(sig["index"])}),
           % elif sig["act"] == "responder":
-      .${sig["name"]}_i(${sig["top_signame"]}_req),
-      .${sig["name"]}_o(${sig["top_signame"]}_rsp),
+      .${sig["name"]}_i(${sig["top_signame"]}_req${lib.index(sig["index"])}),
+      .${sig["name"]}_o(${sig["top_signame"]}_rsp${lib.index(sig["index"])}),
             % endif # sig["act"] == requester
           % elif sig["type"] == "broadcast":
             ## TODO: Broadcast type
             % if sig["act"] == "requester":
-      .${sig["name"]}_o(${sig["top_signame"]}),
+      .${sig["name"]}_o(${sig["top_signame"]}${lib.index(sig["index"])}),
             % elif sig["act"] == "receiver":
-      .${sig["name"]}_i(${sig["top_signame"]}),
+      .${sig["name"]}_i(${sig["top_signame"]}${lib.index(sig["index"])}),
             % endif
           % endif
         % else: # no top_signame in sig
