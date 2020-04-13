@@ -17,6 +17,7 @@ filesets:
       - tb/padctrl_bind_fpv.sv
       - vip/padctrl_assert_fpv.sv
       - vip/padring_assert_fpv.sv
+      - vip/padctrl_csr_assert_fpv.sv
     file_type: systemVerilogSource
 
 targets:

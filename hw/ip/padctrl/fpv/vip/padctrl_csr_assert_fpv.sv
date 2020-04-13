@@ -7,8 +7,8 @@
 
 `include "prim_assert.sv"
 
-// Block: pinmux
-module pinmux_csr_assert_fpv import tlul_pkg::*; (
+// Block: padctrl
+module padctrl_csr_assert_fpv import tlul_pkg::*; (
   input clk_i,
   input rst_ni,
 
@@ -107,39 +107,51 @@ module pinmux_csr_assert_fpv import tlul_pkg::*; (
 
 // for all the regsters, declare assertion
   // assertions for W0C reg fields:
-  `ASSERT(regen_wc0_A, wc0_P(5'h0, i_pinmux.i_reg_top.regen_qs, 1, 0, 0))
-  `ASSERT(regen_wc1_A, wc1_P(5'h0, i_pinmux.i_reg_top.regen_qs, 1, 0, 0))
-  `ASSERT(regen_rd_A, rd_P(5'h0, i_pinmux.i_reg_top.regen_qs))
+  `ASSERT(regen_wc0_A, wc0_P(5'h0, i_padctrl.i_reg_top.regen_qs, 1, 0, 0))
+  `ASSERT(regen_wc1_A, wc1_P(5'h0, i_padctrl.i_reg_top.regen_qs, 1, 0, 0))
+  `ASSERT(regen_rd_A, rd_P(5'h0, i_padctrl.i_reg_top.regen_qs))
 
 
   // define local fpv variable for the multi_reg
-  logic [63:0] periph_insel_q_fpv;
-  for (genvar s = 0; s < 16; s++) begin : gen_periph_insel_q
-    assign periph_insel_q_fpv[((s+1)*4-1):s*4] = 1 ?
-        i_pinmux.reg2hw.periph_insel[s].q : periph_insel_q_fpv[((s+1)*4-1):s*4];
+  logic [31:0] dio_pads_q_fpv;
+  for (genvar s = 0; s < 4; s++) begin : gen_dio_pads_q
+    assign dio_pads_q_fpv[((s+1)*8-1):s*8] = i_padctrl.reg2hw.dio_pads[s].qe ?
+        i_padctrl.reg2hw.dio_pads[s].q : dio_pads_q_fpv[((s+1)*8-1):s*8];
+  end
+  logic [31:0] dio_pads_d_fpv;
+  for (genvar s = 0; s <= 4-1; s++) begin : gen_dio_pads_d
+    assign dio_pads_d_fpv[((s+1)*8-1):s*8] = i_padctrl.hw2reg.dio_pads[s].d;
   end
 
-  `ASSERT(periph_insel0_wr_A, wr_P(5'h4, periph_insel_q_fpv[31:0], i_pinmux.i_reg_top.regen_qs, 'hffffffff))
-  `ASSERT(periph_insel0_rd_A, rd_P(5'h4, periph_insel_q_fpv[31:0]))
-  `ASSERT(periph_insel0_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, periph_insel_q_fpv[31:0]))
-
-  `ASSERT(periph_insel1_wr_A, wr_P(5'h8, periph_insel_q_fpv[63:32], i_pinmux.i_reg_top.regen_qs, 'hffffffff))
-  `ASSERT(periph_insel1_rd_A, rd_P(5'h8, periph_insel_q_fpv[63:32]))
-  `ASSERT(periph_insel1_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, periph_insel_q_fpv[63:32]))
+  `ASSERT(dio_pads_wr_A, wr_ext_P(5'h4, dio_pads_q_fpv[31:0], i_padctrl.i_reg_top.regen_qs, 'hffffffff))
+  `ASSERT(dio_pads_rd_A, rd_ext_P(5'h4, dio_pads_d_fpv[31:0]))
+  `ASSERT(dio_pads_stable_A, wr_regen_stable_P(i_padctrl.i_reg_top.regen_qs, dio_pads_q_fpv[31:0]))
 
   // define local fpv variable for the multi_reg
-  logic [39:0] mio_outsel_q_fpv;
-  for (genvar s = 0; s < 8; s++) begin : gen_mio_outsel_q
-    assign mio_outsel_q_fpv[((s+1)*5-1):s*5] = 1 ?
-        i_pinmux.reg2hw.mio_outsel[s].q : mio_outsel_q_fpv[((s+1)*5-1):s*5];
+  logic [127:0] mio_pads_q_fpv;
+  for (genvar s = 0; s < 16; s++) begin : gen_mio_pads_q
+    assign mio_pads_q_fpv[((s+1)*8-1):s*8] = i_padctrl.reg2hw.mio_pads[s].qe ?
+        i_padctrl.reg2hw.mio_pads[s].q : mio_pads_q_fpv[((s+1)*8-1):s*8];
+  end
+  logic [127:0] mio_pads_d_fpv;
+  for (genvar s = 0; s <= 16-1; s++) begin : gen_mio_pads_d
+    assign mio_pads_d_fpv[((s+1)*8-1):s*8] = i_padctrl.hw2reg.mio_pads[s].d;
   end
 
-  `ASSERT(mio_outsel0_wr_A, wr_P(5'hc, mio_outsel_q_fpv[29:0], i_pinmux.i_reg_top.regen_qs, 'h3fffffff))
-  `ASSERT(mio_outsel0_rd_A, rd_P(5'hc, mio_outsel_q_fpv[29:0]))
-  `ASSERT(mio_outsel0_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, mio_outsel_q_fpv[29:0]))
+  `ASSERT(mio_pads0_wr_A, wr_ext_P(5'h8, mio_pads_q_fpv[31:0], i_padctrl.i_reg_top.regen_qs, 'hffffffff))
+  `ASSERT(mio_pads0_rd_A, rd_ext_P(5'h8, mio_pads_d_fpv[31:0]))
+  `ASSERT(mio_pads0_stable_A, wr_regen_stable_P(i_padctrl.i_reg_top.regen_qs, mio_pads_q_fpv[31:0]))
 
-  `ASSERT(mio_outsel1_wr_A, wr_P(5'h10, mio_outsel_q_fpv[39:30], i_pinmux.i_reg_top.regen_qs, 'h3ff))
-  `ASSERT(mio_outsel1_rd_A, rd_P(5'h10, mio_outsel_q_fpv[39:30]))
-  `ASSERT(mio_outsel1_stable_A, wr_regen_stable_P(i_pinmux.i_reg_top.regen_qs, mio_outsel_q_fpv[39:30]))
+  `ASSERT(mio_pads1_wr_A, wr_ext_P(5'hc, mio_pads_q_fpv[63:32], i_padctrl.i_reg_top.regen_qs, 'hffffffff))
+  `ASSERT(mio_pads1_rd_A, rd_ext_P(5'hc, mio_pads_d_fpv[63:32]))
+  `ASSERT(mio_pads1_stable_A, wr_regen_stable_P(i_padctrl.i_reg_top.regen_qs, mio_pads_q_fpv[63:32]))
+
+  `ASSERT(mio_pads2_wr_A, wr_ext_P(5'h10, mio_pads_q_fpv[95:64], i_padctrl.i_reg_top.regen_qs, 'hffffffff))
+  `ASSERT(mio_pads2_rd_A, rd_ext_P(5'h10, mio_pads_d_fpv[95:64]))
+  `ASSERT(mio_pads2_stable_A, wr_regen_stable_P(i_padctrl.i_reg_top.regen_qs, mio_pads_q_fpv[95:64]))
+
+  `ASSERT(mio_pads3_wr_A, wr_ext_P(5'h14, mio_pads_q_fpv[127:96], i_padctrl.i_reg_top.regen_qs, 'hffffffff))
+  `ASSERT(mio_pads3_rd_A, rd_ext_P(5'h14, mio_pads_d_fpv[127:96]))
+  `ASSERT(mio_pads3_stable_A, wr_regen_stable_P(i_padctrl.i_reg_top.regen_qs, mio_pads_q_fpv[127:96]))
 
 endmodule
