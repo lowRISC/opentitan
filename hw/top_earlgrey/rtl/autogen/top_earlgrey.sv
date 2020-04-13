@@ -452,12 +452,12 @@ module top_earlgrey #(
   logic flash_host_req;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
-  logic [FLASH_DW-1:0] flash_host_rdata;
-  logic [FLASH_AW-1:0] flash_host_addr;
+  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
+  logic [flash_ctrl_pkg::AddrW-1:0] flash_host_addr;
 
   tlul_adapter_sram #(
-    .SramAw(FLASH_AW),
-    .SramDw(FLASH_DW),
+    .SramAw(flash_ctrl_pkg::AddrW),
+    .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
@@ -479,12 +479,7 @@ module top_earlgrey #(
     .rerror_i (2'b00)
   );
 
-  flash_phy #(
-    .NumBanks(FLASH_BANKS),
-    .PagesPerBank(FLASH_PAGES_PER_BANK),
-    .WordsPerPage(FLASH_WORDS_PER_PAGE),
-    .DataWidth(32)
-  ) u_flash_eflash (
+  flash_phy u_flash_eflash (
     .clk_i   (main_clk),
     .rst_ni   (lc_rst_n),
     .host_req_i      (flash_host_req),

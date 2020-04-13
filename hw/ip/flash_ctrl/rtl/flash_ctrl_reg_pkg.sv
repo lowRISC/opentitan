@@ -7,7 +7,7 @@
 package flash_ctrl_reg_pkg;
 
   // Param list
-  parameter int NumBanks = 2;
+  parameter int NBanks = 2;
   parameter int NumRegions = 8;
 
   ////////////////////////////
