@@ -186,7 +186,10 @@ def generate_alert_handler(top, out_path):
 
 def generate_plic(top, out_path):
     # Count number of interrupts
-    src = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]])
+    # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
+    # So, total number of interrupts are the number of entries in the list + 1
+    src = sum([x["width"] if "width" in x else 1
+               for x in top["interrupt"]]) + 1
 
     # Target and priority: Currently fixed
     target = int(top["num_cores"], 0) if "num_cores" in top else 1

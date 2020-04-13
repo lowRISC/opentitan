@@ -16,7 +16,7 @@
 
 module rv_plic import rv_plic_reg_pkg::*; #(
   // derived parameter
-  localparam int SRCW    = $clog2(NumSrc+1)
+  localparam int SRCW    = $clog2(NumSrc)
 ) (
   input     clk_i,
   input     rst_ni,
@@ -66,13 +66,13 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   always_comb begin
     claim = '0;
     for (int i = 0 ; i < NumTarget ; i++) begin
-      if (claim_re[i]) claim[claim_id[i] -1] = 1'b1;
+      if (claim_re[i]) claim[claim_id[i]] = 1'b1;
     end
   end
   always_comb begin
     complete = '0;
     for (int i = 0 ; i < NumTarget ; i++) begin
-      if (complete_we[i]) complete[complete_id[i] -1] = 1'b1;
+      if (complete_we[i]) complete[complete_id[i]] = 1'b1;
     end
   end
 
@@ -206,5 +206,8 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   for (genvar k = 0; k < NumTarget; k++) begin : gen_irq_id_known
     `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
   end
+
+  // Assume
+  `ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
 
 endmodule

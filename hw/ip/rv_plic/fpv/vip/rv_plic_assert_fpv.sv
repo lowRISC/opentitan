@@ -31,7 +31,7 @@ module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
   int unsigned src_sel;
   int unsigned tgt_sel;
 
-  `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < NumSrc, clk_i, !rst_ni)
+  `ASSUME_FPV(IsrcRange_M, src_sel >  0 && src_sel < NumSrc, clk_i, !rst_ni)
   `ASSUME_FPV(ItgtRange_M, tgt_sel >= 0 && tgt_sel < NumTarget, clk_i, !rst_ni)
   `ASSUME_FPV(IsrcStable_M, ##1 $stable(src_sel), clk_i, !rst_ni)
   `ASSUME_FPV(ItgtStable_M, ##1 $stable(tgt_sel), clk_i, !rst_ni)
@@ -97,10 +97,10 @@ module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
           max_priority && ie[tgt_sel][src_sel] |=> irq_o[tgt_sel])
 
   `ASSERT(TriggerIrqBackwardCheck_A, $rose(irq_o[tgt_sel]) |->
-          $past(irq) && (irq_id_o[tgt_sel] - 1) == $past(i_high_prio))
+          $past(irq) && (irq_id_o[tgt_sel]) == $past(i_high_prio))
 
   // when irq ID changed, but not to ID=0, irq_o should be high, or irq represents the largest prio
   // but smaller than the threshold
   `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
-          irq_o[tgt_sel] || ((irq_id_o[tgt_sel] - 1) == $past(i_high_prio) && !$past(irq)))
+          irq_o[tgt_sel] || ((irq_id_o[tgt_sel]) == $past(i_high_prio) && !$past(irq)))
 endmodule : rv_plic_assert_fpv

@@ -17,9 +17,8 @@
 // These defines are used to calculate the IRQ index in IP, LE, IE registers.
 // These registers are 32bit wide, and in order to accommodate all the IRQs,
 // multiple of the same type registers are defined (IE00, IE01, ...). For
-// example, IRQ ID 33 corresponds to bit 0 in registers IP1, LE1, IE01.
+// example, IRQ ID 32 corresponds to bit 0 in registers IP1, LE1, IE01.
 #define PLIC_ID_TO_INDEX_REG_SIZE 32u
-#define PLIC_ID_TO_INDEX(id) ((uint32_t)id - 1)
 
 /**
  * PLIC register info.
@@ -135,10 +134,10 @@ static size_t plic_num_irq_reg(void) {
  *
  * With more than 32 IRQ sources, there is a multiple of these registers to
  * accommodate all the bits (1 bit per IRQ source). This function calculates
- * the offset for a specific IRQ source ID (ID 33 would be IE01, ...).
+ * the offset for a specific IRQ source ID (ID 32 would be IE01, ...).
  */
 static ptrdiff_t plic_offset_from_reg0(dif_plic_irq_id_t irq) {
-  uint8_t register_index = PLIC_ID_TO_INDEX(irq) / PLIC_ID_TO_INDEX_REG_SIZE;
+  uint8_t register_index = irq / PLIC_ID_TO_INDEX_REG_SIZE;
   return register_index * sizeof(uint32_t);
 }
 
@@ -147,11 +146,11 @@ static ptrdiff_t plic_offset_from_reg0(dif_plic_irq_id_t irq) {
  *
  * With more than 32 IRQ sources, there is a multiple of these registers to
  * accommodate all the bits (1 bit per IRQ source). This function calculates
- * the bit position within a register for a specifci IRQ source ID (ID 33 would
+ * the bit position within a register for a specifci IRQ source ID (ID 32 would
  * be bit 0).
  */
 static uint8_t plic_reg_bit_index_from_irq_id(dif_plic_irq_id_t irq) {
-  return PLIC_ID_TO_INDEX(irq) % PLIC_ID_TO_INDEX_REG_SIZE;
+  return irq % PLIC_ID_TO_INDEX_REG_SIZE;
 }
 
 /**
@@ -188,10 +187,10 @@ static void plic_irq_pending_reg_info(dif_plic_irq_id_t irq,
 /**
  * Get a total number of priority registers (one for every IRQ source).
  *
- * The IRQ source IDs start from 1, so the last IRQ ID variant is also
- * the number of priority registers (one per IRQ source).
+ * As PRIO0 register is not used, last IRQ + 1 is the total number of
+ * priority register.
  */
-static size_t plic_num_priority_reg(void) { return kDifPlicIrqIdLast; }
+static size_t plic_num_priority_reg(void) { return kDifPlicIrqIdLast + 1; }
 
 /**
  * Get a PRIO register offset (PRIO0, PRIO1, ...) from an IRQ source ID.
@@ -200,7 +199,7 @@ static size_t plic_num_priority_reg(void) { return kDifPlicIrqIdLast; }
  * source specific PRIO register offset.
  */
 static ptrdiff_t plic_priority_reg_offset(dif_plic_irq_id_t irq) {
-  ptrdiff_t offset = PLIC_ID_TO_INDEX(irq) * sizeof(uint32_t);
+  ptrdiff_t offset = irq * sizeof(uint32_t);
   return RV_PLIC_PRIO0_REG_OFFSET + offset;
 }
 

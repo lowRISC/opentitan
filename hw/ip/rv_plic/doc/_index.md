@@ -13,7 +13,7 @@ See that document for integration overview within the broader top level system.
 ## Features
 
 - RISC-V Platform-Level Interrupt Controller (PLIC) compliant interrupt controller
-- Support arbitrary number of interrupt vectors (up to 256) and targets
+- Support arbitrary number of interrupt vectors (up to 255) and targets
 - Support interrupt enable, interrupt status registers
 - Memory-mapped MSIP register per HART for software interrupt control.
 
@@ -43,9 +43,10 @@ The RV_PLIC is compatible with any RISC-V core implementing the RISC-V privilege
 
 Each interrupt source has a unique ID assigned based upon its bit position
 within the input `intr_src_i`. ID ranges from 0 to N, the number of interrupt
-sources. ID 0 is reserved and represents no interrupt. The `intr_src_i[i]` bit
-has an ID of `i+1`. This ID is used when targets "claim" the interrupt and to
-"complete" the interrupt event.
+sources. ID 0 is reserved and represents no interrupt. The bit 0 of
+`intr_src_i` shall be tied to 0 from the outside of RV_PLIC. The
+`intr_src_i[i]` bit has an ID of `i`. This ID is used when targets "claim" the
+interrupt and to "complete" the interrupt event.
 
 ### Priority and Threshold
 
@@ -116,7 +117,7 @@ interrupt to the Claim/Complete register ({{< regref "CC0" >}} for target 0). Th
 is forwarded to the Gateway logic, which resets the interrupt status to accept a
 new interrupt event. The assumption is that the processor has cleaned up the
 originating interrupt event during the time between claim and complete such that
-`intr_src_i[ID-1]` will have de-asserted (unless a new interrupt has occurred).
+`intr_src_i[ID]` will have de-asserted (unless a new interrupt has occurred).
 
 ~~~~wavejson
 { signal: [
@@ -124,7 +125,7 @@ originating interrupt event during the time between claim and complete such that
   { name: 'intr_src_i[i]', wave: '01....0.1...', node:'.a....e.f...'},
   { name: 'irq_o',         wave: '0.1.0......1', node:'..b.d......h'},
   { name: 'irq_id_o',      wave: '=.=.=......=',
-                           data: ["0","i+1","0","i+1"] },
+                           data: ["0","i","0","i"] },
   { name: 'claim',         wave: '0..10.......', node:'...c........'},
   { name: 'complete',      wave: '0.........10', node:'..........g.'},
   ],
@@ -135,13 +136,13 @@ originating interrupt event during the time between claim and complete such that
 }
 ~~~~
 
-In the example above an interrupt for source ID `i+1` is configured as a level
+In the example above an interrupt for source ID `i` is configured as a level
 interrupt and is raised at a, this results in the target being notified of the
-interrupt at b. The target claims the interrupt at c (reading `i+1` from it's
+interrupt at b. The target claims the interrupt at c (reading `i` from it's
 Claim/Complete register) so `irq_o` deasserts though `intr_src_i[i]` remains
 raised.  The SW handles the interrupt and it drops at e. However a new interrupt
 quickly occurs at f. As complete hasn't been signaled yet `irq_o` isn't
-asserted. At g the interrupt is completed (by writing `i+1` to it's
+asserted. At g the interrupt is completed (by writing `i` to it's
 Claim/Complete register) so at h `irq_o` is asserted due to the new interrupt.
 
 
@@ -166,6 +167,7 @@ void plic_init() {
   }
 
   // Configure priority
+  // Note that PRIO0 register doesn't affect as intr_src_i[0] is tied to 0.
   for (int i = 0; i < N_SOURCE; ++i) {
     *(PRIO + i) = value(i);
   }

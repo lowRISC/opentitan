@@ -158,7 +158,9 @@ module top_${top["name"]} #(
 
 
 <%
-  interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]])
+  # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
+  # So, total number of interrupts are the number of entries in the list + 1
+  interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]]) + 1
 %>\
   logic [${interrupt_num-1}:0]  intr_vector;
   // Interrupt source list
@@ -173,11 +175,11 @@ module top_${top["name"]} #(
 % endfor
 
 
-  <% add_spaces = " " * len(str((interrupt_num).bit_length()-1)) %>
+  <% add_spaces = " " * len(str((interrupt_num-1).bit_length()-1)) %>
   logic [0:0]${add_spaces}irq_plic;
   logic [0:0]${add_spaces}msip;
-  logic [${(interrupt_num).bit_length()-1}:0] irq_id[1];
-  logic [${(interrupt_num).bit_length()-1}:0] unused_irq_id[1];
+  logic [${(interrupt_num-1).bit_length()-1}:0] irq_id[1];
+  logic [${(interrupt_num-1).bit_length()-1}:0] unused_irq_id[1];
 
   // this avoids lint errors
   assign unused_irq_id = irq_id;
@@ -675,8 +677,9 @@ else:
   // interrupt assignments
   assign intr_vector = {
   % for intr in top["interrupt"][::-1]:
-      intr_${intr["name"]}${"," if not loop.last else ""}
+      intr_${intr["name"]},
   % endfor
+      1'b 0 // For ID 0.
   };
 
   // TL-UL Crossbar

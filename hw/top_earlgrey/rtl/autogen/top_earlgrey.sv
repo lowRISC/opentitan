@@ -182,7 +182,7 @@ module top_earlgrey #(
   logic        cio_usbdev_dn_en_d2p;
 
 
-  logic [78:0]  intr_vector;
+  logic [79:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -789,7 +789,8 @@ module top_earlgrey #(
       intr_uart_tx_empty,
       intr_uart_rx_watermark,
       intr_uart_tx_watermark,
-      intr_gpio_gpio
+      intr_gpio_gpio,
+      1'b 0 // For ID 0.
   };
 
   // TL-UL Crossbar

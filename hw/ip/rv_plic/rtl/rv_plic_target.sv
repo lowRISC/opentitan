@@ -70,7 +70,7 @@ module rv_plic_target #(
       if (level == N_LEVELS) begin : gen_leafs
         if (offset < N_SOURCE) begin : gen_assign
           assign is_tree[pa]  = ip[offset] & ie[offset];
-          assign id_tree[pa]  = offset+1'b1;
+          assign id_tree[pa]  = offset;
           assign max_tree[pa] = prio[offset];
         end else begin : gen_tie_off
           assign is_tree[pa]  = '0;
