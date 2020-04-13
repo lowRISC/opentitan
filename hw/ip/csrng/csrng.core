@@ -1,0 +1,68 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:csrng:0.1"
+description: "csrng"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:constants:top_pkg
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+      - lowrisc:ip:entropy_src:entropy_src_pkg
+    files:
+      - rtl/csrng_pkg.sv
+      - rtl/csrng_reg_pkg.sv
+      - rtl/csrng_reg_top.sv
+      - rtl/csrng_cmd_stage.sv
+      - rtl/csrng_main_sm.sv
+      - rtl/csrng_core.sv
+      - rtl/csrng.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/csrng.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/csrng.waiver
+    file_type: waiver
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: csrng
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+
