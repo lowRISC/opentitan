@@ -70,58 +70,6 @@
   regwidth: "32",
   registers: [
 
-    { name: "CFG_CDC_SYNC",
-      swaccess: "rw",
-      hwaccess: "hrw",
-      hwqe: "true",
-      desc: '''
-      The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the
-      fast clock domain but used in the slow clock domain.
-
-      The configuration are not propogated across the clock boundary until this
-      register is triggered and read.  See fields below for more details
-      ''',
-
-      fields: [
-        { bits: "0",
-          swaccess: "wo",
-          name: "SYNC",
-          desc: '''
-            Configuration sync.  When this bit is written to 1, a sync pulse is generated.  When
-            the sync completes, this bit then self clears.
-
-            Software should write this bit to 1, wait for it to clear, before assuming the slow clock
-            domain has assumed the programmaed values.
-          ''',
-          resval: "0",
-        },
-      ]
-    },
-
-    { name: "CTRL_CFG_REGWEN",
-      swaccess: "rw0c",
-      hwaccess: "hwo",
-      hwext: "true",
-      hwqe: "true",
-      desc: '''
-      Controls the configurability of the CONTROL register.
-
-      This register ensures the contents do not change once a low power hint and
-      WFI has occurred.
-
-      It unlocks whenever a low power transition has completed (transition back to the
-      ACTIVE state) for any reason.
-      ''',
-
-      fields: [
-        { bits: "0",
-          name: "EN",
-          desc: "Configuration enable.  Once set to 0, it can longer be configured to 1",
-          resval: "1",
-        },
-      ]
-    },
-
     { name: "CONTROL",
       desc: "Control register",
       swaccess: "rw",
@@ -214,18 +162,53 @@
       ],
     },
 
-    { name: "WAKEUP_EN_REGWEN",
-      desc: "Configuration enable for wakeup register",
-      swaccess: "rw0c",
-      hwaccess: "none",
+    { name: "CFG_CDC_SYNC",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      desc: '''
+      The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the
+      fast clock domain but used in the slow clock domain.
+
+      The configuration are not propogated across the clock boundary until this
+      register is triggered and read.  See fields below for more details
+      ''',
+
       fields: [
         { bits: "0",
-          resval: "1"
-          name: "EN",
+          name: "SYNC",
           desc: '''
-            When 1, WAKEUP register can be configured.
-            When 0, WAKEUP register cannot be configured.
+            Configuration sync.  When this bit is written to 1, a sync pulse is generated.  When
+            the sync completes, this bit then self clears.
+
+            Software should write this bit to 1, wait for it to clear, before assuming the slow clock
+            domain has assumed the programmaed values.
           ''',
+          resval: "0",
+        },
+      ]
+    },
+
+    { name: "CTRL_CFG_REGWEN",
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      hwext: "true",
+      hwqe: "true",
+      desc: '''
+      Controls the configurability of the CONTROL register.
+
+      This register ensures the contents do not change once a low power hint and
+      WFI has occurred.
+
+      It unlocks whenever a low power transition has completed (transition back to the
+      ACTIVE state) for any reason.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: "Configuration enable.  Once set to 0, it can longer be configured to 1",
+          resval: "1",
         },
       ]
     },
@@ -247,6 +230,22 @@
       ]
     },
 
+    { name: "WAKEUP_EN_REGWEN",
+      desc: "Configuration enable for wakeup register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          resval: "1"
+          name: "EN",
+          desc: '''
+            When 1, WAKEUP register can be configured.
+            When 0, WAKEUP register cannot be configured.
+          ''',
+        },
+      ]
+    },
+
     { name: "WAKE_STATUS",
       desc: "A read only register of all current wake requests post enable mask",
       swaccess: "ro",
@@ -257,6 +256,24 @@
           name: "VAL",
           desc: '''
             Current value of wake requests
+          ''',
+        },
+      ]
+    },
+
+
+    { name: "RESET_EN",
+      desc: "Bit mask for enabled resets",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "RESET_EN_REGWEN",
+      resval: "0"
+      fields: [
+        { bits: "1:0",
+          name: "EN",
+          desc: '''
+            Whenever a particular bit is set to 1, that reset request is enabled.
+            Whenever a particular bit is set to 0, that reset request cannot reset the device.
           ''',
         },
       ]
@@ -273,23 +290,6 @@
           desc: '''
             When 1, RESET register can be configured.
             When 0, RESET register cannot be configured.
-          ''',
-        },
-      ]
-    },
-
-    { name: "RESET_EN",
-      desc: "Bit mask for enabled resets",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen: "RESET_EN_REGWEN",
-      resval: "0"
-      fields: [
-        { bits: "1:0",
-          name: "EN",
-          desc: '''
-            Whenever a particular bit is set to 1, that reset request is enabled.
-            Whenever a particular bit is set to 0, that reset request cannot reset the device.
           ''',
         },
       ]
@@ -327,7 +327,13 @@
     },
 
     { name: "WAKE_INFO",
-      desc: "Indicates which functions caused the chip to wakeup",
+      desc: '''
+        Indicates which functions caused the chip to wakeup.
+        The wake info recording begins whenever the device begins a valid low power entry.
+
+        This capture is continued until it is explicitly disabled through WAKE_INFO_CAPTURE_DIS.
+        This means it is possible to capture multiple wakeup reasons.
+      ''',
       swaccess: "rw1c",
       hwaccess: "hrw",
       hwext: "true",
@@ -336,12 +342,7 @@
       fields: [
         { bits: "15:0",
           name: "REASONS",
-          desc: '''
-            The wake info recording begins whenever the device begins a valid low power entry.
-
-            This capture is continued until it is explicitly disabled through WAKE_INFO_CAPTURE_DIS.
-            This means it is possible to capture multiple wakeup reasons.
-          ''',
+          desc: "Various peripheral wake reasons"
         },
         { bits: "16",
           name: "FALL_THROUGH",

@@ -9,48 +9,48 @@
 
 module pwrmgr_cdc import pwrmgr_pkg::*;
 (
- // Clocks and resets
- input clk_slow_i,
- input clk_i,
- input rst_slow_ni,
- input rst_ni,
+  // Clocks and resets
+  input clk_slow_i,
+  input clk_i,
+  input rst_slow_ni,
+  input rst_ni,
 
- // slow domain signals,
- input slow_req_pwrup_i,
- input slow_ack_pwrdn_i,
- input slow_pwrup_cause_toggle_i,
- input pwrup_cause_e slow_pwrup_cause_i,
- output pwrmgr_reg_pkg::pwrmgr_reg2hw_wakeup_en_reg_t slow_wakeup_en_o,
- output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t slow_reset_en_o,
- output logic slow_main_pdb_o,
- output logic slow_io_clk_en_o,
- output logic slow_core_clk_en_o,
- output logic slow_req_pwrdn_o,
- output logic slow_ack_pwrup_o,
- output pwr_ast_rsp_t slow_ast_o,
- output pwr_peri_rsp_t slow_ext_reqs_o,
- input pwr_peri_rsp_t slow_ext_reqs_masked_i,
+  // slow domain signals,
+  input slow_req_pwrup_i,
+  input slow_ack_pwrdn_i,
+  input slow_pwrup_cause_toggle_i,
+  input pwrup_cause_e slow_pwrup_cause_i,
+  output pwrmgr_reg_pkg::pwrmgr_reg2hw_wakeup_en_reg_t slow_wakeup_en_o,
+  output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t slow_reset_en_o,
+  output logic slow_main_pdb_o,
+  output logic slow_io_clk_en_o,
+  output logic slow_core_clk_en_o,
+  output logic slow_req_pwrdn_o,
+  output logic slow_ack_pwrup_o,
+  output pwr_ast_rsp_t slow_ast_o,
+  output pwr_peri_rsp_t slow_ext_reqs_o,
+  input pwr_peri_rsp_t slow_ext_reqs_masked_i,
 
- // fast domain signals
- input req_pwrdn_i,
- input ack_pwrup_i,
- input cfg_cdc_sync_i,
- input pwrmgr_reg_pkg::pwrmgr_reg2hw_wakeup_en_reg_t wakeup_en_i,
- input pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t reset_en_i,
- input main_pdb_i,
- input io_clk_en_i,
- input core_clk_en_i,
- output logic ack_pwrdn_o,
- output logic req_pwrup_o,
- output pwrup_cause_e pwrup_cause_o,
- output pwr_peri_rsp_t ext_reqs_o,
- output logic cdc_sync_done_o,
+  // fast domain signals
+  input req_pwrdn_i,
+  input ack_pwrup_i,
+  input cfg_cdc_sync_i,
+  input pwrmgr_reg_pkg::pwrmgr_reg2hw_wakeup_en_reg_t wakeup_en_i,
+  input pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t reset_en_i,
+  input main_pdb_i,
+  input io_clk_en_i,
+  input core_clk_en_i,
+  output logic ack_pwrdn_o,
+  output logic req_pwrup_o,
+  output pwrup_cause_e pwrup_cause_o,
+  output pwr_peri_rsp_t ext_reqs_o,
+  output logic cdc_sync_done_o,
 
- // peripheral inputs, mixed domains
- input pwr_peri_rsp_t peri_i,
+  // peripheral inputs, mixed domains
+  input pwr_peri_rsp_t peri_i,
 
- // AST inputs, unknown domain
- input pwr_ast_rsp_t ast_i
+  // AST inputs, unknown domain
+  input pwr_ast_rsp_t ast_i
 
 );
 
