@@ -39,4 +39,4 @@ jobs:
 
       - name: Build
         run: |
-          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=${{ matrix.os }}
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=${{ matrix.target_cpus }}

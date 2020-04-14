@@ -41,9 +41,9 @@ jobs:
       - name: Test
         run: |
           cd ${{ matrix.example_dirs }} ||
-          "${GITHUB_WORKSPACE}/bin/bazel" test //... 
+          "${GITHUB_WORKSPACE}/bin/bazel" test //...
 
       - name: Build
         run: |
           cd ${{ matrix.example_dirs }} ||
-          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=${{ matrix.os }}
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=${{ matrix.target_cpus }}
