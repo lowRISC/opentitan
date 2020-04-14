@@ -212,7 +212,8 @@ class MmioTest {
   MockDevice &dev() { return *dev_; }
 
  private:
-  std::unique_ptr<MockDevice> dev_ = std::make_unique<MockDevice>();
+  std::unique_ptr<MockDevice> dev_ =
+      std::make_unique<testing::StrictMock<MockDevice>>();
   testing::InSequence seq_;
 };
 }  // namespace mock_mmio
