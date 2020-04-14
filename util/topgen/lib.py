@@ -214,3 +214,12 @@ def index(i: int) -> str:
     """Return index if it is not -1
     """
     return "[{}]".format(i) if i != -1 else ""
+
+def get_reset_path(resets, name):
+    """Return the appropriate reset path given name
+    """
+    for reset in resets:
+        if reset['name'] == name:
+            return reset['path']
+
+    return "none"
