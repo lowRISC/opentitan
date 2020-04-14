@@ -139,6 +139,38 @@ Example:
 int create_rainbow(int pots_of_gold, int unicorns);
 ```
 
+### Polyglot headers
+
+***Headers intended to be included from both languages must contain `extern` guards; `#include`s should not be wrapped in `extern "C" {}`.***
+
+A *polyglot header* is a header file that can be safely included in either a `.c` or `.cc` file.
+In particular, this means that the file must not depend on any of the places where C and C++ semantics disagree.
+For example:
+- `sizeof(struct {})` and `sizeof(true)` are different in C and C++.
+- Function-scope `static` variables generate lock calls in C++.
+- Some libc macros, like `static_assert`, may not be present in C++.
+- Character literals type as `char` in C++ but `int` in C.
+
+Such files must be explictly marked with `extern` guards like the following, starting after the file's `#include`s.
+```
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Declarations...
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+```
+Moreover, all non-system `#includes` in a polyglot header must also be of other polyglot headers.
+(In other words, all C system headers may be assumed to be polyglot, even if they lack guards.)
+
+Additionally, it is forbidden to wrap `#include` statements in `extern "C"` in a C++ file.
+While this does correctly set the ABI for a header implemented in C, that header may contain code that subtly depends on the peculiarities of C.
+
+This last rule is waived for third-party headers, which may be polyglot but not declared in our style.
+
 ## C++ Style Guide {#cxx-style-guide}
 
 ### C++ Version {#cxx-version}
@@ -284,6 +316,8 @@ This also ensures that the function can be used via a function pointer.
 
 Declarations marked `static` must not appear in header files.
 Header files are declarations of public interfaces, and `static` definitions are copied, not shared, between compilation units.
+
+This is especially important in the case of a polyglot header, since function-local static declarations have different, incompatible semantics in C and C++.
 
 Functions marked `static` must not be marked `inline`.
 The compiler is capable of inlining static functions without the `inline` annotation.
