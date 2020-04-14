@@ -57,11 +57,6 @@ load("@bazel_embedded//toolchains/gcc_arm_none_eabi:gcc_arm_none_toolchain.bzl",
 register_gcc_arm_none_toolchain()
 ```
 
-Enable incompatible/future support for bazel toolchain resolution by adding the following .bazelrc to your project. This won't be required in future after this becomes the default functionality in bazel.
-```
-build --incompatible_enable_cc_toolchain_resolution
-
-```
 
 Cross Compile your target
 
