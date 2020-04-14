@@ -385,10 +385,11 @@ reg_optional = {
         "register name should be given here. empty-string for no register " +
         "write protection"
     ],
-    'resval': ['d', "reset value of full register (default 0)"
-    ],
-    'tags': ['s', "tags for the register, followed by the format 'tag_name:item1:item2...'"]
-
+    'resval': ['d', "reset value of full register (default 0)"],
+    'tags': [
+        's',
+        "tags for the register, followed by the format 'tag_name:item1:item2...'"
+    ]
 }
 reg_added = {
     'genresval': ['pi', "reset value generated from resval and fields"],
@@ -485,9 +486,11 @@ field_optional = {
         "x if neither are provided and the field "
         "is wo. Must match if both are provided."
     ],
-    'enum': ['l', "list of permitted enumeration groups"
-    ],
-    'tags': ['s', "tags for the field, followed by the format 'tag_name:item1:item2...'"]
+    'enum': ['l', "list of permitted enumeration groups"],
+    'tags': [
+        's',
+        "tags for the field, followed by the format 'tag_name:item1:item2...'"
+    ]
 }
 field_added = {
     'genrsvdenum': ['pb', "enum did not cover every possible value"],
@@ -584,7 +587,7 @@ keywords_verilog = [
 
 
 # if not int, check in param_list
-def resolve_value (entry, param_list):
+def resolve_value(entry, param_list):
     val, not_int = check_int(entry, "")
 
     if not_int:
@@ -593,8 +596,9 @@ def resolve_value (entry, param_list):
 
     return int(val)
 
+
 # only supports subtractions right now
-def resolve_bitfield (entry, param_list):
+def resolve_bitfield(entry, param_list):
     lead_term = True
     val = 0
     terms = entry.replace(" ", "").split('-')
@@ -653,7 +657,7 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
             continue
 
         if not 'tags' in field:
-          field['tags'] = []
+            field['tags'] = []
 
         if not 'swaccess' in field:
             if (default_sw == None):
@@ -694,7 +698,6 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
         field['genhwaccess'] = hwacc_info[1]
         field['genhwqe'] = reg_hwqe
         field['genhwre'] = reg_hwre
-
 
         # allow an int but make a string for all downstream users
         if isinstance(field['bits'], int):
@@ -835,6 +838,7 @@ def validate_reg_defaults(reg, rname):
             default_hw = None
     else:
         default_hw = "hro"  # Read-Only
+        reg['hwaccess'] = default_hw
 
     if 'hwext' in reg:
         hwext, ierr = check_bool(reg['hwext'], rname + " hwext")
@@ -886,7 +890,7 @@ def validate_reg_defaults(reg, rname):
         reg['regwen'] = ''
 
     if 'tags' not in reg:
-      reg['tags'] = []
+        reg['tags'] = []
 
     if 'resval' in reg:
         full_resval, ierr = check_int(reg['resval'], rname + " resval")
@@ -1015,9 +1019,9 @@ def validate_multi(mreg, offset, addrsep, width, top):
             genreg['swaccess'] = default_sw
             genreg['hwaccess'] = default_hw
             if 'tags' in mreg:
-              genreg['tags'] = mreg['tags']
+                genreg['tags'] = mreg['tags']
             else:
-              genreg['tags'] = []
+                genreg['tags'] = []
 
             if regwen_incr:
                 genreg['regwen'] = mreg['regwen'] + str(rnum)
@@ -1032,12 +1036,12 @@ def validate_multi(mreg, offset, addrsep, width, top):
         while bpos < width:
             # bused is a bit mask of how many bits the fields need
             # bpos is the current LSB of the bits allocated for the fields
-            trypos = bused << bpos;
+            trypos = bused << bpos
 
             # if register can no longer contain another homogenous field
             # if the field is not homogenous and has been allocated
             # Currently we only compact if field is homogenous
-            if (trypos > max_rval) or (bpos != 0 and len(mreg['fields']) > 1) :
+            if (trypos > max_rval) or (bpos != 0 and len(mreg['fields']) > 1):
                 bpos = width
                 break
             # if bits have not been used, break and allocate
@@ -1057,7 +1061,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
                                        newf['bitinfo'][1],
                                        newf['bitinfo'][2] + bpos)
                     if 'tags' not in fn:
-                      newf['tags'] = []
+                        newf['tags'] = []
                     if 'enum' in newf:
                         del newf['enum']
                 else:
@@ -1158,9 +1162,9 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         newf['genresval'] = 0
         newf['genresvalx'] = False
         if not 'tags' in bit:
-          newf['tags'] = []
+            newf['tags'] = []
         else:
-          newf['tags'] = bit['tags']
+            newf['tags'] = bit['tags']
 
         bits_used = bits_used | ((2**w - 1) << cur_bit)
         cur_bit += 1
@@ -1296,25 +1300,28 @@ def check_wen_regs(regs):
     # 0 - name
     # 1 - reset value
     # 2 - sw access
+    # 3 - hw access
     tuple_name = 0
     tuple_rstval = 1
     tuple_swaccess = 2
+    tuple_hwaccess = 3
 
-    reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'])
-                for reg in regs['registers']
+    reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'],
+                 reg['hwaccess']) for reg in regs['registers']
                 if 'name' in reg and 'genresval' in reg]
     mreg_list = [
         reg['multireg'] for reg in regs['registers'] if 'multireg' in reg
     ]
     field_list = [((reg['name'] + "_" + field['name']).lower(),
-                   field['genresval'], field['swaccess']) for mreg in mreg_list
-                  for reg in mreg['genregs'] for field in reg['fields']]
+                   field['genresval'], field['swaccess'], field['hwaccess'])
+                  for mreg in mreg_list for reg in mreg['genregs']
+                  for field in reg['fields']]
 
     # Need to check in register names and field list in case of multireg
     reg_list.extend(field_list)
 
     # check for reset value
-    # both w1c and w0c are acceptable
+    # both w1c and w0c are acceptable, ro is also acceptable when hwaccess is wo (hw managed regwen)
     for x in regs['genwennames']:
         target = x.lower()
         log.info("check_wen_regs::Searching for %s" % target)
@@ -1328,10 +1335,24 @@ def check_wen_regs(regs):
             log.error(x + " used as regwen fails requirement to default " +
                       "to 1")
 
-        if not reg_list[idx][tuple_swaccess] in ["rw0c", "rw1c"]:
+        # either the regwen is software managed (rw0c or rw1c)
+        # or it is completely hw managed (sw=r0 and hw=wo)
+        sw_regwen = 0
+        hw_regwen = 0
+
+        if reg_list[idx][tuple_swaccess] in ["rw0c", "rw1c"]:
+            sw_regwen += 1
+
+        if reg_list[idx][tuple_swaccess] == "ro" and reg_list[idx][
+                tuple_hwaccess] == "hwo":
+            hw_regwen += 1
+
+        if (sw_regwen + hw_regwen) == 0:
             error += 1
-            log.error(x +
-                      " used as regwen fails requirement to be W1C or W0C ")
+            log.error(
+                x +
+                " used as regwen fails requirement to be swaccess=W1C/W0C or swaccess=RO and hwaccess=HWO"
+            )
 
     return error
 
