@@ -30,10 +30,10 @@ jobs:
       - name: Build
         run: |
           "${GITHUB_WORKSPACE}/bin/bazel" build //... 
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m0
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m1
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m3
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m4
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m7
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m4_fpu
-          "${GITHUB_WORKSPACE}/bin/bazel" build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m7_fpu
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m0
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m1
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m3
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m4
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m7
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m4_fpu
+          "${GITHUB_WORKSPACE}/bin/bazel" build //... --platforms=@bazel_embedded//platforms:cortex_m7_fpu
