@@ -2,9 +2,6 @@
 
 ![CI](https://github.com/silvergasp/bazel-embedded/workflows/CI/badge.svg)
 
-**Caution:** This is alpha quality software at the moment and has not be tested in depth.
-bazel-embedded is a set of tools that enable embedded development using bazel. 
-
 At this point it is relatively easy to add support for new architectures, that have gcc based compilers. In future we will be adding clang support, so that we can make use of clangs static-analyzers. If you would like an architecture added to this repository let us know.
 
 Current support is limited to Arm Cortex-M Devices:
@@ -71,6 +68,57 @@ bazel build //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu
 ```
 
 Explore the examples for more in depth details...
+
+You may choose to upload your code to a microcontroller using the [openocd](tools/openocd/README.md) package which allows you to program using SWD or JTAG. An example of this is shown below;
+
+BUILD
+
+```python
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@bazel_embedded//tools/openocd:defs.bzl", "openocd_debug_server", "openocd_flash")
+
+# This target can be run to launch a gdb server on port 3333
+openocd_debug_server(
+    name = "main_debug_server",
+    device_configs = [
+        "target/stm32h7x_dual_bank.cfg",
+    ],
+    interface_configs = [
+        "interface/stlink.cfg",
+    ],
+    transport = "hla_swd",
+)
+# The target to flash
+cc_binary(
+    name = "main",
+    srcs = ["main.cc"],
+    linkopts = [
+        # app_code.ld is a linker script in the same directory
+        "-T $(location :app_code.ld)",
+        "-lc",
+        "-lm",
+        "-lnosys",
+        "-u _printf_float",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":app_code.ld",
+        "//libs/cpp/board_support:board_support_package",
+    ],
+)
+# Run this target to upload to the microcontroller
+openocd_flash(
+    name = "main_flash",
+    device_configs = [
+        "target/stm32h7x_dual_bank.cfg",
+    ],
+    image = ":main.stripped",
+    interface_configs = [
+        "interface/stlink.cfg",
+    ],
+    transport = "hla_swd",
+)
+```
 
 ## Caveats
 If your repository contains platform independant you will not be able to automatically exclude platform dependant code. For example;
