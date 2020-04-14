@@ -103,6 +103,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_pinmux_d_d2h;
   tl_h2d_t  tl_alert_handler_d_h2d;
   tl_d2h_t  tl_alert_handler_d_d2h;
+  tl_h2d_t  tl_pwrmgr_d_h2d;
+  tl_d2h_t  tl_pwrmgr_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_d_h2d;
@@ -160,6 +162,7 @@ module top_earlgrey #(
   // rv_plic
   // pinmux
   // alert_handler
+  // pwrmgr
   // nmi_gen
   // usbdev
   logic        cio_usbdev_sense_p2d;
@@ -182,7 +185,7 @@ module top_earlgrey #(
   logic        cio_usbdev_dn_en_d2p;
 
 
-  logic [79:0]  intr_vector;
+  logic [80:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -213,6 +216,7 @@ module top_earlgrey #(
   logic intr_alert_handler_classb;
   logic intr_alert_handler_classc;
   logic intr_alert_handler_classd;
+  logic intr_pwrmgr_wakeup;
   logic intr_nmi_gen_esc0;
   logic intr_nmi_gen_esc1;
   logic intr_nmi_gen_esc2;
@@ -671,6 +675,32 @@ module top_earlgrey #(
       .rst_ni (sys_rst_n)
   );
 
+  pwrmgr u_pwrmgr (
+      .tl_i (tl_pwrmgr_d_h2d),
+      .tl_o (tl_pwrmgr_d_d2h),
+
+      // Interrupt
+      .intr_wakeup_o (intr_pwrmgr_wakeup),
+
+      // Inter-module signals
+      .pwr_ast_o(),
+      .pwr_ast_i(pwrmgr_pkg::PWR_AST_RSP_DEFAULT),
+      .pwr_rst_o(),
+      .pwr_rst_i(pwrmgr_pkg::PWR_RST_RSP_DEFAULT),
+      .pwr_otp_o(),
+      .pwr_otp_i(pwrmgr_pkg::PWR_OTP_RSP_DEFAULT),
+      .pwr_lc_o(),
+      .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
+      .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
+      .pwr_proc_i(pwrmgr_pkg::PWR_PROC_DEFAULT),
+      .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
+
+      .clk_i (fixed_clk),
+      .clk_slow_i (fixed_clk),
+      .rst_ni (sys_fixed_rst_n),
+      .rst_slow_ni (sys_fixed_rst_n)
+  );
+
   nmi_gen u_nmi_gen (
       .tl_i (tl_nmi_gen_d_h2d),
       .tl_o (tl_nmi_gen_d_d2h),
@@ -740,6 +770,7 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_pwrmgr_wakeup,
       intr_usbdev_connected,
       intr_usbdev_frame,
       intr_usbdev_rx_bitstuff_err,
@@ -845,6 +876,8 @@ module top_earlgrey #(
     .tl_rv_timer_i   (tl_rv_timer_d_d2h),
     .tl_usbdev_o     (tl_usbdev_d_h2d),
     .tl_usbdev_i     (tl_usbdev_d_d2h),
+    .tl_pwrmgr_o     (tl_pwrmgr_d_h2d),
+    .tl_pwrmgr_i     (tl_pwrmgr_d_d2h),
 
     .scanmode_i
   );

@@ -79,6 +79,8 @@ module pwrmgr_reg_top (
   logic intr_enable_we;
   logic intr_test_wd;
   logic intr_test_we;
+  logic ctrl_cfg_regwen_qs;
+  logic ctrl_cfg_regwen_re;
   logic control_low_power_hint_qs;
   logic control_low_power_hint_wd;
   logic control_low_power_hint_we;
@@ -94,23 +96,19 @@ module pwrmgr_reg_top (
   logic cfg_cdc_sync_qs;
   logic cfg_cdc_sync_wd;
   logic cfg_cdc_sync_we;
-  logic ctrl_cfg_regwen_qs;
-  logic ctrl_cfg_regwen_wd;
-  logic ctrl_cfg_regwen_we;
-  logic ctrl_cfg_regwen_re;
-  logic [15:0] wakeup_en_qs;
-  logic [15:0] wakeup_en_wd;
-  logic wakeup_en_we;
   logic wakeup_en_regwen_qs;
   logic wakeup_en_regwen_wd;
   logic wakeup_en_regwen_we;
+  logic [15:0] wakeup_en_qs;
+  logic [15:0] wakeup_en_wd;
+  logic wakeup_en_we;
   logic [15:0] wake_status_qs;
-  logic [1:0] reset_en_qs;
-  logic [1:0] reset_en_wd;
-  logic reset_en_we;
   logic reset_en_regwen_qs;
   logic reset_en_regwen_wd;
   logic reset_en_regwen_we;
+  logic [1:0] reset_en_qs;
+  logic [1:0] reset_en_wd;
+  logic reset_en_we;
   logic [1:0] reset_status_qs;
   logic wake_info_capture_dis_qs;
   logic wake_info_capture_dis_wd;
@@ -196,6 +194,22 @@ module pwrmgr_reg_top (
     .qe     (reg2hw.intr_test.qe),
     .q      (reg2hw.intr_test.q ),
     .qs     ()
+  );
+
+
+  // R[ctrl_cfg_regwen]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_ctrl_cfg_regwen (
+    .re     (ctrl_cfg_regwen_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.ctrl_cfg_regwen.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (ctrl_cfg_regwen_qs)
   );
 
 
@@ -332,19 +346,30 @@ module pwrmgr_reg_top (
   );
 
 
-  // R[ctrl_cfg_regwen]: V(True)
+  // R[wakeup_en_regwen]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_ctrl_cfg_regwen (
-    .re     (ctrl_cfg_regwen_re),
-    .we     (ctrl_cfg_regwen_we),
-    .wd     (ctrl_cfg_regwen_wd),
-    .d      (hw2reg.ctrl_cfg_regwen.d),
-    .qre    (),
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_wakeup_en_regwen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (wakeup_en_regwen_we),
+    .wd     (wakeup_en_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
-    .qs     (ctrl_cfg_regwen_qs)
+
+    // to register interface (read)
+    .qs     (wakeup_en_regwen_qs)
   );
 
 
@@ -375,64 +400,10 @@ module pwrmgr_reg_top (
   );
 
 
-  // R[wakeup_en_regwen]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
-  ) u_wakeup_en_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (wakeup_en_regwen_we),
-    .wd     (wakeup_en_regwen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (wakeup_en_regwen_qs)
-  );
-
-
   // R[wake_status]: V(False)
 
   // constant-only read
   assign wake_status_qs = 16'h0;
-
-
-  // R[reset_en]: V(False)
-
-  prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
-  ) u_reset_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (reset_en_we & reset_en_regwen_qs),
-    .wd     (reset_en_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.reset_en.q ),
-
-    // to register interface (read)
-    .qs     (reset_en_qs)
-  );
 
 
   // R[reset_en_regwen]: V(False)
@@ -459,6 +430,33 @@ module pwrmgr_reg_top (
 
     // to register interface (read)
     .qs     (reset_en_regwen_qs)
+  );
+
+
+  // R[reset_en]: V(False)
+
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_reset_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (reset_en_we & reset_en_regwen_qs),
+    .wd     (reset_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_en.q ),
+
+    // to register interface (read)
+    .qs     (reset_en_qs)
   );
 
 
@@ -550,14 +548,14 @@ module pwrmgr_reg_top (
     addr_hit[ 0] = (reg_addr == PWRMGR_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == PWRMGR_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == PWRMGR_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == PWRMGR_CONTROL_OFFSET);
-    addr_hit[ 4] = (reg_addr == PWRMGR_CFG_CDC_SYNC_OFFSET);
-    addr_hit[ 5] = (reg_addr == PWRMGR_CTRL_CFG_REGWEN_OFFSET);
-    addr_hit[ 6] = (reg_addr == PWRMGR_WAKEUP_EN_OFFSET);
-    addr_hit[ 7] = (reg_addr == PWRMGR_WAKEUP_EN_REGWEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == PWRMGR_CTRL_CFG_REGWEN_OFFSET);
+    addr_hit[ 4] = (reg_addr == PWRMGR_CONTROL_OFFSET);
+    addr_hit[ 5] = (reg_addr == PWRMGR_CFG_CDC_SYNC_OFFSET);
+    addr_hit[ 6] = (reg_addr == PWRMGR_WAKEUP_EN_REGWEN_OFFSET);
+    addr_hit[ 7] = (reg_addr == PWRMGR_WAKEUP_EN_OFFSET);
     addr_hit[ 8] = (reg_addr == PWRMGR_WAKE_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == PWRMGR_RESET_EN_OFFSET);
-    addr_hit[10] = (reg_addr == PWRMGR_RESET_EN_REGWEN_OFFSET);
+    addr_hit[ 9] = (reg_addr == PWRMGR_RESET_EN_REGWEN_OFFSET);
+    addr_hit[10] = (reg_addr == PWRMGR_RESET_EN_OFFSET);
     addr_hit[11] = (reg_addr == PWRMGR_RESET_STATUS_OFFSET);
     addr_hit[12] = (reg_addr == PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET);
     addr_hit[13] = (reg_addr == PWRMGR_WAKE_INFO_OFFSET);
@@ -593,37 +591,35 @@ module pwrmgr_reg_top (
   assign intr_test_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_wd = reg_wdata[0];
 
-  assign control_low_power_hint_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_cfg_regwen_re = addr_hit[3] && reg_re;
+
+  assign control_low_power_hint_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_low_power_hint_wd = reg_wdata[0];
 
-  assign control_core_clk_en_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_core_clk_en_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_core_clk_en_wd = reg_wdata[4];
 
-  assign control_io_clk_en_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_io_clk_en_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_io_clk_en_wd = reg_wdata[5];
 
-  assign control_main_pdb_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_main_pdb_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_main_pdb_wd = reg_wdata[6];
 
-  assign cfg_cdc_sync_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_cdc_sync_we = addr_hit[5] & reg_we & ~wr_err;
   assign cfg_cdc_sync_wd = reg_wdata[0];
 
-  assign ctrl_cfg_regwen_we = addr_hit[5] & reg_we & ~wr_err;
-  assign ctrl_cfg_regwen_wd = reg_wdata[0];
-  assign ctrl_cfg_regwen_re = addr_hit[5] && reg_re;
-
-  assign wakeup_en_we = addr_hit[6] & reg_we & ~wr_err;
-  assign wakeup_en_wd = reg_wdata[15:0];
-
-  assign wakeup_en_regwen_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_regwen_we = addr_hit[6] & reg_we & ~wr_err;
   assign wakeup_en_regwen_wd = reg_wdata[0];
 
+  assign wakeup_en_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_wd = reg_wdata[15:0];
 
-  assign reset_en_we = addr_hit[9] & reg_we & ~wr_err;
-  assign reset_en_wd = reg_wdata[1:0];
 
-  assign reset_en_regwen_we = addr_hit[10] & reg_we & ~wr_err;
+  assign reset_en_regwen_we = addr_hit[9] & reg_we & ~wr_err;
   assign reset_en_regwen_wd = reg_wdata[0];
+
+  assign reset_en_we = addr_hit[10] & reg_we & ~wr_err;
+  assign reset_en_wd = reg_wdata[1:0];
 
 
   assign wake_info_capture_dis_we = addr_hit[12] & reg_we & ~wr_err;
@@ -658,26 +654,26 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = ctrl_cfg_regwen_qs;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = control_low_power_hint_qs;
         reg_rdata_next[4] = control_core_clk_en_qs;
         reg_rdata_next[5] = control_io_clk_en_qs;
         reg_rdata_next[6] = control_main_pdb_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = cfg_cdc_sync_qs;
       end
 
-      addr_hit[5]: begin
-        reg_rdata_next[0] = ctrl_cfg_regwen_qs;
-      end
-
       addr_hit[6]: begin
-        reg_rdata_next[15:0] = wakeup_en_qs;
+        reg_rdata_next[0] = wakeup_en_regwen_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = wakeup_en_regwen_qs;
+        reg_rdata_next[15:0] = wakeup_en_qs;
       end
 
       addr_hit[8]: begin
@@ -685,11 +681,11 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[1:0] = reset_en_qs;
+        reg_rdata_next[0] = reset_en_regwen_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[0] = reset_en_regwen_qs;
+        reg_rdata_next[1:0] = reset_en_qs;
       end
 
       addr_hit[11]: begin

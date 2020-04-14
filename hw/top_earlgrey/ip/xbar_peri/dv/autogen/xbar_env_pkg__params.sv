@@ -21,6 +21,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"usbdev", '{
         '{32'h40150000, 32'h40150fff}
+    }},
+    '{"pwrmgr", '{
+        '{32'h400a0000, 32'h400a0fff}
 }}};
 
   // List of Xbar hosts
@@ -30,5 +33,6 @@ tl_host_t xbar_hosts[$] = '{
         "gpio",
         "spi_device",
         "rv_timer",
-        "usbdev"}}
+        "usbdev",
+        "pwrmgr"}}
 };

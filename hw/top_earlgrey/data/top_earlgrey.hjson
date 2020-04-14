@@ -125,6 +125,14 @@
         LfsrSeed:  "0x7FFFFFFF"
       }
     }
+    { name: "pwrmgr",
+      type: "pwrmgr",
+      clock: "main",
+      clock_connections: {clk_i: "fixed", clk_slow_i: "fixed"},
+      reset_connections: {rst_ni: "sys_fixed", rst_slow_ni: "sys_fixed"},
+      base_addr: "0x400A0000",
+      generated: "true"
+    },
     // dummy module to capture the alert handler escalation signals
     // and test them by converting them into IRQs
     { name: "nmi_gen",
@@ -217,7 +225,7 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev" ]
+                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.

@@ -28,8 +28,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
   output logic slow_req_pwrdn_o,
   output logic slow_ack_pwrup_o,
   output pwr_ast_rsp_t slow_ast_o,
-  output pwr_peri_rsp_t slow_ext_reqs_o,
-  input pwr_peri_rsp_t slow_ext_reqs_masked_i,
+  output pwr_peri_t slow_ext_reqs_o,
+  input pwr_peri_t slow_ext_reqs_masked_i,
 
   // fast domain signals
   input req_pwrdn_i,
@@ -43,11 +43,11 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
   output logic ack_pwrdn_o,
   output logic req_pwrup_o,
   output pwrup_cause_e pwrup_cause_o,
-  output pwr_peri_rsp_t ext_reqs_o,
+  output pwr_peri_t ext_reqs_o,
   output logic cdc_sync_done_o,
 
   // peripheral inputs, mixed domains
-  input pwr_peri_rsp_t peri_i,
+  input pwr_peri_t peri_i,
 
   // AST inputs, unknown domain
   input pwr_ast_rsp_t ast_i

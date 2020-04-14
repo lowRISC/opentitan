@@ -519,6 +519,114 @@
       scan: "false"
     }
     {
+      name: pwrmgr
+      type: pwrmgr
+      clock: main
+      clock_connections:
+      {
+        clk_i: fixed
+        clk_slow_i: fixed
+      }
+      reset_connections:
+      {
+        rst_ni: sys_fixed
+        rst_slow_ni: sys_fixed
+      }
+      base_addr: 0x400A0000
+      generated: "true"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: wakeup
+          width: 1
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: pwr_ast
+          type: req_rsp
+          name: pwr_ast
+          act: req
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_rst
+          type: req_rsp
+          name: pwr_rst
+          act: req
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_clk
+          type: broadcast
+          name: pwr_clk
+          act: req
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_otp
+          type: req_rsp
+          name: pwr_otp
+          act: req
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_lc
+          type: req_rsp
+          name: pwr_lc
+          act: req
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_flash
+          type: uni
+          name: pwr_flash
+          act: rcv
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_proc
+          type: uni
+          name: pwr_proc
+          act: rcv
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+        {
+          struct: pwr_peri
+          type: uni
+          name: pwr_peri
+          act: rcv
+          package: pwrmgr_pkg
+          inst_name: pwrmgr
+          index: -1
+        }
+      ]
+    }
+    {
       name: nmi_gen
       type: nmi_gen
       clock_connections:
@@ -970,6 +1078,10 @@
               base_addr: 0x40150000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x400A0000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -1112,6 +1224,7 @@
           spi_device
           rv_timer
           usbdev
+          pwrmgr
         ]
       }
       nodes:
@@ -1211,6 +1324,23 @@
           xbar: false
           pipeline_byp: "true"
         }
+        {
+          name: pwrmgr
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: pwrmgr
+          addr_range:
+          [
+            {
+              base_addr: 0x400A0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
       ]
       clock: clk_peri_i
     }
@@ -1225,6 +1355,7 @@
     alert_handler
     nmi_gen
     usbdev
+    pwrmgr
   ]
   interrupt:
   [
@@ -1465,6 +1596,11 @@
     }
     {
       name: usbdev_connected
+      width: 1
+      type: interrupt
+    }
+    {
+      name: pwrmgr_wakeup
       width: 1
       type: interrupt
     }
@@ -1757,6 +1893,78 @@
         inst_name: flash_ctrl
         width: 1
         top_signame: flash_ctrl_flash
+        index: -1
+      }
+      {
+        struct: pwr_ast
+        type: req_rsp
+        name: pwr_ast
+        act: req
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_rst
+        type: req_rsp
+        name: pwr_rst
+        act: req
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_clk
+        type: broadcast
+        name: pwr_clk
+        act: req
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_otp
+        type: req_rsp
+        name: pwr_otp
+        act: req
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_lc
+        type: req_rsp
+        name: pwr_lc
+        act: req
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_flash
+        type: uni
+        name: pwr_flash
+        act: rcv
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_proc
+        type: uni
+        name: pwr_proc
+        act: rcv
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_peri
+        type: uni
+        name: pwr_peri
+        act: rcv
+        package: pwrmgr_pkg
+        inst_name: pwrmgr
         index: -1
       }
       {

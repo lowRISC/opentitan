@@ -7,11 +7,17 @@
 
 package pwrmgr_pkg;
 
-  localparam HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
-  localparam PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
+  // global constant
+  parameter ALWAYS_ON_SEL = 0;
+
+  // variables referenced by other modules / packages
+  parameter HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
+  parameter PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
+
+  // used only in pwrmgr
   localparam WakeUpPeris = 16; // this needs to be a topgen populated number, or from topcfg?
   localparam TotalWakeWidth = WakeUpPeris + 2; // Abort and fall through are added
-  localparam AlwaysOnDomain = 0; // Abort and fall through are added
+
 
   // pwrmgr to ast
   typedef struct packed {
@@ -44,13 +50,19 @@ package pwrmgr_pkg;
     main_pok: 1'b0
   };
 
+  // reasons for pwrmgr reset reset
+  typedef enum logic [1:0] {
+    ResetNone = 0,     // there is no reset
+    LowPwrEntry = 1,   // reset is caused by low power entry
+    HwReq = 2,         // reset is caused by peripheral reset requests
+    ResetUndefined = 3 // this should never happen outside of POR
+  } reset_cause_e;
+
   // pwrmgr to rstmgr
   typedef struct packed {
-    logic [PowerDomains-1:0] lc_rst_req;
-    logic [PowerDomains-1:0] sys_rst_req;
-    logic ndm_req_en;
-    logic low_power_rst;
-    logic hw_rst;
+    logic [PowerDomains-1:0] rst_lc_req;
+    logic [PowerDomains-1:0] rst_sys_req;
+    reset_cause_e reset_cause;
   } pwr_rst_req_t;
 
   // rstmgr to pwrmgr
@@ -61,8 +73,8 @@ package pwrmgr_pkg;
 
   // default value (for dangling ports)
   parameter pwr_rst_rsp_t PWR_RST_RSP_DEFAULT = '{
-    rst_lc_src_n: 1'b1,
-    rst_sys_src_n: 1'b1
+    rst_lc_src_n: {PowerDomains{1'b1}},
+    rst_sys_src_n: {PowerDomains{1'b1}}
   };
 
   // pwrmgr to clkmgr
@@ -83,7 +95,7 @@ package pwrmgr_pkg;
 
   // default value (for dangling ports)
   parameter pwr_otp_rsp_t PWR_OTP_RSP_DEFAULT = '{
-    otp_done: '0,
+    otp_done: 1'b1,
     otp_idle: 1'b1
   };
 
@@ -100,18 +112,28 @@ package pwrmgr_pkg;
 
   // default value (for dangling ports)
   parameter pwr_lc_rsp_t PWR_LC_RSP_DEFAULT = '{
-    lc_done: '0,
+    lc_done: 1'b1,
     lc_idle: 1'b1
   };
 
   // flash to pwrmgr
   typedef struct packed {
     logic flash_idle;
-  } pwr_flash_rsp_t;
+  } pwr_flash_t;
 
   // default value (for dangling ports)
-  parameter pwr_flash_rsp_t PWR_FLASH_RSP_DEFAULT = '{
+  parameter pwr_flash_t PWR_FLASH_DEFAULT = '{
     flash_idle: 1'b1
+  };
+
+  // processor to pwrmgr
+  typedef struct packed {
+    logic core_sleeping;
+  } pwr_proc_t;
+
+  // default value (for dangling ports)
+  parameter pwr_proc_t PWR_PROC_DEFAULT = '{
+    core_sleeping: 1'b0
   };
 
   // peripherals to pwrmgr
@@ -122,10 +144,10 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [WakeUpPeris-1:0] wakeups;
     logic [HwRstReqs-1:0] rstreqs;
-  } pwr_peri_rsp_t;
+  } pwr_peri_t;
 
   // default value (for dangling ports)
-  parameter pwr_peri_rsp_t PWR_PERIS_RSP_DEFAULT = '{
+  parameter pwr_peri_t PWR_PERI_DEFAULT = '{
     wakeups: WakeUpPeris'(1'b1),
     rstreqs: '0
   };
