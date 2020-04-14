@@ -234,7 +234,7 @@ bool dif_uart_watermark_tx_set(const dif_uart_t *uart,
   // Check if the requested watermark is valid, and get a corresponding
   // register definition to be written.
   bitfield_field32_t field = {
-      .mask = UART_FIFO_CTRL_RXILVL_MASK, .index = UART_FIFO_CTRL_RXILVL_OFFSET,
+      .mask = UART_FIFO_CTRL_TXILVL_MASK, .index = UART_FIFO_CTRL_TXILVL_OFFSET,
   };
   switch (watermark) {
     case kDifUartWatermarkByte1:
