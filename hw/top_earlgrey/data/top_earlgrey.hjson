@@ -15,16 +15,27 @@
   ]
 
   // Reset attributes
-  // name: name of reset. Real name is `name`_rst_n
-  // type: reset type, either root or leaf
-  // root: if reset type not root, the root reset it is related to
+  // name: name of reset.
+  // If type is "gen", then real name is `name`_rst_n
+  // If type is "por", then real name is just `name`
+  // The root type is temporary until rstmgr integration
+  //
+  // root: The parent reset.
+  // If type is "por", there is no root, since it is the root
+  //
   // clk:  related clock domain for synchronous release
+  // If type is "por", there is not related clock, since it is
+  // likely external or generated from a voltage comparator
+  //
   resets: [
-    { name: "lc", type: "root", clk: "main"}
-    { name: "sys", type: "root", clk: "main"}
-    { name: "sys_fixed", type: "leaf", root: "sys", clk: "fixed"}
-    { name: "spi_device", type: "leaf", root: "sys", clk: "fixed"}
-    { name: "usb", type: "leaf", root: "sys", clk: "usb"}
+  // The rst_ni and por resets are relevant once rstmgr / pwrmgr are integrated
+  //  { name: "rst_ni",     type: "por" }
+  //  { name: "por",        type: "gen", root: "lc",  clk: "fixed" }
+    { name: "lc",         type: "root", root: "lc",  clk: "fixed" }
+    { name: "sys",        type: "root", root: "sys", clk: "main"  }
+    { name: "sys_fixed",  type: "gen",  root: "sys", clk: "fixed" }
+    { name: "spi_device", type: "gen",  root: "sys", clk: "fixed", sw: 1}
+    { name: "usb",        type: "gen",  root: "sys", clk: "usb",   sw: 1}
   ]
 
   // Number of cores: used in rv_plic and timer

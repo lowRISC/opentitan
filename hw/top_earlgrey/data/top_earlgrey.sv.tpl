@@ -220,7 +220,7 @@ module top_${top["name"]} #(
 
   // Non-root reset assignments
 % for reset in top['resets']:
-  % if reset['type'] in ['leaf'] and reset['name'] != "usb" :
+  % if reset['type'] in ['gen'] and reset['name'] != "usb" :
   assign ${reset['name']}_rst_n = ${reset['root']}_rst_n;
   % endif
 % endfor
@@ -254,7 +254,7 @@ module top_${top["name"]} #(
   ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (main_clk),
-    .rst_ni               (sys_rst_n),
+    .rst_ni               (${top["reset_paths"]["sys"]}),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -285,7 +285,7 @@ module top_${top["name"]} #(
     .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
     .clk_i         (main_clk),
-    .rst_ni        (lc_rst_n),
+    .rst_ni        (${top["reset_paths"]["lc"]}),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
@@ -341,7 +341,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}_clk),
     % endfor
     % for key in resets:
-    .${key}   (${resets[key]}_rst_n),
+    .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
     .tl_i     (tl_${m["name"]}_d_h2d),
     .tl_o     (tl_${m["name"]}_d_d2h),
@@ -367,7 +367,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}_clk),
     % endfor
     % for key in resets:
-    .${key}   (${resets[key]}_rst_n),
+    .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
 
     .req_i    (${m["name"]}_req),
@@ -402,7 +402,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}_clk),
     % endfor
     % for key in resets:
-    .${key}   (${resets[key]}_rst_n),
+    .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
 
     .tl_i     (tl_${m["name"]}_d_h2d),
@@ -428,7 +428,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}_clk),
     % endfor
     % for key in resets:
-    .${key}   (${resets[key]}_rst_n),
+    .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
     .cs_i     (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
@@ -472,7 +472,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}_clk),
     % endfor
     % for key in resets:
-    .${key}   (${resets[key]}_rst_n),
+    .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
 
     .tl_i       (tl_${m["name"]}_d_h2d),
@@ -494,7 +494,7 @@ module top_${top["name"]} #(
     .${key}   (${clocks[key]}_clk),
     % endfor
     % for key in resets:
-    .${key}   (${resets[key]}_rst_n),
+    .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
     .host_req_i      (flash_host_req),
     .host_addr_i     (flash_host_addr),
@@ -667,7 +667,7 @@ else:
       .${k} (${v}_clk),
     % endfor
     % for k, v in m["reset_connections"].items():
-      .${k} (${v}_rst_n)${"," if not loop.last else ""}
+      .${k} (${top["reset_paths"][v]})${"," if not loop.last else ""}
     % endfor
   );
 
@@ -690,7 +690,7 @@ else:
     .${k} (${v}_clk),
   % endfor
   % for k, v in xbar["reset_connections"].items():
-    .${k} (${v}_rst_n),
+    .${k} (${top["reset_paths"][v]}),
   % endfor
   % for node in xbar["nodes"]:
     % if node["type"] == "device":

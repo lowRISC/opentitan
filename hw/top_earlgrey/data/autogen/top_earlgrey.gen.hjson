@@ -29,30 +29,34 @@
     {
       name: lc
       type: root
-      clk: main
+      root: lc
+      clk: fixed
     }
     {
       name: sys
       type: root
+      root: sys
       clk: main
     }
     {
       name: sys_fixed
-      type: leaf
+      type: gen
       root: sys
       clk: fixed
     }
     {
       name: spi_device
-      type: leaf
+      type: gen
       root: sys
       clk: fixed
+      sw: 1
     }
     {
       name: usb
-      type: leaf
+      type: gen
       root: sys
       clk: usb
+      sw: 1
     }
   ]
   num_cores: "1"
@@ -1725,6 +1729,14 @@
         ]
       }
     ]
+  }
+  reset_paths:
+  {
+    lc: lc_rst_n
+    sys: sys_rst_n
+    sys_fixed: sys_fixed_rst_n
+    spi_device: spi_device_rst_n
+    usb: usb_rst_n
   }
   inter_signal:
   {

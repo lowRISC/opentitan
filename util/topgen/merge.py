@@ -416,6 +416,30 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
+def amend_resets(top):
+    """Add a path variable to reset declaration
+    """
+    reset_paths = {}
+
+    for reset in top["resets"]:
+
+        if "type" not in reset:
+            log.error("{} missing type field".format(reset["name"]))
+            return
+
+        if reset["type"] in ["root", "gen"]:
+            # The resets structure will be used once rstmgr is integrated
+            # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
+            reset_paths[reset["name"]] = "{}_rst_n".format(reset["name"])
+        elif reset["type"] == "por":
+            reset_paths[reset["name"]] = "rst_ni"
+        else:
+            log.error("{} type is invalid".format(reset["type"]))
+
+    top["reset_paths"] = reset_paths
+    return
+
+
 def amend_interrupt(top):
     """Check interrupt_module if exists, or just use all modules
     """
@@ -586,6 +610,9 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
     # Combine ip cfg into topcfg
     for ip in ipobjs:
         amend_ip(gencfg, ip)
+
+    # Add path names to declared resets
+    amend_resets(gencfg)
 
     # Inter-module signals
     elab_intermodule(gencfg)
