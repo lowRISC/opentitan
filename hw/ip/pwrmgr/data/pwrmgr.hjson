@@ -28,7 +28,7 @@
     },
 
     { struct:  "pwr_clk",
-      type:    "req_rsp",
+      type:    "broadcast",
       name:    "pwr_clk",
       act:     "req",
       package: "pwrmgr_pkg",
@@ -48,16 +48,23 @@
       package: "pwrmgr_pkg",
     },
 
-    { struct:  "pwr_pinmux",
+    { struct:  "pwr_flash",
       type:    "uni",
-      name:    "pwr_pinmux",
+      name:    "pwr_flash",
       act:     "rcv",
       package: "pwrmgr_pkg",
     },
 
-    { struct:  "pwr_peris",
+    { struct:  "pwr_proc",
       type:    "uni",
-      name:    "pwr_peris",
+      name:    "pwr_proc",
+      act:     "rcv",
+      package: "pwrmgr_pkg",
+    },
+
+    { struct:  "pwr_peri",
+      type:    "uni",
+      name:    "pwr_peri",
       act:     "rcv",
       package: "pwrmgr_pkg",
     },
@@ -69,6 +76,30 @@
 
   regwidth: "32",
   registers: [
+
+    { name: "CTRL_CFG_REGWEN",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      desc: '''
+      Controls the configurability of the CONTROL register.
+
+      This register ensures the contents do not change once a low power hint and
+      WFI has occurred.
+
+      It unlocks whenever a low power transition has completed (transition back to the
+      ACTIVE state) for any reason.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: "Configuration enable.  Once set to 0, it can no longer be configured to 1",
+          resval: "1",
+        },
+      ]
+    },
+
 
     { name: "CONTROL",
       desc: "Control register",
@@ -189,26 +220,18 @@
       ]
     },
 
-    { name: "CTRL_CFG_REGWEN",
+    { name: "WAKEUP_EN_REGWEN",
+      desc: "Configuration enable for wakeup register",
       swaccess: "rw0c",
-      hwaccess: "hwo",
-      hwext: "true",
-      hwqe: "true",
-      desc: '''
-      Controls the configurability of the CONTROL register.
-
-      This register ensures the contents do not change once a low power hint and
-      WFI has occurred.
-
-      It unlocks whenever a low power transition has completed (transition back to the
-      ACTIVE state) for any reason.
-      ''',
-
+      hwaccess: "none",
       fields: [
         { bits: "0",
+          resval: "1"
           name: "EN",
-          desc: "Configuration enable.  Once set to 0, it can longer be configured to 1",
-          resval: "1",
+          desc: '''
+            When 1, WAKEUP register can be configured.
+            When 0, WAKEUP register cannot be configured.
+          ''',
         },
       ]
     },
@@ -230,22 +253,6 @@
       ]
     },
 
-    { name: "WAKEUP_EN_REGWEN",
-      desc: "Configuration enable for wakeup register",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits: "0",
-          resval: "1"
-          name: "EN",
-          desc: '''
-            When 1, WAKEUP register can be configured.
-            When 0, WAKEUP register cannot be configured.
-          ''',
-        },
-      ]
-    },
-
     { name: "WAKE_STATUS",
       desc: "A read only register of all current wake requests post enable mask",
       swaccess: "ro",
@@ -256,24 +263,6 @@
           name: "VAL",
           desc: '''
             Current value of wake requests
-          ''',
-        },
-      ]
-    },
-
-
-    { name: "RESET_EN",
-      desc: "Bit mask for enabled resets",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen: "RESET_EN_REGWEN",
-      resval: "0"
-      fields: [
-        { bits: "1:0",
-          name: "EN",
-          desc: '''
-            Whenever a particular bit is set to 1, that reset request is enabled.
-            Whenever a particular bit is set to 0, that reset request cannot reset the device.
           ''',
         },
       ]
@@ -290,6 +279,23 @@
           desc: '''
             When 1, RESET register can be configured.
             When 0, RESET register cannot be configured.
+          ''',
+        },
+      ]
+    },
+
+    { name: "RESET_EN",
+      desc: "Bit mask for enabled resets",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "RESET_EN_REGWEN",
+      resval: "0"
+      fields: [
+        { bits: "1:0",
+          name: "EN",
+          desc: '''
+            Whenever a particular bit is set to 1, that reset request is enabled.
+            Whenever a particular bit is set to 0, that reset request cannot reset the device.
           ''',
         },
       ]

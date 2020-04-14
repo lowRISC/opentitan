@@ -15,9 +15,6 @@ module pwrmgr import pwrmgr_pkg::*;
   input rst_slow_ni,
   input rst_ni,
 
-  // core sleeping
-  input  core_sleeping_i,
-
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -42,10 +39,13 @@ module pwrmgr import pwrmgr_pkg::*;
   output pwr_lc_req_t pwr_lc_o,
 
   // flash interface
-  input  pwr_flash_rsp_t pwr_flash_i,
+  input  pwr_flash_t pwr_flash_i,
+
+  // processor interface
+  input  pwr_proc_t pwr_proc_i,
 
   // peripherals interface, includes pinmux
-  input  pwr_peri_rsp_t pwr_peri_i,
+  input  pwr_peri_t pwr_peri_i,
 
   output intr_wakeup_o
 
@@ -60,7 +60,7 @@ module pwrmgr import pwrmgr_pkg::*;
   pwrmgr_reg2hw_t reg2hw;
   pwrmgr_hw2reg_t hw2reg;
 
-  pwr_peri_rsp_t ext_reqs_masked;
+  pwr_peri_t ext_reqs_masked;
   logic req_pwrup;
   logic ack_pwrup;
   logic req_pwrdn;
@@ -81,7 +81,7 @@ module pwrmgr import pwrmgr_pkg::*;
   pwrmgr_reg2hw_reset_en_reg_t slow_reset_en;
 
   pwr_ast_rsp_t slow_ast;
-  pwr_peri_rsp_t slow_ext_reqs, slow_ext_reqs_masked;
+  pwr_peri_t slow_ext_reqs, slow_ext_reqs_masked;
 
   pwrup_cause_e slow_pwrup_cause;
   logic slow_pwrup_cause_toggle;
@@ -99,8 +99,8 @@ module pwrmgr import pwrmgr_pkg::*;
 
   logic low_power_hint;
   logic low_power_entry;
+  logic lowpwr_cfg_wen;
   logic wkup;
-  logic lowpwr_cfg_regwen;
   logic clr_cfg_lock;
 
   pwrmgr_reg_top i_reg (
@@ -119,15 +119,15 @@ module pwrmgr import pwrmgr_pkg::*;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      lowpwr_cfg_regwen <= 1'b1;
-    end else if (!lowpwr_cfg_regwen && (clr_cfg_lock || wkup)) begin
-      lowpwr_cfg_regwen <= 1'b1;
+      lowpwr_cfg_wen <= 1'b1;
+    end else if (!lowpwr_cfg_wen && (clr_cfg_lock || wkup)) begin
+      lowpwr_cfg_wen <= 1'b1;
     end else if (low_power_hint) begin
-      lowpwr_cfg_regwen <= 1'b0;
+      lowpwr_cfg_wen <= 1'b0;
     end
   end
 
-  assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_regwen;
+  assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
 
   ////////////////////////////
   ///  cdc handling
@@ -242,7 +242,7 @@ module pwrmgr import pwrmgr_pkg::*;
 
   // low power entry is initiated either through a graceful requests, or a
   // hardware requested reset.
-  assign low_power_entry = core_sleeping_i & low_power_hint |
+  assign low_power_entry = pwr_proc_i.core_sleeping & low_power_hint |
                            |ext_reqs_masked.rstreqs;
 
   pwrmgr_fsm i_fsm (
@@ -255,7 +255,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .ack_pwrup_o       (ack_pwrup),
     .req_pwrdn_o       (req_pwrdn),
     .ack_pwrdn_i       (ack_pwrdn),
-    .low_power_entry_i (core_sleeping_i & low_power_hint),
+    .low_power_entry_i (pwr_proc_i.core_sleeping & low_power_hint),
     .reset_req_i       (|ext_reqs_masked.rstreqs),
 
     // cfg
