@@ -10,7 +10,7 @@ def _is_feature(var):
             result = True
     return result
 
-_CC_ALL_COMMON_FEATURES_INFO = {
+CC_ALL_COMMON_FEATURES_INFO = {
     "all_warnings": "Contains feature to enable all warnings",
     "all_warnings_as_errors": "Contains a feature to treat all warnings as errors",
     "reproducible": "Contains a feature to ensure reproducible builds, this feature should be enabled by default",
@@ -24,7 +24,7 @@ _CC_ALL_COMMON_FEATURES_INFO = {
     "type_name": "The type name for this provider",
 }
 
-CcAllCommonFeaturesInfo = provider(fields = _CC_ALL_COMMON_FEATURES_INFO)
+CcAllCommonFeaturesInfo = provider(fields = CC_ALL_COMMON_FEATURES_INFO)
 
 def all_common_features(
         all_warnings,
@@ -68,7 +68,7 @@ def all_common_features(
     for arg in args:
         if not _is_feature(arg):
             fail("All arguments should be features", arg)
-        if arg.name not in _CC_ALL_COMMON_FEATURES_INFO.keys():
+        if arg.name not in CC_ALL_COMMON_FEATURES_INFO.keys():
             fail("All arguments should have a name corresponding to a provider field, got arg.name:", arg.name, ", which is not in required providers")
 
     return CcAllCommonFeaturesInfo(

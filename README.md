@@ -120,6 +120,15 @@ openocd_flash(
 )
 ```
 
+## Feature configuration
+Bazel can be configured using [features](https://docs.bazel.build/versions/master/cc-toolchain-config-reference.html#features). Each toolchain in this repository aims to implement a consistent behaviour for a given set of features. The list of available configuration features can be listed using the following command.
+```bash
+bazel run @bazel_embedded//toolchains/features:print_all_features
+```
+From here you may use each feature from the command line, the following example enables all warnings as errors and optimises for release;
+```bash
+bazel build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m0 --features=all_warnings_as_errors,opt
+```
 ## Caveats
 If your repository contains platform independant you will not be able to automatically exclude platform dependant code. For example;
 package/BUILD
