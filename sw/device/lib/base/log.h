@@ -114,12 +114,12 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
       /* Put DV-only log constants in .logs.* sections, which
        * the linker will dutifully discard.
        * Unfortunately, clang-format really mangles these
-       * declarations, so we format them manually. */            \
-      __attribute__((section(".logs.fields")))                   \
-      static const log_fields_t kLogFields =                     \
-          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_dv(&kLogFields,                          \
-                           GET_NUM_VARIABLE_ARGS(__VA_ARGS__),   \
+       * declarations, so we format them manually. */               \
+      __attribute__((section(".logs.fields")))                      \
+      static const log_fields_t kLogFields =                        \
+          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);        \
+      base_log_internal_dv(&kLogFields,                             \
+                           GET_NUM_VARIABLE_ARGS(0, ##__VA_ARGS__), \
                            ##__VA_ARGS__); /* clang-format on */ \
     } else {                                                     \
       log_fields_t log_fields =                                  \
@@ -131,10 +131,10 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
 /**
  * Implementation detail of `LOG`.
  */
-#define LOG_MAKE_FIELDS_(_severity, _format, ...)                         \
-  {                                                                       \
-    .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__, \
-    .nargs = GET_NUM_VARIABLE_ARGS(__VA_ARGS__), .format = "" _format "", \
+#define LOG_MAKE_FIELDS_(_severity, _format, ...)                              \
+  {                                                                            \
+    .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__,      \
+    .nargs = GET_NUM_VARIABLE_ARGS(0, ##__VA_ARGS__), .format = "" _format "", \
   }
 
 /**

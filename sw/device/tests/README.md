@@ -14,13 +14,18 @@ For FPGA / silicon this may be a host machine, while for UVM / Verilator this ma
 
 ## Self Checking Mechanism
 
-Currently, the self-checking mechanism is accomplished through a console message.
-When the tests pass, it will output `PASS!\r\n`.
+The self-checking mechanism is accomplished by invoking one of the test status indication APIs defined in `sw/device/lib/testing/test_status.h`.
+It is mandatory to invoke either `test_failed()` or `test_passed()` based on the checks performed in the test.
+These methods provide a platform-agnostic way to indicate the test status.
+Invoking these methods also causes the core to abort the execution and never return after reaching one of these terminal states.
 
+For non-UVM DV platforms (Verilator DV, FPGA or silicon), these methods write a message to the console.
+When the tests pass, it will output `PASS!\r\n`.
 The capturing and generation of this message will differ per testing target.
-On FPGA / silicon, they will feed directly to a host machine through a physical UART conection, where the host can decipher the message correctness.
+On FPGA / silicon, they will feed directly to a host machine through a physical UART connection, where the host can decipher the message correctness.
 On Verilator, they will feed to a virtual UART terminal where the host can do the same.
-On DV, they will feed to a fixed memory location where the DV backend can efficiently pick up the message without significant parsing overhead.
+
+For UVM DV, these methods write the test status signature to a known location in the memory, which is monitored by the testbench.
 
 # List of Tests
 

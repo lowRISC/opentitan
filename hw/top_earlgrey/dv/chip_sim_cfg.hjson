@@ -76,32 +76,37 @@
   tests: [
     {
       name: chip_sanity
+      uvm_test_seq: chip_sw_test_base_vseq
       sw_name: hello_world
       sw_dir: examples/hello_world
     }
     {
       name: chip_flash_test
+      uvm_test_seq: chip_sw_test_base_vseq
       sw_name: flash_test
       sw_dir: tests/flash_ctrl
-      run_opts: ["+cpu_test_timeout_ns=15000000"]
+      run_opts: ["+sw_test_timeout_ns=15000000"]
     }
     {
       name: chip_sha256_test
+      uvm_test_seq: chip_sw_test_base_vseq
       sw_name: sha256_test
       sw_dir: tests/hmac
-      run_opts: ["+cpu_test_timeout_ns=4000000"]
+      run_opts: ["+sw_test_timeout_ns=4000000"]
     }
     {
       name: chip_rv_timer_test
+      uvm_test_seq: chip_sw_test_base_vseq
       sw_name: rv_timer_test
       sw_dir: tests/rv_timer
-      run_opts: ["+cpu_test_timeout_ns=40000000"]
+      run_opts: ["+sw_test_timeout_ns=40000000"]
     }
     {
       name: coremark
+      uvm_test_seq: chip_sw_test_base_vseq
       sw_name: coremark
       sw_dir: benchmarks/coremark
-      run_opts: ["+cpu_test_timeout_ns=20000000"]
+      run_opts: ["+sw_test_timeout_ns=20000000"]
     }
 
     // TODO: CSR suite of tests. Rather than reuse the common one, we are

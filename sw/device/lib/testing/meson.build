@@ -2,6 +2,19 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Test status libary.
+sw_lib_testing_test_status = declare_dependency(
+  link_with: static_library(
+    'test_status_ot',
+    sources: ['test_status.c'],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+    ],
+  )
+)
+
 sw_lib_testing_mock_mmio = declare_dependency(
   link_with: static_library(
     'mock_mmio',

@@ -118,7 +118,8 @@ module tb;
         .sw_log_addr  (sw_log_addr)
       );
       // TODO: RAM only looks at addr[15:2] - need to find a better way to capture it.
-      assign sw_log_valid = `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+      assign sw_log_valid = !stub_cpu &&
+                            `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
                             (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
 
       initial begin
@@ -127,6 +128,14 @@ module tb;
       end
     end
   endgenerate
+
+  // connect the sw_test_status_if
+  sw_test_status_if sw_test_status_if();
+  assign sw_test_status_if.valid =  !stub_cpu &&
+                                    `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+                                    (`RAM_MAIN_HIER.addr_i ==
+                                     sw_test_status_if.sw_test_status_addr[15:2]);
+  assign sw_test_status_if.sw_test_status_val = `RAM_MAIN_HIER.wdata_i;
 
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
@@ -186,6 +195,8 @@ module tb;
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+    uvm_config_db#(virtual sw_test_status_if)::set(
+        null, "*.env", "sw_test_status_vif", sw_test_status_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

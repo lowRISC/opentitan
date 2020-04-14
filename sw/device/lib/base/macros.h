@@ -17,7 +17,7 @@
  * StackOverflow post expains the trick in detail:
  * https://stackoverflow.com/questions/2308243/macro-returning-the-number-of-arguments-it-is-given-in-c
  */
-#define GET_NUM_VARIABLE_ARGS(...) PASS_N_VARIABLE_ARGS_(0, ##__VA_ARGS__)
+#define GET_NUM_VARIABLE_ARGS(...) PASS_N_VARIABLE_ARGS_(__VA_ARGS__)
 
 // Implementation details for `GET_NUM_VARIABLE_ARGS()`.
 #define PASS_N_VARIABLE_ARGS_(...)                                             \
