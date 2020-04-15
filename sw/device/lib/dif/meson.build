@@ -56,6 +56,20 @@ sw_lib_dif_spi_device = declare_dependency(
   )
 )
 
+# RISC-V Timer DIF library (dif_rv_timer)
+dif_rv_timer = declare_dependency(
+  link_with: static_library(
+    'dif_rv_timer_ot',
+    sources: [
+      hw_ip_rv_timer_reg_h,
+      'dif_rv_timer.c',
+    ],
+    dependencies: [
+      sw_lib_mmio
+    ],
+  )
+)
+
 # I2C DIF library
 sw_lib_dif_i2c = declare_dependency(
   link_with: static_library(
