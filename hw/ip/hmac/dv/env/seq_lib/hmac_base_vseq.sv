@@ -14,6 +14,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   bit do_burst_wr      = 1'b0;
   rand bit [TL_AW-1:0]  wr_addr;
   rand bit [TL_DBW-1:0] wr_mask;
+  rand bit wr_config_during_hash, wr_key_during_hash;
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
@@ -162,24 +163,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
-  virtual task wr_msg(bit [7:0] msg[]);
+  virtual task wr_msg(bit [7:0] msg[], bit non_blocking = $urandom_range(0, 1));
     bit [7:0] msg_q[$] = msg;
-
     // randomly pick the size of bytes to write
     // unless msg size is smaller than randomized size
     while (msg_q.size() > 0) begin
       bit [7:0] word_unpack[4];
       bit [TL_DW-1:0] word;
-
-      if (!do_back_pressure && ral.cfg.sha_en.get_mirrored_value()) begin
-        // if not back pressure sequence, wait until fifo_full status cleared then write
-        bit msg_fifo_full;
-        csr_rd(ral.status.fifo_full, msg_fifo_full);
-        if (msg_fifo_full) csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
-      end
-
-      `DV_CHECK_FATAL(randomize(wr_addr, wr_mask)
-                      with {$countones(wr_mask) <= msg_q.size();})
+      `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {$countones(wr_mask) <= msg_q.size();})
       foreach (wr_mask[i]) begin
         // wr_mask is a packed array, word_unpacked is unpack, has different index
         if (wr_mask[i]) word_unpack[3 - i] = msg_q.pop_front();
@@ -189,13 +180,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
                                 wr_addr, wr_mask, word), UVM_HIGH)
       tl_access(.addr(wr_addr), .write(1'b1), .data(word), .mask(wr_mask),
-                .blocking($urandom_range(0, 1)));
+                .blocking(non_blocking));
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
-        //if (!do_back_pressure) check_status_intr_fifo_full();
-        //else clear_intr_fifo_full();
+        if (!do_back_pressure) begin
+          if ($urandom_range(0, 1)) check_status_intr();
+        end
         // randomly change key, config regs during msg wr, should trigger error or be discarded
-        write_discard_config_and_key($urandom_range(0, 20) == 0, $urandom_range(0, 20) == 0);
+        write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
       end else begin
         check_error_code();
       end
@@ -203,6 +195,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     // ensure all msg fifo are written before trigger hmac_process
     csr_utils_pkg::wait_no_outstanding_access();
     if ($urandom_range(0, 1)) rd_msg_length();
+    check_status_intr();
   endtask
 
   // read fifo_depth reg and burst write a chunk of words
@@ -248,33 +241,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // read status FIFO FULL and check intr FIFO FULL
   // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
-  //virtual task check_status_intr_fifo_full();
-  //  bit msg_fifo_full;
-  //  csr_utils_pkg::wait_no_outstanding_access();
-  //  csr_rd(ral.status.fifo_full, msg_fifo_full);
-  //  if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
-  //    check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(msg_fifo_full));
-  //  end else begin
-  //    csr_rd_check(.ptr(ral.intr_state), .compare_value(msg_fifo_full),
-  //                 .compare_mask(1 << HmacMsgFifoFull));
-  //    csr_wr(.csr(ral.intr_state), .value(1 << HmacMsgFifoFull));
-  //  end
-  //endtask
-
-  // when msg fifo full interrupt is set, this task clears the interrupt
-  // checking the correctness of the fifo full interrupt is done in scb
-  //virtual task clear_intr_fifo_full();
-  //  csr_utils_pkg::wait_no_outstanding_access();
-  //  if (ral.intr_enable.fifo_full.get_mirrored_value()) begin
-  //    if (cfg.intr_vif.pins[HmacMsgFifoFull] === 1'b1) begin
-  //      check_interrupts(.interrupts((1 << HmacMsgFifoFull)), .check_set(1'b1));
-  //    end
-  //  end else begin
-  //    bit msg_fifo_full;
-  //    csr_rd(ral.intr_state.fifo_full, msg_fifo_full);
-  //    if (msg_fifo_full) csr_wr(.csr(ral.intr_state), .value(msg_fifo_full << HmacMsgFifoFull));
-  //  end
-  //endtask
+  virtual task check_status_intr();
+    bit [TL_DW-1:0] rdata;
+    csr_utils_pkg::wait_no_outstanding_access();
+    csr_rd(ral.status, rdata);
+    csr_rd(ral.intr_state, rdata);
+    csr_wr(.csr(ral.intr_state), .value(rdata));
+  endtask
 
   // this task is called when sha_en=0 and sequence set hash_start, or streamed in msg
   // it will check intr_pin, intr_state, and error_code register

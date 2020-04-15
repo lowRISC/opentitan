@@ -27,6 +27,8 @@ class hmac_sanity_vseq extends hmac_base_vseq;
     do_hash_start == 1;
     sha_en == 1;
     do_hash_start_when_active == 0;
+    wr_key_during_hash == 0;
+    wr_config_during_hash == 0;
   }
 
   constraint msg_c {
@@ -102,10 +104,9 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         // msg stream in finished, start hash
         if (do_hash_start) trigger_process();
 
-        // TODO: temp solution as after hmac_process, scb hmac_empty has one cycle mismatch with
-        // RTL
-        if (hmac_en) cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES);
-        else cfg.clk_rst_vif.wait_clks(HMAC_MSG_PROCESS_CYCLES);
+        // there is one clk cycle differenct for scb to predict fifo_empty interrupt, thus wait to
+        // ignore the difference.
+        cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES);
 
         if (do_hash_start) begin
           // wait for interrupt to assert, check status and clear it
