@@ -25,6 +25,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
       test_vectors_pkg::parse_sha_hmac(hmac_en, i, parsed_vectors);
 
       foreach (parsed_vectors[j]) begin
+        bit [TL_DW-1:0] intr_state_val;
         // wr init: SHA256 only. HMAC, endian swap, digest swap all disabled
         hmac_init(.hmac_en(hmac_en), .endian_swap(1'b0), .digest_swap(1'b0));
 
@@ -41,18 +42,14 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
         trigger_hash();
 
-        wr_msg(parsed_vectors[j].msg);
+        // wr_msg is non_blocking to ensure the order of input msg
+        wr_msg(parsed_vectors[j].msg, 1);
 
         trigger_process();
 
-        // fifo_full intr can be triggered at the latest two cycle after process
-        // example: current fifo_depth=(14 words + 2 bytes), then wr last 4 bytes, design will
-        // process the 15th word then trigger intr_fifo_full
-        cfg.clk_rst_vif.wait_clks(2);
-        //clear_intr_fifo_full();
-
         wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-        check_interrupts(.interrupts((1 << HmacDone)), .check_set(1'b1));
+        csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
+        csr_wr(.csr(ral.intr_state), .value(intr_state_val));
         // read digest and compare with the expected result, scb will calculate and check too
         compare_digest(parsed_vectors[j].exp_digest);
       end
