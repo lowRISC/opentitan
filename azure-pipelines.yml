@@ -235,24 +235,33 @@ jobs:
     vmImage: ubuntu-16.04
   dependsOn:
     - top_earlgrey_verilator
-    - execute_verilated_tests
-  # TODO: re-enable this CI step once RISC-V compliance correctly calls into
-  # Meson. See #1181.
-  condition: False
+    - sw_build
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
   - bash: |
+      set -x
+      sudo util/get-toolchain.py \
+        --target-dir="${TOOLCHAIN_PATH}" \
+        --release-version="${TOOLCHAIN_VERSION}" \
+        --update
+    displayName: Install toolchain
+  - bash: |
+      set -e
       . util/build_consts.sh
       export TARGET_SIM="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
       export RISCV_DEVICE=rv32imc
       export RISCV_TARGET=opentitan
+      export OT_BIN=$BIN_DIR
       export OT_TARGET=verilator
       export OT_TOOLS="$TOOLCHAIN_PATH/bin"
+      export OT_RV_NO_LIB_ROM_BUILD=1
       cd sw/vendor/riscv_compliance
 
-      # Only running base interger variant for now, others will be added later.
       make RISCV_ISA=rv32i
+      make RISCV_ISA=rv32im
+      make RISCV_ISA=rv32imc
+      make RISCV_ISA=rv32Zicsr
     displayName: Execute tests
 
 - job: top_earlgrey_nexysvideo
