@@ -145,6 +145,34 @@ int create_rainbow(int pots_of_gold, int unicorns);
 
 C++ code should target C++14.
 
+### Aggregate Initializers
+
+***C++20-style designated initializers are permitted in C++ code, when used with POD types.***
+
+While we target C++14, both GCC and Clang allow C++20 designated initializers in C++14-mode, as an extension:
+```
+struct Foo { int a, b; };
+
+Foo f = { .a = 1, .b = 42, };
+```
+
+This feature is fairly mature in both compilers, though it varies from the C11 variant in two ways important ways:
+  - It can only be used with structs and unions, not arrays.
+  - Members must be initialized in declaration order.
+
+Because it is especially useful with types declared for C, we allow designatued initializers whenever the type is a plain-old-data type, and:
+  - All members are public.
+  - It has no non-trivial constructors.
+  - It has no `virtual` members.
+
+Furthermore, designated initializers do not play well with type deduction and overload resolution.
+As such, they are forbidden in the following contexts:
+- Do not call overloaded functions with a designated initializer: `overloaded({ .foo = 0 })`.
+  Instead, disambiguate with syntax like `T var = { .foo = 0 }; overloaded(var);`.
+- Do not use designated initializers in any place where they would be used for type defuction.
+  This includes `auto`, such as `auto var = { .foo = 0 };`, and a templated argument in a template function.
+
+It is recommended to only use designated initializers with types which use C-style declarations.
 
 ## C Style Guide
 
