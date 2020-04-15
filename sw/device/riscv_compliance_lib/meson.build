@@ -1,0 +1,37 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+foreach device_name, device_lib : sw_lib_arch_core_devices
+  # We want to produce a single .a containing the libraries needed to run
+  # the riscv-compliance test suite. Giving these libraries as dependcies
+  # directly to static_library gives an empty library. Creating an 'inner'
+  # library as below and then using link_whole to link against the 'inner'
+  # library produces what we need.
+  riscv_compliance_lib_inner = static_library(
+    'ot_riscv_compliance_inner_' + device_name,
+    dependencies : [
+      sw_lib_uart,
+      sw_lib_base_print,
+      sw_lib_irq_handlers,
+      sw_lib_mem,
+      device_lib,
+    ]
+  )
+
+  riscv_compliance_lib = static_library(
+    'ot_riscv_compliance_' + device_name,
+    link_whole : [
+      riscv_compliance_lib_inner,
+    ],
+  )
+
+  custom_target(
+    'riscv_compliance_lib_export_' + device_name,
+    command: export_embedded_target,
+    input: [riscv_compliance_lib],
+    output: 'riscv_compliance_lib_export_' + device_name,
+    build_always_stale: true,
+    build_by_default: true,
+  )
+endforeach
