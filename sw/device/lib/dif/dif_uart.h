@@ -10,6 +10,9 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+// The size of UART TX and RX FIFOs in bytes.
+extern const uint32_t kDifUartFifoSizeBytes;
+
 /**
  * UART interrupt configuration.
  *

@@ -9,10 +9,9 @@
 #include "sw/device/lib/base/mmio.h"
 #include "uart_regs.h"  // Generated.
 
-#define UART_RX_FIFO_SIZE_BYTES 32u
-#define UART_TX_FIFO_SIZE_BYTES 32u
-
 #define UART_INTR_STATE_MASK 0xffffffffu
+
+const uint32_t kDifUartFifoSizeBytes = 32u;
 
 static bool uart_tx_full(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->base_addr, UART_STATUS_REG_OFFSET,
@@ -456,7 +455,7 @@ bool dif_uart_tx_bytes_available(const dif_uart_t *uart, size_t *num_bytes) {
       uart->base_addr, UART_FIFO_STATUS_REG_OFFSET, UART_FIFO_STATUS_TXLVL_MASK,
       UART_FIFO_STATUS_TXLVL_OFFSET);
 
-  *num_bytes = UART_TX_FIFO_SIZE_BYTES - fill_bytes;
+  *num_bytes = kDifUartFifoSizeBytes - fill_bytes;
 
   return true;
 }
