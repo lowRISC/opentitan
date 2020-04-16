@@ -180,7 +180,7 @@ _DEBUG_FEATURE = feature(
             flag_groups = [
                 flag_group(
                     flags = [
-                        "-O",
+                        "-O0",
                         "-g3",
                     ],
                 ),
