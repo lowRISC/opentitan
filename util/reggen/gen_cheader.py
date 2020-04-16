@@ -245,9 +245,56 @@ def gen_cdefine_multireg(outstr, register, component, regwidth, rnames,
                              existing_defines)
 
 
+def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth, existing_defines):
+    fieldlsb = interrupt['bitinfo'][2]
+    iname = interrupt['name']
+    defname = as_define(component + '_INTR_COMMON_' + iname)
+
+    if interrupt['bitinfo'][1] == 1:
+        # single bit
+        genout(outstr,
+                gen_define(defname, [], str(fieldlsb), existing_defines))
+    else:
+        # multiple bits (unless it is the whole register)
+        if interrupt['bitinfo'][1] != regwidth:
+            mask = interrupt['bitinfo'][0] >> fieldlsb
+            genout(
+                outstr,
+                gen_define(defname + '_MASK', [], hex(mask),
+                            existing_defines))
+            genout(
+                outstr,
+                gen_define(defname + '_OFFSET', [], str(fieldlsb),
+                            existing_defines))
+
+def gen_cdefines_interrupts(outstr, regs, component, regwidth, existing_defines):
+    # no_auto_intr_regs controls whether interrupt registers are automatically
+    # generated from the interrupt_list. This key could be 'true' or 'false',
+    # but might also be True or False (the python booleans).
+    no_auto_i = False
+    if 'no_auto_intr_regs' in regs:
+        no_auto_intr_regs_val = regs['no_auto_intr_regs']
+        if isinstance(no_auto_intr_regs_val, bool):
+            no_auto_i = no_auto_intr_regs_val
+        elif no_auto_intr_regs_val.lower() in ["true", "false"]:
+            no_auto_i = no_auto_intr_regs_val == "true"
+        else:
+            pass
+
+    # If no_auto_intr_regs is true, then we do not generate common defines,
+    # because the bit offsets for a particular interrupt may differ between
+    # the interrupt enable/state/test registers.
+    if no_auto_i:
+        return
+
+    interrupts = regs.get('interrupt_list', [])
+    genout(outstr, format_comment(first_line("Common Interrupt Offsets")))
+    for intr in interrupts:
+        gen_cdefines_interrupt_field(outstr, intr, component, regwidth, existing_defines)
+    genout(outstr, '\n')
+
+
 # Must have called validate, so should have no errors
-
-
 def gen_cdefines(regs, outfile, src_lic, src_copy):
     component = regs['name']
     registers = regs['registers']
@@ -265,6 +312,9 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
 
     gen_cdefines_module_params(outstr, regs, component, regwidth,
                                existing_defines)
+
+    gen_cdefines_interrupts(outstr, regs, component, regwidth, existing_defines)
+
     for x in registers:
         if 'reserved' in x:
             continue

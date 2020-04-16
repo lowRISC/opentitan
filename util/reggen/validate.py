@@ -1140,7 +1140,7 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
     bits_used = 0
     genfields = []
     cur_bit = 0
-    for bit in intrs:
+    for (field_idx, bit) in enumerate(intrs):
         newf = {}
         newf['name'] = bit['name']
         w = 1
@@ -1151,6 +1151,13 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         else:
             newf['bits'] = str(cur_bit)
             newf['bitinfo'] = (1 << cur_bit, 1, cur_bit)
+
+        # Put the automatically generated information back into
+        # `interrupt_list`, so that it can be used to generate C preprocessor
+        # definitions if needed.
+        intrs[field_idx]['bits'] = newf['bits']
+        intrs[field_idx]['bitinfo'] = newf['bitinfo']
+
         if name == 'INTR_ENABLE':
             newf['desc'] = 'Enable interrupt when ' + \
                            ('corresponding bit in ' if w > 1 else '') + \
