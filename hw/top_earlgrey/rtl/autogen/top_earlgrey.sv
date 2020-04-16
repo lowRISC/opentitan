@@ -284,17 +284,20 @@ module top_earlgrey #(
 
   // processor core
   rv_core_ibex #(
-    .PMPEnable           (0),
-    .PMPGranularity      (0),
-    .PMPNumRegions       (4),
-    .MHPMCounterNum      (8),
-    .MHPMCounterWidth    (40),
-    .RV32E               (0),
-    .RV32M               (1),
-    .DbgTriggerEn        (1),
-    .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
-    .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
-    .PipeLine            (IbexPipeLine)
+    .PMPEnable                (0),
+    .PMPGranularity           (0),
+    .PMPNumRegions            (4),
+    .MHPMCounterNum           (8),
+    .MHPMCounterWidth         (40),
+    .RV32E                    (0),
+    .RV32M                    (1),
+    .BranchTargetALU          (1),
+    .WritebackStage           (1),
+    .MultiplierImplementation ("single-cycle"),
+    .DbgTriggerEn             (1),
+    .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
+    .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
+    .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (main_clk),
