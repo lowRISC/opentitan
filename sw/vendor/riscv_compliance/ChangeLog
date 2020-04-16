@@ -1,3 +1,71 @@
+2020-03-19 Neel Gala <neelgala@gmail.com>
+    * restructuring the riscv-test-suite to indicate clearly what is deprecated, wip and usable
+      tests.
+    * based on the above fixed the directory structure for riscv-targets where-ever applicable. Only
+      tested riscvOVPsim and spike.
+    * fixed script bugs for spike as well
+    * renamed rv32i/I-IO.S to rv32i/I-IO-01.S along with necessary changes to the reference files
+      and Makefrag
+    * renamed mbadaddr csr to mtval as raised in issue #31
+    * C.SWSP-01.S test updated to fix issue #37
+
+2020-03-18 Neel Gala <neelgala@gmail.com>
+    * fixed doc/README.adoc with correct version to pass the sanity-check in the doc/Makefile
+
+2020-02-07 Prashanth Mundkur <prashanth.mundkur@gmail.com>
+    * Support F extension on RV32 sail-riscv-c.
+
+2019-12-01 Allen Baum <allen.baum@esperantotech.com>
+        * modified macro names to conformn to riscof naming convention of model specific vs. pre-defined
+	* add more complete list of macros, their uses, parameters, and whether they are required or optional
+	* minor structural changes (moving sentences, renumbering) and typo fixes
+	* clarified impact of debug macros
+	* clarified how SIGUPD and BASEUPD must be used
+        * remove section about test taxonomy, binary tests, emulated ops
+        * clarify/fix  boundary between test target and framework responsibilities
+	   (split test target into test target and test shell)
+        * remove To Be discussed items that have been discussed
+	* remove default case condition; if conditions are unchanged, part of same case
+        *  minor grammatical changes related to the above
+
+2019-10-16 Allen Baum <allen.baum@esperantotech.com>
+	* spec/TestFormatSpec.adoc: changed the format of the signature to fixed physical address size, fixed 32b data size extracted from COMPLIANCE_DATA_BEGIN/END range.
+
+	* more gramatical fixes, clarifications added
+	* added To Be Discussed items regarding emulated instruction and binary tests
+
+2019-09-11 Allen Baum <allen.baum@esperantotech.com>
+	* spec/TestFormatSpec.adoc:   more grammar and typo corrections and changes
+	  clarified and added To Be Discussed issues
+
+2019-09-11 Allen Baum <allen.baum@esperantotech.com>
+    * spec/TestFormatSpec.adoc:   many grammar and typo corrections and changes
+	removed many "to Be Discussed items and made them official
+	Added wording to clarify spec intent (work in progress/goal rather than final)
+	Added macros to ease test authoring: RVTEST_SIGBASE, RVTEST_SIGUPDATE, RVTEST_CASE
+	Added detail on proposals for connection to framework (how framework selects tests).
+	Expanded definition of signature format
+	Changed the (proposed) directory structure and naming convention to eliminate ambiguities, add consistancy and slightly better match existing structure
+	Added many "future work" items related to the above
+	Added examples and comments to code examples to indicate how proposed macros would be used
+   * .gitignore: added condition to ignore Mac file system artifacts
+
+
+2019-11-05 Lee Moore <moore@imperas.com>
+    * Restructured RV32I to move Zicsr and Zifencei into their own suites
+
+2019-10-14 Lee Moore <moore@imperas.com>
+    * Added Ability to run a single test by using the Make Variable RISCV_TEST
+    for example, to only run the test I-ADD-01 from the rv32i suite
+        make RISCV_ISA=rv32i RISCV_TEST=I-ADD-01
+    * Added Top Level Variable to Makefile RISCV_TARGET_FLAGS, 
+    in the case of the RISCV_TARGET this can be passed and appended to the invocation
+    commandline configuration, for example to pass a command line flag to the RISCV_TARGET
+    to perform tracing. The value of this flag will be target specific
+        make RISCV_ISA=rv32i RISCV_TEST=I-ADD-01 RISCV_TARGET_FLAGS="--trace"
+    This is has also been added to all other targets to allow target configuration from
+    the commandline
+
 2019-10-07 Philipp Wagner <phw@lowrisc.org>
     * When executing the test suite, Ibex always writes an instruction
       log. Update the Makefile to write it to a test-specific location

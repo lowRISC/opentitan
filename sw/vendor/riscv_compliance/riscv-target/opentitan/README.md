@@ -22,6 +22,12 @@ $ export OT_TARGET=fpga
 $ export OT_FPGA_UART=/dev/tty*
 ```
 
+In addition the UART device must be appropriately configured.
+
+```console
+$ stty -F $OT_FPGA_UART 230400 raw
+```
+
 By default, the test assumes there exists a valid Verilator build at `${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
 If your Verilator build is at a different location, please set that as well when running with Verilator.
 
@@ -29,9 +35,15 @@ If your Verilator build is at a different location, please set that as well when
 $ export TARGET_SIM=${PATH_TO_VERILATOR_BUILD}
 ```
 
-When running against FPGA, the test assumes the FPGA is already programmed and ready to go.
-To quickly get started with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/)
+When running against FPGA, the test assumes the FPGA is already programmed and ready to go with spiflash available at `${REPO_TOP}/build-bin/sw/host/spiflash/spiflash_export`
+To quickly get started with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
 
+The meson build environment must be setup before running the compliance test.
+
+```console
+$ cd $REPO_TOP
+$ ./meson_init.sh
+```
 
 Now, run the tests from the riscv_compliance directory.
 The following output will be seen (software build steps are truncated).
@@ -39,36 +51,9 @@ The example below uses Verilator as an example, but the FPGA output is nearly id
 
 ```console
 $ cd $RISCV_COMPLIANCE_REPO_BASE
-$ make RISCV_ISA=rv32i \
-  && make RISCV_ISA=rv32im \
-  && make RISCV_ISA=rv32imc
+$ make RISCV_ISA=rv32i
 
-
-Rom initialized with program at $REPO_TOP/sw/vendor/riscv_compliance/../../boot_rom/rom.vmem
-
-Flash initialized with program at $REPO_TOP/sw/vendor/riscv_compliance/work/rv32i/I-ENDIANESS-01.elf.vmem
-
-JTAG: Virtual JTAG interface jtag0 is listening on port 44853. Use
-OpenOCD and the following configuration to connect:
-  interface remote_bitbang
-  remote_bitbang_host localhost
-  remote_bitbang_port 44853
-
-SPI: Created /dev/pts/21 for spi0. Connect to it with any terminal program, e.g.
-$ screen /dev/pts/21
-NOTE: a SPI transaction is run for every 4 characters entered.
-SPI: Monitor output file created at $REPO_TOP/sw/vendor/riscv_compliance/riscv-test-suite/rv32i/spi0.log. Works well with tail:
-$ tail -f $REPO_TOP/sw/vendor/riscv_compliance/riscv-test-suite/rv32i/spi0.log
-
-UART: Created /dev/pts/22 for uart0. Connect to it with any terminal program, e.g.
-$ screen /dev/pts/22
-
-Simulation running, end by pressing CTRL-c.
-TOP.top_earlgrey_verilator.top_earlgrey.core.ibex_tracer_i: Writing execution trace to trace_core_00000000.log
-Verilator sim termination requested
-Your simulation wrote to 0x10008000
-
-...
+... verbose test output ...
 
 Compare to reference files ...
 
@@ -76,22 +61,66 @@ Check         I-ADD-01 ... OK
 Check        I-ADDI-01 ... OK
 Check         I-AND-01 ... OK
 Check        I-ANDI-01 ... OK
-
-...
-
+Check       I-AUIPC-01 ... OK
+Check         I-BEQ-01 ... OK
+Check         I-BGE-01 ... OK
+Check        I-BGEU-01 ... OK
+Check         I-BLT-01 ... OK
+Check        I-BLTU-01 ... OK
+Check         I-BNE-01 ... OK
+Check I-DELAY_SLOTS-01 ... OK
+Check      I-EBREAK-01 ... OK
+Check       I-ECALL-01 ... OK
+Check   I-ENDIANESS-01 ... OK
+Check          I-IO-01 ... OK
+Check         I-JAL-01 ... OK
+Check        I-JALR-01 ... OK
+Check          I-LB-01 ... OK
+Check         I-LBU-01 ... OK
+Check          I-LH-01 ... OK
+Check         I-LHU-01 ... OK
+Check         I-LUI-01 ... OK
+Check          I-LW-01 ... OK
+Check I-MISALIGN_JMP-01 ... IGNORE
+Check I-MISALIGN_LDST-01 ... IGNORE
+Check         I-NOP-01 ... OK
+Check          I-OR-01 ... OK
+Check         I-ORI-01 ... OK
+Check     I-RF_size-01 ... OK
+Check    I-RF_width-01 ... OK
+Check       I-RF_x0-01 ... OK
+Check          I-SB-01 ... OK
+Check          I-SH-01 ... OK
+Check         I-SLL-01 ... OK
+Check        I-SLLI-01 ... OK
+Check         I-SLT-01 ... OK
+Check        I-SLTI-01 ... OK
+Check       I-SLTIU-01 ... OK
+Check        I-SLTU-01 ... OK
+Check         I-SRA-01 ... OK
+Check        I-SRAI-01 ... OK
+Check         I-SRL-01 ... OK
+Check        I-SRLI-01 ... OK
+Check         I-SUB-01 ... OK
+Check          I-SW-01 ... OK
+Check         I-XOR-01 ... OK
+Check        I-XORI-01 ... OK
 --------------------------------
-OK: 55/55
-
-
+OK: 48/48
 ```
 
+There are several test suites that can be run `rv32i`, `rv32im`, `rv32imc` and `rv32Zicsr`.
+Change the `RISCV_ISA` argument passed to `make` to choose between them.
 
-## Removed Tests
-A small number of tests are not run for OpenTitan riscv_compliance since the underlying core does not yet support specific features.
-The removed tests are the following:
+
+## Removed/Broken Tests
+A small number of tests are not run for OpenTitan riscv_compliance as they fail
+due to flaws in the compliance test suite rather than Ibex/OpenTitan itself (see
+https://github.com/lowRISC/ibex/issues/100). The I-FENCE.I-01 test attempts to
+write instruction memory which fails in the OT system as this writes to flash
+which can't be done.
 
 * I-MISALIGN_JMP-01
 * I-MISALIGN_LDST-01
 * I-FENCE.I-01
-* I-ECALL-01
-* I-EBREAK-01
+

@@ -56,4 +56,4 @@ rv32imc_sc_tests =    \
 
 rv32imc_tests = $(addsuffix .elf, $(rv32imc_sc_tests))
 
-target32_tests += $(rv32imc_tests)
+target_tests += $(rv32imc_tests)

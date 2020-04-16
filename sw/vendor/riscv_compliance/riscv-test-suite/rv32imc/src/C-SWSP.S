@@ -65,7 +65,7 @@ RV_COMPLIANCE_CODE_BEGIN
 	# address for test results
 	la	x1, test_3_res
 
-	TEST_CSWSP(test_data, x16, -0x1, 64, x1, 0)
+	TEST_CSWSP(test_data, x16, -0x1, 8, x1, 0)
 
 	# ---------------------------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ RV_COMPLIANCE_CODE_BEGIN
 	# address for test results
 	la	x1, test_4_res
 
-	TEST_CSWSP(test_data, x24, 0x7fff, 120, x1, 0)
+	TEST_CSWSP(test_data, x24, 0x7fff, 64, x1, 0)
 
 	# ---------------------------------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ RV_COMPLIANCE_CODE_BEGIN
 	# address for test results
 	la	x1, test_5_res
 
-	TEST_CSWSP(test_data, x21, 0x8000, 252, x1, 0)
+	TEST_CSWSP(test_data, x21, 0x8000, 124, x1, 0)
 
 
 	RVTEST_IO_WRITE_STR(x31, "Test End\n")

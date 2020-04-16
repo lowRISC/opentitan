@@ -8,6 +8,9 @@ work_dir := $(ROOTDIR)/work
 work_dir_isa := $(work_dir)/$(RISCV_ISA)
 
 include $(act_dir)/Makefrag
+ifneq ($(RISCV_TEST),)
+    target_tests = $(RISCV_TEST).elf
+endif
 
 default: all
 
@@ -26,33 +29,28 @@ endif
 #------------------------------------------------------------
 # Build and run assembly tests
 
-%.out32: %.elf
-	$(RUN_TARGET)
+%.log: %.elf
+	$(V) echo "Execute $(@)"
+	$(V) $(RUN_TARGET)
 
 
 define compile_template
 
-$$($(1)_tests): %.elf: $(src_dir)/%.S
-	@mkdir -p $(work_dir_isa)/$$(@D)
-	$(COMPILE_TARGET)
-$(1)_tests += $$($(1)_p_tests)
+$(work_dir_isa)/%.elf: $(src_dir)/%.S
+	$(V) echo "Compile $$(@)"
+	@mkdir -p $$(@D)
+	$(V) $(COMPILE_TARGET)
 
-.PHONY: $(1)
-
-tests += $$($(1)_tests)
+.PRECIOUS: $(work_dir_isa)/%.elf
 
 endef
 
-$(eval $(call compile_template,rv32imc,-march=rv32imc -mabi=ilp32))
+$(eval $(call compile_template,-march=rv32imc -mabi=ilp32))
 
-tests32_out = $(patsubst %.elf,%.out32,$(target32_tests))
+target_elf = $(foreach e,$(target_tests),$(work_dir_isa)/$(e))
+target_log = $(patsubst %.elf,%.log,$(target_elf))
 
-run: $(tests32_out)
-
-#------------------------------------------------------------
-# Default
-
-all: $(tests_dump)
+run: $(target_log)
 
 #------------------------------------------------------------
 # Clean up

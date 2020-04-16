@@ -21,7 +21,7 @@ do
         echo    "Check $(printf %16s ${stub}) ... IGNORE"
         continue
     fi
-    diff --strip-trailing-cr ${ref} ${sig} #&> /dev/null
+    diff --ignore-case --strip-trailing-cr ${ref} ${sig} #&> /dev/null
     if [ $? == 0 ]
     then
         echo " ... OK"
