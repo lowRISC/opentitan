@@ -34,5 +34,13 @@
     "riscv-test-suite/rv32ui",
     "riscv-test-suite/rv64i",
     "riscv-test-suite/rv64im",
+    // FENCE.I test attemps write to flash memory so doesn't work in OT
+    "riscv-test-suite/rv32Zifencei",
   ]
+
+  patch_repo: {
+    url: "https://github.com/lowRISC/riscv-compliance.git",
+    rev_base: "master",
+    rev_patched: "ot",
+  }
 }
