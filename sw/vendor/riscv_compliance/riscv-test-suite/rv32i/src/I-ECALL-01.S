@@ -73,6 +73,7 @@ RV_COMPLIANCE_CODE_BEGIN
 
     # ---------------------------------------------------------------------------------------------
     # Exception handler
+.align TRAPALIGN
 _trap_handler:
     # increment return address
     csrr    x30, mepc

@@ -70,24 +70,17 @@ rv32i_sc_tests = \
     I-SRA-01 \
     I-SLT-01 \
     I-SLTU-01 \
-    I-CSRRW-01 \
-    I-CSRRWI-01 \
     I-NOP-01 \
-    I-CSRRS-01 \
-    I-CSRRSI-01 \
-    I-CSRRC-01 \
-    I-CSRRCI-01 \
-    I-IO \
+    I-ECALL-01 \
+    I-EBREAK-01 \
+    I-IO-01 \
 
-    # These tests are currently removed since the underlying core in opentitan
-    # does not yet support FENCE.I instructions
+    # These tests are broken due to flaws in riscv-compliance rather than
+    # Ibex/OpenTitan (see https://github.com/lowRISC/ibex/issues/100)
     #I-MISALIGN_JMP-01
     #I-MISALIGN_LDST-01
-    #I-FENCE.I-01
-    #I-ECALL-01
-    #I-EBREAK-01
 
 
 rv32i_tests = $(addsuffix .elf, $(rv32i_sc_tests))
 
-target32_tests += $(rv32i_tests)
+target_tests += $(rv32i_tests)

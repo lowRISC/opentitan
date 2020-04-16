@@ -13,11 +13,7 @@
 // RV Compliance Macros
 //-----------------------------------------------------------------------
 #define RV_COMPLIANCE_HALT                                                    \
-        la sp, _stack_start;                                                  \
-        j dump_signature;                                                     \
-      loop_forever:                                                           \
-        wfi;                                                                  \
-        j loop_forever;                                                       \
+        j end_rvc_test;                                                       \
 
 #define RV_COMPLIANCE_RV32M                                                   \
         RVTEST_RV32M                                                          \
@@ -30,7 +26,7 @@
         RVTEST_CODE_END                                                       \
 
 #define RV_COMPLIANCE_DATA_BEGIN                                              \
-        .section .test.output;                                                \
+        .section .data;                                                       \
         RVTEST_DATA_BEGIN                                                     \
 
 #define RV_COMPLIANCE_DATA_END                                                \

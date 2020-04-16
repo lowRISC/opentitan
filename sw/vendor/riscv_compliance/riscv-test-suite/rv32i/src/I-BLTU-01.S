@@ -1,7 +1,6 @@
-# RISC-V Compliance Test I-BLTU-01
+# RISC-V Compliance Test BLTU-01
 #
-# Copyright (c) 2017, Codasip Ltd.
-# Copyright (c) 2018, Imperas Software Ltd. Additions
+# Copyright (c) 2019, Imperas Software Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -11,456 +10,487 @@
 #      * Redistributions in binary form must reproduce the above copyright
 #        notice, this list of conditions and the following disclaimer in the
 #        documentation and/or other materials provided with the distribution.
-#      * Neither the name of the Codasip Ltd., Imperas Software Ltd. nor the
+#      * Neither the name of the Imperas Software Ltd. nor the
 #        names of its contributors may be used to endorse or promote products
 #        derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
 # IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 # THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Codasip Ltd., Imperas Software Ltd.
-# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Imperas Software Ltd. BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# Specification: RV32I Base Integer Instruction Set, Version 2.0
-# Description: Testing instruction BLTU.
+# Specification: RV32I Base Integer Instruction Set, Version 2.1
+# Description: Testing instruction 'BLTU'.
 
+#include "riscv_test_macros.h"
 #include "compliance_test.h"
 #include "compliance_io.h"
-#include "test_macros.h"
 
-# Test Virtual Machine (TVM) used by program.
 RV_COMPLIANCE_RV32M
 
-# Test code region
 RV_COMPLIANCE_CODE_BEGIN
 
-    RVTEST_IO_INIT
-    RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
-    RVTEST_IO_WRITE_STR(x31, "# Test Begin\n")
 
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A1 - general test of value 0 with 0, 1, -1, MIN, MAX register values\n");
+	RVTEST_IO_INIT
+	RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
+	RVTEST_IO_WRITE_STR(x31, "Test Begin\n")
 
-    # Addresses for test data and results
-    la      x1, test_A1_data
-    la      x2, test_A1_res
+	# ---------------------------------------------------------------------------------------------
 
-    # Load testdata
-    lw      x3, 0(x1)
+	RVTEST_IO_WRITE_STR(x31, "# Test number 1\n")
 
-    # Register initialization
-    li      x4, 0
-    li      x5, 1
-    li      x6, -1
-    li      x7, 0x7FFFFFFF
-    li      x8, 0x80000000
-    li      x31, 0
 
-    # Test
-    bltu    x3, x4, 1f
-    ori     x31, x31, 0x1
-1:
-    bltu    x3, x5, 1f
-    ori     x31, x31, 0x2
-1:
-    bltu    x3, x6, 1f
-    ori     x31, x31, 0x4
-1:
-    bltu    x3, x7, 1f
-    ori     x31, x31, 0x8
-1:
-    bltu    x3, x8, 1f
-    ori     x31, x31, 0x10
-1:
+    # address for test results
+	la	x2, test_1_res
+    
+ 
+    // Result = 0
+    TEST_CASE(x3, x1, 0x123ab, x2, 0, \
+      li x1, 0xcccc; \
+	  li x31, -0x1; \
+      li x16, 0x0; \
+      bltu x31, x16, 1f; \
+      li x1, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 4, \
+      li x1, 0xcccc; \
+	  li x30, 0x1; \
+      li x15, -0x7ff; \
+      bltu x30, x15, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+ 
 
-    # Store results
-    sw      x3, 0(x2)
-    sw      x4, 4(x2)
-    sw      x5, 8(x2)
-    sw      x6, 12(x2)
-    sw      x7, 16(x2)
-    sw      x8, 20(x2)
-    sw      x31, 24(x2)
-
-    //
-    // Assert
-    //
-    RVTEST_IO_CHECK()
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x3, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x4, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x5, 0x00000001)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x6, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x7, 0x7FFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x8, 0x80000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x31, 0x00000001)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A1  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A2 - general test of value 1 with 0, 1, -1, MIN, MAX register values\n");
-
-    # Addresses for test data and results
-    la      x1, test_A2_data
-    la      x2, test_A2_res
-
-    # Load testdata
-    lw      x6, 0(x1)
-
-    # Register initialization
-    li      x7, 0
-    li      x8, 1
-    li      x9, -1
-    li      x10, 0x7FFFFFFF
-    li      x11, 0x80000000
-    li      x31, 0
-
-    # Test
-    bltu    x6, x7, 1f
-    ori     x31, x31, 0x1
-1:
-    bltu    x6, x8, 1f
-    ori     x31, x31, 0x2
-1:
-    bltu    x6, x9, 1f
-    ori     x31, x31, 0x4
-1:
-    bltu    x6, x10, 1f
-    ori     x31, x31, 0x8
-1:
-    bltu    x6, x11, 1f
-    ori     x31, x31, 0x10
-1:
-
-    # Store results
-    sw      x6, 0(x2)
-    sw      x7, 4(x2)
-    sw      x8, 8(x2)
-    sw      x9, 12(x2)
-    sw      x10, 16(x2)
-    sw      x11, 20(x2)
-    sw      x31, 24(x2)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x6, 0x00000001)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x7, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x8, 0x00000001)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x9, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x10, 0x7FFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x11, 0x80000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x31, 0x00000003)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A2  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A3 - general test of value -1 with 0, 1, -1, MIN, MAX register values\n");
-
-    # Addresses for test data and results
-    la      x1, test_A3_data
-    la      x2, test_A3_res
-
-    # Load testdata
-    lw      x12, 0(x1)
-
-    # Register initialization
-    li      x13, 0
-    li      x14, 1
-    li      x15, -1
-    li      x16, 0x7FFFFFFF
-    li      x17, 0x80000000
-    li      x31, 0
-
-    # Test
-    bltu    x12, x13, 1f
-    ori     x31, x31, 0x1
-1:
-    bltu    x12, x14, 1f
-    ori     x31, x31, 0x2
-1:
-    bltu    x12, x15, 1f
-    ori     x31, x31, 0x4
-1:
-    bltu    x12, x16, 1f
-    ori     x31, x31, 0x8
-1:
-    bltu    x12, x17, 1f
-    ori     x31, x31, 0x10
-1:
-
-    # Store results
-    sw      x12, 0(x2)
-    sw      x13, 4(x2)
-    sw      x14, 8(x2)
-    sw      x15, 12(x2)
-    sw      x16, 16(x2)
-    sw      x17, 20(x2)
-    sw      x31, 24(x2)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x12, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x13, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x14, 0x00000001)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x15, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x16, 0x7FFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x17, 0x80000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x31, 0x0000001F)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A3  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A4 - general test of value 0x7FFFFFFF with 0, 1, -1, MIN, MAX register values\n");
-
-    # Addresses for test data and results
-    la      x1, test_A4_data
-    la      x2, test_A4_res
-
-    # Load testdata
-    lw      x18, 0(x1)
-
-    # Register initialization
-    li      x19, 0
-    li      x20, 1
-    li      x21, -1
-    li      x22, 0x7FFFFFFF
-    li      x23, 0x80000000
-    li      x31, 0
-
-    # Test
-    bltu    x18, x19, 1f
-    ori     x31, x31, 0x1
-1:
-    bltu    x18, x20, 1f
-    ori     x31, x31, 0x2
-1:
-    bltu    x18, x21, 1f
-    ori     x31, x31, 0x4
-1:
-    bltu    x18, x22, 1f
-    ori     x31, x31, 0x8
-1:
-    bltu    x18, x23, 1f
-    ori     x31, x31, 0x10
-1:
-
-    # Store results
-    sw      x18, 0(x2)
-    sw      x19, 4(x2)
-    sw      x20, 8(x2)
-    sw      x21, 12(x2)
-    sw      x22, 16(x2)
-    sw      x23, 20(x2)
-    sw      x31, 24(x2)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x18, 0x7FFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x19, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x20, 0x00000001)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x21, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x22, 0x7FFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x23, 0x80000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x31, 0x0000000B)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A4  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A5 - general test of value 0x80000000 with 0, 1, -1, MIN, MAX register values\n");
-
-    # Addresses for test data and results
-    la      x1, test_A5_data
-    la      x2, test_A5_res
-
-    # Load testdata
-    lw      x24, 0(x1)
-
-    # Register initialization
-    li      x25, 0
-    li      x26, 1
-    li      x27, -1
-    li      x28, 0x7FFFFFFF
-    li      x29, 0x80000000
-    li      x31, 0
-
-    # Test
-    bltu    x24, x25, 1f
-    ori     x31, x31, 0x1
-1:
-    bltu    x24, x26, 1f
-    ori     x31, x31, 0x2
-1:
-    bltu    x24, x27, 1f
-    ori     x31, x31, 0x4
-1:
-    bltu    x24, x28, 1f
-    ori     x31, x31, 0x8
-1:
-    bltu    x24, x29, 1f
-    ori     x31, x31, 0x10
-1:
-
-    # Store results
-    sw      x24, 0(x2)
-    sw      x25, 4(x2)
-    sw      x26, 8(x2)
-    sw      x27, 12(x2)
-    sw      x28, 16(x2)
-    sw      x29, 20(x2)
-    sw      x31, 24(x2)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x24, 0x80000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x25, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x26, 0x00000001)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x27, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x28, 0x7FFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x29, 0x80000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x31, 0x0000001B)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A5  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part B - testing compare with x0\n");
-
-    # Address for test results
-    la      x27, test_B_res
-
-    # Register initialization
-    li      x1, 0
-    li      x2, 1
-    li      x3, -1
-    li      x4, 0x7FFFFFFF
-    li      x5, 0x80000000
-    li      x31, 0
-
-    # Test
-    bltu    x1, x0, 1f
-    ori     x31, x31, 0x1
-1:
-    bltu    x2, x0, 1f
-    ori     x31, x31, 0x2
-1:
-    bltu    x3, x0, 1f
-    ori     x31, x31, 0x4
-1:
-    bltu    x4, x0, 1f
-    ori     x31, x31, 0x8
-1:
-    bltu    x5, x0, 1f
-    ori     x31, x31, 0x10
-1:
-    bltu    x0, x1, 1f
-    ori     x31, x31, 0x20
-1:
-    bltu    x0, x2, 1f
-    ori     x31, x31, 0x40
-1:
-    bltu    x0, x3, 1f
-    ori     x31, x31, 0x80
-1:
-    bltu    x0, x4, 1f
-    ori     x31, x31, 0x100
-1:
-    bltu    x0, x5, 1f
-    ori     x31, x31, 0x200
-1:
-
-    # Store results
-    sw      x31, 0(x27)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x27, x31, 0x0000003F)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part B  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part C - jumps forward, backward\n");
-
-    # Address for test data and results
-    la      x21, test_C_data
-    la      x22, test_C_res
-
-    # Load testdata
-    lw      x31, 0(x21)
-
-    # Register initialization
-    li      x2, 0xFFFFFFFF
-    li      x3, 0xFFFFFFFF
-    li      x4, 0x0FEDCBA9
-
-    # Test
-    bltu    x0, x31, 2f
-    li      x2, 0
-    li      x3, 0
-    li      x4, 0
-
-1:
-    li      x3, 0x87654321
-    bltu    x0, x31, 3f
-    li      x2, 0
-    li      x3, 0
-    li      x4, 0
-
+    jal x0, 3f
 2:
-    li      x2, 0x9ABCDEF0
-    bltu    x0, x31, 1b
-    li      x2, 0
-    li      x3, 0
-    li      x4, 0
-
+    jal x0, 4f
 3:
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 8, \
+      li x1, 0xcccc; \
+	  li x29, 0x0; \
+      li x14, -0x1; \
+      bltu x29, x14, 2b; \
+      li x1, 0x123ab; \
+4: \
+    )
 
-    # Store results
-    sw      x0, 0(x22)
-    sw      x2, 4(x22)
-    sw      x3, 8(x22)
-    sw      x4, 12(x22)
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 12, \
+      li x1, 0xcccc; \
+	  li x28, 0x7ff; \
+      li x13, -0x1234; \
+      bltu x28, x13, 4f; \
+      li x1, 0x123ab; \
+4: \
+    )
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 16, \
+      li x1, 0xcccc; \
+	  li x27, 0x0; \
+      li x12, 0x80000000; \
+      bltu x27, x12, 5f; \
+      li x1, 0x123ab; \
+5: \
+    )
 
-    RVTEST_IO_ASSERT_GPR_EQ(x22, x0, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x22, x2, 0x9ABCDEF0)
-    RVTEST_IO_ASSERT_GPR_EQ(x22, x3, 0x87654321)
-    RVTEST_IO_ASSERT_GPR_EQ(x22, x4, 0x0FEDCBA9)
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part C  - Complete\n");
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 2\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test End\n")
 
- # ---------------------------------------------------------------------------------------------
-    # HALT
-    RV_COMPLIANCE_HALT
+    # address for test results
+	la	x2, test_2_res
+    
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 0, \
+      li x1, 0xcccc; \
+	  li x26, 0x800; \
+      li x11, 0x1234; \
+      bltu x26, x11, 1f; \
+      li x1, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 4, \
+      li x1, 0xcccc; \
+	  li x25, 0x7654321; \
+      li x10, 0xffffffff; \
+      bltu x25, x10, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+ 
+
+    jal x0, 3f
+2:
+    jal x0, 4f
+3:
+    // Result = 0
+    TEST_CASE(x3, x1, 0x123ab, x2, 8, \
+      li x1, 0xcccc; \
+	  li x24, 0x7fffffff; \
+      li x9, 0x1; \
+      bltu x24, x9, 2b; \
+      li x1, 0x123ab; \
+4: \
+    )
+
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 12, \
+      li x1, 0xcccc; \
+	  li x23, 0x1; \
+      li x8, 0x7fffffff; \
+      bltu x23, x8, 4f; \
+      li x1, 0x123ab; \
+4: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x3, x1, 0x123ab, x2, 16, \
+      li x1, 0xcccc; \
+	  li x22, 0xffffffff; \
+      li x7, 0x7654321; \
+      bltu x22, x7, 5f; \
+      li x1, 0x123ab; \
+5: \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 3\n")
+
+
+    # address for test results
+	la	x7, test_3_res
+    
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 0, \
+      li x1, 0xcccc; \
+	  li x21, 0x1234; \
+      li x6, 0x800; \
+      bltu x21, x6, 1f; \
+      li x1, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 4, \
+      li x1, 0xcccc; \
+	  li x20, 0x80000000; \
+      li x5, 0x0; \
+      bltu x20, x5, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+ 
+
+    jal x0, 3f
+2:
+    jal x0, 4f
+3:
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 8, \
+      li x1, 0xcccc; \
+	  li x19, -0x1234; \
+      li x4, 0x7ff; \
+      bltu x19, x4, 2b; \
+      li x1, 0x123ab; \
+4: \
+    )
+
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 12, \
+      li x1, 0xcccc; \
+	  li x18, -0x1; \
+      li x3, -0x1; \
+      bltu x18, x3, 4f; \
+      li x1, 0x123ab; \
+4: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 16, \
+      li x1, 0xcccc; \
+	  li x17, -0x7ff; \
+      li x2, 0x1; \
+      bltu x17, x2, 5f; \
+      li x1, 0x123ab; \
+5: \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 4\n")
+
+
+    # address for test results
+	la	x3, test_4_res
+    
+ 
+    // Result = 0
+    TEST_CASE(x4, x2, 0x123ab, x3, 0, \
+      li x2, 0xcccc; \
+	  li x16, 0x0; \
+      li x1, 0x0; \
+      bltu x16, x1, 1f; \
+      li x2, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x4, x1, 0x123ab, x3, 4, \
+      li x1, 0xcccc; \
+	  li x15, -0x1; \
+      li x0, 0x0; \
+      bltu x15, x0, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+ 
+
+    jal x0, 3f
+2:
+    jal x0, 4f
+3:
+    // Result = 1
+    TEST_CASE(x4, x1, 0xcccc, x3, 8, \
+      li x1, 0xcccc; \
+	  li x14, 0x1; \
+      li x31, -0x7ff; \
+      bltu x14, x31, 2b; \
+      li x1, 0x123ab; \
+4: \
+    )
+
+ 
+    // Result = 1
+    TEST_CASE(x4, x1, 0xcccc, x3, 12, \
+      li x1, 0xcccc; \
+	  li x13, 0x0; \
+      li x30, -0x1; \
+      bltu x13, x30, 4f; \
+      li x1, 0x123ab; \
+4: \
+    )
+ 
+    // Result = 1
+    TEST_CASE(x4, x1, 0xcccc, x3, 16, \
+      li x1, 0xcccc; \
+	  li x12, 0x7ff; \
+      li x29, -0x1234; \
+      bltu x12, x29, 5f; \
+      li x1, 0x123ab; \
+5: \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 5\n")
+
+
+    # address for test results
+	la	x2, test_5_res
+    
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 0, \
+      li x1, 0xcccc; \
+	  li x11, 0x0; \
+      li x28, 0x80000000; \
+      bltu x11, x28, 1f; \
+      li x1, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 4, \
+      li x1, 0xcccc; \
+	  li x10, 0x800; \
+      li x27, 0x1234; \
+      bltu x10, x27, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+ 
+
+    jal x0, 3f
+2:
+    jal x0, 4f
+3:
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 8, \
+      li x1, 0xcccc; \
+	  li x9, 0x7654321; \
+      li x26, 0xffffffff; \
+      bltu x9, x26, 2b; \
+      li x1, 0x123ab; \
+4: \
+    )
+
+ 
+    // Result = 0
+    TEST_CASE(x3, x1, 0x123ab, x2, 12, \
+      li x1, 0xcccc; \
+	  li x8, 0x7fffffff; \
+      li x25, 0x1; \
+      bltu x8, x25, 4f; \
+      li x1, 0x123ab; \
+4: \
+    )
+ 
+    // Result = 1
+    TEST_CASE(x3, x1, 0xcccc, x2, 16, \
+      li x1, 0xcccc; \
+	  li x7, 0x1; \
+      li x24, 0x7fffffff; \
+      bltu x7, x24, 5f; \
+      li x1, 0x123ab; \
+5: \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 6\n")
+
+
+    # address for test results
+	la	x7, test_6_res
+    
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 0, \
+      li x1, 0xcccc; \
+	  li x6, 0xffffffff; \
+      li x23, 0x7654321; \
+      bltu x6, x23, 1f; \
+      li x1, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 4, \
+      li x1, 0xcccc; \
+	  li x5, 0x1234; \
+      li x22, 0x800; \
+      bltu x5, x22, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+ 
+
+    jal x0, 3f
+2:
+    jal x0, 4f
+3:
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 8, \
+      li x1, 0xcccc; \
+	  li x4, 0x80000000; \
+      li x21, 0x0; \
+      bltu x4, x21, 2b; \
+      li x1, 0x123ab; \
+4: \
+    )
+
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 12, \
+      li x1, 0xcccc; \
+	  li x3, -0x1234; \
+      li x20, 0x7ff; \
+      bltu x3, x20, 4f; \
+      li x1, 0x123ab; \
+4: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x8, x1, 0x123ab, x7, 16, \
+      li x1, 0xcccc; \
+	  li x2, -0x1; \
+      li x19, -0x1; \
+      bltu x2, x19, 5f; \
+      li x1, 0x123ab; \
+5: \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 7\n")
+
+
+    # address for test results
+	la	x3, test_7_res
+    
+ 
+    // Result = 0
+    TEST_CASE(x4, x2, 0x123ab, x3, 0, \
+      li x2, 0xcccc; \
+	  li x1, -0x7ff; \
+      li x18, 0x1; \
+      bltu x1, x18, 1f; \
+      li x2, 0x123ab; \
+1: \
+    )
+ 
+    // Result = 0
+    TEST_CASE(x4, x1, 0x123ab, x3, 4, \
+      li x1, 0xcccc; \
+	  li x0, 0x0; \
+      li x17, 0x0; \
+      bltu x0, x17, 2f; \
+      li x1, 0x123ab; \
+2: \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	
+	RVTEST_IO_WRITE_STR(x31, "Test End\n")
+
+	# ---------------------------------------------------------------------------------------------
+
+	RV_COMPLIANCE_HALT
 
 RV_COMPLIANCE_CODE_END
 
 # Input data section.
-    .data
-    .align 4
-test_A1_data:
-    .word 0
-test_A2_data:
-    .word 1
-test_A3_data:
-    .word -1
-test_A4_data:
-    .word 0x7FFFFFFF
-test_A5_data:
-    .word 0x80000000
-test_C_data:
-    .word 1
+	.data
 
 # Output data section.
 RV_COMPLIANCE_DATA_BEGIN
-    .align 4
 
-test_A1_res:
-    .fill 7, 4, -1
-test_A2_res:
-    .fill 7, 4, -1
-test_A3_res:
-    .fill 7, 4, -1
-test_A4_res:
-    .fill 7, 4, -1
-test_A5_res:
-    .fill 7, 4, -1
-test_B_res:
-    .fill 1, 4, -1
-test_C_res:
-    .fill 4, 4, -1
+test_1_res:
+	.fill 5, 4, -1
+test_2_res:
+	.fill 5, 4, -1
+test_3_res:
+	.fill 5, 4, -1
+test_4_res:
+	.fill 5, 4, -1
+test_5_res:
+	.fill 5, 4, -1
+test_6_res:
+	.fill 5, 4, -1
+test_7_res:
+	.fill 5, 4, -1
 
 RV_COMPLIANCE_DATA_END
+

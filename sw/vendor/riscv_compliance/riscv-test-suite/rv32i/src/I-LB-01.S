@@ -1,7 +1,6 @@
-# RISC-V Compliance Test I-LB-01
+# RISC-V Compliance Test LB-01
 #
-# Copyright (c) 2017, Codasip Ltd.
-# Copyright (c) 2018, Imperas Software Ltd. Additions
+# Copyright (c) 2019, Imperas Software Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -11,353 +10,275 @@
 #      * Redistributions in binary form must reproduce the above copyright
 #        notice, this list of conditions and the following disclaimer in the
 #        documentation and/or other materials provided with the distribution.
-#      * Neither the name of the Codasip Ltd., Imperas Software Ltd. nor the
+#      * Neither the name of the Imperas Software Ltd. nor the
 #        names of its contributors may be used to endorse or promote products
 #        derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
 # IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 # THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Codasip Ltd., Imperas Software Ltd.
-# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Imperas Software Ltd. BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# Specification: RV32I Base Integer Instruction Set, Version 2.0
-# Description: Testing instruction LB.
+# Specification: RV32I Base Integer Instruction Set, Version 2.1
+# Description: Testing instruction 'LB'.
 
+#include "riscv_test_macros.h"
 #include "compliance_test.h"
 #include "compliance_io.h"
-#include "test_macros.h"
 
-# Test Virtual Machine (TVM) used by program.
 RV_COMPLIANCE_RV32M
 
-# Test code region
 RV_COMPLIANCE_CODE_BEGIN
 
-    RVTEST_IO_INIT
-    RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
-    RVTEST_IO_WRITE_STR(x31, "# Test Begin\n")
 
-    # ------------------0x00000000---------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A1 - test base address + 0\n");
+	RVTEST_IO_INIT
+	RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
+	RVTEST_IO_WRITE_STR(x31, "Test Begin\n")
 
-    # Addresses for test data and results
-    la      x31, test_A1_data
-    la      x2, test_A1_res
+	# ---------------------------------------------------------------------------------------------
 
-    # Test
-    lb      x3, 0(x31)
-    lb      x4, 1(x31)
-    lb      x5, 2(x31)
-    lb      x6, 3(x31)
+	RVTEST_IO_WRITE_STR(x31, "# Test number 1\n")
 
-    # Store results
-    sw      x3, 0(x2)
-    sw      x4, 4(x2)
-    sw      x5, 8(x2)
-    sw      x6, 12(x2)
-
-    //
-    // Assert
-    //
-    RVTEST_IO_CHECK()
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x3, 0x00000022)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x4, 0xFFFFFFF2)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x5, 0xFFFFFFF1)
-    RVTEST_IO_ASSERT_GPR_EQ(x2, x6, 0x00000011)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A1  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A2 - test base address - 1\n");
 
     # Addresses for test data and results
-    la      x24, test_A2_data + 1
-    la      x5, test_A2_res
+	la	x5, test_1_res
 
-    # Test
-    lb      x25, -1(x24)
-    lb      x26, +0(x24)
-    lb      x27, +1(x24)
-    lb      x28, +2(x24)
+	TEST_CASE(x7, x0, 0x0, x5, 0, \
+    la  x31, test_data; \
+    lb x0, 0x0(x31); \
+    )
+	TEST_CASE(x7, x1, 0xffffffbb, x5, 4, \
+    la  x30, test_data; \
+    lb x1, -0x2(x30); \
+    )
+	TEST_CASE(x7, x2, 0xffffffdd, x5, 8, \
+    la  x29, test_data; \
+    lb x2, 0x3(x29); \
+    )
+	TEST_CASE(x7, x3, 0xc, x5, 12, \
+    la  x28, test_data; \
+    lb x3, -0x4(x28); \
+    )
+	TEST_CASE(x7, x4, 0xd, x5, 16, \
+    la  x27, test_data; \
+    lb x4, 0x2(x27); \
+    )
 
-    # Store results
-    sw      x25, 0(x5)
-    sw      x26, 4(x5)
-    sw      x27, 8(x5)
-    sw      x28, 12(x5)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x5, x25, 0xFFFFFFF4)
-    RVTEST_IO_ASSERT_GPR_EQ(x5, x26, 0x00000044)
-    RVTEST_IO_ASSERT_GPR_EQ(x5, x27, 0x00000033)
-    RVTEST_IO_ASSERT_GPR_EQ(x5, x28, 0xFFFFFFF3)
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 2\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part A2  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A3 - test base address + 1\n");
-
-    # Addresses for test data and results
-    la      x7, test_A3_data - 1
-    la      x8, test_A3_res
-
-    # Test
-    lb      x30, 1(x7)
-    lb      x31, 2(x7)
-    lb      x1, 3(x7)
-    lb      x2, 4(x7)
-
-    # Store results
-    sw      x30, 0(x8)
-    sw      x31, 4(x8)
-    sw      x1, 8(x8)
-    sw      x2, 12(x8)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x8, x30, 0x00000066)
-    RVTEST_IO_ASSERT_GPR_EQ(x8, x31, 0xFFFFFFF6)
-    RVTEST_IO_ASSERT_GPR_EQ(x8, x1, 0xFFFFFFF5)
-    RVTEST_IO_ASSERT_GPR_EQ(x8, x2, 0x00000055)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A3  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A4 - test base address - 2048\n");
 
     # Addresses for test data and results
-    la      x10, test_A4_data + 2048
-    la      x11, test_A4_res
+	la	x1, test_2_res
 
-    # Test
-    lb      x12, 0xFFFFF800(x10)
-    lb      x13, 0xFFFFF801(x10)
-    lb      x14, 0xFFFFF802(x10)
-    lb      x15, 0xFFFFF803(x10)
+	TEST_CASE(x3, x5, 0xfffffff0, x1, 0, \
+    la  x26, test_data; \
+    lb x5, 0x4(x26); \
+    )
+	TEST_CASE(x3, x6, 0xb, x1, 4, \
+    la  x25, test_data; \
+    lb x6, -0x1(x25); \
+    )
+	TEST_CASE(x3, x7, 0xe, x1, 8, \
+    la  x24, test_data; \
+    lb x7, 0x1(x24); \
+    )
+	TEST_CASE(x3, x8, 0xffffffee, x1, 12, \
+    la  x23, test_data; \
+    lb x8, 0x0(x23); \
+    )
+	TEST_CASE(x3, x9, 0xffffffbb, x1, 16, \
+    la  x22, test_data; \
+    lb x9, -0x2(x22); \
+    )
 
-    # Store results
-    sw      x12, 0(x11)
-    sw      x13, 4(x11)
-    sw      x14, 8(x11)
-    sw      x15, 12(x11)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x11, x12, 0xFFFFFFF8)
-    RVTEST_IO_ASSERT_GPR_EQ(x11, x13, 0xFFFFFF88)
-    RVTEST_IO_ASSERT_GPR_EQ(x11, x14, 0x00000077)
-    RVTEST_IO_ASSERT_GPR_EQ(x11, x15, 0xFFFFFFF7)
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 3\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part A4  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A5 - test base address + 2047\n");
-
-    # Addresses for test data and results
-    la      x13, test_A5_data - 2044
-    la      x14, test_A5_res
-
-    # Test
-    lb      x15, 0x7FC(x13)
-    lb      x16, 0x7FD(x13)
-    lb      x17, 0x7FE(x13)
-    lb      x18, 0x7FF(x13)
-
-    # Store results
-    sw      x15, 0(x14)
-    sw      x16, 4(x14)
-    sw      x17, 8(x14)
-    sw      x18, 12(x14)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x14, x15, 0xFFFFFFAA)
-    RVTEST_IO_ASSERT_GPR_EQ(x14, x16, 0x0000000A)
-    RVTEST_IO_ASSERT_GPR_EQ(x14, x17, 0x00000009)
-    RVTEST_IO_ASSERT_GPR_EQ(x14, x18, 0xFFFFFF99)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part A5  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part B - test base address + -4,-1, ..., 6, 7\n");
 
     # Addresses for test data and results
-    la      x16, test_B_data
-    la      x17, test_B_res
+	la	x1, test_3_res
 
-    # Test
-    lb      x18, -4(x16)
-    lb      x19, -3(x16)
-    lb      x20, -2(x16)
-    lb      x21, -1(x16)
-    lb      x22, 0(x16)
-    lb      x23, 1(x16)
-    lb      x24, 2(x16)
-    lb      x25, 3(x16)
-    lb      x26, 4(x16)
-    lb      x27, 5(x16)
-    lb      x28, 6(x16)
-    lb      x29, 7(x16)
+	TEST_CASE(x8, x10, 0xffffffdd, x1, 0, \
+    la  x21, test_data; \
+    lb x10, 0x3(x21); \
+    )
+	TEST_CASE(x8, x11, 0xc, x1, 4, \
+    la  x20, test_data; \
+    lb x11, -0x4(x20); \
+    )
+	TEST_CASE(x8, x12, 0xd, x1, 8, \
+    la  x19, test_data; \
+    lb x12, 0x2(x19); \
+    )
+	TEST_CASE(x8, x13, 0xfffffff0, x1, 12, \
+    la  x18, test_data; \
+    lb x13, 0x4(x18); \
+    )
+	TEST_CASE(x8, x14, 0xb, x1, 16, \
+    la  x17, test_data; \
+    lb x14, -0x1(x17); \
+    )
 
-    # Store results
-    sw      x18, 0(x17)
-    sw      x19, 4(x17)
-    sw      x20, 8(x17)
-    sw      x21, 12(x17)
-    sw      x22, 16(x17)
-    sw      x23, 20(x17)
-    sw      x24, 24(x17)
-    sw      x25, 28(x17)
-    sw      x26, 32(x17)
-    sw      x27, 36(x17)
-    sw      x28, 40(x17)
-    sw      x29, 44(x17)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x18, 0x0000000C)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x19, 0xFFFFFFCC)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x20, 0xFFFFFFBB)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x21, 0x0000000B)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x22, 0xFFFFFFEE)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x23, 0x0000000E)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x24, 0x0000000D)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x25, 0xFFFFFFDD)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x26, 0xFFFFFFF0)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x27, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x28, 0xFFFFFFFF)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x29, 0x0000000F)
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 4\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part B  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part C - test load to x0\n");
 
     # Addresses for test data and results
-    la      x21, test_C_data
-    la      x22, test_C_res
+	la	x2, test_4_res
 
-    # Test
-    lb      x0, 0(x21)
+	TEST_CASE(x4, x15, 0xe, x2, 0, \
+    la  x16, test_data; \
+    lb x15, 0x1(x16); \
+    )
+	TEST_CASE(x4, x16, 0xffffffee, x2, 4, \
+    la  x15, test_data; \
+    lb x16, 0x0(x15); \
+    )
+	TEST_CASE(x4, x17, 0xffffffbb, x2, 8, \
+    la  x14, test_data; \
+    lb x17, -0x2(x14); \
+    )
+	TEST_CASE(x4, x18, 0xffffffdd, x2, 12, \
+    la  x13, test_data; \
+    lb x18, 0x3(x13); \
+    )
+	TEST_CASE(x4, x19, 0xc, x2, 16, \
+    la  x12, test_data; \
+    lb x19, -0x4(x12); \
+    )
 
-    # Store results
-    sw      x0, 0(x22)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x22, x0, 0x00000000)
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 5\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part C  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part D - test for forwarding\n");
-
-    # Addresses for test data and results
-    la      x21, test_D_data
-    la      x22, test_D_res
-
-    # Test
-    lw      x23, 0(x21)
-    lb      x24, 0(x23)
-    mv      x25, x24
-
-    # Store results
-    sw      x25, 0(x22)
-
-    RVTEST_IO_ASSERT_GPR_EQ(x22, x25, 0xFFFFFFF0)
-
-    RVTEST_IO_WRITE_STR(x31, "# Test part D  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part E1 - test store with same base and destination address\n");
 
     # Addresses for test data and results
-    la      x25, test_E1_data
-    la      x26, test_E1_res
+	la	x1, test_5_res
 
-    # Test
-    lb      x25, 0(x25)
+	TEST_CASE(x3, x20, 0xd, x1, 0, \
+    la  x11, test_data; \
+    lb x20, 0x2(x11); \
+    )
+	TEST_CASE(x3, x21, 0xfffffff0, x1, 4, \
+    la  x10, test_data; \
+    lb x21, 0x4(x10); \
+    )
+	TEST_CASE(x3, x22, 0xb, x1, 8, \
+    la  x9, test_data; \
+    lb x22, -0x1(x9); \
+    )
+	TEST_CASE(x3, x23, 0xe, x1, 12, \
+    la  x8, test_data; \
+    lb x23, 0x1(x8); \
+    )
+	TEST_CASE(x3, x24, 0xffffffee, x1, 16, \
+    la  x7, test_data; \
+    lb x24, 0x0(x7); \
+    )
 
-    # Store results
-    sw      x25, 0(x26)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x26, x25, 0x00000010)
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 6\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part E  - Complete\n");
-
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part E2 - test store with same base and destination address, base with offset\n");
 
     # Addresses for test data and results
-    la      x27, test_E2_data + 1
-    la      x28, test_E2_res
+	la	x1, test_6_res
 
-    # Test
-    lb      x27, -1(x27)
+	TEST_CASE(x8, x25, 0xffffffbb, x1, 0, \
+    la  x6, test_data; \
+    lb x25, -0x2(x6); \
+    )
+	TEST_CASE(x8, x26, 0xffffffdd, x1, 4, \
+    la  x5, test_data; \
+    lb x26, 0x3(x5); \
+    )
+	TEST_CASE(x8, x27, 0xc, x1, 8, \
+    la  x4, test_data; \
+    lb x27, -0x4(x4); \
+    )
+	TEST_CASE(x8, x28, 0xd, x1, 12, \
+    la  x3, test_data; \
+    lb x28, 0x2(x3); \
+    )
+	TEST_CASE(x8, x29, 0xfffffff0, x1, 16, \
+    la  x2, test_data; \
+    lb x29, 0x4(x2); \
+    )
 
-    # Store results
-    sw      x27, 0(x28)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x28, x27, 0xFFFFFF98)
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 7\n")
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part A1  - Complete\n");
 
-    RVTEST_IO_WRITE_STR(x31, "# Test End\n")
+    # Addresses for test data and results
+	la	x2, test_7_res
 
- # ---------------------------------------------------------------------------------------------
-    # HALT
-    RV_COMPLIANCE_HALT
+	TEST_CASE(x4, x30, 0xb, x2, 0, \
+    la  x1, test_data; \
+    lb x30, -0x1(x1); \
+    )
+	TEST_CASE(x4, x31, 0xe, x2, 4, \
+    la  x1, test_data; \
+    lb x31, 0x1(x1); \
+    )
+
+
+	# ---------------------------------------------------------------------------------------------
+	
+	RVTEST_IO_WRITE_STR(x31, "Test End\n")
+
+	# ---------------------------------------------------------------------------------------------
+
+	RV_COMPLIANCE_HALT
 
 RV_COMPLIANCE_CODE_END
 
 # Input data section.
-    .data
-    .align 4
+	.data
+	.align 4
+test_data_start:
 
-test_A1_data:
-    .word 0x11F1F222
-test_A2_data:
-    .word 0xF33344F4
-test_A3_data:
-    .word 0x55F5F666
-test_A4_data:
-    .word 0xF77788F8
-test_A5_data:
-    .word 0x99090AAA
-    .word 0x0BBBCC0C
-test_B_data:
-    .word 0xDD0D0EEE
-    .word 0x0FFF00F0
-test_C_data:
-    .word 0x12345678
-test_D_data:
-    .word test_D_data2_label
-test_D_data2_label:
-    .word 0x9ABCDEF0
-test_E1_data:
-    .word 0x76543210
-test_E2_data:
-    .word 0xFEDCBA98
-
+	.word 0x11f1f222
+	.word 0xf33344f4
+	.word 0x55f5f666
+	.word 0xf77788f8
+	.word 0x99090aaa
+	.word 0xbbbcc0c
+test_data:
+	.word 0xdd0d0eee
+	.word 0xfff00f0
+	.word 0x12345678
+	.word 0x9abcdef0
+	.word 0x76543210
+	.word 0xfedcba98
 
 # Output data section.
 RV_COMPLIANCE_DATA_BEGIN
-    .align 4
 
-test_A1_res:
-    .fill 4, 4, -1
-test_A2_res:
-    .fill 4, 4, -1
-test_A3_res:
-    .fill 4, 4, -1
-test_A4_res:
-    .fill 4, 4, -1
-test_A5_res:
-    .fill 4, 4, -1
-test_B_res:
-    .fill 12, 4, -1
-test_C_res:
-    .fill 1, 4, -1
-test_D_res:
-    .fill 1, 4, -1
-test_E1_res:
-    .fill 1, 4, -1
-test_E2_res:
-    .fill 1, 4, -1
+test_1_res:
+	.fill 5, 4, -1
+test_2_res:
+	.fill 5, 4, -1
+test_3_res:
+	.fill 5, 4, -1
+test_4_res:
+	.fill 5, 4, -1
+test_5_res:
+	.fill 5, 4, -1
+test_6_res:
+	.fill 5, 4, -1
+test_7_res:
+	.fill 5, 4, -1
 
 RV_COMPLIANCE_DATA_END
+

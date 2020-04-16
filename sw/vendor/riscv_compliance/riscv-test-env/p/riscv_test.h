@@ -60,14 +60,14 @@
   csrw pmpaddr0, t0;                                                    \
   li t0, PMP_NAPOT | PMP_R | PMP_W | PMP_X;                             \
   csrw pmpcfg0, t0;                                                     \
-  .align 2;                                                             \
+  .align TRAPALIGN;                                                     \
 1:
 
 #define INIT_SPTBR                                                      \
   la t0, 1f;                                                            \
   csrw mtvec, t0;                                                       \
   csrwi sptbr, 0;                                                       \
-  .align 2;                                                             \
+  .align TRAPALIGN;                                                     \
 1:
 
 #define DELEGATE_NO_TRAPS                                               \
@@ -76,7 +76,7 @@
   csrwi medeleg, 0;                                                     \
   csrwi mideleg, 0;                                                     \
   csrwi mie, 0;                                                         \
-  .align 2;                                                             \
+  .align TRAPALIGN;                                                     \
 1:
 
 #define RVTEST_ENABLE_SUPERVISOR                                        \
@@ -125,6 +125,14 @@
 #if defined(TRAPHANDLER)
 #include TRAPHANDLER
 #endif
+#if !defined(TRAPALIGN)
+#define TRAPALIGN 2
+#endif
+
+#if !defined(RVTEST_ENTRY)
+#define RVTEST_ENTRY _start
+#endif
+
 
 #define INTERRUPT_HANDLER j other_exception /* No interrupts should occur */
 
@@ -133,11 +141,11 @@
         .align  6;                                                      \
         .weak stvec_handler;                                            \
         .weak mtvec_handler;                                            \
-        .globl _start;                                                  \
-_start:                                                                 \
+        .globl RVTEST_ENTRY;                                            \
+RVTEST_ENTRY:                                                           \
         /* reset vector */                                              \
         j reset_vector;                                                 \
-        .align 2;                                                       \
+        .align TRAPALIGN;                                               \
 trap_vector:                                                            \
         /* test whether the test came from pass/fail */                 \
         csrr t5, mcause;                                                \

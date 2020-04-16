@@ -1,0 +1,1149 @@
+This coverage created by Imperas using Mentor Questa simulator and SystemVerilog UVM coverage from github.com/google/riscv-dv
+
+COVERGROUP COVERAGE:
+----------------------------------------------------------------------------------------------------------
+Covergroup                                             Metric       Goal    Status               
+                                                                                                         
+----------------------------------------------------------------------------------------------------------
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/mul_cg 
+                                                       89.28%        100    Uncovered            
+    covered/total bins:                                    82        106                      
+    missing/total bins:                                    24        106                      
+    % Hit:                                             77.35%        100                      
+    Coverpoint mul_cg::cp_rs1                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mul_cg::cp_rs2                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mul_cg::cp_rd                           75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mul_cg::cp_rs1_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mul_cg::cp_rs2_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mul_cg::cp_rd_sign                     100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Cross mul_cg::cp_sign_cross                       100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/mulh_cg 
+                                                       89.28%        100    Uncovered            
+    covered/total bins:                                    82        106                      
+    missing/total bins:                                    24        106                      
+    % Hit:                                             77.35%        100                      
+    Coverpoint mulh_cg::cp_rs1                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulh_cg::cp_rs2                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulh_cg::cp_rd                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulh_cg::cp_rs1_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mulh_cg::cp_rs2_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mulh_cg::cp_rd_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 17          1    Covered              
+        bin auto[NEGATIVE]                                  8          1    Covered              
+    Cross mulh_cg::cp_sign_cross                      100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/mulhsu_cg 
+                                                       89.28%        100    Uncovered            
+    covered/total bins:                                    82        106                      
+    missing/total bins:                                    24        106                      
+    % Hit:                                             77.35%        100                      
+    Coverpoint mulhsu_cg::cp_rs1                       75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulhsu_cg::cp_rs2                       75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulhsu_cg::cp_rd                        75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulhsu_cg::cp_rs1_sign                 100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mulhsu_cg::cp_rs2_sign                 100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mulhsu_cg::cp_rd_sign                  100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 17          1    Covered              
+        bin auto[NEGATIVE]                                  8          1    Covered              
+    Cross mulhsu_cg::cp_sign_cross                    100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/mulhu_cg 
+                                                       89.28%        100    Uncovered            
+    covered/total bins:                                    82        106                      
+    missing/total bins:                                    24        106                      
+    % Hit:                                             77.35%        100                      
+    Coverpoint mulhu_cg::cp_rs1                        75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulhu_cg::cp_rs2                        75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulhu_cg::cp_rd                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint mulhu_cg::cp_rs1_sign                  100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mulhu_cg::cp_rs2_sign                  100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint mulhu_cg::cp_rd_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 24          1    Covered              
+        bin auto[NEGATIVE]                                  1          1    Covered              
+    Cross mulhu_cg::cp_sign_cross                     100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/div_cg 
+                                                       90.62%        100    Uncovered            
+    covered/total bins:                                    85        109                      
+    missing/total bins:                                    24        109                      
+    % Hit:                                             77.98%        100                      
+    Coverpoint div_cg::cp_rs1                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint div_cg::cp_rs2                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint div_cg::cp_rd                           75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint div_cg::cp_rs1_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint div_cg::cp_rs2_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint div_cg::cp_rd_sign                     100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 14          1    Covered              
+        bin auto[NEGATIVE]                                 11          1    Covered              
+    Coverpoint div_cg::cp_div_result                  100.00%        100    Covered              
+        covered/total bins:                                 3          3                      
+        missing/total bins:                                 0          3                      
+        % Hit:                                        100.00%        100                      
+        bin auto[DIV_NORMAL]                               19          1    Covered              
+        bin auto[DIV_BY_ZERO]                               5          1    Covered              
+        bin auto[DIV_OVERFLOW]                              1          1    Covered              
+    Cross div_cg::cp_sign_cross                       100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/divu_cg 
+                                                       90.62%        100    Uncovered            
+    covered/total bins:                                    85        109                      
+    missing/total bins:                                    24        109                      
+    % Hit:                                             77.98%        100                      
+    Coverpoint divu_cg::cp_rs1                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint divu_cg::cp_rs2                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint divu_cg::cp_rd                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint divu_cg::cp_rs1_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint divu_cg::cp_rs2_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint divu_cg::cp_rd_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 18          1    Covered              
+        bin auto[NEGATIVE]                                  7          1    Covered              
+    Coverpoint divu_cg::cp_div_result                 100.00%        100    Covered              
+        covered/total bins:                                 3          3                      
+        missing/total bins:                                 0          3                      
+        % Hit:                                        100.00%        100                      
+        bin auto[DIV_NORMAL]                               19          1    Covered              
+        bin auto[DIV_BY_ZERO]                               5          1    Covered              
+        bin auto[DIV_OVERFLOW]                              1          1    Covered              
+    Cross divu_cg::cp_sign_cross                      100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/rem_cg 
+                                                       90.62%        100    Uncovered            
+    covered/total bins:                                    85        109                      
+    missing/total bins:                                    24        109                      
+    % Hit:                                             77.98%        100                      
+    Coverpoint rem_cg::cp_rs1                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint rem_cg::cp_rs2                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint rem_cg::cp_rd                           75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint rem_cg::cp_rs1_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint rem_cg::cp_rs2_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint rem_cg::cp_rd_sign                     100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 20          1    Covered              
+        bin auto[NEGATIVE]                                  5          1    Covered              
+    Coverpoint rem_cg::cp_div_result                  100.00%        100    Covered              
+        covered/total bins:                                 3          3                      
+        missing/total bins:                                 0          3                      
+        % Hit:                                        100.00%        100                      
+        bin auto[DIV_NORMAL]                               19          1    Covered              
+        bin auto[DIV_BY_ZERO]                               5          1    Covered              
+        bin auto[DIV_OVERFLOW]                              1          1    Covered              
+    Cross rem_cg::cp_sign_cross                       100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+ TYPE /riscv_instr_pkg/riscv_instr_cover_group/remu_cg 
+                                                       90.62%        100    Uncovered            
+    covered/total bins:                                    85        109                      
+    missing/total bins:                                    24        109                      
+    % Hit:                                             77.98%        100                      
+    Coverpoint remu_cg::cp_rs1                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint remu_cg::cp_rs2                         75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint remu_cg::cp_rd                          75.00%        100    Uncovered            
+        covered/total bins:                                24         32                      
+        missing/total bins:                                 8         32                      
+        % Hit:                                         75.00%        100                      
+        bin auto[ZERO]                                      0          1    ZERO                 
+        bin auto[RA]                                        0          1    ZERO                 
+        bin auto[SP]                                        0          1    ZERO                 
+        bin auto[GP]                                        1          1    Covered              
+        bin auto[TP]                                        1          1    Covered              
+        bin auto[T0]                                        0          1    ZERO                 
+        bin auto[T1]                                        0          1    ZERO                 
+        bin auto[T2]                                        0          1    ZERO                 
+        bin auto[S0]                                        1          1    Covered              
+        bin auto[S1]                                        1          1    Covered              
+        bin auto[A0]                                        0          1    ZERO                 
+        bin auto[A1]                                        1          1    Covered              
+        bin auto[A2]                                        1          1    Covered              
+        bin auto[A3]                                        1          1    Covered              
+        bin auto[A4]                                        1          1    Covered              
+        bin auto[A5]                                        1          1    Covered              
+        bin auto[A6]                                        1          1    Covered              
+        bin auto[A7]                                        1          1    Covered              
+        bin auto[S2]                                        1          1    Covered              
+        bin auto[S3]                                        1          1    Covered              
+        bin auto[S4]                                        1          1    Covered              
+        bin auto[S5]                                        2          1    Covered              
+        bin auto[S6]                                        1          1    Covered              
+        bin auto[S7]                                        1          1    Covered              
+        bin auto[S8]                                        1          1    Covered              
+        bin auto[S9]                                        1          1    Covered              
+        bin auto[S10]                                       1          1    Covered              
+        bin auto[S11]                                       1          1    Covered              
+        bin auto[T3]                                        1          1    Covered              
+        bin auto[T4]                                        1          1    Covered              
+        bin auto[T5]                                        1          1    Covered              
+        bin auto[T6]                                        0          1    ZERO                 
+    Coverpoint remu_cg::cp_rs1_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint remu_cg::cp_rs2_sign                   100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 15          1    Covered              
+        bin auto[NEGATIVE]                                 10          1    Covered              
+    Coverpoint remu_cg::cp_rd_sign                    100.00%        100    Covered              
+        covered/total bins:                                 2          2                      
+        missing/total bins:                                 0          2                      
+        % Hit:                                        100.00%        100                      
+        bin auto[POSITIVE]                                 22          1    Covered              
+        bin auto[NEGATIVE]                                  3          1    Covered              
+    Coverpoint remu_cg::cp_div_result                 100.00%        100    Covered              
+        covered/total bins:                                 3          3                      
+        missing/total bins:                                 0          3                      
+        % Hit:                                        100.00%        100                      
+        bin auto[DIV_NORMAL]                               19          1    Covered              
+        bin auto[DIV_BY_ZERO]                               5          1    Covered              
+        bin auto[DIV_OVERFLOW]                              1          1    Covered              
+    Cross remu_cg::cp_sign_cross                      100.00%        100    Covered              
+        covered/total bins:                                 4          4                      
+        missing/total bins:                                 0          4                      
+        % Hit:                                        100.00%        100                      
+        bin <auto[POSITIVE],auto[POSITIVE]>                 9          1    Covered              
+        bin <auto[NEGATIVE],auto[POSITIVE]>                 6          1    Covered              
+        bin <auto[POSITIVE],auto[NEGATIVE]>                 6          1    Covered              
+        bin <auto[NEGATIVE],auto[NEGATIVE]>                 4          1    Covered              
+
+TOTAL COVERGROUP COVERAGE: 89.95%  COVERGROUP TYPES: 8

@@ -1,243 +1,391 @@
 # RISC-V Compliance Test I-AUIPC-01
 #
-# Copyright (c) 2017, Codasip Ltd.
-# Copyright (c) 2018, Imperas Software Ltd. Additions
-# All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#      * Redistributions of source code must retain the above copyright
-#        notice, this list of conditions and the following disclaimer.
-#      * Redistributions in binary form must reproduce the above copyright
-#        notice, this list of conditions and the following disclaimer in the
-#        documentation and/or other materials provided with the distribution.
-#      * Neither the name of the Codasip Ltd., Imperas Software Ltd. nor the
-#        names of its contributors may be used to endorse or promote products
-#        derived from this software without specific prior written permission.
+# Copyright (c) 2019 Imperas Software Ltd., www.imperas.com
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Codasip Ltd., Imperas Software Ltd.
-# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Specification: RV32I Base Integer Instruction Set, Version 2.0
-# Description: Testing instruction AUIPC.
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied.
+#
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#
+# Specification: RV32I Base Integer Instruction Set, Version 2.1
+# Description: Testing instruction 'AUIPC'.
 
+#include "riscv_test_macros.h"
 #include "compliance_test.h"
 #include "compliance_io.h"
-#include "test_macros.h"
 
-# Test Virtual Machine (TVM) used by program.
 RV_COMPLIANCE_RV32M
 
-# Test code region
 RV_COMPLIANCE_CODE_BEGIN
 
-    RVTEST_IO_INIT
-    RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
-    RVTEST_IO_WRITE_STR(x31, "# Test Begin\n")
 
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part A - general test of AUIPC\n");
+	RVTEST_IO_INIT
+	RVTEST_IO_ASSERT_GPR_EQ(x31, x0, 0x00000000)
+	RVTEST_IO_WRITE_STR(x31, "Test Begin\n")
 
-    # Addresses for test data and results
-    la      x14, test_A_data
-    la      x15, test_A_res
+	# ---------------------------------------------------------------------------------------------
 
-    # Register initialization
-    lw      x1, 0(x14)
-    li      x2, 0x00001004
-    li      x3, 0xFFFFF008
-    li      x4, 0x7FFFF00C
-    li      x5, 0x80000010
+	RVTEST_IO_WRITE_STR(x31, "# Test number 1\n")
 
-    add     x2, x1, x2
-    add     x3, x1, x3
-    add     x4, x1, x4
-    add     x5, x1, x5
 
-    # Test
-test_A:
-    auipc   x6, 0x0
-    auipc   x7, 0x1
-    auipc   x16, 0xFFFFF
-    auipc   x29, 0x7FFFF
-    auipc   x31, 0x80000
+    # address for test results
+	la	x5, test_1_res
 
-    xor     x6, x6, x1
-    xor     x7, x7, x2
-    xor     x16, x16, x3
-    xor     x29, x29, x4
-    xor     x31, x31, x5
+	# Testcase 0:  imm:0x0, result rd:x0(0x0)
+1: 
+    auipc x0, 0x0
+    la x7, 1b
+    sub  x0,  x0, x7
+	sw  x0, 0(x5)
+    RVTEST_IO_ASSERT_GPR_EQ(x6, x0, 0x0)
 
-    # Store results
-    sw      x6, 0(x15)
-    sw      x7, 4(x15)
-    sw      x16, 8(x15)
-    sw      x29, 12(x15)
-    sw      x31, 16(x15)
+	# Testcase 1:  imm:0x0, result rd:x1(0x0)
+1: 
+    auipc x1, 0x0
+    la x7, 1b
+    sub  x1,  x1, x7
+	sw  x1, 4(x5)
+    RVTEST_IO_ASSERT_GPR_EQ(x6, x1, 0x0)
 
-    //
-    // Assert
-    //
-    RVTEST_IO_CHECK()
-    RVTEST_IO_ASSERT_GPR_EQ(x15, x6,  0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x15, x7,  0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x15, x16, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x15, x29, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x15, x31, 0x00000000)
+	# Testcase 2:  imm:0x7ff, result rd:x2(0x7ff000)
+1: 
+    auipc x2, 0x7ff
+    la x7, 1b
+    sub  x2,  x2, x7
+	sw  x2, 8(x5)
+    RVTEST_IO_ASSERT_GPR_EQ(x6, x2, 0x7ff000)
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part A1  - Complete\n");
+	# Testcase 3:  imm:0x1, result rd:x3(0x1000)
+1: 
+    auipc x3, 0x1
+    la x7, 1b
+    sub  x3,  x3, x7
+	sw  x3, 12(x5)
+    RVTEST_IO_ASSERT_GPR_EQ(x6, x3, 0x1000)
 
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part B - test AUIPC overwrites low bits\n");
+	# Testcase 4:  imm:0x1234, result rd:x4(0x1234000)
+1: 
+    auipc x4, 0x1234
+    la x7, 1b
+    sub  x4,  x4, x7
+	sw  x4, 16(x5)
+    RVTEST_IO_ASSERT_GPR_EQ(x6, x4, 0x1234000)
 
-    # Addresses for test data and results
-    la      x17, test_B_data
-    la      x16, test_B_res
 
-    # Register initialization
-    li      x1, 0x11111111
-    li      x2, 0x22222222
-    li      x15, 0x33333333
-    li      x28, 0x44444444
-    li      x30, 0x55555555
 
-    lw      x3, 0(x17)
-    li      x4, 0x80000000
-    li      x5, 0x7FFFF004
-    li      x6, 0x00000008
-    li      x7, 0x0000100C
-    li      x8, 0xFFFFF010
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 2\n")
 
-    add     x4, x3, x4
-    add     x5, x3, x5
-    add     x6, x3, x6
-    add     x7, x3, x7
-    add     x8, x3, x8
 
-    # Test
-test_B:
-    auipc   x1, 0x80000
-    auipc   x2, 0x7FFFF
-    auipc   x15, 0
-    auipc   x28, 1
-    auipc   x30, 0xFFFFF
+    # address for test results
+	la	x1, test_2_res
 
-    xor     x1, x1, x4
-    xor     x2, x2, x5
-    xor     x15, x15, x6
-    xor     x28, x28, x7
-    xor     x30, x30, x8
+	# Testcase 5:  imm:0x80000, result rd:x5(0x80000000)
+1: 
+    auipc x5, 0x80000
+    la x3, 1b
+    sub  x5,  x5, x3
+	sw  x5, 0(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x5, 0x80000000)
 
-    # Store results
-    sw      x1, 0(x16)
-    sw      x2, 4(x16)
-    sw      x15, 8(x16)
-    sw      x28, 12(x16)
-    sw      x30, 16(x16)
+	# Testcase 6:  imm:0x1234, result rd:x6(0x1234000)
+1: 
+    auipc x6, 0x1234
+    la x3, 1b
+    sub  x6,  x6, x3
+	sw  x6, 4(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x6, 0x1234000)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x16, x1,  0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x16, x2,  0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x16, x15, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x16, x28, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x16, x30, 0x00000000)
+	# Testcase 7:  imm:0xfffff, result rd:x7(0xfffff000)
+1: 
+    auipc x7, 0xfffff
+    la x3, 1b
+    sub  x7,  x7, x3
+	sw  x7, 8(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x7, 0xfffff000)
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part A2  - Complete\n");
+	# Testcase 8:  imm:0x1, result rd:x8(0x1000)
+1: 
+    auipc x8, 0x1
+    la x3, 1b
+    sub  x8,  x8, x3
+	sw  x8, 12(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x8, 0x1000)
 
-    # ---------------------------------------------------------------------------------------------
-    RVTEST_IO_WRITE_STR(x31, "# Test part C - test loading address using auipc + addi or la alias\n");
+	# Testcase 9:  imm:0x7ffff, result rd:x9(0x7ffff000)
+1: 
+    auipc x9, 0x7ffff
+    la x3, 1b
+    sub  x9,  x9, x3
+	sw  x9, 16(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x9, 0x7ffff000)
 
-    # Addresses for test data and results
-    la      x18, test_C_data
-    la      x17, test_C_res
 
-test_C1:
-    # Register initialization
-    lw      x1, 0(x18)
-    lw      x2, 4(x18)
-    lw      x3, 8(x18)
 
-    # Test
-    la      x4,  test_C1
-    la      x15, test_C2
-    la      x30, test_C3
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 3\n")
 
-    # C1
-    auipc   x5, 0x0
-    addi    x5, x5, 0xFFFFFFDC
 
-test_C2:
-    # C2
-    auipc   x16, 0x0
-    addi    x16, x16, 0x0
+    # address for test results
+	la	x1, test_3_res
 
-    # C3
-    auipc   x31, 0x0
-    addi    x31, x31, 0x28
+	# Testcase 10:  imm:0x54321, result rd:x10(0x54321000)
+1: 
+    auipc x10, 0x54321
+    la x8, 1b
+    sub  x10,  x10, x8
+	sw  x10, 0(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x10, 0x54321000)
 
-    xor     x4, x4, x1
-    xor     x15, x15, x2
-    xor     x30, x30, x3
-    sub     x5, x5, x1
-    xor     x16, x16, x2
-    xor     x31, x31, x3
+	# Testcase 11:  imm:0x800, result rd:x11(0x800000)
+1: 
+    auipc x11, 0x800
+    la x8, 1b
+    sub  x11,  x11, x8
+	sw  x11, 4(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x11, 0x800000)
 
-    # Store results
-    sw      x4, 0(x17)
-    sw      x15, 4(x17)
-test_C3:
-    sw      x30, 8(x17)
-    sw      x5, 12(x17)
-    sw      x16, 16(x17)
-    sw      x31, 20(x17)
+	# Testcase 12:  imm:0x0, result rd:x12(0x0)
+1: 
+    auipc x12, 0x0
+    la x8, 1b
+    sub  x12,  x12, x8
+	sw  x12, 8(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x12, 0x0)
 
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x4,  0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x15, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x29, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x5,  0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x16, 0x00000000)
-    RVTEST_IO_ASSERT_GPR_EQ(x17, x31, 0x00000000)
+	# Testcase 13:  imm:0x7ff, result rd:x13(0x7ff000)
+1: 
+    auipc x13, 0x7ff
+    la x8, 1b
+    sub  x13,  x13, x8
+	sw  x13, 12(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x13, 0x7ff000)
 
-    RVTEST_IO_WRITE_STR(x31, "# Test part A3  - Complete\n");
+	# Testcase 14:  imm:0x0, result rd:x14(0x0)
+1: 
+    auipc x14, 0x0
+    la x8, 1b
+    sub  x14,  x14, x8
+	sw  x14, 16(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x14, 0x0)
 
-    RVTEST_IO_WRITE_STR(x31, "# Test End\n")
 
- # ---------------------------------------------------------------------------------------------
-    # HALT
-    RV_COMPLIANCE_HALT
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 4\n")
+
+
+    # address for test results
+	la	x2, test_4_res
+
+	# Testcase 15:  imm:0x1, result rd:x15(0x1000)
+1: 
+    auipc x15, 0x1
+    la x4, 1b
+    sub  x15,  x15, x4
+	sw  x15, 0(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x15, 0x1000)
+
+	# Testcase 16:  imm:0x0, result rd:x16(0x0)
+1: 
+    auipc x16, 0x0
+    la x4, 1b
+    sub  x16,  x16, x4
+	sw  x16, 4(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x16, 0x0)
+
+	# Testcase 17:  imm:0x0, result rd:x17(0x0)
+1: 
+    auipc x17, 0x0
+    la x4, 1b
+    sub  x17,  x17, x4
+	sw  x17, 8(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x17, 0x0)
+
+	# Testcase 18:  imm:0x7ff, result rd:x18(0x7ff000)
+1: 
+    auipc x18, 0x7ff
+    la x4, 1b
+    sub  x18,  x18, x4
+	sw  x18, 12(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x18, 0x7ff000)
+
+	# Testcase 19:  imm:0x1, result rd:x19(0x1000)
+1: 
+    auipc x19, 0x1
+    la x4, 1b
+    sub  x19,  x19, x4
+	sw  x19, 16(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x19, 0x1000)
+
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 5\n")
+
+
+    # address for test results
+	la	x1, test_5_res
+
+	# Testcase 20:  imm:0x1234, result rd:x20(0x1234000)
+1: 
+    auipc x20, 0x1234
+    la x3, 1b
+    sub  x20,  x20, x3
+	sw  x20, 0(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x20, 0x1234000)
+
+	# Testcase 21:  imm:0x80000, result rd:x21(0x80000000)
+1: 
+    auipc x21, 0x80000
+    la x3, 1b
+    sub  x21,  x21, x3
+	sw  x21, 4(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x21, 0x80000000)
+
+	# Testcase 22:  imm:0x1234, result rd:x22(0x1234000)
+1: 
+    auipc x22, 0x1234
+    la x3, 1b
+    sub  x22,  x22, x3
+	sw  x22, 8(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x22, 0x1234000)
+
+	# Testcase 23:  imm:0xfffff, result rd:x23(0xfffff000)
+1: 
+    auipc x23, 0xfffff
+    la x3, 1b
+    sub  x23,  x23, x3
+	sw  x23, 12(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x23, 0xfffff000)
+
+	# Testcase 24:  imm:0x1, result rd:x24(0x1000)
+1: 
+    auipc x24, 0x1
+    la x3, 1b
+    sub  x24,  x24, x3
+	sw  x24, 16(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x2, x24, 0x1000)
+
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 6\n")
+
+
+    # address for test results
+	la	x1, test_6_res
+
+	# Testcase 25:  imm:0x7ffff, result rd:x25(0x7ffff000)
+1: 
+    auipc x25, 0x7ffff
+    la x8, 1b
+    sub  x25,  x25, x8
+	sw  x25, 0(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x25, 0x7ffff000)
+
+	# Testcase 26:  imm:0x54321, result rd:x26(0x54321000)
+1: 
+    auipc x26, 0x54321
+    la x8, 1b
+    sub  x26,  x26, x8
+	sw  x26, 4(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x26, 0x54321000)
+
+	# Testcase 27:  imm:0x800, result rd:x27(0x800000)
+1: 
+    auipc x27, 0x800
+    la x8, 1b
+    sub  x27,  x27, x8
+	sw  x27, 8(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x27, 0x800000)
+
+	# Testcase 28:  imm:0x0, result rd:x28(0x0)
+1: 
+    auipc x28, 0x0
+    la x8, 1b
+    sub  x28,  x28, x8
+	sw  x28, 12(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x28, 0x0)
+
+	# Testcase 29:  imm:0x7ff, result rd:x29(0x7ff000)
+1: 
+    auipc x29, 0x7ff
+    la x8, 1b
+    sub  x29,  x29, x8
+	sw  x29, 16(x1)
+    RVTEST_IO_ASSERT_GPR_EQ(x7, x29, 0x7ff000)
+
+
+
+	# ---------------------------------------------------------------------------------------------
+	RVTEST_IO_WRITE_STR(x31, "# Test number 7\n")
+
+
+    # address for test results
+	la	x2, test_7_res
+
+	# Testcase 30:  imm:0x0, result rd:x30(0x0)
+1: 
+    auipc x30, 0x0
+    la x4, 1b
+    sub  x30,  x30, x4
+	sw  x30, 0(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x30, 0x0)
+
+	# Testcase 31:  imm:0x1, result rd:x31(0x1000)
+1: 
+    auipc x31, 0x1
+    la x4, 1b
+    sub  x31,  x31, x4
+	sw  x31, 4(x2)
+    RVTEST_IO_ASSERT_GPR_EQ(x3, x31, 0x1000)
+
+
+
+	# ---------------------------------------------------------------------------------------------
+	
+	RVTEST_IO_WRITE_STR(x31, "Test End\n")
+
+	# ---------------------------------------------------------------------------------------------
+
+	RV_COMPLIANCE_HALT
 
 RV_COMPLIANCE_CODE_END
 
 # Input data section.
-    .data
-    .align 4
-
-test_A_data:
-    .word test_A
-test_B_data:
-    .word test_B
-test_C_data:
-    .word test_C1
-    .word test_C2
-    .word test_C3
+	.data
 
 
 # Output data section.
 RV_COMPLIANCE_DATA_BEGIN
-    .align 4
 
-test_A_res:
-    .fill 5, 4, -1
-test_B_res:
-    .fill 5, 4, -1
-test_C_res:
-    .fill 6, 4, -1
+test_1_res:
+	.fill 5, 4, -1
+test_2_res:
+	.fill 5, 4, -1
+test_3_res:
+	.fill 5, 4, -1
+test_4_res:
+	.fill 5, 4, -1
+test_5_res:
+	.fill 5, 4, -1
+test_6_res:
+	.fill 5, 4, -1
+test_7_res:
+	.fill 5, 4, -1
 
 RV_COMPLIANCE_DATA_END
+
