@@ -102,7 +102,6 @@ _CC_CONSTRUCTOR_DESTRUCTOR_FEATURE = feature(
                         "-fno-common",
                         # Emits guards against functions that have references to local array definitions
                         "-fstack-protector-strong",
-                        "-fno-threadsafe-statics",
                     ],
                 ),
             ],
@@ -114,6 +113,8 @@ _CC_CONSTRUCTOR_DESTRUCTOR_FEATURE = feature(
                     flags = [
                         # Disable teardown/destructors for static variables
                         "-fno-use-cxa-atexit",
+                        # Disable threadsafe statics
+                        "-fno-threadsafe-statics",
                     ],
                 ),
             ],
