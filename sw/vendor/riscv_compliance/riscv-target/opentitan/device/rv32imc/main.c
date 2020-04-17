@@ -24,16 +24,21 @@ int main(int argc, char **argv) {
   uint32_t size = end_signature - begin_signature;
 
   for (uint32_t i = 0; i < size; ++i) {
+    //uart_send_str("SIG: ");
+    //uart_send_uint(REG32(begin_signature + i), 32);
+    //uart_send_str("\r\n");
     base_printf("SIG: %08x\r\n", REG32(begin_signature + i));
   }
 
   base_printf("PASS!\r\n");
+  //uart_send_str("PASS!\r\n");
 
   // The "End" string here is a workaround to pytest console parsing.
   // Without additional characters, the "\n" from above is not always
   // detected, and this causes pytest to register the test as a false failure.
   // This needs to be debugged further to see if it's a setup or hw issue.
   base_printf("End");
+  //uart_send_str("End");
 
   return 0;
 }
