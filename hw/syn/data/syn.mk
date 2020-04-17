@@ -22,7 +22,7 @@ pre_compile: gen_sv_flist
 compile: pre_compile
 	@echo "[make]: compile"
 	# we check the status in the parse script below
-	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts} | tee ${build_log}
+	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts} 2>&1 | tee ${build_log}
 
 post_compile: compile
 	@echo "[make]: post_compile"
