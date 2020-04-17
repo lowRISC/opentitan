@@ -21,7 +21,7 @@
 
   // Define rstmgr struct package
   inter_signal_list: [
-    { struct:  "pwr_rst",    // rstmgr_req_t, rstmgr_rsp_t
+    { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
       type:    "req_rsp",
       name:    "pwr",        // resets_o (req), resets_i (rsp)
       act:     "rsp",

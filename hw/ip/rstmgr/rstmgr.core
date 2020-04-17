@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:rstmgr_pkg
     files:
       - rtl/rstmgr_reg_pkg.sv

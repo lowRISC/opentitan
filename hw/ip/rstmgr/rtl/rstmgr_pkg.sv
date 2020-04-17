@@ -1,38 +1,17 @@
 package rstmgr_pkg;
 
   // global constants
-  parameter int ALWAYS_ON_SEL = 0;
+  parameter int ALWAYS_ON_SEL    = pwrmgr_pkg::ALWAYS_ON_SEL;;
 
   // params that reference pwrmgr, should be replaced once pwrmgr is merged
-  //localparam int AlwaysOnSel = pwrmgr_pkg::AlwaysOnDomain;
-  //localparam int ExtResetReasons = pwrmgr_pkg::HwRstReqs;
-  localparam int PowerDomains = 2;
+  localparam int PowerDomains    = pwrmgr_pkg::PowerDomains;
+  localparam int ExtResetReasons = pwrmgr_pkg::HwRstReqs;
+
+  // calculated domains
   localparam int OffDomains = PowerDomains-1;
-  localparam int ExtResetReasons = 2;
 
   // low power exit + external reasons + ndm_reset_req
   localparam int ResetReasons = 1 + ExtResetReasons + 1;
-
-  // reasons for pwrmgr reset reset
-  typedef enum logic [1:0] {
-    None = 0,
-    LowPwrEntry = 1,
-    HwReq = 2,
-    Undefined = 3
-  } reset_cause_e;
-
-  // pwrmgr interface (these are declared in pwrmgr_pkg), should remove once present
-  typedef struct packed {
-    logic [PowerDomains-1:0] rst_lc_req;
-    logic [PowerDomains-1:0] rst_sys_req;
-    reset_cause_e reset_cause;
-  } pwr_rst_req_t;
-
-  // rstmgr to pwrmgr
-  typedef struct packed {
-    logic [PowerDomains-1:0] rst_lc_src_n;
-    logic [PowerDomains-1:0] rst_sys_src_n;
-  } pwr_rst_rsp_t;
 
   // ast interface
   typedef struct packed {

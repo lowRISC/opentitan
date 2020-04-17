@@ -22,8 +22,8 @@ module rstmgr import rstmgr_pkg::*; (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // pwrmgr interface
-  input pwr_rst_req_t pwr_i,
-  output pwr_rst_rsp_t pwr_o,
+  input pwrmgr_pkg::pwr_rst_req_t pwr_i,
+  output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
 
   // ast interface
   input rstmgr_ast_t ast_i,
@@ -87,7 +87,7 @@ module rstmgr import rstmgr_pkg::*; (
     .q(ndmreset_req_q)
   );
 
-  assign ndm_req_valid = ndmreset_req_q & (pwr_i.reset_cause == None);
+  assign ndm_req_valid = ndmreset_req_q & (pwr_i.reset_cause == pwrmgr_pkg::ResetNone);
 
   ////////////////////////////////////////////////////
   // Source resets in the system                    //
@@ -108,7 +108,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_i),
     .rst_ni(rstmgr_o.rst_por_n),
     .rst_req_i(pwr_i.rst_lc_req),
-    .rst_parent_ni(PowerDomains'(1'b1)),
+    .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
   );
 
@@ -186,11 +186,16 @@ module rstmgr import rstmgr_pkg::*; (
   ////////////////////////////////////////////////////
 
   logic [ResetReasons-1:0] rst_reqs;
+  logic rst_hw_req;
+  logic rst_low_power;
+
+  assign rst_hw_req = pwr_i.reset_cause == pwrmgr_pkg::HwReq;
+  assign rst_low_power = pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry;
 
   assign rst_reqs = {
                     ndm_req_valid,
-                    (pwr_i.reset_cause == HwReq) ? peri_i.rst_reqs : ExtResetReasons'(0),
-                    (pwr_i.reset_cause == LowPwrEntry)
+                    rst_hw_req ? peri_i.rst_reqs : ExtResetReasons'(0),
+                    rst_low_power
                     };
 
   rstmgr_info #(
