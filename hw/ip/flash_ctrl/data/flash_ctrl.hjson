@@ -18,7 +18,7 @@
     { struct:  "flash",          // flash_req_t, flash_rsp_t
       type:    "req_rsp",
       name:    "flash",          // flash_o (req), flash_i (rsp)
-      act:     "requester",
+      act:     "req",
       package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
     }
   ],

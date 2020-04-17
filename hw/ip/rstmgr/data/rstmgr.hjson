@@ -24,36 +24,36 @@
     { struct:  "pwr_rst",    // rstmgr_req_t, rstmgr_rsp_t
       type:    "req_rsp",
       name:    "pwr",        // resets_o (req), resets_i (rsp)
-      act:     "responder",
-      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+      act:     "rsp",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
     { struct:  "rstmgr_out",
-      type:    "broadcast",
+      type:    "uni",
       name:    "rstmgr",
-      act:     "requester",
-      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+      act:     "req",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
     { struct:  "rstmgr_ast",
-      type:    "broadcast",
+      type:    "uni",
       name:    "ast",
-      act:     "receiver",
-      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+      act:     "rcv",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
     { struct:  "rstmgr_cpu",
-      type:    "broadcast",
+      type:    "uni",
       name:    "cpu",
-      act:     "receiver",
-      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+      act:     "rcv",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
     { struct:  "rstmgr_peri",
-      type:    "broadcast",
+      type:    "uni",
       name:    "peri",
-      act:     "receiver",
-      package: "rstmgr_pkg", // Origin package (only needs for the requester)
+      act:     "rcv",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
     }
   ],
 

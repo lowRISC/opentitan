@@ -6,8 +6,31 @@ import re
 import logging as log
 from typing import Dict, Tuple
 from collections import OrderedDict
+from enum import Enum
 
 from reggen.validate import check_int
+from topgen import lib
+
+IM_TYPES = ['uni', 'req_rsp']
+IM_ACTS = ['req', 'rsp', 'rcv']
+IM_CONN_TYPE = ['1-to-1', '1-to-N', 'broadcast']
+
+
+class ImType(Enum):
+    Uni = 1
+    ReqRsp = 2
+
+
+class ImAct(Enum):
+    Req = 1
+    Rsp = 2
+    Rcv = 3
+
+
+class ImConn(Enum):
+    OneToOne = 1  # req <-> {rsp,rcv} with same width
+    OneToN = 2  # req width N <-> N x {rsp,rcv}s width 1
+    Broadcast = 3  # req width 1 <-> N x rcvs width 1
 
 
 def intersignal_format(req: Dict) -> str:
@@ -18,8 +41,7 @@ def intersignal_format(req: Dict) -> str:
     """
 
     # TODO: Handle array signal
-    result = "{req}_{struct}".format(req=req["inst_name"],
-                                     struct=req["struct"])
+    result = "{req}_{struct}".format(req=req["inst_name"], struct=req["name"])
 
     # check signal length if exceeds 100
 
@@ -78,7 +100,9 @@ def elab_intermodule(topcfg: OrderedDict):
     #
     # For example:
     #  inter_module: {
-    #    'pwr_mgr.pwrup': ['lc.pwrup', 'otp.pwrup']
+    #    'connect': {
+    #      'pwr_mgr.pwrup': ['lc.pwrup', 'otp.pwrup']
+    #    }
     #  }
     # The tool adds `struct [1:0] pwr_mgr_pwrup`
     # It doesn't matter whether `pwr_mgr.pwrup` is requester or responder.
@@ -88,13 +112,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
     uid = 0  # Unique connection ID across the top
 
-    # inter_module: {
-    #   // template 1
-    #   'flash_ctrl.flash': ['eflash.flash_ctrl']
-    #   // template 2
-    #   'module_a.sig_a' : ['module_b.sig_a', 'module_c.sig_a[0]']
-    # },
-    for req, rsps in topcfg["inter_module"].items():
+    for req, rsps in topcfg["inter_module"]["connect"].items():
         log.info("{req} --> {rsps}".format(req=req, rsps=rsps))
 
         # Split index
@@ -124,11 +142,28 @@ def elab_intermodule(topcfg: OrderedDict):
                 package = ""
 
         # Add to definition
-        definitions.append(
-            OrderedDict([('package', package),
-                         ('struct', req_struct["struct"]),
-                         ('signame', sig_name), ('width', req_struct["width"]),
-                         ('type', req_struct["type"])]))
+        if req_struct["type"] == "req_rsp":
+            # Add two definitions
+            definitions.append(
+                OrderedDict([('package', package),
+                             ('struct', req_struct["struct"] + "_req"),
+                             ('signame', sig_name + "_req"),
+                             ('width', req_struct["width"]),
+                             ('type', req_struct["type"])]))
+            definitions.append(
+                OrderedDict([('package', package),
+                             ('struct', req_struct["struct"] + "_rsp"),
+                             ('signame', sig_name + "_rsp"),
+                             ('width', req_struct["width"]),
+                             ('type', req_struct["type"])]))
+        else:
+            # unidirection
+            definitions.append(
+                OrderedDict([('package', package),
+                             ('struct', req_struct["struct"]),
+                             ('signame', sig_name),
+                             ('width', req_struct["width"]),
+                             ('type', req_struct["type"])]))
 
         req_struct["index"] = -1
 
@@ -162,17 +197,63 @@ def elab_intermodule(topcfg: OrderedDict):
             uid += 1
 
     # TODO: Check unconnected port
+    if "top" not in topcfg["inter_module"]:
+        topcfg["inter_module"]["top"] = []
+
+    for s in topcfg["inter_module"]["top"]:
+        sig_m, sig_s, sig_i = filter_index(s)
+        assert sig_i is -1, 'top net connection should not use bit index'
+        sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
+        sig_name = intersignal_format(sig)
+        sig["top_signame"] = sig_name
+        if "index" not in sig:
+            sig["index"] = -1
+
+        if sig["type"] == "req_rsp":
+            # Add two definitions
+            definitions.append(
+                OrderedDict([('package', sig["package"]),
+                             ('struct', sig["struct"] + "_req"),
+                             ('signame', sig_name + "_req"),
+                             ('width', sig["width"]), ('type', sig["type"])]))
+            definitions.append(
+                OrderedDict([('package', sig["package"]),
+                             ('struct', sig["struct"] + "_rsp"),
+                             ('signame', sig_name + "_rsp"),
+                             ('width', sig["width"]), ('type', sig["type"])]))
+        else:  # if sig["type"] == "uni":
+            definitions.append(
+                OrderedDict([('package', sig["package"]),
+                             ('struct', sig["struct"]), ('signame', sig_name),
+                             ('width', sig["width"]), ('type', sig["type"])]))
+
+    if "ext" not in topcfg["inter_module"]:
+        topcfg["inter_module"]["ext"] = []
+
+    for s in topcfg["inter_module"]["ext"]:
+        sig_m, sig_s, sig_i = filter_index(s)
+        assert sig_i is -1, 'top net connection should not use bit index'
+        sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
+        sig_name = intersignal_format(sig)
+        sig["top_signame"] = sig_name
+        if "index" not in sig:
+            sig["index"] = -1
+        # TODO: Create top port
+
+        log.warning(
+            "Currently external signal {instname}.{signame} isn't supported. "
+            "Use it at the top manually".format(instname=sig["inst_name"],
+                                                signame=sig["name"]))
 
     for sig in topcfg["inter_signal"]["signals"]:
         # Check if it exist in definitions
         if "top_signame" in sig:
             continue
 
-        # Handle the unconnected port rule
+        # Set index to -1
+        sig["index"] = -1
 
-        # Option #1: tied the default value
-
-        # Option #2: External port (TBD)
+        # TODO: Handle the unconnected port rule
 
     if "definitions" not in topcfg["inter_signal"]:
         topcfg["inter_signal"]["definitions"] = definitions
@@ -211,13 +292,50 @@ def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
 
 
 # Validation
+def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
+    error = 0
+
+    # type check
+    if obj["type"] not in IM_TYPES:
+        log.error("{prefix} Inter_signal {name} "
+                  "type {type} is incorrect.".format(prefix=prefix,
+                                                     name=obj["name"],
+                                                     type=obj["type"]))
+        error += 1
+
+    if obj["act"] not in IM_ACTS:
+        log.error("{prefix} Inter_signal {name} "
+                  "act {act} is incorrect.".format(prefix=prefix,
+                                                   name=obj["name"],
+                                                   act=obj["act"]))
+        error += 1
+
+    # Check 'width' field
+    width = 1
+    if "width" not in obj:
+        obj["width"] = 1
+    elif not isinstance(obj["width"], int):
+        width, err = check_int(obj["width"], obj["name"])
+        if err:
+            log.error("{prefix} Inter-module {inst}.{sig} 'width' "
+                      "should be int type.".format(prefix=prefix,
+                                                   inst=obj["inst_name"],
+                                                   sig=obj["name"]))
+            error += 1
+        else:
+            # convert to int value
+            obj["width"] = width
+
+    return error
+
+
 def check_intermodule(topcfg: Dict, prefix: str) -> int:
     if "inter_module" not in topcfg:
         return 0
 
     total_error = 0
 
-    for req, rsps in topcfg["inter_module"].items():
+    for req, rsps in topcfg["inter_module"]["connect"].items():
         error = 0
         # checking the key, value are in correct format
         # Allowed format
@@ -227,10 +345,12 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         #
         # Example:
         #   inter_module: {
-        #     'flash_ctrl.flash': ['eflash.flash_ctrl'],
-        #     'life_cycle.provision': ['debug_tap.dbg_en', 'dft_ctrl.en'],
-        #     'otp.pwr_hold': ['pwrmgr.peri[0]'],
-        #     'flash_ctrl.pwr_hold': ['pwrmgr.peri[1]'],
+        #     'connect': {
+        #       'flash_ctrl.flash': ['eflash.flash_ctrl'],
+        #       'life_cycle.provision': ['debug_tap.dbg_en', 'dft_ctrl.en'],
+        #       'otp.pwr_hold': ['pwrmgr.peri[0]'],
+        #       'flash_ctrl.pwr_hold': ['pwrmgr.peri[1]'],
+        #     }
         #   }
         #
         # If length of value list is > 1, then key should be array (width need to match)
@@ -254,20 +374,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         req_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
                                              req_m, req_s)
 
-        # Check 'width' field
-        if "width" not in req_struct:
-            req_struct["width"] = 1
-        elif not isinstance(req_struct["width"], int):
-            width, err = check_int(req_struct["width"], req_struct["name"])
-            if err:
-                log.error(
-                    "Inter-module {inst}.{sig} 'width' should be int type.".
-                    format(inst=req_struct["inst_name"],
-                           sig=req_struct["name"]))
-                error += 1
-            else:
-                # convert to int value
-                req_struct["width"] = width
+        error += check_intermodule_field(req_struct)
 
         if req_i != -1 and len(rsps) != 1:
             # Array format should have one entry
@@ -288,24 +395,32 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             rsp_struct = find_intermodule_signal(
                 topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
 
-            # Check 'width' field
-            width = 1
-            if "width" not in rsp_struct:
-                rsp_struct["width"] = 1
-            elif not isinstance(rsp_struct["width"], int):
-                width, err = check_int(rsp_struct["width"], rsp_struct["name"])
-                if err:
-                    log.error(
-                        "Inter-module {inst}.{sig} 'width' should be int type."
-                        .format(inst=rsp_struct["inst_name"],
-                                sig=rsp_struct["name"]))
-                    error += 1
-                else:
-                    # convert to int value
-                    rsp_struct["width"] = width
+            error += check_intermodule_field(rsp_struct)
+
+            # Type check
+            if "package" not in rsp_struct:
+                rsp_struct["package"] = req_struct["package"]
+            elif req_struct["package"] != rsp_struct["package"]:
+                log.error(
+                    "Inter-module package should be matched: "
+                    "{req}->{rsp} exp({expected}), actual({actual})".format(
+                        req=req_struct["name"],
+                        rsp=rsp_struct["name"],
+                        expected=req_struct["package"],
+                        actual=rsp_struct["package"]))
+                error += 1
+            if req_struct["type"] != rsp_struct["type"]:
+                log.error(
+                    "Inter-module type should be matched: "
+                    "{req}->{rsp} exp({expected}), actual({actual})".format(
+                        req=req_struct["name"],
+                        rsp=rsp_struct["name"],
+                        expected=req_struct["type"],
+                        actual=rsp_struct["type"]))
+                error += 1
 
             if req_struct["width"] != 1:
-                if width not in [1, req_struct["width"]]:
+                if rsp_struct["width"] not in [1, req_struct["width"]]:
                     log.error(
                         "If req {req} is an array, "
                         "rsp {rsp} shall be non-array or array with same width"
@@ -343,3 +458,61 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             error += 1
 
     return total_error
+
+
+# Template functions
+def im_defname(obj: OrderedDict) -> str:
+    """return definition struct name
+
+    e.g. flash_ctrl::flash_req_t
+    """
+    if obj["package"] == "":
+        # should be logic
+        return "logic"
+
+    return "{package}::{struct}_t".format(package=obj["package"],
+                                          struct=obj["struct"])
+
+
+def im_netname(obj: OrderedDict, suffix: str = "") -> str:
+    """return top signal name with index
+    """
+
+    # Floating signals
+    if "top_signame" not in obj:
+        if obj["act"] == "req" and suffix == "req":
+            return ""
+        if obj["act"] == "rsp" and suffix == "rsp":
+            return ""
+        if obj["act"] == "req" and suffix == "rsp":
+            return "{package}::{struct}_RSP_DEFAULT".format(
+                package=obj["package"], struct=obj["struct"].upper())
+        if obj["act"] == "rsp" and suffix == "req":
+            return "{package}::{struct}_REQ_DEFAULT".format(
+                package=obj["package"], struct=obj["struct"].upper())
+
+        return "FLOAT"
+
+    # Connected signals
+    assert suffix in ["", "req", "rsp"]
+
+    suffix_s = "_{suffix}".format(suffix=suffix) if suffix != "" else suffix
+    return "{top_signame}{suffix}{index}".format(
+        top_signame=obj["top_signame"],
+        suffix=suffix_s,
+        index=lib.index(obj["index"]))
+
+
+def im_portname(obj: OrderedDict, suffix: str = "") -> str:
+    """return IP's port name
+
+    e.g signame_o for requester req signal
+    """
+    if suffix == "":
+        suffix_s = "_o" if obj["act"] == "req" else "_i"
+    elif suffix == "req":
+        suffix_s = "_o" if obj["act"] == "req" else "_i"
+    else:
+        suffix_s = "_o" if obj["act"] == "rsp" else "_i"
+
+    return "{signame}{suffix}".format(signame=obj["name"], suffix=suffix_s)

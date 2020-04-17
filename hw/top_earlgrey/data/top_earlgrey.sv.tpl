@@ -199,6 +199,14 @@ module top_${top["name"]} #(
   end
 % endif
 
+## Inter-module Definitions
+% if len(top["inter_signal"]["definitions"]) >= 1:
+  // define inter-module signals
+% endif
+% for sig in top["inter_signal"]["definitions"]:
+  ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
+% endfor
+
   // Clock assignments
 % for clock in top['clocks']:
   % if clock['name'] != "usb" :
@@ -438,22 +446,6 @@ module top_${top["name"]} #(
 
   % elif m["type"] == "eflash":
 
-  % if len(top["inter_signal"]["definitions"]) >= 1:
-  // define inter-module signals
-  % endif
-  % for sig in top["inter_signal"]["definitions"]:
-    % if sig["type"] == "req_rsp":
-  ${sig["package"]}::${sig["struct"]}_req_t ${lib.bitarray(sig["width"],1)} ${sig["signame"]}_req;
-  ${sig["package"]}::${sig["struct"]}_rsp_t ${lib.bitarray(sig["width"],1)} ${sig["signame"]}_rsp;
-    % elif sig["type"] == "broadcast":
-      % if sig["struct"] == "logic":
-  logic ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
-      % else:
-  ${sig["package"]}::${sig["struct"]}_t ${sig["signame"]};
-      % endif
-    % endif
-  % endfor
-
   // host to flash communication
   logic flash_host_req;
   logic flash_host_req_rdy;
@@ -588,40 +580,13 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // Inter-module signals
       % for sig in m["inter_signal_list"]:
         ## TODO: handle below condition in lib.py
-        % if "top_signame" in sig:
-          % if sig["type"] == "req_rsp":
-            % if sig["act"] == "requester":
-      .${sig["name"]}_o(${sig["top_signame"]}_req${lib.index(sig["index"])}),
-      .${sig["name"]}_i(${sig["top_signame"]}_rsp${lib.index(sig["index"])}),
-          % elif sig["act"] == "responder":
-      .${sig["name"]}_i(${sig["top_signame"]}_req${lib.index(sig["index"])}),
-      .${sig["name"]}_o(${sig["top_signame"]}_rsp${lib.index(sig["index"])}),
-            % endif # sig["act"] == requester
-          % elif sig["type"] == "broadcast":
-            ## TODO: Broadcast type
-            % if sig["act"] == "requester":
-      .${sig["name"]}_o(${sig["top_signame"]}${lib.index(sig["index"])}),
-            % elif sig["act"] == "receiver":
-      .${sig["name"]}_i(${sig["top_signame"]}${lib.index(sig["index"])}),
-            % endif
-          % endif
-        % else: # no top_signame in sig
-          % if sig["type"] == "req_rsp":
-            % if sig["act"] == "requester":
-      .${sig["name"]}_o(),
-      .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_RSP_DEFAULT),
-            % elif sig["act"] == "responder":
-      .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_REQ_DEFAULT),
-      .${sig["name"]}_o(),
-            % endif
-          % elif sig["type"] == "broadcast":
-            % if sig["act"] == "requester":
-      .${sig["name"]}_o(),
-            % elif sig["act"] == "receiver":
-              ## TODO: Add logic struct default value
-      .${sig["name"]}_i(${sig["package"]}::${sig["struct"].upper()}_DEFAULT),
-            % endif
-          % endif
+        % if sig["type"] == "req_rsp":
+      .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
+      .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),
+        % elif sig["type"] == "uni":
+          ## TODO: Broadcast type
+          ## TODO: default for logic type
+      .${lib.im_portname(sig)}(${lib.im_netname(sig)}),
         % endif
       % endfor
     % endif

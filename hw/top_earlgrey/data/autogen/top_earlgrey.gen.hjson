@@ -313,7 +313,7 @@
           struct: flash
           type: req_rsp
           name: flash
-          act: requester
+          act: req
           package: flash_ctrl_pkg
           inst_name: flash_ctrl
           width: 1
@@ -764,9 +764,10 @@
           struct: flash
           type: req_rsp
           name: flash_ctrl
-          act: responder
+          act: rsp
           inst_name: eflash
           width: 1
+          package: flash_ctrl_pkg
           top_signame: flash_ctrl_flash
           index: -1
         }
@@ -775,10 +776,15 @@
   ]
   inter_module:
   {
-    flash_ctrl.flash:
-    [
-      eflash.flash_ctrl
-    ]
+    connect:
+    {
+      flash_ctrl.flash:
+      [
+        eflash.flash_ctrl
+      ]
+    }
+    top: []
+    ext: []
   }
   xbar:
   [
@@ -1746,7 +1752,7 @@
         struct: flash
         type: req_rsp
         name: flash
-        act: requester
+        act: req
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
         width: 1
@@ -1757,9 +1763,10 @@
         struct: flash
         type: req_rsp
         name: flash_ctrl
-        act: responder
+        act: rsp
         inst_name: eflash
         width: 1
+        package: flash_ctrl_pkg
         top_signame: flash_ctrl_flash
         index: -1
       }
@@ -1768,8 +1775,15 @@
     [
       {
         package: flash_ctrl_pkg
-        struct: flash
-        signame: flash_ctrl_flash
+        struct: flash_req
+        signame: flash_ctrl_flash_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: flash_ctrl_pkg
+        struct: flash_rsp
+        signame: flash_ctrl_flash_rsp
         width: 1
         type: req_rsp
       }

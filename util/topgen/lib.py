@@ -11,6 +11,9 @@ import sys
 
 import re
 
+# Ignore flake8 warning as the function is used in the template
+from .intermodule import im_defname, im_netname, im_portname  # noqa : F401
+
 
 def is_ipcfg(ip: Path) -> bool:  # return bool
     log.info("IP Path: %s" % repr(ip))
@@ -214,6 +217,7 @@ def index(i: int) -> str:
     """Return index if it is not -1
     """
     return "[{}]".format(i) if i != -1 else ""
+
 
 def get_reset_path(resets, name):
     """Return the appropriate reset path given name

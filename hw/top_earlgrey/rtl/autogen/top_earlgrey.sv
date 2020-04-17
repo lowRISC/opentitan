@@ -252,6 +252,10 @@ module top_earlgrey #(
   prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
 
 
+  // define inter-module signals
+  flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
+  flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
+
   // Clock assignments
   assign main_clk = clk_i;
   assign fixed_clk = clk_i;
@@ -443,10 +447,6 @@ module top_earlgrey #(
     .rvalid_o (ram_main_rvalid),
     .rdata_o  (ram_main_rdata)
   );
-
-  // define inter-module signals
-  flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
-  flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
 
   // host to flash communication
   logic flash_host_req;

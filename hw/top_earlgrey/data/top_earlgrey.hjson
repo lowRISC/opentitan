@@ -167,7 +167,7 @@
         { struct: "flash",    // flash_req_t, flash_rsp_t
           type: "req_rsp",
           name: "flash_ctrl", // flash_ctrl_i (req), flash_ctrl_o (rsp)
-          act:  "responder",
+          act:  "rsp",
         }
       ],
     },
@@ -177,10 +177,20 @@
   // format:
   //    requester: [ resp1, resp2, ... ],
   //
-  //  the field and value should be module_inst.signal_name
+  //  the field and value should be module_inst.port_name
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
-    'flash_ctrl.flash': ['eflash.flash_ctrl']
+    'connect': {
+      'flash_ctrl.flash': ['eflash.flash_ctrl']
+    }
+
+    // top is to connect to top net/struct.
+    // It defines the signal in the top and connect from the module,
+    // use of the signal is up to top template
+    'top': [],
+
+    // ext is to create port in the top.
+    'ext': [],
   },
 
   debug_mem_base_addr: "0x1A110000",
