@@ -61,7 +61,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
         // fill async fifo and check fifo doesn't overflow
         spi_host_xfer_bytes(ASYNC_FIFO_SIZE, device_bytes_q);
-        cfg.clk_rst_vif.wait_clks(2); // for interrupt to triggered
+        cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
         check_interrupts(.interrupts(1 << RxFifoOverflow), .check_set(0));
 
         // fill 1 word and check fifo overflow
@@ -125,16 +125,17 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
           // fill async fifo, design has 2 words depth, but only update ptr to 2nd word when 1st
           // one is out
           process_tx_write(SRAM_WORD_SIZE);
+          csr_spinwait(.ptr(ral.async_fifo_level.txlvl), .exp_data(SRAM_WORD_SIZE));
           // just at watermark
           if (aligned_watermark != 0) process_tx_write(aligned_watermark);
-          else csr_spinwait(.ptr(ral.async_fifo_level.txlvl), .exp_data(SRAM_WORD_SIZE));
           if (aligned_watermark > ASYNC_FIFO_SIZE) begin
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
             check_interrupts(.interrupts(1 << TxFifoLtLevel), .check_set(0));
           end
 
           // send one word and fifo is less than watermark
           spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
-          cfg.clk_rst_vif.wait_clks(2); // for interrupt to triggered
+          cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
           check_interrupts(.interrupts(1 << TxFifoLtLevel), .check_set(1));
 
           // clean up tx fifo
@@ -151,7 +152,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
       TxFifoUnderflow: begin
         // send one word when fifo is empty
         spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
-        cfg.clk_rst_vif.wait_clks(2); // for interrupt to triggered
+        cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
         check_interrupts(.interrupts(1 << TxFifoUnderflow), .check_set(1));
 
         // clean up rx fifo
