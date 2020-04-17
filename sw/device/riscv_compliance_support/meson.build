@@ -8,8 +8,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   # directly to static_library gives an empty library. Creating an 'inner'
   # library as below and then using link_whole to link against the 'inner'
   # library produces what we need.
-  riscv_compliance_lib_inner = static_library(
-    'ot_riscv_compliance_inner_' + device_name,
+  riscv_compliance_support_inner = static_library(
+    'ot_riscv_compliance_support_inner_' + device_name,
     dependencies : [
       sw_lib_uart,
       sw_lib_base_print,
@@ -19,18 +19,18 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ]
   )
 
-  riscv_compliance_lib = static_library(
-    'ot_riscv_compliance_' + device_name,
+  riscv_compliance_support = static_library(
+    'ot_riscv_compliance_support_' + device_name,
     link_whole : [
-      riscv_compliance_lib_inner,
+      riscv_compliance_support_inner,
     ],
   )
 
   custom_target(
-    'riscv_compliance_lib_export_' + device_name,
+    'riscv_compliance_support_export_' + device_name,
     command: export_embedded_target,
-    input: [riscv_compliance_lib],
-    output: 'riscv_compliance_lib_export_' + device_name,
+    input: [riscv_compliance_support],
+    output: 'riscv_compliance_support_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
   )
