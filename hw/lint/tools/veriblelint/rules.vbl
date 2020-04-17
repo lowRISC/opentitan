@@ -1,0 +1,19 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenTitan-specific style lint rule configurations
+
+# line length currently set to 150 to remove clutter in reports.
+# set this back to 100 once we can waive this rule for generated
+# files or once the file generators can respect this constraint
+line-length=length:150
+
+# we allow "classic" verilog string parameters without explicit type
+explicit-parameter-storage-type=exempt_type:string
+
+# localparam can be both ALL_CAPS and CamelCase according to our style
+parameter-name-style=localparam_style:CamelCase|ALL_CAPS
+
+# we allow nested struct definitions
+-typedef-structs-unions

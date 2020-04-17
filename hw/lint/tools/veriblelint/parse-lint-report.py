@@ -43,8 +43,10 @@ def get_results(resdir):
             full_file = f.read()
             err_warn_patterns = {("errors", r"^ERROR: .*"),
                                  ("errors", r"^Error: .*"),
+                                 ("errors", r"^E .*"),
                                  ("warnings", r"^WARNING: .*"),
                                  ("warnings", r"^Warning: .* "),
+                                 ("warnings", r"^W .*"),
                                  ("lint_warnings", r"^.*\[Style:.*")}
             extract_messages(full_file, err_warn_patterns, results)
     except IOError as err:

@@ -15,6 +15,10 @@ filesets:
       - tools/ascentlint/common.waiver: {file_type: waiver}
       - tools/ascentlint/ascentlint-config.tcl: {file_type: tclSource}
 
+  files_veriblelint:
+    files:
+      - tools/veriblelint/rules.vbl: {file_type: veribleLintRules}
+
   files_check_tool_requirements:
     depend:
      - lowrisc:tool:check_tool_requirements
@@ -22,6 +26,7 @@ filesets:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator)
-      - tool_ascentlint ? (files_ascentlint)
+      - tool_verilator   ? (files_verilator)
+      - tool_ascentlint  ? (files_ascentlint)
+      - tool_veriblelint ? (files_veriblelint)
       - files_check_tool_requirements
