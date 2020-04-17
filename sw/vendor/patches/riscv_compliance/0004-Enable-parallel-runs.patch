@@ -1,0 +1,54 @@
+From 00a12c1448157003e4926f0e9df105589816ef63 Mon Sep 17 00:00:00 2001
+From: Greg Chadwick <gac@lowrisc.org>
+Date: Fri, 17 Apr 2020 15:02:48 +0100
+Subject: [PATCH 4/4] Enable parallel runs
+
+---
+ Makefile                         |  5 +++++
+ riscv-target/opentitan/README.md | 14 ++++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 25557c1..8f7b04a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -50,6 +50,11 @@ else
+     ifeq ($(RISCV_TARGET),riscvOVPsim)
+         JOBS ?= -j8 --max-load=4
+     endif
++	  ifeq ($(RISCV_TARGET),opentitan)
++			ifeq ($(OT_TARGET), verilator)
++				JOBS ?= -j4
++			endif
++		endif
+ endif
+ 
+ default: $(DEFAULT_TARGET)
+diff --git a/riscv-target/opentitan/README.md b/riscv-target/opentitan/README.md
+index f75c384..b1756cd 100644
+--- a/riscv-target/opentitan/README.md
++++ b/riscv-target/opentitan/README.md
+@@ -121,6 +121,20 @@ $ cd $RISCV_COMPLIANCE_REPO_BASE
+ $ rm -rf ./work
+ ```
+ 
++## Parallel runs
++When running against the `verilator` target parallel make jobs are used (via passing `-j4` to make internally).
++Parallel runs can be disabled by passing `PARALLEL=0` to the `make` command or the `-j` used can be altered with the `JOBS` argument.
++
++Disable parallel runs:
++```console
++$ make RISCV_ISA=rv32i PARALLEL=0
++```
++
++Use a different `-j` parameter:
++```console
++$ make RISCV_ISA=rv32i JOBS=-j8
++```
++
+ ## Removed/Broken Tests
+ A small number of tests are not run for OpenTitan riscv_compliance as they fail
+ due to flaws in the compliance test suite rather than Ibex/OpenTitan itself (see
+-- 
+2.17.1
+

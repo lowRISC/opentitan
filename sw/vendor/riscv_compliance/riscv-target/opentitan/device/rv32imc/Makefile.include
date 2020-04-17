@@ -28,8 +28,8 @@ else
 	OT_SW_TARGET = sim_verilator
 endif
 
-COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_lib/riscv_compliance_lib_export_$(OT_SW_TARGET)
-COMPLIANCE_LIB = ot_riscv_compliance_$(OT_SW_TARGET)
+COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_SW_TARGET)
+COMPLIANCE_LIB = ot_riscv_compliance_support_$(OT_SW_TARGET)
 
 # The run target recipe does the following things:
 # Invoke pytest to run the test
@@ -52,18 +52,6 @@ RISCV_NM       ?= ${OT_TOOLS}/riscv32-unknown-elf-nm
 RISCV_READELF  ?= ${OT_TOOLS}/riscv32-unknown-elf-readelf
 RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -fno-builtin -g -Wl,--no-relax
 
-
-
-
-# Build the verilator boot rom if we're running on verilator and build the
-# support library. These builds can be disabled by setting
-# OT_RV_NO_LIB_ROM_BUILD=1 which is used in CI.
-ifneq ($(OT_RV_NO_LIB_ROM_BUILD), 1)
-ifeq ($(OT_TARGET), verilator)
-	COMPILE_TARGET = ninja -C $(OT_BUILD) sw/device/boot_rom/boot_rom_export_$(OT_SW_TARGET);
-endif
-	COMPILE_TARGET += ninja -C $(OT_BUILD) $(COMPLIANCE_LIB_EXPORT);
-endif
 COMPILE_TARGET += \
 	$$(RISCV_GCC) $(1) $$(RISCV_GCC_OPTS) \
 		-I$(ROOTDIR)/riscv-test-env/ \
@@ -76,7 +64,7 @@ COMPILE_TARGET += \
                 $(OPENTITAN)/run_rvc_test.S \
 							  $(OT_ROOT)/sw/device/lib/irq_vectors.S \
 								$(OT_ROOT)/sw/device/exts/common/flash_crt.S \
-                -L$(OT_BIN)/sw/device/riscv_compliance_lib \
+                -L$(OT_BIN)/sw/device/riscv_compliance_support \
 								-l$(COMPLIANCE_LIB) \
 		-o $$(@); \
         $$(RISCV_OBJDUMP) -SD $$(@) > $$(@).objdump; \

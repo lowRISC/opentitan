@@ -1,35 +1,33 @@
-From b9340dec1bcfadfa02b7b74a5b5a8d168de6e627 Mon Sep 17 00:00:00 2001
+From cc071b648ed45ddf86295baad7636ead4a71c8c3 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 15:44:54 +0100
-Subject: [PATCH 2/3] Add OpenTitan target
+Subject: [PATCH 2/4] Add OpenTitan target
 
 ---
- riscv-target/opentitan/README.md              | 126 ++++++++++++++++++
+ riscv-target/opentitan/README.md              | 134 ++++++++++++++++++
  riscv-target/opentitan/compliance_io.h        |  22 +++
  riscv-target/opentitan/compliance_test.h      |  35 +++++
- .../opentitan/device/rv32imc/Makefile.include |  86 ++++++++++++
+ .../opentitan/device/rv32imc/Makefile.include |  74 ++++++++++
  .../opentitan/device/rv32imc/isa.yaml         |  49 +++++++
- riscv-target/opentitan/device/rv32imc/link.ld |  56 ++++++++
- riscv-target/opentitan/device/rv32imc/main.c  |  39 ++++++
+ riscv-target/opentitan/device/rv32imc/main.c  |  39 +++++
  .../opentitan/device/rv32imc/platform.yaml    |  10 ++
- .../opentitan/device/rv32imc/run_rvc_test.S   |  85 ++++++++++++
- 9 files changed, 508 insertions(+)
+ .../opentitan/device/rv32imc/run_rvc_test.S   |  85 +++++++++++
+ 8 files changed, 448 insertions(+)
  create mode 100644 riscv-target/opentitan/README.md
  create mode 100644 riscv-target/opentitan/compliance_io.h
  create mode 100644 riscv-target/opentitan/compliance_test.h
  create mode 100644 riscv-target/opentitan/device/rv32imc/Makefile.include
  create mode 100644 riscv-target/opentitan/device/rv32imc/isa.yaml
- create mode 100644 riscv-target/opentitan/device/rv32imc/link.ld
  create mode 100644 riscv-target/opentitan/device/rv32imc/main.c
  create mode 100644 riscv-target/opentitan/device/rv32imc/platform.yaml
  create mode 100644 riscv-target/opentitan/device/rv32imc/run_rvc_test.S
 
 diff --git a/riscv-target/opentitan/README.md b/riscv-target/opentitan/README.md
 new file mode 100644
-index 0000000..301e9ad
+index 0000000..f75c384
 --- /dev/null
 +++ b/riscv-target/opentitan/README.md
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,134 @@
 +
 +# Overview
 +The RISC-V compliance test can be run on either OpenTitan FPGA or Verilator.
@@ -70,11 +68,12 @@ index 0000000..301e9ad
 +When running against FPGA, the test assumes the FPGA is already programmed and ready to go with spiflash available at `${REPO_TOP}/build-bin/sw/host/spiflash/spiflash_export`
 +To quickly get started with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
 +
-+The meson build environment must be setup before running the compliance test.
++Finally the support software must be built, including the boot_rom when using the verilator target.
 +
 +```console
 +$ cd $REPO_TOP
 +$ ./meson_init.sh
++$ ninja -C ./build-out all
 +```
 +
 +Now, run the tests from the riscv_compliance directory.
@@ -144,6 +143,13 @@ index 0000000..301e9ad
 +There are several test suites that can be run `rv32i`, `rv32im`, `rv32imc` and `rv32Zicsr`.
 +Change the `RISCV_ISA` argument passed to `make` to choose between them.
 +
++## Changing targets
++When switching between targets (i.e. between FPGA and verilator) the `work` directory in the `riscv_compliance` tree must be remove to force a software rebuild.
++
++```console
++$ cd $RISCV_COMPLIANCE_REPO_BASE
++$ rm -rf ./work
++```
 +
 +## Removed/Broken Tests
 +A small number of tests are not run for OpenTitan riscv_compliance as they fail
@@ -227,10 +233,10 @@ index 0000000..978d578
 +#endif
 diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
 new file mode 100644
-index 0000000..1bfece7
+index 0000000..a20c279
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,74 @@
 +# Copyright lowRISC contributors.
 +# Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +# SPDX-License-Identifier: Apache-2.0
@@ -261,8 +267,8 @@ index 0000000..1bfece7
 +	OT_SW_TARGET = sim_verilator
 +endif
 +
-+COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_lib/riscv_compliance_lib_export_$(OT_SW_TARGET)
-+COMPLIANCE_LIB = ot_riscv_compliance_$(OT_SW_TARGET)
++COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_SW_TARGET)
++COMPLIANCE_LIB = ot_riscv_compliance_support_$(OT_SW_TARGET)
 +
 +# The run target recipe does the following things:
 +# Invoke pytest to run the test
@@ -285,18 +291,6 @@ index 0000000..1bfece7
 +RISCV_READELF  ?= ${OT_TOOLS}/riscv32-unknown-elf-readelf
 +RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -fno-builtin -g -Wl,--no-relax
 +
-+
-+
-+
-+# Build the verilator boot rom if we're running on verilator and build the
-+# support library. These builds can be disabled by setting
-+# OT_RV_NO_LIB_ROM_BUILD=1 which is used in CI.
-+ifneq ($(OT_RV_NO_LIB_ROM_BUILD), 1)
-+ifeq ($(OT_TARGET), verilator)
-+	COMPILE_TARGET = ninja -C $(OT_BUILD) sw/device/boot_rom/boot_rom_export_$(OT_SW_TARGET);
-+endif
-+	COMPILE_TARGET += ninja -C $(OT_BUILD) $(COMPLIANCE_LIB_EXPORT);
-+endif
 +COMPILE_TARGET += \
 +	$$(RISCV_GCC) $(1) $$(RISCV_GCC_OPTS) \
 +		-I$(ROOTDIR)/riscv-test-env/ \
@@ -309,7 +303,7 @@ index 0000000..1bfece7
 +                $(OPENTITAN)/run_rvc_test.S \
 +							  $(OT_ROOT)/sw/device/lib/irq_vectors.S \
 +								$(OT_ROOT)/sw/device/exts/common/flash_crt.S \
-+                -L$(OT_BIN)/sw/device/riscv_compliance_lib \
++                -L$(OT_BIN)/sw/device/riscv_compliance_support \
 +								-l$(COMPLIANCE_LIB) \
 +		-o $$(@); \
 +        $$(RISCV_OBJDUMP) -SD $$(@) > $$(@).objdump; \
@@ -372,68 +366,6 @@ index 0000000..c526fec
 +minstret:
 +  is_hardwired: true
 +  implemented: true
-diff --git a/riscv-target/opentitan/device/rv32imc/link.ld b/riscv-target/opentitan/device/rv32imc/link.ld
-new file mode 100644
-index 0000000..2ae1f1c
---- /dev/null
-+++ b/riscv-target/opentitan/device/rv32imc/link.ld
-@@ -0,0 +1,56 @@
-+/* Copyright lowRISC contributors.
-+   Licensed under the Apache License, Version 2.0, see LICENSE for details.
-+   SPDX-License-Identifier: Apache-2.0
-+*/
-+
-+OUTPUT_ARCH("riscv")
-+ENTRY(_start)
-+
-+/* required to correctly link newlib */
-+GROUP(-lc -lgloss -lgcc -lsupc++)
-+
-+SEARCH_DIR(.)
-+__DYNAMIC  =  0;
-+
-+MEMORY
-+{
-+    flash (rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
-+    ram (wx)   : ORIGIN = 0x10000000, LENGTH = 0x10000
-+}
-+
-+_stack_start = ORIGIN(ram) + LENGTH(ram);
-+
-+/* need to move signature data to modifiable memory */
-+SECTIONS
-+{
-+  .text.init ORIGIN(flash) : {
-+    *(.text.init)
-+  } > flash
-+
-+  .text.trap : {
-+    . = ALIGN(0x100);
-+    *(.text.trap)
-+  } > flash
-+
-+  .text : {
-+    . = ALIGN(0x100);
-+    *(.text)
-+  } > flash
-+
-+  .data : {
-+    . = ALIGN(0x100);
-+    *(.data.*)
-+  } > flash
-+
-+  .tohost ORIGIN(ram) (NOLOAD) : {
-+    *(.tohost)
-+    *(.test.output)
-+  } > ram
-+
-+  .bss : {
-+    . = ALIGN(0x100);
-+    *(.bss)
-+  } > ram
-+
-+  _end = .;
-+}
 diff --git a/riscv-target/opentitan/device/rv32imc/main.c b/riscv-target/opentitan/device/rv32imc/main.c
 new file mode 100644
 index 0000000..4691578

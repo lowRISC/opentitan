@@ -38,11 +38,12 @@ $ export TARGET_SIM=${PATH_TO_VERILATOR_BUILD}
 When running against FPGA, the test assumes the FPGA is already programmed and ready to go with spiflash available at `${REPO_TOP}/build-bin/sw/host/spiflash/spiflash_export`
 To quickly get started with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
 
-The meson build environment must be setup before running the compliance test.
+Finally the support software must be built, including the boot_rom when using the verilator target.
 
 ```console
 $ cd $REPO_TOP
 $ ./meson_init.sh
+$ ninja -C ./build-out all
 ```
 
 Now, run the tests from the riscv_compliance directory.
@@ -112,6 +113,27 @@ OK: 48/48
 There are several test suites that can be run `rv32i`, `rv32im`, `rv32imc` and `rv32Zicsr`.
 Change the `RISCV_ISA` argument passed to `make` to choose between them.
 
+## Changing targets
+When switching between targets (i.e. between FPGA and verilator) the `work` directory in the `riscv_compliance` tree must be remove to force a software rebuild.
+
+```console
+$ cd $RISCV_COMPLIANCE_REPO_BASE
+$ rm -rf ./work
+```
+
+## Parallel runs
+When running against the `verilator` target parallel make jobs are used (via passing `-j4` to make internally).
+Parallel runs can be disabled by passing `PARALLEL=0` to the `make` command or the `-j` used can be altered with the `JOBS` argument.
+
+Disable parallel runs:
+```console
+$ make RISCV_ISA=rv32i PARALLEL=0
+```
+
+Use a different `-j` parameter:
+```console
+$ make RISCV_ISA=rv32i JOBS=-j8
+```
 
 ## Removed/Broken Tests
 A small number of tests are not run for OpenTitan riscv_compliance as they fail
