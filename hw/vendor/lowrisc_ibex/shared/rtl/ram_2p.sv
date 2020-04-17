@@ -116,7 +116,7 @@ module ram_2p #(
   `endif
 
   `ifdef SRAM_INIT_FILE
-    localparam MEM_FILE = `"`SRAM_INIT_FILE`";
+    localparam MEM_FILE = `PRIM_STRINGIFY(`SRAM_INIT_FILE);
     initial begin
       $display("Initializing SRAM from %s", MEM_FILE);
       $readmemh(MEM_FILE, mem);

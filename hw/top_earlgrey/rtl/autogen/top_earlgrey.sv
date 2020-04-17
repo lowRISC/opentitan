@@ -266,8 +266,14 @@ module top_earlgrey #(
   // TODO: lc_rst_n is not the true root reset.  It will be differentiated once the
   //       the reset controller logic is present
   assign lc_rst_n = rst_ni;
-  assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
-
+  //assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
+always_ff @(posedge clk_i or negedge lc_rst_n) begin
+  if (!lc_rst_n) begin
+  sys_rst_n <= 1'b0;
+  end else begin
+  sys_rst_n <= 1'b1;
+  end
+end
   // Non-root reset assignments
   assign sys_fixed_rst_n = sys_rst_n;
   assign spi_device_rst_n = sys_rst_n;

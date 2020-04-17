@@ -10,7 +10,7 @@
   tool_srcs:  ["{proj_root}/hw/dv/tools/xcelium/*"]
 
   build_opts: ["-elaborate -64bit -access +r -sv",
-               "-licqueue",
+               "-licqueue -ALLOWREDEFINITION",
                "-messages -errormax 50",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",

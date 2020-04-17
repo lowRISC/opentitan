@@ -15,8 +15,8 @@
  * - Host (master) arbitration is strictly priority based.
  */
 module bus #(
-  parameter NrDevices,
-  parameter NrHosts,
+  parameter NrDevices = 1,
+  parameter NrHosts   = 1,
   parameter DataWidth    = 32,
   parameter AddressWidth = 32
 ) (
