@@ -41,9 +41,30 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
 
   // write config
   tl_i_transactions[i_trx] = {
-      true, 0,          0,   2,
-      0,    AES_CONFIG, 0xF, (key_len_bits << 4) | (mode << 1) | (unsigned)op,
-      0,    true};
+      true,
+      0,
+      0,
+      2,
+      0,
+      AES_CONFIG,
+      0xF,
+      (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) | (mode << 1) | (unsigned)op,
+      0,
+      true};
+  i_trx++;
+
+  // confrim config
+  tl_i_transactions[i_trx] = {
+      true,
+      0,
+      0,
+      2,
+      0,
+      AES_CONFIG,
+      0xF,
+      (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) | (mode << 1) | (unsigned)op,
+      0,
+      true};
   i_trx++;
 
   // write key
@@ -144,7 +165,7 @@ int aes_tlul_sequence_modes_gen_all() {
 
   // Allocate memory
   num_transactions_max =
-      (1 + 9 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
+      (1 + 10 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
   num_responses_max = (2 + 20 + 3 * TEST_STALL) * num_groups;
   tl_i_transactions = (TLI *)malloc(num_transactions_max * sizeof(TLI));
   if (tl_i_transactions == NULL) {

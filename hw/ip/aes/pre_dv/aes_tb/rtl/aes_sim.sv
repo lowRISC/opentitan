@@ -25,8 +25,11 @@ module aes_sim #(
   ) aes (
     .clk_i,
     .rst_ni,
+    .idle_o     (          ),
     .tl_i,
-    .tl_o
+    .tl_o,
+    .alert_rx_i ( alert_rx ),
+    .alert_tx_o ( alert_tx )
   );
 
   // Signals for controlling model checker
@@ -56,7 +59,7 @@ module aes_sim #(
   logic  [3:0] round         /*verilator public_flat*/;
 
   assign op            = {aes.aes_core.aes_op_q};
-  assign mode          = {aes.aes_core.aes_mode_q};
+  assign mode          = {aes.aes_core.aes_mode_q[2:0]};
   assign cipher_op     = {aes.aes_core.aes_cipher_core.op_i};
   assign key_expand_op = {aes.aes_core.aes_cipher_core.aes_key_expand.op_i};
   assign key_len       = {aes.aes_core.aes_cipher_core.key_len_i};
@@ -107,5 +110,15 @@ module aes_sim #(
   end
 
   assign rcon_q = aes.aes_core.aes_cipher_core.aes_key_expand.rcon_q;
+
+  // alerts
+  prim_alert_pkg::alert_rx_t [aes_pkg::NumAlerts-1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t [aes_pkg::NumAlerts-1:0] alert_tx, unused_alert_tx;
+
+  assign alert_rx[0].ping_p = 1'b0;
+  assign alert_rx[0].ping_n = 1'b1;
+  assign alert_rx[0].ack_p  = 1'b0;
+  assign alert_rx[0].ack_n  = 1'b1;
+  assign unused_alert_tx = alert_tx;
 
 endmodule
