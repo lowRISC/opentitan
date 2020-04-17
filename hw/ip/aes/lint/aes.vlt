@@ -8,4 +8,4 @@
 
 // Always_comb variable driven after use: 'regular'
 // regular is assigned in a for loop, regular[1] depends on regular[0]
-lint_off -msg ALWCOMBORDER -file "*/rtl/aes_key_expand.sv" -lines 208
+lint_off -rule ALWCOMBORDER -file "*/rtl/aes_key_expand.sv" -match "*'regular'"

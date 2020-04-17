@@ -131,6 +131,7 @@ module aes_control (
   logic       output_valid_q;
 
   logic       start, finish;
+  logic       cipher_crypt;
   logic       doing_cbc_enc, doing_cbc_dec;
   logic       doing_ctr;
 
@@ -153,9 +154,10 @@ module aes_control (
   assign finish = manual_operation_i ? 1'b1 : ~output_valid_q | data_out_read;
 
   // Helper signals for FSM
-  assign doing_cbc_enc = (cipher_crypt_o | cipher_crypt_i) & (mode_i == AES_CBC) & (op_i == AES_ENC);
-  assign doing_cbc_dec = (cipher_crypt_o | cipher_crypt_i) & (mode_i == AES_CBC) & (op_i == AES_DEC);  
-  assign doing_ctr     = (cipher_crypt_o | cipher_crypt_i) & (mode_i == AES_CTR);
+  assign cipher_crypt  = cipher_crypt_o | cipher_crypt_i;
+  assign doing_cbc_enc = cipher_crypt & (mode_i == AES_CBC) & (op_i == AES_ENC);
+  assign doing_cbc_dec = cipher_crypt & (mode_i == AES_CBC) & (op_i == AES_DEC);
+  assign doing_ctr     = cipher_crypt & (mode_i == AES_CTR);
 
   // FSM
   always_comb begin : aes_ctrl_fsm
