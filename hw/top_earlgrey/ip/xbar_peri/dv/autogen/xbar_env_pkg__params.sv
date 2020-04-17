@@ -24,6 +24,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"pwrmgr", '{
         '{32'h400a0000, 32'h400a0fff}
+    }},
+    '{"rstmgr", '{
+        '{32'h400b0000, 32'h400b0fff}
 }}};
 
   // List of Xbar hosts
@@ -34,5 +37,6 @@ tl_host_t xbar_hosts[$] = '{
         "spi_device",
         "rv_timer",
         "usbdev",
-        "pwrmgr"}}
+        "pwrmgr",
+        "rstmgr"}}
 };

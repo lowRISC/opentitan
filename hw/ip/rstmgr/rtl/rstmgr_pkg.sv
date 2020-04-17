@@ -1,7 +1,7 @@
 package rstmgr_pkg;
 
   // global constants
-  parameter int ALWAYS_ON_SEL    = pwrmgr_pkg::ALWAYS_ON_SEL;;
+  parameter int ALWAYS_ON_SEL    = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
 
   // params that reference pwrmgr, should be replaced once pwrmgr is merged
   localparam int PowerDomains    = pwrmgr_pkg::PowerDomains;

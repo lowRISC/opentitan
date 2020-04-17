@@ -31,7 +31,7 @@ package tl_main_pkg;
   localparam logic [3:0][31:0] ADDR_MASK_PERI          = {
     32'h 00020fff,
     32'h 00000fff,
-    32'h 00000fff,
+    32'h 0001ffff,
     32'h 00000fff
   };
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL    = 32'h 00000fff;

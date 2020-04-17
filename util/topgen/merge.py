@@ -485,10 +485,10 @@ def amend_resets(top):
             log.error("{} missing type field".format(reset["name"]))
             return
 
-        if reset["type"] in ["root", "gen"]:
+        if reset["type"] in ["gen"]:
             # The resets structure will be used once rstmgr is integrated
             # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
-            reset_paths[reset["name"]] = "{}_rst_n".format(reset["name"])
+            reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(reset["name"])
         elif reset["type"] == "por":
             reset_paths[reset["name"]] = "rst_ni"
         else:

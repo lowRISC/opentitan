@@ -36,7 +36,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   // Interface to alert handler
   // always on resets
-  output rstmgr_out_t rstmgr_o
+  output rstmgr_out_t resets_o
 
 );
 
@@ -50,7 +50,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i,
     .rst_ni,
     .pok_i(ast_i.vcc_pok & ast_i.alw_pok),
-    .rst_no(rstmgr_o.rst_por_n)
+    .rst_no(resets_o.rst_por_n)
   );
 
   ////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   rstmgr_reg_top i_reg (
     .clk_i,
-    .rst_ni(rstmgr_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_n),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -82,7 +82,7 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue(0)
   ) i_sync (
     .clk_i,
-    .rst_ni(rstmgr_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_n),
     .d(cpu_i.ndmreset_req),
     .q(ndmreset_req_q)
   );
@@ -106,7 +106,7 @@ module rstmgr import rstmgr_pkg::*; (
     .PowerDomains(PowerDomains)
   ) i_lc_src (
     .clk_i(clk_i),
-    .rst_ni(rstmgr_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
@@ -117,7 +117,7 @@ module rstmgr import rstmgr_pkg::*; (
     .PowerDomains(PowerDomains)
   ) i_sys_src (
     .clk_i(clk_i),
-    .rst_ni(rstmgr_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -138,7 +138,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_fixed_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(rstmgr_o.rst_lc_n)
+    .q(resets_o.rst_lc_n)
   );
 
   prim_flop_2sync #(
@@ -148,7 +148,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_main_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(rstmgr_o.rst_sys_n)
+    .q(resets_o.rst_sys_n)
   );
 
   prim_flop_2sync #(
@@ -158,7 +158,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_fixed_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(rstmgr_o.rst_sys_fixed_n)
+    .q(resets_o.rst_sys_fixed_n)
   );
 
   prim_flop_2sync #(
@@ -168,7 +168,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_fixed_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(reg2hw.rst_spi_device_n.q),
-    .q(rstmgr_o.rst_spi_device_n)
+    .q(resets_o.rst_spi_device_n)
   );
 
   prim_flop_2sync #(
@@ -178,7 +178,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_usb_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(reg2hw.rst_usb_n.q),
-    .q(rstmgr_o.rst_usb_n)
+    .q(resets_o.rst_usb_n)
   );
 
   ////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Reasons(ResetReasons)
   ) i_info (
     .clk_i,
-    .rst_ni(rstmgr_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_n),
     .rst_cpu_ni(cpu_i.rst_cpu_n),
     .rst_req_i(rst_reqs),
     .wr_i(reg2hw.reset_info.qe),

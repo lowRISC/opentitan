@@ -28,7 +28,7 @@
     },
 
     { struct:  "pwr_clk",
-      type:    "broadcast",
+      type:    "uni",
       name:    "pwr_clk",
       act:     "req",
       package: "pwrmgr_pkg",
@@ -82,7 +82,7 @@
       hwaccess: "hwo",
       hwext: "true",
       desc: '''
-      Controls the configurability of the CONTROL register.
+      Controls the configurability of the !!CONTROL register.
 
       This register ensures the contents do not change once a low power hint and
       WFI has occurred.
@@ -94,7 +94,13 @@
       fields: [
         { bits: "0",
           name: "EN",
-          desc: "Configuration enable.  Once set to 0, it can no longer be configured to 1",
+          desc: '''
+            Configuration enable.
+
+            This bit defaults to 1 and is set to 0 by hardware when low power entry is initiated.
+            When the device transitions back from low power state to active state, this bit is set
+            back to 1 to allow software configuration of !!CONTROL
+          ''',
           resval: "1",
         },
       ]

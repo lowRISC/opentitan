@@ -58,7 +58,6 @@
   // name: name of reset.
   // If type is "gen", then real name is `name`_rst_n
   // If type is "por", then real name is just `name`
-  // The root type is temporary until rstmgr integration
   //
   // root: The parent reset.
   // If type is "por", there is no root, since it is the root
@@ -68,11 +67,10 @@
   // likely external or generated from a voltage comparator
   //
   resets: [
-  // The rst_ni and por resets are relevant once rstmgr / pwrmgr are integrated
-  //  { name: "rst_ni",     type: "por" }
-  //  { name: "por",        type: "gen", root: "lc",  clk: "fixed" }
-    { name: "lc",         type: "root", root: "lc",  clk: "fixed" }
-    { name: "sys",        type: "root", root: "sys", clk: "main"  }
+    { name: "rst_ni",     type: "por" }
+    { name: "por",        type: "gen",  root: "lc",  clk: "fixed" }
+    { name: "lc",         type: "gen",  root: "lc",  clk: "fixed" }
+    { name: "sys",        type: "gen",  root: "sys", clk: "main"  }
     { name: "sys_fixed",  type: "gen",  root: "sys", clk: "fixed" }
     { name: "spi_device", type: "gen",  root: "sys", clk: "fixed", sw: 1}
     { name: "usb",        type: "gen",  root: "sys", clk: "usb",   sw: 1}
@@ -179,8 +177,17 @@
       clock: "main",
       clock_srcs: {clk_i: "fixed", clk_slow_i: "fixed"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "sys_fixed", rst_slow_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "por", rst_slow_ni: "por"},
       base_addr: "0x400A0000",
+      generated: "true"
+    },
+    { name: "rstmgr",
+      type: "rstmgr",
+      clock: "main",
+      clock_srcs: {clk_i: "fixed", clk_main_i: "main", clk_fixed_i: "fixed", clk_usb_i: "usb_48mhz"},
+      clock_group: "powerup",
+      reset_connections: {rst_ni: "rst_ni"},
+      base_addr: "0x400B0000",
       generated: "true"
     },
     // dummy module to capture the alert handler escalation signals
@@ -247,12 +254,13 @@
   inter_module: {
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
+      'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': [],
+    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu'],
 
     // ext is to create port in the top.
     'ext': [],

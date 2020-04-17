@@ -125,11 +125,6 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
-  //reset wires declaration
-% for reset in top['resets']:
-  logic ${reset['name']}_rst_n;
-% endfor
-
   //clock wires declaration
 % for clock_group in clks_attr['groups']:
   % for k in clock_group['clocks']:
@@ -222,29 +217,8 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
-
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
-
-  // root resets
-  // TODO: lc_rst_n is not the true root reset.  It will be differentiated once the
-  //       the reset controller logic is present
-  assign lc_rst_n = rst_ni;
-  assign sys_rst_n = (scanmode_i) ? lc_rst_n : ~ndmreset_req & lc_rst_n;
-
-  // Non-root reset assignments
-% for reset in top['resets']:
-  % if reset['type'] in ['gen'] and reset['name'] != "usb" :
-  assign ${reset['name']}_rst_n = ${reset['root']}_rst_n;
-  % endif
-% endfor
-
-  // Reset synchronizer for USB
-  logic [1:0] usb_rst_q;
-  always_ff @(posedge clk_usb_48mhz_peri) begin
-    usb_rst_q <= {usb_rst_q[0], sys_rst_n};
-  end
-  assign usb_rst_n = sys_rst_n & usb_rst_q[1];
 
   // debug request from rv_dm to core
   logic debug_req;
@@ -288,7 +262,7 @@ module top_${top["name"]} #(
     .debug_req_i          (debug_req),
     // CPU control signals
     .fetch_enable_i       (1'b1),
-    .core_sleep_o         ()
+    .core_sleep_o         (pwrmgr_pwr_cpu.core_sleeping)
   );
 
   // Debug Module (RISC-V Debug Spec 0.13)
@@ -322,6 +296,9 @@ module top_${top["name"]} #(
     .td_o             (jtag_td_o),
     .tdo_oe_o         (       )
   );
+
+  assign rstmgr_cpu.ndmreset_req = ndmreset_req;
+  assign rstmgr_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]};
 
 ## Memory Instantiation
 % for m in top["memory"]:
