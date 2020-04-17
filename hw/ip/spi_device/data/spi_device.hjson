@@ -197,6 +197,10 @@
           swaccess: "rw",
           hwaccess: "hro",
           resval: "0",
+          tags: [// Updating rptr will cause unexpected interrupts. These interrupts may take a
+                 // while to generate and cip_base_vseq::clear_all_interrupts may not be able to
+                 // clear them in time. Leftover interrupts will cause sim error
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         },
         { bits: "31:16",
           name: "WPTR",
@@ -218,8 +222,6 @@
           swaccess: "ro",
           hwaccess: "hwo",
           resval: "0",
-          tags: [// HW modifies rptr for the txfifo in unexpected way.
-                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
         },
         { bits: "31:16",
           name: "WPTR",
@@ -227,6 +229,10 @@
           swaccess: "rw",
           hwaccess: "hro",
           resval: "0",
+          tags: [// Updating rptr will cause unexpected interrupts. These interrupts may take a
+                 // while to generate and cip_base_vseq::clear_all_interrupts may not be able to
+                 // clear them in time. Leftover interrupts will cause sim error
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
     },
