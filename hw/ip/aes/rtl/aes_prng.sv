@@ -26,9 +26,10 @@ module aes_prng (
 
   localparam int unsigned DATA_WIDTH = 64;
 
-  logic [DATA_WIDTH-1:0] lfsr_state;
-  logic                  lfsr_en;
   logic                  seed_en;
+  logic                  lfsr_en;
+  logic [DATA_WIDTH-1:0] lfsr_state;
+  logic [DATA_WIDTH-1:0] scrambled;
 
   // The data requests are fed from the LFSR, reseed requests have the highest priority.
   assign data_ack_o    = reseed_req_i ? 1'b0 : data_req_i;
@@ -57,6 +58,7 @@ module aes_prng (
   );
 
   // "Scramble" the LFSR state.
-  assign data_o = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
+  assign scrambled = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
+  assign data_o    = prim_cipher_pkg::perm_64bit(scrambled, prim_cipher_pkg::PRESENT_PERM64);
 
 endmodule
