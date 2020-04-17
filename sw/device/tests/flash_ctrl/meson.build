@@ -9,6 +9,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     name_suffix: 'elf',
     dependencies: [
       sw_lib_runtime_hart,
+      sw_lib_base_print,
+      sw_lib_base_log,
       sw_lib_flash_ctrl,
       sw_lib_dif_gpio,
       sw_lib_irq,
