@@ -60,7 +60,7 @@ module top_earlgrey #(
   // own IDs.
   // Field structure as defined in the IEEE 1149.1 (JTAG) specification,
   // section 12.1.1.
-  localparam JTAG_IDCODE = {
+  localparam logic [31:0] JTAG_IDCODE = {
     4'h0,     // Version
     16'h4F54, // Part Number: "OT"
     11'h426,  // Manufacturer Identity: Google
@@ -235,7 +235,7 @@ module top_earlgrey #(
   logic intr_usbdev_connected;
 
 
-  
+
   logic [0:0] irq_plic;
   logic [0:0] msip;
   logic [6:0] irq_id[1];
@@ -609,8 +609,8 @@ module top_earlgrey #(
       .intr_hmac_done_o  (intr_hmac_hmac_done),
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
-      
-      // [0]: msg_push_sha_disabled 
+
+      // [0]: msg_push_sha_disabled
       .alert_tx_o  ( alert_tx[0:0] ),
       .alert_rx_i  ( alert_rx[0:0] ),
 

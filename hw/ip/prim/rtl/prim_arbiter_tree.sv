@@ -58,13 +58,13 @@ module prim_arbiter_tree #(
 
     // align to powers of 2 for simplicity
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
-    localparam int unsigned N_LEVELS = $clog2(N);
+    localparam int unsigned NumLevels = $clog2(N);
     logic [N-1:0]                             req;
-    logic [2**(N_LEVELS+1)-2:0]               req_tree;
-    logic [2**(N_LEVELS+1)-2:0]               gnt_tree;
-    logic [2**(N_LEVELS+1)-2:0][N_LEVELS-1:0] idx_tree;
-    logic [2**(N_LEVELS+1)-2:0][DW-1:0]       data_tree;
-    logic [N_LEVELS-1:0]                      rr_q;
+    logic [2**(NumLevels+1)-2:0]               req_tree;
+    logic [2**(NumLevels+1)-2:0]               gnt_tree;
+    logic [2**(NumLevels+1)-2:0][NumLevels-1:0] idx_tree;
+    logic [2**(NumLevels+1)-2:0][DW-1:0]       data_tree;
+    logic [NumLevels-1:0]                      rr_q;
 
     // req_locked
     if (Lock) begin : gen_lock
@@ -85,41 +85,41 @@ module prim_arbiter_tree #(
       assign req = req_i;
     end
 
-    for (genvar level = 0; level < N_LEVELS+1; level++) begin : gen_tree
+    for (genvar level = 0; level < NumLevels+1; level++) begin : gen_tree
       //
-      // level+1   c0   c1   <- "base1" points to the first node on "level+1",
+      // level+1   C0   C1   <- "Base1" points to the first node on "level+1",
       //            \  /         these nodes are the children of the nodes one level below
-      // level       pa      <- "base0", points to the first node on "level",
+      // level       Pa      <- "Base0", points to the first node on "level",
       //                         these nodes are the parents of the nodes one level above
       //
-      // hence we have the following indices for the pa, c0, c1 nodes:
-      // pa = 2**level     - 1 + offset       = base0 + offset
-      // c0 = 2**(level+1) - 1 + 2*offset     = base1 + 2*offset
-      // c1 = 2**(level+1) - 1 + 2*offset + 1 = base1 + 2*offset + 1
+      // hence we have the following indices for the Pa, C0, C1 nodes:
+      // Pa = 2**level     - 1 + offset       = Base0 + offset
+      // C0 = 2**(level+1) - 1 + 2*offset     = Base1 + 2*offset
+      // C1 = 2**(level+1) - 1 + 2*offset + 1 = Base1 + 2*offset + 1
       //
-      localparam int unsigned base0 = (2**level)-1;
-      localparam int unsigned base1 = (2**(level+1))-1;
+      localparam int unsigned Base0 = (2**level)-1;
+      localparam int unsigned Base1 = (2**(level+1))-1;
 
       for (genvar offset = 0; offset < 2**level; offset++) begin : gen_level
-        localparam int unsigned pa = base0 + offset;
-        localparam int unsigned c0 = base1 + 2*offset;
-        localparam int unsigned c1 = base1 + 2*offset + 1;
+        localparam int unsigned Pa = Base0 + offset;
+        localparam int unsigned C0 = Base1 + 2*offset;
+        localparam int unsigned C1 = Base1 + 2*offset + 1;
 
         // this assigns the gated interrupt source signals, their
         // corresponding IDs and priorities to the tree leafs
-        if (level == N_LEVELS) begin : gen_leafs
+        if (level == NumLevels) begin : gen_leafs
           if (offset < N) begin : gen_assign
             // forward path
-            assign req_tree[pa]  = req[offset];
-            assign idx_tree[pa]  = offset;
-            assign data_tree[pa] = data_i[offset];
+            assign req_tree[Pa]  = req[offset];
+            assign idx_tree[Pa]  = offset;
+            assign data_tree[Pa] = data_i[offset];
             // backward (grant) path
-            assign gnt_o[offset] = gnt_tree[pa];
+            assign gnt_o[offset] = gnt_tree[Pa];
           end else begin : gen_tie_off
             // forward path
-            assign req_tree[pa]  = '0;
-            assign idx_tree[pa]  = '0;
-            assign data_tree[pa] = '0;
+            assign req_tree[Pa]  = '0;
+            assign idx_tree[Pa]  = '0;
+            assign data_tree[Pa] = '0;
           end
         // this creates the node assignments
         end else begin : gen_nodes
@@ -139,15 +139,17 @@ module prim_arbiter_tree #(
           // forward path
           logic sel; // local helper variable
           // this performs a (local) round robin arbitration using the associated rr counter bit
-          assign sel = ~req_tree[c0] | req_tree[c1] & rr_q[N_LEVELS-1-level];
+          assign sel = ~req_tree[C0] | req_tree[C1] & rr_q[NumLevels-1-level];
           // propagate requests
-          assign req_tree[pa]  = req_tree[c0] | req_tree[c1];
+          assign req_tree[Pa]  = req_tree[C0] | req_tree[C1];
           // muxes
-          assign idx_tree[pa]  = ({N_LEVELS{sel}}  & idx_tree[c1]) | ({N_LEVELS{~sel}}  & idx_tree[c0]);
-          assign data_tree[pa] = ({DW{sel}} & data_tree[c1])       | ({DW{~sel}} & data_tree[c0]);
+          assign idx_tree[Pa]  = ({NumLevels{sel}}  & idx_tree[C1]) |
+                                 ({NumLevels{~sel}}  & idx_tree[C0]);
+          assign data_tree[Pa] = ({DW{sel}} & data_tree[C1])       |
+                                 ({DW{~sel}} & data_tree[C0]);
           // backward (grant) path
-          assign gnt_tree[c0] = gnt_tree[pa] & ~sel;
-          assign gnt_tree[c1] = gnt_tree[pa] &  sel;
+          assign gnt_tree[C0] = gnt_tree[Pa] & ~sel;
+          assign gnt_tree[C1] = gnt_tree[Pa] &  sel;
         end
       end : gen_level
     end : gen_tree

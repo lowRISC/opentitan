@@ -80,19 +80,19 @@ module xbar_peri (
     dev_sel_s1n_6 = 3'd5;
     if ((tl_s1n_6_us_h2d.a_address & ~(ADDR_MASK_UART)) == ADDR_SPACE_UART) begin
       dev_sel_s1n_6 = 3'd0;
-    
+
     end else if ((tl_s1n_6_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
       dev_sel_s1n_6 = 3'd1;
-    
+
     end else if ((tl_s1n_6_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
       dev_sel_s1n_6 = 3'd2;
-    
+
     end else if ((tl_s1n_6_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
       dev_sel_s1n_6 = 3'd3;
-    
+
     end else if ((tl_s1n_6_us_h2d.a_address & ~(ADDR_MASK_USBDEV)) == ADDR_SPACE_USBDEV) begin
       dev_sel_s1n_6 = 3'd4;
-    end
+end
   end
 
 

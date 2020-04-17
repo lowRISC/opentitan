@@ -170,7 +170,7 @@ module xbar_${xbar.name} (
        (${addr_sig} >= ${name_space}))) begin
       % endif
       dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
-    ${"end" if loop.last else ""}
+${"end" if loop.last else ""}
   % else:
     ## Xbar device port
 <%
@@ -187,7 +187,7 @@ module xbar_${xbar.name} (
     % endfor
     ) begin
       dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
-    ${"end" if loop.last else ""}
+${"end" if loop.last else ""}
   % endif
 % endfor
   end
