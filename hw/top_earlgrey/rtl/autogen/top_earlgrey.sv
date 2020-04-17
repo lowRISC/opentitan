@@ -290,17 +290,20 @@ end
 
   // processor core
   rv_core_ibex #(
-    .PMPEnable           (0),
-    .PMPGranularity      (0),
-    .PMPNumRegions       (4),
-    .MHPMCounterNum      (8),
-    .MHPMCounterWidth    (40),
-    .RV32E               (0),
-    .RV32M               (1),
-    .DbgTriggerEn        (1),
-    .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
-    .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
-    .PipeLine            (IbexPipeLine)
+    .PMPEnable                (0),
+    .PMPGranularity           (0),
+    .PMPNumRegions            (4),
+    .MHPMCounterNum           (8),
+    .MHPMCounterWidth         (40),
+    .RV32E                    (0),
+    .RV32M                    (1),
+    .BranchTargetALU          (1),
+    .WritebackStage           (1),
+    .MultiplierImplementation ("single-cycle"),
+    .DbgTriggerEn             (1),
+    .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
+    .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
+    .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (main_clk),
@@ -448,19 +451,19 @@ end
   );
 
   // define inter-module signals
-  flash_ctrl_pkg::flash_req_t flash_ctrl_eflash_flash_req;
-  flash_ctrl_pkg::flash_rsp_t flash_ctrl_eflash_flash_rsp;
+  flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
+  flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
 
   // host to flash communication
   logic flash_host_req;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
-  logic [FLASH_DW-1:0] flash_host_rdata;
-  logic [FLASH_AW-1:0] flash_host_addr;
+  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
+  logic [flash_ctrl_pkg::AddrW-1:0] flash_host_addr;
 
   tlul_adapter_sram #(
-    .SramAw(FLASH_AW),
-    .SramDw(FLASH_DW),
+    .SramAw(flash_ctrl_pkg::AddrW),
+    .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
@@ -482,12 +485,7 @@ end
     .rerror_i (2'b00)
   );
 
-  flash_phy #(
-    .NumBanks(FLASH_BANKS),
-    .PagesPerBank(FLASH_PAGES_PER_BANK),
-    .WordsPerPage(FLASH_WORDS_PER_PAGE),
-    .DataWidth(32)
-  ) u_flash_eflash (
+  flash_phy u_flash_eflash (
     .clk_i   (main_clk),
     .rst_ni   (lc_rst_n),
     .host_req_i      (flash_host_req),
@@ -495,8 +493,8 @@ end
     .host_req_rdy_o  (flash_host_req_rdy),
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
-    .flash_ctrl_i    (flash_ctrl_eflash_flash_req),
-    .flash_ctrl_o    (flash_ctrl_eflash_flash_rsp)
+    .flash_ctrl_i    (flash_ctrl_flash_req),
+    .flash_ctrl_o    (flash_ctrl_flash_rsp)
   );
 
 
@@ -583,8 +581,8 @@ end
       .intr_op_error_o   (intr_flash_ctrl_op_error),
 
       // Inter-module signals
-      .flash_o(flash_ctrl_eflash_flash_req),
-      .flash_i(flash_ctrl_eflash_flash_rsp),
+      .flash_o(flash_ctrl_flash_req),
+      .flash_i(flash_ctrl_flash_rsp),
 
       .clk_i (main_clk),
       .rst_ni (lc_rst_n)

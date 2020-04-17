@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from collections import OrderedDict
 import hjson
+import sys
 
 import re
 
@@ -56,7 +57,7 @@ def get_hjsonobj_xbars(xbar_path):
                        object_pairs_hook=OrderedDict) for x in p
         ]
     except ValueError:
-        raise Systemexit(sys.exc_info()[1])
+        raise SystemExit(sys.exc_info()[1])
 
     xbar_objs = [x for x in xbar_objs if is_xbarcfg(x)]
 
@@ -91,8 +92,7 @@ def get_package_name_by_intermodule_signal(top, struct) -> str:
     instances = top["module"] + top["memory"]
 
     intermodule_instances = [
-        x["inter_signal_list"] for x in top["module"] + top["memory"]
-        if "inter_signal_list" in x
+        x["inter_signal_list"] for x in instances if "inter_signal_list" in x
     ]
 
     for m in intermodule_instances:
@@ -119,7 +119,7 @@ def add_prefix_to_signal(signal, prefix):
     """
     result = deepcopy(signal)
 
-    if not "name" in signal:
+    if "name" not in signal:
         raise SystemExit("signal {} doesn't have name field".format(signal))
 
     result["name"] = prefix + "_" + signal["name"]
@@ -162,7 +162,7 @@ def get_pad_list(padstr):
         last = first
     first = int(first, 0)
     last = int(last, 0)
-    width = first - last + 1
+    # width = first - last + 1
 
     for p in range(first, last + 1):
         pads.append(OrderedDict([("name", pad), ("index", p)]))
@@ -204,7 +204,13 @@ def bitarray(d, width):
 def parameterize(text):
     """Return the value wrapping with quote if not integer nor bits
     """
-    if re.match('(\d+\'[hdb]\s*[0-9a-f_A-F]+|[0-9]+)', text) == None:
+    if re.match(r'(\d+\'[hdb]\s*[0-9a-f_A-F]+|[0-9]+)', text) is None:
         return "\"{}\"".format(text)
 
     return text
+
+
+def index(i: int) -> str:
+    """Return index if it is not -1
+    """
+    return "[{}]".format(i) if i != -1 else ""

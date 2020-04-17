@@ -9,17 +9,20 @@
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
 module rv_core_ibex #(
-  parameter bit          PMPEnable        = 1'b0,
-  parameter int unsigned PMPGranularity   = 0,
-  parameter int unsigned PMPNumRegions    = 4,
-  parameter int unsigned MHPMCounterNum   = 8,
-  parameter int unsigned MHPMCounterWidth = 40,
-  parameter bit          RV32E            = 0,
-  parameter bit          RV32M            = 1,
-  parameter bit          DbgTriggerEn     = 1'b1,
-  parameter int unsigned DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr  = 32'h1A110808,
-  parameter bit          PipeLine         = 0
+  parameter bit          PMPEnable                = 1'b0,
+  parameter int unsigned PMPGranularity           = 0,
+  parameter int unsigned PMPNumRegions            = 4,
+  parameter int unsigned MHPMCounterNum           = 8,
+  parameter int unsigned MHPMCounterWidth         = 40,
+  parameter bit          RV32E                    = 0,
+  parameter bit          RV32M                    = 1,
+  parameter bit          BranchTargetALU          = 1,
+  parameter bit          WritebackStage           = 1,
+  parameter              MultiplierImplementation = "single-cycle",
+  parameter bit          DbgTriggerEn             = 1'b1,
+  parameter int unsigned DmHaltAddr               = 32'h1A110800,
+  parameter int unsigned DmExceptionAddr          = 32'h1A110808,
+  parameter bit          PipeLine                 = 0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -110,16 +113,19 @@ module rv_core_ibex #(
 `endif
 
   ibex_core #(
-     .PMPEnable        ( PMPEnable         ),
-     .PMPGranularity   ( PMPGranularity    ),
-     .PMPNumRegions    ( PMPNumRegions     ),
-     .MHPMCounterNum   ( MHPMCounterNum    ),
-     .MHPMCounterWidth ( MHPMCounterWidth  ),
-     .RV32E            ( RV32E             ),
-     .RV32M            ( RV32M             ),
-     .DbgTriggerEn     ( DbgTriggerEn      ),
-     .DmHaltAddr       ( DmHaltAddr        ),
-     .DmExceptionAddr  ( DmExceptionAddr   )
+     .PMPEnable                ( PMPEnable                ),
+     .PMPGranularity           ( PMPGranularity           ),
+     .PMPNumRegions            ( PMPNumRegions            ),
+     .MHPMCounterNum           ( MHPMCounterNum           ),
+     .MHPMCounterWidth         ( MHPMCounterWidth         ),
+     .RV32E                    ( RV32E                    ),
+     .RV32M                    ( RV32M                    ),
+     .BranchTargetALU          ( BranchTargetALU          ),
+     .WritebackStage           ( WritebackStage           ),
+     .MultiplierImplementation ( MultiplierImplementation ),
+     .DbgTriggerEn             ( DbgTriggerEn             ),
+     .DmHaltAddr               ( DmHaltAddr               ),
+     .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_core (
      .clk_i,
      .rst_ni,

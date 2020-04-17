@@ -9,8 +9,8 @@ module rv_plic_bind_fpv;
   bind rv_plic rv_plic_assert_fpv #(
     .NumSrc(rv_plic_reg_pkg::NumSrc),
     .NumTarget(rv_plic_reg_pkg::NumTarget),
-    .PRIOW($clog2(7+1))
-  ) rv_plic_assert_fpv(
+    .PRIOW($clog2(3+1))
+  ) rv_plic_assert_fpv (
     .clk_i,
     .rst_ni,
     .intr_src_i,

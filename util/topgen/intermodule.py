@@ -7,26 +7,19 @@ import logging as log
 from typing import Dict, Tuple
 from collections import OrderedDict
 
-from .lib import *
-
 from reggen.validate import check_int
 
 
-def intersignal_format(uid: int, req: Dict, rsp: Dict) -> str:
+def intersignal_format(req: Dict) -> str:
     """Determine the signal format of the inter-module connections
-
-    @param[uid] Unique ID. Each inter-signal has its own ID at top
 
     @param[req] Request struct. It has instance name, package format
                 and etc.
-
-    @param[rsp] Response struct. Same format as @param[req]
     """
 
     # TODO: Handle array signal
-    result = "{req}_{rsp}_{struct}".format(req=req["inst_name"],
-                                           rsp=rsp["inst_name"],
-                                           struct=req["struct"])
+    result = "{req}_{struct}".format(req=req["inst_name"],
+                                     struct=req["struct"])
 
     # check signal length if exceeds 100
 
@@ -34,9 +27,8 @@ def intersignal_format(uid: int, req: Dict, rsp: Dict) -> str:
     # 3 : _{i|o}(
     # 6 : _{req|rsp}),
     req_length = 7 + len(req["name"]) + 3 + len(result) + 6
-    rsp_length = 7 + len(rsp["name"]) + 3 + len(result) + 6
 
-    if max(req_length, rsp_length) > 100:
+    if req_length > 100:
         logmsg = "signal {0} length cannot be greater than 100"
         log.warning(logmsg.format(result))
         log.warning("Please consider shorten the instance name")
@@ -74,10 +66,25 @@ def elab_intermodule(topcfg: OrderedDict):
     # TODO: Cross check Can be done here not in validate as ipobj is not
     # available in validate
     error = check_intermodule(topcfg, "Inter-module Check")
-    assert error is 0, "Inter-module validation is failed cannot move forward."
+    assert error == 0, "Inter-module validation is failed cannot move forward."
 
     # intermodule
     definitions = []
+
+    # Check the originator
+    # As inter-module connection allow only 1:1, 1:N, or N:1, pick the most
+    # common signals. If a requester connects to multiple responders/receivers,
+    # the requester is main connector so that the definition becomes array.
+    #
+    # For example:
+    #  inter_module: {
+    #    'pwr_mgr.pwrup': ['lc.pwrup', 'otp.pwrup']
+    #  }
+    # The tool adds `struct [1:0] pwr_mgr_pwrup`
+    # It doesn't matter whether `pwr_mgr.pwrup` is requester or responder.
+    # If the key is responder type, then the connection is made in reverse,
+    # such that `lc.pwrup --> pwr_mgr.pwrup[0]` and
+    # `otp.pwrup --> pwr_mgr.pwrup[1]`
 
     uid = 0  # Unique connection ID across the top
 
@@ -98,6 +105,33 @@ def elab_intermodule(topcfg: OrderedDict):
                                              req_signal)
 
         rsp_len = len(rsps)
+        # decide signal format based on the `key`
+        sig_name = intersignal_format(req_struct)
+        req_struct["top_signame"] = sig_name
+
+        # Find package in req, rsps
+        if "package" in req_struct:
+            package = req_struct["package"]
+        else:
+            for rsp in rsps:
+                rsp_module, rsp_signal, rsp_index = filter_index(rsp)
+                rsp_struct = find_intermodule_signal(list_of_intersignals,
+                                                     rsp_module, rsp_signal)
+                if "package" in rsp_struct:
+                    package = rsp_struct["package"]
+                    break
+            if not package:
+                package = ""
+
+        # Add to definition
+        definitions.append(
+            OrderedDict([('package', package),
+                         ('struct', req_struct["struct"]),
+                         ('signame', sig_name), ('width', req_struct["width"]),
+                         ('type', req_struct["type"])]))
+
+        req_struct["index"] = -1
+
         for i, rsp in enumerate(rsps):
             assert i == 0, "Handling multiple connections (array) isn't yet supported"
 
@@ -108,32 +142,15 @@ def elab_intermodule(topcfg: OrderedDict):
                                                  rsp_module, rsp_signal)
 
             # determine the signal name
-            sig_name = "im{uid}_{req_s}".format(uid=uid,
-                                                req_s=req_struct['struct'])
-            sig_name = intersignal_format(uid, req_struct, rsp_struct)
 
-            req_struct["top_signame"] = sig_name
             rsp_struct["top_signame"] = sig_name
-
-            # Add to definitions
-            if "package" in req_struct:
-                package = req_struct["package"]
-            elif "package" in rsp_struct:
-                package = rsp_struct["package"]
-            else:
-                package = ""
+            rsp_struct["index"] = -1 if req_struct["width"] == 1 else i
 
             # Assume it is logic
             # req_rsp doesn't allow logic
-            if req_struct["struct"] is "logic":
+            if req_struct["struct"] == "logic":
                 assert req_struct[
-                    "type"] is not "req_rsp", "logic signal cannot have req_rsp type"
-            definitions.append(
-                OrderedDict([('package', package),
-                             ('struct', req_struct["struct"]),
-                             ('signame', sig_name),
-                             ('width', req_struct["width"]),
-                             ('type', req_struct["type"])]))
+                    "type"] != "req_rsp", "logic signal cannot have req_rsp type"
 
             if rsp_len != 1:
                 log.warning("{req}[{i}] -> {rsp}".format(req=req, i=i,
@@ -193,7 +210,7 @@ def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
     return filtered[0] if len(filtered) == 1 else None
 
 
-## Validation
+# Validation
 def check_intermodule(topcfg: Dict, prefix: str) -> int:
     if "inter_module" not in topcfg:
         return 0
@@ -222,7 +239,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         # entries of value list should be 1
         req_m, req_s, req_i = filter_index(req)
 
-        if req_s is "":
+        if req_s == "":
             log.error(
                 "Cannot parse the inter-module signal key '{req}'".format(
                     req=req))
@@ -262,7 +279,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         # Check rsp format
         for i, rsp in enumerate(rsps):
             rsp_m, rsp_s, rsp_i = filter_index(rsp)
-            if rsp_s is "":
+            if rsp_s == "":
                 log.error(
                     "Cannot parse the inter-module signal key '{req}->{rsp}'".
                     format(req=req, rsp=rsp))
@@ -290,7 +307,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             if req_struct["width"] != 1:
                 if width not in [1, req_struct["width"]]:
                     log.error(
-                        "If req {req} is an array, rsp {rsp} shall be non-array or array with same width"
+                        "If req {req} is an array, "
+                        "rsp {rsp} shall be non-array or array with same width"
                         .format(req=req, rsp=rsp))
                     error += 1
 

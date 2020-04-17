@@ -5,7 +5,10 @@
 
 `include "prim_assert.sv"
 
-module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
+module rv_plic_assert_fpv #(parameter int NumSrc = 1,
+                            parameter int NumTarget = 1,
+                            parameter int PRIOW = $clog2(7+1)
+) (
   input clk_i,
   input rst_ni,
   input [NumSrc-1:0] intr_src_i,
@@ -18,8 +21,8 @@ module rv_plic_assert_fpv import rv_plic_reg_pkg::*; (
   input [NumSrc-1:0] ie [NumTarget],
   input [NumSrc-1:0] claim,
   input [NumSrc-1:0] complete,
-  input [2:0]        prio [NumSrc], // TODO: need a way to automatically know the size
-  input [2:0]        threshold [NumTarget]
+  input [PRIOW-1:0]  prio [NumSrc],
+  input [PRIOW-1:0]  threshold [NumTarget]
 );
 
   logic claim_reg, claimed;

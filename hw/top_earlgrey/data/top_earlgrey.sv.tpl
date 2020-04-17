@@ -237,17 +237,20 @@ module top_${top["name"]} #(
 
   // processor core
   rv_core_ibex #(
-    .PMPEnable           (0),
-    .PMPGranularity      (0),
-    .PMPNumRegions       (4),
-    .MHPMCounterNum      (8),
-    .MHPMCounterWidth    (40),
-    .RV32E               (0),
-    .RV32M               (1),
-    .DbgTriggerEn        (1),
-    .DmHaltAddr          (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
-    .DmExceptionAddr     (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
-    .PipeLine            (IbexPipeLine)
+    .PMPEnable                (0),
+    .PMPGranularity           (0),
+    .PMPNumRegions            (4),
+    .MHPMCounterNum           (8),
+    .MHPMCounterWidth         (40),
+    .RV32E                    (0),
+    .RV32M                    (1),
+    .BranchTargetALU          (1),
+    .WritebackStage           (1),
+    .MultiplierImplementation ("single-cycle"),
+    .DbgTriggerEn             (1),
+    .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
+    .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
+    .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (main_clk),
@@ -440,8 +443,8 @@ module top_${top["name"]} #(
   % endif
   % for sig in top["inter_signal"]["definitions"]:
     % if sig["type"] == "req_rsp":
-  ${sig["package"]}::${sig["struct"]}_req_t ${sig["signame"]}_req;
-  ${sig["package"]}::${sig["struct"]}_rsp_t ${sig["signame"]}_rsp;
+  ${sig["package"]}::${sig["struct"]}_req_t ${lib.bitarray(sig["width"],1)} ${sig["signame"]}_req;
+  ${sig["package"]}::${sig["struct"]}_rsp_t ${lib.bitarray(sig["width"],1)} ${sig["signame"]}_rsp;
     % elif sig["type"] == "broadcast":
       % if sig["struct"] == "logic":
   logic ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
@@ -455,12 +458,12 @@ module top_${top["name"]} #(
   logic flash_host_req;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
-  logic [FLASH_DW-1:0] flash_host_rdata;
-  logic [FLASH_AW-1:0] flash_host_addr;
+  logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
+  logic [flash_ctrl_pkg::AddrW-1:0] flash_host_addr;
 
   tlul_adapter_sram #(
-    .SramAw(FLASH_AW),
-    .SramDw(FLASH_DW),
+    .SramAw(flash_ctrl_pkg::AddrW),
+    .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1)
@@ -486,12 +489,7 @@ module top_${top["name"]} #(
     .rerror_i (2'b00)
   );
 
-  flash_phy #(
-    .NumBanks(FLASH_BANKS),
-    .PagesPerBank(FLASH_PAGES_PER_BANK),
-    .WordsPerPage(FLASH_WORDS_PER_PAGE),
-    .DataWidth(${data_width})
-  ) u_flash_${m["name"]} (
+  flash_phy u_flash_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}_clk),
     % endfor
@@ -593,18 +591,18 @@ else:
         % if "top_signame" in sig:
           % if sig["type"] == "req_rsp":
             % if sig["act"] == "requester":
-      .${sig["name"]}_o(${sig["top_signame"]}_req),
-      .${sig["name"]}_i(${sig["top_signame"]}_rsp),
+      .${sig["name"]}_o(${sig["top_signame"]}_req${lib.index(sig["index"])}),
+      .${sig["name"]}_i(${sig["top_signame"]}_rsp${lib.index(sig["index"])}),
           % elif sig["act"] == "responder":
-      .${sig["name"]}_i(${sig["top_signame"]}_req),
-      .${sig["name"]}_o(${sig["top_signame"]}_rsp),
+      .${sig["name"]}_i(${sig["top_signame"]}_req${lib.index(sig["index"])}),
+      .${sig["name"]}_o(${sig["top_signame"]}_rsp${lib.index(sig["index"])}),
             % endif # sig["act"] == requester
           % elif sig["type"] == "broadcast":
             ## TODO: Broadcast type
             % if sig["act"] == "requester":
-      .${sig["name"]}_o(${sig["top_signame"]}),
+      .${sig["name"]}_o(${sig["top_signame"]}${lib.index(sig["index"])}),
             % elif sig["act"] == "receiver":
-      .${sig["name"]}_i(${sig["top_signame"]}),
+      .${sig["name"]}_i(${sig["top_signame"]}${lib.index(sig["index"])}),
             % endif
           % endif
         % else: # no top_signame in sig

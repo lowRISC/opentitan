@@ -8,7 +8,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit             sha_en, fifo_full, fifo_empty;
+  bit             sha_en, fifo_empty;
   bit [7:0]       msg_q[$];
   bit             hmac_start, hmac_process;
   int             hmac_wr_cnt, hmac_rd_cnt;
@@ -61,7 +61,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // do endian swap in the word according to the mask, then push to the queue of msgs
           foreach (item.a_mask[i]) begin
             if (item.a_mask[i]) begin
-              // The DUT by default (endian_swap bit set to 0) operates at big endian data
+              // endian_swap bit 0 operates at big endian data
               msg = (ral.cfg.endian_swap.get_mirrored_value()) ? {bytes[i], msg} : {msg, bytes[i]};
             end
           end
@@ -147,7 +147,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         end else if (csr_name == "intr_state") begin
           if (fifo_empty && ral.intr_state.fifo_empty.get_mirrored_value() != 1) begin
             void'(ral.intr_state.fifo_empty.predict(.value(1), .kind(UVM_PREDICT_READ)));
-            `uvm_info(`gfn, "predict again", UVM_HIGH)
           end
         end
       return;
@@ -254,9 +253,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                   (hmac_process && msg_q.size() % 4 != 0));
               if (sha_en) begin
                 // if fifo full, tlul will not write next data until fifo has space again
-                if (fifo_full) begin
-                  wait(hmac_wr_cnt - hmac_rd_cnt < HMAC_MSG_FIFO_DEPTH)
-                  fifo_full = 0;
+                if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
+                  wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH);
                 end
                 @(negedge cfg.clk_rst_vif.clk);
                 hmac_wr_cnt++;
