@@ -111,22 +111,22 @@ module aes_reg_top (
   logic data_out2_re;
   logic [31:0] data_out3_qs;
   logic data_out3_re;
-  logic ctrl_operation_qs;
-  logic ctrl_operation_wd;
-  logic ctrl_operation_we;
-  logic ctrl_operation_re;
-  logic [2:0] ctrl_mode_qs;
-  logic [2:0] ctrl_mode_wd;
-  logic ctrl_mode_we;
-  logic ctrl_mode_re;
-  logic [2:0] ctrl_key_len_qs;
-  logic [2:0] ctrl_key_len_wd;
-  logic ctrl_key_len_we;
-  logic ctrl_key_len_re;
-  logic ctrl_manual_operation_qs;
-  logic ctrl_manual_operation_wd;
-  logic ctrl_manual_operation_we;
-  logic ctrl_manual_operation_re;
+  logic ctrl_shadowed_operation_qs;
+  logic ctrl_shadowed_operation_wd;
+  logic ctrl_shadowed_operation_we;
+  logic ctrl_shadowed_operation_re;
+  logic [3:0] ctrl_shadowed_mode_qs;
+  logic [3:0] ctrl_shadowed_mode_wd;
+  logic ctrl_shadowed_mode_we;
+  logic ctrl_shadowed_mode_re;
+  logic [2:0] ctrl_shadowed_key_len_qs;
+  logic [2:0] ctrl_shadowed_key_len_wd;
+  logic ctrl_shadowed_key_len_we;
+  logic ctrl_shadowed_key_len_re;
+  logic ctrl_shadowed_manual_operation_qs;
+  logic ctrl_shadowed_manual_operation_wd;
+  logic ctrl_shadowed_manual_operation_we;
+  logic ctrl_shadowed_manual_operation_re;
   logic trigger_start_wd;
   logic trigger_start_we;
   logic trigger_key_clear_wd;
@@ -513,65 +513,65 @@ module aes_reg_top (
   );
 
 
-  // R[ctrl]: V(True)
+  // R[ctrl_shadowed]: V(True)
 
   //   F[operation]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_ctrl_operation (
-    .re     (ctrl_operation_re),
-    .we     (ctrl_operation_we),
-    .wd     (ctrl_operation_wd),
-    .d      (hw2reg.ctrl.operation.d),
-    .qre    (),
-    .qe     (reg2hw.ctrl.operation.qe),
-    .q      (reg2hw.ctrl.operation.q ),
-    .qs     (ctrl_operation_qs)
+  ) u_ctrl_shadowed_operation (
+    .re     (ctrl_shadowed_operation_re),
+    .we     (ctrl_shadowed_operation_we),
+    .wd     (ctrl_shadowed_operation_wd),
+    .d      (hw2reg.ctrl_shadowed.operation.d),
+    .qre    (reg2hw.ctrl_shadowed.operation.re),
+    .qe     (reg2hw.ctrl_shadowed.operation.qe),
+    .q      (reg2hw.ctrl_shadowed.operation.q ),
+    .qs     (ctrl_shadowed_operation_qs)
   );
 
 
-  //   F[mode]: 3:1
+  //   F[mode]: 4:1
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_ctrl_shadowed_mode (
+    .re     (ctrl_shadowed_mode_re),
+    .we     (ctrl_shadowed_mode_we),
+    .wd     (ctrl_shadowed_mode_wd),
+    .d      (hw2reg.ctrl_shadowed.mode.d),
+    .qre    (reg2hw.ctrl_shadowed.mode.re),
+    .qe     (reg2hw.ctrl_shadowed.mode.qe),
+    .q      (reg2hw.ctrl_shadowed.mode.q ),
+    .qs     (ctrl_shadowed_mode_qs)
+  );
+
+
+  //   F[key_len]: 7:5
   prim_subreg_ext #(
     .DW    (3)
-  ) u_ctrl_mode (
-    .re     (ctrl_mode_re),
-    .we     (ctrl_mode_we),
-    .wd     (ctrl_mode_wd),
-    .d      (hw2reg.ctrl.mode.d),
-    .qre    (),
-    .qe     (reg2hw.ctrl.mode.qe),
-    .q      (reg2hw.ctrl.mode.q ),
-    .qs     (ctrl_mode_qs)
+  ) u_ctrl_shadowed_key_len (
+    .re     (ctrl_shadowed_key_len_re),
+    .we     (ctrl_shadowed_key_len_we),
+    .wd     (ctrl_shadowed_key_len_wd),
+    .d      (hw2reg.ctrl_shadowed.key_len.d),
+    .qre    (reg2hw.ctrl_shadowed.key_len.re),
+    .qe     (reg2hw.ctrl_shadowed.key_len.qe),
+    .q      (reg2hw.ctrl_shadowed.key_len.q ),
+    .qs     (ctrl_shadowed_key_len_qs)
   );
 
 
-  //   F[key_len]: 6:4
-  prim_subreg_ext #(
-    .DW    (3)
-  ) u_ctrl_key_len (
-    .re     (ctrl_key_len_re),
-    .we     (ctrl_key_len_we),
-    .wd     (ctrl_key_len_wd),
-    .d      (hw2reg.ctrl.key_len.d),
-    .qre    (),
-    .qe     (reg2hw.ctrl.key_len.qe),
-    .q      (reg2hw.ctrl.key_len.q ),
-    .qs     (ctrl_key_len_qs)
-  );
-
-
-  //   F[manual_operation]: 7:7
+  //   F[manual_operation]: 8:8
   prim_subreg_ext #(
     .DW    (1)
-  ) u_ctrl_manual_operation (
-    .re     (ctrl_manual_operation_re),
-    .we     (ctrl_manual_operation_we),
-    .wd     (ctrl_manual_operation_wd),
-    .d      (hw2reg.ctrl.manual_operation.d),
-    .qre    (),
-    .qe     (reg2hw.ctrl.manual_operation.qe),
-    .q      (reg2hw.ctrl.manual_operation.q ),
-    .qs     (ctrl_manual_operation_qs)
+  ) u_ctrl_shadowed_manual_operation (
+    .re     (ctrl_shadowed_manual_operation_re),
+    .we     (ctrl_shadowed_manual_operation_we),
+    .wd     (ctrl_shadowed_manual_operation_wd),
+    .d      (hw2reg.ctrl_shadowed.manual_operation.d),
+    .qre    (reg2hw.ctrl_shadowed.manual_operation.re),
+    .qe     (reg2hw.ctrl_shadowed.manual_operation.qe),
+    .q      (reg2hw.ctrl_shadowed.manual_operation.q ),
+    .qs     (ctrl_shadowed_manual_operation_qs)
   );
 
 
@@ -854,7 +854,7 @@ module aes_reg_top (
     addr_hit[17] = (reg_addr == AES_DATA_OUT1_OFFSET);
     addr_hit[18] = (reg_addr == AES_DATA_OUT2_OFFSET);
     addr_hit[19] = (reg_addr == AES_DATA_OUT3_OFFSET);
-    addr_hit[20] = (reg_addr == AES_CTRL_OFFSET);
+    addr_hit[20] = (reg_addr == AES_CTRL_SHADOWED_OFFSET);
     addr_hit[21] = (reg_addr == AES_TRIGGER_OFFSET);
     addr_hit[22] = (reg_addr == AES_STATUS_OFFSET);
   end
@@ -945,21 +945,21 @@ module aes_reg_top (
 
   assign data_out3_re = addr_hit[19] && reg_re;
 
-  assign ctrl_operation_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_operation_wd = reg_wdata[0];
-  assign ctrl_operation_re = addr_hit[20] && reg_re;
+  assign ctrl_shadowed_operation_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_shadowed_operation_wd = reg_wdata[0];
+  assign ctrl_shadowed_operation_re = addr_hit[20] && reg_re;
 
-  assign ctrl_mode_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_mode_wd = reg_wdata[3:1];
-  assign ctrl_mode_re = addr_hit[20] && reg_re;
+  assign ctrl_shadowed_mode_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_shadowed_mode_wd = reg_wdata[4:1];
+  assign ctrl_shadowed_mode_re = addr_hit[20] && reg_re;
 
-  assign ctrl_key_len_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_key_len_wd = reg_wdata[6:4];
-  assign ctrl_key_len_re = addr_hit[20] && reg_re;
+  assign ctrl_shadowed_key_len_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_shadowed_key_len_wd = reg_wdata[7:5];
+  assign ctrl_shadowed_key_len_re = addr_hit[20] && reg_re;
 
-  assign ctrl_manual_operation_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_manual_operation_wd = reg_wdata[7];
-  assign ctrl_manual_operation_re = addr_hit[20] && reg_re;
+  assign ctrl_shadowed_manual_operation_we = addr_hit[20] & reg_we & ~wr_err;
+  assign ctrl_shadowed_manual_operation_wd = reg_wdata[8];
+  assign ctrl_shadowed_manual_operation_re = addr_hit[20] && reg_re;
 
   assign trigger_start_we = addr_hit[21] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];
@@ -1068,10 +1068,10 @@ module aes_reg_top (
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[0] = ctrl_operation_qs;
-        reg_rdata_next[3:1] = ctrl_mode_qs;
-        reg_rdata_next[6:4] = ctrl_key_len_qs;
-        reg_rdata_next[7] = ctrl_manual_operation_qs;
+        reg_rdata_next[0] = ctrl_shadowed_operation_qs;
+        reg_rdata_next[4:1] = ctrl_shadowed_mode_qs;
+        reg_rdata_next[7:5] = ctrl_shadowed_key_len_qs;
+        reg_rdata_next[8] = ctrl_shadowed_manual_operation_qs;
       end
 
       addr_hit[21]: begin

@@ -377,7 +377,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "hmac", "otbn" ]
+  alert_module: [ "aes", "hmac", "otbn" ]
 
   // generated list of alerts:
   alert: [

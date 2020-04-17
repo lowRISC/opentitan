@@ -17,6 +17,7 @@ module aes_control (
   input  aes_pkg::aes_mode_e      mode_i,
   input  aes_pkg::ciph_op_e       cipher_op_i,
   input  logic                    manual_operation_i,
+  input  logic                    ctrl_err_i,
   input  logic                    start_i,
   input  logic                    key_clear_i,
   input  logic                    iv_clear_i,
@@ -127,6 +128,7 @@ module aes_control (
   logic       data_out_read;
   logic       output_valid_q;
 
+  logic       cfg_valid;
   logic       start, finish;
   logic       cipher_crypt;
   logic       doing_cbc_enc, doing_cbc_dec;
@@ -137,19 +139,23 @@ module aes_control (
   assign iv_qe = {iv_qe_i[3], iv_qe_i[3], iv_qe_i[2], iv_qe_i[2],
                   iv_qe_i[1], iv_qe_i[1], iv_qe_i[0], iv_qe_i[0]};
 
+  // The cipher core is only ever allowed to start or finish if the control register holds a valid
+  // configuration.
+  assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_i);
+
   // If set to start manually, we just wait for the trigger. Otherwise, we start once we have valid
   // data available. If the IV (and counter) is needed, we only start if also the IV (and counter)
   // is ready.
-  assign start =
-       manual_operation_i ? start_i                                                 :
-      (mode_i == AES_ECB) ? (key_init_ready & data_in_new)                          :
-      (mode_i == AES_CBC) ? (key_init_ready & data_in_new & iv_ready)               :
-      (mode_i == AES_CTR) ? (key_init_ready & data_in_new & iv_ready & ctr_ready_i) : 1'b0;
+  assign start = cfg_valid &
+      ( manual_operation_i ? start_i                                                 :
+       (mode_i == AES_ECB) ? (key_init_ready & data_in_new)                          :
+       (mode_i == AES_CBC) ? (key_init_ready & data_in_new & iv_ready)               :
+       (mode_i == AES_CTR) ? (key_init_ready & data_in_new & iv_ready & ctr_ready_i) : 1'b0);
 
   // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
   // synchronously clears output_valid_q, unless new output data is written in the exact same
   // clock cycle.
-  assign finish = manual_operation_i ? 1'b1 : ~output_valid_q | data_out_read;
+  assign finish = cfg_valid & (manual_operation_i ? 1'b1 : (~output_valid_q | data_out_read));
 
   // Helper signals for FSM
   assign cipher_crypt  = cipher_crypt_o | cipher_crypt_i;
@@ -496,7 +502,8 @@ module aes_control (
   `ASSERT(AesModeValid, mode_i inside {
       AES_ECB,
       AES_CBC,
-      AES_CTR
+      AES_CTR,
+      AES_NONE
       })
   `ASSERT_KNOWN(AesOpKnown, op_i)
   `ASSERT_KNOWN(AesCiphOpKnown, cipher_op_i)
