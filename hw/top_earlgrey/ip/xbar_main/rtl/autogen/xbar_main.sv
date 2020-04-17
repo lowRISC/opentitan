@@ -375,16 +375,16 @@ module xbar_main (
     dev_sel_s1n_15 = 3'd4;
     if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
       dev_sel_s1n_15 = 3'd0;
-    
+
     end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_DEBUG_MEM)) == ADDR_SPACE_DEBUG_MEM) begin
       dev_sel_s1n_15 = 3'd1;
-    
+
     end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
       dev_sel_s1n_15 = 3'd2;
-    
+
     end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_15 = 3'd3;
-    end
+end
   end
 
   always_comb begin
@@ -392,16 +392,16 @@ module xbar_main (
     dev_sel_s1n_20 = 4'd12;
     if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
       dev_sel_s1n_20 = 4'd0;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_DEBUG_MEM)) == ADDR_SPACE_DEBUG_MEM) begin
       dev_sel_s1n_20 = 4'd1;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
       dev_sel_s1n_20 = 4'd2;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_20 = 4'd3;
-    
+
     end else if (
       ((tl_s1n_20_us_h2d.a_address <= (ADDR_MASK_PERI[0] + ADDR_SPACE_PERI[0])) &&
        (tl_s1n_20_us_h2d.a_address >= ADDR_SPACE_PERI[0])) ||
@@ -411,28 +411,28 @@ module xbar_main (
        (tl_s1n_20_us_h2d.a_address >= ADDR_SPACE_PERI[2]))
     ) begin
       dev_sel_s1n_20 = 4'd4;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
       dev_sel_s1n_20 = 4'd5;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_AES)) == ADDR_SPACE_AES) begin
       dev_sel_s1n_20 = 4'd6;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_HMAC)) == ADDR_SPACE_HMAC) begin
       dev_sel_s1n_20 = 4'd7;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_RV_PLIC)) == ADDR_SPACE_RV_PLIC) begin
       dev_sel_s1n_20 = 4'd8;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_PINMUX)) == ADDR_SPACE_PINMUX) begin
       dev_sel_s1n_20 = 4'd9;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
       dev_sel_s1n_20 = 4'd10;
-    
+
     end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_NMI_GEN)) == ADDR_SPACE_NMI_GEN) begin
       dev_sel_s1n_20 = 4'd11;
-    end
+end
   end
 
   always_comb begin
@@ -440,13 +440,13 @@ module xbar_main (
     dev_sel_s1n_30 = 4'd11;
     if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
       dev_sel_s1n_30 = 4'd0;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
       dev_sel_s1n_30 = 4'd1;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_30 = 4'd2;
-    
+
     end else if (
       ((tl_s1n_30_us_h2d.a_address <= (ADDR_MASK_PERI[0] + ADDR_SPACE_PERI[0])) &&
        (tl_s1n_30_us_h2d.a_address >= ADDR_SPACE_PERI[0])) ||
@@ -456,28 +456,28 @@ module xbar_main (
        (tl_s1n_30_us_h2d.a_address >= ADDR_SPACE_PERI[2]))
     ) begin
       dev_sel_s1n_30 = 4'd3;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
       dev_sel_s1n_30 = 4'd4;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_AES)) == ADDR_SPACE_AES) begin
       dev_sel_s1n_30 = 4'd5;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_HMAC)) == ADDR_SPACE_HMAC) begin
       dev_sel_s1n_30 = 4'd6;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_RV_PLIC)) == ADDR_SPACE_RV_PLIC) begin
       dev_sel_s1n_30 = 4'd7;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_PINMUX)) == ADDR_SPACE_PINMUX) begin
       dev_sel_s1n_30 = 4'd8;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
       dev_sel_s1n_30 = 4'd9;
-    
+
     end else if ((tl_s1n_30_us_h2d.a_address & ~(ADDR_MASK_NMI_GEN)) == ADDR_SPACE_NMI_GEN) begin
       dev_sel_s1n_30 = 4'd10;
-    end
+end
   end
 
 

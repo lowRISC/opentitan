@@ -64,7 +64,7 @@ module top_${top["name"]} #(
   // own IDs.
   // Field structure as defined in the IEEE 1149.1 (JTAG) specification,
   // section 12.1.1.
-  localparam JTAG_IDCODE = {
+  localparam logic [31:0] JTAG_IDCODE = {
     4'h0,     // Version
     16'h4F54, // Part Number: "OT"
     11'h426,  // Manufacturer Identity: Google
@@ -175,7 +175,7 @@ module top_${top["name"]} #(
 % endfor
 
 
-  <% add_spaces = " " * len(str((interrupt_num-1).bit_length()-1)) %>
+<% add_spaces = " " * len(str((interrupt_num-1).bit_length()-1)) %>
   logic [0:0]${add_spaces}irq_plic;
   logic [0:0]${add_spaces}msip;
   logic [${(interrupt_num-1).bit_length()-1}:0] irq_id[1];
@@ -572,12 +572,12 @@ else:
       .${lib.ljust("intr_"+intr["name"]+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr["name"]}),
     % endfor
     % if m["alert_list"]:
-      <%
-      w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
-      slice = str(alert_idx+w-1) + ":" + str(alert_idx)
-      %>
+<%
+w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
+slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+%>
       % for alert in m["alert_list"] if "alert_list" in m else []:
-      // [${alert_idx}]: ${alert["name"]} <% alert_idx += 1 %>
+      // [${alert_idx}]: ${alert["name"]}<% alert_idx += 1 %>
       % endfor
       .alert_tx_o  ( alert_tx[${slice}] ),
       .alert_rx_i  ( alert_rx[${slice}] ),
