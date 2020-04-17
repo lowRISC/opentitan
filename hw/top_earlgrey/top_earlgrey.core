@@ -24,6 +24,7 @@ filesets:
       - lowrisc:ip:pwrmgr
       - lowrisc:prim:ram_1p
       - lowrisc:prim:rom
+      - lowrisc:ip:rstmgr
       - lowrisc:prim:flash
       - lowrisc:ip:flash_ctrl:0.1
       - lowrisc:constants:top_pkg

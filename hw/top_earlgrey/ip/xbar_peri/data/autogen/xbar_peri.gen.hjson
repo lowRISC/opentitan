@@ -32,6 +32,7 @@
       rv_timer
       usbdev
       pwrmgr
+      rstmgr
     ]
   }
   nodes:
@@ -142,6 +143,23 @@
       [
         {
           base_addr: 0x400A0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: rstmgr
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: rstmgr
+      addr_range:
+      [
+        {
+          base_addr: 0x400B0000
           size_byte: 0x1000
         }
       ]

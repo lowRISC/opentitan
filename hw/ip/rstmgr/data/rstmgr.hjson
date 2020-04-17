@@ -25,12 +25,11 @@
       type:    "req_rsp",
       name:    "pwr",        // resets_o (req), resets_i (rsp)
       act:     "rsp",
-      package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
     { struct:  "rstmgr_out",
       type:    "uni",
-      name:    "rstmgr",
+      name:    "resets",
       act:     "req",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },

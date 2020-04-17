@@ -35,6 +35,8 @@
         clocks:
         {
           clk_fixed_powerup: fixed
+          clk_main_powerup: main
+          clk_usb_48mhz_powerup: usb_48mhz
         }
       }
       {
@@ -100,14 +102,24 @@
   resets:
   [
     {
+      name: rst_ni
+      type: por
+    }
+    {
+      name: por
+      type: gen
+      root: lc
+      clk: fixed
+    }
+    {
       name: lc
-      type: root
+      type: gen
       root: lc
       clk: fixed
     }
     {
       name: sys
-      type: root
+      type: gen
       root: sys
       clk: main
     }
@@ -849,8 +861,8 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: sys_fixed
-        rst_slow_ni: sys_fixed
+        rst_ni: por
+        rst_slow_ni: por
       }
       base_addr: 0x400A0000
       generated: "true"
@@ -895,11 +907,13 @@
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          top_signame: pwrmgr_pwr_rst
           index: -1
         }
         {
           struct: pwr_clk
-          type: broadcast
+          type: uni
           name: pwr_clk
           act: req
           package: pwrmgr_pkg
@@ -940,6 +954,8 @@
           act: rcv
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          top_signame: pwrmgr_pwr_cpu
           index: -1
         }
         {
@@ -956,6 +972,95 @@
       {
         clk_i: clk_fixed_powerup
         clk_slow_i: clk_fixed_powerup
+      }
+    }
+    {
+      name: rstmgr
+      type: rstmgr
+      clock: main
+      clock_srcs:
+      {
+        clk_i: fixed
+        clk_main_i: main
+        clk_fixed_i: fixed
+        clk_usb_i: usb_48mhz
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: rst_ni
+      }
+      base_addr: 0x400B0000
+      generated: "true"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: pwr_rst
+          type: req_rsp
+          name: pwr
+          act: rsp
+          inst_name: rstmgr
+          width: 1
+          package: pwrmgr_pkg
+          top_signame: pwrmgr_pwr_rst
+          index: -1
+        }
+        {
+          struct: rstmgr_out
+          type: uni
+          name: resets
+          act: req
+          package: rstmgr_pkg
+          inst_name: rstmgr
+          width: 1
+          top_signame: rstmgr_resets
+          index: -1
+        }
+        {
+          struct: rstmgr_ast
+          type: uni
+          name: ast
+          act: rcv
+          package: rstmgr_pkg
+          inst_name: rstmgr
+          index: -1
+        }
+        {
+          struct: rstmgr_cpu
+          type: uni
+          name: cpu
+          act: rcv
+          package: rstmgr_pkg
+          inst_name: rstmgr
+          width: 1
+          top_signame: rstmgr_cpu
+          index: -1
+        }
+        {
+          struct: rstmgr_peri
+          type: uni
+          name: peri
+          act: rcv
+          package: rstmgr_pkg
+          inst_name: rstmgr
+          index: -1
+        }
+      ]
+      clock_connections:
+      {
+        clk_i: clk_fixed_powerup
+        clk_main_i: clk_main_powerup
+        clk_fixed_i: clk_fixed_powerup
+        clk_usb_i: clk_usb_48mhz_powerup
       }
     }
     {
@@ -1390,8 +1495,17 @@
       [
         eflash.flash_ctrl
       ]
+      pwrmgr.pwr_rst:
+      [
+        rstmgr.pwr
+      ]
     }
-    top: []
+    top:
+    [
+      rstmgr.resets
+      rstmgr.cpu
+      pwrmgr.pwr_cpu
+    ]
     ext: []
   }
   xbar:
@@ -1588,6 +1702,10 @@
               base_addr: 0x400A0000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x400B0000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -1736,6 +1854,7 @@
           rv_timer
           usbdev
           pwrmgr
+          rstmgr
         ]
       }
       nodes:
@@ -1846,6 +1965,23 @@
           [
             {
               base_addr: 0x400A0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: rstmgr
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: rstmgr
+          addr_range:
+          [
+            {
+              base_addr: 0x400B0000
               size_byte: 0x1000
             }
           ]
@@ -2793,11 +2929,13 @@
   }
   reset_paths:
   {
-    lc: lc_rst_n
-    sys: sys_rst_n
-    sys_fixed: sys_fixed_rst_n
-    spi_device: spi_device_rst_n
-    usb: usb_rst_n
+    rst_ni: rst_ni
+    por: rstmgr_resets.rst_por_n
+    lc: rstmgr_resets.rst_lc_n
+    sys: rstmgr_resets.rst_sys_n
+    sys_fixed: rstmgr_resets.rst_sys_fixed_n
+    spi_device: rstmgr_resets.rst_spi_device_n
+    usb: rstmgr_resets.rst_usb_n
   }
   inter_signal:
   {
@@ -2830,11 +2968,13 @@
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        top_signame: pwrmgr_pwr_rst
         index: -1
       }
       {
         struct: pwr_clk
-        type: broadcast
+        type: uni
         name: pwr_clk
         act: req
         package: pwrmgr_pkg
@@ -2875,6 +3015,8 @@
         act: rcv
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        top_signame: pwrmgr_pwr_cpu
         index: -1
       }
       {
@@ -2884,6 +3026,57 @@
         act: rcv
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        index: -1
+      }
+      {
+        struct: pwr_rst
+        type: req_rsp
+        name: pwr
+        act: rsp
+        inst_name: rstmgr
+        width: 1
+        package: pwrmgr_pkg
+        top_signame: pwrmgr_pwr_rst
+        index: -1
+      }
+      {
+        struct: rstmgr_out
+        type: uni
+        name: resets
+        act: req
+        package: rstmgr_pkg
+        inst_name: rstmgr
+        width: 1
+        top_signame: rstmgr_resets
+        index: -1
+      }
+      {
+        struct: rstmgr_ast
+        type: uni
+        name: ast
+        act: rcv
+        package: rstmgr_pkg
+        inst_name: rstmgr
+        index: -1
+      }
+      {
+        struct: rstmgr_cpu
+        type: uni
+        name: cpu
+        act: rcv
+        package: rstmgr_pkg
+        inst_name: rstmgr
+        width: 1
+        top_signame: rstmgr_cpu
+        index: -1
+      }
+      {
+        struct: rstmgr_peri
+        type: uni
+        name: peri
+        act: rcv
+        package: rstmgr_pkg
+        inst_name: rstmgr
         index: -1
       }
       {
@@ -2913,6 +3106,41 @@
         signame: flash_ctrl_flash_rsp
         width: 1
         type: req_rsp
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_rst_req
+        signame: pwrmgr_pwr_rst_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_rst_rsp
+        signame: pwrmgr_pwr_rst_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: rstmgr_pkg
+        struct: rstmgr_out
+        signame: rstmgr_resets
+        width: 1
+        type: uni
+      }
+      {
+        package: rstmgr_pkg
+        struct: rstmgr_cpu
+        signame: rstmgr_cpu
+        width: 1
+        type: uni
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_cpu
+        signame: pwrmgr_pwr_cpu
+        width: 1
+        type: uni
       }
     ]
   }
