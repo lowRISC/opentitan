@@ -43,8 +43,9 @@ def generate_top(top, tpl_filename):
 
 
 def generate_xbars(top, out_path):
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
-              "-o hw/top_earlgrey/\n\n")
+    topname = top["name"]
+    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
+              "-o hw/top_{topname}/\n\n".format(topname=topname))
 
     for obj in top["xbar"]:
         xbar_path = out_path / 'ip/xbar_{}/data/autogen'.format(obj["name"])
@@ -97,6 +98,8 @@ def generate_alert_handler(top, out_path):
     async_on = "'0"
     # leave this constant
     n_classes = 4
+
+    topname = top["name"]
 
     # check if there are any params to be passed through reggen and placed into
     # the generated package
@@ -170,8 +173,8 @@ def generate_alert_handler(top, out_path):
 
     hjson_gen_path = doc_path / "alert_handler.hjson"
     gencmd = (
-        "// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --alert-handler-only "
-        "-o hw/top_earlgrey/\n\n")
+        "// util/topgen.py -t hw/top_{topname}/doc/top_{topname}.hjson --alert-handler-only "
+        "-o hw/top_{topname}/\n\n".format(topname=topname))
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
@@ -185,6 +188,7 @@ def generate_alert_handler(top, out_path):
 
 
 def generate_plic(top, out_path):
+    topname = top["name"]
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
     # So, total number of interrupts are the number of entries in the list + 1
@@ -213,7 +217,9 @@ def generate_plic(top, out_path):
     tpl_path = out_path / '../ip/rv_plic/data'
     hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
     rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
-    fpv_tpl_names = ['rv_plic_bind_fpv.sv', 'rv_plic_fpv.sv', 'rv_plic_fpv.core']
+    fpv_tpl_names = [
+        'rv_plic_bind_fpv.sv', 'rv_plic_fpv.sv', 'rv_plic_fpv.core'
+    ]
 
     # Generate Register Package and RTLs
     out = StringIO()
@@ -231,8 +237,8 @@ def generate_plic(top, out_path):
 
     hjson_gen_path = hjson_path / "rv_plic.hjson"
     gencmd = (
-        "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --plic-only "
-        "-o hw/top_earlgrey/\n\n")
+        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --plic-only "
+        "-o hw/top_{topname}/\n\n".format(topname=topname))
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
@@ -270,7 +276,7 @@ def generate_plic(top, out_path):
             fpv_tpl = Template(fin.read())
             try:
                 out = fpv_tpl.render(src=src, target=target, prio=prio)
-            except:
+            except:  # noqa : E722
                 log.error(exceptions.text_error_template().render())
             log.info("RV_PLIC FPV: %s" % out)
         if out == "":
@@ -281,7 +287,9 @@ def generate_plic(top, out_path):
         with fpv_gen_path.open(mode='w', encoding='UTF-8') as fout:
             fout.write(out)
 
+
 def generate_pinmux(top, out_path):
+    topname = top["name"]
     # MIO Pads
     num_mio = top["pinmux"]["num_mio"]
     if num_mio <= 0:
@@ -313,8 +321,8 @@ def generate_pinmux(top, out_path):
     tpl_path = out_path / '../ip/pinmux/data/pinmux.hjson.tpl'
 
     # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson "
-              "-o hw/top_earlgrey/\n\n")
+    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
+              "-o hw/top_{topname}/\n\n".format(topname=topname))
 
     hjson_gen_path = data_path / "pinmux.hjson"
 
@@ -499,11 +507,13 @@ def main():
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 
+        topname = topcfg["name"]
+
         # Sweep the IP directory and gather the config files
         ip_dir = Path(__file__).parents[1] / 'hw/ip'
         ips = search_ips(ip_dir)
 
-        # exclude rv_plic (to use top_earlgrey one) and
+        # exclude rv_plic (to use top_${topname} one) and
         ips = [x for x in ips if not x.parents[1].name in filter_list]
 
         # It may require two passes to check if the module is needed.
@@ -557,8 +567,8 @@ def main():
         genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
                                      completecfg["name"])
         gencmd = (
-            "// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --hjson-only "
-            "-o hw/top_earlgrey/\n")
+            "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
+            "-o hw/top_{topname}/\n".format(topname=topname))
 
         if args.top_ral:
             generate_top_ral(completecfg, ip_objs, out_path)
