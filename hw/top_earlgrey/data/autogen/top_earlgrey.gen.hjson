@@ -723,7 +723,15 @@
       available_output_list: []
       available_inout_list: []
       interrupt_list: []
-      alert_list: []
+      alert_list:
+      [
+        {
+          name: ctrl_err
+          width: 1
+          type: alert
+          async: 0
+        }
+      ]
       wakeup_list: []
       scan: "false"
       scan_reset: "false"
@@ -3278,11 +3286,19 @@
   ]
   alert_module:
   [
+    aes
     hmac
     otbn
   ]
   alert:
   [
+    {
+      name: aes_ctrl_err
+      width: 1
+      type: alert
+      async: 0
+      module_name: aes
+    }
     {
       name: hmac_msg_push_sha_disabled
       width: 1

@@ -15,11 +15,15 @@
 #define AES_NUM_REGS_DATA 4
 
 void aes_init(aes_cfg_t aes_cfg) {
-  REG32(AES_CTRL(0)) =
-      (aes_cfg.operation << AES_CTRL_OPERATION) |
-      ((aes_cfg.mode & AES_CTRL_MODE_MASK) << AES_CTRL_MODE_OFFSET) |
-      ((aes_cfg.key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET) |
-      (aes_cfg.manual_operation << AES_CTRL_MANUAL_OPERATION);
+  uint32_t cfg_val =
+      (aes_cfg.operation << AES_CTRL_SHADOWED_OPERATION) |
+      ((aes_cfg.mode & AES_CTRL_SHADOWED_MODE_MASK)
+       << AES_CTRL_SHADOWED_MODE_OFFSET) |
+      ((aes_cfg.key_len & AES_CTRL_SHADOWED_KEY_LEN_MASK)
+       << AES_CTRL_SHADOWED_KEY_LEN_OFFSET) |
+      (aes_cfg.manual_operation << AES_CTRL_SHADOWED_MANUAL_OPERATION);
+  REG32(AES_CTRL_SHADOWED(0)) = cfg_val;
+  REG32(AES_CTRL_SHADOWED(0)) = cfg_val;
 };
 
 void aes_key_put(const void *key, aes_key_len_t key_len) {
@@ -101,7 +105,9 @@ void aes_clear(void) {
   }
 
   // Disable autostart
-  REG32(AES_CTRL(0)) = 0x1u << AES_CTRL_MANUAL_OPERATION;
+  uint32_t cfg_val = 0x1u << AES_CTRL_SHADOWED_MANUAL_OPERATION;
+  REG32(AES_CTRL_SHADOWED(0)) = cfg_val;
+  REG32(AES_CTRL_SHADOWED(0)) = cfg_val;
 
   // Clear internal key and output registers
   REG32(AES_TRIGGER(0)) = (0x1u << AES_TRIGGER_KEY_CLEAR) |

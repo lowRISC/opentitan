@@ -88,19 +88,18 @@ class aes_scoreboard extends cip_base_scoreboard #(
       csr_name = csr.get_name();
       case (1)
         // add individual case item for each csr
-         (!uvm_re_match("ctrl", csr_name)): begin
-
-          input_item.manual_op = item.a_data[7];
-          input_item.key_len   = item.a_data[6:4];
+        (!uvm_re_match("ctrl_shadowed", csr_name)): begin
+          input_item.manual_op = item.a_data[8];
+          input_item.key_len   = item.a_data[7:5];
           `downcast(input_item.operation, item.a_data[0]);
           input_item.valid = 1'b1;
-           
-          case (item.a_data[3:1])
-            3'b001:  input_item.mode = AES_ECB;
-            3'b010:  input_item.mode = AES_CBC;
-            3'b100:  input_item.mode = AES_CTR;
-            default: input_item.mode = AES_ECB;
-          endcase // case item.a_data[3
+          case (item.a_data[4:1])
+            4'b0001:  input_item.mode = AES_ECB;
+            4'b0010:  input_item.mode = AES_CBC;
+            4'b0100:  input_item.mode = AES_CTR;
+            4'b1000:  input_item.mode = AES_NONE;
+            default:  input_item.mode = AES_ECB;
+          endcase // case item.a_data[4:1]
         end
 
         (!uvm_re_match("key*", csr_name)): begin
@@ -171,7 +170,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
               // verify that all 4 data_in and all 8 key are clean
               `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
                         input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-  
+
               if(input_item.data_in_valid() && input_item.key_clean(1)) begin
                 //clone and add to ref and rec data fifo
                 `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
@@ -193,7 +192,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
               // verify that all 4 data_in and all 8 key  and all 4 IV are clean
               `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
                                 input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-  
+
               if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
                 //clone and add to ref and rec data fifo
                 `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
@@ -226,7 +225,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
         endcase // case (input_item.mode)
       end // if (input_item.valid)
-      
 
       // forward item to receive side
       if(ok_to_fwd ) begin

@@ -16,12 +16,14 @@ typedef enum aes_op { kAesEnc = 0, kAesDec = 1 } aes_op_t;
 
 /**
  * Supported AES block cipher modes: ECB, CBC, CTR. The hardware uses a one-hot
- * encoding.
+ * encoding. NONE is not a supported mode but the reset value of the hardware.
+ * The hardware resolves invalid mode values to NONE.
  */
 typedef enum aes_mode {
   kAesEcb = 1 << 0,
   kAesCbc = 1 << 1,
-  kAesCtr = 1 << 2
+  kAesCtr = 1 << 2,
+  kAesNone = 1 << 3
 } aes_mode_t;
 
 /**

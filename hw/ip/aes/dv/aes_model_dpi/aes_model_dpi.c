@@ -22,6 +22,10 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
   const unsigned char impl = impl_i & impl_mask;
   const unsigned char op = op_i & op_mask;
   const crypto_mode_t mode = (crypto_mode_t)(*mode_i & mode_mask);
+  if (mode == kCryptoAesNone) {
+    printf("ERROR: Mode kCryptoAesNone not supported by c_dpi_aes_crypt_block");
+    return;
+  }
 
   // key_len_i is one-hot encoded.
   int key_len;
@@ -114,6 +118,11 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
   const unsigned char impl = impl_i & impl_mask;
   const unsigned char op = op_i & op_mask;
   const crypto_mode_t mode = (crypto_mode_t)(*mode_i & mode_mask);
+  if (mode == kCryptoAesNone) {
+    printf(
+        "ERROR: Mode kCryptoAesNone not supported by c_dpi_aes_crypt_message");
+    return;
+  }
 
   // key_len_i is one-hot encoded.
   int key_len;

@@ -45,34 +45,34 @@ class aes_base_vseq extends cip_base_vseq #(
 
     // initialize control register
     aes_ctrl[0]    = 0;        // set to encryption
-    aes_ctrl[3:1] = aes_pkg::AES_ECB;   //3'b001;   // set to ECB MODE
-    aes_ctrl[6:4]  = aes_pkg::AES_128;   // set to 128b key
-    csr_wr(.csr(ral.ctrl), .value(aes_ctrl));
+    aes_ctrl[4:1]  = aes_pkg::AES_ECB;   // 4'b0001
+    aes_ctrl[7:5]  = aes_pkg::AES_128;   // set to 128b key
+    csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1));
     csr_wr(.csr(ral.trigger), .value(aes_trigger));
   endtask
 
 
   virtual task set_operation(bit operation);
-    ral.ctrl.operation.set(operation);
-    csr_update(.csr(ral.ctrl));
+    ral.ctrl_shadowed.operation.set(operation);
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
   endtask // set_operation
 
 
-  virtual task set_mode(bit [2:0] mode);
-    ral.ctrl.mode.set(mode);
-    csr_update(.csr(ral.ctrl));
+  virtual task set_mode(bit [3:0] mode);
+    ral.ctrl_shadowed.mode.set(mode);
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
   endtask
 
 
   virtual task set_key_len(bit [2:0] key_len);
-    ral.ctrl.key_len.set(key_len);
-    csr_update(.csr(ral.ctrl));
+    ral.ctrl_shadowed.key_len.set(key_len);
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
   endtask
 
 
   virtual task set_manual_operation(bit manual_operation);
-    ral.ctrl.manual_operation.set(manual_operation);
-    csr_update(.csr(ral.ctrl));
+    ral.ctrl_shadowed.manual_operation.set(manual_operation);
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
   endtask
 
 

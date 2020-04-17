@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef CRYPTO_H_
-#define CRYPTO_H_
+#ifndef OPENTITAN_HW_IP_AES_MODEL_CRYPTO_H_
+#define OPENTITAN_HW_IP_AES_MODEL_CRYPTO_H_
 
 /**
  * AES cipher mode
@@ -11,7 +11,8 @@
 typedef enum crypto_mode {
   kCryptoAesEcb = 1 << 0,
   kCryptoAesCbc = 1 << 1,
-  kCryptoAesCtr = 1 << 2
+  kCryptoAesCtr = 1 << 2,
+  kCryptoAesNone = 1 << 3
 } crypto_mode_t;
 
 /**
@@ -48,4 +49,4 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
                    const unsigned char *input, int input_len,
                    const unsigned char *key, int key_len, crypto_mode_t mode);
 
-#endif  // CRYPTO_H_
+#endif  // OPENTITAN_HW_IP_AES_MODEL_CRYPTO_H_
