@@ -93,12 +93,14 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
           for (int i = 0; i < NUM_HARTS; i++) begin
             timer_val[i][31:0] = get_reg_fld_mirror_value(
                                      ral, $sformatf("timer_v_lower%0d", i), "v");
+            num_clk_update_due[i] = 1'b1;
           end
         end
         (!uvm_re_match("timer_v_upper*", csr_name)): begin
           for (int i = 0; i < NUM_HARTS; i++) begin
             timer_val[i][63:32] = get_reg_fld_mirror_value(
                                       ral, $sformatf("timer_v_upper%0d", i), "v");
+            num_clk_update_due[i] = 1'b1;
           end
         end
         (!uvm_re_match("compare_lower*", csr_name)): begin

@@ -30,6 +30,11 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
     num_trans inside {[1:4]};
   }
 
+  function void pre_randomize();
+    super.pre_randomize();
+    max_clks_until_expiry = 1_000_000; // Redefining max clock to avoid timeout
+  endfunction
+
   task body();
     for (int trans = 1; trans <= num_trans; trans++) begin
       `uvm_info(`gfn, $sformatf("Running test iteration %0d/%0d", trans, num_trans), UVM_LOW)
