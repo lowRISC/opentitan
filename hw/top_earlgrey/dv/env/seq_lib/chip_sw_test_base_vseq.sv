@@ -26,8 +26,7 @@ class chip_sw_test_base_vseq extends chip_base_vseq;
     // initialize the sw msg monitor
     foreach (cfg.sw_types[i]) begin
       cfg.sw_logger_vif[cfg.sw_types[i]].sw_log_addr = SW_DV_LOG_ADDR;
-      cfg.sw_logger_vif[cfg.sw_types[i]].set_sw_log_file(cfg.sw_types[i],
-                                                         cfg.sw_log_files[cfg.sw_types[i]]);
+      cfg.sw_logger_vif[cfg.sw_types[i]].set_sw_name(cfg.sw_types[i]);
       cfg.sw_logger_vif[cfg.sw_types[i]].ready();
     end
 

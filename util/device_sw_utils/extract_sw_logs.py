@@ -38,11 +38,14 @@ RODATA_SECTION = '.rodata'
 def cleanup_newlines(string):
     '''Replaces newlines with a carriage return.
 
-    The reason for doing so if a neline is encountered in the middle of a
+    The reason for doing so if a newline is encountered in the middle of a
     string, it ends up adding that newline in the output files this script
     generates. The output of this script is consumed by a monitor written in
     SystemVerilog (hw/dv/sv/sw_logger_if), a language with limited parsing
-    / processing support.'''
+    / processing capability. So we make the parsing easier on the SV side by
+    putting all multiline strings on a single line, separated by a single
+    carriage return instead, which the SV monitor can easily replace with
+    a newline.'''
     return re.sub(r"[\n\r]+", "\r", string).strip()
 
 
@@ -65,6 +68,38 @@ def cleanup_format(_format):
     _format = re.sub(r"(%-?\d*)z", r"\1s[%d]", _format)
     _format = re.sub(r"%([bcodhHs])", r"%0\1", _format)
     return cleanup_newlines(_format)
+
+
+def get_string_format_specifier_indices(_format):
+    '''Returns the indices of string format specifiers %s in the format string.
+
+    Example: a = %d, %%b = %%%2c, %%%% c = %5s, %% d = %o, e = %x, f = %-1s
+    The function will return: `2 5` because the 2nd and the 5th arg to the
+    format are strings. The '%%' does not accept an arg so they are ignored.
+    The returned value is a string of indices separated by a single space.
+
+    It is assumed that _format has been passed through `cleanup_format()`.
+    '''
+    pattern = '''
+         %                    # literal "%"
+         (?:[-+0 #]{0,5})     # optional flags
+         (?:\d+|\*)?          # width
+         (?:\.(?:\d+|\*))?    # precision
+         (?:l|ll)?            # size
+         ([cdiouxpXshH])      # type (returned if matched)
+         |                    # OR
+         %(%)                 # literal "%%" (returned if matched)
+         '''
+    m = re.findall(pattern, _format, re.X)
+    # With the above example, the output of the pattern match is:
+    # [('d', ''), ('', '%'), ('', '%'), ('c', ''), and so on..]
+    index = 0
+    result = []
+    for match in m:
+        if match[1] == '%': continue
+        if match[0] == 's': result.append(str(index))
+        index += 1
+    return ' '.join(result).strip()
 
 
 def prune_filename(filename):
@@ -170,8 +205,10 @@ def extract_sw_logs(elf_file, logs_fields_section, ro_sections):
                 prune_filename(get_str_at_addr(file_addr, addr_strings)))
             result += "line: {}\n".format(line)
             result += "nargs: {}\n".format(nargs)
-            result += "format: {}\n".format(
-                cleanup_format(get_str_at_addr(format_addr, addr_strings)))
+            fmt = cleanup_format(get_str_at_addr(format_addr, addr_strings))
+            result += "format: {}\n".format(fmt)
+            result += "str_arg_idx: {}\n".format(
+                get_string_format_specifier_indices(fmt))
 
         return rodata, result
 
