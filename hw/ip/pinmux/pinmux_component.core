@@ -11,6 +11,8 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
     files:
+      - rtl/pinmux_pkg.sv
+      - rtl/pinmux_wkup.sv
       - rtl/pinmux.sv
     file_type: systemVerilogSource
 
