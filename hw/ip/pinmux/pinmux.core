@@ -11,7 +11,6 @@ filesets:
       - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
 
-
 parameters:
   SYNTHESIS:
     datatype: bool
