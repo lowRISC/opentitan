@@ -7,10 +7,6 @@
       {ral.class``i``_phase0_cyc, ral.class``i``_phase1_cyc, \
        ral.class``i``_phase2_cyc, ral.class``i``_phase3_cyc};
 
-`define WAIT_CLK_AND_CHECK_RESET \
-  @(cfg.clk_rst_vif.cb); \
-  if (cfg.under_reset) break;
-
 class alert_handler_scoreboard extends cip_base_scoreboard #(
     .CFG_T(alert_handler_env_cfg),
     .RAL_T(alert_handler_reg_block),
@@ -302,8 +298,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // if counter exceeds threshold, call predict_esc() function to calculate related esc
   virtual task check_intr_timeout_trigger_esc();
     for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
-      automatic int             class_i = i;
       fork
+        automatic int class_i = i;
         begin : intr_sig_counter
           forever @(under_intr_classes[class_i] && !under_esc_classes[class_i]) begin
             bit [TL_DW-1:0] timeout_cyc, class_ctrl;
@@ -341,36 +337,48 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       fork
         automatic int class_i = i;
         begin : esc_phases_counter
-          forever @(under_esc_classes[class_i]) begin
-            for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
-              int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
-                                .get_mirrored_value();
-              bit[TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
-              int enabled_sig_q[$];
-              for (int sig_i = 0; sig_i < NUM_ESC_SIGNALS; sig_i++) begin
-                if (class_ctrl[sig_i*2+7 -: 2] == phase_i && class_ctrl[sig_i+2]) begin
-                  enabled_sig_q.push_back(sig_i);
+          forever @(!cfg.under_reset && under_esc_classes[class_i]) begin
+            fork
+              begin : inc_esc_cnt
+                for (int phase_i = 0; phase_i < NUM_ESC_PHASES; phase_i++) begin
+                  int phase_thresh = reg_esc_phase_cycs_per_class_q[class_i][phase_i]
+                                     .get_mirrored_value();
+                  bit[TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
+                  int enabled_sig_q[$];
+                  for (int sig_i = 0; sig_i < NUM_ESC_SIGNALS; sig_i++) begin
+                    if (class_ctrl[sig_i*2+7 -: 2] == phase_i && class_ctrl[sig_i+2]) begin
+                      enabled_sig_q.push_back(sig_i);
+                    end
+                  end
+                  if (under_esc_classes[class_i]) begin
+                    @(cfg.clk_rst_vif.cb);
+                    intr_cnter_per_class[class_i] = 1;
+                    incr_esc_sig_cnt(enabled_sig_q, class_i);
+                    while (under_esc_classes[class_i] != 0 &&
+                           intr_cnter_per_class[class_i] < phase_thresh) begin
+                      @(cfg.clk_rst_vif.cb);
+                      incr_esc_sig_cnt(enabled_sig_q, class_i);
+                      intr_cnter_per_class[class_i]++;
+                    end
+                    incr_esc_sig_cnt(enabled_sig_q, class_i);
+                    foreach (enabled_sig_q[i]) begin
+                      int index = enabled_sig_q[i];
+                      if (esc_sig_class[index] == (class_i + 1)) release_esc_signal(index);
+                    end
+                  end
+                end
+                @(cfg.clk_rst_vif.cb);
+                intr_cnter_per_class[class_i] = 0;
+                cfg.clk_rst_vif.wait_clks(2);
+              end
+              begin
+                wait(cfg.under_reset || !under_esc_classes[class_i]);
+                if (!under_esc_classes[class_i]) begin
+                  cfg.clk_rst_vif.wait_clks(2);
                 end
               end
-              if (under_esc_classes[class_i]) begin
-                `WAIT_CLK_AND_CHECK_RESET
-                intr_cnter_per_class[class_i] = 1;
-                incr_esc_sig_cnt(enabled_sig_q, class_i);
-                while (under_esc_classes[class_i] != 0 &&
-                       intr_cnter_per_class[class_i] < phase_thresh) begin
-                  `WAIT_CLK_AND_CHECK_RESET
-                  incr_esc_sig_cnt(enabled_sig_q, class_i);
-                  intr_cnter_per_class[class_i]++;
-                end
-                incr_esc_sig_cnt(enabled_sig_q, class_i);
-                foreach (enabled_sig_q[i]) begin
-                  int index = enabled_sig_q[i];
-                  if (esc_sig_class[index] == (class_i + 1)) release_esc_signal(index);
-                end
-             end
-            end
-            @(cfg.clk_rst_vif.cb);
-            intr_cnter_per_class[class_i] = 0;
+            join_any
+            disable fork;
           end // end forever
         end
       join_none
@@ -450,4 +458,3 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 endclass
 
 `undef ASSIGN_CLASS_PHASE_REGS
-`undef WAIT_CLK_AND_CHECK_RESET

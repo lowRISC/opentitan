@@ -134,10 +134,12 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.classd_esc_cnt), .value(accum_cnt));
   endtask
 
-  virtual task wait_alert_esc_handshake_done(int wait_clk_cycs_esc);
+  virtual task wait_alert_handshake_done();
     cfg.clk_rst_vif.wait_clks(2);
     foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].vif.wait_ack_complete();
+  endtask
 
+  virtual task wait_esc_handshake_done(int wait_clk_cycs_esc);
     cfg.clk_rst_vif.wait_clks(wait_clk_cycs_esc);
     foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].vif.wait_esc_complete();
   endtask

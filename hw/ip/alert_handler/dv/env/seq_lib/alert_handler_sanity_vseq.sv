@@ -95,10 +95,21 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       // read and check interrupt
       clear_all_interrupts();
 
-      // wait to ensure all escalation phases are done before clearing the esc class
-      // TODO: replace with accurate status and cycle check
-      wait_alert_esc_handshake_done(max_wait_phases_cyc);
-
+      wait_alert_handshake_done();
+      fork
+        begin : isolation_fork
+          fork
+            begin
+              wait_esc_handshake_done(max_wait_phases_cyc);
+            end
+            begin
+              cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc*2));
+              do_clr_esc = 1;
+            end
+          join_any
+          disable fork;
+        end
+      join
       read_alert_cause();
       read_esc_status();
       if (do_clr_esc) clear_esc();
