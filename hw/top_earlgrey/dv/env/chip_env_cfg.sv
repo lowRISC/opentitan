@@ -21,7 +21,6 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   string sw_types[]         = '{"rom", "sw"};
   sw_logger_vif             sw_logger_vif[string];
   string                    sw_images[string];
-  string                    sw_log_files[string];
   virtual sw_test_status_if sw_test_status_vif;
   uint                      sw_test_timeout_ns = 2_000_000; // 2ms
 
@@ -76,7 +75,6 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
     // initialize the sw_image names and log file names
     foreach (sw_types[i]) begin
       sw_images[sw_types[i]] = {sw_types[i], ".32.vmem"};
-      sw_log_files[sw_types[i]] = {sw_types[i], "_logs.txt"};
     end
   endfunction
 

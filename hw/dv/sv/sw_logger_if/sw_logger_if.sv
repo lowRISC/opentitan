@@ -3,41 +3,42 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // shortcuts for use in switching # of args to insert in formatted string
+`define _USE_STR_ARG(a, n)          (a.str_arg.exists(``n``) ? a.str_arg[``n``] : a.arg[``n``])
 `define _0_ARGS(a)
-`define _1_ARGS(a)                  , a[0]
-`define _2_ARGS(a)                  `_1_ARGS(a), a[1]
-`define _3_ARGS(a)                  `_2_ARGS(a), a[2]
-`define _4_ARGS(a)                  `_3_ARGS(a), a[3]
-`define _5_ARGS(a)                  `_4_ARGS(a), a[4]
-`define _6_ARGS(a)                  `_5_ARGS(a), a[5]
-`define _7_ARGS(a)                  `_6_ARGS(a), a[6]
-`define _8_ARGS(a)                  `_7_ARGS(a), a[7]
-`define _9_ARGS(a)                  `_8_ARGS(a), a[8]
-`define _10_ARGS(a)                 `_9_ARGS(a), a[9]
-`define _11_ARGS(a)                 `_10_ARGS(a), a[10]
-`define _12_ARGS(a)                 `_11_ARGS(a), a[11]
-`define _13_ARGS(a)                 `_12_ARGS(a), a[12]
-`define _14_ARGS(a)                 `_13_ARGS(a), a[13]
-`define _15_ARGS(a)                 `_14_ARGS(a), a[14]
-`define _16_ARGS(a)                 `_15_ARGS(a), a[15]
-`define _17_ARGS(a)                 `_16_ARGS(a), a[16]
-`define _18_ARGS(a)                 `_17_ARGS(a), a[17]
-`define _19_ARGS(a)                 `_18_ARGS(a), a[18]
-`define _20_ARGS(a)                 `_19_ARGS(a), a[19]
-`define _21_ARGS(a)                 `_20_ARGS(a), a[20]
-`define _22_ARGS(a)                 `_21_ARGS(a), a[21]
-`define _23_ARGS(a)                 `_22_ARGS(a), a[22]
-`define _24_ARGS(a)                 `_23_ARGS(a), a[23]
-`define _25_ARGS(a)                 `_24_ARGS(a), a[24]
-`define _26_ARGS(a)                 `_25_ARGS(a), a[25]
-`define _27_ARGS(a)                 `_26_ARGS(a), a[26]
-`define _28_ARGS(a)                 `_27_ARGS(a), a[27]
-`define _29_ARGS(a)                 `_28_ARGS(a), a[28]
-`define _30_ARGS(a)                 `_29_ARGS(a), a[29]
-`define _31_ARGS(a)                 `_30_ARGS(a), a[30]
-`define _32_ARGS(a)                 `_31_ARGS(a), a[31]
+`define _1_ARGS(a)                  , `_USE_STR_ARG(a, 0)
+`define _2_ARGS(a)                  `_1_ARGS(a), `_USE_STR_ARG(a, 1)
+`define _3_ARGS(a)                  `_2_ARGS(a), `_USE_STR_ARG(a, 2)
+`define _4_ARGS(a)                  `_3_ARGS(a), `_USE_STR_ARG(a, 3)
+`define _5_ARGS(a)                  `_4_ARGS(a), `_USE_STR_ARG(a, 4)
+`define _6_ARGS(a)                  `_5_ARGS(a), `_USE_STR_ARG(a, 5)
+`define _7_ARGS(a)                  `_6_ARGS(a), `_USE_STR_ARG(a, 6)
+`define _8_ARGS(a)                  `_7_ARGS(a), `_USE_STR_ARG(a, 7)
+`define _9_ARGS(a)                  `_8_ARGS(a), `_USE_STR_ARG(a, 8)
+`define _10_ARGS(a)                 `_9_ARGS(a), `_USE_STR_ARG(a, 9)
+`define _11_ARGS(a)                 `_10_ARGS(a), `_USE_STR_ARG(a, 10)
+`define _12_ARGS(a)                 `_11_ARGS(a), `_USE_STR_ARG(a, 11)
+`define _13_ARGS(a)                 `_12_ARGS(a), `_USE_STR_ARG(a, 12)
+`define _14_ARGS(a)                 `_13_ARGS(a), `_USE_STR_ARG(a, 13)
+`define _15_ARGS(a)                 `_14_ARGS(a), `_USE_STR_ARG(a, 14)
+`define _16_ARGS(a)                 `_15_ARGS(a), `_USE_STR_ARG(a, 15)
+`define _17_ARGS(a)                 `_16_ARGS(a), `_USE_STR_ARG(a, 16)
+`define _18_ARGS(a)                 `_17_ARGS(a), `_USE_STR_ARG(a, 17)
+`define _19_ARGS(a)                 `_18_ARGS(a), `_USE_STR_ARG(a, 18)
+`define _20_ARGS(a)                 `_19_ARGS(a), `_USE_STR_ARG(a, 19)
+`define _21_ARGS(a)                 `_20_ARGS(a), `_USE_STR_ARG(a, 20)
+`define _22_ARGS(a)                 `_21_ARGS(a), `_USE_STR_ARG(a, 21)
+`define _23_ARGS(a)                 `_22_ARGS(a), `_USE_STR_ARG(a, 22)
+`define _24_ARGS(a)                 `_23_ARGS(a), `_USE_STR_ARG(a, 23)
+`define _25_ARGS(a)                 `_24_ARGS(a), `_USE_STR_ARG(a, 24)
+`define _26_ARGS(a)                 `_25_ARGS(a), `_USE_STR_ARG(a, 25)
+`define _27_ARGS(a)                 `_26_ARGS(a), `_USE_STR_ARG(a, 26)
+`define _28_ARGS(a)                 `_27_ARGS(a), `_USE_STR_ARG(a, 27)
+`define _29_ARGS(a)                 `_28_ARGS(a), `_USE_STR_ARG(a, 28)
+`define _30_ARGS(a)                 `_29_ARGS(a), `_USE_STR_ARG(a, 29)
+`define _31_ARGS(a)                 `_30_ARGS(a), `_USE_STR_ARG(a, 30)
+`define _32_ARGS(a)                 `_31_ARGS(a), `_USE_STR_ARG(a, 31)
 `define _ADD_ARGS(a, n)             `_``n``_ARGS(a)
-`define FORMATTED_LOG_WITH_NARGS(n) $sformatf(log `_ADD_ARGS(sw_log.arg, n))
+`define FORMATTED_LOG_WITH_NARGS(n) $sformatf(log `_ADD_ARGS(sw_log, n))
 
 interface sw_logger_if #(
   // width of the data bus
@@ -62,6 +63,7 @@ interface sw_logger_if #(
   // image name and log file for parsing
   string sw_name;
   string sw_log_file;
+  string sw_rodata_file;
 
   // typedef addr / data values
   typedef bit [DATA_WIDTH-1:0] addr_data_t;
@@ -87,11 +89,12 @@ interface sw_logger_if #(
     string          name;       // Name of the SW image.
     log_severity_e  severity;
     log_verbosity_e verbosity;
-    string          file;       // Name of the C file invoking the log.
-    int             line;       // Line no in the C file from where the log originated.
-    int             nargs;      // Number of args provided to the format string.
-    addr_data_t     arg[];      // actual arg values
-    string          format;     // formatted string
+    string          file;         // Name of the C file invoking the log.
+    int             line;         // Line no in the C file from where the log originated.
+    int             nargs;        // Number of args provided to the format string.
+    addr_data_t     arg[];        // actual arg values
+    string          str_arg[int]; // some args are strings - this AA holds it
+    string          format;       // formatted string
   } sw_log_t;
 
   // signal indicating all initializations are done (this is set by calling ready() function)
@@ -100,17 +103,27 @@ interface sw_logger_if #(
   // hash of log with addr key
   sw_log_t sw_logs[addr_data_t];
 
+  // hash of rodata with addr key
+  string sw_rodata[addr_data_t];
+
   // q of values obtained from the bus
   addr_data_t addr_data_q[$];
 
-  // function to add the log dat files
-  function automatic void set_sw_log_file(string _sw_name, string _sw_log_file);
+  // Indicate when the log was printed and what was the final string.
+  event  printed_log_event;
+  string printed_log;
+
+  // Set the sw_name, The logger assumes that there are two files placed in the rundir -
+  // <sw_name>_logs.txt: contains logs split as fields of `sw_log_t`
+  // <sw_name>_rodata.txt: contains constants from the read-only sections.
+  function automatic void set_sw_name(string _sw_name);
     if (_ready) log_fatal(.log("this function cannot be called after calling ready()"));
     sw_name = _sw_name;
-    sw_log_file = _sw_log_file;
+    sw_log_file = {sw_name, "_logs.txt"};
+    sw_rodata_file = {sw_name, "_rodata.txt"};
   endfunction
 
-  // signal to indicate all monitor is good to go - all initializations are done
+  // signal to indicate that this monitor is good to go - all initializations are done
   function automatic void ready();
     _ready = 1'b1;
   endfunction
@@ -121,6 +134,7 @@ interface sw_logger_if #(
   initial begin
     wait(_ready);
     if (parse_sw_log_file()) begin
+      void'(parse_sw_rodata_file());
       fork
         get_addr_data_from_bus();
         construct_log_and_print();
@@ -160,6 +174,15 @@ interface sw_logger_if #(
       sw_log.arg = new[sw_log.nargs];
       void'(get_sw_log_field(fd, "format", field));
       sw_log.format = field;
+      void'(get_sw_log_field(fd, "str_arg_idx", field));
+
+      begin
+        int indices[$];
+        get_str_arg_indices(field, indices);
+        foreach (indices[i]) begin
+          sw_log.str_arg[indices[i]] = "";
+        end
+      end
 
       if (sw_logs.exists(addr)) begin
         log_warning($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
@@ -169,16 +192,50 @@ interface sw_logger_if #(
     end
     $fclose(fd);
 
-    // cleanup the format of all logs
-    cleanup_format();
-
     // print parsed logs
     foreach (sw_logs[addr]) begin
+      // Replace CRs in the middle of the string with NLs.
+      sw_logs[addr].format = replace_cr_with_nl(sw_logs[addr].format);
       log_info(.verbosity(LogVerbosityHigh),
                .log($sformatf("sw_logs[%0h] = %p", addr, sw_logs[addr])));
     end
 
     return (sw_logs.size() > 0);
+  endfunction
+
+  function automatic bit parse_sw_rodata_file();
+    int fd;
+    fd = $fopen(sw_rodata_file, "r");
+    if (!fd) return 0;
+
+    while (!$feof(fd)) begin
+      string        field;
+      addr_data_t   addr;
+      bit           status;
+
+      status = get_sw_log_field(fd, "addr", field);
+      // We proceed to retrieving other fields only if we get the addr.
+      if (!status) break;
+      addr = field.atohex();
+      void'(get_sw_log_field(fd, "string", field));
+
+      if (sw_rodata.exists(addr)) begin
+        log_warning($sformatf("Rodata entry for addr %0x already exists:\nOld: %s\nNew: %s",
+                              addr, sw_rodata[addr], field));
+      end
+      sw_rodata[addr] = field;
+    end
+    $fclose(fd);
+
+    // print parsed logs
+    foreach (sw_rodata[addr]) begin
+      // Replace CRs in the middle of the string with NLs.
+      sw_rodata[addr] = replace_cr_with_nl(sw_rodata[addr]);
+      log_info(.verbosity(LogVerbosityHigh),
+               .log($sformatf("sw_rodata[%0h] = %p", addr, sw_rodata[addr])));
+    end
+
+    return (sw_rodata.size() > 0);
   endfunction
 
   // Get the sw log fields by parsing line-by-line.
@@ -189,6 +246,7 @@ interface sw_logger_if #(
     byte   cr    = 8'hd;
     string match = {field, ": *"};
 
+    value = "";
     while (!$feof(fd)) begin
       string line;
       void'($fgets(line, fd));
@@ -197,7 +255,7 @@ interface sw_logger_if #(
         line = line.substr(0, line.len() - 2);
       end
       if (line == "") continue;
-      // check if field exists
+      // Check if field exists
       if (!uvm_re_match(match, line)) begin
         value = line.substr(match.len() - 1, line.len() - 1);
         return 1'b1;
@@ -209,25 +267,63 @@ interface sw_logger_if #(
     return 1'b0;
   endfunction
 
-  // function to cleanup the string formatting
-  function automatic void cleanup_format();
-    byte cr = 8'hd;
-    byte lf = 8'ha;
-    foreach (sw_logs[addr]) begin
-      string str = sw_logs[addr].format;
-      if (str.len() >= 2) begin
-        for (int i = 0; i < str.len() - 1; i++) begin
-          // replace carriage return in the middle of the string with newline.
-          if (byte'(str.getc(i)) == cr) begin
-            str.putc(i, lf);
-          end
-        end
+  // Parse list if indices that have string args (in string format as space separated values
+  // and return a queue of corresponding integers.
+  function automatic void get_str_arg_indices(string list, ref int indices[$]);
+    int i;
+    int start = 0;
+    indices.delete();
+    if (list == "") return;
+    for (i = 0; i < list.len(); i++) begin
+      if (list.getc(i) == " " && i == start) begin
+        start++;
+        continue;
       end
-      sw_logs[addr].format = str;
+      else if (list.getc(i) == " ") begin
+        string index = list.substr(start, i - 1);
+        indices.push_back(index.atoi());
+        start = i + 1;
+      end
+    end
+    if (start < i) begin
+      string index = list.substr(start, i - 1);
+      indices.push_back(index.atoi());
     end
   endfunction
 
-    // retrieve addr or data from the bus
+  // replace carriage return in the middle of the string with newline.
+  function automatic string replace_cr_with_nl(string text);
+    byte cr = 8'hd;
+    byte lf = 8'ha;
+    if (text.len() >= 2) begin
+      for (int i = 0; i < text.len() - 1; i++) begin
+        if (byte'(text.getc(i)) == cr) begin
+          text.putc(i, lf);
+        end
+      end
+    end
+    return text;
+  endfunction
+
+  // Retrieve the string at the specified addr.
+  function automatic string get_str_at_addr(addr_data_t addr);
+    if (sw_rodata.exists(addr)) return sw_rodata[addr];
+    // The string could start midway from an existing addr entry.
+    foreach (sw_rodata[str_addr]) begin
+      addr_data_t limit = sw_rodata[str_addr].len() - 1;
+      if (addr inside {[str_addr : str_addr + limit]}) begin
+        return sw_rodata[str_addr].substr(addr - str_addr, limit);
+      end
+    end
+    // If no string was found at the provided addr, then return the addr converted to string.
+    begin
+      string result;
+      result.hextoa(addr);
+      return result;
+    end
+  endfunction
+
+  // retrieve addr or data from the bus
   task automatic get_addr_data_from_bus();
     forever begin
       @(posedge clk);
@@ -255,6 +351,15 @@ interface sw_logger_if #(
               for (int i = 0; i < sw_logs[addr].nargs; i++) begin
                 wait(addr_data_q.size() > 0);
                 sw_logs[addr].arg[i] = addr_data_q.pop_front();
+                // Check if this is an str arg
+                if (sw_logs[addr].str_arg.exists(i)) begin
+                  // The arg[i] received is the addr in rodata where the string resides.
+                  sw_logs[addr].str_arg[i] = get_str_at_addr(sw_logs[addr].arg[i]);
+                  log_info(.verbosity(LogVerbosityDebug),
+                           .log($sformatf("String arg at addr %0h: %0s",
+                                          sw_logs[addr].arg[i],
+                                          sw_logs[addr].str_arg[i])));
+                end
               end
               begin
                 // check if rst_n occurred - in that case discard and start over
@@ -314,6 +419,8 @@ interface sw_logger_if #(
     endcase
     sw_log.format = log;
     print_log(sw_log);
+    printed_log = log;
+    ->printed_log_event;
   endfunction
 
   // print logs from this file.
@@ -391,6 +498,7 @@ interface sw_logger_if #(
 endinterface
 
 // undefine previously defined macros
+`undef _USE_STR_ARG
 `undef _0_ARGS
 `undef _1_ARGS
 `undef _2_ARGS
