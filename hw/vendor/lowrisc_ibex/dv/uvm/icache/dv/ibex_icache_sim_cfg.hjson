@@ -42,6 +42,7 @@
     {
       name: ibex_icache_sanity
       uvm_test_seq: ibex_icache_sanity_vseq
+      run_opts: ["+test_timeout_ns=10000"]
     }
 
     // TODO: add more tests here

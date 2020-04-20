@@ -20,6 +20,7 @@ module ibex_id_stage #(
     parameter bit RV32E           = 0,
     parameter bit RV32M           = 1,
     parameter bit RV32B           = 0,
+    parameter bit DataIndTiming   = 1'b0,
     parameter bit BranchTargetALU = 0,
     parameter bit WritebackStage  = 0
 ) (
@@ -67,6 +68,11 @@ module ibex_id_stage #(
     output logic [31:0]               alu_operand_a_ex_o,
     output logic [31:0]               alu_operand_b_ex_o,
 
+    // Multicycle Operation Stage Register
+    input  logic                      imd_val_we_ex_i,
+    input  logic [33:0]               imd_val_d_ex_i,
+    output logic [33:0]               imd_val_q_ex_o,
+
     // Branch target ALU
     output logic [31:0]               bt_a_operand_o,
     output logic [31:0]               bt_b_operand_o,
@@ -95,6 +101,7 @@ module ibex_id_stage #(
     input  ibex_pkg::priv_lvl_e       priv_mode_i,
     input  logic                      csr_mstatus_tw_i,
     input  logic                      illegal_csr_insn_i,
+    input  logic                      data_ind_timing_i,
 
     // Interface to load store unit
     output logic                      lsu_req_o,
@@ -183,6 +190,7 @@ module ibex_id_stage #(
 
   logic        branch_in_dec;
   logic        branch_set, branch_set_d;
+  logic        branch_taken;
   logic        jump_in_dec;
   logic        jump_set;
 
@@ -224,6 +232,10 @@ module ibex_id_stage #(
   alu_op_e     alu_operator;
   op_a_sel_e   alu_op_a_mux_sel, alu_op_a_mux_sel_dec;
   op_b_sel_e   alu_op_b_mux_sel, alu_op_b_mux_sel_dec;
+  logic        alu_multicycle_dec;
+  logic        stall_alu;
+
+  logic [33:0] imd_val_q;
 
   op_a_sel_e   bt_a_mux_sel;
   imm_b_sel_e  bt_b_mux_sel;
@@ -338,6 +350,20 @@ module ibex_id_stage #(
   // ALU MUX for Operand B
   assign alu_operand_b = (alu_op_b_mux_sel == OP_B_IMM) ? imm_b : rf_rdata_b_fwd;
 
+  /////////////////////////////////////////
+  // Multicycle Operation Stage Register //
+  /////////////////////////////////////////
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : intermediate_val_reg
+    if (!rst_ni) begin
+      imd_val_q <= '0;
+    end else if (imd_val_we_ex_i) begin
+      imd_val_q <= imd_val_d_ex_i;
+    end
+  end
+
+  assign imd_val_q_ex_o = imd_val_q;
+
   ///////////////////////
   // Register File MUX //
   ///////////////////////
@@ -375,6 +401,7 @@ module ibex_id_stage #(
       .ecall_insn_o                    ( ecall_insn_dec       ),
       .wfi_insn_o                      ( wfi_insn_dec         ),
       .jump_set_o                      ( jump_set             ),
+      .branch_taken_i                  ( branch_taken         ),
       .icache_inval_o                  ( icache_inval_o       ),
 
       // from IF-ID pipeline register
@@ -410,6 +437,7 @@ module ibex_id_stage #(
       .alu_operator_o                  ( alu_operator         ),
       .alu_op_a_mux_sel_o              ( alu_op_a_mux_sel_dec ),
       .alu_op_b_mux_sel_o              ( alu_op_b_mux_sel_dec ),
+      .alu_multicycle_o                ( alu_multicycle_dec   ),
 
       // MULT & DIV
       .mult_en_o                       ( mult_en_dec          ),
@@ -423,10 +451,10 @@ module ibex_id_stage #(
       .csr_op_o                        ( csr_op_o             ),
 
       // LSU
-      .data_req_o                      ( lsu_req_dec      ),
-      .data_we_o                       ( lsu_we           ),
-      .data_type_o                     ( lsu_type         ),
-      .data_sign_extension_o           ( lsu_sign_ext     ),
+      .data_req_o                      ( lsu_req_dec          ),
+      .data_we_o                       ( lsu_we               ),
+      .data_type_o                     ( lsu_type             ),
+      .data_sign_extension_o           ( lsu_sign_ext         ),
 
       // jump/branches
       .jump_in_dec_o                   ( jump_in_dec          ),
@@ -582,19 +610,16 @@ module ibex_id_stage #(
   assign multdiv_operand_a_ex_o      = rf_rdata_a_fwd;
   assign multdiv_operand_b_ex_o      = rf_rdata_b_fwd;
 
-  typedef enum logic { FIRST_CYCLE, MULTI_CYCLE } id_fsm_e;
-  id_fsm_e id_fsm_q, id_fsm_d;
+  ////////////////////////
+  // Branch set control //
+  ////////////////////////
 
-  /////////////////////////////
-  // ID-EX Pipeline Register //
-  /////////////////////////////
-
-  if (BranchTargetALU) begin : g_branch_set_direct
+  if (BranchTargetALU && !DataIndTiming) begin : g_branch_set_direct
     // Branch set fed straight to controller with branch target ALU
     // (condition pass/fail used same cycle as generated instruction request)
     assign branch_set = branch_set_d;
-  end else begin : g_branch_set_flopped
-    // Branch set flopped without branch target ALU
+  end else begin : g_branch_set_flop
+    // Branch set flopped without branch target ALU, or in fixed time execution mode
     // (condition pass/fail used next cycle where branch target is calculated)
     logic branch_set_q;
 
@@ -606,13 +631,45 @@ module ibex_id_stage #(
       end
     end
 
-    assign branch_set = branch_set_q;
+    // Branches always take two cycles in fixed time execution mode, with or without the branch
+    // target ALU (to avoid a path from the branch decision into the branch target ALU operand
+    // muxing).
+    assign branch_set = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+  end
+
+  // Branch condition is calculated in the first cycle and flopped for use in the second cycle
+  // (only used in fixed time execution mode to determine branch destination).
+  if (DataIndTiming) begin : g_sec_branch_taken
+    logic branch_taken_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        branch_taken_q <= 1'b0;
+      end else begin
+        branch_taken_q <= branch_decision_i;
+      end
+    end
+
+    assign branch_taken = ~data_ind_timing_i | branch_taken_q;
+
+  end else begin : g_nosec_branch_taken
+
+    // Signal unused without fixed time execution mode - only taken branches will trigger branch_set
+    assign branch_taken = 1'b1;
+
   end
 
   // Holding branch_set/jump_set high for more than one cycle may not cause a functional issue but
   // could generate needless prefetch buffer flushes and instruction fetches. ID/EX is designed such
   // that this shouldn't ever happen.
   `ASSERT(NeverDoubleBranch, branch_set |=> ~branch_set)
+
+  ///////////////
+  // ID-EX FSM //
+  ///////////////
+
+  typedef enum logic { FIRST_CYCLE, MULTI_CYCLE } id_fsm_e;
+  id_fsm_e id_fsm_q, id_fsm_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : id_pipeline_reg
     if (!rst_ni) begin
@@ -621,10 +678,6 @@ module ibex_id_stage #(
       id_fsm_q            <= id_fsm_d;
     end
   end
-
-  ///////////////
-  // ID-EX FSM //
-  ///////////////
 
   // ID/EX stage can be in two states, FIRST_CYCLE and MULTI_CYCLE. An instruction enters
   // MULTI_CYCLE if it requires multiple cycles to complete regardless of stalls and other
@@ -637,6 +690,7 @@ module ibex_id_stage #(
     stall_multdiv           = 1'b0;
     stall_jump              = 1'b0;
     stall_branch            = 1'b0;
+    stall_alu               = 1'b0;
     branch_set_d            = 1'b0;
     perf_branch_o           = 1'b0;
 
@@ -666,16 +720,24 @@ module ibex_id_stage #(
             end
             branch_in_dec: begin
               // cond branch operation
-              id_fsm_d      =  (!BranchTargetALU && branch_decision_i) ? MULTI_CYCLE : FIRST_CYCLE;
-              stall_branch  =  ~BranchTargetALU & branch_decision_i;
-              branch_set_d  =  branch_decision_i;
-              perf_branch_o =  1'b1;
+              // All branches take two cycles in fixed time execution mode, regardless of branch
+              // condition.
+              id_fsm_d      = (data_ind_timing_i || (!BranchTargetALU && branch_decision_i)) ?
+                                  MULTI_CYCLE : FIRST_CYCLE;
+              stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
+              branch_set_d  = branch_decision_i | data_ind_timing_i;
+              perf_branch_o = 1'b1;
             end
             jump_in_dec: begin
               // uncond branch operation
               // BTALU means jumps only need one cycle
               id_fsm_d      = BranchTargetALU ? FIRST_CYCLE : MULTI_CYCLE;
               stall_jump    = ~BranchTargetALU;
+            end
+            alu_multicycle_dec: begin
+              stall_alu     = 1'b1;
+              id_fsm_d      = MULTI_CYCLE;
+              rf_we_raw     = 1'b0;
             end
             default: begin
               id_fsm_d      = FIRST_CYCLE;
@@ -710,7 +772,8 @@ module ibex_id_stage #(
   `ASSERT(StallIDIfMulticycle, (id_fsm_q == FIRST_CYCLE) & (id_fsm_d == MULTI_CYCLE) |-> stall_id)
 
   // Stall ID/EX stage for reason that relates to instruction in ID/EX
-  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch;
+  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch |
+                      stall_alu;
 
   assign instr_done = ~stall_id & ~flush_id & instr_executing;
 
@@ -724,6 +787,7 @@ module ibex_id_stage #(
   // first cycle if it is stalled.
   assign instr_first_cycle      = instr_valid_i & (id_fsm_q == FIRST_CYCLE);
   // Used by RVFI to know when to capture register read data
+  // Used by ALU to access RS3 if ternary instruction.
   assign instr_first_cycle_id_o = instr_first_cycle;
 
   if (WritebackStage) begin : gen_stall_mem

@@ -16,8 +16,10 @@ lint_off -rule PINCONNECTEMPTY
 // 32 bits
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32M'*"
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32E'*"
+lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32B'*"
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'BranchTargetALU'*"
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'WritebackStage'*"
+lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'SecureIbex'*"
 
 // Filename 'ibex_register_file_ff' does not match MODULE name: ibex_register_file
 // ibex_register_file_ff and ibex_register_file_latch provide two
@@ -26,17 +28,17 @@ lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
 lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
 lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_fpga.sv"
 
+// Bits of signal are not used: shift_amt_compl[5]
+// cleaner to write all bits even if not all are used
+lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_amt_compl'[5]*"
+
+// Bits of signal are not used: shift_result_ext[32]
+// cleaner to write all bits even if not all are used
+lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_result_ext'[32]*"
+
 // Bits of signal are not used: fetch_addr_n[0]
 // cleaner to write all bits even if not all are used
 lint_off -rule UNUSED -file "*/rtl/ibex_if_stage.sv" -match "*'fetch_addr_n'[0]*"
-
-// Signal is not used, if RVB == 0: shift_result_ext_rvb
-// Needed if RVB == 1.
-lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_result_ext_rvb'*"
-
-// Signal is not used, if RVB == 1: shift_result_ext
-// Needed if RVB == 0.
-lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_result_ext'*"
 
 // Bits of signal are not used: alu_adder_ext_i[0]
 // Bottom bit is round, not needed
@@ -46,7 +48,6 @@ lint_off -rule UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -match "*'alu_adder_ext
 // cleaner to write all bits even if not all are used
 lint_off -rule UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -match "*mac_res_ext*"
 lint_off -rule UNUSED -file "*/rtl/ibex_multdiv_fast.sv" -match "*mult1_res*"
-
 
 // Bits of signal are not used: res_adder_h[32]
 // cleaner to write all bits even if not all are used

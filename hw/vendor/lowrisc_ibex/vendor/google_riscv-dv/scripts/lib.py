@@ -96,7 +96,7 @@ def get_seed(seed):
   """
   if seed >= 0:
     return seed
-  return random.getrandbits(32)
+  return random.getrandbits(31)
 
 
 def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True, debug_cmd = None):

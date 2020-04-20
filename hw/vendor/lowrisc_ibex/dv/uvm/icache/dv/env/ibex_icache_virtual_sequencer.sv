@@ -8,8 +8,8 @@ class ibex_icache_virtual_sequencer extends dv_base_virtual_sequencer #(
   );
   `uvm_component_utils(ibex_icache_virtual_sequencer)
 
-  ibex_icache_sequencer ibex_icache_sequencer_h;
-  ibex_mem_intf_slave_sequencer ibex_mem_intf_slave_sequencer_h;
+  ibex_icache_core_sequencer    core_sequencer_h;
+  ibex_mem_intf_slave_sequencer mem_sequencer_h;
 
   `uvm_component_new
 

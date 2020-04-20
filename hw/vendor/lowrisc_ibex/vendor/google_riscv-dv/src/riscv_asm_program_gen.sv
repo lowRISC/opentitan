@@ -78,7 +78,7 @@ class riscv_asm_program_gen extends uvm_object;
       gen_init_section(hart);
       // If PMP is supported, we want to generate the associated trap handlers and the test_done
       // section at the start of the program so we can allow access through the pmpcfg0 CSR
-      if (support_pmp) begin
+      if (support_pmp && !cfg.bare_program_mode) begin
         gen_trap_handlers(hart);
         // Ecall handler
         gen_ecall_handler(hart);
@@ -357,12 +357,13 @@ class riscv_asm_program_gen extends uvm_object;
 
   // Generate the user stack section
   virtual function void gen_stack_section(int hart);
+	string hart_prefix_string = hart_prefix(hart);
     if (cfg.use_push_data_section) begin
       instr_stream.push_back($sformatf(".pushsection .%0suser_stack,\"aw\",@progbits;",
-                             hart_prefix(hart)));
+                             hart_prefix_string));
     end else begin
       instr_stream.push_back($sformatf(".section .%0suser_stack,\"aw\",@progbits;",
-                             hart_prefix(hart)));
+                             hart_prefix_string));
     end
     if (SATP_MODE != BARE) begin
       instr_stream.push_back(".align 12");
@@ -382,12 +383,13 @@ class riscv_asm_program_gen extends uvm_object;
 
   // The kernal stack is used to save user program context before executing exception handling
   virtual function void gen_kernel_stack_section(int hart);
+	string hart_prefix_string = hart_prefix(hart);
     if (cfg.use_push_data_section) begin
       instr_stream.push_back($sformatf(".pushsection .%0skernel_stack,\"aw\",@progbits;",
-                             hart_prefix(hart)));
+                             hart_prefix_string));
     end else begin
       instr_stream.push_back($sformatf(".section .%0skernel_stack,\"aw\",@progbits;",
-                             hart_prefix(hart)));
+                             hart_prefix_string));
     end
     if (SATP_MODE != BARE) begin
       instr_stream.push_back(".align 12");
@@ -601,9 +603,10 @@ class riscv_asm_program_gen extends uvm_object;
 
   virtual function void pre_enter_privileged_mode(int hart);
     string instr[];
+    string str[$];
     // Setup kerenal stack pointer
-    gen_section(get_label("kernel_sp", hart),
-               {$sformatf("la x%0d, %0skernel_stack_end", cfg.tp, hart_prefix(hart))});
+    str = {$sformatf("la x%0d, %0skernel_stack_end", cfg.tp, hart_prefix(hart))};
+    gen_section(get_label("kernel_sp", hart), str);
     // Setup interrupt and exception delegation
     if(!cfg.no_delegation && (cfg.init_privileged_mode != MACHINE_MODE)) begin
       gen_delegation(hart);
@@ -696,7 +699,7 @@ class riscv_asm_program_gen extends uvm_object;
     string instr[$];
     if (riscv_instr_pkg::support_pmp) begin
       cfg.pmp_cfg.setup_pmp();
-      cfg.pmp_cfg.gen_pmp_instr(instr, cfg.scratch_reg);
+      cfg.pmp_cfg.gen_pmp_instr('{cfg.scratch_reg, cfg.gpr[0]}, instr);
       gen_section(get_label("pmp_setup", hart), instr);
     end
   endfunction

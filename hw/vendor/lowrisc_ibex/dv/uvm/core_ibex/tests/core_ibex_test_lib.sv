@@ -703,7 +703,7 @@ class core_ibex_debug_ebreakmu_test extends core_ibex_directed_test;
     // send a single debug request after core initialization to configure dcsr
     vseq.start_debug_single_seq();
     check_next_core_status(IN_DEBUG_MODE,
-                           "Core did not enter debug mode after debug_req stimulus", 1000);
+                           "Core did not enter debug mode after debug_req stimulus", 2000);
     check_priv_mode(PRIV_LVL_M);
     // Read dcsr and verify the appropriate ebreak(m/s/u) bit has been set based on the prv field,
     // as well as the cause field
@@ -715,7 +715,7 @@ class core_ibex_debug_ebreakmu_test extends core_ibex_directed_test;
     forever begin
       wait (dut_vif.ebreak === 1'b1);
       check_next_core_status(IN_DEBUG_MODE,
-                             "Core did not enter debug mode after execution of ebreak", 1000);
+                             "Core did not enter debug mode after execution of ebreak", 2000);
       check_priv_mode(PRIV_LVL_M);
       // Read dcsr and verify the appropriate ebreak(m/s/u) bit has been set based on the prv field
       wait_for_csr_write(CSR_DCSR, 500);

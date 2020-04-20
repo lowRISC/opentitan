@@ -31,12 +31,22 @@ extern void simutil_verilator_memload(const char *file);
  *
  * @return 1 if successful, 0 otherwise
  */
-extern int simutil_verilator_set_mem(int index, const svLogicVecVal *val);
+extern int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 }
 
 bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
                                           const std::string location) {
-  MemArea mem = {.name = name, .location = location};
+  // Default to 32bit width
+  return RegisterMemoryArea(name, location, 32);
+}
+
+bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
+                                          const std::string location,
+                                          size_t width_bit) {
+  MemArea mem = {.name = name, .location = location, .width_bit = width_bit};
+
+  assert((width_bit == 32 || width_bit == 64) &&
+         "TODO: Check if width other than 32 and 64 works as expected.");
 
   auto ret = mem_register_.emplace(name, mem);
   if (ret.second == false) {
@@ -130,8 +140,9 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
 void VerilatorMemUtil::PrintMemRegions() const {
   std::cout << "Registered memory regions:" << std::endl;
   for (const auto &m : mem_register_) {
-    std::cout << "\t'" << m.second.name << "' at location: '"
-              << m.second.location << "'" << std::endl;
+    std::cout << "\t'" << m.second.name << "' (" << m.second.width_bit
+              << "bits) at location: '" << m.second.location << "'"
+              << std::endl;
   }
 }
 
@@ -386,9 +397,17 @@ bool VerilatorMemUtil::MemWrite(const MemArea &m, const std::string &filepath,
     return false;
   }
 
+  if ((m.width_bit % 32) != 0) {
+    std::cerr << "ERROR: width for: " << m.name
+              << "must be a multiple of 32 (was : " << m.width_bit << ")"
+              << std::endl;
+    return false;
+  }
+  size_t size_byte = m.width_bit / 8;
+
   switch (type) {
     case kMemImageElf:
-      if (!WriteElfToMem(scope, filepath)) {
+      if (!WriteElfToMem(scope, filepath, size_byte)) {
         std::cerr << "ERROR: Writing ELF file to memory \"" << m.name << "\" ("
                   << m.location << ") failed." << std::endl;
         return false;
@@ -410,7 +429,8 @@ bool VerilatorMemUtil::MemWrite(const MemArea &m, const std::string &filepath,
 }
 
 bool VerilatorMemUtil::WriteElfToMem(const svScope &scope,
-                                     const std::string &filepath) {
+                                     const std::string &filepath,
+                                     size_t size_byte) {
   bool retcode;
   svScope prev_scope = svSetScope(scope);
 
@@ -422,9 +442,9 @@ bool VerilatorMemUtil::WriteElfToMem(const svScope &scope,
     retcode = false;
     goto ret;
   }
-  for (int i = 0; i < (len_bytes + 3) / 4; ++i) {
-    if (!simutil_verilator_set_mem(i, (svLogicVecVal *)&buf[4 * i])) {
-      std::cerr << "ERROR: Could not set memory byte: " << i * 4 << "/"
+  for (int i = 0; i < (len_bytes + size_byte - 1) / size_byte; ++i) {
+    if (!simutil_verilator_set_mem(i, (svBitVecVal *)&buf[size_byte * i])) {
+      std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
                 << len_bytes << "" << std::endl;
 
       retcode = false;

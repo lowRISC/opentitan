@@ -470,6 +470,51 @@ class riscv_b_instr extends riscv_instr;
     this.has_rs3 = rhs_.has_rs3;
   endfunction : do_copy
 
+  virtual function bit is_supported(riscv_instr_gen_config cfg);
+    return cfg.enable_b_extension && (
+           (ZBB inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               CLZ, CTZ, PCNT,
+               SLO, SLOI, SLOW, SLOIW,
+               SRO, SLOI, SROW, SLOIW,
+               MIN, MINU, MAX, MAXU,
+               ADDWU, ADDIWU, SUBWU,
+               ADDU_W, SUBU_W,
+               SLLIU_W,
+               ANDN, ORN,
+               XNOR, PACK, PACKW, PACKU, PACKUW, PACKH,
+               ROL, ROLW, ROR, RORW, RORI, RORIW
+               }) ||
+           (ZBS inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               SBSET, SBSETW, SBSETI, SBSETIW,
+               SBCLR, SBCLRW, SBCLRI, SBCLRIW,
+               SBINV, SBINVW, SBINVI, SBINVIW,
+               SBEXT, SBEXTW, SBEXTI
+               }) ||
+           (ZBP inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               GREV, GREVW, GREVI, GREVIW,
+               GORC, GORCW, GORCI, GORCIW,
+               SHFL, SHFLW, UNSHFL, UNSHFLW, SHFLI, UNSHFLI
+               }) ||
+           (ZBE inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               BEXT, BEXTW,
+               BDEP, BDEPW
+               }) ||
+           (ZBF inside {cfg.enable_bitmanip_groups} && instr_name inside {BFP, BFPW}) ||
+           (ZBC inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               CLMUL, CLMULW, CLMULH, CLMULHW, CLMULR, CLMULRW
+               }) ||
+           (ZBR inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               CRC32_B, CRC32_H, CRC32_W, CRC32_D,
+               CRC32C_B, CRC32C_H, CRC32C_W, CRC32C_D
+               }) ||
+           (ZBM inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               BMATOR, BMATXOR, BMATFLIP
+               }) ||
+           (ZBT inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               CMOV, CMIX,
+               FSL, FSLW, FSR, FSRW, FSRI, FSRIW}));
+  endfunction
+
 endclass
 
 

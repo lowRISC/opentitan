@@ -6,4 +6,5 @@
 # and inserted into the Sphinx-generated documentation.
 __TOOL_REQUIREMENTS__ = {
     'verilator': '4.028',
+    'edalize':   '0.2.0'
 }

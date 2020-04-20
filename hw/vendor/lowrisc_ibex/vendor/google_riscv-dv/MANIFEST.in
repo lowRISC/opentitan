@@ -11,6 +11,7 @@ include HANDSHAKE.md
 include files.f
 include qrun_option.f
 include questa_sim.tcl
+include riviera_sim.tcl
 include run.py
 include requirements.txt
 include vcs.compile.option.f

@@ -32,7 +32,6 @@
 
 - import: <riscv_dv_root>/target/rv32imc/testlist.yaml
 
-
 - test: riscv_b_ext_test
   description: >
     Random instruction test with b extension
@@ -40,4 +39,14 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +enable_b_extension=1
+  rtl_test: core_base_test
+
+- test: riscv_zbb_zbt_test
+  description: >
+    Random instruction test with zbb and zbt groups in b extension
+  iterations: 1
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbb,zbt
   rtl_test: core_base_test

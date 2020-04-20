@@ -33,18 +33,18 @@ parameters:
     paramtype: vlogdefine
 
   RV32E:
-    datatype: bool
-    default: false
+    datatype: int
+    default: 0
     paramtype: vlogparam
 
   RV32M:
-    datatype: bool
-    default: true
+    datatype: int
+    default: 1
     paramtype: vlogparam
 
   RV32B:
-    datatype: bool
-    default: false
+    datatype: int
+    default: 0
     paramtype: vlogparam
 
   MultiplierImplementation:
@@ -54,28 +54,34 @@ parameters:
     default: "fast"
 
   ICache:
-    datatype: bool
+    datatype: int
+    default: 0
     paramtype: vlogparam
     description: "Enable instruction cache"
-    default: false
 
   ICacheECC:
-    datatype: bool
+    datatype: int
+    default: 0
     paramtype: vlogparam
     description: "Enable ECC protection in instruction cache"
-    default: false
 
   BranchTargetALU:
-    datatype: bool
+    datatype: int
+    default: 0
     paramtype: vlogparam
-    default: false
     description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
 
   WritebackStage:
-    datatype: bool
+    datatype: int
+    default: 0
     paramtype: vlogparam
-    default: false
     description: "Enables third pipeline stage (EXPERIMENTAL) [0/1]"
+
+  SecureIbex:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
 
 targets:
   default:
@@ -97,9 +103,11 @@ targets:
       - SYNTHESIS=true
       - RV32M
       - RV32E
+      - RV32B
       - BranchTargetALU
       - WritebackStage
       - MultiplierImplementation
+      - SecureIbex
     default_tool: verilator
     toplevel: ibex_core_tracing
     tools:

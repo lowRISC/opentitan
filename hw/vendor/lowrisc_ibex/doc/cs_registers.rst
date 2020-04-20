@@ -500,6 +500,11 @@ Other bit fields read as zero.
 +-------+------+------------------------------------------------------------------+
 | Bit#  | R/W  | Description                                                      |
 +-------+------+------------------------------------------------------------------+
+| 1     | WARL | **data_ind_timing:** Enable (1) or disable (0) data-independent  |
+|       |      | timing features. If the core has not been configured with        |
+|       |      | security features (SecureIbex parameter == 0), this field will   |
+|       |      | always read as zero.                                             |
++-------+------+------------------------------------------------------------------+
 | 0     | WARL | **icache_enable:** Enable (1) or disable (0) the instruction     |
 |       |      | cache. If the instruction cache has not been configured (ICache  |
 |       |      | parameter == 0), this field will always read as zero.            |

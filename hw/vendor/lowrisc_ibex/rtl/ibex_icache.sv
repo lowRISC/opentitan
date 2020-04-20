@@ -600,10 +600,11 @@ module ibex_icache #(
     // data output, and have data available to send.
     // Data is available if:
     // - The request hit in the cache
+    // - The request received an error (since a PMP error might not actually receive any data)
     // - Buffered data is available (fill_rvd_cnt_q is ahead of fill_out_cnt_q)
     // - Data is available from the bus this cycle (fill_rvd_arb)
     assign fill_out_req[fb]    = fill_busy_q[fb] & ~fill_stale_q[fb] & ~fill_out_done[fb] &
-                                 (fill_hit_ic1[fb] | fill_hit_q[fb] |
+                                 (fill_hit_ic1[fb] | fill_hit_q[fb] | (|fill_err_q[fb]) |
                                   (fill_rvd_beat[fb] > fill_out_cnt_q[fb]) | fill_rvd_arb[fb]);
 
     // Calculate when a beat of data is output. Any ECC error squashes the output that cycle.
@@ -666,7 +667,8 @@ module ibex_icache #(
     assign fill_data_reg[fb]   = fill_busy_q[fb] & ~fill_stale_q[fb] &
                                  ~fill_out_done[fb] & fill_data_sel[fb] &
     //                           The incoming data is already ahead of the output count
-                                 ((fill_rvd_beat[fb] > fill_out_cnt_q[fb]) | fill_hit_q[fb]);
+                                 ((fill_rvd_beat[fb] > fill_out_cnt_q[fb]) | fill_hit_q[fb] |
+                                  (|fill_err_q[fb]));
     // 2. Select IC1 hit data
     assign fill_data_hit[fb]   = fill_busy_q[fb] & fill_hit_ic1[fb] & fill_data_sel[fb];
     // 3. Select incoming instr_rdata_i
@@ -892,8 +894,8 @@ module ibex_icache #(
   assign output_valid = skid_complete_instr |
                         // Output data available and, output stream aligned, or skid data available,
                         (data_valid & (~output_addr_q[1] | skid_valid_q |
-                         // or this half is an error, or this is an unaligned compressed instruction
-                         output_err | (output_data[17:16] != 2'b11)));
+                         // or this is an unaligned compressed instruction
+                         (output_data[17:16] != 2'b11)));
 
   // Update the address on branches and every time an instruction is driven
   assign output_addr_en = branch_i | (ready_i & valid_o);

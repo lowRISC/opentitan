@@ -21,6 +21,7 @@ module ibex_core_tracing #(
     parameter bit          ICache                   = 1'b0,
     parameter bit          ICacheECC                = 1'b0,
     parameter bit          DbgTriggerEn             = 1'b0,
+    parameter bit          SecureIbex               = 1'b0,
     parameter int unsigned DmHaltAddr               = 32'h1A110800,
     parameter int unsigned DmExceptionAddr          = 32'h1A110808
 ) (
@@ -84,8 +85,10 @@ module ibex_core_tracing #(
   logic [ 1:0] rvfi_mode;
   logic [ 4:0] rvfi_rs1_addr;
   logic [ 4:0] rvfi_rs2_addr;
+  logic [ 4:0] rvfi_rs3_addr;
   logic [31:0] rvfi_rs1_rdata;
   logic [31:0] rvfi_rs2_rdata;
+  logic [31:0] rvfi_rs3_rdata;
   logic [ 4:0] rvfi_rd_addr;
   logic [31:0] rvfi_rd_wdata;
   logic [31:0] rvfi_pc_rdata;
@@ -111,6 +114,7 @@ module ibex_core_tracing #(
     .ICacheECC                ( ICacheECC                ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
     .WritebackStage           ( WritebackStage           ),
+    .SecureIbex               ( SecureIbex               ),
     .DmHaltAddr               ( DmHaltAddr               ),
     .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_ibex_core (
@@ -156,8 +160,10 @@ module ibex_core_tracing #(
     .rvfi_mode,
     .rvfi_rs1_addr,
     .rvfi_rs2_addr,
+    .rvfi_rs3_addr,
     .rvfi_rs1_rdata,
     .rvfi_rs2_rdata,
+    .rvfi_rs3_rdata,
     .rvfi_rd_addr,
     .rvfi_rd_wdata,
     .rvfi_pc_rdata,
@@ -188,8 +194,10 @@ module ibex_core_tracing #(
     .rvfi_mode,
     .rvfi_rs1_addr,
     .rvfi_rs2_addr,
+    .rvfi_rs3_addr,
     .rvfi_rs1_rdata,
     .rvfi_rs2_rdata,
+    .rvfi_rs3_rdata,
     .rvfi_rd_addr,
     .rvfi_rd_wdata,
     .rvfi_pc_rdata,

@@ -59,10 +59,10 @@ scripts:
 
 parameters:
   PMPEnable:
-    datatype: bool
+    datatype: int
     paramtype: vlogparam
-    default: true
-    description: PMP enabled [true/false]
+    default: 1
+    description: PMP enabled [1/0]
   PMPNumRegions:
     datatype: int
     paramtype: vlogparam

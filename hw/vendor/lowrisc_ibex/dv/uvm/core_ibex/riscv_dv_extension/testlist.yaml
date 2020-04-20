@@ -582,5 +582,8 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
-    +num_of_sub_program=2
+    +pmp_randomize=0
+    +pmp_allow_addr_overlap=0
+    +pmp_max_offset=00021000
+    +boot_mode=u
   rtl_test: core_ibex_base_test

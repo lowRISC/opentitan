@@ -111,6 +111,7 @@ class riscv_instr extends uvm_object;
       riscv_instr instr_inst;
       if (instr_name inside {unsupported_instr}) continue;
       instr_inst = create_instr(instr_name);
+      if (!instr_inst.is_supported(cfg)) continue;
       instr_template[instr_name] = instr_inst;
       // C_JAL is RV32C only instruction
       if ((XLEN != 32) && (instr_name == C_JAL)) continue;
@@ -123,9 +124,8 @@ class riscv_instr extends uvm_object;
           !(cfg.disable_compressed_instr &&
             (instr_inst.group inside {RV32C, RV64C, RV32DC, RV32FC, RV128C})) &&
           !(!cfg.enable_floating_point &&
-            (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D})) &&
-          !(!cfg.enable_b_extension &&
-            (instr_inst.group inside {RV32B, RV64B}))) begin
+            (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D}))
+          ) begin
         instr_category[instr_inst.category].push_back(instr_name);
         instr_group[instr_inst.group].push_back(instr_name);
         instr_names.push_back(instr_name);
@@ -134,6 +134,10 @@ class riscv_instr extends uvm_object;
     build_basic_instruction_list(cfg);
     create_csr_filter(cfg);
   endfunction : create_instr_list
+
+  virtual function bit is_supported(riscv_instr_gen_config cfg);
+    return 1;
+  endfunction
 
   static function void create_csr_filter(riscv_instr_gen_config cfg);
     include_reg.delete();
