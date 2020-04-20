@@ -219,12 +219,16 @@ If that happens, the cache drops ``instr_req_o`` and stops making any further re
 Note that it is possible for ``instr_gnt_i`` and ``instr_pmp_err_i`` to be high on the same cycle.
 In that case, the error signal takes precedence.
 
-Fetched instructions are returned to the core using ports ``ready_i``, ``valid_o``, ``rdata_o``, ``addr_o`` and ``err_o``.
-This interface uses ready/valid handshaking in the usual way (a transaction is signalled by ready and valid being high; if valid goes high, it will remain high and the other output signals will remain stable until the transaction goes through).
-The one exception is if ``branch_i`` is asserted, which will cause ``valid_o`` to de-assert.
+Fetched instructions are returned to the core using ports ``ready_i``, ``valid_o``, ``rdata_o``, ``addr_o``, ``err_o`` and ``err_plus2_o``.
+This interface uses a form of ready/valid handshaking.
+A transaction is signalled by ready and valid being high.
+If valid goes high, it will remain high and the other output signals will remain stable until the transaction goes through or is cancelled by ``branch_i`` being asserted.
+There is no constraint on the behaviour of ``ready_i``.
+
 The 32-bit wide ``rdata_o`` signal contains instruction data fetched from ``addr_o``.
-If there is a compressed instruction in the lower 16 bits, the upper 16 bits are unconstrained.
-This allows fetching an instruction from the top 16 bits of a memory, for example.
+An instruction is either 16 or 32 bits wide (called *compressed* or *uncompressed*, respectively).
+The width of an instruction can be calculated from its bottom two bits: an instruction is uncompressed if they equal ``2'b11`` and compressed otherwise.
+If there is a compressed instruction in the lower 16 bits, the upper 16 bits are unconstrained (and may change even after valid has been asserted).
 The ``err_o`` signal will be high if the instruction fetch failed (either with ``instr_pmp_err_i`` or ``instr_err_i``); in this case ``rdata_o`` is not specified.
 
 The ``req_i`` signal tells the cache that the core is awake and will start requesting instructions soon.
@@ -236,10 +240,10 @@ A correctly behaving core should not not assert ``ready_i`` when ``req_i`` is lo
 
 Inside the cache is an address counter.
 If ``branch_i`` is asserted then the address counter will be set to ``addr_i`` and the next instruction that is passed to the core will be the one fetched from that address.
+The address is required to be halfword aligned, so ``addr_i[0]`` must be zero.
 The cache will also start reading into a new prefetch buffer, storing the current contents into the main cache memory or discarding it (see ``icache_enable_i`` below).
-On other cycles, the address counter will be incremented every time an instruction is passed to the core.
-This increment depends on the instruction data (visible at ``rdata_o``): if the bottom bits of the instruction are not ``2'b11``, the instruction is considered to be compressed and the address will be incremented by 2.
-If the bottom bits of the instruction are ``2'b11`` then the instruction is considered to be uncompressed and the address will be incremented by 4.
+On cycles where ``branch_i`` is not asserted, the address counter will be incremented when an instruction is passed to the core.
+This increment depends on the instruction data (visible at ``rdata_o``): it will be 2 if the instruction is compressed and 4 otherwise.
 Since the contents of ``rdata_o`` are not specified if an instruction fetch has caused an error, the core must signal a branch before accepting another instruction after it sees ``err_o``.
 
 Because a single instruction can span two 32bit memory addresses, an extra signal (``err_plus2_o``) indicates when an error is caused by the second half of an unaligned uncompressed instruction.

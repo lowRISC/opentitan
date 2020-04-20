@@ -71,6 +71,7 @@ module tb_cs_registers #(
   logic [31:0]          pc_id_i;
   logic [31:0]          pc_wb_i;
 
+  logic                 data_ind_timing_o;
   logic                 icache_enable_o;
 
   logic                 csr_save_if_i;

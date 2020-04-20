@@ -71,16 +71,16 @@ module prim_generic_ram_1p #(
       $readmemh(file, mem);
     endtask
 
-    // TODO: Allow 'val' to have other widths than 32 bit
+    // Width must be a multiple of 32bit for this function to work
     // Note that the DPI export and function definition must both be in the same generate
     // context to get the correct name.
-    if (Width == 32) begin : gen_32bit
-      // Function for setting a specific 32 bit element in |mem|
+    if ((Width % 32) == 0) begin : gen_set_mem
+      // Function for setting a specific element in |mem|
       // Returns 1 (true) for success, 0 (false) for errors.
       export "DPI-C" function simutil_verilator_set_mem;
 
       function int simutil_verilator_set_mem(input int index,
-                                             input logic[31:0] val);
+                                             input bit [Width-1:0] val);
         if (index >= Depth) begin
           return 0;
         end
@@ -89,11 +89,11 @@ module prim_generic_ram_1p #(
         return 1;
       endfunction
     end else begin : gen_other
-      // Function doesn't work for Width != 32 so just return 0
+      // Function doesn't work unless Width % 32 so just return 0
       export "DPI-C" function simutil_verilator_set_mem;
 
       function int simutil_verilator_set_mem(input int index,
-                                             input logic[31:0] val);
+                                             input bit [Width-1:0] val);
         return 0;
       endfunction
     end

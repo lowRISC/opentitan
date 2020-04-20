@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ibex_icache_monitor extends dv_base_monitor #(
-    .ITEM_T (ibex_icache_item),
-    .CFG_T  (ibex_icache_agent_cfg),
-    .COV_T  (ibex_icache_agent_cov)
+class ibex_icache_core_monitor extends dv_base_monitor #(
+    .ITEM_T (ibex_icache_core_item),
+    .CFG_T  (ibex_icache_core_agent_cfg),
+    .COV_T  (ibex_icache_core_agent_cov)
   );
-  `uvm_component_utils(ibex_icache_monitor)
+  `uvm_component_utils(ibex_icache_core_monitor)
 
   // the base class provides the following handles for use:
-  // ibex_icache_agent_cfg: cfg
-  // ibex_icache_agent_cov: cov
-  // uvm_analysis_port #(ibex_icache_item): analysis_port
+  // ibex_icache_core_agent_cfg: cfg
+  // ibex_icache_core_agent_cov: cov
+  // uvm_analysis_port #(ibex_icache_core_item): analysis_port
 
   `uvm_component_new
 

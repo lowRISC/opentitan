@@ -75,9 +75,6 @@ endif
 ifeq (${SIMULATOR},vcs)
 	COMPILE_OPTS += -pvalue+core_ibex_tb_top.dut.PMPNumRegions=${PMP_REGIONS}
 	COMPILE_OPTS += -pvalue+core_ibex_tb_top.dut.PMPGranularity=${PMP_GRANULARITY}
-else ifeq (${SIMULATOR},ius)
-	COMPILE_OPTS += -defparam core_ibex_tb_top.dut.PMPNumRegions=${PMP_REGIONS}
-	COMPILE_OPTS += -defparam core_ibex_tb_top.dut.PMPGranularity=${PMP_GRANULARITY}
 else ifeq (&{SIMULATOR},riviera)
 	SIM_OPTS +=-g/core_ibex_tb_top/dut/PMPNumRegions=${PMP_REGIONS}
 	SIM_OPTS +=-g/core_ibex_tb_top/dut/PMPGranularity=${PMP_GRANULARITY}
@@ -328,6 +325,7 @@ $(OUT)/rtl_sim/.compile.stamp: \
 	@./sim.py \
 	 --o=${OUT} \
 	 --steps=compile \
+	 --lsf_cmd="${LSF_CMD}" \
 	 ${COMMON_OPTS} \
 	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
 	 $(cov-arg) $(wave-arg) --cmp_opts="${COMPILE_OPTS}"
@@ -363,6 +361,7 @@ $(metadata)/rtl_sim.run.stamp: \
 	@./sim.py \
 	 --o=$(OUT-SEED) \
 	 --steps=sim \
+	 --lsf_cmd="${LSF_CMD}" \
 	 ${TEST_OPTS} \
 	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
 	 $(cov-arg) $(wave-arg) $(lsf-arg) \

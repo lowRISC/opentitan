@@ -14,6 +14,7 @@
 
 module ibex_cs_registers #(
     parameter bit          DbgTriggerEn     = 0,
+    parameter bit          DataIndTiming    = 1'b0,
     parameter bit          ICache           = 1'b0,
     parameter int unsigned MHPMCounterNum   = 10,
     parameter int unsigned MHPMCounterWidth = 40,
@@ -79,6 +80,7 @@ module ibex_cs_registers #(
     input  logic [31:0]          pc_wb_i,
 
     // CPU control bits
+    output logic                 data_ind_timing_o,
     output logic                 icache_enable_o,
 
     // Exception save/restore
@@ -158,7 +160,8 @@ module ibex_cs_registers #(
 
   // CPU control register fields
   typedef struct packed {
-    logic [30:0] unused_ctrl;
+    logic [31:2] unused_ctrl;
+    logic        data_ind_timing;
     logic        icache_enable;
   } CpuCtrl_t;
 
@@ -1037,6 +1040,34 @@ module ibex_cs_registers #(
   // Cast register write data
   assign cpuctrl_wdata = CpuCtrl_t'(csr_wdata_int);
 
+  // Generate fixed time execution bit
+  if (DataIndTiming) begin : gen_dit
+    logic data_ind_timing_d, data_ind_timing_q;
+
+    assign data_ind_timing_d = (csr_we_int && (csr_addr == CSR_CPUCTRL)) ?
+      cpuctrl_wdata.data_ind_timing : data_ind_timing_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        data_ind_timing_q <= 1'b0; // disabled on reset
+      end else begin
+        data_ind_timing_q <= data_ind_timing_d;
+      end
+    end
+
+    assign cpuctrl_rdata.data_ind_timing = data_ind_timing_q;
+
+  end else begin : gen_no_dit
+    // tieoff for the unused bit
+    logic unused_dit;
+    assign unused_dit = cpuctrl_wdata.data_ind_timing;
+
+    // field will always read as zero if not configured
+    assign cpuctrl_rdata.data_ind_timing = 1'b0;
+  end
+
+  assign data_ind_timing_o = cpuctrl_rdata.data_ind_timing;
+
   // Generate icache enable bit
   if (ICache) begin : gen_icache_enable
     logic icache_enable_d, icache_enable_q;
@@ -1064,11 +1095,12 @@ module ibex_cs_registers #(
     assign cpuctrl_rdata.icache_enable = 1'b0;
   end
 
-  // tieoff for the currently unused bits of cpuctrl
-  logic [31:1] unused_cpuctrl;
-  assign unused_cpuctrl = {cpuctrl_wdata[31:1]};
-
   assign icache_enable_o = cpuctrl_rdata.icache_enable;
+
+  // tieoff for the currently unused bits of cpuctrl
+  logic [31:2] unused_cpuctrl;
+  assign unused_cpuctrl = {cpuctrl_wdata[31:2]};
+
 
   ////////////////
   // Assertions //

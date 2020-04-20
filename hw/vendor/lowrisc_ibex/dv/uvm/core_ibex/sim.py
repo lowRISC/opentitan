@@ -244,7 +244,7 @@ def get_test_sim_cmd(base_cmd, test, idx, output_dir, bin_dir, lsf_cmd):
     return (desc, sim_cmd, sim_dir)
 
 
-def run_sim_commands(command_list, use_lsf, check_return_code):
+def run_sim_commands(command_list, use_lsf):
     '''Run the given list of commands
 
     command_list should be a list of tuples (desc, cmd, dirname) where desc is
@@ -256,18 +256,15 @@ def run_sim_commands(command_list, use_lsf, check_return_code):
     'bsub -Is'. It seems that we always use interactive bsub, so we'll have a
     local process per job, which we track with run_parallel_cmd.
 
-    If check_return_code is true, we check that the commands pass and stop if
-    not.
-
     '''
     # If we're in LSF mode, we submit all the commands 'at once', which means
     # we have to create the output directories in advance.
     if use_lsf:
         cmds = []
-        for cmd, dirname in command_list:
+        for desc, cmd, dirname in command_list:
             os.makedirs(dirname, exist_ok=True)
             cmds.append(cmd)
-        run_parallel_cmd(cmds, 600, check_return_code=check_return_code)
+        run_parallel_cmd(cmds, 600, check_return_code=True)
         return
 
     # We're not in LSF mode, so we'll create the output directories as we go.
@@ -276,11 +273,11 @@ def run_sim_commands(command_list, use_lsf, check_return_code):
     for desc, cmd, dirname in command_list:
         os.makedirs(dirname, exist_ok=True)
         logging.info("Running " + desc)
-        run_cmd(cmd, 300, check_return_code=check_return_code)
+        run_cmd(cmd, 300, check_return_code=True)
 
 
 def rtl_sim(sim_cmd, test_list, seed, opts,
-            output_dir, bin_dir, lsf_cmd, check_return_code):
+            output_dir, bin_dir, lsf_cmd):
     """Run the testbench in the simulator
 
     sim_cmd is the base command (as returned by get_simulator_cmd). This will
@@ -296,9 +293,6 @@ def rtl_sim(sim_cmd, test_list, seed, opts,
 
     If lsf_cmd is not None, it should be prefixed on each command, which will
     be run in parallel.
-
-    check_return_code is True if we should check the return codes from
-    simulator executions.
 
     """
     logging.info("Running RTL simulation...")
@@ -319,7 +313,7 @@ def rtl_sim(sim_cmd, test_list, seed, opts,
             cmd_list.append(get_test_sim_cmd(sim_cmd, test, i,
                                              output_dir, bin_dir, lsf_cmd))
 
-    run_sim_commands(cmd_list, lsf_cmd is not None, check_return_code)
+    run_sim_commands(cmd_list, lsf_cmd is not None)
 
 
 def compare_test_run(test, idx, iss, output_dir, report):
@@ -420,7 +414,7 @@ def compare(test_list, iss, output_dir):
     return fails == 0
 
 
-#TODO(udinator) - support IUS, DSim, and Riviera
+#TODO(udinator) - support DSim, and Riviera
 def gen_cov(base_dir, simulator, lsf_cmd):
     """Generate a merged coverage directory.
 
@@ -541,15 +535,6 @@ def main():
 
     # Run RTL simulation
     if steps['sim']:
-        check_return_code = True
-        # Don't check return code for IUS sims, as a failure will short circuit
-        # the entire simulation flow
-        check_return_code = True
-        if args.simulator == "ius":
-            check_return_code = False
-            logging.debug("Disable return code checking for %s simulator"
-                          % args.simulator)
-
         # Pick a seed: either the one we were given, or pick one at random. In
         # the latter case, print it out so the user can see what's going on.
         if args.seed is None or args.seed < 0:
@@ -559,7 +544,7 @@ def main():
             seed = args.seed
 
         rtl_sim(sim_cmd, matched_list, seed, args.sim_opts,
-                output_dir, bin_dir, args.lsf_cmd, check_return_code)
+                output_dir, bin_dir, args.lsf_cmd)
 
     # Compare RTL & ISS simulation result.
     if steps['compare']:

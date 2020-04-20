@@ -21,6 +21,7 @@ enum MemImageType {
 struct MemArea {
   std::string name;      // Unique identifier
   std::string location;  // Design scope location
+  size_t width_bit;      // Memory width
 };
 
 /**
@@ -41,9 +42,17 @@ class VerilatorMemUtil : public SimCtrlExtension {
    * instantiated memory, which needs to support the DPI-C interfaces
    * 'simutil_verilator_memload' and 'simutil_verilator_set_mem' used for
    * 'vmem' and 'elf' files, respectively.
+   * The |width_bit| argument specifies the with in bits of the target memory
+   * instance (used for packing data).
    *
    * Memories must be registered before command arguments are parsed by
    * ParseCommandArgs() in order for them to be known.
+   */
+  bool RegisterMemoryArea(const std::string name, const std::string location,
+                          size_t width_bit);
+
+  /**
+   * Register a memory with default width (32bits)
    */
   bool RegisterMemoryArea(const std::string name, const std::string location);
 
@@ -98,7 +107,8 @@ class VerilatorMemUtil : public SimCtrlExtension {
                 MemImageType type);
   bool MemWrite(const MemArea &m, const std::string &filepath,
                 MemImageType type);
-  bool WriteElfToMem(const svScope &scope, const std::string &filepath);
+  bool WriteElfToMem(const svScope &scope, const std::string &filepath,
+                     size_t size_byte);
   bool WriteVmemToMem(const svScope &scope, const std::string &filepath);
 };
 

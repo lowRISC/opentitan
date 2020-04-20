@@ -77,7 +77,8 @@ class riscv_instr_gen_config extends uvm_object;
   // Reserved register
   // Reserved for various hardcoded routines
   rand riscv_reg_t       gpr[4];
-  // Used by any DCSR operations inside of the debug rom
+  // Used by any DCSR operations inside of the debug rom.
+  // Also used by the PMP generation.
   rand riscv_reg_t       scratch_reg;
   // Use a random register for stack pointer/thread pointer
   rand riscv_reg_t       sp;
@@ -239,6 +240,7 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_vector_extension;
   // Bit manipulation extension support
   bit                    enable_b_extension;
+  b_ext_group_t          enable_bitmanip_groups[] = {ZBB, ZBS, ZBP, ZBE, ZBF, ZBC, ZBR, ZBM, ZBT};
 
   //-----------------------------------------------------------------------------
   // Command line options for instruction distribution control
@@ -483,11 +485,13 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(enable_floating_point, UVM_DEFAULT)
     `uvm_field_int(enable_vector_extension, UVM_DEFAULT)
     `uvm_field_int(enable_b_extension, UVM_DEFAULT)
+    `uvm_field_array_enum(b_ext_group_t, enable_bitmanip_groups, UVM_DEFAULT)
     `uvm_field_int(use_push_data_section, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new (string name = "");
     string s;
+    riscv_instr_group_t march_isa[];
     super.new(name);
     init_delegation();
     inst = uvm_cmdline_processor::get_inst();
@@ -538,6 +542,8 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_floating_point=", enable_floating_point);
     get_bool_arg_value("+enable_vector_extension=", enable_vector_extension);
     get_bool_arg_value("+enable_b_extension=", enable_b_extension);
+    cmdline_enum_processor #(b_ext_group_t)::get_array_values("+enable_bitmanip_groups=",
+                                                              enable_bitmanip_groups);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
       `uvm_info(get_full_name(), $sformatf(
                 "Got boot mode option - %0s", boot_mode_opts), UVM_LOW)
@@ -555,22 +561,9 @@ class riscv_instr_gen_config extends uvm_object;
                    riscv_instr_pkg::supported_privileged_mode.size()), UVM_LOW)
     void'(inst.get_arg_value("+asm_test_suffix=", asm_test_suffix));
     // Directed march list from the runtime options, ex. RV32I, RV32M etc.
-    void'(inst.get_arg_value("+march=", s));
-    if(s != "") begin
-      string cmdline_march_list[$];
-      riscv_instr_group_t march;
-      uvm_split_string(s, ",", cmdline_march_list);
-      riscv_instr_pkg::supported_isa.delete();
-      foreach(cmdline_march_list[i]) begin
-        if(uvm_enum_wrapper#(riscv_instr_group_t)::from_name(
-           cmdline_march_list[i].toupper(), march)) begin
-          riscv_instr_pkg::supported_isa.push_back(march);
-        end else begin
-          `uvm_fatal(get_full_name(), $sformatf(
-                     "Invalid march %0s specified in command line", cmdline_march_list[i]))
-        end
-      end
-    end
+    cmdline_enum_processor #(riscv_instr_group_t)::get_array_values("+march=", march_isa);
+    if (march_isa.size != 0) riscv_instr_pkg::supported_isa = march_isa;
+
     if (!(RV32C inside {supported_isa})) begin
       disable_compressed_instr = 1;
     end

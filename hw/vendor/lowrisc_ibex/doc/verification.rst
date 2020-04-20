@@ -85,22 +85,22 @@ Prerequisites & Environment Setup
 
 In order to run the co-simulation flow, you'll need:
 
-  - A SystemVerilog simulator that supports UVM. The flow is currently
-    tested with VCS.
+- A SystemVerilog simulator that supports UVM. The flow is currently
+  tested with VCS.
 
-  - A RISC-V instruction set simulator. For example, Spike_ or
-    OVPsim_. Note that Spike must be configured with
-    ``--enable-commitlog`` and ``--enable-misaligned``. The commit log
-    is needed to track the instructions that were executed and
-    ``--enable-misaligned`` tells Spike to simulate a core that
-    handles misaligned accesses in hardware (rather than jumping to a
-    trap handler).
+- A RISC-V instruction set simulator. For example, Spike_ or
+  OVPsim_. Note that Spike must be configured with
+  ``--enable-commitlog`` and ``--enable-misaligned``. The commit log
+  is needed to track the instructions that were executed and
+  ``--enable-misaligned`` tells Spike to simulate a core that
+  handles misaligned accesses in hardware (rather than jumping to a
+  trap handler).
 
-  - A working RISC-V toolchain (to compile / assemble the generated
-    programs before simulating them). Either download and build the
-    `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_ or
-    (quicker) download a `pre-built toolchain
-    <riscv-toolchain-releases_>`_.
+- A working RISC-V toolchain (to compile / assemble the generated
+  programs before simulating them). Either download and build the
+  `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_ or
+  (quicker) download a `pre-built toolchain
+  <riscv-toolchain-releases_>`_.
 
 Once these are installed, you need to set some environment variables
 to tell the RISCV-DV code where to find them:

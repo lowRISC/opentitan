@@ -11,19 +11,15 @@ class ibex_icache_scoreboard extends dv_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(ibex_icache_item) ibex_icache_fifo;
-  uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) ibex_mem_intf_slave_fifo;
-
-  // local queues to hold incoming packets pending comparison
-  ibex_icache_item ibex_icache_q[$];
-  ibex_mem_intf_seq_item ibex_mem_intf_slave_q[$];
+  uvm_tlm_analysis_fifo #(ibex_icache_core_item)  core_fifo;
+  uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) mem_fifo;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ibex_icache_fifo = new("ibex_icache_fifo", this);
-    ibex_mem_intf_slave_fifo = new("ibex_mem_intf_slave_fifo", this);
+    core_fifo = new("core_fifo", this);
+    mem_fifo = new("mem_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -39,17 +35,17 @@ class ibex_icache_scoreboard extends dv_base_scoreboard #(
   endtask
 
   virtual task process_ibex_icache_fifo();
-    ibex_icache_item item;
+    ibex_icache_core_item item;
     forever begin
-      ibex_icache_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received ibex_icache item:\n%0s", item.sprint()), UVM_HIGH)
+      core_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("received ibex_icache_core item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 
   virtual task process_ibex_mem_intf_slave_fifo();
     ibex_mem_intf_seq_item item;
     forever begin
-      ibex_mem_intf_slave_fifo.get(item);
+      mem_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received ibex_mem_intf_seq item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask

@@ -8,11 +8,11 @@
 # Two-stage pipeline without additional branch target ALU and 3 cycle multiplier
 # (4 cycles for mulh), resulting in 2 stall cycles for mul (3 for mulh)
 small-3cmult:
-  RV32E                    : False
-  RV32M                    : True
-  RV32B                    : False
-  BranchTargetALU          : False
-  WritebackStage           : False
+  RV32E                    : 0
+  RV32M                    : 1
+  RV32B                    : 0
+  BranchTargetALU          : 0
+  WritebackStage           : 0
   MultiplierImplementation : "fast"
 
 # ===============================
@@ -23,18 +23,18 @@ small-3cmult:
 # (2 cycles for mulh) so mul does not stall (mulh stall 1 cycles). This is the
 # maximum performance configuration.
 experimental-maxperf-1cmult:
-  RV32E                    : False
-  RV32M                    : True
-  RV32B                    : False
-  BranchTargetALU          : True
-  WritebackStage           : True
+  RV32E                    : 0
+  RV32M                    : 1
+  RV32B                    : 0
+  BranchTargetALU          : 1
+  WritebackStage           : 1
   MultiplierImplementation : "single-cycle"
 
 # maxpref-1cmult config above with bitmanip extension
 experimental-maxperf-bm-1cmult:
-  RV32E                    : False
-  RV32M                    : True
-  RV32B                    : True
-  BranchTargetALU          : True
-  WritebackStage           : True
+  RV32E                    : 0
+  RV32M                    : 1
+  RV32B                    : 1
+  BranchTargetALU          : 1
+  WritebackStage           : 1
   MultiplierImplementation : "single-cycle"

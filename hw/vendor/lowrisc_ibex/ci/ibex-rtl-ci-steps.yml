@@ -7,11 +7,14 @@ steps:
     # the CI to fail if there's an issue with the configuration file or an
     # incorrect configuration name being used
     - bash: |
-        ./util/ibex_config.py ${{ config }} fusesoc_opts
-      displayName: Display fusesoc config for ${{ config }}
+        set -e
+        IBEX_CONFIG_OPTS=`./util/ibex_config.py ${{ config }} fusesoc_opts`
+        echo $IBEX_CONFIG_OPTS
+        echo "##vso[task.setvariable variable=ibex_config_opts]" $IBEX_CONFIG_OPTS
+      displayName: Test and display fusesoc config for ${{ config }}
 
     - bash: |
-        fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing $(./util/ibex_config.py ${{ parameters.ibex_config }} fusesoc_opts)
+        fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing $IBEX_CONFIG_OPTS
         if [ $? != 0 ]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Verilog lint failed. Run 'fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing' to check and fix all errors."
@@ -21,7 +24,7 @@ steps:
 
     - bash: |
         # Build simulation model of Ibex
-        fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_riscv_compliance $(./util/ibex_config.py ${{ parameters.ibex_config }} fusesoc_opts)
+        fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_riscv_compliance $IBEX_CONFIG_OPTS
         if [ $? != 0 ]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Unable to build Verilator model of Ibex for compliance testing."

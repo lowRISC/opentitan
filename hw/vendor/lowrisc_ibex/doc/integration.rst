@@ -23,6 +23,7 @@ Instantiation Template
       .MultiplierImplementation ( "fast"       ),
       .ICache                   ( 0            ),
       .ICacheECC                ( 0            ),
+      .SecureIbex               ( 0            ),
       .DbgTriggerEn             ( 0            ),
       .DmHaltAddr               ( 32'h1A110800 ),
       .DmExceptionAddr          ( 32'h1A110808 )
@@ -109,6 +110,9 @@ Parameters
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``ICacheECC``                | bit         | 0          | *EXPERIMENTAL* Enable SECDED ECC protection in ICache (if       |
 |                              |             |            | ICache == 1)                                                    |
++------------------------------+-------------+------------+-----------------------------------------------------------------+
+| ``SecureIbex``               | bit         | 0          | *EXPERIMENTAL* Enable various additional features targeting     |
+|                              |             |            | secure code execution.                                          |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``DbgTriggerEn``             | bit         | 0          | Enable debug trigger support (one trigger only)                 |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+

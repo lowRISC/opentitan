@@ -86,7 +86,14 @@ typedef enum logic [5:0] {
 
   // Set lower than
   ALU_SLT,
-  ALU_SLTU
+  ALU_SLTU,
+
+  // Ternary Bitmanip Operations
+  // RV32B
+  ALU_CMOV,
+  ALU_CMIX,
+  ALU_FSL,
+  ALU_FSR
 } alu_op_e;
 
 typedef enum logic [1:0] {

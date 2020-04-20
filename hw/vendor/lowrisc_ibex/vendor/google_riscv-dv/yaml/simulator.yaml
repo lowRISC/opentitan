@@ -102,3 +102,20 @@
       qrun -64 -simulate -snapshot design_opt -c <cov_opts> <sim_opts> -sv_seed <seed> -outdir <out>/qrun.out
     cov_opts: >
       -coverage -ucdb <out>/cov.ucdb
+
+- tool: riviera
+  compile:
+    cmd:
+      - "vlib <out>/work"
+      - "vlog -work <out>/work
+        -uvmver 1.2
+        +define+UVM_REGEX_NO_DPI
+        +incdir+<setting>
+        +incdir+<user_extension>
+        -f <cwd>/files.f
+        <cmp_opts>"
+  sim:
+    cmd: >
+      vsim -c <sim_opts> -sv_seed <seed> <cov_opts> -do <cwd>/riviera_sim.tcl
+    cov_opts: >
+      -acdb_file <out>/cov.acdb

@@ -64,9 +64,9 @@ Other blocks use the ALU for the following tasks:
 * It computes memory addresses for loads and stores with a Reg + Imm calculation
 * The LSU uses it to increment addresses when performing two accesses to handle an unaligned access
 
-Support for the RISC-V Bitmanipulation Extension is enabled via the parameter ``RV32B``.
+Support for the RISC-V Bitmanipulation Extension (Document Version 0.92, November 8, 2019) is enabled via the parameter ``RV32B``.
 This feature is *EXPERIMENTAL* and the details of its impact are not yet documented here.
-Currently only the Zbb base extension is implemented.
+Currently the Zbb and Zbt sub-extensions are implemented.
 All instructions are carried out in a single clock cycle.
 
 .. _mult-div:

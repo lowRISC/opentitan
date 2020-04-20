@@ -8,7 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_lib
-      - lowrisc:dv:ibex_icache_agent
+      - lowrisc:dv:ibex_icache_core_agent
       - lowrisc:dv:ibex_mem_intf_agent
     files:
       - ibex_icache_env_pkg.sv

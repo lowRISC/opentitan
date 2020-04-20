@@ -24,7 +24,7 @@
          -Mdir=<out>/vcs_simv.csrc
          -o <out>/vcs_simv
          -debug_access+pp
-         -lca -kdb <wave_opts> <cov_opts>"
+         -lca -kdb <cmp_opts> <wave_opts> <cov_opts>"
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
       -cm_tgl portsonly
@@ -72,31 +72,6 @@
     wave_opts: >
       -waves waves.vcd
 
-- tool: ius
-  compile:
-    cmd:
-      - "mkdir -p <out>/ius"
-      - "irun -work worklib
-              -access +rwc
-              -nclibdirpath <out>/ius
-              -sv -uvm -uvmhome CDNS-1.2
-              +define+UVM
-              -f ibex_dv.f
-              -elaborate -licqueue
-              -l <out>/ius/compile.log <cov_opts>"
-    cov_opts: >
-      -coverage all
-      -covfile cover.ccf
-  sim:
-    cmd: >
-      irun -R -nclibdirpath <out>/ius <sim_opts> -svseed <seed> -licqueue <wave_opts> <cov_opts>
-    cov_opts: >
-      -covoverwrite
-      -covworkdir <out>/cov_work
-      -covbaserun test
-    wave_opts: >
-      -input <cwd>/ius.tcl
-
 - tool: riviera
   env_var: ALDEC_PATH
   compile:
@@ -110,7 +85,7 @@
 
   sim:
     cmd: >
-      vsim -c <sim_opts> <cov_opts> -sv_seed <seed> -lib <out>/work +access +r+w -l <out>/logfile.log -do "run -all; endsim; quit -force" +ibex_tracer_file_base="trace_core"
+      vsim -c <sim_opts> <cov_opts> -sv_seed <seed> -lib <out>/work +access +r+w +UVM_TESTNAME=<rtl_test> +bin=<binary> +ibex_tracer_file_base="<sim_dir>/trace_core" -l <sim_dir>/sim.log -do "run -all; endsim; quit -force"
     cov_opts: >
       -acdb_file <out>/cov.acdb
 

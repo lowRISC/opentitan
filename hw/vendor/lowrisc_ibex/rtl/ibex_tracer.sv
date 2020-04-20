@@ -48,8 +48,10 @@ module ibex_tracer (
   input logic [ 1:0] rvfi_mode,
   input logic [ 4:0] rvfi_rs1_addr,
   input logic [ 4:0] rvfi_rs2_addr,
+  input logic [ 4:0] rvfi_rs3_addr,
   input logic [31:0] rvfi_rs1_rdata,
   input logic [31:0] rvfi_rs2_rdata,
+  input logic [31:0] rvfi_rs3_rdata,
   input logic [ 4:0] rvfi_rd_addr,
   input logic [31:0] rvfi_rd_wdata,
   input logic [31:0] rvfi_pc_rdata,
@@ -83,9 +85,10 @@ module ibex_tracer (
   // Data items accessed during this instruction
   localparam RS1 = (1 << 0);
   localparam RS2 = (1 << 1);
-  localparam RD  = (1 << 2);
-  localparam MEM = (1 << 3);
-  logic [3:0] data_accessed;
+  localparam RS3 = (1 << 2);
+  localparam RD  = (1 << 3);
+  localparam MEM = (1 << 4);
+  logic [4:0] data_accessed;
 
   function automatic void printbuffer_dumpline();
     string rvfi_insn_str;
@@ -115,6 +118,9 @@ module ibex_tracer (
     end
     if ((data_accessed & RS2) != 0) begin
       $fwrite(file_handle, " %s:0x%08x", reg_addr_to_str(rvfi_rs2_addr), rvfi_rs2_rdata);
+    end
+    if ((data_accessed & RS3) != 0) begin
+      $fwrite(file_handle, " %s:0x%08x", reg_addr_to_str(rvfi_rs3_addr), rvfi_rs3_rdata);
     end
     if ((data_accessed & RD) != 0) begin
       $fwrite(file_handle, " %s=0x%08x", reg_addr_to_str(rvfi_rd_addr), rvfi_rd_wdata);
@@ -396,12 +402,25 @@ module ibex_tracer (
 
   function automatic void decode_r_insn(input string mnemonic);
     data_accessed = RS1 | RS2 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, rvfi_rs2_addr);
+    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
+        rvfi_rs2_addr);
   endfunction
 
   function automatic void decode_r1_insn(input string mnemonic);
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr);
+  endfunction
+
+  function automatic void decode_r_cmixcmov_insn(input string mnemonic);
+    data_accessed = RS1 | RS2 | RS3 | RD;
+    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs2_addr,
+        rvfi_rs1_addr, rvfi_rs3_addr);
+  endfunction
+
+  function automatic void decode_r_funnelshift_insn(input string mnemonic);
+    data_accessed = RS1 | RS2 | RS3 | RD;
+    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
+        rvfi_rs3_addr, rvfi_rs2_addr);
   endfunction
 
   function automatic void decode_i_insn(input string mnemonic);
@@ -416,6 +435,15 @@ module ibex_tracer (
     shamt = {rvfi_insn[24:20]};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, shamt);
+  endfunction
+
+  function automatic void decode_i_funnelshift_insn( input string mnemonic);
+    // fsri
+    logic [5:0] shamt;
+    shamt = {rvfi_insn[25:20]};
+    data_accessed = RS1 | RS3;
+    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
+        rvfi_rs3_addr, shamt);
   endfunction
 
   function automatic void decode_i_jalr_insn(input string mnemonic);
@@ -709,7 +737,7 @@ module ibex_tracer (
 
   always_comb begin
     decoded_str = "";
-    data_accessed = 4'h0;
+    data_accessed = 5'h0;
     insn_is_compressed = 0;
 
     // Check for compressed instructions
@@ -871,6 +899,12 @@ module ibex_tracer (
         INSN_PCNT:       decode_r1_insn("pcnt");
         INSN_REV:        decode_r1_insn("rev");
         INSN_REV8:       decode_r1_insn("rev8");
+        // TERNARY BITMABIP INSTR
+        INSN_CMIX:       decode_r_cmixcmov_insn("cmix");
+        INSN_CMOV:       decode_r_cmixcmov_insn("cmov");
+        INSN_FSR:        decode_r_funnelshift_insn("fsr");
+        INSN_FSL:        decode_r_funnelshift_insn("fsl");
+        INSN_FSRI:       decode_i_funnelshift_insn("fsri");
 
         default:         decode_mnemonic("INVALID");
       endcase
