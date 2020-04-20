@@ -51,7 +51,7 @@ Run Verilator with boot_rom enabled:
 ```console
 $ cd ${REPO_TOP}
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
-  --rominit build-bin/sw/device/boot_rom/boot_rom_sim_verilator.vmem
+  --rominit build-bin/sw/device/boot_rom/boot_rom_sim_verilator.32.vmem
 ```
 
 Run spiflash. In this example we use SPI device `/dev/pts/3` as an example.

@@ -28,7 +28,7 @@ parameters:
   SRAM_INIT_FILE:
     datatype: str
     description: SRAM initialization file in vmem hex format
-    default: "../../../../../sw/device/examples/hello_world/hello_world.vmem"
+    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
     paramtype: vlogdefine
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
