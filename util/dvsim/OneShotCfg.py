@@ -24,7 +24,6 @@ class OneShotCfg(FlowCfg):
 
         # Options set from command line
         self.tool = args.tool
-        self.email = args.email
         self.verbose = args.verbose
         self.flist_gen_cmd = ""
         self.flist_gen_opts = []
