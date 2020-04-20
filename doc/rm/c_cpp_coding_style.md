@@ -139,9 +139,9 @@ Example:
 int create_rainbow(int pots_of_gold, int unicorns);
 ```
 
-## C++ Style Guide
+## C++ Style Guide {#cxx-style-guide}
 
-### C++ Version
+### C++ Version {#cxx-version}
 
 C++ code should target C++14.
 

@@ -2,8 +2,8 @@
 title: "Signoff Checklist"
 ---
 
-This document explains the recommended checklist items to review when transitioning from one [Hardware Stage]({{<relref "/doc/project/development_stages.md" >}}) to another, for both design and verification stages.
-It is expected that the items in each stage (D1, V1, etc) are completed.
+This document explains the recommended checklist items to review when transitioning from one [Development Stage]({{<relref "/doc/project/development_stages.md" >}}) to another, for design, verification, and [software device interface function (DIF)]({{< relref "doc/rm/device_interface_functions.md" >}}) stages.
+It is expected that the items in each stage (D1, V1, S1, etc) are completed.
 
 ## D1
 
@@ -395,3 +395,102 @@ Clean up all compile-time and run-time warnings thrown by the simulator.
 ### PRE_VERIFIED_SUB_MODULES_V3
 
 Sub-modules that are pre-verified with their own testbenches have already reached V3 stage.
+
+## S1
+
+For a transition from S0 to S1, the following items are expected be completed.
+
+### DIF_EXISTS
+
+`dif_<ip>.h` and, optionally, `dif_<ip>.c` exist in `sw/device/lib/dif`.
+
+### DIF_USED_IN_TREE
+
+All existing in-tree code which uses the device, uses the device via the DIF.
+There is no remaining driver code that directly uses the device outside of DIF code.
+
+### DIF_TEST_UNIT
+
+Software unit tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_unittest.cc`.
+
+### DIF_TEST_SANITY
+
+Sanity tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_sanitytest.c`.
+
+This should perform a basic test of the main datapath of the hardware module by the embedded core, via the DIF, and should be able to be run on all OpenTitan platforms (including FPGA, simulation, and DV).
+This test will be shared with DV.
+
+Sanity tests are for diagnosing major issues in both software and hardware, and with this in mind, they should execute quickly.
+Initially we expect this kind of test to be written by hardware designers for debugging issues during module development.
+This happens long before a DIF is implemented, so there are no requirements on how these should work, though we suggest they are placed in `sw/device/tests/<ip>/<ip>.c` as this has been the convention until now.
+Later, when a DIF is written, the DIF author is responsible for updating this test to use the DIF, and for moving this test into the aforementioned location.
+
+## S2
+
+For a transition from S1 to S2, the following items are expected be completed.
+
+### DIF_FEATURES
+
+DIF has functions to cover all specified hardware functionality.
+
+### DIF_HW_USAGE_REVIEWED
+
+The DIF's usage of its respective IP device has been reviewed by the device's hardware designer.
+
+### DIF_HW_FEATURE_COMPLETE
+
+The DIF's respective device IP is at least stage D2.
+
+### DIF_HW_PARAMS
+
+DIF uses automatically generated HW parameters and register definitions.
+
+### DIF_DOC_HW
+
+HW IP Programmer's guide references specific DIF APIs that can be used for operations.
+
+### DIF_CODE_STYLE
+
+DIF follows the DIF-specific guidelines in [`sw/device/lib/dif/README.md`]({{< relref "sw/device/lib/dif/README.md" >}}) and the OpenTitan C style guidelines.
+
+### DIF_DV_TESTS
+
+Chip-level DV testing for the IP using DIFs has been started.
+
+### DIF_USED_TOCK
+
+DIF has initial interface for use from Tock.
+
+## S3
+
+For a transition from S2 to S3, the following items are expected be completed.
+
+### DIF_HW_DESIGN_COMPLETE
+
+The DIF's respective device IP is at least stage D3.
+
+### DIF_HW_VERIFICATION_COMPLETE
+
+The DIF's respective device IP is at least stage V3.
+
+### DIF_REVIEW_C_STABLE
+
+Fully re-review C interface and implementation, with a view to the interface not changing in future.
+
+### DIF_TEST_UNIT_COMPLETE
+
+Unit tests cover (at least):
+
+- Device Initialisation
+- All Device FIFOs (including when empty, full, and adding data)
+- All Device Registers
+- All DIF Functions
+- All DIF return codes
+
+### DIF_TODO_COMPLETE
+
+Ensure all DIF TODOs are complete.
+
+### DIF_REVIEW_TOCK_STABLE
+
+Fully re-review Tock interface, with a view to the interface not changing in future.

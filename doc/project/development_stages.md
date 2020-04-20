@@ -47,8 +47,10 @@ Feature requests towards a signed-off design requires review and approval by the
 Once accepted, it results in creating a new version and return a design to the appropriate life stage, based upon the size of the change.
 See the _Versioning_ section of the document for more discussion.
 Signed off fully-functioning (read: not buggy) designs stay in the Signoff stage as an available complete IP, with an associated revision ID.
-[Here](https://github.com/lowRISC/opentitan/blob/master/doc/project/hw_checklist.md.tpl) is a template that can be used as a checklist item.
 
+There exists a [template for IP checklists](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl).
+The DIF stages use a separate, [software-specific checklist](https://github.com/lowRISC/opentitan/blob/master/doc/project/sw_checklist.md.tpl).
+All the checklist items are listed in the [Signoff Checklist]({{< relref "doc/project/checklist.md" >}}).
 
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
@@ -123,6 +125,35 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV plan completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Assertions (written and proven): all assertions including newly added post-V2 assertions (if any) <li> Regression: 100% of properties proven (with reviewed assumptions) <li> Coverage: 100% code coverage and 100% COI coverage</ul> |
 
+## Device Interface Function Stages
+
+The following development stages are for [Device Interface Function (DIF)]({{< relref "doc/rm/device_interface_functions.md" >}}) work.
+These milestones have a slightly different emphasis to the hardware design and verification milestones, because software is much easier to change if bugs are found.
+The metric they are trying to capture is the stability and completeness of a low-level software interface to hardware design.
+We are aiming to keep this process fairly lightweight in the early stages, and not significantly burdeonsome to the associated HW designer through all stages.
+
+There are explicit checkpoints in these stages to ensure that DIF development does not overtake design and verification.
+
+The first DIF stage is **Initial Work**.
+This indicates the period of time between starting the software API, and it being complete enough for other software to start using it.
+The exact API is still being defined.
+Once the DIF is complete enough to cover all existing in-tree uses of the device, and has mock tests, it has completed the Initial Work stage.
+
+The second stage is **Functional**.
+In this stage, the DIF can be used for basic operations, but may not cover all the specified functionality of the device.
+Once the DIF is complete enough to cover all the functionality of the device, in the way the hardware designer envisioned; is used for both DV testing; and can be used Tock, it has completed this stage.
+
+The third stage is **Complete**.
+In this stage, no changes to the interface are expected.
+Once testing is complete, and we are satisfied that the interface will not change (except for bug fixes), the DIF moves into its final stage: **Stable**.
+
+| **Stage** | **Name** | **Definition** |
+| --- | --- | --- |
+| S0 | Initial Work | Work has started on a DIF for the given IP block. |
+| S1 | Functional | <ul> <li> DIF has been reviewed and merged <li> DIF is used by all in-tree device code <li> DIF has (mocked) unit tests </ul> |
+| S2 | Complete | <ul> <li> DIF API is now Complete <li> The respective IP block is feature complete (at least D2) <li> DIF matches HW designer's agreed IP block usage <li> DIF covers all specified functionality of the IP block <li> DIF is used for chip-level DV <li> DIF documented in IP documentation <li> DIF has initial Tock integration </ul> |
+| S3 | Stable | <ul> <li> DIF API Reviewed and Stable <li> The respective IP block is at D3/V3 <li> DIF tested fully (DV + Unit tests, full functional coverage) <li> Complete and Stable Tock interface to DIF </ul> |
+
 ## Signoff Review
 
 At the end of the final design and verification phase, the IP block should be proposed to the Technical Committee as ready for sign-off.
@@ -159,6 +190,7 @@ For example, `file: gpio.prj.hjson`:
     life_stage:         "L1"
     design_stage:       "D2"
     verification_stage: "V1"
+    dif_stage:          "S0"
     notes:              "information shown on the dashboard"
 }
 ```
@@ -176,6 +208,7 @@ The commit ID has its own entry in the project Hjson file, as shown below.
     life_stage:         "L1"
     design_stage:       "D2"
     verification_stage: "V1"
+    dif_stage:          "S0"
     commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8"
     notes:              "information shown on the dashboard"
 }
@@ -192,6 +225,7 @@ They are converted to complete URLs in the generated dashboard.
     design_spec:  "hw/ip/gpio/doc"
     dv_plan:      "hw/ip/gpio/doc/dv_plan"
     hw_checklist: "hw/ip/gpio/doc/checklist"
+    sw_checklist: "sw/device/lib/dif/dif_gpio"
 }
 ```
 
@@ -233,6 +267,7 @@ This is indicated as two versions as shown in this example.
         life_stage:         "L2",
         design_stage:       "D3",
         verification_stage: "V3",
+        dif_stage:          "S0",
         commit_id:          "92e4298f8c2de268b2420a2c16939cd0784f1bf8",
         notes:              ""
       }
@@ -241,6 +276,7 @@ This is indicated as two versions as shown in this example.
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
+        dif_stage:          "S0",
         commit_id:          "f3039d7006ca8ebd45ae0b52b22864983876175d",
         notes:              "Rolled back to D2 as the register module is updated",
       }
