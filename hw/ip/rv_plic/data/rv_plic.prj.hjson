@@ -4,6 +4,9 @@
 
 {
     name:               "rv_plic",
+    design_spec:        "hw/ip/rv_plic/doc",
+    dv_plan:            "hw/ip/rv_plic/doc/dv_plan",
+    hw_checklist:       "hw/ip/rv_plic/doc/checklist",
     revisions: [
       {
         version:            "0.5",
