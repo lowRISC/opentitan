@@ -8,7 +8,7 @@ We start off by providing links to the [results of various tool-flows](#results-
 This includes DV simulations, FPV and lint, all of which are run with the `dvsim` tool which serves as the common frontend.
 
 The [Comportable IPs](#comportable-ips) following it provides links to their design specifications and DV plans, and tracks their current stage of development.
-See the [Hardware Development Stages]({{< relref "/doc/project/hw_stages.md" >}}) for description of the hardware stages and how they are determined.
+See the [Hardware Development Stages]({{< relref "/doc/project/development_stages.md" >}}) for description of the hardware stages and how they are determined.
 
 Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV plans and the DV simulation results.
 

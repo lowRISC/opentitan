@@ -2,7 +2,7 @@
 title: "RV_TIMER Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{<relref "/doc/project/hw_stages.md" >}})
+This checklist is for [Hardware Stage]({{<relref "/doc/project/development_stages.md" >}})
 transitions for the [rv_timer peripheral.](../) All checklist
 items refer to the content in the [Checklist.]({{<relref "/doc/project/checklist.md" >}})
 

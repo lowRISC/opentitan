@@ -2,7 +2,7 @@
 title: "Signoff Checklist"
 ---
 
-This document explains the recommended checklist items to review when transitioning from one [Hardware Stage]({{<relref "/doc/project/hw_stages.md" >}}) to another, for both design and verification stages.
+This document explains the recommended checklist items to review when transitioning from one [Hardware Stage]({{<relref "/doc/project/development_stages.md" >}}) to another, for both design and verification stages.
 It is expected that the items in each stage (D1, V1, etc) are completed.
 
 ## D1

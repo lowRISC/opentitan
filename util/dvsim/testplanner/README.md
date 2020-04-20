@@ -43,7 +43,7 @@ intent of a planned test:
 * **tests: list of actual written tests that maps to this planned test**
 
     Testplan is written in the initial work stage of the verification
-    [life-cycle]({{< relref "doc/project/hw_stages#hardware-verification-stages" >}}).
+    [life-cycle]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}).
     When the DV engineer gets to actually developing the test, it may not map 1:1 to
     the planned test - it may be possible that an already written test that mapped
     to another planned test also satisfies the current one; OR it may also be
