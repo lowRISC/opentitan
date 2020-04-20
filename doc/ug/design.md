@@ -35,7 +35,7 @@ TODO: briefly discuss key architectural decisions, and how we came to the conclu
 Designs within the OpenTitan project come in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of a design is important to gauge the confidence in its advertised feature set.
-To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "doc/project/hw_stages.md" >}}) document.
+To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "doc/project/development_stages.md" >}}) document.
 This document defines the design stages and references where one can find the current status of each of the designs in the repository.
 
 ## Documentation
@@ -85,7 +85,7 @@ Once the Pull Request has been merged, these developers can then work with the m
 
 Note that all designs with enabled AscentLint targets will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://docs.opentitan.org/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
-Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/hw_stages" >}}) document.
+Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/development_stages" >}}) document.
 
 ## Assertion Methodology
 

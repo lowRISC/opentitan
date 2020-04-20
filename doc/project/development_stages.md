@@ -1,3 +1,7 @@
+---
+aliases: [/doc/project/hw_stages/]
+---
+
 # OpenTitan Hardware Development Stages
 
 ## Document Goals

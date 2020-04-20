@@ -8,7 +8,7 @@ Please refer to the [DV methodology]({{< relref "dv_methodology.md" >}}) documen
 
 ## Stages of DV
 
-The life stages of a design / DV effort within the OpenTitan are described in the [Hardware Development Stages]({{< relref "doc/project/hw_stages.md" >}}) document.
+The life stages of a design / DV effort within the OpenTitan are described in the [Hardware Development Stages]({{< relref "doc/project/development_stages.md" >}}) document.
 It separates the life of DV into three broad stages: Initial Work, Under Test and Testing Complete.
 This document attempts to give guidance on how to get going with the first stage and have a smooth transition into the Under Test stage.
 They are not hard and fast rules but methods we have seen work well in the project.
@@ -88,7 +88,7 @@ Please refer to [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README" >}}) for 
 
 ## Full DV
 
-Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage]({{< relref "doc/project/hw_stages#hardware-verification-stages" >}}) should provide a good reference in terms of how to develop tests as outlined in the testplan and running and debugging them.
+Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}) should provide a good reference in terms of how to develop tests as outlined in the testplan and running and debugging them.
 Please refer to the [checklist]({{< relref "doc/project/checklist" >}}) to understand the key requirements for progressing through the subsequent verification stages and final signoff.
 
 The [UART DV](https://github.com/lowRISC/opentitan/tree/master/hw/ip/uart/dv) area can be used as a canonical example for making progress.

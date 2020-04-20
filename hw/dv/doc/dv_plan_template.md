@@ -20,7 +20,7 @@ applicable. Once done, remove this comment before making a PR. -->
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
+  * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
 * [Simulation results](https://reports.opentitan.org/hw/ip/foo/dv/latest/results.html)
 
 ## Design features

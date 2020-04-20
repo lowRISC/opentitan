@@ -20,7 +20,7 @@ ${'##'} Goals
 
 ${'##'} Current status
 * [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/hw_stages" >}})
+  * [HW development stages]({{< relref "doc/project/development_stages" >}})
 * [Simulation results](https://reports.opentitan.org/hw/ip/${name}/dv/latest/results.html)
 
 ${'##'} Design features

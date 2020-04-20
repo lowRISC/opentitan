@@ -5,7 +5,7 @@ title: "UART Checklist"
 This checklist is for [Hardware Stage][] transitions for the [UART peripheral.](../)
 All checklist items refer to the content in the [Checklist.]({{<relref "/doc/project/checklist.md">}})
 
-[Hardware Stage]: {{<relref "/doc/project/hw_stages.md" >}}
+[Hardware Stage]: {{<relref "/doc/project/development_stages.md" >}}
 
 
 ## Design Checklist

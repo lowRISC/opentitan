@@ -11,7 +11,7 @@ title: "HMAC DV Plan"
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
+  * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
 * [Simulation results](https://reports.opentitan.org/hw/ip/hmac/dv/latest/results.html)
 
 ## Design features
