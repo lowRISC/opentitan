@@ -84,6 +84,7 @@ module spi_fwm_txf_ctrl #(
   // State Machine next , output logic
   always_comb begin
     // default output value
+    st_next     = StIdle;
     sram_req_d  = 1'b0;
     update_rptr = 1'b0;
     latch_wptr  = 1'b0;
@@ -134,7 +135,7 @@ module spi_fwm_txf_ctrl #(
           fifo_valid = 1'b1;
           txf_sel = 1'b1; // select sram_rdata_q
           cnt_incr = 1'b1;
-        end else if (fifo_ready && cnt_eq_end) begin
+        end else begin //if (fifo_ready && cnt_eq_end) begin
           // current SRAM word is written to FIFO
           st_next = StUpdate;
         end
