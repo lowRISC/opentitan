@@ -13,6 +13,7 @@
         life_stage:         "L1",
         design_stage:       "D1",
         verification_stage: "V1",
+        dif_stage:          "S0",
         commit_id:          "553ca956e0204e5b67b3bbea47f2e067f60b5510",
         notes:              ""
       }

@@ -13,6 +13,7 @@
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
+        dif_stage:          "S0",
         commit_id:          "d4d5d2f3bb87af5ca2f2787af5bc19bee04ffc6a",
         notes:              "based on FPV at block level",
       }
