@@ -12,14 +12,14 @@ module prim_generic_ram_1p #(
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
-  input clk_i,
-  input rst_ni,       // Memory content reset
+  input  logic             clk_i,
+  input  logic             rst_ni,
 
-  input                    req_i,
-  input                    write_i,
-  input        [Aw-1:0]    addr_i,
-  input        [Width-1:0] wdata_i,
-  input        [Width-1:0] wmask_i,
+  input  logic             req_i,
+  input  logic             write_i,
+  input  logic [Aw-1:0]    addr_i,
+  input  logic [Width-1:0] wdata_i,
+  input  logic [Width-1:0] wmask_i,
   output logic             rvalid_o,
   output logic [Width-1:0] rdata_o
 );
@@ -28,7 +28,7 @@ module prim_generic_ram_1p #(
   // to be the full bit mask
   localparam int MaskWidth = Width / DataBitsPerMask;
 
-  logic [Width-1:0] mem [Depth];
+  logic [Width-1:0]     mem [Depth];
   logic [MaskWidth-1:0] wmask;
 
   always_comb begin
@@ -65,25 +65,38 @@ module prim_generic_ram_1p #(
   `ifdef VERILATOR
     // Task for loading 'mem' with SystemVerilog system task $readmemh()
     export "DPI-C" task simutil_verilator_memload;
-    // Function for setting a specific 32 bit element in |mem|
-    // Returns 1 (true) for success, 0 (false) for errors.
-    export "DPI-C" function simutil_verilator_set_mem;
 
     task simutil_verilator_memload;
       input string file;
       $readmemh(file, mem);
     endtask
 
-    // TODO: Allow 'val' to have other widths than 32 bit
-    function int simutil_verilator_set_mem(input int index,
-                                           input logic[31:0] val);
-      if (index >= Depth) begin
-        return 0;
-      end
+    // Width must be a multiple of 32bit for this function to work
+    // Note that the DPI export and function definition must both be in the same generate
+    // context to get the correct name.
+    if ((Width % 32) == 0) begin : gen_set_mem
+      // Function for setting a specific element in |mem|
+      // Returns 1 (true) for success, 0 (false) for errors.
+      export "DPI-C" function simutil_verilator_set_mem;
 
-      mem[index] = val;
-      return 1;
-    endfunction
+      function int simutil_verilator_set_mem(input int index,
+                                             input bit [Width-1:0] val);
+        if (index >= Depth) begin
+          return 0;
+        end
+
+        mem[index] = val;
+        return 1;
+      endfunction
+    end else begin : gen_other
+      // Function doesn't work unless Width % 32 so just return 0
+      export "DPI-C" function simutil_verilator_set_mem;
+
+      function int simutil_verilator_set_mem(input int index,
+                                             input bit [Width-1:0] val);
+        return 0;
+      endfunction
+    end
   `endif
 
   `ifdef SRAM_INIT_FILE
