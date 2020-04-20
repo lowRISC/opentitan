@@ -560,8 +560,6 @@ class SimCfg(FlowCfg):
         super()._publish_results()
 
         if self.cov:
-            # TODO: hack to only allow VCS coverage data to be uploaded.
-            if self.tool != "vcs": return
             results_server_dir_url = self.results_server_dir.replace(
                 self.results_server_prefix, self.results_server_url_prefix)
 
