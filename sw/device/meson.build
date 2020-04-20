@@ -9,7 +9,7 @@ subdir('exts')
 # files (plus a disassembled .dis file).
 #
 # These definitions should only be available to directories which define executables.
-make_embedded_target_outputs = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.vmem']
+make_embedded_target_outputs = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.32.vmem', '@BASENAME@.64.vmem']
 make_embedded_target = [
   prog_python, meson.source_root() / 'util/embedded_target.py',
   '--objcopy', prog_objcopy,

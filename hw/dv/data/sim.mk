@@ -63,10 +63,10 @@ ifneq (${sw_name},)
 		-f .logs.fields -r .rodata \
 		-n "sw" -o "${run_dir}"
 	# Copy over the images to the run_dir.
-	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.vmem \
-		${run_dir}/rom.vmem
-	cp ${sw_build_dir}/build-out/sw/device/${sw_dir}/${sw_name}_${sw_build_device}.vmem \
-		${run_dir}/sw.vmem
+	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.32.vmem \
+		${run_dir}/rom.32.vmem
+	cp ${sw_build_dir}/build-out/sw/device/${sw_dir}/${sw_name}_${sw_build_device}.32.vmem \
+		${run_dir}/sw.32.vmem
 endif
 
 simulate: sw_build

@@ -71,7 +71,7 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
 
     // initialize the sw_image names and log file names
     foreach (sw_types[i]) begin
-      sw_images[sw_types[i]] = {sw_types[i], ".vmem"};
+      sw_images[sw_types[i]] = {sw_types[i], ".32.vmem"};
       sw_log_files[sw_types[i]] = {sw_types[i], "_logs.txt"};
     end
   endfunction

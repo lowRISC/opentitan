@@ -37,7 +37,7 @@ parameters:
   ROM_INIT_FILE:
     datatype: str
     description: ROM initialization file in vmem hex format
-    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.vmem"
+    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
     paramtype: vlogdefine
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
