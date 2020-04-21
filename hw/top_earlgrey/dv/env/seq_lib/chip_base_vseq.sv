@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_base_vseq extends dv_base_vseq #(
+class chip_base_vseq extends cip_base_vseq #(
     .CFG_T               (chip_env_cfg),
     .RAL_T               (chip_reg_block),
     .COV_T               (chip_env_cov),
@@ -18,6 +18,11 @@ class chip_base_vseq extends dv_base_vseq #(
   // various knobs to enable certain routines
 
   `uvm_object_new
+
+  task post_start();
+    do_clear_all_interrupts = 0;
+    super.post_start();
+  endtask
 
   virtual task apply_reset(string kind = "HARD");
     // TODO: Cannot assert different types of resets in parallel; due to randomization

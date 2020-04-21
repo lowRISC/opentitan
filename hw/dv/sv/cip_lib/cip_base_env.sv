@@ -34,7 +34,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         cfg.num_interrupts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(devmode_vif)::get(this, "", "devmode_vif", cfg.devmode_vif)) begin
+    if (cfg.has_devmode && !uvm_config_db#(devmode_vif)::get(this, "", "devmode_vif",
+                                                             cfg.devmode_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
     if (!uvm_config_db#(tlul_assert_ctrl_vif)::get(this, "", "tlul_assert_ctrl_vif",
@@ -78,7 +79,9 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
     // Set the TL adapter / sequencer to the default_map.
-    cfg.ral.default_map.set_sequencer(m_tl_agent.sequencer, m_tl_reg_adapter);
+    if (cfg.m_tl_agent_cfg.is_active) begin
+      cfg.ral.default_map.set_sequencer(m_tl_agent.sequencer, m_tl_reg_adapter);
+    end
   endfunction : end_of_elaboration_phase
 
 endclass

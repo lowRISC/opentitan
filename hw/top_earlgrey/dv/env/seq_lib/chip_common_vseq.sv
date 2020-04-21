@@ -17,7 +17,7 @@ class chip_common_vseq extends chip_base_vseq;
   endtask
 
   virtual task body();
-    run_csr_vseq_wrapper(num_trans);
+    run_common_vseq_wrapper(num_trans);
   endtask : body
 
 endclass

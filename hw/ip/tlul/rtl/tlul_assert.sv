@@ -21,6 +21,7 @@ module tlul_assert #(
 `ifndef VERILATOR
 `ifndef SYNTHESIS
 
+  import uvm_pkg::*;
   import tlul_pkg::*;
   import top_pkg::*;
 
@@ -282,6 +283,13 @@ module tlul_assert #(
   //  make sure ready is not X after reset
   `ASSERT_KNOWN(aReadyKnown_A, d2h.a_ready)
   `ASSERT_KNOWN(dReadyKnown_A, h2d.d_ready)
+
+  initial forever begin
+    bit tlul_assert_en;
+    uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_assert_en");
+    uvm_config_db#(bit)::get(null, "%m", "tlul_assert_en", tlul_assert_en);
+    force tlul_assert_ctrl = tlul_assert_en; // TODO to clean up
+  end
 `endif
 `endif
 endmodule : tlul_assert

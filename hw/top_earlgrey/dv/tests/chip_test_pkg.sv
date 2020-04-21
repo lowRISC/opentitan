@@ -5,8 +5,9 @@
 package chip_test_pkg;
   // dep packages
   import uvm_pkg::*;
-  import dv_lib_pkg::*;
+  import cip_base_pkg::*;
   import chip_env_pkg::*;
+  import tl_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
