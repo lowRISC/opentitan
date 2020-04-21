@@ -41,9 +41,6 @@ package chip_env_pkg;
     SpiMem
   } chip_mem_e;
 
-  typedef class chip_tl_seq_item;
-  typedef tl_reg_adapter #(.ITEM_T(chip_tl_seq_item)) chip_tl_reg_adapter;
-
   // functions
 
   // package sources

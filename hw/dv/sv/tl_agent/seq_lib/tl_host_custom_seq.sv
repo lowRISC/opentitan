@@ -12,7 +12,6 @@ class tl_host_custom_seq extends tl_host_single_seq;
   virtual function void randomize_req(REQ req, int idx);
     control_addr_alignment = 1;
     control_rand_size      = 1;
-    control_rand_source    = 1;
     control_rand_opcode    = 1;
     req.disable_a_chan_protocol_constraint();
     super.randomize_req(req, idx);

@@ -138,6 +138,20 @@
       run_opts: ["+en_scb=0", "+csr_aliasing"]
       en_run_modes: ["stub_cpu"]
     }
+
+    {
+      name: "chip_same_csr_outstanding"
+      uvm_test_seq: chip_common_vseq
+      run_opts: ["+en_scb=0", "+run_same_csr_outstanding"]
+      en_run_modes: ["stub_cpu"]
+    }
+
+    {
+      name: chip_tl_errors
+      uvm_test_seq: chip_common_vseq
+      run_opts: ["+run_tl_errors"]
+      en_run_modes: ["stub_cpu"]
+    }
   ]
 
   // List of regressions.

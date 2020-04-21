@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_scoreboard extends dv_base_scoreboard #(
+class chip_scoreboard extends cip_base_scoreboard #(
     .CFG_T(chip_env_cfg),
     .RAL_T(chip_reg_block),
     .COV_T(chip_env_cov)
