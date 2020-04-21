@@ -168,8 +168,6 @@ def elab_intermodule(topcfg: OrderedDict):
         req_struct["index"] = -1
 
         for i, rsp in enumerate(rsps):
-            assert i == 0, "Handling multiple connections (array) isn't yet supported"
-
             # Split index
             rsp_module, rsp_signal, rsp_index = filter_index(rsp)
 
@@ -179,7 +177,13 @@ def elab_intermodule(topcfg: OrderedDict):
             # determine the signal name
 
             rsp_struct["top_signame"] = sig_name
-            rsp_struct["index"] = -1 if req_struct["width"] == 1 else i
+            if req_struct["type"] == "uni" and req_struct[
+                    "top_type"] == "broadcast":
+                rsp_struct["index"] = -1
+            elif rsp_struct["width"] == req_struct["width"] and len(rsps) == 1:
+                rsp_struct["index"] = -1
+            else:
+                rsp_struct["index"] = -1 if req_struct["width"] == 1 else i
 
             # Assume it is logic
             # req_rsp doesn't allow logic
@@ -383,6 +387,9 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                     req=req))
             error += 1
 
+        total_width = 0
+        widths = []
+
         # Check rsp format
         for i, rsp in enumerate(rsps):
             rsp_m, rsp_s, rsp_i = filter_index(rsp)
@@ -396,6 +403,9 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
 
             error += check_intermodule_field(rsp_struct)
+
+            total_width += rsp_struct["width"]
+            widths.append(rsp_struct["width"])
 
             # Type check
             if "package" not in rsp_struct:
@@ -419,6 +429,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                         actual=rsp_struct["type"]))
                 error += 1
 
+            # If len(rsps) is 1, then the width should be matched to req
             if req_struct["width"] != 1:
                 if rsp_struct["width"] not in [1, req_struct["width"]]:
                     log.error(
@@ -434,7 +445,25 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                         .format(rsp=rsp))
                     error += 1
 
-        # All rsps are checked, check the total width to req width
+        # Determine if "uni" is broadcast or one-to-N
+        if req_struct["type"] == "uni" and len(rsps) != 1:
+            # If req width is same as total width of rsps ==> one-to-N
+            if req_struct["width"] == total_width:
+                req_struct["top_type"] = "one-to-N"
+
+            # If req width is same to the every width of rsps ==> broadcast
+            elif len(rsps) * [req_struct["width"]] == widths:
+                req_struct["top_type"] = "broadcast"
+
+            # If not, error
+            else:
+                log.error("'uni' type connection {req} should be either"
+                          "OneToN or Broadcast".format(req=req))
+                error += 1
+        elif req_struct["type"] == "uni":
+            # one-to-one connection
+            req_struct["top_type"] = "broadcast"
+
         # If req is array, it is not allowed to have partial connections.
         # Doing for loop again here: Make code separate from other checker
         # for easier maintenance
@@ -456,6 +485,15 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 "Request {} width is not matched with total responses width {}"
                 .format(req_struct["width"], rsps_width))
             error += 1
+
+    for item in topcfg["inter_module"]["top"] + topcfg["inter_module"]["ext"]:
+        sig_m, sig_s, sig_i = filter_index(item)
+        if sig_i != -1:
+            log.error("{item} cannot have index".format(item=item))
+            total_error += 1
+        sig_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
+                                             sig_m, sig_s)
+        total_error += check_intermodule_field(sig_struct)
 
     return total_error
 
@@ -479,6 +517,8 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     """
 
     # Floating signals
+    # TODO: Check logic type too
+    # TODO: Find smarter way to assign default?
     if "top_signame" not in obj:
         if obj["act"] == "req" and suffix == "req":
             return ""
@@ -491,7 +531,7 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
 
-        return "FLOAT"
+        return ""
 
     # Connected signals
     assert suffix in ["", "req", "rsp"]
