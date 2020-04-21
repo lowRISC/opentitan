@@ -81,7 +81,7 @@ typedef enum dif_plic_result {
  * Initialises an instance of PLIC.
  *
  * Information that must be retained, and is required to program PLIC, shall
- * be stored in @p plic.
+ * be stored in `plic`.
  *
  * @param base_addr Base address of an instance of the PLIC IP block.
  * @param plic PLIC state data.
