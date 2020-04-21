@@ -1,8 +1,9 @@
 
 # Overview
 The RISC-V compliance test can be run on either OpenTitan FPGA or Verilator.
-OpenTitan is an open source project to build transparent, high-quality reference designs for silicon root of trust chips.
-Please see the [OpenTitan website](https://opentitan.org) for more details.
+OpenTitan is an open source project to build transparent, high-quality reference
+designs for silicon root of trust chips.  Please see the [OpenTitan
+website](https://opentitan.org) for more details.
 
 To run on Verilator, set the variables below
 
@@ -12,8 +13,8 @@ $ export RISCV_DEVICE=rv32imc
 $ export OT_TARGET=verilator
 ```
 
-To run on FPGA, set the variables below.
-The `FPGA_UART` variable must be set to wherever a valid device is connected.
+To run on FPGA, set the variables below.  The `FPGA_UART` variable must be set
+to wherever a valid device is connected.
 
 ```console
 $ export RISCV_TARGET=opentitan
@@ -28,17 +29,23 @@ In addition the UART device must be appropriately configured.
 $ stty -F $OT_FPGA_UART 230400 raw
 ```
 
-By default, the test assumes there exists a valid Verilator build at `${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
-If your Verilator build is at a different location, please set that as well when running with Verilator.
+By default, the test assumes there exists a valid Verilator build at
+`${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
+If your Verilator build is at a different location, please set that as well when
+running with Verilator.
 
 ```console
 $ export TARGET_SIM=${PATH_TO_VERILATOR_BUILD}
 ```
 
-When running against FPGA, the test assumes the FPGA is already programmed and ready to go with spiflash available at `${REPO_TOP}/build-bin/sw/host/spiflash/spiflash_export`
-To quickly get started with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
+When running against FPGA, the test assumes the FPGA is already programmed and
+ready to go with spiflash available at
+`${REPO_TOP}/build-bin/sw/host/spiflash/spiflash_export` To quickly get started
+with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start
+guide](https://docs.opentitan.org/doc/ug/quickstart/).
 
-Finally the support software must be built, including the boot_rom when using the verilator target.
+Finally the support software must be built, including the boot_rom when using
+the verilator target.
 
 ```console
 $ cd $REPO_TOP
@@ -46,9 +53,9 @@ $ ./meson_init.sh
 $ ninja -C ./build-out all
 ```
 
-Now, run the tests from the riscv_compliance directory.
-The following output will be seen (software build steps are truncated).
-The example below uses Verilator as an example, but the FPGA output is nearly identical.
+Now, run the tests from the riscv_compliance directory.  The following output
+will be seen (software build steps are truncated).  The example below uses
+Verilator as an example, but the FPGA output is nearly identical.
 
 ```console
 $ cd $RISCV_COMPLIANCE_REPO_BASE
@@ -110,11 +117,14 @@ Check        I-XORI-01 ... OK
 OK: 48/48
 ```
 
-There are several test suites that can be run `rv32i`, `rv32im`, `rv32imc` and `rv32Zicsr`.
-Change the `RISCV_ISA` argument passed to `make` to choose between them.
+There are several test suites that can be run `rv32i`, `rv32im`, `rv32imc` and
+`rv32Zicsr`.  Change the `RISCV_ISA` argument passed to `make` to choose between
+them.
 
 ## Changing targets
-When switching between targets (i.e. between FPGA and verilator) the `work` directory in the `riscv_compliance` tree must be remove to force a software rebuild.
+When switching between targets (i.e. between FPGA and verilator) the `work`
+directory in the `riscv_compliance` tree must be remove to force a software
+rebuild.
 
 ```console
 $ cd $RISCV_COMPLIANCE_REPO_BASE
@@ -122,8 +132,10 @@ $ rm -rf ./work
 ```
 
 ## Parallel runs
-When running against the `verilator` target parallel make jobs are used (via passing `-j4` to make internally).
-Parallel runs can be disabled by passing `PARALLEL=0` to the `make` command or the `-j` used can be altered with the `JOBS` argument.
+When running against the `verilator` target parallel make jobs are used (via
+passing `-j4` to make internally).  Parallel runs can be disabled by passing
+`PARALLEL=0` to the `make` command or the `-j` used can be altered with the
+`JOBS` argument.
 
 Disable parallel runs:
 ```console
