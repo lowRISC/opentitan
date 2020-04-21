@@ -5,7 +5,7 @@ import logging as log
 from enum import Enum
 from collections import OrderedDict
 
-from reggen.validate import check_keys, val_types
+from reggen.validate import check_keys
 
 # For the reference
 # val_types = {
@@ -36,7 +36,8 @@ from reggen.validate import check_keys, val_types
 top_required = {
     'name': ['s', 'Top name'],
     'type': ['s', 'type of hjson. Shall be "top" always'],
-    'clocks': ['l', 'list of clocks'],
+    'clocks': ['g', 'group of clock properties'],
+    'resets': ['l', 'list of resets'],
     'module': ['l', 'list of modules to instantiate'],
     'memory': [
         'l', 'list of memories. At least one memory is needed to run \
@@ -83,6 +84,16 @@ padctrl_optional = {
     'attr_default': ['l', 'List of the attribute']
 }
 padctrl_added = {}
+
+clock_groups_required = {
+    'name': ['s', 'name of clock group'],
+    'sw_cg': ['s', 'yes, no, hint. Software clock gate attributes'],
+}
+clock_groups_optional = {
+    'unique': ['s', 'whether clocks in the group are unique'],
+    'clocks': ['g', 'groups of clock name to source'],
+}
+clock_groups_added = {}
 
 
 class TargetType(Enum):
@@ -147,10 +158,38 @@ def check_pinmux(top, prefix):
     return 0
 
 
+# check for inconsistent clock group definitions
+def check_clock_groups(top):
+
+    # default empty assignment
+    if "groups" not in top['clocks']:
+        top['clocks']['groups'] = []
+
+    error = 0
+    for group in top['clocks']['groups']:
+        error = check_keys(group, clock_groups_required, clock_groups_optional,
+                           clock_groups_added, "Clock Groups")
+
+        # Check sw_cg values are valid
+        if group['sw_cg'] not in ['yes', 'no', 'hint']:
+            log.error("Incorrect attribute for sw_cg: {}".format(group['sw_cg']))
+            error += 1
+
+        # Check combination of sw_cg and unique are valid
+        unique = group['unique'] if 'unique' in group else 'no'
+        if group['sw_cg'] == 'no' and unique != 'no':
+            log.error("Incorrect attribute combination.  When sw_cg is no, unique must be no")
+            error += 1
+
+        if error:
+            break
+
+    return error
+
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']]
-    clock_nets = [clock['name'] for clock in top['clocks']]
+    clock_srcs = [clock['name'] for clock in top['clocks']['srcs']]
     error = 0
 
     # Check clock/reset port connection for all IPs
@@ -158,7 +197,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         ipcfg_name = ipcfg['name'].lower()
         log.info("Checking clock/resets for %s" % ipcfg_name)
         error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets)
-        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_nets)
+        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs)
 
         if error:
             log.error("module clock/reset checking failed")
@@ -171,7 +210,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         error += validate_reset(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
                                 reset_nets, "xbar")
         error += validate_clock(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
-                                clock_nets, "xbar")
+                                clock_srcs, "xbar")
 
         if error:
             log.error("xbar clock/reset checking failed")
@@ -244,10 +283,10 @@ def validate_reset(top, inst, reset_nets, prefix=""):
 
 
 # Checks the following
-# For each defined clock connection in top*.hjson, there exists a defined port at the destination
-# and defined clock net
+# For each defined clock_src in top*.hjson, there exists a defined port at the destination
+# and defined clock source
 # There are the same number of defined connections as there are ports
-def validate_clock(top, inst, clock_nets, prefix=""):
+def validate_clock(top, inst, clock_srcs, prefix=""):
     # Gather inst port list
     error = 0
     inst_port_list = []
@@ -263,13 +302,13 @@ def validate_clock(top, inst, clock_nets, prefix=""):
     log.info("%s %s clocks are %s" %
              (prefix, inst['name'].lower(), inst_port_list))
 
-    if len(top['clock_connections'].keys()) != len(inst_port_list):
+    if len(top['clock_srcs'].keys()) != len(inst_port_list):
         error += 1
         log.error("%s %s mismatched number of clock ports and nets" %
                   (prefix, inst['name']))
 
     missing_port = [
-        port for port in top['clock_connections'].keys()
+        port for port in top['clock_srcs'].keys()
         if port not in inst_port_list
     ]
 
@@ -280,8 +319,8 @@ def validate_clock(top, inst, clock_nets, prefix=""):
         [log.error("%s" % port) for port in missing_port]
 
     missing_net = [
-        net for port, net in top['clock_connections'].items()
-        if net not in clock_nets
+        net for port, net in top['clock_srcs'].items()
+        if net not in clock_srcs
     ]
 
     if missing_net:
@@ -315,6 +354,9 @@ def validate_top(top, ipobjs, xbarobjs):
 
     ## Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
+
+    ## Clock group check
+    error += check_clock_groups(top)
 
     ## RV_PLIC check
 

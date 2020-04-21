@@ -18,6 +18,8 @@ max_diolength = max([len(x["name"]) for x in top["pinmux"]["dio"]])
 max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"] +  top["pinmux"]["inouts"]])
 max_sigwidth = len("{}".format(max_sigwidth))
 
+clks_attr = top['clocks']
+
 %>\
 module top_${top["name"]} #(
   parameter bit IbexPipeLine = 0
@@ -25,6 +27,9 @@ module top_${top["name"]} #(
   // Clock and Reset
   input               clk_i,
   input               rst_ni,
+
+  // Fixed clock
+  input               clk_fixed_i,
 
   // USB clock
   input               clk_usb_48mhz_i,
@@ -126,8 +131,10 @@ module top_${top["name"]} #(
 % endfor
 
   //clock wires declaration
-% for clock in top['clocks']:
-  logic ${clock['name']}_clk;
+% for clock_group in clks_attr['groups']:
+  % for k in clock_group['clocks']:
+  logic ${k};
+  % endfor
 % endfor
 
   // Signals
@@ -208,14 +215,13 @@ module top_${top["name"]} #(
 % endfor
 
   // Clock assignments
-% for clock in top['clocks']:
-  % if clock['name'] != "usb" :
-  assign ${clock['name']}_clk = clk_i;
-  % endif
+  // These assignments are temporary until the creation of the clock controller
+% for clock_group in clks_attr['groups']:
+  % for k,v in clock_group['clocks'].items():
+  assign ${k} = ${lib.get_clk_name(v)};
+  % endfor
 % endfor
 
-  // Separate clock input for USB clock
-  assign usb_clk = clk_usb_48mhz_i;
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -235,7 +241,7 @@ module top_${top["name"]} #(
 
   // Reset synchronizer for USB
   logic [1:0] usb_rst_q;
-  always_ff @(posedge usb_clk) begin
+  always_ff @(posedge clk_usb_48mhz_peri) begin
     usb_rst_q <= {usb_rst_q[0], sys_rst_n};
   end
   assign usb_rst_n = sys_rst_n & usb_rst_q[1];
@@ -261,7 +267,7 @@ module top_${top["name"]} #(
     .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
-    .clk_i                (main_clk),
+    .clk_i                (clk_proc_main),
     .rst_ni               (${top["reset_paths"]["sys"]}),
     .test_en_i            (1'b0),
     // static pinning
@@ -292,7 +298,7 @@ module top_${top["name"]} #(
     .NrHarts     (1),
     .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
-    .clk_i         (main_clk),
+    .clk_i         (clk_proc_main),
     .rst_ni        (${top["reset_paths"]["lc"]}),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
@@ -346,7 +352,7 @@ module top_${top["name"]} #(
     .Outstanding(2)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
-    .${key}   (${clocks[key]}_clk),
+    .${key}   (${clocks[key]}),
     % endfor
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
@@ -372,7 +378,7 @@ module top_${top["name"]} #(
     .DataBitsPerMask(${int(data_width/4)})
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
-    .${key}   (${clocks[key]}_clk),
+    .${key}   (${clocks[key]}),
     % endfor
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
@@ -407,7 +413,7 @@ module top_${top["name"]} #(
     .ErrOnWrite(1)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
-    .${key}   (${clocks[key]}_clk),
+    .${key}   (${clocks[key]}),
     % endfor
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
@@ -433,7 +439,7 @@ module top_${top["name"]} #(
     .Depth(${rom_depth})
   ) u_rom_${m["name"]} (
     % for key in clocks:
-    .${key}   (${clocks[key]}_clk),
+    .${key}   (${clocks[key]}),
     % endfor
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
@@ -461,7 +467,7 @@ module top_${top["name"]} #(
     .ErrOnWrite(1)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
-    .${key}   (${clocks[key]}_clk),
+    .${key}   (${clocks[key]}),
     % endfor
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
@@ -483,7 +489,7 @@ module top_${top["name"]} #(
 
   flash_phy u_flash_${m["name"]} (
     % for key in clocks:
-    .${key}   (${clocks[key]}_clk),
+    .${key}   (${clocks[key]}),
     % endfor
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
@@ -629,7 +635,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
 
     % for k, v in m["clock_connections"].items():
-      .${k} (${v}_clk),
+      .${k} (${v}),
     % endfor
     % for k, v in m["reset_connections"].items():
       .${k} (${top["reset_paths"][v]})${"," if not loop.last else ""}
@@ -652,7 +658,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 %>\
   xbar_${xbar["name"]} u_xbar_${xbar["name"]} (
   % for k, v in xbar["clock_connections"].items():
-    .${k} (${v}_clk),
+    .${k} (${v}),
   % endfor
   % for k, v in xbar["reset_connections"].items():
     .${k} (${top["reset_paths"][v]}),

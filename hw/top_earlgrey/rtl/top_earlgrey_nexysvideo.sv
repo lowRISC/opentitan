@@ -64,7 +64,7 @@ module top_earlgrey_nexysvideo (
   ) top_earlgrey (
     .clk_i                      (clk_sys),
     .rst_ni                     (rst_sys_n),
-
+    .clk_fixed_i                (clk_sys),
     .clk_usb_48mhz_i            (clk_48mhz),
 
     .jtag_tck_i                 (cio_jtag_tck_p2d),

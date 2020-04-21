@@ -7,7 +7,7 @@ from copy import deepcopy
 from functools import partial
 from collections import OrderedDict
 
-from .lib import *
+from topgen import lib
 from .intermodule import elab_intermodule
 
 
@@ -99,8 +99,8 @@ def amend_ip(top, ip):
             i["type"] = "alert"
             i["width"] = int(i["width"])
             # automatically insert asynchronous transition if necessary
-            if ip_module["clock_connections"]["clk_i"] == \
-               top["module"][ah_idx]["clock_connections"]["clk_i"]:
+            if ip_module["clock_srcs"]["clk_i"] == \
+               top["module"][ah_idx]["clock_srcs"]["clk_i"]:
                 i["async"] = 0
             else:
                 i["async"] = 1
@@ -165,7 +165,7 @@ def xbar_addhost(top, xbar, host):
             "pipeline": "true",
             "pipeline_byp": "true"
         }
-        topxbar["nodes"].append(obj)
+        xbar["nodes"].append(obj)
         return
 
     xbar_bool, xbar_h = is_xbar(top, host)
@@ -416,6 +416,64 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
+def amend_clocks(top: OrderedDict):
+    """Add a list of clocks to each clock group
+       Amend the clock connections of each entry to reflect the actual gated clock
+    """
+    clks_attr = top['clocks']
+    groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
+
+
+    # Default assignments
+    for group in clks_attr['groups']:
+
+        # if unique not defined, it defaults to 'no'
+        if 'unique' not in group:
+            group['unique'] = "no"
+
+        # if no hardwired clocks, define an empty set
+        group['clocks'] = OrderedDict() if 'clocks' not in group else group['clocks']
+
+
+    for ep in top['module'] + top['memory'] + top['xbar']:
+
+        clock_connections = OrderedDict()
+
+        # if no clock group assigned, default is unique
+        ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep['clock_group']
+        ep_grp = ep['clock_group']
+
+        # end point names and clocks
+        ep_name = ep['name']
+        ep_clks = []
+
+        # clock group index
+        cg_idx = groups_in_top.index(ep_grp)
+
+        # unique property of each group
+        unique = clks_attr['groups'][cg_idx]['unique']
+
+        for port, clk in ep['clock_srcs'].items():
+            ep_clks.append(clk)
+
+            if unique == "yes":
+                # new unqiue clock name
+                clk_name = "clk_{}_{}".format(clk, ep_name)
+
+            else:
+                # new group clock name
+                clk_name = "clk_{}_{}".format(clk, ep_grp)
+
+
+            # add clock to a particular group
+            clks_attr['groups'][cg_idx]['clocks'][clk_name] = clk
+
+            # add clock connections
+            clock_connections[port] = clk_name
+
+        # Add to endpoint structure
+        ep['clock_connections'] = clock_connections
+
 def amend_resets(top):
     """Add a path variable to reset declaration
     """
@@ -458,7 +516,7 @@ def amend_interrupt(top):
 
         log.info("Adding interrupts from module %s" % ip[0]["name"])
         top["interrupt"] += list(
-            map(partial(add_module_prefix_to_signal, module=m.lower()),
+            map(partial(lib.add_module_prefix_to_signal, module=m.lower()),
                 ip[0]["interrupt_list"]))
 
 
@@ -480,7 +538,7 @@ def amend_alert(top):
 
         log.info("Adding alert from module %s" % ip[0]["name"])
         top["alert"] += list(
-            map(partial(add_module_prefix_to_signal, module=m.lower()),
+            map(partial(lib.add_module_prefix_to_signal, module=m.lower()),
                 ip[0]["alert_list"]))
 
 
@@ -496,13 +554,13 @@ def amend_pinmux_io(top):
     pinmux['dio'] = []
     for e in pinmux["dio_modules"]:
         # Check name if it is module or signal
-        mname, sname = get_ms_name(e["name"])
+        mname, sname = lib.get_ms_name(e["name"])
 
         # Parse how many signals
-        m = get_module_by_name(top, mname)
+        m = lib.get_module_by_name(top, mname)
 
         if sname != None:
-            signals = deepcopy([get_signal_by_name(m, sname)])
+            signals = deepcopy([lib.get_signal_by_name(m, sname)])
         else:
             # Get all module signals
             signals = deepcopy(m["available_input_list"] +
@@ -513,17 +571,15 @@ def amend_pinmux_io(top):
 
         # convert signal with module name
         signals = list(
-            map(partial(add_module_prefix_to_signal, module=mname), signals))
+            map(partial(lib.add_module_prefix_to_signal, module=mname), signals))
         # Parse how many pads are assigned
         if not "pad" in e:
             raise SystemExit("Should catch pad field in validate.py!")
 
-        total_width = 0
-
         # pads are the list of individual pin, each entry is 1 bit width
         pads = []
         for p in e["pad"]:
-            pads += get_pad_list(p)
+            pads += lib.get_pad_list(p)
 
         # check if #sig and #pads are matched
         if len(pads) != sig_width:
@@ -539,7 +595,7 @@ def amend_pinmux_io(top):
 
     dio_names = [p["name"] for p in pinmux["dio"]]
 
-    ## Multiplexer IO
+    # Multiplexer IO
     if not "mio_modules" in pinmux:
         # Add all modules having available io to Multiplexer IO
         pinmux["mio_modules"] = []
@@ -568,7 +624,7 @@ def amend_pinmux_io(top):
             raise SystemExit(
                 "Cannot parse signal/module in mio_modules {}".format(e))
         # Add all ports from the module to input/outputs
-        m = get_module_by_name(top, tokens[0])
+        m = lib.get_module_by_name(top, tokens[0])
         if m == None:
             raise SystemExit("Module {} doesn't exist".format(tokens[0]))
 
@@ -577,21 +633,21 @@ def amend_pinmux_io(top):
                 filter(
                     lambda x: x["name"] not in dio_names,
                     map(
-                        partial(add_module_prefix_to_signal,
+                        partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
                         m["available_input_list"])))
             pinmux["outputs"] += list(
                 filter(
                     lambda x: x["name"] not in dio_names,
                     map(
-                        partial(add_module_prefix_to_signal,
+                        partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
                         m["available_output_list"])))
             pinmux["inouts"] += list(
                 filter(
                     lambda x: x["name"] not in dio_names,
                     map(
-                        partial(add_module_prefix_to_signal,
+                        partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
                         m["available_inout_list"])))
 
@@ -610,6 +666,12 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
     # Combine ip cfg into topcfg
     for ip in ipobjs:
         amend_ip(gencfg, ip)
+
+    # Create clock connections for each block
+    # Assign clocks into appropriate groups
+    # Note, amend_ip references clock information to establish async handling
+    # as part of alerts.
+    amend_clocks(gencfg)
 
     # Add path names to declared resets
     amend_resets(gencfg)

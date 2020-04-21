@@ -10,20 +10,93 @@
   type: top
   datawidth: "32"
   clocks:
-  [
-    {
-      name: main
-      freq: "100000000"
-    }
-    {
-      name: fixed
-      freq: "100000000"
-    }
-    {
-      name: usb
-      freq: "48000000"
-    }
-  ]
+  {
+    srcs:
+    [
+      {
+        name: main
+        freq: "100000000"
+      }
+      {
+        name: fixed
+        freq: "100000000"
+      }
+      {
+        name: usb_48mhz
+        freq: "48000000"
+      }
+    ]
+    groups:
+    [
+      {
+        name: powerup
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_fixed_powerup: fixed
+        }
+      }
+      {
+        name: trans
+        sw_cg: hint
+        unique: yes
+        clocks:
+        {
+          clk_main_aes: main
+          clk_main_hmac: main
+        }
+      }
+      {
+        name: infra
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_main_infra: main
+          clk_fixed_infra: fixed
+        }
+      }
+      {
+        name: secure
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_fixed_secure: fixed
+          clk_main_secure: main
+        }
+      }
+      {
+        name: peri
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_fixed_peri: fixed
+          clk_usb_48mhz_peri: usb_48mhz
+        }
+      }
+      {
+        name: timers
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_fixed_timers: fixed
+        }
+      }
+      {
+        name: proc
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_proc_main: main
+        }
+      }
+    ]
+  }
   resets:
   [
     {
@@ -65,7 +138,7 @@
     {
       name: uart
       type: uart
-      clock_connections:
+      clock_srcs:
       {
         clk_i: fixed
       }
@@ -195,14 +268,20 @@
       ]
       alert_list: []
       scan: "false"
+      clock_group: secure
+      clock_connections:
+      {
+        clk_i: clk_fixed_secure
+      }
     }
     {
       name: gpio
       type: gpio
-      clock_connections:
+      clock_srcs:
       {
         clk_i: fixed
       }
+      clock_group: peri
       reset_connections:
       {
         rst_ni: sys_fixed
@@ -238,14 +317,19 @@
       ]
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_fixed_peri
+      }
     }
     {
       name: spi_device
       type: spi_device
-      clock_connections:
+      clock_srcs:
       {
         clk_i: fixed
       }
+      clock_group: peri
       reset_connections:
       {
         rst_ni: spi_device
@@ -358,14 +442,19 @@
       ]
       alert_list: []
       scan: "true"
+      clock_connections:
+      {
+        clk_i: clk_fixed_peri
+      }
     }
     {
       name: flash_ctrl
       type: flash_ctrl
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: infra
       reset_connections:
       {
         rst_ni: lc
@@ -468,14 +557,19 @@
           index: -1
         }
       ]
+      clock_connections:
+      {
+        clk_i: clk_main_infra
+      }
     }
     {
       name: rv_timer
       type: rv_timer
-      clock_connections:
+      clock_srcs:
       {
         clk_i: fixed
       }
+      clock_group: timers
       reset_connections:
       {
         rst_ni: sys_fixed
@@ -497,14 +591,19 @@
       ]
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_fixed_timers
+      }
     }
     {
       name: aes
       type: aes
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: trans
       reset_connections:
       {
         rst_ni: sys
@@ -519,14 +618,19 @@
       interrupt_list: []
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_main_aes
+      }
     }
     {
       name: hmac
       type: hmac
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: trans
       reset_connections:
       {
         rst_ni: sys
@@ -587,14 +691,19 @@
         }
       ]
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_main_hmac
+      }
     }
     {
       name: rv_plic
       type: rv_plic
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: secure
       reset_connections:
       {
         rst_ni: sys
@@ -610,15 +719,20 @@
       interrupt_list: []
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_main_secure
+      }
     }
     {
       name: pinmux
       type: pinmux
       clock: main
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: secure
       reset_connections:
       {
         rst_ni: sys
@@ -634,14 +748,19 @@
       interrupt_list: []
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_main_secure
+      }
     }
     {
       name: alert_handler
       type: alert_handler
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: secure
       reset_connections:
       {
         rst_ni: sys
@@ -713,16 +832,21 @@
       ]
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_main_secure
+      }
     }
     {
       name: pwrmgr
       type: pwrmgr
       clock: main
-      clock_connections:
+      clock_srcs:
       {
         clk_i: fixed
         clk_slow_i: fixed
       }
+      clock_group: powerup
       reset_connections:
       {
         rst_ni: sys_fixed
@@ -828,14 +952,20 @@
           index: -1
         }
       ]
+      clock_connections:
+      {
+        clk_i: clk_fixed_powerup
+        clk_slow_i: clk_fixed_powerup
+      }
     }
     {
       name: nmi_gen
       type: nmi_gen
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: secure
       reset_connections:
       {
         rst_ni: sys
@@ -900,15 +1030,20 @@
       ]
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_main_secure
+      }
     }
     {
       name: usbdev
       type: usbdev
-      clock_connections:
+      clock_srcs:
       {
         clk_i: fixed
-        clk_usb_48mhz_i: usb
+        clk_usb_48mhz_i: usb_48mhz
       }
+      clock_group: peri
       reset_connections:
       {
         rst_ni: sys_fixed
@@ -1164,30 +1299,42 @@
       ]
       alert_list: []
       scan: "false"
+      clock_connections:
+      {
+        clk_i: clk_fixed_peri
+        clk_usb_48mhz_i: clk_usb_48mhz_peri
+      }
     }
   ]
   memory:
   [
     {
       name: rom
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: infra
       reset_connections:
       {
         rst_ni: sys
       }
       type: rom
       base_addr: 0x00008000
+      swaccess: ro
       size: 0x4000
+      clock_connections:
+      {
+        clk_i: clk_main_infra
+      }
     }
     {
       name: ram_main
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: infra
       reset_connections:
       {
         rst_ni: sys
@@ -1195,19 +1342,25 @@
       type: ram_1p
       base_addr: 0x10000000
       size: 0x10000
+      clock_connections:
+      {
+        clk_i: clk_main_infra
+      }
     }
     {
       name: eflash
-      clock_connections:
+      clock_srcs:
       {
         clk_i: main
       }
+      clock_group: infra
       reset_connections:
       {
         rst_ni: lc
       }
       type: eflash
       base_addr: 0x20000000
+      swaccess: ro
       size: 0x80000
       inter_signal_list:
       [
@@ -1223,6 +1376,10 @@
           index: -1
         }
       ]
+      clock_connections:
+      {
+        clk_i: clk_main_infra
+      }
     }
   ]
   inter_module:
@@ -1241,16 +1398,22 @@
   [
     {
       name: main
-      clock_connections:
+      clock_srcs:
       {
         clk_main_i: main
         clk_fixed_i: fixed
       }
+      clock_group: infra
       reset: rst_main_ni
       reset_connections:
       {
         rst_main_ni: sys
         rst_fixed_ni: sys_fixed
+      }
+      clock_connections:
+      {
+        clk_main_i: clk_main_infra
+        clk_fixed_i: clk_fixed_infra
       }
       connections:
       {
@@ -1549,14 +1712,19 @@
     }
     {
       name: peri
-      clock_connections:
+      clock_srcs:
       {
         clk_peri_i: fixed
       }
+      clock_group: infra
       reset: rst_peri_ni
       reset_connections:
       {
         rst_peri_ni: sys_fixed
+      }
+      clock_connections:
+      {
+        clk_peri_i: clk_fixed_infra
       }
       connections:
       {
