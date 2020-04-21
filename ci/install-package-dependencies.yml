@@ -33,12 +33,24 @@ steps:
 
       cd "${{ parameters.REPO_TOP }}"
 
+      # Install verilator from experimental OBS repository
+      # apt-requirements.txt doesn't cover this dependency as we don't support
+      # using the repository below for anything but our CI (yet).
+      EDATOOLS_REPO_KEY="https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_16.04/Release.key"
+      EDATOOLS_REPO="deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_16.04/ /"
+      curl -sL "$EDATOOLS_REPO_KEY" | sudo apt-key add -
+      sudo sh -c "echo \"$EDATOOLS_REPO\" > /etc/apt/sources.list.d/edatools.list"
+
+      cp apt-requirements.txt apt-requirements-ci.txt
+      echo "verilator-$(VERILATOR_VERSION)" >> apt-requirements-ci.txt
+      cat apt-requirements-ci.txt
+
       # Ensure apt package index is up-to-date.
       sudo $APT_CMD update
 
       # NOTE: We use sed to remove all comments from apt-requirements.txt,
       # since apt-get/apt-fast doesn't actually provide such a feature.
-      sed 's/#.*//' apt-requirements.txt \
+      sed 's/#.*//' apt-requirements-ci.txt \
         | xargs sudo $APT_CMD install -y
 
       # Python requirements are installed to the local user directory so prepend

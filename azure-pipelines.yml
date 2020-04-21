@@ -3,7 +3,6 @@
 
 variables:
   VERILATOR_VERSION: 4.032
-  VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20191010-1
@@ -169,27 +168,6 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
-      set -e
-      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
-        echo "Building verilator (no cached build found)"
-
-        mkdir -p build/verilator
-        cd build/verilator
-        curl -Ls -o verilator.tgz \
-          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
-        tar -xf verilator.tgz
-
-        cd "verilator-$(VERILATOR_VERSION)"
-        ./configure --prefix="$(VERILATOR_PATH)"
-        make -j$(nproc)
-        mkdir -p "$VERILATOR_PATH"
-        make install
-      else
-        echo "Re-using cached verilator build"
-      fi
-    displayName: Build and install Verilator
-  - bash: |
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       python3 --version
       fusesoc --version
       verilator --version
@@ -199,7 +177,6 @@ jobs:
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       fusesoc --cores-root=. \
         run --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
