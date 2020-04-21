@@ -53,7 +53,7 @@ formal/             @cindychip
 # lint/             # TBD
 
 # SW related
-/sw/                @mcy @moidx @gkelly @sriyerg
+/sw/                @mcy @moidx @gkelly @sriyerg @lenary
 
 # Common docs
 /doc/               @sjgitty @asb
