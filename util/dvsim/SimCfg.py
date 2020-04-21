@@ -504,8 +504,7 @@ class SimCfg(FlowCfg):
                 if self.cov_report_deploy.status == "P":
                     results_str += "\n## Coverage Results\n"
                     # Link the dashboard page using "cov_report_page" value.
-                    # TODO: hack to only link VCS generated results.
-                    if self.tool == "vcs" and hasattr(self, "cov_report_page"):
+                    if hasattr(self, "cov_report_page"):
                         results_str += "\n### [Coverage Dashboard]"
                         results_str += "({})\n\n".format(
                             getattr(self, "cov_report_page"))
