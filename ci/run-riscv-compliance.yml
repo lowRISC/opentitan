@@ -9,9 +9,6 @@ jobs:
     dependsOn:
       - top_earlgrey_verilator
       - sw_build
-    # The risc-v compliance suite is failing for a mysterious reason, disabling
-    # it for now whilst it is debugged see issue #2012
-    condition: false
     steps:
     - template: install-package-dependencies.yml
     - template: download-artifacts-template.yml
