@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Power Manager module to find slow clock edges
-// The clock is not used directly to avoid STA issues.  Instead a toggle
-// pulse is used instead.
+// The clock is not used directly to avoid STA issues, instead a toggle
+// pulse is used.
 
 `include "prim_assert.sv"
 

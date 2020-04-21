@@ -42,7 +42,7 @@ module pwrmgr import pwrmgr_pkg::*;
   input  pwr_flash_t pwr_flash_i,
 
   // processor interface
-  input  pwr_proc_t pwr_proc_i,
+  input  pwr_cpu_t pwr_cpu_i,
 
   // peripherals interface, includes pinmux
   input  pwr_peri_t pwr_peri_i,
@@ -59,8 +59,8 @@ module pwrmgr import pwrmgr_pkg::*;
 
   pwrmgr_reg2hw_t reg2hw;
   pwrmgr_hw2reg_t hw2reg;
+  pwr_peri_t peri_reqs_masked;
 
-  pwr_peri_t ext_reqs_masked;
   logic req_pwrup;
   logic ack_pwrup;
   logic req_pwrdn;
@@ -81,7 +81,7 @@ module pwrmgr import pwrmgr_pkg::*;
   pwrmgr_reg2hw_reset_en_reg_t slow_reset_en;
 
   pwr_ast_rsp_t slow_ast;
-  pwr_peri_t slow_ext_reqs, slow_ext_reqs_masked;
+  pwr_peri_t slow_peri_reqs, slow_peri_reqs_masked;
 
   pwrup_cause_e slow_pwrup_cause;
   logic slow_pwrup_cause_toggle;
@@ -89,7 +89,7 @@ module pwrmgr import pwrmgr_pkg::*;
   logic slow_ack_pwrup;
   logic slow_req_pwrdn;
   logic slow_ack_pwrdn;
-  logic slow_main_pdb;
+  logic slow_main_pd_n;
   logic slow_io_clk_en;
   logic slow_core_clk_en;
 
@@ -98,8 +98,8 @@ module pwrmgr import pwrmgr_pkg::*;
   ////////////////////////////
 
   logic low_power_hint;
-  logic low_power_entry;
   logic lowpwr_cfg_wen;
+  logic clr_hint;
   logic wkup;
   logic clr_cfg_lock;
 
@@ -115,7 +115,7 @@ module pwrmgr import pwrmgr_pkg::*;
 
   // whenever low power entry begins, wipe the hint
   assign hw2reg.control.low_power_hint.d = 1'b0;
-  assign hw2reg.control.low_power_hint.de = low_power_entry;
+  assign hw2reg.control.low_power_hint.de = clr_hint;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -146,14 +146,14 @@ module pwrmgr import pwrmgr_pkg::*;
     .slow_pwrup_cause_i(slow_pwrup_cause),
     .slow_wakeup_en_o(slow_wakeup_en),
     .slow_reset_en_o(slow_reset_en),
-    .slow_main_pdb_o(slow_main_pdb),
+    .slow_main_pd_no(slow_main_pd_n),
     .slow_io_clk_en_o(slow_io_clk_en),
     .slow_core_clk_en_o(slow_core_clk_en),
     .slow_req_pwrdn_o(slow_req_pwrdn),
     .slow_ack_pwrup_o(slow_ack_pwrup),
     .slow_ast_o(slow_ast),
-    .slow_ext_reqs_o(slow_ext_reqs),
-    .slow_ext_reqs_masked_i(slow_ext_reqs_masked),
+    .slow_peri_reqs_o(slow_peri_reqs),
+    .slow_peri_reqs_masked_i(slow_peri_reqs_masked),
 
     // fast domain signals
     .req_pwrdn_i(req_pwrdn),
@@ -162,13 +162,13 @@ module pwrmgr import pwrmgr_pkg::*;
     .cdc_sync_done_o(hw2reg.cfg_cdc_sync.de),
     .wakeup_en_i(reg2hw.wakeup_en.q),
     .reset_en_i(reg2hw.reset_en.q),
-    .main_pdb_i(reg2hw.control.main_pdb.q),
+    .main_pd_ni(reg2hw.control.main_pd_n.q),
     .io_clk_en_i(reg2hw.control.io_clk_en.q),
     .core_clk_en_i(reg2hw.control.core_clk_en.q),
     .ack_pwrdn_o(ack_pwrdn),
     .req_pwrup_o(req_pwrup),
     .pwrup_cause_o(pwrup_cause),
-    .ext_reqs_o(ext_reqs_masked),
+    .peri_reqs_o(peri_reqs_masked),
 
     // AST signals
     .ast_i(pwr_ast_i),
@@ -183,7 +183,7 @@ module pwrmgr import pwrmgr_pkg::*;
   ///  Wakup and reset capture
   ////////////////////////////
 
-  // resets and wakeup requests are captured into the slow clock domain and then
+  // reset and wakeup requests are captured into the slow clock domain and then
   // fanned out to other domains as necessary.  This ensures there is not a huge
   // time gap between when the slow clk domain sees the signal vs when the fast
   // clock domains see it.  This creates redundant syncing but keeps the time
@@ -201,8 +201,8 @@ module pwrmgr import pwrmgr_pkg::*;
   // correctly, it is possible for the device to end up in a permanent reset loop,
   // and that would be very undesirable.
 
-  assign slow_ext_reqs_masked.wakeups = slow_ext_reqs.wakeups & slow_wakeup_en;
-  assign slow_ext_reqs_masked.rstreqs = slow_ext_reqs.rstreqs & slow_reset_en;
+  assign slow_peri_reqs_masked.wakeups = slow_peri_reqs.wakeups & slow_wakeup_en;
+  assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs & slow_reset_en;
 
 
 
@@ -214,8 +214,8 @@ module pwrmgr import pwrmgr_pkg::*;
   pwrmgr_slow_fsm i_slow_fsm (
     .clk_i                (clk_slow_i),
     .rst_ni               (rst_slow_ni),
-    .wakeup_i             (|slow_ext_reqs_masked.wakeups),
-    .reset_req_i          (|slow_ext_reqs_masked.rstreqs),
+    .wakeup_i             (|slow_peri_reqs_masked.wakeups),
+    .reset_req_i          (|slow_peri_reqs_masked.rstreqs),
     .ast_i                (slow_ast),
     .req_pwrup_o          (slow_req_pwrup),
     .pwrup_cause_o        (slow_pwrup_cause),
@@ -224,7 +224,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .req_pwrdn_i          (slow_req_pwrdn),
     .ack_pwrdn_o          (slow_ack_pwrdn),
 
-    .main_pdb_i           (slow_main_pdb),
+    .main_pd_ni           (slow_main_pd_n),
     .io_clk_en_i          (slow_io_clk_en),
     .core_clk_en_i        (slow_core_clk_en),
 
@@ -240,11 +240,6 @@ module pwrmgr import pwrmgr_pkg::*;
 
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
 
-  // low power entry is initiated either through a graceful requests, or a
-  // hardware requested reset.
-  assign low_power_entry = pwr_proc_i.core_sleeping & low_power_hint |
-                           |ext_reqs_masked.rstreqs;
-
   pwrmgr_fsm i_fsm (
     .clk_i,
     .rst_ni,
@@ -255,11 +250,11 @@ module pwrmgr import pwrmgr_pkg::*;
     .ack_pwrup_o       (ack_pwrup),
     .req_pwrdn_o       (req_pwrdn),
     .ack_pwrdn_i       (ack_pwrdn),
-    .low_power_entry_i (pwr_proc_i.core_sleeping & low_power_hint),
-    .reset_req_i       (|ext_reqs_masked.rstreqs),
+    .low_power_entry_i (pwr_cpu_i.core_sleeping & low_power_hint),
+    .reset_req_i       (|peri_reqs_masked.rstreqs),
 
     // cfg
-    .main_pdb_i        (reg2hw.control.main_pdb.q),
+    .main_pd_ni        (reg2hw.control.main_pd_n.q),
 
     // consumed in pwrmgr
     .wkup_record_o     (capture_en_pulse),
@@ -267,6 +262,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .clr_cfg_lock_o    (clr_cfg_lock),
     .fall_through_o    (low_power_fall_through),
     .abort_o           (low_power_abort),
+    .clr_hint_o        (clr_hint),
 
     // rstmgr
     .pwr_rst_o         (pwr_rst_o),
@@ -296,9 +292,9 @@ module pwrmgr import pwrmgr_pkg::*;
   logic wake_info_wen;
   logic [TotalWakeWidth-1:0] wake_info_data;
 
-  assign wake_info_wen = reg2hw.wake_info.reasons.qe |
+  assign wake_info_wen = reg2hw.wake_info.abort.qe |
                          reg2hw.wake_info.fall_through.qe |
-                         reg2hw.wake_info.abort.qe;
+                         reg2hw.wake_info.reasons.qe;
 
   assign wake_info_data = {reg2hw.wake_info.abort.q,
                            reg2hw.wake_info.fall_through.q,
@@ -311,7 +307,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .data_i          (wake_info_data),
     .start_capture_i (capture_en_pulse),
     .record_dis_i    (reg2hw.wake_info_capture_dis.q),
-    .wakeups_i       (ext_reqs_masked.wakeups),
+    .wakeups_i       (peri_reqs_masked.wakeups),
     .fall_through_i  (low_power_fall_through),
     .abort_i         (low_power_abort),
     .info_o          (hw2reg.wake_info)
@@ -322,8 +318,7 @@ module pwrmgr import pwrmgr_pkg::*;
   ////////////////////////////
 
   // This interrupt is asserted whenever the fast FSM transitions
-  // into active state. Meaning this interrupt will also set during
-  // POR.
+  // into active state.  However, it does not assert during POR
   prim_intr_hw #(.Width(1)) intr_wakeup (
     .event_intr_i           (wkup),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),

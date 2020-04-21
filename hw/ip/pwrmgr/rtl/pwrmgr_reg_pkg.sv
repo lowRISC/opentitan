@@ -34,7 +34,7 @@ package pwrmgr_reg_pkg;
     } io_clk_en;
     struct packed {
       logic        q;
-    } main_pdb;
+    } main_pd_n;
   } pwrmgr_reg2hw_control_reg_t;
 
   typedef struct packed {

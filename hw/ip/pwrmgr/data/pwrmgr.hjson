@@ -55,9 +55,9 @@
       package: "pwrmgr_pkg",
     },
 
-    { struct:  "pwr_proc",
+    { struct:  "pwr_cpu",
       type:    "uni",
-      name:    "pwr_proc",
+      name:    "pwr_cpu",
       act:     "rcv",
       package: "pwrmgr_pkg",
     },
@@ -113,6 +113,8 @@
           desc: '''
             The low power hint to power manager.
             The hint is an indication for how the manager should treat the next WFI.
+            Once the power manager begins a low power transition, or if a valid reset request is registerd,
+            this bit is automatically cleared by HW.
             '''
           resval: "0"
           enum: [
@@ -172,20 +174,22 @@
         },
 
         { bits: "6",
-          name: "MAIN_PDB",
-          desc: "Main power domain power down",
+          name: "MAIN_PD_N",
+          desc: "Active low, main power domain power down",
           resval: "1"
           enum: [
             { value: "0",
               name: "Power down",
               desc: '''
-                Main power domain is powered down during low power state
+                Main power domain is powered down during low power state.
+                Note this signal is active low.
                 '''
             },
             { value: "1",
               name: "Power up",
               desc: '''
                 Main power domain is kept powered during low power state
+                Note this signal is active low.
                 '''
             },
           ]
@@ -325,8 +329,8 @@
         { bits: "0",
           name: "VAL",
           desc: '''
-            When written to 1, this actively suppresses the wakeup infor capture.
-            When written to 0, wakeup info capture timign is controlled by HW.
+            When written to 1, this actively suppresses the wakeup info capture.
+            When written to 0, wakeup info capture timing is controlled by HW.
           ''',
         },
       ]

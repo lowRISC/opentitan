@@ -22,14 +22,14 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
   input pwrup_cause_e slow_pwrup_cause_i,
   output pwrmgr_reg_pkg::pwrmgr_reg2hw_wakeup_en_reg_t slow_wakeup_en_o,
   output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t slow_reset_en_o,
-  output logic slow_main_pdb_o,
+  output logic slow_main_pd_no,
   output logic slow_io_clk_en_o,
   output logic slow_core_clk_en_o,
   output logic slow_req_pwrdn_o,
   output logic slow_ack_pwrup_o,
   output pwr_ast_rsp_t slow_ast_o,
-  output pwr_peri_t slow_ext_reqs_o,
-  input pwr_peri_t slow_ext_reqs_masked_i,
+  output pwr_peri_t slow_peri_reqs_o,
+  input pwr_peri_t slow_peri_reqs_masked_i,
 
   // fast domain signals
   input req_pwrdn_i,
@@ -37,13 +37,13 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
   input cfg_cdc_sync_i,
   input pwrmgr_reg_pkg::pwrmgr_reg2hw_wakeup_en_reg_t wakeup_en_i,
   input pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t reset_en_i,
-  input main_pdb_i,
+  input main_pd_ni,
   input io_clk_en_i,
   input core_clk_en_i,
   output logic ack_pwrdn_o,
   output logic req_pwrup_o,
   output pwrup_cause_e pwrup_cause_o,
-  output pwr_peri_t ext_reqs_o,
+  output pwr_peri_t peri_reqs_o,
   output logic cdc_sync_done_o,
 
   // peripheral inputs, mixed domains
@@ -97,7 +97,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
     .d      (peri_i),
-    .q      (slow_ext_reqs_o)
+    .q      (slow_peri_reqs_o)
   );
 
 
@@ -139,13 +139,13 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
     if (!rst_slow_ni) begin
       slow_wakeup_en_o <= '0;
       slow_reset_en_o <= '0;
-      slow_main_pdb_o <= '0;
+      slow_main_pd_no <= '0;
       slow_io_clk_en_o <= '0;
       slow_core_clk_en_o <= '0;
     end else if (slow_cdc_sync) begin
       slow_wakeup_en_o <= wakeup_en_i;
       slow_reset_en_o <= reset_en_i;
-      slow_main_pdb_o <= main_pdb_i;
+      slow_main_pd_no <= main_pd_ni;
       slow_io_clk_en_o <= io_clk_en_i;
       slow_core_clk_en_o <= core_clk_en_i;
     end
@@ -217,8 +217,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*;
   ) i_ext_req_sync (
     .clk_i,
     .rst_ni,
-    .d (slow_ext_reqs_masked_i),
-    .q (ext_reqs_o)
+    .d (slow_peri_reqs_masked_i),
+    .q (peri_reqs_o)
   );
 
 

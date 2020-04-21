@@ -8,20 +8,20 @@
 package pwrmgr_pkg;
 
   // global constant
-  parameter ALWAYS_ON_SEL = 0;
+  parameter ALWAYS_ON_DOMAIN = 0;
 
   // variables referenced by other modules / packages
   parameter HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
   parameter PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
 
-  // used only in pwrmgr
+  // variables referenced only by pwrmgr
   localparam WakeUpPeris = 16; // this needs to be a topgen populated number, or from topcfg?
   localparam TotalWakeWidth = WakeUpPeris + 2; // Abort and fall through are added
 
 
   // pwrmgr to ast
   typedef struct packed {
-    logic main_pdb;
+    logic main_pd_n;
     logic pwr_clamp;
     logic slow_clk_en;
     logic core_clk_en;
@@ -129,10 +129,10 @@ package pwrmgr_pkg;
   // processor to pwrmgr
   typedef struct packed {
     logic core_sleeping;
-  } pwr_proc_t;
+  } pwr_cpu_t;
 
   // default value (for dangling ports)
-  parameter pwr_proc_t PWR_PROC_DEFAULT = '{
+  parameter pwr_cpu_t PWR_CPU_DEFAULT = '{
     core_sleeping: 1'b0
   };
 
