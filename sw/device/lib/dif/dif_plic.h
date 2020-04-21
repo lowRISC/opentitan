@@ -61,7 +61,7 @@ typedef enum dif_plic_flag {
  * PLIC persistent data that is required by all the PLIC API.
  */
 typedef struct dif_plic {
-  mmio_region_t base_addr; /**< PLIC instance base address */
+  mmio_region_t base_addr; /**< PLIC instance base address. */
 } dif_plic_t;
 
 /**
@@ -83,8 +83,8 @@ typedef enum dif_plic_result {
  * Information that must be retained, and is required to program PLIC, shall
  * be stored in @p plic.
  *
- * @param base_addr Base address of an instance of the PLIC IP block
- * @param plic PLIC state data
+ * @param base_addr Base address of an instance of the PLIC IP block.
+ * @param plic PLIC state data.
  * @return `dif_plic_result_t`.
  */
 dif_plic_result_t dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
@@ -94,10 +94,10 @@ dif_plic_result_t dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
  *
  * This operation does not affect the IRQ generation in the peripherals, which
  * must be configured in a corresponding peripheral itself.
- * @param plic PLIC state data
- * @param irq Interrupt Source ID
- * @param target Target to enable the IRQ for
- * @param enable Enable/disable the IRQ handling
+ * @param plic PLIC state data.
+ * @param irq Interrupt Source ID.
+ * @param target Target to enable the IRQ for.
+ * @param enable Enable/disable the IRQ handling.
  * @return `dif_plic_result_t`.
  */
 dif_plic_result_t dif_plic_irq_enable_set(const dif_plic_t *plic,
@@ -110,10 +110,11 @@ dif_plic_result_t dif_plic_irq_enable_set(const dif_plic_t *plic,
  *
  * Sets the behaviour of the Interrupt Gateway for a particular IRQ to be edge
  * or level triggered.
- * @param plic PLIC state data
- * @param irq Interrupt source ID
- * @param enable Enable for the edge triggered, disable for level triggered IRQs
- * @return `dif_plic_result_t`
+ * @param plic PLIC state data.
+ * @param irq Interrupt source ID.
+ * @param enable Enable for the edge triggered, disable for level triggered
+ * IRQs.
+ * @return `dif_plic_result_t`.
  */
 dif_plic_result_t dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
                                                 dif_plic_irq_id_t irq,
@@ -125,9 +126,9 @@ dif_plic_result_t dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
  * In order for PLIC to set a CC register and assert the external interrupt line
  * to the target (Ibex, ...), the priority of an IRQ source must be higher than
  * the threshold for this source.
- * @param plic PLIC state data
- * @param irq Interrupt source ID
- * @param priority Priority to be set
+ * @param plic PLIC state data.
+ * @param irq Interrupt source ID.
+ * @param priority Priority to be set.
  * @return `dif_plic_result_t`.
  */
 dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
@@ -140,9 +141,9 @@ dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
  * Sets the target priority threshold. PLIC will only interrupt a target when
  * IRQ source priority is set higher than the priority threshold for the
  * corresponding target.
- * @param plic PLIC state data
- * @param target Target to set the IRQ priority threshold for
- * @param threshold IRQ priority threshold to be set
+ * @param plic PLIC state data.
+ * @param target Target to set the IRQ priority threshold for.
+ * @param threshold IRQ priority threshold to be set.
  * @return `dif_plic_result_t`.
  */
 dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
@@ -154,9 +155,9 @@ dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
  *
  * Gets the status of the PLIC Interrupt Pending register bit for a specific IRQ
  * source.
- * @param plic PLIC state data
- * @param irq Interrupt source ID
- * @param status Flag indicating whether the IRQ pending bit is set in PLIC
+ * @param plic PLIC state data.
+ * @param irq Interrupt source ID.
+ * @param status Flag indicating whether the IRQ pending bit is set in PLIC.
  * @return `dif_plic_result_t`.
  */
 dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
@@ -170,8 +171,8 @@ dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
  * reads a target specific CC register. dif_plic_irq_complete must be called
  * after the claimed IRQ has been serviced.
  *
- * @param plic PLIC state data
- * @param target Target that claimed the IRQ
+ * @param plic PLIC state data.
+ * @param target Target that claimed the IRQ.
  * @param claim_data Data that describes the origin of the IRQ.
  * @return `dif_plic_result_t`.
  */
@@ -186,8 +187,8 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
  * target specific CC register. This function must be called after
  * dif_plic_claim_irq, when a caller has finished servicing the IRQ.
  *
- * @param plic PLIC state data
- * @param target Target that claimed the IRQ
+ * @param plic PLIC state data.
+ * @param target Target that claimed the IRQ.
  * @param complete_data Previously claimed IRQ data that is used to signal PLIC
  *                      of the IRQ servicing completion.
  * @return `dif_plic_result_t`.
