@@ -62,7 +62,7 @@ module top_earlgrey_asic (
   top_earlgrey top_earlgrey (
     .clk_i                      (IO_CLK),
     .rst_ni                     (IO_RST_N),
-
+    .clk_fixed_i                (IO_CLK),
     .clk_usb_48mhz_i            (IO_CLK_USB_48MHZ),
 
     .jtag_tck_i                 (cio_jtag_tck_p2d),

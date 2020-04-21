@@ -8,11 +8,51 @@
 
   datawidth: "32",  # 32-bit datawidth
 
-  clocks: [
-    { name: "main", freq: "100000000" }
-    { name: "fixed", freq: "100000000" }
-    { name: "usb", freq: "48000000" }
-  ]
+  // This is the clock data strcture of the design.
+  // The src key indicates the raw clock sources in the design
+  // The groups key indicates the various clock groupings in the design
+  clocks: {
+
+    srcs: [
+      { name: "main",      freq: "100000000" }
+      { name: "fixed",     freq: "100000000" }
+      { name: "usb_48mhz", freq: "48000000" }
+    ],
+
+    // Clock Group attributes
+    // name: name of group.
+    //
+    // sw_cfg: whether software is allowed to gate the clock
+    // "no"   - software is not allowed to gate clocks
+    // "yes"  - software is allowed to gate clocks
+    // "hint" - software can provide a hint, and hw controls the rest
+    //
+    // unique: whether each module in the group can be separately gated
+    //         if sw_cfg is "no", this field has no meaning
+    // "yes"  - each clock is individually controlled
+    // "no"   - the group is controlled as one single unit
+    //
+    // The powerup and proc groups are unique.
+    // The powerup group of clocks do not need through the clock
+    // controller as they manage clock controller behavior
+    // The proc group is not peripheral, and direclty hardwired
+
+    groups: [
+      { name: "powerup", sw_cg: "no"                   }
+      { name: "trans",   sw_cg: "hint", unique: "yes", }
+      { name: "infra",   sw_cg: "no",                  }
+      { name: "secure",  sw_cg: "no"                   }
+      { name: "peri",    sw_cg: "yes",  unique: "no"   }
+      { name: "timers",  sw_cg: "no"                   }
+      { name: "proc",
+        sw_cg: "no"
+        unique: "no"
+        clocks: {
+          clk_proc_main: main
+        }
+      }
+    ],
+  }
 
   // Reset attributes
   // name: name of reset.
@@ -52,7 +92,7 @@
       // clock connections defines the port to top level clock connection
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
-      clock_connections: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "fixed"},
 
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
@@ -63,44 +103,51 @@
     },
     { name: "gpio",
       type: "gpio",
-      clock_connections: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "fixed"},
+      clock_group: "peri",
       reset_connections: {rst_ni: "sys_fixed"},
       base_addr: "0x40010000",
     }
 
     { name: "spi_device",
       type: "spi_device",
-      clock_connections: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "fixed"},
+      clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40020000",
     },
     { name: "flash_ctrl",
       type: "flash_ctrl",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
       base_addr: "0x40030000",
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock_connections: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "fixed"},
+      clock_group: "timers",
       reset_connections: {rst_ni: "sys_fixed"},
       base_addr: "0x40080000",
     },
     { name: "aes",
       type: "aes",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "trans",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40110000",
     },
     { name: "hmac",
       type: "hmac",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "trans",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40120000",
     },
     { name: "rv_plic",
       type: "rv_plic",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40090000",
       generated: "true"         // Indicate this module is generated in the topgen
@@ -108,14 +155,16 @@
     { name: "pinmux",
       type: "pinmux",
       clock: "main",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40070000",
       generated: "true"
     },
     { name: "alert_handler",
       type: "alert_handler",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40130000",
       generated: "true"         // Indicate this module is generated in the topgen
@@ -128,7 +177,8 @@
     { name: "pwrmgr",
       type: "pwrmgr",
       clock: "main",
-      clock_connections: {clk_i: "fixed", clk_slow_i: "fixed"},
+      clock_srcs: {clk_i: "fixed", clk_slow_i: "fixed"},
+      clock_group: "powerup",
       reset_connections: {rst_ni: "sys_fixed", rst_slow_ni: "sys_fixed"},
       base_addr: "0x400A0000",
       generated: "true"
@@ -137,13 +187,15 @@
     // and test them by converting them into IRQs
     { name: "nmi_gen",
       type: "nmi_gen",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40140000",
     }
     { name: "usbdev",
       type: "usbdev",
-      clock_connections: {clk_i: "fixed", clk_usb_48mhz_i: "usb"},
+      clock_srcs: {clk_i: "fixed", clk_usb_48mhz_i: "usb_48mhz"},
+      clock_group: "peri",
       reset_connections: {rst_ni: "sys_fixed", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
@@ -153,7 +205,8 @@
   // It utilizes the primitive cells but configurable
   memory: [
     { name: "rom",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
       type: "rom",
       base_addr: "0x00008000",
@@ -161,13 +214,15 @@
       size: "0x4000"
     },
     { name: "ram_main",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
       type: "ram_1p",
       base_addr: "0x10000000",
       size: "0x10000" },
     { name: "eflash",
-      clock_connections: {clk_i: "main"},
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
       type: "eflash",
       base_addr: "0x20000000",
@@ -210,12 +265,14 @@
   // Assume xbar.hjson is located in the same directory of top.hjson
   xbar: [
     { name: "main",
-      clock_connections: {clk_main_i: "main", clk_fixed_i: "fixed"},
+      clock_srcs: {clk_main_i: "main", clk_fixed_i: "fixed"},
+      clock_group: "infra",
       reset: "sys",
       reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_fixed"}
     },
     { name: "peri",
-      clock_connections: {clk_peri_i: "fixed"},
+      clock_srcs: {clk_peri_i: "fixed"},
+      clock_group: "infra",
       reset: "sys_fixed",
       reset_connections: {rst_peri_ni: "sys_fixed"},
     }

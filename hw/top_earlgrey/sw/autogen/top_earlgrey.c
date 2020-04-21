@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[80] = {
+    top_earlgrey_plic_interrupt_for_peripheral[81] = {
             [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
             [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
             [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -137,4 +137,6 @@ const top_earlgrey_plic_peripheral_t
                 kTopEarlgreyPlicPeripheralUsbdev,
             [kTopEarlgreyPlicIrqIdUsbdevConnected] =
                 kTopEarlgreyPlicPeripheralUsbdev,
+            [kTopEarlgreyPlicIrqIdPwrmgrWakeup] =
+                kTopEarlgreyPlicPeripheralPwrmgr,
 };

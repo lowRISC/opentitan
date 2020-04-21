@@ -102,7 +102,8 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralAlertHandler = 6, /**< alert_handler */
   kTopEarlgreyPlicPeripheralNmiGen = 7,       /**< nmi_gen */
   kTopEarlgreyPlicPeripheralUsbdev = 8,       /**< usbdev */
-  kTopEarlgreyPlicPeripheralLast = 8, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralPwrmgr = 9,       /**< pwrmgr */
+  kTopEarlgreyPlicPeripheralLast = 9, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -192,7 +193,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr = 77,  /**< usbdev_rx_bitstuff_err */
   kTopEarlgreyPlicIrqIdUsbdevFrame = 78,          /**< usbdev_frame */
   kTopEarlgreyPlicIrqIdUsbdevConnected = 79,      /**< usbdev_connected */
-  kTopEarlgreyPlicIrqIdLast = 79, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdPwrmgrWakeup = 80,         /**< pwrmgr_wakeup */
+  kTopEarlgreyPlicIrqIdLast = 80, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -202,7 +204,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[80];
+    top_earlgrey_plic_interrupt_for_peripheral[81];
 
 /**
  * PLIC external interrupt target.

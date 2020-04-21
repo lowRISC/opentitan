@@ -220,6 +220,14 @@ def index(i: int) -> str:
     return "[{}]".format(i) if i != -1 else ""
 
 
+def get_clk_name(clk):
+    """Return the appropriate clk name
+    """
+    if clk == 'main':
+        return 'clk_i'
+    else:
+        return "clk_{}_i".format(clk)
+
 def get_reset_path(resets, name):
     """Return the appropriate reset path given name
     """

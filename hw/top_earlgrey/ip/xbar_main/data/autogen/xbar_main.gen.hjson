@@ -8,16 +8,22 @@
 
 {
   name: main
-  clock_connections:
+  clock_srcs:
   {
     clk_main_i: main
     clk_fixed_i: fixed
   }
+  clock_group: infra
   reset: rst_main_ni
   reset_connections:
   {
     rst_main_ni: sys
     rst_fixed_ni: sys_fixed
+  }
+  clock_connections:
+  {
+    clk_main_i: clk_main_infra
+    clk_fixed_i: clk_fixed_infra
   }
   connections:
   {

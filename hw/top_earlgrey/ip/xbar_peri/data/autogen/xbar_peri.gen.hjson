@@ -8,14 +8,19 @@
 
 {
   name: peri
-  clock_connections:
+  clock_srcs:
   {
     clk_peri_i: fixed
   }
+  clock_group: infra
   reset: rst_peri_ni
   reset_connections:
   {
     rst_peri_ni: sys_fixed
+  }
+  clock_connections:
+  {
+    clk_peri_i: clk_fixed_infra
   }
   connections:
   {
