@@ -24,7 +24,9 @@ else
 	CARG = -DSIMULATION=1
 	MAKEARG = SIM=1
 	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(<).vmem \
-		--rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.vmem
+		--rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.vmem \
+		--log-cli-format "$(notdir $(basename $(<))): %(message)s" --log-cli-level DEBUG \
+		--uart_timeout 240
 	OT_SW_TARGET = sim_verilator
 endif
 
