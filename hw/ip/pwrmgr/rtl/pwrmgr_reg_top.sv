@@ -90,9 +90,9 @@ module pwrmgr_reg_top (
   logic control_io_clk_en_qs;
   logic control_io_clk_en_wd;
   logic control_io_clk_en_we;
-  logic control_main_pdb_qs;
-  logic control_main_pdb_wd;
-  logic control_main_pdb_we;
+  logic control_main_pd_n_qs;
+  logic control_main_pd_n_wd;
+  logic control_main_pd_n_we;
   logic cfg_cdc_sync_qs;
   logic cfg_cdc_sync_wd;
   logic cfg_cdc_sync_we;
@@ -293,18 +293,18 @@ module pwrmgr_reg_top (
   );
 
 
-  //   F[main_pdb]: 6:6
+  //   F[main_pd_n]: 6:6
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_control_main_pdb (
+  ) u_control_main_pd_n (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (control_main_pdb_we & ctrl_cfg_regwen_qs),
-    .wd     (control_main_pdb_wd),
+    .we     (control_main_pd_n_we & ctrl_cfg_regwen_qs),
+    .wd     (control_main_pd_n_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -312,10 +312,10 @@ module pwrmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.main_pdb.q ),
+    .q      (reg2hw.control.main_pd_n.q ),
 
     // to register interface (read)
-    .qs     (control_main_pdb_qs)
+    .qs     (control_main_pd_n_qs)
   );
 
 
@@ -602,8 +602,8 @@ module pwrmgr_reg_top (
   assign control_io_clk_en_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_io_clk_en_wd = reg_wdata[5];
 
-  assign control_main_pdb_we = addr_hit[4] & reg_we & ~wr_err;
-  assign control_main_pdb_wd = reg_wdata[6];
+  assign control_main_pd_n_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_main_pd_n_wd = reg_wdata[6];
 
   assign cfg_cdc_sync_we = addr_hit[5] & reg_we & ~wr_err;
   assign cfg_cdc_sync_wd = reg_wdata[0];
@@ -661,7 +661,7 @@ module pwrmgr_reg_top (
         reg_rdata_next[0] = control_low_power_hint_qs;
         reg_rdata_next[4] = control_core_clk_en_qs;
         reg_rdata_next[5] = control_io_clk_en_qs;
-        reg_rdata_next[6] = control_main_pdb_qs;
+        reg_rdata_next[6] = control_main_pd_n_qs;
       end
 
       addr_hit[5]: begin

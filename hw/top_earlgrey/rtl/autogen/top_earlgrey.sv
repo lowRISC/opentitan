@@ -692,7 +692,7 @@ module top_earlgrey #(
       .pwr_lc_o(),
       .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
       .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
-      .pwr_proc_i(pwrmgr_pkg::PWR_PROC_DEFAULT),
+      .pwr_cpu_i(pwrmgr_pkg::PWR_CPU_DEFAULT),
       .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
 
       .clk_i (fixed_clk),

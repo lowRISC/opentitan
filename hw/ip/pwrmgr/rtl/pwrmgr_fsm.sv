@@ -18,7 +18,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   output logic req_pwrdn_o,
   input ack_pwrdn_i,
   input low_power_entry_i,
-  input main_pdb_i,
+  input main_pd_ni,
   input reset_req_i,
 
   // consumed in pwrmgr
@@ -26,6 +26,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   output logic wkup_record_o, // enable wakeup recording
   output logic fall_through_o,
   output logic abort_o,
+  output logic clr_hint_o,
   output logic clr_cfg_lock_o,
 
   // rstmgr
@@ -50,7 +51,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 );
 
   // state enum
-  typedef enum logic [3:0] {
+  typedef enum logic [4:0] {
     StLowPower,
     StEnableClocks,
     StReleaseLcRst,
@@ -67,9 +68,14 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
     StReqPwrDn
   } state_e;
 
+  // The code below always assumes the always on domain is index 0
+  `ASSERT_INIT(AlwaysOnIndex_A, ALWAYS_ON_DOMAIN == 0)
+
+  // when there are multiple on domains, the latter 1 should become another parameter
+  localparam int OffDomainSelStart = ALWAYS_ON_DOMAIN + 1;
 
   // all powered down domains have resets asserted
-  logic pdb_rsts_asserted;
+  logic pd_n_rsts_asserted;
 
   // all domains have resets asserted
   logic all_rsts_asserted;
@@ -90,16 +96,16 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   logic otp_init;
   logic lc_init;
 
-  assign pdb_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
-                             pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
+  assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
+                              pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
 
-  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &&
+  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
                              pwr_rst_i.rst_sys_src_n == '0;
 
   // when in low power path, resets are controlled by domain power down
   // when in reset path, all resets must be asserted
   // when the reset cause is something else, it is invalid
-  assign reset_valid = reset_cause_q == LowPwrEntry ? main_pdb_i | pdb_rsts_asserted :
+  assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
                        reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
 
 
@@ -126,17 +132,18 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   end
 
   always_comb begin
-    ack_pwrup_d = 1'b0;
-    req_pwrdn_d = 1'b0;
     otp_init = 1'b0;
     lc_init = 1'b0;
     wkup_o = 1'b0;
     wkup_record_o = 1'b0;
     fall_through_o = 1'b0;
     abort_o = 1'b0;
+    clr_hint_o = 1'b0;
     clr_cfg_lock_o = 1'b0;
 
     state_d = state_q;
+    ack_pwrup_d = ack_pwrup_q;
+    req_pwrdn_d = req_pwrdn_q;
     reset_ongoing_d = reset_ongoing_q;
     ip_clk_en_d = ip_clk_en_q;
     rst_lc_req_d = rst_lc_req_q;
@@ -180,14 +187,16 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
         if (lc_done_i) begin
           state_d = StAckPwrUp;
+
+
         end
       end
 
       StAckPwrUp: begin
-
         // only ack the slow_fsm if we actually transitioned through it
         ack_pwrup_d = !reset_ongoing_q;
 
+        // wait for request power up to drop relative to ack
         if (!req_pwrup_i || reset_ongoing_q) begin
           ack_pwrup_d = 1'b0;
           clr_cfg_lock_o = 1'b1;
@@ -202,6 +211,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
         if (reset_req_i || low_power_entry_i) begin
           reset_cause_d = ResetUndefined;
+          clr_hint_o = 1'b1;
           state_d = StDisClks;
         end
       end
@@ -247,9 +257,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         // reset non-always-on domains if requested
         // this includes the clock manager, which implies pwr/rst managers must
         // be fed directly from the source
-        for (int i = 1; i < PowerDomains; i++) begin
-          rst_lc_req_d[i] = ~main_pdb_i;
-          rst_sys_req_d[i] = ~main_pdb_i;
+        for (int i = OffDomainSelStart; i < PowerDomains; i++) begin
+          rst_lc_req_d[i] = ~main_pd_ni;
+          rst_sys_req_d[i] = ~main_pd_ni;
         end
 
         if (reset_valid) begin
@@ -275,8 +285,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
       StResetPrep: begin
         reset_cause_d = HwReq;
-        rst_lc_req_d = {PowerDomains-1{1'b1}};
-        rst_sys_req_d = {PowerDomains-1{1'b1}};
+        rst_lc_req_d = {PowerDomains{1'b1}};
+        rst_sys_req_d = {PowerDomains{1'b1}};
 
         if (reset_valid) begin
           state_d = StLowPower;
@@ -285,8 +295,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
       // Terminal state, kill everything
       default: begin
-        rst_lc_req_d = {PowerDomains-1{1'b1}};
-        rst_sys_req_d = {PowerDomains-1{1'b1}};
+        rst_lc_req_d = {PowerDomains{1'b1}};
+        rst_sys_req_d = {PowerDomains{1'b1}};
         ip_clk_en_d = 1'b0;
       end
 

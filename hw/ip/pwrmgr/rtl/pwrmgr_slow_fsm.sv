@@ -24,7 +24,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   output logic ack_pwrdn_o,
 
   // low power entry configuration
-  input main_pdb_i,
+  input main_pd_ni,
   input io_clk_en_i,
   input core_clk_en_i,
 
@@ -47,19 +47,24 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   } state_e;
 
   state_e state_q, state_d;
+
+  // All signals crossing over to other domain must be flopped
   pwrup_cause_e cause_q, cause_d;
   logic cause_toggle_q, cause_toggle_d;
+  logic req_pwrup_q, req_pwrup_d;
+  logic ack_pwrdn_q, ack_pwrdn_d;
 
-  // All power signals and signals going to analog logic are flopped to avoid transitioanl glitches
-  logic pdb_q, pdb_d;
+  // All power signals and signals going to analog logic are flopped to avoid transitional glitches
+  logic pd_nq, pd_nd;
   logic pwr_clamp_q, pwr_clamp_d;
   logic core_clk_en_q, core_clk_en_d;
   logic io_clk_en_q, io_clk_en_d;
 
-
   logic all_clks_valid;
   logic all_clks_invalid;
 
+  // TODO: This should come from an AST package long term and not be hardcoded.
+  // Tracked in #2010
   assign all_clks_valid = ast_i.core_clk_val == 2'b10 && ast_i.io_clk_val == 2'b10;
 
   // if clock were configured to turn off, make sure val is 2'b01
@@ -71,32 +76,36 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       state_q        <= StReset;
       cause_q        <= Por;
       cause_toggle_q <= 1'b0;
-      pdb_q          <= 1'b0;
+      pd_nq          <= 1'b0;
       pwr_clamp_q    <= 1'b1;
       core_clk_en_q  <= 1'b0;
       io_clk_en_q    <= 1'b0;
+      req_pwrup_q    <= 1'b0;
+      ack_pwrdn_q    <= 1'b0;
     end else begin
       state_q        <= state_d;
       cause_q        <= cause_d;
       cause_toggle_q <= cause_toggle_d;
-      pdb_q          <= pdb_d;
+      pd_nq          <= pd_nd;
       pwr_clamp_q    <= pwr_clamp_d;
       core_clk_en_q  <= core_clk_en_d;
       io_clk_en_q    <= io_clk_en_d;
+      req_pwrup_q    <= req_pwrup_d;
+      ack_pwrdn_q    <= ack_pwrdn_d;
     end
   end
 
   always_comb begin
     state_d        = state_q;
     cause_d        = cause_q;
-    pdb_d          = pdb_q;
+    pd_nd          = pd_nq;
     cause_toggle_d = cause_toggle_q;
     pwr_clamp_d    = pwr_clamp_q;
     core_clk_en_d  = core_clk_en_q;
     io_clk_en_d    = io_clk_en_q;
 
-    req_pwrup_o    = 1'b0;
-    ack_pwrdn_o    = 1'b0;
+    req_pwrup_d    = req_pwrup_q;
+    ack_pwrdn_d    = ack_pwrdn_q;
 
     unique case(state_q)
 
@@ -116,7 +125,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       StMainPowerOn: begin
-        pdb_d = 1'b1;
+        pd_nd = 1'b1;
 
         if (ast_i.main_pok) begin
           pwr_clamp_d = 1'b0;
@@ -134,24 +143,29 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       StReqPwrUp: begin
-        req_pwrup_o = 1'b1;
+        req_pwrup_d = 1'b1;
 
-        if (ack_pwrup_i) begin
+        // req_pwrdn_i should be 0 here to indicate
+        // the request from the previous round has definitely completed
+        if (ack_pwrup_i && !req_pwrdn_i) begin
+          req_pwrup_d = 1'b0;
           state_d = StIdle;
-
         end
       end
 
       StIdle: begin
-        if (req_pwrdn_i) begin
+        // ack_pwrup_i should be 0 here to indicate
+        // the ack from the previous round has definitively completed
+        if (req_pwrdn_i && !ack_pwrup_i) begin
           state_d = StAckPwrDn;
         end
       end
 
       StAckPwrDn: begin
-        ack_pwrdn_o = 1'b1;
+        ack_pwrdn_d = 1'b1;
 
         if (!req_pwrdn_i) begin
+          ack_pwrdn_d = 1'b0;
           state_d = StClocksOff;
         end
       end
@@ -162,23 +176,23 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
         if (all_clks_invalid) begin
           // if main power is turned off, assert clamp ahead
-          pwr_clamp_d = ~main_pdb_i;
+          pwr_clamp_d = ~main_pd_ni;
           state_d = StMainPowerOff;
         end
       end
 
       StMainPowerOff: begin
-        pdb_d = main_pdb_i;
+        pd_nd = main_pd_ni;
 
         // if power is never turned off, proceed directly to low power state
-        if (!ast_i.main_pok | main_pdb_i) begin
+        if (!ast_i.main_pok | main_pd_ni) begin
           state_d = StLowPower;
         end
       end
 
       // Very terminal state, kill everything
       default: begin
-        pdb_d         = 1'b0;
+        pd_nd         = 1'b0;
         pwr_clamp_d   = 1'b1;
         core_clk_en_d = 1'b0;
         io_clk_en_d   = 1'b0;
@@ -191,10 +205,12 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   assign pwrup_cause_o = cause_q;
   assign pwrup_cause_toggle_o = cause_toggle_q;
+  assign req_pwrup_o = req_pwrup_q;
+  assign ack_pwrdn_o = ack_pwrdn_q;
 
   assign ast_o.core_clk_en = core_clk_en_q;
   assign ast_o.io_clk_en = io_clk_en_q;
-  assign ast_o.main_pdb = pdb_q;
+  assign ast_o.main_pd_n = pd_nq;
   assign ast_o.pwr_clamp = pwr_clamp_q;
 
   // This is hardwired to 1 all the time
