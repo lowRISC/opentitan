@@ -35,17 +35,17 @@ def pytest_exception_interact(node, call, report):
         return
 
     tmp_path = str(node.funcargs['tmp_path'])
-    print("\n\n")
-    print("================= DUMP OF ALL TEMPORARY FILES =================")
+    logging.debug("================= DUMP OF ALL TEMPORARY FILES =================")
 
     for f in os.listdir(tmp_path):
         f_abs = os.path.join(tmp_path, f)
         if not os.path.isfile(f_abs):
             continue
-        print("vvvvvvvvvvvvvvvvvvvv {} vvvvvvvvvvvvvvvvvvvv".format(f))
+        logging.debug("vvvvvvvvvvvvvvvvvvvv {} vvvvvvvvvvvvvvvvvvvv".format(f))
         with open(f_abs, 'r') as fp:
-            print(fp.read())
-        print("^^^^^^^^^^^^^^^^^^^^ {} ^^^^^^^^^^^^^^^^^^^^\n\n".format(f))
+            for line in fp.readlines():
+                logging.debug(line.rstrip())
+        logging.debug("^^^^^^^^^^^^^^^^^^^^ {} ^^^^^^^^^^^^^^^^^^^^".format(f))
 
 
 @pytest.fixture(scope="session")
