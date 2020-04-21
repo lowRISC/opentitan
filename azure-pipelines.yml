@@ -2,7 +2,7 @@
 # Documentation at https://aka.ms/yaml
 
 variables:
-  VERILATOR_VERSION: 4.028
+  VERILATOR_VERSION: 4.032
   VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
