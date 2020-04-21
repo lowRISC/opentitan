@@ -7,7 +7,6 @@
 
 variables:
   VERILATOR_VERSION: 4.040
-  VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   VERIBLE_VERSION: v0.0-520-g650c6cc
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
@@ -316,27 +315,6 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
-      set -e
-      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
-        echo "Building verilator (no cached build found)"
-
-        mkdir -p build/verilator
-        cd build/verilator
-        curl -Ls -o verilator.tgz \
-          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
-        tar -xf verilator.tgz
-
-        cd "verilator-$(VERILATOR_VERSION)"
-        ./configure --prefix="$(VERILATOR_PATH)"
-        make -j$(nproc)
-        mkdir -p "$VERILATOR_PATH"
-        make install
-      else
-        echo "Re-using cached verilator build"
-      fi
-    displayName: Build and install Verilator
-  - bash: |
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       python3 --version
       fusesoc --version
       verilator --version
@@ -346,7 +324,6 @@ jobs:
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       # Compile the simulation without threading; the runners provided by
       # Azure provide two virtual CPUs, which seems to equal one physical
       # CPU (at most); the use of threading slows down the simulation.
