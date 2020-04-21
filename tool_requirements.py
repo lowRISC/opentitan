@@ -5,7 +5,7 @@
 # Version requirements for various tools. Checked by tooling (e.g. fusesoc),
 # and inserted into the documentation.
 __TOOL_REQUIREMENTS__ = {
-    'verilator': '4.028',
+    'verilator': '4.040',
     'edalize': '0.2.0',
     'verible': '0.0-520-g650c6cc',
 }
