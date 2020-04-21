@@ -51,7 +51,7 @@ else
         JOBS ?= -j8 --max-load=4
     endif
 	  ifeq ($(RISCV_TARGET),opentitan)
-			ifeq ($(OT_TARGET), verilator)
+			ifeq ($(OT_TARGET),verilator)
 				JOBS ?= -j4
 			endif
 		endif

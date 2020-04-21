@@ -23,8 +23,13 @@ ifeq ($(OT_TARGET),fpga)
 else
 	CARG = -DSIMULATION=1
 	MAKEARG = SIM=1
-	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(<).vmem \
-		--rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.vmem
+	# Verilator can be run in parallel mode so alter log output to prepend with
+	# test name, also increase uart_timeout as with parallel runs on CI individual
+	# test execution can take greater than 60 seconds.
+	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(<).32.vmem \
+		--rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.32.vmem \
+		--log-cli-format "$(notdir $(basename $(<))): %(message)s" --log-cli-level DEBUG \
+		--uart_timeout 240
 	OT_SW_TARGET = sim_verilator
 endif
 
@@ -71,4 +76,4 @@ COMPILE_TARGET += \
         $$(RISCV_READELF) -a $$(@) > $$(@).readelf; \
         $$(RISCV_NM) $$(@) > $$(@).nm; \
         $$(RISCV_OBJCOPY) -O binary $$(@) $$(@).bin; \
-        srec_cat $$(@).bin -binary -offset 0x0000 -byte-swap 4 -o $$(@).vmem -vmem
+        srec_cat $$(@).bin -binary -offset 0x0000 -byte-swap 4 -o $$(@).32.vmem -vmem
