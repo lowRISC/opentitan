@@ -4,10 +4,11 @@
 #include "sw/device/lib/flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #include "sw/device/lib/common.h"
 
-#define FLASH_CTRL0_BASE_ADDR 0x40030000
+#define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_BASE_ADDR
 
 typedef enum flash_op {
   FLASH_READ = 0,

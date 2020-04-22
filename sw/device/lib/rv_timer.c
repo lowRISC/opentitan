@@ -4,12 +4,14 @@
 
 #include "sw/device/lib/rv_timer.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_timer_regs.h"  // Generated.
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/runtime/ibex.h"
 
-#define RV_TIMER0_BASE_ADDR 0x40080000
+#define RV_TIMER0_BASE_ADDR TOP_EARLGREY_RV_TIMER_BASE_ADDR
 #define HART_CFG_ADDR_GAP 0x100
 
 static const uint32_t NS_IN_S = 1000 * 1000 * 1000;

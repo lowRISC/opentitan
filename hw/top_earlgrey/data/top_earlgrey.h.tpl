@@ -45,6 +45,17 @@
   % endif
 % endfor
 
+% for m in top["module"]:
+/**
+ * Base address for ${m["name"]} peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}u
+
+% endfor
+
 <%!
 
 def camelcase(str):

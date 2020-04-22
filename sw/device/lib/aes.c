@@ -4,10 +4,12 @@
 
 #include "sw/device/lib/aes.h"
 
-#include "aes_regs.h"  // Generated.
 #include "sw/device/lib/common.h"
 
-#define AES0_BASE_ADDR 0x40110000
+#include "aes_regs.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#define AES0_BASE_ADDR TOP_EARLGREY_AES_BASE_ADDR
 #define AES_NUM_REGS_KEY 8
 #define AES_NUM_REGS_IV 4
 #define AES_NUM_REGS_DATA 4

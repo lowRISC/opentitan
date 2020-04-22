@@ -13,8 +13,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 
-#define UART0_BASE_ADDR 0x40000000u
-#define PLIC0_BASE_ADDR 0x40090000u
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define PLIC_TARGET kDifPlicTargetIbex0
 
@@ -254,11 +253,13 @@ int main(int argc, char **argv) {
   irq_external_ctrl(true);
 
   // No debug output in case of UART initialisation failure.
-  mmio_region_t uart_base_addr = mmio_region_from_addr(UART0_BASE_ADDR);
+  mmio_region_t uart_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
   uart_initialise(uart_base_addr, &uart0);
   base_set_stdout(kPolledUartSink);
 
-  mmio_region_t plic_base_addr = mmio_region_from_addr(PLIC0_BASE_ADDR);
+  mmio_region_t plic_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   if (!plic_initialise(plic_base_addr, &plic0)) {
     base_printf("FAIL!\r\n");
     return -1;

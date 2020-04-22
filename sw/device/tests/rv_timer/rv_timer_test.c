@@ -11,7 +11,7 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/uart.h"
 
-#define GPIO0_BASE_ADDR 0x40010000u
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_gpio_t gpio;
 static uint32_t intr_handling_success = 0;
@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
 
   pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
-  dif_gpio_config_t gpio_config = {.base_addr =
-                                       mmio_region_from_addr(GPIO0_BASE_ADDR)};
+  dif_gpio_config_t gpio_config = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
   dif_gpio_init(&gpio_config, &gpio);
   dif_gpio_output_mode_all_set(&gpio, 0xFF00);
 
